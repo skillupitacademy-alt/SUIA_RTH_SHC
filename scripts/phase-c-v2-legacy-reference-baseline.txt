@@ -1,0 +1,811 @@
+﻿
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:10:  sectionType: string;
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:18:  sectionType: string;
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:48:        { sectionType: 'layman', 
+isRequired: true, order: 1, subsectionDepth: 'medium', estimatedTime: 10 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:49:        { sectionType: 'visual', 
+isRequired: true, order: 2, subsectionDepth: 'shallow', estimatedTime: 8 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:50:        { sectionType: 'notes', 
+isRequired: true, order: 3, subsectionDepth: 'shallow', estimatedTime: 15 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:51:        { sectionType: 'code', isRequired: 
+true, order: 4, subsectionDepth: 'shallow', estimatedTime: 20 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:52:        { sectionType: 'practice', 
+isRequired: true, order: 5, subsectionDepth: 'medium', estimatedTime: 25 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:53:        { sectionType: 'quiz', isRequired: 
+false, order: 6, subsectionDepth: 'shallow', estimatedTime: 10 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:63:        { sectionType: 'notes', 
+isRequired: true, order: 1, subsectionDepth: 'medium', estimatedTime: 15 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:64:        { sectionType: 'technical', 
+isRequired: true, order: 2, subsectionDepth: 'deep', estimatedTime: 30 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:65:        { sectionType: 'code', isRequired: 
+true, order: 3, subsectionDepth: 'deep', estimatedTime: 25 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:66:        { sectionType: 'real_life', 
+isRequired: true, order: 4, subsectionDepth: 'deep', estimatedTime: 20 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:67:        { sectionType: 'project', 
+isRequired: true, order: 5, subsectionDepth: 'deep', estimatedTime: 60 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:68:        { sectionType: 'interview', 
+isRequired: false, order: 6, subsectionDepth: 'deep', estimatedTime: 20 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:78:        { sectionType: 'visual', 
+isRequired: true, order: 1, subsectionDepth: 'deep', estimatedTime: 20 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:79:        { sectionType: 'layman', 
+isRequired: true, order: 2, subsectionDepth: 'medium', estimatedTime: 10 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:80:        { sectionType: 'notes', 
+isRequired: true, order: 3, subsectionDepth: 'medium', estimatedTime: 15 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:81:        { sectionType: 'real_life', 
+isRequired: true, order: 4, subsectionDepth: 'medium', estimatedTime: 15 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:82:        { sectionType: 'code', isRequired: 
+false, order: 5, subsectionDepth: 'shallow', estimatedTime: 15 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:92:        { sectionType: 'notes', 
+isRequired: true, order: 1, subsectionDepth: 'medium', estimatedTime: 15 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:93:        { sectionType: 'code', isRequired: 
+true, order: 2, subsectionDepth: 'medium', estimatedTime: 20 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:94:        { sectionType: 'interview', 
+isRequired: true, order: 3, subsectionDepth: 'deep', estimatedTime: 30 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:95:        { sectionType: 'practice', 
+isRequired: true, order: 4, subsectionDepth: 'deep', estimatedTime: 30 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:96:        { sectionType: 'real_life', 
+isRequired: false, order: 5, subsectionDepth: 'medium', estimatedTime: 15 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:106:        { sectionType: 'summary', 
+isRequired: true, order: 1, subsectionDepth: 'shallow', estimatedTime: 5 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:107:        { sectionType: 'code', 
+isRequired: true, order: 2, subsectionDepth: 'shallow', estimatedTime: 10 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:108:        { sectionType: 'notes', 
+isRequired: false, order: 3, subsectionDepth: 'shallow', estimatedTime: 10 },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:135:        { sectionType: 'notes', 
+componentName: 'CardRenderer', layoutConfig: { spacing: 'comfortable', maxWidth: '900px', imagePosition: 
+'inline', codeTheme: 'dracula', cardStyle: 'elevated' } },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:136:        { sectionType: 'code', 
+componentName: 'CodeCardRenderer', layoutConfig: { spacing: 'comfortable', maxWidth: '900px', 
+imagePosition: 'inline', codeTheme: 'dracula', cardStyle: 'elevated' } },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:137:        { sectionType: 'visual', 
+componentName: 'DiagramCardRenderer', layoutConfig: { spacing: 'comfortable', maxWidth: '900px', 
+imagePosition: 'inline', codeTheme: 'dracula', cardStyle: 'elevated' } },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:147:        { sectionType: 'notes', 
+componentName: 'ListRenderer', layoutConfig: { spacing: 'compact', maxWidth: '100%', imagePosition: 
+'right', codeTheme: 'github', cardStyle: 'flat' } },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:148:        { sectionType: 'code', 
+componentName: 'InlineCodeRenderer', layoutConfig: { spacing: 'compact', maxWidth: '100%', imagePosition: 
+'right', codeTheme: 'github', cardStyle: 'flat' } },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:158:        { sectionType: 'notes', 
+componentName: 'ImmersiveRenderer', layoutConfig: { spacing: 'spacious', maxWidth: '1200px', imagePosition: 
+'inline', codeTheme: 'monokai', cardStyle: 'flat' } },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:159:        { sectionType: 'visual', 
+componentName: 'FullScreenDiagramRenderer', layoutConfig: { spacing: 'spacious', maxWidth: '1200px', 
+imagePosition: 'inline', codeTheme: 'monokai', cardStyle: 'flat' } },
+src\migrations\p1-p0-foundation\seed-default-architectures.ts:169:        { sectionType: 'notes', 
+componentName: 'AccessibleRenderer', layoutConfig: { spacing: 'comfortable', maxWidth: '800px', 
+imagePosition: 'bottom', codeTheme: 'high-contrast', cardStyle: 'outlined' } },
+src\migrations\p1-p0-foundation\validate-gap-remediation.ts:28:    const subsectionTypes = await 
+db.execute(sql`
+src\migrations\p1-p0-foundation\validate-gap-remediation.ts:34:    const expectedSubsectionTypes = [
+src\migrations\p1-p0-foundation\validate-gap-remediation.ts:44:    if (subsectionTypes.rows.length === 
+expectedSubsectionTypes.length) {
+src\migrations\p1-p0-foundation\validate-gap-remediation.ts:45:      addResult('GAP 2', 'Subsection Type 
+Enum', 'PASS', `All ${expectedSubsectionTypes.length} subsection types defined`);
+src\migrations\p1-p0-foundation\validate-gap-remediation.ts:47:      addResult('GAP 2', 'Subsection Type 
+Enum', 'FAIL', `Expected ${expectedSubsectionTypes.length} types, found ${subsectionTypes.rows.length}`);
+src\migrations\p1-p0-foundation\validate-gap-remediation.ts:258:    const sectionTypes = await 
+db.execute(sql`
+src\migrations\p1-p0-foundation\validate-gap-remediation.ts:269:    const foundSections = 
+sectionTypes.rows.map((row: any) => row.enumlabel);
+src\repositories\__tests__\tutorial-content.repository.test.ts:2:import type { TutorialContentJSON } from 
+'@quiz/types';
+src\repositories\__tests__\tutorial-content.repository.test.ts:5:import { tutorialContentAudit } from 
+'../../schema/tutorial-content-audit';
+src\repositories\__tests__\tutorial-content.repository.test.ts:6:import { tutorialContentVersions } from 
+'../../schema/tutorial-content-versions';
+src\repositories\__tests__\tutorial-content.repository.test.ts:18:import { TutorialContentRepository } from 
+'../tutorial-content.repository';
+src\repositories\__tests__\tutorial-content.repository.test.ts:21:  const content: TutorialContentJSON = {
+src\repositories\__tests__\tutorial-content.repository.test.ts:120:      const rows = table === 
+tutorialContentVersions
+src\repositories\__tests__\tutorial-content.repository.test.ts:122:        : table === tutorialContentAudit
+src\repositories\__tests__\tutorial-content.repository.test.ts:148:        table === 
+tutorialContentVersions ? versionRows[0] : auditRows[0],
+src\repositories\__tests__\tutorial-content.repository.test.ts:159:describe('TutorialContentRepository', () 
+=> {
+src\repositories\__tests__\tutorial-content.repository.test.ts:166:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:174:      
+'TutorialContentRepository.findById'
+src\repositories\__tests__\tutorial-content.repository.test.ts:180:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:186:      
+'TutorialContentRepository.findBySubtopicId'
+src\repositories\__tests__\tutorial-content.repository.test.ts:192:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:199:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:202:    
+expect(cloned).toBeInstanceOf(TutorialContentRepository);
+src\repositories\__tests__\tutorial-content.repository.test.ts:209:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:217:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:224:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:250:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:263:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:279:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:304:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:333:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:353:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:367:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:373:      
+'TutorialContentRepository.getVersionHistory'
+src\repositories\__tests__\tutorial-content.repository.test.ts:379:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:393:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:400:        content: versionRow.content as 
+TutorialContentJSON,
+src\repositories\__tests__\tutorial-content.repository.test.ts:412:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:419:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-content.repository.test.ts:438:    const repo = new 
+TutorialContentRepository(db as never);
+src\repositories\__tests__\tutorial-section.repository.test.ts:31:        await 
+repository.archiveSection(id);
+src\repositories\__tests__\tutorial-section.repository.test.ts:39:  describe('createSection', () => {
+src\repositories\__tests__\tutorial-section.repository.test.ts:57:        sectionType: 'notes',
+src\repositories\__tests__\tutorial-section.repository.test.ts:63:      const section = await 
+repository.createSection(input);
+src\repositories\__tests__\tutorial-section.repository.test.ts:69:      
+expect(section.sectionType).toBe('notes');
+src\repositories\__tests__\tutorial-section.repository.test.ts:131:        sectionType: 'layman',
+src\repositories\__tests__\tutorial-section.repository.test.ts:136:      const created = await 
+repository.createSection(input);
+src\repositories\__tests__\tutorial-section.repository.test.ts:146:  describe('updateSection', () => {
+src\repositories\__tests__\tutorial-section.repository.test.ts:160:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:162:        sectionType: 'technical',
+src\repositories\__tests__\tutorial-section.repository.test.ts:182:      const updated = await 
+repository.updateSection(section.id, {
+src\repositories\__tests__\tutorial-section.repository.test.ts:192:  describe('updateSectionWithVersion', 
+() => {
+src\repositories\__tests__\tutorial-section.repository.test.ts:206:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:208:        sectionType: 'overview',
+src\repositories\__tests__\tutorial-section.repository.test.ts:228:      const updated = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:252:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:254:        sectionType: 'real_life',
+src\repositories\__tests__\tutorial-section.repository.test.ts:274:      const result = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:301:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:303:        sectionType: 'practice',
+src\repositories\__tests__\tutorial-section.repository.test.ts:323:      const firstResult = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:344:      const secondResult = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:364:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:366:        sectionType: 'quiz',
+src\repositories\__tests__\tutorial-section.repository.test.ts:373:      const updated1 = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:380:      const updated2 = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:387:      const updated3 = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:401:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:403:        sectionType: 'summary',
+src\repositories\__tests__\tutorial-section.repository.test.ts:410:      await 
+repository.archiveSection(section.id);
+src\repositories\__tests__\tutorial-section.repository.test.ts:413:      const result = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:428:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:430:        sectionType: 'project',
+src\repositories\__tests__\tutorial-section.repository.test.ts:438:      const updated = await 
+repository.updateSectionWithVersion(
+src\repositories\__tests__\tutorial-section.repository.test.ts:450:  describe('querySections', () => {
+src\repositories\__tests__\tutorial-section.repository.test.ts:458:      const section1 = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:460:        sectionType: 'visual',
+src\repositories\__tests__\tutorial-section.repository.test.ts:466:      const section2 = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:468:        sectionType: 'interview',
+src\repositories\__tests__\tutorial-section.repository.test.ts:475:      const result = await 
+repository.querySections({ subtopicId: testSubtopicId }, 10);
+src\repositories\__tests__\tutorial-section.repository.test.ts:484:  describe('archiveSection', () => {
+src\repositories\__tests__\tutorial-section.repository.test.ts:491:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:493:        sectionType: 'code',
+src\repositories\__tests__\tutorial-section.repository.test.ts:500:      await 
+repository.archiveSection(section.id);
+src\repositories\__tests__\tutorial-section.repository.test.ts:508:  describe('publishSection', () => {
+src\repositories\__tests__\tutorial-section.repository.test.ts:521:      const section = await 
+repository.createSection({
+src\repositories\__tests__\tutorial-section.repository.test.ts:523:        sectionType: 'assignment',
+src\repositories\__tests__\tutorial-section.repository.test.ts:532:      const published = await 
+repository.publishSection(section.id);
+src\repositories\layman.repository.ts:25: * DO NOT map V2 back to sectionType='layman'.
+src\repositories\tutorial-content.repository.ts:3:import { tutorialContent } from 
+'../schema/tutorial-content';
+src\repositories\tutorial-content.repository.ts:4:import { tutorialContentVersions } from 
+'../schema/tutorial-content-versions';
+src\repositories\tutorial-content.repository.ts:5:import { tutorialContentAudit } from 
+'../schema/tutorial-content-audit';
+src\repositories\tutorial-content.repository.ts:9:  ITutorialContentRepository,
+src\repositories\tutorial-content.repository.ts:11:  TutorialContentAuditCreateInput,
+src\repositories\tutorial-content.repository.ts:12:  TutorialContentAuditRecord,
+src\repositories\tutorial-content.repository.ts:13:  TutorialContentRecord,
+src\repositories\tutorial-content.repository.ts:14:  TutorialContentVersionCreateInput,
+src\repositories\tutorial-content.repository.ts:15:  TutorialContentVersionRecord,
+src\repositories\tutorial-content.repository.ts:16:  TutorialContentUpsertInput,
+src\repositories\tutorial-content.repository.ts:19:import { TutorialContentSchema } from '@quiz/types';
+src\repositories\tutorial-content.repository.ts:23:const activeContent = isNull(tutorialContent.deletedAt);
+src\repositories\tutorial-content.repository.ts:25:export class TutorialContentRepository
+src\repositories\tutorial-content.repository.ts:27:  implements ITutorialContentRepository
+src\repositories\tutorial-content.repository.ts:34:    return new TutorialContentRepository(dbClient as 
+typeof db) as this;
+src\repositories\tutorial-content.repository.ts:37:  async findById(id: string): 
+Promise<TutorialContentRecord | undefined> {
+src\repositories\tutorial-content.repository.ts:41:        .from(tutorialContent)
+src\repositories\tutorial-content.repository.ts:42:        .where(and(eq(tutorialContent.id, id), 
+activeContent)),
+src\repositories\tutorial-content.repository.ts:43:      'TutorialContentRepository.findById'
+src\repositories\tutorial-content.repository.ts:46:    return rows[0] as TutorialContentRecord | undefined;
+src\repositories\tutorial-content.repository.ts:52:  ): Promise<TutorialContentRecord[]> {
+src\repositories\tutorial-content.repository.ts:53:    const conditions = [eq(tutorialContent.subtopicId, 
+subtopicId), activeContent];
+src\repositories\tutorial-content.repository.ts:55:      conditions.push(eq(tutorialContent.difficulty, 
+difficulty));
+src\repositories\tutorial-content.repository.ts:61:        .from(tutorialContent)
+src\repositories\tutorial-content.repository.ts:63:      'TutorialContentRepository.findBySubtopicId'
+src\repositories\tutorial-content.repository.ts:66:    return rows as TutorialContentRecord[];
+src\repositories\tutorial-content.repository.ts:72:  ): Promise<TutorialContentRecord[]> {
+src\repositories\tutorial-content.repository.ts:74:      eq(tutorialContent.subtopicId, subtopicId),
+src\repositories\tutorial-content.repository.ts:75:      eq(tutorialContent.isPublished, true),
+src\repositories\tutorial-content.repository.ts:79:      conditions.push(eq(tutorialContent.difficulty, 
+difficulty));
+src\repositories\tutorial-content.repository.ts:85:        .from(tutorialContent)
+src\repositories\tutorial-content.repository.ts:87:      'TutorialContentRepository.getPublished'
+src\repositories\tutorial-content.repository.ts:90:    return rows as TutorialContentRecord[];
+src\repositories\tutorial-content.repository.ts:93:  async upsertBlocks(data: TutorialContentUpsertInput): 
+Promise<TutorialContentRecord> {
+src\repositories\tutorial-content.repository.ts:94:    const validatedContent = 
+TutorialContentSchema.parse(data.content);
+src\repositories\tutorial-content.repository.ts:97:        .insert(tutorialContent)
+src\repositories\tutorial-content.repository.ts:116:          target: [tutorialContent.subtopicId, 
+tutorialContent.difficulty, tutorialContent.contentType],
+src\repositories\tutorial-content.repository.ts:128:            version: sql`${tutorialContent.version} + 
+1`,
+src\repositories\tutorial-content.repository.ts:129:            regenerationCount: 
+sql`${tutorialContent.regenerationCount} + 1`,
+src\repositories\tutorial-content.repository.ts:135:      'TutorialContentRepository.upsertBlocks'
+src\repositories\tutorial-content.repository.ts:136:    )) as TutorialContentRecord[];
+src\repositories\tutorial-content.repository.ts:143:    data: TutorialContentUpsertInput
+src\repositories\tutorial-content.repository.ts:144:  ): Promise<TutorialContentRecord | undefined> {
+src\repositories\tutorial-content.repository.ts:145:    const validatedContent = 
+TutorialContentSchema.parse(data.content);
+src\repositories\tutorial-content.repository.ts:148:        .update(tutorialContent)
+src\repositories\tutorial-content.repository.ts:160:          version: sql`${tutorialContent.version} + 1`,
+src\repositories\tutorial-content.repository.ts:161:          regenerationCount: 
+sql`${tutorialContent.regenerationCount} + 1`,
+src\repositories\tutorial-content.repository.ts:165:        .where(and(eq(tutorialContent.id, contentId), 
+activeContent))
+src\repositories\tutorial-content.repository.ts:167:      'TutorialContentRepository.updateById'
+src\repositories\tutorial-content.repository.ts:170:    return rows[0] as TutorialContentRecord | undefined;
+src\repositories\tutorial-content.repository.ts:173:  async publish(contentId: string): 
+Promise<TutorialContentRecord | undefined> {
+src\repositories\tutorial-content.repository.ts:176:        .update(tutorialContent)
+src\repositories\tutorial-content.repository.ts:182:        .where(and(eq(tutorialContent.id, contentId), 
+activeContent))
+src\repositories\tutorial-content.repository.ts:184:      'TutorialContentRepository.publish'
+src\repositories\tutorial-content.repository.ts:187:    return rows[0] as TutorialContentRecord | undefined;
+src\repositories\tutorial-content.repository.ts:190:  async getVersionHistory(contentId: string): 
+Promise<TutorialContentRecord[]> {
+src\repositories\tutorial-content.repository.ts:194:        .from(tutorialContent)
+src\repositories\tutorial-content.repository.ts:195:        .where(eq(tutorialContent.id, contentId)),
+src\repositories\tutorial-content.repository.ts:196:      'TutorialContentRepository.getVersionHistory'
+src\repositories\tutorial-content.repository.ts:199:    return rows as TutorialContentRecord[];
+src\repositories\tutorial-content.repository.ts:202:  async softDelete(contentId: string): 
+Promise<TutorialContentRecord | undefined> {
+src\repositories\tutorial-content.repository.ts:205:        .update(tutorialContent)
+src\repositories\tutorial-content.repository.ts:211:        .where(and(eq(tutorialContent.id, contentId), 
+activeContent))
+src\repositories\tutorial-content.repository.ts:213:      'TutorialContentRepository.softDelete'
+src\repositories\tutorial-content.repository.ts:216:    return rows[0] as TutorialContentRecord | undefined;
+src\repositories\tutorial-content.repository.ts:220:    input: TutorialContentVersionCreateInput
+src\repositories\tutorial-content.repository.ts:221:  ): Promise<TutorialContentVersionRecord> {
+src\repositories\tutorial-content.repository.ts:224:        .insert(tutorialContentVersions)
+src\repositories\tutorial-content.repository.ts:233:      'TutorialContentRepository.createVersionSnapshot'
+src\repositories\tutorial-content.repository.ts:234:    )) as TutorialContentVersionRecord[];
+src\repositories\tutorial-content.repository.ts:239:  async getVersionSnapshot(versionId: string): 
+Promise<TutorialContentVersionRecord | undefined> {
+src\repositories\tutorial-content.repository.ts:243:        .from(tutorialContentVersions)
+src\repositories\tutorial-content.repository.ts:244:        .where(eq(tutorialContentVersions.id, 
+versionId)),
+src\repositories\tutorial-content.repository.ts:245:      'TutorialContentRepository.getVersionSnapshot'
+src\repositories\tutorial-content.repository.ts:248:    return rows[0] as TutorialContentVersionRecord | 
+undefined;
+src\repositories\tutorial-content.repository.ts:251:  async getVersionSnapshots(contentId: string): 
+Promise<TutorialContentVersionRecord[]> {
+src\repositories\tutorial-content.repository.ts:255:        .from(tutorialContentVersions)
+src\repositories\tutorial-content.repository.ts:256:        .where(eq(tutorialContentVersions.contentId, 
+contentId)),
+src\repositories\tutorial-content.repository.ts:257:      'TutorialContentRepository.getVersionSnapshots'
+src\repositories\tutorial-content.repository.ts:260:    return [...(rows as 
+TutorialContentVersionRecord[])].sort(
+src\repositories\tutorial-content.repository.ts:265:  async createAuditEntry(input: 
+TutorialContentAuditCreateInput): Promise<TutorialContentAuditRecord> {
+src\repositories\tutorial-content.repository.ts:268:        .insert(tutorialContentAudit)
+src\repositories\tutorial-content.repository.ts:277:      'TutorialContentRepository.createAuditEntry'
+src\repositories\tutorial-content.repository.ts:278:    )) as TutorialContentAuditRecord[];
+src\repositories\tutorial-content.repository.ts:285:    action?: TutorialContentAuditRecord['action'];
+src\repositories\tutorial-content.repository.ts:288:  }): Promise<TutorialContentAuditRecord[]> {
+src\repositories\tutorial-content.repository.ts:291:      
+conditions.push(eq(tutorialContentAudit.contentId, filters.contentId));
+src\repositories\tutorial-content.repository.ts:294:      conditions.push(eq(tutorialContentAudit.action, 
+filters.action));
+src\repositories\tutorial-content.repository.ts:299:      .from(tutorialContentAudit);
+src\repositories\tutorial-content.repository.ts:303:      'TutorialContentRepository.getAuditEntries'
+src\repositories\tutorial-content.repository.ts:306:    const ordered = [...(rows as 
+TutorialContentAuditRecord[])].sort(
+src\repositories\tutorial-section.repository.ts:45:export interface UpdateTutorialContentInput {
+src\repositories\tutorial-section.repository.ts:266:  async updateTutorialContent(
+src\repositories\tutorial-section.repository.ts:268:    input: UpdateTutorialContentInput
+src\repositories\tutorial-section.repository.ts:288:      'TutorialSectionRepository.updateTutorialContent'
+src\repositories\tutorial-section.repository.ts:297:  async updateTutorialContentWithVersion(
+src\repositories\tutorial-section.repository.ts:300:    input: UpdateTutorialContentInput
+src\repositories\tutorial-section.repository.ts:320:      
+'TutorialSectionRepository.updateTutorialContentWithVersion'
+src\schema\ai-section-generation-jobs.ts:12:import { sectionTypeEnum, jobStatusEnum } from 
+'./enums-modular';
+src\schema\ai-section-generation-jobs.ts:28:  sectionType: sectionTypeEnum('section_type').notNull(),
+src\schema\ai-section-generation-jobs.ts:82:  idxJobsSection: 
+index('idx_jobs_section').on(table.sectionType),
+src\schema\analytics-learning-metrics.ts:11:import { tutorialSubsections } from './tutorial-subsections';
+src\schema\analytics-learning-metrics.ts:30:  sectionType: text('section_type').notNull(),
+src\schema\analytics-learning-metrics.ts:93:    .references(() => tutorialSubsections.id, { onDelete: 
+'cascade' }),
+src\schema\analytics-learning-metrics.ts:94:  subsectionType: text('subsection_type').notNull(),
+src\schema\content-generation-jobs.ts:4:import { tutorialContentJobStatusEnum, tutorialDifficultyEnum } 
+from './enums';
+src\schema\content-generation-jobs.ts:10:  status: 
+tutorialContentJobStatusEnum('status').notNull().default('pending'),
+src\schema\educational-architectures.ts:32:    sectionType: string;
+src\schema\enums-modular.ts:13:export const sectionTypeEnum = pgEnum('section_type', [
+src\schema\enums-modular.ts:34:export const subsectionTypeEnum = pgEnum('subsection_type', [
+src\schema\enums.ts:25:export const tutorialContentJobStatusEnum = pgEnum('tutorial_content_job_status', 
+['pending', 'processing', 'completed', 'failed']);
+src\schema\enums.ts:28:export const tutorialContentAuditActionEnum = 
+pgEnum('tutorial_content_audit_action', [
+src\schema\index.ts:62:// REMOVED: tutorialSubsectionsModule (legacy - dropped Phase B)
+src\schema\index.ts:87:// REMOVED: tutorialContentModule (legacy - dropped Phase B)
+src\schema\index.ts:89:import * as tutorialContentVersionsModule from './tutorial-content-versions';
+src\schema\index.ts:90:import * as tutorialContentAuditModule from './tutorial-content-audit';
+src\schema\index.ts:116:  // REMOVED: tutorialSubsectionsModule (legacy - dropped Phase B)
+src\schema\index.ts:141:  // REMOVED: tutorialContentModule (legacy - dropped Phase B)
+src\schema\index.ts:143:  ...tutorialContentVersionsModule,
+src\schema\index.ts:144:  ...tutorialContentAuditModule,
+src\schema\layman-educational-architecture-seeds.ts:31:      sectionType: 'layman',
+src\schema\layman-educational-architecture-seeds.ts:38:      sectionType: 'notes',
+src\schema\layman-educational-architecture-seeds.ts:45:      sectionType: 'visual',
+src\schema\layman-educational-architecture-seeds.ts:52:      sectionType: 'real_life',
+src\schema\layman-educational-architecture-seeds.ts:59:      sectionType: 'code',
+src\schema\layman-educational-architecture-seeds.ts:111:      sectionType: 'layman',
+src\schema\layman-educational-architecture-seeds.ts:118:      sectionType: 'visual',
+src\schema\layman-educational-architecture-seeds.ts:125:      sectionType: 'notes',
+src\schema\layman-educational-architecture-seeds.ts:132:      sectionType: 'real_life',
+src\schema\layman-educational-architecture-seeds.ts:168:      sectionType: 'layman',
+src\schema\layman-educational-architecture-seeds.ts:175:      sectionType: 'notes',
+src\schema\layman-educational-architecture-seeds.ts:182:      sectionType: 'code',
+src\schema\layman-educational-architecture-seeds.ts:219:      sectionType: 'layman',
+src\schema\layman-educational-architecture-seeds.ts:226:      sectionType: 'real_life',
+src\schema\layman-educational-architecture-seeds.ts:233:      sectionType: 'visual',
+src\schema\layman-educational-architecture-seeds.ts:240:      sectionType: 'notes',
+src\schema\layman-educational-architecture-seeds.ts:276:      sectionType: 'layman',
+src\schema\layman-educational-architecture-seeds.ts:283:      sectionType: 'notes',
+src\schema\layman-educational-architecture-seeds.ts:290:      sectionType: 'code',
+src\schema\layman-educational-architecture-seeds.ts:297:      sectionType: 'real_life',
+src\schema\layman-prompt-seeds.ts:17:  sectionType: 'layman',
+src\schema\layman-prompt-seeds.ts:18:  subsectionType: null, // Master template for entire section
+src\schema\layman-prompt-seeds.ts:223:  sectionType: 'layman',
+src\schema\layman-prompt-seeds.ts:224:  subsectionType: 'analogy',
+src\schema\layman-prompt-seeds.ts:293:  sectionType: 'layman',
+src\schema\layman-prompt-seeds.ts:294:  subsectionType: null,
+src\schema\layman-section-config.ts:10:import { subsectionTypeEnum } from './enums-modular';
+src\schema\layman-section-config.ts:18:  sectionType: 'layman' as const,
+src\schema\layman-section-index.ts:86:  if (section.sectionType !== 'layman') {
+src\schema\layman-ui-architecture-seeds.ts:22:      sectionType: 'layman',
+src\schema\layman-ui-architecture-seeds.ts:205:      sectionType: 'layman',
+src\schema\layman-ui-architecture-seeds.ts:233:          subsectionType: 'mental_model',
+src\schema\layman-ui-architecture-seeds.ts:245:          subsectionType: 'mental_model',
+src\schema\layman-ui-architecture-seeds.ts:268:      sectionType: 'layman',
+src\schema\layman-ui-architecture-seeds.ts:325:      sectionType: 'layman',
+src\schema\prompt-templates.ts:11:import { sectionTypeEnum, subsectionTypeEnum, brandEnum, 
+brandVisibilityEnum } from './enums-modular';
+src\schema\prompt-templates.ts:22:  sectionType: sectionTypeEnum('section_type').notNull(),
+src\schema\prompt-templates.ts:23:  subsectionType: subsectionTypeEnum('subsection_type'), // GAP 2: 
+Subsection specialization
+src\schema\prompt-templates.ts:73:    table.sectionType,
+src\schema\prompt-templates.ts:74:    table.subsectionType,
+src\schema\prompt-templates.ts:80:  idxPromptSection: index('idx_prompt_section').on(table.sectionType),
+src\schema\prompt-templates.ts:81:  idxPromptSubsection: 
+index('idx_prompt_subsection').on(table.subsectionType),
+src\schema\tutorial-content-audit.ts:4:import { tutorialContentAuditActionEnum } from './enums';
+src\schema\tutorial-content-audit.ts:6:export const tutorialContentAudit = 
+pgTable('tutorial_content_audit', {
+src\schema\tutorial-content-audit.ts:10:  action: tutorialContentAuditActionEnum('action').notNull(),
+src\schema\tutorial-content-versions.ts:4:import type { TutorialContentJSON } from '@quiz/types';
+src\schema\tutorial-content-versions.ts:6:export const tutorialContentVersions = 
+pgTable('tutorial_content_versions', {
+src\schema\tutorial-content-versions.ts:10:  content: 
+jsonb('content').$type<TutorialContentJSON>().notNull(),
+src\schema\tutorial-content.ts:4:import type { TutorialContentJSON } from '@quiz/types';
+src\schema\tutorial-content.ts:8:export const tutorialContent = pgTable('tutorial_content', {
+src\schema\tutorial-content.ts:13:  content: jsonb('content').$type<TutorialContentJSON>().notNull(),
+src\schema\tutorial-content.ts:28:  idxTutorialContentSubtopic: 
+index('idx_tutorial_content_subtopic').on(table.subtopicId),
+src\schema\tutorial-content.ts:29:  idxTutorialContentPublished: 
+index('idx_tutorial_content_published').on(table.subtopicId, table.isPublished),
+src\schema\tutorial-content.ts:30:  uqTutorialContentVersion: 
+uniqueIndex('uq_tutorial_content_subtopic_difficulty_type').on(
+src\schema\tutorial-content.ts:35:  idxTutorialContentContentGin: 
+index('idx_tutorial_content_content_gin').using('gin', table.content),
+src\schema\tutorial-page-content-v2.ts:4:  TutorialContentPayloadByType,
+src\schema\tutorial-page-content-v2.ts:5:  TutorialContentSourceFormat,
+src\schema\tutorial-page-content-v2.ts:6:  TutorialContentStatus,
+src\schema\tutorial-page-content-v2.ts:19:  payload: 
+jsonb('payload').$type<TutorialContentPayloadByType[TutorialPageContentType]>().notNull(),
+src\schema\tutorial-page-content-v2.ts:20:  sourceFormat: 
+text('source_format').$type<TutorialContentSourceFormat>().notNull().default('json'),
+src\schema\tutorial-page-content-v2.ts:22:  status: 
+text('status').$type<TutorialContentStatus>().notNull().default('draft'),
+src\schema\tutorial-sections.ts:14:// REMOVED: sectionTypeEnum (legacy)
+src\schema\tutorial-sections.ts:34:  // REMOVED: sectionType (legacy - dropped in Phase B)
+src\schema\tutorial-subsections.ts:12:import { subsectionTypeEnum, brandEnum, brandVisibilityEnum } from 
+'./enums-modular';
+src\schema\tutorial-subsections.ts:19:export const tutorialSubsections = pgTable('tutorial_subsections', {
+src\schema\tutorial-subsections.ts:29:  subsectionType: subsectionTypeEnum('subsection_type').notNull(),
+src\schema\tutorial-subsections.ts:67:  idxSubsectionsType: 
+index('idx_subsections_type').on(table.subsectionType),
+src\schema\tutorial-subsections.ts:74:export type TutorialSubsection = typeof 
+tutorialSubsections.$inferSelect;
+src\schema\tutorial-subsections.ts:75:export type NewTutorialSubsection = typeof 
+tutorialSubsections.$inferInsert;
+src\schema\ui-architectures.ts:28:    sectionType: string;
+src\services\__tests__\composer-draft-generator.service.test.ts:68:        sectionType: 'notes',
+src\services\__tests__\composer-draft-generator.service.test.ts:121:        sectionType: 'notes',
+src\services\__tests__\composer-draft-generator.service.test.ts:181:        sectionType: 'notes',
+src\services\__tests__\composer-draft-generator.service.test.ts:256:        sectionType: 'notes',
+src\services\__tests__\composer-draft-generator.service.test.ts:286:        sectionType: 'notes',
+src\services\__tests__\composer-draft-generator.service.test.ts:300:    it('should reject missing 
+sectionType', async () => {
+src\services\__tests__\composer-draft-generator.service.test.ts:309:        sectionType: '', // Empty
+src\services\__tests__\composer-draft-generator.service.test.ts:320:      ).rejects.toThrow('sectionType is 
+required');
+src\services\__tests__\composer-draft-generator.service.test.ts:332:        sectionType: 'notes',
+src\services\__tests__\composer-draft-generator.service.test.ts:383:        sectionType: 'notes',
+src\services\__tests__\composer-draft-generator.service.test.ts:422:        sectionType: 'notes',
+src\services\__tests__\composer-draft-generator.service.test.ts:479:        sectionType: 'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:15: * 
+TutorialComposerService.createSection()
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:137:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:140:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:152:      
+expect(section.sectionType).toBe('notes');
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:208:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:211:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:244:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:247:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:289:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:292:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:302:      await 
+tutorialComposerService.publishSection(section.id, mockContext);
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:309:        sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:418:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:421:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:431:      await 
+tutorialComposerService.publishSection(section.id, mockContext);
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:436:        sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:452:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:455:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:463:      await 
+tutorialComposerService.publishSection(section.id, mockContext);
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:467:        sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:487:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:490:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:498:      await 
+tutorialComposerService.publishSection(section.id, mockContext);
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:502:        sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:522:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:525:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:533:      await 
+tutorialComposerService.publishSection(section.id, mockContext);
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:537:        sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:567:      const section = 
+await tutorialComposerService.createSection(
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:570:          sectionType: 
+'notes',
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:578:      await 
+tutorialComposerService.publishSection(section.id, mockContext);
+src\services\__tests__\phase-1h-definition-d1-persistence.integration.test.ts:582:        sectionType: 
+'notes',
+src\services\__tests__\phase-2e-append-block.test.ts:10:import type { TutorialComposerServiceContext, 
+CreateSectionInput } from '../tutorial-composer.service';
+src\services\__tests__\phase-2e-append-block.test.ts:120:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:122:      sectionType: 'notes', // notes allows both 
+'definition' and 'code' blocks
+src\services\__tests__\phase-2e-append-block.test.ts:127:    const section = await 
+service.createSection(createInput, context);
+src\services\__tests__\phase-2e-append-block.test.ts:194:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:196:      sectionType: 'notes', // notes allows both 
+'definition' and 'code' blocks
+src\services\__tests__\phase-2e-append-block.test.ts:201:    const section = await 
+service.createSection(createInput, context);
+src\services\__tests__\phase-2e-append-block.test.ts:275:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:277:      sectionType: 'notes',
+src\services\__tests__\phase-2e-append-block.test.ts:282:    const section = await 
+service.createSection(createInput, context);
+src\services\__tests__\phase-2e-append-block.test.ts:355:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:357:      sectionType: 'notes',
+src\services\__tests__\phase-2e-append-block.test.ts:362:    const section = await 
+service.createSection(createInput, context);
+src\services\__tests__\phase-2e-append-block.test.ts:458:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:460:      sectionType: 'technical', // technical also 
+allows 'definition' and 'code'
+src\services\__tests__\phase-2e-append-block.test.ts:465:    const section = await 
+service.createSection(createInput, context);
+src\services\__tests__\phase-2e-append-block.test.ts:561:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:563:      sectionType: 'technical', // technical also 
+allows 'definition' and 'code'
+src\services\__tests__\phase-2e-append-block.test.ts:568:    const section = await 
+service.createSection(createInput, context);
+src\services\__tests__\phase-2e-append-block.test.ts:666:   * TEST 7: Adding a new block must NOT invoke 
+createSection
+src\services\__tests__\phase-2e-append-block.test.ts:698:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:700:      sectionType: 'technical', // technical also 
+allows 'definition' and 'code'
+src\services\__tests__\phase-2e-append-block.test.ts:705:    const section = await 
+service.createSection(createInput, context);
+src\services\__tests__\phase-2e-append-block.test.ts:742:    const existingSection = await 
+service.getSectionByKey(
+src\services\__tests__\phase-2e-append-block.test.ts:744:      createInput.sectionType,
+src\services\__tests__\phase-2e-append-block.test.ts:822:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:824:      sectionType: 'technical', // technical also 
+allows 'code'
+src\services\__tests__\phase-2e-append-block.test.ts:829:    const section = await 
+service.createSection(createInput, context);
+src\services\__tests__\phase-2e-append-block.test.ts:892:    const createInput: CreateSectionInput = {
+src\services\__tests__\phase-2e-append-block.test.ts:894:      sectionType: 'notes',
+src\services\__tests__\phase-2e-append-block.test.ts:899:    let section = await 
+service.createSection(createInput, context);
+src\services\__tests__\suggestion-application.service.test.ts:36:      updateSectionWithVersion: vi.fn(),
+src\services\__tests__\suggestion-application.service.test.ts:81:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:155:      
+mockRepository.updateSectionWithVersion.mockResolvedValue(updatedSection);
+src\services\__tests__\suggestion-application.service.test.ts:187:      
+expect(mockRepository.updateSectionWithVersion).toHaveBeenCalledWith(
+src\services\__tests__\suggestion-application.service.test.ts:209:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:277:      
+mockRepository.updateSectionWithVersion.mockResolvedValue(updatedSection);
+src\services\__tests__\suggestion-application.service.test.ts:327:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:427:      
+mockRepository.updateSectionWithVersion.mockResolvedValue(updatedSection);
+src\services\__tests__\suggestion-application.service.test.ts:462:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:532:      
+mockRepository.updateSectionWithVersion.mockResolvedValue(updatedSection);
+src\services\__tests__\suggestion-application.service.test.ts:569:      
+expect(mockRepository.updateSectionWithVersion).not.toHaveBeenCalled();
+src\services\__tests__\suggestion-application.service.test.ts:593:      
+expect(mockRepository.updateSectionWithVersion).not.toHaveBeenCalled();
+src\services\__tests__\suggestion-application.service.test.ts:612:      
+expect(mockRepository.updateSectionWithVersion).not.toHaveBeenCalled();
+src\services\__tests__\suggestion-application.service.test.ts:624:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:687:      // updateSectionWithVersion returns 
+null when version mismatch
+src\services\__tests__\suggestion-application.service.test.ts:688:      
+mockRepository.updateSectionWithVersion.mockResolvedValue(null);
+src\services\__tests__\suggestion-application.service.test.ts:710:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:772:      
+expect(mockRepository.updateSectionWithVersion).not.toHaveBeenCalled();
+src\services\__tests__\suggestion-application.service.test.ts:805:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:879:      
+mockRepository.updateSectionWithVersion.mockImplementation(async () => {
+src\services\__tests__\suggestion-application.service.test.ts:904:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:969:      
+mockRepository.updateSectionWithVersion.mockResolvedValue(updatedSection);
+src\services\__tests__\suggestion-application.service.test.ts:993:      
+expect(mockRepository.updateSectionWithVersion).toHaveBeenCalledWith(
+src\services\__tests__\suggestion-application.service.test.ts:1010:        sectionType: 'notes',
+src\services\__tests__\suggestion-application.service.test.ts:1044:        sectionType: 'notes',
+src\services\__tests__\suggestion-verification.service.test.ts:63:      sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:24:  describe('createSection', () => {
+src\services\__tests__\tutorial-composer.service.test.ts:47:      const section = await 
+service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:50:          sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:68:        service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:71:            sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:93:        service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:96:            sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:123:        service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:126:            sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:152:        service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:155:            sectionType: 'overview',
+src\services\__tests__\tutorial-composer.service.test.ts:178:      await service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:181:          sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:190:        service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:193:            sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:203:  describe('updateSection', () => {
+src\services\__tests__\tutorial-composer.service.test.ts:216:      const section = await 
+service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:219:          sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:237:      const updated = await 
+service.updateSection(
+src\services\__tests__\tutorial-composer.service.test.ts:253:      const section = await 
+service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:256:          sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:269:        service.updateSection(
+src\services\__tests__\tutorial-composer.service.test.ts:278:  describe('publishSection', () => {
+src\services\__tests__\tutorial-composer.service.test.ts:291:      const section = await 
+service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:294:          sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:301:      const published = await 
+service.publishSection(section.id, mockContext);
+src\services\__tests__\tutorial-composer.service.test.ts:313:      const section = await 
+service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:316:          sectionType: 'notes',
+src\services\__tests__\tutorial-composer.service.test.ts:324:        service.publishSection(section.id, 
+mockContext)
+src\services\__tests__\tutorial-composer.service.test.ts:332:        service.publishSection(fakeSectionId, 
+mockContext)
+src\services\__tests__\tutorial-composer.service.test.ts:350:      const created = await 
+service.createSection(
+src\services\__tests__\tutorial-composer.service.test.ts:353:          sectionType: 'notes',
+src\services\__tests__\tutorial-content-sanitization.service.test.ts:19:import { 
+TutorialContentSanitizationService } from '../tutorial-content-sanitization.service';
+src\services\__tests__\tutorial-content-sanitization.service.test.ts:22:describe('TutorialContentSanitizatio
+nService', () => {
+src\services\__tests__\tutorial-content-sanitization.service.test.ts:23:  const service = new 
+TutorialContentSanitizationService();
+src\services\__tests__\tutorial-delivery.service.test.ts:45:      sectionType: 'notes',
+src\services\__tests__\tutorial-delivery.service.test.ts:66:      sectionType: 'visual',
+src\services\__tests__\tutorial-delivery.service.test.ts:206:      it('should filter by sectionType when 
+specified', async () => {
+src\services\__tests__\tutorial-delivery.service.test.ts:224:          sectionType: 'notes',
+src\services\__tests__\tutorial-delivery.service.test.ts:335:        
+expect(result.sectionType).toBe('notes');
+src\services\__tests__\tutorial-delivery.service.test.ts:537:          sectionType: 'visual',
+src\services\__tests__\tutorial-delivery.service.test.ts:600:          sectionType: 'visual',
+src\services\__tests__\tutorial-delivery.service.test.ts:659:          sectionType: 'visual',
+src\services\__tests__\tutorial-delivery.service.test.ts:714:          sectionType: 'visual',
+src\services\__tests__\tutorial-delivery.service.test.ts:794:          sectionType: 'visual',
+src\services\__tests__\tutorial-import.service.test.ts:237:        sectionType: 'notes',
+src\services\__tests__\tutorial-import.service.test.ts:277:          sectionType: 'notes',
+src\services\block-suggestion.service.ts:62:  sectionType?: string;
+src\services\composer-draft-generator.service.ts:80:  sectionType: string;
+src\services\composer-draft-generator.service.ts:222:    if (!finalReview.sectionType) {
+src\services\composer-draft-generator.service.ts:224:        'sectionType is required',
+src\services\composer-draft-generator.service.ts:228:            message: 'sectionType is required',
+src\services\composer-draft-generator.service.ts:229:            path: 'sectionType',
+src\services\presentation-ideas.service.ts:48:  sectionType?: string;
+src\services\suggestion-application.service.ts:36: * 4. Phase A: updateSectionWithVersion() for atomic 
+persistence
+src\services\suggestion-application.service.ts:225:    const updatedSection = await 
+this.sectionRepository.updateSectionWithVersion(
+src\services\suggestion-application.service.ts:236:    // If updateSectionWithVersion returns null, it 
+means:
+src\services\suggestion-application.service.ts:272:  ): Promise<{ version: number; sectionType: string } | 
+null> {
+src\services\suggestion-application.service.ts:281:      sectionType: section.sectionType,
+src\services\suggestion-verification.service.ts:117:    // The final mutation MUST still use 
+updateSectionWithVersion()
+src\services\suggestion-verification.service.ts:137:        sectionType: section.sectionType,
+src\services\suggestion-verification.service.ts:206:        sectionType: section.sectionType,
+src\services\tutorial-composer.service.ts:17:  type SectionType,
+src\services\tutorial-composer.service.ts:43:export interface CreateSectionInput {
+src\services\tutorial-composer.service.ts:45:  sectionType: SectionType;
+src\services\tutorial-composer.service.ts:55:export interface UpdateSectionInput {
+src\services\tutorial-composer.service.ts:80:  async createSection(
+src\services\tutorial-composer.service.ts:81:    input: CreateSectionInput,
+src\services\tutorial-composer.service.ts:101:      input.sectionType
+src\services\tutorial-composer.service.ts:109:    const existingSection = await 
+this.repository.getSectionByKey(
+src\services\tutorial-composer.service.ts:111:      input.sectionType,
+src\services\tutorial-composer.service.ts:118:        `Section already exists: ${input.sectionType} 
+(${input.difficulty}) for subtopic ${input.subtopicId}`
+src\services\tutorial-composer.service.ts:125:      sectionType: input.sectionType,
+src\services\tutorial-composer.service.ts:132:    const section = await 
+this.repository.createSection(repositoryInput);
+src\services\tutorial-composer.service.ts:169:  async querySections(
+src\services\tutorial-composer.service.ts:180:      this.repository.querySections(filters, limit, cursor),
+src\services\tutorial-composer.service.ts:193:   * Get section by logical key (subtopic + sectionType + 
+difficulty + brand)
+src\services\tutorial-composer.service.ts:198:  async getSectionByKey(
+src\services\tutorial-composer.service.ts:200:    sectionType: SectionType,
+src\services\tutorial-composer.service.ts:204:    const section = await this.repository.getSectionByKey(
+src\services\tutorial-composer.service.ts:206:      sectionType,
+src\services\tutorial-composer.service.ts:216:  async updateSection(
+src\services\tutorial-composer.service.ts:218:    input: UpdateSectionInput,
+src\services\tutorial-composer.service.ts:249:        existingSection.sectionType
+src\services\tutorial-composer.service.ts:264:    const updatedSection = await 
+this.repository.updateSection(
+src\services\tutorial-composer.service.ts:283:  async publishSection(
+src\services\tutorial-composer.service.ts:295:    // await this.assertCanPublishSection(context, section);
+src\services\tutorial-composer.service.ts:314:      section.sectionType
+src\services\tutorial-composer.service.ts:338:    const publishedSection = await 
+this.repository.publishSection(sectionId);
+src\services\tutorial-composer.service.ts:353:  async archiveSection(
+src\services\tutorial-composer.service.ts:364:    // await this.assertCanArchiveSection(context, section);
+src\services\tutorial-composer.service.ts:366:    await this.repository.archiveSection(sectionId);
+src\services\tutorial-composer.service.ts:442:      existingSection.sectionType
+src\services\tutorial-composer.service.ts:454:    const updatedSection = await 
+this.repository.updateSection(
+src\services\tutorial-content-sanitization.service.ts:35:export class TutorialContentSanitizationService {
+src\services\tutorial-content-sanitization.service.ts:263:export const tutorialContentSanitizationService = 
+new TutorialContentSanitizationService();
+src\services\tutorial-delivery.service.ts:21:import type { TutorialDifficulty, SectionType, Brand } from 
+'@quiz/types';
+src\services\tutorial-delivery.service.ts:22:import { tutorialContentSanitizationService } from 
+'./tutorial-content-sanitization.service';
+src\services\tutorial-delivery.service.ts:34:  sectionType: SectionType;
+src\services\tutorial-delivery.service.ts:60:  sectionType?: SectionType;
+src\services\tutorial-delivery.service.ts:109:      sectionType,
+src\services\tutorial-delivery.service.ts:142:    if (sectionType) {
+src\services\tutorial-delivery.service.ts:143:      conditions.push(eq(tutorialSections.sectionType, 
+sectionType));
+src\services\tutorial-delivery.service.ts:170:        sectionType: tutorialSections.sectionType,
+src\services\tutorial-delivery.service.ts:192:          sectionType: rawSection.sectionType,
+src\services\tutorial-delivery.service.ts:201:      const sanitizationResult = 
+tutorialContentSanitizationService.sanitizeDocument(
+src\services\tutorial-delivery.service.ts:216:        sectionType: rawSection.sectionType as SectionType,
+src\services\tutorial-delivery.service.ts:249:        sectionType: tutorialSections.sectionType,
+src\services\tutorial-delivery.service.ts:300:    const sanitizationResult = 
+tutorialContentSanitizationService.sanitizeDocument(
+src\services\tutorial-delivery.service.ts:315:      sectionType: rawSection.sectionType as SectionType,
+src\services\tutorial-import.service.ts:17:  type SectionType,
+src\services\tutorial-import.service.ts:47:    const { sourceType, sectionType, options } = request;
+src\services\tutorial-import.service.ts:109:    // Map sectionType to the schema SectionType
+src\services\tutorial-import.service.ts:110:    const sectionValidation = 
+validateDocumentForSection(document, sectionType as any);
+src\services\tutorial-import.service.ts:114:        `Imported content contains blocks not allowed for 
+section '${sectionType}'`,
+src\validators\layman.validator.ts:145:    if (section.sectionType !== 'layman') {
+src\validators\layman.validator.ts:146:      errors.push(`Invalid section type: ${section.sectionType} 
+(expected: layman)`);
+src\__tests__\db.test.ts:7:    expect(schema).toHaveProperty('tutorialContent');
+src\index.ts:51:export { tutorialContentSanitizationService, TutorialContentSanitizationService } from 
+'./services/tutorial-content-sanitization.service';
+src\validate-governance.ts:119:      .where(eq(tutorialSections.sectionType, 'layman'));
+src\vector.service.ts:5:import type { TutorialContentJSON, TutorialDifficulty } from '@quiz/types';
+src\vector.service.ts:114:  content: TutorialContentJSON,
+src\vector.service.ts:189:  content: TutorialContentJSON
+src\verify-seed.ts:24:  pt.forEach(t => console.log(`   - ${t.name} 
+(${t.sectionType}/${t.subsectionType})`));
+
+

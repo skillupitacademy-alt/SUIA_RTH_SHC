@@ -1,13 +1,13 @@
 /**
- * Tutorial Composer API - Block Management
- * Phase 2E: Append block instances to existing sections
+ * Tutorial Composer API - Block Management (V2)
+ * Append block instances to existing tutorials
  * 
  * POST /api/tutorial-composer/sections/:sectionId/blocks - Append new block
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  TutorialSectionResponseSchema,
+  TutorialResponseSchema,
   type ApiErrorCode,
   type ValidationErrorDetail,
   type TutorialBlock,
@@ -88,10 +88,9 @@ function handleServiceError(error: unknown) {
 
 /**
  * POST /api/tutorial-composer/sections/:sectionId/blocks
- * Append new block instance to existing section
+ * Append new block instance to existing tutorial (V2)
  * 
- * Phase 2E: This endpoint enables adding multiple block instances
- * of the same or different types to a TutorialDocument
+ * Enables adding multiple block instances of the same or different types
  */
 export async function POST(
   request: NextRequest,
@@ -107,17 +106,17 @@ export async function POST(
     }
     const { user } = authResult;
 
-    // Step 2: Fetch existing section to check permissions
-    const existingSection = await tutorialComposerService.getSection(sectionId);
+    // Step 2: Fetch existing tutorial to check permissions
+    const existingTutorial = await tutorialComposerService.getTutorial(sectionId);
 
     // Step 3: Authorize subtopic access
-    const subtopicAuthError = requireSubtopicAccess(user, existingSection.subtopicId);
+    const subtopicAuthError = requireSubtopicAccess(user, existingTutorial.subtopicId);
     if (subtopicAuthError) {
       return createAuthErrorResponse(subtopicAuthError);
     }
 
     // Step 4: Authorize brand access
-    const brandAuthError = requireBrandAccess(user, existingSection.brandId);
+    const brandAuthError = requireBrandAccess(user, existingTutorial.brandId);
     if (brandAuthError) {
       return createAuthErrorResponse(brandAuthError);
     }
@@ -147,39 +146,49 @@ export async function POST(
       userId: user.userId,
     };
 
-    // Step 8: Append block to section
-    const updatedSection = await tutorialComposerService.appendBlockToSection(
+    // Step 8: Append block to tutorial via V2 service
+    const updatedTutorial = await tutorialComposerService.appendBlockToTutorial(
       sectionId,
       block as TutorialBlock,
       context
     );
 
     // Step 9: Invalidate cache (async, don't block response)
-    invalidateTutorialDeliveryCache(existingSection.subtopicId).catch((error) => {
+    invalidateTutorialDeliveryCache(existingTutorial.subtopicId).catch((error) => {
       console.error('[Tutorial Composer] Cache invalidation failed', {
-        subtopicId: existingSection.subtopicId,
+        subtopicId: existingTutorial.subtopicId,
         error,
       });
     });
 
-    // Step 10: Format response
-    const response = TutorialSectionResponseSchema.parse({
-      id: updatedSection.id,
-      subtopicId: updatedSection.subtopicId,
-      sectionType: updatedSection.sectionType,
-      difficulty: updatedSection.difficulty,
-      orderIndex: updatedSection.orderIndex,
-      content: updatedSection.content,
-      version: updatedSection.version,
-      language: updatedSection.language,
-      status: updatedSection.status,
-      brandId: updatedSection.brandId,
-      generatedByAi: updatedSection.generatedByAi,
-      aiModelUsed: updatedSection.aiModelUsed,
-      qualityScore: updatedSection.qualityScore,
-      createdAt: updatedSection.createdAt.toISOString(),
-      updatedAt: updatedSection.updatedAt.toISOString(),
-      publishedAt: updatedSection.publishedAt?.toISOString() || null,
+    // Step 10: Format V2 response
+    const response = TutorialResponseSchema.parse({
+      id: updatedTutorial.id,
+      subtopicId: updatedTutorial.subtopicId,
+      brandId: updatedTutorial.brandId,
+      orderIndex: updatedTutorial.orderIndex,
+      content: updatedTutorial.content,
+      version: updatedTutorial.version,
+      language: updatedTutorial.language,
+      status: updatedTutorial.status,
+      generatedByAi: updatedTutorial.generatedByAi,
+      aiModelUsed: updatedTutorial.aiModelUsed,
+      generationJobId: updatedTutorial.generationJobId,
+      qualityScore: updatedTutorial.qualityScore,
+      hallucinationScore: updatedTutorial.hallucinationScore,
+      regenerationCount: updatedTutorial.regenerationCount,
+      approvedBy: updatedTutorial.approvedBy,
+      approvedAt: updatedTutorial.approvedAt?.toISOString() || null,
+      rejectionReason: updatedTutorial.rejectionReason,
+      promptTemplateId: updatedTutorial.promptTemplateId,
+      educationalArchitectureId: updatedTutorial.educationalArchitectureId,
+      uiArchitectureId: updatedTutorial.uiArchitectureId,
+      brandVisibility: updatedTutorial.brandVisibility,
+      brandCustomizations: updatedTutorial.brandCustomizations,
+      createdAt: updatedTutorial.createdAt.toISOString(),
+      updatedAt: updatedTutorial.updatedAt.toISOString(),
+      publishedAt: updatedTutorial.publishedAt?.toISOString() || null,
+      deletedAt: updatedTutorial.deletedAt?.toISOString() || null,
     });
 
     return NextResponse.json({ 

@@ -1,32 +1,37 @@
 /**
- * Tutorial Composer Service
- * Business logic layer for NEW Tutorial Composer
+ * Tutorial Composer Service - V2 Architecture
+ * Business logic layer for Tutorial V2 Composer
  * 
- * ARCHITECTURE:
- * - Uses TutorialDocument as canonical content model
- * - Validates documents before persistence
- * - NO legacy transformation
- * - NO child table writes
- * - Operates ONLY on tutorial_sections.content
+ * V2 ARCHITECTURE:
+ * - Identity: (subtopicId, brandId) - ONE tutorial per subtopic per brand
+ * - Content: TutorialDocument JSONB (blocks[])
+ * - NO sectionType, NO difficulty taxonomy
+ * - NO section-specific palettes
+ * - Blocks are pedagogical units within single tutorial
  */
 
 import {
   TutorialDocumentSchema,
-  validateDocumentForSection,
   type TutorialDocument,
-  type SectionType,
-  type TutorialDifficulty,
+  type TutorialBlock,
   TutorialDocumentValidationError,
   SectionNotFoundError,
   SectionAlreadyExistsError,
   InvalidStatusTransitionError,
 } from '@quiz/types';
+
+// V2 Note: Using existing error types temporarily
+// SectionNotFoundError → represents Tutorial not found (will be renamed in types package later)
+// SectionAlreadyExistsError → represents Tutorial already exists (will be renamed in types package later)
+const TutorialNotFoundError = SectionNotFoundError;
+const TutorialAlreadyExistsError = SectionAlreadyExistsError;
 import type { TutorialSection } from '../schema/tutorial-sections';
 import {
   TutorialSectionRepository,
-  type CreateTutorialSectionInput,
-  type UpdateTutorialSectionInput,
-  type TutorialSectionFilters,
+  type CreateTutorialInput,
+  type UpdateTutorialContentInput,
+  type UpdateTutorialStatusInput,
+  type TutorialFilters,
 } from '../repositories/tutorial-section.repository';
 
 /**
@@ -34,33 +39,32 @@ import {
  */
 export interface TutorialComposerServiceContext {
   userId: string;
-  // Add other auth context as needed (portalIdentity, brandId, etc.)
-}
-
-/**
- * Create section input (service layer)
- */
-export interface CreateSectionInput {
-  subtopicId: string;
-  sectionType: SectionType;
-  difficulty: TutorialDifficulty;
-  content: TutorialDocument;
   brandId?: string;
-  orderIndex?: number;
 }
 
 /**
- * Update section input (service layer)
+ * V2 Create tutorial input (service layer)
  */
-export interface UpdateSectionInput {
-  content?: TutorialDocument;
-  difficulty?: TutorialDifficulty;
+export interface CreateTutorialServiceInput {
+  subtopicId: string;
+  brandId?: string;
+  content: TutorialDocument;
   orderIndex?: number;
+  promptTemplateId?: string;
+  educationalArchitectureId?: string;
+  uiArchitectureId?: string;
 }
 
 /**
- * Tutorial Composer Service
- * Orchestrates business logic for tutorial section management
+ * V2 Update tutorial content input (service layer)
+ */
+export interface UpdateTutorialContentServiceInput {
+  content: TutorialDocument;
+}
+
+/**
+ * Tutorial Composer Service - V2
+ * Orchestrates business logic for tutorial document management
  */
 export class TutorialComposerService {
   constructor(
@@ -68,19 +72,23 @@ export class TutorialComposerService {
   ) {}
 
   /**
-   * Create a new tutorial section
+   * V2: Create a new tutorial
+   * 
+   * Identity: (subtopicId, brandId)
+   * Enforced by database UNIQUE constraint
    * 
    * Validates:
    * 1. TutorialDocument schema
-   * 2. Section-specific block palette
-   * 3. No duplicate section exists
+   * 2. No duplicate tutorial exists for this (subtopicId, brandId)
    * 
    * Then persists to tutorial_sections.content
    */
-  async createSection(
-    input: CreateSectionInput,
+  async createTutorial(
+    input: CreateTutorialServiceInput,
     context: TutorialComposerServiceContext
   ): Promise<TutorialSection> {
+    const brandId = input.brandId || context.brandId || 'shared';
+
     // Step 1: Validate TutorialDocument schema
     const parseResult = TutorialDocumentSchema.safeParse(input.content);
     if (!parseResult.success) {
@@ -95,62 +103,50 @@ export class TutorialComposerService {
 
     const document: TutorialDocument = parseResult.data as TutorialDocument;
 
-    // Step 2: Validate section-specific constraints
-    const sectionValidation = validateDocumentForSection(
-      document,
-      input.sectionType
-    );
-
-    if (!sectionValidation.valid) {
-      throw new TutorialDocumentValidationError(sectionValidation.errors);
-    }
-
-    // Step 3: Check for duplicate section
-    const existingSection = await this.repository.getSectionByKey(
+    // Step 2: Check for duplicate tutorial (subtopicId, brandId) already exists
+    const existingTutorial = await this.repository.getTutorialBySubtopic(
       input.subtopicId,
-      input.sectionType,
-      input.difficulty,
-      input.brandId || 'shared'
+      brandId
     );
 
-    if (existingSection) {
-      throw new SectionAlreadyExistsError(
-        `Section already exists: ${input.sectionType} (${input.difficulty}) for subtopic ${input.subtopicId}`
+    if (existingTutorial) {
+      throw new TutorialAlreadyExistsError(
+        `Tutorial already exists for subtopic ${input.subtopicId} and brand ${brandId}`
       );
     }
 
-    // Step 4: Create section
-    const repositoryInput: CreateTutorialSectionInput = {
+    // Step 3: Create tutorial
+    const repositoryInput: CreateTutorialInput = {
       subtopicId: input.subtopicId,
-      sectionType: input.sectionType,
-      difficulty: input.difficulty,
+      brandId,
       content: document,
-      brandId: input.brandId,
       orderIndex: input.orderIndex,
+      promptTemplateId: input.promptTemplateId,
+      educationalArchitectureId: input.educationalArchitectureId,
+      uiArchitectureId: input.uiArchitectureId,
     };
 
-    const section = await this.repository.createSection(repositoryInput);
+    const tutorial = await this.repository.createTutorial(repositoryInput);
 
     // TODO: Add cache invalidation if required by existing infrastructure
     // Example: await cacheService.invalidateSubtopic(input.subtopicId);
 
-    return section;
+    return tutorial;
   }
 
   /**
-   * Get section by ID
+   * V2: Get tutorial by ID
    */
-  async getSection(sectionId: string): Promise<TutorialSection> {
-    const section = await this.repository.getSectionById(sectionId);
+  async getTutorial(tutorialId: string): Promise<TutorialSection> {
+    const tutorial = await this.repository.getTutorialById(tutorialId);
 
-    if (!section) {
-      throw new SectionNotFoundError(sectionId);
+    if (!tutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // Validate that stored content is a valid TutorialDocument
-    const parseResult = TutorialDocumentSchema.safeParse(section.content);
+    const parseResult = TutorialDocumentSchema.safeParse(tutorial.content);
     if (!parseResult.success) {
-      // Historical data may not be TutorialDocument
       throw new TutorialDocumentValidationError([
         {
           code: 'STORED_DOCUMENT_INVALID',
@@ -160,29 +156,43 @@ export class TutorialComposerService {
       ]);
     }
 
-    return section;
+    return tutorial;
   }
 
   /**
-   * Query sections with filters
+   * V2: Get tutorial by subtopic and brand
    */
-  async querySections(
-    filters: TutorialSectionFilters,
+  async getTutorialBySubtopic(
+    subtopicId: string,
+    brandId: string = 'shared'
+  ): Promise<TutorialSection | null> {
+    const tutorial = await this.repository.getTutorialBySubtopic(
+      subtopicId,
+      brandId
+    );
+    return tutorial ?? null;
+  }
+
+  /**
+   * V2: Query tutorials with filters
+   */
+  async queryTutorials(
+    filters: TutorialFilters,
     limit: number = 20,
     cursor?: string
   ): Promise<{
-    sections: TutorialSection[];
+    tutorials: TutorialSection[];
     hasMore: boolean;
     nextCursor: string | null;
     total: number;
   }> {
     const [queryResult, total] = await Promise.all([
-      this.repository.querySections(filters, limit, cursor),
-      this.repository.countSections(filters),
+      this.repository.queryTutorials(filters, limit, cursor),
+      this.repository.countTutorials(filters),
     ]);
 
     return {
-      sections: queryResult.sections,
+      tutorials: queryResult.tutorials,
       hasMore: queryResult.hasMore,
       nextCursor: queryResult.nextCursor,
       total,
@@ -190,112 +200,117 @@ export class TutorialComposerService {
   }
 
   /**
-   * Get section by logical key (subtopic + sectionType + difficulty + brand)
-   * 
-   * Phase 2E: Helper to check if section exists before creating
-   * Returns null if section doesn't exist
+   * V2: Update tutorial content
    */
-  async getSectionByKey(
-    subtopicId: string,
-    sectionType: SectionType,
-    difficulty: TutorialDifficulty,
-    brandId: string = 'shared'
-  ): Promise<TutorialSection | null> {
-    const section = await this.repository.getSectionByKey(
-      subtopicId,
-      sectionType,
-      difficulty,
-      brandId
-    );
-    return section ?? null;
-  }
-
-  /**
-   * Update section
-   */
-  async updateSection(
-    sectionId: string,
-    input: UpdateSectionInput,
+  async updateTutorialContent(
+    tutorialId: string,
+    input: UpdateTutorialContentServiceInput,
     context: TutorialComposerServiceContext
   ): Promise<TutorialSection> {
-    // Step 1: Load existing section
-    const existingSection = await this.repository.getSectionById(sectionId);
+    // Step 1: Load existing tutorial
+    const existingTutorial = await this.repository.getTutorialById(tutorialId);
 
-    if (!existingSection) {
-      throw new SectionNotFoundError(sectionId);
+    if (!existingTutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // TODO: Add authorization check
-    // await this.assertCanEditSection(context, existingSection);
+    // await this.assertCanEditTutorial(context, existingTutorial);
 
-    // Step 2: If content is being updated, validate it
-    if (input.content !== undefined) {
-      const parseResult = TutorialDocumentSchema.safeParse(input.content);
-      if (!parseResult.success) {
-        throw new TutorialDocumentValidationError([
-          {
-            code: 'SCHEMA_INVALID',
-            message: 'TutorialDocument schema validation failed',
-            path: 'content',
-          },
-        ]);
-      }
-
-      const document: TutorialDocument = parseResult.data as TutorialDocument;
-
-      // Validate section-specific constraints
-      const sectionValidation = validateDocumentForSection(
-        document,
-        existingSection.sectionType
-      );
-
-      if (!sectionValidation.valid) {
-        throw new TutorialDocumentValidationError(sectionValidation.errors);
-      }
+    // Step 2: Validate new content
+    const parseResult = TutorialDocumentSchema.safeParse(input.content);
+    if (!parseResult.success) {
+      throw new TutorialDocumentValidationError([
+        {
+          code: 'SCHEMA_INVALID',
+          message: 'TutorialDocument schema validation failed',
+          path: 'content',
+        },
+      ]);
     }
 
-    // Step 3: Update section
-    const repositoryInput: UpdateTutorialSectionInput = {
-      content: input.content,
-      difficulty: input.difficulty,
-      orderIndex: input.orderIndex,
+    const document: TutorialDocument = parseResult.data as TutorialDocument;
+
+    // Step 3: Update tutorial
+    const repositoryInput: UpdateTutorialContentInput = {
+      content: document,
     };
 
-    const updatedSection = await this.repository.updateSection(
-      sectionId,
+    const updatedTutorial = await this.repository.updateTutorialContent(
+      tutorialId,
       repositoryInput
     );
 
-    if (!updatedSection) {
-      throw new SectionNotFoundError(sectionId);
+    if (!updatedTutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // TODO: Cache invalidation if required
-    // await cacheService.invalidateSubtopic(updatedSection.subtopicId);
+    // await cacheService.invalidateSubtopic(updatedTutorial.subtopicId);
 
-    return updatedSection;
+    return updatedTutorial;
   }
 
   /**
-   * Publish section
-   * Changes status to 'deployed' and sets publishedAt
+   * V2: Update tutorial status
    */
-  async publishSection(
-    sectionId: string,
+  async updateTutorialStatus(
+    tutorialId: string,
+    input: UpdateTutorialStatusInput,
     context: TutorialComposerServiceContext
   ): Promise<TutorialSection> {
-    // Step 1: Load section
-    const section = await this.repository.getSectionById(sectionId);
+    // Step 1: Load tutorial
+    const tutorial = await this.repository.getTutorialById(tutorialId);
 
-    if (!section) {
-      throw new SectionNotFoundError(sectionId);
+    if (!tutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // TODO: Add authorization check
-    // await this.assertCanPublishSection(context, section);
+    // await this.assertCanUpdateTutorialStatus(context, tutorial);
+
+    // Step 2: Validate status transition
+    if (tutorial.status === input.status) {
+      // No-op if status unchanged
+      return tutorial;
+    }
+
+    // Step 3: Update status
+    const updatedTutorial = await this.repository.updateTutorialStatus(
+      tutorialId,
+      input
+    );
+
+    if (!updatedTutorial) {
+      throw new TutorialNotFoundError(tutorialId);
+    }
+
+    // TODO: Cache invalidation
+    // await cacheService.invalidateSubtopic(updatedTutorial.subtopicId);
+
+    return updatedTutorial;
+  }
+
+  /**
+   * V2: Publish tutorial
+   * Changes status to 'deployed' and sets publishedAt
+   */
+  async publishTutorial(
+    tutorialId: string,
+    context: TutorialComposerServiceContext
+  ): Promise<TutorialSection> {
+    // Step 1: Load tutorial
+    const tutorial = await this.repository.getTutorialById(tutorialId);
+
+    if (!tutorial) {
+      throw new TutorialNotFoundError(tutorialId);
+    }
+
+    // TODO: Add authorization check
+    // await this.assertCanPublishTutorial(context, tutorial);
 
     // Step 2: Validate document is publishable
-    const parseResult = TutorialDocumentSchema.safeParse(section.content);
+    const parseResult = TutorialDocumentSchema.safeParse(tutorial.content);
     if (!parseResult.success) {
       throw new TutorialDocumentValidationError([
         {
@@ -307,16 +322,6 @@ export class TutorialComposerService {
     }
 
     const document: TutorialDocument = parseResult.data as TutorialDocument;
-
-    // Validate section constraints
-    const sectionValidation = validateDocumentForSection(
-      document,
-      section.sectionType
-    );
-
-    if (!sectionValidation.valid) {
-      throw new TutorialDocumentValidationError(sectionValidation.errors);
-    }
 
     // Check document is not empty (business rule)
     if (document.blocks.length === 0) {
@@ -330,82 +335,81 @@ export class TutorialComposerService {
     }
 
     // Step 3: Validate status transition
-    if (section.status === 'deployed') {
-      throw new InvalidStatusTransitionError(section.status, 'deployed');
+    if (tutorial.status === 'deployed') {
+      throw new InvalidStatusTransitionError(tutorial.status, 'deployed');
     }
 
     // Step 4: Publish
-    const publishedSection = await this.repository.publishSection(sectionId);
+    const publishedTutorial = await this.repository.publishTutorial(tutorialId);
 
-    if (!publishedSection) {
-      throw new SectionNotFoundError(sectionId);
+    if (!publishedTutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // TODO: Cache invalidation
-    // await cacheService.invalidateSubtopic(publishedSection.subtopicId);
+    // await cacheService.invalidateSubtopic(publishedTutorial.subtopicId);
 
-    return publishedSection;
+    return publishedTutorial;
   }
 
   /**
-   * Archive section (soft delete)
+   * V2: Archive tutorial (soft delete)
    */
-  async archiveSection(
-    sectionId: string,
+  async archiveTutorial(
+    tutorialId: string,
     context: TutorialComposerServiceContext
   ): Promise<void> {
-    const section = await this.repository.getSectionById(sectionId);
+    const tutorial = await this.repository.getTutorialById(tutorialId);
 
-    if (!section) {
-      throw new SectionNotFoundError(sectionId);
+    if (!tutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // TODO: Add authorization check
-    // await this.assertCanArchiveSection(context, section);
+    // await this.assertCanArchiveTutorial(context, tutorial);
 
-    await this.repository.archiveSection(sectionId);
+    await this.repository.archiveTutorial(tutorialId);
 
     // TODO: Cache invalidation
-    // await cacheService.invalidateSubtopic(section.subtopicId);
+    // await cacheService.invalidateSubtopic(tutorial.subtopicId);
   }
 
   /**
-   * Append block to existing section
-   * 
-   * Phase 2E: Support for adding block instances to existing TutorialDocument
+   * V2: Append block to existing tutorial
    * 
    * This method:
-   * 1. Loads existing section
+   * 1. Loads existing tutorial by ID
    * 2. Validates new block
    * 3. Appends block to document.blocks[]
-   * 4. Validates complete document against section constraints
+   * 4. Validates complete document
    * 5. Persists updated document
    * 
-   * IMPORTANT: This does NOT create a new section.
-   * It updates an existing section's TutorialDocument.
+   * IMPORTANT: This does NOT create a new tutorial.
+   * It updates an existing tutorial's TutorialDocument.
+   * Multiple blocks of the same type (D1, D1, C1, C1) are allowed.
    */
-  async appendBlockToSection(
-    sectionId: string,
-    newBlock: TutorialDocument['blocks'][number],
+  async appendBlockToTutorial(
+    tutorialId: string,
+    newBlock: TutorialBlock,
     context: TutorialComposerServiceContext
   ): Promise<TutorialSection> {
-    // Step 1: Load existing section
-    const existingSection = await this.repository.getSectionById(sectionId);
+    // Step 1: Load existing tutorial
+    const existingTutorial = await this.repository.getTutorialById(tutorialId);
 
-    if (!existingSection) {
-      throw new SectionNotFoundError(sectionId);
+    if (!existingTutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // TODO: Add authorization check
-    // await this.assertCanEditSection(context, existingSection);
+    // await this.assertCanEditTutorial(context, existingTutorial);
 
     // Step 2: Parse existing content as TutorialDocument
-    const parseResult = TutorialDocumentSchema.safeParse(existingSection.content);
+    const parseResult = TutorialDocumentSchema.safeParse(existingTutorial.content);
     if (!parseResult.success) {
       throw new TutorialDocumentValidationError([
         {
           code: 'STORED_DOCUMENT_INVALID',
-          message: 'Existing section content is not a valid TutorialDocument',
+          message: 'Existing tutorial content is not a valid TutorialDocument',
           path: 'content',
         },
       ]);
@@ -428,7 +432,7 @@ export class TutorialComposerService {
       throw new TutorialDocumentValidationError([
         {
           code: 'SCHEMA_INVALID',
-          message: 'Updated TutorialDocument schema validation failed',
+          message: 'Updated TutorialDocument schema validation failed after appending block',
           path: 'content',
         },
       ]);
@@ -436,34 +440,38 @@ export class TutorialComposerService {
 
     const validatedDocument: TutorialDocument = updatedParseResult.data as TutorialDocument;
 
-    // Step 5: Validate section-specific constraints
-    const sectionValidation = validateDocumentForSection(
-      validatedDocument,
-      existingSection.sectionType
-    );
-
-    if (!sectionValidation.valid) {
-      throw new TutorialDocumentValidationError(sectionValidation.errors);
-    }
-
-    // Step 6: Update section with appended block
-    const repositoryInput: UpdateTutorialSectionInput = {
+    // Step 5: Update tutorial with appended block
+    const repositoryInput: UpdateTutorialContentInput = {
       content: validatedDocument,
     };
 
-    const updatedSection = await this.repository.updateSection(
-      sectionId,
+    const updatedTutorial = await this.repository.updateTutorialContent(
+      tutorialId,
       repositoryInput
     );
 
-    if (!updatedSection) {
-      throw new SectionNotFoundError(sectionId);
+    if (!updatedTutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // TODO: Cache invalidation
-    // await cacheService.invalidateSubtopic(updatedSection.subtopicId);
+    // await cacheService.invalidateSubtopic(updatedTutorial.subtopicId);
 
-    return updatedSection;
+    return updatedTutorial;
+  }
+
+  /**
+   * LEGACY COMPATIBILITY ALIAS - DEPRECATED
+   * Use appendBlockToTutorial() instead
+   * 
+   * @deprecated Use appendBlockToTutorial()
+   */
+  async appendBlockToSection(
+    sectionId: string,
+    newBlock: TutorialBlock,
+    context: TutorialComposerServiceContext
+  ): Promise<TutorialSection> {
+    return this.appendBlockToTutorial(sectionId, newBlock, context);
   }
 }
 

@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, beforeAll, afterEach } from 'vitest';
 import { TutorialSectionRepository } from '../tutorial-section.repository';
 import type { TutorialDocument } from '@quiz/types';
 import { CURRENT_SCHEMA_VERSION } from '@quiz/types';
-import { getTestSubtopicId } from '../../test-helpers/get-test-subtopic';
+import { getAnySubtopicId } from '../../test-helpers/get-test-subtopic';
 
 describe('TutorialSectionRepository', () => {
   let repository: TutorialSectionRepository;
@@ -16,7 +16,7 @@ describe('TutorialSectionRepository', () => {
 
   beforeAll(async () => {
     // Get a valid subtopic ID from the database
-    testSubtopicId = await getTestSubtopicId();
+    testSubtopicId = await getAnySubtopicId();
   });
 
   beforeEach(() => {
@@ -135,7 +135,7 @@ describe('TutorialSectionRepository', () => {
 
       const created = await repository.createSection(input);
       createdSectionIds.push(created.id);
-      
+
       const retrieved = await repository.getSectionById(created.id);
 
       expect(retrieved).toBeDefined();

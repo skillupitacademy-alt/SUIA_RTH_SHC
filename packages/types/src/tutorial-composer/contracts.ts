@@ -1,7 +1,7 @@
 /**
  * Tutorial Composer - API Contracts
  * Request/Response Zod schemas for NEW Tutorial Composer API
- * 
+ *
  * ARCHITECTURE:
  * - These contracts are for the NEW Composer only
  * - They use TutorialDocument as the canonical content model
@@ -159,12 +159,12 @@ export const TutorialSectionResponseSchema = z
     language: z.string().default('en'),
     status: SectionStatusSchema,
     brandId: BrandIdSchema,
-    
+
     // AI metadata (readonly)
     generatedByAi: z.boolean(),
     aiModelUsed: z.string().nullable(),
     qualityScore: z.number().int().nullable(),
-    
+
     // Timestamps (readonly)
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
@@ -404,7 +404,7 @@ export const BlockSuggestionTypeSchema = z.enum([
   'code',
   'quote',
   'image',
-  
+
   // Intelligent suggestions (Prompt 07 intelligence)
   'two-column',
   'three-column',
@@ -434,7 +434,7 @@ export type SuggestionStatus = z.infer<typeof SuggestionStatusSchema>;
 
 /**
  * Individual Block Suggestion
- * 
+ *
  * IMPORTANT SEMANTICS:
  * - kind: "existing" = detected from analysis (not a new suggestion)
  * - kind: "suggested" = intelligent recommendation to improve content
@@ -522,6 +522,148 @@ export const BlockSuggestionsResponseSchema = z.object({
   data: BlockSuggestionResultSchema,
 });
 export type BlockSuggestionsResponse = z.infer<typeof BlockSuggestionsResponseSchema>;
+
+// ============================================================
+// V2 CONTRACTS - Tutorial V2 Architecture
+// ============================================================
+
+/**
+ * V2 Tutorial Status (from database sectionStatusEnum)
+ * Reuses existing SectionStatusSchema (exact values verified from schema)
+ */
+export const TutorialStatusSchema = SectionStatusSchema;
+export type TutorialStatus = z.infer<typeof TutorialStatusSchema>;
+
+/**
+ * V2 Create Tutorial Request
+ * Based on CreateTutorialServiceInput from tutorial-composer.service.ts
+ */
+export const CreateTutorialRequestSchema = z
+  .object({
+    subtopicId: z.string().uuid('Invalid subtopic ID'),
+    brandId: BrandIdSchema.optional(),
+    content: TutorialDocumentSchema,
+    orderIndex: z.number().int().min(0).optional(),
+    promptTemplateId: z.string().uuid().optional(),
+    educationalArchitectureId: z.string().uuid().optional(),
+    uiArchitectureId: z.string().uuid().optional(),
+  })
+  .strict();
+
+export type CreateTutorialRequest = z.infer<typeof CreateTutorialRequestSchema>;
+
+/**
+ * V2 Tutorial Response
+ * Based on TutorialSection type from tutorial-sections.ts schema
+ */
+export const TutorialResponseSchema = z
+  .object({
+    id: z.string().uuid(),
+    subtopicId: z.string().uuid(),
+    brandId: BrandIdSchema,
+    orderIndex: z.number().int(),
+    content: TutorialDocumentSchema,
+    version: z.number().int().min(1),
+    language: z.string(),
+    status: TutorialStatusSchema,
+
+    // AI metadata
+    generatedByAi: z.boolean(),
+    aiModelUsed: z.string().nullable(),
+    generationJobId: z.string().uuid().nullable(),
+    qualityScore: z.number().int().nullable(),
+    hallucinationScore: z.number().int().nullable(),
+    regenerationCount: z.number().int(),
+
+    // Approval workflow
+    approvedBy: z.string().uuid().nullable(),
+    approvedAt: z.string().datetime().nullable(),
+    rejectionReason: z.string().nullable(),
+
+    // Architecture references
+    promptTemplateId: z.string().uuid().nullable(),
+    educationalArchitectureId: z.string().uuid().nullable(),
+    uiArchitectureId: z.string().uuid().nullable(),
+
+    // Brand partitioning
+    brandVisibility: z.enum(['brand_only', 'shared_visible', 'shared_fallback']).nullable(),
+    brandCustomizations: z.any().nullable(),
+
+    // Timestamps
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+    publishedAt: z.string().datetime().nullable(),
+    deletedAt: z.string().datetime().nullable(),
+  })
+  .strict();
+
+export type TutorialResponse = z.infer<typeof TutorialResponseSchema>;
+
+/**
+ * V2 List Tutorials Query
+ * Based on TutorialFilters from tutorial-section.repository.ts
+ */
+export const ListTutorialsQuerySchema = z.object({
+  subtopicId: z.string().uuid().optional(),
+  brandId: BrandIdSchema.optional(),
+  status: TutorialStatusSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  cursor: z.string().uuid().optional(),
+});
+
+export type ListTutorialsQuery = z.infer<typeof ListTutorialsQuerySchema>;
+
+/**
+ * V2 List Tutorials Response
+ * Based on queryTutorials() return type from tutorial-composer.service.ts
+ */
+export const ListTutorialsResponseSchema = z
+  .object({
+    data: z.array(TutorialResponseSchema),
+    hasMore: z.boolean(),
+    nextCursor: z.string().uuid().nullable(),
+    total: z.number().int().min(0),
+  })
+  .strict();
+
+export type ListTutorialsResponse = z.infer<typeof ListTutorialsResponseSchema>;
+
+/**
+ * V2 Update Tutorial Content Request
+ * Based on UpdateTutorialContentServiceInput from tutorial-composer.service.ts
+ */
+export const UpdateTutorialContentRequestSchema = z
+  .object({
+    content: TutorialDocumentSchema,
+  })
+  .strict();
+
+export type UpdateTutorialContentRequest = z.infer<typeof UpdateTutorialContentRequestSchema>;
+
+/**
+ * V2 Append Block Request
+ * Based on appendBlockToTutorial() input from tutorial-composer.service.ts
+ * Uses TutorialBlockSchema from tutorial-rich-document/schemas/blocks.schema.ts
+ */
+export const AppendBlockRequestSchema = z
+  .object({
+    block: z.lazy(() => {
+      // Import is deferred to avoid circular dependency
+      const { TutorialBlockSchema } = require('../tutorial-rich-document/schemas/blocks.schema');
+      return TutorialBlockSchema;
+    }),
+  })
+  .strict();
+
+export type AppendBlockRequest = z.infer<typeof AppendBlockRequestSchema>;
+
+/**
+ * V2 Publish Tutorial Request
+ * Empty body - tutorial ID comes from URL
+ */
+export const PublishTutorialRequestSchema = z.object({}).strict();
+
+export type PublishTutorialRequest = z.infer<typeof PublishTutorialRequestSchema>;
 
 // ============================================================
 // ERROR RESPONSES

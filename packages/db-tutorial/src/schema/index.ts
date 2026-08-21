@@ -4,7 +4,7 @@ export * from './enums';
 // ===== PHASE 1 P0: MODULAR TUTORIAL SYSTEM =====
 export * from './enums-modular';
 export * from './tutorial-sections';
-export * from './tutorial-subsections';
+// REMOVED: tutorial-subsections (legacy - dropped Phase B)
 export * from './tutorial-section-domains';
 export * from './user-interactions'; // NEW: User interaction tracking
 export * from './educational-architectures';
@@ -30,7 +30,7 @@ export * from './layman-prompt-history';
 export * from './layman-content-revisions';
 
 // ===== LEGACY: MONOLITHIC SYSTEM (TO BE DEPRECATED) =====
-export * from './tutorial-content';
+// REMOVED: tutorial-content (legacy - dropped Phase B)
 export * from './tutorial-domains';
 export * from './tutorial-content-versions';
 export * from './tutorial-content-audit';
@@ -45,7 +45,7 @@ export * from './tutorial-projects';
 export * from './tutorial-project-submissions';
 export * from './student-badges';
 export * from './tutorial-progress';
-export * from './tutorial-video-links';
+// REMOVED: export * from './tutorial-video-links'; (legacy - dropped Phase B)
 export * from './badges';
 export * from './certificates';
 export * from './remediation-triggers';
@@ -59,7 +59,7 @@ import * as enums from './enums';
 // Phase 1 P0: Modular System Imports
 import * as enumsModular from './enums-modular';
 import * as tutorialSectionsModule from './tutorial-sections';
-import * as tutorialSubsectionsModule from './tutorial-subsections';
+// REMOVED: tutorialSubsectionsModule (legacy - dropped Phase B)
 import * as tutorialSectionDomainsModule from './tutorial-section-domains';
 import * as userInteractionsModule from './user-interactions'; // NEW
 import * as educationalArchitecturesModule from './educational-architectures';
@@ -84,7 +84,7 @@ import * as laymanPromptHistoryModule from './layman-prompt-history';
 import * as laymanContentRevisionsModule from './layman-content-revisions';
 
 // Legacy Imports
-import * as tutorialContentModule from './tutorial-content';
+// REMOVED: tutorialContentModule (legacy - dropped Phase B)
 import * as tutorialDomainsModule from './tutorial-domains';
 import * as tutorialContentVersionsModule from './tutorial-content-versions';
 import * as tutorialContentAuditModule from './tutorial-content-audit';
@@ -95,7 +95,7 @@ import * as tutorialProjectsModule from './tutorial-projects';
 import * as tutorialProjectSubmissionsModule from './tutorial-project-submissions';
 import * as studentBadgesModule from './student-badges';
 import * as tutorialProgressModule from './tutorial-progress';
-import * as tutorialVideoLinksModule from './tutorial-video-links';
+// REMOVED: import * as tutorialVideoLinksModule from './tutorial-video-links'; (legacy - dropped Phase B)
 import * as tutorialSubjectsModule from './tutorial-subjects';
 import * as tutorialTopicsModule from './tutorial-topics';
 import * as tutorialSubtopicsModule from './tutorial-subtopics';
@@ -113,7 +113,7 @@ export const schema = {
   // Phase 1 P0: Modular Tutorial System
   ...enumsModular,
   ...tutorialSectionsModule,
-  ...tutorialSubsectionsModule,
+  // REMOVED: tutorialSubsectionsModule (legacy - dropped Phase B)
   ...tutorialSectionDomainsModule,
   ...userInteractionsModule, // NEW
   ...educationalArchitecturesModule,
@@ -138,7 +138,7 @@ export const schema = {
   ...laymanContentRevisionsModule,
   
   // Legacy System (Preserved for Migration)
-  ...tutorialContentModule,
+  // REMOVED: tutorialContentModule (legacy - dropped Phase B)
   ...tutorialDomainsModule,
   ...tutorialContentVersionsModule,
   ...tutorialContentAuditModule,
@@ -152,7 +152,7 @@ export const schema = {
   ...tutorialProjectSubmissionsModule,
   ...studentBadgesModule,
   ...tutorialProgressModule,
-  ...tutorialVideoLinksModule,
+  // REMOVED: ...tutorialVideoLinksModule, (legacy - dropped Phase B)
   ...badgesModule,
   ...certificatesModule,
   ...remediationTriggersModule,

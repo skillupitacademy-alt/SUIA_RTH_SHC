@@ -91,12 +91,23 @@ export {
   TutorialDifficultySchema,
   SectionStatusSchema,
   BrandIdSchema,
+  // V2 Contracts
+  TutorialStatusSchema,
+  CreateTutorialRequestSchema,
+  TutorialResponseSchema,
+  ListTutorialsQuerySchema,
+  ListTutorialsResponseSchema,
+  UpdateTutorialContentRequestSchema,
+  AppendBlockRequestSchema,
+  PublishTutorialRequestSchema,
+  // Legacy Contracts (V1 - retained for backward compatibility)
   CreateTutorialSectionRequestSchema,
   UpdateTutorialSectionRequestSchema,
   PublishTutorialSectionRequestSchema,
   TutorialSectionResponseSchema,
   ListTutorialSectionsQuerySchema,
   ListTutorialSectionsResponseSchema,
+  // Other contracts
   RawContentSourceTypeSchema,
   ImportOptionsSchema,
   ImportedContentStatsSchema,

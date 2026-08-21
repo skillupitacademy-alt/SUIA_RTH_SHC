@@ -1,13 +1,17 @@
 /**
- * Tutorial Delivery Service
+ * Tutorial Delivery Service - V2 Architecture
  * 
- * PROMPT 10 — Tutorial Section / Delivery Foundation
+ * V2 ARCHITECTURE:
+ * - Identity: (subtopicId, brandId) - ONE tutorial per subtopic per brand
+ * - Content: TutorialDocument JSONB (blocks[])
+ * - NO sectionType, NO difficulty taxonomy
+ * - Returns single Tutorial with validated, sanitized content
  * 
  * Responsibilities:
- * - Retrieve published tutorial sections for learners
+ * - Retrieve published tutorials for learners
  * - Filter by brand visibility, deletion status, publication status
- * - Order sections correctly by orderIndex
  * - Validate TutorialDocument content at trust boundary
+ * - Sanitize content before delivery (security boundary)
  * - Return only learner-safe data (no admin metadata)
  * 
  * This service sits between the learner-facing API and the database,
@@ -18,21 +22,22 @@ import { db } from '../db';
 import { tutorialSections, tutorialSubtopics } from '../schema';
 import { eq, and, inArray, isNull, or } from 'drizzle-orm';
 import { TutorialDocumentSchema, type TutorialDocument } from '@quiz/types';
-import type { TutorialDifficulty, SectionType, Brand } from '@quiz/types';
+import type { Brand } from '@quiz/types';
 import { tutorialContentSanitizationService } from './tutorial-content-sanitization.service';
 
 /**
- * Delivery-safe section data
- * Excludes admin-only fields like:
+ * V2 Delivery-safe tutorial data
+ * Excludes admin-only fields:
  * - AI generation metadata
  * - Approval workflow data
  * - Internal IDs (generation jobs, etc.)
  * - Architecture references
+ * - Legacy fields (sectionType, difficulty)
  */
-export interface DeliverySection {
+export interface DeliveredTutorial {
   id: string;
-  sectionType: SectionType;
-  difficulty: TutorialDifficulty;
+  subtopicId: string;
+  brandId: string;
   orderIndex: number;
   content: TutorialDocument;
   version: number;
@@ -41,38 +46,37 @@ export interface DeliverySection {
 }
 
 /**
- * Complete tutorial delivery for a subtopic
+ * V2 Complete tutorial delivery for a subtopic
+ * Returns single tutorial (not array of sections)
  */
-export interface TutorialDelivery {
+export interface TutorialDeliveryV2 {
   subtopicId: string;
   subtopicSlug: string;
   subtopicName: string;
-  difficulty: TutorialDifficulty;
-  sections: DeliverySection[];
-  totalSections: number;
+  brandId: string;
+  tutorial: DeliveredTutorial | null;
 }
 
 /**
- * Options for tutorial delivery
+ * V2 Options for tutorial delivery
  */
 export interface DeliveryOptions {
-  difficulty?: TutorialDifficulty;
-  sectionType?: SectionType;
   brandId?: Brand;
   includeUnpublished?: boolean; // For admin preview, defaults to false
 }
 
 /**
- * Tutorial Delivery Service
+ * Tutorial Delivery Service - V2
  */
 export class TutorialDeliveryService {
   /**
-   * Get tutorial sections for a subtopic (by slug)
+   * V2: Get tutorial for a subtopic (by slug)
+   * Returns single tutorial per (subtopicId, brandId)
    */
   async getTutorialBySlug(
     subtopicSlug: string,
     options: DeliveryOptions = {}
-  ): Promise<TutorialDelivery> {
+  ): Promise<TutorialDeliveryV2> {
     // Resolve subtopic
     const [subtopic] = await db
       .select({
@@ -98,15 +102,14 @@ export class TutorialDeliveryService {
   }
 
   /**
-   * Get tutorial sections for a subtopic (by UUID)
+   * V2: Get tutorial for a subtopic (by UUID)
+   * Returns single tutorial per (subtopicId, brandId) identity
    */
   async getTutorialById(
     subtopicId: string,
     options: DeliveryOptions & { _subtopicMetadata?: { slug: string; name: string } } = {}
-  ): Promise<TutorialDelivery> {
+  ): Promise<TutorialDeliveryV2> {
     const {
-      difficulty = 'simple',
-      sectionType,
       brandId = 'shared',
       includeUnpublished = false,
       _subtopicMetadata,
@@ -131,17 +134,11 @@ export class TutorialDeliveryService {
       subtopicMetadata = subtopic;
     }
 
-    // Build query conditions
+    // V2: Query single tutorial by (subtopicId, brandId)
     const conditions = [
       eq(tutorialSections.subtopicId, subtopicId),
-      eq(tutorialSections.difficulty, difficulty),
-      isNull(tutorialSections.deletedAt), // Exclude soft-deleted sections
+      isNull(tutorialSections.deletedAt), // Exclude soft-deleted tutorials
     ];
-
-    // Filter by section type if specified
-    if (sectionType) {
-      conditions.push(eq(tutorialSections.sectionType, sectionType));
-    }
 
     // Filter by publication status (default: only published)
     if (!includeUnpublished) {
@@ -150,8 +147,8 @@ export class TutorialDeliveryService {
       );
     }
 
-    // Filter by brand visibility
-    // Sections visible if:
+    // V2: Filter by brand visibility
+    // Tutorial visible if:
     // 1. brandId = 'shared' (universal content)
     // 2. brandId = requested brand (brand-specific)
     // 3. brandVisibility = 'shared_visible' (cross-brand visible)
@@ -163,12 +160,12 @@ export class TutorialDeliveryService {
       )!
     );
 
-    // Query sections
-    const rawSections = await db
+    // V2: Query single tutorial (not array)
+    const [rawTutorial] = await db
       .select({
         id: tutorialSections.id,
-        sectionType: tutorialSections.sectionType,
-        difficulty: tutorialSections.difficulty,
+        subtopicId: tutorialSections.subtopicId,
+        brandId: tutorialSections.brandId,
         orderIndex: tutorialSections.orderIndex,
         content: tutorialSections.content,
         version: tutorialSections.version,
@@ -177,77 +174,89 @@ export class TutorialDeliveryService {
       })
       .from(tutorialSections)
       .where(and(...conditions))
-      .orderBy(tutorialSections.orderIndex); // Order by orderIndex
+      .limit(1);
 
-    // Validate and transform sections
-    const deliverySections: DeliverySection[] = [];
+    // V2: Return structure with nullable tutorial
+    if (!rawTutorial) {
+      return {
+        subtopicId,
+        subtopicSlug: subtopicMetadata.slug,
+        subtopicName: subtopicMetadata.name,
+        brandId,
+        tutorial: null,
+      };
+    }
 
-    for (const rawSection of rawSections) {
-      // CRITICAL: Validate TutorialDocument schema at trust boundary
-      const validationResult = TutorialDocumentSchema.safeParse(rawSection.content);
+    // CRITICAL: Validate TutorialDocument schema at trust boundary
+    const validationResult = TutorialDocumentSchema.safeParse(rawTutorial.content);
 
-      if (!validationResult.success) {
-        console.error('[TutorialDeliveryService] Schema validation failed', {
-          sectionId: rawSection.id,
-          sectionType: rawSection.sectionType,
-          errors: validationResult.error.errors,
-        });
-        // Skip invalid sections in production
-        continue;
-      }
+    if (!validationResult.success) {
+      console.error('[TutorialDeliveryService] Schema validation failed', {
+        tutorialId: rawTutorial.id,
+        subtopicId,
+        brandId: rawTutorial.brandId,
+        errors: validationResult.error.errors,
+      });
+      // Return null tutorial if invalid (fail safe)
+      return {
+        subtopicId,
+        subtopicSlug: subtopicMetadata.slug,
+        subtopicName: subtopicMetadata.name,
+        brandId,
+        tutorial: null,
+      };
+    }
 
-      // CRITICAL: Sanitize content before delivery
-      // This is the security boundary between DB and learners
-      const sanitizationResult = tutorialContentSanitizationService.sanitizeDocument(
-        validationResult.data
-      );
+    // CRITICAL: Sanitize content before delivery
+    // This is the security boundary between DB and learners
+    const sanitizationResult = tutorialContentSanitizationService.sanitizeDocument(
+      validationResult.data
+    );
 
-      // Log security warnings if content was modified
-      if (sanitizationResult.modified) {
-        console.warn('[TutorialDeliveryService] Content sanitized', {
-          sectionId: rawSection.id,
-          warningCount: sanitizationResult.warnings.length,
-          warningTypes: sanitizationResult.warnings.map(w => w.split(':')[1]?.trim() || 'unknown'),
-        });
-      }
-
-      deliverySections.push({
-        id: rawSection.id,
-        sectionType: rawSection.sectionType as SectionType,
-        difficulty: rawSection.difficulty as TutorialDifficulty,
-        orderIndex: rawSection.orderIndex,
-        content: sanitizationResult.sanitized, // Use sanitized content
-        version: rawSection.version,
-        language: rawSection.language,
-        publishedAt: rawSection.publishedAt,
+    // Log security warnings if content was modified
+    if (sanitizationResult.modified) {
+      console.warn('[TutorialDeliveryService] Content sanitized', {
+        tutorialId: rawTutorial.id,
+        warningCount: sanitizationResult.warnings.length,
+        warningTypes: sanitizationResult.warnings.map(w => w.split(':')[1]?.trim() || 'unknown'),
       });
     }
+
+    const deliveredTutorial: DeliveredTutorial = {
+      id: rawTutorial.id,
+      subtopicId: rawTutorial.subtopicId,
+      brandId: rawTutorial.brandId as string,
+      orderIndex: rawTutorial.orderIndex,
+      content: sanitizationResult.sanitized, // Use sanitized content
+      version: rawTutorial.version,
+      language: rawTutorial.language,
+      publishedAt: rawTutorial.publishedAt,
+    };
 
     return {
       subtopicId,
       subtopicSlug: subtopicMetadata.slug,
       subtopicName: subtopicMetadata.name,
-      difficulty,
-      sections: deliverySections,
-      totalSections: deliverySections.length,
+      brandId,
+      tutorial: deliveredTutorial,
     };
   }
 
   /**
-   * Get a single section by ID
-   * Used for direct section access (e.g., deep links)
+   * V2: Get a single tutorial by tutorial ID
+   * Used for direct tutorial access (e.g., deep links, admin preview)
    */
-  async getSectionById(
-    sectionId: string,
+  async getSingleTutorialById(
+    tutorialId: string,
     options: { brandId?: Brand } = {}
-  ): Promise<DeliverySection> {
+  ): Promise<DeliveredTutorial> {
     const { brandId = 'shared' } = options;
 
-    const [rawSection] = await db
+    const [rawTutorial] = await db
       .select({
         id: tutorialSections.id,
-        sectionType: tutorialSections.sectionType,
-        difficulty: tutorialSections.difficulty,
+        subtopicId: tutorialSections.subtopicId,
+        brandId: tutorialSections.brandId,
         orderIndex: tutorialSections.orderIndex,
         content: tutorialSections.content,
         version: tutorialSections.version,
@@ -255,45 +264,44 @@ export class TutorialDeliveryService {
         publishedAt: tutorialSections.publishedAt,
         deletedAt: tutorialSections.deletedAt,
         status: tutorialSections.status,
-        brandId: tutorialSections.brandId,
         brandVisibility: tutorialSections.brandVisibility,
       })
       .from(tutorialSections)
-      .where(eq(tutorialSections.id, sectionId))
+      .where(eq(tutorialSections.id, tutorialId))
       .limit(1);
 
-    if (!rawSection) {
-      throw new SectionNotFoundError(sectionId);
+    if (!rawTutorial) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
-    // Verify section is published and not deleted
-    if (rawSection.deletedAt) {
-      throw new SectionNotFoundError(sectionId);
+    // Verify tutorial is published and not deleted
+    if (rawTutorial.deletedAt) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
-    if (!['approved', 'deployed'].includes(rawSection.status)) {
-      throw new SectionNotFoundError(sectionId);
+    if (!['approved', 'deployed'].includes(rawTutorial.status)) {
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // Verify brand access
     const hasAccess =
-      rawSection.brandId === 'shared' ||
-      rawSection.brandId === brandId ||
-      rawSection.brandVisibility === 'shared_visible';
+      rawTutorial.brandId === 'shared' ||
+      rawTutorial.brandId === brandId ||
+      rawTutorial.brandVisibility === 'shared_visible';
 
     if (!hasAccess) {
-      throw new SectionNotFoundError(sectionId);
+      throw new TutorialNotFoundError(tutorialId);
     }
 
     // Validate content
-    const validationResult = TutorialDocumentSchema.safeParse(rawSection.content);
+    const validationResult = TutorialDocumentSchema.safeParse(rawTutorial.content);
 
     if (!validationResult.success) {
-      console.error('[TutorialDeliveryService] Schema validation failed for single section', {
-        sectionId,
+      console.error('[TutorialDeliveryService] Schema validation failed for single tutorial', {
+        tutorialId,
         errors: validationResult.error.errors,
       });
-      throw new InvalidSectionContentError(sectionId);
+      throw new InvalidTutorialContentError(tutorialId);
     }
 
     // CRITICAL: Sanitize content before delivery
@@ -303,22 +311,22 @@ export class TutorialDeliveryService {
 
     // Log security warnings if content was modified
     if (sanitizationResult.modified) {
-      console.warn('[TutorialDeliveryService] Single section content sanitized', {
-        sectionId,
+      console.warn('[TutorialDeliveryService] Single tutorial content sanitized', {
+        tutorialId,
         warningCount: sanitizationResult.warnings.length,
         warningTypes: sanitizationResult.warnings.map(w => w.split(':')[1]?.trim() || 'unknown'),
       });
     }
 
     return {
-      id: rawSection.id,
-      sectionType: rawSection.sectionType as SectionType,
-      difficulty: rawSection.difficulty as TutorialDifficulty,
-      orderIndex: rawSection.orderIndex,
+      id: rawTutorial.id,
+      subtopicId: rawTutorial.subtopicId,
+      brandId: rawTutorial.brandId as string,
+      orderIndex: rawTutorial.orderIndex,
       content: sanitizationResult.sanitized, // Use sanitized content
-      version: rawSection.version,
-      language: rawSection.language,
-      publishedAt: rawSection.publishedAt,
+      version: rawTutorial.version,
+      language: rawTutorial.language,
+      publishedAt: rawTutorial.publishedAt,
     };
   }
 }
@@ -333,17 +341,17 @@ export class SubtopicNotFoundError extends Error {
   }
 }
 
-export class SectionNotFoundError extends Error {
-  constructor(sectionId: string) {
-    super(`Section not found: ${sectionId}`);
-    this.name = 'SectionNotFoundError';
+export class TutorialNotFoundError extends Error {
+  constructor(tutorialId: string) {
+    super(`Tutorial not found: ${tutorialId}`);
+    this.name = 'TutorialNotFoundError';
   }
 }
 
-export class InvalidSectionContentError extends Error {
-  constructor(sectionId: string) {
-    super(`Section content failed schema validation: ${sectionId}`);
-    this.name = 'InvalidSectionContentError';
+export class InvalidTutorialContentError extends Error {
+  constructor(tutorialId: string) {
+    super(`Tutorial content failed schema validation: ${tutorialId}`);
+    this.name = 'InvalidTutorialContentError';
   }
 }
 

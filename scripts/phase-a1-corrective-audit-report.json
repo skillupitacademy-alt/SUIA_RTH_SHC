@@ -1,0 +1,1324 @@
+{
+  "timestamp": "2026-08-21T10:36:31.060Z",
+  "phase": "A.1 - Corrective Audit",
+  "findings": {
+    "legacy_tables": {
+      "tutorial_sections": {
+        "exists": true,
+        "row_count": 0,
+        "size": "240 kB",
+        "bytes": 245760,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [
+          {
+            "from_table": "code_interactions",
+            "from_column": "section_id",
+            "constraint": "code_interactions_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "content_deployments",
+            "from_column": "section_id",
+            "constraint": "content_deployments_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "practice_test_answers",
+            "from_column": "section_id",
+            "constraint": "practice_test_answers_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "quiz_answers",
+            "from_column": "section_id",
+            "constraint": "quiz_answers_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "section_completions",
+            "from_column": "section_id",
+            "constraint": "section_completions_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_learning_metrics",
+            "from_column": "section_id",
+            "constraint": "tutorial_learning_metrics_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_ai_tutor",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_ai_tutor_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_assignment",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_assignment_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_code",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_code_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_interview",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_interview_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_notes",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_notes_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_overview",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_overview_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_practice",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_practice_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_project",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_project_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_quiz",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_quiz_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_real_life",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_real_life_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_summary",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_summary_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_technical",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_technical_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_section_visual",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_visual_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "tutorial_subsections",
+            "from_column": "section_id",
+            "constraint": "tutorial_subsections_section_id_tutorial_sections_id_fk"
+          },
+          {
+            "from_table": "visual_interactions",
+            "from_column": "section_id",
+            "constraint": "visual_interactions_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "incoming_fks_count": 21,
+        "outgoing_fks": [
+          {
+            "to_table": "educational_architectures",
+            "to_column": "id",
+            "from_column": "educational_architecture_id",
+            "constraint": "tutorial_sections_educational_architecture_id_educational_archi"
+          },
+          {
+            "to_table": "prompt_templates",
+            "to_column": "id",
+            "from_column": "prompt_template_id",
+            "constraint": "tutorial_sections_prompt_template_id_prompt_templates_id_fk"
+          },
+          {
+            "to_table": "tutorial_subtopics",
+            "to_column": "id",
+            "from_column": "subtopic_id",
+            "constraint": "tutorial_sections_subtopic_id_tutorial_subtopics_id_fk"
+          },
+          {
+            "to_table": "ui_architectures",
+            "to_column": "id",
+            "from_column": "ui_architecture_id",
+            "constraint": "tutorial_sections_ui_architecture_id_ui_architectures_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 4,
+        "verdict": "EMPTY_HAS_DEPENDENCIES",
+        "action": "DROP_AFTER_DEPENDENTS"
+      },
+      "tutorial_content": {
+        "exists": true,
+        "row_count": 0,
+        "size": "56 kB",
+        "bytes": 57344,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [],
+        "outgoing_fks_count": 0,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_subsections": {
+        "exists": true,
+        "row_count": 0,
+        "size": "48 kB",
+        "bytes": 49152,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [
+          {
+            "from_table": "subsection_engagement_metrics",
+            "from_column": "subsection_id",
+            "constraint": "subsection_engagement_metrics_subsection_id_tutorial_subsection"
+          }
+        ],
+        "incoming_fks_count": 1,
+        "outgoing_fks": [
+          {
+            "to_table": "prompt_templates",
+            "to_column": "id",
+            "from_column": "prompt_template_id",
+            "constraint": "tutorial_subsections_prompt_template_id_prompt_templates_id_fk"
+          },
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_subsections_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 2,
+        "verdict": "EMPTY_HAS_DEPENDENCIES",
+        "action": "DROP_AFTER_DEPENDENTS"
+      },
+      "tutorial_section_notes": {
+        "exists": true,
+        "row_count": 0,
+        "size": "80 kB",
+        "bytes": 81920,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_notes_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_layman": {
+        "exists": false,
+        "verdict": "TABLE_NOT_FOUND",
+        "action": "ALREADY_DROPPED"
+      },
+      "tutorial_section_technical": {
+        "exists": true,
+        "row_count": 0,
+        "size": "80 kB",
+        "bytes": 81920,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_technical_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_code": {
+        "exists": true,
+        "row_count": 0,
+        "size": "48 kB",
+        "bytes": 49152,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_code_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_practice": {
+        "exists": true,
+        "row_count": 0,
+        "size": "80 kB",
+        "bytes": 81920,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_practice_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_visual": {
+        "exists": true,
+        "row_count": 0,
+        "size": "120 kB",
+        "bytes": 122880,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_visual_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_overview": {
+        "exists": true,
+        "row_count": 0,
+        "size": "48 kB",
+        "bytes": 49152,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_overview_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_real_life": {
+        "exists": true,
+        "row_count": 0,
+        "size": "48 kB",
+        "bytes": 49152,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_real_life_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_summary": {
+        "exists": true,
+        "row_count": 0,
+        "size": "80 kB",
+        "bytes": 81920,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_summary_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_assignment": {
+        "exists": true,
+        "row_count": 0,
+        "size": "80 kB",
+        "bytes": 81920,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_assignment_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_project": {
+        "exists": true,
+        "row_count": 0,
+        "size": "48 kB",
+        "bytes": 49152,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_project_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_quiz": {
+        "exists": true,
+        "row_count": 0,
+        "size": "80 kB",
+        "bytes": 81920,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_quiz_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_interview": {
+        "exists": true,
+        "row_count": 0,
+        "size": "80 kB",
+        "bytes": 81920,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_interview_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_section_ai_tutor": {
+        "exists": true,
+        "row_count": 0,
+        "size": "48 kB",
+        "bytes": 49152,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_section_ai_tutor_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "code_interactions": {
+        "exists": true,
+        "row_count": 0,
+        "size": "40 kB",
+        "bytes": 40960,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "code_interactions_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "content_deployments": {
+        "exists": true,
+        "row_count": 0,
+        "size": "48 kB",
+        "bytes": 49152,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "content_deployments_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "practice_test_answers": {
+        "exists": true,
+        "row_count": 0,
+        "size": "40 kB",
+        "bytes": 40960,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "practice_test_answers_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "quiz_answers": {
+        "exists": true,
+        "row_count": 0,
+        "size": "40 kB",
+        "bytes": 40960,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "quiz_answers_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "section_completions": {
+        "exists": true,
+        "row_count": 0,
+        "size": "32 kB",
+        "bytes": 32768,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "section_completions_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "tutorial_learning_metrics": {
+        "exists": true,
+        "row_count": 0,
+        "size": "48 kB",
+        "bytes": 49152,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "tutorial_learning_metrics_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      },
+      "visual_interactions": {
+        "exists": true,
+        "row_count": 0,
+        "size": "40 kB",
+        "bytes": 40960,
+        "primary_key": [
+          "id"
+        ],
+        "incoming_fks": [],
+        "incoming_fks_count": 0,
+        "outgoing_fks": [
+          {
+            "to_table": "tutorial_sections",
+            "to_column": "id",
+            "from_column": "section_id",
+            "constraint": "visual_interactions_section_id_tutorial_sections_id_fk"
+          }
+        ],
+        "outgoing_fks_count": 1,
+        "verdict": "EMPTY_NO_DEPENDENCIES",
+        "action": "DROP_APPROVED"
+      }
+    },
+    "tutorial_sections_dependents": {
+      "total_count": 21,
+      "tables": [
+        {
+          "table": "tutorial_subsections",
+          "row_count": 0,
+          "verdict": "EMPTY_HAS_DEPENDENCIES",
+          "action": "DROP_AFTER_DEPENDENTS"
+        },
+        {
+          "table": "tutorial_section_notes",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_technical",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_code",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_practice",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_visual",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_overview",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_real_life",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_summary",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_assignment",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_project",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_quiz",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_interview",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_section_ai_tutor",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "code_interactions",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "content_deployments",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "practice_test_answers",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "quiz_answers",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "section_completions",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "tutorial_learning_metrics",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        },
+        {
+          "table": "visual_interactions",
+          "row_count": 0,
+          "verdict": "EMPTY_NO_DEPENDENCIES",
+          "action": "DROP_APPROVED"
+        }
+      ],
+      "all_empty": true,
+      "tables_with_data": []
+    },
+    "code_references": {
+      "typescript": {
+        "SectionType": {
+          "count": 12,
+          "files": [
+            "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+            "apps/skillhubcore-admin/src/app/(admin)/tools/content-manager/components/ComponentPreview.tsx",
+            "apps/skillhubcore-admin/src/app/(admin)/tools/content-manager/components/LiveVisualizerPreview.tsx",
+            "apps/skillhubcore-admin/src/app/(admin)/tools/content-manager/components/SectionManager.tsx",
+            "apps/skillhubcore-admin/src/app/(admin)/tools/content-manager/components/types.ts",
+            "packages/db-tutorial/src/services/tutorial-delivery.service.ts",
+            "packages/types/src/tutorial-composer/contracts.ts",
+            "packages/types/src/tutorial-rich-document/validation.ts",
+            "scripts/audit-tutorial-section-validation.ts",
+            "scripts/phase-a-eradication-safety-audit.ts",
+            "scripts/phase-a1-corrective-audit.ts",
+            "src/share-branding/SubtopicNotesPage.tsx"
+          ]
+        },
+        "TutorialDifficulty": {
+          "count": 13,
+          "files": [
+            "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+            "apps/api-server/src/modules/tutorial-engine/tutorial.engine.ts",
+            "apps/api-server/src/modules/tutorial-engine/tutorial.service.ts",
+            "apps/realtutorialhub-web/src/app/api/workers/index-content-vector/route.ts",
+            "apps/realtutorialhub-web/src/lib/tutorial-content-api.ts",
+            "apps/realtutorialhub-web/src/server/tutorial-delivery.ts",
+            "packages/api-client/src/modules/tutorial-client.ts",
+            "packages/db-tutorial/src/services/tutorial-delivery.service.ts",
+            "packages/db-tutorial/src/vector.service.ts",
+            "packages/types/src/tutorial-composer/contracts.ts",
+            "packages/types/src/tutorial-repositories.types.ts",
+            "scripts/phase-a-eradication-safety-audit.ts",
+            "scripts/phase-a1-corrective-audit.ts"
+          ]
+        },
+        "SECTION_BLOCK_PALETTES": {
+          "count": 5,
+          "files": [
+            "packages/types/.audit-comprehensive.ts",
+            "packages/types/src/tutorial-rich-document/section-palettes.ts",
+            "packages/types/src/tutorial-rich-document/validation.ts",
+            "scripts/phase-a-eradication-safety-audit.ts",
+            "scripts/phase-a1-corrective-audit.ts"
+          ]
+        },
+        "getSectionByKey": {
+          "count": 5,
+          "files": [
+            "packages/db-tutorial/src/repositories/tutorial-section.repository.ts",
+            "packages/db-tutorial/src/services/tutorial-composer.service.ts",
+            "packages/db-tutorial/src/services/__tests__/phase-2e-append-block.test.ts",
+            "scripts/phase-a-eradication-safety-audit.ts",
+            "scripts/phase-a1-corrective-audit.ts"
+          ]
+        }
+      },
+      "api_routes": {
+        "sectionType": {
+          "count": 18,
+          "files": [
+            "apps/api-server/src/app/api/admin/layman/review/queue/route.ts",
+            "apps/api-server/src/app/api/tutorial/API_ENDPOINTS.ts",
+            "apps/api-server/src/app/api/tutorial/interactions/_shared.ts",
+            "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+            "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/sections/__tests__/route.test.ts",
+            "apps/skillhubcore-admin/src/app/api/content-manager/add-section/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/__tests__/route.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.integration.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/composer-persistence.integration.test.ts"
+          ]
+        },
+        "difficulty": {
+          "count": 51,
+          "files": [
+            "apps/api-server/src/app/api/admin/layman/prompt/generate/route.ts",
+            "apps/api-server/src/app/api/admin/layman/review/queue/route.ts",
+            "apps/api-server/src/app/api/admin/metrics/broken-questions/route.ts",
+            "apps/api-server/src/app/api/analytics/admin/discrimination/route.ts",
+            "apps/api-server/src/app/api/analytics/admin/item-difficulty/route.ts",
+            "apps/api-server/src/app/api/analytics/admin/planned-vs-actual-difficulty/route.ts",
+            "apps/api-server/src/app/api/analytics/user/difficulty-accuracy/route.ts",
+            "apps/api-server/src/app/api/factory/save/route.ts",
+            "apps/api-server/src/app/api/quiz/start/route.ts",
+            "apps/api-server/src/app/api/tutorial/API_ENDPOINTS.ts",
+            "apps/api-server/src/app/api/tutorial/content/[subtopicId]/route.ts",
+            "apps/api-server/src/app/api/tutorial/content/[subtopicId]/__tests__/route.test.ts",
+            "apps/api-server/src/app/api/tutorial/faculty/assignments/__tests__/route.test.ts",
+            "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/route.ts",
+            "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/__tests__/route.test.ts",
+            "apps/faculty-app/src/app/api/faculty/__tests__/routes.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/assignments/draft/route.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/assignments/draft/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/assignments/publish/route.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/assignments/publish/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/versions/route.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/versions/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/[id]/publish/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/[id]/restore/route.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/[id]/restore/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/[id]/route.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/[id]/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/hierarchy/subtopics/route.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/hierarchy/__tests__/routes.test.ts",
+            "apps/realtutorialhub-web/src/app/api/ai-tutor/query/route.ts",
+            "apps/realtutorialhub-web/src/app/api/ai-tutor/query/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/app/api/content-manager/add-section/route.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/complete/route.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/route.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/start/route.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/sections/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/app/api/workers/index-content-vector/route.ts",
+            "apps/realtutorialhub-web/src/app/api/workers/index-content-vector/__tests__/route.test.ts",
+            "apps/skillhubcore-admin/src/app/api/content-manager/add-section/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.integration.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/composer-persistence.integration.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/hierarchy/route.ts",
+            "apps/skillup-web/src/app/api/content-manager/add-section/route.ts"
+          ]
+        }
+      },
+      "tests": {
+        "sectionType": {
+          "count": 19,
+          "files": [
+            "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/sections/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/components/content/__tests__/NotesBlock.test.tsx",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/__tests__/route.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.integration.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/composer-persistence.integration.test.ts",
+            "packages/db-tutorial/src/repositories/__tests__/tutorial-section.repository.test.ts",
+            "packages/db-tutorial/src/services/__tests__/composer-draft-generator.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/phase-1h-definition-d1-persistence.integration.test.ts",
+            "packages/db-tutorial/src/services/__tests__/phase-2e-append-block.test.ts",
+            "packages/db-tutorial/src/services/__tests__/suggestion-application.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/suggestion-verification.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/tutorial-composer.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/tutorial-delivery.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/tutorial-import.service.test.ts",
+            "packages/types/src/tutorial-composer/__tests__/apply-suggestion-contracts.test.ts",
+            "packages/ui/src/tutorial/__tests__/TutorialRenderer.test.tsx",
+            "packages/validation/src/__tests__/tutorialSections.test.ts"
+          ]
+        },
+        "difficulty": {
+          "count": 109,
+          "files": [
+            "apps/api-server/src/app/api/tutorial/content/[subtopicId]/__tests__/route.test.ts",
+            "apps/api-server/src/app/api/tutorial/faculty/assignments/__tests__/route.test.ts",
+            "apps/api-server/src/app/api/tutorial/sections/[subtopicId]/__tests__/route.test.ts",
+            "apps/api-server/src/lib/export/__tests__/csv.formatter.test.ts",
+            "apps/api-server/src/lib/export/__tests__/export.aggregator.test.ts",
+            "apps/api-server/src/modules/admin-engine/__tests__/admin.analytics.engine.test.ts",
+            "apps/api-server/src/modules/admin-engine/__tests__/admin.question.engine.test.ts",
+            "apps/api-server/src/modules/analytics/__tests__/user-analytics.branch.test.ts",
+            "apps/api-server/src/modules/analytics/__tests__/user-analytics.cache.test.ts",
+            "apps/api-server/src/modules/analytics/__tests__/user-analytics.coverage.test.ts",
+            "apps/api-server/src/modules/domain/__tests__/hierarchy.factory.branch.test.ts",
+            "apps/api-server/src/modules/domain/__tests__/hierarchy.factory.tail2.test.ts",
+            "apps/api-server/src/modules/domain/__tests__/hierarchy.factory.test.ts",
+            "apps/api-server/src/modules/exam-engine/__tests__/design-patterns.verification.test.ts",
+            "apps/api-server/src/modules/hierarchy/__tests__/hierarchy-sync.service.test.ts",
+            "apps/api-server/src/modules/quiz-engine/__tests__/quiz.engine.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.branches2.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.branches3.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.branches4.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.branches5.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.branches6.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.branches7.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.empty.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.emptydata.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.expert.time.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report-interpreter.tail.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report.engine.branch.full.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report.engine.branch.gaps.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report.engine.branches3.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report.engine.factory.branch.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report.engine.heatmap.actions.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report.engine.tutor.branch.test.ts",
+            "apps/api-server/src/modules/report-engine/__tests__/report.interpreter.branch.test.ts",
+            "apps/api-server/src/modules/scoring-engine/strategies/__tests__/scoring.strategies.test.ts",
+            "apps/api-server/src/modules/scoring-engine/__tests__/scoring.dimensions.test.ts",
+            "apps/api-server/src/modules/scoring-engine/__tests__/scoring.engine.mapping.branch.test.ts",
+            "apps/api-server/src/modules/scoring-engine/__tests__/scoring.engine.test.ts",
+            "apps/api-server/src/modules/selection-engine/__tests__/selection.batching.test.ts",
+            "apps/api-server/src/modules/selection-engine/__tests__/selection.compose.mixed.test.ts",
+            "apps/api-server/src/modules/selection-engine/__tests__/selection.phase3.test.ts",
+            "apps/api-server/src/modules/selection-engine/__tests__/selection.rules.test.ts",
+            "apps/api-server/src/modules/selection-engine/__tests__/selection.service.branch.test.ts",
+            "apps/api-server/src/modules/selection-engine/__tests__/selection.service.entry.test.ts",
+            "apps/api-server/src/modules/selection-engine/__tests__/selection.service.guard2.test.ts",
+            "apps/api-server/src/modules/selection-engine/__tests__/selection.service.tracer.test.ts",
+            "apps/api-server/src/modules/system/__tests__/system.branch.test.ts",
+            "apps/api-server/src/modules/system/__tests__/system.report.coverage.cleanup.test.ts",
+            "apps/api-server/src/modules/__tests__/admin.hierarchy.test.ts",
+            "apps/api-server/src/modules/__tests__/coverage.core.test.ts",
+            "apps/api-server/src/repositories/implementations/__tests__/admin-field-selection.test.ts",
+            "apps/api-server/src/services/exams/__tests__/exam-blueprint.service.test.ts",
+            "apps/api-server/src/services/exams/__tests__/exam-blueprint.service.tracer.test.ts",
+            "apps/api-server/src/services/reports/__tests__/report.materializer.subtopic.test.ts",
+            "apps/api-server/src/services/reports/__tests__/report.materializer.tail.test.ts",
+            "apps/api-server/src/services/reports/__tests__/ReportMaterializer.branch.test.ts",
+            "apps/api-server/src/services/reports/__tests__/reportMaterializer.branch2.test.ts",
+            "apps/api-server/src/__tests__/dto.test.ts",
+            "apps/faculty-app/src/app/api/faculty/__tests__/routes.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/assignments/draft/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/assignments/publish/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/versions/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/[id]/publish/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/[id]/restore/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/[id]/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/content/__tests__/route.test.ts",
+            "apps/realtutorialhub-admin/src/app/api/tutorial/hierarchy/__tests__/routes.test.ts",
+            "apps/realtutorialhub-admin/src/lib/factory/__tests__/prompt-service.test.ts",
+            "apps/realtutorialhub-admin/src/lib/__tests__/tutorial-content-api.test.ts",
+            "apps/realtutorialhub-admin/tests/e2e/question-bank-pagination.spec.ts",
+            "apps/realtutorialhub-quiz/src/components/quiz/__tests__/EnterpriseQuestionView.test.tsx",
+            "apps/realtutorialhub-quiz/src/hooks/__tests__/useExamInterfaceLogic.test.ts",
+            "apps/realtutorialhub-quiz/src/__tests__/components/InsightVectorTab.test.tsx",
+            "apps/realtutorialhub-quiz/src/__tests__/components/PrecisionGuidanceCard.test.tsx",
+            "apps/realtutorialhub-quiz/src/__tests__/quiz-store.test.ts",
+            "apps/realtutorialhub-web/src/app/(learning)/learn/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/assignments/__tests__/page.test.ts",
+            "apps/realtutorialhub-web/src/app/(learning)/learn/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/__tests__/page.test.ts",
+            "apps/realtutorialhub-web/src/app/api/ai-tutor/query/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/assignments/[subtopicId]/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/app/api/tutorial/sections/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/app/api/workers/index-content-vector/__tests__/route.test.ts",
+            "apps/realtutorialhub-web/src/components/content/__tests__/AITutorBlock.test.tsx",
+            "apps/realtutorialhub-web/src/components/content/__tests__/ProjectSubmissionPanel.test.tsx",
+            "apps/realtutorialhub-web/src/components/tutorial/__tests__/AiTutorDrawer.test.tsx",
+            "apps/realtutorialhub-web/src/lib/__tests__/ai-tutor-vector.test.ts",
+            "apps/realtutorialhub-web/src/lib/__tests__/assignment.test.ts",
+            "apps/realtutorialhub-web/src/lib/__tests__/tutorial-content-api.test.ts",
+            "apps/realtutorialhub-web/src/server/__tests__/assignment.service.test.ts",
+            "apps/realtutorialhub-web/src/server/__tests__/project.service.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.integration.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.test.ts",
+            "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/composer-persistence.integration.test.ts",
+            "packages/db-tutorial/src/repositories/__tests__/assignment.repository.test.ts",
+            "packages/db-tutorial/src/repositories/__tests__/project-submission.repository.test.ts",
+            "packages/db-tutorial/src/repositories/__tests__/project.repository.test.ts",
+            "packages/db-tutorial/src/repositories/__tests__/tutorial-content.repository.test.ts",
+            "packages/db-tutorial/src/repositories/__tests__/tutorial-section.repository.test.ts",
+            "packages/db-tutorial/src/services/__tests__/phase-1h-definition-d1-persistence.integration.test.ts",
+            "packages/db-tutorial/src/services/__tests__/phase-2e-append-block.test.ts",
+            "packages/db-tutorial/src/services/__tests__/suggestion-application.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/suggestion-verification.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/tutorial-composer.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/tutorial-delivery.service.test.ts",
+            "packages/db-tutorial/src/services/__tests__/tutorial-import.service.test.ts",
+            "packages/db-tutorial/src/__tests__/database-enum-validation.test.ts",
+            "packages/db-tutorial/src/__tests__/vector.service.test.ts",
+            "packages/types/src/tutorial-composer/__tests__/apply-suggestion-contracts.test.ts",
+            "services/skillhubcore-service/src/modules/hierarchy/__tests__/hierarchy.routes.test.ts",
+            "services/skillhubcore-service/src/modules/hierarchy/__tests__/hierarchy.service.test.ts",
+            "tests/chaos.spec.ts"
+          ]
+        }
+      },
+      "all_classified": true
+    },
+    "section_type_enum": {
+      "total_usage": 4,
+      "usage": [
+        {
+          "table": "ai_section_generation_jobs",
+          "column": "section_type",
+          "nullable": false
+        },
+        {
+          "table": "prompt_templates",
+          "column": "section_type",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_sections",
+          "column": "section_type",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_sections_layman_backup_20260815",
+          "column": "section_type",
+          "nullable": true
+        }
+      ],
+      "classification": {
+        "legacy_drop": [
+          {
+            "location": "tutorial_sections.section_type",
+            "reason": "Legacy tutorial sections table - scheduled for column removal",
+            "action": "REMOVE_COLUMN"
+          }
+        ],
+        "backup_tables": [
+          {
+            "location": "tutorial_sections_layman_backup_20260815.section_type",
+            "reason": "Backup table - will be dropped with parent table",
+            "action": "DROP_WITH_TABLE"
+          }
+        ],
+        "ai_generation": [
+          {
+            "location": "ai_section_generation_jobs.section_type",
+            "reason": "AI generation system - requires investigation",
+            "action": "INVESTIGATE"
+          }
+        ],
+        "prompt_templates": [
+          {
+            "location": "prompt_templates.section_type",
+            "reason": "Prompt template system - requires investigation",
+            "action": "INVESTIGATE"
+          }
+        ],
+        "other": []
+      },
+      "can_drop": false,
+      "recommendation": "KEEP_ENUM_INVESTIGATE_NON_LEGACY_USAGE",
+      "requires_investigation": true
+    },
+    "subsection_type_enum": {
+      "total_usage": 2,
+      "usage": [
+        {
+          "table": "prompt_templates",
+          "column": "subsection_type",
+          "nullable": true
+        },
+        {
+          "table": "tutorial_subsections",
+          "column": "subsection_type",
+          "nullable": false
+        }
+      ],
+      "classification": {
+        "legacy_drop": [
+          {
+            "location": "tutorial_subsections.subsection_type",
+            "reason": "Legacy tutorial subsections table - scheduled for table drop",
+            "action": "DROP_WITH_TABLE"
+          }
+        ],
+        "prompt_templates": [
+          {
+            "location": "prompt_templates.subsection_type",
+            "reason": "Prompt template system - requires investigation",
+            "action": "INVESTIGATE"
+          }
+        ],
+        "other": []
+      },
+      "can_drop": false,
+      "recommendation": "KEEP_ENUM_INVESTIGATE_PROMPT_TEMPLATES",
+      "requires_investigation": true
+    },
+    "tutorial_difficulty_enum": {
+      "total_usage": 10,
+      "usage": [
+        {
+          "table": "ai_generation_orchestration",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "ai_section_generation_jobs",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "assignment_progress",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "content_generation_jobs",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_assignments",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_content",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_project_submissions",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_sections",
+          "column": "difficulty",
+          "nullable": false
+        },
+        {
+          "table": "tutorial_sections_layman_backup_20260815",
+          "column": "difficulty",
+          "nullable": true
+        },
+        {
+          "table": "tutorial_video_links",
+          "column": "assignment_difficulty",
+          "nullable": true
+        }
+      ],
+      "classification": {
+        "tutorial_drop": [
+          {
+            "location": "tutorial_content.difficulty",
+            "reason": "Legacy tutorial table - scheduled for column/table removal",
+            "action": "REMOVE_COLUMN_OR_DROP_TABLE"
+          },
+          {
+            "location": "tutorial_sections.difficulty",
+            "reason": "Legacy tutorial table - scheduled for column/table removal",
+            "action": "REMOVE_COLUMN_OR_DROP_TABLE"
+          }
+        ],
+        "assessment_keep": [
+          {
+            "location": "assignment_progress.difficulty",
+            "reason": "Assessment domain - legitimate use of difficulty",
+            "action": "KEEP"
+          },
+          {
+            "location": "tutorial_assignments.difficulty",
+            "reason": "Assessment domain - legitimate use of difficulty",
+            "action": "KEEP"
+          },
+          {
+            "location": "tutorial_project_submissions.difficulty",
+            "reason": "Assessment domain - legitimate use of difficulty",
+            "action": "KEEP"
+          }
+        ],
+        "ai_generation_keep": [
+          {
+            "location": "ai_generation_orchestration.difficulty",
+            "reason": "AI generation system - legitimate use of difficulty",
+            "action": "KEEP"
+          },
+          {
+            "location": "ai_section_generation_jobs.difficulty",
+            "reason": "AI generation system - legitimate use of difficulty",
+            "action": "KEEP"
+          },
+          {
+            "location": "content_generation_jobs.difficulty",
+            "reason": "AI generation system - legitimate use of difficulty",
+            "action": "KEEP"
+          }
+        ],
+        "backup_tables": [
+          {
+            "location": "tutorial_sections_layman_backup_20260815.difficulty",
+            "reason": "Backup table - will be dropped",
+            "action": "DROP_WITH_TABLE"
+          }
+        ],
+        "other": [
+          {
+            "location": "tutorial_video_links.assignment_difficulty",
+            "reason": "Unknown usage",
+            "action": "INVESTIGATE"
+          }
+        ]
+      },
+      "can_drop": false,
+      "recommendation": "KEEP_ENUM_REMOVE_TUTORIAL_COLUMNS_ONLY",
+      "requires_investigation": false
+    }
+  },
+  "executive_summary": {
+    "phase_a_status": "COMPLETE",
+    "legacy_tables_audited": 24,
+    "legacy_tables_with_data": 0,
+    "protected_tutorial_data_rows": 0,
+    "fk_dependencies_classified": true,
+    "database_objects_classified": true,
+    "typescript_references_classified": true,
+    "api_references_classified": true,
+    "delivery_references_classified": true,
+    "cache_references_classified": true,
+    "vector_references_classified": true,
+    "test_references_classified": true,
+    "enum_decisions": {
+      "tutorial_difficulty": {
+        "decision": "KEEP",
+        "reason": "Used by assessments and AI generation",
+        "action": "Remove tutorial_sections.difficulty and tutorial_content.difficulty columns only"
+      },
+      "section_type": {
+        "decision": "KEEP",
+        "reason": "Used by AI generation and prompt templates - requires investigation",
+        "action": "Remove tutorial_sections.section_type, investigate ai_section_generation_jobs and prompt_templates"
+      },
+      "subsection_type": {
+        "decision": "KEEP",
+        "reason": "Used by prompt_templates - requires investigation",
+        "action": "Drop tutorial_subsections table, investigate prompt_templates.subsection_type"
+      }
+    },
+    "additional_legacy_tables": [
+      "code_interactions",
+      "content_deployments",
+      "practice_test_answers",
+      "quiz_answers",
+      "section_completions",
+      "tutorial_learning_metrics",
+      "visual_interactions",
+      "tutorial_subsections"
+    ],
+    "all_additional_tables_classified": true,
+    "safe_for_phase_b": true,
+    "requires_investigation": false,
+    "investigation_items": [
+      "section_type enum used by ai_section_generation_jobs and prompt_templates - investigate usage",
+      "subsection_type enum used by prompt_templates - investigate usage"
+    ]
+  }
+}

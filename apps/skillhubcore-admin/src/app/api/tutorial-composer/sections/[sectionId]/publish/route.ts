@@ -1,14 +1,14 @@
 /**
- * Tutorial Composer API - Publish Section
- * NEW Composer API routes (clean separation from legacy ContentManager)
+ * Tutorial Composer API - Publish Tutorial (V2)
+ * V2 API using (subtopicId, brandId) identity
  * 
- * POST /api/tutorial-composer/sections/:sectionId/publish - Publish section
+ * POST /api/tutorial-composer/sections/:sectionId/publish - Publish tutorial
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  PublishTutorialSectionRequestSchema,
-  TutorialSectionResponseSchema,
+  PublishTutorialRequestSchema,
+  TutorialResponseSchema,
   type ApiErrorCode,
   type ValidationErrorDetail,
 } from '@quiz/types';
@@ -88,7 +88,7 @@ function getAuthenticatedContext(_request: NextRequest): TutorialComposerService
 
 /**
  * POST /api/tutorial-composer/sections/:sectionId/publish
- * Publish tutorial section
+ * Publish tutorial (V2)
  */
 export async function POST(
   request: NextRequest,
@@ -104,24 +104,24 @@ export async function POST(
     }
     const { user } = authResult;
 
-    // Step 2: Fetch existing section to check permissions
-    const existingSection = await tutorialComposerService.getSection(sectionId);
+    // Step 2: Fetch existing tutorial to check permissions
+    const existingTutorial = await tutorialComposerService.getTutorial(sectionId);
 
     // Step 3: Authorize subtopic access
-    const subtopicAuthError = requireSubtopicAccess(user, existingSection.subtopicId);
+    const subtopicAuthError = requireSubtopicAccess(user, existingTutorial.subtopicId);
     if (subtopicAuthError) {
       return createAuthErrorResponse(subtopicAuthError);
     }
 
     // Step 4: Authorize brand access
-    const brandAuthError = requireBrandAccess(user, existingSection.brandId);
+    const brandAuthError = requireBrandAccess(user, existingTutorial.brandId);
     if (brandAuthError) {
       return createAuthErrorResponse(brandAuthError);
     }
 
     // Step 5: Parse and validate request body (empty body expected)
     const body = await request.json().catch(() => ({}));
-    const parseResult = PublishTutorialSectionRequestSchema.safeParse(body);
+    const parseResult = PublishTutorialRequestSchema.safeParse(body);
     
     if (!parseResult.success) {
       return errorResponse('VALIDATION_ERROR', 'Invalid request data', 400);
@@ -132,39 +132,49 @@ export async function POST(
       userId: user.userId,
     };
 
-    // Step 7: Publish section via service
-    const section = await tutorialComposerService.publishSection(
+    // Step 7: Publish tutorial via V2 service
+    const tutorial = await tutorialComposerService.publishTutorial(
       sectionId,
       context
     );
 
     // Step 8: Invalidate cache (CRITICAL for publish - learners must see new content)
-    invalidateTutorialDeliveryCache(existingSection.subtopicId).catch((error) => {
+    invalidateTutorialDeliveryCache(existingTutorial.subtopicId).catch((error) => {
       console.error('[Tutorial Composer] CRITICAL: Cache invalidation failed after publish', {
-        subtopicId: existingSection.subtopicId,
+        subtopicId: existingTutorial.subtopicId,
         sectionId,
         error,
       });
     });
 
-    // Step 9: Format response
-    const response = TutorialSectionResponseSchema.parse({
-      id: section.id,
-      subtopicId: section.subtopicId,
-      sectionType: section.sectionType,
-      difficulty: section.difficulty,
-      orderIndex: section.orderIndex,
-      content: section.content,
-      version: section.version,
-      language: section.language,
-      status: section.status,
-      brandId: section.brandId,
-      generatedByAi: section.generatedByAi,
-      aiModelUsed: section.aiModelUsed,
-      qualityScore: section.qualityScore,
-      createdAt: section.createdAt.toISOString(),
-      updatedAt: section.updatedAt.toISOString(),
-      publishedAt: section.publishedAt?.toISOString() || null,
+    // Step 9: Format V2 response
+    const response = TutorialResponseSchema.parse({
+      id: tutorial.id,
+      subtopicId: tutorial.subtopicId,
+      brandId: tutorial.brandId,
+      orderIndex: tutorial.orderIndex,
+      content: tutorial.content,
+      version: tutorial.version,
+      language: tutorial.language,
+      status: tutorial.status,
+      generatedByAi: tutorial.generatedByAi,
+      aiModelUsed: tutorial.aiModelUsed,
+      generationJobId: tutorial.generationJobId,
+      qualityScore: tutorial.qualityScore,
+      hallucinationScore: tutorial.hallucinationScore,
+      regenerationCount: tutorial.regenerationCount,
+      approvedBy: tutorial.approvedBy,
+      approvedAt: tutorial.approvedAt?.toISOString() || null,
+      rejectionReason: tutorial.rejectionReason,
+      promptTemplateId: tutorial.promptTemplateId,
+      educationalArchitectureId: tutorial.educationalArchitectureId,
+      uiArchitectureId: tutorial.uiArchitectureId,
+      brandVisibility: tutorial.brandVisibility,
+      brandCustomizations: tutorial.brandCustomizations,
+      createdAt: tutorial.createdAt.toISOString(),
+      updatedAt: tutorial.updatedAt.toISOString(),
+      publishedAt: tutorial.publishedAt?.toISOString() || null,
+      deletedAt: tutorial.deletedAt?.toISOString() || null,
     });
 
     return NextResponse.json({ data: response });
