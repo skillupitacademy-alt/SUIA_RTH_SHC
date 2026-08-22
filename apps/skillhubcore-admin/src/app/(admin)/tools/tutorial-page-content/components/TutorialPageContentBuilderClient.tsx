@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Bot,
   Check,
@@ -495,6 +495,10 @@ export function TutorialPageContentBuilderClient() {
   // Hydration state
   const [isLoadingDocument, setIsLoadingDocument] = useState(false);
   const [loadedSectionId, setLoadedSectionId] = useState<string | null>(null);
+  
+  // Track unsaved local changes to prevent async hydration from overwriting user edits
+  // This protects against race conditions where user adds/removes blocks while fetch is pending
+  const hasUnsavedLocalChangesRef = useRef(false);
 
   useEffect(() => {
     fetch('/api/tutorial-left-sidebar/hierarchy')
@@ -515,6 +519,7 @@ export function TutorialPageContentBuilderClient() {
       setDocumentBlocks([]);
       setLoadedSectionId(null);
       setIsLoadingDocument(false);
+      hasUnsavedLocalChangesRef.current = false; // Clear dirty flag on reset
       return;
     }
 
@@ -595,6 +600,7 @@ export function TutorialPageContentBuilderClient() {
         sourceContent,
       };
 
+      hasUnsavedLocalChangesRef.current = true;
       setDocumentBlocks((prev) => [...prev, newInstance]);
       setPreviewMode('document');
       setMessage(`Appended new block instance: ${selectedVersion.code} (${title})`);
@@ -607,6 +613,7 @@ export function TutorialPageContentBuilderClient() {
    * Remove a block instance from the local list
    */
   function handleRemoveBlockInstance(id: string) {
+    hasUnsavedLocalChangesRef.current = true;
     setDocumentBlocks((prev) => prev.filter((b) => b.id !== id));
     setMessage('Block instance removed from document.');
   }
@@ -669,8 +676,19 @@ export function TutorialPageContentBuilderClient() {
 
       const instances = tutorialBlocksToInstances(document.blocks);
 
+      // RACE PROTECTION: Do not overwrite user's unsaved local changes
+      // If user added/removed blocks while this fetch was pending, preserve their work
+      if (hasUnsavedLocalChangesRef.current) {
+        setMessage(
+          `Cannot load: You have unsaved local changes. Save or discard changes first. (Server has ${instances.length} blocks)`
+        );
+        setIsLoadingDocument(false);
+        return;
+      }
+
       setDocumentBlocks(instances);
       setLoadedSectionId(section.id);
+      hasUnsavedLocalChangesRef.current = false; // Fresh from server = clean state
 
       setMessage(
         `Loaded existing tutorial with ${instances.length} block ${
@@ -894,6 +912,9 @@ export function TutorialPageContentBuilderClient() {
       } else {
         setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} successfully as ${status}!`);
       }
+      
+      // Clear dirty flag after successful save
+      hasUnsavedLocalChangesRef.current = false;
       
       // Update loadedSectionId if we just created a new section
       if (!existingTutorial && result.data?.id) {
