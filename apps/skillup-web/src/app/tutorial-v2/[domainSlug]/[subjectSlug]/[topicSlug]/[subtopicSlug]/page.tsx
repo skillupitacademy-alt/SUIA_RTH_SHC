@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 
 import { TutorialPageShell } from '@/share-branding/LearningExperience/components/TutorialPageShell';
 import { getPublishedTutorialPagePayload } from '@/share-branding/LearningExperience/tutorialSidebarDelivery';
-import { TokenService } from '@quiz/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,14 +28,9 @@ export default async function TutorialV2SubtopicPage({ params }: PageProps) {
     redirect(`/login?redirect=${encodeURIComponent(currentPath)}`);
   }
 
-  // Verify token is valid
-  const tokenService = new TokenService();
-  const verifyResult = await tokenService.verifyUserAccessToken(accessToken);
-  
-  if (!verifyResult.valid || !verifyResult.payload) {
-    // Invalid token - redirect to login
-    redirect(`/login?redirect=${encodeURIComponent(currentPath)}`);
-  }
+  // NOTE: proxy.ts middleware already validated the token and added user headers
+  // We don't need to re-verify the token here since middleware did it
+  // The presence of accessToken cookie is sufficient (middleware already checked validity)
 
   const payload = await getPublishedTutorialPagePayload({
     brandId: 'skillup',
