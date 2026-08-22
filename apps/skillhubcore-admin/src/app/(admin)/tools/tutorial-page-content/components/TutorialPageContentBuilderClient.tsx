@@ -503,11 +503,12 @@ export function TutorialPageContentBuilderClient() {
   // Check for duplicate IDs (React reconciliation issue)
   useEffect(() => {
     const ids = documentBlocks.map((block) => block.id);
-    const duplicateIds = ids.filter(
-      (id, index) => ids.indexOf(id) !== index
-    );
-
+    const uniqueIds = new Set(ids);
+    
     // Duplicate IDs detected - validation will fail at API level
+    if (uniqueIds.size !== ids.length) {
+      // Duplicates exist - let API validation handle it
+    }
   }, [documentBlocks]);
 
   useEffect(() => {
