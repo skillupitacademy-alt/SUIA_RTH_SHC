@@ -8,6 +8,8 @@ Comprehensive guides for testing practices in the Quiz Platform monorepo.
 
 > **No meaningful backend/API/database feature is considered deployment-ready until its Node.js E2E integration test passes locally, followed by type-check and build.**
 
+**📋 Read the full standard:** **[PROJECT-TESTING-STANDARD.md](./PROJECT-TESTING-STANDARD.md)** ← **MANDATORY**
+
 ### Standard Workflow
 
 ```
@@ -15,6 +17,8 @@ Code change → Type-check → Start server → Run E2E → All pass → Build �
 ```
 
 **Technology:** Node.js + Fetch API (real HTTP requests, not browser automation)
+
+**Principle:** Test actual business lifecycle, not blind CRUD
 
 ---
 
@@ -24,6 +28,7 @@ Code change → Type-check → Start server → Run E2E → All pass → Build �
 
 | Document | Purpose | When to Use |
 |----------|---------|-------------|
+| **[🔴 PROJECT TESTING STANDARD](./PROJECT-TESTING-STANDARD.md)** | **MANDATORY policy document** | **READ THIS FIRST** |
 | **[E2E Testing Guide](./e2e-testing-guide.md)** | Complete guide with templates and best practices | Writing new E2E tests, onboarding |
 | **[Quick Reference](./e2e-quick-reference.md)** | Fast lookup for common commands and errors | Daily development, troubleshooting |
 | **[Tutorial Composer Summary](./tutorial-composer-e2e-summary.md)** | Real-world example with complete problem→solution | Reference implementation, learning |
