@@ -500,21 +500,8 @@ export function TutorialPageContentBuilderClient() {
   // This protects against race conditions where user adds/removes blocks while fetch is pending
   const hasUnsavedLocalChangesRef = useRef(false);
 
-  // DIAGNOSTIC: Track documentBlocks state changes
+  // Check for duplicate IDs (React reconciliation issue)
   useEffect(() => {
-    console.log('[TutorialComposer] documentBlocks STATE UPDATED:', {
-      length: documentBlocks.length,
-      blocks: documentBlocks.map((block, index) => ({
-        index,
-        id: block.id,
-        type: block.type,
-        version: block.version,
-        versionCode: block.versionCode,
-        title: block.title,
-      })),
-    });
-
-    // Check for duplicate IDs (React reconciliation issue)
     const ids = documentBlocks.map((block) => block.id);
     const duplicateIds = ids.filter(
       (id, index) => ids.indexOf(id) !== index
@@ -527,21 +514,6 @@ export function TutorialPageContentBuilderClient() {
       );
     }
   }, [documentBlocks]);
-
-  // DIAGNOSTIC: Track preview state
-  useEffect(() => {
-    console.log('[TutorialComposer] PREVIEW STATE:', {
-      previewMode,
-      documentBlocksLength: documentBlocks.length,
-      blocks: documentBlocks.map((block, index) => ({
-        index,
-        id: block.id,
-        type: block.type,
-        versionCode: block.versionCode,
-        title: block.title,
-      })),
-    });
-  }, [documentBlocks, previewMode]);
 
   useEffect(() => {
     fetch('/api/tutorial-left-sidebar/hierarchy')
@@ -720,25 +692,6 @@ export function TutorialPageContentBuilderClient() {
 
       const instances = tutorialBlocksToInstances(document.blocks);
 
-      // DEBUG: Log block count at each stage
-      console.log('[TutorialComposer] Hydration Debug:', {
-        serverBlockCount: document.blocks.length,
-        instancesCount: instances.length,
-        serverBlockTypes: document.blocks.map(b => b.type),
-        instanceTypes: instances.map(i => i.type),
-        hasUnsavedChanges: hasUnsavedLocalChangesRef.current,
-      });
-
-      // DEBUG: Table view of server blocks
-      console.table(
-        document.blocks.map((block, index) => ({
-          index,
-          id: block.id,
-          type: block.type,
-          version: (block as any).version || 'N/A',
-        }))
-      );
-
       // RACE PROTECTION: Do not overwrite user's unsaved local changes
       // If user added/removed blocks while this fetch was pending, preserve their work
       if (hasUnsavedLocalChangesRef.current) {
@@ -750,12 +703,6 @@ export function TutorialPageContentBuilderClient() {
       }
 
       setDocumentBlocks(instances);
-      
-      // DEBUG: Verify state was set correctly
-      console.log('[TutorialComposer] After setDocumentBlocks:', {
-        instancesLength: instances.length,
-        instances: instances.map(i => ({ id: i.id, type: i.type, title: i.title })),
-      });
       
       setLoadedSectionId(section.id);
       hasUnsavedLocalChangesRef.current = false; // Fresh from server = clean state
@@ -1327,7 +1274,7 @@ export function TutorialPageContentBuilderClient() {
                     className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => save('draft')}
                   >
-                    <Save className="h-3.5 w-3.5" /> Save Draft
+                    <Save className="h-3.5 w-3.5" /> Save
                   </button>
                   <button
                     type="button"

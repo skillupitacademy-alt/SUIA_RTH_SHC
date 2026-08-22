@@ -15,6 +15,7 @@ import type { TutorialDocument } from '@quiz/types';
 import { db } from '../db';
 import { tutorialSections, type TutorialSection, type NewTutorialSection } from '../schema/tutorial-sections';
 import { tutorialSubtopics } from '../schema/tutorial-subtopics';
+import { tutorialContentVersions } from '../schema/tutorial-content-versions';
 import { TutorialRepositoryBase } from './base.repository';
 import type { TutorialDbClientLike } from '@quiz/types';
 

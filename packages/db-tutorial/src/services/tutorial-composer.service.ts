@@ -410,10 +410,10 @@ export class TutorialComposerService {
       ]);
     }
 
-    // Step 3: Validate status transition
-    if (tutorial.status === 'deployed') {
-      throw new InvalidStatusTransitionError(tutorial.status, 'deployed');
-    }
+    // Step 3: Allow republishing
+    // If already deployed, this is a deliberate republish operation
+    // The repository will update publishedAt timestamp
+    // No status transition error for deployed → deployed
 
     // Step 4: Publish
     const publishedTutorial = await this.repository.publishTutorial(tutorialId);
