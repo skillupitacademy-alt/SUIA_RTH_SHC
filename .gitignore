@@ -60,6 +60,7 @@ scripts/test-*.js
 !scripts/test-auth-resilience.js
 !scripts/test-rbac-live.js
 scripts/audit-*.js
+scripts/audit-*.ts
 scripts/compare-*.js
 scripts/debug-*.js
 scripts/verify-*.js
@@ -78,6 +79,23 @@ tokens.json
 rbac-test-config.json
 get-tokens.ps1
 *.md.backup
+
+# Audit directory scripts and investigation artifacts
+scripts/audit/audit-*.ts
+scripts/audit/audit-*.js
+scripts/audit/c1-*.ts
+scripts/audit/c1-*.mjs
+scripts/audit/forensic-*.ts
+scripts/audit/tutorial-v2-*.ts
+scripts/audit/*-RESULTS.ts
+scripts/audit/C1-*.md
+scripts/audit/C1-*.txt
+scripts/audit/README-*.md
+scripts/audit/FORENSIC_*.ts
+scripts/run-tutorial-*.ts
+
+# Keep only production audit scripts
+!scripts/audit/c1-018-implementation-tests.mjs
 
 # Documentation files (keep locally, don't commit)
 CANONICAL-*.md
