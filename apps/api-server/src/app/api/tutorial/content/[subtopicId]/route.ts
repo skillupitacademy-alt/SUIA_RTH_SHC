@@ -93,14 +93,35 @@ export async function GET(
       difficulty: difficulty || 'simple'
     });
 
-    if (!result.success) {
-      console.error('[Tutorial Content API] Content not found:', result.error);
+    // ✅ SECURITY: Brand authorization check
+    if (result.success && result.data) {
+      const tutorialBrand = result.data.brand;
+      const userBrand = brandId;
+
+      // Check brand access: allow if tutorial is shared, or brands match
+      if (tutorialBrand !== 'shared' && tutorialBrand !== userBrand) {
+        console.warn('[Tutorial Content API] Brand mismatch:', { userBrand, tutorialBrand });
+        return NextResponse.json(
+          { error: 'Access denied: Brand mismatch' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Continue with existing logic
+    const originalResult = result;
+
+    // Continue with existing logic
+    const originalResult = result;
+
+    if (!originalResult.success) {
+      console.error('[Tutorial Content API] Content not found:', originalResult.error);
       console.warn('[Tutorial Content API] This likely means tutorial_content table is empty for this subtopic');
       console.warn('[Tutorial Content API] Recommendation: Use /api/tutorial/sections/* which queries tutorial_sections table');
       
       return NextResponse.json(
         { 
-          error: result.error,
+          error: originalResult.error,
           _deprecation: 'This endpoint is deprecated. Use /api/tutorial/sections/* instead.',
           _recommendation: 'The tutorial_content table is incomplete. Use tutorial_sections system.'
         },
@@ -112,7 +133,7 @@ export async function GET(
 
     // Set cache headers with deprecation warning
     const response = NextResponse.json({ 
-      data: result.data,
+      data: originalResult.data,
       _deprecation: 'This endpoint is deprecated. Use /api/tutorial/sections/* instead.'
     });
     response.headers.set('Cache-Control', 'public, max-age=3600');
