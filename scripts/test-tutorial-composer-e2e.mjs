@@ -709,6 +709,85 @@ async function test10_validUUIDRegression() {
 }
 
 // ============================================================
+// TEST 11 - REPUBLISH DEPLOYED TUTORIAL
+// ============================================================
+
+async function test11_republishDeployedTutorial(tutorialId) {
+  const testName = 'Republish Deployed Tutorial';
+  log(`TEST 11: ${testName}`);
+  
+  try {
+    // First, update the deployed tutorial's content
+    const updatePayload = {
+      content: {
+        schemaVersion: 1,
+        blocks: [
+          {
+            id: crypto.randomUUID(),
+            type: 'definition',
+            version: 'D1',
+            content: {
+              ...JAVA_DEFINITION_PAYLOAD,
+              page: {
+                ...JAVA_DEFINITION_PAYLOAD.page,
+                title: 'Updated After Republish Test',
+              }
+            }
+          }
+        ]
+      }
+    };
+    
+    const updateResponse = await fetch(
+      `${BASE_URL}/api/tutorial-composer/sections/${tutorialId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Cookie': `accessToken=${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatePayload),
+      }
+    );
+    
+    assert(updateResponse.ok, testName, `Update failed: ${updateResponse.status}`);
+    log(`Tutorial updated after deployment`);
+    
+    // Now republish the already-deployed tutorial (this was previously failing)
+    const publishResponse = await fetch(
+      `${BASE_URL}/api/tutorial-composer/sections/${tutorialId}/publish`,
+      {
+        method: 'POST',
+        headers: {
+          'Cookie': `accessToken=${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    const result = await publishResponse.json();
+    
+    if (!publishResponse.ok) {
+      fail(testName, `Republish failed: HTTP ${publishResponse.status} - ${JSON.stringify(result.error)}`);
+      throw new Error(`Expected republish to succeed, got ${publishResponse.status}`);
+    }
+    
+    assert(result.data.status === 'deployed', testName, `Expected status 'deployed', got '${result.data.status}'`);
+    
+    log(`Tutorial republished successfully:`, {
+      id: result.data.id,
+      status: result.data.status,
+      publishedAt: result.data.publishedAt,
+    });
+    
+    pass(testName);
+  } catch (error) {
+    fail(testName, error.message);
+    throw error;
+  }
+}
+
+// ============================================================
 // MAIN TEST RUNNER
 // ============================================================
 
@@ -754,6 +833,9 @@ async function main() {
     console.log();
     
     await test10_validUUIDRegression();
+    console.log();
+    
+    await test11_republishDeployedTutorial(tutorialId);
     console.log();
     
   } catch (error) {

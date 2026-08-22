@@ -1027,7 +1027,18 @@ export function TutorialPageContentBuilderClient() {
           throw new Error(publishError.error?.message || 'Publish failed');
         }
 
-        setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} and published successfully! Status: ${status}`);
+        // Generate public URL from hierarchy slugs
+        const domain = hierarchy.domains.find((d) => d.id === form.domainId);
+        const subject = subjects.find((s) => s.id === form.subjectId);
+        const topic = topics.find((t) => t.id === form.topicId);
+        const subtopic = subtopics.find((st) => st.id === form.subtopicId);
+        
+        if (domain && subject && topic && subtopic) {
+          const publicUrl = `https://user.skillupitacademy.com/tutorial-v2/${domain.slug}/${subject.slug}/${topic.slug}/${subtopic.slug}`;
+          setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} and published successfully!\n\nPublic URL: ${publicUrl}`);
+        } else {
+          setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} and published successfully!`);
+        }
       } else {
         setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} successfully as ${status}!`);
       }
