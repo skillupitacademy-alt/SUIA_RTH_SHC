@@ -246,9 +246,25 @@ export class TutorialComposerService {
     nextCursor: string | null;
     total: number;
   }> {
+    // Resolve external subtopic ID to internal if provided
+    let internalSubtopicId = filters.subtopicId;
+    if (filters.subtopicId) {
+      const resolved = await this.repository.resolveSubtopicId(filters.subtopicId);
+      if (!resolved) {
+        // Subtopic doesn't exist in tutorial DB - return empty result
+        return {
+          tutorials: [],
+          hasMore: false,
+          nextCursor: null,
+          total: 0,
+        };
+      }
+      internalSubtopicId = resolved;
+    }
+
     const [queryResult, total] = await Promise.all([
-      this.repository.queryTutorials(filters, limit, cursor),
-      this.repository.countTutorials(filters),
+      this.repository.queryTutorials({ ...filters, subtopicId: internalSubtopicId }, limit, cursor),
+      this.repository.countTutorials({ ...filters, subtopicId: internalSubtopicId }),
     ]);
 
     return {

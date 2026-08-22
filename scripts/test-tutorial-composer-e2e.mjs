@@ -168,6 +168,23 @@ async function test02_validateSubtopic() {
     log(`Subtopic exists and is accessible`);
     log(`Existing tutorials: ${result.data?.length || 0}`);
     
+    // Clean up existing tutorials for this test
+    if (result.data && result.data.length > 0) {
+      log(`\nCleaning up ${result.data.length} existing tutorial(s)...`);
+      for (const tutorial of result.data) {
+        const deleteResponse = await fetch(
+          `${BASE_URL}/api/tutorial-composer/sections/${tutorial.id}`,
+          {
+            method: 'DELETE',
+            headers: { 'Cookie': `accessToken=${adminToken}` },
+          }
+        );
+        if (deleteResponse.ok) {
+          log(`✅ Deleted tutorial: ${tutorial.id}`);
+        }
+      }
+    }
+    
     pass(testName);
   } catch (error) {
     fail(testName, error.message);
