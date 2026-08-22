@@ -1,4 +1,5 @@
 import type { BrandTutorialTheme, TutorialNavigationTree, TutorialSidebarBrandId } from './tutorial-sidebar.types';
+import type { TutorialBlock } from './tutorial-rich-document/blocks';
 
 export type TutorialPageContentType = 'definition' | 'code' | 'summary';
 export type TutorialContentSourceFormat = 'json' | 'markdown';
@@ -164,11 +165,17 @@ export interface TutorialPagePayload {
     topic: { id: string; name: string; slug: string };
     subtopic: { id: string; name: string; slug: string };
   };
-  content: Partial<{
-    definition: TutorialDefinitionPayload;
-    code: TutorialCodePayload;
-    summary: TutorialSummaryPayload;
-  }>;
+  content: {
+    // V2 Architecture: TutorialDocument.blocks[] preserved through delivery
+    blocks: TutorialBlock[];
+    // Legacy fields (deprecated, for backward compatibility only)
+    /** @deprecated Use blocks[] instead */
+    definition?: TutorialDefinitionPayload;
+    /** @deprecated Use blocks[] instead */
+    code?: TutorialCodePayload;
+    /** @deprecated Use blocks[] instead */
+    summary?: TutorialSummaryPayload;
+  };
   footer: {
     previous: TutorialFooterNavigationItem | null;
     next: TutorialFooterNavigationItem | null;

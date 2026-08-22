@@ -29,6 +29,8 @@ import type {
   TutorialSummaryPayload,
   TutorialDocument,
   TutorialBlock,
+  DefinitionD1AuthorContent,
+  CodeC1AuthorContent,
 } from '@quiz/types';
 
 type SourceFormat = 'json' | 'markdown';
@@ -68,23 +70,39 @@ export const SUPPORTED_BLOCKS: BlockTypeOption[] = [
     id: 'definition',
     label: 'Definition',
     versions: [
-      { id: 'v1', code: 'D1', label: 'D1 - Concept Definition', description: 'Authoritative definition with intuition, example & responsive key characteristics' },
-      { id: 'v2', code: 'D2', label: 'D2 - Deep Dive', description: 'Advanced conceptual breakdown and architectural mechanisms' },
+      {
+        id: 'v1',
+        code: 'D1',
+        label: 'D1 - Concept Definition',
+        description:
+          'Authoritative definition with intuition, example & responsive key characteristics',
+      },
     ],
   },
   {
     id: 'code',
     label: 'Code',
     versions: [
-      { id: 'v1', code: 'C1', label: 'C1 - Basic Example', description: 'Step-by-step code execution with memory model' },
-      { id: 'v2', code: 'C2', label: 'C2 - Advanced Pattern', description: 'Production-grade idioms and error handling' },
+      {
+        id: 'v1',
+        code: 'C1',
+        label: 'C1 - Basic Example',
+        description:
+          'Step-by-step code execution with memory model',
+      },
     ],
   },
   {
     id: 'summary',
     label: 'Summary',
     versions: [
-      { id: 'v1', code: 'S1', label: 'S1 - Revision Table', description: 'Quick revision table with key points, remember cards and takeaways' },
+      {
+        id: 'v1',
+        code: 'S1',
+        label: 'S1 - Revision Table',
+        description:
+          'Quick revision table with key points, remember cards and takeaways',
+      },
     ],
   },
 ];
@@ -335,6 +353,74 @@ function exampleForContentType(contentType: TutorialPageContentType) {
   return summaryExample;
 }
 
+/**
+ * Convert TutorialBlock[] → BlockInstance[]
+ * Hydrates the editor with existing tutorial_sections.content.blocks[]
+ */
+function tutorialBlocksToInstances(
+  blocks: TutorialBlock[]
+): BlockInstance[] {
+  return blocks.map((block) => {
+    let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload;
+    let sourceContent: string;
+
+    switch (block.type) {
+      case 'definition':
+        payload = block.content as unknown as TutorialDefinitionPayload;
+        sourceContent = JSON.stringify(payload, null, 2);
+
+        return {
+          id: block.id,
+          type: 'definition',
+          version: 'v1',
+          versionCode: 'D1',
+          title: extractBlockTitle(payload, 'definition'),
+          payload,
+          sourceFormat: 'json',
+          sourceContent,
+        };
+
+      case 'code':
+        payload = block.content as unknown as TutorialCodePayload;
+        sourceContent = JSON.stringify(payload, null, 2);
+
+        return {
+          id: block.id,
+          type: 'code',
+          version: 'v1',
+          versionCode: 'C1',
+          title: extractBlockTitle(payload, 'code'),
+          payload,
+          sourceFormat: 'json',
+          sourceContent,
+        };
+
+      case 'summary':
+        payload = block.content as unknown as TutorialSummaryPayload;
+        sourceContent = JSON.stringify(payload, null, 2);
+
+        return {
+          id: block.id,
+          type: 'summary',
+          version: 'v1',
+          versionCode: 'S1',
+          title: extractBlockTitle(payload, 'summary'),
+          payload,
+          sourceFormat: 'json',
+          sourceContent,
+        };
+
+      default: {
+        // Type narrowing: all other block types (heading, paragraph, etc.) are not yet supported
+        // in the GUI. When they are added, extend this switch.
+        throw new Error(
+          `Unsupported block type for editor: ${(block as TutorialBlock).type}`
+        );
+      }
+    }
+  });
+}
+
 function extractBlockTitle(payload: unknown, type: TutorialPageContentType): string {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic payload access requires any, type refinement tracked in backlog
   const p = payload as any;
@@ -403,19 +489,12 @@ export function TutorialPageContentBuilderClient() {
   const [message, setMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Document block instances collection
-  const [documentBlocks, setDocumentBlocks] = useState<BlockInstance[]>([
-    {
-      id: 'block-d1-init',
-      type: 'definition',
-      version: 'v1',
-      versionCode: 'D1',
-      title: 'What Is a Variable?',
-      payload: definitionExample,
-      sourceFormat: 'json',
-      sourceContent: JSON.stringify(definitionExample, null, 2),
-    },
-  ]);
+  // Document block instances collection (starts empty, hydrated on subtopic selection)
+  const [documentBlocks, setDocumentBlocks] = useState<BlockInstance[]>([]);
+  
+  // Hydration state
+  const [isLoadingDocument, setIsLoadingDocument] = useState(false);
+  const [loadedSectionId, setLoadedSectionId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/tutorial-left-sidebar/hierarchy')
@@ -429,6 +508,24 @@ export function TutorialPageContentBuilderClient() {
     setSourceContent(JSON.stringify(example, null, 2));
     setActiveBlockPreview(example);
   }, [form.blockType]);
+
+  // Hydrate existing tutorial when subtopic selection changes
+  useEffect(() => {
+    if (!form.subtopicId) {
+      setDocumentBlocks([]);
+      setLoadedSectionId(null);
+      setIsLoadingDocument(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    void loadExistingTutorial(form.subtopicId, controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, [form.subtopicId]);
 
   const subjects = useMemo(() => hierarchy.subjects.filter((item) => item.domainId === form.domainId), [hierarchy.subjects, form.domainId]);
   const topics = useMemo(() => hierarchy.topics.filter((item) => item.subjectId === form.subjectId), [hierarchy.topics, form.subjectId]);
@@ -514,33 +611,295 @@ export function TutorialPageContentBuilderClient() {
     setMessage('Block instance removed from document.');
   }
 
+  /**
+   * Load existing tutorial from tutorial_sections for selected subtopic
+   * Hydrates documentBlocks[] with existing content.blocks[]
+   * 
+   * @param subtopicId - The subtopic ID to load tutorial for
+   * @param signal - Optional AbortSignal for request cancellation
+   */
+  async function loadExistingTutorial(subtopicId: string, signal?: AbortSignal) {
+    if (!subtopicId) {
+      setDocumentBlocks([]);
+      setLoadedSectionId(null);
+      return;
+    }
+
+    setIsLoadingDocument(true);
+    setMessage('');
+
+    try {
+      const response = await fetch(
+        `/api/tutorial-composer/sections?subtopicId=${encodeURIComponent(
+          subtopicId
+        )}&brandId=${SHARED_BRAND_ID}&limit=1`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to load existing tutorial');
+      }
+
+      const result = await response.json();
+      const section = result.data?.[0];
+
+      if (!section) {
+        setDocumentBlocks([]);
+        setLoadedSectionId(null);
+        setMessage('No existing tutorial found. Ready to create a new document.');
+        return;
+      }
+
+      const document = section.content as TutorialDocument | undefined;
+
+      if (!document || !Array.isArray(document.blocks)) {
+        setDocumentBlocks([]);
+        setLoadedSectionId(section.id);
+        setMessage(
+          'Existing tutorial has no valid document blocks. Ready for editing.'
+        );
+        return;
+      }
+
+      const instances = tutorialBlocksToInstances(document.blocks);
+
+      setDocumentBlocks(instances);
+      setLoadedSectionId(section.id);
+
+      setMessage(
+        `Loaded existing tutorial with ${instances.length} block ${
+          instances.length === 1 ? 'instance' : 'instances'
+        }.`
+      );
+    } catch (error) {
+      // Ignore aborted requests (user changed subtopic selection)
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+
+      setDocumentBlocks([]);
+      setLoadedSectionId(null);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Failed to load existing tutorial.'
+      );
+    } finally {
+      // Only update loading state if request wasn't aborted
+      if (!signal?.aborted) {
+        setIsLoadingDocument(false);
+      }
+    }
+  }
+
+  /**
+   * Type-safe conversion: BlockInstance → TutorialBlock
+   * Enforces discriminated union types for each block type and version
+   * 
+   * Note: payload types are cast through `unknown` because the GUI's legacy
+   * TutorialDefinitionPayload/TutorialCodePayload types have slightly looser
+   * type constraints than the strict DefinitionD1AuthorContent types.
+   * Runtime validation occurs at the API boundary via Zod.
+   */
+  function toTutorialBlock(instance: BlockInstance): TutorialBlock {
+    switch (instance.type) {
+      case 'definition': {
+        if (instance.versionCode === 'D1') {
+          return {
+            id: instance.id,
+            type: 'definition',
+            version: 'D1',
+            content: instance.payload as unknown as DefinitionD1AuthorContent,
+          };
+        }
+
+        // D2 does not exist yet in the type system
+        throw new Error(
+          `Unsupported definition version: ${instance.versionCode}. Only D1 is currently supported.`
+        );
+      }
+
+      case 'code': {
+        if (instance.versionCode === 'C1') {
+          return {
+            id: instance.id,
+            type: 'code',
+            version: 'C1',
+            content: instance.payload as unknown as CodeC1AuthorContent,
+          };
+        }
+
+        // C2 does not exist yet in the type system
+        throw new Error(
+          `Unsupported code version: ${instance.versionCode}. Only C1 is currently supported.`
+        );
+      }
+
+      case 'summary': {
+        if (instance.versionCode === 'S1') {
+          // Summary block does NOT have a version field in the current type system
+          // Transform legacy TutorialSummaryPayload to SummaryBlock content structure
+          const summaryPayload = instance.payload as TutorialSummaryPayload;
+          
+          // Extract points from the legacy structure
+          const points: string[] = [];
+          
+          // Add summary text points if they exist
+          if (summaryPayload.summary) {
+            summaryPayload.summary.forEach(item => {
+              if (item.text) {
+                points.push(item.text);
+              }
+            });
+          }
+          
+          // Extract key points from revision table rows if they exist
+          if (summaryPayload.revisionTable?.rows) {
+            summaryPayload.revisionTable.rows.forEach((row) => {
+              if (row.keyPoint?.title) {
+                points.push(row.keyPoint.title);
+              }
+            });
+          }
+          
+          return {
+            id: instance.id,
+            type: 'summary',
+            content: {
+              title: summaryPayload.page?.title,
+              points: points.length > 0 ? points : ['Summary content'],
+            },
+          };
+        }
+
+        throw new Error(
+          `Unsupported summary version: ${instance.versionCode}`
+        );
+      }
+
+      default: {
+        const exhaustiveCheck: never = instance.type;
+        throw new Error(
+          `Unsupported tutorial block type: ${exhaustiveCheck}`
+        );
+      }
+    }
+  }
+
   async function save(status: 'draft' | 'published') {
     setIsSaving(true);
     setMessage('');
     try {
-      // Validate all blocks
-      const payload = parseSource(sourceFormat, sourceContent, form.blockType);
-      const response = await fetch('/api/tutorial-page-content', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          contentType: form.blockType,
-          version: form.versionId,
-          brandId: SHARED_BRAND_ID,
-          payload,
-          documentBlocks,
-          sourceFormat,
-          sourceContent,
-          status,
-        }),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error ?? 'Save failed.');
+      if (!form.subtopicId) {
+        throw new Error('Subtopic is required');
       }
-      const deliveryPath = result.deliveryUrls?.realtutorialhub ?? result.deliveryUrls?.skillup;
-      setMessage(deliveryPath ? `${result.message} Common path: ${deliveryPath}` : result.message);
+
+      if (isLoadingDocument) {
+        throw new Error(
+          'Tutorial is still loading. Please wait before saving.'
+        );
+      }
+
+      // Step 1: Map documentBlocks[] → TutorialDocument.blocks[] using type-safe conversion
+      const tutorialBlocks: TutorialBlock[] = documentBlocks.map(toTutorialBlock);
+
+      // Step 2: Create TutorialDocument
+      const tutorialDocument: TutorialDocument = {
+        schemaVersion: 1,
+        blocks: tutorialBlocks,
+      };
+
+      // Step 3: Check if tutorial exists for this subtopicId + brandId
+      const queryResponse = await fetch(
+        `/api/tutorial-composer/sections?subtopicId=${form.subtopicId}&brandId=${SHARED_BRAND_ID}&limit=1`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      if (!queryResponse.ok) {
+        throw new Error('Failed to check existing tutorial');
+      }
+
+      const queryResult = await queryResponse.json();
+      const existingTutorial = queryResult.data?.[0];
+
+      // Step 3b: Race condition protection - verify we're editing the same section we loaded
+      if (
+        existingTutorial &&
+        loadedSectionId &&
+        existingTutorial.id !== loadedSectionId
+      ) {
+        throw new Error(
+          'The selected tutorial changed while editing. Reload the document before saving.'
+        );
+      }
+
+      let response;
+      let result;
+
+      if (existingTutorial) {
+        // Step 4a: UPDATE existing tutorial
+        response = await fetch(`/api/tutorial-composer/sections/${existingTutorial.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: tutorialDocument,
+          }),
+        });
+      } else {
+        // Step 4b: CREATE new tutorial
+        response = await fetch('/api/tutorial-composer/sections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subtopicId: form.subtopicId,
+            brandId: SHARED_BRAND_ID,
+            content: tutorialDocument,
+            orderIndex: 0,
+          }),
+        });
+      }
+
+      result = await response.json();
+      
+      if (!response.ok) {
+        const errorMsg = result.error?.message || result.error || 'Save failed';
+        throw new Error(errorMsg);
+      }
+
+      // Step 5: Publish if status is 'published'
+      if (status === 'published' && result.data?.id) {
+        const publishResponse = await fetch(
+          `/api/tutorial-composer/sections/${result.data.id}/publish`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+
+        if (!publishResponse.ok) {
+          const publishError = await publishResponse.json();
+          throw new Error(publishError.error?.message || 'Publish failed');
+        }
+
+        setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} and published successfully! Status: ${status}`);
+      } else {
+        setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} successfully as ${status}!`);
+      }
+      
+      // Update loadedSectionId if we just created a new section
+      if (!existingTutorial && result.data?.id) {
+        setLoadedSectionId(result.data.id);
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Save failed.');
     } finally {
@@ -565,7 +924,15 @@ export function TutorialPageContentBuilderClient() {
             </div>
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
               <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="font-mono text-slate-600">Document blocks: <strong>{documentBlocks.length}</strong></span>
+              {isLoadingDocument ? (
+                <span className="font-mono text-amber-600">
+                  Loading document…
+                </span>
+              ) : (
+                <span className="font-mono text-slate-600">
+                  Document blocks: <strong>{documentBlocks.length}</strong>
+                </span>
+              )}
             </div>
           </div>
 
@@ -756,7 +1123,7 @@ export function TutorialPageContentBuilderClient() {
                   </button>
                   <button
                     type="button"
-                    disabled={isSaving || !form.subtopicId}
+                    disabled={isSaving || isLoadingDocument || !form.subtopicId}
                     className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => save('draft')}
                   >
@@ -764,7 +1131,7 @@ export function TutorialPageContentBuilderClient() {
                   </button>
                   <button
                     type="button"
-                    disabled={isSaving || !form.subtopicId}
+                    disabled={isSaving || isLoadingDocument || !form.subtopicId}
                     className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#e11d48] px-3 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#be123c] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => save('published')}
                   >

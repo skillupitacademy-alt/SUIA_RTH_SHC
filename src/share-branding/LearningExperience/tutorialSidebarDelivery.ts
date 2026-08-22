@@ -2,8 +2,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import {
   dbHttp,
-  tutorialPageContentV2,
   tutorialSidebarTreesV2,
+  tutorialDeliveryService,
 } from '@quiz/db-tutorial';
 import {
   domains as shcDomains,
@@ -302,40 +302,27 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
   }
 
   const { hierarchy, tree, activeUrl } = sidebarPayload;
-  const sharedRows = await dbHttp
-    .select()
-    .from(tutorialPageContentV2)
-    .where(and(
-      eq(tutorialPageContentV2.brandId, 'shared'),
-      eq(tutorialPageContentV2.subtopicId, hierarchy.subtopic.id),
-      eq(tutorialPageContentV2.status, 'published')
-    ));
 
-  const brandRows = sharedRows.length > 0
-    ? []
-    : await dbHttp
-      .select()
-      .from(tutorialPageContentV2)
-      .where(and(
-        eq(tutorialPageContentV2.brandId, params.brandId),
-        eq(tutorialPageContentV2.subtopicId, hierarchy.subtopic.id),
-        eq(tutorialPageContentV2.status, 'published')
-      ));
+  // V2: Use TutorialDeliveryService to fetch tutorial from tutorial_sections
+  const deliveryResult = await tutorialDeliveryService.getTutorialById(
+    hierarchy.subtopic.id,
+    {
+      brandId: params.brandId,
+      includeUnpublished: false,
+      _subtopicMetadata: {
+        slug: hierarchy.subtopic.slug,
+        name: hierarchy.subtopic.name,
+      },
+    }
+  );
 
-  const contentRows = sharedRows.length > 0 ? sharedRows : brandRows;
-  const content: TutorialPagePayload['content'] = {};
-
-  for (const row of contentRows) {
-    if (row.contentType === 'definition') {
-      content.definition = row.payload as TutorialPagePayload['content']['definition'];
-    }
-    if (row.contentType === 'code') {
-      content.code = row.payload as TutorialPagePayload['content']['code'];
-    }
-    if (row.contentType === 'summary') {
-      content.summary = row.payload as TutorialPagePayload['content']['summary'];
-    }
-  }
+  const tutorial = deliveryResult.tutorial;
+  
+  // V2 Architecture: Preserve TutorialDocument.blocks[] through delivery
+  // Do NOT convert back to legacy definition/code/summary structure
+  const content: TutorialPagePayload['content'] = {
+    blocks: tutorial?.content?.blocks ?? [],
+  };
 
   const flatItems = flattenNavigation(tree.topics).map((item) => withTutorialV2Url(item, hierarchy));
   const activeIndex = flatItems.findIndex((item) => isActiveNavigationItem(item, params, hierarchy, activeUrl));

@@ -1,3 +1,20 @@
+/**
+ * ⚠️  DEPRECATED: Legacy Tutorial Page Content API
+ * 
+ * STATUS: DEAD CODE - Zero active callers (confirmed 2026-08-22)
+ * 
+ * This route uses tutorial_page_content_v2 (legacy table).
+ * The GUI has migrated to /api/tutorial-composer/sections (tutorial_sections table).
+ * 
+ * REMOVAL TIMELINE:
+ * - C1-018: Mark deprecated ✅
+ * - C1-019: Final verification + removal
+ * - C1-020: Drop tutorial_page_content_v2 table
+ * 
+ * DO NOT USE THIS ROUTE FOR NEW FEATURES.
+ * Use /api/tutorial-composer/sections instead.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { and, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
