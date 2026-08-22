@@ -676,6 +676,15 @@ export function TutorialPageContentBuilderClient() {
 
       const instances = tutorialBlocksToInstances(document.blocks);
 
+      // DEBUG: Log block count at each stage
+      console.log('[TutorialComposer] Hydration Debug:', {
+        serverBlockCount: document.blocks.length,
+        instancesCount: instances.length,
+        serverBlockTypes: document.blocks.map(b => b.type),
+        instanceTypes: instances.map(i => i.type),
+        hasUnsavedChanges: hasUnsavedLocalChangesRef.current,
+      });
+
       // RACE PROTECTION: Do not overwrite user's unsaved local changes
       // If user added/removed blocks while this fetch was pending, preserve their work
       if (hasUnsavedLocalChangesRef.current) {
@@ -687,6 +696,13 @@ export function TutorialPageContentBuilderClient() {
       }
 
       setDocumentBlocks(instances);
+      
+      // DEBUG: Verify state was set correctly
+      console.log('[TutorialComposer] After setDocumentBlocks:', {
+        instancesLength: instances.length,
+        instances: instances.map(i => ({ id: i.id, type: i.type, title: i.title })),
+      });
+      
       setLoadedSectionId(section.id);
       hasUnsavedLocalChangesRef.current = false; // Fresh from server = clean state
 
@@ -1292,22 +1308,29 @@ export function TutorialPageContentBuilderClient() {
                     No blocks in document yet. Add blocks from the left authoring panel to preview the full document.
                   </div>
                 ) : (
-                  documentBlocks.map((instance, idx) => (
-                    <div key={instance.id} className="relative">
-                      {idx > 0 && <div className="my-8 border-t border-dashed border-slate-200" />}
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-600">
-                          <span>Instance #{idx + 1}</span>
-                          <span>•</span>
-                          <span>{instance.versionCode}</span>
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-400">ID: {instance.id}</span>
+                  <>
+                    {/* DEBUG: Log what preview is rendering */}
+                    {console.log('[TutorialComposer] Preview Rendering:', {
+                      documentBlocksLength: documentBlocks.length,
+                      blocks: documentBlocks.map(b => ({ id: b.id, type: b.type, title: b.title })),
+                    })}
+                    {documentBlocks.map((instance, idx) => (
+                      <div key={instance.id} className="relative">
+                        {idx > 0 && <div className="my-8 border-t border-dashed border-slate-200" />}
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-600">
+                            <span>Instance #{idx + 1}</span>
+                            <span>•</span>
+                            <span>{instance.versionCode}</span>
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400">ID: {instance.id}</span>
+                        </div>
+                        {instance.type === 'definition' && <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
+                        {instance.type === 'code' && <TutorialCodeContent payload={instance.payload as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
+                        {instance.type === 'summary' && <TutorialSummaryContent payload={instance.payload as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
                       </div>
-                      {instance.type === 'definition' && <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
-                      {instance.type === 'code' && <TutorialCodeContent payload={instance.payload as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
-                      {instance.type === 'summary' && <TutorialSummaryContent payload={instance.payload as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
-                    </div>
-                  ))
+                    ))}
+                  </>
                 )
               )}
             </div>
