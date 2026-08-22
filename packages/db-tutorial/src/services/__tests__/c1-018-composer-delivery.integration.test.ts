@@ -137,7 +137,9 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       // Verify D1 block
       const block = content.blocks[0];
       expect(block.type).toBe('definition');
-      expect(block.version).toBe('D1');
+      if (block.type === 'definition') {
+        expect(block.version).toBe('D1');
+      }
       expect(block.id).toBe(fixture.definitionId);
       expect(block.id).toBeTruthy();
     });
@@ -170,14 +172,19 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       expect(content.blocks.length).toBe(2);
 
       // Verify first block is still D1
-      expect(content.blocks[0].type).toBe('definition');
-      expect(content.blocks[0].version).toBe('D1');
-      expect(content.blocks[0].id).toBe(fixture.definitionId);
+      const firstBlock = content.blocks[0];
+      expect(firstBlock.type).toBe('definition');
+      if (firstBlock.type === 'definition') {
+        expect(firstBlock.version).toBe('D1');
+      }
+      expect(firstBlock.id).toBe(fixture.definitionId);
 
       // Verify second block is C1
       const c1Block = content.blocks[1];
       expect(c1Block.type).toBe('code');
-      expect(c1Block.version).toBe('C1');
+      if (c1Block.type === 'code' && 'version' in c1Block) {
+        expect(c1Block.version).toBe('C1');
+      }
       expect(c1Block.id).toBe(fixture.codeId1);
       expect(c1Block.id).toBeTruthy();
 
@@ -221,7 +228,9 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       // Verify third block is C1
       const c1Block2 = content.blocks[2];
       expect(c1Block2.type).toBe('code');
-      expect(c1Block2.version).toBe('C1');
+      if (c1Block2.type === 'code' && 'version' in c1Block2) {
+        expect(c1Block2.version).toBe('C1');
+      }
       expect(c1Block2.id).toBe(fixture.codeId2);
 
       // Verify all IDs are unique
@@ -263,14 +272,23 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const content = updated.content as TutorialDocument;
       expect(content.blocks.length).toBe(3);
 
-      expect(content.blocks[0].type).toBe('definition');
-      expect(content.blocks[0].version).toBe('D1');
+      const block0 = content.blocks[0];
+      expect(block0.type).toBe('definition');
+      if (block0.type === 'definition') {
+        expect(block0.version).toBe('D1');
+      }
 
-      expect(content.blocks[1].type).toBe('code');
-      expect(content.blocks[1].version).toBe('C1');
+      const block1 = content.blocks[1];
+      expect(block1.type).toBe('code');
+      if (block1.type === 'code' && 'version' in block1) {
+        expect(block1.version).toBe('C1');
+      }
 
-      expect(content.blocks[2].type).toBe('code');
-      expect(content.blocks[2].version).toBe('C1');
+      const block2 = content.blocks[2];
+      expect(block2.type).toBe('code');
+      if (block2.type === 'code' && 'version' in block2) {
+        expect(block2.version).toBe('C1');
+      }
 
       // Verify this is not [C1, D1, C1] or any other order
       const types = content.blocks.map((b) => b.type);
@@ -340,8 +358,10 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       expect(content.blocks[2].id).toBe(originalCodeId2);
 
       // Verify D1 content changed
-      const updatedBlock = content.blocks[0] as TutorialBlock;
-      expect(updatedBlock.content.page.title).toContain('Updated');
+      const updatedBlock = content.blocks[0];
+      if (updatedBlock.type === 'definition') {
+        expect(updatedBlock.content.page.title).toContain('Updated');
+      }
     });
   });
 
@@ -524,14 +544,23 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const content = delivery.tutorial!.content as TutorialDocument;
       const blocks = content.blocks;
 
-      expect(blocks[0].type).toBe('definition');
-      expect(blocks[0].version).toBe('D1');
+      const block0 = blocks[0];
+      expect(block0.type).toBe('definition');
+      if (block0.type === 'definition') {
+        expect(block0.version).toBe('D1');
+      }
 
-      expect(blocks[1].type).toBe('code');
-      expect(blocks[1].version).toBe('C1');
+      const block1 = blocks[1];
+      expect(block1.type).toBe('code');
+      if (block1.type === 'code' && 'version' in block1) {
+        expect(block1.version).toBe('C1');
+      }
 
-      expect(blocks[2].type).toBe('code');
-      expect(blocks[2].version).toBe('C1');
+      const block2 = blocks[2];
+      expect(block2.type).toBe('code');
+      if (block2.type === 'code' && 'version' in block2) {
+        expect(block2.version).toBe('C1');
+      }
     });
   });
 
