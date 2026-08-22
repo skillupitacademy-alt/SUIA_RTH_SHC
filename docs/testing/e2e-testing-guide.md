@@ -7,6 +7,8 @@ Complete guide for running E2E integration tests against local development serve
 ## Table of Contents
 
 - [Overview](#overview)
+- [Development Rule](#development-rule)
+- [Technology: Node.js + Fetch API](#technology-nodejs--fetch-api)
 - [Prerequisites](#prerequisites)
 - [Server Setup](#server-setup)
 - [Running E2E Tests](#running-e2e-tests)
@@ -17,13 +19,64 @@ Complete guide for running E2E integration tests against local development serve
 
 ---
 
+## Technology: Node.js + Fetch API
+
+**IMPORTANT:** This project uses **Node.js E2E integration scripts**, not Playwright or browser-based testing.
+
+### What We Use
+
+```javascript
+// Real HTTP requests via fetch()
+const response = await fetch(`${BASE_URL}/api/resources`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Cookie': `accessToken=${adminToken}`,
+  },
+  body: JSON.stringify(payload),
+});
+
+// Real API endpoints
+// Real authentication (session cookies)
+// Real database operations
+// Real business logic
+```
+
+### What We Don't Use
+
+- ❌ Playwright (browser automation)
+- ❌ Puppeteer (headless Chrome)
+- ❌ Cypress (browser testing)
+- ❌ Selenium (UI testing)
+
+### Why Node.js + Fetch?
+
+**Advantages:**
+- Tests **backend workflows** directly (API → Service → Database)
+- Faster execution (no browser overhead)
+- Easier to debug (standard Node.js debugging)
+- Better for CI/CD (no browser dependencies)
+- Focuses on **business logic** not UI rendering
+- Real HTTP requests = real integration testing
+
+**When to use browser testing:**
+- UI/UX validation
+- Frontend-only bugs
+- Cross-browser compatibility
+- Visual regression testing
+- User interaction flows
+
+**This project focuses on backend/API testing**, so we use Node.js + fetch().
+
+---
+
 ## Overview
 
 E2E tests verify the complete lifecycle of features by:
 
 1. Starting local development servers
 2. Running test scripts that make real HTTP requests
-3. Verifying CREATE → READ → UPDATE → DELETE operations
+3. Verifying the **actual business workflow** (not just CRUD)
 4. Testing edge cases and error handling
 5. Ensuring business logic and data persistence work end-to-end
 
@@ -34,6 +87,54 @@ E2E tests verify the complete lifecycle of features by:
 - Test database constraints and transactions
 - Validate authentication and authorization
 - Prove complex multi-step workflows
+
+**Project Standard:**
+
+> **No meaningful backend/API/database feature is considered deployment-ready until its Node.js E2E integration test passes locally, followed by type-check and build.**
+
+---
+
+## Development Rule
+
+For **every meaningful backend/API/database change**, follow this workflow:
+
+```
+Developer changes code
+        ↓
+Run type-check
+        ↓
+Start local application (Terminal 1: npm run dev)
+        ↓
+Run Node.js E2E script (Terminal 2: node scripts/test-*-e2e.mjs)
+        ↓
+Real HTTP requests
+        ↓
+Real authentication
+        ↓
+Real API
+        ↓
+Real database
+        ↓
+Verify complete business workflow
+        ↓
+ALL TESTS PASSED
+        ↓
+Build (npm run build)
+        ↓
+Commit (git commit)
+        ↓
+Deploy
+```
+
+**If E2E fails:**
+
+```
+❌ TEST SUITE FAILED
+
+DO NOT DEPLOY until all tests pass.
+
+Fix → Type-check → E2E → Build → Deploy
+```
 
 ---
 
@@ -681,35 +782,76 @@ const JAVA_DEFINITION_PAYLOAD = {
 
 ### 6. Test Sequence Design
 
-Follow CRUD lifecycle in logical order:
+**IMPORTANT:** Follow the **actual business lifecycle**, not blindly follow CRUD.
+
+E2E tests must mirror real user workflows and business operations, not theoretical database operations.
+
+#### Example: Tutorial Composer (Real Business Lifecycle)
 
 ```javascript
-// 1. Setup (Authentication)
+// 1. Authentication (prerequisite)
 await test01_login();
 
-// 2. Validation (Check prerequisites)
+// 2. Data validation (prerequisite)
 await test02_validateSubtopic();
 
-// 3. Create
-const { resourceId } = await test03_create();
+// 3. Create tutorial
+const { tutorialId } = await test03_create();
 
-// 4. Read (Verify create)
-await test04_read(resourceId);
+// 4. Read (verify creation)
+await test04_read(tutorialId);
 
-// 5. Update
-await test05_update(resourceId);
+// 5. Update with multiple blocks (actual workflow)
+await test05_update(tutorialId);
 
-// 6. Read (Verify update)
-await test06_readAfterUpdate(resourceId);
+// 6. Read (verify update persistence)
+await test06_readAfterUpdate(tutorialId);
 
-// 7. Special operations
-await test07_publish(resourceId);
+// 7. Publish (actual business operation)
+await test07_publish(tutorialId);
 
-// 8. Edge cases
-await test08_invalidInput();
+// 8. Read (verify publish status)
+await test08_readPublished(tutorialId);
 
-// 9. Regression tests
-await test09_regressionCheck();
+// 9. Regression tests (protect against known bugs)
+await test09_invalidUUIDRegression();
+await test10_validUUIDRegression();
+
+// Note: No DELETE - not part of Tutorial Composer business workflow
+// Cleanup happens in test02 (prerequisite validation)
+```
+
+#### Example: Quiz Management (Different Lifecycle)
+
+```javascript
+// Different feature = different lifecycle
+await test01_login();
+await test02_createQuiz();
+await test03_addQuestions();        // Multi-step workflow
+await test04_readQuiz();
+await test05_updateQuizSettings();
+await test06_archiveQuiz();         // Archive, not delete
+await test07_restoreQuiz();         // Restore operation
+await test08_deleteQuiz();          // Final cleanup
+```
+
+#### Principle: Test What Users Actually Do
+
+```
+❌ Wrong: Force CRUD pattern on every feature
+✅ Right: Test the actual business operations
+
+Tutorial Composer:
+  CREATE → READ → UPDATE → READ → PUBLISH → READ
+
+User Management:
+  CREATE → READ → UPDATE → DEACTIVATE → REACTIVATE
+
+Quiz:
+  CREATE → ADD_QUESTIONS → PUBLISH → ARCHIVE → DELETE
+
+Payment:
+  INITIATE → VERIFY → PROCESS → CONFIRM → REFUND
 ```
 
 ---

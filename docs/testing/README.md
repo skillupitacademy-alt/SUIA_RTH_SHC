@@ -4,6 +4,20 @@ Comprehensive guides for testing practices in the Quiz Platform monorepo.
 
 ---
 
+## 🎯 Project Testing Standard
+
+> **No meaningful backend/API/database feature is considered deployment-ready until its Node.js E2E integration test passes locally, followed by type-check and build.**
+
+### Standard Workflow
+
+```
+Code change → Type-check → Start server → Run E2E → All pass → Build → Commit → Deploy
+```
+
+**Technology:** Node.js + Fetch API (real HTTP requests, not browser automation)
+
+---
+
 ## 📚 Documentation Index
 
 ### E2E Testing
@@ -176,12 +190,17 @@ packages/validation/                 ← Zod schemas
 ### Writing E2E Test
 
 - [ ] Copied template from guide
-- [ ] Tests follow CRUD order (Create → Read → Update → Delete)
+- [ ] **Tests follow actual business lifecycle** (not blindly CRUD)
+- [ ] Tests mirror real user workflows
+- [ ] Uses Node.js + fetch() (not browser automation)
 - [ ] Includes authentication test
+- [ ] Includes prerequisite validation
 - [ ] Includes error case tests
-- [ ] Has cleanup (deletes test data)
+- [ ] Includes regression tests for known bugs
+- [ ] Has cleanup in prerequisite validation
 - [ ] Logs are comprehensive
 - [ ] Assertions are specific
+- [ ] Tests real HTTP → API → Database flow
 
 ### Before Committing
 
