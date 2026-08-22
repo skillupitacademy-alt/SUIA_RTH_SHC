@@ -507,12 +507,7 @@ export function TutorialPageContentBuilderClient() {
       (id, index) => ids.indexOf(id) !== index
     );
 
-    if (duplicateIds.length > 0) {
-      console.error(
-        '[TutorialComposer] DUPLICATE BLOCK IDS:',
-        duplicateIds
-      );
-    }
+    // Duplicate IDs detected - validation will fail at API level
   }, [documentBlocks]);
 
   useEffect(() => {
@@ -832,17 +827,6 @@ export function TutorialPageContentBuilderClient() {
     setIsSaving(true);
     setMessage('');
     
-    console.log('[TutorialComposer] SAVE DEBUG - Starting save flow:', {
-      status,
-      subtopicId: form.subtopicId,
-      brandId: SHARED_BRAND_ID,
-      loadedSectionId,
-      documentBlocksCount: documentBlocks.length,
-      blockIds: documentBlocks.map(b => b.id),
-      blockTypes: documentBlocks.map(b => b.type),
-      blockVersions: documentBlocks.map(b => b.versionCode),
-    });
-    
     try {
       if (!form.subtopicId) {
         throw new Error('Subtopic is required');
@@ -857,36 +841,14 @@ export function TutorialPageContentBuilderClient() {
       // Step 1: Map documentBlocks[] → TutorialDocument.blocks[] using type-safe conversion
       const tutorialBlocks: TutorialBlock[] = documentBlocks.map(toTutorialBlock);
 
-      console.log('[TutorialComposer] SAVE DEBUG - After toTutorialBlock conversion:', {
-        inputBlocksCount: documentBlocks.length,
-        outputBlocksCount: tutorialBlocks.length,
-        tutorialBlocks: tutorialBlocks.map((block, index) => ({
-          index,
-          id: block.id,
-          type: block.type,
-          version: (block as any).version || 'N/A',
-        })),
-      });
-
       // Step 2: Create TutorialDocument
       const tutorialDocument: TutorialDocument = {
         schemaVersion: 1,
         blocks: tutorialBlocks,
       };
 
-      console.log('[TutorialComposer] SAVE DEBUG - TutorialDocument created:', {
-        schemaVersion: tutorialDocument.schemaVersion,
-        blocksCount: tutorialDocument.blocks.length,
-      });
-
       // Step 3: Check if tutorial exists for this subtopicId + brandId
       const existenceCheckUrl = `/api/tutorial-composer/sections?subtopicId=${form.subtopicId}&brandId=${SHARED_BRAND_ID}&limit=1`;
-      console.log('[TutorialComposer] SAVE EXISTENCE CHECK - Querying:', {
-        url: existenceCheckUrl,
-        subtopicId: form.subtopicId,
-        brandId: SHARED_BRAND_ID,
-        loadedSectionId,
-      });
 
       const queryResponse = await fetch(existenceCheckUrl, {
         method: 'GET',
@@ -899,14 +861,6 @@ export function TutorialPageContentBuilderClient() {
 
       const queryResult = await queryResponse.json();
       const existingTutorial = queryResult.data?.[0];
-
-      console.log('[TutorialComposer] SAVE EXISTENCE CHECK - Result:', {
-        foundExistingTutorial: !!existingTutorial,
-        existingTutorialId: existingTutorial?.id || null,
-        loadedSectionId,
-        idsMatch: existingTutorial?.id === loadedSectionId,
-        queryResultData: queryResult.data,
-      });
 
       // Step 3b: Race condition protection - verify we're editing the same section we loaded
       if (
@@ -929,19 +883,6 @@ export function TutorialPageContentBuilderClient() {
           content: tutorialDocument,
         };
 
-        console.log('[TutorialComposer] SAVE REQUEST - PATCH:', {
-          method: 'PATCH',
-          url: patchUrl,
-          sectionId: existingTutorial.id,
-          payloadSummary: {
-            content: {
-              schemaVersion: requestPayload.content.schemaVersion,
-              blocksCount: requestPayload.content.blocks.length,
-              blockTypes: requestPayload.content.blocks.map(b => b.type),
-            },
-          },
-        });
-
         response = await fetch(patchUrl, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -956,21 +897,6 @@ export function TutorialPageContentBuilderClient() {
           orderIndex: 0,
         };
 
-        console.log('[TutorialComposer] SAVE REQUEST - POST:', {
-          method: 'POST',
-          url: '/api/tutorial-composer/sections',
-          payloadSummary: {
-            subtopicId: requestPayload.subtopicId,
-            brandId: requestPayload.brandId,
-            orderIndex: requestPayload.orderIndex,
-            content: {
-              schemaVersion: requestPayload.content.schemaVersion,
-              blocksCount: requestPayload.content.blocks.length,
-              blockTypes: requestPayload.content.blocks.map(b => b.type),
-            },
-          },
-        });
-
         response = await fetch('/api/tutorial-composer/sections', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -980,25 +906,8 @@ export function TutorialPageContentBuilderClient() {
 
       const result = await response.json();
 
-      console.log('[TutorialComposer] SAVE RESPONSE:', {
-        status: response.status,
-        ok: response.ok,
-        hasData: !!result.data,
-        hasError: !!result.error,
-        resultSummary: response.ok 
-          ? { id: result.data?.id, status: result.data?.status } 
-          : { errorCode: result.error?.code, errorMessage: result.error?.message, errorDetails: result.error?.details },
-      });
-      
       if (!response.ok) {
-        console.error('[TutorialComposer] SAVE FAILED - Full error response:', result);
         const errorMsg = result.error?.message || result.error || 'Save failed';
-        
-        // Log validation errors if present
-        if (result.error?.details && Array.isArray(result.error.details)) {
-          console.error('[TutorialComposer] SAVE FAILED - Validation errors:', result.error.details);
-        }
-        
         throw new Error(errorMsg);
       }
 
@@ -1006,24 +915,13 @@ export function TutorialPageContentBuilderClient() {
       if (status === 'published' && result.data?.id) {
         const publishUrl = `/api/tutorial-composer/sections/${result.data.id}/publish`;
         
-        console.log('[TutorialComposer] PUBLISH REQUEST:', {
-          url: publishUrl,
-          sectionId: result.data.id,
-        });
-
         const publishResponse = await fetch(publishUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
 
-        console.log('[TutorialComposer] PUBLISH RESPONSE:', {
-          status: publishResponse.status,
-          ok: publishResponse.ok,
-        });
-
         if (!publishResponse.ok) {
           const publishError = await publishResponse.json();
-          console.error('[TutorialComposer] PUBLISH FAILED:', publishError);
           throw new Error(publishError.error?.message || 'Publish failed');
         }
 
@@ -1043,13 +941,6 @@ export function TutorialPageContentBuilderClient() {
         setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} successfully as ${status}!`);
       }
       
-      console.log('[TutorialComposer] SAVE COMPLETE:', {
-        success: true,
-        status,
-        wasUpdate: !!existingTutorial,
-        finalSectionId: result.data?.id || existingTutorial?.id,
-      });
-      
       // Clear dirty flag after successful save
       hasUnsavedLocalChangesRef.current = false;
       
@@ -1058,7 +949,6 @@ export function TutorialPageContentBuilderClient() {
         setLoadedSectionId(result.data.id);
       }
     } catch (error) {
-      console.error('[TutorialComposer] SAVE ERROR:', error);
       setMessage(error instanceof Error ? error.message : 'Save failed.');
     } finally {
       setIsSaving(false);
@@ -1458,42 +1348,21 @@ export function TutorialPageContentBuilderClient() {
                         </div>
                         
                         {instance.type === 'definition' && (
-                          <>
-                            {console.log('[TutorialComposer] Rendering Definition:', {
-                              index: idx,
-                              id: instance.id,
-                              title: instance.title,
-                            })}
-                            <div data-tutorial-block-type="definition">
-                              <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />
-                            </div>
-                          </>
+                          <div data-tutorial-block-type="definition">
+                            <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />
+                          </div>
                         )}
                         
                         {instance.type === 'code' && (
-                          <>
-                            {console.log('[TutorialComposer] Rendering Code:', {
-                              index: idx,
-                              id: instance.id,
-                              title: instance.title,
-                            })}
-                            <div data-tutorial-block-type="code">
-                              <TutorialCodeContent payload={instance.payload as TutorialCodePayload} theme={themeForBrand(form.brandId)} />
-                            </div>
-                          </>
+                          <div data-tutorial-block-type="code">
+                            <TutorialCodeContent payload={instance.payload as TutorialCodePayload} theme={themeForBrand(form.brandId)} />
+                          </div>
                         )}
                         
                         {instance.type === 'summary' && (
-                          <>
-                            {console.log('[TutorialComposer] Rendering Summary:', {
-                              index: idx,
-                              id: instance.id,
-                              title: instance.title,
-                            })}
-                            <div data-tutorial-block-type="summary">
-                              <TutorialSummaryContent payload={instance.payload as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />
-                            </div>
-                          </>
+                          <div data-tutorial-block-type="summary">
+                            <TutorialSummaryContent payload={instance.payload as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />
+                          </div>
                         )}
                       </div>
                     ))}

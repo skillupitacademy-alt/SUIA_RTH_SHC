@@ -14,18 +14,28 @@ const TUTORIAL_CACHE_VERSIONS = ['v1', 'v2'] as const;
 const TUTORIAL_DIFFICULTIES = ['simple'] as const;
 
 /**
- * Get subtopic slug from UUID
+ * Get subtopic slug from internal or external UUID
  * 
- * @param subtopicId - Subtopic UUID
+ * @param subtopicId - Internal tutorialSubtopics.id OR external_id from MainDB
  * @returns Subtopic slug or null if not found
  */
 async function getSubtopicSlug(subtopicId: string): Promise<string | null> {
   try {
-    const result = await db
+    // Try internal ID first
+    let result = await db
       .select({ slug: tutorialSubtopics.slug })
       .from(tutorialSubtopics)
       .where(eq(tutorialSubtopics.id, subtopicId))
       .limit(1);
+
+    // If not found, try external ID
+    if (!result[0]) {
+      result = await db
+        .select({ slug: tutorialSubtopics.slug })
+        .from(tutorialSubtopics)
+        .where(eq(tutorialSubtopics.externalId, subtopicId))
+        .limit(1);
+    }
 
     return result[0]?.slug ?? null;
   } catch (error) {
@@ -44,19 +54,19 @@ async function getSubtopicSlug(subtopicId: string): Promise<string | null> {
  * for learner delivery. Called after content changes to ensure learners see
  * the latest published content.
  * 
- * @param subtopicSlugOrId - The subtopic slug (e.g., "javascript-variables") OR UUID
+ * @param subtopicId - The subtopic ID (can be internal tutorial_subtopics.id OR external MainDB UUID)
  * 
  * @example
  * ```ts
- * // With slug
- * await invalidateTutorialDeliveryCache('javascript-variables');
+ * // With external MainDB UUID
+ * await invalidateTutorialDeliveryCache('12efacf1-b5ad-4b43-9fe4-17ba1cf249e4');
  * 
- * // With UUID (will be looked up)
- * await invalidateTutorialDeliveryCache('550e8400-e29b-41d4-a716-446655440000');
+ * // With internal tutorial_subtopics.id
+ * await invalidateTutorialDeliveryCache('ba9125f3-12b1-4698-9262-2da3116073a7');
  * ```
  */
 export async function invalidateTutorialDeliveryCache(
-  subtopicSlugOrId: string
+  subtopicId: string
 ): Promise<void> {
   const baseUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
   const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
@@ -67,33 +77,19 @@ export async function invalidateTutorialDeliveryCache(
       {
         hasBaseUrl: !!baseUrl,
         hasToken: !!token,
-        subtopicSlugOrId,
+        subtopicId,
       }
     );
     return;
   }
 
-  // Determine if input is UUID or slug
-  // UUID format: 8-4-4-4-12 hex digits
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-    subtopicSlugOrId
-  );
-
-  let subtopicSlug: string;
-
-  if (isUUID) {
-    // Fetch slug from database
-    const slug = await getSubtopicSlug(subtopicSlugOrId);
-    if (!slug) {
-      console.error('[Cache Invalidation] Subtopic not found', {
-        subtopicId: subtopicSlugOrId,
-      });
-      return;
-    }
-    subtopicSlug = slug;
-  } else {
-    // Already a slug
-    subtopicSlug = subtopicSlugOrId;
+  // Fetch slug from database (handles both internal and external IDs)
+  const subtopicSlug = await getSubtopicSlug(subtopicId);
+  if (!subtopicSlug) {
+    console.error('[Cache Invalidation] Subtopic not found', {
+      subtopicId,
+    });
+    return;
   }
 
   // Generate all cache keys that need to be invalidated
@@ -106,9 +102,8 @@ export async function invalidateTutorialDeliveryCache(
   ]);
 
   console.log('[Cache Invalidation] Invalidating tutorial delivery cache', {
-    subtopicSlugOrId,
+    subtopicId,
     subtopicSlug,
-    isUUID,
     keyCount: keys.length,
     keys,
   });
@@ -135,7 +130,7 @@ export async function invalidateTutorialDeliveryCache(
   );
 
   console.log('[Cache Invalidation] Tutorial delivery cache invalidated', {
-    subtopicSlugOrId,
+    subtopicId,
     subtopicSlug,
   });
 }
@@ -145,12 +140,12 @@ export async function invalidateTutorialDeliveryCache(
  * 
  * Useful when bulk operations affect multiple subtopics.
  * 
- * @param subtopicSlugsOrIds - Array of subtopic slugs or UUIDs
+ * @param subtopicIds - Array of subtopic IDs (internal or external)
  */
 export async function invalidateTutorialDeliveryCacheBatch(
-  subtopicSlugsOrIds: string[]
+  subtopicIds: string[]
 ): Promise<void> {
   await Promise.all(
-    subtopicSlugsOrIds.map((slugOrId) => invalidateTutorialDeliveryCache(slugOrId))
+    subtopicIds.map((id) => invalidateTutorialDeliveryCache(id))
   );
 }
