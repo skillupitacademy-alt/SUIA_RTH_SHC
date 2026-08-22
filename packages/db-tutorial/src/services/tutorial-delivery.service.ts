@@ -24,6 +24,7 @@ import { eq, and, inArray, isNull, or } from 'drizzle-orm';
 import { TutorialDocumentSchema, type TutorialDocument } from '@quiz/types';
 import type { Brand } from '@quiz/types';
 import { tutorialContentSanitizationService } from './tutorial-content-sanitization.service';
+import { TutorialSectionRepository } from '../repositories/tutorial-section.repository';
 
 /**
  * V2 Delivery-safe tutorial data
@@ -69,6 +70,10 @@ export interface DeliveryOptions {
  * Tutorial Delivery Service - V2
  */
 export class TutorialDeliveryService {
+  constructor(
+    private readonly repository: TutorialSectionRepository = new TutorialSectionRepository()
+  ) {}
+
   /**
    * V2: Get tutorial for a subtopic (by slug)
    * Returns single tutorial per (subtopicId, brandId)
@@ -104,6 +109,8 @@ export class TutorialDeliveryService {
   /**
    * V2: Get tutorial for a subtopic (by UUID)
    * Returns single tutorial per (subtopicId, brandId) identity
+   * 
+   * @param subtopicId - MainDB subtopic ID (external_id in TutorialDB)
    */
   async getTutorialById(
     subtopicId: string,
@@ -115,7 +122,16 @@ export class TutorialDeliveryService {
       _subtopicMetadata,
     } = options;
 
-    // If no metadata provided, fetch it
+    // CRITICAL: Resolve MainDB subtopic ID to TutorialDB internal ID
+    // subtopicId parameter is the external ID (from MainDB)
+    // We need the internal TutorialDB ID for FK queries
+    const internalSubtopicId = await this.repository.resolveSubtopicId(subtopicId);
+
+    if (!internalSubtopicId) {
+      throw new SubtopicNotFoundError(subtopicId);
+    }
+
+    // Fetch subtopic metadata if not provided
     let subtopicMetadata = _subtopicMetadata;
     if (!subtopicMetadata) {
       const [subtopic] = await db
@@ -124,7 +140,7 @@ export class TutorialDeliveryService {
           name: tutorialSubtopics.name,
         })
         .from(tutorialSubtopics)
-        .where(eq(tutorialSubtopics.id, subtopicId))
+        .where(eq(tutorialSubtopics.id, internalSubtopicId))
         .limit(1);
 
       if (!subtopic) {
@@ -134,9 +150,9 @@ export class TutorialDeliveryService {
       subtopicMetadata = subtopic;
     }
 
-    // V2: Query single tutorial by (subtopicId, brandId)
+    // V2: Query single tutorial by (internalSubtopicId, brandId)
     const conditions = [
-      eq(tutorialSections.subtopicId, subtopicId),
+      eq(tutorialSections.subtopicId, internalSubtopicId), // Use TutorialDB internal ID
       isNull(tutorialSections.deletedAt), // Exclude soft-deleted tutorials
     ];
 
