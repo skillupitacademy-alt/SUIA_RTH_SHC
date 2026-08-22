@@ -153,7 +153,7 @@ async function test02_validateSubtopic() {
   
   try {
     const response = await fetch(
-      `${BASE_URL}/api/tutorial-composer/sections?subtopicId=${TEST_SUBTOPIC_ID}&brandId=${BRAND_ID}&limit=1`,
+      `${BASE_URL}/api/tutorial-composer/sections?subtopicId=${TEST_SUBTOPIC_ID}&brandId=${BRAND_ID}&limit=100`,
       {
         headers: { 'Cookie': `accessToken=${adminToken}` },
       }
@@ -166,10 +166,11 @@ async function test02_validateSubtopic() {
     log(`Subtopic exists and is accessible`);
     log(`Existing tutorials: ${result.data?.length || 0}`);
     
-    // Clean up existing tutorials for this test
+    // Clean up ALL existing tutorials for this test (including deployed ones)
     if (result.data && result.data.length > 0) {
       log(`\nCleaning up ${result.data.length} existing tutorial(s)...`);
       for (const tutorial of result.data) {
+        log(`Deleting tutorial: ${tutorial.id} (status: ${tutorial.status})`);
         const deleteResponse = await fetch(
           `${BASE_URL}/api/tutorial-composer/sections/${tutorial.id}`,
           {
@@ -179,8 +180,22 @@ async function test02_validateSubtopic() {
         );
         if (deleteResponse.ok) {
           log(`✅ Deleted tutorial: ${tutorial.id}`);
+        } else {
+          const deleteError = await deleteResponse.json();
+          log(`❌ Failed to delete tutorial ${tutorial.id}:`, deleteError);
+          // Don't fail the test, just log the error
         }
       }
+      
+      // Verify cleanup succeeded
+      const verifyResponse = await fetch(
+        `${BASE_URL}/api/tutorial-composer/sections?subtopicId=${TEST_SUBTOPIC_ID}&brandId=${BRAND_ID}&limit=1`,
+        {
+          headers: { 'Cookie': `accessToken=${adminToken}` },
+        }
+      );
+      const verifyResult = await verifyResponse.json();
+      log(`After cleanup: ${verifyResult.data?.length || 0} tutorials remaining`);
     }
     
     pass(testName);
