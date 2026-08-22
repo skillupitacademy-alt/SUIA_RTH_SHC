@@ -500,6 +500,49 @@ export function TutorialPageContentBuilderClient() {
   // This protects against race conditions where user adds/removes blocks while fetch is pending
   const hasUnsavedLocalChangesRef = useRef(false);
 
+  // DIAGNOSTIC: Track documentBlocks state changes
+  useEffect(() => {
+    console.log('[TutorialComposer] documentBlocks STATE UPDATED:', {
+      length: documentBlocks.length,
+      blocks: documentBlocks.map((block, index) => ({
+        index,
+        id: block.id,
+        type: block.type,
+        version: block.version,
+        versionCode: block.versionCode,
+        title: block.title,
+      })),
+    });
+
+    // Check for duplicate IDs (React reconciliation issue)
+    const ids = documentBlocks.map((block) => block.id);
+    const duplicateIds = ids.filter(
+      (id, index) => ids.indexOf(id) !== index
+    );
+
+    if (duplicateIds.length > 0) {
+      console.error(
+        '[TutorialComposer] DUPLICATE BLOCK IDS:',
+        duplicateIds
+      );
+    }
+  }, [documentBlocks]);
+
+  // DIAGNOSTIC: Track preview state
+  useEffect(() => {
+    console.log('[TutorialComposer] PREVIEW STATE:', {
+      previewMode,
+      documentBlocksLength: documentBlocks.length,
+      blocks: documentBlocks.map((block, index) => ({
+        index,
+        id: block.id,
+        type: block.type,
+        versionCode: block.versionCode,
+        title: block.title,
+      })),
+    });
+  }, [documentBlocks, previewMode]);
+
   useEffect(() => {
     fetch('/api/tutorial-left-sidebar/hierarchy')
       .then((response) => response.json())
@@ -684,6 +727,16 @@ export function TutorialPageContentBuilderClient() {
         instanceTypes: instances.map(i => i.type),
         hasUnsavedChanges: hasUnsavedLocalChangesRef.current,
       });
+
+      // DEBUG: Table view of server blocks
+      console.table(
+        document.blocks.map((block, index) => ({
+          index,
+          id: block.id,
+          type: block.type,
+          version: (block as any).version || 'N/A',
+        }))
+      );
 
       // RACE PROTECTION: Do not overwrite user's unsaved local changes
       // If user added/removed blocks while this fetch was pending, preserve their work
@@ -1309,14 +1362,23 @@ export function TutorialPageContentBuilderClient() {
                   </div>
                 ) : (
                   <>
-                    {/* DEBUG: Log what preview is rendering */}
-                    {console.log('[TutorialComposer] Preview Rendering:', {
-                      documentBlocksLength: documentBlocks.length,
-                      blocks: documentBlocks.map(b => ({ id: b.id, type: b.type, title: b.title })),
-                    })}
                     {documentBlocks.map((instance, idx) => (
-                      <div key={instance.id} className="relative">
+                      <div
+                        key={instance.id}
+                        className="relative"
+                        data-tutorial-block-id={instance.id}
+                      >
                         {idx > 0 && <div className="my-8 border-t border-dashed border-slate-200" />}
+                        
+                        {/* DEBUG: Visible block marker */}
+                        <div className="mb-3 rounded-lg border border-pink-200 bg-pink-50 p-2">
+                          <strong>DEBUG BLOCK #{idx + 1}</strong>
+                          <div className="text-xs">ID: {instance.id}</div>
+                          <div className="text-xs">TYPE: {instance.type}</div>
+                          <div className="text-xs">VERSION: {instance.versionCode}</div>
+                          <div className="text-xs">TITLE: {instance.title}</div>
+                        </div>
+
                         <div className="mb-3 flex items-center justify-between">
                           <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-600">
                             <span>Instance #{idx + 1}</span>
@@ -1325,9 +1387,45 @@ export function TutorialPageContentBuilderClient() {
                           </span>
                           <span className="text-[10px] font-mono text-slate-400">ID: {instance.id}</span>
                         </div>
-                        {instance.type === 'definition' && <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
-                        {instance.type === 'code' && <TutorialCodeContent payload={instance.payload as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
-                        {instance.type === 'summary' && <TutorialSummaryContent payload={instance.payload as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
+                        
+                        {instance.type === 'definition' && (
+                          <>
+                            {console.log('[TutorialComposer] Rendering Definition:', {
+                              index: idx,
+                              id: instance.id,
+                              title: instance.title,
+                            })}
+                            <div data-tutorial-block-type="definition">
+                              <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />
+                            </div>
+                          </>
+                        )}
+                        
+                        {instance.type === 'code' && (
+                          <>
+                            {console.log('[TutorialComposer] Rendering Code:', {
+                              index: idx,
+                              id: instance.id,
+                              title: instance.title,
+                            })}
+                            <div data-tutorial-block-type="code">
+                              <TutorialCodeContent payload={instance.payload as TutorialCodePayload} theme={themeForBrand(form.brandId)} />
+                            </div>
+                          </>
+                        )}
+                        
+                        {instance.type === 'summary' && (
+                          <>
+                            {console.log('[TutorialComposer] Rendering Summary:', {
+                              index: idx,
+                              id: instance.id,
+                              title: instance.title,
+                            })}
+                            <div data-tutorial-block-type="summary">
+                              <TutorialSummaryContent payload={instance.payload as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </>
