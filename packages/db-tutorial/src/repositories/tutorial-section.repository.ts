@@ -230,7 +230,16 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
    * Identity: (subtopicId, brandId) - enforced by database UNIQUE constraint
    */
   async createTutorial(input: CreateTutorialInput): Promise<TutorialSection> {
+    const diagnosticId = `REPO-CREATE-${Date.now()}`;
     const now = new Date();
+
+    console.log(`[${diagnosticId}] createTutorial - Starting:`, {
+      subtopicId: input.subtopicId,
+      brandId: input.brandId || 'shared',
+      orderIndex: input.orderIndex,
+      hasContent: !!input.content,
+      contentBlocksCount: input.content?.blocks?.length,
+    });
 
     const values: NewTutorialSection = {
       subtopicId: input.subtopicId,
@@ -249,15 +258,43 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
       updatedAt: now,
     };
 
-    const [row] = await this.runRead(
-      this.dbInstance
-        .insert(tutorialSections)
-        .values(values)
-        .returning(),
-      'TutorialSectionRepository.createTutorial'
-    );
+    console.log(`[${diagnosticId}] Executing INSERT with values:`, {
+      subtopicId: values.subtopicId,
+      brandId: values.brandId,
+      orderIndex: values.orderIndex,
+      status: values.status,
+      version: values.version,
+    });
 
-    return row;
+    try {
+      const [row] = await this.runRead(
+        this.dbInstance
+          .insert(tutorialSections)
+          .values(values)
+          .returning(),
+        'TutorialSectionRepository.createTutorial'
+      );
+
+      console.log(`[${diagnosticId}] INSERT successful:`, {
+        id: row.id,
+        subtopicId: row.subtopicId,
+        status: row.status,
+      });
+
+      return row;
+    } catch (error) {
+      console.error(`[${diagnosticId}] INSERT failed:`, {
+        errorType: error?.constructor?.name,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorCode: (error as any)?.code,
+        errorDetail: (error as any)?.detail,
+        errorConstraint: (error as any)?.constraint,
+        errorTable: (error as any)?.table,
+        errorColumn: (error as any)?.column,
+        errorStack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
   }
 
   /**
