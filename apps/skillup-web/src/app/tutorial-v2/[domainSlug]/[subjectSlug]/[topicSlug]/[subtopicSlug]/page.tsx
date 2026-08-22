@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
 import { TutorialPageShell } from '@/share-branding/LearningExperience/components/TutorialPageShell';
@@ -21,14 +21,12 @@ export default async function TutorialV2SubtopicPage({ params }: PageProps) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
   
+  const resolved = await params;
+  const currentPath = `/tutorial-v2/${resolved.domainSlug}/${resolved.subjectSlug}/${resolved.topicSlug}/${resolved.subtopicSlug}`;
+  
   if (!accessToken) {
-    // Return 401 - authentication required
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1>Authentication Required</h1>
-        <p>Please log in to access tutorial content.</p>
-      </div>
-    );
+    // Redirect to login with return path
+    redirect(`/login?redirect=${encodeURIComponent(currentPath)}`);
   }
 
   // Verify token is valid
@@ -36,16 +34,10 @@ export default async function TutorialV2SubtopicPage({ params }: PageProps) {
   const verifyResult = await tokenService.verifyUserAccessToken(accessToken);
   
   if (!verifyResult.valid || !verifyResult.payload) {
-    // Invalid token - require re-authentication
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1>Authentication Required</h1>
-        <p>Your session has expired. Please log in again.</p>
-      </div>
-    );
+    // Invalid token - redirect to login
+    redirect(`/login?redirect=${encodeURIComponent(currentPath)}`);
   }
 
-  const resolved = await params;
   const payload = await getPublishedTutorialPagePayload({
     brandId: 'skillup',
     ...resolved,
@@ -58,12 +50,7 @@ export default async function TutorialV2SubtopicPage({ params }: PageProps) {
   // ✅ SECURITY: Check if tutorial content is actually available
   // If payload exists but has no blocks, it means brand authorization failed
   if (!payload.content?.blocks || payload.content.blocks.length === 0) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1>Access Denied</h1>
-        <p>This content is not available for your account.</p>
-      </div>
-    );
+    notFound(); // Return 404 for unauthorized content
   }
 
   return <TutorialPageShell payload={payload} />;
