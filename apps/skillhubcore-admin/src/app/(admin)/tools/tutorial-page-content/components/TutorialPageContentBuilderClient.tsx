@@ -844,7 +844,6 @@ export function TutorialPageContentBuilderClient() {
       }
 
       let response;
-      let result;
 
       if (existingTutorial) {
         // Step 4a: UPDATE existing tutorial
@@ -869,7 +868,7 @@ export function TutorialPageContentBuilderClient() {
         });
       }
 
-      result = await response.json();
+      const result = await response.json();
       
       if (!response.ok) {
         const errorMsg = result.error?.message || result.error || 'Save failed';

@@ -18,7 +18,7 @@ import {
   FileText,
   Compass,
   Layout,
-  Edit,
+  // Edit, // Unused for now
   GraduationCap,
   PlaySquare,
   ChevronRight,

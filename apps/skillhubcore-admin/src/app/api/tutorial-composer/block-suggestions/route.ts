@@ -117,7 +117,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { document, analysis, subtopicId, sectionType, brandId } = parseResult.data;
+    const { document, analysis, subtopicId, brandId } = parseResult.data;
+    // sectionType is available but unused in current implementation
 
     // Step 4: Validate that analysis is provided (required for Summary suggestions)
     if (!analysis) {

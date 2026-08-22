@@ -52,7 +52,7 @@ import {
   suggestionApplicationService,
 } from '@quiz/db-tutorial';
 import { eq, sql } from 'drizzle-orm';
-import { TutorialDocumentSchema } from '@quiz/types';
+import { TutorialDocumentSchema, type TutorialDocument } from '@quiz/types';
 
 // Helper type for content casting (content column is jsonb → unknown in TS)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,7 +141,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
               content: { text: 'Original paragraph content.' },
             },
           ],
-        } as any,
+        } as unknown as TutorialDocument, // Type assertion needed for test fixture
         version: 1,
         language: 'en',
         status: 'draft' as const,

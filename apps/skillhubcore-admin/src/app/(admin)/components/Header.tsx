@@ -24,7 +24,7 @@ export function Header({
   setIsRightSidebarOpen,
   headerTitle,
   headerSubtitle,
-  pathname,
+  // pathname, // Unused for now
   rightSidebarContent,
   isLoggingOut,
   handleLogout
