@@ -91,14 +91,29 @@ export class TutorialComposerService {
     const brandId = input.brandId || context.brandId || 'shared';
 
     console.log(`[${diagnosticId}] createTutorial - Starting:`, {
-      subtopicId: input.subtopicId,
+      externalSubtopicId: input.subtopicId,
       brandId,
       userId: context.userId,
       blocksCount: input.content?.blocks?.length,
       schemaVersion: input.content?.schemaVersion,
     });
 
-    // Step 1: Validate TutorialDocument schema
+    // Step 1: Resolve external subtopic ID to internal tutorial_subtopics ID
+    const internalSubtopicId = await this.repository.resolveSubtopicId(input.subtopicId);
+    
+    if (!internalSubtopicId) {
+      console.error(`[${diagnosticId}] Subtopic not found in tutorial database:`, {
+        externalSubtopicId: input.subtopicId,
+      });
+      throw new Error(`Subtopic ${input.subtopicId} not found in tutorial database. Please sync hierarchy first.`);
+    }
+    
+    console.log(`[${diagnosticId}] Resolved subtopic ID:`, {
+      external: input.subtopicId,
+      internal: internalSubtopicId,
+    });
+
+    // Step 2: Validate TutorialDocument schema
     const parseResult = TutorialDocumentSchema.safeParse(input.content);
     if (!parseResult.success) {
       console.error(`[${diagnosticId}] TutorialDocument validation failed:`, parseResult.error.errors);
@@ -115,11 +130,11 @@ export class TutorialComposerService {
     
     console.log(`[${diagnosticId}] TutorialDocument validation passed`);
 
-    // Step 2: Check for duplicate tutorial (subtopicId, brandId) already exists
-    console.log(`[${diagnosticId}] Checking for existing tutorial:`, { subtopicId: input.subtopicId, brandId });
+    // Step 3: Check for duplicate tutorial (internalSubtopicId, brandId) already exists
+    console.log(`[${diagnosticId}] Checking for existing tutorial:`, { internalSubtopicId, brandId });
     
     const existingTutorial = await this.repository.getTutorialBySubtopic(
-      input.subtopicId,
+      internalSubtopicId,
       brandId
     );
 
@@ -135,9 +150,9 @@ export class TutorialComposerService {
     
     console.log(`[${diagnosticId}] No existing tutorial found - proceeding with creation`);
 
-    // Step 3: Create tutorial
+    // Step 4: Create tutorial with internal subtopic ID (satisfies FK constraint)
     const repositoryInput: CreateTutorialInput = {
-      subtopicId: input.subtopicId,
+      subtopicId: internalSubtopicId, // Internal tutorial_subtopics.id (NOT external_id)
       brandId,
       content: document,
       orderIndex: input.orderIndex,

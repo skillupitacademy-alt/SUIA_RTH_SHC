@@ -14,6 +14,7 @@ import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { TutorialDocument } from '@quiz/types';
 import { db } from '../db';
 import { tutorialSections, type TutorialSection, type NewTutorialSection } from '../schema/tutorial-sections';
+import { tutorialSubtopics } from '../schema/tutorial-subtopics';
 import { TutorialRepositoryBase } from './base.repository';
 import type { TutorialDbClientLike } from '@quiz/types';
 
@@ -65,6 +66,23 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
    */
   withDb(dbClient: TutorialDbClientLike): this {
     return new TutorialSectionRepository(dbClient as typeof db) as this;
+  }
+
+  /**
+   * Resolve external subtopic ID to internal tutorial_subtopics ID
+   * External ID comes from main database, internal ID is used for FK
+   */
+  async resolveSubtopicId(externalSubtopicId: string): Promise<string | null> {
+    const rows = await this.runRead(
+      this.dbInstance
+        .select({ id: tutorialSubtopics.id })
+        .from(tutorialSubtopics)
+        .where(eq(tutorialSubtopics.externalId, externalSubtopicId))
+        .limit(1),
+      'TutorialSectionRepository.resolveSubtopicId'
+    );
+    
+    return rows[0]?.id ?? null;
   }
 
   /**
