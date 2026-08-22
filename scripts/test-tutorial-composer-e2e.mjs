@@ -6,8 +6,7 @@
  * - Login
  * - Create tutorial with valid UUID
  * - Read/verify
- * - Update
- * - Multi-block persistence
+ * - Update with 5 blocks
  * - Publish
  * - UUID validation regression
  * 
@@ -153,7 +152,6 @@ async function test02_validateSubtopic() {
   log(`Subtopic ID: ${TEST_SUBTOPIC_ID}`);
   
   try {
-    // Try to fetch existing tutorial for this subtopic
     const response = await fetch(
       `${BASE_URL}/api/tutorial-composer/sections?subtopicId=${TEST_SUBTOPIC_ID}&brandId=${BRAND_ID}&limit=1`,
       {
@@ -249,19 +247,6 @@ async function test03_createD1WithValidUUID() {
         error: result.error,
       });
       
-      if (response.status === 500) {
-        console.error('\n🔴 HTTP 500 INTERNAL ERROR DETECTED');
-        console.error('This is the primary issue to investigate.');
-        console.error('Check LOCAL server logs for detailed exception.');
-        console.error('\nLikely causes:');
-        console.error('- Database constraint violation');
-        console.error('- Foreign key constraint');
-        console.error('- NOT NULL constraint');
-        console.error('- Unique constraint');
-        console.error('- Missing required field');
-        console.error('- Schema mismatch\n');
-      }
-      
       fail(testName, `HTTP ${response.status}: ${JSON.stringify(result.error)}`);
       throw new Error(`Create failed: ${response.status}`);
     }
@@ -289,7 +274,7 @@ async function test03_createD1WithValidUUID() {
 // TEST 04 - READ AFTER CREATE
 // ============================================================
 
-async function test04_readAfterCreate(expectedBlockId) {
+async function test04_readAfterCreate(tutorialId, expectedBlockId) {
   const testName = 'Read After Create';
   log(`TEST 04: ${testName}`);
   
@@ -310,7 +295,7 @@ async function test04_readAfterCreate(expectedBlockId) {
     
     const tutorial = result.data[0];
     
-    assert(tutorial.id === createdTutorialId, testName, 'Tutorial ID mismatch');
+    assert(tutorial.id === tutorialId, testName, 'Tutorial ID mismatch');
     assert(tutorial.content, testName, 'No content in tutorial');
     assert(tutorial.content.schemaVersion === 1, testName, 'Schema version mismatch');
     assert(tutorial.content.blocks, testName, 'No blocks array');
@@ -338,7 +323,7 @@ async function test04_readAfterCreate(expectedBlockId) {
 // TEST 05 - UPDATE WITH MULTIPLE BLOCKS
 // ============================================================
 
-async function test05_updateWithMultipleBlocks() {
+async function test05_updateWithMultipleBlocks(tutorialId) {
   const testName = 'Update with Multiple Blocks';
   log(`TEST 05: ${testName}`);
   
@@ -389,39 +374,22 @@ async function test05_updateWithMultipleBlocks() {
       ]
     };
     
-    const payload = {
-      subtopicId: TEST_SUBTOPIC_ID,
-      brandId: BRAND_ID,
-      content: tutorialDocument,
-      orderIndex: 0,
-    };
-    
-    log(`Sending POST request (should UPDATE existing):`, {
-      subtopicId: payload.subtopicId,
-      brandId: payload.brandId,
-      blocksCount: payload.content.blocks.length,
+    log(`Sending PATCH request to update tutorial ${tutorialId}:`, {
+      blocksCount: tutorialDocument.blocks.length,
     });
     
-    const response = await fetch(`${BASE_URL}/api/tutorial-composer/sections`, {
-      method: 'POST',
+    const response = await fetch(`${BASE_URL}/api/tutorial-composer/sections/${tutorialId}`, {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Cookie': `accessToken=${adminToken}`,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        content: tutorialDocument,
+      }),
     });
     
     const result = await response.json();
-    
-    // This may fail with 409 if the system requires explicit UPDATE endpoint
-    // Or it may succeed if POST handles upsert logic
-    
-    if (response.status === 409) {
-      log(`Got 409 Conflict - tutorial already exists. This is expected.`);
-      log(`System requires explicit UPDATE endpoint or DELETE before CREATE.`);
-      pass(testName + ' (409 expected)');
-      return { blockIds, skipped: true };
-    }
     
     if (!response.ok) {
       fail(testName, `HTTP ${response.status}: ${JSON.stringify(result.error)}`);
@@ -429,14 +397,16 @@ async function test05_updateWithMultipleBlocks() {
     }
     
     assert(result.data, testName, 'No data in response');
+    assert(result.data.content.blocks.length === 5, testName, `Expected 5 blocks, got ${result.data.content.blocks.length}`);
     
     log(`Tutorial updated successfully:`, {
       id: result.data.id,
       blocksCount: result.data.content?.blocks?.length,
+      version: result.data.version,
     });
     
     pass(testName);
-    return { blockIds, skipped: false };
+    return { blockIds };
   } catch (error) {
     fail(testName, error.message);
     throw error;
@@ -444,12 +414,154 @@ async function test05_updateWithMultipleBlocks() {
 }
 
 // ============================================================
-// TEST 06 - INVALID UUID REGRESSION
+// TEST 06 - READ 5-BLOCK DOCUMENT
 // ============================================================
 
-async function test06_invalidUUIDRegression() {
-  const testName = 'Invalid UUID Rejection';
+async function test06_read5BlockDocument(tutorialId, expectedBlockIds) {
+  const testName = 'Read 5-Block Document';
   log(`TEST 06: ${testName}`);
+  
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/tutorial-composer/sections?subtopicId=${TEST_SUBTOPIC_ID}&brandId=${BRAND_ID}&limit=1`,
+      {
+        headers: { 'Cookie': `accessToken=${adminToken}` },
+      }
+    );
+    
+    assert(response.ok, testName, `Read failed: ${response.status}`);
+    
+    const result = await response.json();
+    
+    assert(result.data, testName, 'No data in response');
+    assert(result.data.length > 0, testName, 'No tutorials found');
+    
+    const tutorial = result.data[0];
+    
+    assert(tutorial.id === tutorialId, testName, 'Tutorial ID mismatch');
+    assert(tutorial.content.blocks.length === 5, testName, `Expected 5 blocks, got ${tutorial.content.blocks.length}`);
+    
+    // Verify block IDs match
+    const actualBlockIds = tutorial.content.blocks.map(b => b.id);
+    expectedBlockIds.forEach((expectedId, index) => {
+      assert(actualBlockIds[index] === expectedId, testName, `Block ${index} ID mismatch`);
+    });
+    
+    // Verify all are valid UUIDs
+    actualBlockIds.forEach((id, index) => {
+      assert(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id), testName, `Block ${index} has invalid UUID: ${id}`);
+    });
+    
+    log(`5-block document read successfully:`, {
+      id: tutorial.id,
+      blocksCount: tutorial.content.blocks.length,
+      blockIds: actualBlockIds,
+    });
+    
+    pass(testName);
+  } catch (error) {
+    fail(testName, error.message);
+    throw error;
+  }
+}
+
+// ============================================================
+// TEST 07 - PUBLISH TUTORIAL
+// ============================================================
+
+async function test07_publishTutorial(tutorialId) {
+  const testName = 'Publish Tutorial';
+  log(`TEST 07: ${testName}`);
+  
+  try {
+    const response = await fetch(`${BASE_URL}/api/tutorial-composer/sections/${tutorialId}/publish`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': `accessToken=${adminToken}`,
+      },
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      fail(testName, `HTTP ${response.status}: ${JSON.stringify(result.error)}`);
+      throw new Error(`Publish failed: ${response.status}`);
+    }
+    
+    assert(result.data, testName, 'No data in response');
+    assert(result.data.status === 'deployed', testName, `Expected status 'deployed', got '${result.data.status}'`);
+    assert(result.data.publishedAt, testName, 'publishedAt is null');
+    
+    log(`Tutorial published successfully:`, {
+      id: result.data.id,
+      status: result.data.status,
+      publishedAt: result.data.publishedAt,
+    });
+    
+    pass(testName);
+  } catch (error) {
+    fail(testName, error.message);
+    throw error;
+  }
+}
+
+// ============================================================
+// TEST 08 - READ PUBLISHED TUTORIAL
+// ============================================================
+
+async function test08_readPublishedTutorial(tutorialId, expectedBlockIds) {
+  const testName = 'Read Published Tutorial';
+  log(`TEST 08: ${testName}`);
+  
+  try {
+    const response = await fetch(
+      `${BASE_URL}/api/tutorial-composer/sections?subtopicId=${TEST_SUBTOPIC_ID}&brandId=${BRAND_ID}&status=deployed&limit=1`,
+      {
+        headers: { 'Cookie': `accessToken=${adminToken}` },
+      }
+    );
+    
+    assert(response.ok, testName, `Read failed: ${response.status}`);
+    
+    const result = await response.json();
+    
+    assert(result.data, testName, 'No data in response');
+    assert(result.data.length > 0, testName, 'No published tutorials found');
+    
+    const tutorial = result.data[0];
+    
+    assert(tutorial.id === tutorialId, testName, 'Tutorial ID mismatch');
+    assert(tutorial.status === 'deployed', testName, `Expected status 'deployed', got '${tutorial.status}'`);
+    assert(tutorial.content.blocks.length === 5, testName, `Expected 5 blocks, got ${tutorial.content.blocks.length}`);
+    
+    // Verify blocks persisted through publish
+    const actualBlockIds = tutorial.content.blocks.map(b => b.id);
+    expectedBlockIds.forEach((expectedId, index) => {
+      assert(actualBlockIds[index] === expectedId, testName, `Block ${index} ID changed after publish`);
+    });
+    
+    log(`Published tutorial verified:`, {
+      id: tutorial.id,
+      status: tutorial.status,
+      blocksCount: tutorial.content.blocks.length,
+      publishedAt: tutorial.publishedAt,
+    });
+    
+    pass(testName);
+  } catch (error) {
+    fail(testName, error.message);
+    throw error;
+  }
+}
+
+// ============================================================
+// TEST 09 - INVALID UUID REGRESSION
+// ============================================================
+
+async function test09_invalidUUIDRegression() {
+  const testName = 'Invalid UUID Rejection';
+  log(`TEST 09: ${testName}`);
   
   try {
     const invalidBlockId = `block-definition-d1-${Date.now().toString(36)}`;
@@ -512,12 +624,12 @@ async function test06_invalidUUIDRegression() {
 }
 
 // ============================================================
-// TEST 07 - VALID UUID REGRESSION
+// TEST 10 - VALID UUID REGRESSION
 // ============================================================
 
-async function test07_validUUIDRegression() {
+async function test10_validUUIDRegression() {
   const testName = 'Valid UUID Acceptance';
-  log(`TEST 07: ${testName}`);
+  log(`TEST 10: ${testName}`);
   
   try {
     const validBlockId = crypto.randomUUID();
@@ -605,19 +717,28 @@ async function main() {
     await test02_validateSubtopic();
     console.log();
     
-    const { blockId } = await test03_createD1WithValidUUID();
+    const { tutorialId, blockId } = await test03_createD1WithValidUUID();
     console.log();
     
-    await test04_readAfterCreate(blockId);
+    await test04_readAfterCreate(tutorialId, blockId);
     console.log();
     
-    await test05_updateWithMultipleBlocks();
+    const { blockIds } = await test05_updateWithMultipleBlocks(tutorialId);
     console.log();
     
-    await test06_invalidUUIDRegression();
+    await test06_read5BlockDocument(tutorialId, blockIds);
     console.log();
     
-    await test07_validUUIDRegression();
+    await test07_publishTutorial(tutorialId);
+    console.log();
+    
+    await test08_readPublishedTutorial(tutorialId, blockIds);
+    console.log();
+    
+    await test09_invalidUUIDRegression();
+    console.log();
+    
+    await test10_validUUIDRegression();
     console.log();
     
   } catch (error) {
