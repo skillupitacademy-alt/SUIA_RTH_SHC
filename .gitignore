@@ -153,6 +153,21 @@ db-audit-output.txt
 # Kiro specs (AI assistant workspace)
 .kiro/specs/
 
+# Analysis artifacts (refactoring documentation)
+.analysis/
+
+# Tutorial composer E2E test scripts
+scripts/test-tutorial-composer-c1-e2e.mjs
+scripts/check-subtopic-sync.mjs
+scripts/diagnose-tutorial-404-clean.mjs
+scripts/find-all-published-tutorials.mjs
+scripts/test-delivery-service-fix.mjs
+scripts/test-tutorial-delivery-e2e.mjs
+scripts/test-tutorial-delivery-simple.mjs
+
+# Next.js TypeScript declarations (auto-generated)
+**/next-env.d.ts
+
 # Migration and transformation reports
 scripts/deployment/*.txt
 scripts/transformation/*.txt
