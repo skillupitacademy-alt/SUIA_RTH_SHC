@@ -373,7 +373,7 @@ function tutorialBlocksToInstances(
           id: block.id,
           type: 'definition',
           version: 'v1',
-          versionCode: 'D1',
+          versionCode: ('version' in block && block.version) ? block.version : 'D1', // Preserve database version, fallback to D1 for legacy
           title: extractBlockTitle(payload, 'definition'),
           payload,
           sourceFormat: 'json',
@@ -388,7 +388,7 @@ function tutorialBlocksToInstances(
           id: block.id,
           type: 'code',
           version: 'v1',
-          versionCode: 'C1',
+          versionCode: ('version' in block && block.version) ? block.version : 'C1', // Preserve database version, fallback to C1 for legacy
           title: extractBlockTitle(payload, 'code'),
           payload,
           sourceFormat: 'json',
@@ -403,7 +403,7 @@ function tutorialBlocksToInstances(
           id: block.id,
           type: 'summary',
           version: 'v1',
-          versionCode: 'S1',
+          versionCode: 'S1', // Summary blocks don't have version field yet in type system
           title: extractBlockTitle(payload, 'summary'),
           payload,
           sourceFormat: 'json',
@@ -1316,7 +1316,7 @@ export function TutorialPageContentBuilderClient() {
                       block={{
                         id: 'preview',
                         type: 'definition',
-                        version: 'D1',
+                        version: selectedVersion.code as 'D1', // Use selected version from UI
                         content: activeBlockPreview as DefinitionD1AuthorContent,
                       }}
                       theme={themeForBrand(form.brandId)}
@@ -1347,7 +1347,7 @@ export function TutorialPageContentBuilderClient() {
                               block={{
                                 id: instance.id,
                                 type: 'definition',
-                                version: 'D1',
+                                version: instance.versionCode as 'D1', // Use actual version from instance
                                 content: instance.payload as DefinitionD1AuthorContent,
                               }}
                               theme={themeForBrand(form.brandId)}
