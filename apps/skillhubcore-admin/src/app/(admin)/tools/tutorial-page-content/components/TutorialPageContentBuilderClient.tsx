@@ -46,6 +46,7 @@ import {
   type BlockInstance,
 } from '../document/documentTransformation';
 import { parseSource, type SourceFormat } from '../document/sourceParser';
+import { themeForBrand } from '../theme/brandTheme';
 import {
   getBlockTypes,
   getBlockType,
@@ -106,26 +107,6 @@ const initialForm: FormState = {
   blockType: 'definition',
   versionId: 'v1',
 };
-
-function themeForBrand(brandId: TutorialSidebarBrandId): BrandTutorialTheme {
-  if (brandId === 'skillup' || brandId === 'shared') {
-    return {
-      primary: '#f54a8d',
-      primaryDark: '#d63d7a',
-      secondary: '#0B1B3D',
-      activeBackground: '#fff0f6',
-      completed: '#08a64a',
-    };
-  }
-
-  return {
-    primary: '#d03f00',
-    primaryDark: '#b63600',
-    secondary: '#124fd6',
-    activeBackground: '#eef3fa',
-    completed: '#08a64a',
-  };
-}
 
 export function TutorialPageContentBuilderClient() {
   const [hierarchy, setHierarchy] = useState<HierarchyState>(initialHierarchy);
