@@ -47,6 +47,7 @@ import {
 } from '../document/documentTransformation';
 import { parseSource, type SourceFormat } from '../document/sourceParser';
 import { themeForBrand } from '../theme/brandTheme';
+import { TutorialComposerHeader } from './TutorialComposerHeader';
 import {
   getBlockTypes,
   getBlockType,
@@ -534,24 +535,10 @@ export function TutorialPageContentBuilderClient() {
       <div className="mx-auto max-w-[1700px] space-y-6">
         {/* Top Header & Compact Horizontal Authoring Toolbar */}
         <header className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-4">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#e11d48]">Tutorial Page Builder</p>
-              <h1 className="text-xl font-extrabold text-[#071f63] font-outfit">Create & Append Block Instances</h1>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              {isLoadingDocument ? (
-                <span className="font-mono text-amber-600">
-                  Loading document…
-                </span>
-              ) : (
-                <span className="font-mono text-slate-600">
-                  Document blocks: <strong>{documentBlocks.length}</strong>
-                </span>
-              )}
-            </div>
-          </div>
+          <TutorialComposerHeader 
+            isLoadingDocument={isLoadingDocument}
+            documentBlockCount={documentBlocks.length}
+          />
 
           {/* Horizontal Hierarchy & Content Selector Toolbar */}
           <div className="flex flex-wrap items-end gap-3">
