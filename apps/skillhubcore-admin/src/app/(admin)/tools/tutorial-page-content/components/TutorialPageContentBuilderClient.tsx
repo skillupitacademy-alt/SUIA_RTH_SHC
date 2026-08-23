@@ -51,6 +51,7 @@ import { TutorialComposerHeader } from './TutorialComposerHeader';
 import { TutorialHierarchySelector } from './TutorialHierarchySelector';
 import { TutorialBlockSelector } from './TutorialBlockSelector';
 import { TutorialDocumentBlocksList } from './TutorialDocumentBlocksList';
+import { TutorialPreviewPane } from './TutorialPreviewPane';
 import {
   getBlockTypes,
   getBlockType,
@@ -683,128 +684,16 @@ export function TutorialPageContentBuilderClient() {
           </section>
 
           {/* Right Column: Preview Target Header & Live Preview Pane */}
-          <section className="space-y-4 min-w-0">
-            <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-4 text-sm font-bold text-[#071f63] shadow-xl border-t border-white/60 -translate-y-1 flex flex-wrap items-center justify-between gap-2">
-              <span className="truncate">Preview Target: {selectedSubtopic?.name ?? 'Select a subtopic'}</span>
-              
-              {/* Preview Mode Switcher */}
-              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('document')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    previewMode === 'document'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Full Document ({documentBlocks.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('active-block')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    previewMode === 'active-block'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Active Block ({selectedVersion.code})
-                </button>
-              </div>
-            </div>
-
-            {/* Live Rendered Content Container (Preserving original component themes) */}
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xl min-h-[600px] overflow-y-auto space-y-8">
-              {previewMode === 'active-block' ? (
-                <div>
-                  <div className="mb-4 pb-2 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 font-mono">
-                    <span>Active Editor Preview</span>
-                    <span>{selectedVersion.code} Block</span>
-                  </div>
-                  {form.blockType === 'definition' && (
-                    <TutorialBlockRenderer
-                      block={{
-                        id: 'preview',
-                        type: 'definition',
-                        version: selectedVersion.code, // Use selected version without cast
-                        content: activeBlockPreview as DefinitionD1AuthorContent,
-                      } as TutorialBlock}
-                      theme={themeForBrand(form.brandId)}
-                      depth={0}
-                    />
-                  )}
-                  {form.blockType === 'code' && (
-                    <TutorialBlockRenderer
-                      block={{
-                        id: 'preview',
-                        type: 'code',
-                        version: selectedVersion.code,
-                        content: toCanonicalCodeC1(activeBlockPreview).content, // Use .content (pure)
-                      } as TutorialBlock}
-                      theme={themeForBrand(form.brandId)}
-                      depth={0}
-                    />
-                  )}
-                  {form.blockType === 'summary' && <TutorialSummaryContent payload={activeBlockPreview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
-                </div>
-              ) : (
-                documentBlocks.length === 0 ? (
-                  <div className="py-16 text-center text-slate-400 text-sm">
-                    No blocks in document yet. Add blocks from the left authoring panel to preview the full document.
-                  </div>
-                ) : (
-                  <>
-                    {documentBlocks.map((instance, idx) => (
-                      <div
-                        key={instance.id}
-                        className="relative"
-                        data-tutorial-block-id={instance.id}
-                      >
-                        {idx > 0 && <div className="my-8 border-t border-dashed border-slate-200" />}
-                        
-                        {instance.type === 'definition' && (
-                          <div data-tutorial-block-type="definition">
-                            <TutorialBlockRenderer
-                              block={{
-                                id: instance.id,
-                                type: 'definition',
-                                version: instance.versionCode, // Use actual version without cast
-                                content: instance.payload as DefinitionD1AuthorContent,
-                              } as TutorialBlock}
-                              theme={themeForBrand(form.brandId)}
-                              depth={0}
-                            />
-                          </div>
-                        )}
-                        
-                        {instance.type === 'code' && (
-                          <div data-tutorial-block-type="code">
-                            <TutorialBlockRenderer
-                              block={{
-                                id: instance.id,
-                                type: 'code',
-                                version: instance.versionCode,
-                                content: toCanonicalCodeC1(instance.payload).content, // Use .content (pure)
-                              } as TutorialBlock}
-                              theme={themeForBrand(form.brandId)}
-                              depth={0}
-                            />
-                          </div>
-                        )}
-                        
-                        {instance.type === 'summary' && (
-                          <div data-tutorial-block-type="summary">
-                            <TutorialSummaryContent payload={instance.payload as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </>
-                )
-              )}
-            </div>
-          </section>
+          <TutorialPreviewPane
+            subtopicName={selectedSubtopic?.name ?? ''}
+            previewMode={previewMode}
+            onPreviewModeChange={setPreviewMode}
+            documentBlocks={documentBlocks}
+            activeBlockType={form.blockType}
+            activeBlockVersion={selectedVersion.code}
+            activeBlockPreview={activeBlockPreview}
+            brandId={form.brandId}
+          />
         </div>
       </div>
     </main>
