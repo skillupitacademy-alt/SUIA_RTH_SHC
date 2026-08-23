@@ -104,6 +104,9 @@ export function TutorialPageContentBuilderClient() {
   // Track unsaved local changes to prevent async hydration from overwriting user edits
   // This protects against race conditions where user adds/removes blocks while fetch is pending
   const hasUnsavedLocalChangesRef = useRef(false);
+  
+  // Track which block is currently being edited (null = new block mode)
+  const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
 
   // Check for duplicate IDs (React reconciliation issue)
   useEffect(() => {
@@ -208,14 +211,14 @@ export function TutorialPageContentBuilderClient() {
   }
 
   /**
-   * Append new block instance to TutorialDocument
+   * Add new block instance OR update existing block instance in TutorialDocument
    */
   function handleAddBlockInstance() {
     try {
       const parsed = parseSource(sourceFormat, sourceContent, form.blockType) as 
         TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload;
       
-      // Canonicalize C1 blocks immediately upon Add
+      // Canonicalize C1 blocks immediately upon Add/Update
       let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | CodeC1AuthorContent = parsed;
       let payloadFormat: 'legacy' | 'canonical' = 'legacy';
       
@@ -232,26 +235,53 @@ export function TutorialPageContentBuilderClient() {
         }
       }
       
-      // Generate a valid UUID for the block ID (required by API validation)
-      const uniqueId = crypto.randomUUID();
       const title = extractBlockTitle(payload, form.blockType);
 
-      const newInstance: BlockInstance = {
-        id: uniqueId,
-        type: form.blockType,
-        version: form.versionId,
-        versionCode: selectedVersion.code,
-        title,
-        payload,
-        payloadFormat,
-        sourceFormat,
-        sourceContent, // Preserve original author input
-      };
+      // Check if we're editing an existing block
+      if (editingBlockId) {
+        // UPDATE mode: replace existing block in place
+        hasUnsavedLocalChangesRef.current = true;
+        setDocumentBlocks((prev) => 
+          prev.map((block) => 
+            block.id === editingBlockId
+              ? {
+                  ...block,
+                  type: form.blockType,
+                  version: form.versionId,
+                  versionCode: selectedVersion.code,
+                  title,
+                  payload,
+                  payloadFormat,
+                  sourceFormat,
+                  sourceContent,
+                }
+              : block
+          )
+        );
+        setPreviewMode('document');
+        setMessage(`Updated block: ${selectedVersion.code} (${title})`);
+        setEditingBlockId(null); // Clear editing state
+      } else {
+        // ADD mode: append new block
+        const uniqueId = crypto.randomUUID();
 
-      hasUnsavedLocalChangesRef.current = true;
-      setDocumentBlocks((prev) => [...prev, newInstance]);
-      setPreviewMode('document');
-      setMessage(`Appended new block instance: ${selectedVersion.code} (${title})`);
+        const newInstance: BlockInstance = {
+          id: uniqueId,
+          type: form.blockType,
+          version: form.versionId,
+          versionCode: selectedVersion.code,
+          title,
+          payload,
+          payloadFormat,
+          sourceFormat,
+          sourceContent,
+        };
+
+        hasUnsavedLocalChangesRef.current = true;
+        setDocumentBlocks((prev) => [...prev, newInstance]);
+        setPreviewMode('document');
+        setMessage(`Appended new block instance: ${selectedVersion.code} (${title})`);
+      }
     } catch (error) {
       setMessage(error instanceof Error ? `Cannot add block: ${error.message}` : 'Failed to add block instance.');
     }
@@ -263,7 +293,23 @@ export function TutorialPageContentBuilderClient() {
   function handleRemoveBlockInstance(id: string) {
     hasUnsavedLocalChangesRef.current = true;
     setDocumentBlocks((prev) => prev.filter((b) => b.id !== id));
+    // If we're removing the block being edited, clear editing state
+    if (editingBlockId === id) {
+      setEditingBlockId(null);
+    }
     setMessage('Block instance removed from document.');
+  }
+  
+  /**
+   * Clear editing mode and start fresh with a new block
+   */
+  function handleStartNewBlock() {
+    setEditingBlockId(null);
+    const example = getDefaultPayload(form.blockType, form.versionId);
+    setSourceContent(JSON.stringify(example, null, 2));
+    setActiveBlockPreview(example);
+    setMemoryModelWarning('');
+    setMessage('Ready to create a new block.');
   }
 
   /**
@@ -563,11 +609,13 @@ export function TutorialPageContentBuilderClient() {
             <TutorialEditorPanel
               sourceContent={sourceContent}
               versionCode={selectedVersion.code}
+              isEditingExisting={editingBlockId !== null}
               onContentChange={(content) => {
                 setSourceContent(content);
                 setMemoryModelWarning(''); // Clear warning when user edits
               }}
               onAddBlock={handleAddBlockInstance}
+              onStartNewBlock={handleStartNewBlock}
               onPreviewBlock={handlePreviewCurrent}
               onSaveDraft={() => save('draft')}
               onPublish={() => save('published')}
@@ -586,7 +634,8 @@ export function TutorialPageContentBuilderClient() {
                 setActiveBlockPreview(block.payload);
                 setForm((prev) => ({ ...prev, blockType: block.type, versionId: block.version }));
                 setMemoryModelWarning(''); // Clear warning when loading existing block
-                setMessage(`Loaded block #${index + 1} (${block.versionCode}) into editor.`);
+                setEditingBlockId(block.id); // Track which block is being edited
+                setMessage(`Loaded block #${index + 1} (${block.versionCode}) into editor for editing.`);
               }}
               onRemoveBlock={handleRemoveBlockInstance}
             />

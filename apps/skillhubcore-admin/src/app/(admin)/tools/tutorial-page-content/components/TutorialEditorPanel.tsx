@@ -18,10 +18,12 @@ interface TutorialEditorPanelProps {
   // Editor state
   sourceContent: string;
   versionCode: string;
+  isEditingExisting: boolean;
   
   // Actions
   onContentChange: (content: string) => void;
   onAddBlock: () => void;
+  onStartNewBlock: () => void;
   onPreviewBlock: () => void;
   onSaveDraft: () => void;
   onPublish: () => void;
@@ -37,8 +39,10 @@ interface TutorialEditorPanelProps {
 export function TutorialEditorPanel({
   sourceContent,
   versionCode,
+  isEditingExisting,
   onContentChange,
   onAddBlock,
+  onStartNewBlock,
   onPreviewBlock,
   onSaveDraft,
   onPublish,
@@ -69,14 +73,33 @@ export function TutorialEditorPanel({
 
       {/* Main Action Buttons */}
       <div className="mt-4 space-y-2.5">
-        {/* Primary Add Block Action */}
+        {/* Editing Mode Indicator */}
+        {isEditingExisting && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200">
+            <span className="text-xs font-bold text-blue-700">✏️ Editing existing block</span>
+            <button
+              type="button"
+              onClick={onStartNewBlock}
+              className="ml-auto text-xs font-bold text-blue-600 hover:text-blue-800 underline"
+            >
+              Start New Block Instead
+            </button>
+          </div>
+        )}
+        
+        {/* Primary Add/Update Block Action */}
         <button
           type="button"
           onClick={onAddBlock}
           className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-4 py-3 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:scale-[1.01] active:scale-95 transition-all"
         >
           <Plus size={16} />
-          <span>+ Add {versionCode} Block Instance to Document</span>
+          <span>
+            {isEditingExisting 
+              ? `✓ Update Block in Document (${versionCode})`
+              : `+ Add ${versionCode} Block Instance to Document`
+            }
+          </span>
         </button>
 
         {/* Secondary Actions Row */}
