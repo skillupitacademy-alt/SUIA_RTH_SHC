@@ -83,7 +83,7 @@ export function tutorialBlocksToInstances(
           sourceContent,
         };
 
-      case 'code':
+      case 'code': {
         // Check if already canonical C1
         const isCanonicalC1 = CodeC1AuthorContentSchema.safeParse(block.content).success;
         
@@ -109,6 +109,7 @@ export function tutorialBlocksToInstances(
           sourceFormat: 'json',
           sourceContent,
         };
+      }
 
       case 'summary':
         payload = block.content as unknown as TutorialSummaryPayload;

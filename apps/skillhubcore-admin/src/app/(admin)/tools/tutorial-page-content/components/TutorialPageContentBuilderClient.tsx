@@ -1,20 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Eye,
-  Plus,
-  Save,
-  Send,
-  Trash2,
-  FileCode,
-  ListOrdered,
-} from 'lucide-react';
 
-import { TutorialBlockRenderer } from '@quiz/ui';
-import { TutorialSummaryContent } from '@/share-branding/LearningExperience/components/TutorialSummaryContent';
 import type {
-  BrandTutorialTheme,
   TutorialCodePayload,
   TutorialDefinitionPayload,
   TutorialPageContentType,
@@ -22,17 +10,12 @@ import type {
   TutorialSummaryPayload,
   TutorialDocument,
   TutorialBlock,
-  DefinitionD1AuthorContent,
   CodeC1AuthorContent,
 } from '@quiz/types';
-import { CodeC1AuthorContentSchema } from '@quiz/types';
 
 const SHARED_BRAND_ID: TutorialSidebarBrandId = 'shared';
 
-import {
-  toCanonicalCodeC1,
-  type CanonicalCodeC1Result,
-} from '../blocks/code/C1/codeC1.converter';
+import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import {
   toTutorialBlock,
   tutorialBlocksToInstances,
@@ -40,7 +23,6 @@ import {
   type BlockInstance,
 } from '../document/documentTransformation';
 import { parseSource, type SourceFormat } from '../document/sourceParser';
-import { themeForBrand } from '../theme/brandTheme';
 import { TutorialComposerHeader } from './TutorialComposerHeader';
 import { TutorialHierarchySelector } from './TutorialHierarchySelector';
 import { TutorialBlockSelector } from './TutorialBlockSelector';
@@ -48,13 +30,7 @@ import { TutorialDocumentBlocksList } from './TutorialDocumentBlocksList';
 import { TutorialPreviewPane } from './TutorialPreviewPane';
 import { TutorialEditorPanel } from './TutorialEditorPanel';
 import { AiInstructionContainer } from './AiInstructionContainer';
-import {
-  getBlockTypes,
-  getBlockType,
-  getDefaultPayload,
-  type BlockRegistryEntry,
-  type BlockVersionRegistryEntry,
-} from '../registry';
+import { getBlockTypes, getBlockType, getDefaultPayload } from '../registry';
 
 interface HierarchyRow {
   id: string;
@@ -152,7 +128,7 @@ export function TutorialPageContentBuilderClient() {
     setSourceContent(JSON.stringify(example, null, 2));
     setActiveBlockPreview(example);
     setMemoryModelWarning(''); // Clear warning when block type changes
-  }, [form.blockType]);
+  }, [form.blockType, form.versionId]);
 
   // Hydrate existing tutorial when subtopic selection changes
   useEffect(() => {
