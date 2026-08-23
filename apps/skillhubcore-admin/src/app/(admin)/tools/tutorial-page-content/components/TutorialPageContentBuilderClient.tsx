@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 
 import { TutorialBlockRenderer } from '@quiz/ui';
-import { TutorialCodeContent } from '@/share-branding/LearningExperience/components/TutorialCodeContent';
 import { TutorialSummaryContent } from '@/share-branding/LearningExperience/components/TutorialSummaryContent';
 import type {
   BrandTutorialTheme,
@@ -1316,14 +1315,25 @@ export function TutorialPageContentBuilderClient() {
                       block={{
                         id: 'preview',
                         type: 'definition',
-                        version: selectedVersion.code as 'D1', // Use selected version from UI
+                        version: selectedVersion.code, // Use selected version without cast
                         content: activeBlockPreview as DefinitionD1AuthorContent,
-                      }}
+                      } as TutorialBlock}
                       theme={themeForBrand(form.brandId)}
                       depth={0}
                     />
                   )}
-                  {form.blockType === 'code' && <TutorialCodeContent payload={activeBlockPreview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
+                  {form.blockType === 'code' && (
+                    <TutorialBlockRenderer
+                      block={{
+                        id: 'preview',
+                        type: 'code',
+                        version: selectedVersion.code, // Use selected version without cast
+                        content: activeBlockPreview as CodeC1AuthorContent,
+                      } as TutorialBlock}
+                      theme={themeForBrand(form.brandId)}
+                      depth={0}
+                    />
+                  )}
                   {form.blockType === 'summary' && <TutorialSummaryContent payload={activeBlockPreview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
                 </div>
               ) : (
@@ -1347,9 +1357,9 @@ export function TutorialPageContentBuilderClient() {
                               block={{
                                 id: instance.id,
                                 type: 'definition',
-                                version: instance.versionCode as 'D1', // Use actual version from instance
+                                version: instance.versionCode, // Use actual version without cast
                                 content: instance.payload as DefinitionD1AuthorContent,
-                              }}
+                              } as TutorialBlock}
                               theme={themeForBrand(form.brandId)}
                               depth={0}
                             />
@@ -1358,7 +1368,16 @@ export function TutorialPageContentBuilderClient() {
                         
                         {instance.type === 'code' && (
                           <div data-tutorial-block-type="code">
-                            <TutorialCodeContent payload={instance.payload as TutorialCodePayload} theme={themeForBrand(form.brandId)} />
+                            <TutorialBlockRenderer
+                              block={{
+                                id: instance.id,
+                                type: 'code',
+                                version: instance.versionCode, // Use actual version without cast
+                                content: instance.payload as CodeC1AuthorContent,
+                              } as TutorialBlock}
+                              theme={themeForBrand(form.brandId)}
+                              depth={0}
+                            />
                           </div>
                         )}
                         
