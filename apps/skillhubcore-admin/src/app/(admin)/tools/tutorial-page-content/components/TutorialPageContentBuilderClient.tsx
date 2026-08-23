@@ -52,6 +52,7 @@ import { TutorialHierarchySelector } from './TutorialHierarchySelector';
 import { TutorialBlockSelector } from './TutorialBlockSelector';
 import { TutorialDocumentBlocksList } from './TutorialDocumentBlocksList';
 import { TutorialPreviewPane } from './TutorialPreviewPane';
+import { TutorialEditorPanel } from './TutorialEditorPanel';
 import {
   getBlockTypes,
   getBlockType,
@@ -591,83 +592,23 @@ export function TutorialPageContentBuilderClient() {
             />
 
             {/* JSON Content Editor & Append Controls */}
-            <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
-              <div className="flex items-center justify-between pb-2 text-xs font-bold uppercase tracking-wider text-slate-600">
-                <span className="flex items-center gap-1.5">
-                  <FileCode size={14} className="text-pink-600" />
-                  <span>Block Content Editor</span>
-                  <span className="text-[10px] text-slate-400 font-mono">({selectedVersion.code})</span>
-                </span>
-                <span className="text-[10px] text-pink-600 font-mono font-semibold">Pure Block Schema</span>
-              </div>
-              <textarea
-                className="h-[400px] w-full rounded-xl border border-slate-800 bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 resize-y"
-                value={sourceContent}
-                onChange={(event) => {
-                  setSourceContent(event.target.value);
-                  setMemoryModelWarning(''); // Clear warning when user edits
-                }}
-                placeholder="Paste or edit JSON content here..."
-                aria-label="JSON Content Editor"
-              />
-
-              {/* Main Action Buttons */}
-              <div className="mt-4 space-y-2.5">
-                {/* Primary Add Block Action */}
-                <button
-                  type="button"
-                  onClick={handleAddBlockInstance}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-4 py-3 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:scale-[1.01] active:scale-95 transition-all"
-                >
-                  <Plus size={16} />
-                  <span>+ Add {selectedVersion.code} Block Instance to Document</span>
-                </button>
-
-                {/* Secondary Actions Row */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all"
-                    onClick={handlePreviewCurrent}
-                  >
-                    <Eye className="h-3.5 w-3.5" /> Preview Block
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isSaving || isLoadingDocument || !form.subtopicId}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => save('draft')}
-                  >
-                    <Save className="h-3.5 w-3.5" /> Save
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isSaving || isLoadingDocument || !form.subtopicId}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#e11d48] px-3 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#be123c] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => save('published')}
-                  >
-                    <Send className="h-3.5 w-3.5" /> Publish
-                  </button>
-                </div>
-              </div>
-
-              {message && (
-                <div className="mt-3 rounded-lg bg-pink-50/70 border border-pink-100 p-3 text-xs font-semibold text-[#071f63] flex items-center gap-2">
-                  <Sparkles size={14} className="text-pink-600 shrink-0" />
-                  <span>{message}</span>
-                </div>
-              )}
-
-              {memoryModelWarning && (
-                <div className="mt-3 rounded-lg bg-orange-50/70 border border-orange-200 p-3 text-xs font-semibold text-orange-900 flex items-start gap-2">
-                  <span className="text-orange-600 shrink-0 mt-0.5">⚠️</span>
-                  <div>
-                    <div className="font-bold mb-1">Memory Model Data Will Be Lost</div>
-                    <div className="font-normal text-orange-800">{memoryModelWarning}</div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <TutorialEditorPanel
+              sourceContent={sourceContent}
+              versionCode={selectedVersion.code}
+              onContentChange={(content) => {
+                setSourceContent(content);
+                setMemoryModelWarning(''); // Clear warning when user edits
+              }}
+              onAddBlock={handleAddBlockInstance}
+              onPreviewBlock={handlePreviewCurrent}
+              onSaveDraft={() => save('draft')}
+              onPublish={() => save('published')}
+              message={message}
+              memoryModelWarning={memoryModelWarning}
+              isSaving={isSaving}
+              isLoadingDocument={isLoadingDocument}
+              canSave={Boolean(form.subtopicId)}
+            />
 
             {/* Document Blocks List (Ordered Block Instances in TutorialDocument) */}
             <TutorialDocumentBlocksList
