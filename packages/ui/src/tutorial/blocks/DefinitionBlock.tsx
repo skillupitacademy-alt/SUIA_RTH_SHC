@@ -55,9 +55,15 @@ function DefinitionD1View({
   const characteristics = Array.isArray(page.characteristics) ? page.characteristics : [];
   const explanation = Array.isArray(page.explanation) ? page.explanation : [];
 
-  // Default colors if theme not provided (fallback only)
-  const primary = theme?.primary || '#6366f1';
-  const secondary = theme?.secondary || '#0f172a';
+  // Theme is required for canonical locked renderer
+  if (!theme?.primary || !theme?.secondary) {
+    throw new Error(
+      `[DefinitionD1View] Missing required brand theme for Definition D1 block ${block.id}`
+    );
+  }
+
+  const primary = theme.primary;
+  const secondary = theme.secondary;
 
   // Helper to create color with alpha
   function withAlpha(hex: string, alphaHex: string) {
