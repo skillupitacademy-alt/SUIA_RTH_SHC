@@ -1330,24 +1330,6 @@ export function TutorialPageContentBuilderClient() {
                       >
                         {idx > 0 && <div className="my-8 border-t border-dashed border-slate-200" />}
                         
-                        {/* DEBUG: Visible block marker */}
-                        <div className="mb-3 rounded-lg border border-pink-200 bg-pink-50 p-2">
-                          <strong>DEBUG BLOCK #{idx + 1}</strong>
-                          <div className="text-xs">ID: {instance.id}</div>
-                          <div className="text-xs">TYPE: {instance.type}</div>
-                          <div className="text-xs">VERSION: {instance.versionCode}</div>
-                          <div className="text-xs">TITLE: {instance.title}</div>
-                        </div>
-
-                        <div className="mb-3 flex items-center justify-between">
-                          <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-600">
-                            <span>Instance #{idx + 1}</span>
-                            <span>•</span>
-                            <span>{instance.versionCode}</span>
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-400">ID: {instance.id}</span>
-                        </div>
-                        
                         {instance.type === 'definition' && (
                           <div data-tutorial-block-type="definition">
                             <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />
