@@ -17,8 +17,8 @@ import {
   ListOrdered,
 } from 'lucide-react';
 
+import { TutorialBlockRenderer } from '@quiz/ui';
 import { TutorialCodeContent } from '@/share-branding/LearningExperience/components/TutorialCodeContent';
-import { TutorialDefinitionContent } from '@/share-branding/LearningExperience/components/TutorialDefinitionContent';
 import { TutorialSummaryContent } from '@/share-branding/LearningExperience/components/TutorialSummaryContent';
 import type {
   BrandTutorialTheme,
@@ -1311,7 +1311,18 @@ export function TutorialPageContentBuilderClient() {
                     <span>Active Editor Preview</span>
                     <span>{selectedVersion.code} Block</span>
                   </div>
-                  {form.blockType === 'definition' && <TutorialDefinitionContent payload={activeBlockPreview as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />}
+                  {form.blockType === 'definition' && (
+                    <TutorialBlockRenderer
+                      block={{
+                        id: 'preview',
+                        type: 'definition',
+                        version: 'D1',
+                        content: activeBlockPreview as DefinitionD1AuthorContent,
+                      }}
+                      theme={themeForBrand(form.brandId)}
+                      depth={0}
+                    />
+                  )}
                   {form.blockType === 'code' && <TutorialCodeContent payload={activeBlockPreview as TutorialCodePayload} theme={themeForBrand(form.brandId)} />}
                   {form.blockType === 'summary' && <TutorialSummaryContent payload={activeBlockPreview as TutorialSummaryPayload} theme={themeForBrand(form.brandId)} />}
                 </div>
@@ -1332,7 +1343,16 @@ export function TutorialPageContentBuilderClient() {
                         
                         {instance.type === 'definition' && (
                           <div data-tutorial-block-type="definition">
-                            <TutorialDefinitionContent payload={instance.payload as TutorialDefinitionPayload} theme={themeForBrand(form.brandId)} />
+                            <TutorialBlockRenderer
+                              block={{
+                                id: instance.id,
+                                type: 'definition',
+                                version: 'D1',
+                                content: instance.payload as DefinitionD1AuthorContent,
+                              }}
+                              theme={themeForBrand(form.brandId)}
+                              depth={0}
+                            />
                           </div>
                         )}
                         
