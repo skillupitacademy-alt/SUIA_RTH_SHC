@@ -1,5 +1,6 @@
 import React from 'react';
-import type { IDefinitionBlock, BlockComponentProps } from '../types';
+import { BookOpen, FileText, Code2, Star, Sparkles } from 'lucide-react';
+import type { IDefinitionBlock, BlockComponentProps, DomainTheme } from '../types';
 
 /**
  * Definition Block - Version Router
@@ -7,7 +8,8 @@ import type { IDefinitionBlock, BlockComponentProps } from '../types';
  */
 export function DefinitionBlock({ 
   block, 
-  className = '' 
+  className = '',
+  theme
 }: BlockComponentProps<IDefinitionBlock>) {
   // Explicit version check
   if (!block.version) {
@@ -19,7 +21,7 @@ export function DefinitionBlock({
   // Version routing
   switch (block.version) {
     case 'D1':
-      return <DefinitionD1View block={block} className={className} />;
+      return <DefinitionD1View block={block} theme={theme} className={className} />;
     default:
       throw new Error(
         `[DefinitionBlock] Unsupported Definition version: ${block.version}`
@@ -28,134 +30,135 @@ export function DefinitionBlock({
 }
 
 /**
- * Definition D1 View
- * Renders Definition D1 using page.* structure
+ * Definition D1 View - CANONICAL LOCKED UI
  * 
- * Layout preserves researched Definition UI/UX:
- * - Category label (learner-facing content, not hierarchy)
- * - Title
- * - Intro paragraph
- * - Definition card
- * - Explanation paragraphs
- * - Code example
- * - Key characteristics list
- * - Key takeaway
+ * This is the single authoritative Definition D1 renderer for ALL brands.
+ * Layout, typography, spacing, icons, cards, borders, and responsive behavior are FIXED.
+ * Only theme.primary and theme.secondary vary by brand.
+ * 
+ * Used by:
+ * - Composer Preview
+ * - SUIA Student Page
+ * - RTH Student Page
+ * - All other brand learner pages
  */
 function DefinitionD1View({ 
   block, 
+  theme,
   className = '' 
 }: { 
-  block: IDefinitionBlock; 
+  block: IDefinitionBlock;
+  theme?: DomainTheme;
   className?: string;
 }) {
-  const { page } = block.content;
+  const page = block.content.page;
+  const characteristics = Array.isArray(page.characteristics) ? page.characteristics : [];
+  const explanation = Array.isArray(page.explanation) ? page.explanation : [];
+
+  // Default colors if theme not provided (fallback only)
+  const primary = theme?.primary || '#6366f1';
+  const secondary = theme?.secondary || '#0f172a';
+
+  // Helper to create color with alpha
+  function withAlpha(hex: string, alphaHex: string) {
+    return `${hex}${alphaHex}`;
+  }
 
   return (
-    <article
-      id={block.id}
-      className={`my-6 p-6 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 shadow-sm ${className}`}
-    >
-      {/* Category - learner-facing label */}
-      {page.category && (
-        <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-2">
-          {page.category}
-        </div>
-      )}
-
-      {/* Title */}
-      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-        <span className="text-indigo-500 text-lg">📖</span>
-        <span>{page.title}</span>
-      </h3>
-
-      {/* Intro */}
-      <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
-        {page.intro}
-      </p>
-
-      {/* Definition Card */}
-      <div className="my-4 p-4 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-            Definition
+    <article className={`w-full bg-white px-[5%] py-10 ${className}`} style={{ color: secondary }}>
+      <header className="mb-[26px]">
+        <div className="mb-[14px] flex items-center gap-2.5 text-base font-extrabold leading-snug" style={{ color: primary }}>
+          <span className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border-2" style={{ borderColor: primary }}>
+            <BookOpen className="h-4 w-4" />
           </span>
+          <span>{page.category ?? 'Definition'}</span>
         </div>
-        <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
-          {page.definition}
-        </p>
-      </div>
+        <h1 className="text-[clamp(38px,6.9vw,55px)] font-extrabold leading-[1.08] tracking-[-1.4px]" style={{ color: secondary }}>
+          {page.title ?? 'Untitled Definition'}
+        </h1>
+        <div className="mb-[17px] mt-4 h-1 w-12 rounded-full" style={{ backgroundColor: primary }} />
+        {page.intro && <p className="text-lg font-medium leading-[1.7]" style={{ color: secondary }}>{page.intro}</p>}
+      </header>
 
-      {/* Explanation paragraphs */}
-      {page.explanation && page.explanation.length > 0 && (
-        <div className="my-4 space-y-3">
-          {page.explanation.map((paragraph, index) => (
-            <p 
-              key={index} 
-              className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
-            >
-              {paragraph}
-            </p>
-          ))}
+      <section className="my-6 grid min-h-[175px] w-full grid-cols-[86px_1px_minmax(0,1fr)] items-center gap-6 rounded-[11px] border px-9 py-[30px]" style={{ backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '66') }}>
+        <div className="m-auto flex h-[70px] w-[70px] items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: primary }}>
+          <FileText className="h-8 w-8" />
         </div>
+        <div className="h-[92px] w-px" style={{ backgroundColor: withAlpha(primary, '73') }} />
+        <div className="min-w-0">
+          <h2 className="mb-2.5 text-xl font-extrabold leading-snug" style={{ color: primary }}>Definition</h2>
+          <p className="text-[19px] font-semibold leading-[1.65]" style={{ color: secondary }}>{page.definition}</p>
+        </div>
+      </section>
+
+      {explanation.length > 0 && (
+        <section className="my-7">
+          <div className="mb-[14px] flex items-center gap-3">
+            <FileText className="h-6 w-6" style={{ color: primary }} />
+            <h2 className="text-2xl font-extrabold leading-snug tracking-[-0.3px]" style={{ color: secondary }}>Explanation</h2>
+          </div>
+          <div className="text-lg font-medium leading-[1.75]" style={{ color: secondary }}>
+            {explanation.map((item, index) => (
+              <p key={index} className={index > 0 ? 'mt-4' : undefined}>{item}</p>
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* Code Example */}
-      {page.example && page.example.code && (
-        <div className="my-4 rounded-lg overflow-hidden border border-slate-700/60 bg-slate-950">
-          <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-400 font-mono">
-            {page.example.language}
+      {page.example && (
+        <section className="my-[26px] rounded-[10px] border px-[26px] pb-[23px] pt-5" style={{ backgroundColor: '#f6f8ff', borderColor: '#d2dcf0' }}>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-base font-extrabold leading-snug" style={{ color: secondary }}>Example</h2>
+            <Code2 className="h-[17px] w-[17px]" style={{ color: primary }} />
           </div>
-          <pre className="p-4 overflow-x-auto text-sm font-mono leading-relaxed text-slate-100">
-            <code className={`language-${page.example.language}`}>
-              {page.example.code}
-            </code>
+          <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-base font-medium leading-[1.85]" style={{ color: secondary }}>
+            <code>{page.example.code}</code>
           </pre>
-        </div>
+        </section>
       )}
 
-      {/* Key Characteristics - Responsive Grid (1 col mobile, 2 col tablet, 3-4 col desktop) */}
-      {page.characteristics && page.characteristics.length > 0 && (
-        <div className="my-6">
-          <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-            <span>✨</span>
-            <span>Key Characteristics</span>
+      {characteristics.length > 0 && (
+        <section className="my-8">
+          <div className="mb-4 flex items-center gap-3">
+            <Star className="h-6 w-6 fill-current" style={{ color: primary }} />
+            <h2 className="text-2xl font-extrabold leading-snug tracking-[-0.3px]" style={{ color: secondary }}>Key Characteristics</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 w-full">
-            {page.characteristics.map((char, index) => (
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {characteristics.map((item, index) => (
               <div 
-                key={index} 
-                className="flex flex-col rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/90 p-4 shadow-sm hover:shadow-md transition-shadow"
+                key={item.title || index} 
+                className="flex flex-col rounded-xl border bg-white p-5 text-center transition hover:-translate-y-0.5 hover:shadow-md" 
+                style={{ borderColor: '#e0dce6' }}
               >
-                <div className="flex items-center gap-2.5 mb-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-sm font-bold shrink-0">
-                    {char.icon || '○'}
-                  </span>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug break-words flex-1">
-                    {char.title}
-                  </h4>
+                <div 
+                  className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border text-xl font-bold shrink-0" 
+                  style={{ backgroundColor: withAlpha(primary, '14'), borderColor: withAlpha(primary, '73'), color: primary }}
+                >
+                  {item.icon || <Sparkles className="h-5 w-5" />}
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed break-words flex-1">
-                  {char.description}
+                <h3 className="mb-2 text-base font-extrabold leading-snug tracking-[-0.1px] break-words" style={{ color: secondary }}>
+                  {item.title}
+                </h3>
+                <p className="text-sm font-medium leading-[1.65] text-slate-600 break-words flex-1">
+                  {item.description}
                 </p>
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Key Takeaway */}
       {page.takeaway && (
-        <div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-base">💡</span>
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-              Key Takeaway
+        <section className="relative mt-8 overflow-hidden rounded-[10px] border py-[23px] pl-6 pr-[100px]" style={{ backgroundColor: '#fffaf0', borderColor: '#ead8a8' }}>
+          <div className="mb-3 flex items-center gap-[11px]">
+            <span className="inline-flex h-[29px] w-[29px] shrink-0 items-center justify-center rounded-full bg-[#f59e0b] text-white">
+              <Star className="h-[15px] w-[15px] fill-current" />
             </span>
+            <h2 className="text-[19px] font-extrabold leading-snug text-[#d97706]">Key Takeaway</h2>
           </div>
-          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-            {page.takeaway}
-          </p>
-        </div>
+          <p className="text-base font-medium leading-[1.7]" style={{ color: secondary }}>{page.takeaway}</p>
+          <Sparkles className="absolute bottom-[15px] right-[22px] h-12 w-12 text-[#f59e0b]" />
+        </section>
       )}
     </article>
   );
