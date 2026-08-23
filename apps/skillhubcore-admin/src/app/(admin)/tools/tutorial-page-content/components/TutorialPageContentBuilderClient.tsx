@@ -48,6 +48,7 @@ import {
 import { parseSource, type SourceFormat } from '../document/sourceParser';
 import { themeForBrand } from '../theme/brandTheme';
 import { TutorialComposerHeader } from './TutorialComposerHeader';
+import { TutorialHierarchySelector } from './TutorialHierarchySelector';
 import {
   getBlockTypes,
   getBlockType,
@@ -542,80 +543,20 @@ export function TutorialPageContentBuilderClient() {
 
           {/* Horizontal Hierarchy & Content Selector Toolbar */}
           <div className="flex flex-wrap items-end gap-3">
-            {/* 1. Domain */}
-            <div className="flex-1 min-w-[170px]">
-              <label htmlFor="select-domain" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Domain
-              </label>
-              <select
-                id="select-domain"
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20"
-                value={form.domainId}
-                onChange={(event) => updateForm('domainId', event.target.value)}
-              >
-                <option value="">Select Domain</option>
-                {hierarchy.domains.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* 2. Subject */}
-            <div className="flex-1 min-w-[170px]">
-              <label htmlFor="select-subject" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Subject
-              </label>
-              <select
-                id="select-subject"
-                disabled={!form.domainId}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
-                value={form.subjectId}
-                onChange={(event) => updateForm('subjectId', event.target.value)}
-              >
-                <option value="">Select Subject</option>
-                {subjects.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* 3. Topic */}
-            <div className="flex-1 min-w-[150px]">
-              <label htmlFor="select-topic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Topic
-              </label>
-              <select
-                id="select-topic"
-                disabled={!form.subjectId}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
-                value={form.topicId}
-                onChange={(event) => updateForm('topicId', event.target.value)}
-              >
-                <option value="">Select Topic</option>
-                {topics.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* 4. Subtopic */}
-            <div className="flex-1 min-w-[170px]">
-              <label htmlFor="select-subtopic" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                Subtopic
-              </label>
-              <select
-                id="select-subtopic"
-                disabled={!form.topicId}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
-                value={form.subtopicId}
-                onChange={(event) => updateForm('subtopicId', event.target.value)}
-              >
-                <option value="">Select Subtopic</option>
-                {subtopics.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name}</option>
-                ))}
-              </select>
-            </div>
+            <TutorialHierarchySelector
+              domains={hierarchy.domains}
+              subjects={subjects}
+              topics={topics}
+              subtopics={subtopics}
+              domainId={form.domainId}
+              subjectId={form.subjectId}
+              topicId={form.topicId}
+              subtopicId={form.subtopicId}
+              onDomainChange={(value) => updateForm('domainId', value)}
+              onSubjectChange={(value) => updateForm('subjectId', value)}
+              onTopicChange={(value) => updateForm('topicId', value)}
+              onSubtopicChange={(value) => updateForm('subtopicId', value)}
+            />
 
             {/* 5. Block Type (Independent Dropdown) */}
             <div className="w-[140px] min-w-[130px]">
