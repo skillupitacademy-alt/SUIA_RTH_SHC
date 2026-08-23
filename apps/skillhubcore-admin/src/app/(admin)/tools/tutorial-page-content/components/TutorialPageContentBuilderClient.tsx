@@ -33,7 +33,6 @@ import type {
 } from '@quiz/types';
 import { CodeC1AuthorContentSchema } from '@quiz/types';
 
-type SourceFormat = 'json' | 'markdown';
 const SHARED_BRAND_ID: TutorialSidebarBrandId = 'shared';
 
 import {
@@ -46,6 +45,7 @@ import {
   extractBlockTitle,
   type BlockInstance,
 } from '../document/documentTransformation';
+import { parseSource, type SourceFormat } from '../document/sourceParser';
 import {
   getBlockTypes,
   getBlockType,
@@ -124,51 +124,6 @@ function themeForBrand(brandId: TutorialSidebarBrandId): BrandTutorialTheme {
     secondary: '#124fd6',
     activeBackground: '#eef3fa',
     completed: '#08a64a',
-  };
-}
-
-function parseSource(format: SourceFormat, source: string, contentType: TutorialPageContentType) {
-  if (format === 'json') {
-    return JSON.parse(source);
-  }
-
-  if (contentType === 'definition') {
-    const lines = source.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-    return {
-      page: {
-        type: 'definition',
-        title: lines[0]?.replace(/^#\s*/, '') || 'Untitled Definition',
-        intro: lines[1] || '',
-        definition: lines[2] || '',
-        explanation: lines.slice(3),
-      },
-    };
-  }
-
-  if (contentType === 'summary') {
-    const lines = source.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-    return {
-      page: {
-        badge: 'REVISION & SUMMARY',
-        title: lines[0]?.replace(/^#\s*/, '') || 'Revision Summary',
-        introduction: lines[1] || '',
-      },
-      summary: lines.slice(2).map((line) => ({ text: line.replace(/^[-*]\s*/, '') })),
-    };
-  }
-
-  const codeMatch = source.match(/```(\w+)?\n([\s\S]*?)```/);
-  return {
-    page: {
-      type: 'CODE + EXPLANATION',
-      title: source.split(/\r?\n/)[0]?.replace(/^#\s*/, '') || 'Untitled Code Example',
-      introduction: 'Code example imported from markdown.',
-    },
-    code: {
-      language: codeMatch?.[1] || 'text',
-      prismLanguage: codeMatch?.[1] || 'text',
-      source: codeMatch?.[2]?.trim() || source,
-    },
   };
 }
 
@@ -302,10 +257,11 @@ export function TutorialPageContentBuilderClient() {
    */
   function handleAddBlockInstance() {
     try {
-      const parsed = parseSource(sourceFormat, sourceContent, form.blockType);
+      const parsed = parseSource(sourceFormat, sourceContent, form.blockType) as 
+        TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload;
       
       // Canonicalize C1 blocks immediately upon Add
-      let payload = parsed;
+      let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | CodeC1AuthorContent = parsed;
       let payloadFormat: 'legacy' | 'canonical' = 'legacy';
       
       if (form.blockType === 'code' && selectedVersion.code === 'C1') {
