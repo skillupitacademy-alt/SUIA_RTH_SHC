@@ -31,9 +31,18 @@ import type {
   DefinitionD1AuthorContent,
   CodeC1AuthorContent,
 } from '@quiz/types';
+import { CodeC1AuthorContentSchema } from '@quiz/types';
 
 type SourceFormat = 'json' | 'markdown';
 const SHARED_BRAND_ID: TutorialSidebarBrandId = 'shared';
+
+/**
+ * Result of Code C1 canonicalization with optional warning
+ */
+interface CanonicalCodeC1Result {
+  content: CodeC1AuthorContent;
+  memoryModelWarning?: string;
+}
 
 interface HierarchyRow {
   id: string;
@@ -87,7 +96,7 @@ export const SUPPORTED_BLOCKS: BlockTypeOption[] = [
         code: 'C1',
         label: 'C1 - Basic Example',
         description:
-          'Step-by-step code execution with memory model',
+          'Step-by-step code explanation with optional output and practice hint',
       },
     ],
   },
@@ -112,7 +121,8 @@ export interface BlockInstance {
   version: string;
   versionCode: string;
   title: string;
-  payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | unknown;
+  payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | CodeC1AuthorContent | DefinitionD1AuthorContent | unknown;
+  payloadFormat: 'legacy' | 'canonical'; // Track whether payload is already canonical or needs conversion
   sourceFormat: SourceFormat;
   sourceContent: string;
 }
@@ -375,21 +385,34 @@ function tutorialBlocksToInstances(
           versionCode: ('version' in block && block.version) ? block.version : 'D1', // Preserve database version, fallback to D1 for legacy
           title: extractBlockTitle(payload, 'definition'),
           payload,
+          payloadFormat: 'legacy', // Definition blocks use legacy format for now
           sourceFormat: 'json',
           sourceContent,
         };
 
       case 'code':
-        payload = block.content as unknown as TutorialCodePayload;
-        sourceContent = JSON.stringify(payload, null, 2);
+        // Check if already canonical C1
+        const isCanonicalC1 = CodeC1AuthorContentSchema.safeParse(block.content).success;
+        
+        let codePayload: TutorialCodePayload | CodeC1AuthorContent;
+        if (isCanonicalC1) {
+          // Already canonical - preserve as-is
+          codePayload = block.content as CodeC1AuthorContent;
+        } else {
+          // Legacy format - keep as legacy payload
+          codePayload = block.content as unknown as TutorialCodePayload;
+        }
+        
+        sourceContent = JSON.stringify(codePayload, null, 2);
 
         return {
           id: block.id,
           type: 'code',
           version: 'v1',
           versionCode: ('version' in block && block.version) ? block.version : 'C1', // Preserve database version, fallback to C1 for legacy
-          title: extractBlockTitle(payload, 'code'),
-          payload,
+          title: extractBlockTitle(codePayload, 'code'),
+          payload: codePayload,
+          payloadFormat: isCanonicalC1 ? 'canonical' : 'legacy', // Track format
           sourceFormat: 'json',
           sourceContent,
         };
@@ -405,6 +428,7 @@ function tutorialBlocksToInstances(
           versionCode: 'S1', // Summary blocks don't have version field yet in type system
           title: extractBlockTitle(payload, 'summary'),
           payload,
+          payloadFormat: 'legacy', // Summary blocks use legacy format for now
           sourceFormat: 'json',
           sourceContent,
         };
@@ -486,6 +510,7 @@ export function TutorialPageContentBuilderClient() {
   const [activeBlockPreview, setActiveBlockPreview] = useState<any>(definitionExample);
   const [previewMode, setPreviewMode] = useState<'document' | 'active-block'>('document');
   const [message, setMessage] = useState('');
+  const [memoryModelWarning, setMemoryModelWarning] = useState(''); // UI warning for memoryModel loss
   const [isSaving, setIsSaving] = useState(false);
 
   // Document block instances collection (starts empty, hydrated on subtopic selection)
@@ -521,6 +546,7 @@ export function TutorialPageContentBuilderClient() {
     const example = exampleForContentType(form.blockType);
     setSourceContent(JSON.stringify(example, null, 2));
     setActiveBlockPreview(example);
+    setMemoryModelWarning(''); // Clear warning when block type changes
   }, [form.blockType]);
 
   // Hydrate existing tutorial when subtopic selection changes
@@ -583,7 +609,17 @@ export function TutorialPageContentBuilderClient() {
   function handlePreviewCurrent() {
     try {
       const parsed = parseSource(sourceFormat, sourceContent, form.blockType);
-      setActiveBlockPreview(parsed);
+      
+      // Handle Code C1 conversion and warning
+      if (form.blockType === 'code' && selectedVersion.code === 'C1') {
+        const result = toCanonicalCodeC1(parsed);
+        setActiveBlockPreview(result.content); // Store canonical content
+        setMemoryModelWarning(result.memoryModelWarning || ''); // Update warning from event handler
+      } else {
+        setActiveBlockPreview(parsed);
+        setMemoryModelWarning(''); // Clear warning for non-C1 blocks
+      }
+      
       setMessage('Active block preview updated.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Preview parsing failed.');
@@ -595,7 +631,25 @@ export function TutorialPageContentBuilderClient() {
    */
   function handleAddBlockInstance() {
     try {
-      const payload = parseSource(sourceFormat, sourceContent, form.blockType);
+      const parsed = parseSource(sourceFormat, sourceContent, form.blockType);
+      
+      // Canonicalize C1 blocks immediately upon Add
+      let payload = parsed;
+      let payloadFormat: 'legacy' | 'canonical' = 'legacy';
+      
+      if (form.blockType === 'code' && selectedVersion.code === 'C1') {
+        const result = toCanonicalCodeC1(parsed);
+        
+        // Store canonical content, not legacy
+        payload = result.content;
+        payloadFormat = 'canonical';
+        
+        // Surface memoryModel warning if present
+        if (result.memoryModelWarning) {
+          setMemoryModelWarning(result.memoryModelWarning);
+        }
+      }
+      
       // Generate a valid UUID for the block ID (required by API validation)
       const uniqueId = crypto.randomUUID();
       const title = extractBlockTitle(payload, form.blockType);
@@ -607,8 +661,9 @@ export function TutorialPageContentBuilderClient() {
         versionCode: selectedVersion.code,
         title,
         payload,
+        payloadFormat,
         sourceFormat,
-        sourceContent,
+        sourceContent, // Preserve original author input
       };
 
       hasUnsavedLocalChangesRef.current = true;
@@ -730,6 +785,112 @@ export function TutorialPageContentBuilderClient() {
   }
 
   /**
+   * Converts legacy TutorialCodePayload to canonical CodeC1AuthorContent.
+   * 
+   * This function implements the proven mapping from the authoritative C1 fixture.
+   * 
+   * @param legacy - Legacy TutorialCodePayload structure
+   * @returns Object with canonical content and optional warning message
+   */
+  function legacyCodePayloadToC1Content(
+    legacy: TutorialCodePayload
+  ): { content: CodeC1AuthorContent; warning?: string } {
+    let warning: string | undefined;
+
+    // Detect unsupported rich content that will be lost
+    if (legacy.memoryModel) {
+      const nodeCount = legacy.memoryModel.nodes?.length || 0;
+      const columnCount = legacy.memoryModel.columns?.length || 0;
+      const connectionCount = legacy.memoryModel.connections?.length || 0;
+      
+      warning = 
+        `Memory Model detected (${columnCount} columns, ${nodeCount} nodes, ${connectionCount} connections) ` +
+        `but NOT supported by canonical C1. This visualization will be LOST. ` +
+        `Manual migration to DiagramBlock or future C2 required.`;
+      
+      console.warn(`[C1 Migration Warning] ${warning}`);
+    }
+
+    // Build canonical C1 content
+    const page = legacy.page || { type: 'CODE + EXPLANATION', title: '', introduction: '' };
+    const code = legacy.code || { language: 'text', source: '' };
+    const steps = Array.isArray(legacy.explanation?.steps) ? legacy.explanation.steps : [];
+    const takeawayItems = Array.isArray(legacy.takeaway?.items) ? legacy.takeaway.items : [];
+
+    const c1Content: CodeC1AuthorContent = {
+      page: {
+        type: 'code', // Transform 'CODE + EXPLANATION' → 'code'
+        title: page.title || 'Code Example',
+        introduction: page.introduction || 'Code introduction',
+        language: code.language || 'text',
+        code: code.source || '// Code example',
+        explanation: steps.length >= 2 ? steps.map((step, index) => ({
+          focus: step.code || `// Step ${index + 1}`, // Map steps[].code → focus
+          description: step.description || 'Step description',
+        })) : [
+          { focus: '// First step', description: 'First step description (minimum 2 required)' },
+          { focus: '// Second step', description: 'Second step description' },
+        ],
+        output: legacy.output?.value
+          ? {
+              value: legacy.output.value,
+              description: undefined, // output.description not in legacy schema
+            }
+          : undefined,
+        takeaway: takeawayItems.length > 0 
+          ? takeawayItems.join(' ') // Transform array → single string
+          : 'Review the code example above to understand the concept.',
+        practiceHint: legacy.tip?.text, // Map tip.text → practiceHint (optional)
+      },
+    };
+
+    return { content: c1Content, warning };
+  }
+
+  /**
+   * Converts any Code block payload to canonical CodeC1AuthorContent.
+   * 
+   * PURE FUNCTION - does not mutate React state.
+   * Returns warning message if memoryModel detected.
+   * 
+   * @param payload - Either legacy TutorialCodePayload or canonical CodeC1AuthorContent
+   * @returns Result with canonical content and optional warning
+   * @throws Error if payload cannot be converted to valid C1
+   */
+  function toCanonicalCodeC1(payload: unknown): CanonicalCodeC1Result {
+    // First, check if already canonical C1
+    const parseResult = CodeC1AuthorContentSchema.safeParse(payload);
+    
+    if (parseResult.success) {
+      // Already canonical - return as-is with no warning
+      return { content: parseResult.data };
+    }
+    
+    // Not canonical - attempt legacy conversion
+    const { content: converted, warning } = legacyCodePayloadToC1Content(
+      payload as TutorialCodePayload
+    );
+    
+    // Validate the conversion result
+    const validationResult = CodeC1AuthorContentSchema.safeParse(converted);
+    
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors
+        .map(e => `${e.path.join('.')}: ${e.message}`)
+        .join('; ');
+      
+      throw new Error(
+        `Legacy → C1 conversion produced invalid canonical content: ${errors}`
+      );
+    }
+    
+    return {
+      content: validationResult.data,
+      memoryModelWarning: warning,
+    };
+  }
+
+  /**
    * Type-safe conversion: BlockInstance → TutorialBlock
    * Enforces discriminated union types for each block type and version
    * 
@@ -758,11 +919,38 @@ export function TutorialPageContentBuilderClient() {
 
       case 'code': {
         if (instance.versionCode === 'C1') {
+          // If already canonical, validate and return directly
+          if (instance.payloadFormat === 'canonical') {
+            const validation = CodeC1AuthorContentSchema.safeParse(instance.payload);
+            
+            if (!validation.success) {
+              const errors = validation.error.errors
+                .map(e => `${e.path.join('.')}: ${e.message}`)
+                .join('; ');
+              throw new Error(
+                `BlockInstance marked canonical but validation failed: ${errors}`
+              );
+            }
+            
+            return {
+              id: instance.id,
+              type: 'code',
+              version: 'C1',
+              content: validation.data,
+            };
+          }
+          
+          // Legacy format - convert to canonical
+          const result = toCanonicalCodeC1(instance.payload);
+          
+          // Note: warning is NOT set here (would cause render-time state mutation)
+          // Warnings are set in event handlers (handlePreviewCurrent, handleAddBlockInstance)
+
           return {
             id: instance.id,
             type: 'code',
             version: 'C1',
-            content: instance.payload as unknown as CodeC1AuthorContent,
+            content: result.content,
           };
         }
 
@@ -1143,7 +1331,10 @@ export function TutorialPageContentBuilderClient() {
               <textarea
                 className="h-[400px] w-full rounded-xl border border-slate-800 bg-[#071024] p-4 font-mono text-xs leading-5 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 resize-y"
                 value={sourceContent}
-                onChange={(event) => setSourceContent(event.target.value)}
+                onChange={(event) => {
+                  setSourceContent(event.target.value);
+                  setMemoryModelWarning(''); // Clear warning when user edits
+                }}
                 placeholder="Paste or edit JSON content here..."
                 aria-label="JSON Content Editor"
               />
@@ -1192,6 +1383,16 @@ export function TutorialPageContentBuilderClient() {
                 <div className="mt-3 rounded-lg bg-pink-50/70 border border-pink-100 p-3 text-xs font-semibold text-[#071f63] flex items-center gap-2">
                   <Sparkles size={14} className="text-pink-600 shrink-0" />
                   <span>{message}</span>
+                </div>
+              )}
+
+              {memoryModelWarning && (
+                <div className="mt-3 rounded-lg bg-orange-50/70 border border-orange-200 p-3 text-xs font-semibold text-orange-900 flex items-start gap-2">
+                  <span className="text-orange-600 shrink-0 mt-0.5">⚠️</span>
+                  <div>
+                    <div className="font-bold mb-1">Memory Model Data Will Be Lost</div>
+                    <div className="font-normal text-orange-800">{memoryModelWarning}</div>
+                  </div>
                 </div>
               )}
             </div>
@@ -1247,6 +1448,7 @@ export function TutorialPageContentBuilderClient() {
                             setSourceContent(block.sourceContent);
                             setActiveBlockPreview(block.payload);
                             setForm((prev) => ({ ...prev, blockType: block.type, versionId: block.version }));
+                            setMemoryModelWarning(''); // Clear warning when loading existing block
                             setMessage(`Loaded block #${index + 1} (${block.versionCode}) into editor.`);
                           }}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
@@ -1327,8 +1529,8 @@ export function TutorialPageContentBuilderClient() {
                       block={{
                         id: 'preview',
                         type: 'code',
-                        version: selectedVersion.code, // Use selected version without cast
-                        content: activeBlockPreview as CodeC1AuthorContent,
+                        version: selectedVersion.code,
+                        content: toCanonicalCodeC1(activeBlockPreview).content, // Use .content (pure)
                       } as TutorialBlock}
                       theme={themeForBrand(form.brandId)}
                       depth={0}
@@ -1372,8 +1574,8 @@ export function TutorialPageContentBuilderClient() {
                               block={{
                                 id: instance.id,
                                 type: 'code',
-                                version: instance.versionCode, // Use actual version without cast
-                                content: instance.payload as CodeC1AuthorContent,
+                                version: instance.versionCode,
+                                content: toCanonicalCodeC1(instance.payload).content, // Use .content (pure)
                               } as TutorialBlock}
                               theme={themeForBrand(form.brandId)}
                               depth={0}
