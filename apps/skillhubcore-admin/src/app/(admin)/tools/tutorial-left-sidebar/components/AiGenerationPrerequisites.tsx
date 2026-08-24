@@ -113,7 +113,7 @@ export function AiGenerationPrerequisites({
               <li>IDs must be unique within the navigation tree</li>
               <li>Generate IDs from semantic node names</li>
               <li>Each node <strong>SHOULD</strong> contain a short <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">description</code></li>
-              <li>Use <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">"type": "group"</code> for containers, <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">"type": "page"</code> for tutorial pages</li>
+              <li>Use <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">&quot;type&quot;: &quot;group&quot;</code> for containers, <code className="px-1 py-0.5 bg-slate-100 rounded text-xs">&quot;type&quot;: &quot;page&quot;</code> for tutorial pages</li>
               <li>Page nodes must not have children</li>
               <li>Do NOT include brand, theme, progress, or runtime data</li>
             </ul>

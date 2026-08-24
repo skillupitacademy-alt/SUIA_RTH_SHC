@@ -661,3 +661,5 @@ main().catch((error) => {
   console.error('PHASE 11.11E FAILED');
   console.error(error);
 
+  process.exitCode = 1;
+});
