@@ -8,7 +8,7 @@ import {
   tutorialTopics,
   withTimeout,
 } from "@quiz/db-tutorial";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 import { logger } from "@/lib/logger";
 
@@ -72,31 +72,8 @@ const uniqueSlug = (name: string, entityId: string) => {
   return `${slugify(name)}-${suffix.length > 0 ? suffix : entityId.slice(0, 8)}`;
 };
 
-const quizStatusUpdate = async (
-  entityType: HierarchyEntityType,
-  entityId: string,
-  status: "synced" | "failed",
-  now: Date,
-) => {
-  const tableMap = {
-    domain: domains,
-    subject: subjects,
-    topic: topics,
-    subtopic: subtopics,
-  } as const;
-
-  const table = tableMap[entityType];
-  const values =
-    entityType === "subtopic"
-      ? { tutorialSyncStatus: status }
-      : { tutorialSyncStatus: status, updatedAt: now };
-
-  await withTimeout(
-    quizDb.update(table).set(values).where(eq(table.id, entityId)),
-    STANDARD_QUERY_TIMEOUT,
-    `HierarchySyncService.quizStatus.${entityType}`,
-  );
-};
+// Status tracking removed: MainDB tables don't have tutorialSyncStatus column
+// Sync success/failure is now communicated via method return/throw instead of database state
 
 const upsertTutorialDomain = async (
   tx: TutorialTx,
@@ -258,6 +235,184 @@ const upsertTutorialSubtopic = async (
 };
 
 export class HierarchySyncService {
+  /**
+   * Ensure complete hierarchy synchronization for a topic before sidebar publish.
+   * 
+   * This method guarantees that:
+   * 1. Parent chain (domain → subject → topic) exists in TutorialDB
+   * 2. ALL active subtopics under the topic exist in TutorialDB
+   * 3. Every external_id mapping is verified
+   * 
+   * Used by: Left Sidebar publish boundary
+   * 
+   * @throws Error if any required synchronization or verification fails
+   * @returns Verified mapping information
+   */
+  static async ensureTopicHierarchySynced(topicId: string): Promise<{
+    domain: { externalId: string; internalId: string };
+    subject: { externalId: string; internalId: string };
+    topic: { externalId: string; internalId: string };
+    subtopics: Array<{ externalId: string; internalId: string; name: string }>;
+  }> {
+    const now = new Date();
+
+    // Load MainDB topic with complete parent chain and ALL active subtopics
+    const source = await withTimeout(
+      quizDb.query.topics.findFirst({
+        where: eq(topics.id, topicId),
+        with: {
+          subject: {
+            with: {
+              domain: true,
+            },
+          },
+        },
+      }) as unknown as Promise<QuizTopicRow | null>,
+      STANDARD_QUERY_TIMEOUT,
+      "HierarchySyncService.ensureTopicHierarchySynced.fetchTopic"
+    );
+
+    if (
+      source === null ||
+      source.subject === undefined ||
+      source.subject === null ||
+      source.subject.domain === undefined ||
+      source.subject.domain === null
+    ) {
+      throw new Error(`Topic not found or incomplete hierarchy: ${topicId}`);
+    }
+
+    // Load ALL active subtopics for this topic
+    const activeSubtopics = await withTimeout(
+      quizDb.query.subtopics.findMany({
+        where: and(
+          eq(subtopics.topicId, topicId),
+          isNull(subtopics.deletedAt)
+        ),
+      }) as unknown as Promise<Array<{ id: string; name: string; topicId: string }>>,
+      STANDARD_QUERY_TIMEOUT,
+      "HierarchySyncService.ensureTopicHierarchySynced.fetchSubtopics"
+    );
+
+    // Synchronize complete hierarchy in a transaction
+    const result = await tutorialDb.transaction(async (tx) => {
+      const tutorialTx = tx as TutorialTx;
+
+      // Sync parent chain
+      const tutorialDomainId = await upsertTutorialDomain(tutorialTx, source.subject.domain, now);
+      const tutorialSubjectId = await upsertTutorialSubject(tutorialTx, source.subject, tutorialDomainId, now);
+      const tutorialTopicId = await upsertTutorialTopic(tutorialTx, source, tutorialSubjectId, now);
+
+      // Sync ALL active subtopics
+      const subtopicResults: Array<{ externalId: string; internalId: string; name: string }> = [];
+      
+      for (const subtopic of activeSubtopics) {
+        const subtopicWithParent = {
+          ...subtopic,
+          topic: source,
+        };
+        const tutorialSubtopicId = await upsertTutorialSubtopic(
+          tutorialTx,
+          subtopicWithParent as QuizSubtopicRow,
+          tutorialTopicId,
+          now
+        );
+        subtopicResults.push({
+          externalId: subtopic.id,
+          internalId: tutorialSubtopicId,
+          name: subtopic.name,
+        });
+      }
+
+      return {
+        domain: {
+          externalId: source.subject.domain.id,
+          internalId: tutorialDomainId,
+        },
+        subject: {
+          externalId: source.subject.id,
+          internalId: tutorialSubjectId,
+        },
+        topic: {
+          externalId: source.id,
+          internalId: tutorialTopicId,
+        },
+        subtopics: subtopicResults,
+      };
+    });
+
+    // Verify all mappings exist in TutorialDB
+    await this.verifyTopicHierarchyMappings(result);
+
+    return result;
+  }
+
+  /**
+   * Verify that all expected TutorialDB mappings actually exist.
+   * 
+   * @throws Error if any required mapping is missing
+   */
+  private static async verifyTopicHierarchyMappings(expected: {
+    domain: { externalId: string };
+    subject: { externalId: string };
+    topic: { externalId: string };
+    subtopics: Array<{ externalId: string }>;
+  }): Promise<void> {
+    // Verify domain mapping
+    const domainCheck = await withTimeout(
+      tutorialDb.query.tutorialDomains.findFirst({
+        where: eq(tutorialDomains.externalId, expected.domain.externalId),
+        columns: { id: true },
+      }),
+      STANDARD_QUERY_TIMEOUT,
+      "HierarchySyncService.verifyDomainMapping"
+    );
+    if (!domainCheck) {
+      throw new Error(`Domain mapping verification failed: ${expected.domain.externalId}`);
+    }
+
+    // Verify subject mapping
+    const subjectCheck = await withTimeout(
+      tutorialDb.query.tutorialSubjects.findFirst({
+        where: eq(tutorialSubjects.externalId, expected.subject.externalId),
+        columns: { id: true },
+      }),
+      STANDARD_QUERY_TIMEOUT,
+      "HierarchySyncService.verifySubjectMapping"
+    );
+    if (!subjectCheck) {
+      throw new Error(`Subject mapping verification failed: ${expected.subject.externalId}`);
+    }
+
+    // Verify topic mapping
+    const topicCheck = await withTimeout(
+      tutorialDb.query.tutorialTopics.findFirst({
+        where: eq(tutorialTopics.externalId, expected.topic.externalId),
+        columns: { id: true },
+      }),
+      STANDARD_QUERY_TIMEOUT,
+      "HierarchySyncService.verifyTopicMapping"
+    );
+    if (!topicCheck) {
+      throw new Error(`Topic mapping verification failed: ${expected.topic.externalId}`);
+    }
+
+    // Verify ALL subtopic mappings
+    for (const subtopic of expected.subtopics) {
+      const subtopicCheck = await withTimeout(
+        tutorialDb.query.tutorialSubtopics.findFirst({
+          where: eq(tutorialSubtopics.externalId, subtopic.externalId),
+          columns: { id: true },
+        }),
+        STANDARD_QUERY_TIMEOUT,
+        "HierarchySyncService.verifySubtopicMapping"
+      );
+      if (!subtopicCheck) {
+        throw new Error(`Subtopic mapping verification failed: ${subtopic.externalId}`);
+      }
+    }
+  }
+
   static async sync(entityType: HierarchyEntityType, entityId: string): Promise<void> {
     await this.attemptSync(entityType, entityId);
   }
@@ -348,7 +503,6 @@ export class HierarchySyncService {
       await this.executeSync(entityType, entityId, now);
       return true;
     } catch (error) {
-      await quizStatusUpdate(entityType, entityId, "failed", now).catch(() => undefined);
       await this.logFailure(entityType, entityId, error);
       return false;
     }
@@ -401,8 +555,6 @@ export class HierarchySyncService {
     await tutorialDb.transaction(async (tx) => {
       await upsertTutorialDomain(tx as TutorialTx, source, now);
     });
-
-    await quizStatusUpdate("domain", entityId, "synced", now);
   }
 
   private static async syncSubject(entityId: string, now: Date) {
@@ -426,11 +578,6 @@ export class HierarchySyncService {
       const tutorialDomainId = await upsertTutorialDomain(tutorialTx, source.domain, now);
       await upsertTutorialSubject(tutorialTx, source, tutorialDomainId, now);
     });
-
-    await Promise.all([
-      quizStatusUpdate("domain", source.domain.id, "synced", now),
-      quizStatusUpdate("subject", entityId, "synced", now),
-    ]);
   }
 
   private static async syncTopic(entityId: string, now: Date) {
@@ -465,12 +612,6 @@ export class HierarchySyncService {
       const tutorialSubjectId = await upsertTutorialSubject(tutorialTx, source.subject, tutorialDomainId, now);
       await upsertTutorialTopic(tutorialTx, source, tutorialSubjectId, now);
     });
-
-    await Promise.all([
-      quizStatusUpdate("domain", source.subject.domain.id, "synced", now),
-      quizStatusUpdate("subject", source.subject.id, "synced", now),
-      quizStatusUpdate("topic", entityId, "synced", now),
-    ]);
   }
 
   private static async syncSubtopic(entityId: string, now: Date) {
@@ -512,12 +653,5 @@ export class HierarchySyncService {
       const tutorialTopicId = await upsertTutorialTopic(tutorialTx, source.topic, tutorialSubjectId, now);
       await upsertTutorialSubtopic(tutorialTx, source, tutorialTopicId, now);
     });
-
-    await Promise.all([
-      quizStatusUpdate("domain", source.topic.subject.domain.id, "synced", now),
-      quizStatusUpdate("subject", source.topic.subject.id, "synced", now),
-      quizStatusUpdate("topic", source.topic.id, "synced", now),
-      quizStatusUpdate("subtopic", entityId, "synced", now),
-    ]);
   }
 }

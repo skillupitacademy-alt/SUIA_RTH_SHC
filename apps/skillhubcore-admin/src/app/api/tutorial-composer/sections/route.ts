@@ -152,10 +152,11 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    // Step 9: Format V2 response
+    // Step 9: Format Phase 1 response
     const response = TutorialResponseSchema.parse({
       id: tutorial.id,
       subtopicId: tutorial.subtopicId,
+      navigationNodeId: tutorial.navigationNodeId, // Phase 1: Include page identity
       brandId: tutorial.brandId,
       orderIndex: tutorial.orderIndex,
       content: tutorial.content,
@@ -244,11 +245,12 @@ export async function GET(request: NextRequest) {
       filters.cursor
     );
 
-    // Step 5: Format V2 response
+    // Step 5: Format Phase 1 response
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = result.tutorials.map((tutorial: any) => ({
       id: tutorial.id,
       subtopicId: tutorial.subtopicId,
+      navigationNodeId: tutorial.navigationNodeId, // Phase 1: Include page identity
       brandId: tutorial.brandId,
       orderIndex: tutorial.orderIndex,
       content: tutorial.content,

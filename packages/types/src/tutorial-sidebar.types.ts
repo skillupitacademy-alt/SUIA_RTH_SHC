@@ -8,6 +8,7 @@ export interface TutorialNavigationNode {
   id: string;
   name: string;
   type?: TutorialNodeType;
+  description?: string;  // Educational description of what this node covers
   icon?: string;
   expanded?: boolean;
   slug?: string;
@@ -58,6 +59,7 @@ export interface TutorialNormalizedNavigationNode {
   id: string;
   name: string;
   type: TutorialNodeType;
+  description?: string;  // Educational description
   icon?: string;
   expanded?: boolean;
   slug: string;  // System-generated

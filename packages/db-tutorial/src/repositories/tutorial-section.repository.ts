@@ -29,10 +29,12 @@ export interface TutorialFilters {
 }
 
 /**
- * V2 Tutorial create input
+ * Phase 1 Tutorial create input
+ * Added navigationNodeId for sidebar page identity
  */
 export interface CreateTutorialInput {
   subtopicId: string;
+  navigationNodeId: string; // Phase 1: Required for new content (normalized sidebar node.id)
   brandId?: string;
   content: TutorialDocument;
   orderIndex?: number;
@@ -108,7 +110,61 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
   }
 
   /**
-   * V2: Get tutorial by V2 identity (subtopic_id, brand_id)
+   * Phase 1: Get tutorial by page identity (subtopicId, navigationNodeId, brandId)
+   * Replaces V2 getTutorialBySubtopic which assumed one tutorial per subtopic
+   */
+  async getTutorialByPageIdentity(
+    subtopicId: string,
+    navigationNodeId: string,
+    brandId: string = 'shared'
+  ): Promise<TutorialSection | undefined> {
+    const rows = await this.runRead(
+      this.dbInstance
+        .select()
+        .from(tutorialSections)
+        .where(
+          and(
+            eq(tutorialSections.subtopicId, subtopicId),
+            eq(tutorialSections.navigationNodeId, navigationNodeId),
+            eq(tutorialSections.brandId, brandId as any),
+            isNull(tutorialSections.deletedAt)
+          )
+        )
+        .limit(1),
+      'TutorialSectionRepository.getTutorialByPageIdentity'
+    );
+
+    return rows[0];
+  }
+
+  /**
+   * Phase 1: Get all pages for a subtopic (by navigationNodeId)
+   * Returns array of tutorials for different sidebar pages under same subtopic
+   */
+  async getPagesBySubtopic(
+    subtopicId: string,
+    brandId: string = 'shared'
+  ): Promise<TutorialSection[]> {
+    return await this.runRead(
+      this.dbInstance
+        .select()
+        .from(tutorialSections)
+        .where(
+          and(
+            eq(tutorialSections.subtopicId, subtopicId),
+            eq(tutorialSections.brandId, brandId as any),
+            isNull(tutorialSections.deletedAt)
+          )
+        )
+        .orderBy(tutorialSections.navigationNodeId, tutorialSections.orderIndex),
+      'TutorialSectionRepository.getPagesBySubtopic'
+    );
+  }
+
+  /**
+   * V2: Get tutorial by V2 identity (subtopicId, brandId)
+   * @deprecated Phase 1: Use getTutorialByPageIdentity instead
+   * Kept for backward compatibility with existing content (navigationNodeId = NULL)
    */
   async getTutorialBySubtopic(
     subtopicId: string,
@@ -262,6 +318,7 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
 
     const values: NewTutorialSection = {
       subtopicId: input.subtopicId,
+      navigationNodeId: input.navigationNodeId, // Phase 1: Required for page identity
       brandId: (input.brandId || 'shared') as any,
       content: input.content as any, // TutorialDocument stored as JSONB
       orderIndex: input.orderIndex ?? 0,
@@ -279,6 +336,7 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
 
     console.log(`[${diagnosticId}] Executing INSERT with values:`, {
       subtopicId: values.subtopicId,
+      navigationNodeId: values.navigationNodeId, // Phase 1
       brandId: values.brandId,
       orderIndex: values.orderIndex,
       status: values.status,

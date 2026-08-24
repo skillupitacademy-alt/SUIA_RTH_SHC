@@ -5,6 +5,9 @@ import { Eye, FileDown, Save, Send } from 'lucide-react';
 
 import { TutorialLeftSidebar } from '@/share-branding/LearningExperience/components/TutorialLeftSidebar';
 import { universalNavigationTemplate } from './sample-navigation-tree';
+import { AiGenerationPrerequisites } from './AiGenerationPrerequisites';
+import { parseMarkdownNavigation } from '@/app/api/tutorial-left-sidebar/markdown-navigation-parser';
+import { normalizeNavigationIds } from '../utils/navigation-id';
 import type {
   TutorialNavigationNode,
   TutorialNavigationTree,
@@ -53,10 +56,6 @@ function slugify(value: string) {
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-}
-
-function compactSlug(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 function stripPresentationData(node: TutorialNavigationNode): TutorialNavigationNode {
@@ -124,73 +123,19 @@ function getBrandTreeDefaults(brandId: TutorialSidebarBrandId, subjectName: stri
   };
 }
 
-
-function inferIcon(level: number, name: string) {
-  if (level === 0 && name.toLowerCase().includes('javascript')) {
-    return 'javascript';
-  }
-  if (level === 1) {
-    return 'book';
-  }
-  if (level >= 3) {
-    return 'file';
-  }
-  return 'folder';
-}
-
-function parseMarkdownTree(source: string): TutorialNavigationNode[] {
-  const roots: TutorialNavigationNode[] = [];
-  const stack: Array<{ level: number; node: TutorialNavigationNode }> = [];
-
-  source.split(/\r?\n/).forEach((line, index) => {
-    if (!line.trim()) {
-      return;
-    }
-
-    const match = line.match(/^(\s*)-\s*(?:\[([xX~ ])\]\s*)?(.+)$/);
-    if (!match) {
-      throw new Error(`Invalid markdown tree line ${index + 1}: ${line}`);
-    }
-
-    const level = Math.floor(match[1].replace(/\t/g, '  ').length / 2);
-    const parts = match[3].split('|').map((part) => part.trim()).filter(Boolean);
-    const name = parts[0];
-    const id = parts[1] || compactSlug(name);
-
-    const node: TutorialNavigationNode = {
-      id,
-      name,
-      icon: inferIcon(level, name),
-      type: level >= 2 ? 'page' : 'group',
-      expanded: level <= 1,
-      children: [],
-    };
-
-    while (stack.length > 0 && stack[stack.length - 1].level >= level) {
-      stack.pop();
-    }
-
-    const parent = stack[stack.length - 1]?.node;
-    if (parent) {
-      parent.children = parent.children ?? [];
-      parent.children.push(node);
-    } else {
-      roots.push(node);
-    }
-
-    stack.push({ level, node });
-  });
-
-  function clean(nodes: TutorialNavigationNode[]): TutorialNavigationNode[] {
-    return nodes.map((node) => {
-      const children = clean(node.children ?? []);
-      const rest = { ...node };
-      delete rest.children;
-      return children.length > 0 ? { ...rest, children } : rest;
-    });
-  }
-
-  return clean(roots);
+/**
+ * Parse Markdown navigation using shared parser
+ * 
+ * This is preview-only parsing for client-side validation.
+ * The server performs the authoritative parsing and normalization.
+ */
+function parseMarkdownTreeShared(source: string): TutorialNavigationNode[] {
+  // Use shared parser that handles key/value syntax
+  const authoringNodes = parseMarkdownNavigation(source);
+  
+  // Normalize IDs using shared normalization
+  // No type assertion needed - types are now compatible
+  return normalizeNavigationIds(authoringNodes);
 }
 
 function validateNavigationDepthClient(nodes: TutorialNavigationNode[], currentDepth: number, path: string): void {
@@ -240,7 +185,7 @@ function parseSource(format: SourceFormat, source: string, subjectName: string):
 
   return {
     ...defaults,
-    topics: parseMarkdownTree(source),
+    topics: parseMarkdownTreeShared(source),
   };
 }
 
@@ -363,8 +308,18 @@ export function SidebarBuilderClient() {
     setMessage(status === 'published' ? 'Publishing sidebar...' : 'Saving draft...');
 
     try {
-      // Normalize navigation to universal format (strip brand/theme/progress/status/url)
-      const universalNavigation = normalizeNavigationForStorage(parsed.tree);
+      // Parse based on format to get universal navigation
+      let universalNavigation;
+      
+      if (format === 'json') {
+        // JSON: Already have the tree, just normalize for storage
+        universalNavigation = normalizeNavigationForStorage(parsed.tree);
+      } else {
+        // Markdown: Parse to get tree, then normalize
+        // Note: Server will re-parse; this is for client validation only
+        const markdownTree = parseMarkdownTreeShared(source);
+        universalNavigation = { topics: markdownTree };
+      }
       
       const response = await fetch('/api/tutorial-left-sidebar', {
         method: 'POST',
@@ -376,8 +331,8 @@ export function SidebarBuilderClient() {
           topicId: form.topicId,
           activeSubtopicId: form.activeSubtopicId || undefined,
           tree: universalNavigation,
-          sourceFormat: 'json',
-          sourceContent: JSON.stringify(universalNavigation, null, 2),
+          sourceFormat: format,  // Preserve actual format
+          sourceContent: source, // Preserve original source
           status,
         }),
       });
@@ -534,21 +489,63 @@ export function SidebarBuilderClient() {
           </div>
         </div>
 
-        {/* JSON Navigation Editor */}
+        {/* AI Generation Prerequisites */}
+        <AiGenerationPrerequisites
+          domainName={hierarchy.domains.find((d) => d.id === form.domainId)?.name}
+          subjectName={hierarchy.subjects.find((s) => s.id === form.subjectId)?.name}
+          topicName={hierarchy.topics.find((t) => t.id === form.topicId)?.name}
+          subtopicName={hierarchy.subtopics.find((s) => s.id === form.activeSubtopicId)?.name}
+        />
+
+        {/* Navigation Authoring Editor */}
         <div className="mt-5 space-y-2">
-          <div className="flex items-center justify-between pb-1 text-xs font-bold uppercase tracking-wider text-slate-600">
-            <span className="flex items-center gap-2">
-              <span>Navigation JSON Structure</span>
-              <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-600">Universal Tree</span>
-            </span>
-            <span className="font-mono text-[10px] font-semibold text-pink-600">Pure Content Contract</span>
+          {/* Format Selector and Label */}
+          <div className="flex items-center justify-between pb-1">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                Navigation {format === 'json' ? 'JSON' : 'Markdown'} Structure
+              </span>
+              <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-600">
+                Universal Tree
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] font-semibold text-pink-600">Pure Content Contract</span>
+              <div className="flex rounded-lg border border-slate-200 bg-white shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setFormat('json')}
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    format === 'json'
+                      ? 'bg-pink-600 text-white rounded-l-lg'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormat('markdown')}
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    format === 'markdown'
+                      ? 'bg-pink-600 text-white rounded-r-lg'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  Markdown
+                </button>
+              </div>
+            </div>
           </div>
           <textarea
             value={source}
             onChange={(event) => setSource(event.target.value)}
-            placeholder='Click "Load Template" to start with the universal navigation structure'
+            placeholder={format === 'json' 
+              ? 'Click "Load Template" to start with the universal navigation structure'
+              : 'Enter navigation in Markdown format:\n- id: javascript\n  name: JavaScript\n  type: group\n  description: Programming language.\n\n  - id: functions\n    name: Functions\n    type: page'
+            }
             spellCheck={false}
-            aria-label="Navigation JSON Structure"
+            aria-label={`Navigation ${format === 'json' ? 'JSON' : 'Markdown'} Structure`}
             className="min-h-[460px] w-full resize-y rounded-xl border border-slate-800 bg-[#071024] p-4 font-mono text-xs leading-6 text-slate-100 outline-none transition-all focus:ring-2 focus:ring-pink-500"
           />
         </div>
@@ -557,7 +554,8 @@ export function SidebarBuilderClient() {
         <div className="mt-4 rounded-xl border border-pink-200 bg-pink-50/40 p-4 text-xs leading-relaxed text-slate-700">
           <p className="font-bold text-pink-950">📋 Universal Navigation Guidelines:</p>
           <ul className="ml-4 mt-2 list-disc space-y-1 text-[11px] text-slate-600">
-            <li><strong>Structure:</strong> Use &ldquo;id&rdquo;, &ldquo;name&rdquo;, &ldquo;type&rdquo; (group/page), &ldquo;icon&rdquo;, &ldquo;expanded&rdquo;, and &ldquo;children&rdquo;</li>
+            <li><strong>Structure:</strong> Use &ldquo;id&rdquo;, &ldquo;name&rdquo;, &ldquo;type&rdquo; (group/page), &ldquo;description&rdquo;, &ldquo;icon&rdquo;, &ldquo;expanded&rdquo;, and &ldquo;children&rdquo;</li>
+            <li><strong>Both formats supported:</strong> JSON (structured data) or Markdown (key/value syntax)</li>
             <li><strong>Do NOT include:</strong> brand, theme, progress, status, or manual URLs</li>
             <li><strong>Max depth:</strong> 3 visual levels (Topic → Group → Page)</li>
             <li><strong>Runtime behavior:</strong> The engine automatically generates URLs, active states, and brand themes dynamically</li>

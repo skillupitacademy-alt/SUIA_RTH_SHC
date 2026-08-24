@@ -189,7 +189,14 @@ export function createForwardHeaders(request: NextRequest): Headers {
   if (!headers.has('x-brand')) {
     if (hostname) {
       let brand: string;
-      if (hostname.includes('skillhubcore')) {
+      
+      // 🔧 LOCAL DEV: Allow environment variable override for local development
+      const envBrand = process.env.NEXT_PUBLIC_BRAND ?? process.env.BRAND;
+      
+      // Use environment override if provided (for local development)
+      if (envBrand === 'skillup' || envBrand === 'realtutorialhub' || envBrand === 'skillhubcore') {
+        brand = envBrand;
+      } else if (hostname.includes('skillhubcore')) {
         brand = 'skillhubcore';
       } else if (hostname.includes('skillup')) {
         brand = 'skillup';
@@ -208,6 +215,7 @@ export function createForwardHeaders(request: NextRequest): Headers {
         action: 'create_forward_headers',
         hostname,
         brand,
+        envBrandOverride: envBrand ?? 'none',
         hasDeviceId: !!deviceId,
         hasInternalSecret: !!internalSecret,
       }));
@@ -342,8 +350,14 @@ export async function proxyAuthRequest(
 ) {
   // 📊 OBSERVABILITY: Log auth proxy request and current mode
   const hostname = getRequestHost(request);
+  
+  // 🔧 LOCAL DEV: Allow environment variable override for brand detection
+  const envBrand = process.env.NEXT_PUBLIC_BRAND ?? process.env.BRAND;
+  
   let brand: string;
-  if (hostname?.includes('skillhubcore')) {
+  if (envBrand === 'skillup' || envBrand === 'realtutorialhub' || envBrand === 'skillhubcore') {
+    brand = envBrand;
+  } else if (hostname?.includes('skillhubcore')) {
     brand = 'skillhubcore';
   } else if (hostname?.includes('skillup')) {
     brand = 'skillup';
@@ -358,6 +372,7 @@ export async function proxyAuthRequest(
     method: options.method ?? request.method,
     brand,
     hostname,
+    envBrandOverride: envBrand ?? 'none',
   }));
 
   // 📊 PHASE 5: Log current configuration mode

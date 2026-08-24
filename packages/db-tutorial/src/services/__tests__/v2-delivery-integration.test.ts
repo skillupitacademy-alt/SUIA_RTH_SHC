@@ -43,6 +43,7 @@ describe('V2 Delivery Integration Test', () => {
 
   // Type assertion for 'shared' brandId - valid in database enum but not in Brand type
   const SHARED_BRAND = 'shared' as any;
+  const TEST_NAV_NODE_ID = 'test-page';
 
   beforeAll(async () => {
     const result = await db
@@ -86,6 +87,7 @@ describe('V2 Delivery Integration Test', () => {
       const tutorial = await composerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: SHARED_BRAND,
           content: document
         },
@@ -126,6 +128,7 @@ describe('V2 Delivery Integration Test', () => {
       const tutorial = await composerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: SHARED_BRAND,
           content: document
         },
@@ -160,6 +163,7 @@ describe('V2 Delivery Integration Test', () => {
       const tutorial = await composerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: SHARED_BRAND,
           content: document
         },
@@ -193,6 +197,7 @@ describe('V2 Delivery Integration Test', () => {
       const tutorial = await composerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: SHARED_BRAND,
           content: document
         },
@@ -253,7 +258,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
 
@@ -342,7 +348,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
 
@@ -455,7 +462,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
 
@@ -491,7 +499,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorialSkillup = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: 'skillup', content: documentSkillup },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'skillup', content: documentSkillup },
         mockContext
       );
       createdTutorialIds.push(tutorialSkillup.id);
@@ -518,7 +527,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
@@ -553,7 +563,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
@@ -591,7 +602,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
@@ -627,7 +639,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
@@ -666,7 +679,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
@@ -717,7 +731,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
       createdTutorialIds.push(tutorial.id);
@@ -771,7 +786,8 @@ describe('V2 Delivery Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: SHARED_BRAND, content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: SHARED_BRAND, content: document },
         mockContext
       );
       createdTutorialIds.push(tutorial.id);

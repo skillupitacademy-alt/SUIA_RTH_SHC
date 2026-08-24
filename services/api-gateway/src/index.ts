@@ -107,7 +107,7 @@ export const createApp = () => {
 
     // 🏷️ BRAND RESOLUTION: Use consistent hostname-based brand resolution
     const hostname = requestUrl.hostname.toLowerCase();
-    const brand = resolveBrandFromHostname(hostname);
+    const brand = resolveBrandFromHostname(hostname, c.env);
 
     // 🔥 CRITICAL FIX: Set brand header for ALL requests (not just authenticated ones)
     // This ensures login/signup get the correct brand

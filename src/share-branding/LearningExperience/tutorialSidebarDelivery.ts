@@ -28,6 +28,7 @@ export interface TutorialSidebarDeliveryParams {
   subjectSlug: string;
   topicSlug: string;
   subtopicSlug: string;
+  navigationNodeId: string; // Phase 1: Exact sidebar node.id
 }
 
 export interface TutorialSidebarDeliveryPayload {
@@ -42,6 +43,7 @@ export interface TutorialSidebarDeliveryPayload {
 }
 
 interface FlatNavigationItem {
+  id: string; // Phase 1: Exact sidebar node.id
   name: string;
   slug: string;
   url: string;
@@ -131,21 +133,6 @@ function withRuntimeBrand(
   };
 }
 
-function findUrlBySlug(nodes: TutorialNavigationNode[], slug: string): string {
-  for (const node of nodes) {
-    if ((node.slug === slug || compactSlug(node.slug) === compactSlug(slug)) && node.url) {
-      return node.url;
-    }
-
-    const childMatch = findUrlBySlug(node.children ?? [], slug);
-    if (childMatch) {
-      return childMatch;
-    }
-  }
-
-  return '';
-}
-
 function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[] {
   const items: FlatNavigationItem[] = [];
 
@@ -153,7 +140,12 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
     for (const node of branch) {
       // Only include nodes with both url and slug (pages with generated URLs)
       if (node.url && node.slug) {
-        items.push({ name: node.name, slug: node.slug, url: node.url });
+        items.push({ 
+          id: node.id, // Phase 1: Preserve exact node.id
+          name: node.name, 
+          slug: node.slug, 
+          url: node.url 
+        });
       }
       if (node.children) {
         walk(node.children);
@@ -166,38 +158,39 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
 }
 
 function withTutorialV2Url(item: FlatNavigationItem, hierarchy: TutorialSidebarDeliveryPayload['hierarchy']): FlatNavigationItem {
+  // Phase 1: Include exact navigationNodeId in URL
   return {
     ...item,
-    url: `/tutorial-v2/${hierarchy.domain.slug}/${hierarchy.subject.slug}/${hierarchy.topic.slug}/${canonicalSubtopicSlug(item.slug || item.name)}`,
+    url: `/tutorial-v2/${hierarchy.domain.slug}/${hierarchy.subject.slug}/${hierarchy.topic.slug}/${canonicalSubtopicSlug(item.slug || item.name)}/${item.id}`,
   };
 }
 
-function lastPathSegment(value: string | undefined) {
-  const parts = (value ?? '').split('/').filter(Boolean);
-  return parts[parts.length - 1] ?? '';
-}
-
-function isActiveNavigationItem(item: FlatNavigationItem, params: TutorialSidebarDeliveryParams, hierarchy: TutorialSidebarDeliveryPayload['hierarchy'], activeUrl: string) {
-  const itemSlug = compactSlug(item.slug);
-  const itemUrlSlug = compactSlug(lastPathSegment(item.url));
-  return (
-    itemSlug === compactSlug(params.subtopicSlug)
-    || itemSlug === compactSlug(hierarchy.subtopic.slug)
-    || item.url === activeUrl
-    || itemUrlSlug === compactSlug(params.subtopicSlug)
-    || itemUrlSlug === compactSlug(hierarchy.subtopic.slug)
-  );
+function isActiveNavigationItem(item: FlatNavigationItem, params: TutorialSidebarDeliveryParams) {
+  // Phase 1: ONLY match by exact navigationNodeId - no subtopic-based fallback
+  return item.id === params.navigationNodeId;
 }
 
 async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
+  console.log('[DELIVERY_TRACE] resolveHierarchy START', { domainSlug: params.domainSlug, subjectSlug: params.subjectSlug, topicSlug: params.topicSlug, subtopicSlug: params.subtopicSlug });
+  
   const db = getDb();
+  
+  // Log which database URL is being used
+  console.log('[DELIVERY_TRACE] Database connection', { 
+    DATABASE_URL: process.env.DATABASE_URL?.substring(0, 50) + '...',
+    DATABASE_URL_TUTORIAL: process.env.DATABASE_URL_TUTORIAL?.substring(0, 50) + '...'
+  });
+  
   const domainRows = await db
     .select()
     .from(shcDomains)
     .where(isNull(shcDomains.deletedAt));
   const domain = domainRows.find((row) => matchesSlug(row.name, params.domainSlug));
 
+  console.log('[DELIVERY_TRACE] Domain resolution', { found: !!domain, domainName: domain?.name });
+
   if (!domain) {
+    console.log('[DELIVERY_TRACE] resolveHierarchy FAIL - domain not found');
     return null;
   }
 
@@ -210,7 +203,10 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     ));
   const subject = subjectRows.find((row) => matchesSlug(row.name, params.subjectSlug));
 
+  console.log('[DELIVERY_TRACE] Subject resolution', { found: !!subject, subjectName: subject?.name, subjectId: subject?.id });
+
   if (!subject) {
+    console.log('[DELIVERY_TRACE] resolveHierarchy FAIL - subject not found');
     return null;
   }
 
@@ -221,9 +217,20 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
       eq(shcTopics.subjectId, subject.id),
       isNull(shcTopics.deletedAt)
     ));
-  const topic = topicRows.find((row) => matchesSlug(row.name, params.topicSlug));
+  
+  console.log('[DELIVERY_TRACE] Topic query', { subjectId: subject.id, query: `SELECT * FROM topics WHERE subject_id='${subject.id}' AND deleted_at IS NULL` });
+  console.log('[DELIVERY_TRACE] Topic query result', { count: topicRows.length, topicNames: topicRows.map(r => r.name), targetSlug: params.topicSlug });
+  
+  const topic = topicRows.find((row) => {
+    const matches = matchesSlug(row.name, params.topicSlug);
+    console.log('[DELIVERY_TRACE] Topic match check', { topicName: row.name, targetSlug: params.topicSlug, slugified: slugify(row.name), matches });
+    return matches;
+  });
+
+  console.log('[DELIVERY_TRACE] Topic resolution', { found: !!topic, topicName: topic?.name, topicId: topic?.id });
 
   if (!topic) {
+    console.log('[DELIVERY_TRACE] resolveHierarchy FAIL - topic not found');
     return null;
   }
 
@@ -236,10 +243,14 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     ));
   const subtopic = subtopicRows.find((row) => matchesSlug(row.name, params.subtopicSlug));
 
+  console.log('[DELIVERY_TRACE] Subtopic resolution', { found: !!subtopic, subtopicName: subtopic?.name, subtopicId: subtopic?.id });
+
   if (!subtopic) {
+    console.log('[DELIVERY_TRACE] resolveHierarchy FAIL - subtopic not found');
     return null;
   }
 
+  console.log('[DELIVERY_TRACE] resolveHierarchy SUCCESS');
   return {
     domain: { id: domain.id, name: domain.name, slug: slugify(domain.name) },
     subject: { id: subject.id, name: subject.name, slug: slugify(subject.name) },
@@ -249,10 +260,15 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
 }
 
 export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliveryParams): Promise<TutorialSidebarDeliveryPayload | null> {
+  console.log('[DELIVERY_TRACE] getPublishedTutorialSidebar START', params);
+  
   const hierarchy = await resolveHierarchy(params);
   if (!hierarchy) {
+    console.log('[DELIVERY_TRACE] getPublishedTutorialSidebar FAIL - hierarchy null');
     return null;
   }
+
+  console.log('[DELIVERY_TRACE] Querying sidebar with topicId:', hierarchy.topic.id);
 
   const sharedRows = await dbHttp
     .select()
@@ -263,6 +279,8 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
       eq(tutorialSidebarTreesV2.status, 'published')
     ))
     .limit(1);
+
+  console.log('[DELIVERY_TRACE] Shared sidebar query result:', { count: sharedRows.length });
 
   const brandRows = sharedRows.length > 0
     ? []
@@ -278,54 +296,135 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
 
   const sidebar = sharedRows[0] ?? brandRows[0];
   if (!sidebar) {
+    console.log('[DELIVERY_TRACE] getPublishedTutorialSidebar FAIL - no sidebar found');
     return null;
   }
+
+  console.log('[DELIVERY_TRACE] getPublishedTutorialSidebar SUCCESS');
 
   // Transform normalized tree (from DB) into complete runtime tree
   const brandedTree = withRuntimeBrand(sidebar.tree, params.brandId, hierarchy.subject.name);
 
-  const activeUrl =
-    findUrlBySlug(brandedTree.topics, params.subtopicSlug)
-    || findUrlBySlug(brandedTree.topics, hierarchy.subtopic.slug);
-
+  // Phase 1: activeUrl is resolved by exact navigationNodeId in getPublishedTutorialPagePayload
+  // This function provides only the tree and hierarchy
   return {
     tree: brandedTree,
-    activeUrl,
+    activeUrl: '', // Placeholder - actual activeUrl resolved by caller with exact navigationNodeId
     hierarchy,
   };
 }
 
 export async function getPublishedTutorialPagePayload(params: TutorialSidebarDeliveryParams): Promise<TutorialPagePayload | null> {
+  console.log('[DELIVERY_TRACE] getPublishedTutorialPagePayload START', params);
+  
   const sidebarPayload = await getPublishedTutorialSidebar(params);
   if (!sidebarPayload) {
+    console.log('[DELIVERY_TRACE] getPublishedTutorialPagePayload FAIL - sidebar payload null');
     return null;
   }
 
-  const { hierarchy, tree, activeUrl } = sidebarPayload;
+  const { hierarchy, tree } = sidebarPayload;
 
-  // V2: Use TutorialDeliveryService to fetch tutorial from tutorial_sections
-  const deliveryResult = await tutorialDeliveryService.getTutorialById(
-    hierarchy.subtopic.id,
+  console.log('[DELIVERY_TRACE] Validating navigationNodeId:', params.navigationNodeId);
+
+  // Phase 1: Validate navigationNodeId exists in sidebar and is a page node
+  const validateNavigationNode = (nodes: TutorialNavigationNode[]): boolean => {
+    for (const node of nodes) {
+      if (node.id === params.navigationNodeId) {
+        // Found the node - verify it's a page (has url and slug)
+        const isValid = !!(node.url && node.slug);
+        console.log('[DELIVERY_TRACE] Found navigationNode', { id: node.id, hasUrl: !!node.url, hasSlug: !!node.slug, isValid });
+        return isValid;
+      }
+      if (node.children) {
+        if (validateNavigationNode(node.children)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  if (!validateNavigationNode(tree.topics)) {
+    // navigationNodeId not found or not a page node
+    console.log('[DELIVERY_TRACE] getPublishedTutorialPagePayload FAIL - navigation node validation failed');
+    return null;
+  }
+
+  // Phase 1: Resolve activeUrl by exact navigationNodeId
+  const findUrlByNavigationNodeId = (nodes: TutorialNavigationNode[], nodeId: string): string => {
+    for (const node of nodes) {
+      if (node.id === nodeId && node.url) {
+        return node.url;
+      }
+      if (node.children) {
+        const childUrl = findUrlByNavigationNodeId(node.children, nodeId);
+        if (childUrl) {
+          return childUrl;
+        }
+      }
+    }
+    return '';
+  };
+
+  const activeUrl = findUrlByNavigationNodeId(tree.topics, params.navigationNodeId);
+
+  console.log('[DELIVERY_TRACE] Active URL resolved:', activeUrl);
+
+  // Phase 1: Fail closed if navigationNodeId validation passed but URL not found
+  if (!activeUrl) {
+    console.log('[DELIVERY_TRACE] getPublishedTutorialPagePayload FAIL - activeUrl empty');
+    return null;
+  }
+
+  // Phase 1: Use getTutorialByPage with exact navigationNodeId
+  console.log('[DELIVERY_TRACE] Calling getTutorialByPage', { subtopicSlug: hierarchy.subtopic.slug, navigationNodeId: params.navigationNodeId, brandId: params.brandId });
+  
+  const deliveryResult = await tutorialDeliveryService.getTutorialByPage(
+    hierarchy.subtopic.slug,
+    params.navigationNodeId,
     {
       brandId: params.brandId,
       includeUnpublished: false,
-      _subtopicMetadata: {
-        slug: hierarchy.subtopic.slug,
-        name: hierarchy.subtopic.name,
-      },
     }
   );
 
+  console.log('[DELIVERY_TRACE] getTutorialByPage result:', { hasTutorial: !!deliveryResult.tutorial });
+
   const tutorial = deliveryResult.tutorial;
   
+  /*
+   * PHASE 11.11D FIX: Decouple sidebar from content
+   * 
+   * Sidebar + navigation must render even when tutorial content is:
+   * - Not yet created (0/18 blocks)
+   * - Invalid/failing schema validation
+   * - Missing from database
+   * 
+   * This enables progressive rendering and matches documented behavior:
+   * "Create page node → publish sidebar → do NOT create content → 
+   * learner navigates → TutorialPageShell shows 'Content not published yet' → 
+   * Left Sidebar still visible"
+   * 
+   * Content absence/failure should only affect content region, not page shell.
+   */
+  if (!tutorial) {
+    console.log('[DELIVERY_TRACE] getPublishedTutorialPagePayload - tutorial is null, continuing with empty content');
+  } else {
+    console.log('[DELIVERY_TRACE] getPublishedTutorialPagePayload - tutorial content available');
+  }
+  
+  console.log('[DELIVERY_TRACE] getPublishedTutorialPagePayload SUCCESS');
+
   // V2 Architecture: Preserve TutorialDocument.blocks[] through delivery
   // Do NOT convert back to legacy definition/code/summary structure
+  // Allow empty blocks array when tutorial is unavailable
   const content: TutorialPagePayload['content'] = {
     blocks: tutorial?.content?.blocks ?? [],
   };
 
   const flatItems = flattenNavigation(tree.topics).map((item) => withTutorialV2Url(item, hierarchy));
-  const activeIndex = flatItems.findIndex((item) => isActiveNavigationItem(item, params, hierarchy, activeUrl));
+  const activeIndex = flatItems.findIndex((item) => isActiveNavigationItem(item, params));
 
   return {
     brandId: params.brandId,

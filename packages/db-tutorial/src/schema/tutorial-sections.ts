@@ -1,11 +1,12 @@
 /* istanbul ignore file */
 /**
  * Tutorial Sections - Modular Content System
- * Phase 1 P0 Foundation - Database Governance
+ * Phase 1: Page-Aware Tutorial Architecture
  * Enhanced with Gap Remediation (GAP 3 & GAP 4)
  * UPDATED: Phase B.2 - Legacy Eradication (removed section_type, difficulty)
  *
- * V2 Architecture: One tutorial per subtopic per brand (multi-brand support)
+ * Phase 1 Architecture: One tutorial section per (subtopic, navigationNode, brand)
+ * Multiple independent content pages can exist under a single subtopic.
  */
 
 import { boolean, integer, jsonb, pgTable, text, timestamp, uuid, index, uniqueIndex } from 'drizzle-orm/pg-core';
@@ -31,6 +32,12 @@ export const tutorialSections = pgTable('tutorial_sections', {
   subtopicId: uuid('subtopic_id')
     .notNull()
     .references(() => tutorialSubtopics.id, { onDelete: 'cascade' }),
+
+  // Phase 1: Sidebar Navigation Identity (REQUIRED)
+  // Maps to normalized sidebar node.id (e.g., 'what-is-java', 'introduction-to-python')
+  // Enables multiple independent content pages per subtopic
+  // MUST use canonical node.id from Phase 0.2 sidebar, NOT derived from name/slug/URL
+  navigationNodeId: text('navigation_node_id').notNull(),
 
   // Section Configuration
   // REMOVED: sectionType (legacy - dropped in Phase B)
@@ -84,18 +91,19 @@ export const tutorialSections = pgTable('tutorial_sections', {
   publishedAt: timestamp('published_at', { mode: 'date' }),
   deletedAt: timestamp('deleted_at', { mode: 'date' }),
 }, (table) => ({
-  // V2 Optimized Indexes (Phase B.2 - Post-Eradication)
-  idxTutorialV2Delivery: index('idx_tutorial_v2_delivery').on(table.subtopicId, table.brandId, table.status),
+  // V2 Indexes for Common Queries
+  idxTutorialV2Delivery: index('idx_tutorial_v2_delivery').on(table.subtopicId, table.navigationNodeId, table.brandId, table.status),
   idxTutorialV2ByBrand: index('idx_tutorial_v2_by_brand').on(table.brandId, table.status, table.updatedAt),
   idxTutorialV2ByStatus: index('idx_tutorial_v2_by_status').on(table.status, table.updatedAt),
   idxTutorialV2ByArchitecture: index('idx_tutorial_v2_by_architecture').on(table.educationalArchitectureId),
   idxTutorialV2SubtopicStatus: index('idx_tutorial_v2_subtopic_status').on(table.subtopicId, table.status),
 
-  // V2 Identity Constraint: one ACTIVE tutorial per subtopic per brand
+  // Phase 1 Identity Constraint: one ACTIVE tutorial per (subtopic, navigationNode, brand)
   // Partial unique index: applies only to active tutorials (deleted_at IS NULL)
+  // Allows multiple pages per subtopic when navigationNodeId differs
   // Allows multiple archived tutorials for same identity
   uqTutorialV2IdentityActive: uniqueIndex('uq_tutorial_v2_identity_active')
-    .on(table.subtopicId, table.brandId)
+    .on(table.subtopicId, table.navigationNodeId, table.brandId)
     .where(sql`${table.deletedAt} IS NULL`),
 }));
 

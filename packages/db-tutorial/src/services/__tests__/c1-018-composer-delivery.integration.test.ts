@@ -58,6 +58,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   // Use different brands for test isolation
   const TEST_BRANDS = ['realtutorialhub', 'skillup'] as const;
+  const TEST_NAV_NODE_ID = 'test-page';
   let brandIndex = 0;
 
   function getNextBrand() {
@@ -113,6 +114,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -153,6 +155,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -201,6 +204,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -249,6 +253,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -304,6 +309,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -373,6 +379,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -417,6 +424,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -460,6 +468,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -510,6 +519,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -572,6 +582,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },
@@ -618,6 +629,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: brand,
           content: fixture.initialDocument,
         },

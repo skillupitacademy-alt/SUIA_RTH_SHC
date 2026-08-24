@@ -535,12 +535,14 @@ export const TutorialStatusSchema = SectionStatusSchema;
 export type TutorialStatus = z.infer<typeof TutorialStatusSchema>;
 
 /**
- * V2 Create Tutorial Request
+ * Phase 1 Create Tutorial Request
  * Based on CreateTutorialServiceInput from tutorial-composer.service.ts
+ * Added navigationNodeId for sidebar page identity
  */
 export const CreateTutorialRequestSchema = z
   .object({
     subtopicId: z.string().uuid('Invalid subtopic ID'),
+    navigationNodeId: z.string().min(1, 'navigationNodeId is required'), // Phase 1: Required
     brandId: BrandIdSchema.optional(),
     content: TutorialDocumentSchema,
     orderIndex: z.number().int().min(0).optional(),
@@ -553,13 +555,15 @@ export const CreateTutorialRequestSchema = z
 export type CreateTutorialRequest = z.infer<typeof CreateTutorialRequestSchema>;
 
 /**
- * V2 Tutorial Response
+ * Phase 1 Tutorial Response
  * Based on TutorialSection type from tutorial-sections.ts schema
+ * Added navigationNodeId for sidebar page identity
  */
 export const TutorialResponseSchema = z
   .object({
     id: z.string().uuid(),
     subtopicId: z.string().uuid(),
+    navigationNodeId: z.string().nullable(), // Phase 1: Added for page identity
     brandId: BrandIdSchema,
     orderIndex: z.number().int(),
     content: TutorialDocumentSchema,

@@ -37,6 +37,8 @@ describe('GATE 4 — V2 Concurrency & Duplicate Prevention', () => {
     service = new TutorialComposerService();
     createdTutorialIds = [];
   });
+  
+  const TEST_NAV_NODE_ID = 'test-page';
 
   afterEach(async () => {
     if (createdTutorialIds.length > 0) {
@@ -58,6 +60,7 @@ describe('GATE 4 — V2 Concurrency & Duplicate Prevention', () => {
 
     const input: CreateTutorialInput = {
       subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
       brandId: 'realtutorialhub', // Valid brand enum value
       content: document,
     };
@@ -101,11 +104,13 @@ describe('GATE 4 — V2 Concurrency & Duplicate Prevention', () => {
 
     const brandA: CreateTutorialInput = {
       subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
       brandId: 'realtutorialhub', // Valid brand enum value
       content: document,
     };
     const brandB: CreateTutorialInput = {
       subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
       brandId: 'skillup', // Different valid brand enum value
       content: document,
     };
@@ -141,6 +146,7 @@ describe('GATE 4 — V2 Concurrency & Duplicate Prevention', () => {
 
     const input: CreateTutorialInput = {
       subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
       brandId: 'skillup', // Valid brand enum value
       content: document,
     };
@@ -170,6 +176,7 @@ describe('GATE 4 — V2 Concurrency & Duplicate Prevention', () => {
 
     const input: CreateTutorialInput = {
       subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
       brandId: 'shared', // Valid brand enum value
       content: document,
     };

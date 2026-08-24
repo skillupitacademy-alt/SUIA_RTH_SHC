@@ -39,7 +39,18 @@ export function detectRequestBrand(request: Request): string | undefined {
 }
 
 // 🔥 NEW: Consistent brand resolution from hostname
-export function resolveBrandFromHostname(hostname: string): 'realtutorialhub' | 'skillup' {
+export function resolveBrandFromHostname(
+  hostname: string,
+  env: GatewayBindings,
+): 'realtutorialhub' | 'skillup' {
+  // 🔧 LOCAL DEV: Allow server-side environment override for local development
+  const envBrand = env.BRAND;
+  
+  if (envBrand === 'skillup' || envBrand === 'realtutorialhub') {
+    return envBrand;
+  }
+  
+  // Production hostname-based resolution
   return hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
 }
 
@@ -130,7 +141,7 @@ export async function authenticateRequest(
   
   // 🔥 NEW: Always derive brand from hostname for consistency
   const url = new URL(request.url);
-  const hostnameBrand = resolveBrandFromHostname(url.hostname);
+  const hostnameBrand = resolveBrandFromHostname(url.hostname, env);
   const effectiveBrand = requestBrand ?? hostnameBrand;
   
   const selection = getTokenFromHeaders(request, portal);

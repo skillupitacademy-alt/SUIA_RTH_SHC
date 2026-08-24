@@ -6,6 +6,8 @@ const nextConfig = {
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ['@quiz/auth', '@quiz/db-tutorial', '@quiz/types', '@quiz/validation', '@quiz/ui', '@quiz/observability', '@quiz/api-client'],
   turbopack: {},
+  // Externalize Node.js-only database dependencies for Server Components
+  serverExternalPackages: ['@neondatabase/serverless', 'ws', 'bufferutil', 'utf-8-validate'],
 };
 
 const withSkillupSerwist = withSerwist({

@@ -34,6 +34,8 @@ describe('V2 Composer Integration Test', () => {
   const mockContext = {
     userId: 'v2-composer-test-user'
   };
+  
+  const TEST_NAV_NODE_ID = 'test-page';
 
   beforeAll(async () => {
     const result = await db
@@ -102,6 +104,7 @@ describe('V2 Composer Integration Test', () => {
       const tutorial = await composerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: 'shared',
           content: document
         },
@@ -139,6 +142,7 @@ describe('V2 Composer Integration Test', () => {
       const first = await composerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: 'shared',
           content: document
         },
@@ -152,6 +156,7 @@ describe('V2 Composer Integration Test', () => {
         composerService.createTutorial(
           {
             subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
             brandId: 'shared',
             content: document
           },
@@ -224,7 +229,8 @@ describe('V2 Composer Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: 'shared', content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'shared', content: document },
         mockContext
       );
 
@@ -352,7 +358,8 @@ describe('V2 Composer Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: 'shared', content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'shared', content: document },
         mockContext
       );
 
@@ -382,7 +389,8 @@ describe('V2 Composer Integration Test', () => {
 
       await expect(
         composerService.createTutorial(
-          { subtopicId: testSubtopicId, brandId: 'shared', content: invalidDocument },
+          { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'shared', content: invalidDocument },
           mockContext
         )
       ).rejects.toThrow(TutorialDocumentValidationError);
@@ -399,7 +407,8 @@ describe('V2 Composer Integration Test', () => {
       // If not, it should throw
       try {
         const tutorial = await composerService.createTutorial(
-          { subtopicId: testSubtopicId, brandId: 'shared', content: emptyDocument },
+          { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'shared', content: emptyDocument },
           mockContext
         );
         createdTutorialIds.push(tutorial.id);
@@ -427,7 +436,8 @@ describe('V2 Composer Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: 'shared', content: initialDocument },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'shared', content: initialDocument },
         mockContext
       );
 
@@ -480,7 +490,8 @@ describe('V2 Composer Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: 'shared', content: initialDocument },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'shared', content: initialDocument },
         mockContext
       );
 
@@ -526,7 +537,8 @@ describe('V2 Composer Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: 'shared', content: originalDoc },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'shared', content: originalDoc },
         mockContext
       );
 
@@ -561,7 +573,8 @@ describe('V2 Composer Integration Test', () => {
       };
 
       const tutorial = await composerService.createTutorial(
-        { subtopicId: testSubtopicId, brandId: 'shared', content: document },
+        { subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID, brandId: 'shared', content: document },
         mockContext
       );
 

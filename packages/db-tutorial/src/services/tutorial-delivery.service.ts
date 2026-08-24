@@ -59,11 +59,12 @@ export interface TutorialDeliveryV2 {
 }
 
 /**
- * V2 Options for tutorial delivery
+ * Phase 1 Options for tutorial delivery
  */
 export interface DeliveryOptions {
-  brandId?: Brand;
+  brandId?: Brand | 'shared'; // Brand includes 'shared' for universal content
   includeUnpublished?: boolean; // For admin preview, defaults to false
+  navigationNodeId?: string; // Phase 1: Optional page identity
 }
 
 /**
@@ -75,8 +76,43 @@ export class TutorialDeliveryService {
   ) {}
 
   /**
+   * Phase 1: Get tutorial for a specific page (by subtopic slug + navigationNodeId)
+   * Returns tutorial for specific sidebar page
+   */
+  async getTutorialByPage(
+    subtopicSlug: string,
+    navigationNodeId: string,
+    options: DeliveryOptions = {}
+  ): Promise<TutorialDeliveryV2> {
+    // Resolve subtopic
+    const [subtopic] = await db
+      .select({
+        id: tutorialSubtopics.id,
+        slug: tutorialSubtopics.slug,
+        name: tutorialSubtopics.name,
+      })
+      .from(tutorialSubtopics)
+      .where(eq(tutorialSubtopics.slug, subtopicSlug))
+      .limit(1);
+
+    if (!subtopic) {
+      throw new SubtopicNotFoundError(subtopicSlug);
+    }
+
+    return this.getTutorialById(subtopic.id, {
+      ...options,
+      navigationNodeId,
+      _subtopicMetadata: {
+        slug: subtopic.slug,
+        name: subtopic.name,
+      },
+    });
+  }
+
+  /**
    * V2: Get tutorial for a subtopic (by slug)
    * Returns single tutorial per (subtopicId, brandId)
+   * @deprecated Phase 1: Use getTutorialByPage with navigationNodeId
    */
   async getTutorialBySlug(
     subtopicSlug: string,
@@ -107,10 +143,13 @@ export class TutorialDeliveryService {
   }
 
   /**
-   * V2: Get tutorial for a subtopic (by UUID)
-   * Returns single tutorial per (subtopicId, brandId) identity
+   * Phase 1: Get tutorial for a subtopic (by UUID)
+   * Returns tutorial per (subtopicId, navigationNodeId, brandId) when navigationNodeId provided
+   * Falls back to V2 behavior (subtopicId, brandId) for backward compatibility
    * 
-   * @param subtopicId - MainDB subtopic ID (external_id in TutorialDB)
+   * @param subtopicId - Can be either:
+   *   - MainDB subtopic ID (external_id in TutorialDB) - requires resolution
+   *   - TutorialDB internal ID when called from getTutorialByPage (skip resolution)
    */
   async getTutorialById(
     subtopicId: string,
@@ -119,16 +158,25 @@ export class TutorialDeliveryService {
     const {
       brandId = 'shared',
       includeUnpublished = false,
+      navigationNodeId, // Phase 1: Optional page identity
       _subtopicMetadata,
     } = options;
 
     // CRITICAL: Resolve MainDB subtopic ID to TutorialDB internal ID
-    // subtopicId parameter is the external ID (from MainDB)
-    // We need the internal TutorialDB ID for FK queries
-    const internalSubtopicId = await this.repository.resolveSubtopicId(subtopicId);
-
-    if (!internalSubtopicId) {
-      throw new SubtopicNotFoundError(subtopicId);
+    // When _subtopicMetadata is provided, subtopicId is already the internal ID (from getTutorialByPage)
+    // Otherwise, subtopicId is the external ID (from MainDB) and requires resolution
+    let internalSubtopicId: string;
+    
+    if (_subtopicMetadata) {
+      // Already resolved: subtopicId is internal ID from getTutorialByPage
+      internalSubtopicId = subtopicId;
+    } else {
+      // External ID: resolve to internal ID
+      const resolved = await this.repository.resolveSubtopicId(subtopicId);
+      if (!resolved) {
+        throw new SubtopicNotFoundError(subtopicId);
+      }
+      internalSubtopicId = resolved;
     }
 
     // Fetch subtopic metadata if not provided
@@ -150,11 +198,16 @@ export class TutorialDeliveryService {
       subtopicMetadata = subtopic;
     }
 
-    // V2: Query single tutorial by (internalSubtopicId, brandId)
+    // Phase 1: Query by (internalSubtopicId, navigationNodeId, brandId) when provided
     const conditions = [
       eq(tutorialSections.subtopicId, internalSubtopicId), // Use TutorialDB internal ID
       isNull(tutorialSections.deletedAt), // Exclude soft-deleted tutorials
     ];
+
+    // Phase 1: Add navigationNodeId filter if provided
+    if (navigationNodeId) {
+      conditions.push(eq(tutorialSections.navigationNodeId, navigationNodeId));
+    }
 
     // Filter by publication status (default: only published)
     if (!includeUnpublished) {
@@ -163,7 +216,7 @@ export class TutorialDeliveryService {
       );
     }
 
-    // V2: Filter by brand visibility
+    // Phase 1: Filter by brand visibility
     // Tutorial visible if:
     // 1. brandId = 'shared' (universal content)
     // 2. brandId = requested brand (brand-specific)

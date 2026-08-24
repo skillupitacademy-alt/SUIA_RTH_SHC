@@ -14,11 +14,13 @@ import {
   TutorialDocumentSchema,
   type TutorialDocument,
   type TutorialBlock,
+  type TutorialSidebarBrandId,
   TutorialDocumentValidationError,
   SectionNotFoundError,
   SectionAlreadyExistsError,
   InvalidStatusTransitionError,
 } from '@quiz/types';
+import { SidebarNavigationValidatorService } from './sidebar-navigation-validator.service';
 
 // V2 Note: Using existing error types temporarily
 // SectionNotFoundError → represents Tutorial not found (will be renamed in types package later)
@@ -43,10 +45,12 @@ export interface TutorialComposerServiceContext {
 }
 
 /**
- * V2 Create tutorial input (service layer)
+ * Phase 1 Create tutorial input (service layer)
+ * Added navigationNodeId for sidebar page identity
  */
 export interface CreateTutorialServiceInput {
   subtopicId: string;
+  navigationNodeId: string; // Phase 1: Required (normalized sidebar node.id)
   brandId?: string;
   content: TutorialDocument;
   orderIndex?: number;
@@ -72,14 +76,14 @@ export class TutorialComposerService {
   ) {}
 
   /**
-   * V2: Create a new tutorial
+   * Phase 1: Create a new tutorial
    * 
-   * Identity: (subtopicId, brandId)
+   * Identity: (subtopicId, navigationNodeId, brandId)
    * Enforced by database UNIQUE constraint
    * 
    * Validates:
    * 1. TutorialDocument schema
-   * 2. No duplicate tutorial exists for this (subtopicId, brandId)
+   * 2. No duplicate tutorial exists for this (subtopicId, navigationNodeId, brandId)
    * 
    * Then persists to tutorial_sections.content
    */
@@ -87,16 +91,32 @@ export class TutorialComposerService {
     input: CreateTutorialServiceInput,
     context: TutorialComposerServiceContext
   ): Promise<TutorialSection> {
-    const brandId = input.brandId || context.brandId || 'shared';
+    const brandId: TutorialSidebarBrandId = (input.brandId || context.brandId || 'shared') as TutorialSidebarBrandId;
 
-    // Step 1: Resolve external subtopic ID to internal tutorial_subtopics ID
+    // Step 1: Validate navigationNodeId (must be provided)
+    if (!input.navigationNodeId || input.navigationNodeId.trim() === '') {
+      throw new Error('navigationNodeId is required for Phase 1 content creation');
+    }
+
+    // Step 2: Resolve external subtopic ID to internal tutorial_subtopics ID
     const internalSubtopicId = await this.repository.resolveSubtopicId(input.subtopicId);
     
     if (!internalSubtopicId) {
       throw new Error(`Subtopic ${input.subtopicId} not found in tutorial database. Please sync hierarchy first.`);
     }
 
-    // Step 2: Validate TutorialDocument schema
+    // Step 3: Validate navigationNodeId belongs to this subtopic (PHASE 1 CRITICAL)
+    const validation = await SidebarNavigationValidatorService.validateNavigationNode(
+      internalSubtopicId,
+      input.navigationNodeId,
+      brandId
+    );
+
+    if (!validation.isValid) {
+      throw new Error(`Invalid navigation node: ${validation.reason}`);
+    }
+
+    // Step 4: Validate TutorialDocument schema
     const parseResult = TutorialDocumentSchema.safeParse(input.content);
     if (!parseResult.success) {
       throw new TutorialDocumentValidationError([
@@ -110,21 +130,23 @@ export class TutorialComposerService {
 
     const document: TutorialDocument = parseResult.data as TutorialDocument;
 
-    // Step 3: Check for duplicate tutorial (internalSubtopicId, brandId) already exists
-    const existingTutorial = await this.repository.getTutorialBySubtopic(
+    // Step 5: Check for duplicate tutorial (internalSubtopicId, navigationNodeId, brandId)
+    const existingTutorial = await this.repository.getTutorialByPageIdentity(
       internalSubtopicId,
+      input.navigationNodeId,
       brandId
     );
 
     if (existingTutorial) {
       throw new TutorialAlreadyExistsError(
-        `Tutorial already exists for subtopic ${input.subtopicId} and brand ${brandId}`
+        `Tutorial already exists for subtopic ${input.subtopicId}, page ${input.navigationNodeId}, brand ${brandId}`
       );
     }
 
-    // Step 4: Create tutorial with internal subtopic ID (satisfies FK constraint)
+    // Step 6: Create tutorial with internal subtopic ID (satisfies FK constraint)
     const repositoryInput: CreateTutorialInput = {
       subtopicId: internalSubtopicId, // Internal tutorial_subtopics.id (NOT external_id)
+      navigationNodeId: input.navigationNodeId, // Phase 1: Sidebar page identity
       brandId,
       content: document,
       orderIndex: input.orderIndex,
@@ -170,7 +192,24 @@ export class TutorialComposerService {
   }
 
   /**
+   * Phase 1: Get tutorial by page identity (subtopicId, navigationNodeId, brandId)
+   */
+  async getTutorialByPageIdentity(
+    subtopicId: string,
+    navigationNodeId: string,
+    brandId: string = 'shared'
+  ): Promise<TutorialSection | null> {
+    const tutorial = await this.repository.getTutorialByPageIdentity(
+      subtopicId,
+      navigationNodeId,
+      brandId
+    );
+    return tutorial ?? null;
+  }
+
+  /**
    * V2: Get tutorial by subtopic and brand
+   * @deprecated Phase 1: Use getTutorialByPageIdentity instead
    */
   async getTutorialBySubtopic(
     subtopicId: string,

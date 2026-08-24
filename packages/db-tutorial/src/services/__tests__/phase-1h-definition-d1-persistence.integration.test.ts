@@ -58,6 +58,8 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
   const mockContext: TutorialComposerServiceContext = {
     userId: 'phase-1h-test-user',
   };
+  
+  const TEST_NAV_NODE_ID = 'test-page';
 
   // Test brands to ensure unique (subtopicId, brandId) identity
   const TEST_BRANDS = ['realtutorialhub', 'skillup'] as const;
@@ -151,6 +153,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: getNextBrand(),
           content: document,
         },
@@ -223,6 +226,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: getNextBrand(),
           content: document,
         },
@@ -261,6 +265,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId: getNextBrand(),
           content: document,
         },
@@ -307,6 +312,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId,
           content: document,
         },
@@ -435,6 +441,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId,
           content: document,
         },
@@ -469,6 +476,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId,
           content: document,
         },
@@ -507,6 +515,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId,
           content: document,
         },
@@ -545,6 +554,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId,
           content: document,
         },
@@ -593,6 +603,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
+          navigationNodeId: TEST_NAV_NODE_ID,
           brandId,
           content: document,
         },
