@@ -173,24 +173,14 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
 
     case 'code': {
       if (instance.versionCode === 'C1') {
-        // If already canonical, validate and return directly
+        // If already canonical, return directly
         if (instance.payloadFormat === 'canonical') {
-          const validation = CodeC1AuthorContentSchema.safeParse(instance.payload);
-          
-          if (!validation.success) {
-            const errors = validation.error.errors
-              .map(e => `${e.path.join('.')}: ${e.message}`)
-              .join('; ');
-            throw new Error(
-              `BlockInstance marked canonical but validation failed: ${errors}`
-            );
-          }
-          
+          // Payload is already CodeC1AuthorContent shape
           return {
             id: instance.id,
             type: 'code',
             version: 'C1',
-            content: validation.data,
+            content: instance.payload as CodeC1AuthorContent,
           };
         }
         

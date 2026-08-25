@@ -7,7 +7,16 @@ export * from './content';
 export * from './container';
 
 // Export version-specific Code block types from content-blocks
-export type { CodeC1Page, CodeC1AuthorContent, CodeC1Block, CodeBlockVersioned } from './content-blocks';
+export type { 
+  CodeC1Page, 
+  CodeC1AuthorContent, 
+  CodeC1Block, 
+  CodeBlockVersioned,
+  CodeC1MemoryModel,
+  CodeC1MemoryModelColumn,
+  CodeC1MemoryModelNode,
+  CodeC1MemoryModelConnection,
+} from './content-blocks';
 
 import type { ContentBlockExtended } from './content';
 import type { ContainerBlock } from './container';

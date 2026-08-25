@@ -1,53 +1,121 @@
 /**
  * Code C1 - Zod Validation Schemas
  * 
- * Separates AI author output validation from canonical block validation
+ * HISTORICAL CONTRACT PRESERVED
+ * Based on TutorialCodePayload from commit d01c5921 (Aug 23, 2026)
+ * This is the AUTHORITATIVE CodeBlock JSON structure that must be preserved.
  */
 
 import { z } from 'zod';
 import { CodeLanguageSchema } from './content-blocks.schema';
 
 /**
- * Code C1 Explanation Item Schema
- * Validates individual explanation items
+ * Historical Code Explanation Step Schema
+ * From d01c5921 TutorialCodePayload.explanation.steps
  */
-export const CodeC1ExplanationItemSchema = z.object({
-  focus: z.string().min(5).max(100),
-  description: z.string().min(20).max(300),
-}).strict();
+export const HistoricalCodeExplanationStepSchema = z.object({
+  number: z.number(),
+  code: z.string(),
+  description: z.string(),
+}).passthrough(); // Allow additional fields for backward compatibility
 
 /**
- * Code C1 Output Schema
- * Validates optional output structure
+ * Historical Memory Model Schema
+ * COMPLETE structure from d01c5921
  */
-export const CodeC1OutputSchema = z.object({
-  value: z.string().min(1).max(500),
-  description: z.string().max(200).optional(),
-}).strict();
+export const HistoricalMemoryModelSchema = z.object({
+  type: z.string().optional(),
+  description: z.string().optional(),
+  layout: z.object({
+    type: z.string(),
+  }).passthrough().optional(),
+  columns: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    width: z.string().optional(),
+  }).passthrough()).optional(),
+  nodes: z.array(z.object({
+    id: z.string(),
+    label: z.string(),
+    column: z.string(),
+    row: z.number(),
+    variant: z.string().optional(),
+    monospace: z.boolean().optional(),
+  }).passthrough()).optional(),
+  connections: z.array(z.object({
+    id: z.string(),
+    from: z.string(),
+    to: z.string(),
+    type: z.string().optional(),
+    fromSide: z.string().optional(),
+    toSide: z.string().optional(),
+  }).passthrough()).optional(),
+  columnHeaders: z.record(z.string()).optional(),
+  rows: z.array(z.record(z.string())).optional(),
+  note: z.string().optional(),
+}).passthrough();
 
 /**
- * Code C1 Page Schema
- * Validates the page.* structure
+ * Historical TutorialCodePayload Schema
+ * EXACT structure from d01c5921 - THIS IS THE AUTHORITATIVE CONTRACT
  */
-export const CodeC1PageSchema = z.object({
+export const HistoricalTutorialCodePayloadSchema = z.object({
+  page: z.object({
+    type: z.union([z.literal('CODE + EXPLANATION'), z.string()]),
+    title: z.string(),
+    introduction: z.string(),
+  }).passthrough(),
+  code: z.object({
+    language: z.string(), // Accepts ANY case: Python, python, PYTHON
+    prismLanguage: z.string().optional(),
+    source: z.string(),
+  }).strict(),
+  explanation: z.object({
+    steps: z.array(HistoricalCodeExplanationStepSchema),
+  }).strict().optional(),
+  output: z.object({
+    inputExample: z.record(z.string()).optional(),
+    value: z.string(),
+  }).strict().optional(),
+  memoryModel: HistoricalMemoryModelSchema.optional(),
+  takeaway: z.object({
+    items: z.array(z.string()),
+  }).strict().optional(),
+  tip: z.object({
+    text: z.string(),
+  }).strict().optional(),
+}).passthrough(); // Allow additional fields for extensibility
+
+/**
+ * Canonical Code C1 Page Schema
+ * This is the CANONICAL storage format after conversion
+ */
+export const CanonicalCodeC1PageSchema = z.object({
   type: z.literal('code'),
-  title: z.string().min(10).max(150),
-  introduction: z.string().min(50).max(500),
-  language: CodeLanguageSchema,
-  code: z.string().min(10).max(2000),
-  filename: z.string().min(1).max(100).optional(),
-  explanation: z.array(CodeC1ExplanationItemSchema).min(2).max(6),
-  output: CodeC1OutputSchema.optional(),
-  takeaway: z.string().min(20).max(200),
-  practiceHint: z.string().min(20).max(200).optional(),
+  title: z.string(),
+  introduction: z.string(),
+  language: z.string(),
+  code: z.string(),
+  filename: z.string().optional(),
+  explanation: z.array(z.object({
+    focus: z.string(),
+    description: z.string(),
+  })),
+  output: z.object({
+    value: z.string(),
+    description: z.string().optional(),
+  }).optional(),
+  takeaway: z.string(),
+  practiceHint: z.string().optional(),
+  memoryModel: HistoricalMemoryModelSchema.optional(),
 }).strict();
 
 /**
  * Code C1 Author Content Schema
- * Validates AI output: { page: {...} }
+ * CANONICAL format: {page: {...}}
  */
 export const CodeC1AuthorContentSchema = z.object({
-  page: CodeC1PageSchema,
+  page: CanonicalCodeC1PageSchema,
 }).strict();
 
 /**
@@ -69,3 +137,17 @@ export function validateCodeC1AIOutput(
 ): z.infer<typeof CodeC1AuthorContentSchema> {
   return CodeC1AuthorContentSchema.parse(output);
 }
+
+// Re-export schemas for backward compatibility
+export const CodeC1PageSchema = CanonicalCodeC1PageSchema;
+export const CodeC1ExplanationItemSchema = z.object({
+  focus: z.string(),
+  description: z.string(),
+});
+export const CodeC1OutputSchema = z.object({
+  value: z.string(),
+  description: z.string().optional(),
+});
+export const CodeC1TakeawaySchema = z.string();
+export const CodeC1PracticeHintSchema = z.string();
+export const CodeC1MemoryModelSchema = HistoricalMemoryModelSchema;

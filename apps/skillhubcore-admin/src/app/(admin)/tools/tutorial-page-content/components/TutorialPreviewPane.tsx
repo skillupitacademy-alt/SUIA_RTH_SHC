@@ -17,9 +17,9 @@ import type {
   DefinitionD1AuthorContent,
 } from '@quiz/types';
 
-import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import { themeForBrand } from '../theme/brandTheme';
 import type { BlockInstance } from '../document/documentTransformation';
+import { toTutorialBlock } from '../document/documentTransformation';
 
 interface TutorialPreviewPaneProps {
   // Header
@@ -113,7 +113,7 @@ export function TutorialPreviewPane({
                   id: 'preview',
                   type: 'code',
                   version: activeBlockVersion,
-                  content: toCanonicalCodeC1(activeBlockPreview).content,
+                  content: activeBlockPreview,
                 } as TutorialBlock}
                 theme={theme}
                 depth={0}
@@ -159,12 +159,7 @@ export function TutorialPreviewPane({
                   {instance.type === 'code' && (
                     <div data-tutorial-block-type="code">
                       <TutorialBlockRenderer
-                        block={{
-                          id: instance.id,
-                          type: 'code',
-                          version: instance.versionCode,
-                          content: toCanonicalCodeC1(instance.payload).content,
-                        } as TutorialBlock}
+                        block={toTutorialBlock(instance)}
                         theme={theme}
                         depth={0}
                       />

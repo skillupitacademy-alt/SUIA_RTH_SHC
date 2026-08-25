@@ -62,18 +62,17 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '' 
         return <ParagraphBlock block={block} depth={depth} theme={theme} className={className} />;
       case 'list':
         return <ListBlock block={block} depth={depth} theme={theme} className={className} />;
-      case 'code':
-        // Runtime check: CodeC1Block has version property, legacy CodeBlock does not
-        if ('version' in block) {
-          if (block.version === 'C1') {
-            // CodeC1Block - use versioned renderer
-            return <CodeC1Block block={block as any} depth={depth} theme={theme} className={className} />;
-          }
-          // Unknown version - throw error
-          throw new Error(`Unsupported code block version: ${(block as any).version}`);
+      case 'code': {
+        // Code C1 is the only supported version
+        if (!('version' in block) || block.version !== 'C1') {
+          throw new Error(
+            `Unsupported code block version. Code C1 is required. Received: ${('version' in block) ? (block as any).version : 'no version'}`
+          );
         }
-        // Legacy CodeBlock (no version property)
-        return <CodeBlock block={block as any} depth={depth} theme={theme} className={className} />;
+        
+        // CodeC1Block - use versioned renderer
+        return <CodeC1Block block={block as any} depth={depth} theme={theme} className={className} />;
+      }
       case 'table':
         return <TableBlock block={block} depth={depth} theme={theme} className={className} />;
       case 'image':

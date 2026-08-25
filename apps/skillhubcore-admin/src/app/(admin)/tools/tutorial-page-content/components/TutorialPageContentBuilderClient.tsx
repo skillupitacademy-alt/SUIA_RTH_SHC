@@ -91,7 +91,32 @@ export function TutorialPageContentBuilderClient() {
   const [activeBlockPreview, setActiveBlockPreview] = useState<any>(getDefaultPayload('definition'));
   const [previewMode, setPreviewMode] = useState<'document' | 'active-block'>('document');
   const [message, setMessage] = useState('');
-  const [memoryModelWarning, setMemoryModelWarning] = useState(''); // UI warning for memoryModel loss
+  const [memoryModelWarning, setMemoryModelWarning] = useState('');
+
+  /**
+   * Normalize active preview state - ensures C1 blocks are always canonical
+   * 
+   * INVARIANT: For Code C1, activeBlockPreview MUST always be CodeC1AuthorContent
+   */
+  function normalizeActivePreview(
+    payload: unknown,
+    blockType: TutorialPageContentType,
+    versionCode: string
+  ): unknown {
+    if (blockType === 'code' && versionCode === 'C1') {
+      try {
+        const result = toCanonicalCodeC1(payload);
+        setMemoryModelWarning(result.memoryModelWarning || '');
+        return result.content;
+      } catch (error) {
+        console.error('[C1 Normalization] Failed to convert to canonical:', error);
+        setMemoryModelWarning('');
+        return payload; // Fallback to raw payload if conversion fails
+      }
+    }
+    setMemoryModelWarning('');
+    return payload;
+  } // UI warning for memoryModel loss
   const [isSaving, setIsSaving] = useState(false);
 
   // Document block instances collection (starts empty, hydrated on subtopic selection)
@@ -129,8 +154,7 @@ export function TutorialPageContentBuilderClient() {
   useEffect(() => {
     const example = getDefaultPayload(form.blockType, form.versionId);
     setSourceContent(JSON.stringify(example, null, 2));
-    setActiveBlockPreview(example);
-    setMemoryModelWarning(''); // Clear warning when block type changes
+    setActiveBlockPreview(normalizeActivePreview(example, form.blockType, form.versionId));
   }, [form.blockType, form.versionId]);
 
   // Hydrate existing tutorial when subtopic selection changes
@@ -193,17 +217,7 @@ export function TutorialPageContentBuilderClient() {
   function handlePreviewCurrent() {
     try {
       const parsed = parseSource(sourceFormat, sourceContent, form.blockType);
-      
-      // Handle Code C1 conversion and warning
-      if (form.blockType === 'code' && selectedVersion.code === 'C1') {
-        const result = toCanonicalCodeC1(parsed);
-        setActiveBlockPreview(result.content); // Store canonical content
-        setMemoryModelWarning(result.memoryModelWarning || ''); // Update warning from event handler
-      } else {
-        setActiveBlockPreview(parsed);
-        setMemoryModelWarning(''); // Clear warning for non-C1 blocks
-      }
-      
+      setActiveBlockPreview(normalizeActivePreview(parsed, form.blockType, selectedVersion.code));
       setMessage('Active block preview updated.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Preview parsing failed.');
@@ -307,8 +321,7 @@ export function TutorialPageContentBuilderClient() {
     setEditingBlockId(null);
     const example = getDefaultPayload(form.blockType, form.versionId);
     setSourceContent(JSON.stringify(example, null, 2));
-    setActiveBlockPreview(example);
-    setMemoryModelWarning('');
+    setActiveBlockPreview(normalizeActivePreview(example, form.blockType, form.versionId));
     setMessage('Ready to create a new block.');
   }
 
@@ -631,9 +644,8 @@ export function TutorialPageContentBuilderClient() {
               documentBlocks={documentBlocks}
               onLoadBlock={(block, index) => {
                 setSourceContent(block.sourceContent);
-                setActiveBlockPreview(block.payload);
+                setActiveBlockPreview(normalizeActivePreview(block.payload, block.type, block.versionCode));
                 setForm((prev) => ({ ...prev, blockType: block.type, versionId: block.version }));
-                setMemoryModelWarning(''); // Clear warning when loading existing block
                 setEditingBlockId(block.id); // Track which block is being edited
                 setMessage(`Loaded block #${index + 1} (${block.versionCode}) into editor for editing.`);
               }}

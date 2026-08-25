@@ -164,6 +164,48 @@ export type DefinitionBlock = DefinitionD1Block;
 /**
  * 9. Code Block (Version-aware)
  * 
+ * Code C1 - Memory Model Structure
+ * Historical CodeBlock memory visualization (from d01c5921)
+ */
+export interface CodeC1MemoryModelColumn {
+  id: string;
+  title: string;
+  width?: string;
+}
+
+export interface CodeC1MemoryModelNode {
+  id: string;
+  label: string;
+  column: string;
+  row: number;
+  variant?: string;
+  monospace?: boolean;
+}
+
+export interface CodeC1MemoryModelConnection {
+  id: string;
+  from: string;
+  to: string;
+  type?: string;
+  fromSide?: string;
+  toSide?: string;
+}
+
+export interface CodeC1MemoryModel {
+  type?: string;
+  description?: string;
+  layout?: {
+    type: string;
+  };
+  columns?: CodeC1MemoryModelColumn[];
+  nodes?: CodeC1MemoryModelNode[];
+  connections?: CodeC1MemoryModelConnection[];
+  columnHeaders?: Record<string, string>;
+  rows?: Array<Record<string, string>>;
+  note?: string;
+}
+
+/**
  * Code C1 - Page Structure
  * Author content contract for Code C1 version
  */
@@ -184,6 +226,7 @@ export interface CodeC1Page {
   };
   takeaway: string;
   practiceHint?: string;
+  memoryModel?: CodeC1MemoryModel;  // ✅ RESTORED from historical CodeBlock
 }
 
 /**

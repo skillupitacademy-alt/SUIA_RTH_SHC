@@ -1,149 +1,216 @@
 'use client';
 
-import React, { useState } from 'react';
-import type { CodeC1Block as ICodeC1Block } from '@quiz/types';
-import type { BlockComponentProps } from '../types';
-
 /**
- * Code C1 Block Renderer
- * Phase 2D: UI/Renderer Implementation
+ * Code C1 Block - Canonical Code Block Renderer
  * 
- * Renders Code C1 "Basic Syntax" educational content.
- * 
- * SECURITY: All content rendered as React text (never executed)
- * FROZEN CONTRACT: Consumes Phase 2A/2B/2C canonical structure
+ * HISTORICAL UI/UX RESTORED from TutorialCodeContent
+ * Uses canonical C1 data structure
  */
-export function CodeC1Block({ 
-  block, 
-  className = '' 
-}: BlockComponentProps<ICodeC1Block>) {
-  const { page } = block.content;
-  const [copied, setCopied] = useState(false);
 
-  const handleCopy = async () => {
-    try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        await navigator.clipboard.writeText(page.code);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch {
-      // Graceful fallback if clipboard API unavailable
-    }
+import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { Code2, Copy, Lightbulb, MessageCircle, Monitor, Star, Terminal, Check, Boxes } from 'lucide-react';
+import type { BlockComponentProps } from '../types';
+import type { CodeC1Block as CodeC1BlockType } from '@quiz/types';
+
+export function CodeC1Block({ block, theme: providedTheme }: BlockComponentProps<CodeC1BlockType>) {
+  const page = block.content.page;
+
+  // Fallback theme for when theme is not provided
+  const theme = providedTheme ?? {
+    primary: '#3b82f6',
+    primaryDark: '#1e40af',
+    secondary: '#0b1b3d',
   };
 
-  return (
-    <article
-      id={block.id}
-      className={`my-6 p-6 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 shadow-sm ${className}`}
-      data-block-type="code"
-      data-block-version="C1"
-    >
-      {/* Title */}
-      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-        <span className="text-indigo-500 text-lg">💻</span>
-        <span>{page.title}</span>
-      </h3>
+  // Helper functions from historical implementation
+  function withAlpha(hex: string, alphaHex: string) {
+    return `${hex}${alphaHex}`;
+  }
 
-      {/* Introduction */}
-      <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
-        {page.introduction}
-      </p>
+  function html(value: string) {
+    return { __html: value };
+  }
 
-      {/* Code Panel */}
-      <figure className="my-4 rounded-lg overflow-hidden border border-slate-700/60 bg-slate-950 text-slate-100 shadow-sm">
-        {/* Code Header */}
-        <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-400 font-mono">
-          <span>{page.filename || page.language}</span>
-          <button
-            type="button"
-            onClick={handleCopy}
-            aria-label={copied ? 'Code copied to clipboard' : 'Copy code to clipboard'}
-            className="px-2 py-1 rounded hover:bg-slate-800 text-slate-300 transition-colors focus:outline-none focus:ring-1 focus:ring-slate-500"
-          >
-            {copied ? '✓ Copied' : 'Copy'}
-          </button>
-        </div>
+  function variantStyles(variant: string | undefined) {
+    if (variant === 'value') {
+      return { color: '#079447', backgroundColor: '#effaf4', borderColor: '#bfe8d1' };
+    }
+    if (variant === 'result') {
+      return { color: '#a56b00', backgroundColor: '#fff9e9', borderColor: '#f4dba1' };
+    }
+    return { color: '#1554c7', backgroundColor: '#eef4ff', borderColor: '#c9d9ff' };
+  }
 
-        {/* Code Content - SECURITY: Rendered as text, never executed */}
-        <pre className="p-4 overflow-x-auto text-sm font-mono leading-relaxed">
-          <code className={`language-${page.language}`} data-language={page.language}>
-            {page.code}
-          </code>
-        </pre>
-      </figure>
+  function TerminalWindow({ title, children, copySource }: { title: string; children: ReactNode; copySource?: string }) {
+    const [copied, setCopied] = useState(false);
 
-      {/* Explanation Section */}
-      {page.explanation && page.explanation.length > 0 && (
-        <div className="my-5 space-y-4">
-          <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-            <span>📝</span>
-            <span>How It Works</span>
+    const copy = async () => {
+      if (!copySource) return;
+      await navigator.clipboard?.writeText(copySource);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    };
+
+    return (
+      <div className="w-full overflow-hidden rounded-[11px] border border-[#172b52] bg-[#07142f] shadow-[0_8px_24px_rgba(7,20,47,0.12)]">
+        <div className="flex min-h-[58px] items-center gap-3.5 border-b border-white/10 bg-[#0d1d40] px-[18px] text-[#f8fafc]">
+          <div className="flex items-center gap-[7px]" aria-hidden="true">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
           </div>
-          {page.explanation.map((item, index) => (
-            <div 
-              key={index}
-              className="pl-4 border-l-2 border-indigo-200 dark:border-indigo-900"
+          <span className="text-sm font-bold leading-snug">{title}</span>
+          {copySource ? (
+            <button
+              type="button"
+              onClick={copy}
+              className="ml-auto inline-flex items-center gap-[7px] rounded-md border border-white/15 px-3 py-2 text-[13px] font-bold text-white transition hover:border-white/25 hover:bg-white/10"
             >
-              <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">
-                {item.focus}
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                {item.description}
-              </p>
-            </div>
-          ))}
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              <span>{copied ? 'Copied' : 'Copy'}</span>
+            </button>
+          ) : null}
         </div>
-      )}
+        {children}
+      </div>
+    );
+  }
 
-      {/* Output Section - Optional */}
-      {page.output && (
-        <div className="my-5 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40">
-          <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <span>▶</span>
-            <span>Output</span>
+  // Extract data from canonical C1 structure
+  const memory = page.memoryModel;
+  const columns = Array.isArray(memory?.columns) ? memory.columns : [];
+  const nodes = Array.isArray(memory?.nodes) ? memory.nodes : [];
+  const rows = [...new Set(nodes.map((node) => node.row))].sort((a, b) => a - b);
+  const explanationSteps = Array.isArray(page.explanation) ? page.explanation : [];
+  const takeawayItems = page.takeaway ? page.takeaway.split('\n\n').filter(Boolean) : [];
+
+  return (
+    <article className="w-full bg-white px-[5%] py-10 text-[#0b1b3d]">
+      {/* Header - Historical Design */}
+      <header className="mb-[30px] w-full">
+        <div className="mb-[13px] inline-flex items-center gap-[9px] rounded-[5px] px-2.5 py-[5px] text-[13px] font-extrabold leading-snug" style={{ color: theme.primaryDark, backgroundColor: withAlpha(theme.primary, '14') }}>
+          <Code2 className="h-5 w-5" style={{ color: theme.primary }} />
+          <span>CODE + EXPLANATION</span>
+        </div>
+        <h1 className="text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]" style={{ color: theme.secondary }}>
+          {page.title}
+        </h1>
+        <div className="mt-3 h-[3px] w-[34px] rounded-full" style={{ backgroundColor: theme.primary }} />
+        {page.introduction && <p className="mt-[13px] max-w-[900px] text-[17px] font-medium leading-[1.65]" style={{ color: theme.secondary }}>{page.introduction}</p>}
+      </header>
+
+      {/* Code Section - Historical Design */}
+      <section className="mb-[30px] w-full">
+        <div className="mb-[14px] flex items-center gap-2.5">
+          <Terminal className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
+          <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Code Example</h2>
+        </div>
+        <TerminalWindow title={page.language || 'Code'} copySource={page.code}>
+          <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <pre className="m-0 bg-[#07142f] px-[22px] pb-7 pt-6">
+              <code className="block whitespace-pre font-mono text-base font-medium leading-[1.8] text-[#f8fafc]">{page.code}</code>
+            </pre>
           </div>
-          <pre className="text-sm font-mono text-emerald-900 dark:text-emerald-100 whitespace-pre-wrap break-words">
-            {page.output.value}
-          </pre>
-          {page.output.description && (
-            <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
-              {page.output.description}
-            </p>
-          )}
-        </div>
-      )}
+        </TerminalWindow>
+      </section>
 
-      {/* Takeaway */}
-      {page.takeaway && (
-        <div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-base">💡</span>
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-              Key Takeaway
-            </span>
+      {/* Explanation Section - Historical Design */}
+      {explanationSteps.length > 0 && (
+        <section className="mb-[30px] w-full">
+          <div className="mb-[14px] flex items-center gap-2.5">
+            <MessageCircle className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
+            <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Explanation</h2>
           </div>
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
-            {page.takeaway}
-          </p>
-        </div>
-      )}
-
-      {/* Practice Hint - Optional */}
-      {page.practiceHint && (
-        <div className="mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40">
-          <div className="flex items-start gap-2">
-            <span className="text-amber-600 dark:text-amber-400 text-sm shrink-0">💪</span>
-            <div className="flex-1">
-              <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">
-                Practice
+          <div className="w-full overflow-hidden rounded-[10px] border bg-white" style={{ borderColor: withAlpha(theme.primary, '66') }}>
+            {explanationSteps.map((step, index) => (
+              <div key={`${index}-${step.focus}`} className="grid min-h-20 w-full grid-cols-[48px_minmax(150px,250px)_minmax(0,1fr)] items-center border-b last:border-b-0" style={{ borderColor: withAlpha(theme.primary, '33') }}>
+                <div className="ml-3 flex h-[35px] w-[35px] items-center justify-center rounded-full text-[15px] font-extrabold text-white" style={{ backgroundColor: theme.primary }}>
+                  {index + 1}
+                </div>
+                <code className="inline-flex max-w-full justify-self-start rounded-md px-2.5 py-1.5 font-mono text-sm font-bold leading-snug" style={{ color: theme.primaryDark, backgroundColor: withAlpha(theme.primary, '14') }}>
+                  {step.focus}
+                </code>
+                <div className="px-5 py-[17px] pl-2.5 text-base font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }} dangerouslySetInnerHTML={html(step.description)} />
               </div>
-              <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
-                {page.practiceHint}
-              </p>
-            </div>
+            ))}
           </div>
-        </div>
+        </section>
+      )}
+
+      {/* Output Section - Historical Design */}
+      {page.output?.value && (
+        <section className="mb-8 w-full">
+          <div className="mb-[14px] flex items-center gap-2.5">
+            <Monitor className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
+            <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Output</h2>
+          </div>
+          <TerminalWindow title="Terminal">
+            <pre className="m-0 whitespace-pre-wrap bg-[#07142f] p-[22px] font-mono text-base leading-[1.7] text-[#d7e2f5]">{page.output.value}</pre>
+          </TerminalWindow>
+        </section>
+      )}
+
+      {/* Memory / Model Section - Historical Design */}
+      {memory && (
+        <section className="mb-8 w-full">
+          <div className="mb-[14px] flex items-center gap-2.5">
+            <Boxes className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
+            <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Memory / Model</h2>
+          </div>
+          {memory.description && <p className="mb-4 text-base font-medium leading-[1.65]" style={{ color: theme.secondary }}>{memory.description}</p>}
+          {columns.length > 0 && nodes.length > 0 && (
+            <div className="w-full overflow-x-auto rounded-[10px] border bg-white p-[22px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ borderColor: withAlpha(theme.primary, '66') }}>
+              <div className="grid min-w-[760px] items-center justify-center gap-x-[26px] gap-y-[18px]" style={{ gridTemplateColumns: columns.map((column) => column.width ?? 'minmax(160px,1fr)').join(' ') }}>
+                {columns.map((column) => (
+                  <div key={column.id} className="min-h-[25px] text-base font-extrabold leading-snug" style={{ color: theme.primaryDark }}>{column.title}</div>
+                ))}
+                {rows.flatMap((row) => columns.map((column) => {
+                  const node = nodes.find((item) => item.row === row && item.column === column.id);
+                  return (
+                    <div
+                      key={`${row}-${column.id}`}
+                      className="flex min-h-12 items-center justify-center rounded-lg border px-3.5 py-[9px] text-center text-[15px] font-bold leading-snug"
+                      style={node ? { ...variantStyles(node.variant), fontFamily: node.monospace ? 'SFMono-Regular, Cascadia Code, Consolas, monospace' : undefined } : { borderColor: 'transparent' }}
+                    >
+                      {node?.label ?? ''}
+                    </div>
+                  );
+                }))}
+              </div>
+            </div>
+          )}
+          {memory.note && <div className="mt-3 rounded-[7px] border border-[#dce5f8] bg-[#f6f8ff] px-[13px] py-2.5 text-[13px] font-semibold leading-[1.55]" style={{ color: theme.secondary }}>{memory.note}</div>}
+        </section>
+      )}
+
+      {/* Key Takeaway Section - Historical Design */}
+      {takeawayItems.length > 0 && (
+        <section className="relative mb-6 w-full rounded-[10px] border py-[22px] pl-5 pr-[90px]" style={{ backgroundColor: '#fffaf0', borderColor: '#f0d9a2' }}>
+          <div className="mb-3 flex items-center gap-[9px]">
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f59e0b] text-white">
+              <Star className="h-[13px] w-[13px] fill-current" />
+            </span>
+            <h2 className="text-lg font-extrabold leading-snug text-[#d97706]">Key Takeaway</h2>
+          </div>
+          <ul className="flex list-disc flex-col gap-2 pl-5 text-[15px] font-medium leading-[1.55] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }}>
+            {takeawayItems.map((item, index) => (
+              <li key={index} dangerouslySetInnerHTML={html(item)} />
+            ))}
+          </ul>
+          <Lightbulb className="absolute bottom-[18px] right-[25px] h-12 w-12 text-[#f59e0b]" />
+        </section>
+      )}
+
+      {/* Practice / Tip Section - Historical Design */}
+      {page.practiceHint && (
+        <section className="w-full rounded-[10px] border border-[#d9e0ea] bg-[#f7f9fc] p-5">
+          <div className="mb-[9px] flex items-center gap-[9px]">
+            <Lightbulb className="h-[19px] w-[19px]" style={{ color: theme.primary }} />
+            <h2 className="text-lg font-extrabold leading-snug" style={{ color: theme.secondary }}>Tip</h2>
+          </div>
+          <p className="text-[15px] font-medium leading-[1.65]" style={{ color: theme.secondary }}>{page.practiceHint}</p>
+        </section>
       )}
     </article>
   );
