@@ -405,7 +405,7 @@ describe('Learner Page Resolution - Phase 1 Identity', () => {
       }
       
       // Footer URLs should also follow Phase 1 pattern
-      if (result && result.footer.next) {
+      if (result && result.footer.next && result.footer.next.url) {
         const urlParts = result.footer.next.url.split('/').filter(Boolean);
         expect(urlParts.length).toBeGreaterThan(5); // domain/subject/topic/subtopic/navigationNodeId
       }

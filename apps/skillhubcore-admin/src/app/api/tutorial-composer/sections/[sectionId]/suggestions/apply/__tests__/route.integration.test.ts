@@ -131,6 +131,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
       .insert(tutorialSections)
       .values([{
         subtopicId: testSubtopicId,
+        navigationNodeId: 'test-navigation-node', // Phase 1: Required field
         orderIndex: 1,
         content: {
           schemaVersion: 1,
