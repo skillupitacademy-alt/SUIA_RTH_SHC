@@ -57,7 +57,7 @@ export function transformNavigationTree(
         description: node.description,
         slug: canonicalSlug,
         url: isPageNode 
-          ? `/tutorial-v2/${scope.domainSlug}/${scope.subjectSlug}/${scope.topicSlug}/${canonicalSlug}` 
+          ? `/tutorial-v2/${scope.domainSlug}/${scope.subjectSlug}/${scope.topicSlug}/${canonicalSlug}/${node.id}` 
           : undefined,
         icon: node.icon,
         expanded: node.expanded,

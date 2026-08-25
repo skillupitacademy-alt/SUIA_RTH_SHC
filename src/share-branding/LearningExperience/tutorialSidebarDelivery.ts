@@ -381,7 +381,7 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
   console.log('[DELIVERY_TRACE] Calling getTutorialByPage', { subtopicSlug: hierarchy.subtopic.slug, navigationNodeId: params.navigationNodeId, brandId: params.brandId });
   
   const deliveryResult = await tutorialDeliveryService.getTutorialByPage(
-    hierarchy.subtopic.slug,
+    hierarchy.subtopic.id,
     params.navigationNodeId,
     {
       brandId: params.brandId,

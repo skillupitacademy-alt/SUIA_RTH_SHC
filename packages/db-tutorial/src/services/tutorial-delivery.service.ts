@@ -80,7 +80,7 @@ export class TutorialDeliveryService {
    * Returns tutorial for specific sidebar page
    */
   async getTutorialByPage(
-    subtopicSlug: string,
+    subtopicId: string,
     navigationNodeId: string,
     options: DeliveryOptions = {}
   ): Promise<TutorialDeliveryV2> {
@@ -92,11 +92,11 @@ export class TutorialDeliveryService {
         name: tutorialSubtopics.name,
       })
       .from(tutorialSubtopics)
-      .where(eq(tutorialSubtopics.slug, subtopicSlug))
+      .where(eq(tutorialSubtopics.externalId, subtopicId))
       .limit(1);
 
     if (!subtopic) {
-      throw new SubtopicNotFoundError(subtopicSlug);
+      throw new SubtopicNotFoundError(subtopicId);
     }
 
     return this.getTutorialById(subtopic.id, {

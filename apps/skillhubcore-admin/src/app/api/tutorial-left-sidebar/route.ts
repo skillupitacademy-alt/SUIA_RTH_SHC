@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import {
-  dbHttp,
+  db as tutorialDb,
   tutorialSidebarTreesV2,
   tutorialDomains,
   tutorialSubjects,
@@ -40,6 +40,58 @@ function compactSlug(value: string | undefined) {
   return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+/* ============================================================================
+ * PHASE 11.18E — HIERARCHY SYNC INSTRUMENTATION
+ * ========================================================================== */
+
+function inspectHierarchySyncError(error: unknown): Record<string, unknown> {
+  if (error instanceof Error) {
+    const candidate = error as Error & Record<string, unknown>;
+    return {
+      name: error.name,
+      message: error.message,
+      code: candidate.code ?? null,
+      constraint: candidate.constraint ?? null,
+      table: candidate.table ?? null,
+      column: candidate.column ?? null,
+      detail: candidate.detail ?? null,
+      hint: candidate.hint ?? null,
+      routine: candidate.routine ?? null,
+      stack: error.stack ?? null,
+    };
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    const candidate = error as Record<string, unknown>;
+    return {
+      name: candidate.name ?? null,
+      message: candidate.message ?? null,
+      code: candidate.code ?? null,
+      constraint: candidate.constraint ?? null,
+      table: candidate.table ?? null,
+      column: candidate.column ?? null,
+      detail: candidate.detail ?? null,
+      hint: candidate.hint ?? null,
+      routine: candidate.routine ?? null,
+      stack: candidate.stack ?? null,
+      raw: candidate,
+    };
+  }
+
+  return {
+    name: 'UnknownError',
+    message: String(error),
+  };
+}
+
+function hierarchySyncLog(
+  phase: string,
+  status: 'START' | 'SUCCESS' | 'FAILED',
+  details?: Record<string, unknown>,
+): void {
+  console.log(`[PHASE_11_18E][${phase}] ${status}`, details ?? '');
+}
+
 /**
  * Ensure complete hierarchy synchronization for a topic before sidebar publish.
  * 
@@ -56,204 +108,518 @@ async function ensureTopicHierarchySynced(topicId: string): Promise<{
   topic: { externalId: string; internalId: string };
   subtopics: Array<{ externalId: string; internalId: string; name: string }>;
 }> {
+  console.log('');
+  console.log('============================================================');
+  console.log('[PHASE_11_18E] HIERARCHY SYNC START');
+  console.log('============================================================');
+  console.log('');
+  console.log('[PHASE_11_18E] INPUT', { topicId });
+
   const db = getDb();
   const now = new Date();
 
-  // Load MainDB topic with parent chain
-  const topicRows = await db.select().from(shcTopics).where(eq(shcTopics.id, topicId));
-  if (topicRows.length === 0) {
-    throw new Error(`Topic not found: ${topicId}`);
-  }
-  const topic = topicRows[0];
+  // ============================================================
+  // SYNC-01 — MAINDB TOPIC
+  // ============================================================
 
-  const subjectRows = await db.select().from(shcSubjects).where(eq(shcSubjects.id, topic.subjectId));
-  if (subjectRows.length === 0) {
-    throw new Error(`Subject not found for topic: ${topicId}`);
-  }
-  const subject = subjectRows[0];
-
-  const domainRows = await db.select().from(shcDomains).where(eq(shcDomains.id, subject.domainId));
-  if (domainRows.length === 0) {
-    throw new Error(`Domain not found for topic: ${topicId}`);
-  }
-  const domain = domainRows[0];
-
-  // Load ALL active subtopics for this topic
-  const activeSubtopics = await db
-    .select()
-    .from(shcSubtopics)
-    .where(and(
-      eq(shcSubtopics.topicId, topicId),
-      isNull(shcSubtopics.deletedAt)
-    ));
-
-  // Synchronize complete hierarchy in a transaction
-  const result = await dbHttp.transaction(async (tx) => {
-    // Helper to generate unique slug
-    const uniqueSlug = (name: string, entityId: string) => {
-      const slugified = name
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .replace(/-+/g, '-');
-      const suffix = entityId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
-      return `${slugified}-${suffix.length > 0 ? suffix : entityId.slice(0, 8)}`;
-    };
-
-    // Sync domain
-    const [tutorialDomain] = await tx
-      .insert(tutorialDomains)
-      .values({
-        externalId: domain.id,
-        name: domain.name,
-        slug: uniqueSlug(domain.name, domain.id),
-        deletedAt: null,
-        updatedAt: now,
-      })
-      .onConflictDoUpdate({
-        target: tutorialDomains.externalId,
-        set: {
-          name: domain.name,
-          slug: uniqueSlug(domain.name, domain.id),
-          deletedAt: null,
-          updatedAt: now,
-        },
-      })
-      .returning({ id: tutorialDomains.id });
-
-    // Sync subject
-    const [tutorialSubject] = await tx
-      .insert(tutorialSubjects)
-      .values({
-        externalId: subject.id,
-        domainId: tutorialDomain.id,
-        name: subject.name,
-        slug: uniqueSlug(subject.name, subject.id),
-        deletedAt: null,
-        updatedAt: now,
-      })
-      .onConflictDoUpdate({
-        target: tutorialSubjects.externalId,
-        set: {
-          domainId: tutorialDomain.id,
-          name: subject.name,
-          slug: uniqueSlug(subject.name, subject.id),
-          deletedAt: null,
-          updatedAt: now,
-        },
-      })
-      .returning({ id: tutorialSubjects.id });
-
-    // Sync topic
-    const [tutorialTopic] = await tx
-      .insert(tutorialTopics)
-      .values({
-        externalId: topic.id,
-        subjectId: tutorialSubject.id,
-        name: topic.name,
-        slug: uniqueSlug(topic.name, topic.id),
-        deletedAt: null,
-        updatedAt: now,
-      })
-      .onConflictDoUpdate({
-        target: tutorialTopics.externalId,
-        set: {
-          subjectId: tutorialSubject.id,
-          name: topic.name,
-          slug: uniqueSlug(topic.name, topic.id),
-          deletedAt: null,
-          updatedAt: now,
-        },
-      })
-      .returning({ id: tutorialTopics.id });
-
-    // Sync ALL active subtopics
-    const subtopicResults: Array<{ externalId: string; internalId: string; name: string }> = [];
-    
-    for (const subtopic of activeSubtopics) {
-      const [tutorialSubtopic] = await tx
-        .insert(tutorialSubtopics)
-        .values({
-          externalId: subtopic.id,
-          topicId: tutorialTopic.id,
-          name: subtopic.name,
-          slug: uniqueSlug(subtopic.name, subtopic.id),
-          difficultyLevels: [],
-          deletedAt: null,
-          updatedAt: now,
-        })
-        .onConflictDoUpdate({
-          target: tutorialSubtopics.externalId,
-          set: {
-            topicId: tutorialTopic.id,
-            name: subtopic.name,
-            slug: uniqueSlug(subtopic.name, subtopic.id),
-            difficultyLevels: [],
-            deletedAt: null,
-            updatedAt: now,
-          },
-        })
-        .returning({ id: tutorialSubtopics.id });
-
-      subtopicResults.push({
-        externalId: subtopic.id,
-        internalId: tutorialSubtopic.id,
-        name: subtopic.name,
-      });
-    }
-
-    return {
-      domain: {
-        externalId: domain.id,
-        internalId: tutorialDomain.id,
-      },
-      subject: {
-        externalId: subject.id,
-        internalId: tutorialSubject.id,
-      },
-      topic: {
-        externalId: topic.id,
-        internalId: tutorialTopic.id,
-      },
-      subtopics: subtopicResults,
-    };
+  hierarchySyncLog('SYNC-01', 'START', {
+    operation: 'MainDB topic lookup',
+    topicId,
   });
 
-  // Verify all mappings exist
-  const domainCheck = await dbHttp.select({ id: tutorialDomains.id })
-    .from(tutorialDomains)
-    .where(eq(tutorialDomains.externalId, result.domain.externalId))
-    .limit(1);
-  if (domainCheck.length === 0) {
-    throw new Error(`Domain mapping verification failed: ${result.domain.externalId}`);
-  }
-
-  const subjectCheck = await dbHttp.select({ id: tutorialSubjects.id })
-    .from(tutorialSubjects)
-    .where(eq(tutorialSubjects.externalId, result.subject.externalId))
-    .limit(1);
-  if (subjectCheck.length === 0) {
-    throw new Error(`Subject mapping verification failed: ${result.subject.externalId}`);
-  }
-
-  const topicCheck = await dbHttp.select({ id: tutorialTopics.id })
-    .from(tutorialTopics)
-    .where(eq(tutorialTopics.externalId, result.topic.externalId))
-    .limit(1);
-  if (topicCheck.length === 0) {
-    throw new Error(`Topic mapping verification failed: ${result.topic.externalId}`);
-  }
-
-  for (const subtopic of result.subtopics) {
-    const subtopicCheck = await dbHttp.select({ id: tutorialSubtopics.id })
-      .from(tutorialSubtopics)
-      .where(eq(tutorialSubtopics.externalId, subtopic.externalId))
-      .limit(1);
-    if (subtopicCheck.length === 0) {
-      throw new Error(`Subtopic mapping verification failed: ${subtopic.externalId}`);
+  let topic;
+  try {
+    const topicRows = await db.select().from(shcTopics).where(eq(shcTopics.id, topicId));
+    if (topicRows.length === 0) {
+      throw new Error(`Topic not found: ${topicId}`);
     }
+    topic = topicRows[0];
+    hierarchySyncLog('SYNC-01', 'SUCCESS', {
+      topicId: topic.id,
+      topicName: topic.name,
+      subjectId: topic.subjectId,
+    });
+  } catch (error) {
+    hierarchySyncLog('SYNC-01', 'FAILED', {
+      topicId,
+      error: inspectHierarchySyncError(error),
+    });
+    throw error;
   }
+
+  // ============================================================
+  // SYNC-02 — MAINDB SUBJECT
+  // ============================================================
+
+  hierarchySyncLog('SYNC-02', 'START', {
+    operation: 'MainDB subject lookup',
+    subjectId: topic.subjectId,
+  });
+
+  let subject;
+  try {
+    const subjectRows = await db.select().from(shcSubjects).where(eq(shcSubjects.id, topic.subjectId));
+    if (subjectRows.length === 0) {
+      throw new Error(`Subject not found for topic: ${topicId}`);
+    }
+    subject = subjectRows[0];
+    hierarchySyncLog('SYNC-02', 'SUCCESS', {
+      subjectId: subject.id,
+      subjectName: subject.name,
+      domainId: subject.domainId,
+    });
+  } catch (error) {
+    hierarchySyncLog('SYNC-02', 'FAILED', {
+      subjectId: topic.subjectId,
+      error: inspectHierarchySyncError(error),
+    });
+    throw error;
+  }
+
+  // ============================================================
+  // SYNC-03 — MAINDB DOMAIN
+  // ============================================================
+
+  hierarchySyncLog('SYNC-03', 'START', {
+    operation: 'MainDB domain lookup',
+    domainId: subject.domainId,
+  });
+
+  let domain;
+  try {
+    const domainRows = await db.select().from(shcDomains).where(eq(shcDomains.id, subject.domainId));
+    if (domainRows.length === 0) {
+      throw new Error(`Domain not found for topic: ${topicId}`);
+    }
+    domain = domainRows[0];
+    hierarchySyncLog('SYNC-03', 'SUCCESS', {
+      domainId: domain.id,
+      domainName: domain.name,
+    });
+  } catch (error) {
+    hierarchySyncLog('SYNC-03', 'FAILED', {
+      domainId: subject.domainId,
+      error: inspectHierarchySyncError(error),
+    });
+    throw error;
+  }
+
+  // ============================================================
+  // SYNC-04 — MAINDB ACTIVE SUBTOPICS
+  // ============================================================
+
+  hierarchySyncLog('SYNC-04', 'START', {
+    operation: 'MainDB active subtopics lookup',
+    topicId,
+  });
+
+  let activeSubtopics;
+  try {
+    activeSubtopics = await db
+      .select()
+      .from(shcSubtopics)
+      .where(and(
+        eq(shcSubtopics.topicId, topicId),
+        isNull(shcSubtopics.deletedAt)
+      ));
+    hierarchySyncLog('SYNC-04', 'SUCCESS', {
+      topicId,
+      count: activeSubtopics.length,
+      subtopics: activeSubtopics.map((s) => ({ id: s.id, name: s.name })),
+    });
+  } catch (error) {
+    hierarchySyncLog('SYNC-04', 'FAILED', {
+      topicId,
+      error: inspectHierarchySyncError(error),
+    });
+    throw error;
+  }
+
+  // ============================================================
+  // TUTORIALDB TRANSACTION
+  // ============================================================
+
+  hierarchySyncLog('SYNC-05', 'START', {
+    message: 'Starting TutorialDB transaction',
+  });
+
+  let result;
+  try {
+    result = await tutorialDb.transaction(async (tx) => {
+      // Helper to generate unique slug
+      const uniqueSlug = (name: string, entityId: string) => {
+        const slugified = name
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .replace(/-+/g, '-');
+        const suffix = entityId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+        return `${slugified}-${suffix.length > 0 ? suffix : entityId.slice(0, 8)}`;
+      };
+
+      // ========================================================
+      // SYNC-05 — DOMAIN UPSERT
+      // ========================================================
+
+      hierarchySyncLog('SYNC-05', 'START', {
+        table: 'tutorial_domains',
+        operation: 'upsert',
+        externalId: domain.id,
+        name: domain.name,
+      });
+
+      let tutorialDomain;
+      try {
+        [tutorialDomain] = await tx
+          .insert(tutorialDomains)
+          .values({
+            externalId: domain.id,
+            name: domain.name,
+            slug: uniqueSlug(domain.name, domain.id),
+            deletedAt: null,
+            updatedAt: now,
+          })
+          .onConflictDoUpdate({
+            target: tutorialDomains.externalId,
+            set: {
+              name: domain.name,
+              slug: uniqueSlug(domain.name, domain.id),
+              deletedAt: null,
+              updatedAt: now,
+            },
+          })
+          .returning({ id: tutorialDomains.id });
+        hierarchySyncLog('SYNC-05', 'SUCCESS', {
+          table: 'tutorial_domains',
+          externalId: domain.id,
+          internalId: tutorialDomain.id,
+        });
+      } catch (error) {
+        hierarchySyncLog('SYNC-05', 'FAILED', {
+          table: 'tutorial_domains',
+          externalId: domain.id,
+          error: inspectHierarchySyncError(error),
+        });
+        throw error;
+      }
+
+      // ========================================================
+      // SYNC-06 — SUBJECT UPSERT
+      // ========================================================
+
+      hierarchySyncLog('SYNC-06', 'START', {
+        table: 'tutorial_subjects',
+        operation: 'upsert',
+        externalId: subject.id,
+        name: subject.name,
+        parentDomainId: tutorialDomain.id,
+      });
+
+      let tutorialSubject;
+      try {
+        [tutorialSubject] = await tx
+          .insert(tutorialSubjects)
+          .values({
+            externalId: subject.id,
+            domainId: tutorialDomain.id,
+            name: subject.name,
+            slug: uniqueSlug(subject.name, subject.id),
+            deletedAt: null,
+            updatedAt: now,
+          })
+          .onConflictDoUpdate({
+            target: tutorialSubjects.externalId,
+            set: {
+              domainId: tutorialDomain.id,
+              name: subject.name,
+              slug: uniqueSlug(subject.name, subject.id),
+              deletedAt: null,
+              updatedAt: now,
+            },
+          })
+          .returning({ id: tutorialSubjects.id });
+        hierarchySyncLog('SYNC-06', 'SUCCESS', {
+          table: 'tutorial_subjects',
+          externalId: subject.id,
+          internalId: tutorialSubject.id,
+        });
+      } catch (error) {
+        hierarchySyncLog('SYNC-06', 'FAILED', {
+          table: 'tutorial_subjects',
+          externalId: subject.id,
+          parentDomainId: tutorialDomain.id,
+          error: inspectHierarchySyncError(error),
+        });
+        throw error;
+      }
+
+      // ========================================================
+      // SYNC-07 — TOPIC UPSERT
+      // ========================================================
+
+      hierarchySyncLog('SYNC-07', 'START', {
+        table: 'tutorial_topics',
+        operation: 'upsert',
+        externalId: topic.id,
+        name: topic.name,
+        parentSubjectId: tutorialSubject.id,
+      });
+
+      let tutorialTopic;
+      try {
+        [tutorialTopic] = await tx
+          .insert(tutorialTopics)
+          .values({
+            externalId: topic.id,
+            subjectId: tutorialSubject.id,
+            name: topic.name,
+            slug: uniqueSlug(topic.name, topic.id),
+            deletedAt: null,
+            updatedAt: now,
+          })
+          .onConflictDoUpdate({
+            target: tutorialTopics.externalId,
+            set: {
+              subjectId: tutorialSubject.id,
+              name: topic.name,
+              slug: uniqueSlug(topic.name, topic.id),
+              deletedAt: null,
+              updatedAt: now,
+            },
+          })
+          .returning({ id: tutorialTopics.id });
+        hierarchySyncLog('SYNC-07', 'SUCCESS', {
+          table: 'tutorial_topics',
+          externalId: topic.id,
+          internalId: tutorialTopic.id,
+        });
+      } catch (error) {
+        hierarchySyncLog('SYNC-07', 'FAILED', {
+          table: 'tutorial_topics',
+          externalId: topic.id,
+          parentSubjectId: tutorialSubject.id,
+          error: inspectHierarchySyncError(error),
+        });
+        throw error;
+      }
+
+      // ========================================================
+      // SYNC-08 — SUBTOPIC UPSERTS
+      // ========================================================
+
+      const subtopicResults: Array<{ externalId: string; internalId: string; name: string }> = [];
+      
+      for (const subtopic of activeSubtopics) {
+        hierarchySyncLog('SYNC-08', 'START', {
+          table: 'tutorial_subtopics',
+          operation: 'upsert',
+          externalId: subtopic.id,
+          name: subtopic.name,
+          parentTopicId: tutorialTopic.id,
+        });
+
+        try {
+          const [tutorialSubtopic] = await tx
+            .insert(tutorialSubtopics)
+            .values({
+              externalId: subtopic.id,
+              topicId: tutorialTopic.id,
+              name: subtopic.name,
+              slug: uniqueSlug(subtopic.name, subtopic.id),
+              difficultyLevels: [],
+              deletedAt: null,
+              updatedAt: now,
+            })
+            .onConflictDoUpdate({
+              target: tutorialSubtopics.externalId,
+              set: {
+                topicId: tutorialTopic.id,
+                name: subtopic.name,
+                slug: uniqueSlug(subtopic.name, subtopic.id),
+                difficultyLevels: [],
+                deletedAt: null,
+                updatedAt: now,
+              },
+            })
+            .returning({ id: tutorialSubtopics.id });
+
+          subtopicResults.push({
+            externalId: subtopic.id,
+            internalId: tutorialSubtopic.id,
+            name: subtopic.name,
+          });
+
+          hierarchySyncLog('SYNC-08', 'SUCCESS', {
+            table: 'tutorial_subtopics',
+            externalId: subtopic.id,
+            internalId: tutorialSubtopic.id,
+          });
+        } catch (error) {
+          hierarchySyncLog('SYNC-08', 'FAILED', {
+            table: 'tutorial_subtopics',
+            externalId: subtopic.id,
+            name: subtopic.name,
+            parentTopicId: tutorialTopic.id,
+            error: inspectHierarchySyncError(error),
+          });
+          throw error;
+        }
+      }
+
+      // ========================================================
+      // SYNC-09 — TRANSACTION CALLBACK COMPLETED
+      // ========================================================
+
+      hierarchySyncLog('SYNC-09', 'SUCCESS', {
+        message: 'All TutorialDB hierarchy upserts completed inside transaction.',
+        domainExternalId: domain.id,
+        subjectExternalId: subject.id,
+        topicExternalId: topic.id,
+        subtopicCount: activeSubtopics.length,
+      });
+
+      return {
+        domain: {
+          externalId: domain.id,
+          internalId: tutorialDomain.id,
+        },
+        subject: {
+          externalId: subject.id,
+          internalId: tutorialSubject.id,
+        },
+        topic: {
+          externalId: topic.id,
+          internalId: tutorialTopic.id,
+        },
+        subtopics: subtopicResults,
+      };
+    });
+
+    hierarchySyncLog('SYNC-09', 'SUCCESS', {
+      message: 'TutorialDB transaction committed successfully.',
+    });
+  } catch (error) {
+    console.error('');
+    console.error('[PHASE_11_18E][TRANSACTION] ROLLBACK / FAILURE');
+    console.error(inspectHierarchySyncError(error));
+    console.error('');
+    throw error;
+  }
+
+  // ============================================================
+  // SYNC-10 — DOMAIN VERIFICATION
+  // ============================================================
+
+  hierarchySyncLog('SYNC-10', 'START', {
+    table: 'tutorial_domains',
+    externalId: result.domain.externalId,
+  });
+
+  try {
+    const domainCheck = await tutorialDb.select({ id: tutorialDomains.id })
+      .from(tutorialDomains)
+      .where(eq(tutorialDomains.externalId, result.domain.externalId))
+      .limit(1);
+    if (domainCheck.length === 0) {
+      throw new Error(`Domain mapping verification failed: ${result.domain.externalId}`);
+    }
+    hierarchySyncLog('SYNC-10', 'SUCCESS', { verified: true });
+  } catch (error) {
+    hierarchySyncLog('SYNC-10', 'FAILED', {
+      externalId: result.domain.externalId,
+      error: inspectHierarchySyncError(error),
+    });
+    throw error;
+  }
+
+  // ============================================================
+  // SYNC-11 — SUBJECT VERIFICATION
+  // ============================================================
+
+  hierarchySyncLog('SYNC-11', 'START', {
+    table: 'tutorial_subjects',
+    externalId: result.subject.externalId,
+  });
+
+  try {
+    const subjectCheck = await tutorialDb.select({ id: tutorialSubjects.id })
+      .from(tutorialSubjects)
+      .where(eq(tutorialSubjects.externalId, result.subject.externalId))
+      .limit(1);
+    if (subjectCheck.length === 0) {
+      throw new Error(`Subject mapping verification failed: ${result.subject.externalId}`);
+    }
+    hierarchySyncLog('SYNC-11', 'SUCCESS', { verified: true });
+  } catch (error) {
+    hierarchySyncLog('SYNC-11', 'FAILED', {
+      externalId: result.subject.externalId,
+      error: inspectHierarchySyncError(error),
+    });
+    throw error;
+  }
+
+  // ============================================================
+  // SYNC-12 — TOPIC VERIFICATION
+  // ============================================================
+
+  hierarchySyncLog('SYNC-12', 'START', {
+    table: 'tutorial_topics',
+    externalId: result.topic.externalId,
+  });
+
+  try {
+    const topicCheck = await tutorialDb.select({ id: tutorialTopics.id })
+      .from(tutorialTopics)
+      .where(eq(tutorialTopics.externalId, result.topic.externalId))
+      .limit(1);
+    if (topicCheck.length === 0) {
+      throw new Error(`Topic mapping verification failed: ${result.topic.externalId}`);
+    }
+    hierarchySyncLog('SYNC-12', 'SUCCESS', { verified: true });
+  } catch (error) {
+    hierarchySyncLog('SYNC-12', 'FAILED', {
+      externalId: result.topic.externalId,
+      error: inspectHierarchySyncError(error),
+    });
+    throw error;
+  }
+
+  // ============================================================
+  // SYNC-13 — SUBTOPIC VERIFICATION
+  // ============================================================
+
+  hierarchySyncLog('SYNC-13', 'START', {
+    table: 'tutorial_subtopics',
+    count: result.subtopics.length,
+  });
+
+  try {
+    for (const subtopic of result.subtopics) {
+      const subtopicCheck = await tutorialDb.select({ id: tutorialSubtopics.id })
+        .from(tutorialSubtopics)
+        .where(eq(tutorialSubtopics.externalId, subtopic.externalId))
+        .limit(1);
+      if (subtopicCheck.length === 0) {
+        throw new Error(`Subtopic mapping verification failed: ${subtopic.externalId}`);
+      }
+    }
+    hierarchySyncLog('SYNC-13', 'SUCCESS', {
+      count: result.subtopics.length,
+      verified: true,
+    });
+  } catch (error) {
+    hierarchySyncLog('SYNC-13', 'FAILED', {
+      error: inspectHierarchySyncError(error),
+    });
+    throw error;
+  }
+
+  console.log('');
+  console.log('============================================================');
+  console.log('[PHASE_11_18E] HIERARCHY SYNC COMPLETE');
+  console.log('============================================================');
+  console.log('');
 
   return result;
 }
@@ -274,10 +640,15 @@ async function getHierarchyNames(
 ) {
   const db = getDb();
   
+  console.log('[DIAG] getHierarchyNames DATABASE_URL:', process.env.DATABASE_URL?.substring(0, 50) + '...');
+  console.log('[DIAG] getHierarchyNames topicId:', topicId);
+  
   // Fetch all records
   const [domain] = await db.select().from(shcDomains).where(eq(shcDomains.id, domainId)).limit(1);
   const [subject] = await db.select().from(shcSubjects).where(eq(shcSubjects.id, subjectId)).limit(1);
   const [topic] = await db.select().from(shcTopics).where(eq(shcTopics.id, topicId)).limit(1);
+  
+  console.log('[DIAG] Query result - topic:', topic ? `Found: ${topic.name}` : 'NOT FOUND');
   const [activeSubtopic] = activeSubtopicId
     ? await db.select().from(shcSubtopics).where(eq(shcSubtopics.id, activeSubtopicId)).limit(1)
     : [null];
@@ -363,7 +734,7 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const [row] = await dbHttp
+    const [row] = await tutorialDb
       .select()
       .from(tutorialSidebarTreesV2)
       .where(and(
@@ -489,7 +860,7 @@ export async function POST(request: NextRequest) {
       updatedAt: now,
     };
 
-    const [saved] = await dbHttp
+    const [saved] = await tutorialDb
       .insert(tutorialSidebarTreesV2)
       .values(values)
       .onConflictDoUpdate({
