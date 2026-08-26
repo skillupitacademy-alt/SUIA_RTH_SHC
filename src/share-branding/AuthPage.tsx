@@ -44,7 +44,6 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
   const config = getBrandConfig(brand);
   const data = getAuthPageData(config);
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot_password'>(initialMode);
-  const [isHydrated, setIsHydrated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -52,10 +51,6 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
   const searchParams = useSearchParams();
 
   const modeContent = data.modes[mode];
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   const containerVariants: import('framer-motion').Variants = {
     hidden: { opacity: 0, scale: 0.98 },
@@ -341,7 +336,7 @@ function AuthContent({ brand, initialMode = 'login' }: AuthPageProps) {
                   ) : null}
 
                   <button
-                    disabled={isLoading || isHydrated === false}
+                    disabled={isLoading}
                     type="submit"
                     className="relative !mt-8 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl border border-black/10 bg-slate-950 py-3.5 text-base font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0 disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0 sm:text-lg"
                     style={{ backgroundColor: config.primaryColorDark }}
