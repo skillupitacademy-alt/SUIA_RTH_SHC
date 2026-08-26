@@ -25,12 +25,16 @@ import {
 import { parseSource, type SourceFormat } from '../document/sourceParser';
 import { TutorialComposerHeader } from './TutorialComposerHeader';
 import { TutorialHierarchySelector } from './TutorialHierarchySelector';
+import { TutorialNavigationNodeSelector } from './TutorialNavigationNodeSelector'; // Phase 1
 import { TutorialBlockSelector } from './TutorialBlockSelector';
 import { TutorialDocumentBlocksList } from './TutorialDocumentBlocksList';
 import { TutorialPreviewPane } from './TutorialPreviewPane';
 import { TutorialEditorPanel } from './TutorialEditorPanel';
 import { AiInstructionContainer } from './AiInstructionContainer';
 import { getBlockTypes, getBlockType, getDefaultPayload } from '../registry';
+import { useTutorialNavigationNodes } from '../hooks/useTutorialNavigationNodes'; // Phase 1
+import { useTutorialHydration } from '../hooks/useTutorialHydration'; // Phase 1
+import { saveTutorialSection } from '../services/tutorialSaveService'; // Phase 1
 
 interface HierarchyRow {
   id: string;
@@ -54,6 +58,7 @@ interface FormState {
   subjectId: string;
   topicId: string;
   subtopicId: string;
+  navigationNodeId: string; // Phase 1: Navigation page identity
   blockType: TutorialPageContentType;
   versionId: string;
 }
@@ -78,6 +83,7 @@ const initialForm: FormState = {
   subjectId: '',
   topicId: '',
   subtopicId: '',
+  navigationNodeId: '', // Phase 1: Initial navigation node selection empty
   blockType: 'definition',
   versionId: 'v1',
 };
@@ -85,12 +91,32 @@ const initialForm: FormState = {
 export function TutorialPageContentBuilderClient() {
   const [hierarchy, setHierarchy] = useState<HierarchyState>(initialHierarchy);
   const [form, setForm] = useState<FormState>(initialForm);
+  
+  // Phase 1: Navigation nodes for selected subtopic
+  const { navigationNodes, isLoading: isLoadingNodes } = useTutorialNavigationNodes(
+    form.subtopicId,
+    form.brandId
+  );
+  
+  // Phase 1: Hydration hook manages document loading
+  const {
+    documentBlocks,
+    setDocumentBlocks,
+    isLoadingDocument,
+    loadedSectionId,
+    setLoadedSectionId,
+    hasUnsavedLocalChangesRef,
+    loadExistingTutorial,
+    invalidateHydration,
+    message,
+    setMessage,
+  } = useTutorialHydration({ brandId: form.brandId });
+  
   const [sourceFormat, setSourceFormat] = useState<SourceFormat>('json');
   const [sourceContent, setSourceContent] = useState(JSON.stringify(getDefaultPayload('definition'), null, 2));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Legacy preview state, type refinement tracked in backlog
   const [activeBlockPreview, setActiveBlockPreview] = useState<any>(getDefaultPayload('definition'));
   const [previewMode, setPreviewMode] = useState<'document' | 'active-block'>('document');
-  const [message, setMessage] = useState('');
   const [memoryModelWarning, setMemoryModelWarning] = useState('');
 
   /**
@@ -118,17 +144,6 @@ export function TutorialPageContentBuilderClient() {
     return payload;
   } // UI warning for memoryModel loss
   const [isSaving, setIsSaving] = useState(false);
-
-  // Document block instances collection (starts empty, hydrated on subtopic selection)
-  const [documentBlocks, setDocumentBlocks] = useState<BlockInstance[]>([]);
-  
-  // Hydration state
-  const [isLoadingDocument, setIsLoadingDocument] = useState(false);
-  const [loadedSectionId, setLoadedSectionId] = useState<string | null>(null);
-  
-  // Track unsaved local changes to prevent async hydration from overwriting user edits
-  // This protects against race conditions where user adds/removes blocks while fetch is pending
-  const hasUnsavedLocalChangesRef = useRef(false);
   
   // Track which block is currently being edited (null = new block mode)
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
@@ -157,24 +172,18 @@ export function TutorialPageContentBuilderClient() {
     setActiveBlockPreview(normalizeActivePreview(example, form.blockType, form.versionId));
   }, [form.blockType, form.versionId]);
 
-  // Hydrate existing tutorial when subtopic selection changes
+  // Phase 1: Hydrate existing tutorial when navigation context changes
+  // Phase 2: Hook manages AbortController and request sequence internally
   useEffect(() => {
-    if (!form.subtopicId) {
-      setDocumentBlocks([]);
-      setLoadedSectionId(null);
-      setIsLoadingDocument(false);
-      hasUnsavedLocalChangesRef.current = false; // Clear dirty flag on reset
+    if (!form.subtopicId || !form.navigationNodeId) {
+      // Reset state when no complete navigation context
+      invalidateHydration();
+      hasUnsavedLocalChangesRef.current = false;
       return;
     }
 
-    const controller = new AbortController();
-
-    void loadExistingTutorial(form.subtopicId, controller.signal);
-
-    return () => {
-      controller.abort();
-    };
-  }, [form.subtopicId]);
+    void loadExistingTutorial(form.subtopicId, form.navigationNodeId);
+  }, [form.subtopicId, form.navigationNodeId, loadExistingTutorial, invalidateHydration]);
 
   const subjects = useMemo(() => hierarchy.subjects.filter((item) => item.domainId === form.domainId), [hierarchy.subjects, form.domainId]);
   const topics = useMemo(() => hierarchy.topics.filter((item) => item.subjectId === form.subjectId), [hierarchy.topics, form.subjectId]);
@@ -194,17 +203,24 @@ export function TutorialPageContentBuilderClient() {
   function updateForm<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => {
       const next = { ...current, [key]: value };
+      // Phase 1: Reset dependent selections when hierarchy changes
       if (key === 'domainId') {
         next.subjectId = '';
         next.topicId = '';
         next.subtopicId = '';
+        next.navigationNodeId = '';
       }
       if (key === 'subjectId') {
         next.topicId = '';
         next.subtopicId = '';
+        next.navigationNodeId = '';
       }
       if (key === 'topicId') {
         next.subtopicId = '';
+        next.navigationNodeId = '';
+      }
+      if (key === 'subtopicId') {
+        next.navigationNodeId = '';
       }
       if (key === 'blockType') {
         const block = getBlockType(value as TutorialPageContentType);
@@ -325,198 +341,41 @@ export function TutorialPageContentBuilderClient() {
     setMessage('Ready to create a new block.');
   }
 
-  /**
-   * Load existing tutorial from tutorial_sections for selected subtopic
-   * Hydrates documentBlocks[] with existing content.blocks[]
-   * 
-   * @param subtopicId - The subtopic ID to load tutorial for
-   * @param signal - Optional AbortSignal for request cancellation
-   */
-  async function loadExistingTutorial(subtopicId: string, signal?: AbortSignal) {
-    if (!subtopicId) {
-      setDocumentBlocks([]);
-      setLoadedSectionId(null);
-      return;
-    }
-
-    setIsLoadingDocument(true);
-    setMessage('');
-
-    try {
-      const response = await fetch(
-        `/api/tutorial-composer/sections?subtopicId=${encodeURIComponent(
-          subtopicId
-        )}&brandId=${SHARED_BRAND_ID}&limit=1`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          signal,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to load existing tutorial');
-      }
-
-      const result = await response.json();
-      const section = result.data?.[0];
-
-      if (!section) {
-        setDocumentBlocks([]);
-        setLoadedSectionId(null);
-        setMessage('No existing tutorial found. Ready to create a new document.');
-        return;
-      }
-
-      const document = section.content as TutorialDocument | undefined;
-
-      if (!document || !Array.isArray(document.blocks)) {
-        setDocumentBlocks([]);
-        setLoadedSectionId(section.id);
-        setMessage(
-          'Existing tutorial has no valid document blocks. Ready for editing.'
-        );
-        return;
-      }
-
-      const instances = tutorialBlocksToInstances(document.blocks);
-
-      // RACE PROTECTION: Do not overwrite user's unsaved local changes
-      // If user added/removed blocks while this fetch was pending, preserve their work
-      if (hasUnsavedLocalChangesRef.current) {
-        setMessage(
-          `Cannot load: You have unsaved local changes. Save or discard changes first. (Server has ${instances.length} blocks)`
-        );
-        setIsLoadingDocument(false);
-        return;
-      }
-
-      setDocumentBlocks(instances);
-      
-      setLoadedSectionId(section.id);
-      hasUnsavedLocalChangesRef.current = false; // Fresh from server = clean state
-
-      setMessage(
-        `Loaded existing tutorial with ${instances.length} block ${
-          instances.length === 1 ? 'instance' : 'instances'
-        }.`
-      );
-    } catch (error) {
-      // Ignore aborted requests (user changed subtopic selection)
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        return;
-      }
-
-      setDocumentBlocks([]);
-      setLoadedSectionId(null);
-
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'Failed to load existing tutorial.'
-      );
-    } finally {
-      // Only update loading state if request wasn't aborted
-      if (!signal?.aborted) {
-        setIsLoadingDocument(false);
-      }
-    }
-  }
-
   async function save(status: 'draft' | 'published') {
     setIsSaving(true);
     setMessage('');
-    
+
     try {
-      if (!form.subtopicId) {
-        throw new Error('Subtopic is required');
-      }
-
-      if (isLoadingDocument) {
-        throw new Error(
-          'Tutorial is still loading. Please wait before saving.'
-        );
-      }
-
-      // Step 1: Map documentBlocks[] → TutorialDocument.blocks[] using type-safe conversion
-      const tutorialBlocks: TutorialBlock[] = documentBlocks.map(toTutorialBlock);
-
-      // Step 2: Create TutorialDocument
-      const tutorialDocument: TutorialDocument = {
-        schemaVersion: 1,
-        blocks: tutorialBlocks,
-      };
-
-      // Step 3: Check if tutorial exists for this subtopicId + brandId
-      const existenceCheckUrl = `/api/tutorial-composer/sections?subtopicId=${form.subtopicId}&brandId=${SHARED_BRAND_ID}&limit=1`;
-
-      const queryResponse = await fetch(existenceCheckUrl, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!queryResponse.ok) {
-        throw new Error('Failed to check existing tutorial');
-      }
-
-      const queryResult = await queryResponse.json();
-      const existingTutorial = queryResult.data?.[0];
-
-      // Step 3b: Race condition protection - verify we're editing the same section we loaded
-      if (
-        existingTutorial &&
-        loadedSectionId &&
-        existingTutorial.id !== loadedSectionId
-      ) {
-        throw new Error(
-          'The selected tutorial changed while editing. Reload the document before saving.'
-        );
-      }
-
-      let response;
-      let requestPayload;
-
-      if (existingTutorial) {
-        // Step 4a: UPDATE existing tutorial
-        const patchUrl = `/api/tutorial-composer/sections/${existingTutorial.id}`;
-        requestPayload = {
-          content: tutorialDocument,
-        };
-
-        response = await fetch(patchUrl, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestPayload),
-        });
-      } else {
-        // Step 4b: CREATE new tutorial
-        requestPayload = {
+      // Phase 1: Use save service with navigationNodeId
+      const result = await saveTutorialSection(
+        {
           subtopicId: form.subtopicId,
-          brandId: SHARED_BRAND_ID,
-          content: tutorialDocument,
-          orderIndex: 0,
-        };
+          navigationNodeId: form.navigationNodeId,
+          brandId: form.brandId,
+          documentBlocks,
+          loadedSectionId,
+          isLoadingDocument,
+        },
+        status
+      );
 
-        response = await fetch('/api/tutorial-composer/sections', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestPayload),
-        });
+      if (!result.success) {
+        setMessage(result.message);
+        return;
       }
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        const errorMsg = result.error?.message || result.error || 'Save failed';
-        throw new Error(errorMsg);
+      // Update loadedSectionId if we just created a new section
+      if (result.sectionId && !loadedSectionId) {
+        setLoadedSectionId(result.sectionId);
       }
 
-      // Step 5: Publish if status is 'published'
-      if (status === 'published' && result.data?.id) {
-        const publishUrl = `/api/tutorial-composer/sections/${result.data.id}/publish`;
-        
+      // Clear dirty flag after successful save
+      hasUnsavedLocalChangesRef.current = false;
+
+      // Handle publish flow if status is 'published'
+      if (status === 'published' && result.sectionId) {
+        const publishUrl = `/api/tutorial-composer/sections/${result.sectionId}/publish`;
+
         const publishResponse = await fetch(publishUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -524,7 +383,8 @@ export function TutorialPageContentBuilderClient() {
 
         if (!publishResponse.ok) {
           const publishError = await publishResponse.json();
-          throw new Error(publishError.error?.message || 'Publish failed');
+          setMessage(`Saved but publish failed: ${publishError.error?.message || 'Unknown error'}`);
+          return;
         }
 
         // Generate public URL from hierarchy slugs
@@ -532,23 +392,15 @@ export function TutorialPageContentBuilderClient() {
         const subject = subjects.find((s) => s.id === form.subjectId);
         const topic = topics.find((t) => t.id === form.topicId);
         const subtopic = subtopics.find((st) => st.id === form.subtopicId);
-        
+
         if (domain && subject && topic && subtopic) {
           const publicUrl = `https://user.skillupitacademy.com/tutorial-v2/${domain.slug}/${subject.slug}/${topic.slug}/${subtopic.slug}`;
-          setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} and published successfully!\n\nPublic URL: ${publicUrl}`);
+          setMessage(`${result.message}\n\nPublished URL: ${publicUrl}`);
         } else {
-          setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} and published successfully!`);
+          setMessage(`${result.message} Published successfully!`);
         }
       } else {
-        setMessage(`Tutorial ${existingTutorial ? 'updated' : 'created'} successfully as ${status}!`);
-      }
-      
-      // Clear dirty flag after successful save
-      hasUnsavedLocalChangesRef.current = false;
-      
-      // Update loadedSectionId if we just created a new section
-      if (!existingTutorial && result.data?.id) {
-        setLoadedSectionId(result.data.id);
+        setMessage(result.message);
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Save failed.');
@@ -587,6 +439,14 @@ export function TutorialPageContentBuilderClient() {
               onSubjectChange={(value) => updateForm('subjectId', value)}
               onTopicChange={(value) => updateForm('topicId', value)}
               onSubtopicChange={(value) => updateForm('subtopicId', value)}
+            />
+
+            {/* Phase 1: Navigation Node Selector */}
+            <TutorialNavigationNodeSelector
+              navigationNodes={navigationNodes}
+              navigationNodeId={form.navigationNodeId}
+              onNavigationNodeChange={(value) => updateForm('navigationNodeId', value)}
+              disabled={!form.subtopicId || isLoadingNodes}
             />
 
             <TutorialBlockSelector
