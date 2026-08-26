@@ -41,7 +41,7 @@ export function TutorialHeader({ crumbs, active, brand, theme, onMenuClick }: Tu
           ))}
           <span className="truncate" style={{ color: theme.primary }}>{active}</span>
         </nav>
-        <div className="hidden h-10 w-[280px] items-center gap-2 rounded-lg border border-[#dfe7f1] px-3 text-xs font-semibold text-[#7a8aa2] md:flex">
+        <div className="hidden h-10 w-[280px] items-center gap-2 rounded-lg border border-[#dfe7f1] px-3 text-xs font-semibold text-slate-600 md:flex">
           <span className="flex-1">Search anything...</span>
           <Search className="h-4 w-4" style={{ color: theme.secondary }} />
         </div>
