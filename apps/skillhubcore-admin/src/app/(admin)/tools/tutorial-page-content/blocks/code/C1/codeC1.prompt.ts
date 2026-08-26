@@ -1,41 +1,37 @@
 /**
  * C1 Code Block - AI Generation Prompt Template
- * 
- * This prompt is used by the Tutorial Composer's AI instruction panel
- * to help authors generate C1 code block content.
+ *
+ * This file owns only the C1-specific generation instructions.
+ *
+ * Common hierarchy and metadata protection are centralized.
  */
 
-export interface PromptContext {
-  domainName: string;
-  subjectName: string;
-  topicName: string;
-  subtopicName: string;
-  navigationNodeName: string;
-  blockName: string;
-  versionName: string;
-  versionId: string;
-}
+import type { TutorialPromptContext } from '../../../prompts/tutorialPromptContext';
+import { buildTutorialPrompt } from '../../../prompts/tutorialPrompt.shared';
 
 /**
  * Generate the AI prompt for C1 code block content generation
  */
-export function getCodeC1Prompt(context: PromptContext): string {
-  const { domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName, versionId } = context;
-  
-  return `You are generating educational content for a tutorial platform.
+export function getCodeC1Prompt(
+  context: TutorialPromptContext
+): string {
+  const versionCode = context.versionId
+    ? context.versionId.toUpperCase()
+    : context.versionName.toUpperCase();
 
-# TARGET HIERARCHY
-- Domain: ${domainName}
-- Subject: ${subjectName}
-- Topic: ${topicName}
-- Subtopic: ${subtopicName}
-- Navigation Node: ${navigationNodeName}
-- Block: ${blockName}
-- Version: ${versionName}
+  return buildTutorialPrompt(
+    context,
+    `# OUTPUT REQUIREMENTS
 
-# OUTPUT REQUIREMENTS
-Generate valid, production-ready code (${versionId.toUpperCase()}) content conforming strictly to the official platform schema without system metadata or styling fields.
+Generate valid, production-ready code (${versionCode}) content conforming strictly to the official platform schema.
 
-# PROHIBITED SYSTEM METADATA
-Do NOT include id, blockId, navigationNodeId, version, domainId, subjectId, topicId, subtopicId, brandId, theme, status, publishedAt, or schemaVersion.`;
+The generated content must:
+
+1. Follow the canonical C1 schema.
+2. Contain valid JSON only.
+3. Contain no markdown code fences around the JSON.
+4. Preserve the semantic meaning of the selected Navigation Node.
+5. Generate examples appropriate to the selected tutorial topic.
+6. Avoid UI styling or presentation metadata unless explicitly defined by the C1 schema.`
+  );
 }

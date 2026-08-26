@@ -10,6 +10,8 @@
 import { useState, useMemo } from 'react';
 import { Bot, Check, ChevronDown, ChevronUp, Copy, Sparkles } from 'lucide-react';
 import type { TutorialPageContentType } from '@quiz/types';
+import type { TutorialPromptContext } from '../prompts/tutorialPromptContext';
+import { buildTutorialPrompt } from '../prompts/tutorialPrompt.shared';
 import { getDefinitionD1Prompt } from '../blocks/definition/D1/definitionD1.prompt';
 import { getCodeC1Prompt } from '../blocks/code/C1/codeC1.prompt';
 import { getSummaryS1Prompt } from '../blocks/summary/S1/summaryS1.prompt';
@@ -41,7 +43,7 @@ export function AiInstructionContainer({
   const [copied, setCopied] = useState(false);
 
   const promptText = useMemo(() => {
-    const context = {
+    const context: TutorialPromptContext = {
       domainName,
       subjectName,
       topicName,
@@ -64,20 +66,17 @@ export function AiInstructionContainer({
       return getSummaryS1Prompt(context);
     }
 
-    // Fallback (should not happen with current registry)
-    return `You are generating educational content for a tutorial platform.
+    // Fallback using shared infrastructure
+    return buildTutorialPrompt(
+      context,
+      `# OUTPUT REQUIREMENTS
 
-# TARGET HIERARCHY
-- Domain: ${domainName}
-- Subject: ${subjectName}
-- Topic: ${topicName}
-- Subtopic: ${subtopicName}
-- Navigation Node: ${navigationNodeName}
-- Block: ${blockName}
-- Version: ${versionName}
+Generate valid, production-ready ${blockType} content conforming strictly to the official platform schema.
 
-# OUTPUT REQUIREMENTS
-Generate valid, production-ready ${blockType} (${versionId.toUpperCase()}) content conforming strictly to the official platform schema without system metadata or styling fields.`;
+Return valid JSON only.
+
+Do not include markdown code fences.`
+    );
   }, [domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName, blockType, versionId]);
 
   const handleCopy = () => {

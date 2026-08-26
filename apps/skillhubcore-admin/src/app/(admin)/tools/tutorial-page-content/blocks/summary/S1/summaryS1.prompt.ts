@@ -1,41 +1,38 @@
 /**
  * S1 Summary Block - AI Generation Prompt Template
- * 
- * This prompt is used by the Tutorial Composer's AI instruction panel
- * to help authors generate S1 summary block content.
+ *
+ * Common hierarchy and system metadata rules are centralized.
+ *
+ * This file owns only the S1-specific content contract.
  */
 
-export interface PromptContext {
-  domainName: string;
-  subjectName: string;
-  topicName: string;
-  subtopicName: string;
-  navigationNodeName: string;
-  blockName: string;
-  versionName: string;
-  versionId: string;
-}
+import type { TutorialPromptContext } from '../../../prompts/tutorialPromptContext';
+import { buildTutorialPrompt } from '../../../prompts/tutorialPrompt.shared';
 
 /**
  * Generate the AI prompt for S1 summary block content generation
  */
-export function getSummaryS1Prompt(context: PromptContext): string {
-  const { domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName, versionId } = context;
-  
-  return `You are generating educational content for a tutorial platform.
+export function getSummaryS1Prompt(
+  context: TutorialPromptContext
+): string {
+  const versionCode = context.versionId
+    ? context.versionId.toUpperCase()
+    : context.versionName.toUpperCase();
 
-# TARGET HIERARCHY
-- Domain: ${domainName}
-- Subject: ${subjectName}
-- Topic: ${topicName}
-- Subtopic: ${subtopicName}
-- Navigation Node: ${navigationNodeName}
-- Block: ${blockName}
-- Version: ${versionName}
+  return buildTutorialPrompt(
+    context,
+    `# OUTPUT REQUIREMENTS
 
-# OUTPUT REQUIREMENTS
-Generate valid, production-ready summary (${versionId.toUpperCase()}) content conforming strictly to the official platform schema without system metadata or styling fields.
+Return ONLY valid JSON conforming strictly to the canonical S1 Summary schema.
 
-# PROHIBITED SYSTEM METADATA
-Do NOT include id, blockId, navigationNodeId, version, domainId, subjectId, topicId, subtopicId, brandId, theme, status, publishedAt, or schemaVersion.`;
+The generated summary (${versionCode}) must:
+
+1. Summarize the selected Navigation Node accurately.
+2. Reflect the selected topic and subtopic context.
+3. Be concise and learner-friendly.
+4. Preserve the canonical S1 JSON structure.
+5. Contain no markdown code fences.
+6. Contain no UI layout metadata.
+7. Generate valid JSON only.`
+  );
 }
