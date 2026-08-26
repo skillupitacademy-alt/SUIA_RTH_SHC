@@ -1,0 +1,518 @@
+{
+  "topics": [
+    {
+      "id": "java",
+      "name": "Java",
+      "type": "group",
+      "icon": "java",
+      "expanded": true,
+      "children": [
+        {
+          "id": "java-fundamentals",
+          "name": "Fundamentals",
+          "type": "group",
+          "icon": "book",
+          "expanded": true,
+          "children": [
+            {
+              "id": "what-is-java",
+              "name": "What Is Java?",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "java-syntax",
+              "name": "Syntax & Structure",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "primitive-data-types",
+              "name": "Primitive Data Types",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "operators",
+              "name": "Operators",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "control-flow",
+              "name": "Control Flow (if/else, loops)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "arrays",
+              "name": "Arrays",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "strings",
+              "name": "Strings",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "varargs",
+              "name": "Varargs",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "oop",
+          "name": "Object-Oriented Programming",
+          "type": "group",
+          "icon": "code",
+          "expanded": true,
+          "children": [
+            {
+              "id": "classes-objects",
+              "name": "Classes & Objects",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "constructors",
+              "name": "Constructors",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "inheritance",
+              "name": "Inheritance",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "polymorphism",
+              "name": "Polymorphism",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "encapsulation",
+              "name": "Encapsulation",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "abstraction",
+              "name": "Abstraction",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "abstract-classes",
+              "name": "Abstract Classes",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "interfaces",
+              "name": "Interfaces",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "packages",
+              "name": "Packages & Imports",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "access-modifiers",
+              "name": "Access Modifiers",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "static-keyword",
+              "name": "Static Keyword",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "final-keyword",
+              "name": "Final Keyword",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "exception-handling",
+          "name": "Exception Handling",
+          "type": "group",
+          "icon": "alert",
+          "children": [
+            {
+              "id": "exceptions-overview",
+              "name": "Overview",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "try-catch-finally",
+              "name": "try-catch-finally",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "throw-throws",
+              "name": "throw & throws",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "custom-exceptions",
+              "name": "Custom Exceptions",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "try-with-resources",
+              "name": "try-with-resources",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "collections",
+          "name": "Collections Framework",
+          "type": "group",
+          "icon": "list",
+          "expanded": true,
+          "children": [
+            {
+              "id": "collections-overview",
+              "name": "Overview & Hierarchy",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "list-interface",
+              "name": "List (ArrayList, LinkedList)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "set-interface",
+              "name": "Set (HashSet, TreeSet)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "map-interface",
+              "name": "Map (HashMap, TreeMap)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "queue-interface",
+              "name": "Queue (PriorityQueue)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "iterators",
+              "name": "Iterators & Iterable",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "comparator-comparable",
+              "name": "Comparator & Comparable",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "generics",
+          "name": "Generics",
+          "type": "group",
+          "icon": "type",
+          "children": [
+            {
+              "id": "generics-intro",
+              "name": "Introduction to Generics",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "generic-classes",
+              "name": "Generic Classes",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "generic-methods",
+              "name": "Generic Methods",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "wildcards",
+              "name": "Wildcards (?, extends, super)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "type-erasure",
+              "name": "Type Erasure",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "lambda-streams",
+          "name": "Lambda & Streams",
+          "type": "group",
+          "icon": "zap",
+          "children": [
+            {
+              "id": "lambda-expressions",
+              "name": "Lambda Expressions",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "functional-interfaces",
+              "name": "Functional Interfaces",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "method-references",
+              "name": "Method References",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "stream-api",
+              "name": "Stream API Basics",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "stream-operations",
+              "name": "Stream Operations (map, filter, reduce)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "collectors",
+              "name": "Collectors",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "io",
+          "name": "Input / Output",
+          "type": "group",
+          "icon": "file",
+          "children": [
+            {
+              "id": "io-overview",
+              "name": "Overview (Streams, Readers)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "file-class",
+              "name": "File Class",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "byte-streams",
+              "name": "Byte Streams (FileInputStream, etc.)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "character-streams",
+              "name": "Character Streams (FileReader, etc.)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "buffered-streams",
+              "name": "Buffered Streams",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "serialization",
+              "name": "Serialization",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "concurrency",
+          "name": "Concurrency & Multithreading",
+          "type": "group",
+          "icon": "cpu",
+          "children": [
+            {
+              "id": "threads-intro",
+              "name": "Thread Basics",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "runnable-callable",
+              "name": "Runnable & Callable",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "synchronization",
+              "name": "Synchronization & Locks",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "executor-framework",
+              "name": "Executor Framework",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "concurrent-collections",
+              "name": "Concurrent Collections",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "atomic-variables",
+              "name": "Atomic Variables",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "thread-pools",
+              "name": "Thread Pools",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "annotations",
+          "name": "Annotations",
+          "type": "group",
+          "icon": "at",
+          "children": [
+            {
+              "id": "annotations-overview",
+              "name": "Overview & Built-in Annotations",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "custom-annotations",
+              "name": "Creating Custom Annotations",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "retention-target",
+              "name": "Retention & Target Policies",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "annotation-processing",
+              "name": "Annotation Processing",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "reflection",
+          "name": "Reflection",
+          "type": "group",
+          "icon": "eye",
+          "children": [
+            {
+              "id": "reflection-overview",
+              "name": "Overview",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "class-object",
+              "name": "Class Object & Methods",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "reflection-fields",
+              "name": "Inspecting Fields",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "reflection-methods",
+              "name": "Inspecting Methods",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "reflection-constructors",
+              "name": "Inspecting Constructors",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        },
+        {
+          "id": "jvm",
+          "name": "JVM & Memory Management",
+          "type": "group",
+          "icon": "server",
+          "children": [
+            {
+              "id": "jvm-architecture",
+              "name": "JVM Architecture",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "memory-management",
+              "name": "Memory Management (Heap, Stack)",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "garbage-collection",
+              "name": "Garbage Collection Basics",
+              "type": "page",
+              "icon": "folder"
+            },
+            {
+              "id": "jvm-options",
+              "name": "JVM Options & Tuning",
+              "type": "page",
+              "icon": "folder"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
