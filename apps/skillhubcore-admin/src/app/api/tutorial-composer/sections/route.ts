@@ -211,6 +211,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const queryParams = {
       subtopicId: searchParams.get('subtopicId') || undefined,
+      navigationNodeId: searchParams.get('navigationNodeId') || undefined, // Phase 1: Added
       brandId: searchParams.get('brandId') || undefined,
       status: searchParams.get('status') || undefined,
       limit: searchParams.get('limit') || '20',
@@ -238,6 +239,7 @@ export async function GET(request: NextRequest) {
     const result = await tutorialComposerService.queryTutorials(
       {
         subtopicId: filters.subtopicId,
+        navigationNodeId: filters.navigationNodeId, // Phase 1: Added
         brandId: filters.brandId,
         status: filters.status,
       },

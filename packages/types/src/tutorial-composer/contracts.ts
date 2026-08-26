@@ -606,9 +606,11 @@ export type TutorialResponse = z.infer<typeof TutorialResponseSchema>;
 /**
  * V2 List Tutorials Query
  * Based on TutorialFilters from tutorial-section.repository.ts
+ * Phase 1: Added navigationNodeId for page-specific queries
  */
 export const ListTutorialsQuerySchema = z.object({
   subtopicId: z.string().uuid().optional(),
+  navigationNodeId: z.string().optional(), // Phase 1: Added
   brandId: BrandIdSchema.optional(),
   status: TutorialStatusSchema.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),

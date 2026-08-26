@@ -21,9 +21,11 @@ import type { TutorialDbClientLike } from '@quiz/types';
 
 /**
  * V2 Tutorial filters for querying
+ * Phase 1: Added navigationNodeId for page-specific queries
  */
 export interface TutorialFilters {
   subtopicId?: string;
+  navigationNodeId?: string; // Phase 1: Filter by specific navigation page
   brandId?: string;
   status?: string;
 }
@@ -245,6 +247,10 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
 
     if (filters.subtopicId) {
       conditions.push(eq(tutorialSections.subtopicId, filters.subtopicId));
+    }
+    if (filters.navigationNodeId) {
+      // Phase 1: Filter by specific navigation page
+      conditions.push(eq(tutorialSections.navigationNodeId, filters.navigationNodeId));
     }
     if (filters.brandId) {
       conditions.push(eq(tutorialSections.brandId, filters.brandId as any));

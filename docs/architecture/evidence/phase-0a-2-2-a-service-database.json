@@ -1,0 +1,840 @@
+{
+  "auditVersion": "0A.2.2-A",
+  "phase": "Service → Database Static Mapping",
+  "generatedAt": "2026-08-26T12:35:57.176Z",
+  "mode": "STATIC_SOURCE_ANALYSIS",
+  "security": {
+    "credentialsIncluded": false,
+    "environmentValuesIncluded": false,
+    "databaseConnectionsUsed": false,
+    "readOnly": true
+  },
+  "summary": {
+    "sourceFilesScanned": 1501,
+    "servicesAnalyzed": 5,
+    "databaseAccessFindings": 169,
+    "serviceDatabaseRelationships": 11,
+    "uniqueServices": 4,
+    "uniqueDatabases": 6
+  },
+  "databases": [
+    {
+      "logicalName": "quiz_platform_prod",
+      "packagePaths": [
+        "packages/db"
+      ]
+    },
+    {
+      "logicalName": "tutorial_prod",
+      "packagePaths": [
+        "packages/db-tutorial"
+      ]
+    },
+    {
+      "logicalName": "people_prod",
+      "packagePaths": [
+        "packages/db-people"
+      ]
+    },
+    {
+      "logicalName": "rth_prod",
+      "packagePaths": [
+        "packages/db-rth"
+      ]
+    },
+    {
+      "logicalName": "skillup_prod",
+      "packagePaths": [
+        "packages/db-skillup"
+      ]
+    },
+    {
+      "logicalName": "payment_prod",
+      "packagePaths": [
+        "packages/db-payment"
+      ]
+    },
+    {
+      "logicalName": "placement_prod",
+      "packagePaths": [
+        "packages/db-placement"
+      ]
+    }
+  ],
+  "services": [
+    {
+      "name": "api-server",
+      "path": "apps/api-server",
+      "exists": true
+    },
+    {
+      "name": "realtutorialhub-web",
+      "path": "apps/realtutorialhub-web",
+      "exists": true
+    },
+    {
+      "name": "skillup-web",
+      "path": "apps/skillup-web",
+      "exists": true
+    },
+    {
+      "name": "skillhubcore-admin",
+      "path": "apps/skillhubcore-admin",
+      "exists": true
+    },
+    {
+      "name": "skillhub-placement",
+      "path": "apps/skillhub-placement",
+      "exists": true
+    },
+    {
+      "name": "tutorial-service",
+      "path": "apps/tutorial-service",
+      "exists": false
+    },
+    {
+      "name": "payment-service",
+      "path": "apps/payment-service",
+      "exists": false
+    },
+    {
+      "name": "placement-service",
+      "path": "apps/placement-service",
+      "exists": false
+    }
+  ],
+  "serviceDatabaseMatrix": [
+    {
+      "service": "api-server",
+      "servicePath": "apps/api-server",
+      "database": "quiz_platform_prod",
+      "evidenceCount": 15,
+      "fileCount": 5,
+      "accessTypes": [
+        "unknown",
+        "read",
+        "read-write",
+        "write"
+      ],
+      "connectionTypes": [
+        "package-import",
+        "direct-reference"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\app\\api\\factory\\save\\route.ts",
+          "line": 182,
+          "matchedPattern": "packages/db",
+          "connectionType": "package-import",
+          "accessType": "unknown"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\admin-engine\\admin.question.engine.ts",
+          "line": 133,
+          "matchedPattern": "packages/db",
+          "connectionType": "package-import",
+          "accessType": "unknown"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\hierarchy\\hierarchy-sync.service.ts",
+          "line": 1,
+          "matchedPattern": "quizDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\hierarchy\\hierarchy-sync.service.ts",
+          "line": 261,
+          "matchedPattern": "quizDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\hierarchy\\hierarchy-sync.service.ts",
+          "line": 287,
+          "matchedPattern": "quizDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\hierarchy\\hierarchy-sync.service.ts",
+          "line": 445,
+          "matchedPattern": "quizDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\hierarchy\\hierarchy-sync.service.ts",
+          "line": 455,
+          "matchedPattern": "quizDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\hierarchy\\hierarchy-sync.service.ts",
+          "line": 465,
+          "matchedPattern": "quizDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\hierarchy\\hierarchy-sync.service.ts",
+          "line": 475,
+          "matchedPattern": "quizDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\api-server\\src\\modules\\hierarchy\\hierarchy-sync.service.ts",
+          "line": 544,
+          "matchedPattern": "quizDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        }
+      ]
+    },
+    {
+      "service": "api-server",
+      "servicePath": "apps/api-server",
+      "database": "tutorial_prod",
+      "evidenceCount": 40,
+      "fileCount": 5,
+      "accessTypes": [
+        "unknown",
+        "read-write",
+        "read",
+        "write"
+      ],
+      "connectionTypes": [
+        "direct-reference"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\certificate-verification.ts",
+          "line": 1,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\certificate-verification.ts",
+          "line": 33,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 14,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 207,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 223,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 240,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 256,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 302,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 340,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 379,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        }
+      ]
+    },
+    {
+      "service": "api-server",
+      "servicePath": "apps/api-server",
+      "database": "people_prod",
+      "evidenceCount": 24,
+      "fileCount": 4,
+      "accessTypes": [
+        "unknown",
+        "read-write",
+        "write",
+        "read"
+      ],
+      "connectionTypes": [
+        "direct-reference"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 6,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 107,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 131,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 143,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 165,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 183,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 422,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 456,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 468,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\api-server\\src\\lib\\tutorial-faculty-access.ts",
+          "line": 510,
+          "matchedPattern": "peopleDb",
+          "connectionType": "direct-reference",
+          "accessType": "write"
+        }
+      ]
+    },
+    {
+      "service": "api-server",
+      "servicePath": "apps/api-server",
+      "database": "rth_prod",
+      "evidenceCount": 2,
+      "fileCount": 1,
+      "accessTypes": [
+        "unknown",
+        "read"
+      ],
+      "connectionTypes": [
+        "direct-reference"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "rth_prod",
+          "file": "apps\\api-server\\src\\modules\\core\\health.service.ts",
+          "line": 3,
+          "matchedPattern": "rthDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "rth_prod",
+          "file": "apps\\api-server\\src\\modules\\core\\health.service.ts",
+          "line": 153,
+          "matchedPattern": "rthDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        }
+      ]
+    },
+    {
+      "service": "api-server",
+      "servicePath": "apps/api-server",
+      "database": "skillup_prod",
+      "evidenceCount": 4,
+      "fileCount": 2,
+      "accessTypes": [
+        "unknown",
+        "read"
+      ],
+      "connectionTypes": [
+        "direct-reference"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "skillup_prod",
+          "file": "apps\\api-server\\src\\modules\\auth\\brand-db.ts",
+          "line": 27,
+          "matchedPattern": "skillupDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "skillup_prod",
+          "file": "apps\\api-server\\src\\modules\\auth\\brand-db.ts",
+          "line": 96,
+          "matchedPattern": "skillupDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "skillup_prod",
+          "file": "apps\\api-server\\src\\modules\\core\\health.service.ts",
+          "line": 4,
+          "matchedPattern": "skillupDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "skillup_prod",
+          "file": "apps\\api-server\\src\\modules\\core\\health.service.ts",
+          "line": 173,
+          "matchedPattern": "skillupDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        }
+      ]
+    },
+    {
+      "service": "realtutorialhub-web",
+      "servicePath": "apps/realtutorialhub-web",
+      "database": "tutorial_prod",
+      "evidenceCount": 2,
+      "fileCount": 1,
+      "accessTypes": [
+        "unknown",
+        "read-write"
+      ],
+      "connectionTypes": [
+        "direct-reference"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\realtutorialhub-web\\src\\app\\api\\certificates\\verify\\[verificationCode]\\route.ts",
+          "line": 5,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\realtutorialhub-web\\src\\app\\api\\certificates\\verify\\[verificationCode]\\route.ts",
+          "line": 24,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        }
+      ]
+    },
+    {
+      "service": "skillup-web",
+      "servicePath": "apps/skillup-web",
+      "database": "quiz_platform_prod",
+      "evidenceCount": 2,
+      "fileCount": 1,
+      "accessTypes": [
+        "unknown"
+      ],
+      "connectionTypes": [
+        "package-import"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillup-web\\vitest.config.ts",
+          "line": 18,
+          "matchedPattern": "packages/db",
+          "connectionType": "package-import",
+          "accessType": "unknown"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillup-web\\vitest.config.ts",
+          "line": 19,
+          "matchedPattern": "packages/db",
+          "connectionType": "package-import",
+          "accessType": "unknown"
+        }
+      ]
+    },
+    {
+      "service": "skillup-web",
+      "servicePath": "apps/skillup-web",
+      "database": "people_prod",
+      "evidenceCount": 2,
+      "fileCount": 1,
+      "accessTypes": [
+        "unknown"
+      ],
+      "connectionTypes": [
+        "package-import"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "people_prod",
+          "file": "apps\\skillup-web\\vitest.config.ts",
+          "line": 18,
+          "matchedPattern": "packages/db-people",
+          "connectionType": "package-import",
+          "accessType": "unknown"
+        },
+        {
+          "database": "people_prod",
+          "file": "apps\\skillup-web\\vitest.config.ts",
+          "line": 19,
+          "matchedPattern": "packages/db-people",
+          "connectionType": "package-import",
+          "accessType": "unknown"
+        }
+      ]
+    },
+    {
+      "service": "skillup-web",
+      "servicePath": "apps/skillup-web",
+      "database": "placement_prod",
+      "evidenceCount": 4,
+      "fileCount": 1,
+      "accessTypes": [
+        "unknown",
+        "read-write",
+        "read"
+      ],
+      "connectionTypes": [
+        "direct-reference"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "placement_prod",
+          "file": "apps\\skillup-web\\src\\lib\\skillup-data.ts",
+          "line": 18,
+          "matchedPattern": "placementDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "placement_prod",
+          "file": "apps\\skillup-web\\src\\lib\\skillup-data.ts",
+          "line": 295,
+          "matchedPattern": "placementDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        },
+        {
+          "database": "placement_prod",
+          "file": "apps\\skillup-web\\src\\lib\\skillup-data.ts",
+          "line": 420,
+          "matchedPattern": "placementDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "placement_prod",
+          "file": "apps\\skillup-web\\src\\lib\\skillup-data.ts",
+          "line": 434,
+          "matchedPattern": "placementDb",
+          "connectionType": "direct-reference",
+          "accessType": "read-write"
+        }
+      ]
+    },
+    {
+      "service": "skillhubcore-admin",
+      "servicePath": "apps/skillhubcore-admin",
+      "database": "quiz_platform_prod",
+      "evidenceCount": 55,
+      "fileCount": 17,
+      "accessTypes": [
+        "write",
+        "read",
+        "read-write",
+        "unknown"
+      ],
+      "connectionTypes": [
+        "database-factory"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\batch-delete\\route.ts",
+          "line": 1,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "write"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\batch-delete\\route.ts",
+          "line": 12,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "write"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts",
+          "line": 2,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "read"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts",
+          "line": 9,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "read"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts",
+          "line": 54,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "write"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts",
+          "line": 88,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "write"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts",
+          "line": 132,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "read-write"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\[id]\\route.ts",
+          "line": 1,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "write"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\[id]\\route.ts",
+          "line": 9,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "write"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\[id]\\route.ts",
+          "line": 32,
+          "matchedPattern": "getDb",
+          "connectionType": "database-factory",
+          "accessType": "write"
+        }
+      ]
+    },
+    {
+      "service": "skillhubcore-admin",
+      "servicePath": "apps/skillhubcore-admin",
+      "database": "tutorial_prod",
+      "evidenceCount": 19,
+      "fileCount": 3,
+      "accessTypes": [
+        "unknown",
+        "read",
+        "write"
+      ],
+      "connectionTypes": [
+        "direct-reference"
+      ],
+      "confidenceLevel": "STATIC_IMPORT",
+      "evidence": [
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\(admin)\\tools\\tutorial-left-sidebar\\utils\\navigation-id.ts",
+          "line": 15,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\navigation-nodes\\route.ts",
+          "line": 10,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\navigation-nodes\\route.ts",
+          "line": 32,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\navigation-nodes\\route.ts",
+          "line": 43,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "read"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\route.ts",
+          "line": 5,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\route.ts",
+          "line": 99,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\route.ts",
+          "line": 100,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\route.ts",
+          "line": 239,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "write"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\route.ts",
+          "line": 243,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        },
+        {
+          "database": "tutorial_prod",
+          "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\route.ts",
+          "line": 248,
+          "matchedPattern": "tutorialDb",
+          "connectionType": "direct-reference",
+          "accessType": "unknown"
+        }
+      ]
+    }
+  ],
+  "confidenceLevel": "STATIC_IMPORT",
+  "limitations": [
+    "Static import detection does not prove runtime access",
+    "Pattern matches may include unused imports",
+    "Cannot determine request-level database usage",
+    "Cannot distinguish sequential vs parallel access",
+    "Runtime tracing required for performance analysis"
+  ]
+}

@@ -1,0 +1,6256 @@
+{
+  "auditVersion": "0A.2.2-B",
+  "phase": "Request → Database Static Analysis",
+  "generatedAt": "2026-08-26T12:53:36.242Z",
+  "mode": "STATIC_SOURCE_ANALYSIS",
+  "security": {
+    "credentialsIncluded": false,
+    "environmentValuesIncluded": false,
+    "databaseConnectionsUsed": false,
+    "readOnly": true
+  },
+  "summary": {
+    "sourceFilesScanned": 1501,
+    "routesDetected": 314,
+    "databaseSymbolsResolved": 642,
+    "requestDatabaseFindings": 85,
+    "multiDatabaseRequests": 0,
+    "uniqueServices": 3,
+    "uniqueDatabases": 1
+  },
+  "requests": [
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/auth/heartbeat",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\auth\\heartbeat\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 23,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "users",
+          "operation": "read-write",
+          "line": 23,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "users",
+          "operation": "write",
+          "line": 25,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/blueprints",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\blueprints\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "examBlueprints",
+          "operation": "read-write",
+          "line": 17,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "type",
+          "operation": "read-write",
+          "line": 17,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/domains",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\domains\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 34,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 40,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 44,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 51,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 52,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 88,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 89,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 94,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 95,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "type",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/metrics/tutor",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\metrics\\tutor\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 19,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 27,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/questions/bulk",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\questions\\bulk\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 23,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 131,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 167,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 178,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 199,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "type",
+          "operation": "write",
+          "line": 17,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "type",
+          "operation": "write",
+          "line": 23,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "type",
+          "operation": "write",
+          "line": 142,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/questions/[id]",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\questions\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 20,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "read",
+          "line": 20,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "read",
+          "line": 21,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/skills",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\skills\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 17,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 19,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 40,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 44,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 51,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 52,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 89,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 90,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 95,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 96,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/subjects",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\subjects\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 20,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read",
+          "line": 53,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read",
+          "line": 54,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 91,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 92,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 97,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 98,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/subtopics",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\subtopics\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read-write",
+          "line": 20,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read",
+          "line": 53,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read",
+          "line": 54,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 90,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 91,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 96,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 97,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/topics",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\topics\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 20,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 53,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 54,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 92,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 93,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 98,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 99,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/tutor/help/list",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\tutor\\help\\list\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 28,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 112,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 117,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 121,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 142,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "write",
+          "line": 142,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 121,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 122,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 112,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 113,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 117,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 117,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/admin/users/[id]",
+      "file": "apps\\api-server\\src\\app\\api\\admin\\users\\[id]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 23,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/admin/discrimination",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\admin\\discrimination\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 73,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/admin/item-difficulty",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\admin\\item-difficulty\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 73,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/admin/mastery-trend",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\admin\\mastery-trend\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 69,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/admin/planned-vs-actual-difficulty",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\admin\\planned-vs-actual-difficulty\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 73,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 80,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/admin/pool-sufficiency",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\admin\\pool-sufficiency\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 67,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/admin/score-histogram",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\admin\\score-histogram\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 73,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/admin/topic-skill-heatmap",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\admin\\topic-skill-heatmap\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 72,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/user/difficulty-accuracy",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\user\\difficulty-accuracy\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read-write",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/user/mastery-trend",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\user\\mastery-trend\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 58,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 61,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/user/score-history",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\user\\score-history\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 44,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 55,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/user/topic-performance",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\user\\topic-performance\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read-write",
+          "line": 48,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/analytics/user/weakness-tree",
+      "file": "apps\\api-server\\src\\app\\api\\analytics\\user\\weakness-tree\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read-write",
+          "line": 72,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 89,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sqlReplica",
+          "operation": "read",
+          "line": 97,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/auth/debug/profile-integrity",
+      "file": "apps\\api-server\\src\\app\\api\\auth\\debug\\profile-integrity\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 17,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 20,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 50,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 51,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "users",
+          "operation": "read",
+          "line": 17,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "users",
+          "operation": "read",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "users",
+          "operation": "read",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/auth/profile",
+      "file": "apps\\api-server\\src\\app\\api\\auth\\profile\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 198,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 198,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 372,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 372,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 201,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 202,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 375,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 376,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "write",
+          "line": 393,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "write",
+          "line": 395,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "write",
+          "line": 411,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "users",
+          "operation": "read",
+          "line": 216,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "users",
+          "operation": "read",
+          "line": 217,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/cron/cleanup-reports",
+      "file": "apps\\api-server\\src\\app\\api\\cron\\cleanup-reports\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 48,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 63,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 48,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 50,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 63,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 63,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/cron/pdf-health",
+      "file": "apps\\api-server\\src\\app\\api\\cron\\pdf-health\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 34,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/debug/sweep-stuck-reports",
+      "file": "apps\\api-server\\src\\app\\api\\debug\\sweep-stuck-reports\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 37,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 50,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/export/download",
+      "file": "apps\\api-server\\src\\app\\api\\export\\download\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 67,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 67,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 68,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/export/status/[jobId]",
+      "file": "apps\\api-server\\src\\app\\api\\export\\status\\[jobId]\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 316,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 316,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 317,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/export/urls",
+      "file": "apps\\api-server\\src\\app\\api\\export\\urls\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 77,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 101,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 116,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 77,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 101,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 101,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 116,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 118,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/export/workflow",
+      "file": "apps\\api-server\\src\\app\\api\\export\\workflow\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 130,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 62,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 130,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 131,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 138,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/factory/save",
+      "file": "apps\\api-server\\src\\app\\api\\factory\\save\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 131,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 145,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 171,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "read",
+          "line": 193,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questionSkills",
+          "operation": "write",
+          "line": 203,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 132,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 132,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 133,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 146,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 148,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 156,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 156,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 157,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 158,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/generate-report",
+      "file": "apps\\api-server\\src\\app\\api\\generate-report\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 75,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 103,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 75,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 76,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 77,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 103,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 103,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 103,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/notifications/mark-read",
+      "file": "apps\\api-server\\src\\app\\api\\notifications\\mark-read\\route.ts",
+      "methods": [
+        "PATCH"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 44,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 59,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "write",
+          "line": 47,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "write",
+          "line": 47,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "write",
+          "line": 62,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/notifications",
+      "file": "apps\\api-server\\src\\app\\api\\notifications\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 48,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "read",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "read-write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "read-write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "read-write",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "read-write",
+          "line": 48,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "read-write",
+          "line": 50,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/notifications/unread-count",
+      "file": "apps\\api-server\\src\\app\\api\\notifications\\unread-count\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 28,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "read",
+          "line": 30,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "read",
+          "line": 31,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/queue-report",
+      "file": "apps\\api-server\\src\\app\\api\\queue-report\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 74,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 102,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 134,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 146,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 163,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 265,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 273,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 74,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 75,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 102,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 103,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 146,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 147,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 158,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 164,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 166,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read-write",
+          "line": 265,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read-write",
+          "line": 266,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 273,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 273,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 135,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read",
+          "line": 142,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 247,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "read-write",
+          "line": 256,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "reports",
+          "operation": "write",
+          "line": 290,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/quiz/active",
+      "file": "apps\\api-server\\src\\app\\api\\quiz\\active\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 23,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 23,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 25,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 27,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/quiz/result",
+      "file": "apps\\api-server\\src\\app\\api\\quiz\\result\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 64,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 37,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 64,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 65,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/recommendations/explain",
+      "file": "apps\\api-server\\src\\app\\api\\recommendations\\explain\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 39,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/recommendations/history",
+      "file": "apps\\api-server\\src\\app\\api\\recommendations\\history\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/recommendations",
+      "file": "apps\\api-server\\src\\app\\api\\recommendations\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/report-status",
+      "file": "apps\\api-server\\src\\app\\api\\report-status\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 48,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 209,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 245,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 48,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 130,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 209,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 210,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 245,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 246,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/reports/download",
+      "file": "apps\\api-server\\src\\app\\api\\reports\\download\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 56,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 56,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 57,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/reports",
+      "file": "apps\\api-server\\src\\app\\api\\reports\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 84,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 84,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 85,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/search",
+      "file": "apps\\api-server\\src\\app\\api\\search\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "dbReadOnly",
+          "operation": "read-write",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "dbReadOnly",
+          "operation": "read",
+          "line": 68,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 53,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 53,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 75,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 80,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 80,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "read",
+          "line": 70,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "read",
+          "line": 71,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "read-write",
+          "line": 72,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 77,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 78,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 81,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 81,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "questions",
+          "operation": "write",
+          "line": 82,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 48,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 52,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 52,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 53,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 74,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 79,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 79,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 80,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 47,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 51,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 52,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 54,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 54,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 55,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 73,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 78,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 78,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 79,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/student-insight-pdf",
+      "file": "apps\\api-server\\src\\app\\api\\student-insight-pdf\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 102,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 44,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 100,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 102,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutor/help/request",
+      "file": "apps\\api-server\\src\\app\\api\\tutor\\help\\request\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 50,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 67,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 82,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 89,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 95,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notifications",
+          "operation": "write",
+          "line": 95,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 89,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 90,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 50,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 52,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 53,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 56,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorHelpRequests",
+          "operation": "read-write",
+          "line": 82,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userRecommendations",
+          "operation": "read",
+          "line": 67,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userRecommendations",
+          "operation": "read-write",
+          "line": 69,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userRecommendations",
+          "operation": "write",
+          "line": 70,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutor/notes/download",
+      "file": "apps\\api-server\\src\\app\\api\\tutor\\notes\\download\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutor/notes/view",
+      "file": "apps\\api-server\\src\\app\\api\\tutor\\notes\\view\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "notesAccessLogs",
+          "operation": "write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 46,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 47,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userRecommendations",
+          "operation": "read",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userRecommendations",
+          "operation": "read",
+          "line": 37,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userRecommendations",
+          "operation": "read",
+          "line": 38,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutorial/interactions/code",
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\code\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 34,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 87,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 99,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "codeInteractions",
+          "operation": "write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "codeInteractions",
+          "operation": "read",
+          "line": 89,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "codeInteractions",
+          "operation": "read",
+          "line": 92,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "codeInteractions",
+          "operation": "read",
+          "line": 93,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "codeInteractions",
+          "operation": "read",
+          "line": 101,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "codeInteractions",
+          "operation": "read",
+          "line": 104,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutorial/interactions/completion",
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\completion\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 34,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 111,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sectionCompletions",
+          "operation": "read",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sectionCompletions",
+          "operation": "read",
+          "line": 39,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sectionCompletions",
+          "operation": "write",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sectionCompletions",
+          "operation": "write",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sectionCompletions",
+          "operation": "write",
+          "line": 61,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sectionCompletions",
+          "operation": "read",
+          "line": 113,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "sectionCompletions",
+          "operation": "read",
+          "line": 116,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutorial/interactions/practice",
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\practice\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 105,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "practiceTestAnswers",
+          "operation": "read-write",
+          "line": 38,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "practiceTestAnswers",
+          "operation": "read-write",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "practiceTestAnswers",
+          "operation": "write",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "practiceTestAnswers",
+          "operation": "write",
+          "line": 50,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "practiceTestAnswers",
+          "operation": "read",
+          "line": 107,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "practiceTestAnswers",
+          "operation": "read",
+          "line": 110,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutorial/interactions/quiz",
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\quiz\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 104,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "quizAnswers",
+          "operation": "read-write",
+          "line": 38,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "quizAnswers",
+          "operation": "read-write",
+          "line": 41,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "quizAnswers",
+          "operation": "write",
+          "line": 42,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "quizAnswers",
+          "operation": "write",
+          "line": 50,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "quizAnswers",
+          "operation": "read",
+          "line": 106,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "quizAnswers",
+          "operation": "read",
+          "line": 109,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutorial/interactions/visual",
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\visual\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 34,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 86,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 98,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "visualInteractions",
+          "operation": "write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "visualInteractions",
+          "operation": "read",
+          "line": 88,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "visualInteractions",
+          "operation": "read",
+          "line": 91,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "visualInteractions",
+          "operation": "read",
+          "line": 92,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "visualInteractions",
+          "operation": "read",
+          "line": 100,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "visualInteractions",
+          "operation": "read",
+          "line": 103,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/tutorial/progress",
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\progress\\route.ts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "TutorialProgressRepository",
+          "operation": "read",
+          "line": 79,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "api-server",
+      "routePath": "/api/workflows/pdf-report",
+      "file": "apps\\api-server\\src\\app\\api\\workflows\\pdf-report\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 83,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 91,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read",
+          "line": 44,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 49,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read-write",
+          "line": 83,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "read-write",
+          "line": 84,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 91,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "exams",
+          "operation": "write",
+          "line": 91,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "realtutorialhub-web",
+      "routePath": "/api/ai-tutor/query",
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\ai-tutor\\query\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "STANDARD_QUERY_TIMEOUT",
+          "operation": "read",
+          "line": 79,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "STANDARD_QUERY_TIMEOUT",
+          "operation": "read",
+          "line": 86,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "withTimeout",
+          "operation": "read",
+          "line": 77,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "withTimeout",
+          "operation": "read",
+          "line": 84,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "realtutorialhub-web",
+      "routePath": "/api/certificates/verify/[verificationCode]",
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\certificates\\verify\\[verificationCode]\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialDb",
+          "operation": "read-write",
+          "line": 24,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "read-write",
+          "line": 26,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "read-write",
+          "line": 27,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "read-write",
+          "line": 27,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "coreDb",
+          "operation": "read",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "userProfiles",
+          "operation": "read",
+          "line": 36,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "realtutorialhub-web",
+      "routePath": "/api/workers/award-project-badge",
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\award-project-badge\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "ProjectRepository",
+          "operation": "read",
+          "line": 65,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 75,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialProjectSubmissions",
+          "operation": "read-write",
+          "line": 80,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialProjectSubmissions",
+          "operation": "read",
+          "line": 85,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "withTimeout",
+          "operation": "read-write",
+          "line": 66,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "withTimeout",
+          "operation": "read-write",
+          "line": 78,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "STANDARD_QUERY_TIMEOUT",
+          "operation": "read-write",
+          "line": 68,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "STANDARD_QUERY_TIMEOUT",
+          "operation": "read",
+          "line": 86,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "realtutorialhub-web",
+      "routePath": "/api/workers/issue-certificate",
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\issue-certificate\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "read-write",
+          "line": 59,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "read-write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "read-write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "certificates",
+          "operation": "write",
+          "line": 72,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "read-write",
+          "line": 57,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 69,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "withTimeout",
+          "operation": "read-write",
+          "line": 56,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "withTimeout",
+          "operation": "write",
+          "line": 70,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "STANDARD_QUERY_TIMEOUT",
+          "operation": "write",
+          "line": 61,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "STANDARD_QUERY_TIMEOUT",
+          "operation": "write",
+          "line": 86,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "realtutorialhub-web",
+      "routePath": "/api/workers/review-project",
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\review-project\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "ProjectRepository",
+          "operation": "read",
+          "line": 64,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "db",
+          "operation": "write",
+          "line": 100,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "withTimeout",
+          "operation": "read",
+          "line": 66,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "withTimeout",
+          "operation": "read",
+          "line": 71,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "STANDARD_QUERY_TIMEOUT",
+          "operation": "read",
+          "line": 68,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "STANDARD_QUERY_TIMEOUT",
+          "operation": "read",
+          "line": 73,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/domains/batch-delete",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\batch-delete\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 13,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 15,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/domains",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 6,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 6,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read-write",
+          "line": 22,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read-write",
+          "line": 25,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read-write",
+          "line": 28,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 30,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 51,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 66,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 85,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 107,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 109,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read-write",
+          "line": 129,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 147,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 148,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 151,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 155,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 156,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 9,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 54,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 88,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read-write",
+          "line": 132,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/domains/[id]",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\[id]\\route.ts",
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 19,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 19,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 9,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/skills/batch-delete",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\batch-delete\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 13,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 15,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/skills",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 8,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 31,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read-write",
+          "line": 81,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 15,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 24,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 25,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 39,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 69,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "read-write",
+          "line": 69,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 89,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 89,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 93,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 93,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/skills/[id]",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\[id]\\route.ts",
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 19,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 19,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "skills",
+          "operation": "write",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/subjects/batch-delete",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\batch-delete\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 13,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 15,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/subjects",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read-write",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 8,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 60,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read-write",
+          "line": 110,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 18,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 22,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 26,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 31,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 34,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 37,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 54,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 68,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 95,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 95,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 121,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 121,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 122,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 124,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 124,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/subjects/[id]",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\[id]\\route.ts",
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 19,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 19,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/subtopics/batch-delete",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\batch-delete\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 13,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 15,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/subtopics",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 23,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 28,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 28,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 8,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 61,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read-write",
+          "line": 112,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 22,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 27,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 27,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 28,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read",
+          "line": 15,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read-write",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "read-write",
+          "line": 20,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 25,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 26,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 30,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 55,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 69,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 100,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 100,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 120,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 120,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 124,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 124,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 21,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 26,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 26,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 27,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/subtopics/[id]",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\[id]\\route.ts",
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 34,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 21,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 21,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subtopics",
+          "operation": "write",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/topics/batch-delete",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\batch-delete\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 1,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 12,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 13,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 15,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/topics",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\route.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "read-write",
+          "line": 22,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 26,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "domains",
+          "operation": "write",
+          "line": 26,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read",
+          "line": 8,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 53,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read-write",
+          "line": 104,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "read-write",
+          "line": 21,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 25,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 25,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "subjects",
+          "operation": "write",
+          "line": 26,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read",
+          "line": 2,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 15,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 16,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 20,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 24,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 25,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 28,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 47,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 61,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 93,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "read-write",
+          "line": 93,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 112,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 112,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 116,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 116,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/admin/topics/[id]",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\[id]\\route.ts",
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "write",
+          "line": 51,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 38,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 38,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 52,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "topics",
+          "operation": "write",
+          "line": 52,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/tutorial-composer/sections",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\route.ts",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialComposerService",
+          "operation": "write",
+          "line": 141,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialComposerService",
+          "operation": "read",
+          "line": 239,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/tutorial-composer/sections/[sectionId]/blocks",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\blocks\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialComposerService",
+          "operation": "read",
+          "line": 110,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/tutorial-composer/sections/[sectionId]/publish",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\publish\\route.ts",
+      "methods": [
+        "POST"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialComposerService",
+          "operation": "read",
+          "line": 108,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/tutorial-composer/sections/[sectionId]",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\route.ts",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialComposerService",
+          "operation": "read",
+          "line": 105,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialComposerService",
+          "operation": "read",
+          "line": 174,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialComposerService",
+          "operation": "write",
+          "line": 212,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialComposerService",
+          "operation": "read",
+          "line": 281,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/tutorial-left-sidebar/hierarchy",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\hierarchy\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcDomains",
+          "operation": "read-write",
+          "line": 29,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcDomains",
+          "operation": "read-write",
+          "line": 29,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcDomains",
+          "operation": "read-write",
+          "line": 29,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcDomains",
+          "operation": "read-write",
+          "line": 29,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "getDb",
+          "operation": "read-write",
+          "line": 27,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcSubjects",
+          "operation": "read-write",
+          "line": 30,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcSubjects",
+          "operation": "read-write",
+          "line": 30,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcSubjects",
+          "operation": "read-write",
+          "line": 30,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcSubjects",
+          "operation": "read-write",
+          "line": 30,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcTopics",
+          "operation": "read-write",
+          "line": 31,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcTopics",
+          "operation": "read-write",
+          "line": 31,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcTopics",
+          "operation": "read-write",
+          "line": 31,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcTopics",
+          "operation": "read-write",
+          "line": 31,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcSubtopics",
+          "operation": "read-write",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcSubtopics",
+          "operation": "read-write",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcSubtopics",
+          "operation": "read-write",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "shcSubtopics",
+          "operation": "write",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    },
+    {
+      "service": "skillhubcore-admin",
+      "routePath": "/api/tutorial-left-sidebar/navigation-nodes",
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\navigation-nodes\\route.ts",
+      "methods": [
+        "GET"
+      ],
+      "databaseCount": 1,
+      "databases": [
+        "quiz_platform_prod"
+      ],
+      "operations": [
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialDb",
+          "operation": "read",
+          "line": 10,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialDb",
+          "operation": "read",
+          "line": 32,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialDb",
+          "operation": "read",
+          "line": 43,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialSidebarTreesV2",
+          "operation": "read",
+          "line": 10,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialSidebarTreesV2",
+          "operation": "read",
+          "line": 45,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialSidebarTreesV2",
+          "operation": "read",
+          "line": 47,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialSubtopics",
+          "operation": "read",
+          "line": 10,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialSubtopics",
+          "operation": "read",
+          "line": 33,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialSubtopics",
+          "operation": "read",
+          "line": 34,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        },
+        {
+          "database": "quiz_platform_prod",
+          "symbol": "tutorialSubtopics",
+          "operation": "read",
+          "line": 35,
+          "confidence": "STATIC_QUERY_CONTEXT"
+        }
+      ],
+      "executionPattern": "SINGLE_DATABASE",
+      "executionConfidence": "STATIC_EXECUTION_ANALYSIS",
+      "confidence": "STATIC_REQUEST_FLOW"
+    }
+  ],
+  "confidenceLevel": "STATIC_REQUEST_FLOW",
+  "limitations": [
+    "Static source analysis does not prove runtime execution.",
+    "Detected routes may not be invoked in production.",
+    "Detected imports may not be used on every request.",
+    "Execution classification is source-structure evidence only.",
+    "Promise.all detection does not prove simultaneous database execution.",
+    "Await ordering does not prove actual database latency.",
+    "No connection-pool behavior is measured.",
+    "No network latency is measured.",
+    "No production traffic is measured.",
+    "Runtime tracing is required for definitive performance evidence."
+  ]
+}
