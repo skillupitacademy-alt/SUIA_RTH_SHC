@@ -10,6 +10,7 @@ export interface PromptContext {
   subjectName: string;
   topicName: string;
   subtopicName: string;
+  navigationNodeName: string;
   blockName: string;
   versionName: string;
   versionId: string;
@@ -19,7 +20,7 @@ export interface PromptContext {
  * Generate the AI prompt for S1 summary block content generation
  */
 export function getSummaryS1Prompt(context: PromptContext): string {
-  const { domainName, subjectName, topicName, subtopicName, blockName, versionName, versionId } = context;
+  const { domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName, versionId } = context;
   
   return `You are generating educational content for a tutorial platform.
 
@@ -28,9 +29,13 @@ export function getSummaryS1Prompt(context: PromptContext): string {
 - Subject: ${subjectName}
 - Topic: ${topicName}
 - Subtopic: ${subtopicName}
+- Navigation Node: ${navigationNodeName}
 - Block: ${blockName}
 - Version: ${versionName}
 
 # OUTPUT REQUIREMENTS
-Generate valid, production-ready summary (${versionId.toUpperCase()}) content conforming strictly to the official platform schema without system metadata or styling fields.`;
+Generate valid, production-ready summary (${versionId.toUpperCase()}) content conforming strictly to the official platform schema without system metadata or styling fields.
+
+# PROHIBITED SYSTEM METADATA
+Do NOT include id, blockId, navigationNodeId, version, domainId, subjectId, topicId, subtopicId, brandId, theme, status, publishedAt, or schemaVersion.`;
 }

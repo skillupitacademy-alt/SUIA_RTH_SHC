@@ -472,6 +472,7 @@ export function TutorialPageContentBuilderClient() {
               subjectName={subjectName}
               topicName={topicName}
               subtopicName={subtopicName}
+              navigationNodeName={navigationNodes.find(n => n.id === form.navigationNodeId)?.name ?? ''}
               blockName={currentBlockConfig.label}
               versionName={selectedVersion.label}
               blockType={form.blockType}

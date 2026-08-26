@@ -10,6 +10,7 @@ export interface PromptContext {
   subjectName: string;
   topicName: string;
   subtopicName: string;
+  navigationNodeName: string;
   blockName: string;
   versionName: string;
 }
@@ -18,7 +19,7 @@ export interface PromptContext {
  * Generate the AI prompt for D1 definition block content generation
  */
 export function getDefinitionD1Prompt(context: PromptContext): string {
-  const { domainName, subjectName, topicName, subtopicName, blockName, versionName } = context;
+  const { domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName } = context;
   
   return `You are generating educational content for a tutorial platform.
 
@@ -27,6 +28,7 @@ export function getDefinitionD1Prompt(context: PromptContext): string {
 - Subject: ${subjectName}
 - Topic: ${topicName}
 - Subtopic: ${subtopicName}
+- Navigation Node: ${navigationNodeName}
 - Block: ${blockName}
 - Version: ${versionName}
 
@@ -37,7 +39,7 @@ Return ONLY a valid JSON object matching this exact schema:
   "page": {
     "type": "definition",
     "category": "${topicName}",
-    "title": "What Is ${subtopicName}?",
+    "title": "What Is ${navigationNodeName}?",
     "intro": "A concise 1-2 sentence learner-friendly introduction.",
     "definition": "Authoritative, technically accurate conceptual definition.",
     "explanation": [
@@ -71,5 +73,5 @@ Return ONLY a valid JSON object matching this exact schema:
 4. The platform renderer automatically handles responsive presentation (1 col mobile, 2 col tablet, 3-4 col desktop). Do NOT include CSS, column numbers, or layout metadata in the JSON.
 
 # PROHIBITED SYSTEM METADATA
-Do NOT include id, blockId, version, domainId, subjectId, topicId, subtopicId, brandId, theme, status, publishedAt, or schemaVersion.`;
+Do NOT include id, blockId, navigationNodeId, version, domainId, subjectId, topicId, subtopicId, brandId, theme, status, publishedAt, or schemaVersion.`;
 }

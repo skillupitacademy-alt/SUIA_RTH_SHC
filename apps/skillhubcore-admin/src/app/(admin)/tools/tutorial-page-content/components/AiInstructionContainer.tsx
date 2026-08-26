@@ -19,6 +19,7 @@ interface AiInstructionContainerProps {
   subjectName: string;
   topicName: string;
   subtopicName: string;
+  navigationNodeName: string;
   blockName: string;
   versionName: string;
   blockType: TutorialPageContentType;
@@ -30,6 +31,7 @@ export function AiInstructionContainer({
   subjectName,
   topicName,
   subtopicName,
+  navigationNodeName,
   blockName,
   versionName,
   blockType,
@@ -44,6 +46,7 @@ export function AiInstructionContainer({
       subjectName,
       topicName,
       subtopicName,
+      navigationNodeName,
       blockName,
       versionName,
       versionId,
@@ -69,12 +72,13 @@ export function AiInstructionContainer({
 - Subject: ${subjectName}
 - Topic: ${topicName}
 - Subtopic: ${subtopicName}
+- Navigation Node: ${navigationNodeName}
 - Block: ${blockName}
 - Version: ${versionName}
 
 # OUTPUT REQUIREMENTS
 Generate valid, production-ready ${blockType} (${versionId.toUpperCase()}) content conforming strictly to the official platform schema without system metadata or styling fields.`;
-  }, [domainName, subjectName, topicName, subtopicName, blockName, versionName, blockType, versionId]);
+  }, [domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName, blockType, versionId]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(promptText);
@@ -144,9 +148,17 @@ Generate valid, production-ready ${blockType} (${versionId.toUpperCase()}) conte
           {topicName}
         </span>
         <span className="text-slate-400">›</span>
-        <span className="rounded bg-indigo-600 text-white px-2 py-0.5 font-bold">
+        <span className="rounded bg-white border border-indigo-100 px-2 py-0.5 font-bold text-indigo-900">
           {subtopicName}
         </span>
+        {navigationNodeName && (
+          <>
+            <span className="text-slate-400">›</span>
+            <span className="rounded bg-indigo-600 text-white px-2 py-0.5 font-bold">
+              {navigationNodeName}
+            </span>
+          </>
+        )}
         <span className="text-slate-400">›</span>
         <span className="rounded bg-white border border-indigo-200 px-2 py-0.5 font-bold text-indigo-700">
           {blockName}
