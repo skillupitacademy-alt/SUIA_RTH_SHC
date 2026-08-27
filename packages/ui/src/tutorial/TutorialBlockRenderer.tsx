@@ -44,7 +44,7 @@ function NestingLimitState({ depth }: { depth: number }) {
   );
 }
 
-export function TutorialBlockRenderer({ block, depth = 0, theme, className = '' }: BlockComponentProps) {
+export function TutorialBlockRenderer({ block, depth = 0, theme, className = '', runtimeContext }: BlockComponentProps) {
   if (!block || !block.type) {
     return null;
   }
@@ -54,14 +54,24 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '' 
     return <NestingLimitState depth={depth} />;
   }
 
+  // Phase 2.5: Create renderChild with runtime context propagation
+  const renderChild = (childBlock: TutorialBlock, childDepth: number) => (
+    <TutorialBlockRenderer 
+      block={childBlock} 
+      depth={childDepth} 
+      theme={theme}
+      runtimeContext={runtimeContext}
+    />
+  );
+
   try {
     switch (block.type) {
       case 'heading':
-        return <HeadingBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <HeadingBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'paragraph':
-        return <ParagraphBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <ParagraphBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'list':
-        return <ListBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <ListBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'code': {
         // Code C1 is the only supported version
         if (!('version' in block) || block.version !== 'C1') {
@@ -71,34 +81,34 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '' 
         }
         
         // CodeC1Block - use versioned renderer
-        return <CodeC1Block block={block as any} depth={depth} theme={theme} className={className} />;
+        return <CodeC1Block block={block as any} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       }
       case 'table':
-        return <TableBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <TableBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'image':
-        return <ImageBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <ImageBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'callout':
-        return <CalloutBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <CalloutBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'definition':
-        return <DefinitionBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <DefinitionBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'example':
-        return <ExampleBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <ExampleBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'quote':
-        return <QuoteBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <QuoteBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'summary':
-        return <SummaryBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <SummaryBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'diagram':
-        return <DiagramBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <DiagramBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'comparison':
-        return <ComparisonBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <ComparisonBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'two-column':
-        return <TwoColumnBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <TwoColumnBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'three-column':
-        return <ThreeColumnBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <ThreeColumnBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'card-grid':
-        return <CardGridBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <CardGridBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'timeline':
-        return <TimelineBlock block={block} depth={depth} theme={theme} className={className} />;
+        return <TimelineBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       default: {
         const _exhaustiveCheck: never = block;
         return <UnknownBlockState type={(_exhaustiveCheck as any)?.type || 'unknown'} />;

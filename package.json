@@ -74,8 +74,16 @@
     "validate:ssr": "node scripts/test-ssr-auth-flow.js",
     "validate:deployment": "node scripts/validate-deployment-ready.js",
     "validate:phase2b": "tsx scripts/validate-phase2b.ts",
+
+    "assurance:tutorial-v2:e2e": "node scripts/assurance/tutorial-v2-auth-http.e2e.mjs",
     "audit:tutorial-section-validation": "tsx scripts/audit-tutorial-section-validation.ts",
     "validate:cloudrun-coverage": "node scripts/verify-cloudrun-coverage.mjs",
+
+    "tutorial:phase25:static": "node scripts/tutorial/phase-25-runtime-assurance.js",
+    "tutorial:phase25:contract": "node scripts/tutorial/phase-25/phase-25-runtime-contract-test.js",
+    "tutorial:phase25:routes": "node scripts/tutorial/phase-25/phase-25-route-test.js",
+    "tutorial:phase25:progress": "node scripts/tutorial/phase-25/phase-25-progress-test.js",
+    "tutorial:phase25:runtime": "node scripts/tutorial/phase-25/phase-25-runtime-suite.js",
 
     "check:localhost": "node scripts/no-localhost-check.js",
     "verify:css-isolation": "node scripts/verify-css-isolation.mjs",

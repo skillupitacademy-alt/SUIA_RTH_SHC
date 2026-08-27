@@ -1,21 +1,81 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import type { TutorialPagePayload } from '@quiz/types';
+import type { TutorialRuntimeContext } from '../runtime/TutorialRuntimeContext';
 import { TutorialBlockRenderer } from '@quiz/ui';
 import { TutorialCodeContent } from './TutorialCodeContent';
 import { TutorialDefinitionContent } from './TutorialDefinitionContent';
 import { TutorialSummaryContent } from './TutorialSummaryContent';
 import { TutorialLeftSidebar } from './TutorialLeftSidebar';
 import { TutorialFooterNavigation, TutorialHeader } from './TutorialPageChrome';
+import { trackTutorialEvent } from '../runtime/tutorialTrackingService';
 
 interface TutorialPageShellProps {
   payload: TutorialPagePayload;
+  runtimeContext: TutorialRuntimeContext;
 }
 
-export function TutorialPageShell({ payload }: TutorialPageShellProps) {
+export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [completedUrls, setCompletedUrls] = useState<Set<string> | undefined>(undefined);
+
+  // Phase 2.5: Fetch learner progress and compute completed URLs
+  useEffect(() => {
+    async function loadProgress() {
+      try {
+        const { getTutorialProgress } = await import('../runtime/tutorialTrackingService');
+        const progress = await getTutorialProgress(
+          runtimeContext.learnerId,
+          runtimeContext.hierarchy.subtopicId
+        );
+
+        if (!progress) {
+          setCompletedUrls(new Set());
+          return;
+        }
+
+        // Map completed blocks to navigation URLs
+        // Currently blocks are tracked by blockType (e.g. 'definition', 'code', 'summary')
+        // **ARCHITECTURAL BLOCKER:**
+        // Current backend only persists (userId, subtopicId, blockType[])
+        // Missing: navigationNodeId, sectionId, blockId, blockVersion
+        //
+        // Cannot map blockType to navigationNodeId (different identity domains)
+        // Cannot use array-based completion check - identity violation
+        //
+        // BLOCKED: Sidebar navigation-node progress requires backend migration
+        // See: .analysis/phase-25-runtime-completion-report.md
+        //
+        // For now: Mark nothing as complete until backend migration
+        const completedSet = new Set<string>();
+        
+        // TODO (future backend phase): Replace with real navigation-node progress
+        // Requires: GET /api/tutorial/progress?navigationNodeId=...
+        // Returns: { navigationNodeId, completedBlockIds[], sectionProgress }
+        
+        setCompletedUrls(completedSet);
+      } catch (error) {
+        console.error('[Tutorial Progress] Failed to load progress:', error);
+        setCompletedUrls(new Set());
+      }
+    }
+
+    void loadProgress();
+  }, [runtimeContext.learnerId, runtimeContext.hierarchy.subtopicId, payload.sidebar.topics]);
+
+  // Phase 2.5: Track page view event (async, non-blocking)
+  useEffect(() => {
+    // Fire-and-forget tracking (failure-isolated)
+    void trackTutorialEvent({
+      eventType: 'page_view',
+      learnerId: runtimeContext.learnerId,
+      navigationNodeId: runtimeContext.navigationNodeId,
+      sectionId: runtimeContext.sectionId,
+      subtopicId: runtimeContext.hierarchy.subtopicId, // Required for persistence
+    });
+  }, [runtimeContext.learnerId, runtimeContext.navigationNodeId, runtimeContext.sectionId, runtimeContext.hierarchy.subtopicId]);
 
   // V2 Architecture: Render blocks[] when available
   const hasBlocks = payload.content.blocks && payload.content.blocks.length > 0;
@@ -25,6 +85,18 @@ export function TutorialPageShell({ payload }: TutorialPageShellProps) {
     payload.content.definition || 
     payload.content.code || 
     payload.content.summary;
+
+  // Phase 2.5: Prepare block runtime context for universal rendering
+  // This provides tracking/identity boundary without modifying block content schemas
+  const createBlockRuntimeContext = (blockId: string, blockType: string, blockVersion: string): import('../runtime/TutorialRuntimeContext').TutorialBlockRuntimeContext => ({
+    learnerId: runtimeContext.learnerId,
+    navigationNodeId: runtimeContext.navigationNodeId,
+    sectionId: runtimeContext.sectionId,
+    blockId,
+    blockType,
+    blockVersion,
+    subtopicId: runtimeContext.hierarchy.subtopicId,
+  });
 
   return (
     <main className="min-h-screen bg-white">
@@ -37,20 +109,45 @@ export function TutorialPageShell({ payload }: TutorialPageShellProps) {
       />
       <div className="flex w-full min-w-0 gap-0 bg-white">
         {isSidebarOpen && (
-          <TutorialLeftSidebar tree={payload.sidebar} activeUrl={payload.activeUrl} />
+          <TutorialLeftSidebar 
+            tree={payload.sidebar} 
+            activeUrl={payload.activeUrl}
+            // Phase 2.5: Pass actual completed URLs from learner progress
+            completedUrls={completedUrls}
+            // Phase 2.5: onNavigate can be used for client-side tracking
+            onNavigate={(url, node) => {
+              // Navigation handled by Next.js Link/router
+              // Track navigation intent if needed
+              console.log('[Tutorial Navigation]', { url, nodeId: node.id, nodeName: node.name });
+            }}
+          />
         )}
         <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
           <div className="w-full space-y-6">
             {hasBlocks ? (
               // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
-              payload.content.blocks.map((block) => (
-                <TutorialBlockRenderer
-                  key={block.id}
-                  block={block}
-                  theme={payload.theme}
-                  depth={0}
-                />
-              ))
+              payload.content.blocks.map((block) => {
+                // Phase 2.5: Construct block runtime context for each block
+                // Type-safe version extraction without unsafe cast
+                const blockVersion = ('version' in block && typeof block.version === 'string') 
+                  ? block.version 
+                  : 'unversioned';
+                const blockRuntimeContext = createBlockRuntimeContext(
+                  block.id,
+                  block.type,
+                  blockVersion
+                );
+                
+                return (
+                  <TutorialBlockRenderer
+                    key={block.id}
+                    block={block}
+                    theme={payload.theme}
+                    depth={0}
+                    runtimeContext={blockRuntimeContext}
+                  />
+                );
+              })
             ) : hasLegacyContent ? (
               // Temporary Legacy Fallback: Render old content structure
               <>

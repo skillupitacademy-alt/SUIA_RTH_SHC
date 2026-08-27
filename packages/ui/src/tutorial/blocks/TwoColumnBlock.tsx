@@ -42,20 +42,14 @@ export function TwoColumnBlock({
   }
 
   const renderBlockItem = (childBlock: TutorialBlock, idx: number, prefix: string) => {
-    if (renderChild) {
-      return (
-        <React.Fragment key={childBlock.id || `${prefix}-${idx}`}>
-          {renderChild(childBlock, depth + 1)}
-        </React.Fragment>
-      );
+    // Phase 2.5: Always use renderChild (provided by parent renderer with runtimeContext)
+    if (!renderChild) {
+      throw new Error('TwoColumnBlock requires renderChild prop for runtime context propagation');
     }
     return (
-      <TutorialBlockRenderer
-        key={childBlock.id || `${prefix}-${idx}`}
-        block={childBlock}
-        depth={depth + 1}
-        theme={theme}
-      />
+      <React.Fragment key={childBlock.id || `${prefix}-${idx}`}>
+        {renderChild(childBlock, depth + 1)}
+      </React.Fragment>
     );
   };
 

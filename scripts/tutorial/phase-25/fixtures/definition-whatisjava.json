@@ -1,0 +1,40 @@
+{
+  "page": {
+    "type": "definition",
+    "category": "Java",
+    "title": "What Is Java?",
+    "intro": "Java is a high-level, object-oriented programming language designed to be platform-independent and secure for building robust enterprise applications.",
+    "definition": "Java is a programming language and computing platform developed by Sun Microsystems (now Oracle) that follows the principle of 'Write Once, Run Anywhere' (WORA). Compiled Java code (bytecode) runs on any system equipped with a Java Virtual Machine (JVM), making it one of the most widely adopted languages for enterprise development, Android applications, web servers, and big data processing.",
+    "explanation": [
+      "At its core, Java is built on the concept of Object-Oriented Programming (OOP), which organizes software around data (objects) rather than functions. This approach promotes modularity, code reuse, and scalability. The JVM abstracts the underlying hardware, allowing developers to write code once and deploy it across Windows, macOS, Linux, and other platforms without modification.",
+      "Java's ecosystem includes a vast standard library (Java API) that provides ready-to-use components for networking, I/O, database connectivity, and more. Its automatic garbage collection manages memory allocation and deallocation, reducing manual memory errors. These features, combined with strong type-checking, exception handling, and built-in security mechanisms, make Java a trusted choice for mission-critical systems in banking, e-commerce, and scientific computing."
+    ],
+    "example": {
+      "language": "java",
+      "code": "public class HelloWorld {\n    public static void main(String[] args) {\n        // Prints the classic greeting\n        System.out.println(\"Hello, World!\");\n    }\n}"
+    },
+    "characteristics": [
+      {
+        "icon": "○",
+        "title": "Platform Independence",
+        "description": "Java source code compiles to bytecode, which runs on any system with a Java Virtual Machine (JVM) — regardless of operating system or hardware architecture."
+      },
+      {
+        "icon": "◆",
+        "title": "Object-Oriented Design",
+        "description": "Java models real-world entities as objects, supporting inheritance, polymorphism, encapsulation, and abstraction to create modular, reusable, and maintainable code."
+      },
+      {
+        "icon": "✎",
+        "title": "Automatic Memory Management",
+        "description": "The JVM's garbage collector automatically handles memory allocation and deallocation, freeing developers from manual memory management and reducing common errors like memory leaks."
+      },
+      {
+        "icon": "↗",
+        "title": "Robust Security Features",
+        "description": "Java enforces strict type-checking, bytecode verification, and security policies that prevent unauthorized access and protect against malicious code execution."
+      }
+    ],
+    "takeaway": "Java is a powerful, platform-independent, object-oriented language with automatic memory management and robust security features, making it the foundation of countless enterprise-scale applications and systems worldwide."
+  }
+}

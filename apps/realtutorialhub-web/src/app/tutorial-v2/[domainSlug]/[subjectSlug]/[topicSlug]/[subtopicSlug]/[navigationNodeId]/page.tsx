@@ -1,8 +1,11 @@
 import { notFound, redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { cookies, headers as nextHeaders } from 'next/headers';
 
 import { TutorialPageShell } from '@/share-branding/LearningExperience/components/TutorialPageShell';
-import { getPublishedTutorialPagePayload } from '@/share-branding/LearningExperience/tutorialSidebarDelivery';
+import { 
+  resolveRuntimeContext, 
+  extractLearnerIdFromHeaders 
+} from '@/share-branding/LearningExperience/runtime/tutorialRuntimeResolver';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,15 +33,23 @@ export default async function TutorialV2SubtopicPage({ params }: PageProps) {
   }
 
   // NOTE: proxy.ts middleware already validated the token and added user headers
-  // We don't need to re-verify the token here since middleware did it
-  // The presence of accessToken cookie is sufficient (middleware already checked validity)
+  // Extract learnerId from middleware-added headers
+  const headersList = await nextHeaders();
+  const learnerId = extractLearnerIdFromHeaders(headersList);
 
-  const payload = await getPublishedTutorialPagePayload({
+  if (!learnerId) {
+    // Authentication headers missing - redirect to login
+    redirect(`/login?redirect=${encodeURIComponent(currentPath)}`);
+  }
+
+  // Phase 2.5: Resolve runtime context (reuses existing delivery logic)
+  const result = await resolveRuntimeContext({
     brandId: 'realtutorialhub',
+    learnerId,
     ...resolved,
   });
 
-  if (!payload) {
+  if (!result.success) {
     notFound();
   }
 
@@ -53,11 +64,8 @@ export default async function TutorialV2SubtopicPage({ params }: PageProps) {
    * - Developer iteration (create navigation structure before content)
    * - Incremental publishing (0/18 → 1/18 → ... → 18/18)
    * 
-   * Removed previous check:
-   * if (!payload.content?.blocks || payload.content.blocks.length === 0) {
-   *   notFound(); // This prevented empty state from rendering
-   * }
+   * Phase 2.5: Runtime context now available for tracking/progress
    */
 
-  return <TutorialPageShell payload={payload} />;
+  return <TutorialPageShell payload={result.payload} runtimeContext={result.context} />;
 }

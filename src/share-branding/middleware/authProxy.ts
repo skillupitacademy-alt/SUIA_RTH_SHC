@@ -25,6 +25,7 @@ const PUBLIC_PREFIXES = ['/verify', '/api/programs', '/api/certificates/verify/'
 const PROTECTED_PREFIXES = [
   '/learn/',
   '/start-learning/',
+  '/tutorial-v2',
   '/api/tutorial/',
   '/api/ai-tutor/',
   '/remediation/',
@@ -265,27 +266,62 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
 
     // Handle protected routes with authenticated user
     if (isProtectedRoute(pathname)) {
-      if (user !== null && hasRequiredRole(user) === false) {
+      if (user === null) {
         if (isApiRoute) {
-          return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+          return NextResponse.json(
+            { error: 'Authentication required' },
+            { status: 401 },
+          );
         }
 
-        const response = NextResponse.redirect(getLoginUrl(request, redirectPath, options.brandLoginUrl));
+        return NextResponse.redirect(
+          getLoginUrl(request, redirectPath, options.brandLoginUrl),
+        );
+      }
+
+      if (hasRequiredRole(user) === false) {
+        if (isApiRoute) {
+          return NextResponse.json(
+            { error: 'Forbidden' },
+            { status: 403 },
+          );
+        }
+
+        const response = NextResponse.redirect(
+          getLoginUrl(request, redirectPath, options.brandLoginUrl),
+        );
+
         response.cookies.delete('accessToken');
         response.cookies.delete('refreshToken');
+
         return response;
       }
 
       const headers = new Headers(request.headers);
-      if (user !== null) {
-        headers.set('x-user-id', user.shadowUserId);
-        headers.set('x-shadow-user-id', user.shadowUserId);
-        headers.set('x-original-user-id', user.originalUserId);
+
+      headers.set('x-user-id', user.shadowUserId);
+      headers.set('x-shadow-user-id', user.shadowUserId);
+      headers.set('x-original-user-id', user.originalUserId);
+
+      if (pathname.startsWith('/tutorial-v2')) {
+        console.log(
+          '[TUTORIAL_AUTH_HEADERS]',
+          JSON.stringify({
+            pathname,
+            authenticated: true,
+            hasUserId: headers.has('x-user-id'),
+            hasShadowUserId: headers.has('x-shadow-user-id'),
+            hasOriginalUserId: headers.has('x-original-user-id'),
+            roles: user.roles,
+          }),
+        );
       }
 
-      return user !== null
-        ? addUserHeaders(NextResponse.next({ request: { headers } }), user)
-        : NextResponse.next({ request: { headers } });
+      return NextResponse.next({
+        request: {
+          headers,
+        },
+      });
     }
 
     return NextResponse.next();

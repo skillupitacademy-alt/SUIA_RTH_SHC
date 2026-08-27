@@ -166,6 +166,9 @@ export interface TutorialPagePayload {
     subtopic: { id: string; name: string; slug: string };
   };
   content: {
+    // Phase 2.5: Tutorial section identity (tutorial_sections.id)
+    // Null if content not created yet (valid state)
+    sectionId: string | null;
     // V2 Architecture: TutorialDocument.blocks[] preserved through delivery
     blocks: TutorialBlock[];
     // Legacy fields (deprecated, for backward compatibility only)

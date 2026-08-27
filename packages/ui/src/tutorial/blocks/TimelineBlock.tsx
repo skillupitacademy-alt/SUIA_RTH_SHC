@@ -13,20 +13,14 @@ export function TimelineBlock({
   const orientation = block.content?.orientation || 'vertical';
 
   const renderBlockItem = (childBlock: TutorialBlock, idx: number, bIdx: number) => {
-    if (renderChild) {
-      return (
-        <React.Fragment key={childBlock.id || `item-${idx}-b${bIdx}`}>
-          {renderChild(childBlock, depth + 1)}
-        </React.Fragment>
-      );
+    // Phase 2.5: Always use renderChild (provided by parent renderer with runtimeContext)
+    if (!renderChild) {
+      throw new Error('TimelineBlock requires renderChild prop for runtime context propagation');
     }
     return (
-      <TutorialBlockRenderer
-        key={childBlock.id || `item-${idx}-b${bIdx}`}
-        block={childBlock}
-        depth={depth + 1}
-        theme={theme}
-      />
+      <React.Fragment key={childBlock.id || `item-${idx}-b${bIdx}`}>
+        {renderChild(childBlock, depth + 1)}
+      </React.Fragment>
     );
   };
 

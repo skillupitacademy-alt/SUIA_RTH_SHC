@@ -2,8 +2,10 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import {
   dbHttp,
+  getTutorialDb,
   tutorialSidebarTreesV2,
   tutorialDeliveryService,
+  tutorialSubtopics,
 } from '@quiz/db-tutorial';
 import {
   domains as shcDomains,
@@ -38,7 +40,14 @@ export interface TutorialSidebarDeliveryPayload {
     domain: { id: string; name: string; slug: string };
     subject: { id: string; name: string; slug: string };
     topic: { id: string; name: string; slug: string };
-    subtopic: { id: string; name: string; slug: string };
+    subtopic: {
+      id: string;
+      name: string;
+      slug: string;
+      // Phase 2.6: Expose tutorial identity for explicit resolution
+      tutorialId?: string;
+      canonicalSlug?: string;
+    };
   };
 }
 
@@ -158,10 +167,11 @@ function flattenNavigation(nodes: TutorialNavigationNode[]): FlatNavigationItem[
 }
 
 function withTutorialV2Url(item: FlatNavigationItem, hierarchy: TutorialSidebarDeliveryPayload['hierarchy']): FlatNavigationItem {
-  // Phase 1: Include exact navigationNodeId in URL
+  // PHASE 2.6 FIX: Use canonical TutorialDB slug from hierarchy, NOT regenerated compact slug
+  // hierarchy.subtopic.slug is now the authoritative what-is-java-12efacf1, not whatisjava
   return {
     ...item,
-    url: `/tutorial-v2/${hierarchy.domain.slug}/${hierarchy.subject.slug}/${hierarchy.topic.slug}/${canonicalSubtopicSlug(item.slug || item.name)}/${item.id}`,
+    url: `/tutorial-v2/${hierarchy.domain.slug}/${hierarchy.subject.slug}/${hierarchy.topic.slug}/${hierarchy.subtopic.slug}/${item.id}`,
   };
 }
 
@@ -173,18 +183,20 @@ function isActiveNavigationItem(item: FlatNavigationItem, params: TutorialSideba
 async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
   console.log('[DELIVERY_TRACE] resolveHierarchy START', { domainSlug: params.domainSlug, subjectSlug: params.subjectSlug, topicSlug: params.topicSlug, subtopicSlug: params.subtopicSlug });
   
-  const db = getDb();
-  
-  // Log which database URL is being used
-  console.log('[DELIVERY_TRACE] Database connection', { 
-    DATABASE_URL: process.env.DATABASE_URL?.substring(0, 50) + '...',
-    DATABASE_URL_TUTORIAL: process.env.DATABASE_URL_TUTORIAL?.substring(0, 50) + '...'
-  });
-  
-  const domainRows = await db
-    .select()
-    .from(shcDomains)
-    .where(isNull(shcDomains.deletedAt));
+  try {
+    const db = getDb();
+    const tutorialDb = getTutorialDb();
+    
+    // Log which database URL is being used
+    console.log('[DELIVERY_TRACE] Database connection', { 
+      DATABASE_URL: process.env.DATABASE_URL?.substring(0, 50) + '...',
+      DATABASE_URL_TUTORIAL: process.env.DATABASE_URL_TUTORIAL?.substring(0, 50) + '...'
+    });
+    
+    const domainRows = await db
+      .select()
+      .from(shcDomains)
+      .where(isNull(shcDomains.deletedAt));
   const domain = domainRows.find((row) => matchesSlug(row.name, params.domainSlug));
 
   console.log('[DELIVERY_TRACE] Domain resolution', { found: !!domain, domainName: domain?.name });
@@ -234,6 +246,9 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     return null;
   }
 
+  // PHASE 2.5-F: Resolve subtopic via tutorial_subtopics.slug when curriculum match fails
+  // The URL may contain tutorial_subtopics.slug (e.g., 'what-is-java-12efacf1') 
+  // which includes the curriculum ID suffix and won't match curriculum subtopic names directly.
   const subtopicRows = await db
     .select()
     .from(shcSubtopics)
@@ -241,22 +256,115 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
       eq(shcSubtopics.topicId, topic.id),
       isNull(shcSubtopics.deletedAt)
     ));
-  const subtopic = subtopicRows.find((row) => matchesSlug(row.name, params.subtopicSlug));
+  let subtopic = subtopicRows.find((row) => matchesSlug(row.name, params.subtopicSlug));
 
-  console.log('[DELIVERY_TRACE] Subtopic resolution', { found: !!subtopic, subtopicName: subtopic?.name, subtopicId: subtopic?.id });
+  console.log('[DELIVERY_TRACE] Subtopic resolution (curriculum direct match)', { found: !!subtopic, subtopicName: subtopic?.name, subtopicId: subtopic?.id });
+
+  // If curriculum subtopic not found by name, try tutorial_subtopics.slug
+  // This handles URLs like /tutorial-v2/.../what-is-java-12efacf1/whatisjava
+  if (!subtopic) {
+    console.log('[DELIVERY_TRACE] Subtopic not found in curriculum, trying tutorial_subtopics.slug match');
+    
+    const [tutorialSubtopic] = await tutorialDb
+      .select({
+        id: tutorialSubtopics.id,
+        externalId: tutorialSubtopics.externalId,
+        name: tutorialSubtopics.name,
+        slug: tutorialSubtopics.slug,
+      })
+      .from(tutorialSubtopics)
+      .where(and(
+        eq(tutorialSubtopics.slug, params.subtopicSlug),
+        isNull(tutorialSubtopics.deletedAt)
+      ))
+      .limit(1);
+
+    if (tutorialSubtopic?.externalId) {
+      console.log('[DELIVERY_TRACE] Found tutorial_subtopics match', { 
+        tutorialSlug: tutorialSubtopic.slug, 
+        externalId: tutorialSubtopic.externalId 
+      });
+      
+      // Resolve back to curriculum subtopic via external_id
+      subtopic = subtopicRows.find((row) => row.id === tutorialSubtopic.externalId);
+      
+      console.log('[DELIVERY_TRACE] Resolved to curriculum subtopic via external_id', { 
+        found: !!subtopic, 
+        subtopicName: subtopic?.name, 
+        subtopicId: subtopic?.id 
+      });
+    }
+  }
 
   if (!subtopic) {
     console.log('[DELIVERY_TRACE] resolveHierarchy FAIL - subtopic not found');
     return null;
   }
 
+  // PHASE 2.6: Now resolve the authoritative TutorialDB identity
+  // This ensures we preserve the CANONICAL tutorial slug instead of regenerating it
+  const [tutorialSubtopicRecord] = await tutorialDb
+    .select({
+      id: tutorialSubtopics.id,
+      externalId: tutorialSubtopics.externalId,
+      name: tutorialSubtopics.name,
+      slug: tutorialSubtopics.slug,
+    })
+    .from(tutorialSubtopics)
+    .where(and(
+      eq(tutorialSubtopics.externalId, subtopic.id),
+      isNull(tutorialSubtopics.deletedAt)
+    ))
+    .limit(1);
+
+  if (!tutorialSubtopicRecord) {
+    console.log('[PHASE_2_6] TUTORIAL_SUBTOPIC_MAPPING_MISSING', {
+      curriculumSubtopicId: subtopic.id,
+    });
+    return null;
+  }
+
+  // PHASE 2.6: Verify identity invariant
+  if (tutorialSubtopicRecord.externalId !== subtopic.id) {
+    console.error('[PHASE_2_6] IDENTITY_INVARIANT_FAILED', {
+      curriculumSubtopicId: subtopic.id,
+      tutorialExternalId: tutorialSubtopicRecord.externalId,
+    });
+    return null;
+  }
+
+  console.log('[PHASE_2_6] SUBTOPIC_IDENTITY_RESOLVED', {
+    curriculumSubtopicId: subtopic.id,
+    tutorialSubtopicId: tutorialSubtopicRecord.id,
+    tutorialSubtopicSlug: tutorialSubtopicRecord.slug,
+    requestedSlug: params.subtopicSlug,
+  });
+
   console.log('[DELIVERY_TRACE] resolveHierarchy SUCCESS');
+  
   return {
     domain: { id: domain.id, name: domain.name, slug: slugify(domain.name) },
     subject: { id: subject.id, name: subject.name, slug: slugify(subject.name) },
     topic: { id: topic.id, name: topic.name, slug: slugify(topic.name) },
-    subtopic: { id: subtopic.id, name: subtopic.name, slug: canonicalSubtopicSlug(subtopic.name) },
+    subtopic: {
+      id: subtopic.id,
+      name: subtopic.name,
+      // PHASE 2.6 FIX: Use canonical TutorialDB slug, NOT regenerated from curriculum name
+      slug: tutorialSubtopicRecord.slug,
+      // Phase 2.6: Expose tutorial ID for explicit identity resolution
+      tutorialId: tutorialSubtopicRecord.id,
+      canonicalSlug: tutorialSubtopicRecord.slug,
+    },
   };
+  } catch (error) {
+    // PHASE 2.6: Database failure is NOT a 404 - it's an infrastructure failure
+    console.error('[PHASE_2_6][DATABASE_FAILURE]', {
+      stage: 'resolveHierarchy',
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // Re-throw to let error boundary handle it (don't convert DB outage to notFound)
+    throw error;
+  }
 }
 
 export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliveryParams): Promise<TutorialSidebarDeliveryPayload | null> {
@@ -351,32 +459,6 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
     return null;
   }
 
-  // Phase 1: Resolve activeUrl by exact navigationNodeId
-  const findUrlByNavigationNodeId = (nodes: TutorialNavigationNode[], nodeId: string): string => {
-    for (const node of nodes) {
-      if (node.id === nodeId && node.url) {
-        return node.url;
-      }
-      if (node.children) {
-        const childUrl = findUrlByNavigationNodeId(node.children, nodeId);
-        if (childUrl) {
-          return childUrl;
-        }
-      }
-    }
-    return '';
-  };
-
-  const activeUrl = findUrlByNavigationNodeId(tree.topics, params.navigationNodeId);
-
-  console.log('[DELIVERY_TRACE] Active URL resolved:', activeUrl);
-
-  // Phase 1: Fail closed if navigationNodeId validation passed but URL not found
-  if (!activeUrl) {
-    console.log('[DELIVERY_TRACE] getPublishedTutorialPagePayload FAIL - activeUrl empty');
-    return null;
-  }
-
   // Phase 1: Use getTutorialByPage with exact navigationNodeId
   console.log('[DELIVERY_TRACE] Calling getTutorialByPage', { subtopicSlug: hierarchy.subtopic.slug, navigationNodeId: params.navigationNodeId, brandId: params.brandId });
   
@@ -421,10 +503,25 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
   // Allow empty blocks array when tutorial is unavailable
   const content: TutorialPagePayload['content'] = {
     blocks: tutorial?.content?.blocks ?? [],
+    // Phase 2.5: Include sectionId for runtime identity
+    sectionId: tutorial?.id ?? null,
   };
 
+  // PHASE 2.6: Generate URLs with canonical TutorialDB slug
+  // This regenerates URLs using hierarchy.subtopic.slug instead of reading from tree
   const flatItems = flattenNavigation(tree.topics).map((item) => withTutorialV2Url(item, hierarchy));
   const activeIndex = flatItems.findIndex((item) => isActiveNavigationItem(item, params));
+
+  // PHASE 2.6: Use regenerated canonical URL, not tree's pre-stored URL
+  const activeUrl = activeIndex >= 0 ? flatItems[activeIndex]!.url : '';
+
+  console.log('[PHASE_2_6] Active URL uses canonical slug:', activeUrl);
+
+  // Fail if navigationNodeId was validated but URL regeneration failed
+  if (!activeUrl) {
+    console.log('[PHASE_2_6] FAIL - activeUrl empty after regeneration');
+    return null;
+  }
 
   return {
     brandId: params.brandId,

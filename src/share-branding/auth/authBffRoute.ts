@@ -18,23 +18,11 @@ const HOP_BY_HOP_HEADERS = new Set([
 
 /**
  * 🔥 GATEWAY-FIRST ARCHITECTURE
- * ALL requests MUST go through the API Gateway.
- * NO direct API server calls allowed.
+ * ALL requests MUST go through the shared API Gateway.
+ * The gateway resolves brand from X-Original-Host, not from different URLs.
  */
-function getGatewayUrl(hostname?: string): string {
-  // Determine brand from hostname
-  const isSkillUp = hostname?.includes('skillup') ?? false;
-  const isSkillHubCore = hostname?.includes('skillhubcore') ?? false;
-  
-  // Use brand-specific gateway URL
-  let gatewayUrl: string | undefined;
-  if (isSkillHubCore) {
-    gatewayUrl = process.env.GATEWAY_URL_SKILLHUBCORE;
-  } else if (isSkillUp) {
-    gatewayUrl = process.env.GATEWAY_URL_SKILLUP;
-  } else {
-    gatewayUrl = process.env.GATEWAY_URL;
-  }
+function getGatewayUrl(): string {
+  const gatewayUrl = process.env.GATEWAY_URL;
   
   if (!gatewayUrl || gatewayUrl.trim().length === 0) {
     throw new Error('GATEWAY_URL not configured - all requests must go through API Gateway');
@@ -43,10 +31,10 @@ function getGatewayUrl(hostname?: string): string {
   return gatewayUrl.trim().replace(/\/+$/, '');
 }
 
-export function getConfiguredAuthBaseUrls(fallbackApiBase: string, hostname?: string): string[] {
+export function getConfiguredAuthBaseUrls(fallbackApiBase: string): string[] {
   // 🔥 CRITICAL: Only return gateway URL - no fallbacks, no bypasses
   try {
-    return [getGatewayUrl(hostname)];
+    return [getGatewayUrl()];
   } catch {
     // If gateway URL not configured, throw error - don't allow fallback
     throw new Error('GATEWAY_URL must be configured - direct API access is forbidden');
@@ -65,15 +53,15 @@ export function getUpstreamUrls(fallbackApiBase: string, upstreamPath: string, h
     return [`${internalApiUrl}/${normalizedPath}`];
   }
 
-  const gatewayUrl = getGatewayUrl(hostname);
+  const gatewayUrl = getGatewayUrl();
   
   // Gateway URLs already include routing - just append the path
   return [`${gatewayUrl}/${normalizedPath}`];
 }
 
-export function getAuthUpstreamUrls(fallbackApiBase: string, authPath: string, hostname?: string): string[] {
+export function getAuthUpstreamUrls(fallbackApiBase: string, authPath: string): string[] {
   const normalizedAuthPath = authPath.replace(/^\/+/, '');
-  const gatewayUrl = getGatewayUrl(hostname);
+  const gatewayUrl = getGatewayUrl();
   
   // Gateway handles auth routing - use /auth prefix
   return [`${gatewayUrl}/auth/${normalizedAuthPath}`];
@@ -94,12 +82,13 @@ function normalizeHost(value?: string | null): string | undefined {
   return `.${labels.slice(-2).join('.')}`;
 }
 
+/**
+ * Get the actual request host from Next.js Host header.
+ * 
+ * SECURITY: Does NOT trust x-forwarded-host which can be client-controlled.
+ * Only reads the actual Host header that Next.js received.
+ */
 function getRequestHost(request: NextRequest): string | undefined {
-  const forwardedHost = request.headers.get('x-forwarded-host');
-  if (typeof forwardedHost === 'string' && forwardedHost.trim().length > 0) {
-    return forwardedHost.split(',')[0]?.trim();
-  }
-
   return request.headers.get('host') ?? request.nextUrl.hostname;
 }
 
@@ -146,17 +135,26 @@ export function createForwardHeaders(request: NextRequest): Headers {
   headers.delete('host');
   headers.delete('content-length');
   
-  // 🔥 CRITICAL: Add internal secret for BFF → API authentication
-  const internalSecret = process.env.INTERNAL_API_SECRET;
-  const internalApiKey = process.env.INTERNAL_API_KEY ?? internalSecret;
-  if (internalSecret) {
-    headers.set('x-internal-secret', internalSecret);
+  // 🔥 CRITICAL: Get actual public hostname (not x-forwarded-host)
+  const publicHost = getRequestHost(request);
+  
+  // 🔐 MULTI-BRAND SECURITY: Send actual hostname to gateway with internal authentication
+  // The gateway will resolve brand from X-Original-Host after validating X-Internal-Secret
+  if (publicHost) {
+    headers.set('x-original-host', publicHost);
+  }
+  
+  // 🔥 CRITICAL: Add internal secret for BFF → Gateway authentication
+  const internalGatewaySecret = process.env.INTERNAL_GATEWAY_SECRET;
+  if (internalGatewaySecret) {
+    headers.set('x-internal-secret', internalGatewaySecret);
   } else {
-    console.error('[BFF_AUTH] INTERNAL_API_SECRET not configured - BFF → API calls will fail');
+    console.error('[BFF_GATEWAY] INTERNAL_GATEWAY_SECRET not configured - BFF → Gateway calls will fail');
   }
   
   // 🔐 ENTERPRISE AUTH: Preserve device context headers
   // These headers are CRITICAL for multi-device session tracking
+  const internalApiKey = process.env.INTERNAL_API_KEY;
   if (internalApiKey) {
     headers.set('x-internal-key', internalApiKey);
   }
@@ -180,47 +178,14 @@ export function createForwardHeaders(request: NextRequest): Headers {
     headers.set('user-agent', userAgent);
   }
   
-  // 🏷️ BRAND RESOLUTION: Add x-brand header based on hostname
-  const hostname = getRequestHost(request);
-  if (hostname?.includes('skillhubcore') === true) {
-    headers.set('x-brand', 'skillhubcore');
-    headers.set('x-portal-identity', 'shc-admin');
-  }
-  if (!headers.has('x-brand')) {
-    if (hostname) {
-      let brand: string;
-      
-      // 🔧 LOCAL DEV: Allow environment variable override for local development
-      const envBrand = process.env.NEXT_PUBLIC_BRAND ?? process.env.BRAND;
-      
-      // Use environment override if provided (for local development)
-      if (envBrand === 'skillup' || envBrand === 'realtutorialhub' || envBrand === 'skillhubcore') {
-        brand = envBrand;
-      } else if (hostname.includes('skillhubcore')) {
-        brand = 'skillhubcore';
-      } else if (hostname.includes('skillup')) {
-        brand = 'skillup';
-      } else {
-        brand = 'realtutorialhub';
-      }
-      headers.set('x-brand', brand);
-
-      if (brand === 'skillhubcore') {
-        headers.set('x-portal-identity', 'shc-admin');
-      }
-      
-      // 📊 OBSERVABILITY: Log brand resolution and internal secret status
-      console.log(JSON.stringify({
-        tag: 'AUTH_FLOW',
-        action: 'create_forward_headers',
-        hostname,
-        brand,
-        envBrandOverride: envBrand ?? 'none',
-        hasDeviceId: !!deviceId,
-        hasInternalSecret: !!internalSecret,
-      }));
-    }
-  }
+  // 📊 OBSERVABILITY: Log BFF → Gateway request (no secret values)
+  console.log(JSON.stringify({
+    tag: 'BFF_GATEWAY',
+    action: 'create_forward_headers',
+    publicHost,
+    hasInternalGatewaySecret: !!internalGatewaySecret,
+    hasDeviceId: !!deviceId,
+  }));
   
   return headers;
 }
@@ -281,11 +246,10 @@ export async function fetchAuthUpstream(
       ? undefined
       : await request.arrayBuffer();
   const headers = createForwardHeaders(request);
-  const hostname = getRequestHost(request);
 
   let upstreamResponse: Response | null = null;
 
-  for (const url of getAuthUpstreamUrls(options.fallbackApiBase, options.authPath, hostname)) {
+  for (const url of getAuthUpstreamUrls(options.fallbackApiBase, options.authPath)) {
     const candidate = await unifiedFetch(`${url}${request.nextUrl.search}`, {
       method,
       headers,
@@ -348,31 +312,15 @@ export async function proxyAuthRequest(
     body?: BodyInit | null;
   },
 ) {
-  // 📊 OBSERVABILITY: Log auth proxy request and current mode
-  const hostname = getRequestHost(request);
-  
-  // 🔧 LOCAL DEV: Allow environment variable override for brand detection
-  const envBrand = process.env.NEXT_PUBLIC_BRAND ?? process.env.BRAND;
-  
-  let brand: string;
-  if (envBrand === 'skillup' || envBrand === 'realtutorialhub' || envBrand === 'skillhubcore') {
-    brand = envBrand;
-  } else if (hostname?.includes('skillhubcore')) {
-    brand = 'skillhubcore';
-  } else if (hostname?.includes('skillup')) {
-    brand = 'skillup';
-  } else {
-    brand = 'realtutorialhub';
-  }
+  // 📊 OBSERVABILITY: Log auth proxy request
+  const publicHost = getRequestHost(request);
   
   console.log(JSON.stringify({
     tag: 'AUTH_FLOW',
     action: 'proxy_auth_request',
     authPath: options.authPath,
     method: options.method ?? request.method,
-    brand,
-    hostname,
-    envBrandOverride: envBrand ?? 'none',
+    publicHost,
   }));
 
   // 📊 PHASE 5: Log current configuration mode
@@ -384,7 +332,7 @@ export async function proxyAuthRequest(
   }));
 
   // 🔥 PHASE 5: Gateway-first execution
-  const gatewayUrl = getGatewayUrl(hostname);
+  const gatewayUrl = getGatewayUrl();
   const targetUrl = `${gatewayUrl}/auth/${options.authPath}`;
   const headers = createForwardHeaders(request);
   const method = options.method ?? request.method;
@@ -411,7 +359,6 @@ export async function proxyAuthRequest(
         type: 'gateway_success',
         status: upstreamResponse.status,
         authPath: options.authPath,
-        brand,
       }));
 
       // Process successful response
@@ -445,15 +392,12 @@ export async function proxyAuthRequest(
       tag: 'AUTH_GATEWAY_FAIL',
       authPath: options.authPath,
       error: err instanceof Error ? err.message : 'Unknown error',
-      brand,
-      hostname,
     }));
 
     console.log(JSON.stringify({
       tag: 'AUTH_METRIC',
       type: 'gateway_failure',
       authPath: options.authPath,
-      brand,
     }));
 
     // 🔴 STRICT MODE → NO fallback
@@ -477,14 +421,12 @@ export async function proxyAuthRequest(
         tag: 'AUTH_FALLBACK_TRIGGERED',
         authPath: options.authPath,
         fallbackApiBase: options.fallbackApiBase,
-        brand,
       }));
 
       console.log(JSON.stringify({
         tag: 'AUTH_METRIC',
         type: 'fallback_used',
         authPath: options.authPath,
-        brand,
       }));
 
       try {

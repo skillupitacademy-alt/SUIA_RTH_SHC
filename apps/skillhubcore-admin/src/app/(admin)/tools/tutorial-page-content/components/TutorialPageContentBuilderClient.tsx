@@ -15,6 +15,57 @@ import type {
 
 const SHARED_BRAND_ID: TutorialSidebarBrandId = 'shared';
 
+/**
+ * Build the canonical learner-facing Tutorial V2 URL.
+ *
+ * Identity contract:
+ *
+ * Domain
+ *   ↓
+ * Subject
+ *   ↓
+ * Topic
+ *   ↓
+ * Subtopic
+ *   ↓
+ * Navigation Node
+ *
+ * The final route segment MUST be navigationNodeId.
+ *
+ * This must remain separate from:
+ * - sectionId
+ * - blockId
+ * - navigationNode.slug
+ */
+function buildPublishedTutorialUrl(
+  domainSlug: string,
+  subjectSlug: string,
+  topicSlug: string,
+  subtopicSlug: string,
+  navigationNodeId: string
+): string {
+  const segments = [
+    domainSlug,
+    subjectSlug,
+    topicSlug,
+    subtopicSlug,
+    navigationNodeId,
+  ];
+
+  if (segments.some((segment) => !segment?.trim())) {
+    throw new Error(
+      'Incomplete tutorial navigation identity.'
+    );
+  }
+
+  return [
+    'https://user.skillupitacademy.com/tutorial-v2',
+    ...segments.map((segment) =>
+      encodeURIComponent(segment.trim())
+    ),
+  ].join('/');
+}
+
 import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import {
   toTutorialBlock,
@@ -392,12 +443,58 @@ export function TutorialPageContentBuilderClient() {
         const subject = subjects.find((s) => s.id === form.subjectId);
         const topic = topics.find((t) => t.id === form.topicId);
         const subtopic = subtopics.find((st) => st.id === form.subtopicId);
+        
+        // Resolve exact navigation node
+        const navigationNode = navigationNodes.find(
+          (node) => node.id === form.navigationNodeId
+        );
 
-        if (domain && subject && topic && subtopic) {
-          const publicUrl = `https://user.skillupitacademy.com/tutorial-v2/${domain.slug}/${subject.slug}/${topic.slug}/${subtopic.slug}`;
+        if (domain && subject && topic && subtopic && navigationNode) {
+          const publicUrl = buildPublishedTutorialUrl(
+            domain.slug,
+            subject.slug,
+            topic.slug,
+            subtopic.slug,
+            navigationNode.id
+          );
+          
+          console.info(
+            '[Tutorial Composer] Published learner URL',
+            {
+              sectionId: result.sectionId,
+              domainSlug: domain.slug,
+              subjectSlug: subject.slug,
+              topicSlug: topic.slug,
+              subtopicSlug: subtopic.slug,
+              navigationNodeId: navigationNode.id,
+              navigationNodeName: navigationNode.name,
+              navigationNodeSlug: navigationNode.slug,
+              publicUrl,
+            }
+          );
+          
           setMessage(`${result.message}\n\nPublished URL: ${publicUrl}`);
         } else {
-          setMessage(`${result.message} Published successfully!`);
+          console.error(
+            '[Tutorial Composer] Published successfully but learner URL could not be constructed',
+            {
+              sectionId: result.sectionId,
+              domainId: form.domainId,
+              subjectId: form.subjectId,
+              topicId: form.topicId,
+              subtopicId: form.subtopicId,
+              navigationNodeId: form.navigationNodeId,
+              domainFound: !!domain,
+              subjectFound: !!subject,
+              topicFound: !!topic,
+              subtopicFound: !!subtopic,
+              navigationNodeFound: !!navigationNode,
+            }
+          );
+          
+          setMessage(
+            `${result.message}\n\nPublished successfully, but the learner URL could not be generated because the navigation identity is incomplete.`
+          );
         }
       } else {
         setMessage(result.message);

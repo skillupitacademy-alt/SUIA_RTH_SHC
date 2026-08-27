@@ -58,10 +58,29 @@ export interface TutorialRendererProps {
   className?: string;
 }
 
+/**
+ * Phase 2.5: TutorialBlockRuntimeContext
+ * Universal runtime identity boundary for block rendering.
+ * 
+ * This is passed to blocks for tracking/progress OUTSIDE of block content JSON.
+ * Blocks do NOT implement tracking logic - the universal boundary does.
+ */
+export interface TutorialBlockRuntimeContext {
+  learnerId: string;
+  navigationNodeId: string;
+  sectionId: string | null;
+  blockId: string;
+  blockType: string;
+  blockVersion: string;
+  subtopicId: string;
+}
+
 export interface BlockComponentProps<T extends TutorialBlock = TutorialBlock> {
   block: T;
   depth?: number;
   theme?: DomainTheme;
   className?: string;
   renderChild?: (block: TutorialBlock, depth: number) => React.ReactNode;
+  // Phase 2.5: Universal runtime context (optional for legacy/preview contexts)
+  runtimeContext?: TutorialBlockRuntimeContext;
 }

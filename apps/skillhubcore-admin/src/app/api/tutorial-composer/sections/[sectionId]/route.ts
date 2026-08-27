@@ -120,6 +120,7 @@ export async function GET(
     const response = TutorialResponseSchema.parse({
       id: tutorial.id,
       subtopicId: tutorial.subtopicId,
+      navigationNodeId: tutorial.navigationNodeId,
       brandId: tutorial.brandId,
       orderIndex: tutorial.orderIndex,
       content: tutorial.content,
@@ -227,6 +228,7 @@ export async function PATCH(
     const response = TutorialResponseSchema.parse({
       id: tutorial.id,
       subtopicId: tutorial.subtopicId,
+      navigationNodeId: tutorial.navigationNodeId,
       brandId: tutorial.brandId,
       orderIndex: tutorial.orderIndex,
       content: tutorial.content,

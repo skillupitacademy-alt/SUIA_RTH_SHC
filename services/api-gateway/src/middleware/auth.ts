@@ -2,6 +2,8 @@ import { TokenService } from '@quiz/auth';
 
 import type { GatewayBindings } from '@/types';
 import type { SkillHubCoreTokenPayload } from '@/types';
+import type { Brand } from '@/lib/brand-resolution';
+import { isSupportedBrand } from '@/lib/brand-resolution';
 
 export type PortalKind = 'admin' | 'user';
 export type AuthTokenSource = 'admin_accessToken' | 'accessToken' | 'authorization';
@@ -17,7 +19,7 @@ export type AuthResolution = {
   payload: SkillHubCoreTokenPayload;
   portal: PortalKind;
   tokenSource: AuthTokenSource;
-  requestBrand?: string;
+  requestBrand: Brand;
 };
 
 function getCookieValue(cookieHeader: string, name: string): string | undefined {
@@ -26,6 +28,10 @@ function getCookieValue(cookieHeader: string, name: string): string | undefined 
   return match?.[1] !== undefined ? decodeURIComponent(match[1]) : undefined;
 }
 
+/**
+ * @deprecated Use resolveTrustedRequestBrand() from @/lib/request-brand instead.
+ * This function is kept for backward compatibility but should not be used directly.
+ */
 export function detectRequestBrand(request: Request): string | undefined {
   const explicitBrand =
     normalizeString(request.headers.get('x-brand')) ??
@@ -38,20 +44,19 @@ export function detectRequestBrand(request: Request): string | undefined {
   return undefined;
 }
 
-// 🔥 NEW: Consistent brand resolution from hostname
+/**
+ * @deprecated Removed. Use canonical resolveBrandFromHostname() from @/lib/brand-resolution instead.
+ * This function had unsafe substring matching and silent RTH fallback.
+ */
 export function resolveBrandFromHostname(
   hostname: string,
   env: GatewayBindings,
 ): 'realtutorialhub' | 'skillup' {
-  // 🔧 LOCAL DEV: Allow server-side environment override for local development
-  const envBrand = env.BRAND;
-  
-  if (envBrand === 'skillup' || envBrand === 'realtutorialhub') {
-    return envBrand;
-  }
-  
-  // Production hostname-based resolution
-  return hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
+  throw new Error(
+    'resolveBrandFromHostname() from auth.ts is deprecated. ' +
+    'Use resolveBrandFromHostname() from @/lib/brand-resolution and ' +
+    'resolveTrustedRequestBrand() from @/lib/request-brand instead.'
+  );
 }
 
 export function detectRequestPortal(request: Request, route?: RouteLike): PortalKind {
@@ -135,14 +140,22 @@ export async function authenticateRequest(
   request: Request,
   env: GatewayBindings,
   route?: RouteLike,
+  resolvedBrand?: Brand,
 ): Promise<AuthResolution | Response> {
   const portal = detectRequestPortal(request, route);
-  const requestBrand = detectRequestBrand(request);
   
-  // 🔥 NEW: Always derive brand from hostname for consistency
-  const url = new URL(request.url);
-  const hostnameBrand = resolveBrandFromHostname(url.hostname, env);
-  const effectiveBrand = requestBrand ?? hostnameBrand;
+  // Brand must be resolved by caller using resolveTrustedRequestBrand()
+  if (!resolvedBrand) {
+    console.log('[CF_AUTH_REJECT] No brand resolved - returning 400');
+    return new Response(JSON.stringify({ 
+      error: 'Bad Request', 
+      reason: 'brand_unresolved',
+      message: 'Unable to resolve brand from request hostname'
+    }), {
+      status: 400,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
   
   const selection = getTokenFromHeaders(request, portal);
   const token = selection.token;
@@ -150,10 +163,7 @@ export async function authenticateRequest(
   // 🔥 CRITICAL DEBUG: Log token extraction
   console.log('[CF_AUTH_DEBUG]', JSON.stringify({
     portal,
-    hostname: url.hostname,
-    hostnameBrand,
-    requestBrand: requestBrand ?? null,
-    effectiveBrand,
+    resolvedBrand,
     hasCookie: request.headers.get('cookie') !== null,
     hasAuthHeader: request.headers.get('authorization') !== null,
     tokenSource: selection.source ?? null,
@@ -217,12 +227,12 @@ export async function authenticateRequest(
     // 🔥 CRITICAL DEBUG: Log brand validation
     console.log('[CF_AUTH_BRAND]', JSON.stringify({
       tokenBrand: tokenBrand ?? null,
-      effectiveBrand,
-      match: tokenBrand === effectiveBrand,
+      resolvedBrand,
+      match: tokenBrand === resolvedBrand,
     }));
     
-    // 🔥 CRITICAL FIX: Validate brand against hostname-derived brand
-    if (tokenBrand !== undefined && tokenBrand !== effectiveBrand) {
+    // 🔥 CRITICAL FIX: Validate JWT brand matches the resolved trusted brand
+    if (tokenBrand !== undefined && tokenBrand !== resolvedBrand) {
       console.log('[CF_AUTH_REJECT] Brand mismatch - returning 403');
       return new Response(JSON.stringify({ error: 'Forbidden', reason: 'brand_mismatch' }), {
         status: 403,
@@ -243,14 +253,14 @@ export async function authenticateRequest(
       tokenSource: selection.source ?? 'authorization',
       tokenType,
       tokenBrand: tokenBrand ?? null,
-      effectiveBrand,
+      resolvedBrand,
     }));
 
     return {
       payload,
       portal,
       tokenSource: selection.source ?? 'authorization',
-      requestBrand: effectiveBrand,
+      requestBrand: resolvedBrand,
     };
   } catch (error) {
     console.log('[CF_AUTH_REJECT] Token verification failed - returning 401', {

@@ -8,7 +8,8 @@ import { createRateLimitMiddleware } from '@/middleware/rate-limit';
 import { createRequestIdMiddleware } from '@/middleware/request-id';
 import { resolveGatewayRoute } from '@/routes/routing-table';
 import { buildGatewayHealthSnapshot } from '@/lib/validation';
-import { resolveBrandFromHostname } from '@/middleware/auth';
+import { resolveTrustedRequestBrand, hasTrustedInternalRequest } from '@/lib/request-brand';
+import { validateBrandAssertion } from '@/lib/brand-assertion';
 import type { GatewayBindings, GatewayVariables } from '@/types';
 
 function rewritePath(pathname: string, routePrefix: string, upstreamPathPrefix?: string): string | undefined {
@@ -105,9 +106,41 @@ export const createApp = () => {
       return c.json({ error: 'Upstream not configured', requestId: c.get('requestId') }, 502);
     }
 
-    // 🏷️ BRAND RESOLUTION: Use consistent hostname-based brand resolution
-    const hostname = requestUrl.hostname.toLowerCase();
-    const brand = resolveBrandFromHostname(hostname, c.env);
+    // 🏷️ BRAND RESOLUTION: Resolve brand from trusted hostname source
+    const requestBrand = resolveTrustedRequestBrand(c);
+    
+    if (!requestBrand) {
+      console.log('[GATEWAY_ERROR] Unable to resolve brand from request');
+      return c.json({ 
+        error: 'Bad Request',
+        reason: 'brand_unresolved',
+        message: 'Unable to resolve brand from request hostname',
+        requestId: c.get('requestId')
+      }, 400);
+    }
+
+    const brand = requestBrand.brand;
+
+    // 🔥 BRAND CONSISTENCY: Validate X-Brand header if present (trusted requests only)
+    if (hasTrustedInternalRequest(c)) {
+      const assertedBrand = c.req.header('x-brand');
+      if (!validateBrandAssertion(assertedBrand, brand)) {
+        console.log('[GATEWAY_ERROR] Brand assertion mismatch');
+        return c.json({
+          error: 'Forbidden',
+          reason: 'brand_assertion_mismatch',
+          requestId: c.get('requestId')
+        }, 403);
+      }
+    }
+
+    // 🔥 DEBUG: Log brand resolution
+    console.log('[GATEWAY_BRAND_DEBUG]', JSON.stringify({
+      hostname: requestBrand.hostname,
+      brand: requestBrand.brand,
+      source: requestBrand.source,
+      internalRequest: hasTrustedInternalRequest(c),
+    }));
 
     // 🔥 CRITICAL FIX: Set brand header for ALL requests (not just authenticated ones)
     // This ensures login/signup get the correct brand
@@ -123,7 +156,7 @@ export const createApp = () => {
     let roles: string[] | undefined; // 🔥 ADD: Extract roles from JWT
     if (route.auth === true) {
       const authStart = Date.now();
-      const authResult = await authenticateRequest(requestToProxy, c.env, route);
+      const authResult = await authenticateRequest(requestToProxy, c.env, route, brand);
       timings.afterAuth = Date.now();
       console.log('[PERF][GATEWAY][AUTH]', { duration: timings.afterAuth - authStart });
       
@@ -138,7 +171,7 @@ export const createApp = () => {
         path: requestUrl.pathname,
         portal: authResult.portal,
         tokenSource: authResult.tokenSource,
-        requestBrand: authResult.requestBrand ?? null,
+        requestBrand: authResult.requestBrand,
         roles: authResult.payload.roles, // 🔥 ADD: Log roles for debugging
       }));
 

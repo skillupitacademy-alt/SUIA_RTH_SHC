@@ -55,9 +55,8 @@ export async function handleProfileGet(req: NextRequest) {
   console.log("[ENV TRACE]", JSON.stringify({
     service: process.env.K_SERVICE,
     revision: process.env.K_REVISION,
-    length: secret?.length,
-    prefix: secret?.slice(0, 8),
-    hasQuotes: secret?.includes('"'),
+    hasSecret: typeof secret === 'string' && secret.length > 0,
+    secretLength: secret?.length,
     envKeys: Object.keys(process.env)
       .filter(k => k.includes('SECRET'))
       .sort(),
@@ -84,9 +83,9 @@ export async function handleProfileGet(req: NextRequest) {
     // Add correlation ID for debugging
     headers['x-correlation-id'] = correlationId;
     
-    // 🔍 DEBUG: Verify secret is being sent
+    // 🔍 DEBUG: Verify headers are being sent
     console.log(`[BFF DEBUG][${correlationId}]`, {
-      sendingSecret: headers['x-gateway-secret']?.slice(0, 10),
+      sendingSecret: headers['x-internal-secret'] ? '[present]' : '[missing]',
       sendingUserId: headers['x-user-id'],
       sendingBrand: headers['x-brand'],
       apiUrl: INTERNAL_API_URL,
@@ -167,9 +166,9 @@ export async function handleProfilePatch(req: NextRequest) {
     // Add correlation ID for debugging
     headers['x-correlation-id'] = correlationId;
     
-    // 🔍 DEBUG: Verify secret is being sent
+    // 🔍 DEBUG: Verify headers are being sent
     console.log(`[BFF DEBUG][${correlationId}]`, {
-      sendingSecret: headers['x-gateway-secret']?.slice(0, 10),
+      sendingSecret: headers['x-internal-secret'] ? '[present]' : '[missing]',
       sendingUserId: headers['x-user-id'],
       sendingBrand: headers['x-brand'],
       apiUrl: INTERNAL_API_URL,
