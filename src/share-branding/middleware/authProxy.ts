@@ -1,5 +1,10 @@
 import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  resolveBrandFromHostname,
+  extractHostnameFromRequest,
+  type Brand,
+} from '../auth/brandResolution';
 
 const INTERNAL_GATEWAY_SECRET = process.env.INTERNAL_GATEWAY_SECRET;
 const ONBOARDING_STATE_COOKIE = 'onboarding_state';
@@ -112,7 +117,18 @@ function hasValidGatewaySecret(request: NextRequest): boolean {
   return gatewaySecret === INTERNAL_GATEWAY_SECRET;
 }
 
-type UserPayload = { sub: string; roles: string[]; shadowUserId: string; originalUserId: string };
+type UserPayload = {
+  sub: string;
+  roles: string[];
+  shadowUserId: string;
+  originalUserId: string;
+  brand?: Brand;
+};
+
+type AuthResult = 
+  | { type: 'authenticated'; user: UserPayload }
+  | { type: 'unauthenticated' }
+  | { type: 'forbidden'; reason: 'brand_mismatch' | 'brand_unresolved' };
 
 type VerifiedTokenPayload = {
   sub?: string;
@@ -142,7 +158,7 @@ function addUserHeaders(response: NextResponse, payload: UserPayload): NextRespo
   return response;
 }
 
-async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
+async function resolveUser(request: NextRequest): Promise<AuthResult> {
   const token = getAccessToken(request);
   
   console.log('[BFF_AUTH_DEBUG]', JSON.stringify({
@@ -154,7 +170,7 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
   
   if (token === undefined || token.trim().length === 0) {
     console.log('[BFF_AUTH_DEBUG] No token found');
-    return null;
+    return { type: 'unauthenticated' };
   }
 
   try {
@@ -162,23 +178,79 @@ async function resolveUser(request: NextRequest): Promise<UserPayload | null> {
     const userIds = getTokenIds(payload);
     if (userIds === null) {
       console.log('[BFF_AUTH_DEBUG] Invalid user IDs in token');
-      return null;
+      return { type: 'unauthenticated' };
+    }
+
+    // 🔒 SECURITY: Extract JWT brand claim
+    const jwtBrand = typeof payload.brand === 'string' ? payload.brand.trim().toLowerCase() : undefined;
+    
+    // 🔒 SECURITY: Resolve trusted request brand from hostname
+    const hostHeader = request.headers.get('host');
+    const hostname = extractHostnameFromRequest(hostHeader);
+    const requestBrand = hostname ? resolveBrandFromHostname(hostname) : undefined;
+
+    console.log('[BFF_BRAND_VALIDATION]', JSON.stringify({
+      pathname: request.nextUrl.pathname,
+      hostHeader,
+      hostname,
+      jwtBrand: jwtBrand ?? null,
+      requestBrand: requestBrand ?? null,
+      match: jwtBrand === requestBrand,
+    }));
+
+    // 🔒 SECURITY: Reject if request brand cannot be resolved
+    // This prevents ambiguous tenant context
+    if (!requestBrand) {
+      console.log('[BFF_AUTH_REJECT] Cannot resolve request brand', JSON.stringify({
+        pathname: request.nextUrl.pathname,
+        hostHeader,
+        hostname,
+      }));
+      return { type: 'forbidden', reason: 'brand_unresolved' };
+    }
+
+    // 🔒 SECURITY: Reject if JWT brand claim is missing
+    // All user JWTs must explicitly identify their authorized brand
+    if (!jwtBrand) {
+      console.log('[BFF_AUTH_REJECT] JWT missing brand claim', JSON.stringify({
+        pathname: request.nextUrl.pathname,
+        requestBrand,
+        userId: userIds.shadowUserId.substring(0, 8),
+      }));
+      return { type: 'forbidden', reason: 'brand_mismatch' };
+    }
+
+    // 🔒 SECURITY: Enforce brand boundary
+    // JWT brand must match the trusted request brand
+    if (jwtBrand !== requestBrand) {
+      console.log('[BFF_AUTH_REJECT] Brand mismatch', JSON.stringify({
+        pathname: request.nextUrl.pathname,
+        jwtBrand,
+        requestBrand,
+        userId: userIds.shadowUserId.substring(0, 8),
+      }));
+      return { type: 'forbidden', reason: 'brand_mismatch' };
     }
     
     console.log('[BFF_AUTH_DEBUG] Token verified successfully', JSON.stringify({
       userId: userIds.shadowUserId.substring(0, 8),
       roles: payload.roles,
+      brand: requestBrand,
     }));
     
     return {
-      sub: userIds.shadowUserId,
-      roles: payload.roles ?? [],
-      shadowUserId: userIds.shadowUserId,
-      originalUserId: userIds.originalUserId,
+      type: 'authenticated',
+      user: {
+        sub: userIds.shadowUserId,
+        roles: payload.roles ?? [],
+        shadowUserId: userIds.shadowUserId,
+        originalUserId: userIds.originalUserId,
+        brand: requestBrand,
+      },
     };
   } catch (error) {
     console.log('[BFF_AUTH_DEBUG] Token verification failed:', error instanceof Error ? error.message : 'Unknown error');
-    return null;
+    return { type: 'unauthenticated' };
   }
 }
 
@@ -198,14 +270,12 @@ export interface AuthProxyOptions {
 
 export async function createAuthProxy(options: AuthProxyOptions = {}) {
   return async function authProxy(request: NextRequest) {
-    const isRSCRequest = request.nextUrl.searchParams.has('_rsc');
-
-    if (isRSCRequest) {
-      return NextResponse.next();
-    }
-
+    // 🔒 SECURITY: RSC requests MUST NOT bypass authentication
+    // RSC is a transport/rendering mechanism, not an authorization class
+    // Protected routes must be authenticated regardless of request type (HTML/RSC/API)
+    
     const { pathname, search } = request.nextUrl;
-    const user = await resolveUser(request);
+    const authResult = await resolveUser(request);
     const onboardingCompleted = hasCompletedOnboarding(request);
     const redirectPath = `${pathname}${search}`;
     const isApiRoute = pathname.startsWith('/api/');
@@ -220,8 +290,8 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
     }
 
     if (isPublicRoute(pathname)) {
-      return user !== null
-        ? addUserHeaders(NextResponse.next({ request: { headers: new Headers(request.headers) } }), user)
+      return authResult.type === 'authenticated'
+        ? addUserHeaders(NextResponse.next({ request: { headers: new Headers(request.headers) } }), authResult.user)
         : NextResponse.next();
     }
 
@@ -242,13 +312,37 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // 🔒 SECURITY: Return 403 for brand mismatch or unresolved brand
+    if (authResult.type === 'forbidden') {
+      console.log('[BFF_AUTH_FORBIDDEN]', JSON.stringify({
+        pathname,
+        reason: authResult.reason,
+      }));
+      
+      if (isApiRoute) {
+        return NextResponse.json(
+          { 
+            error: 'Forbidden',
+            reason: authResult.reason,
+            message: authResult.reason === 'brand_mismatch' 
+              ? 'Access denied: brand authorization failed'
+              : 'Access denied: unable to resolve request brand'
+          },
+          { status: 403 },
+        );
+      }
+      
+      // For non-API routes, also return 403 (don't redirect to login for wrong brand)
+      return new NextResponse('Forbidden', { status: 403 });
+    }
+
     // Handle authenticated user accessing onboarding when already completed
-    if (user !== null && pathname === '/onboarding' && onboardingCompleted === true) {
+    if (authResult.type === 'authenticated' && pathname === '/onboarding' && onboardingCompleted === true) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     // Handle unauthenticated user accessing protected routes
-    if (isProtectedRoute(pathname) && user === null) {
+    if (isProtectedRoute(pathname) && authResult.type === 'unauthenticated') {
       return isApiRoute
         ? NextResponse.json({ error: 'Authentication required' }, { status: 401 })
         : NextResponse.redirect(getLoginUrl(request, redirectPath, options.brandLoginUrl));
@@ -256,7 +350,7 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
 
     // Handle authenticated user who hasn't completed onboarding
     if (
-      user !== null &&
+      authResult.type === 'authenticated' &&
       onboardingCompleted === false &&
       pathname !== '/onboarding' &&
       pathname.startsWith('/dashboard')
@@ -266,7 +360,7 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
 
     // Handle protected routes with authenticated user
     if (isProtectedRoute(pathname)) {
-      if (user === null) {
+      if (authResult.type !== 'authenticated') {
         if (isApiRoute) {
           return NextResponse.json(
             { error: 'Authentication required' },
@@ -279,7 +373,7 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
         );
       }
 
-      if (hasRequiredRole(user) === false) {
+      if (hasRequiredRole(authResult.user) === false) {
         if (isApiRoute) {
           return NextResponse.json(
             { error: 'Forbidden' },
@@ -299,9 +393,9 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
 
       const headers = new Headers(request.headers);
 
-      headers.set('x-user-id', user.shadowUserId);
-      headers.set('x-shadow-user-id', user.shadowUserId);
-      headers.set('x-original-user-id', user.originalUserId);
+      headers.set('x-user-id', authResult.user.shadowUserId);
+      headers.set('x-shadow-user-id', authResult.user.shadowUserId);
+      headers.set('x-original-user-id', authResult.user.originalUserId);
 
       if (pathname.startsWith('/tutorial-v2')) {
         console.log(
@@ -312,7 +406,8 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
             hasUserId: headers.has('x-user-id'),
             hasShadowUserId: headers.has('x-shadow-user-id'),
             hasOriginalUserId: headers.has('x-original-user-id'),
-            roles: user.roles,
+            roles: authResult.user.roles,
+            brand: authResult.user.brand,
           }),
         );
       }

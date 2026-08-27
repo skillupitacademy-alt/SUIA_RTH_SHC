@@ -3,15 +3,20 @@
 /**
  * Tutorial V2 Auth E2E - HTTP Only
  *
- * Tests authentication and Tutorial V2 access using Node.js fetch.
- * No browser automation.
+ * Legacy/single-brand Tutorial V2 authentication assurance.
+ *
+ * IMPORTANT: This test intentionally does NOT call /api/auth/me because that
+ * endpoint is not part of the SkillUp/RTH Tutorial V2 architecture.
+ *
+ * Authentication is proven through the actual Tutorial V2 request.
  */
 
-const BASE_URL = process.env.SKILLUP_BASE_URL ?? 'http://localhost:3009';
+const BASE_URL = process.env.SKILLUP_BASE_URL ?? 'http://skillup.localhost:3009';
 const EMAIL = process.env.SKILLUP_TEST_EMAIL ?? 'student@skillupitacademy.com';
 const PASSWORD = process.env.SKILLUP_TEST_PASSWORD ?? 'testing';
 
 const CANONICAL_TUTORIAL_PATH = '/tutorial-v2/full-stack-development/backend-development/java/what-is-java/whatisjava';
+const ID_VARIANT_TUTORIAL_PATH = '/tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava';
 
 let failures = 0;
 let accessToken = null;
@@ -37,22 +42,54 @@ function section(title) {
   console.log('');
 }
 
+function isLoginPage(html) {
+  const normalized = html.toLowerCase();
+
+  if (normalized.includes('<title>login |') || normalized.includes('<title>login</title>')) {
+    return true;
+  }
+
+  return normalized.includes('sign in to') && normalized.includes('email') && normalized.includes('password');
+}
+
+function isTutorialContent(html) {
+  const normalized = html.toLowerCase();
+
+  if (html.length < 1000) {
+    return false;
+  }
+
+  if (isLoginPage(html)) {
+    return false;
+  }
+
+  return (
+    normalized.includes('tutorial') ||
+    normalized.includes('navigation') ||
+    normalized.includes('sidebar') ||
+    normalized.includes('tutorial-content')
+  );
+}
+
 async function main() {
   section('TUTORIAL V2 AUTH E2E - HTTP ONLY');
 
   info(`Testing against: ${BASE_URL}`);
-  info(`Note: Server must have NEXT_PUBLIC_BRAND=skillup configured`);
 
-  // ==========================================================
-  // 1. Login
-  // ==========================================================
+  /*
+   * ==========================================================
+   * 1. LOGIN
+   * ==========================================================
+   */
 
   section('1. LOGIN');
 
   const loginUrl = `${BASE_URL}/api/auth/login`;
+
   info(`POST ${loginUrl}`);
 
   let loginResponse;
+
   try {
     loginResponse = await fetch(loginUrl, {
       method: 'POST',
@@ -71,23 +108,27 @@ async function main() {
 
   info(`Login status: ${loginResponse.status}`);
 
-  if (!loginResponse.ok) {
+  if (loginResponse.status !== 200) {
     fail(`Login failed with status ${loginResponse.status}`);
+
     const errorText = await loginResponse.text();
+
     console.error('Login error:', errorText);
+
     return;
   }
 
   pass('Login request succeeded (HTTP 200)');
 
-  // Extract accessToken from set-cookie header
   const setCookie = loginResponse.headers.get('set-cookie');
+
   if (!setCookie) {
     fail('No set-cookie header in login response');
     return;
   }
 
   const tokenMatch = setCookie.match(/accessToken=([^;]+)/);
+
   if (!tokenMatch) {
     fail('No accessToken found in set-cookie header');
     console.error('Set-Cookie header:', setCookie);
@@ -95,83 +136,32 @@ async function main() {
   }
 
   accessToken = tokenMatch[1];
+
   pass('accessToken cookie extracted');
+
   info(`Token length: ${accessToken.length}`);
 
-  // ==========================================================
-  // 2. Verify /api/auth/me
-  // ==========================================================
+  /*
+   * ==========================================================
+   * 2. AUTHENTICATED TUTORIAL
+   * ==========================================================
+   */
 
-  section('2. AUTH ME');
-
-  const authMeUrl = `${BASE_URL}/api/auth/me`;
-  info(`GET ${authMeUrl}`);
-
-  let authMeResponse;
-  try {
-    authMeResponse = await fetch(authMeUrl, {
-      method: 'GET',
-      headers: {
-        'Cookie': `accessToken=${accessToken}`,
-      },
-    });
-  } catch (error) {
-    fail(`/api/auth/me request failed: ${error.message}`);
-    return;
-  }
-
-  info(`/api/auth/me status: ${authMeResponse.status}`);
-
-  if (authMeResponse.status !== 200) {
-    fail(`/api/auth/me returned ${authMeResponse.status}`);
-    const errorText = await authMeResponse.text();
-    console.error('/api/auth/me error:', errorText);
-    return;
-  }
-
-  pass('/api/auth/me returns HTTP 200');
-
-  let authMeJson;
-  try {
-    authMeJson = await authMeResponse.json();
-  } catch {
-    fail('/api/auth/me did not return valid JSON');
-    return;
-  }
-
-  console.log(JSON.stringify(authMeJson, null, 2));
-
-  const roles = Array.isArray(authMeJson?.roles) ? authMeJson.roles : [];
-  
-  if (roles.includes('student')) {
-    pass('User has student role');
-  } else {
-    fail(`Student role missing. Roles: ${JSON.stringify(roles)}`);
-  }
-
-  if (authMeJson?.isAuthenticated || authMeJson?.authenticated) {
-    pass('User is authenticated');
-  } else {
-    fail('User authentication status is false or missing');
-  }
-
-  // ==========================================================
-  // 3. Test Canonical Tutorial URL
-  // ==========================================================
-
-  section('3. CANONICAL TUTORIAL URL');
+  section('2. AUTHENTICATED TUTORIAL');
 
   const tutorialUrl = `${BASE_URL}${CANONICAL_TUTORIAL_PATH}`;
+
   info(`GET ${tutorialUrl}`);
 
   let tutorialResponse;
+
   try {
     tutorialResponse = await fetch(tutorialUrl, {
       method: 'GET',
       headers: {
-        'Cookie': `accessToken=${accessToken}`,
+        Cookie: `accessToken=${accessToken}`,
       },
-      redirect: 'manual', // Don't follow redirects
+      redirect: 'manual',
     });
   } catch (error) {
     fail(`Tutorial request failed: ${error.message}`);
@@ -180,128 +170,176 @@ async function main() {
 
   info(`Tutorial status: ${tutorialResponse.status}`);
 
-  // Check for redirect to login
-  if (tutorialResponse.status === 307 || tutorialResponse.status === 302) {
-    const location = tutorialResponse.headers.get('location');
+  const location = tutorialResponse.headers.get('location');
+
+  if (location) {
     info(`Redirect location: ${location}`);
+  }
 
-    if (location && location.includes('/login')) {
-      fail('Authenticated user redirected to /login');
-      console.error('This indicates middleware is not setting x-user-id headers');
-    } else if (location && location.includes('/dashboard/tutorial-v2')) {
-      fail('Tutorial redirected under /dashboard (incorrect URL construction)');
-    } else {
-      info(`Redirected to: ${location}`);
+  /*
+   * Compact URL is allowed to canonicalize.
+   *
+   * Authentication redirect to /login is NOT allowed.
+   */
+
+  if (tutorialResponse.status === 307 || tutorialResponse.status === 302) {
+    if (location?.includes('/login')) {
+      fail('Authenticated user was redirected to /login');
+      return;
     }
+
+    fail(`Authenticated Tutorial produced unexpected redirect: ${location}`);
+
     return;
   }
 
-  if (tutorialResponse.status === 200) {
-    pass('Canonical Tutorial returns HTTP 200');
-  } else if (tutorialResponse.status === 404) {
-    fail('Tutorial returned 404 (may indicate navigation node missing)');
-    return;
-  } else {
-    fail(`Tutorial returned unexpected status: ${tutorialResponse.status}`);
+  if (tutorialResponse.status === 308) {
+    if (!location) {
+      fail('Tutorial returned 308 without Location header');
+      return;
+    }
+
+    if (location.includes('/login')) {
+      fail('Authenticated Tutorial canonicalization redirected to /login');
+      return;
+    }
+
+    pass('Authenticated Tutorial returned canonical 308 redirect');
+
+    info('Following canonical redirect...');
+
+    try {
+      tutorialResponse = await fetch(new URL(location, BASE_URL), {
+        method: 'GET',
+        headers: {
+          Cookie: `accessToken=${accessToken}`,
+        },
+        redirect: 'manual',
+      });
+    } catch (error) {
+      fail(`Canonical Tutorial request failed: ${error.message}`);
+      return;
+    }
+
+    info(`Canonical Tutorial status: ${tutorialResponse.status}`);
+  }
+
+  if (tutorialResponse.status !== 200) {
+    fail(`Authenticated Tutorial returned ${tutorialResponse.status}, expected 200`);
     return;
   }
 
-  // Check response content
+  pass('Authenticated Tutorial returns HTTP 200');
+
   const tutorialHtml = await tutorialResponse.text();
-  
-  if (tutorialHtml.length > 100) {
-    pass('Tutorial page contains content');
-  } else {
-    fail('Tutorial page body is unexpectedly empty');
+
+  info(`Tutorial content length: ${tutorialHtml.length}`);
+
+  if (isLoginPage(tutorialHtml)) {
+    fail('Tutorial HTTP 200 response is actually the Login page');
+    return;
   }
 
-  if (tutorialHtml.toLowerCase().includes('authentication required')) {
-    fail('Tutorial page displays authentication error');
-  } else {
-    pass('No authentication error displayed');
+  pass('Tutorial HTTP 200 response is NOT Login page');
+
+  if (!isTutorialContent(tutorialHtml)) {
+    fail('Tutorial response does not contain expected Tutorial content');
+    return;
   }
 
-  // ==========================================================
-  // 4. Test Unauthenticated Access
-  // ==========================================================
+  pass('Authenticated Tutorial contains expected content');
 
-  section('4. UNAUTHENTICATED ACCESS');
+  /*
+   * ==========================================================
+   * 3. UNAUTHENTICATED ACCESS
+   * ==========================================================
+   */
 
-  info('Testing Tutorial URL without authentication...');
+  section('3. UNAUTHENTICATED ACCESS');
+
+  info('Requesting Tutorial without authentication');
 
   let unauthResponse;
+
   try {
     unauthResponse = await fetch(tutorialUrl, {
       method: 'GET',
       redirect: 'manual',
-      // No cookie header
     });
   } catch (error) {
-    fail(`Unauthenticated request failed: ${error.message}`);
+    fail(`Unauthenticated Tutorial request failed: ${error.message}`);
     return;
   }
 
   info(`Unauthenticated status: ${unauthResponse.status}`);
 
-  if (unauthResponse.status === 307 || unauthResponse.status === 302) {
-    const location = unauthResponse.headers.get('location');
-    if (location && location.includes('/login')) {
-      pass('Unauthenticated user correctly redirected to /login');
-    } else {
-      fail(`Unexpected redirect for unauthenticated user: ${location}`);
-    }
-  } else if (unauthResponse.status === 401) {
-    pass('Unauthenticated user received 401');
-  } else {
-    fail(`Unauthenticated user received unexpected status: ${unauthResponse.status}`);
+  const unauthLocation = unauthResponse.headers.get('location');
+
+  if (unauthLocation) {
+    info(`Redirect location: ${unauthLocation}`);
   }
 
-  // ==========================================================
-  // 5. Test ID Variant URL
-  // ==========================================================
+  if (
+    (unauthResponse.status === 307 || unauthResponse.status === 302) &&
+    unauthLocation?.includes('/login')
+  ) {
+    pass('Unauthenticated user correctly redirected to /login');
+  } else {
+    fail(`Unauthenticated Tutorial protection failed: HTTP ${unauthResponse.status}`);
+  }
 
-  section('5. ID VARIANT URL');
+  /*
+   * ==========================================================
+   * 4. CANONICAL ID VARIANT
+   * ==========================================================
+   */
 
-  const idVariantPath = '/tutorial-v2/full-stack-development/backend-development/java/what-is-java-12efacf1/whatisjava';
-  const idVariantUrl = `${BASE_URL}${idVariantPath}`;
-  
+  section('4. CANONICAL ID VARIANT');
+
+  const idVariantUrl = `${BASE_URL}${ID_VARIANT_TUTORIAL_PATH}`;
+
   info(`GET ${idVariantUrl}`);
 
   let idResponse;
+
   try {
     idResponse = await fetch(idVariantUrl, {
       method: 'GET',
       headers: {
-        'Cookie': `accessToken=${accessToken}`,
+        Cookie: `accessToken=${accessToken}`,
       },
       redirect: 'manual',
     });
   } catch (error) {
-    info(`ID variant request failed: ${error.message}`);
+    fail(`ID variant request failed: ${error.message}`);
     return;
   }
 
   info(`ID variant status: ${idResponse.status}`);
 
-  if (idResponse.status === 307 || idResponse.status === 302) {
-    const location = idResponse.headers.get('location');
-    if (location && location.includes('/login')) {
-      fail('ID variant redirected authenticated user to /login (auth propagation problem)');
-    } else {
-      info(`ID variant redirected to: ${location}`);
-    }
-  } else if (idResponse.status === 404) {
-    info('ID variant returned 404 (acceptable if navigationNodeId not authoritative)');
-  } else if (idResponse.status === 200) {
-    pass('ID variant resolved successfully');
-  } else {
-    info(`ID variant returned: ${idResponse.status}`);
+  if (idResponse.status !== 200) {
+    fail(`Canonical ID variant returned ${idResponse.status}, expected 200`);
+    return;
   }
-}
 
-// ==========================================================
-// Execute
-// ==========================================================
+  pass('Canonical ID variant returns HTTP 200');
+
+  const idHtml = await idResponse.text();
+
+  if (isLoginPage(idHtml)) {
+    fail('Canonical ID variant returned Login page');
+    return;
+  }
+
+  pass('Canonical ID variant response is NOT Login page');
+
+  if (!isTutorialContent(idHtml)) {
+    fail('Canonical ID variant does not contain Tutorial content');
+    return;
+  }
+
+  pass('Canonical ID variant contains expected Tutorial content');
+}
 
 try {
   await main();
@@ -312,16 +350,30 @@ try {
   failures++;
 }
 
-// ==========================================================
-// Final Result
-// ==========================================================
-
 section('FINAL RESULT');
 
 if (failures === 0) {
   console.log('🎉 PASS — Tutorial V2 authentication/routing validated');
+
+  console.log('');
+  console.log('Authentication:');
+  console.log('  ✅ Login: PASS');
+  console.log('  ✅ accessToken: PASS');
+
+  console.log('');
+  console.log('Tutorial V2:');
+  console.log('  ✅ Authenticated Tutorial: PASS');
+  console.log('  ✅ Unauthenticated protection: PASS');
+  console.log('  ✅ Canonical ID variant: PASS');
+
+  console.log('');
+  console.log('Content:');
+  console.log('  ✅ Actual Tutorial content verified');
+  console.log('  ✅ Login-page false positive rejected');
+
   process.exit(0);
 }
 
 console.error(`🔥 FAIL — ${failures} assertion(s) failed`);
+
 process.exit(1);

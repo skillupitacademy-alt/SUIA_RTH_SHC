@@ -8,12 +8,9 @@ export const proxy = await createAuthProxy({
 
 export const config = {
   matcher: [
-    {
-      source: '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
-      missing: [
-        { type: 'query', key: '_rsc' },
-        { type: 'header', key: 'rsc' },
-      ],
-    },
+    // 🔒 SECURITY: Match ALL application routes including RSC requests
+    // RSC requests MUST pass through authentication boundary
+    // Previous config excluded RSC requests, creating security bypass
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)' ,
   ],
 };

@@ -109,6 +109,20 @@ export const createApp = () => {
     // 🏷️ BRAND RESOLUTION: Resolve brand from trusted hostname source
     const requestBrand = resolveTrustedRequestBrand(c);
     
+    // 🔥 STEP 4 DIAGNOSTIC: Evidence for brand resolution investigation
+    console.log('[GATEWAY_BRAND_EVIDENCE]', JSON.stringify({
+      requestUrl: c.req.url,
+      host: c.req.header('host') ?? null,
+      forwardedHost: c.req.header('x-forwarded-host') ?? null,
+      originalHost: c.req.header('x-original-host') ?? null,
+      assertedBrand: c.req.header('x-brand') ?? null,
+      platform: c.req.header('x-platform') ?? null,
+      trustedInternalRequest: hasTrustedInternalRequest(c),
+      resolvedBrand: requestBrand?.brand ?? null,
+      resolvedHostname: requestBrand?.hostname ?? null,
+      resolvedSource: requestBrand?.source ?? null,
+    }));
+    
     if (!requestBrand) {
       console.log('[GATEWAY_ERROR] Unable to resolve brand from request');
       return c.json({ 

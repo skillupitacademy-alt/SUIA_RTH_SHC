@@ -107,8 +107,9 @@ export function hasTrustedInternalRequest(
  *
  * Priority:
  *
- *   1. Trusted X-Original-Host (when X-Internal-Secret is valid)
- *   2. Actual gateway hostname
+ *   1. Trusted X-Forwarded-Host (when X-Internal-Secret is valid)
+ *   2. Trusted X-Original-Host (when X-Internal-Secret is valid) [legacy]
+ *   3. Actual gateway hostname
  *
  * We deliberately DO NOT use X-Brand here as an unauthenticated
  * tenant selector.
@@ -119,28 +120,52 @@ export function resolveTrustedRequestBrand(
   const gatewayHostname =
     getGatewayHostname(c);
 
+  // Check both x-forwarded-host (standard) and x-original-host (legacy)
+  const forwardedHost =
+    c.req.header('x-forwarded-host');
   const originalHost =
     c.req.header('x-original-host');
 
-  if (
-    originalHost &&
-    hasTrustedInternalRequest(c)
-  ) {
-    const normalizedOriginalHost =
-      normalizeHostHeader(originalHost);
+  if (hasTrustedInternalRequest(c)) {
+    // Try x-forwarded-host first (standard header)
+    if (forwardedHost) {
+      const normalizedForwardedHost =
+        normalizeHostHeader(forwardedHost);
 
-    if (normalizedOriginalHost) {
-      const originalBrand =
-        resolveBrandFromHostname(
-          normalizedOriginalHost,
-        );
+      if (normalizedForwardedHost) {
+        const forwardedBrand =
+          resolveBrandFromHostname(
+            normalizedForwardedHost,
+          );
 
-      if (originalBrand) {
-        return {
-          brand: originalBrand,
-          hostname: normalizedOriginalHost,
-          source: 'trusted-original-host',
-        };
+        if (forwardedBrand) {
+          return {
+            brand: forwardedBrand,
+            hostname: normalizedForwardedHost,
+            source: 'trusted-original-host',
+          };
+        }
+      }
+    }
+
+    // Fall back to x-original-host (legacy)
+    if (originalHost) {
+      const normalizedOriginalHost =
+        normalizeHostHeader(originalHost);
+
+      if (normalizedOriginalHost) {
+        const originalBrand =
+          resolveBrandFromHostname(
+            normalizedOriginalHost,
+          );
+
+        if (originalBrand) {
+          return {
+            brand: originalBrand,
+            hostname: normalizedOriginalHost,
+            source: 'trusted-original-host',
+          };
+        }
       }
     }
   }

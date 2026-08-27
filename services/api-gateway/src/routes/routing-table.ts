@@ -10,6 +10,7 @@ export const ROUTING_TABLE: GatewayRoute[] = [
   },
   { host: 'user.realtutorialhub.com', prefix: '/auth', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/auth', public: true },
   { host: 'user.realtutorialhub.com', prefix: '/health', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/health', public: true },
+  { host: 'user.realtutorialhub.com', prefix: '/tutorial-v2', upstreamKey: 'TUTORIAL_SERVICE_URL', auth: true },
   { host: 'user.realtutorialhub.com', prefix: '/', upstreamKey: 'TUTORIAL_SERVICE_URL', public: true },
   { host: 'admin.realtutorialhub.com', prefix: '/', upstreamKey: 'RTH_ADMIN_URL', public: true },
   {
@@ -21,6 +22,7 @@ export const ROUTING_TABLE: GatewayRoute[] = [
   },
   { host: 'user.skillupitacademy.com', prefix: '/auth', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/auth', public: true },
   { host: 'user.skillupitacademy.com', prefix: '/health', upstreamKey: 'EXAM_SERVICE_URL', upstreamPathPrefix: '/api/health', public: true },
+  { host: 'user.skillupitacademy.com', prefix: '/tutorial-v2', upstreamKey: 'SKILLUP_WEB_URL', auth: true },
   { host: 'user.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_WEB_URL', public: true },
   { host: 'admin.skillupitacademy.com', prefix: '/', upstreamKey: 'SKILLUP_ADMIN_URL', public: true },
   { host: 'faculty.skillupitacademy.com', prefix: '/', upstreamKey: 'FACULTY_URL', public: true },

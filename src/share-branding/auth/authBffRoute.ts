@@ -135,13 +135,53 @@ export function createForwardHeaders(request: NextRequest): Headers {
   headers.delete('host');
   headers.delete('content-length');
   
-  // 🔥 CRITICAL: Get actual public hostname (not x-forwarded-host)
+  // 🔥 CRITICAL: Get actual public hostname (not arbitrary client headers)
+  // SECURITY: Only use the actual Host header Next.js received
   const publicHost = getRequestHost(request);
   
-  // 🔐 MULTI-BRAND SECURITY: Send actual hostname to gateway with internal authentication
-  // The gateway will resolve brand from X-Original-Host after validating X-Internal-Secret
   if (publicHost) {
-    headers.set('x-original-host', publicHost);
+    const normalizedHost = publicHost
+      .split(',')[0]
+      .trim()
+      .toLowerCase();
+
+    const brand =
+      normalizedHost.includes('skillup')
+        ? 'skillup'
+        : 'realtutorialhub';
+
+    /*
+     * Explicit brand assertion.
+     */
+    headers.set('x-brand', brand);
+
+    /*
+     * Trusted hostname context.
+     *
+     * Gateway is contacted through 127.0.0.1:8787,
+     * so preserve the browser-facing hostname.
+     */
+    headers.set('x-forwarded-host', normalizedHost);
+
+    /*
+     * Preserve protocol as well.
+     */
+    const protocol =
+      request.headers.get('x-forwarded-proto') ??
+      request.nextUrl.protocol.replace(':', '');
+
+    headers.set('x-forwarded-proto', protocol);
+
+    // 🔐 LEGACY: Also set x-original-host for any code still using it
+    headers.set('x-original-host', normalizedHost);
+
+    console.log(JSON.stringify({
+      tag: 'BFF_BRAND_CONTEXT',
+      hostname: normalizedHost,
+      brand,
+      forwardedHost: headers.get('x-forwarded-host'),
+      forwardedProto: headers.get('x-forwarded-proto'),
+    }));
   }
   
   // 🔥 CRITICAL: Add internal secret for BFF → Gateway authentication

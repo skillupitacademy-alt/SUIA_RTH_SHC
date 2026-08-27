@@ -76,6 +76,10 @@
     "validate:phase2b": "tsx scripts/validate-phase2b.ts",
 
     "assurance:tutorial-v2:e2e": "node scripts/assurance/tutorial-v2-auth-http.e2e.mjs",
+    "assurance:tutorial-v2:auth": "node scripts/assurance/tutorial-v2-auth-matrix.mjs",
+    "assurance:tutorial-v2:direct-url": "node scripts/assurance/tutorial-v2-direct-url.e2e.mjs",
+    "assurance:tutorial-v2:extended": "node scripts/assurance/tutorial-v2-extended-auth-matrix.mjs",
+    "assurance:tutorial-v2:api-auth": "cross-env JWT_SECRET=\"a53ce3b12a7ad0c7a93f08f101090b009b87dc775c0199ab74da94f2beb6b6a5ec214e4f9fcbd402688329fded49509e960e494f47c0354b2e0402352584c26c\" node scripts/assurance/tutorial-v2-api-auth-matrix.mjs",
     "audit:tutorial-section-validation": "tsx scripts/audit-tutorial-section-validation.ts",
     "validate:cloudrun-coverage": "node scripts/verify-cloudrun-coverage.mjs",
 

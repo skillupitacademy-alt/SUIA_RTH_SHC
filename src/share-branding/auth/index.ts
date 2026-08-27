@@ -22,6 +22,15 @@ export {
   type BffAuthResult,
 } from './unifiedBffAuth';
 
+// 🔒 SECURITY: Canonical brand resolution (shared with gateway)
+export {
+  resolveBrandFromHostname,
+  extractHostnameFromRequest,
+  isSupportedBrand,
+  SUPPORTED_BRANDS,
+  type Brand,
+} from './brandResolution';
+
 // Identity guard - enforce correct user ID usage
 export {
   getDatabaseUserId,

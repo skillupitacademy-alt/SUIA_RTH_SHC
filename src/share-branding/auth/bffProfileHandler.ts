@@ -50,16 +50,13 @@ export async function handleProfileGet(req: NextRequest) {
   const perfStart = Date.now();
   const correlationId = req.headers.get('x-correlation-id') || crypto.randomUUID();
 
-  // 🔥 RUNTIME ENV TRACE
-  const secret = process.env.INTERNAL_GATEWAY_SECRET;
-  console.log("[ENV TRACE]", JSON.stringify({
-    service: process.env.K_SERVICE,
-    revision: process.env.K_REVISION,
-    hasSecret: typeof secret === 'string' && secret.length > 0,
-    secretLength: secret?.length,
-    envKeys: Object.keys(process.env)
-      .filter(k => k.includes('SECRET'))
-      .sort(),
+  // 🔍 RUNTIME ENV DIAGNOSTIC
+  console.log("[BFF][Profile GET][ENV]", JSON.stringify({
+    correlationId,
+    hasInternalApiSecret: Boolean(process.env.INTERNAL_API_SECRET),
+    hasInternalApiUrl: Boolean(process.env.INTERNAL_API_URL),
+    hasApiServerUrl: Boolean(process.env.API_SERVER_URL),
+    resolvedInternalApiUrl: INTERNAL_API_URL,
   }));
 
   try {
@@ -83,25 +80,38 @@ export async function handleProfileGet(req: NextRequest) {
     // Add correlation ID for debugging
     headers['x-correlation-id'] = correlationId;
     
-    // 🔍 DEBUG: Verify headers are being sent
-    console.log(`[BFF DEBUG][${correlationId}]`, {
-      sendingSecret: headers['x-internal-secret'] ? '[present]' : '[missing]',
-      sendingUserId: headers['x-user-id'],
-      sendingBrand: headers['x-brand'],
-      apiUrl: INTERNAL_API_URL,
+    // 🔍 DIAGNOSTIC: Verify headers being sent (without exposing secrets)
+    console.log(`[BFF][Profile GET][${correlationId}] Headers diagnostic`, {
+      headerNames: Object.keys(headers).sort(),
+      hasInternalSecret: Boolean(headers['x-internal-secret']),
+      hasUserId: Boolean(headers['x-user-id']),
+      hasBrand: Boolean(headers['x-brand']),
+      userId: headers['x-user-id']?.substring(0, 8),
+      brand: headers['x-brand'],
     });
 
     // Call API Server
-    const res = await unifiedFetch(`${INTERNAL_API_URL}/auth/profile`, {
+    const upstreamUrl = `${INTERNAL_API_URL}/auth/profile`;
+    console.log(`[BFF][Profile GET][${correlationId}] Calling upstream: ${upstreamUrl}`);
+    
+    const res = await unifiedFetch(upstreamUrl, {
       method: 'GET',
       headers,
       cache: 'no-store',
     });
 
+    // 🔍 DIAGNOSTIC: Log upstream response BEFORE processing
+    console.log(`[BFF][Profile GET][${correlationId}] Upstream response received`, {
+      status: res.status,
+      statusText: res.statusText,
+      contentType: res.headers.get('content-type'),
+      hasBody: Boolean(res.body),
+    });
+
     const data = await res.json();
     const duration = Date.now() - perfStart;
 
-    console.log(`[BFF][Profile GET][${correlationId}] API response: ${res.status} (${duration}ms)`);
+    console.log(`[BFF][Profile GET][${correlationId}] Response parsed: ${res.status} (${duration}ms)`);
 
     if (res.status === 404) {
       return NextResponse.json(
@@ -129,7 +139,14 @@ export async function handleProfileGet(req: NextRequest) {
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
     const duration = Date.now() - perfStart;
-    console.error(`[BFF][Profile GET][${correlationId}] Error (${duration}ms):`, err);
+    
+    // 🔍 DIAGNOSTIC: Log exact error that triggered catch block
+    console.error(`[BFF][Profile GET][${correlationId}] EXCEPTION in catch block (${duration}ms)`, {
+      errorName: err instanceof Error ? err.name : 'Unknown',
+      errorMessage: err instanceof Error ? err.message : String(err),
+      errorStack: err instanceof Error ? err.stack?.split('\n').slice(0, 3).join('\n') : undefined,
+    });
+    
     return BffAuthErrors.internalError('Profile retrieval failed');
   }
 }
