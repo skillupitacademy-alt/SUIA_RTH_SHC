@@ -119,7 +119,7 @@ function extractNavigationNodes(nodes: Array<{ id: string; name: string; type: s
 
     // Recursively traverse children
     if (node.children && Array.isArray(node.children)) {
-      result.push(...extractNavigationNodes(node.children));
+      result.push(...extractNavigationNodes(node.children as Array<{ id: string; name: string; type: string; slug?: string; children?: unknown[] }>));
     }
   }
 
