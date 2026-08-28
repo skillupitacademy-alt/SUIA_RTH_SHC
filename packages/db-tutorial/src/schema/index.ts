@@ -45,6 +45,7 @@ export * from './tutorial-projects';
 export * from './tutorial-project-submissions';
 export * from './student-badges';
 export * from './tutorial-progress';
+export * from './tutorial-navigation-progress'; // Phase 2.6: Navigation-node progress
 // REMOVED: export * from './tutorial-video-links'; (legacy - dropped Phase B)
 export * from './badges';
 export * from './certificates';
@@ -95,6 +96,7 @@ import * as tutorialProjectsModule from './tutorial-projects';
 import * as tutorialProjectSubmissionsModule from './tutorial-project-submissions';
 import * as studentBadgesModule from './student-badges';
 import * as tutorialProgressModule from './tutorial-progress';
+import * as tutorialNavigationProgressModule from './tutorial-navigation-progress'; // Phase 2.6
 // REMOVED: import * as tutorialVideoLinksModule from './tutorial-video-links'; (legacy - dropped Phase B)
 import * as tutorialSubjectsModule from './tutorial-subjects';
 import * as tutorialTopicsModule from './tutorial-topics';
@@ -152,6 +154,7 @@ export const schema = {
   ...tutorialProjectSubmissionsModule,
   ...studentBadgesModule,
   ...tutorialProgressModule,
+  ...tutorialNavigationProgressModule, // Phase 2.6
   // REMOVED: ...tutorialVideoLinksModule, (legacy - dropped Phase B)
   ...badgesModule,
   ...certificatesModule,

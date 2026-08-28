@@ -69,4 +69,22 @@ export { buildDefinitionD1AIPrompt } from './services/definition-d1-prompt-gener
 export { buildCodeC1AIPrompt } from './services/code-c1-prompt-generator';
 export { buildCodeC1AIContext } from './services/ai-context-builder';
 
+// Phase 2.6-A3: Learning Progress Service
+export { LearningProgressService } from './services/learning-progress.service';
+export type {
+  AuthenticatedIdentity,
+  LearningState,
+  NavigationProgressDTO,
+  NavigationProgressWithCalculatedDTO,
+  CompletionDecision,
+} from './services/learning-progress.service';
+export {
+  LearningProgressError,
+  NavigationNodeNotFoundError,
+  UnauthorizedProgressAccessError,
+  InvalidBlockCompletionError,
+  InvalidNavigationHierarchyError,
+  InvalidTimeUpdateError,
+} from './services/learning-progress.service';
+
 export { withTimeout, QUICK_QUERY_TIMEOUT, STANDARD_QUERY_TIMEOUT, REPORT_QUERY_TIMEOUT, MIGRATION_TIMEOUT, QueryTimeoutError } from '@quiz/db';

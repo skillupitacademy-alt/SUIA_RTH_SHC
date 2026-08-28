@@ -109,6 +109,105 @@ export interface TutorialProgressRecord {
   deletedAt: Date | null;
 }
 
+/**
+ * Phase 2.6: Completed Block Record
+ * 
+ * Preserves block identity and version across content revisions.
+ */
+export interface CompletedBlockRecord {
+  blockId: string;
+  blockVersion: string; // e.g., "D1", "C1", "S1"
+  completedAt: string; // ISO timestamp
+}
+
+/**
+ * Phase 2.6: Navigation Progress Record
+ * 
+ * Per-navigation-node learner progress
+ */
+export interface TutorialNavigationProgressRecord {
+  id: string;
+  userId: string;
+  navigationNodeId: string;
+  sectionId: string | null;
+  subtopicId: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  completedBlocks: CompletedBlockRecord[]; // Block records with versions
+  timeSpentActiveSec: number;
+  visitCount: number;
+  revisionCount: number;
+  lastSessionId: string | null; // JWT family ID or client session UUID
+  firstViewedAt: Date | null;
+  lastViewedAt: Date | null;
+  completedAt: Date | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+/**
+ * Phase 2.6: Navigation Progress Create Input
+ */
+export interface TutorialNavigationProgressCreateInput {
+  userId: string;
+  navigationNodeId: string;
+  sectionId?: string | null;
+  subtopicId: string;
+}
+
+/**
+ * Phase 2.6: Block Completion Event
+ * 
+ * IMPORTANT: Preserves blockVersion to track content revisions
+ */
+export interface TutorialBlockCompletionEvent {
+  userId: string;
+  navigationNodeId: string;
+  sectionId: string | null;
+  subtopicId: string;
+  blockId: string;
+  blockType: string;
+  blockVersion: string; // e.g., "D1", "C1", "S1"
+  sessionId?: string; // Optional: Learning session identifier for idempotency
+  occurredAt?: Date;
+}
+
+/**
+ * Phase 2.6: Time Update Event
+ */
+export interface TutorialTimeUpdateEvent {
+  userId: string;
+  navigationNodeId: string;
+  subtopicId: string;
+  timeSpentActiveSec: number; // Accumulated active time
+  sessionId?: string; // Optional: For deduplication
+}
+
+/**
+ * Phase 2.6: Visit Event
+ * 
+ * SESSION SEMANTICS:
+ * - sessionId: REQUIRED learning session identifier (JWT family ID or client-generated UUID)
+ * - Service layer owns session ID generation:
+ *   * Authenticated users: JWT family/session ID
+ *   * Anonymous users: Stable client session UUID
+ * - Repository uses sessionId for atomic session transition detection
+ * - IS DISTINCT FROM comparison determines new vs same session
+ * 
+ * REVISION SEMANTICS:
+ * - Revision = return to previously completed node in a new session
+ * - Automatically detected by repository when:
+ *   * status = 'completed' AND sessionId different from lastSessionId
+ */
+export interface TutorialVisitEvent {
+  userId: string;
+  navigationNodeId: string;
+  subtopicId: string;
+  sessionId: string; // REQUIRED - service must provide stable session identity
+  occurredAt?: Date;
+}
+
 export interface TutorialProjectSubmissionRecord {
   id: string;
   userId: string;
@@ -211,6 +310,54 @@ export interface ITutorialProgressRepository {
   isSubtopicComplete(userId: string, subtopicId: string): Promise<boolean>;
   getCompletedSubtopics(userId: string): Promise<string[]>;
   resetProgress(userId: string, subtopicId: string): Promise<TutorialProgressRecord>;
+}
+
+/**
+ * Phase 2.6: Navigation Progress Repository Interface
+ * 
+ * COMPLETION POLICY BOUNDARY:
+ * - Repository: Persistence layer only
+ * - Service: Business logic and completion eligibility validation
+ * 
+ * SERVICE LAYER RESPONSIBILITY (NOT REPOSITORY):
+ * - Determine if node can be marked complete
+ * - Validate required blocks completed
+ * - Apply D1/C1/S1-specific completion rules
+ * - Determine session boundaries for visit counting
+ * - Determine revision triggers (return after completion)
+ * 
+ * REPOSITORY RESPONSIBILITY:
+ * - Persist progress state
+ * - Ensure idempotency
+ * - Atomic updates
+ * - Concurrency-safe operations
+ */
+export interface ITutorialNavigationProgressRepository {
+  withDb(dbClient: TutorialDbClientLike): this;
+  
+  // Core CRUD
+  findById(id: string): Promise<TutorialNavigationProgressRecord | undefined>;
+  getProgress(userId: string, navigationNodeId: string): Promise<TutorialNavigationProgressRecord | undefined>;
+  getProgressForSubtopic(userId: string, subtopicId: string): Promise<TutorialNavigationProgressRecord[]>;
+  createProgress(data: TutorialNavigationProgressCreateInput): Promise<TutorialNavigationProgressRecord>;
+  
+  // Block completion (idempotent, preserves blockVersion)
+  markBlockCompleted(event: TutorialBlockCompletionEvent): Promise<TutorialNavigationProgressRecord>;
+  isBlockCompleted(userId: string, navigationNodeId: string, blockId: string, blockVersion?: string): Promise<boolean>;
+  
+  // Time tracking (cumulative, validated)
+  recordTime(event: TutorialTimeUpdateEvent): Promise<TutorialNavigationProgressRecord>;
+  
+  // Visit tracking (service determines increment logic)
+  recordVisit(event: TutorialVisitEvent): Promise<TutorialNavigationProgressRecord>;
+  incrementRevision(userId: string, navigationNodeId: string): Promise<TutorialNavigationProgressRecord>;
+  
+  // Completion (service validates eligibility before calling)
+  completeNode(userId: string, navigationNodeId: string): Promise<TutorialNavigationProgressRecord>;
+  
+  // Queries
+  getCompletedNodes(userId: string, subtopicId: string): Promise<string[]>; // Returns navigationNodeIds
+  isNodeComplete(userId: string, navigationNodeId: string): Promise<boolean>;
 }
 
 export interface IProjectSubmissionRepository {
