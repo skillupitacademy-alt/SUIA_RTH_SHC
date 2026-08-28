@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { db, domains, subjects, subtopics, topics, withTimeout, STANDARD_QUERY_TIMEOUT } from '@quiz/db';
-import { TutorialContentRepository } from '@quiz/db-tutorial';
+import { TutorialSectionRepository } from '@quiz/db-tutorial';
 import { getTutorialContentBySubtopicId } from './tutorial-content-api';
 
 export interface TutorialHierarchyNode {
@@ -25,7 +25,7 @@ export interface PublishedTutorialContent {
   updatedAt: Date;
 }
 
-const repository = new TutorialContentRepository();
+const repository = new TutorialSectionRepository();
 
 const hasDatabaseUrl = (): boolean => typeof process.env.DATABASE_URL === 'string' && process.env.DATABASE_URL.trim().length > 0;
 
@@ -164,8 +164,11 @@ export async function getPublishedTutorialPaths() {
         const topicSlug = slugifySegment(topic.name);
         const subtopicMatches = hierarchy.subtopics.filter((subtopic) => subtopic.topicId === topic.id);
         for (const subtopic of subtopicMatches) {
-          const published = await repository.getPublished(subtopic.id);
-          if (published.length === 0) {
+          // Query tutorial_sections (V2) with status='deployed' instead of legacy tutorial_content
+          const sections = await repository.getTutorialsBySubtopic(subtopic.id);
+          const deployedSections = sections.filter(section => section.status === 'deployed');
+          
+          if (deployedSections.length === 0) {
             continue;
           }
 
@@ -175,7 +178,7 @@ export async function getPublishedTutorialPaths() {
             topicSlug,
             subtopicSlug: slugifySegment(subtopic.name),
             subtopicId: subtopic.id,
-            updatedAt: published[0]?.updatedAt ?? subtopic.updatedAt,
+            updatedAt: deployedSections[0]?.updatedAt ?? subtopic.updatedAt,
           });
         }
       }
