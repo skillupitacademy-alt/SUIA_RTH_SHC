@@ -3,7 +3,6 @@ import { TokenService } from '@quiz/auth';
 import type { GatewayBindings } from '@/types';
 import type { SkillHubCoreTokenPayload } from '@/types';
 import type { Brand } from '@/lib/brand-resolution';
-import { isSupportedBrand } from '@/lib/brand-resolution';
 
 export type PortalKind = 'admin' | 'user';
 export type AuthTokenSource = 'admin_accessToken' | 'accessToken' | 'authorization';
@@ -48,10 +47,7 @@ export function detectRequestBrand(request: Request): string | undefined {
  * @deprecated Removed. Use canonical resolveBrandFromHostname() from @/lib/brand-resolution instead.
  * This function had unsafe substring matching and silent RTH fallback.
  */
-export function resolveBrandFromHostname(
-  hostname: string,
-  env: GatewayBindings,
-): 'realtutorialhub' | 'skillup' {
+export function resolveBrandFromHostname(): 'realtutorialhub' | 'skillup' {
   throw new Error(
     'resolveBrandFromHostname() from auth.ts is deprecated. ' +
     'Use resolveBrandFromHostname() from @/lib/brand-resolution and ' +

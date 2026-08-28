@@ -9,7 +9,6 @@
  */
 
 import { CodeC1AuthorContent, CodeC1AuthorContentSchema, HistoricalTutorialCodePayloadSchema } from '@quiz/types/tutorial-rich-document';
-import { TutorialCodePayload } from '@quiz/types/tutorial-page-content.types';
 
 /**
  * Result of Code C1 canonicalization with optional warning

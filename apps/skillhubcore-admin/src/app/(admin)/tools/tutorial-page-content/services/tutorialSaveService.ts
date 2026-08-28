@@ -37,7 +37,8 @@ export interface TutorialSaveResult {
  */
 export async function saveTutorialSection(
   params: TutorialSaveParams,
-  status: 'draft' | 'published'
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _status: 'draft' | 'published'
 ): Promise<TutorialSaveResult> {
   const {
     subtopicId,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type {
   TutorialCodePayload,
@@ -68,8 +68,6 @@ function buildPublishedTutorialUrl(
 
 import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import {
-  toTutorialBlock,
-  tutorialBlocksToInstances,
   extractBlockTitle,
   type BlockInstance,
 } from '../document/documentTransformation';
@@ -215,7 +213,7 @@ export function TutorialPageContentBuilderClient() {
       .then((response) => response.json())
       .then(setHierarchy)
       .catch((error) => setMessage(error instanceof Error ? error.message : 'Failed to load hierarchy.'));
-  }, []);
+  }, [setMessage]);
 
   useEffect(() => {
     const example = getDefaultPayload(form.blockType, form.versionId);
@@ -234,7 +232,7 @@ export function TutorialPageContentBuilderClient() {
     }
 
     void loadExistingTutorial(form.subtopicId, form.navigationNodeId);
-  }, [form.subtopicId, form.navigationNodeId, loadExistingTutorial, invalidateHydration]);
+  }, [form.subtopicId, form.navigationNodeId, loadExistingTutorial, invalidateHydration, hasUnsavedLocalChangesRef]);
 
   const subjects = useMemo(() => hierarchy.subjects.filter((item) => item.domainId === form.domainId), [hierarchy.subjects, form.domainId]);
   const topics = useMemo(() => hierarchy.topics.filter((item) => item.subjectId === form.subjectId), [hierarchy.topics, form.subjectId]);

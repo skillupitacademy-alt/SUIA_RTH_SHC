@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Step 3: Extract navigation page nodes from sidebar tree
-    const tree = row.tree as { topics?: any[] };
+    const tree = row.tree as { topics?: Array<{ id: string; name: string; type: string; slug: string; children?: unknown[] }> };
     console.log('[Navigation Nodes API] Tree topics:', tree.topics?.length || 0);
     const nodes = extractNavigationNodes(tree.topics || []);
     console.log('[Navigation Nodes API] Extracted nodes:', nodes.length);
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
  * 
  * Phase 1: navigationNodeId is the page node's id from the sidebar tree
  */
-function extractNavigationNodes(nodes: any[]): Array<{
+function extractNavigationNodes(nodes: Array<{ id: string; name: string; type: string; slug?: string; children?: unknown[] }>): Array<{
   id: string;
   name: string;
   type: string;
