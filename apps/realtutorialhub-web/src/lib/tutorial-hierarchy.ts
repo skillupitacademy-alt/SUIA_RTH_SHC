@@ -164,26 +164,19 @@ export async function getPublishedTutorialPaths() {
         const topicSlug = slugifySegment(topic.name);
         const subtopicMatches = hierarchy.subtopics.filter((subtopic) => subtopic.topicId === topic.id);
         for (const subtopic of subtopicMatches) {
-          try {
-            const published = await repository.getPublished(subtopic.id);
-            if (published.length === 0) {
-              continue;
-            }
-
-            paths.push({
-              domainSlug,
-              subjectSlug,
-              topicSlug,
-              subtopicSlug: slugifySegment(subtopic.name),
-              subtopicId: subtopic.id,
-              updatedAt: published[0]?.updatedAt ?? subtopic.updatedAt,
-            });
-          } catch (error) {
-            // Gracefully skip subtopics with missing tutorial_content table or query errors
-            // This allows builds to succeed even when the tutorial database is incomplete
-            console.warn(`[Tutorial Paths] Skipping subtopic ${subtopic.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          const published = await repository.getPublished(subtopic.id);
+          if (published.length === 0) {
             continue;
           }
+
+          paths.push({
+            domainSlug,
+            subjectSlug,
+            topicSlug,
+            subtopicSlug: slugifySegment(subtopic.name),
+            subtopicId: subtopic.id,
+            updatedAt: published[0]?.updatedAt ?? subtopic.updatedAt,
+          });
         }
       }
     }
