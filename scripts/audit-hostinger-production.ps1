@@ -1,35 +1,30 @@
 #!/usr/bin/env pwsh
+
 <#
 .SYNOPSIS
-    Read-only production environment and deployment audit.
+    Read-only Hostinger production configuration audit.
 
 .DESCRIPTION
-    Audits the actual Hostinger production configuration and running
-    containers without changing anything.
+    Audits the actual production Hostinger server.
 
     IMPORTANT:
-    - Does NOT modify files.
-    - Does NOT restart containers.
-    - Does NOT deploy anything.
-    - Does NOT print secret values.
-    - Only reports whether required secrets exist and what URLs/configuration
-      are actually being used.
-
-.NOTES
-    Target:
-        root@72.61.115.49
-
-    Production project:
-        /opt/platform
+      - READ ONLY
+      - No deployment
+      - No file modifications
+      - No container restarts
+      - No secret values printed
 #>
 
 [CmdletBinding()]
 param(
     [string]$HostAddress = "72.61.115.49",
-    [string]$User = "root"
+    [string]$User = "root",
+    [string]$ProjectPath = "/opt/platform"
 )
 
 $ErrorActionPreference = "Stop"
+
+$Target = "$User@$HostAddress"
 
 function Write-Section {
     param([string]$Title)
@@ -42,121 +37,141 @@ function Write-Section {
 
 function Write-Info {
     param([string]$Message)
+
     Write-Host "[INFO] $Message" -ForegroundColor Cyan
 }
 
-function Write-Success {
+function Write-Pass {
     param([string]$Message)
+
     Write-Host "[PASS] $Message" -ForegroundColor Green
 }
 
 function Write-Warn {
     param([string]$Message)
+
     Write-Host "[WARN] $Message" -ForegroundColor Yellow
 }
 
 function Write-Fail {
     param([string]$Message)
+
     Write-Host "[FAIL] $Message" -ForegroundColor Red
 }
 
-$Target = "$User@$HostAddress"
+function Invoke-Remote {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Command
+    )
+
+    & ssh `
+        -o BatchMode=yes `
+        -o ConnectTimeout=10 `
+        $Target `
+        $Command
+}
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Green
-Write-Host "       HOSTINGER PRODUCTION READ-ONLY AUDIT" -ForegroundColor Green
+Write-Host "        HOSTINGER PRODUCTION READ-ONLY AUDIT" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "Target: $Target" -ForegroundColor Gray
-Write-Host "Mode:   READ ONLY" -ForegroundColor Green
+Write-Host "Target : $Target"
+Write-Host "Project: $ProjectPath"
+Write-Host "Mode   : READ ONLY" -ForegroundColor Green
 Write-Host ""
 
-# ------------------------------------------------------------
-# 1. Connectivity
-# ------------------------------------------------------------
+# ============================================================
+# 1. SSH CONNECTIVITY
+# ============================================================
 
 Write-Section "1. SSH CONNECTIVITY"
 
-ssh -o BatchMode=yes -o ConnectTimeout=10 $Target "echo HOSTINGER_SSH_OK"
+try {
+    $result = & ssh `
+        -o BatchMode=yes `
+        -o ConnectTimeout=10 `
+        $Target `
+        "echo HOSTINGER_SSH_OK" 2>&1
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Fail "Cannot connect to Hostinger."
+    if ($LASTEXITCODE -ne 0) {
+        Write-Fail "SSH connection failed."
+        Write-Host $result
+        exit 1
+    }
+
+    Write-Pass "SSH connection successful."
+}
+catch {
+    Write-Fail "SSH connection failed: $($_.Exception.Message)"
     exit 1
 }
 
-Write-Success "SSH connection successful."
-
-# ------------------------------------------------------------
-# 2. Host information
-# ------------------------------------------------------------
+# ============================================================
+# 2. HOST INFORMATION
+# ============================================================
 
 Write-Section "2. HOST INFORMATION"
 
-ssh $Target @"
+Invoke-Remote @"
 echo "Hostname:"
 hostname
 
-echo ""
+echo
 echo "OS:"
 cat /etc/os-release | head -5
 
-echo ""
+echo
 echo "Docker:"
 docker --version
 
-echo ""
+echo
 echo "Docker Compose:"
 docker compose version
 "@
 
-# ------------------------------------------------------------
-# 3. Production directories
-# ------------------------------------------------------------
+# ============================================================
+# 3. PROJECT DIRECTORY
+# ============================================================
 
-Write-Section "3. PRODUCTION DIRECTORY STRUCTURE"
+Write-Section "3. PRODUCTION PROJECT"
 
-ssh $Target @"
-echo "Checking /opt/platform..."
-if [ -d /opt/platform ]; then
-    echo "OK: /opt/platform exists"
+Invoke-Remote @"
+if [ -d "$ProjectPath" ]; then
+    echo "PROJECT_EXISTS=true"
 else
-    echo "ERROR: /opt/platform does not exist"
-    exit 1
+    echo "PROJECT_EXISTS=false"
 fi
 
-echo ""
-echo "Top-level:"
-find /opt/platform -maxdepth 2 -type d | sort | head -80
+echo
+echo "Project contents:"
+ls -lah "$ProjectPath" 2>/dev/null | head -80
 "@
 
-# ------------------------------------------------------------
-# 4. Environment files
-# ------------------------------------------------------------
+# ============================================================
+# 4. ENVIRONMENT FILE DISCOVERY
+# ============================================================
 
 Write-Section "4. PRODUCTION ENVIRONMENT FILES"
 
-ssh $Target @"
-echo "Environment-related files:"
-find /opt/platform \
-    -maxdepth 4 \
+Invoke-Remote @"
+echo "Environment files found under $ProjectPath:"
+find "$ProjectPath" \
+    -maxdepth 5 \
     -type f \
-    \( -name ".env" -o -name ".env.*" -o -name "*env*" \) \
+    \( -name ".env" -o -name ".env.*" \) \
     -print 2>/dev/null | sort
 "@
 
-# ------------------------------------------------------------
-# 5. Required variables in likely environment files
-# ------------------------------------------------------------
+# ============================================================
+# 5. ENVIRONMENT VARIABLE PRESENCE
+# ============================================================
 
 Write-Section "5. REQUIRED ENVIRONMENT VARIABLES"
 
-ssh $Target @'
+Invoke-Remote @'
 set +e
-
-echo ""
-echo "Scanning environment files for required variables."
-echo "SECRET VALUES WILL NOT BE DISPLAYED."
-echo ""
 
 FILES=$(find /opt/platform \
     -maxdepth 5 \
@@ -165,228 +180,234 @@ FILES=$(find /opt/platform \
     -print 2>/dev/null)
 
 if [ -z "$FILES" ]; then
-    echo "No .env files found under /opt/platform"
-else
-    for FILE in $FILES; do
-        echo "------------------------------------------------------------"
-        echo "FILE: $FILE"
-        echo "------------------------------------------------------------"
+    echo "No .env files found."
+    exit 0
+fi
 
-        for VAR in \
-            INTERNAL_API_URL \
-            INTERNAL_API_SECRET \
-            INTERNAL_GATEWAY_SECRET \
-            JWT_SECRET \
-            ADMIN_JWT_SECRET \
-            DATABASE_URL \
-            DATABASE_URL_TUTORIAL
-        do
-            if grep -qE "^${VAR}=" "$FILE" 2>/dev/null; then
+for FILE in $FILES
+do
+    echo
+    echo "------------------------------------------------------------"
+    echo "FILE: $FILE"
+    echo "------------------------------------------------------------"
 
-                VALUE=$(grep -E "^${VAR}=" "$FILE" | head -1 | cut -d= -f2-)
+    for VAR in \
+        INTERNAL_API_URL \
+        INTERNAL_API_SECRET \
+        INTERNAL_GATEWAY_SECRET \
+        JWT_SECRET \
+        ADMIN_JWT_SECRET \
+        DATABASE_URL \
+        DATABASE_URL_TUTORIAL
+    do
 
-                if [ -z "$VALUE" ]; then
-                    echo "$VAR = PRESENT BUT EMPTY"
-                else
-                    echo "$VAR = PRESENT (value hidden)"
-                fi
+        LINE=$(grep -E "^${VAR}=" "$FILE" 2>/dev/null | head -1)
 
-            else
-                echo "$VAR = NOT FOUND"
-            fi
-        done
+        if [ -z "$LINE" ]; then
+            echo "$VAR = NOT FOUND"
+            continue
+        fi
+
+        VALUE="${LINE#*=}"
+
+        if [ -z "$VALUE" ]; then
+            echo "$VAR = PRESENT BUT EMPTY"
+            continue
+        fi
+
+        case "$VAR" in
+            INTERNAL_API_SECRET|INTERNAL_GATEWAY_SECRET|JWT_SECRET|ADMIN_JWT_SECRET)
+                echo "$VAR = PRESENT (VALUE HIDDEN)"
+                ;;
+            *)
+                echo "$VAR = $VALUE"
+                ;;
+        esac
+
     done
-fi
+done
 '@
 
-# ------------------------------------------------------------
-# 6. Detect localhost API URLs
-# ------------------------------------------------------------
+# ============================================================
+# 6. PRODUCTION LOCALHOST CHECK
+# ============================================================
 
-Write-Section "6. PRODUCTION LOCALHOST API CHECK"
+Write-Section "6. LOCALHOST API CONFIGURATION CHECK"
 
-ssh $Target @'
-echo "Searching production configuration for localhost API references..."
-echo ""
+Invoke-Remote @'
+echo "Searching production configuration..."
 
-MATCHES=$(grep -RniE \
-    "INTERNAL_API_URL|localhost:3000|127\.0\.0\.1:3000|api\.skillhubcore\.in" \
-    /opt/platform/compose \
-    /opt/platform/.env \
-    /opt/platform/.env.* \
-    2>/dev/null)
+echo
+echo "--- INTERNAL_API_URL occurrences ---"
 
-if [ -z "$MATCHES" ]; then
-    echo "No matching configuration found."
-else
-    echo "$MATCHES" | \
-        sed -E \
-        -e "s/(INTERNAL_API_SECRET=).*/\1<REDACTED>/g" \
-        -e "s/(INTERNAL_GATEWAY_SECRET=).*/\1<REDACTED>/g" \
-        -e "s/(JWT_SECRET=).*/\1<REDACTED>/g" \
-        -e "s/(ADMIN_JWT_SECRET=).*/\1<REDACTED>/g"
-fi
+grep -RniE \
+    "^[[:space:]]*INTERNAL_API_URL=" \
+    /opt/platform \
+    --exclude-dir=node_modules \
+    --exclude-dir=.git \
+    2>/dev/null |
+    sed -E 's#(INTERNAL_API_SECRET=).*#\1<REDACTED>#g'
+
+echo
+echo "--- localhost:3000 references ---"
+
+grep -RniE \
+    "localhost:3000|127\.0\.0\.1:3000" \
+    /opt/platform \
+    --exclude-dir=node_modules \
+    --exclude-dir=.git \
+    2>/dev/null |
+    head -100
+
+echo
+echo "--- production API references ---"
+
+grep -RniE \
+    "api\.skillhubcore\.in" \
+    /opt/platform \
+    --exclude-dir=node_modules \
+    --exclude-dir=.git \
+    2>/dev/null |
+    head -100
 '@
 
-# ------------------------------------------------------------
-# 7. Docker Compose configuration
-# ------------------------------------------------------------
+# ============================================================
+# 7. DOCKER COMPOSE FILES
+# ============================================================
 
 Write-Section "7. DOCKER COMPOSE CONFIGURATION"
 
-ssh $Target @"
+Invoke-Remote @"
 echo "Compose files:"
-find /opt/platform/compose \
-    -maxdepth 2 \
+
+find "$ProjectPath/compose" \
+    -maxdepth 3 \
     -type f \
     \( -name "*.yml" -o -name "*.yaml" \) \
     -print 2>/dev/null | sort
 
-echo ""
-echo "Production Compose configuration:"
+echo
+echo "Resolved production Compose configuration:"
 docker compose \
-    -f /opt/platform/compose/docker-compose.yml \
-    -f /opt/platform/compose/docker-compose.production.yml \
-    config 2>/dev/null | \
+    -f "$ProjectPath/compose/docker-compose.yml" \
+    -f "$ProjectPath/compose/docker-compose.production.yml" \
+    config 2>/dev/null |
     sed -E \
-    -e 's/(INTERNAL_API_SECRET:).*/\1 <REDACTED>/g' \
-    -e 's/(INTERNAL_GATEWAY_SECRET:).*/\1 <REDACTED>/g' \
-    -e 's/(JWT_SECRET:).*/\1 <REDACTED>/g' \
-    -e 's/(ADMIN_JWT_SECRET:).*/\1 <REDACTED>/g'
+        -e 's/(INTERNAL_API_SECRET:).*/\1 <REDACTED>/g' \
+        -e 's/(INTERNAL_GATEWAY_SECRET:).*/\1 <REDACTED>/g' \
+        -e 's/(JWT_SECRET:).*/\1 <REDACTED>/g' \
+        -e 's/(ADMIN_JWT_SECRET:).*/\1 <REDACTED>/g'
 "@
 
-# ------------------------------------------------------------
-# 8. Running containers
-# ------------------------------------------------------------
+# ============================================================
+# 8. RUNNING CONTAINERS
+# ============================================================
 
 Write-Section "8. RUNNING PRODUCTION CONTAINERS"
 
-ssh $Target @"
+Invoke-Remote @'
 docker ps \
     --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
-"@
-
-# ------------------------------------------------------------
-# 9. Expected services
-# ------------------------------------------------------------
-
-Write-Section "9. EXPECTED APPLICATION SERVICES"
-
-ssh $Target @'
-EXPECTED="
-api-server
-realtutorialhub-web
-skillup-web
-skillhubcore-admin
-skillup-admin
-realtutorialhub-admin
-faculty-app
-skillhub-placement
-question-judge
-"
-
-for SERVICE in $EXPECTED; do
-
-    COUNT=$(docker ps \
-        --filter "name=$SERVICE" \
-        --format "{{.Names}}" | wc -l)
-
-    if [ "$COUNT" -gt 0 ]; then
-        echo "[RUNNING] $SERVICE"
-    else
-        echo "[NOT RUNNING] $SERVICE"
-    fi
-
-done
 '@
 
-# ------------------------------------------------------------
-# 10. Actual environment inside running BFF containers
-# ------------------------------------------------------------
+# ============================================================
+# 9. BFF CONTAINER ENVIRONMENT
+# ============================================================
 
-Write-Section "10. ACTUAL RUNNING BFF ENVIRONMENT"
+Write-Section "9. ACTUAL RUNNING BFF ENVIRONMENT"
 
-ssh $Target @'
+Invoke-Remote @'
 set +e
 
-for CONTAINER in $(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web"); do
+CONTAINERS=$(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web")
 
-    echo ""
+if [ -z "$CONTAINERS" ]; then
+    echo "No RTH/SkillUp BFF containers currently running."
+    exit 0
+fi
+
+for CONTAINER in $CONTAINERS
+do
+
+    echo
     echo "------------------------------------------------------------"
     echo "CONTAINER: $CONTAINER"
     echo "------------------------------------------------------------"
 
-    echo ""
-    echo "Environment presence:"
-    
-    docker exec "$CONTAINER" sh -c '
-        for VAR in \
-            INTERNAL_API_URL \
-            INTERNAL_API_SECRET \
-            INTERNAL_GATEWAY_SECRET \
-            JWT_SECRET \
-            ADMIN_JWT_SECRET \
-            NEXT_PUBLIC_BRAND
-        do
-            VALUE=$(printenv "$VAR" 2>/dev/null)
+    for VAR in \
+        INTERNAL_API_URL \
+        INTERNAL_API_SECRET \
+        INTERNAL_GATEWAY_SECRET \
+        JWT_SECRET \
+        ADMIN_JWT_SECRET \
+        NEXT_PUBLIC_BRAND
+    do
 
-            if [ -z "$VALUE" ]; then
-                echo "$VAR = NOT SET"
-            else
-                case "$VAR" in
-                    INTERNAL_API_SECRET|INTERNAL_GATEWAY_SECRET|JWT_SECRET|ADMIN_JWT_SECRET)
-                        echo "$VAR = PRESENT (value hidden)"
-                        ;;
-                    *)
-                        echo "$VAR = $VALUE"
-                        ;;
-                esac
-            fi
-        done
-    '
+        VALUE=$(docker exec "$CONTAINER" sh -c "printenv $VAR" 2>/dev/null)
+
+        if [ -z "$VALUE" ]; then
+            echo "$VAR = NOT SET"
+        else
+            case "$VAR" in
+                INTERNAL_API_SECRET|INTERNAL_GATEWAY_SECRET|JWT_SECRET|ADMIN_JWT_SECRET)
+                    echo "$VAR = PRESENT (VALUE HIDDEN)"
+                    ;;
+                *)
+                    echo "$VAR = $VALUE"
+                    ;;
+            esac
+        fi
+
+    done
 
 done
 '@
 
-# ------------------------------------------------------------
-# 11. Actual Docker container configuration
-# ------------------------------------------------------------
+# ============================================================
+# 10. DOCKER INSPECT ENVIRONMENT
+# ============================================================
 
-Write-Section "11. DOCKER INSPECT — ENVIRONMENT SOURCE"
+Write-Section "10. DOCKER CONTAINER ENVIRONMENT"
 
-ssh $Target @'
+Invoke-Remote @'
 set +e
 
-for CONTAINER in $(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web"); do
+CONTAINERS=$(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web")
 
-    echo ""
+for CONTAINER in $CONTAINERS
+do
+
+    echo
     echo "------------------------------------------------------------"
     echo "CONTAINER: $CONTAINER"
     echo "------------------------------------------------------------"
 
     docker inspect "$CONTAINER" \
-        --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null |
+        --format '{{range .Config.Env}}{{println .}}{{end}}' |
         sed -E \
-        -e 's/(INTERNAL_API_SECRET=).*/\1<REDACTED>/g' \
-        -e 's/(INTERNAL_GATEWAY_SECRET=).*/\1<REDACTED>/g' \
-        -e 's/(JWT_SECRET=).*/\1<REDACTED>/g' \
-        -e 's/(ADMIN_JWT_SECRET=).*/\1<REDACTED>/g'
+            -e 's/(INTERNAL_API_SECRET=).*/\1<REDACTED>/g' \
+            -e 's/(INTERNAL_GATEWAY_SECRET=).*/\1<REDACTED>/g' \
+            -e 's/(JWT_SECRET=).*/\1<REDACTED>/g' \
+            -e 's/(ADMIN_JWT_SECRET=).*/\1<REDACTED>/g'
 
 done
 '@
 
-# ------------------------------------------------------------
-# 12. API connectivity from BFF containers
-# ------------------------------------------------------------
+# ============================================================
+# 11. BFF → API CONNECTIVITY
+# ============================================================
 
-Write-Section "12. BFF → API CONNECTIVITY"
+Write-Section "11. BFF → API CONNECTIVITY"
 
-ssh $Target @'
+Invoke-Remote @'
 set +e
 
-for CONTAINER in $(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web"); do
+CONTAINERS=$(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web")
 
-    echo ""
+for CONTAINER in $CONTAINERS
+do
+
+    echo
     echo "------------------------------------------------------------"
     echo "CONTAINER: $CONTAINER"
     echo "------------------------------------------------------------"
@@ -394,40 +415,46 @@ for CONTAINER in $(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-we
     API_URL=$(docker exec "$CONTAINER" sh -c 'printenv INTERNAL_API_URL' 2>/dev/null)
 
     if [ -z "$API_URL" ]; then
-        echo "[FAIL] INTERNAL_API_URL not set"
+        echo "[FAIL] INTERNAL_API_URL is not set."
         continue
     fi
 
     echo "Configured API URL: $API_URL"
 
-    echo ""
-    echo "Testing API base connectivity..."
+    if echo "$API_URL" | grep -Eq "localhost:3000|127\.0\.0\.1:3000"; then
+        echo "[FAIL] Production BFF points to localhost API."
+        continue
+    fi
 
-    docker exec "$CONTAINER" sh -c "
-        if command -v curl >/dev/null 2>&1; then
-            curl -k -sS -o /dev/null -w 'HTTP_STATUS=%{http_code}\n' \
-                --max-time 10 \
-                '$API_URL'
-        else
-            echo 'curl not installed in container'
-        fi
-    "
+    if docker exec "$CONTAINER" sh -c "command -v curl >/dev/null 2>&1"; then
+
+        echo "Testing API endpoint..."
+
+        docker exec "$CONTAINER" sh -c \
+            "curl -k -sS -o /dev/null -w 'HTTP_STATUS=%{http_code}\n' --max-time 10 '$API_URL'"
+
+    else
+        echo "[WARN] curl is not installed in container."
+    fi
 
 done
 '@
 
-# ------------------------------------------------------------
-# 13. Container logs — configuration/auth errors only
-# ------------------------------------------------------------
+# ============================================================
+# 12. RECENT BFF LOGS
+# ============================================================
 
-Write-Section "13. RECENT BFF AUTH/API CONFIGURATION LOGS"
+Write-Section "12. RECENT BFF AUTH/API LOGS"
 
-ssh $Target @'
+Invoke-Remote @'
 set +e
 
-for CONTAINER in $(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web"); do
+CONTAINERS=$(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web")
 
-    echo ""
+for CONTAINER in $CONTAINERS
+do
+
+    echo
     echo "------------------------------------------------------------"
     echo "CONTAINER: $CONTAINER"
     echo "------------------------------------------------------------"
@@ -440,129 +467,132 @@ for CONTAINER in $(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-we
 done
 '@
 
-# ------------------------------------------------------------
-# 14. Image versions
-# ------------------------------------------------------------
+# ============================================================
+# 13. IMAGE VERSIONS
+# ============================================================
 
-Write-Section "14. DEPLOYED IMAGE VERSIONS"
+Write-Section "13. DEPLOYED IMAGE VERSIONS"
 
-ssh $Target @'
+Invoke-Remote @'
 docker ps \
     --format "{{.Names}}|{{.Image}}" |
-    grep -E "realtutorialhub-web|skillup-web|api-server|skillhubcore-admin|skillup-admin|realtutorialhub-admin" |
+    grep -E \
+    "realtutorialhub-web|skillup-web|api-server|skillhubcore-admin|skillup-admin|realtutorialhub-admin" |
     sort
 '@
 
-# ------------------------------------------------------------
-# 15. Deployment release information
-# ------------------------------------------------------------
+# ============================================================
+# 14. RELEASE INFORMATION
+# ============================================================
 
-Write-Section "15. DEPLOYMENT RELEASES"
+Write-Section "14. DEPLOYMENT RELEASE INFORMATION"
 
-ssh $Target @'
-echo "Recent release artifacts:"
-ls -lah /opt/platform/releases 2>/dev/null | tail -30
+Invoke-Remote @'
+echo "Release directory:"
+ls -lah /opt/platform/releases 2>/dev/null | tail -40
 
-echo ""
+echo
 echo "Deployment scripts:"
 ls -lah /opt/platform/scripts 2>/dev/null
 '@
 
-# ------------------------------------------------------------
-# 16. Final automated assessment
-# ------------------------------------------------------------
+# ============================================================
+# 15. AUTOMATED ASSESSMENT
+# ============================================================
 
-Write-Section "16. AUTOMATED PRODUCTION CONFIGURATION ASSESSMENT"
+Write-Section "15. AUTOMATED PRODUCTION ASSESSMENT"
 
-ssh $Target @'
+Invoke-Remote @'
 set +e
 
 FAIL=0
 WARN=0
 
-echo ""
+CONTAINERS=$(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web")
 
-# Check BFF containers
-for CONTAINER in $(docker ps --format "{{.Names}}" | grep -E "realtutorialhub-web|skillup-web"); do
+if [ -z "$CONTAINERS" ]; then
+    echo "[FAIL] No RTH/SkillUp BFF containers are running."
+    FAIL=$((FAIL + 1))
+fi
 
-    echo "Checking: $CONTAINER"
+for CONTAINER in $CONTAINERS
+do
+
+    echo
+    echo "Checking container: $CONTAINER"
 
     API_URL=$(docker exec "$CONTAINER" sh -c 'printenv INTERNAL_API_URL' 2>/dev/null)
     API_SECRET=$(docker exec "$CONTAINER" sh -c 'printenv INTERNAL_API_SECRET' 2>/dev/null)
     GATEWAY_SECRET=$(docker exec "$CONTAINER" sh -c 'printenv INTERNAL_GATEWAY_SECRET' 2>/dev/null)
 
     if [ -z "$API_URL" ]; then
-        echo "  [FAIL] INTERNAL_API_URL missing"
-        FAIL=$((FAIL + 1))
-    else
-        echo "  [PASS] INTERNAL_API_URL present: $API_URL"
 
-        case "$API_URL" in
-            *localhost:3000*|*127.0.0.1:3000*)
-                echo "  [FAIL] Production BFF points to localhost API"
-                FAIL=$((FAIL + 1))
-                ;;
-            *)
-                echo "  [PASS] API URL is not localhost:3000"
-                ;;
-        esac
+        echo "[FAIL] INTERNAL_API_URL missing."
+        FAIL=$((FAIL + 1))
+
+    else
+
+        echo "[PASS] INTERNAL_API_URL present: $API_URL"
+
+        if echo "$API_URL" | grep -Eq "localhost:3000|127\.0\.0\.1:3000"; then
+            echo "[FAIL] Production BFF points to localhost API."
+            FAIL=$((FAIL + 1))
+        else
+            echo "[PASS] API URL is not localhost:3000."
+        fi
+
     fi
 
     if [ -z "$API_SECRET" ]; then
-        echo "  [FAIL] INTERNAL_API_SECRET missing"
+        echo "[FAIL] INTERNAL_API_SECRET missing."
         FAIL=$((FAIL + 1))
     else
-        echo "  [PASS] INTERNAL_API_SECRET present"
+        echo "[PASS] INTERNAL_API_SECRET present."
     fi
 
     if [ -z "$GATEWAY_SECRET" ]; then
-        echo "  [WARN] INTERNAL_GATEWAY_SECRET missing"
+        echo "[WARN] INTERNAL_GATEWAY_SECRET missing."
         WARN=$((WARN + 1))
     else
-        echo "  [PASS] INTERNAL_GATEWAY_SECRET present"
+        echo "[PASS] INTERNAL_GATEWAY_SECRET present."
     fi
 
 done
 
-echo ""
+echo
 echo "------------------------------------------------------------"
-echo "ASSESSMENT"
+echo "ASSESSMENT RESULT"
 echo "------------------------------------------------------------"
 
-echo "Failures: $FAIL"
-echo "Warnings: $WARN"
+echo "Failures : $FAIL"
+echo "Warnings : $WARN"
 
 if [ "$FAIL" -gt 0 ]; then
-    echo ""
-    echo "RESULT: FAIL"
-    echo "Production configuration requires attention."
+    echo "RESULT   : FAIL"
     exit 2
 fi
 
 if [ "$WARN" -gt 0 ]; then
-    echo ""
-    echo "RESULT: PASS WITH WARNINGS"
+    echo "RESULT   : PASS WITH WARNINGS"
     exit 0
 fi
 
-echo ""
-echo "RESULT: PASS"
+echo "RESULT   : PASS"
 exit 0
 '@
 
-# ------------------------------------------------------------
-# Completion
-# ------------------------------------------------------------
+# ============================================================
+# FINAL
+# ============================================================
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Green
-Write-Host "       HOSTINGER AUDIT COMPLETE" -ForegroundColor Green
+Write-Host "           HOSTINGER AUDIT COMPLETE" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host ""
-
-Write-Host "IMPORTANT:" -ForegroundColor Yellow
-Write-Host "This audit made NO changes to Hostinger." -ForegroundColor Gray
-Write-Host "No containers were restarted." -ForegroundColor Gray
+Write-Host "READ-ONLY AUDIT — NO PRODUCTION CHANGES WERE MADE." -ForegroundColor Green
+Write-Host ""
+Write-Host "Secrets were never printed." -ForegroundColor Gray
+Write-Host "Containers were not restarted." -ForegroundColor Gray
 Write-Host "No deployment was performed." -ForegroundColor Gray
-Write-Host "Secret values were intentionally hidden." -ForegroundColor Gray
 Write-Host ""
