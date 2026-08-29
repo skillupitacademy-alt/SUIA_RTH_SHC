@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { AUTH_CONFIG } from './config';
 import { unifiedFetch } from '../lib/unifiedFetch';
+import { resolveBrandFromHostname, extractHostnameFromHostHeader } from '@quiz/types';
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
@@ -140,20 +141,37 @@ export function createForwardHeaders(request: NextRequest): Headers {
   const publicHost = getRequestHost(request);
   
   if (publicHost) {
-    const normalizedHost = publicHost
-      .split(',')[0]
-      .trim()
-      .toLowerCase();
+    // Extract hostname without port using canonical helper
+    const normalizedHost = extractHostnameFromHostHeader(publicHost);
 
-    const brand =
-      normalizedHost.includes('skillup')
-        ? 'skillup'
-        : 'realtutorialhub';
+    // Diagnostic logging
+    console.log(JSON.stringify({
+      tag: 'BFF_HOSTNAME_NORMALIZATION',
+      publicHost,
+      normalizedHost,
+      portStripped: publicHost !== normalizedHost,
+    }));
+
+    if (!normalizedHost) {
+      console.error(JSON.stringify({
+        tag: 'BFF_BRAND_CONTEXT',
+        publicHost,
+        normalizedHost: null,
+        brand: null,
+        error: 'failed_to_extract_hostname',
+      }));
+      return headers;
+    }
+
+    // Use canonical brand resolver (supports skillhubcore, skillup, realtutorialhub)
+    const brand = resolveBrandFromHostname(normalizedHost);
 
     /*
-     * Explicit brand assertion.
+     * Explicit brand assertion (only if brand resolved successfully).
      */
-    headers.set('x-brand', brand);
+    if (brand) {
+      headers.set('x-brand', brand);
+    }
 
     /*
      * Trusted hostname context.
@@ -175,13 +193,28 @@ export function createForwardHeaders(request: NextRequest): Headers {
     // 🔐 LEGACY: Also set x-original-host for any code still using it
     headers.set('x-original-host', normalizedHost);
 
-    console.log(JSON.stringify({
-      tag: 'BFF_BRAND_CONTEXT',
-      hostname: normalizedHost,
-      brand,
-      forwardedHost: headers.get('x-forwarded-host'),
-      forwardedProto: headers.get('x-forwarded-proto'),
-    }));
+    if (brand) {
+      console.log(JSON.stringify({
+        tag: 'BFF_BRAND_CONTEXT',
+        publicHost,
+        normalizedHost,
+        brand,
+        forwardedHost: headers.get('x-forwarded-host'),
+        forwardedProto: headers.get('x-forwarded-proto'),
+        hasInternalSecret: !!process.env.INTERNAL_GATEWAY_SECRET,
+      }));
+    } else {
+      console.log(JSON.stringify({
+        tag: 'BFF_BRAND_CONTEXT',
+        publicHost,
+        normalizedHost,
+        brand: null,
+        warning: 'hostname_not_recognized_by_resolver',
+        forwardedHost: headers.get('x-forwarded-host'),
+        forwardedProto: headers.get('x-forwarded-proto'),
+        hasInternalSecret: !!process.env.INTERNAL_GATEWAY_SECRET,
+      }));
+    }
   }
   
   // 🔥 CRITICAL: Add internal secret for BFF → Gateway authentication

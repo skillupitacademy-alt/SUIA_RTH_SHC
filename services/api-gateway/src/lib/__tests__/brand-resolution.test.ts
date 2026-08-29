@@ -50,6 +50,32 @@ describe('resolveBrandFromHostname', () => {
     });
   });
 
+  describe('SkillHubCore local development', () => {
+    it('resolves shc.localhost', () => {
+      expect(
+        resolveBrandFromHostname(
+          'shc.localhost',
+        ),
+      ).toBe('skillhubcore');
+    });
+
+    it('resolves skillhubcore.localhost', () => {
+      expect(
+        resolveBrandFromHostname(
+          'skillhubcore.localhost',
+        ),
+      ).toBe('skillhubcore');
+    });
+
+    it('resolves shc.localhost case-insensitively', () => {
+      expect(
+        resolveBrandFromHostname(
+          'SHC.LOCALHOST',
+        ),
+      ).toBe('skillhubcore');
+    });
+  });
+
   describe('production SkillUp', () => {
     it('resolves apex domain', () => {
       expect(
@@ -142,6 +168,64 @@ describe('resolveBrandFromHostname', () => {
     });
   });
 
+  describe('production SkillHubCore', () => {
+    it('resolves apex domain', () => {
+      expect(
+        resolveBrandFromHostname(
+          'skillhubcore.in',
+        ),
+      ).toBe('skillhubcore');
+    });
+
+    it('resolves quiz subdomain', () => {
+      expect(
+        resolveBrandFromHostname(
+          'quiz.skillhubcore.in',
+        ),
+      ).toBe('skillhubcore');
+    });
+
+    it('resolves admin subdomain', () => {
+      expect(
+        resolveBrandFromHostname(
+          'admin.skillhubcore.in',
+        ),
+      ).toBe('skillhubcore');
+    });
+
+    it('resolves api subdomain', () => {
+      expect(
+        resolveBrandFromHostname(
+          'api.skillhubcore.in',
+        ),
+      ).toBe('skillhubcore');
+    });
+
+    it('resolves tutorial subdomain', () => {
+      expect(
+        resolveBrandFromHostname(
+          'tutorial.skillhubcore.in',
+        ),
+      ).toBe('skillhubcore');
+    });
+
+    it('resolves placement subdomain', () => {
+      expect(
+        resolveBrandFromHostname(
+          'placement.skillhubcore.in',
+        ),
+      ).toBe('skillhubcore');
+    });
+
+    it('resolves case-insensitively', () => {
+      expect(
+        resolveBrandFromHostname(
+          'QUIZ.SKILLHUBCORE.IN',
+        ),
+      ).toBe('skillhubcore');
+    });
+  });
+
   describe('ambiguous hosts', () => {
     it('does not resolve localhost', () => {
       expect(
@@ -225,6 +309,22 @@ describe('resolveBrandFromHostname', () => {
       ).toBeUndefined();
     });
 
+    it('rejects fake SHC suffix', () => {
+      expect(
+        resolveBrandFromHostname(
+          'evil-skillhubcore.in',
+        ),
+      ).toBeUndefined();
+    });
+
+    it('rejects SHC as a subdomain of another domain', () => {
+      expect(
+        resolveBrandFromHostname(
+          'skillhubcore.in.evil.com',
+        ),
+      ).toBeUndefined();
+    });
+
     it('rejects hostname containing skillup keyword', () => {
       expect(
         resolveBrandFromHostname(
@@ -233,10 +333,26 @@ describe('resolveBrandFromHostname', () => {
       ).toBeUndefined();
     });
 
+    it('rejects hostname containing skillhubcore keyword', () => {
+      expect(
+        resolveBrandFromHostname(
+          'my-skillhubcore-site.example.com',
+        ),
+      ).toBeUndefined();
+    });
+
     it('rejects similar-looking domains', () => {
       expect(
         resolveBrandFromHostname(
           'skillupacademy.com',
+        ),
+      ).toBeUndefined();
+    });
+
+    it('rejects similar-looking SHC domains', () => {
+      expect(
+        resolveBrandFromHostname(
+          'skillhub.in',
         ),
       ).toBeUndefined();
     });
@@ -250,6 +366,10 @@ describe('isSupportedBrand', () => {
 
   it('identifies realtutorialhub as supported', () => {
     expect(isSupportedBrand('realtutorialhub')).toBe(true);
+  });
+
+  it('identifies skillhubcore as supported', () => {
+    expect(isSupportedBrand('skillhubcore')).toBe(true);
   });
 
   it('rejects invalid brand', () => {

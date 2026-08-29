@@ -155,6 +155,13 @@
       "when": 1787341859253,
       "tag": "0021_sparkling_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1788021759918,
+      "tag": "0022_broken_supernaut",
+      "breakpoints": true
     }
   ]
 }

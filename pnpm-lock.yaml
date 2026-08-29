@@ -1390,6 +1390,9 @@ importers:
 
   packages/auth:
     dependencies:
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../types
       '@upstash/redis':
         specifier: ^1.36.2
         version: 1.37.0
@@ -2012,6 +2015,9 @@ importers:
       '@quiz/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       hono:
         specifier: ^4.7.8
         version: 4.12.8

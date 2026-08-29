@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 import { TokenService } from '@quiz/auth';
+import type { Brand } from '@quiz/types';
+import { isSupportedBrand } from '@quiz/types';
 
 /**
  * 🔥 UNIFIED BFF AUTH - SINGLE SOURCE OF TRUTH
@@ -16,7 +18,7 @@ export interface BffAuthResult {
   isAuthenticated: boolean;
   userId?: string;
   email?: string;
-  brand?: 'realtutorialhub' | 'skillup';
+  brand?: Brand;
   roles?: Role[]; // 🔥 TYPE SAFETY: Use typed roles
   accessToken?: string;
   shadowUserId?: string;
@@ -110,7 +112,14 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
     // Extract identity claims
     const shadowUserId = payload.shadowUserId;
     const originalUserId = payload.originalUserId;
-    const brand = payload.brand as 'realtutorialhub' | 'skillup' | undefined;
+    
+    // 🔥 RUNTIME VALIDATION: Validate brand from JWT claims
+    // JWT is untrusted runtime data - validate instead of asserting
+    const rawBrand = payload.brand;
+    const brand =
+      typeof rawBrand === 'string' && isSupportedBrand(rawBrand)
+        ? rawBrand
+        : undefined;
     
     // 🔥 CRITICAL FIX: Normalize roles immediately to prevent security bypass
     const rawRoles = Array.isArray(payload.roles) ? payload.roles : [];
@@ -144,7 +153,7 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
       isAuthenticated: true,
       userId: shadowUserId,
       email: payload.email,
-      brand: brand || 'realtutorialhub', // fallback
+      brand: brand || 'realtutorialhub', // 🔥 COMPATIBILITY: Preserve existing RTH fallback
       roles: normalizedRoles, // ✅ Always normalized and deduplicated
       accessToken,
       shadowUserId,
@@ -199,17 +208,6 @@ export function createInternalHeaders(auth: BffAuthResult): Record<string, strin
     'x-internal-secret': internalSecret,
     'content-type': 'application/json',
   };
-}
-
-/**
- * Get brand from request hostname (fallback for brand detection)
- */
-export function getBrandFromHostname(req: NextRequest): 'realtutorialhub' | 'skillup' | 'skillhubcore' {
-  const hostname = req.headers.get('host') || req.nextUrl.hostname;
-  if (hostname.includes('skillhubcore')) {
-    return 'skillhubcore';
-  }
-  return hostname.includes('skillup') ? 'skillup' : 'realtutorialhub';
 }
 
 /**

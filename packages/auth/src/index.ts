@@ -9,7 +9,7 @@ export * from './rbac';
 
 // Feature Flags exports
 export { FeatureFlagService, requireFeature } from './feature-flags.service';
-export type { FeatureKey, Brand, FeatureFlag, FeatureFlagInput } from './feature-flags.types';
+export type { FeatureKey, FeatureFlag, FeatureFlagInput } from './feature-flags.types';
 export { FeatureNotAvailableError } from './feature-flags.types';
 
 // Session Management exports
@@ -24,7 +24,6 @@ export {
   enforceBrandValidation, 
   validateBrandContext, 
   withBrandValidation,
-  resolveBrandFromHostname,
   BrandValidationError 
 } from './middleware/brand-validator.middleware';
 export type { BrandId, BrandValidationContext } from './middleware/brand-validator.middleware';
@@ -33,7 +32,6 @@ export { validateBrandOrThrow } from './middleware/brand.guard';
 // 🔐 Cookie Middleware exports (CRITICAL for multi-brand auth)
 export {
   getCookieDomain,
-  resolveBrandFromHostname as resolveBrandFromHostnameForCookie,
   buildAuthCookie,
   buildAccessTokenCookie,
   buildRefreshTokenCookie,
@@ -42,7 +40,10 @@ export {
   clearAuthCookies,
   clearAllBrandCookies,
 } from './middleware/cookie.middleware';
-export type { Brand as CookieBrand, AuthCookieOptions } from './middleware/cookie.middleware';
+export type { AuthCookieOptions } from './middleware/cookie.middleware';
+
+// Re-export Brand and resolver from canonical location
+export { type Brand, SUPPORTED_BRANDS, isSupportedBrand, resolveBrandFromHostname } from '@quiz/types';
 
 // Audit exports
 export { logRBACDecision, logOwnershipCheck } from './audit/rbac.audit';

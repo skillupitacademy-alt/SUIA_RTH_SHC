@@ -1,4 +1,5 @@
 import { decodeJwt, jwtVerify, SignJWT, type JWTPayload } from 'jose';
+import type { Brand } from '@quiz/types';
 
 const ACCESS_TOKEN_EXPIRE = '8h'; // 8 hours for admin sessions
 const REFRESH_TOKEN_EXPIRE = '7d';
@@ -37,7 +38,7 @@ export type TokenPayload = JWTPayload & {
   isAdmin?: boolean;
   aud?: string;
   tokenType?: 'user' | 'admin';
-  brand?: string;
+  brand?: Brand;
   role?: string;
   platforms?: Array<'realtutorialhub' | 'skillup'>;
   subscriptions?: string[];
@@ -55,7 +56,7 @@ export type RefreshTokenPayload = JWTPayload & {
   tokenFamily?: string;
   aud?: string;
   tokenType?: 'user' | 'admin';
-  brand?: string;
+  brand?: Brand;
 };
 
 export type SkillHubCoreTokenPayload = JWTPayload & {
@@ -66,7 +67,7 @@ export type SkillHubCoreTokenPayload = JWTPayload & {
   subscriptions: string[];
   platforms?: Array<'realtutorialhub' | 'skillup'>;
   iss: 'skillhubcore.in';
-  brand?: 'realtutorialhub' | 'skillup';
+  brand?: Brand;
 };
 
 export type AccessTokenRequestLike = {

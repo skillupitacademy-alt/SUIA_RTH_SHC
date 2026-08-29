@@ -15,6 +15,10 @@ export * from './portal';
 export * from './tutorial-sidebar.types';
 export * from './tutorial-page-content.types';
 
+// Brand type and resolution
+export * from './brand.types';
+export * from './brand-resolution';
+
 // Rich Tutorial Document Model (Schema Version 1)
 export * from './tutorial-rich-document';
 

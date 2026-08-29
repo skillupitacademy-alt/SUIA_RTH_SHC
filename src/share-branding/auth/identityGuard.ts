@@ -17,6 +17,7 @@
  */
 
 import type { BffAuthResult } from './unifiedBffAuth';
+import type { Brand } from '@quiz/types';
 
 /**
  * Identity context extracted from auth
@@ -24,7 +25,7 @@ import type { BffAuthResult } from './unifiedBffAuth';
 export interface IdentityContext {
   originalUserId: string;
   shadowUserId: string;
-  brand: 'realtutorialhub' | 'skillup';
+  brand: Brand;
   email?: string;
   roles?: string[];
 }

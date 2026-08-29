@@ -6,11 +6,12 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "outDir": "dist",
-    "rootDir": "src",
     "types": ["@cloudflare/workers-types", "node"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@quiz/types": ["../../packages/types/src/index.ts"],
+      "@quiz/types/*": ["../../packages/types/src/*"]
     }
   },
   "include": ["src/**/*.ts"],

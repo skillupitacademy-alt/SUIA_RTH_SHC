@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@quiz/auth": "workspace:*",
+    "@quiz/types": "workspace:*",
     "hono": "^4.7.8",
     "jose": "^6.1.3"
   },

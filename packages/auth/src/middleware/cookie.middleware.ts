@@ -8,7 +8,7 @@
  * Never use response.cookies.set() directly for auth cookies.
  */
 
-export type Brand = 'realtutorialhub' | 'skillup';
+import { type Brand, resolveBrandFromHostname } from '@quiz/types';
 
 /**
  * Brand-specific configuration
@@ -16,10 +16,13 @@ export type Brand = 'realtutorialhub' | 'skillup';
  */
 const BRAND_CONFIG = {
   realtutorialhub: {
-    hostnames: ['user.realtutorialhub.com', 'admin.realtutorialhub.com', 'api.realtutorialhub.com'],
+    hostnames: ['realtutorialhub.com', 'user.realtutorialhub.com', 'admin.realtutorialhub.com', 'api.realtutorialhub.com'],
   },
   skillup: {
-    hostnames: ['user.skillupitacademy.com', 'admin.skillupitacademy.com', 'api.skillupitacademy.com', 'faculty.skillupitacademy.com'],
+    hostnames: ['skillupitacademy.com', 'user.skillupitacademy.com', 'admin.skillupitacademy.com', 'api.skillupitacademy.com', 'faculty.skillupitacademy.com'],
+  },
+  skillhubcore: {
+    hostnames: ['skillhubcore.in', 'quiz.skillhubcore.in', 'admin.skillhubcore.in', 'api.skillhubcore.in', 'tutorial.skillhubcore.in', 'placement.skillhubcore.in'],
   },
 } as const;
 
@@ -32,6 +35,9 @@ function getRuntimeEnv(): Record<string, string | undefined> | undefined {
 }
 
 function getCookieDomainFallback(brand: Brand): string {
+  if (brand === 'skillhubcore') {
+    return '.skillhubcore.in';
+  }
   return brand === 'skillup' ? '.skillupitacademy.com' : '.realtutorialhub.com';
 }
 
@@ -42,33 +48,27 @@ function getCookieDomainFallback(brand: Brand): string {
  * @returns The cookie domain (e.g., '.realtutorialhub.com')
  */
 export function getCookieDomain(brand: Brand): string {
-  if (brand !== 'realtutorialhub' && brand !== 'skillup') {
+  if (brand !== 'realtutorialhub' && brand !== 'skillup' && brand !== 'skillhubcore') {
     throw new Error(`Invalid brand: ${brand}`);
   }
 
   const env = getRuntimeEnv();
+  
+  let envKey: string;
+  if (brand === 'realtutorialhub') {
+    envKey = 'COOKIE_DOMAIN_RTH';
+  } else if (brand === 'skillup') {
+    envKey = 'COOKIE_DOMAIN_SKILLUP';
+  } else {
+    envKey = 'COOKIE_DOMAIN_SHC';
+  }
+  
   const domain =
-    env?.[brand === 'realtutorialhub' ? 'COOKIE_DOMAIN_RTH' : 'COOKIE_DOMAIN_SKILLUP'] ??
+    env?.[envKey] ??
     env?.COOKIE_DOMAIN ??
     getCookieDomainFallback(brand);
 
   return domain;
-}
-
-/**
- * Resolve brand from hostname
- * 
- * @param hostname - The request hostname
- * @returns The brand identifier
- */
-export function resolveBrandFromHostname(hostname: string): Brand {
-  const normalized = hostname.toLowerCase();
-  
-  if (normalized.includes('skillup')) {
-    return 'skillup';
-  }
-  
-  return 'realtutorialhub';
 }
 
 /**
@@ -149,27 +149,27 @@ export function buildRefreshTokenCookie(token: string, brand: Brand, isAdmin = f
 /**
  * Validate that the cookie domain matches the request hostname
  * 
+ * Uses the canonical brand resolver for security.
+ * 
  * @param hostname - The request hostname
  * @param brand - The brand identifier
  * @throws Error if domain mismatch detected
  */
 export function validateCookieDomain(hostname: string, brand: Brand): void {
-  const config = BRAND_CONFIG[brand];
-  const normalized = hostname.toLowerCase();
   const expectedDomain = getCookieDomain(brand);
   
-  // Check if hostname matches any of the expected hostnames for this brand
-  const isValidHostname = config.hostnames.some(h => normalized.includes(h.toLowerCase()));
+  // Use canonical resolver for security validation
+  const resolvedBrand = resolveBrandFromHostname(hostname);
   
-  if (!isValidHostname) {
+  if (resolvedBrand !== brand) {
     console.error('COOKIE DOMAIN MISMATCH', {
       hostname,
       brand,
+      resolvedBrand,
       expectedDomain,
-      expectedHostnames: config.hostnames,
     });
     
-    throw new Error(`Cookie domain mismatch: hostname "${hostname}" does not match brand "${brand}"`);
+    throw new Error(`Cookie domain mismatch: hostname "${hostname}" resolved to "${resolvedBrand}" but expected "${brand}"`);
   }
 }
 
@@ -244,7 +244,7 @@ export function clearAllBrandCookies(
   response: { cookies: { set: (name: string, value: string, options: any) => void } },
   isAdmin = false
 ) {
-  const brands: Brand[] = ['realtutorialhub', 'skillup'];
+  const brands: Brand[] = ['realtutorialhub', 'skillup', 'skillhubcore'];
   
   brands.forEach(brand => {
     clearAuthCookies(response, brand, isAdmin);

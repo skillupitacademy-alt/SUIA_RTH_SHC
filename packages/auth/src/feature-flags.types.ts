@@ -3,6 +3,8 @@
  * Brand-specific feature control
  */
 
+import type { Brand } from '@quiz/types';
+
 export type FeatureKey = 
   | 'AI_LABS'
   | 'PLACEMENT'
@@ -15,7 +17,8 @@ export type FeatureKey =
   | 'BULK_IMPORT'
   | 'CUSTOM_BRANDING';
 
-export type Brand = 'realtutorialhub' | 'skillup';
+// Re-export Brand for backward compatibility
+export type { Brand };
 
 export interface FeatureFlag {
   id: string;
@@ -52,6 +55,15 @@ export const DEFAULT_FEATURE_FLAGS: Record<Brand, Partial<Record<FeatureKey, boo
     MOBILE_APP: true,
     BULK_IMPORT: true,
     CUSTOM_BRANDING: true
+  },
+
+  skillhubcore: {
+    PLACEMENT: true,
+    ADVANCED_ANALYTICS: true,
+    LIVE_SESSIONS: true,
+    CERTIFICATES: true,
+    API_ACCESS: true,
+    CUSTOM_BRANDING: false
   }
 };
 

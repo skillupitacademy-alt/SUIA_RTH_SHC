@@ -7,30 +7,19 @@
  */
 
 import type { NextRequest } from 'next/server';
-
-export type BrandId = 'realtutorialhub' | 'skillup';
-
-export interface BrandValidationContext {
-  tokenBrand: BrandId;
-  hostnameBrand: BrandId;
-  requestBrand?: BrandId;
-}
+import type { Brand } from '@quiz/types';
+import { resolveBrandFromHostname, isSupportedBrand } from '@quiz/types';
 
 /**
- * 🔥 CRITICAL: Derive brand from hostname
+ * @deprecated Use `Brand` from '@quiz/types' instead
+ * Retained for backward compatibility only
  */
-export function resolveBrandFromHostname(hostname: string): BrandId {
-  // Skillup domains
-  if (
-    hostname.includes('skillup') ||
-    hostname.includes('skillhubcore') ||
-    hostname.includes('skillhub')
-  ) {
-    return 'skillup';
-  }
-  
-  // Default to RTH
-  return 'realtutorialhub';
+export type BrandId = Brand;
+
+export interface BrandValidationContext {
+  tokenBrand: Brand;
+  hostnameBrand: Brand;
+  requestBrand?: Brand;
 }
 
 /**
@@ -46,26 +35,39 @@ export function validateBrandContext(
   req: NextRequest
 ): BrandValidationContext {
   const hostname = new URL(req.url).hostname;
-  const hostnameBrand = resolveBrandFromHostname(hostname);
+  const resolvedBrand = resolveBrandFromHostname(hostname);
   
   // Extract explicit brand from headers
   const brandHeader = req.headers.get('x-brand') || req.headers.get('x-platform');
-  const requestBrand = brandHeader === 'realtutorialhub' || brandHeader === 'skillup'
+  const requestBrand: Brand | undefined = brandHeader && isSupportedBrand(brandHeader)
     ? brandHeader
     : undefined;
   
-  // Normalize token brand
-  const normalizedTokenBrand = typeof tokenBrand === 'string' && tokenBrand.trim().length > 0
-    ? tokenBrand.trim().toLowerCase() as BrandId
+  // Normalize and validate token brand
+  const normalizedTokenValue = typeof tokenBrand === 'string' && tokenBrand.trim().length > 0
+    ? tokenBrand.trim().toLowerCase()
     : undefined;
   
-  // 🔥 VALIDATION 1: Token must have brand claim
-  if (!normalizedTokenBrand) {
-    throw new BrandValidationError('Token missing brand claim', {
-      hostnameBrand,
+  // 🔥 VALIDATION 0: Token brand must be a valid Brand
+  if (!normalizedTokenValue || !isSupportedBrand(normalizedTokenValue)) {
+    throw new BrandValidationError('Token missing or invalid brand claim', {
+      hostnameBrand: resolvedBrand,
       requestBrand,
     });
   }
+  
+  const normalizedTokenBrand: Brand = normalizedTokenValue;
+  
+  // 🔥 VALIDATION 1: Hostname must resolve to a known brand
+  if (!resolvedBrand) {
+    throw new BrandValidationError('Hostname does not resolve to a valid brand', {
+      tokenBrand: normalizedTokenBrand,
+      requestBrand,
+    });
+  }
+  
+  // After this point, resolvedBrand is definitely Brand (not undefined)
+  const hostnameBrand: Brand = resolvedBrand;
   
   // 🔥 VALIDATION 2: Token brand must match hostname brand
   if (normalizedTokenBrand !== hostnameBrand) {
@@ -105,7 +107,11 @@ export function validateBrandContext(
 export class BrandValidationError extends Error {
   constructor(
     message: string,
-    public context: Partial<BrandValidationContext>
+    public context: {
+      tokenBrand?: Brand;
+      hostnameBrand?: Brand;
+      requestBrand?: Brand;
+    }
   ) {
     super(message);
     this.name = 'BrandValidationError';

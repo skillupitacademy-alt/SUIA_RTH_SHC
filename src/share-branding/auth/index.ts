@@ -16,7 +16,6 @@ export {
 export {
   extractAuthFromRequest,
   createInternalHeaders,
-  getBrandFromHostname,
   requireBffAuth,
   BffAuthErrors,
   type BffAuthResult,
