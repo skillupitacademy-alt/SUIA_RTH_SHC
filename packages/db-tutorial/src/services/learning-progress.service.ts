@@ -62,6 +62,7 @@ import {
   validateSessionId,
   validateBlockId,
   validateBlockVersion,
+  validateSubtopicId,
 } from './learning-progress.validation';
 import {
   resolveRequiredBlocks as resolveRequiredBlocksImpl,
@@ -148,7 +149,7 @@ export class LearningProgressService {
     navigationNodeId: string,
     subtopicId: string,
     sectionId?: string | null
-  ): Promise<NavigationProgressDTO> {
+  ): Promise<NavigationProgressWithCalculatedDTO> {
     // Validate identity and authorization
     validateUserId(identity.userId);
     validateNavigationNodeId(navigationNodeId);
@@ -198,7 +199,7 @@ export class LearningProgressService {
   async getSubtopicProgress(
     identity: AuthenticatedIdentity,
     subtopicId: string
-  ): Promise<NavigationProgressDTO[]> {
+  ): Promise<NavigationProgressWithCalculatedDTO[]> {
     validateUserId(identity.userId);
 
     const progressRecords = await this.progressRepository.getProgressForSubtopic(
@@ -207,7 +208,7 @@ export class LearningProgressService {
     );
 
     // Resolve required blocks for each navigation node
-    const results: NavigationProgressDTO[] = [];
+    const results: NavigationProgressWithCalculatedDTO[] = [];
     for (const record of progressRecords) {
       const requiredBlocks = await this.resolveRequiredBlocks(
         record.subtopicId,
@@ -245,7 +246,7 @@ export class LearningProgressService {
     subtopicId: string,
     sessionId: string,
     sectionId?: string | null
-  ): Promise<NavigationProgressDTO> {
+  ): Promise<NavigationProgressWithCalculatedDTO> {
     // Validate inputs
     validateUserId(identity.userId);
     validateNavigationNodeId(navigationNodeId);
@@ -311,7 +312,7 @@ export class LearningProgressService {
     blockType: string,
     blockVersion: string,
     sessionId?: string
-  ): Promise<NavigationProgressDTO> {
+  ): Promise<NavigationProgressWithCalculatedDTO> {
     // Validate inputs
     validateUserId(identity.userId);
     validateNavigationNodeId(navigationNodeId);
@@ -378,7 +379,7 @@ export class LearningProgressService {
     navigationNodeId: string,
     subtopicId: string,
     timeSpentSec: number
-  ): Promise<NavigationProgressDTO> {
+  ): Promise<NavigationProgressWithCalculatedDTO> {
     // Validate inputs
     validateUserId(identity.userId);
     validateNavigationNodeId(navigationNodeId);
@@ -434,16 +435,30 @@ export class LearningProgressService {
    * - Rationale: Content with no requirements is inherently complete
    * - Use case: Informational pages without interactive blocks
    * 
+   * SECURITY: Server-side canonical requirement resolution.
+   * - Client specifies WHICH node to complete
+   * - Server determines WHAT blocks are required
+   * - Canonical requirements resolved from tutorial_sections
+   * 
    * AUTHORIZATION: SELF-SCOPED - uses authenticated identity.userId ONLY
    */
   async completeNavigationNode(
     identity: AuthenticatedIdentity,
     navigationNodeId: string,
-    requiredBlocks: Array<{ blockId: string; blockVersion: string }>
-  ): Promise<NavigationProgressDTO> {
+    subtopicId: string
+  ): Promise<NavigationProgressWithCalculatedDTO> {
     // Validate inputs
     validateUserId(identity.userId);
     validateNavigationNodeId(navigationNodeId);
+    validateSubtopicId(subtopicId);
+
+    // Validate navigation hierarchy consistency
+    await this.validateNavigationHierarchy(
+      navigationNodeId,
+      subtopicId,
+      null, // sectionId optional
+      identity
+    );
 
     // Get current progress
     const progress = await this.progressRepository.getProgress(
@@ -453,6 +468,13 @@ export class LearningProgressService {
     if (!progress) {
       throw new NavigationNodeNotFoundError(navigationNodeId);
     }
+
+    // Resolve canonical requirements (server authority)
+    const requiredBlocks = await this.resolveRequiredBlocks(
+      subtopicId,
+      navigationNodeId,
+      identity
+    );
 
     // Evaluate completion policy
     const decision = this.evaluateCompletionPolicy(progress, requiredBlocks);
@@ -568,15 +590,16 @@ export class LearningProgressService {
   }
 
   /**
-   * Convert repository record to DTO
+   * Convert repository record to DTO with calculated progress
    * 
    * @param record - Progress record from repository
-   * @param requiredBlocks - Required blocks for progress calculation (empty array if not available)
+   * @param requiredBlocks - Required blocks for progress calculation
+   * @returns DTO with required blocks context
    */
   private toDTO(
     record: TutorialNavigationProgressRecord,
     requiredBlocks: Array<{ blockId: string; blockVersion: string }>
-  ): NavigationProgressDTO {
+  ): NavigationProgressWithCalculatedDTO {
     const progressPercentage = this.calculateProgressPercentage(
       record.completedBlocks,
       requiredBlocks
@@ -591,6 +614,7 @@ export class LearningProgressService {
       completedBlocks: record.completedBlocks,
       completedBlockCount: record.completedBlocks.length,
       totalBlockCount: requiredBlocks.length,
+      requiredBlocks, // Include canonical requirements in DTO
       timeSpentActiveSec: record.timeSpentActiveSec,
       visitCount: record.visitCount,
       revisionCount: record.revisionCount,

@@ -6,6 +6,9 @@ import type { NextRequest } from 'next/server';
  * Supports TWO TRUST MODES for multi-brand system:
  * 1. Gateway Mode: x-user-id + x-brand (existing)
  * 2. Internal Mode: x-internal-secret + identity headers (NEW)
+ * 
+ * Options:
+ * - requireInternalSecret: When true, ONLY internal mode is accepted (gateway fallback disabled)
  */
 
 export interface AuthContext {
@@ -17,7 +20,14 @@ export interface AuthContext {
   roles?: string[]; // 🔥 ADD: User roles for RBAC
 }
 
-export function validateRequest(req: NextRequest): { error?: Response; context?: AuthContext } {
+export interface ValidateRequestOptions {
+  requireInternalSecret?: boolean;
+}
+
+export function validateRequest(
+  req: NextRequest,
+  options?: ValidateRequestOptions
+): { error?: Response; context?: AuthContext } {
   const correlationId = req.headers.get('x-correlation-id') ?? crypto.randomUUID();
   
   // Mode 1: Internal Service Authentication (NEW - FASTEST)
@@ -137,6 +147,22 @@ export function validateRequest(req: NextRequest): { error?: Response; context?:
         authMode: 'internal',
         roles, // 🔥 FIXED: Always array or undefined
       }
+    };
+  }
+  
+  // 🔒 SECURITY POLICY: Internal-Only Routes
+  // When requireInternalSecret is true, missing internal secret is unauthorized
+  // This prevents ILS routes from falling back to gateway authentication
+  if (options?.requireInternalSecret === true) {
+    console.log(`[AUTH][${correlationId}] Internal secret required but not provided`);
+    return {
+      error: new Response(JSON.stringify({ 
+        error: 'Unauthorized', 
+        message: 'Internal secret required for this endpoint' 
+      }), { 
+        status: 401,
+        headers: { 'content-type': 'application/json' }
+      })
     };
   }
   

@@ -95,3 +95,18 @@ export function validateBlockVersion(blockVersion: string): void {
     );
   }
 }
+
+/**
+ * Validate subtopic ID
+ * 
+ * @throws {LearningProgressError} if subtopicId is invalid
+ */
+export function validateSubtopicId(subtopicId: string): void {
+  if (!subtopicId || typeof subtopicId !== 'string' || subtopicId.trim() === '') {
+    throw new LearningProgressError(
+      'Invalid subtopicId',
+      'INVALID_SUBTOPIC_ID',
+      { subtopicId }
+    );
+  }
+}

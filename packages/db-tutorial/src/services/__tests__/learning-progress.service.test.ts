@@ -560,6 +560,19 @@ describe('LearningProgressService', () => {
 
   describe('Node Completion', () => {
     it('prevents completion with incomplete required blocks', async () => {
+      // Setup canonical content with 2 required blocks
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+            { id: 'block-C1', version: 'C1' } as any,
+          ],
+        };
+      }
+
       await mockRepo.createProgress({
         userId: 'user-1',
         navigationNodeId: 'node-1',
@@ -567,14 +580,24 @@ describe('LearningProgressService', () => {
       });
 
       await expect(
-        service.completeNavigationNode({ userId: 'user-1', brand: 'shared' }, 'node-1', [
-          { blockId: 'block-D1', blockVersion: 'D1' },
-          { blockId: 'block-C1', blockVersion: 'C1' },
-        ])
+        service.completeNavigationNode({ userId: 'user-1', brand: 'shared' }, 'node-1', 'subtopic-1')
       ).rejects.toThrow('Cannot complete node');
     });
 
     it('allows completion with all required blocks', async () => {
+      // Setup canonical content with 2 required blocks
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+            { id: 'block-C1', version: 'C1' } as any,
+          ],
+        };
+      }
+
       await mockRepo.createProgress({
         userId: 'user-1',
         navigationNodeId: 'node-1',
@@ -587,16 +610,25 @@ describe('LearningProgressService', () => {
       await service.recordBlockCompletion({ userId: 'user-1', brand: 'shared' }, 'node-1', 'subtopic-1', null, 'block-C1', 'code', 'C1'
       );
 
-      const result = await service.completeNavigationNode({ userId: 'user-1', brand: 'shared' }, 'node-1', [
-        { blockId: 'block-D1', blockVersion: 'D1' },
-        { blockId: 'block-C1', blockVersion: 'C1' },
-      ]);
+      const result = await service.completeNavigationNode({ userId: 'user-1', brand: 'shared' }, 'node-1', 'subtopic-1');
 
       expect(result.status).toBe('completed');
       expect(result.completedAt).toBeTruthy();
     });
 
     it('completed node remains completed on repeat request', async () => {
+      // Setup canonical content with 1 required block
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+          ],
+        };
+      }
+
       await mockRepo.createProgress({
         userId: 'user-1',
         navigationNodeId: 'node-1',
@@ -606,15 +638,266 @@ describe('LearningProgressService', () => {
       await service.recordBlockCompletion({ userId: 'user-1', brand: 'shared' }, 'node-1', 'subtopic-1', null, 'block-D1', 'definition', 'D1'
       );
 
-      await service.completeNavigationNode({ userId: 'user-1', brand: 'shared' }, 'node-1', [
-        { blockId: 'block-D1', blockVersion: 'D1' },
-      ]);
+      await service.completeNavigationNode({ userId: 'user-1', brand: 'shared' }, 'node-1', 'subtopic-1');
 
-      const result = await service.completeNavigationNode({ userId: 'user-1', brand: 'shared' }, 'node-1', [
-        { blockId: 'block-D1', blockVersion: 'D1' },
-      ]);
+      const result = await service.completeNavigationNode({ userId: 'user-1', brand: 'shared' }, 'node-1', 'subtopic-1');
 
       expect(result.status).toBe('completed');
+    });
+  });
+
+  // ============================================================
+  // SECURITY: A3 COMPLETION AUTHORITY BOUNDARY
+  // ============================================================
+
+  describe('Security: Completion Authority Boundary', () => {
+    it('TEST A: prevents client from defining completion requirements', async () => {
+      // SECURITY: Client cannot supply requiredBlocks parameter
+      // Server resolves canonical requirements from tutorial_sections
+      
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Canonical content requires D1, C1, S1
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+            { id: 'block-C1', version: 'C1' } as any,
+            { id: 'block-S1', version: 'S1' } as any,
+          ],
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // User only completed D1 (not all requirements)
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-D1', 'definition', 'D1');
+
+      // Completion should fail - server resolves [D1, C1, S1], user only has [D1]
+      await expect(
+        service.completeNavigationNode(identity, 'node-1', 'subtopic-1')
+      ).rejects.toThrow('Cannot complete node');
+    });
+
+    it('TEST B: prevents subset requirement bypass', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Canonical requires 3 blocks
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+            { id: 'block-C1', version: 'C1' } as any,
+            { id: 'block-S1', version: 'S1' } as any,
+          ],
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // User completed only 1 block
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-D1', 'definition', 'D1');
+
+      // Server resolves full requirements, rejects incomplete
+      await expect(
+        service.completeNavigationNode(identity, 'node-1', 'subtopic-1')
+      ).rejects.toThrow('Cannot complete node');
+    });
+
+    it('TEST C: canonical requirements determine completion', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Canonical content defines exactly 1 required block
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+          ],
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // User completed the canonically-required block
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-D1', 'definition', 'D1');
+
+      // Completion succeeds - canonical requirement satisfied
+      const result = await service.completeNavigationNode(identity, 'node-1', 'subtopic-1');
+      expect(result.status).toBe('completed');
+    });
+
+    it('TEST D: enforces blockId + blockVersion identity', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Canonical requires specific block-def with D1
+      mockSectionRepo.clear();
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-def', version: 'D1', type: 'definition' } as any,
+          ],
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // User completed DIFFERENT blockId (block-other) even though same version (D1)
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-other', 'definition', 'D1');
+
+      // Completion should fail - blockId mismatch (block-other != block-def)
+      // Verifies matching on blockId + blockVersion, not just version
+      await expect(
+        service.completeNavigationNode(identity, 'node-1', 'subtopic-1')
+      ).rejects.toThrow('Cannot complete node');
+    });
+
+    it('TEST E: allows server-resolved empty requirements', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Canonical content has NO D1/C1/S1 blocks (informational page)
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [], // Server resolves []
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // Completion succeeds - server-resolved [] is valid (vacuously complete)
+      const result = await service.completeNavigationNode(identity, 'node-1', 'subtopic-1');
+      expect(result.status).toBe('completed');
+      expect(result.progressPercentage).toBe(100);
+    });
+
+    it('TEST F: enforces brand isolation in canonical resolution', async () => {
+      // Brand A content
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'brand-a');
+      const sectionA = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'brand-a');
+      if (sectionA) {
+        sectionA.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+            { id: 'block-C1', version: 'C1' } as any,
+            { id: 'block-S1', version: 'S1' } as any,
+          ],
+        };
+      }
+
+      // Brand B content (fewer requirements)
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'brand-b');
+      const sectionB = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'brand-b');
+      if (sectionB) {
+        sectionB.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+          ],
+        };
+      }
+
+      const identityA: AuthenticatedIdentity = { userId: 'user-1', brand: 'brand-a' };
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // User completed only D1
+      await service.recordBlockCompletion(identityA, 'node-1', 'subtopic-1', null, 'block-D1', 'definition', 'D1');
+
+      // Brand A requirements apply (D1, C1, S1) - not Brand B's (D1 only)
+      await expect(
+        service.completeNavigationNode(identityA, 'node-1', 'subtopic-1')
+      ).rejects.toThrow('Cannot complete node');
+    });
+
+    it('TEST G: rejects mismatched hierarchy (navigationNodeId/subtopicId)', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Register only: subtopic-1 + node-1
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // Attempt with UNRELATED subtopic (subtopic-2 + node-1 not registered)
+      await expect(
+        service.completeNavigationNode(identity, 'node-1', 'subtopic-2')
+      ).rejects.toThrow('does not belong to subtopic');
+    });
+
+    it('TEST H: DTO contains server-resolved canonical requirements', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Canonical defines D1, C1
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', version: 'D1' } as any,
+            { id: 'block-C1', version: 'C1' } as any,
+          ],
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // Complete all canonical requirements
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-D1', 'definition', 'D1');
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-C1', 'code', 'C1');
+
+      const result = await service.completeNavigationNode(identity, 'node-1', 'subtopic-1');
+
+      // DTO requiredBlocks must match canonical content
+      expect(result.requiredBlocks).toHaveLength(2);
+      expect(result.requiredBlocks).toContainEqual({ blockId: 'block-D1', blockVersion: 'D1' });
+      expect(result.requiredBlocks).toContainEqual({ blockId: 'block-C1', blockVersion: 'C1' });
     });
   });
 
@@ -931,6 +1214,16 @@ describe('LearningProgressService', () => {
     it('allows completion with zero required blocks (vacuously complete)', async () => {
       const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
 
+      // Setup canonical content with NO required blocks (D1/C1/S1)
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [], // No D1/C1/S1 blocks = informational content
+        };
+      }
+
       await mockRepo.createProgress({
         userId: 'user-1',
         navigationNodeId: 'node-1',
@@ -940,7 +1233,7 @@ describe('LearningProgressService', () => {
       const result = await service.completeNavigationNode(
         identity,
         'node-1',
-        [] // No required blocks
+        'subtopic-1' // Server resolves []
       );
 
       expect(result.status).toBe('completed');
@@ -950,11 +1243,21 @@ describe('LearningProgressService', () => {
     it('marks informational content as complete without blocks', async () => {
       const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
 
+      // Setup canonical content with NO required blocks (D1/C1/S1)
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [], // Informational page - no interactive blocks
+        };
+      }
+
       // Create progress for informational content (no interactive blocks)
       await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
 
-      // Should be able to complete immediately
-      const result = await service.completeNavigationNode(identity, 'node-1', []);
+      // Should be able to complete immediately (server resolves [])
+      const result = await service.completeNavigationNode(identity, 'node-1', 'subtopic-1');
 
       expect(result.status).toBe('completed');
       expect(result.completedAt).toBeTruthy();
