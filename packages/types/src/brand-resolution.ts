@@ -85,7 +85,11 @@ export function resolveBrandFromHostname(
   // --------------------------------------------------------------------------
 
   // SHC Local Development
-  if (normalized === 'shc.localhost' || normalized === 'skillhubcore.localhost') {
+  if (
+    normalized === 'shc.localhost' ||
+    normalized === 'skillhubcore.localhost' ||
+    normalized.endsWith('.skillhubcore.localhost')
+  ) {
     return 'skillhubcore';
   }
 

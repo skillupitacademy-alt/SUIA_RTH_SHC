@@ -21,13 +21,14 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { db } from '../../db';
 import { tutorialSections, tutorialSubtopics } from '../../schema';
-import { inArray } from 'drizzle-orm';
+import { inArray, eq, and, isNull, like } from 'drizzle-orm';
 import { TutorialComposerService } from '../tutorial-composer.service';
 import type { TutorialDocument, TutorialBlock } from '@quiz/types';
 import { TutorialDocumentValidationError, SectionAlreadyExistsError } from '@quiz/types';
 
 describe('V2 Composer Integration Test', () => {
-  let testSubtopicId: string;
+  let testSubtopicId: string; // External ID for Composer input
+  let testSubtopicInternalId: string; // Internal ID for cleanup
   let createdTutorialIds: string[] = [];
   const composerService = new TutorialComposerService();
 
@@ -35,23 +36,41 @@ describe('V2 Composer Integration Test', () => {
     userId: 'v2-composer-test-user'
   };
   
-  const TEST_NAV_NODE_ID = 'test-page';
+  const TEST_NAV_NODE_ID = 'whatisjava'; // Canonical Java navigation node (actual sidebar node.id)
+  const TEST_BRAND = 'shared'; // Only brand with existing sidebar for Java topic
 
   beforeAll(async () => {
-    const result = await db
-      .select({ id: tutorialSubtopics.id })
-      .from(tutorialSubtopics)
-      .limit(1);
+    // Get canonical Java subtopic (deterministic fixture)
+    const javaSubtopic = await db.query.tutorialSubtopics.findFirst({
+      where: (subtopics, { eq, and, isNull, like }) => 
+        and(
+          eq(subtopics.name, 'What is Java?'),
+          like(subtopics.slug, 'what-is-java-%'), // Match slug pattern with UUID suffix
+          isNull(subtopics.deletedAt)
+        ),
+    });
 
-    if (result.length === 0) {
-      throw new Error('No test subtopic available');
+    if (!javaSubtopic) {
+      throw new Error('Java subtopic not found. Run database setup first.');
     }
 
-    testSubtopicId = result[0].id;
+    testSubtopicId = javaSubtopic.externalId; // External ID for Composer input
+    testSubtopicInternalId = javaSubtopic.id; // Internal ID for cleanup
     console.log(`Using test subtopic: ${testSubtopicId}`);
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Clean up before EACH test to ensure isolation
+    await db
+      .delete(tutorialSections)
+      .where(
+        and(
+          eq(tutorialSections.subtopicId, testSubtopicInternalId),
+          eq(tutorialSections.navigationNodeId, TEST_NAV_NODE_ID),
+          eq(tutorialSections.brandId, TEST_BRAND)
+        )
+      );
+    
     createdTutorialIds = [];
   });
 
@@ -105,7 +124,7 @@ describe('V2 Composer Integration Test', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: 'shared',
+          brandId: TEST_BRAND,
           content: document
         },
         mockContext
@@ -113,8 +132,8 @@ describe('V2 Composer Integration Test', () => {
 
       createdTutorialIds.push(tutorial.id);
 
-      expect(tutorial.subtopicId).toBe(testSubtopicId);
-      expect(tutorial.brandId).toBe('shared');
+      expect(tutorial.subtopicId).toBe(testSubtopicInternalId); // Service returns internal ID
+      expect(tutorial.brandId).toBe(TEST_BRAND);
       expect(tutorial.content.blocks).toHaveLength(1);
       expect(tutorial.content.blocks[0].type).toBe('definition');
 
@@ -143,7 +162,7 @@ describe('V2 Composer Integration Test', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: 'shared',
+          brandId: TEST_BRAND,
           content: document
         },
         mockContext
@@ -157,7 +176,7 @@ describe('V2 Composer Integration Test', () => {
           {
             subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-            brandId: 'shared',
+            brandId: TEST_BRAND,
             content: document
           },
           mockContext

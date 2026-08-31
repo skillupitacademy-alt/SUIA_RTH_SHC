@@ -1,0 +1,167 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1774000000000,
+      "tag": "0000_t1_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774000001000,
+      "tag": "0001_content_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774165551232,
+      "tag": "0002_easy_namorita",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774169829327,
+      "tag": "0003_flawless_surge",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1774175200154,
+      "tag": "0004_neat_greymalkin",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1774177951851,
+      "tag": "0005_nebulous_jane_foster",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774181525989,
+      "tag": "0006_heavy_sally_floyd",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774183908666,
+      "tag": "0007_tiny_bill_hollister",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774217227063,
+      "tag": "0008_opposite_wiccan",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774551051336,
+      "tag": "0009_mv_student_weak_areas",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774551052336,
+      "tag": "0010_looping_demo_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1774551053336,
+      "tag": "0011_add_layman_hardening_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1778202643367,
+      "tag": "0012_futuristic_pepper_potts",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1778315289541,
+      "tag": "0013_colorful_wong",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1778315289542,
+      "tag": "0014_add_ai_tutor_section_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1778315289543,
+      "tag": "0015_backfill_summary_interview_ai_tutor_sections",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1778315289544,
+      "tag": "0016_add_overview_section_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1778315289545,
+      "tag": "0017_tutorial_delivery_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1778979561865,
+      "tag": "0018_amused_rockslide",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1786995512007,
+      "tag": "0019_add_tutorial_sidebar_trees_v2",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1786997739194,
+      "tag": "0020_add_tutorial_page_content_v2",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1787341859253,
+      "tag": "0021_sparkling_unus",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1788016646932,
+      "tag": "0022_complete_rage",
+      "breakpoints": true
+    }
+  ]
+}

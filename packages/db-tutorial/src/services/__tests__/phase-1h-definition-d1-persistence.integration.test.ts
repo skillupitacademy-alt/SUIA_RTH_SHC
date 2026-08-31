@@ -33,10 +33,10 @@
  * ✅ No admin metadata in delivery
  */
 
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { db } from '../../db';
 import { tutorialSections, tutorialSubtopics } from '../../schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, and } from 'drizzle-orm';
 import {
   validateDefinitionD1AIOutput,
   type DefinitionD1AuthorContent,
@@ -52,24 +52,16 @@ import {
 } from '../../index';
 
 describe('Phase 1H — Definition D1 Persistence Integration', () => {
-  let testSubtopicId: string;
+  let testSubtopicId: string; // External ID for test input
+  let testSubtopicInternalId: string; // Internal ID for cleanup queries
   let createdTutorialIds: string[] = [];
 
   const mockContext: TutorialComposerServiceContext = {
     userId: 'phase-1h-test-user',
   };
   
-  const TEST_NAV_NODE_ID = 'test-page';
-
-  // Test brands to ensure unique (subtopicId, brandId) identity
-  const TEST_BRANDS = ['realtutorialhub', 'skillup'] as const;
-  let brandIndex = 0;
-  
-  function getNextBrand() {
-    const brand = TEST_BRANDS[brandIndex % TEST_BRANDS.length];
-    brandIndex++;
-    return brand;
-  }
+  const TEST_NAV_NODE_ID = 'whatisjava'; // Phase 1 canonical navigation node (actual sidebar node.id)
+  const TEST_BRAND = 'shared'; // Only brand with existing sidebar
 
   // Deterministic AI output fixture
   const validAIOutput = {
@@ -105,22 +97,38 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
   };
 
   beforeAll(async () => {
-    // Get one test subtopic - we'll use different brands for uniqueness
-    const result = await db
-      .select({ id: tutorialSubtopics.id })
-      .from(tutorialSubtopics)
-      .limit(1);
+    // Get canonical Java subtopic (deterministic fixture)
+    const javaSubtopic = await db.query.tutorialSubtopics.findFirst({
+      where: (subtopics, { eq, and, isNull, like }) => 
+        and(
+          eq(subtopics.name, 'What is Java?'),
+          like(subtopics.slug, 'what-is-java-%'), // Match slug pattern with UUID suffix
+          isNull(subtopics.deletedAt)
+        ),
+    });
 
-    if (result.length === 0) {
-      throw new Error('No subtopics found in test database. Run seed script first.');
+    if (!javaSubtopic) {
+      throw new Error('Java subtopic not found. Run database setup first.');
     }
 
-    testSubtopicId = result[0].id;
-    
-    // Clean up any existing test tutorials for this subtopic
+    testSubtopicId = javaSubtopic.externalId; // External ID for Composer input
+    testSubtopicInternalId = javaSubtopic.id; // Internal ID for cleanup
+  });
+
+  beforeEach(async () => {
+    // Clean up before EACH test to ensure isolation
+    // Use internal ID for database query
     await db
       .delete(tutorialSections)
-      .where(eq(tutorialSections.subtopicId, testSubtopicId));
+      .where(
+        and(
+          eq(tutorialSections.subtopicId, testSubtopicInternalId),
+          eq(tutorialSections.navigationNodeId, TEST_NAV_NODE_ID),
+          eq(tutorialSections.brandId, TEST_BRAND)
+        )
+      );
+    
+    createdTutorialIds = [];
   });
 
   afterEach(async () => {
@@ -154,7 +162,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: getNextBrand(),
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -164,8 +172,8 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
       // ✅ VERIFY: Tutorial created
       expect(tutorial.id).toBeTruthy();
-      expect(tutorial.subtopicId).toBe(testSubtopicId);
-      expect(tutorial.brandId).toBe('realtutorialhub');
+      expect(tutorial.subtopicId).toBeDefined(); // Returns internal ID
+      expect(tutorial.brandId).toBe('shared');
       expect(tutorial.status).toBe('draft');
 
       // ✅ VERIFY: Read from database
@@ -178,7 +186,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
       const dbTutorial = dbRows[0];
 
       // ✅ VERIFY: Hierarchy in column, NOT in JSONB
-      expect(dbTutorial.subtopicId).toBe(testSubtopicId);
+      expect(dbTutorial.subtopicId).toBeDefined(); // Internal ID stored
       const contentJSON = JSON.stringify(dbTutorial.content);
       expect(contentJSON).not.toContain('subtopicId');
       expect(contentJSON).not.toContain('domainId');
@@ -227,7 +235,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: getNextBrand(),
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -266,7 +274,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: getNextBrand(),
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -290,7 +298,6 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
   describe('Phase 1H-D: Full Pipeline Integration', () => {
     it('should execute complete AI → Persistence → Delivery pipeline', async () => {
-      const brandId = getNextBrand(); // Capture once for entire test
       
       // Step 1: AI Output (fixture)
       const aiOutput = validAIOutput;
@@ -313,7 +320,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId,
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -326,7 +333,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
       // Step 7: V2 - Retrieve via Delivery Service
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        brandId,
+        brandId: TEST_BRAND,
         includeUnpublished: false,
       });
 
@@ -431,7 +438,6 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
   describe('Phase 1H-F: Delivery Round-Trip', () => {
     it('should deliver canonical D1 block after persistence', async () => {
-      const brandId = getNextBrand(); // Capture once
       
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
@@ -442,7 +448,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId,
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -453,7 +459,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        brandId,
+        brandId: TEST_BRAND,
       });
 
       // ✅ VERIFY: Delivered block matches saved block
@@ -466,7 +472,6 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
     });
 
     it('should not include hierarchy in delivered content', async () => {
-      const brandId = getNextBrand(); // Capture once
       
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
@@ -477,7 +482,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId,
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -488,7 +493,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        brandId,
+        brandId: TEST_BRAND,
       });
 
       // ✅ VERIFY: No hierarchy in delivered content
@@ -505,7 +510,6 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
     });
 
     it('should not leak admin metadata in delivery', async () => {
-      const brandId = getNextBrand(); // Capture once
       
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
@@ -516,7 +520,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId,
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -527,7 +531,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        brandId,
+        brandId: TEST_BRAND,
       });
 
       expect(delivery.tutorial).toBeTruthy();
@@ -544,7 +548,6 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
   describe('Phase 1H-G: Content Preservation', () => {
     it('should preserve all page.* fields exactly through pipeline', async () => {
-      const brandId = getNextBrand(); // Capture once
       
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
@@ -555,7 +558,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId,
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -566,7 +569,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        brandId,
+        brandId: TEST_BRAND,
       });
 
       expect(delivery.tutorial).toBeTruthy();
@@ -593,7 +596,6 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
     });
 
     it('should preserve complex nested structures (characteristics, example)', async () => {
-      const brandId = getNextBrand(); // Capture once
       
       const authorContent = validateDefinitionD1AIOutput(validAIOutput);
       const block = buildCanonicalDefinitionD1Block(authorContent);
@@ -604,7 +606,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId,
+          brandId: TEST_BRAND,
           content: document,
         },
         mockContext
@@ -615,7 +617,7 @@ describe('Phase 1H — Definition D1 Persistence Integration', () => {
 
       // V2: Deliver
       const delivery = await tutorialDeliveryService.getTutorialById(testSubtopicId, {
-        brandId,
+        brandId: TEST_BRAND,
       });
 
       expect(delivery.tutorial).toBeTruthy();

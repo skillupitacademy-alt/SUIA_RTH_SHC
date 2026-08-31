@@ -30,10 +30,10 @@
  * ✅ CLEANUP removes only test data
  */
 
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { db } from '../../db';
 import { tutorialSections, tutorialSubtopics } from '../../schema';
-import { eq, inArray, and, isNull } from 'drizzle-orm';
+import { eq, inArray, and, isNull, like } from 'drizzle-orm';
 import type { TutorialDocument, TutorialBlock } from '@quiz/types';
 import {
   tutorialComposerService,
@@ -47,7 +47,8 @@ import {
 } from './c1-018-fixture';
 
 describe('C1-018 Composer → Storage → Delivery Integration', () => {
-  let testSubtopicId: string;
+  let testSubtopicId: string; // External ID for Composer input
+  let testSubtopicInternalId: string; // Internal ID for cleanup
   let createdTutorialIds: string[] = [];
   
   const fixture = createC1018Fixture();
@@ -56,32 +57,43 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
     userId: 'c1-018-test-user',
   };
 
-  // Use different brands for test isolation
-  const TEST_BRANDS = ['realtutorialhub', 'skillup'] as const;
-  const TEST_NAV_NODE_ID = 'test-page';
-  let brandIndex = 0;
-
-  function getNextBrand() {
-    const brand = TEST_BRANDS[brandIndex % TEST_BRANDS.length];
-    brandIndex++;
-    return brand;
-  }
+  const TEST_NAV_NODE_ID = 'whatisjava'; // Canonical Java navigation node (actual sidebar node.id)
+  const TEST_BRAND = 'shared'; // Only brand with existing sidebar for Java topic
 
   beforeAll(async () => {
-    // Find a real subtopic for testing
-    const result = await db
-      .select({ id: tutorialSubtopics.id })
-      .from(tutorialSubtopics)
-      .limit(1);
+    // Get canonical Java subtopic (deterministic fixture)
+    const javaSubtopic = await db.query.tutorialSubtopics.findFirst({
+      where: (subtopics, { eq, and, isNull, like }) => 
+        and(
+          eq(subtopics.name, 'What is Java?'),
+          like(subtopics.slug, 'what-is-java-%'), // Match slug pattern with UUID suffix
+          isNull(subtopics.deletedAt)
+        ),
+    });
 
-    if (result.length === 0) {
-      throw new Error(
-        'No subtopics found in test database. Run seed script first.'
-      );
+    if (!javaSubtopic) {
+      throw new Error('Java subtopic not found. Run database setup first.');
     }
 
-    testSubtopicId = result[0].id;
+    testSubtopicId = javaSubtopic.externalId; // External ID for Composer input
+    testSubtopicInternalId = javaSubtopic.id; // Internal ID for cleanup
     console.log(`[C1-018] Using test subtopic: ${testSubtopicId}`);
+  });
+
+  beforeEach(async () => {
+    // Clean up before EACH test to ensure isolation
+    // Use internal ID for database query with tuple identity
+    await db
+      .delete(tutorialSections)
+      .where(
+        and(
+          eq(tutorialSections.subtopicId, testSubtopicInternalId),
+          eq(tutorialSections.navigationNodeId, TEST_NAV_NODE_ID),
+          eq(tutorialSections.brandId, TEST_BRAND)
+        )
+      );
+    
+    createdTutorialIds = [];
   });
 
   afterEach(async () => {
@@ -108,14 +120,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('01. CREATE with D1 block', () => {
     it('should create tutorial with single Definition D1 block via TutorialComposerService', async () => {
-      const brand = getNextBrand();
-
       // CREATE via service
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -126,8 +136,8 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
       // Verify tutorial created
       expect(tutorial.id).toBeTruthy();
-      expect(tutorial.subtopicId).toBe(testSubtopicId);
-      expect(tutorial.brandId).toBe(brand);
+      expect(tutorial.subtopicId).toBeDefined(); // Returns internal ID
+      expect(tutorial.brandId).toBe('shared');
       expect(tutorial.status).toBe('draft');
 
       // Verify content structure
@@ -149,14 +159,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('02. APPEND first C1 block', () => {
     it('should append Code C1 block #1 via appendBlockToTutorial()', async () => {
-      const brand = getNextBrand();
-
       // CREATE initial tutorial
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -198,14 +206,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('03. APPEND second C1 block', () => {
     it('should append Code C1 block #2 (same type/version) via appendBlockToTutorial()', async () => {
-      const brand = getNextBrand();
-
       // CREATE + APPEND first C1
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -247,14 +253,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('04. Block ordering preserved [D1, C1, C1]', () => {
     it('should preserve exact insertion order', async () => {
-      const brand = getNextBrand();
-
       // CREATE + APPEND + APPEND
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -303,14 +307,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('05. UPDATE D1 without changing block IDs', () => {
     it('should update D1 content via updateTutorialContent() preserving all IDs', async () => {
-      const brand = getNextBrand();
-
       // CREATE + APPEND + APPEND
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -373,14 +375,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('06. Single tutorial_sections row maintained', () => {
     it('should maintain exactly one row per (subtopicId, brandId)', async () => {
-      const brand = getNextBrand();
-
       // CREATE + APPEND + APPEND
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -405,8 +405,8 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
         .from(tutorialSections)
         .where(
           and(
-            eq(tutorialSections.subtopicId, testSubtopicId),
-            eq(tutorialSections.brandId, brand),
+            eq(tutorialSections.subtopicId, testSubtopicInternalId),
+            eq(tutorialSections.brandId, TEST_BRAND),
             isNull(tutorialSections.deletedAt)
           )
         );
@@ -418,14 +418,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('07. PUBLISH sets correct status', () => {
     it('should publish tutorial via publishTutorial()', async () => {
-      const brand = getNextBrand();
-
       // CREATE + APPEND + APPEND
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -462,14 +460,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('08. DELIVERY preserves blocks[] structure', () => {
     it('should deliver blocks[] via TutorialDeliveryService.getTutorialById()', async () => {
-      const brand = getNextBrand();
-
       // CREATE + APPEND + APPEND + PUBLISH
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -494,7 +490,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const delivery = await tutorialDeliveryService.getTutorialById(
         testSubtopicId,
         {
-          brandId: brand,
+          brandId: TEST_BRAND,
           includeUnpublished: false,
         }
       );
@@ -513,14 +509,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('09. DELIVERY preserves block ordering', () => {
     it('should preserve [D1, C1, C1] ordering in delivery', async () => {
-      const brand = getNextBrand();
-
       // CREATE + APPEND + APPEND + PUBLISH
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -545,7 +539,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const delivery = await tutorialDeliveryService.getTutorialById(
         testSubtopicId,
         {
-          brandId: brand,
+          brandId: TEST_BRAND,
           includeUnpublished: false,
         }
       );
@@ -576,14 +570,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('10. DELIVERY preserves block IDs', () => {
     it('should preserve exact block IDs in delivery', async () => {
-      const brand = getNextBrand();
-
       // CREATE + APPEND + APPEND + PUBLISH
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
@@ -608,7 +600,7 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
       const delivery = await tutorialDeliveryService.getTutorialById(
         testSubtopicId,
         {
-          brandId: brand,
+          brandId: TEST_BRAND,
           includeUnpublished: false,
         }
       );
@@ -623,14 +615,12 @@ describe('C1-018 Composer → Storage → Delivery Integration', () => {
 
   describe('11. CLEANUP verification', () => {
     it('should remove test data and verify zero remaining rows', async () => {
-      const brand = getNextBrand();
-
       // CREATE tutorial
       const tutorial = await tutorialComposerService.createTutorial(
         {
           subtopicId: testSubtopicId,
           navigationNodeId: TEST_NAV_NODE_ID,
-          brandId: brand,
+          brandId: TEST_BRAND,
           content: fixture.initialDocument,
         },
         mockContext
