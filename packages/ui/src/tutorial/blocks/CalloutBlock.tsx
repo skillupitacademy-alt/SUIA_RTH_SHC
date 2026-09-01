@@ -57,6 +57,8 @@ export function CalloutBlock({ block, className = '' }: BlockComponentProps<ICal
   return (
     <aside
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="callout"
       role="note"
       aria-label={title || defaultTitle}
       className={`my-4 p-4 rounded-lg border-l-4 border ${container} shadow-sm ${className}`}

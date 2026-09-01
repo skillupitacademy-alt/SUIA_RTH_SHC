@@ -71,7 +71,13 @@ function DefinitionD1View({
   }
 
   return (
-    <article className={`w-full bg-white px-[5%] py-10 ${className}`} style={{ color: secondary }}>
+    <article 
+      className={`w-full bg-white px-[5%] py-10 ${className}`} 
+      style={{ color: secondary }}
+      data-block-id={block.id}
+      data-block-type="definition"
+      data-block-version={block.version}
+    >
       <header className="mb-[26px]">
         <div className="mb-[14px] flex items-center gap-2.5 text-base font-extrabold leading-snug" style={{ color: primary }}>
           <span className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border-2" style={{ borderColor: primary }}>

@@ -18,6 +18,8 @@ export function TableBlock({ block, className = '' }: BlockComponentProps<ITable
   return (
     <div
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="table"
       className={`my-4 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm ${className}`}
     >
       <table className="w-full text-sm text-left text-slate-700 dark:text-slate-300 divide-y divide-slate-200 dark:divide-slate-800">

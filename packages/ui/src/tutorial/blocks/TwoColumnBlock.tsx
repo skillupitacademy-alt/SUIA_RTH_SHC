@@ -56,6 +56,8 @@ export function TwoColumnBlock({
   return (
     <div
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="two-column"
       className={`my-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start ${className}`}
     >
       <div className={`flex flex-col space-y-2 min-w-0 ${leftColSpan}`}>

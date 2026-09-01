@@ -77,7 +77,7 @@ describe('Phase 2D - Code C1 Renderer', () => {
       
       const title = screen.getByText('Python Print Statement');
       expect(title).toBeInTheDocument();
-      expect(title.tagName).toBe('SPAN');
+      expect(title.tagName).toBe('H1');
     });
 
     it('TEST 3 — renders introduction', () => {
@@ -98,9 +98,10 @@ describe('Phase 2D - Code C1 Renderer', () => {
       const block = createC1Block(validC1Content);
       const { container } = render(<CodeC1Block block={block} />);
       
-      const codeElement = container.querySelector('code[data-language="python"]');
+      // Language is rendered in TerminalWindow title
+      expect(screen.getByText('python')).toBeInTheDocument();
+      const codeElement = container.querySelector('code');
       expect(codeElement).toBeInTheDocument();
-      expect(codeElement).toHaveClass('language-python');
     });
 
     it('TEST 6 — renders all explanation items', () => {
@@ -231,7 +232,8 @@ describe('Phase 2D - Code C1 Renderer', () => {
       const block = createC1Block(validC1Content);
       const { container } = render(<CodeC1Block block={block} />);
       
-      const explanationItems = container.querySelectorAll('[class*="border-l-2"]');
+      // Explanation items are grid rows with 3-column layout
+      const explanationItems = container.querySelectorAll('.grid.grid-cols-\\[48px_minmax\\(150px\\,250px\\)_minmax\\(0\\,1fr\\)\\]');
       expect(explanationItems).toHaveLength(2);
     });
 
@@ -252,7 +254,8 @@ describe('Phase 2D - Code C1 Renderer', () => {
       const block = createC1Block(contentWith6Explanations);
       const { container } = render(<CodeC1Block block={block} />);
       
-      const explanationItems = container.querySelectorAll('[class*="border-l-2"]');
+      // Explanation items are grid rows with 3-column layout
+      const explanationItems = container.querySelectorAll('.grid.grid-cols-\\[48px_minmax\\(150px\\,250px\\)_minmax\\(0\\,1fr\\)\\]');
       expect(explanationItems).toHaveLength(6);
       
       expect(screen.getByText('Item 1')).toBeInTheDocument();
@@ -408,10 +411,10 @@ describe('Phase 2D - Code C1 Renderer', () => {
           },
         };
         const block = createC1Block(langContent);
-        const { container } = render(<CodeC1Block block={block} />);
+        render(<CodeC1Block block={block} />);
         
-        const codeElement = container.querySelector(`code[data-language="${lang}"]`);
-        expect(codeElement).toBeInTheDocument();
+        // Language is displayed in TerminalWindow title
+        expect(screen.getByText(lang)).toBeInTheDocument();
         expect(screen.getByText(`// ${lang} code example`)).toBeInTheDocument();
       });
     });
@@ -424,7 +427,7 @@ describe('Phase 2D - Code C1 Renderer', () => {
       
       const article = container.querySelector('article');
       expect(article).toBeInTheDocument();
-      expect(article).toHaveAttribute('id', 'test-c1-block-id');
+      expect(article).toHaveAttribute('data-block-id', 'test-c1-block-id');
     });
 
     it('TEST 43 — code block is accessible', () => {
@@ -442,7 +445,7 @@ describe('Phase 2D - Code C1 Renderer', () => {
       const block = createC1Block(validC1Content);
       render(<CodeC1Block block={block} />);
       
-      const copyButton = screen.getByRole('button', { name: /copy code to clipboard/i });
+      const copyButton = screen.getByRole('button', { name: /copy/i });
       expect(copyButton).toBeInTheDocument();
     });
 
@@ -450,12 +453,12 @@ describe('Phase 2D - Code C1 Renderer', () => {
       const block = createC1Block(validC1Content);
       const { container } = render(<CodeC1Block block={block} />);
       
-      const h3 = container.querySelector('h3');
-      expect(h3).toBeInTheDocument();
-      expect(h3?.textContent).toContain('Python Print Statement');
+      const h1 = container.querySelector('h1');
+      expect(h1).toBeInTheDocument();
+      expect(h1?.textContent).toContain('Python Print Statement');
       
-      const h4s = container.querySelectorAll('h4');
-      expect(h4s.length).toBeGreaterThan(0);
+      const h2s = container.querySelectorAll('h2');
+      expect(h2s.length).toBeGreaterThan(0);
     });
   });
 

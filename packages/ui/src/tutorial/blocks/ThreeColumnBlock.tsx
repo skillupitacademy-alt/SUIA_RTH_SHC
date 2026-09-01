@@ -26,6 +26,8 @@ export function ThreeColumnBlock({
   return (
     <div
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="three-column"
       className={`my-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-start ${className}`}
     >
       {columns.map((col, cIdx) => {

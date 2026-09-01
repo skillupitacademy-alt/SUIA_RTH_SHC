@@ -47,9 +47,15 @@ export function CodeC1Block({ block, theme: providedTheme }: BlockComponentProps
 
     const copy = async () => {
       if (!copySource) return;
-      await navigator.clipboard?.writeText(copySource);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
+      try {
+        await navigator.clipboard?.writeText(copySource);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1500);
+      } catch (err) {
+        // Gracefully handle clipboard rejection (permissions, unavailable, etc.)
+        // No user-facing error - button stays in default state
+        console.warn('Clipboard write failed:', err);
+      }
     };
 
     return (
@@ -86,7 +92,12 @@ export function CodeC1Block({ block, theme: providedTheme }: BlockComponentProps
   const takeawayItems = page.takeaway ? page.takeaway.split('\n\n').filter(Boolean) : [];
 
   return (
-    <article className="w-full bg-white px-[5%] py-10 text-[#0b1b3d]">
+    <article 
+      className="w-full bg-white px-[5%] py-10 text-[#0b1b3d]"
+      data-block-id={block.id}
+      data-block-type="code"
+      data-block-version="C1"
+    >
       {/* Header - Historical Design */}
       <header className="mb-[30px] w-full">
         <div className="mb-[13px] inline-flex items-center gap-[9px] rounded-[5px] px-2.5 py-[5px] text-[13px] font-extrabold leading-snug" style={{ color: theme.primaryDark, backgroundColor: withAlpha(theme.primary, '14') }}>
@@ -106,7 +117,7 @@ export function CodeC1Block({ block, theme: providedTheme }: BlockComponentProps
           <Terminal className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
           <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Code Example</h2>
         </div>
-        <TerminalWindow title={page.language || 'Code'} copySource={page.code}>
+        <TerminalWindow title={page.filename || page.language || 'Code'} copySource={page.code}>
           <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <pre className="m-0 bg-[#07142f] px-[22px] pb-7 pt-6">
               <code className="block whitespace-pre font-mono text-base font-medium leading-[1.8] text-[#f8fafc]">{page.code}</code>
@@ -145,6 +156,9 @@ export function CodeC1Block({ block, theme: providedTheme }: BlockComponentProps
             <Monitor className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
             <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Output</h2>
           </div>
+          {page.output.description && (
+            <p className="mb-3 text-base font-medium leading-[1.65]" style={{ color: theme.secondary }}>{page.output.description}</p>
+          )}
           <TerminalWindow title="Terminal">
             <pre className="m-0 whitespace-pre-wrap bg-[#07142f] p-[22px] font-mono text-base leading-[1.7] text-[#d7e2f5]">{page.output.value}</pre>
           </TerminalWindow>

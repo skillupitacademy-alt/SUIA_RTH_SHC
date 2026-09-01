@@ -28,6 +28,8 @@ export function TimelineBlock({
     return (
       <div
         id={block.id}
+        data-block-id={block.id}
+        data-block-type="timeline"
         className={`my-6 overflow-x-auto pb-4 ${className}`}
       >
         <div className="flex items-start gap-6 min-w-max">
@@ -68,6 +70,8 @@ export function TimelineBlock({
   return (
     <div
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="timeline"
       className={`my-6 pl-4 border-l-2 border-indigo-200 dark:border-indigo-900/60 space-y-6 ${className}`}
     >
       {items.map((item, idx) => {

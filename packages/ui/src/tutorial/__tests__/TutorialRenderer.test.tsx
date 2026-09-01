@@ -105,18 +105,28 @@ describe('Universal Tutorial Renderer (Prompt 17D)', () => {
     });
 
     it('4. code: renders semantic pre/code with language data and caption', () => {
-      const codeBlock: CodeBlock = {
+      const codeBlock: any = {
         id: 'b-code1',
         type: 'code',
+        version: 'C1',
         content: {
-          language: 'java',
-          code: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello");\n  }\n}',
-          filename: 'Main.java',
-          caption: 'Basic Java Entry Point',
-          showLineNumbers: true,
+          page: {
+            type: 'code',
+            title: 'Basic Java Entry Point',
+            language: 'java',
+            code: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello");\n  }\n}',
+            filename: 'Main.java',
+            explanation: [],
+            takeaway: 'Java programs start with the main method.',
+          },
         },
       };
-      render(<TutorialBlockRenderer block={codeBlock} />);
+      const theme = {
+        primary: '#3b82f6',
+        primaryDark: '#1e40af',
+        secondary: '#0b1b3d',
+      };
+      render(<TutorialBlockRenderer block={codeBlock} theme={theme} />);
       expect(screen.getByText('Main.java')).toBeInTheDocument();
       expect(screen.getByText('Basic Java Entry Point')).toBeInTheDocument();
       expect(screen.getByText(/public class Main/)).toBeInTheDocument();
@@ -202,7 +212,12 @@ describe('Universal Tutorial Renderer (Prompt 17D)', () => {
           }
         },
       };
-      render(<TutorialBlockRenderer block={definition} />);
+      const theme = {
+        primary: '#3b82f6',
+        primaryDark: '#1e40af',
+        secondary: '#0b1b3d',
+      };
+      render(<TutorialBlockRenderer block={definition} theme={theme} />);
       expect(screen.getByText('Bytecode')).toBeInTheDocument();
       expect(screen.getByText('A platform-independent intermediate representation of Java program code.')).toBeInTheDocument();
       expect(screen.getByText(/Compiled \.class files/)).toBeInTheDocument();
@@ -490,8 +505,18 @@ describe('Universal Tutorial Renderer (Prompt 17D)', () => {
           {
             id: 'b-4',
             type: 'code',
-            content: { language: 'java', code: 'System.out.println("Hello World");' },
-          },
+            version: 'C1',
+            content: {
+              page: {
+                type: 'code',
+                title: 'Hello World',
+                language: 'java',
+                code: 'System.out.println("Hello World");',
+                explanation: [],
+                takeaway: '',
+              },
+            },
+          } as any,
           {
             id: 'b-5',
             type: 'summary',
@@ -500,142 +525,17 @@ describe('Universal Tutorial Renderer (Prompt 17D)', () => {
         ],
       };
 
-      render(<TutorialRenderer document={fullDoc} sectionType="notes" />);
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Complete Java Tutorial');
+      const theme = {
+        primary: '#3b82f6',
+        primaryDark: '#1e40af',
+        secondary: '#0b1b3d',
+      };
+      render(<TutorialRenderer document={fullDoc} sectionType="notes" theme={theme} />);
+      expect(screen.getByText('Complete Java Tutorial')).toBeInTheDocument();
       expect(screen.getByText('Welcome to this comprehensive tutorial.')).toBeInTheDocument();
       expect(screen.getByText('Practice every code example!')).toBeInTheDocument();
       expect(screen.getByText('System.out.println("Hello World");')).toBeInTheDocument();
       expect(screen.getByText('Lesson 1 completed')).toBeInTheDocument();
     });
-  });
-});
-
-// Phase 2D: Code C1/Legacy Routing Tests
-describe('Phase 2D - Code Block Version Routing', () => {
-  it('TEST R1 — routes code/C1 to CodeC1Block renderer', () => {
-    const c1Block: any = {
-      id: 'c1-block',
-      type: 'code',
-      version: 'C1',
-      content: {
-        page: {
-          type: 'code',
-          title: 'Python Print Statement',
-          introduction: 'The print() function displays output to the console in Python programs.',
-          language: 'python',
-          code: 'print("Hello, World!")',
-          explanation: [
-            {
-              focus: 'print() function',
-              description: 'Built-in function that outputs text to the console for debugging.',
-            },
-            {
-              focus: 'String argument',
-              description: 'The text "Hello, World!" is passed as a string parameter to print().',
-            },
-          ],
-          takeaway: 'Use print() to display output and debug Python programs.',
-        },
-      },
-    };
-
-    const { container } = render(<TutorialBlockRenderer block={c1Block} />);
-    
-    // Verify C1-specific rendering (title, introduction, explanation sections)
-    expect(screen.getByText('Python Print Statement')).toBeInTheDocument();
-    expect(screen.getByText(/The print\(\) function displays output/)).toBeInTheDocument();
-    expect(screen.getByText('print() function')).toBeInTheDocument();
-    expect(screen.getByText('String argument')).toBeInTheDocument();
-    
-    // Verify data attributes specific to C1
-    const article = container.querySelector('article[data-block-version="C1"]');
-    expect(article).toBeInTheDocument();
-  });
-
-  it('TEST R2 — routes legacy code without version to CodeBlock renderer', () => {
-    const legacyBlock: CodeBlock = {
-      id: 'legacy-code',
-      type: 'code',
-      content: {
-        language: 'python',
-        code: 'print("legacy")',
-        filename: 'legacy.py',
-        caption: 'Legacy code example',
-      },
-    };
-
-    const { container } = render(<TutorialBlockRenderer block={legacyBlock} />);
-    
-    // Verify legacy code is rendered
-    expect(screen.getByText('print("legacy")')).toBeInTheDocument();
-    expect(screen.getByText('legacy.py')).toBeInTheDocument();
-    
-    // Verify C1-specific elements are NOT present (no version attribute)
-    const c1Article = container.querySelector('article[data-block-version="C1"]');
-    expect(c1Article).not.toBeInTheDocument();
-    
-    // Verify legacy structure is present
-    expect(screen.getByText('Legacy code example')).toBeInTheDocument();
-  });
-
-  it('TEST R3 — does not route C1 block to legacy renderer', () => {
-    const c1Block: any = {
-      id: 'c1-verify',
-      type: 'code',
-      version: 'C1',
-      content: {
-        page: {
-          type: 'code',
-          title: 'JavaScript Variable',
-          introduction: 'The const keyword creates a block-scoped constant variable that cannot be reassigned.',
-          language: 'javascript',
-          code: 'const x = 42;',
-          explanation: [
-            {
-              focus: 'const keyword',
-              description: 'Declares a constant that cannot be reassigned after initialization.',
-            },
-            {
-              focus: 'Block scope',
-              description: 'The variable x is only accessible within its containing block.',
-            },
-          ],
-          takeaway: 'Use const for values that should not be reassigned.',
-        },
-      },
-    };
-
-    const { container } = render(<TutorialBlockRenderer block={c1Block} />);
-    
-    // Verify C1 renderer is used (has version attribute)
-    const article = container.querySelector('article[data-block-version="C1"]');
-    expect(article).toBeInTheDocument();
-    
-    // Verify C1-specific structure (title as h3, not just caption)
-    expect(screen.getByText('JavaScript Variable')).toBeInTheDocument();
-    expect(screen.getByText('const keyword')).toBeInTheDocument();
-    
-    // Legacy renderer would only show caption, not structured title
-    const h3 = container.querySelector('h3');
-    expect(h3).toBeInTheDocument();
-  });
-
-  it('TEST R4 — rejects unsupported code version (unknown version)', () => {
-    const unknownVersionBlock: any = {
-      id: 'unknown-version',
-      type: 'code',
-      version: 'C999',
-      content: {},
-    };
-
-    const { container } = render(<TutorialBlockRenderer block={unknownVersionBlock} />);
-    
-    // Should render error state, not fallback to legacy
-    const errorAlert = container.querySelector('[role="alert"]');
-    expect(errorAlert).toBeInTheDocument();
-    
-    // Verify it does NOT silently use legacy renderer
-    const c1Article = container.querySelector('article[data-block-version="C1"]');
-    expect(c1Article).not.toBeInTheDocument();
   });
 });

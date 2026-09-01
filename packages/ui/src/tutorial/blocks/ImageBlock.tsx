@@ -11,6 +11,8 @@ export function ImageBlock({ block, className = '' }: BlockComponentProps<IImage
   return (
     <figure
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="image"
       className={`my-4 flex flex-col items-center justify-center ${className}`}
     >
       <div

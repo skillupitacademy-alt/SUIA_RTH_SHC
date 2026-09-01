@@ -7,6 +7,9 @@ export * from './types';
 export * from './TutorialRenderer';
 export * from './TutorialBlockRenderer';
 
+// Phase 3: Active Block Runtime
+export * from './runtime/ActiveBlockContext';
+
 // Individual block components
 export * from './blocks/HeadingBlock';
 export * from './blocks/ParagraphBlock';

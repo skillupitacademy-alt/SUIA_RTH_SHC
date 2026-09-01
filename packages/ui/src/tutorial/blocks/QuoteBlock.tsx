@@ -7,6 +7,8 @@ export function QuoteBlock({ block, className = '' }: BlockComponentProps<IQuote
   return (
     <figure
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="quote"
       className={`my-4 p-4 rounded-lg border-l-4 border-slate-400 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/30 ${className}`}
     >
       <blockquote className="text-base italic leading-relaxed text-slate-800 dark:text-slate-200">

@@ -7,6 +7,8 @@ export function ComparisonBlock({ block, className = '' }: BlockComponentProps<I
   return (
     <section
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="comparison"
       aria-label={title || 'Comparison'}
       className={`my-4 p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm ${className}`}
     >

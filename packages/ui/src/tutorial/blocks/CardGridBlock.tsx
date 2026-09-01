@@ -34,6 +34,8 @@ export function CardGridBlock({
   return (
     <div
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="card-grid"
       className={`my-4 grid ${colClass} gap-4 items-stretch ${className}`}
     >
       {cards.map((card, cIdx) => {

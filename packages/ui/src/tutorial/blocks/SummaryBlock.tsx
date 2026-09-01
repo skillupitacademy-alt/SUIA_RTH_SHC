@@ -9,6 +9,8 @@ export function SummaryBlock({ block, className = '' }: BlockComponentProps<ISum
       id={block.id}
       aria-label={title || 'Summary'}
       className={`my-4 p-5 rounded-lg border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-sm ${className}`}
+      data-block-id={block.id}
+      data-block-type="summary"
     >
       <div className="flex items-center gap-2 mb-3 font-bold text-base text-indigo-950 dark:text-indigo-200">
         <span>📌</span>

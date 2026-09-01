@@ -28,6 +28,8 @@ export function ListBlock({ block, className = '' }: BlockComponentProps<IListBl
     return (
       <ol
         id={block.id}
+        data-block-id={block.id}
+        data-block-type="list"
         className={`list-decimal list-inside space-y-1.5 my-3 pl-2 text-slate-700 dark:text-slate-300 ${className}`}
       >
         {items.map((item, index) => renderListItem(item, index, style))}
@@ -38,6 +40,8 @@ export function ListBlock({ block, className = '' }: BlockComponentProps<IListBl
   return (
     <ul
       id={block.id}
+      data-block-id={block.id}
+      data-block-type="list"
       className={`list-disc list-inside space-y-1.5 my-3 pl-2 text-slate-700 dark:text-slate-300 ${className}`}
     >
       {items.map((item, index) => renderListItem(item, index, style))}

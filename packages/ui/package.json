@@ -6,7 +6,8 @@
   "scripts": {
     "type-check": "tsc --noEmit -p tsconfig.json",
     "test": "vitest --config vitest.config.ts run",
-    "test:watch": "vitest --config vitest.config.ts"
+    "test:watch": "vitest --config vitest.config.ts",
+    "test:http": "node .http-e2e-smoke.test.mjs"
   },
   "exports": {
     ".": "./src/index.ts",
