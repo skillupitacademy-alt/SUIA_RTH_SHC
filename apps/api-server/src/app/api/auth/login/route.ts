@@ -1,6 +1,7 @@
 // 🔐 CRITICAL: Import shared cookie middleware to ensure correct domain per brand
-import { type CookieBrand,setAuthCookies } from '@quiz/auth';
+import { setAuthCookies } from '@quiz/auth';
 import { METRICS } from '@quiz/observability';
+import { type Brand } from '@quiz/types';
 import type { NextRequest } from 'next/server';
 
 import { toUserSummaryDTO } from '@/dtos/auth.dto';
@@ -124,7 +125,7 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
 
     // 🔐 CRITICAL FIX: Use shared cookie middleware to ensure correct domain per brand
     // This fixes the SkillUp redirect loop caused by cookie domain mismatch
-    const cookieBrand: CookieBrand = brand === 'skillup' ? 'skillup' : 'realtutorialhub';
+    const cookieBrand: Brand = brand === 'skillup' ? 'skillup' : 'realtutorialhub';
     
     const requestHostname = resolveRequestHostnameFromHeaders(req.headers, req.nextUrl.hostname);
     

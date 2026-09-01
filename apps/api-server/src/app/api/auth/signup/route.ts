@@ -1,5 +1,6 @@
-import { type CookieBrand,setAuthCookies } from '@quiz/auth';
+import { setAuthCookies } from '@quiz/auth';
 import { METRICS } from '@quiz/observability';
+import { type Brand } from '@quiz/types';
 import type { NextRequest } from 'next/server';
 
 import { toUserSummaryDTO } from '@/dtos/auth.dto';
@@ -56,7 +57,7 @@ async function handler(_req: NextRequest) {
     });
 
     const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
-    const cookieBrand = brand as CookieBrand;
+    const cookieBrand = brand as Brand;
 
     // Set cookies using the shared middleware helper
     setAuthCookies(response, accessToken, refreshToken, cookieBrand, false);

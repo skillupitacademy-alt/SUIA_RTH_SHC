@@ -8,10 +8,10 @@
  */
 
 import {
+  type AuthenticatedIdentity,
   LearningProgressService,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
-  type AuthenticatedIdentity,
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -43,10 +43,11 @@ export async function GET(
     const authContext = authValidation.context;
     
     // Construct authenticated identity from validated context
+    const sessionId = request.headers.get('x-session-id');
     const identity: AuthenticatedIdentity = {
       userId: authContext.userId,
       brand: authContext.brand,
-      sessionId: request.headers.get('x-session-id') || undefined,
+      sessionId: sessionId !== null && sessionId !== '' ? sessionId : undefined,
     };
 
     // Call service

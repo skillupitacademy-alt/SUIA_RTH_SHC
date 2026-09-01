@@ -8,13 +8,13 @@
  */
 
 import {
+  type AuthenticatedIdentity,
+  InvalidBlockCompletionError,
+  InvalidNavigationHierarchyError,
   LearningProgressService,
+  NavigationNodeNotFoundError,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
-  NavigationNodeNotFoundError,
-  InvalidNavigationHierarchyError,
-  InvalidBlockCompletionError,
-  type AuthenticatedIdentity,
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -41,10 +41,11 @@ export async function POST(request: NextRequest) {
     const { context } = authValidation;
     
     // Construct authenticated identity from validated context
+    const sessionId = request.headers.get('x-session-id');
     const identity: AuthenticatedIdentity = {
       userId: context.userId,
       brand: context.brand,
-      sessionId: request.headers.get('x-session-id') || undefined,
+      sessionId: sessionId !== null && sessionId !== '' ? sessionId : undefined,
     };
 
     // Parse and validate request body

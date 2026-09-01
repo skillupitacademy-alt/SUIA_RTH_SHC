@@ -28,8 +28,9 @@ import { login, testCredentials, getInternalApiHeaders } from './auth-helper.mjs
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, '../../..');
-config({ path: join(projectRoot, '.env.local') });
+
+// Load .env.local from workspace root (assuming script runs from workspace root)
+config({ path: '.env.local', override: true });
 
 const { Client } = pkg;
 
@@ -60,12 +61,36 @@ const certification = {
   realSystemE2E: 'PENDING',
 };
 
+/**
+ * PHASE 3C-B: Production-matching slugify implementation
+ * This must match tutorialSidebarDelivery.ts line 57 exactly
+ * 
+ * Production generates domain/subject/topic slugs from names using this function
+ * Database slug columns contain ID suffixes (e.g., 'full-stack-development-30000000')
+ * Production URLs use slugify(name) which produces 'full-stack-development' (no suffix)
+ */
+function slugify(value) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 console.log('\n╔════════════════════════════════════════════════════════════════════╗');
 console.log('║   REAL SYSTEM E2E CERTIFICATION - Tutorial Engine + ILS Chain     ║');
 console.log('╚════════════════════════════════════════════════════════════════════╝\n');
 
 async function main() {
-  const client = new Client({ connectionString: process.env.DATABASE_URL_TUTORIAL });
+  let connString = process.env.DATABASE_URL_TUTORIAL;
+  
+  // Strip surrounding quotes if present (some .env formats include them)
+  if (connString && connString.startsWith('"') && connString.endsWith('"')) {
+    connString = connString.slice(1, -1);
+  }
+  
+  const client = new Client({ connectionString: connString });
   
   try {
     await client.connect();
@@ -157,6 +182,9 @@ async function main() {
     console.log('PART 3: SELECT ACTUAL PUBLISHED TUTORIAL');
     console.log('═'.repeat(70) + '\n');
 
+    // PHASE 3C-B FIX: Query names AND slugs to reproduce production route logic
+    // Production generates domain/subject/topic slugs from names, NOT from slug column
+    // Only subtopic.slug is used directly from database
     const tutorialQuery = await client.query(`
       SELECT
         ts.id as section_id,
@@ -168,11 +196,11 @@ async function main() {
         ts.published_at,
         t.slug as subtopic_slug,
         t.name as subtopic_name,
-        tp.slug as topic_slug,
+        tp.slug as topic_slug_db,
         tp.name as topic_name,
-        s.slug as subject_slug,
+        s.slug as subject_slug_db,
         s.name as subject_name,
-        d.slug as domain_slug,
+        d.slug as domain_slug_db,
         d.name as domain_name
       FROM tutorial_sections ts
       JOIN tutorial_subtopics t ON t.id = ts.subtopic_id
@@ -194,6 +222,15 @@ async function main() {
     }
 
     const tutorial = tutorialQuery.rows[0];
+    
+    // PHASE 3C-B: Generate canonical slugs matching production behavior
+    // Production calls slugify(name) for domain/subject/topic
+    // Only subtopic uses database slug column directly
+    const domainSlug = slugify(tutorial.domain_name);
+    const subjectSlug = slugify(tutorial.subject_name);
+    const topicSlug = slugify(tutorial.topic_name);
+    const subtopicSlug = tutorial.subtopic_slug; // DB value used directly
+    
     evidence.selectedTutorial = {
       sectionId: tutorial.section_id,
       subtopicId: tutorial.subtopic_id,
@@ -201,21 +238,31 @@ async function main() {
       brandId: tutorial.brand_id,
       status: tutorial.status,
       domain: tutorial.domain_name,
-      domainSlug: tutorial.domain_slug,
+      domainSlug: domainSlug,
+      domainSlugDb: tutorial.domain_slug_db,
       subject: tutorial.subject_name,
-      subjectSlug: tutorial.subject_slug,
+      subjectSlug: subjectSlug,
+      subjectSlugDb: tutorial.subject_slug_db,
       topic: tutorial.topic_name,
-      topicSlug: tutorial.topic_slug,
+      topicSlug: topicSlug,
+      topicSlugDb: tutorial.topic_slug_db,
       subtopic: tutorial.subtopic_name,
-      subtopicSlug: tutorial.subtopic_slug,
+      subtopicSlug: subtopicSlug,
       publishedAt: tutorial.published_at,
     };
 
     console.log('✓ Selected published tutorial:');
-    console.log(`  Domain: ${tutorial.domain_name} (${tutorial.domain_slug})`);
-    console.log(`  Subject: ${tutorial.subject_name} (${tutorial.subject_slug})`);
-    console.log(`  Topic: ${tutorial.topic_name} (${tutorial.topic_slug})`);
-    console.log(`  Subtopic: ${tutorial.subtopic_name} (${tutorial.subtopic_slug})`);
+    console.log(`  Domain: ${tutorial.domain_name}`);
+    console.log(`    URL slug: ${domainSlug} (from slugify(name))`);
+    console.log(`    DB slug:  ${tutorial.domain_slug_db} (NOT used in URL)`);
+    console.log(`  Subject: ${tutorial.subject_name}`);
+    console.log(`    URL slug: ${subjectSlug} (from slugify(name))`);
+    console.log(`    DB slug:  ${tutorial.subject_slug_db} (NOT used in URL)`);
+    console.log(`  Topic: ${tutorial.topic_name}`);
+    console.log(`    URL slug: ${topicSlug} (from slugify(name))`);
+    console.log(`    DB slug:  ${tutorial.topic_slug_db} (NOT used in URL)`);
+    console.log(`  Subtopic: ${tutorial.subtopic_name}`);
+    console.log(`    URL slug: ${subtopicSlug} (from DB - USED in URL)`);
     console.log(`  Navigation Node ID: ${tutorial.navigation_node_id}`);
     console.log(`  Section ID: ${tutorial.section_id}`);
     console.log(`  Brand: ${tutorial.brand_id}`);
@@ -297,12 +344,20 @@ async function main() {
     const targetBrand = 'skillup';
     const brandConfig = brandConfigs[targetBrand];
     
-    const canonicalUrl = `${brandConfig.webBaseUrl}/tutorial-v2/${tutorial.domain_slug}/${tutorial.subject_slug}/${tutorial.topic_slug}/${tutorial.subtopic_slug}/${tutorial.navigation_node_id}`;
+    // PHASE 3C-B: Construct URL using generated slugs (matching production)
+    // /tutorial-v2/[domainSlug]/[subjectSlug]/[topicSlug]/[subtopicSlug]/[navigationNodeId]
+    const canonicalUrl = `${brandConfig.webBaseUrl}/tutorial-v2/${domainSlug}/${subjectSlug}/${topicSlug}/${subtopicSlug}/${tutorial.navigation_node_id}`;
 
     console.log('Canonical URL (Tutorial V2 with navigationNodeId):');
     console.log(`  ${canonicalUrl}`);
     console.log(`  Brand: ${targetBrand}`);
-    console.log(`  Runtime Brand: ${brandConfig.runtimeBrand}\n`);
+    console.log(`  Runtime Brand: ${brandConfig.runtimeBrand}`);
+    console.log(`\nURL construction verified:`);
+    console.log(`  Domain:   ${domainSlug} = slugify("${tutorial.domain_name}")`);
+    console.log(`  Subject:  ${subjectSlug} = slugify("${tutorial.subject_name}")`);
+    console.log(`  Topic:    ${topicSlug} = slugify("${tutorial.topic_name}")`);
+    console.log(`  Subtopic: ${subtopicSlug} (from DB)`);
+    console.log();
 
     evidence.gates.canonicalUrl = true;
 
@@ -321,6 +376,9 @@ async function main() {
       baseUrl: brandConfig.webBaseUrl,
       ...brandConfig.credentials,
     });
+    
+    // PHASE 3C-H: Declare authenticated user ID at broader scope (needed by ILS section)
+    let authenticatedUserId = null;
 
     if (!authResult.success) {
       console.log(`⚠️  Authentication failed: ${authResult.error}`);
@@ -331,9 +389,28 @@ async function main() {
     } else {
       console.log('✓ Authentication successful\n');
       
+      // PHASE 3C-J: Use user ID from login response body
+      if (authResult.userId) {
+        authenticatedUserId = authResult.userId;
+        console.log('✓ Authenticated user ID obtained from login response\n');
+      } else {
+        console.log('⚠️  User ID not present in login response\n');
+        evidence.warnings.push('User ID not present in login response');
+      }
+      
       console.log('Fetching tutorial page with authentication and timeout...');
       
+      // PHASE 3C-E: Add diagnostics to prove cookie is being sent
+      console.log('[E2E_AUTH_DEBUG]', JSON.stringify({
+        hasAccessToken: !!authResult.accessToken,
+        tokenLength: authResult.accessToken?.length ?? 0,
+        cookieHeaderConstructed: true,
+        cookieName: 'accessToken',
+        targetUrl: canonicalUrl,
+      }));
+      
       // Fetch with timeout using AbortController
+      // PHASE 3C-E: Use redirect: 'manual' to prevent cookie loss on redirect
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
       
@@ -343,10 +420,22 @@ async function main() {
           headers: {
             'Cookie': `accessToken=${authResult.accessToken}`,
           },
+          redirect: 'manual', // Don't auto-follow redirects that might lose cookie
           signal: controller.signal,
         });
         const elapsedMs = Date.now() - startTime;
         clearTimeout(timeoutId);
+        
+        // PHASE 3C-E: Handle redirect explicitly
+        if ([301, 302, 303, 307, 308].includes(tutorialResponse.status)) {
+          const redirectLocation = tutorialResponse.headers.get('location');
+          console.log(`⚠️  Tutorial request redirected: ${tutorialResponse.status} → ${redirectLocation}`);
+          console.log('    This likely indicates authentication failure (should return 200, not redirect)');
+          evidence.gates.tutorialHttpPublic = false;
+          evidence.gates.tutorialIdentity = false;
+          evidence.errors.push(`Tutorial HTTP redirected to login: ${tutorialResponse.status}`);
+        } else {
+          // Not a redirect - process normal response
         
         console.log(`Status: ${tutorialResponse.status}`);
         console.log(`Elapsed: ${elapsedMs}ms\n`);
@@ -403,6 +492,7 @@ async function main() {
           evidence.gates.tutorialIdentity = false;
           evidence.errors.push(`Authenticated tutorial HTTP returned ${tutorialResponse.status}`);
         }
+        } // Close redirect else block
       } catch (error) {
         clearTimeout(timeoutId);
         if (error.name === 'AbortError') {
@@ -417,7 +507,7 @@ async function main() {
           evidence.errors.push(`Tutorial HTTP error: ${error.message}`);
         }
       }
-    }
+    } // Close authentication success else block
 
     // ========================================================================
     // PART 7: ILS DATABASE VERIFICATION
@@ -507,17 +597,31 @@ async function main() {
     console.log();
 
     // Test ILS endpoints with proper authentication headers
-    console.log('Testing ILS endpoints with internal authentication:');
-    console.log('NOTE: Using X-Internal-Secret header for API-to-API authentication\n');
+    console.log('Testing ILS endpoints with internal API authentication:');
+    console.log('NOTE: Using X-Internal-Secret + X-User-ID + X-Brand for internal API\n');
     
     const apiBaseUrl = brandConfig.apiBaseUrl;
     
-    // CRITICAL: Use authenticated session cookie, NOT internal API with test user ID
-    // The accessToken contains the real authenticated UUID
-    const authCookieHeaders = {
-      'Cookie': `accessToken=${authResult.accessToken}`,
-      'X-Brand': brandConfig.runtimeBrand,
-    };
+    // PHASE 3C-H: Use internal API authentication contract with authenticated user ID
+    let ilsHeaders = null;
+    
+    if (authenticatedUserId) {
+      ilsHeaders = getInternalApiHeaders(
+        authenticatedUserId,
+        brandConfig.runtimeBrand
+      );
+      
+      console.log('[ILS_AUTH_DEBUG]', JSON.stringify({
+        authenticatedUserIdPresent: true,
+        internalSecretPresent: Boolean(process.env.INTERNAL_API_SECRET),
+        brand: brandConfig.runtimeBrand,
+      }));
+    } else {
+      console.log('⚠️  Cannot test ILS endpoints: authenticated user ID not available\n');
+      evidence.warnings.push('ILS testing skipped: no authenticated user ID');
+      evidence.gates.ilsEndpoints = 'USER_ID_MISSING';
+      ilsHeaders = null;
+    }
     
     let ilsTestsPassed = 0;
     let ilsTestsFailed = 0;
@@ -527,6 +631,8 @@ async function main() {
     console.log(`Navigation Node ID: ${tutorial.navigation_node_id}`);
     console.log(`Subtopic ID: ${tutorial.subtopic_id}\n`);
     
+    // Only test if we have valid headers
+    if (ilsHeaders) {
     for (const endpoint of ilsEndpoints.slice(0, 2)) { // Test GET endpoints only
       try {
         const url = `${apiBaseUrl}${endpoint.path}`;
@@ -540,7 +646,7 @@ async function main() {
           const startTime = Date.now();
           const response = await fetch(url, { 
             method: endpoint.method,
-            headers: authCookieHeaders,
+            headers: ilsHeaders,
             signal: controller.signal,
           });
           const elapsedMs = Date.now() - startTime;
@@ -602,6 +708,7 @@ async function main() {
       }
       console.log();
     }
+    } // Close if (ilsHeaders) block
 
     if (ilsTestsPassed > 0 && ilsTestsFailed === 0) {
       console.log('✓ ILS HTTP endpoints verified with authentication\n');

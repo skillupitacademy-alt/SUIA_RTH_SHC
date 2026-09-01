@@ -35,9 +35,15 @@ export interface TutorialSidebarDeliveryPayload {
   hierarchy: {
     domain: { id: string; name: string; slug: string };
     subject: { id: string; name: string; slug: string };
-    topic: { id: string; name: string; slug: string };
+    topic: { 
+      id: string;           // TutorialDB internal ID
+      externalId: string;   // MainDB topics.id (cross-database identity)
+      name: string; 
+      slug: string; 
+    };
     subtopic: {
-      id: string;
+      id: string;              // TutorialDB internal ID
+      externalId: string;      // MainDB subtopics.id (cross-database identity)
       name: string;
       slug: string;
       // Phase 2.6: Expose tutorial identity for explicit resolution
@@ -256,10 +262,12 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
 
   // If subtopic not found by name, try tutorial_subtopics.slug
   // This handles URLs like /tutorial-v2/.../what-is-java-12efacf1/whatisjava
+  let tutorialSubtopic: { id: string; externalId: string; name: string; slug: string } | null = null; // PHASE 3C-J: Hoist to broader scope for later use
+  
   if (!subtopic) {
     console.log('[DELIVERY_TRACE] Subtopic not found by name, trying slug match');
     
-    const [tutorialSubtopic] = await tutorialDb
+    [tutorialSubtopic] = await tutorialDb
       .select({
         id: tutorialSubtopics.id,
         externalId: tutorialSubtopics.externalId,
@@ -273,20 +281,29 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
       ))
       .limit(1);
 
-    if (tutorialSubtopic?.externalId) {
+    if (tutorialSubtopic) {
       console.log('[DELIVERY_TRACE] Found tutorial_subtopics match', { 
         tutorialSlug: tutorialSubtopic.slug, 
         externalId: tutorialSubtopic.externalId 
       });
       
-      // Resolve back to curriculum subtopic via external_id
-      subtopic = subtopicRows.find((row) => row.id === tutorialSubtopic.externalId);
+      // PHASE 3C-J FIX: Support Tutorial V2-only content (no curriculum backing)
+      // Try to resolve to curriculum subtopic via external_id for curriculum-backed tutorials
+      subtopic = subtopicRows.find((row) => row.id === tutorialSubtopic!.externalId);
       
       console.log('[DELIVERY_TRACE] Resolved to curriculum subtopic via external_id', { 
         found: !!subtopic, 
         subtopicName: subtopic?.name, 
         subtopicId: subtopic?.id 
       });
+      
+      // If no curriculum subtopic exists, use the tutorial subtopic directly
+      // This supports Tutorial V2-only content that has no curriculum backing record
+      if (!subtopic) {
+        console.log('[DELIVERY_TRACE] No curriculum subtopic found, using tutorial subtopic directly (Tutorial V2-only content)');
+        // Cast tutorialSubtopic to match subtopicRows type (they're from the same table)
+        subtopic = tutorialSubtopic as typeof subtopicRows[number];
+      }
     }
   }
 
@@ -297,51 +314,61 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
 
   // PHASE 2.6: Now resolve the authoritative TutorialDB identity
   // This ensures we preserve the CANONICAL tutorial slug instead of regenerating it
-  const [tutorialSubtopicRecord] = await tutorialDb
-    .select({
-      id: tutorialSubtopics.id,
-      externalId: tutorialSubtopics.externalId,
-      name: tutorialSubtopics.name,
-      slug: tutorialSubtopics.slug,
-    })
-    .from(tutorialSubtopics)
-    .where(and(
-      eq(tutorialSubtopics.externalId, subtopic.id),
-      isNull(tutorialSubtopics.deletedAt)
-    ))
-    .limit(1);
-
-  if (!tutorialSubtopicRecord) {
-    console.log('[PHASE_2_6] TUTORIAL_SUBTOPIC_MAPPING_MISSING', {
-      curriculumSubtopicId: subtopic.id,
+  //
+  // PHASE 3C-J: Handle both curriculum-backed and Tutorial V2-only content
+  // IMPORTANT: After 519ca2de, subtopicRows queries TutorialDB tutorial_subtopics
+  // So subtopic.id is ALWAYS TutorialDB internal ID, not curriculum ID
+  let tutorialSubtopicRecord: { id: string; externalId: string; name: string; slug: string } | undefined;
+  
+  // Check if we already have a tutorial subtopic from the slug match (Tutorial V2-only path)
+  if (tutorialSubtopic && tutorialSubtopic.id === subtopic.id) {
+    // Tutorial V2-only content: we already have the tutorial subtopic
+    tutorialSubtopicRecord = tutorialSubtopic;
+    console.log('[PHASE_2_6] Using Tutorial V2-only subtopic (no curriculum backing)', {
+      tutorialSubtopicId: tutorialSubtopicRecord.id,
+      tutorialSubtopicSlug: tutorialSubtopicRecord.slug,
     });
-    return null;
-  }
+  } else {
+    // PHASE 3C-M FIX: subtopic is from tutorialSubtopics table (line 239)
+    // So subtopic.id is already TutorialDB internal ID
+    // We already have the complete record - just use it directly
+    tutorialSubtopicRecord = {
+      id: subtopic.id,
+      externalId: (subtopic as any).externalId, // Type from tutorialSubtopics includes externalId
+      name: subtopic.name,
+      slug: (subtopic as any).slug,
+    };
 
-  // PHASE 2.6: Verify identity invariant
-  if (tutorialSubtopicRecord.externalId !== subtopic.id) {
-    console.error('[PHASE_2_6] IDENTITY_INVARIANT_FAILED', {
-      curriculumSubtopicId: subtopic.id,
+    console.log('[PHASE_2_6] Using direct match from tutorial_subtopics', {
+      tutorialSubtopicId: tutorialSubtopicRecord.id,
+      tutorialSubtopicSlug: tutorialSubtopicRecord.slug,
       tutorialExternalId: tutorialSubtopicRecord.externalId,
     });
-    return null;
   }
 
-  console.log('[PHASE_2_6] SUBTOPIC_IDENTITY_RESOLVED', {
-    curriculumSubtopicId: subtopic.id,
-    tutorialSubtopicId: tutorialSubtopicRecord.id,
-    tutorialSubtopicSlug: tutorialSubtopicRecord.slug,
-    requestedSlug: params.subtopicSlug,
-  });
-
   console.log('[DELIVERY_TRACE] resolveHierarchy SUCCESS');
+  console.log('[PHASE_3C_M] TOPIC_IDENTITY', {
+    'topic.id (TutorialDB internal)': topic.id,
+    'topic.externalId (MainDB)': topic.externalId,
+  });
+  console.log('[PHASE_3C_M] SUBTOPIC_IDENTITY', {
+    'subtopic.id (TutorialDB internal)': subtopic.id,
+    'subtopic.externalId (MainDB/cross-DB)': tutorialSubtopicRecord.externalId,
+    'subtopic.slug': tutorialSubtopicRecord.slug,
+  });
   
   return {
     domain: { id: domain.id, name: domain.name, slug: slugify(domain.name) },
     subject: { id: subject.id, name: subject.name, slug: slugify(subject.name) },
-    topic: { id: topic.id, name: topic.name, slug: slugify(topic.name) },
+    topic: { 
+      id: topic.id,                    // TutorialDB internal ID
+      externalId: topic.externalId,    // MainDB topics.id
+      name: topic.name, 
+      slug: slugify(topic.name) 
+    },
     subtopic: {
-      id: subtopic.id,
+      id: subtopic.id,                      // TutorialDB internal ID
+      externalId: tutorialSubtopicRecord.externalId,  // MainDB subtopics.id
       name: subtopic.name,
       // PHASE 2.6 FIX: Use canonical TutorialDB slug, NOT regenerated from curriculum name
       slug: tutorialSubtopicRecord.slug,
@@ -370,14 +397,17 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
     return null;
   }
 
-  console.log('[DELIVERY_TRACE] Querying sidebar with topicId:', hierarchy.topic.id);
+  console.log('[DELIVERY_TRACE] Querying sidebar with topicId (externalId):', hierarchy.topic.externalId);
+  console.log('[PHASE_3C_M] SIDEBAR_LOOKUP_IDENTITY', {
+    'Using hierarchy.topic.externalId': hierarchy.topic.externalId,
+  });
 
   const sharedRows = await dbHttp
     .select()
     .from(tutorialSidebarTreesV2)
     .where(and(
       eq(tutorialSidebarTreesV2.brandId, 'shared'),
-      eq(tutorialSidebarTreesV2.topicId, hierarchy.topic.id),
+      eq(tutorialSidebarTreesV2.topicId, hierarchy.topic.externalId),  // Use MainDB ID
       eq(tutorialSidebarTreesV2.status, 'published')
     ))
     .limit(1);
@@ -391,7 +421,7 @@ export async function getPublishedTutorialSidebar(params: TutorialSidebarDeliver
       .from(tutorialSidebarTreesV2)
       .where(and(
         eq(tutorialSidebarTreesV2.brandId, params.brandId),
-        eq(tutorialSidebarTreesV2.topicId, hierarchy.topic.id),
+        eq(tutorialSidebarTreesV2.topicId, hierarchy.topic.externalId),  // Use MainDB ID
         eq(tutorialSidebarTreesV2.status, 'published')
       ))
       .limit(1);
@@ -454,10 +484,19 @@ export async function getPublishedTutorialPagePayload(params: TutorialSidebarDel
   }
 
   // Phase 1: Use getTutorialByPage with exact navigationNodeId
-  console.log('[DELIVERY_TRACE] Calling getTutorialByPage', { subtopicSlug: hierarchy.subtopic.slug, navigationNodeId: params.navigationNodeId, brandId: params.brandId });
+  console.log('[DELIVERY_TRACE] Calling getTutorialByPage', { 
+    subtopicSlug: hierarchy.subtopic.slug, 
+    navigationNodeId: params.navigationNodeId, 
+    brandId: params.brandId 
+  });
+  console.log('[PHASE_3C_M] TUTORIAL_CONTENT_IDENTITY', {
+    'getTutorialByPage identifier': hierarchy.subtopic.externalId,
+    'identifier meaning': 'tutorial_subtopics.external_id (MainDB subtopics.id)',
+    'subtopic.id (internal)': hierarchy.subtopic.id,
+  });
   
   const deliveryResult = await tutorialDeliveryService.getTutorialByPage(
-    hierarchy.subtopic.id,
+    hierarchy.subtopic.externalId,  // Use external_id (cross-database identity)
     params.navigationNodeId,
     {
       brandId: params.brandId,

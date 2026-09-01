@@ -5,13 +5,13 @@
  */
 
 /**
- * Login and get accessToken cookie
+ * Login and get accessToken cookie + user ID
  * @param {Object} options
  * @param {string} options.baseUrl - Base URL (e.g., http://skillup.localhost:3009)
  * @param {string} options.email - User email
  * @param {string} options.password - User password
  * @param {string} options.brand - Brand identifier (skillup or realtutorialhub)
- * @returns {Promise<{success: boolean, accessToken?: string, error?: string}>}
+ * @returns {Promise<{success: boolean, accessToken?: string, userId?: string, error?: string}>}
  */
 export async function login({ baseUrl, email, password, brand }) {
   try {
@@ -32,6 +32,17 @@ export async function login({ baseUrl, email, password, brand }) {
     console.log(`  Login response status: ${response.status}`);
 
     if (response.status === 200 || response.status === 302) {
+      // Parse response body to extract user ID
+      const bodyText = await response.text();
+      let userId = null;
+      
+      try {
+        const bodyJson = JSON.parse(bodyText);
+        userId = bodyJson.user?.id;
+      } catch {
+        // Body is not JSON or doesn't have expected structure
+      }
+      
       // Extract accessToken from Set-Cookie header
       const setCookie = response.headers.get('set-cookie');
       
@@ -42,20 +53,11 @@ export async function login({ baseUrl, email, password, brand }) {
           const accessToken = match[1];
           console.log(`  ✓ Authentication successful`);
           console.log(`  ✓ Access token obtained (length: ${accessToken.length})`);
-          return { success: true, accessToken };
+          if (userId) {
+            console.log(`  ✓ User ID obtained (${userId.substring(0, 8)}...)`);
+          }
+          return { success: true, accessToken, userId };
         }
-      }
-
-      // Check if response body contains token
-      const body = await response.text();
-      try {
-        const json = JSON.parse(body);
-        if (json.accessToken) {
-          console.log(`  ✓ Authentication successful (token in body)`);
-          return { success: true, accessToken: json.accessToken };
-        }
-      } catch {
-        // Not JSON, ignore
       }
 
       console.log(`  ⚠️  Login succeeded but no token found`);

@@ -26,7 +26,7 @@ export function extractAuthenticatedIdentity(
   const userId = request.headers.get('x-user-id');
   const brand = request.headers.get('x-brand');
 
-  if (!userId || userId.trim() === '') {
+  if (userId === null || userId.trim() === '') {
     return {
       error: NextResponse.json(
         { error: 'User ID required' },
@@ -35,7 +35,7 @@ export function extractAuthenticatedIdentity(
     };
   }
 
-  if (!brand || brand.trim() === '') {
+  if (brand === null || brand.trim() === '') {
     return {
       error: NextResponse.json(
         { error: 'Brand context required' },
@@ -56,7 +56,8 @@ export function extractAuthenticatedIdentity(
   }
 
   // Optional session ID from headers
-  const sessionId = request.headers.get('x-session-id') || undefined;
+  const sessionIdHeader = request.headers.get('x-session-id');
+  const sessionId = sessionIdHeader !== null && sessionIdHeader !== '' ? sessionIdHeader : undefined;
 
   const identity: AuthenticatedIdentity = {
     userId: userId.trim(),
