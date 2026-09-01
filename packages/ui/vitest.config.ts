@@ -9,6 +9,10 @@ export default defineConfig({
     testTimeout: 30_000,
     hookTimeout: 30_000,
     setupFiles: [path.resolve(__dirname, '__tests__/setup.ts')],
+    exclude: [
+      '**/node_modules/**',
+      '**/.http-e2e-smoke.test.mjs',
+    ],
   },
   resolve: {
     tsconfigPaths: true,
