@@ -6,14 +6,10 @@ import {
   tutorialSidebarTreesV2,
   tutorialDeliveryService,
   tutorialSubtopics,
+  tutorialDomains,
+  tutorialSubjects,
+  tutorialTopics,
 } from '@quiz/db-tutorial';
-import {
-  domains as shcDomains,
-  getDb,
-  subjects as shcSubjects,
-  subtopics as shcSubtopics,
-  topics as shcTopics,
-} from '@quiz/db';
 import type {
   BrandTutorialTheme,
   TutorialNavigationNode,
@@ -184,19 +180,17 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
   console.log('[DELIVERY_TRACE] resolveHierarchy START', { domainSlug: params.domainSlug, subjectSlug: params.subjectSlug, topicSlug: params.topicSlug, subtopicSlug: params.subtopicSlug });
   
   try {
-    const db = getDb();
     const tutorialDb = getTutorialDb();
     
     // Log which database URL is being used
     console.log('[DELIVERY_TRACE] Database connection', { 
-      DATABASE_URL: process.env.DATABASE_URL?.substring(0, 50) + '...',
       DATABASE_URL_TUTORIAL: process.env.DATABASE_URL_TUTORIAL?.substring(0, 50) + '...'
     });
     
-    const domainRows = await db
+    const domainRows = await tutorialDb
       .select()
-      .from(shcDomains)
-      .where(isNull(shcDomains.deletedAt));
+      .from(tutorialDomains)
+      .where(isNull(tutorialDomains.deletedAt));
   const domain = domainRows.find((row) => matchesSlug(row.name, params.domainSlug));
 
   console.log('[DELIVERY_TRACE] Domain resolution', { found: !!domain, domainName: domain?.name });
@@ -206,12 +200,12 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     return null;
   }
 
-  const subjectRows = await db
+  const subjectRows = await tutorialDb
     .select()
-    .from(shcSubjects)
+    .from(tutorialSubjects)
     .where(and(
-      eq(shcSubjects.domainId, domain.id),
-      isNull(shcSubjects.deletedAt)
+      eq(tutorialSubjects.domainId, domain.id),
+      isNull(tutorialSubjects.deletedAt)
     ));
   const subject = subjectRows.find((row) => matchesSlug(row.name, params.subjectSlug));
 
@@ -222,12 +216,12 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
     return null;
   }
 
-  const topicRows = await db
+  const topicRows = await tutorialDb
     .select()
-    .from(shcTopics)
+    .from(tutorialTopics)
     .where(and(
-      eq(shcTopics.subjectId, subject.id),
-      isNull(shcTopics.deletedAt)
+      eq(tutorialTopics.subjectId, subject.id),
+      isNull(tutorialTopics.deletedAt)
     ));
   
   console.log('[DELIVERY_TRACE] Topic query', { subjectId: subject.id, query: `SELECT * FROM topics WHERE subject_id='${subject.id}' AND deleted_at IS NULL` });
@@ -249,21 +243,21 @@ async function resolveHierarchy(params: TutorialSidebarDeliveryParams) {
   // PHASE 2.5-F: Resolve subtopic via tutorial_subtopics.slug when curriculum match fails
   // The URL may contain tutorial_subtopics.slug (e.g., 'what-is-java-12efacf1') 
   // which includes the curriculum ID suffix and won't match curriculum subtopic names directly.
-  const subtopicRows = await db
+  const subtopicRows = await tutorialDb
     .select()
-    .from(shcSubtopics)
+    .from(tutorialSubtopics)
     .where(and(
-      eq(shcSubtopics.topicId, topic.id),
-      isNull(shcSubtopics.deletedAt)
+      eq(tutorialSubtopics.topicId, topic.id),
+      isNull(tutorialSubtopics.deletedAt)
     ));
   let subtopic = subtopicRows.find((row) => matchesSlug(row.name, params.subtopicSlug));
 
-  console.log('[DELIVERY_TRACE] Subtopic resolution (curriculum direct match)', { found: !!subtopic, subtopicName: subtopic?.name, subtopicId: subtopic?.id });
+  console.log('[DELIVERY_TRACE] Subtopic resolution (direct match)', { found: !!subtopic, subtopicName: subtopic?.name, subtopicId: subtopic?.id });
 
-  // If curriculum subtopic not found by name, try tutorial_subtopics.slug
+  // If subtopic not found by name, try tutorial_subtopics.slug
   // This handles URLs like /tutorial-v2/.../what-is-java-12efacf1/whatisjava
   if (!subtopic) {
-    console.log('[DELIVERY_TRACE] Subtopic not found in curriculum, trying tutorial_subtopics.slug match');
+    console.log('[DELIVERY_TRACE] Subtopic not found by name, trying slug match');
     
     const [tutorialSubtopic] = await tutorialDb
       .select({

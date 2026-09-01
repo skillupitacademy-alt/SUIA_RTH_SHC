@@ -512,10 +512,12 @@ async function main() {
     
     const apiBaseUrl = brandConfig.apiBaseUrl;
     
-    // CRITICAL: Use runtime brand, NOT tutorial content brand_id
-    // Tutorial content brand_id='shared' is NOT a valid runtime brand
-    // Valid runtime brands: 'skillup', 'realtutorialhub'
-    const authHeaders = getInternalApiHeaders('test-e2e-user-id', brandConfig.runtimeBrand);
+    // CRITICAL: Use authenticated session cookie, NOT internal API with test user ID
+    // The accessToken contains the real authenticated UUID
+    const authCookieHeaders = {
+      'Cookie': `accessToken=${authResult.accessToken}`,
+      'X-Brand': brandConfig.runtimeBrand,
+    };
     
     let ilsTestsPassed = 0;
     let ilsTestsFailed = 0;
@@ -538,7 +540,7 @@ async function main() {
           const startTime = Date.now();
           const response = await fetch(url, { 
             method: endpoint.method,
-            headers: authHeaders,
+            headers: authCookieHeaders,
             signal: controller.signal,
           });
           const elapsedMs = Date.now() - startTime;

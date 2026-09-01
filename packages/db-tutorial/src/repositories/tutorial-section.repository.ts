@@ -10,7 +10,7 @@
  * - NO legacy transformers
  */
 
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import type { TutorialDocument } from '@quiz/types';
 import { db } from '../db';
 import { tutorialSections, type TutorialSection, type NewTutorialSection } from '../schema/tutorial-sections';
@@ -114,6 +114,10 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
   /**
    * Phase 1: Get tutorial by page identity (subtopicId, navigationNodeId, brandId)
    * Replaces V2 getTutorialBySubtopic which assumed one tutorial per subtopic
+   * 
+   * Phase 3: Brand resolution supports shared content fallback
+   * - Prioritizes exact brand match
+   * - Falls back to brand_id='shared' for multi-brand content
    */
   async getTutorialByPageIdentity(
     subtopicId: string,
@@ -128,7 +132,10 @@ export class TutorialSectionRepository extends TutorialRepositoryBase {
           and(
             eq(tutorialSections.subtopicId, subtopicId),
             eq(tutorialSections.navigationNodeId, navigationNodeId),
-            eq(tutorialSections.brandId, brandId as any),
+            or(
+              eq(tutorialSections.brandId, brandId as any),
+              eq(tutorialSections.brandId, 'shared')
+            ),
             isNull(tutorialSections.deletedAt)
           )
         )
