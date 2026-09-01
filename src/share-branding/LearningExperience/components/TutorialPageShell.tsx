@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import type { TutorialPagePayload } from '@quiz/types';
 import type { TutorialRuntimeContext } from '../runtime/TutorialRuntimeContext';
-import { TutorialBlockRenderer } from '@quiz/ui';
+import { TutorialBlockRenderer, ActiveBlockProvider } from '@quiz/ui';
 import { TutorialCodeContent } from './TutorialCodeContent';
 import { TutorialDefinitionContent } from './TutorialDefinitionContent';
 import { TutorialSummaryContent } from './TutorialSummaryContent';
@@ -20,6 +20,9 @@ interface TutorialPageShellProps {
 export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [completedUrls, setCompletedUrls] = useState<Set<string> | undefined>(undefined);
+  
+  // Phase 3C-A: Ref to canonical tutorial block container for ActiveBlockProvider
+  const contentContainerRef = useRef<HTMLDivElement>(null);
 
   // Phase 2.5: Fetch learner progress and compute completed URLs
   useEffect(() => {
@@ -122,48 +125,50 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             }}
           />
         )}
-        <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
-          <div className="w-full space-y-6">
-            {hasBlocks ? (
-              // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
-              payload.content.blocks.map((block) => {
-                // Phase 2.5: Construct block runtime context for each block
-                // Type-safe version extraction without unsafe cast
-                const blockVersion = ('version' in block && typeof block.version === 'string') 
-                  ? block.version 
-                  : 'unversioned';
-                const blockRuntimeContext = createBlockRuntimeContext(
-                  block.id,
-                  block.type,
-                  blockVersion
-                );
-                
-                return (
-                  <TutorialBlockRenderer
-                    key={block.id}
-                    block={block}
-                    theme={payload.theme}
-                    depth={0}
-                    runtimeContext={blockRuntimeContext}
-                  />
-                );
-              })
-            ) : hasLegacyContent ? (
-              // Temporary Legacy Fallback: Render old content structure
-              <>
-                {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
-                {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
-                {payload.content.summary && <TutorialSummaryContent payload={payload.content.summary} theme={payload.theme} />}
-              </>
-            ) : (
-              // Empty/Unpublished State
-              <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
-                Content is not published for this subtopic yet.
-              </section>
-            )}
+        <ActiveBlockProvider containerRef={contentContainerRef}>
+          <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
+            <div ref={contentContainerRef} className="w-full space-y-6">
+              {hasBlocks ? (
+                // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
+                payload.content.blocks.map((block) => {
+                  // Phase 2.5: Construct block runtime context for each block
+                  // Type-safe version extraction without unsafe cast
+                  const blockVersion = ('version' in block && typeof block.version === 'string') 
+                    ? block.version 
+                    : 'unversioned';
+                  const blockRuntimeContext = createBlockRuntimeContext(
+                    block.id,
+                    block.type,
+                    blockVersion
+                  );
+                  
+                  return (
+                    <TutorialBlockRenderer
+                      key={block.id}
+                      block={block}
+                      theme={payload.theme}
+                      depth={0}
+                      runtimeContext={blockRuntimeContext}
+                    />
+                  );
+                })
+              ) : hasLegacyContent ? (
+                // Temporary Legacy Fallback: Render old content structure
+                <>
+                  {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
+                  {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
+                  {payload.content.summary && <TutorialSummaryContent payload={payload.content.summary} theme={payload.theme} />}
+                </>
+              ) : (
+                // Empty/Unpublished State
+                <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
+                  Content is not published for this subtopic yet.
+                </section>
+              )}
+            </div>
+            <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
           </div>
-          <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
-        </div>
+        </ActiveBlockProvider>
       </div>
     </main>
   );

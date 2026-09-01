@@ -269,6 +269,33 @@ describe('Active Block Selection - Multiple Blocks', () => {
     });
   });
 
+  it('selects by DOM order NOT blockTop when intersection heights are equal', async () => {
+    const { container, getByTestId } = render(
+      <ActiveBlockProvider anchorPosition={0.25}>
+        <div data-block-id="block-A" data-block-type="heading">Block A</div>
+        <div data-block-id="block-B" data-block-type="paragraph">Block B</div>
+        <TestConsumer />
+      </ActiveBlockProvider>
+    );
+
+    const blockA = container.querySelector('[data-block-id="block-A"]')!;
+    const blockB = container.querySelector('[data-block-id="block-B"]')!;
+
+    // CRITICAL: Both blocks have EQUAL intersection height (50px)
+    // But block-B has SMALLER blockTop (50 vs 100)
+    // If implementation incorrectly uses blockTop as tie-break, it would select block-B
+    // Correct behavior: select block-A (earlier in DOM order)
+    triggerIntersection([
+      createMockEntry(blockA, true, { top: 100, bottom: 150 }), // intersectionHeight = 50, blockTop = 100
+      createMockEntry(blockB, true, { top: 50, bottom: 100 }),  // intersectionHeight = 50, blockTop = 50
+    ]);
+
+    await waitFor(() => {
+      // Must be block-A (DOM order) NOT block-B (smaller blockTop)
+      expect(getByTestId('active-block-id')).toHaveTextContent('block-A');
+    });
+  });
+
   it('updates active block when scrolling down', async () => {
     const { container, getByTestId } = render(
       <ActiveBlockProvider anchorPosition={0.25}>

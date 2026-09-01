@@ -74,7 +74,7 @@ interface ActiveBlockProviderProps {
    * Container element that holds tutorial blocks
    * Defaults to document if not provided
    */
-  containerRef?: React.RefObject<HTMLElement>;
+  containerRef?: React.RefObject<HTMLElement | null>;
   
   /**
    * Children to render
@@ -110,6 +110,7 @@ export function ActiveBlockProvider({
   const [activeBlock, setActiveBlock] = useState<ActiveBlockState>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const visibleBlocksRef = useRef<Map<Element, IntersectionObserverEntry>>(new Map());
+  const blockElementsRef = useRef<Element[]>([]);
   const rafRef = useRef<number | null>(null);
 
   /**
@@ -134,9 +135,9 @@ export function ActiveBlockProvider({
    * 
    * POLICY:
    * 1. Calculate anchor zone (top anchorPosition% of viewport)
-   * 2. For each visible block, calculate intersection with anchor zone
-   * 3. Select block with highest intersection
-   * 4. Tie-breaker: first in DOM order
+   * 2. For each visible block, calculate intersection HEIGHT with anchor zone
+   * 3. Select block with highest intersection HEIGHT
+   * 4. Tie-breaker: explicit DOM order (lowest index in blockElementsRef)
    */
   const determineActiveBlock = useCallback(() => {
     const entries = Array.from(visibleBlocksRef.current.values());
@@ -151,8 +152,8 @@ export function ActiveBlockProvider({
     const anchorTop = 0;
     const anchorBottom = viewportHeight * anchorPosition;
 
-    let bestBlock: Element | null = null;
-    let bestScore = -1;
+    // Calculate intersection heights for all intersecting blocks
+    const candidates: Array<{ element: Element; intersectionHeight: number; domIndex: number }> = [];
 
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
@@ -168,19 +169,18 @@ export function ActiveBlockProvider({
       const intersectBottom = Math.min(blockBottom, anchorBottom);
       const intersectionHeight = Math.max(0, intersectBottom - intersectTop);
       
-      // Score: intersection height (higher = more overlap with anchor zone)
-      // Secondary: negative top position (higher on screen = higher score)
-      const score = intersectionHeight * 1000 - blockTop;
+      // Get DOM index from canonical block order
+      const domIndex = blockElementsRef.current.indexOf(entry.target);
       
-      // If this block scores better, or scores equal but comes first in DOM
-      if (score > bestScore) {
-        bestScore = score;
-        bestBlock = entry.target;
-      }
+      candidates.push({
+        element: entry.target,
+        intersectionHeight,
+        domIndex,
+      });
     }
 
-    // Fallback: if no block intersects anchor, select topmost visible block
-    if (!bestBlock) {
+    if (candidates.length === 0) {
+      // Fallback: if no block intersects anchor, select topmost visible block
       let topmost: Element | null = null;
       let topmostY = Infinity;
       
@@ -193,14 +193,28 @@ export function ActiveBlockProvider({
         }
       }
       
-      bestBlock = topmost;
+      if (!topmost) {
+        return null;
+      }
+      
+      return extractBlockIdentity(topmost);
     }
 
-    if (!bestBlock) {
-      return null;
-    }
+    // Find maximum intersection height
+    const maxHeight = Math.max(...candidates.map(c => c.intersectionHeight));
+    
+    // Filter to candidates with maximum height
+    const maxCandidates = candidates.filter(c => c.intersectionHeight === maxHeight);
+    
+    // Tie-break: select earliest in DOM order (lowest domIndex)
+    const selected = maxCandidates.reduce((best, current) => {
+      if (current.domIndex < best.domIndex) {
+        return current;
+      }
+      return best;
+    });
 
-    return extractBlockIdentity(bestBlock);
+    return extractBlockIdentity(selected.element);
   }, [anchorPosition, extractBlockIdentity]);
 
   /**
@@ -255,14 +269,27 @@ export function ActiveBlockProvider({
    */
   useEffect(() => {
     // Find container
-    const container = containerRef?.current || document;
+    const container = containerRef?.current;
     
-    // Query all blocks with Phase 2 identity
-    const blocks = container.querySelectorAll('[data-block-id]');
+    // Query blocks based on whether we have a container ref
+    let blocks: NodeListOf<Element>;
+    
+    if (container) {
+      // Production mode: Query only top-level blocks (direct children of container)
+      // This ensures container blocks are observed but NOT their nested children
+      blocks = container.querySelectorAll(':scope > [data-block-id]');
+    } else {
+      // Test/fallback mode: Query all blocks in document
+      console.warn('[ActiveBlockProvider] containerRef not provided - observing all blocks');
+      blocks = document.querySelectorAll('[data-block-id]');
+    }
     
     if (blocks.length === 0) {
       return;
     }
+
+    // Store canonical DOM order for deterministic tie-breaking
+    blockElementsRef.current = Array.from(blocks);
 
     // Create observer
     const observer = new IntersectionObserver(handleIntersection, {
@@ -287,6 +314,7 @@ export function ActiveBlockProvider({
       observer.disconnect();
       observerRef.current = null;
       visibleBlocksRef.current.clear();
+      blockElementsRef.current = [];
     };
   }, [containerRef, handleIntersection]);
 
