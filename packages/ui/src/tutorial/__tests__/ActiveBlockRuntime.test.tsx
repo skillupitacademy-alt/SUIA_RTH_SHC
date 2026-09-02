@@ -3,6 +3,7 @@
  * Phase 3: Comprehensive test coverage for IntersectionObserver-based active block detection
  */
 
+import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, act, waitFor } from '@testing-library/react';
 import { ActiveBlockProvider, useActiveBlock } from '../runtime/ActiveBlockContext';
@@ -136,16 +137,21 @@ describe('ActiveBlockProvider', () => {
     expect(mockObserverInstance.observe).toHaveBeenCalled();
   });
 
-  it('observes all elements with data-block-id', () => {
+  it('observes only top-level blocks when containerRef provided', () => {
+    const containerRef = React.createRef<HTMLDivElement>();
+    
     render(
-      <ActiveBlockProvider>
-        <div data-block-id="block-1" data-block-type="heading">Block 1</div>
-        <div data-block-id="block-2" data-block-type="paragraph">Block 2</div>
-        <div data-block-id="block-3" data-block-type="code" data-block-version="C1">Block 3</div>
-        <TestConsumer />
-      </ActiveBlockProvider>
+      <div ref={containerRef}>
+        <ActiveBlockProvider containerRef={containerRef}>
+          <div data-block-id="block-1" data-block-type="heading">Block 1</div>
+          <div data-block-id="block-2" data-block-type="paragraph">Block 2</div>
+          <div data-block-id="block-3" data-block-type="code" data-block-version="C1">Block 3</div>
+          <TestConsumer />
+        </ActiveBlockProvider>
+      </div>
     );
 
+    // Production path: observes only direct children of containerRef
     expect(mockObserverInstance.observe).toHaveBeenCalledTimes(3);
   });
 
@@ -565,19 +571,24 @@ describe('Active Block Selection - Container Blocks', () => {
     });
   });
 
-  it('observes container block and child blocks independently', async () => {
+  it('observes only top-level container block, not nested children', async () => {
+    const containerRef = React.createRef<HTMLDivElement>();
+    
     const { container } = render(
-      <ActiveBlockProvider>
-        <div data-block-id="container-1" data-block-type="two-column">
-          <div data-block-id="child-1" data-block-type="heading">Child 1</div>
-          <div data-block-id="child-2" data-block-type="paragraph">Child 2</div>
-        </div>
-        <TestConsumer />
-      </ActiveBlockProvider>
+      <div ref={containerRef}>
+        <ActiveBlockProvider containerRef={containerRef}>
+          <div data-block-id="container-1" data-block-type="two-column">
+            <div data-block-id="child-1" data-block-type="heading">Child 1</div>
+            <div data-block-id="child-2" data-block-type="paragraph">Child 2</div>
+          </div>
+          <TestConsumer />
+        </ActiveBlockProvider>
+      </div>
     );
 
-    // All three blocks should be observed
-    expect(mockObserverInstance.observe).toHaveBeenCalledTimes(3);
+    // Production contract: only the top-level container is observed
+    // Nested children are NOT independently observed
+    expect(mockObserverInstance.observe).toHaveBeenCalledTimes(1);
   });
 
   it('selects container when it intersects anchor zone', async () => {
