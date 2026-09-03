@@ -11,10 +11,10 @@
  * - Content failure MUST NOT prevent tracking attempts
  * - Log errors but continue execution
  * 
- * REUSE EXISTING INFRASTRUCTURE:
- * - This wraps existing tutorial_progress table
- * - This wraps existing tutorialProgressEngine
- * - This wraps existing /api/tutorial/progress endpoints
+ * PHASE 5 RSSB (Block-Level Identity):
+ * - Calls ILS API with complete block identity (blockId + blockType + blockVersion)
+ * - Uses tutorial_navigation_progress.completed_blocks JSONB
+ * - Legacy /api/tutorial/progress deprecated for block tracking
  * - Do NOT create competing tracking systems
  */
 
@@ -26,13 +26,15 @@ import type {
 /**
  * Map D1/C1/S1 block types to backend-compatible types
  * 
- * TEMPORARY PHASE 2.5 BRIDGE:
+ * PHASE 2.5 BRIDGE:
  * - D1/C1/S1 use: definition, code, summary
- * - Backend expects: technical, code, summary
- * - This mapping preserves both architectures during transition
+ * - Backend blockType field expects: technical, code, summary
+ * - This mapping preserves compatibility during transition
  * 
- * Phase 2.6: Backend will support block-level identity (blockId, blockVersion)
- * and this mapping can be removed.
+ * PHASE 5 RSSB:
+ * - ILS API now receives blockId + blockType + blockVersion
+ * - blockType is runtime metadata (not persisted in completed_blocks JSONB)
+ * - completed_blocks stores: {blockId, blockVersion, completedAt}
  */
 function mapBlockTypeForBackend(blockType: string): string {
   const mapping: Record<string, string> = {
@@ -51,6 +53,11 @@ function mapBlockTypeForBackend(blockType: string): string {
  * - This is async but failures are swallowed (logged only)
  * - Caller should not await or check result
  * - Use fire-and-forget pattern to avoid blocking UI
+ * 
+ * PHASE 5 RSSB:
+ * - Now calls ILS API with complete block identity (blockId + blockType + blockVersion)
+ * - Legacy /api/tutorial/progress dropped blockId + blockVersion (propagation bug)
+ * - ILS API supports canonical block completion matching
  */
 export async function trackTutorialEvent(
   event: TutorialTrackingEvent
@@ -68,10 +75,13 @@ export async function trackTutorialEvent(
     }
 
     // Validate required fields for persistence
-    if (!event.blockType || !event.subtopicId) {
+    if (!event.blockId || !event.blockType || !event.blockVersion || !event.subtopicId || !event.navigationNodeId) {
       console.warn('[Tutorial Tracking] Missing required fields for block_complete:', {
+        blockId: event.blockId,
         blockType: event.blockType,
+        blockVersion: event.blockVersion,
         subtopicId: event.subtopicId,
+        navigationNodeId: event.navigationNodeId,
       });
       return;
     }
@@ -79,30 +89,37 @@ export async function trackTutorialEvent(
     // Map D1/C1/S1 types to backend-compatible types
     const backendBlockType = mapBlockTypeForBackend(event.blockType);
 
-    // Call existing /api/tutorial/progress POST endpoint
-    // API expects: { subtopicId, blockType, status: 'viewed' }
-    const response = await fetch('/api/tutorial/progress', {
+    // Call ILS API with complete block identity
+    // API contract: { navigationNodeId, subtopicId, sectionId, blockId, blockType, blockVersion, sessionId? }
+    const response = await fetch('/api/tutorial/ils/block-completion', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include', // Use cookies for authentication
       body: JSON.stringify({
+        navigationNodeId: event.navigationNodeId,
         subtopicId: event.subtopicId,
+        sectionId: event.sectionId,
+        blockId: event.blockId,
         blockType: backendBlockType,
-        status: 'viewed',
+        blockVersion: event.blockVersion,
+        // sessionId: optional, not yet tracked
       }),
     });
 
     if (!response.ok) {
-      console.warn(`[Tutorial Tracking] Progress API POST returned ${response.status}`);
+      console.warn(`[Tutorial Tracking] ILS block-completion API POST returned ${response.status}`);
       return;
     }
 
-    console.log('[Tutorial Tracking] Block complete tracked:', {
+    console.log('[Tutorial Tracking] Block complete tracked (ILS API):', {
       learnerId: event.learnerId,
+      navigationNodeId: event.navigationNodeId,
       subtopicId: event.subtopicId,
+      blockId: event.blockId,
       blockType: event.blockType,
+      blockVersion: event.blockVersion,
       backendBlockType,
     });
 

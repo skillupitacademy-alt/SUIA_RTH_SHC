@@ -10,6 +10,9 @@ export * from './TutorialBlockRenderer';
 // Phase 3: Active Block Runtime
 export * from './runtime/ActiveBlockContext';
 
+// Phase 4: ILS Data Context
+export * from './runtime/ILSProvider';
+
 // Individual block components
 export * from './blocks/HeadingBlock';
 export * from './blocks/ParagraphBlock';

@@ -1,71 +1,132 @@
 # Tutorial Page Engineering SOP
 
-**Version:** 1.0  
+**Version:** 2.0  
 **Status:** Active / Project Standard  
-**Scope:** Tutorial Page / Tutorial V2 / All Tutorial Blocks  
+**Scope:** Tutorial Page / Tutorial V2 / All Tutorial Blocks / ILS / LSNB  
 **Audience:** Human Developers + AI Coding Agents  
 **Created:** 2026-09-02  
-**Last Updated:** 2026-09-02
+**Last Updated:** 2026-09-02 (Phase 3 lessons integrated)
 
 **Normative Rule:**  
 This document is mandatory for all Tutorial Page implementation unless a specific project decision explicitly overrides it.
+
+**Major Updates in v2.0:**
+- Added current architectural model (LSNB → NavigationNode → Tutorial Composer → Page → ILS)
+- Added three primary learner-page systems architecture
+- Added HTTP E2E harness isolation rules
+- Added testing layer separation and certification gates
+- Added multi-brand architecture (SkillUp/RTH/SkillHubCore)
+- Added cold-start/performance rules
+- Added environment variable handling
+- Integrated Phase 3 lessons and real-system E2E certification
 
 ---
 
 ## Table of Contents
 
+### Core Architecture
 1. [The Primary Rule](#1-the-primary-rule)
 2. [Current Architecture Is Source of Truth](#2-current-architecture-is-source-of-truth)
-3. [Never Mix Legacy and Current Architecture](#3-never-mix-legacy-and-current-architecture)
-4. [Every Entity Must Have an Identity Contract](#4-every-entity-must-have-an-identity-contract)
-5. [Phase 3C-M Lesson: Identity Boundaries](#5-phase-3c-m-lesson-identity-boundaries)
-6. [Identity Rule — Never Guess](#6-identity-rule--never-guess)
-7. [Database Ownership Must Be Explicit](#7-database-ownership-must-be-explicit)
-8. [No Database Changes During Investigation](#8-no-database-changes-during-investigation)
-9. [Every New Block Must Have a Block Contract](#9-every-new-block-must-have-a-block-contract)
-10. [Block Versioning Is Permanent](#10-block-versioning-is-permanent)
-11. [Every Block Is an Independent Component](#11-every-block-is-an-independent-component)
-12. [Universal Features Live Above Individual Blocks](#12-universal-features-live-above-individual-blocks)
-13. [LHSN Is a Navigation System](#13-lhsn-is-a-navigation-system)
-14. [LHSN Identity Rule](#14-lhsn-identity-rule)
-15. [ILS Must Not Become a Second Tutorial Architecture](#15-ils-must-not-become-a-second-tutorial-architecture)
-16. [ILS Block Identity](#16-ils-block-identity)
-17. [Right-Side ILS Panel Must Be Universal](#17-right-side-ils-panel-must-be-universal)
-18. [New Block Implementation Order](#18-new-block-implementation-order)
-19. [Never Implement Everything in One AI Prompt](#19-never-implement-everything-in-one-ai-prompt)
-20. [Read-Only Audit Before Every Feature](#20-read-only-audit-before-every-feature)
-21. [File Modification Boundary](#21-file-modification-boundary)
-22. [600-Line Rule](#22-600-line-rule)
-23. [Do Not Create Temporary Scripts Everywhere](#23-do-not-create-temporary-scripts-everywhere)
-24. [Test Script Must Be Designed Before Implementation](#24-test-script-must-be-designed-before-implementation)
-25. [Standard Test Pyramid](#25-standard-test-pyramid)
-26. [Required Test Matrix for Every New Block](#26-required-test-matrix-for-every-new-block)
-27. [Test Script Contract](#27-test-script-contract)
-28. [Test Database Mutation Safety](#28-test-database-mutation-safety)
-29. [Pre-Existing Failures Must Be Baselined](#29-pre-existing-failures-must-be-baselined)
-30. [Build/Type Check Rule](#30-buildtype-check-rule)
-31. [HTTP Test ≠ Browser Test ≠ E2E](#31-http-test--browser-test--e2e)
-32. [Multi-Brand Testing Is Mandatory](#32-multi-brand-testing-is-mandatory)
-33. [Authentication Must Always Be Included](#33-authentication-must-always-be-included)
-34. [Route Identity Test](#34-route-identity-test)
-35. [Block Rendering Test](#35-block-rendering-test)
-36. [ILS Test Must Verify Active Block](#36-ils-test-must-verify-active-block)
-37. [LHSN + Main Content + ILS Must Be Tested Together](#37-lhsn--main-content--ils-must-be-tested-together)
-38. [No "Cast Until It Works"](#38-no-cast-until-it-works)
-39. [No Hard-Coded Production IDs](#39-no-hard-coded-production-ids)
-40. [No Service Contract Changes Without a Contract Phase](#40-no-service-contract-changes-without-a-contract-phase)
-41. [Every Feature Must Have a "Do Not Touch" List](#41-every-feature-must-have-a-do-not-touch-list)
-42. [Diff Review Is a Required Phase](#42-diff-review-is-a-required-phase)
-43. [Temporary Artifact Cleanup](#43-temporary-artifact-cleanup)
-44. [Final Certification Matrix](#44-final-certification-matrix)
-45. [Certification States](#45-certification-states)
-46. [The Master AI Implementation Workflow](#46-the-master-ai-implementation-workflow)
-47. [The 18+ Block Strategy](#47-the-18-block-strategy)
-48. [Extending an Existing Block Is Different](#48-extending-an-existing-block-is-different)
-49. [Component Dependency Types](#49-component-dependency-types)
-50. [Stop Conditions for AI](#50-stop-conditions-for-ai)
-51. [The Golden Rule](#51-the-golden-rule)
-52. [Master Prompt Template for AI Agents](#52-master-prompt-template-for-ai-agents)
+3. [Current Tutorial Page Architecture Model](#3-current-tutorial-page-architecture-model)
+4. [Three Primary Learner-Page Systems](#4-three-primary-learner-page-systems)
+5. [Never Mix Legacy and Current Architecture](#5-never-mix-legacy-and-current-architecture)
+
+### Identity & Boundaries
+6. [Every Entity Must Have an Identity Contract](#6-every-entity-must-have-an-identity-contract)
+7. [Phase 3C-M Lesson: Identity Boundaries](#7-phase-3c-m-lesson-identity-boundaries)
+8. [Identity Rule — Never Guess](#8-identity-rule--never-guess)
+9. [Database Ownership Must Be Explicit](#9-database-ownership-must-be-explicit)
+
+### Database & Persistence
+10. [No Database Changes During Investigation](#10-no-database-changes-during-investigation)
+11. [Migration Safety Rule](#11-migration-safety-rule)
+
+### Block Architecture
+12. [Every New Block Must Have a Block Contract](#12-every-new-block-must-have-a-block-contract)
+13. [Block Versioning Is Permanent](#13-block-versioning-is-permanent)
+14. [Every Block Is an Independent Component](#14-every-block-is-an-independent-component)
+15. [Universal Features Live Above Individual Blocks](#15-universal-features-live-above-individual-blocks)
+16. [Block Identity Rule](#16-block-identity-rule)
+17. [DOM Identity Rule](#17-dom-identity-rule)
+18. [Active Block Rule](#18-active-block-rule)
+
+### LSNB (Left Sidebar Navigation)
+19. [LSNB Is a Navigation System](#19-lsnb-is-a-navigation-system)
+20. [LSNB Identity Rule](#20-lsnb-identity-rule)
+21. [LSNB Rules](#21-lsnb-rules)
+
+### ILS (Independent Learning System)
+22. [ILS Must Not Become a Second Tutorial Architecture](#22-ils-must-not-become-a-second-tutorial-architecture)
+23. [ILS Block Identity](#23-ils-block-identity)
+24. [ILS UI Architecture](#24-ils-ui-architecture)
+25. [Right-Side ILS Panel Must Be Universal](#25-right-side-ils-panel-must-be-universal)
+26. [ILS Architecture](#26-ils-architecture)
+27. [ILS Progress Model](#27-ils-progress-model)
+28. [ILS Completion Rule](#28-ils-completion-rule)
+29. [ILS Aggregation Rule](#29-ils-aggregation-rule)
+
+### Implementation Process
+30. [New Block Implementation Order](#30-new-block-implementation-order)
+31. [New Block Development SOP](#31-new-block-development-sop)
+32. [Never Implement Everything in One AI Prompt](#32-never-implement-everything-in-one-ai-prompt)
+33. [Read-Only Audit Before Every Feature](#33-read-only-audit-before-every-feature)
+34. [Existing Feature Extension SOP](#34-existing-feature-extension-sop)
+35. [File Modification Boundary](#35-file-modification-boundary)
+36. [600-Line Rule](#36-600-line-rule)
+
+### Testing & Certification
+37. [Testing Levels](#37-testing-levels)
+38. [HTTP Smoke Test Rule](#38-http-smoke-test-rule)
+39. [E2E Certification Rule](#39-e2e-certification-rule)
+40. [Cold-Start / Performance Rule](#40-cold-start--performance-rule)
+41. [No Progress Rule](#41-no-progress-rule)
+42. [Do Not Create Temporary Scripts Everywhere](#42-do-not-create-temporary-scripts-everywhere)
+43. [Test Script Must Be Designed Before Implementation](#43-test-script-must-be-designed-before-implementation)
+44. [Standard Test Pyramid](#44-standard-test-pyramid)
+45. [Required Test Matrix for Every New Block](#45-required-test-matrix-for-every-new-block)
+46. [Test Script Contract](#46-test-script-contract)
+47. [Test Database Mutation Safety](#47-test-database-mutation-safety)
+48. [Pre-Existing Failures Must Be Baselined](#48-pre-existing-failures-must-be-baselined)
+49. [Build/Type Check Rule](#49-buildtype-check-rule)
+50. [HTTP Test ≠ Browser Test ≠ E2E](#50-http-test--browser-test--e2e)
+
+### Multi-Brand & Authentication
+51. [Multi-Brand Rule](#51-multi-brand-rule)
+52. [Multi-Brand Testing Is Mandatory](#52-multi-brand-testing-is-mandatory)
+53. [Multi-Brand Certification](#53-multi-brand-certification)
+54. [Authentication / Authorization Rule](#54-authentication--authorization-rule)
+55. [Authentication Must Always Be Included](#55-authentication-must-always-be-included)
+
+### Code Quality
+56. [Route Identity Test](#56-route-identity-test)
+57. [Block Rendering Test](#57-block-rendering-test)
+58. [ILS Test Must Verify Active Block](#58-ils-test-must-verify-active-block)
+59. [LSNB + Main Content + ILS Must Be Tested Together](#59-lsnb--main-content--ils-must-be-tested-together)
+60. [No "Cast Until It Works"](#60-no-cast-until-it-works)
+61. [No Hard-Coded Production IDs](#61-no-hard-coded-production-ids)
+62. [No Service Contract Changes Without a Contract Phase](#62-no-service-contract-changes-without-a-contract-phase)
+
+### Project Management
+63. [Every Feature Must Have a "Do Not Touch" List](#63-every-feature-must-have-a-do-not-touch-list)
+64. [Backend / Frontend Responsibility](#64-backend--frontend-responsibility)
+65. [Diff Review Is a Required Phase](#65-diff-review-is-a-required-phase)
+66. [Temporary Artifact Cleanup](#66-temporary-artifact-cleanup)
+67. [Phase Execution Model](#67-phase-execution-model)
+68. [Deployment Rule](#68-deployment-rule)
+
+### Certification
+69. [Final Certification Matrix](#69-final-certification-matrix)
+70. [Certification States](#70-certification-states)
+71. [Stop Conditions](#71-stop-conditions)
+72. [Evidence-First Development](#72-evidence-first-development)
+
+### Reference
+73. [The Master AI Implementation Workflow](#73-the-master-ai-implementation-workflow)
+74. [The 18+ Block Strategy](#74-the-18-block-strategy)
+75. [Extending an Existing Block Is Different](#75-extending-an-existing-block-is-different)
+76. [Component Dependency Types](#76-component-dependency-types)
+77. [The Golden Rule](#77-the-golden-rule)
+78. [Master Prompt Template for AI Agents](#78-master-prompt-template-for-ai-agents)
 
 ---
 
@@ -129,7 +190,127 @@ Historical documentation is useful for understanding intent, but the AI must not
 
 ---
 
-## 3. Never Mix Legacy and Current Architecture
+## 3. Current Tutorial Page Architecture Model
+
+The current production Tutorial Page architecture follows this model:
+
+```text
+LSNB (Left Sidebar Navigation)
+      |
+      | navigation structure
+      v
+NavigationNode
+      |
+      v
+Tutorial Composer (Authoring System)
+      |
+      v
+TutorialDocument
+      |
+      v
+TutorialBlock[]
+      |
+      v
+tutorial_sections (Database)
+      |
+      v
+Published Tutorial Page
+      |
+      v
+Universal Block Renderer
+      |
+      +-----------------------+
+      |                       |
+      v                       v
+Main Content Area        ILS (Independent Learning System)
+                              |
+                              v
+                        Learner State
+                              |
+                              v
+                  LearningProgressService
+                              |
+                              v
+                 tutorial_navigation_progress
+```
+
+**This is the current model. It must be preserved.**
+
+Historical Tutorial Engine structures (notes, layman, real_life, technical, code, ai_tutor) are **legacy** and must not be reintroduced.
+
+---
+
+## 4. Three Primary Learner-Page Systems
+
+The learner Tutorial Page has three architecturally independent systems:
+
+```text
++----------------------------------------------------------+
+|                     TUTORIAL PAGE                        |
++----------------------------------------------------------+
+|                                                          |
+| LSNB        MAIN CONTENT                       ILS       |
+| LEFT        CENTER                             RIGHT     |
+|                                                          |
+| Navigation   I1                                      ILS |
+| Tree         O1                                      UI  |
+|              D1                                          |
+|              C1                                          |
+|              S1                                          |
+|                                                          |
++----------------------------------------------------------+
+```
+
+### System 1: LSNB (Left Sidebar Navigation)
+
+**Owns:**
+- Navigation structure
+- Domain → Subject → Topic → Subtopic hierarchy
+- navigationNodeId
+- Active navigation state
+- Navigation links
+
+**Does NOT own:**
+- Tutorial block content
+- ILS progress persistence
+- Learner time analytics
+
+### System 2: Main Tutorial Content (Center)
+
+**Owns:**
+- TutorialDocument
+- TutorialBlock[] rendering
+- Block identity (id, type, version)
+- Tutorial page layout
+- Block viewport visibility
+
+**Does NOT own:**
+- Navigation structure
+- ILS UI
+- Progress persistence
+
+### System 3: ILS (Right Sidebar Panel)
+
+**Owns:**
+- Learning progress UI
+- Active block observation
+- Engagement metrics display
+- Time analysis display
+- Progress state display
+
+**Does NOT own:**
+- Tutorial block rendering
+- Tutorial content
+- Navigation structure
+
+**Critical Rule:** These systems are independent. Do NOT merge:
+- LSNB + Tutorial Composer
+- Tutorial Block + ILS UI
+- Tutorial Content + ILS Panel
+
+---
+
+## 5. Never Mix Legacy and Current Architecture
 
 The AI must explicitly classify discovered structures.
 
@@ -373,7 +554,66 @@ Phase 3C-M correctly treated database safety as a certification criterion.
 
 ---
 
-## 9. Every New Block Must Have a Block Contract
+## 11. Migration Safety Rule
+
+Before executing ANY migration:
+
+check whether generated SQL contains:
+
+```text
+DROP TABLE
+DROP COLUMN
+DROP INDEX
+ALTER TABLE
+CREATE TABLE
+CREATE TYPE
+```
+
+Each statement must be explained.
+
+If an existing production field is being added again:
+
+```text
+STOP
+```
+
+Do not execute the migration.
+
+This specifically protects:
+
+```text
+navigation_node_id
+```
+
+from being re-added to tutorial_sections when it already exists.
+
+**Never assume:**
+
+```text
+TypeScript schema exists
+    =
+PostgreSQL schema exists
+```
+
+**Never execute a migration merely because Drizzle generated it.**
+
+**Before a schema change:**
+
+1. Prove the requirement.
+2. Inspect actual production schema.
+3. Inspect current Drizzle schema.
+4. Inspect migrations/snapshots.
+5. Determine ownership.
+6. Determine whether an existing field/model is sufficient.
+7. Prepare migration.
+8. Review generated SQL.
+9. Verify destructive statements.
+10. Obtain authorization where required.
+11. Execute only after validation.
+
+---
+
+## 12. Every New Block Must Have a Block Contract
 
 For every one of the 18+ blocks:
 
@@ -500,7 +740,113 @@ This prevents 18+ duplicate implementations.
 
 ---
 
-## 13. LHSN Is a Navigation System
+## 16. Block Identity Rule
+
+Every canonical TutorialBlock has an existing identity.
+
+The identity is:
+
+```text
+block.id
+block.type
+block.version
+```
+
+For versioned blocks:
+
+```text
+Definition -> D1
+Code       -> C1
+Summary    -> S1
+etc.
+```
+
+Do not replace these identifiers with category-based legacy names.
+
+Do not create:
+
+```text
+ilsId
+progressId
+trackingId
+```
+
+unless a future explicitly approved architecture requires them.
+
+The block itself remains a content/rendering unit. ILS references block identity.
+
+---
+
+## 17. DOM Identity Rule
+
+The browser must be able to identify the actual rendered block.
+
+The intended identity contract is:
+
+```html
+data-block-id="..."
+data-block-type="..."
+data-block-version="..."
+```
+
+Version is required for versioned blocks.
+
+Do not introduce unnecessary wrapper elements.
+
+Prefer adding identity metadata to the existing root DOM element.
+
+The DOM identity foundation must not alter:
+
+- layout
+- spacing
+- visual styling
+- accessibility semantics
+- block structure
+- existing child relationships
+
+---
+
+## 18. Active Block Rule
+
+The learner MUST NOT manually select the active block.
+
+Development inspection controls may exist separately.
+
+Production learner behavior is:
+
+```text
+viewport
+   |
+   v
+rendered block
+   |
+   v
+activeBlockContext
+   |
+   v
+ILS
+```
+
+Conceptually:
+
+```text
+D1 enters viewport
+   -> active block = D1
+
+C1 enters viewport
+   -> active block = C1
+
+S1 enters viewport
+   -> active block = S1
+```
+
+This is a runtime concern.
+
+Do not place ILS UI inside the block.
+
+---
+
+## 19. LSNB Is a Navigation System
 
 LHSN/shared sidebar is not simply UI decoration. It participates in:
 
@@ -557,7 +903,36 @@ The final implementation correctly uses `topic.externalId` for the shared sideba
 
 ---
 
-## 15. ILS Must Not Become a Second Tutorial Architecture
+## 21. LSNB Rules
+
+LSNB owns:
+
+```text
+navigation structure
+navigationNodeId
+active navigation state
+navigation links
+```
+
+LSNB does NOT own:
+
+```text
+Tutorial block content
+ILS progress persistence
+learner time analytics
+```
+
+A Tutorial Page must preserve:
+
+```text
+exact navigationNodeId identity
+```
+
+Navigation must not fall back to vague subtopic matching when a navigationNodeId contract exists.
+
+---
+
+## 22. ILS Must Not Become a Second Tutorial Architecture
 
 ILS should consume the Tutorial Page architecture, not replace it.
 
@@ -587,7 +962,7 @@ ILS should observe/use the canonical Tutorial Page.
 
 ---
 
-## 16. ILS Block Identity
+## 23. ILS Block Identity
 
 ILS should operate at:
 
@@ -623,7 +998,50 @@ Tutorial Page
 
 ---
 
-## 17. Right-Side ILS Panel Must Be Universal
+## 24. ILS UI Architecture
+
+The ILS right-side panel is reusable.
+
+Its visual hierarchy is:
+
+```text
+Overall Progress
+      |
+      v
+Lifecycle & Overview
+      |
+      v
+Engagement Metrics
+      |
+      v
+Time Analysis
+```
+
+**Color rules:**
+
+```text
+Brand PRIMARY
+    -> Overall Progress
+
+Brand SECONDARY
+    -> Lifecycle & Overview
+
+Existing ORANGE
+    -> Engagement Metrics
+
+Existing BLUE
+    -> Time Analysis
+```
+
+Do not replace established metric colors without explicit design authorization.
+
+Typography and existing shared design-system conventions must be reused.
+
+Do not introduce a second independent design system.
+
+---
+
+## 25. Right-Side ILS Panel Must Be Universal
 
 Based on the established Tutorial Page design:
 
@@ -664,7 +1082,153 @@ S1 → ILS
 
 ---
 
-## 18. New Block Implementation Order
+## 26. ILS Architecture
+
+ILS is a reusable learning-state system.
+
+ILS is NOT a second Tutorial Renderer.
+
+ILS is NOT embedded inside D1/C1/S1.
+
+ILS does NOT own Tutorial content.
+
+ILS does NOT create duplicate Tutorial blocks.
+
+ILS observes the current Tutorial Page and its blocks.
+
+The conceptual relationship is:
+
+```text
+Tutorial Page
+     |
+     +-- navigationNodeId
+     |
+     +-- sectionId
+     |
+     +-- blocks[]
+             |
+             +-- blockId
+             +-- blockType
+             +-- blockVersion
+                     |
+                     v
+                ILS Runtime
+                     |
+                     v
+                Learning State
+```
+
+The ILS right-side panel is a separate reusable UI surface.
+
+---
+
+## 27. ILS Progress Model
+
+The primary learner-state record is navigation-node level.
+
+Conceptually:
+
+```text
+user
+  +
+navigationNode
+  +
+section
+  +
+subtopic
+```
+
+with block-level completion evidence.
+
+ILS may track:
+
+```text
+status
+completedBlocks
+active time
+visits
+revisions
+timestamps
+completion
+```
+
+Block completion identity must preserve:
+
+```text
+blockId
+blockVersion
+```
+
+Do not reduce completion to only:
+
+```text
+blockType
+```
+
+---
+
+## 28. ILS Completion Rule
+
+The client does NOT define completion requirements.
+
+The server resolves the canonical required block set.
+
+Conceptually:
+
+```text
+tutorial_sections
+      |
+      v
+canonical blocks
+      |
+      v
+required block set
+      |
+      v
+LearningProgressService
+      |
+      v
+completion decision
+```
+
+Therefore:
+
+```text
+client claim
+    !=
+authoritative completion
+```
+
+The server must remain authoritative.
+
+---
+
+## 29. ILS Aggregation Rule
+
+Block-level learning state contributes to navigation-node/page state.
+
+Conceptually:
+
+```text
+D1
+C1
+S1
+ |
+ v
+block states
+ |
+ v
+navigation-node state
+ |
+ v
+page-level progress
+```
+
+The exact aggregation rules must live in the service/domain layer, not inside presentation components.
+
+---
+
+## 30. New Block Implementation Order
 
 For every new block:
 
@@ -691,7 +1255,142 @@ STEP 18: Certification
 
 ---
 
-## 19. Never Implement Everything in One AI Prompt
+## 31. New Block Development SOP
+
+For EVERY new Tutorial Page block, follow this sequence.
+
+**STEP 1 — READ-ONLY AUDIT**
+
+Inspect:
+- existing block taxonomy
+- current TutorialDocument type
+- renderer
+- composer integration
+- validation
+- existing tests
+- current CSS/design system
+- ILS runtime contract
+- persistence requirements
+
+STOP if ownership is unclear.
+
+**STEP 2 — IDENTITY CONTRACT**
+
+Define:
+- block.id
+- block.type
+- block.version if applicable
+- DOM identity requirements
+- child/container behavior
+
+**STEP 3 — DATABASE IMPACT**
+
+Determine:
+- Does this feature require a new database field?
+- Does existing TutorialDocument JSON already support it?
+- Does ILS need persistent state?
+- Does anything cross databases?
+
+Default answer: DO NOT change schema unless evidence proves it necessary.
+
+**STEP 4 — TYPE CONTRACT**
+
+Define TypeScript interfaces/types.
+
+Validate:
+- required fields
+- optional fields
+- versioning
+- defaults
+- backwards compatibility
+
+**STEP 5 — COMPOSER SUPPORT**
+
+Ensure the existing Composer can produce the block.
+
+Do NOT create a page-specific editor.
+
+**STEP 6 — RENDERER**
+
+Implement the learner-facing renderer.
+
+Preserve:
+- existing root DOM
+- accessibility
+- layout
+- spacing
+- responsive behavior
+
+**STEP 7 — DOM IDENTITY**
+
+Add:
+- data-block-id
+- data-block-type
+- data-block-version
+
+where applicable.
+
+**STEP 8 — ILS COMPATIBILITY**
+
+Determine whether the block:
+- participates in completion
+- contributes time
+- contributes visit/revision state
+- is informational only
+- is a container only
+
+Do not invent semantics.
+
+**STEP 9 — TESTS**
+
+At minimum test:
+- valid rendering
+- invalid data
+- identity
+- version
+- responsive behavior where applicable
+- nested/container behavior
+- existing regression surface
+
+**STEP 10 — TYPECHECK / LINT**
+
+Run the project's existing checks.
+
+**STEP 11 — BUILD**
+
+Run the correct package/build verification.
+
+**STEP 12 — LOCAL RUNTIME**
+
+Start the relevant applications.
+
+Test the real browser path.
+
+**STEP 13 — E2E**
+
+Verify:
+- auth
+- navigation
+- page delivery
+- block rendering
+- ILS
+- brand behavior
+
+**STEP 14 — GIT REVIEW**
+
+Inspect:
+- git status
+- git diff
+- changed files
+- line counts
+
+**STEP 15 — STOP**
+
+Do not begin the next block until this block is accepted.
+
+---
+
+## 32. Never Implement Everything in One AI Prompt
 
 Don't tell the AI:
 
@@ -752,7 +1451,40 @@ Only after approval does implementation begin.
 
 ---
 
-## 21. File Modification Boundary
+## 34. Existing Feature Extension SOP
+
+When extending an existing feature, do NOT rebuild it.
+
+First identify:
+
+```text
+current implementation
+current public contract
+existing tests
+production consumers
+```
+
+Then modify only the smallest necessary boundary.
+
+Required sequence:
+
+```text
+READ
+ ↓
+MAP
+ ↓
+MODIFY
+ ↓
+TEST
+ ↓
+REGRESSION TEST
+ ↓
+E2E
+```
+
+---
+
+## 35. File Modification Boundary
 
 Before coding, the AI must produce:
 
@@ -1651,7 +2383,168 @@ GUESS → CODE → 404 → GUESS AGAIN
 
 ---
 
-## 52. Master Prompt Template for AI Agents
+## 78. Phase Execution Model
+
+Every project phase uses:
+
+```text
+AI AUDIT
+   ↓
+HUMAN REVIEW
+   ↓
+IMPLEMENTATION AUTHORIZATION
+   ↓
+CODE
+   ↓
+TEST
+   ↓
+BUILD
+   ↓
+LOCAL RUNTIME
+   ↓
+BROWSER / E2E
+   ↓
+GIT REVIEW
+   ↓
+COMMIT
+   ↓
+DEPLOY
+   ↓
+PRODUCTION VALIDATION
+   ↓
+NEXT PHASE
+```
+
+Do NOT skip gates.
+
+Do NOT automatically continue to the next phase.
+
+---
+
+## 79. Backend / Frontend Responsibility
+
+Claude / Backend agent owns:
+
+```text
+database
+migrations
+repositories
+services
+API
+authentication
+authorization
+backend/runtime contracts
+E2E backend infrastructure
+```
+
+Gemini / Frontend agent owns:
+
+```text
+visual UI
+React/TSX implementation
+responsive design
+learner page UI
+ILS panel UI
+frontend interaction
+```
+
+Neither agent should silently take ownership of the other's boundary.
+
+---
+
+## 80. Deployment Rule
+
+Local validation is NOT production validation.
+
+Before deployment:
+
+```text
+build
+lint
+tests
+typecheck
+diff review
+```
+
+After deployment:
+
+```text
+health checks
+authentication
+gateway
+brand resolution
+API
+Tutorial Page
+LSNB
+ILS
+browser journey
+logs
+```
+
+Do not push/deploy automatically unless explicitly authorized.
+
+---
+
+## 81. Multi-Brand Certification
+
+Both brands must ultimately be tested:
+
+```text
+SkillUp
+RealTutorialHub
+```
+
+The same shared implementation should be validated under both brand contexts.
+
+Verify:
+
+```text
+correct brand
+correct theme
+correct identity
+correct navigation
+correct Tutorial content
+correct ILS behavior
+no cross-brand state leakage
+```
+
+A brand passing alone is not sufficient for multi-brand certification.
+
+---
+
+## 82. Evidence-First Development
+
+Every implementation report must include:
+
+```text
+Problem
+Evidence
+Root Cause
+Architectural Boundary
+Proposed Change
+Files Affected
+Files Explicitly NOT Changed
+Tests
+Typecheck
+Build
+E2E
+Diff
+Git Status
+Remaining Risks
+```
+
+The agent must distinguish:
+
+```text
+PROVEN
+INFERRED
+UNKNOWN
+BLOCKED
+```
+
+---
+
+## 83. Master Prompt Template for AI Agents
 
 Use this as a header for every future Tutorial Page implementation prompt:
 
@@ -1883,3 +2776,35 @@ Never use "COMPLETE" when a required gate remains pending.
 **For questions about this SOP, consult the Phase 3C-M incident analysis in project logs or discuss with the architecture team.**
 
 **This is a living document. Update it as new lessons emerge from Tutorial Page development.**
+
+
+---
+
+## Version History
+
+**v1.0 (2026-09-02):**
+- Initial SOP creation
+- Phase 3C-M identity boundary lessons
+- 600-line rule
+- Block versioning
+- ILS architecture
+- LSNB separation
+
+**v2.0 (2026-09-02):**
+- Added current architectural model (LSNB → NavigationNode → Tutorial Composer → Page → ILS)
+- Added three primary learner-page systems architecture (LSNB / Main Content / ILS)
+- Added HTTP E2E harness isolation rules (Vitest exclusion for standalone scripts)
+- Added testing layer separation (Component / HTTP Smoke / Real-system E2E)
+- Added multi-brand architecture details (SkillUp/RTH/SkillHubCore roles)
+- Added cold-start/performance rules (Next.js compilation latency)
+- Added NO_PROGRESS_YET classification for new tutorials
+- Added Block Identity Rule, DOM Identity Rule, Active Block Rule
+- Added ILS Architecture, Progress Model, Completion Rule, Aggregation Rule
+- Added New Block Development SOP (15-step process)
+- Added Phase Execution Model
+- Added Backend/Frontend Responsibility boundaries
+- Added Deployment Rule
+- Added Multi-Brand Certification requirements
+- Added Evidence-First Development rules
+- Integrated Phase 3 real-system E2E certification lessons
+
