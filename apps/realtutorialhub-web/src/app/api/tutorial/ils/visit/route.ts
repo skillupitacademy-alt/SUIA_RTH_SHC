@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'X-Brand': 'realtutorialhub',
         'X-User-ID': user.userId,
-        'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
+        'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
+        'x-session-id': request.headers.get('x-session-id') || '', // ILS Phase 2: Forward learning session ID
       },
       body: JSON.stringify(body),
       cache: 'no-store'

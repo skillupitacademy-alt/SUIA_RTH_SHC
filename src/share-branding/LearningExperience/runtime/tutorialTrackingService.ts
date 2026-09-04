@@ -22,6 +22,7 @@ import type {
   TutorialTrackingEvent,
   TutorialProgressState,
 } from './TutorialRuntimeContext';
+import { readTutorialLearningSessionId } from './tutorialSessionService';
 
 /**
  * Map D1/C1/S1 block types to backend-compatible types
@@ -63,8 +64,58 @@ export async function trackTutorialEvent(
   event: TutorialTrackingEvent
 ): Promise<void> {
   try {
+    // ILS Phase 2: page_view → VisitEvent persistence
+    if (event.eventType === 'page_view') {
+      // Read existing learning session (do NOT create new)
+      const learningSessionId = readTutorialLearningSessionId();
+      
+      if (!learningSessionId) {
+        console.warn('[Tutorial Tracking] page_view: No learning session available (SSR or storage unavailable)');
+        return;
+      }
+      
+      // Validate required Visit fields
+      if (!event.navigationNodeId || !event.subtopicId) {
+        console.warn('[Tutorial Tracking] page_view: Missing required fields', {
+          navigationNodeId: event.navigationNodeId,
+          subtopicId: event.subtopicId,
+        });
+        return;
+      }
+      
+      // Call Visit API with learning session ID in BOTH channels:
+      // - Channel A (context): x-session-id header
+      // - Channel B (authoritative): body.sessionId
+      const response = await fetch('/api/tutorial/ils/visit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': learningSessionId, // Channel A: context/metadata
+        },
+        credentials: 'include', // Auth cookies for learner identity
+        body: JSON.stringify({
+          navigationNodeId: event.navigationNodeId,
+          subtopicId: event.subtopicId,
+          sessionId: learningSessionId,      // Channel B: AUTHORITATIVE for persistence
+          sectionId: event.sectionId || null,
+        }),
+      });
+      
+      if (!response.ok) {
+        console.warn(`[Tutorial Tracking] Visit API returned ${response.status}`);
+        return;
+      }
+      
+      console.log('[Tutorial Tracking] page_view persisted:', {
+        navigationNodeId: event.navigationNodeId,
+        subtopicId: event.subtopicId,
+        sessionId: learningSessionId,
+      });
+      return;
+    }
+
     // Only track block_complete events via API
-    // page_view events are logged but not persisted (future enhancement)
+    // Other events are logged but not persisted
     if (event.eventType !== 'block_complete') {
       console.log('[Tutorial Tracking] Event (not persisted):', {
         eventType: event.eventType,
