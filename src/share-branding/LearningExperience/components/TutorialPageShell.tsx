@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
 
@@ -11,6 +11,7 @@ import { TutorialSummaryContent } from './TutorialSummaryContent';
 import { TutorialLeftSidebar } from './TutorialLeftSidebar';
 import { TutorialFooterNavigation, TutorialHeader } from './TutorialPageChrome';
 import { trackTutorialEvent } from '../runtime/tutorialTrackingService';
+import { getOrCreateTutorialLearningSessionId } from '../runtime/tutorialSessionService';
 
 interface TutorialPageShellProps {
   payload: TutorialPagePayload;
@@ -20,9 +21,56 @@ interface TutorialPageShellProps {
 export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [completedUrls, setCompletedUrls] = useState<Set<string> | undefined>(undefined);
-  
+
   // Phase 3C-A: Ref to canonical tutorial block container for ActiveBlockProvider
   const contentContainerRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * ILS Step 1: Tutorial Learning Session initialization.
+   *
+   * ONE authoritative initialization path — this is the SINGLE place where
+   * the learning sessionId is established for this browser tab.
+   *
+   * SEQUENCING:
+   *   TutorialPageShell mounts (client-side only)
+   *       ↓
+   *   getOrCreateTutorialLearningSessionId()
+   *       ↓
+   *   sessionStorage["tutorialLearningSessionId"]
+   *       ↓
+   *   available for telemetry consumers (visit, active-time — future phases)
+   *
+   * WHY useEffect:
+   * - This is a Client Component ('use client')
+   * - sessionStorage is unavailable during SSR
+   * - useEffect only runs after hydration (browser context guaranteed)
+   * - useRef prevents React Strict Mode from creating duplicate sessions
+   *
+   * WHAT THIS IS NOT:
+   * - This is NOT the Auth Session.id
+   * - This is NOT derived from learnerId, navigationNodeId, or subtopicId
+   * - This does NOT modify any authentication state
+   */
+  const sessionInitializedRef = useRef(false);
+
+  useEffect(() => {
+    // Guard: only initialize once per component lifetime (Strict Mode safe)
+    if (sessionInitializedRef.current) return;
+    sessionInitializedRef.current = true;
+
+    const sessionId = getOrCreateTutorialLearningSessionId();
+
+    if (sessionId) {
+      console.log('[Tutorial Session] Learning session established:', {
+        sessionId,
+        navigationNodeId: runtimeContext.navigationNodeId,
+        // NEVER log: learnerId, auth cookies, tokens
+      });
+    }
+    // sessionId is now available in sessionStorage["tutorialLearningSessionId"]
+    // Future phases (Step 2: VisitEvent) will read it via readTutorialLearningSessionId()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps: run exactly once on mount
 
   // Phase 2.5: Fetch learner progress and compute completed URLs
   useEffect(() => {
@@ -53,11 +101,11 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
         //
         // For now: Mark nothing as complete until backend migration
         const completedSet = new Set<string>();
-        
+
         // TODO (future backend phase): Replace with real navigation-node progress
         // Requires: GET /api/tutorial/progress?navigationNodeId=...
         // Returns: { navigationNodeId, completedBlockIds[], sectionProgress }
-        
+
         setCompletedUrls(completedSet);
       } catch (error) {
         console.error('[Tutorial Progress] Failed to load progress:', error);
@@ -82,11 +130,11 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
 
   // V2 Architecture: Render blocks[] when available
   const hasBlocks = payload.content.blocks && payload.content.blocks.length > 0;
-  
+
   // Legacy fallback: Check for old content structure
-  const hasLegacyContent = 
-    payload.content.definition || 
-    payload.content.code || 
+  const hasLegacyContent =
+    payload.content.definition ||
+    payload.content.code ||
     payload.content.summary;
 
   // Phase 2.5: Prepare block runtime context for universal rendering
@@ -112,8 +160,8 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
       />
       <div className="flex w-full min-w-0 gap-0 bg-white">
         {isSidebarOpen && (
-          <TutorialLeftSidebar 
-            tree={payload.sidebar} 
+          <TutorialLeftSidebar
+            tree={payload.sidebar}
             activeUrl={payload.activeUrl}
             // Phase 2.5: Pass actual completed URLs from learner progress
             completedUrls={completedUrls}
@@ -133,15 +181,15 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
                 payload.content.blocks.map((block) => {
                   // Phase 2.5: Construct block runtime context for each block
                   // Type-safe version extraction without unsafe cast
-                  const blockVersion = ('version' in block && typeof block.version === 'string') 
-                    ? block.version 
+                  const blockVersion = ('version' in block && typeof block.version === 'string')
+                    ? block.version
                     : 'unversioned';
                   const blockRuntimeContext = createBlockRuntimeContext(
                     block.id,
                     block.type,
                     blockVersion
                   );
-                  
+
                   return (
                     <TutorialBlockRenderer
                       key={block.id}

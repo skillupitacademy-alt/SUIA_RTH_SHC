@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tutorial Runtime Resolver
  * 
  * Resolves URL parameters and sidebar tree into TutorialRuntimeContext.
@@ -11,13 +11,13 @@
  * 
  * IDENTITY FLOW:
  *   URL params
- *       ↓
- *   resolveHierarchy() → domain/subject/topic/subtopic IDs
- *       ↓
- *   validateNavigationNode() → navigationNodeId validation
- *       ↓
- *   getTutorialByPage() → sectionId (may be null)
- *       ↓
+ *       â†“
+ *   resolveHierarchy() â†’ domain/subject/topic/subtopic IDs
+ *       â†“
+ *   validateNavigationNode() â†’ navigationNodeId validation
+ *       â†“
+ *   getTutorialByPage() â†’ sectionId (may be null)
+ *       â†“
  *   TutorialRuntimeContext
  */
 
@@ -123,6 +123,7 @@ export async function resolveRuntimeContext(
       navigationNodeName,
       sectionId,
       brandId: params.brandId,
+      sessionId: null, // Populated client-side by TutorialPageShell via tutorialSessionService
     };
 
     return {

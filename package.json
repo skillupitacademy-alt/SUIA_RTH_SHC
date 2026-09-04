@@ -1,192 +1,171 @@
 {
-  "name": "quiz-platform",
-  "version": "0.0.0",
-  "private": true,
-  "description": "A modern quiz platform monorepo",
-  "workspaces": [
-    "apps/*",
-    "apps/realtutorialhub-admin",
-    "apps/realtutorialhub-quiz",
-    "apps/skillup-web",
-    "apps/skillup-admin",
-    "apps/faculty-app",
-    "apps/skillhubcore-admin",
-    "packages/*",
-    "services/*"
-  ],
-  "lint-staged": {
-    "apps/**/*.{ts,tsx,js,jsx}": [
-      "eslint --no-ignore --max-warnings=0 --fix"
+    "name": "quiz-platform",
+    "version": "0.0.0",
+    "private": true,
+    "description": "A modern quiz platform monorepo",
+    "workspaces": [
+        "apps/*",
+        "apps/realtutorialhub-admin",
+        "apps/realtutorialhub-quiz",
+        "apps/skillup-web",
+        "apps/skillup-admin",
+        "apps/faculty-app",
+        "apps/skillhubcore-admin",
+        "packages/*",
+        "services/*"
     ],
-    "packages/**/*.{ts,tsx,js,jsx}": [
-      "eslint --no-ignore --max-warnings=0 --fix"
-    ],
-    "src/**/*.{ts,tsx,js,jsx}": [
-      "eslint --no-ignore --max-warnings=0 --fix"
-    ]
-  },
-  "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run dev --concurrency=4",
-
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2",
-
-    "build:all": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/realtutorialhub-site --filter=@quiz/skillupitacademy-site --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
-
-    "build:sequential": "pnpm --filter @quiz/realtutorialhub-quiz build && pnpm --filter @quiz/realtutorialhub-admin build && pnpm --filter @quiz/api-server build && pnpm --filter @quiz/realtutorialhub-web build && pnpm --filter @quiz/skillup-web build",
-
-    "build:windows-safe": "cross-env CI=1 NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=1",
-
-    "build:production": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2",
-
-    "analyze:all": "cross-env ANALYZE=true NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/realtutorialhub-web",
-
-    "lint": "turbo run lint --concurrency=4 -- --max-warnings=0",
-    "lint:all": "turbo run lint --concurrency=4",
-
-    "type-check": "cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run type-check --concurrency=4",
-
-    "typecheck:all": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run type-check --concurrency=3 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/realtutorialhub-site --filter=@quiz/skillupitacademy-site --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
-
-    "test": "cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run test --concurrency=4",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:all": "pnpm --recursive run test",
-
-    "test:load": "k6 run scripts/load/smoke.js",
-    "k6:exam": "k6 run k6/exam-flow.js",
-    "k6:auth": "k6 run k6/auth-flow.js",
-    "k6:admin": "k6 run k6/admin-flow.js",
-    "k6:all": "k6 run k6/exam-flow.js && k6 run k6/auth-flow.js && k6 run k6/admin-flow.js",
-
-    "auth:audit": "node scripts/auth-audit.js",
-    "auth:audit:shared": "node scripts/auth-audit.js",
-    "auth:flow:test": "node scripts/auth-page-flow-validator.js",
-    "auth:dashboard:debug": "node scripts/dashboard-diagnostic.js",
-    "auth:server:debug": "node scripts/server-side-debug.js",
-
-    "audit:dead": "npx ts-prune && npx depcheck",
-    "audit:all": "npm run auth:audit && npm run audit:dead",
-    "audit:csrf-cross-subdomain": "node scripts/audit-csrf-cross-subdomain.mjs",
-
-    "validate:gateway": "node scripts/validate-gateway.mjs",
-    "validate:gateway:live": "node scripts/validate-gateway.mjs --live",
-    "validate:rbac": "node scripts/validate-rbac-shared.js",
-    "validate:ssr": "node scripts/test-ssr-auth-flow.js",
-    "validate:deployment": "node scripts/validate-deployment-ready.js",
-    "validate:phase2b": "tsx scripts/validate-phase2b.ts",
-
-    "assurance:tutorial-v2:e2e": "node scripts/assurance/tutorial-v2-auth-http.e2e.mjs",
-    "assurance:tutorial-v2:auth": "node scripts/assurance/tutorial-v2-auth-matrix.mjs",
-    "assurance:tutorial-v2:direct-url": "node scripts/assurance/tutorial-v2-direct-url.e2e.mjs",
-    "assurance:tutorial-v2:extended": "node scripts/assurance/tutorial-v2-extended-auth-matrix.mjs",
-    "assurance:tutorial-v2:api-auth": "cross-env JWT_SECRET=\"a53ce3b12a7ad0c7a93f08f101090b009b87dc775c0199ab74da94f2beb6b6a5ec214e4f9fcbd402688329fded49509e960e494f47c0354b2e0402352584c26c\" node scripts/assurance/tutorial-v2-api-auth-matrix.mjs",
-    "audit:tutorial-section-validation": "tsx scripts/audit-tutorial-section-validation.ts",
-    "validate:cloudrun-coverage": "node scripts/verify-cloudrun-coverage.mjs",
-
-    "tutorial:phase25:static": "node scripts/tutorial/phase-25-runtime-assurance.js",
-    "tutorial:phase25:contract": "node scripts/tutorial/phase-25/phase-25-runtime-contract-test.js",
-    "tutorial:phase25:routes": "node scripts/tutorial/phase-25/phase-25-route-test.js",
-    "tutorial:phase25:progress": "node scripts/tutorial/phase-25/phase-25-progress-test.js",
-    "tutorial:phase25:runtime": "node scripts/tutorial/phase-25/phase-25-runtime-suite.js",
-
-    "check:localhost": "node scripts/no-localhost-check.js",
-    "verify:css-isolation": "node scripts/verify-css-isolation.mjs",
-
-    "seed:skillup:test-credentials": "node scripts/seed-skillup-test-credentials.js",
-    "seed:skillup:people": "pnpm --filter @quiz/db-people db:seed:skillup",
-    "seed:rth:looping-demo": "tsx scripts/seed-rth-looping-demo.ts",
-    "seed:test-users": "tsx scripts/check-test-users.ts",
-    "seed:quiz-test-users": "node scripts/seed-quiz-test-users-sql.js",
-
-    "db-payment:seed:skillup": "pnpm --filter @quiz/db-payment db:seed:skillup",
-    "db-payment:migrate": "pnpm --filter @quiz/db-payment db:migrate",
-    "db-placement:seed:skillup": "pnpm --filter @quiz/db-placement db:seed:skillup",
-    "db-placement:migrate": "pnpm --filter @quiz/db-placement db:migrate",
-
-    "ci": "pnpm lint:all && pnpm typecheck:all && pnpm build",
-
-    "clean": "turbo run clean && rm -rf node_modules .turbo .next node_modules/.cache",
-
-    "reset": "pnpm clean && pnpm install",
-
-    "lighthouse:web": "cd apps/realtutorialhub-quiz && npx lhci autorun",
-    "lighthouse:admin": "cd apps/realtutorialhub-admin && npx lhci autorun",
-    "lighthouse:all": "pnpm lighthouse:web && pnpm lighthouse:admin",
-
-    "prepare": "echo \"husky prepare temporarily disabled; set scripts.prepare=\\\"husky\\\" to re-enable\""
-  },
-  "devDependencies": {
-    "@axe-core/playwright": "^4.11.1",
-    "@neondatabase/serverless": "^0.10.4",
-    "@next/bundle-analyzer": "^16.1.6",
-    "@playwright/test": "^1.49.1",
-    "@quiz/db": "workspace:*",
-    "@quiz/eslint-config": "workspace:^",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/bcrypt": "^5.0.2",
-    "@types/bcryptjs": "^3.0.0",
-    "@types/jsonwebtoken": "^9.0.8",
-    "@types/node": "^25.0.10",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@types/ws": "^8.18.1",
-    "@upstash/redis": "^1.36.2",
-    "@upstash/workflow": "^1.1.1",
-    "@vitest/coverage-v8": "^4.0.18",
-    "@vitest/ui": "^4.0.18",
-    "bcrypt": "^6.0.0",
-    "cross-env": "^10.1.0",
-    "dotenv": "^17.2.3",
-    "drizzle-kit": "^0.31.8",
-    "drizzle-orm": "^0.45.1",
-    "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-react-hooks": "4.6.2",
-    "eslint-plugin-security": "^3.0.1",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
-    "framer-motion": "^12.34.3",
-    "husky": "^9.1.7",
-    "jsdom": "^28.1.0",
-    "lint-staged": "^16.2.7",
-    "lucide-react": "0.563.0",
-    "next": "16.1.6",
-    "node-fetch": "^3.3.2",
-    "pg": "^8.18.0",
-    "pino": "^10.3.1",
-    "playwright": "^1.59.1",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "ts-morph": "^27.0.2",
-    "ts-node": "^10.9.2",
-    "turbo": "^2.3.3",
-    "typescript": "^5.7.2",
-    "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.0.18",
-    "ws": "^8.19.0"
-  },
-  "packageManager": "pnpm@9.15.4",
-  "engines": {
-    "node": "20.x"
-  },
-  "pnpm": {
-    "overrides": {
-      "@smithy/types": "4.12.0",
-      "@typescript-eslint/eslint-plugin": "8.57.0",
-      "@typescript-eslint/parser": "8.57.0",
-      "@typescript-eslint/utils": "8.57.0"
+    "lint-staged": {
+        "apps/**/*.{ts,tsx,js,jsx}": [
+            "eslint --no-ignore --max-warnings=0 --fix"
+        ],
+        "packages/**/*.{ts,tsx,js,jsx}": [
+            "eslint --no-ignore --max-warnings=0 --fix"
+        ],
+        "src/**/*.{ts,tsx,js,jsx}": [
+            "eslint --no-ignore --max-warnings=0 --fix"
+        ]
+    },
+    "scripts": {
+        "dev": "cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run dev --concurrency=4",
+        "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2",
+        "build:all": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/realtutorialhub-site --filter=@quiz/skillupitacademy-site --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
+        "build:sequential": "pnpm --filter @quiz/realtutorialhub-quiz build && pnpm --filter @quiz/realtutorialhub-admin build && pnpm --filter @quiz/api-server build && pnpm --filter @quiz/realtutorialhub-web build && pnpm --filter @quiz/skillup-web build",
+        "build:windows-safe": "cross-env CI=1 NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=1",
+        "build:production": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2",
+        "analyze:all": "cross-env ANALYZE=true NODE_OPTIONS=--max-old-space-size=8192 turbo run build --concurrency=2 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/realtutorialhub-web",
+        "lint": "turbo run lint --concurrency=4 -- --max-warnings=0",
+        "lint:all": "turbo run lint --concurrency=4",
+        "type-check": "cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run type-check --concurrency=4",
+        "typecheck:all": "cross-env NODE_OPTIONS=--max-old-space-size=8192 turbo run type-check --concurrency=3 --filter=@quiz/realtutorialhub-quiz --filter=@quiz/realtutorialhub-admin --filter=@quiz/api-server --filter=@quiz/realtutorialhub-web --filter=@quiz/realtutorialhub-site --filter=@quiz/skillupitacademy-site --filter=@quiz/skillhubcore-service --filter=@quiz/api-gateway --filter=@quiz/db-people --filter=@quiz/skillup-web --filter=@quiz/skillup-admin --filter=@quiz/faculty-app --filter=@quiz/skillhubcore-admin --filter=@quiz/skillhub-placement",
+        "test": "cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run test --concurrency=4",
+        "test:watch": "vitest",
+        "test:ui": "vitest --ui",
+        "test:all": "pnpm --recursive run test",
+        "test:load": "k6 run scripts/load/smoke.js",
+        "k6:exam": "k6 run k6/exam-flow.js",
+        "k6:auth": "k6 run k6/auth-flow.js",
+        "k6:admin": "k6 run k6/admin-flow.js",
+        "k6:all": "k6 run k6/exam-flow.js && k6 run k6/auth-flow.js && k6 run k6/admin-flow.js",
+        "auth:audit": "node scripts/auth-audit.js",
+        "auth:audit:shared": "node scripts/auth-audit.js",
+        "auth:flow:test": "node scripts/auth-page-flow-validator.js",
+        "auth:dashboard:debug": "node scripts/dashboard-diagnostic.js",
+        "auth:server:debug": "node scripts/server-side-debug.js",
+        "audit:dead": "npx ts-prune && npx depcheck",
+        "audit:all": "npm run auth:audit && npm run audit:dead",
+        "audit:csrf-cross-subdomain": "node scripts/audit-csrf-cross-subdomain.mjs",
+        "validate:gateway": "node scripts/validate-gateway.mjs",
+        "validate:gateway:live": "node scripts/validate-gateway.mjs --live",
+        "validate:rbac": "node scripts/validate-rbac-shared.js",
+        "validate:ssr": "node scripts/test-ssr-auth-flow.js",
+        "validate:deployment": "node scripts/validate-deployment-ready.js",
+        "validate:phase2b": "tsx scripts/validate-phase2b.ts",
+        "assurance:tutorial-v2:e2e": "node scripts/assurance/tutorial-v2-auth-http.e2e.mjs",
+        "test:e2e:ils": "node_modules/@playwright/test/node_modules/.bin/playwright test --config playwright.ils.config.ts",
+        "test:e2e:ils:suia": "npx playwright test --config=playwright.config.ts tests/e2e/ils-tutorial-session.spec.ts --project=suia",
+        "test:e2e:ils:rth": "npx playwright test --config=playwright.config.ts tests/e2e/ils-tutorial-session.spec.ts --project=rth",
+        "assurance:tutorial-v2:auth": "node scripts/assurance/tutorial-v2-auth-matrix.mjs",
+        "assurance:tutorial-v2:direct-url": "node scripts/assurance/tutorial-v2-direct-url.e2e.mjs",
+        "assurance:tutorial-v2:extended": "node scripts/assurance/tutorial-v2-extended-auth-matrix.mjs",
+        "assurance:tutorial-v2:api-auth": "cross-env JWT_SECRET=\"a53ce3b12a7ad0c7a93f08f101090b009b87dc775c0199ab74da94f2beb6b6a5ec214e4f9fcbd402688329fded49509e960e494f47c0354b2e0402352584c26c\" node scripts/assurance/tutorial-v2-api-auth-matrix.mjs",
+        "audit:tutorial-section-validation": "tsx scripts/audit-tutorial-section-validation.ts",
+        "validate:cloudrun-coverage": "node scripts/verify-cloudrun-coverage.mjs",
+        "tutorial:phase25:static": "node scripts/tutorial/phase-25-runtime-assurance.js",
+        "tutorial:phase25:contract": "node scripts/tutorial/phase-25/phase-25-runtime-contract-test.js",
+        "tutorial:phase25:routes": "node scripts/tutorial/phase-25/phase-25-route-test.js",
+        "tutorial:phase25:progress": "node scripts/tutorial/phase-25/phase-25-progress-test.js",
+        "tutorial:phase25:runtime": "node scripts/tutorial/phase-25/phase-25-runtime-suite.js",
+        "check:localhost": "node scripts/no-localhost-check.js",
+        "verify:css-isolation": "node scripts/verify-css-isolation.mjs",
+        "seed:skillup:test-credentials": "node scripts/seed-skillup-test-credentials.js",
+        "seed:skillup:people": "pnpm --filter @quiz/db-people db:seed:skillup",
+        "seed:rth:looping-demo": "tsx scripts/seed-rth-looping-demo.ts",
+        "seed:test-users": "tsx scripts/check-test-users.ts",
+        "seed:quiz-test-users": "node scripts/seed-quiz-test-users-sql.js",
+        "db-payment:seed:skillup": "pnpm --filter @quiz/db-payment db:seed:skillup",
+        "db-payment:migrate": "pnpm --filter @quiz/db-payment db:migrate",
+        "db-placement:seed:skillup": "pnpm --filter @quiz/db-placement db:seed:skillup",
+        "db-placement:migrate": "pnpm --filter @quiz/db-placement db:migrate",
+        "ci": "pnpm lint:all && pnpm typecheck:all && pnpm build",
+        "clean": "turbo run clean && rm -rf node_modules .turbo .next node_modules/.cache",
+        "reset": "pnpm clean && pnpm install",
+        "lighthouse:web": "cd apps/realtutorialhub-quiz && npx lhci autorun",
+        "lighthouse:admin": "cd apps/realtutorialhub-admin && npx lhci autorun",
+        "lighthouse:all": "pnpm lighthouse:web && pnpm lighthouse:admin",
+        "prepare": "echo \"husky prepare temporarily disabled; set scripts.prepare=\\\"husky\\\" to re-enable\""
+    },
+    "devDependencies": {
+        "@axe-core/playwright": "^4.11.1",
+        "@neondatabase/serverless": "^0.10.4",
+        "@next/bundle-analyzer": "^16.1.6",
+        "@playwright/test": "^1.62.1",
+        "@quiz/db": "workspace:*",
+        "@quiz/eslint-config": "workspace:^",
+        "@testing-library/dom": "^10.4.1",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
+        "@types/bcrypt": "^5.0.2",
+        "@types/bcryptjs": "^3.0.0",
+        "@types/jsonwebtoken": "^9.0.8",
+        "@types/node": "^25.0.10",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "@types/ws": "^8.18.1",
+        "@upstash/redis": "^1.36.2",
+        "@upstash/workflow": "^1.1.1",
+        "@vitest/coverage-v8": "^4.0.18",
+        "@vitest/ui": "^4.0.18",
+        "bcrypt": "^6.0.0",
+        "cross-env": "^10.1.0",
+        "dotenv": "^17.2.3",
+        "drizzle-kit": "^0.31.8",
+        "drizzle-orm": "^0.45.1",
+        "eslint-plugin-jsx-a11y": "^6.10.2",
+        "eslint-plugin-react-hooks": "4.6.2",
+        "eslint-plugin-security": "^3.0.1",
+        "eslint-plugin-simple-import-sort": "^12.1.1",
+        "framer-motion": "^12.34.3",
+        "husky": "^9.1.7",
+        "jsdom": "^28.1.0",
+        "lint-staged": "^16.2.7",
+        "lucide-react": "0.563.0",
+        "next": "16.1.6",
+        "node-fetch": "^3.3.2",
+        "pg": "^8.18.0",
+        "pino": "^10.3.1",
+        "playwright": "^1.59.1",
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+        "ts-morph": "^27.0.2",
+        "ts-node": "^10.9.2",
+        "turbo": "^2.3.3",
+        "typescript": "^5.7.2",
+        "vite-tsconfig-paths": "^6.1.1",
+        "vitest": "^4.0.18",
+        "ws": "^8.19.0"
+    },
+    "packageManager": "pnpm@9.15.4",
+    "engines": {
+        "node": "20.x"
+    },
+    "pnpm": {
+        "overrides": {
+            "@smithy/types": "4.12.0",
+            "@typescript-eslint/eslint-plugin": "8.57.0",
+            "@typescript-eslint/parser": "8.57.0",
+            "@typescript-eslint/utils": "8.57.0"
+        }
+    },
+    "dependencies": {
+        "@radix-ui/react-label": "^2.1.1",
+        "@radix-ui/react-slot": "^1.1.1",
+        "@radix-ui/react-tabs": "^1.1.1",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "motion": "12.23.24",
+        "recharts": "^3.8.1",
+        "tailwind-merge": "^2.6.0",
+        "zod": "^3.24.1"
     }
-  },
-  "dependencies": {
-    "@radix-ui/react-label": "^2.1.1",
-    "@radix-ui/react-slot": "^1.1.1",
-    "@radix-ui/react-tabs": "^1.1.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "motion": "12.23.24",
-    "recharts": "^3.8.1",
-    "tailwind-merge": "^2.6.0",
-    "zod": "^3.24.1"
-  }
 }

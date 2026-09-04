@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Tutorial V2 Runtime Foundation
- * 
+ *
  * Universal learner-side runtime context and services.
- * 
+ *
  * IMPORTANT:
  * - This is SEPARATE from authoring-side (TutorialPromptContext)
  * - This is SEPARATE from block content schemas (D1/C1/S1)
@@ -33,3 +33,11 @@ export type {
   ResolveRuntimeContextParams,
   ResolveRuntimeContextResult,
 } from './tutorialRuntimeResolver';
+
+export {
+  getOrCreateTutorialLearningSessionId,
+  readTutorialLearningSessionId,
+  generateSessionId,
+  isValidSessionId,
+  TUTORIAL_LEARNING_SESSION_KEY,
+} from './tutorialSessionService';

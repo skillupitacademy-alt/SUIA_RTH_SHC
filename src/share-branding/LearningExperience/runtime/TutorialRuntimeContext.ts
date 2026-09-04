@@ -1,20 +1,21 @@
-/**
+﻿/**
  * TutorialRuntimeContext
- * 
+ *
  * Universal learner-side runtime context for Tutorial V2 pages.
- * 
+ *
  * IMPORTANT DISTINCTIONS:
  * - This is RUNTIME context (learner-facing), not AI generation context
  * - This is SEPARATE from TutorialPromptContext (authoring/AI-side)
  * - This contains identities needed by the page orchestration layer
- * 
+ *
  * IDENTITY SEPARATION:
  * - navigationNodeId: WHERE the learner is (sidebar node, URL identity)
  * - subtopicId: curriculum hierarchy identity
  * - sectionId: tutorial_sections row identity (optional - may not exist yet)
  * - blockId: content block instance identity
  * - learnerId: WHO is learning
- * 
+ * - sessionId: WHICH learning session (tab-scoped, separate from auth session)
+ *
  * These identities MUST remain separate and MUST NOT be conflated.
  */
 
@@ -50,18 +51,37 @@ export interface TutorialRuntimeContext {
 
   // Brand context
   brandId: 'realtutorialhub' | 'skillup';
+
+  /**
+   * Tutorial Learning Session ID
+   *
+   * IMPORTANT: This is NOT the Auth Session.id.
+   * This is a browser-tab-scoped UUID established by tutorialSessionService.
+   *
+   * - null:   during SSR (server rendering) — no sessionStorage available
+   * - string: after client-side mount — one UUID per browser tab
+   *
+   * Semantics: one continuous learning context per browser tab.
+   *   Survives: page reload, in-tab navigation (D1 → C1 → next page)
+   *   Destroyed: on tab close, new tab, private window
+   *
+   * Carried as: x-session-id header in ILS API calls (Step 2+)
+   * Never placed in: JSON bodies, JWT claims, auth cookies
+   * Never derived from: learnerId, navigationNodeId, subtopicId, Auth Session.id
+   */
+  sessionId: string | null;
 }
 
 /**
  * TutorialBlockRuntimeContext
- * 
+ *
  * Universal runtime boundary for block rendering.
- * 
+ *
  * SEPARATION OF CONCERNS:
  * - Block CONTENT (schema/JSON) remains clean
  * - Block RUNTIME (tracking/progress) uses this context
  * - Blocks do NOT individually implement tracking logic
- * 
+ *
  * This context is passed to the universal rendering layer,
  * NOT embedded in block content JSON.
  */
@@ -84,9 +104,9 @@ export interface TutorialBlockRuntimeContext {
 
 /**
  * TutorialTrackingEvent
- * 
+ *
  * Universal learner activity tracking contract.
- * 
+ *
  * IMPORTANT:
  * - This is NOT part of block content schemas
  * - This is NOT duplicated in D1/C1/S1/I1/O1/etc.
@@ -117,13 +137,13 @@ export interface TutorialTrackingEvent {
 
 /**
  * TutorialProgressState
- * 
+ *
  * Learner progress state (separate from content).
- * 
+ *
  * IMPORTANT SEPARATION:
  * - TutorialDocument.blocks[] = shared content (immutable per learner)
  * - TutorialProgressState = learner state (mutable, personal)
- * 
+ *
  * Never mutate TutorialDocument because one learner completed a block.
  */
 export interface TutorialProgressState {
@@ -132,14 +152,14 @@ export interface TutorialProgressState {
 
   // Block-level progress
   completedBlocks: string[]; // blockId[]
-  
+
   // Page-level progress
   status: 'not_started' | 'in_progress' | 'completed';
-  
+
   // Aggregated metrics
   completionPercent: number;
   timeSpentSec: number;
-  
+
   // Timestamps
   startedAt: Date | null;
   completedAt: Date | null;
@@ -148,15 +168,15 @@ export interface TutorialProgressState {
 
 /**
  * TutorialPageLoadingState
- * 
+ *
  * Explicit loading/error states for learner page.
- * 
+ *
  * IMPORTANT:
  * - Never render misleading blank page
  * - Distinguish: loading vs empty vs error
  * - Sidebar failure should not corrupt content (and vice versa)
  */
-export type TutorialPageLoadingState = 
+export type TutorialPageLoadingState =
   | { status: 'loading' }
   | { status: 'loaded'; hasContent: boolean }
   | { status: 'empty'; reason: 'no_sidebar' | 'no_navigation_node' | 'no_content' }
