@@ -173,3 +173,16 @@ scripts/deployment/*.txt
 scripts/transformation/*.txt
 packages/db-tutorial/src/migrations/p1-p0-foundation/*.txt
 scripts/validate-phase2b/README.md
+
+# Large archive files
+*.zip
+SUIA_RTH_SHC.zip
+
+# Playwright reports
+playwright-report/
+
+# Test scripts
+scripts/.tmp-*
+scripts/inspect-*.mjs
+scripts/test-*.mjs
+scripts/verify-*.mjs
