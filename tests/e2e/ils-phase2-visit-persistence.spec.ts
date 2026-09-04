@@ -522,29 +522,20 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
     console.log('  Content-Length header:', responseHeaders['content-length']);
     console.log('  Transfer-Encoding header:', responseHeaders['transfer-encoding']);
     
-    // RTH has a chunked encoding issue where response stream doesn't close properly
-    // This is cosmetic - database persistence works correctly
-    // Skip body reading for RTH to avoid test timeout
-    if (responseHeaders['transfer-encoding'] === 'chunked' && !responseHeaders['content-length']) {
-      console.log('  Skipping body read (RTH chunked encoding issue - persistence verified via DB)');
-      responseBody = '<skipped-rth-chunked-issue>';
-      responseBodyError = 'RTH chunked encoding stream does not close (known issue, does not affect persistence)';
-    } else {
-      try {
-        // Try with a shorter timeout to fail fast
-        const bodyPromise = visitResponse.text();
-        const timeoutPromise = new Promise<string>((_, reject) => 
-          setTimeout(() => reject(new Error('Body read timeout after 5s')), 5000)
-        );
-        
-        responseBody = await Promise.race([bodyPromise, timeoutPromise]);
-        console.log('  Body length:', responseBody.length);
-        console.log('  Body preview:', responseBody.substring(0, 200));
-      } catch (error) {
-        responseBodyError = error instanceof Error ? error.message : String(error);
-        responseBody = '<unreadable>';
-        console.log('  Body read ERROR:', responseBodyError);
-      }
+    try {
+      // Try with a reasonable timeout
+      const bodyPromise = visitResponse.text();
+      const timeoutPromise = new Promise<string>((_, reject) =>
+        setTimeout(() => reject(new Error('Body read timeout after 5s')), 5000)
+      );
+
+      responseBody = await Promise.race([bodyPromise, timeoutPromise]);
+      console.log('  Body length:', responseBody.length);
+      console.log('  Body preview:', responseBody.substring(0, 200));
+    } catch (error) {
+      responseBodyError = error instanceof Error ? error.message : String(error);
+      responseBody = '<unreadable>';
+      console.log('  Body read ERROR:', responseBodyError);
     }
     
     console.log('=== END TRACE ===\n');
@@ -629,10 +620,7 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
     const responseStatus = visitResponse.status();
     const responseHeaders = visitResponse.headers();
     
-    // Skip body read for RTH chunked encoding issue
-    const responseBody = responseHeaders['transfer-encoding'] === 'chunked' 
-      ? '<skipped-rth-chunked-issue>'
-      : await visitResponse.text().catch(() => '<unreadable>');
+    const responseBody = await visitResponse.text().catch(() => '<unreadable>');
     
     logEvidence('RTH B - First Visit Response', {
       status: responseStatus,
@@ -685,10 +673,7 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
     const responseStatus = visitResponse.status();
     const responseHeaders = visitResponse.headers();
     
-    // Skip body read for RTH chunked encoding issue
-    const responseBody = responseHeaders['transfer-encoding'] === 'chunked' 
-      ? '<skipped-rth-chunked-issue>'
-      : await visitResponse.text().catch(() => '<unreadable>');
+    const responseBody = await visitResponse.text().catch(() => '<unreadable>');
     
     logEvidence('RTH C - First Visit Response', {
       status: responseStatus,

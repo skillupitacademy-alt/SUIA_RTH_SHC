@@ -55,10 +55,12 @@ const nextConfig = {
     ].filter(Boolean);
 
     return [
-      {
-        source: '/api/(.*)',
-        headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' }],
-      },
+      // TEMPORARILY DISABLED FOR STEP 13 EXPERIMENT
+      // Testing hypothesis: Cache-Control header causes response stream termination failure
+      // {
+      //   source: '/api/(.*)',
+      //   headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' }],
+      // },
       {
         source: '/(login|signup|forgot-password|reset-password|dashboard|learn|onboarding|_next/data/.*)',
         headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' }],
