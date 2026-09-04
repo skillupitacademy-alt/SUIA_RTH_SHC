@@ -64,7 +64,7 @@ export async function trackTutorialEvent(
   event: TutorialTrackingEvent
 ): Promise<void> {
   try {
-    // ILS Phase 2: page_view → VisitEvent persistence
+    // ILS Phase 2: page_view -> VisitEvent persistence
     if (event.eventType === 'page_view') {
       // Read existing learning session (do NOT create new)
       const learningSessionId = readTutorialLearningSessionId();
