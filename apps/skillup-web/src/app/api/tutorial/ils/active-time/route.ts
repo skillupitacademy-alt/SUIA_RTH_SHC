@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
     
     const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
-    const url = `${apiUrl}/api/tutorial/ils/active-time`;
+    const url = `${apiUrl}/tutorial/ils/active-time`;
     
     const response = await fetch(url, {
       method: 'POST',

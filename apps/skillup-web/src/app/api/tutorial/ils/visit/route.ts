@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
     
     const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
-    const url = `${apiUrl}/api/tutorial/ils/visit`;
+    const url = `${apiUrl}/tutorial/ils/visit`;
     
     // 🔍 ILS Phase 2: Log proxy target for E2E diagnostics
     console.log('[ILS_PROXY_TARGET]', JSON.stringify({
