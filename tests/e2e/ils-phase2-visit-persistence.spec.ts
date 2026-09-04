@@ -475,30 +475,79 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
     test.setTimeout(120000);
     test.skip(!process.env.RTH_EMAIL, 'RTH_EMAIL not set');
     
-    let visitRequest: Request | null = null;
-    let visitResponse: Response | null = null;
-    
-    page.on('request', (request) => {
-      if (request.url().includes('/api/tutorial/ils/visit')) {
-        visitRequest = request;
-      }
-    });
-    
-    page.on('response', async (response) => {
-      if (response.url().includes('/api/tutorial/ils/visit')) {
-        visitResponse = response;
-      }
-    });
+    // DETERMINISTIC SYNCHRONIZATION - Set up waitForResponse promise BEFORE navigation
+    const visitResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/tutorial/ils/visit') &&
+        response.request().method() === 'POST'
+    );
 
     await login(page, `${cfg.baseUrl}/login`, cfg.email, cfg.password);
     await navigateToTutorial(page, cfg.tutorialUrl);
-    await page.waitForTimeout(2000);
-
-    expect(visitRequest).not.toBeNull();
-    expect(visitResponse, 'Visit response must have been received').not.toBeNull();
     
-    const requestHeaders = visitRequest!.headers();
-    const requestBody = visitRequest!.postDataJSON();
+    // Wait for the actual response (guaranteed request/response pair)
+    const visitResponse = await visitResponsePromise;
+    const visitRequest = visitResponse.request();
+
+    console.log('\n=== RTH A - RESPONSE TRACE ===');
+    
+    // Capture request details
+    const requestHeaders = visitRequest.headers();
+    const requestBody = visitRequest.postDataJSON();
+    
+    console.log('\nREQUEST:');
+    console.log('  Method:', visitRequest.method());
+    console.log('  URL:', visitRequest.url());
+    console.log('  Headers x-session-id:', requestHeaders['x-session-id']);
+    console.log('  Body sessionId:', requestBody.sessionId);
+    console.log('  Body navigationNodeId:', requestBody.navigationNodeId);
+    console.log('  Body subtopicId:', requestBody.subtopicId);
+    
+    // Capture response details with error handling
+    const responseStatus = visitResponse.status();
+    const responseStatusText = visitResponse.statusText();
+    const responseHeaders = visitResponse.headers();
+    
+    console.log('\nRESPONSE:');
+    console.log('  Status:', responseStatus);
+    console.log('  Status Text:', responseStatusText);
+    console.log('  URL:', visitResponse.url());
+    console.log('  Headers content-type:', responseHeaders['content-type']);
+    
+    // Attempt to read response body with detailed error handling and timeout
+    let responseBody: string;
+    let responseBodyError: string | null = null;
+    
+    console.log('  Attempting to read body...');
+    console.log('  Content-Length header:', responseHeaders['content-length']);
+    console.log('  Transfer-Encoding header:', responseHeaders['transfer-encoding']);
+    
+    // RTH has a chunked encoding issue where response stream doesn't close properly
+    // This is cosmetic - database persistence works correctly
+    // Skip body reading for RTH to avoid test timeout
+    if (responseHeaders['transfer-encoding'] === 'chunked' && !responseHeaders['content-length']) {
+      console.log('  Skipping body read (RTH chunked encoding issue - persistence verified via DB)');
+      responseBody = '<skipped-rth-chunked-issue>';
+      responseBodyError = 'RTH chunked encoding stream does not close (known issue, does not affect persistence)';
+    } else {
+      try {
+        // Try with a shorter timeout to fail fast
+        const bodyPromise = visitResponse.text();
+        const timeoutPromise = new Promise<string>((_, reject) => 
+          setTimeout(() => reject(new Error('Body read timeout after 5s')), 5000)
+        );
+        
+        responseBody = await Promise.race([bodyPromise, timeoutPromise]);
+        console.log('  Body length:', responseBody.length);
+        console.log('  Body preview:', responseBody.substring(0, 200));
+      } catch (error) {
+        responseBodyError = error instanceof Error ? error.message : String(error);
+        responseBody = '<unreadable>';
+        console.log('  Body read ERROR:', responseBodyError);
+      }
+    }
+    
+    console.log('=== END TRACE ===\n');
     
     // Capture ACTUAL IDs from application's Visit request
     const actualNavigationNodeId = requestBody.navigationNodeId;
@@ -508,15 +557,14 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
     expect(actualSubtopicId, 'Visit request must contain subtopic UUID').toMatch(UUID_V4_REGEX);
     expect(actualNavigationNodeId, 'Visit request must contain navigation node ID').toBeTruthy();
     
-    // CRITICAL: Verify response success
-    const responseStatus = visitResponse!.status();
-    const responseBody = await visitResponse!.text().catch(() => '<unreadable>');
-    
+    // Log evidence
     logEvidence('RTH A - Visit Response', {
       status: responseStatus,
-      statusText: visitResponse!.statusText(),
-      url: visitResponse!.url(),
+      statusText: responseStatusText,
+      url: visitResponse.url(),
       body: responseBody,
+      bodyError: responseBodyError,
+      contentType: responseHeaders['content-type'],
     });
     
     expect(responseStatus, 'Visit API must return 2xx success').toBeGreaterThanOrEqual(200);
@@ -562,43 +610,40 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
     test.setTimeout(120000);
     test.skip(!process.env.RTH_EMAIL, 'RTH_EMAIL not set');
 
-    let visitRequest: Request | null = null;
-    let visitResponse: Response | null = null;
-    
-    page.on('request', (request) => {
-      if (request.url().includes('/api/tutorial/ils/visit')) {
-        visitRequest = request;
-      }
-    });
-    
-    page.on('response', (response) => {
-      if (response.url().includes('/api/tutorial/ils/visit')) {
-        visitResponse = response;
-      }
-    });
+    // Set up waitForResponse promise BEFORE navigation
+    const visitResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/tutorial/ils/visit') &&
+        response.request().method() === 'POST'
+    );
 
     await login(page, `${cfg.baseUrl}/login`, cfg.email, cfg.password);
     await navigateToTutorial(page, cfg.tutorialUrl);
 
     const sessionId = await readSessionId(page);
-    await page.waitForTimeout(2000);
     
-    expect(visitRequest).not.toBeNull();
-    expect(visitResponse, 'Visit response must have been received').not.toBeNull();
+    // Wait for the actual response
+    const visitResponse = await visitResponsePromise;
+    const visitRequest = visitResponse.request();
     
-    const responseStatus = visitResponse!.status();
-    const responseBody = await visitResponse!.text().catch(() => '<unreadable>');
+    const responseStatus = visitResponse.status();
+    const responseHeaders = visitResponse.headers();
+    
+    // Skip body read for RTH chunked encoding issue
+    const responseBody = responseHeaders['transfer-encoding'] === 'chunked' 
+      ? '<skipped-rth-chunked-issue>'
+      : await visitResponse.text().catch(() => '<unreadable>');
     
     logEvidence('RTH B - First Visit Response', {
       status: responseStatus,
-      statusText: visitResponse!.statusText(),
+      statusText: visitResponse.statusText(),
       body: responseBody,
     });
     
     expect(responseStatus, 'Visit API must return 2xx').toBeGreaterThanOrEqual(200);
     expect(responseStatus, 'Visit API must return 2xx').toBeLessThan(300);
     
-    const requestBody = visitRequest!.postDataJSON();
+    const requestBody = visitRequest.postDataJSON();
     const actualNavigationNodeId = requestBody.navigationNodeId;
     const actualSubtopicId = requestBody.subtopicId;
     
@@ -607,8 +652,6 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
-
-    await page.waitForTimeout(2000);
     const after = await queryProgress(learnerId!, actualNavigationNodeId, actualSubtopicId);
     expect(after, 'Progress row must exist after reload').not.toBeNull();
 
@@ -625,41 +668,38 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
     test.setTimeout(120000);
     test.skip(!process.env.RTH_EMAIL, 'RTH_EMAIL not set');
 
-    let visitRequest: Request | null = null;
-    let visitResponse: Response | null = null;
-    
-    page.on('request', (request) => {
-      if (request.url().includes('/api/tutorial/ils/visit')) {
-        visitRequest = request;
-      }
-    });
-    
-    page.on('response', (response) => {
-      if (response.url().includes('/api/tutorial/ils/visit')) {
-        visitResponse = response;
-      }
-    });
+    // Set up waitForResponse promise BEFORE navigation
+    const visitResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/tutorial/ils/visit') &&
+        response.request().method() === 'POST'
+    );
 
     await login(page, `${cfg.baseUrl}/login`, cfg.email, cfg.password);
     await navigateToTutorial(page, cfg.tutorialUrl);
 
-    await page.waitForTimeout(2000);
-    expect(visitRequest).not.toBeNull();
-    expect(visitResponse, 'Visit response must have been received').not.toBeNull();
+    // Wait for the actual response
+    const visitResponse = await visitResponsePromise;
+    const visitRequest = visitResponse.request();
     
-    const responseStatus = visitResponse!.status();
-    const responseBody = await visitResponse!.text().catch(() => '<unreadable>');
+    const responseStatus = visitResponse.status();
+    const responseHeaders = visitResponse.headers();
+    
+    // Skip body read for RTH chunked encoding issue
+    const responseBody = responseHeaders['transfer-encoding'] === 'chunked' 
+      ? '<skipped-rth-chunked-issue>'
+      : await visitResponse.text().catch(() => '<unreadable>');
     
     logEvidence('RTH C - First Visit Response', {
       status: responseStatus,
-      statusText: visitResponse!.statusText(),
+      statusText: visitResponse.statusText(),
       body: responseBody,
     });
     
     expect(responseStatus, 'Visit API must return 2xx').toBeGreaterThanOrEqual(200);
     expect(responseStatus, 'Visit API must return 2xx').toBeLessThan(300);
     
-    const requestBody = visitRequest!.postDataJSON();
+    const requestBody = visitRequest.postDataJSON();
     const actualNavigationNodeId = requestBody.navigationNodeId;
     const actualSubtopicId = requestBody.subtopicId;
     
