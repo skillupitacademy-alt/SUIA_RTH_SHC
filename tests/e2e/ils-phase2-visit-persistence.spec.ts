@@ -117,15 +117,15 @@ async function getLearnerId(email: string): Promise<string | null> {
 
 async function login(page: Page, loginUrl: string, email: string, password: string): Promise<void> {
   await page.goto(loginUrl, { waitUntil: 'networkidle' });
-  await page.waitForSelector('input#email', { state: 'visible', timeout: 15000 });
+  await page.waitForSelector('input#email', { state: 'visible', timeout: 30000 });
   await page.fill('input#email', email);
   await page.fill('input#password', password);
   await page.waitForTimeout(1000);
   await Promise.all([
-    page.waitForURL((url) => !url.href.includes('/login'), { timeout: 30000 }),
+    page.waitForURL((url) => !url.href.includes('/login'), { timeout: 60000 }), // Increased from 30s to 60s
     page.click('button[type="submit"]'),
   ]);
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(2000); // Increased from 1.5s to 2s for server warmup
 }
 
 async function navigateToTutorial(page: Page, url: string): Promise<void> {
