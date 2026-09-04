@@ -178,6 +178,16 @@ scripts/validate-phase2b/README.md
 *.zip
 SUIA_RTH_SHC.zip
 
+# Video and media files
+*.mp4
+*.mov
+*.avi
+
+# Marketing materials
+digitalmarketing/download/
+digitalmarketing/*.mp4
+digitalmarketing/*.zip
+
 # Playwright reports
 playwright-report/
 
