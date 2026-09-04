@@ -305,7 +305,12 @@ export async function createAuthProxy(options: AuthProxyOptions = {}) {
       pathname.startsWith('/api/dashboard/') ||
       pathname.startsWith('/api/onboarding/') ||
       pathname.startsWith('/api/quiz/') ||
-      pathname.startsWith('/api/tutorial/sections/')
+      pathname.startsWith('/api/tutorial/sections/') ||
+      
+      // Browser → BFF tutorial tracking APIs (ILS Phase 2)
+      // These are internal BFF routes; the BFF adds the
+      // upstream gateway credentials when calling SkillHubCore
+      pathname.startsWith('/api/tutorial/ils/')
     );
     
     if (isApiRoute && !isBffInternalRoute && hasValidGatewaySecret(request) === false && isPublicRoute(pathname) === false) {
