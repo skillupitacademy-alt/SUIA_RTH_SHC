@@ -12,6 +12,12 @@
 import { z } from 'zod';
 
 /**
+ * Navigation Node ID validation (text slug, not UUID)
+ * Database column is text, stores URL-friendly slugs like 'whatisjava'
+ */
+const navigationNodeIdSchema = z.string().min(1, 'Navigation node ID required').max(200);
+
+/**
  * UUID validation
  */
 const uuidSchema = z.string().uuid('Invalid UUID format');
@@ -58,7 +64,7 @@ export type GetNavigationProgressQuery = z.infer<typeof getNavigationProgressQue
  * POST /api/tutorial/ils/visit
  */
 export const recordVisitBodySchema = z.object({
-  navigationNodeId: uuidSchema,
+  navigationNodeId: navigationNodeIdSchema,
   subtopicId: uuidSchema,
   sessionId: sessionIdSchema,
   sectionId: uuidSchema.optional().nullable(),
@@ -70,7 +76,7 @@ export type RecordVisitBody = z.infer<typeof recordVisitBodySchema>;
  * POST /api/tutorial/ils/block-completion
  */
 export const recordBlockCompletionBodySchema = z.object({
-  navigationNodeId: uuidSchema,
+  navigationNodeId: navigationNodeIdSchema,
   subtopicId: uuidSchema,
   sectionId: uuidSchema.nullable(),
   blockId: blockIdSchema,
@@ -85,7 +91,7 @@ export type RecordBlockCompletionBody = z.infer<typeof recordBlockCompletionBody
  * POST /api/tutorial/ils/active-time
  */
 export const recordActiveTimeBodySchema = z.object({
-  navigationNodeId: uuidSchema,
+  navigationNodeId: navigationNodeIdSchema,
   subtopicId: uuidSchema,
   incrementSeconds: timeIncrementSchema,
 });
@@ -99,7 +105,7 @@ export type RecordActiveTimeBody = z.infer<typeof recordActiveTimeBodySchema>;
  * Server resolves canonical requirements.
  */
 export const completeNodeBodySchema = z.object({
-  navigationNodeId: uuidSchema,
+  navigationNodeId: navigationNodeIdSchema,
   subtopicId: uuidSchema,
 });
 

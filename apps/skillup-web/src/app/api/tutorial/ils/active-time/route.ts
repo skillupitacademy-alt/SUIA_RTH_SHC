@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'X-Brand': 'skillup',
         'X-User-ID': authResult.userId,
-        'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
+        'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
+        'x-internal-key': process.env.INTERNAL_API_KEY || ''
       },
       body: JSON.stringify(body),
       cache: 'no-store'

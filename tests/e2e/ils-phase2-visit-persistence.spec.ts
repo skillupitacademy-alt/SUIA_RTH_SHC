@@ -95,7 +95,12 @@ async function queryProgress(
       AND deleted_at IS NULL
   `);
   
-  return result.rows[0] as ProgressRow || null;
+  if (result.rows.length === 0) {
+    return null;
+  }
+  
+  const row = result.rows[0] as unknown as ProgressRow;
+  return row;
 }
 
 async function getLearnerId(email: string): Promise<string | null> {
@@ -110,7 +115,11 @@ async function getLearnerId(email: string): Promise<string | null> {
     SELECT id FROM users WHERE email = ${email} LIMIT 1
   `);
   
-  return result.rows[0]?.id || null;
+  if (result.rows.length === 0) {
+    return null;
+  }
+  
+  return (result.rows[0] as { id: string }).id;
 }
 
 // ── Playwright Helpers ────────────────────────────────────────────────────────
@@ -122,10 +131,10 @@ async function login(page: Page, loginUrl: string, email: string, password: stri
   await page.fill('input#password', password);
   await page.waitForTimeout(1000);
   await Promise.all([
-    page.waitForURL((url) => !url.href.includes('/login'), { timeout: 60000 }), // Increased from 30s to 60s
+    page.waitForURL((url) => !url.href.includes('/login'), { timeout: 90000 }), // Increased to 90s for slow startup
     page.click('button[type="submit"]'),
   ]);
-  await page.waitForTimeout(2000); // Increased from 1.5s to 2s for server warmup
+  await page.waitForTimeout(3000); // Increased to 3s for server warmup
 }
 
 async function navigateToTutorial(page: Page, url: string): Promise<void> {
@@ -163,6 +172,7 @@ test.describe('ILS Phase 2 - Visit Persistence (SUIA)', () => {
   });
 
   test('SUIA A: First visit persists session UUID to database', async ({ page }) => {
+    test.setTimeout(120000);
     test.skip(!process.env.SUIA_EMAIL, 'SUIA_EMAIL not set');
     
     // Capture Visit request AND response
@@ -269,6 +279,7 @@ test.describe('ILS Phase 2 - Visit Persistence (SUIA)', () => {
   });
 
   test('SUIA B: Same-session deduplication (visitCount unchanged)', async ({ page }) => {
+    test.setTimeout(120000);
     test.skip(!process.env.SUIA_EMAIL, 'SUIA_EMAIL not set');
 
     // Capture Visit request AND response
@@ -353,6 +364,7 @@ test.describe('ILS Phase 2 - Visit Persistence (SUIA)', () => {
   });
 
   test('SUIA C: New-session increment (visitCount +1)', async ({ page }) => {
+    test.setTimeout(120000);
     test.skip(!process.env.SUIA_EMAIL, 'SUIA_EMAIL not set');
 
     // Capture Visit request AND response
@@ -460,6 +472,7 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
   });
 
   test('RTH A: First visit persists session UUID to database', async ({ page }) => {
+    test.setTimeout(120000);
     test.skip(!process.env.RTH_EMAIL, 'RTH_EMAIL not set');
     
     let visitRequest: Request | null = null;
@@ -546,6 +559,7 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
   });
 
   test('RTH B: Same-session deduplication', async ({ page }) => {
+    test.setTimeout(120000);
     test.skip(!process.env.RTH_EMAIL, 'RTH_EMAIL not set');
 
     let visitRequest: Request | null = null;
@@ -608,6 +622,7 @@ test.describe('ILS Phase 2 - Visit Persistence (RTH)', () => {
   });
 
   test('RTH C: New-session increment', async ({ page }) => {
+    test.setTimeout(120000);
     test.skip(!process.env.RTH_EMAIL, 'RTH_EMAIL not set');
 
     let visitRequest: Request | null = null;

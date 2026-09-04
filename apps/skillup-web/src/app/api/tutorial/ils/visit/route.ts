@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
         'X-Brand': 'skillup',
         'X-User-ID': authResult.userId,
         'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
+        'x-internal-key': process.env.INTERNAL_API_KEY || '',
         'x-session-id': request.headers.get('x-session-id') || '', // ILS Phase 2: Forward learning session ID
       },
       body: JSON.stringify(body),
