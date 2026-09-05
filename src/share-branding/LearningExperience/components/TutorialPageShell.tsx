@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import type { TutorialPagePayload } from '@quiz/types';
 import type { TutorialRuntimeContext } from '../runtime/TutorialRuntimeContext';
-import { TutorialBlockRenderer, ActiveBlockProvider } from '@quiz/ui';
+import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider } from '@quiz/ui';
 import { TutorialCodeContent } from './TutorialCodeContent';
 import { TutorialDefinitionContent } from './TutorialDefinitionContent';
 import { TutorialSummaryContent } from './TutorialSummaryContent';
@@ -174,8 +174,13 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
           />
         )}
         <ActiveBlockProvider containerRef={contentContainerRef}>
-          <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
-            <div ref={contentContainerRef} className="w-full space-y-6">
+          <ILSProvider
+            navigationNodeId={runtimeContext.navigationNodeId}
+            subtopicId={runtimeContext.hierarchy.subtopicId}
+            sectionId={runtimeContext.sectionId}
+          >
+            <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
+              <div ref={contentContainerRef} className="w-full space-y-6">
               {hasBlocks ? (
                 // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
                 payload.content.blocks.map((block) => {
@@ -216,7 +221,8 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             </div>
             <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
           </div>
-        </ActiveBlockProvider>
+        </ILSProvider>
+      </ActiveBlockProvider>
       </div>
     </main>
   );
