@@ -132,6 +132,13 @@ export function BlockTelemetryProvider({
   
   /**
    * Emit block visit event
+   * 
+   * NOTE: Duplicate prevention flag is set BEFORE request, not after.
+   * This means failed visits won't be automatically retried, which is
+   * acceptable because:
+   * 1. Visit events are idempotent (server can handle duplicates)
+   * 2. Active-time accumulation continues regardless of visit success
+   * 3. Visit is less critical than time data (used for analytics, not metrics)
    */
   const emitVisit = useCallback(async (
     blockId: string,
@@ -179,13 +186,15 @@ export function BlockTelemetryProvider({
   /**
    * Emit active time increment
    * CRITICAL: activeTimeSec is an INCREMENT (delta), not cumulative
+   * 
+   * @returns true if request succeeded, false if failed (for retry logic)
    */
   const emitActiveTime = useCallback(async (
     blockId: string,
     blockVersion: string,
     incrementSec: number
-  ): Promise<void> => {
-    if (!enabled || !sessionIdRef.current || incrementSec <= 0) return;
+  ): Promise<boolean> => {
+    if (!enabled || !sessionIdRef.current || incrementSec <= 0) return false;
     
     // Enforce maximum increment (600 seconds per Phase 4.4 API limit)
     const safeIncrement = Math.min(incrementSec, 600);
@@ -210,10 +219,14 @@ export function BlockTelemetryProvider({
       
       if (!response.ok) {
         console.warn(`[BlockTelemetry] Active time failed: ${response.status}`);
+        return false; // Request failed - time should be retried
       }
+      
+      return true; // Success
     } catch (error) {
       // Silent failure - telemetry must not break UX
       console.error('[BlockTelemetry] Active time error:', error);
+      return false; // Network error - time should be retried
     }
   }, [enabled, navigationNodeId, subtopicId, sectionId]);
   
@@ -255,19 +268,24 @@ export function BlockTelemetryProvider({
       const remainderSec = incrementSec - safeIncrement;
       
       // Start flush operation
-      flushPromiseRef.current = emitActiveTime(
+      const flushPromise = emitActiveTime(
         requestIdentity.blockId,
         requestIdentity.blockVersion,
         safeIncrement
-      ).finally(() => {
-        flushPromiseRef.current = null;
+      ).then((success) => {
+        // CRITICAL: Only clear time if request succeeded
+        // Failed requests leave time pending for retry on next heartbeat
+        if (!success) {
+          console.warn('[BlockTelemetry] Flush failed - time will be retried on next heartbeat');
+          return;
+        }
         
         // Verify state hasn't changed while request was pending
         if (
           timingStateRef.current?.blockId === requestIdentity.blockId &&
           timingStateRef.current?.blockVersion === requestIdentity.blockVersion
         ) {
-          // Preserve both fractional milliseconds AND full-second remainder
+          // SUCCESS: Preserve both fractional milliseconds AND full-second remainder
           if (timingStateRef.current) {
             const fractionalMs = totalPendingMs % 1000;
             const remainderMs = remainderSec * 1000;
@@ -279,9 +297,12 @@ export function BlockTelemetryProvider({
             }
           }
         }
+      }).finally(() => {
+        flushPromiseRef.current = null;
       });
       
-      await flushPromiseRef.current;
+      flushPromiseRef.current = flushPromise;
+      await flushPromise;
     }
   }, [emitActiveTime]);
   
