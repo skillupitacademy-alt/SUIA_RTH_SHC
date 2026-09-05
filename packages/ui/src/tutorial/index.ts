@@ -13,6 +13,9 @@ export * from './runtime/ActiveBlockContext';
 // Phase 4: ILS Data Context
 export * from './runtime/ILSProvider';
 
+// Phase 4.5: Block Telemetry
+export * from './runtime/BlockTelemetryProvider';
+
 // Individual block components
 export * from './blocks/HeadingBlock';
 export * from './blocks/ParagraphBlock';

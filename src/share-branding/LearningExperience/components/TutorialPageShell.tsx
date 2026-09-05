@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import type { TutorialPagePayload } from '@quiz/types';
 import type { TutorialRuntimeContext } from '../runtime/TutorialRuntimeContext';
-import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider } from '@quiz/ui';
+import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider, BlockTelemetryProvider } from '@quiz/ui';
 import { TutorialCodeContent } from './TutorialCodeContent';
 import { TutorialDefinitionContent } from './TutorialDefinitionContent';
 import { TutorialSummaryContent } from './TutorialSummaryContent';
@@ -21,6 +21,7 @@ interface TutorialPageShellProps {
 export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [completedUrls, setCompletedUrls] = useState<Set<string> | undefined>(undefined);
+  const [tutorialSessionId, setTutorialSessionId] = useState<string | null>(null);
 
   // Phase 3C-A: Ref to canonical tutorial block container for ActiveBlockProvider
   const contentContainerRef = useRef<HTMLDivElement>(null);
@@ -59,6 +60,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
     sessionInitializedRef.current = true;
 
     const sessionId = getOrCreateTutorialLearningSessionId();
+    setTutorialSessionId(sessionId);
 
     if (sessionId) {
       console.log('[Tutorial Session] Learning session established:', {
@@ -179,7 +181,13 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             subtopicId={runtimeContext.hierarchy.subtopicId}
             sectionId={runtimeContext.sectionId}
           >
-            <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
+            <BlockTelemetryProvider
+              navigationNodeId={runtimeContext.navigationNodeId}
+              subtopicId={runtimeContext.hierarchy.subtopicId}
+              sectionId={runtimeContext.sectionId}
+              sessionId={tutorialSessionId}
+            >
+              <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
               <div ref={contentContainerRef} className="w-full space-y-6">
               {hasBlocks ? (
                 // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
@@ -221,7 +229,8 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             </div>
             <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
           </div>
-        </ILSProvider>
+        </BlockTelemetryProvider>
+      </ILSProvider>
       </ActiveBlockProvider>
       </div>
     </main>
