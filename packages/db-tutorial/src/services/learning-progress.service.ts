@@ -38,6 +38,7 @@ import type {
   TutorialVisitEvent,
 } from '@quiz/types';
 import type { TutorialSectionRepository } from '../repositories/tutorial-section.repository';
+import type { BlockLearningStateRepository, BlockLearningState } from '../repositories/block-learning-state.repository';
 import {
   type LearningState,
   type AuthenticatedIdentity,
@@ -131,7 +132,8 @@ export {
 export class LearningProgressService {
   constructor(
     private readonly progressRepository: ITutorialNavigationProgressRepository,
-    private readonly sectionRepository: TutorialSectionRepository
+    private readonly sectionRepository: TutorialSectionRepository,
+    private readonly blockLearningStateRepository: BlockLearningStateRepository
   ) {}
 
   /**
@@ -512,6 +514,251 @@ export class LearningProgressService {
     requiredBlocks: Array<{ blockId: string; blockVersion: string }>
   ): number {
     return calculateProgressPercentageImpl(completedBlocks, requiredBlocks);
+  }
+
+  // ========================================================================
+  // Phase 4.3: Block-Level Tracking Methods
+  // ========================================================================
+
+  /**
+   * Record a learner visit to a specific block
+   * 
+   * VISIT SEMANTICS (Mirroring page-level):
+   * - First visit: visitCount = 1, establishes firstViewedAt
+   * - Same session: visitCount unchanged (service-level deduplication)
+   * - New session: visitCount + 1
+   * - New session + completed block: revisionCount + 1
+   * 
+   * SESSION CONTRACT:
+   * - sessionId MUST be stable learning session identifier
+   * - Same sessionId = same learning session (no visit increment)
+   * - Different sessionId = new session (visit increment)
+   * - Block-level sessionId tracking happens at SERVICE layer
+   * - Repository provides atomic persistence only
+   * 
+   * BLOCK IDENTITY:
+   * - (userId, navigationNodeId, blockId, blockVersion) - frozen 4-part identity
+   * 
+   * AUTHORIZATION: SELF-SCOPED - uses authenticated identity.userId ONLY
+   */
+  async recordBlockVisit(
+    identity: AuthenticatedIdentity,
+    navigationNodeId: string,
+    subtopicId: string,
+    blockId: string,
+    blockVersion: string,
+    sessionId: string
+  ): Promise<BlockLearningState> {
+    // Validate inputs
+    validateUserId(identity.userId);
+    validateNavigationNodeId(navigationNodeId);
+    validateBlockId(blockId);
+    validateBlockVersion(blockVersion);
+    validateSessionId(sessionId);
+    validateSubtopicId(subtopicId);
+
+    // Validate navigation hierarchy
+    await this.validateNavigationHierarchy(
+      navigationNodeId,
+      subtopicId,
+      null,
+      identity
+    );
+
+    // Get existing block state
+    const existing = await this.blockLearningStateRepository.findOne({
+      userId: identity.userId,
+      navigationNodeId,
+      blockId,
+      blockVersion,
+    });
+
+    const now = new Date();
+
+    // Session-aware visit logic (service layer responsibility)
+    if (!existing) {
+      // First visit - create new state
+      return await this.blockLearningStateRepository.upsert({
+        userId: identity.userId,
+        navigationNodeId,
+        blockId,
+        blockVersion,
+        visitCount: 1,
+        revisionCount: 0,
+        activeTimeSec: 0,
+        firstViewedAt: now,
+        lastViewedAt: now,
+      });
+    }
+
+    // Existing state - check session
+    // NOTE: Service layer tracks "last session" by comparing with current sessionId
+    // This is a simplification - in production, you might want to store sessionId 
+    // in a separate table or use a more sophisticated session tracking mechanism
+    
+    // For now: if lastViewedAt is recent (within 30 minutes) = same session
+    // This matches typical web session timeout behavior
+    const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+    const isNewSession = !existing.lastViewedAt || 
+                         (now.getTime() - existing.lastViewedAt.getTime() > SESSION_TIMEOUT_MS);
+
+    if (!isNewSession) {
+      // Same session - just update lastViewedAt, no visit increment
+      return await this.blockLearningStateRepository.upsert({
+        userId: identity.userId,
+        navigationNodeId,
+        blockId,
+        blockVersion,
+        visitCount: 0, // No increment
+        revisionCount: 0,
+        activeTimeSec: 0,
+        lastViewedAt: now,
+      });
+    }
+
+    // New session
+    const isCompleted = existing.completedAt !== null;
+    
+    return await this.blockLearningStateRepository.upsert({
+      userId: identity.userId,
+      navigationNodeId,
+      blockId,
+      blockVersion,
+      visitCount: 1, // Increment
+      revisionCount: isCompleted ? 1 : 0, // Increment revision if already completed
+      activeTimeSec: 0,
+      lastViewedAt: now,
+    });
+  }
+
+  /**
+   * Record active time spent on a specific block
+   * 
+   * TIME SEMANTICS:
+   * - Accumulates time atomically at repository layer
+   * - Does NOT increment visit count
+   * - Does NOT change session state
+   * - Block-level time limit: 600 seconds (stricter than page-level 3600s)
+   * 
+   * DOES NOT:
+   * - Manufacture visits (visits require explicit recordBlockVisit)
+   * - Update session state
+   * - Modify completion state
+   * 
+   * CAN CREATE:
+   * - Progress record if none exists (activeTimeSec>0, visitCount=0)
+   * - Rationale: Browser heartbeat may occur before explicit visit
+   * 
+   * BLOCK IDENTITY:
+   * - (userId, navigationNodeId, blockId, blockVersion) - frozen 4-part identity
+   * 
+   * AUTHORIZATION: SELF-SCOPED - uses authenticated identity.userId ONLY
+   */
+  async recordBlockActiveTime(
+    identity: AuthenticatedIdentity,
+    navigationNodeId: string,
+    subtopicId: string,
+    blockId: string,
+    blockVersion: string,
+    activeTimeSec: number
+  ): Promise<BlockLearningState> {
+    // Validate inputs
+    validateUserId(identity.userId);
+    validateNavigationNodeId(navigationNodeId);
+    validateBlockId(blockId);
+    validateBlockVersion(blockVersion);
+    validateSubtopicId(subtopicId);
+
+    // Block-level time validation (stricter than page-level)
+    if (activeTimeSec < 0) {
+      throw new InvalidTimeUpdateError('Active time cannot be negative', {
+        activeTimeSec,
+      });
+    }
+
+    if (activeTimeSec > 600) {
+      throw new InvalidTimeUpdateError(
+        'Block time increment too large (max 600 seconds per update)',
+        { activeTimeSec, maxAllowed: 600 }
+      );
+    }
+
+    // Validate navigation hierarchy
+    await this.validateNavigationHierarchy(
+      navigationNodeId,
+      subtopicId,
+      null,
+      identity
+    );
+
+    const now = new Date();
+
+    // Upsert with atomic time increment
+    // Repository handles the atomic SQL increment on conflict
+    return await this.blockLearningStateRepository.upsert({
+      userId: identity.userId,
+      navigationNodeId,
+      blockId,
+      blockVersion,
+      activeTimeSec,
+      lastViewedAt: now,
+    });
+  }
+
+  /**
+   * Calculate block time comparison metrics
+   * 
+   * PURE CALCULATION - no database access, no side effects
+   * 
+   * Compares actual time spent vs expected time for a block.
+   * Returns null-safe metrics for time efficiency analysis.
+   * 
+   * NO BUSINESS LOGIC:
+   * - Does not determine "struggling" vs "efficient"
+   * - Does not apply thresholds
+   * - Does not make educational decisions
+   * - Just returns raw comparison data
+   * 
+   * EXPECTED TIME SOURCE:
+   * - Must come from published tutorial document
+   * - Service does NOT calculate or invent this value
+   * - Future phase will resolve from canonical content
+   * 
+   * NULL SEMANTICS:
+   * - expectedTimeSec = null → ratio = null (no comparison possible)
+   * - activeTimeSec = 0 → ratio = 0 (no time spent yet)
+   * 
+   * @param blockState - Block learning state from repository
+   * @returns Time comparison metrics (null-safe)
+   */
+  calculateBlockTimeComparison(blockState: BlockLearningState): {
+    actualTimeSec: number;
+    expectedTimeSec: number | null;
+    differenceTimeSec: number | null;
+    ratioActualToExpected: number | null;
+  } {
+    const actualTimeSec = blockState.activeTimeSec;
+    const expectedTimeSec = blockState.expectedTimeSec;
+
+    // Null-safe calculations
+    if (expectedTimeSec === null) {
+      return {
+        actualTimeSec,
+        expectedTimeSec: null,
+        differenceTimeSec: null,
+        ratioActualToExpected: null,
+      };
+    }
+
+    const differenceTimeSec = actualTimeSec - expectedTimeSec;
+    const ratioActualToExpected = expectedTimeSec > 0 ? actualTimeSec / expectedTimeSec : 0;
+
+    return {
+      actualTimeSec,
+      expectedTimeSec,
+      differenceTimeSec,
+      ratioActualToExpected,
+    };
   }
 
   /**

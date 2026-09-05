@@ -293,21 +293,60 @@ class MockNavigationProgressRepository implements ITutorialNavigationProgressRep
   }
 }
 
+// Mock BlockLearningStateRepository for Phase 4.3
+class MockBlockLearningStateRepository {
+  withDb(): this {
+    return this;
+  }
+
+  async findOne(): Promise<null> {
+    return null; // Simple mock - always returns null (no existing state)
+  }
+
+  async upsert(data: any): Promise<any> {
+    // Return a mock block learning state
+    return {
+      id: `block-${Date.now()}`,
+      userId: data.userId,
+      navigationNodeId: data.navigationNodeId,
+      blockId: data.blockId,
+      blockVersion: data.blockVersion,
+      visitCount: data.visitCount ?? 0,
+      revisionCount: data.revisionCount ?? 0,
+      activeTimeSec: data.activeTimeSec ?? 0,
+      expectedTimeSec: data.expectedTimeSec ?? null,
+      firstViewedAt: data.firstViewedAt ?? new Date(),
+      lastViewedAt: data.lastViewedAt ?? new Date(),
+      completedAt: data.completedAt ?? null,
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    };
+  }
+}
+
 describe('LearningProgressService', () => {
   let service: LearningProgressService;
   let mockRepo: MockNavigationProgressRepository;
   let mockSectionRepo: MockSectionRepository;
+  let mockBlockRepo: MockBlockLearningStateRepository;
 
   beforeEach(() => {
     mockRepo = new MockNavigationProgressRepository();
     mockSectionRepo = new MockSectionRepository();
+    mockBlockRepo = new MockBlockLearningStateRepository();
     
     // Register default valid hierarchy for tests
     mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1');
     mockSectionRepo.registerSection('subtopic-1', 'node-2', 'section-2');
     mockSectionRepo.registerSection('subtopic-2', 'node-3', 'section-3');
     
-    service = new LearningProgressService(mockRepo, mockSectionRepo as unknown as TutorialSectionRepository);
+    service = new LearningProgressService(
+      mockRepo,
+      mockSectionRepo as unknown as TutorialSectionRepository,
+      mockBlockRepo as any
+    );
   });
 
   // ============================================================
