@@ -249,11 +249,16 @@ export function BlockTelemetryProvider({
         blockVersion: state.blockVersion,
       };
       
+      // CRITICAL: Cap at 600s per API limit, but preserve remainder for next flush
+      // Example: 1200s pending → send 600s, preserve 600s for next heartbeat
+      const safeIncrement = Math.min(incrementSec, 600);
+      const remainderSec = incrementSec - safeIncrement;
+      
       // Start flush operation
       flushPromiseRef.current = emitActiveTime(
         requestIdentity.blockId,
         requestIdentity.blockVersion,
-        incrementSec
+        safeIncrement
       ).finally(() => {
         flushPromiseRef.current = null;
         
@@ -262,9 +267,11 @@ export function BlockTelemetryProvider({
           timingStateRef.current?.blockId === requestIdentity.blockId &&
           timingStateRef.current?.blockVersion === requestIdentity.blockVersion
         ) {
-          // Preserve fractional milliseconds for next flush
+          // Preserve both fractional milliseconds AND full-second remainder
           if (timingStateRef.current) {
-            timingStateRef.current.accumulatedMs = totalPendingMs % 1000;
+            const fractionalMs = totalPendingMs % 1000;
+            const remainderMs = remainderSec * 1000;
+            timingStateRef.current.accumulatedMs = fractionalMs + remainderMs;
             
             // Reset start time if still running
             if (!timingStateRef.current.isPaused) {
