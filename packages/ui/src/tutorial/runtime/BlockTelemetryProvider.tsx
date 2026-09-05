@@ -69,7 +69,7 @@ export interface BlockTelemetryProviderProps {
 }
 
 /**
- * Internal timing state
+ * Internal timing state for currently active block
  */
 interface TimingState {
   blockId: string;
@@ -77,6 +77,16 @@ interface TimingState {
   startTime: number; // performance.now() when timing started
   accumulatedMs: number; // accumulated time when paused or between flushes
   isPaused: boolean;
+}
+
+/**
+ * Pending active time awaiting delivery
+ * CRITICAL: Survives block transitions and flush failures
+ */
+interface PendingActiveTime {
+  blockId: string;
+  blockVersion: string;
+  pendingMs: number;
 }
 
 /**
@@ -107,8 +117,12 @@ export function BlockTelemetryProvider({
   // Session ID from props
   const sessionIdRef = useRef<string | null>(propSessionId);
   
-  // Current timing state
+  // Current timing state (actively accumulating for current block)
   const timingStateRef = useRef<TimingState | null>(null);
+  
+  // Pending active-time queue (measured but undelivered, survives transitions)
+  // Map structure: blockId+blockVersion → pendingMs
+  const pendingQueueRef = useRef<Map<string, PendingActiveTime>>(new Map());
   
   // Last visit identity (for duplicate prevention)
   const lastVisitIdentityRef = useRef<RequestIdentity | null>(null);
@@ -129,6 +143,59 @@ export function BlockTelemetryProvider({
       console.warn('[BlockTelemetry] No session ID provided - telemetry disabled');
     }
   }, [propSessionId]);
+  
+  /**
+   * Get unique key for pending queue
+   */
+  const getPendingKey = useCallback((blockId: string, blockVersion: string): string => {
+    return `${blockId}::${blockVersion}`;
+  }, []);
+  
+  /**
+   * Add measured time to pending delivery queue
+   * Aggregates if entry already exists for this block
+   */
+  const addToPendingQueue = useCallback((blockId: string, blockVersion: string, ms: number) => {
+    if (ms <= 0) return;
+    
+    const key = getPendingKey(blockId, blockVersion);
+    const existing = pendingQueueRef.current.get(key);
+    
+    if (existing) {
+      // Aggregate with existing pending time
+      existing.pendingMs += ms;
+    } else {
+      // Create new pending entry
+      pendingQueueRef.current.set(key, {
+        blockId,
+        blockVersion,
+        pendingMs: ms,
+      });
+    }
+    
+    console.log(`[BlockTelemetry] Added to pending queue: ${blockId} +${Math.floor(ms/1000)}s (total pending: ${Math.floor((existing?.pendingMs ?? 0) + ms)/1000}s)`);
+  }, [getPendingKey]);
+  
+  /**
+   * Capture currently accumulated time without destroying timing state
+   */
+  const captureCurrentTiming = useCallback((): { blockId: string; blockVersion: string; ms: number } | null => {
+    const state = timingStateRef.current;
+    if (!state) return null;
+    
+    let totalMs = state.accumulatedMs;
+    
+    if (!state.isPaused && state.startTime > 0) {
+      const now = performance.now();
+      totalMs += (now - state.startTime);
+    }
+    
+    return {
+      blockId: state.blockId,
+      blockVersion: state.blockVersion,
+      ms: totalMs,
+    };
+  }, []);
   
   /**
    * Emit block visit event
