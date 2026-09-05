@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { ZodError } from 'zod';
 import {
   DEFINITION_VERSION_REGISTRY,
   ACTIVE_DEFINITION_VERSIONS,
@@ -177,5 +178,51 @@ describe('Definition D1 - Contract Preservation', () => {
     };
 
     expect(() => DefinitionD1AuthorContentSchema.parse(contentWithPage)).not.toThrow();
+  });
+});
+
+
+describe('Definition D1 - expectedTimeSec (Phase 4.1)', () => {
+  const validBlock = {
+    id: '550e8400-e29b-41d4-a716-446655440000',
+    type: 'definition' as const,
+    version: 'D1' as const,
+    content: {
+      page: {
+        type: 'definition' as const,
+        category: 'Test',
+        title: 'Test',
+        intro: 'Test intro',
+        definition: 'Test definition',
+        explanation: ['Test explanation'],
+        example: { language: 'python', code: 'test' },
+        characteristics: [],
+        takeaway: 'Test takeaway',
+      },
+    },
+  };
+
+  it('accepts valid expectedTimeSec', () => {
+    const block = { ...validBlock, expectedTimeSec: 180 };
+    expect(() => DefinitionD1BlockSchema.parse(block)).not.toThrow();
+  });
+
+  it('accepts missing expectedTimeSec (optional)', () => {
+    expect(() => DefinitionD1BlockSchema.parse(validBlock)).not.toThrow();
+  });
+
+  it('rejects zero expectedTimeSec', () => {
+    const block = { ...validBlock, expectedTimeSec: 0 };
+    expect(() => DefinitionD1BlockSchema.parse(block)).toThrow(ZodError);
+  });
+
+  it('rejects negative expectedTimeSec', () => {
+    const block = { ...validBlock, expectedTimeSec: -10 };
+    expect(() => DefinitionD1BlockSchema.parse(block)).toThrow(ZodError);
+  });
+
+  it('rejects decimal expectedTimeSec', () => {
+    const block = { ...validBlock, expectedTimeSec: 180.5 };
+    expect(() => DefinitionD1BlockSchema.parse(block)).toThrow(ZodError);
   });
 });

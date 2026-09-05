@@ -8,6 +8,7 @@
 
 import { z } from 'zod';
 import { CodeLanguageSchema } from './content-blocks.schema';
+import { PresentationConfigSchema } from './presentation.schema';
 
 /**
  * Historical Code Explanation Step Schema
@@ -127,6 +128,8 @@ export const CodeC1BlockSchema = z.object({
   type: z.literal('code'),
   version: z.literal('C1'),
   content: CodeC1AuthorContentSchema,
+  presentation: PresentationConfigSchema,
+  expectedTimeSec: z.number().int().positive().optional(),
 });
 
 /**

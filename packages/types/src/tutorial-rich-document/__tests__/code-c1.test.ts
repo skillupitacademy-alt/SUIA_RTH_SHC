@@ -542,3 +542,51 @@ describe('validateCodeC1AIOutput', () => {
     expect(result.page.takeaway.length).toBe(500);
   });
 });
+
+
+// ============================================================
+// Phase 4.1: expectedTimeSec Validation
+// ============================================================
+
+describe('CodeC1BlockSchema - expectedTimeSec (Phase 4.1)', () => {
+  const validBlock = {
+    id: '550e8400-e29b-41d4-a716-446655440000',
+    type: 'code' as const,
+    version: 'C1' as const,
+    content: {
+      page: {
+        type: 'code' as const,
+        title: 'Test',
+        introduction: 'Test intro',
+        language: 'python',
+        code: 'print("test")',
+        explanation: [],
+        takeaway: 'Test takeaway',
+      },
+    },
+  };
+
+  it('accepts valid expectedTimeSec', () => {
+    const block = { ...validBlock, expectedTimeSec: 240 };
+    expect(() => CodeC1BlockSchema.parse(block)).not.toThrow();
+  });
+
+  it('accepts missing expectedTimeSec (optional)', () => {
+    expect(() => CodeC1BlockSchema.parse(validBlock)).not.toThrow();
+  });
+
+  it('rejects zero expectedTimeSec', () => {
+    const block = { ...validBlock, expectedTimeSec: 0 };
+    expect(() => CodeC1BlockSchema.parse(block)).toThrow(ZodError);
+  });
+
+  it('rejects negative expectedTimeSec', () => {
+    const block = { ...validBlock, expectedTimeSec: -20 };
+    expect(() => CodeC1BlockSchema.parse(block)).toThrow(ZodError);
+  });
+
+  it('rejects decimal expectedTimeSec', () => {
+    const block = { ...validBlock, expectedTimeSec: 240.7 };
+    expect(() => CodeC1BlockSchema.parse(block)).toThrow(ZodError);
+  });
+});

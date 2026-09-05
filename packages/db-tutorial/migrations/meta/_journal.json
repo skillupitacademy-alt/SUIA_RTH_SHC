@@ -162,6 +162,13 @@
       "when": 1788021759918,
       "tag": "0022_broken_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1788587362377,
+      "tag": "0023_lame_deathbird",
+      "breakpoints": true
     }
   ]
 }

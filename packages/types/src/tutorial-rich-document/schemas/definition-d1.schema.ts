@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod';
+import { PresentationConfigSchema } from './presentation.schema';
 
 /**
  * Definition D1 Page Schema
@@ -48,6 +49,8 @@ export const DefinitionD1BlockSchema = z.object({
   type: z.literal('definition'),
   version: z.literal('D1'),
   content: DefinitionD1AuthorContentSchema,
+  presentation: PresentationConfigSchema,
+  expectedTimeSec: z.number().int().positive().optional(),
 });
 
 /**
