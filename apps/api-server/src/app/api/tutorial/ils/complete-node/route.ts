@@ -20,6 +20,7 @@ import {
   NavigationNodeNotFoundError,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
+  BlockLearningStateRepository,
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -75,7 +76,8 @@ export async function POST(request: NextRequest) {
     // Call service - server resolves requiredBlocks canonically
     const progressRepo = new TutorialNavigationProgressRepository();
     const sectionRepo = new TutorialSectionRepository();
-    const service = new LearningProgressService(progressRepo, sectionRepo);
+    const blockRepo = new BlockLearningStateRepository();
+    const service = new LearningProgressService(progressRepo, sectionRepo, blockRepo);
 
     const progress = await service.completeNavigationNode(
       identity,

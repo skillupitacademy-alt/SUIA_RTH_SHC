@@ -1,26 +1,28 @@
 /**
- * POST /api/tutorial/ils/block-completion
+ * POST /api/tutorial/ils/block-visit
  * 
- * Record completion of a learning block.
+ * Phase 4.4: Record a learner visit to a specific block within a navigation node.
  * 
  * AUTHORIZATION: Self-scoped via authenticated identity
  * BRAND: Scoped via authenticated brand context
+ * SESSION: Forwarded from client, used by service for visit deduplication
  */
 
 import {
   type AuthenticatedIdentity,
-  InvalidBlockCompletionError,
   InvalidNavigationHierarchyError,
   LearningProgressService,
   NavigationNodeNotFoundError,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
   BlockLearningStateRepository,
+  InvalidTimeUpdateError,
+  LearningProgressError,
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { validateRequest } from '@/middleware/internal-auth.middleware';
-import { recordBlockCompletionBodySchema } from '@/schemas/ils.schemas';
+import { recordBlockVisitBodySchema } from '@/schemas/ils.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,7 +62,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const parsed = recordBlockCompletionBodySchema.safeParse(body);
+    const parsed = recordBlockVisitBodySchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid request body', issues: parsed.error.issues },
@@ -68,25 +70,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call service
+    // Instantiate repositories
     const progressRepo = new TutorialNavigationProgressRepository();
     const sectionRepo = new TutorialSectionRepository();
     const blockRepo = new BlockLearningStateRepository();
+    
+    // Instantiate service with Phase 4.3 constructor
     const service = new LearningProgressService(progressRepo, sectionRepo, blockRepo);
 
-    const progress = await service.recordBlockCompletion(
+    // Call Phase 4.3 service method
+    const blockState = await service.recordBlockVisit(
       identity,
       parsed.data.navigationNodeId,
       parsed.data.subtopicId,
-      parsed.data.sectionId,
       parsed.data.blockId,
-      parsed.data.blockType,
       parsed.data.blockVersion,
       parsed.data.sessionId
     );
 
     return NextResponse.json(
-      { data: progress },
+      { data: blockState },
       {
         status: 200,
         headers: { 'Cache-Control': 'no-cache' },
@@ -107,14 +110,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (error instanceof InvalidBlockCompletionError) {
+    if (error instanceof LearningProgressError) {
       return NextResponse.json(
         { error: error.message },
         { status: 400 }
       );
     }
 
-    console.error('[ILS API] recordBlockCompletion error:', error);
+    console.error('[ILS API] recordBlockVisit error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

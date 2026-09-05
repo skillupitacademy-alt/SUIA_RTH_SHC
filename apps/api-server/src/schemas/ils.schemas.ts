@@ -110,3 +110,39 @@ export const completeNodeBodySchema = z.object({
 });
 
 export type CompleteNodeBody = z.infer<typeof completeNodeBodySchema>;
+
+/**
+ * POST /api/tutorial/ils/block-visit
+ * 
+ * Phase 4.4: Block-level visit tracking
+ */
+export const recordBlockVisitBodySchema = z.object({
+  navigationNodeId: navigationNodeIdSchema,
+  subtopicId: uuidSchema,
+  blockId: blockIdSchema,
+  blockVersion: blockVersionSchema,
+  sessionId: sessionIdSchema,
+  sectionId: uuidSchema.optional().nullable(),
+});
+
+export type RecordBlockVisitBody = z.infer<typeof recordBlockVisitBodySchema>;
+
+/**
+ * POST /api/tutorial/ils/block-active-time
+ * 
+ * Phase 4.4: Block-level time tracking
+ * Block-level limit is 600 seconds (stricter than page-level 3600)
+ */
+export const recordBlockActiveTimeBodySchema = z.object({
+  navigationNodeId: navigationNodeIdSchema,
+  subtopicId: uuidSchema,
+  blockId: blockIdSchema,
+  blockVersion: blockVersionSchema,
+  activeTimeSec: z.number()
+    .int('Time must be an integer')
+    .min(0, 'Time cannot be negative')
+    .max(600, 'Time increment too large (max 600 seconds)'),
+  sectionId: uuidSchema.optional().nullable(),
+});
+
+export type RecordBlockActiveTimeBody = z.infer<typeof recordBlockActiveTimeBodySchema>;

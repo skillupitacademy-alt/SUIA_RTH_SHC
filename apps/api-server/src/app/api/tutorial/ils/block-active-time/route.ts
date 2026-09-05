@@ -1,26 +1,28 @@
 /**
- * POST /api/tutorial/ils/block-completion
+ * POST /api/tutorial/ils/block-active-time
  * 
- * Record completion of a learning block.
+ * Phase 4.4: Record active time spent on a specific block.
  * 
  * AUTHORIZATION: Self-scoped via authenticated identity
  * BRAND: Scoped via authenticated brand context
+ * TIME LIMIT: 600 seconds (block-level, stricter than page-level 3600s)
  */
 
 import {
   type AuthenticatedIdentity,
-  InvalidBlockCompletionError,
   InvalidNavigationHierarchyError,
   LearningProgressService,
   NavigationNodeNotFoundError,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
   BlockLearningStateRepository,
+  InvalidTimeUpdateError,
+  LearningProgressError,
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { validateRequest } from '@/middleware/internal-auth.middleware';
-import { recordBlockCompletionBodySchema } from '@/schemas/ils.schemas';
+import { recordBlockActiveTimeBodySchema } from '@/schemas/ils.schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,11 +44,9 @@ export async function POST(request: NextRequest) {
     const { context } = authValidation;
     
     // Construct authenticated identity from validated context
-    const sessionId = request.headers.get('x-session-id');
     const identity: AuthenticatedIdentity = {
       userId: context.userId,
       brand: context.brand,
-      sessionId: sessionId !== null && sessionId !== '' ? sessionId : undefined,
     };
 
     // Parse and validate request body
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const parsed = recordBlockCompletionBodySchema.safeParse(body);
+    const parsed = recordBlockActiveTimeBodySchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid request body', issues: parsed.error.issues },
@@ -68,25 +68,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call service
+    // Instantiate repositories
     const progressRepo = new TutorialNavigationProgressRepository();
     const sectionRepo = new TutorialSectionRepository();
     const blockRepo = new BlockLearningStateRepository();
+    
+    // Instantiate service with Phase 4.3 constructor
     const service = new LearningProgressService(progressRepo, sectionRepo, blockRepo);
 
-    const progress = await service.recordBlockCompletion(
+    // Call Phase 4.3 service method
+    const blockState = await service.recordBlockActiveTime(
       identity,
       parsed.data.navigationNodeId,
       parsed.data.subtopicId,
-      parsed.data.sectionId,
       parsed.data.blockId,
-      parsed.data.blockType,
       parsed.data.blockVersion,
-      parsed.data.sessionId
+      parsed.data.activeTimeSec
     );
 
     return NextResponse.json(
-      { data: progress },
+      { data: blockState },
       {
         status: 200,
         headers: { 'Cache-Control': 'no-cache' },
@@ -107,14 +108,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (error instanceof InvalidBlockCompletionError) {
+    if (error instanceof InvalidTimeUpdateError) {
       return NextResponse.json(
         { error: error.message },
         { status: 400 }
       );
     }
 
-    console.error('[ILS API] recordBlockCompletion error:', error);
+    if (error instanceof LearningProgressError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+
+    console.error('[ILS API] recordBlockActiveTime error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
