@@ -298,71 +298,58 @@ export function BlockTelemetryProvider({
   }, [enabled, navigationNodeId, subtopicId, sectionId]);
   
   /**
-   * Flush pending active time (serialized to prevent double-counting)
+   * Try to deliver pending queue entries
+   * Respects 600s API limit and preserves remainders
+   * CRITICAL: Does NOT destroy pending entries on failure
    */
-  const flushPendingTime = useCallback(async (): Promise<void> => {
-    if (!timingStateRef.current) return;
+  const tryDeliverPending = useCallback(async (): Promise<void> => {
+    if (pendingQueueRef.current.size === 0) return;
     
-    // Wait for any in-flight flush to complete (serialization)
+    // Wait for any in-flight delivery (serialization)
     if (flushPromiseRef.current) {
       await flushPromiseRef.current;
     }
     
-    const state = timingStateRef.current;
-    if (!state) return; // May have been cleared while waiting
+    // Process each pending entry
+    const entries = Array.from(pendingQueueRef.current.entries());
     
-    // Calculate total pending time
-    let totalPendingMs = state.accumulatedMs;
-    
-    if (!state.isPaused && state.startTime > 0) {
-      // Add currently active elapsed time
-      const now = performance.now();
-      totalPendingMs += (now - state.startTime);
-    }
-    
-    const incrementSec = Math.floor(totalPendingMs / 1000);
-    
-    if (incrementSec > 0) {
-      // Capture request identity to prevent race corruption
-      const requestIdentity: RequestIdentity = {
-        blockId: state.blockId,
-        blockVersion: state.blockVersion,
-      };
+    for (const [key, pending] of entries) {
+      const incrementSec = Math.floor(pending.pendingMs / 1000);
       
-      // CRITICAL: Cap at 600s per API limit, but preserve remainder for next flush
-      // Example: 1200s pending → send 600s, preserve 600s for next heartbeat
+      if (incrementSec <= 0) {
+        // Clean up entries with <1s
+        pendingQueueRef.current.delete(key);
+        continue;
+      }
+      
+      // Cap at 600s per API limit
       const safeIncrement = Math.min(incrementSec, 600);
       const remainderSec = incrementSec - safeIncrement;
       
-      // Start flush operation
+      // Attempt delivery
       const flushPromise = emitActiveTime(
-        requestIdentity.blockId,
-        requestIdentity.blockVersion,
+        pending.blockId,
+        pending.blockVersion,
         safeIncrement
       ).then((success) => {
-        // CRITICAL: Only clear time if request succeeded
-        // Failed requests leave time pending for retry on next heartbeat
         if (!success) {
-          console.warn('[BlockTelemetry] Flush failed - time will be retried on next heartbeat');
+          console.warn(`[BlockTelemetry] Delivery failed for ${pending.blockId}, will retry`);
           return;
         }
         
-        // Verify state hasn't changed while request was pending
-        if (
-          timingStateRef.current?.blockId === requestIdentity.blockId &&
-          timingStateRef.current?.blockVersion === requestIdentity.blockVersion
-        ) {
-          // SUCCESS: Preserve both fractional milliseconds AND full-second remainder
-          if (timingStateRef.current) {
-            const fractionalMs = totalPendingMs % 1000;
-            const remainderMs = remainderSec * 1000;
-            timingStateRef.current.accumulatedMs = fractionalMs + remainderMs;
-            
-            // Reset start time if still running
-            if (!timingStateRef.current.isPaused) {
-              timingStateRef.current.startTime = performance.now();
-            }
-          }
+        // SUCCESS: Update or remove pending entry
+        const fractionalMs = pending.pendingMs % 1000;
+        const remainderMs = remainderSec * 1000;
+        const totalRemaining = fractionalMs + remainderMs;
+        
+        if (totalRemaining > 0) {
+          // Update entry with remainder
+          pending.pendingMs = totalRemaining;
+          console.log(`[BlockTelemetry] Delivered ${safeIncrement}s for ${pending.blockId}, ${Math.floor(totalRemaining/1000)}s remaining`);
+        } else {
+          // Fully delivered - remove from queue
+          pendingQueueRef.current.delete(key);
+          console.log(`[BlockTelemetry] Fully delivered ${pending.blockId}`);
         }
       }).finally(() => {
         flushPromiseRef.current = null;
@@ -370,8 +357,39 @@ export function BlockTelemetryProvider({
       
       flushPromiseRef.current = flushPromise;
       await flushPromise;
+      
+      // Continue with next entry (allows partial progress)
     }
   }, [emitActiveTime]);
+  
+  /**
+   * Detach current timing to pending queue
+   * CRITICAL: Must be called BEFORE stopTiming() to prevent data loss
+   */
+  const detachCurrentToPending = useCallback(() => {
+    const captured = captureCurrentTiming();
+    if (!captured || captured.ms <= 0) return;
+    
+    addToPendingQueue(captured.blockId, captured.blockVersion, captured.ms);
+    
+    // Clear current timing state to prevent double-counting
+    if (timingStateRef.current) {
+      timingStateRef.current.accumulatedMs = 0;
+      timingStateRef.current.startTime = performance.now();
+    }
+  }, [captureCurrentTiming, addToPendingQueue]);
+  
+  /**
+   * Flush current timing + attempt delivery of all pending
+   * This is the primary entry point for heartbeat/transition flush
+   */
+  const flushAllPending = useCallback(async (): Promise<void> => {
+    // 1. Detach current timing to pending queue (if any)
+    detachCurrentToPending();
+    
+    // 2. Attempt delivery of all pending entries
+    await tryDeliverPending();
+  }, [detachCurrentToPending, tryDeliverPending]);
   
   /**
    * Start timing for a block
@@ -436,11 +454,14 @@ export function BlockTelemetryProvider({
     const currentState = timingStateRef.current;
     
     if (!activeBlock) {
-      // No active block - stop timing and flush if needed
+      // No active block - detach timing and stop
       if (currentState) {
-        void flushPendingTime().then(() => {
-          stopTiming();
-        });
+        // Detach to pending queue (safe even if flush fails)
+        detachCurrentToPending();
+        stopTiming();
+        
+        // Best-effort delivery (non-blocking)
+        void tryDeliverPending();
       }
       return;
     }
@@ -458,32 +479,36 @@ export function BlockTelemetryProvider({
       return;
     }
     
-    // Block change: Flush old block, emit visit for new block, start new timing
+    // Block change: Safe transition with durable pending queue
     const transitionToNewBlock = async () => {
-      // 1. Flush old block's pending time
+      // 1. CRITICAL: Detach old block's timing to pending queue BEFORE stopping
+      //    This ensures measured time survives even if delivery fails
       if (currentState) {
-        await flushPendingTime();
+        detachCurrentToPending();
         stopTiming();
       }
       
-      // 2. Emit visit for new block
+      // 2. Best-effort delivery (non-blocking, failures preserved in queue)
+      void tryDeliverPending();
+      
+      // 3. Emit visit for new block
       await emitVisit(activeBlock.blockId, blockVersion);
       
-      // 3. Start timing for new block
+      // 4. Start timing for new block
       startTiming(activeBlock.blockId, blockVersion);
     };
     
     void transitionToNewBlock();
-  }, [activeBlock, enabled, flushPendingTime, emitVisit, startTiming, stopTiming]);
+  }, [activeBlock, enabled, detachCurrentToPending, tryDeliverPending, emitVisit, startTiming, stopTiming]);
   
   /**
-   * Heartbeat: Periodically flush accumulated time
+   * Heartbeat: Periodically flush accumulated time and retry pending
    */
   useEffect(() => {
     if (!enabled || heartbeatIntervalMs <= 0) return;
     
     heartbeatTimerRef.current = setInterval(() => {
-      void flushPendingTime();
+      void flushAllPending();
     }, heartbeatIntervalMs);
     
     return () => {
@@ -492,20 +517,25 @@ export function BlockTelemetryProvider({
         heartbeatTimerRef.current = null;
       }
     };
-  }, [enabled, heartbeatIntervalMs, flushPendingTime]);
+  }, [enabled, heartbeatIntervalMs, flushAllPending]);
   
   /**
    * Unmount: Final flush (best-effort)
    */
   useEffect(() => {
     return () => {
-      // Final flush on unmount
+      // Detach current timing to pending queue
       if (timingStateRef.current) {
-        // Best-effort flush - don't await
-        void flushPendingTime();
+        const captured = captureCurrentTiming();
+        if (captured && captured.ms > 0) {
+          addToPendingQueue(captured.blockId, captured.blockVersion, captured.ms);
+        }
       }
+      
+      // Best-effort delivery of all pending
+      void tryDeliverPending();
     };
-  }, [flushPendingTime]);
+  }, [captureCurrentTiming, addToPendingQueue, tryDeliverPending]);
   
   return <>{children}</>;
 }
