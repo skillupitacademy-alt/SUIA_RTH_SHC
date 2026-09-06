@@ -6,24 +6,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireStudent, AssignmentAuthError } from '@/lib/assignment-auth';
+import { requireStudentAuth } from '@/lib/student-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user (SkillUp-specific)
-    let user;
-    try {
-      user = await requireStudent(request);
-    } catch (error) {
-      if (error instanceof AssignmentAuthError) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: error.statusCode }
-        );
-      }
-      throw error;
+    const authResult = await requireStudentAuth(request);
+    if (!authResult.ok) {
+      return authResult.response;
     }
     
     // Parse request body
@@ -46,13 +38,13 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'X-Brand': 'skillup',
-        'X-User-ID': user.userId,
+        'X-User-ID': authResult.userId,
         'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
         'x-internal-key': process.env.INTERNAL_API_KEY || ''
       },
       body: JSON.stringify(body),
       cache: 'no-store'
-    );
+    });
     
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Failed to record block active time' }));

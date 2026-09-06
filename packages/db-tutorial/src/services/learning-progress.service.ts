@@ -565,6 +565,23 @@ export class LearningProgressService {
       identity
     );
 
+    // Phase 4.5: Fetch tutorial content to extract expectedTimeSec
+    // Follow pattern from resolveRequiredBlocks - use authenticated brand
+    const section = await this.sectionRepository.getTutorialByPageIdentity(
+      subtopicId,
+      navigationNodeId,
+      identity.brand
+    );
+
+    // Extract expectedTimeSec from block envelope (NOT page content)
+    let expectedTimeSec: number | null = null;
+    if (section?.content?.blocks) {
+      const block = section.content.blocks.find(
+        (b: any) => b.id === blockId && b.version === blockVersion
+      );
+      expectedTimeSec = block?.expectedTimeSec ?? null;
+    }
+
     // Get existing block state
     const existing = await this.blockLearningStateRepository.findOne({
       userId: identity.userId,
@@ -586,6 +603,7 @@ export class LearningProgressService {
         visitCount: 1,
         revisionCount: 0,
         activeTimeSec: 0,
+        expectedTimeSec, // Phase 4.5: Populate from block envelope
         firstViewedAt: now,
         lastViewedAt: now,
       });
@@ -612,6 +630,7 @@ export class LearningProgressService {
         visitCount: 0, // No increment
         revisionCount: 0,
         activeTimeSec: 0,
+        expectedTimeSec, // Phase 4.5: Update if changed (repository preserves if undefined)
         lastViewedAt: now,
       });
     }
@@ -627,6 +646,7 @@ export class LearningProgressService {
       visitCount: 1, // Increment
       revisionCount: isCompleted ? 1 : 0, // Increment revision if already completed
       activeTimeSec: 0,
+      expectedTimeSec, // Phase 4.5: Update if changed (repository preserves if undefined)
       lastViewedAt: now,
     });
   }
