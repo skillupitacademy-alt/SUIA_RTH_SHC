@@ -84,11 +84,12 @@ async function main() {
   const definitionId = randomUUID();
   const definitionBlock = {
     id: definitionId,
-    type: 'definition',
-    version: 'D1',
+    type: 'definition' as const,
+    version: 'D1' as const,
+    expectedTimeSec: 180, // 3 minutes - ILS Phase 4
     content: {
       page: {
-        type: 'definition',
+        type: 'definition' as const,
         category: 'Java Fundamentals',
         title: 'What Is Java?',
         intro: 'Java is a popular programming language used for building applications across different platforms.',
@@ -125,6 +126,7 @@ async function main() {
   };
 
   console.log(`✅ Definition block created (ID: ${definitionId})`);
+  console.log(`   Expected time: ${definitionBlock.expectedTimeSec} seconds`);
   console.log();
 
   // Step 4: Create Code C1 block
@@ -132,11 +134,12 @@ async function main() {
   const codeId = randomUUID();
   const codeBlock = {
     id: codeId,
-    type: 'code',
-    version: 'C1',
+    type: 'code' as const,
+    version: 'C1' as const,
+    expectedTimeSec: 240, // 4 minutes - ILS Phase 4
     content: {
       page: {
-        type: 'code',
+        type: 'code' as const,
         title: 'Your First Java Program',
         introduction: 'Every Java program starts with a main method inside a class. Let\'s create a simple program that prints a message.',
         language: 'java',
@@ -169,16 +172,19 @@ async function main() {
   };
 
   console.log(`✅ Code block created (ID: ${codeId})`);
+  console.log(`   Expected time: ${codeBlock.expectedTimeSec} seconds`);
   console.log();
 
   // Step 5: Create tutorial document
   console.log('Step 5: Creating tutorial document...');
   const tutorialDocument = {
-    schemaVersion: 1,
+    schemaVersion: 1 as const, // Literal type, not number
     blocks: [definitionBlock, codeBlock],
   };
 
   console.log(`✅ Tutorial document assembled (${tutorialDocument.blocks.length} blocks)`);
+  console.log('   Schema version: 1');
+  console.log(`   Total expected time: ${(definitionBlock.expectedTimeSec || 0) + (codeBlock.expectedTimeSec || 0)} seconds`);
   console.log();
 
   // Step 6: Create tutorial via TutorialComposerService
