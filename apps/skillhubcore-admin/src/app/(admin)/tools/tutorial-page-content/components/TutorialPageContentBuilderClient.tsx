@@ -297,8 +297,20 @@ export function TutorialPageContentBuilderClient() {
       const parsed = parseSource(sourceFormat, sourceContent, form.blockType) as 
         TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload;
       
+      // Extract expectedTimeSec at root level if present (AI-generated metadata)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic payload parsing requires any
+      const rawParsed = JSON.parse(sourceContent) as any;
+      const expectedTimeSec = typeof rawParsed.expectedTimeSec === 'number' ? rawParsed.expectedTimeSec : undefined;
+      
+      // Normalize payload: remove expectedTimeSec if present (it belongs at BlockInstance level, not inside payload)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic payload normalization requires any
+      const normalizedParsed = { ...parsed } as any;
+      if ('expectedTimeSec' in normalizedParsed) {
+        delete normalizedParsed.expectedTimeSec;
+      }
+      
       // Canonicalize C1 blocks immediately upon Add/Update
-      let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | CodeC1AuthorContent = parsed;
+      let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | CodeC1AuthorContent = normalizedParsed;
       let payloadFormat: 'legacy' | 'canonical' = 'legacy';
       
       if (form.blockType === 'code' && selectedVersion.code === 'C1') {
@@ -333,6 +345,7 @@ export function TutorialPageContentBuilderClient() {
                   payloadFormat,
                   sourceFormat,
                   sourceContent,
+                  expectedTimeSec,
                 }
               : block
           )
@@ -354,6 +367,7 @@ export function TutorialPageContentBuilderClient() {
           payloadFormat,
           sourceFormat,
           sourceContent,
+          expectedTimeSec,
         };
 
         hasUnsavedLocalChangesRef.current = true;

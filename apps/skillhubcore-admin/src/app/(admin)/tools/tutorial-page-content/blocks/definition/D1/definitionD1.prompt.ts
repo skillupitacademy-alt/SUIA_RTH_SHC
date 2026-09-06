@@ -24,6 +24,7 @@ export function getDefinitionD1Prompt(
 Return ONLY a valid JSON object matching this exact schema:
 
 {
+  "expectedTimeSec": 180,
   "page": {
     "type": "definition",
     "category": "${context.topicName}",
@@ -53,6 +54,13 @@ Return ONLY a valid JSON object matching this exact schema:
     "takeaway": "One strong closing sentence summarizing the key learning point."
   }
 }
+
+# IMPORTANT: expectedTimeSec STRUCTURE
+
+- expectedTimeSec is a COMPOSER/BLOCK METADATA FIELD at ROOT level
+- It MUST NOT appear inside page
+- It should be a whole positive number representing estimated completion time in seconds
+- Example: 180 means 3 minutes
 
 # KEY CHARACTERISTICS RULES
 

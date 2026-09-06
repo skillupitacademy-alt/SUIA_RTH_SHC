@@ -33,6 +33,7 @@ export interface BlockInstance {
   payloadFormat: 'legacy' | 'canonical';
   sourceFormat: 'json' | 'markdown';
   sourceContent: string;
+  expectedTimeSec?: number;
 }
 
 /**
@@ -81,6 +82,7 @@ export function tutorialBlocksToInstances(
           payloadFormat: 'legacy', // Definition blocks use legacy format for now
           sourceFormat: 'json',
           sourceContent,
+          expectedTimeSec: block.expectedTimeSec,
         };
 
       case 'code': {
@@ -108,6 +110,7 @@ export function tutorialBlocksToInstances(
           payloadFormat: isCanonicalC1 ? 'canonical' : 'legacy', // Track format
           sourceFormat: 'json',
           sourceContent,
+          expectedTimeSec: block.expectedTimeSec,
         };
       }
 
@@ -125,6 +128,7 @@ export function tutorialBlocksToInstances(
           payloadFormat: 'legacy', // Summary blocks use legacy format for now
           sourceFormat: 'json',
           sourceContent,
+          expectedTimeSec: block.expectedTimeSec,
         };
 
       default: {
@@ -162,6 +166,7 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
           type: 'definition',
           version: 'D1',
           content: instance.payload as unknown as DefinitionD1AuthorContent,
+          expectedTimeSec: instance.expectedTimeSec,
         };
       }
 
@@ -181,6 +186,7 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
             type: 'code',
             version: 'C1',
             content: instance.payload as CodeC1AuthorContent,
+            expectedTimeSec: instance.expectedTimeSec,
           };
         }
         
@@ -195,6 +201,7 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
           type: 'code',
           version: 'C1',
           content: result.content,
+          expectedTimeSec: instance.expectedTimeSec,
         };
       }
 
@@ -238,6 +245,7 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
             title: summaryPayload.page?.title,
             points: points.length > 0 ? points : ['Summary content'],
           },
+          expectedTimeSec: instance.expectedTimeSec,
         };
       }
 

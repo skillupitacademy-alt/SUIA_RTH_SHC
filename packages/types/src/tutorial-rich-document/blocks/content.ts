@@ -20,6 +20,23 @@ export interface BaseBlock {
    * Presentation configuration (semantic, not React/CSS)
    */
   presentation?: PresentationConfig;
+
+  /**
+   * Expected time for learner to complete this block (in seconds)
+   * 
+   * SEMANTIC SCOPE: Instructional blocks only (D1, C1, S1, I1, O1)
+   * - AI-generated at content authoring time
+   * - Composer-validated and author-reviewable
+   * - Published TutorialDocument is authoritative
+   * - ILS compares actual vs expected time
+   * 
+   * STRUCTURAL BLOCKS: Field inherited but semantically not applicable.
+   * Runtime validation (Zod schemas) determines which blocks accept this field.
+   * 
+   * @example
+   * expectedTimeSec: 180  // 3 minutes
+   */
+  expectedTimeSec?: number;
 }
 
 /**
