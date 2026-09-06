@@ -211,17 +211,48 @@ export function BlockTelemetryProvider({
     blockId: string,
     blockVersion: string
   ): Promise<void> => {
-    if (!enabled || !sessionIdRef.current) return;
+    console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit called', {
+      blockId,
+      blockVersion,
+      enabled,
+      hasSessionId: !!sessionIdRef.current,
+      sessionId: sessionIdRef.current,
+      navigationNodeId,
+      subtopicId,
+      timestamp: new Date().toISOString()
+    });
+    
+    if (!enabled || !sessionIdRef.current) {
+      console.warn('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit SKIPPED - disabled or no sessionId');
+      return;
+    }
     
     // Duplicate prevention
     if (
       lastVisitIdentityRef.current?.blockId === blockId &&
       lastVisitIdentityRef.current?.blockVersion === blockVersion
     ) {
+      console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit SKIPPED - duplicate');
       return;
     }
     
     lastVisitIdentityRef.current = { blockId, blockVersion };
+    
+    const requestPayload = {
+      navigationNodeId,
+      subtopicId,
+      blockId,
+      blockVersion,
+      sessionId: sessionIdRef.current,
+      sectionId,
+    };
+    
+    console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] POST /api/tutorial/ils/block-visit', {
+      url: '/api/tutorial/ils/block-visit',
+      method: 'POST',
+      hasSessionIdHeader: !!sessionIdRef.current,
+      payload: requestPayload
+    });
     
     try {
       const response = await fetch('/api/tutorial/ils/block-visit', {
@@ -231,22 +262,28 @@ export function BlockTelemetryProvider({
           'Content-Type': 'application/json',
           'x-session-id': sessionIdRef.current,
         },
-        body: JSON.stringify({
-          navigationNodeId,
-          subtopicId,
-          blockId,
-          blockVersion,
-          sessionId: sessionIdRef.current,
-          sectionId,
-        }),
+        body: JSON.stringify(requestPayload),
+      });
+      
+      console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] POST /api/tutorial/ils/block-visit response', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
       });
       
       if (!response.ok) {
-        console.warn(`[BlockTelemetry] Visit failed: ${response.status}`);
+        const responseText = await response.text();
+        console.warn('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][WARN] Visit failed', {
+          status: response.status,
+          responseBody: responseText
+        });
+      } else {
+        const responseData = await response.json();
+        console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][SUCCESS] Visit succeeded', responseData);
       }
     } catch (error) {
       // Silent failure - telemetry must not break UX
-      console.error('[BlockTelemetry] Visit error:', error);
+      console.error('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][ERROR] Visit error:', error);
     }
   }, [enabled, navigationNodeId, subtopicId, sectionId]);
   

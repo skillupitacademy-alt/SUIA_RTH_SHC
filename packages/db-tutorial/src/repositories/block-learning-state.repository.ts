@@ -242,81 +242,105 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
    * @returns Created or updated block state
    */
   async upsert(data: UpsertBlockLearningStateInput): Promise<BlockLearningState> {
+    console.log('[ILS-DEBUG][REPOSITORY][blockLearningState] upsert called', {
+      userId: data.userId,
+      navigationNodeId: data.navigationNodeId,
+      blockId: data.blockId,
+      blockVersion: data.blockVersion,
+      visitCount: data.visitCount,
+      revisionCount: data.revisionCount,
+      activeTimeSec: data.activeTimeSec,
+      timestamp: new Date().toISOString()
+    });
+    
     const now = new Date();
 
-    const [result] = await this.runRead(
-      this.dbInstance
-        .insert(blockLearningState)
-        .values({
-          // Identity
-          userId: data.userId,
-          navigationNodeId: data.navigationNodeId,
-          blockId: data.blockId,
-          blockVersion: data.blockVersion,
+    try {
+      const [result] = await this.runRead(
+        this.dbInstance
+          .insert(blockLearningState)
+          .values({
+            // Identity
+            userId: data.userId,
+            navigationNodeId: data.navigationNodeId,
+            blockId: data.blockId,
+            blockVersion: data.blockVersion,
 
-          // Telemetry (initial values)
-          expectedTimeSec: data.expectedTimeSec ?? null,
-          visitCount: data.visitCount ?? 0,
-          revisionCount: data.revisionCount ?? 0,
-          activeTimeSec: data.activeTimeSec ?? 0,
+            // Telemetry (initial values)
+            expectedTimeSec: data.expectedTimeSec ?? null,
+            visitCount: data.visitCount ?? 0,
+            revisionCount: data.revisionCount ?? 0,
+            activeTimeSec: data.activeTimeSec ?? 0,
 
-          // Timestamps (initial values)
-          firstViewedAt: data.firstViewedAt ?? null,
-          lastViewedAt: data.lastViewedAt ?? null,
-          completedAt: data.completedAt ?? null,
-
-          // Audit
-          version: 1,
-          deletedAt: null,
-        })
-        .onConflictDoUpdate({
-          // Complete identity for conflict detection
-          target: [
-            blockLearningState.userId,
-            blockLearningState.navigationNodeId,
-            blockLearningState.blockId,
-            blockLearningState.blockVersion,
-          ],
-          // WHERE clause for partial unique index (active records only)
-          where: sql`${blockLearningState.deletedAt} IS NULL`,
-          // Atomic updates on conflict
-          set: {
-            // Atomic counter increments (cumulative)
-            visitCount:
-              data.visitCount !== undefined
-                ? buildAtomicTimeIncrement(blockLearningState.visitCount, data.visitCount)
-                : blockLearningState.visitCount,
-            revisionCount:
-              data.revisionCount !== undefined
-                ? buildAtomicTimeIncrement(blockLearningState.revisionCount, data.revisionCount)
-                : blockLearningState.revisionCount,
-            activeTimeSec:
-              data.activeTimeSec !== undefined
-                ? buildAtomicTimeIncrement(blockLearningState.activeTimeSec, data.activeTimeSec)
-                : blockLearningState.activeTimeSec,
-
-            // Update other fields if provided, preserve if not
-            expectedTimeSec:
-              data.expectedTimeSec !== undefined ? data.expectedTimeSec : blockLearningState.expectedTimeSec,
-            firstViewedAt:
-              data.firstViewedAt !== undefined ? data.firstViewedAt : blockLearningState.firstViewedAt,
-            lastViewedAt: data.lastViewedAt ?? now, // Always update lastViewedAt
-            completedAt: data.completedAt !== undefined ? data.completedAt : blockLearningState.completedAt,
+            // Timestamps (initial values)
+            firstViewedAt: data.firstViewedAt ?? null,
+            lastViewedAt: data.lastViewedAt ?? null,
+            completedAt: data.completedAt ?? null,
 
             // Audit
-            version: buildAtomicVersionIncrement(blockLearningState.version),
-            updatedAt: now,
-          },
-        })
-        .returning(),
-      'BlockLearningStateRepository.upsert'
-    );
+            version: 1,
+            deletedAt: null,
+          })
+          .onConflictDoUpdate({
+            // Complete identity for conflict detection
+            target: [
+              blockLearningState.userId,
+              blockLearningState.navigationNodeId,
+              blockLearningState.blockId,
+              blockLearningState.blockVersion,
+            ],
+            // WHERE clause for partial unique index (active records only)
+            where: sql`${blockLearningState.deletedAt} IS NULL`,
+            // Atomic updates on conflict
+            set: {
+              // Atomic counter increments (cumulative)
+              visitCount:
+                data.visitCount !== undefined
+                  ? buildAtomicTimeIncrement(blockLearningState.visitCount, data.visitCount)
+                  : blockLearningState.visitCount,
+              revisionCount:
+                data.revisionCount !== undefined
+                  ? buildAtomicTimeIncrement(blockLearningState.revisionCount, data.revisionCount)
+                  : blockLearningState.revisionCount,
+              activeTimeSec:
+                data.activeTimeSec !== undefined
+                  ? buildAtomicTimeIncrement(blockLearningState.activeTimeSec, data.activeTimeSec)
+                  : blockLearningState.activeTimeSec,
 
-    if (!result) {
-      throw new Error('Failed to upsert block learning state');
+              // Update other fields if provided, preserve if not
+              expectedTimeSec:
+                data.expectedTimeSec !== undefined ? data.expectedTimeSec : blockLearningState.expectedTimeSec,
+              firstViewedAt:
+                data.firstViewedAt !== undefined ? data.firstViewedAt : blockLearningState.firstViewedAt,
+              lastViewedAt: data.lastViewedAt ?? now, // Always update lastViewedAt
+              completedAt: data.completedAt !== undefined ? data.completedAt : blockLearningState.completedAt,
+
+              // Audit
+              version: buildAtomicVersionIncrement(blockLearningState.version),
+              updatedAt: now,
+            },
+          })
+          .returning(),
+        'BlockLearningStateRepository.upsert'
+      );
+
+      if (!result) {
+        console.error('[ILS-DEBUG][REPOSITORY][blockLearningState][ERROR] No result returned from upsert');
+        throw new Error('Failed to upsert block learning state');
+      }
+
+      console.log('[ILS-DEBUG][REPOSITORY][blockLearningState][SUCCESS] upsert completed', {
+        id: result.id,
+        visitCount: result.visitCount,
+        revisionCount: result.revisionCount,
+        lastViewedAt: result.lastViewedAt
+      });
+
+      return result;
+    } catch (error) {
+      console.error('[ILS-DEBUG][REPOSITORY][blockLearningState][ERROR] upsert failed:', error);
+      throw error;
     }
-
-    return result;
   }
 
   /**

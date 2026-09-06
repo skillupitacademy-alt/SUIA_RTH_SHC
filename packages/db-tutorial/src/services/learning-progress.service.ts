@@ -549,21 +549,41 @@ export class LearningProgressService {
     blockVersion: string,
     sessionId: string
   ): Promise<BlockLearningState> {
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Function entry', {
+      userId: identity.userId,
+      brand: identity.brand,
+      navigationNodeId,
+      blockId,
+      blockVersion,
+      sessionId,
+      subtopicId,
+      timestamp: new Date().toISOString()
+    });
+    
     // Validate inputs
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Validating inputs');
     validateUserId(identity.userId);
     validateNavigationNodeId(navigationNodeId);
     validateBlockId(blockId);
     validateBlockVersion(blockVersion);
     validateSessionId(sessionId);
     validateSubtopicId(subtopicId);
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Input validation passed');
 
     // Validate navigation hierarchy
-    await this.validateNavigationHierarchy(
-      navigationNodeId,
-      subtopicId,
-      null,
-      identity
-    );
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Validating navigation hierarchy');
+    try {
+      await this.validateNavigationHierarchy(
+        navigationNodeId,
+        subtopicId,
+        null,
+        identity
+      );
+      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Hierarchy validation passed');
+    } catch (error) {
+      console.error('[ILS-DEBUG][SERVICE][recordBlockVisit][ERROR] Hierarchy validation failed:', error);
+      throw error;
+    }
 
     // Phase 4.5: Fetch tutorial content to extract expectedTimeSec
     // Follow pattern from resolveRequiredBlocks - use authenticated brand
@@ -583,6 +603,7 @@ export class LearningProgressService {
     }
 
     // Get existing block state
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Checking for existing block state');
     const existing = await this.blockLearningStateRepository.findOne({
       userId: identity.userId,
       navigationNodeId,
@@ -590,12 +611,23 @@ export class LearningProgressService {
       blockVersion,
     });
 
+    if (existing) {
+      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Existing record found', {
+        existingVisitCount: existing.visitCount,
+        existingLastViewedAt: existing.lastViewedAt,
+        existingCompletedAt: existing.completedAt
+      });
+    } else {
+      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] No existing record - first visit');
+    }
+
     const now = new Date();
 
     // Session-aware visit logic (service layer responsibility)
     if (!existing) {
       // First visit - create new state
-      return await this.blockLearningStateRepository.upsert({
+      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Creating new block state (first visit)');
+      const result = await this.blockLearningStateRepository.upsert({
         userId: identity.userId,
         navigationNodeId,
         blockId,
@@ -607,6 +639,11 @@ export class LearningProgressService {
         firstViewedAt: now,
         lastViewedAt: now,
       });
+      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] New record created', {
+        id: result.id,
+        visitCount: result.visitCount
+      });
+      return result;
     }
 
     // Existing state - check session
@@ -617,12 +654,23 @@ export class LearningProgressService {
     // For now: if lastViewedAt is recent (within 30 minutes) = same session
     // This matches typical web session timeout behavior
     const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+    const elapsedMs = existing.lastViewedAt ? (now.getTime() - existing.lastViewedAt.getTime()) : null;
     const isNewSession = !existing.lastViewedAt || 
                          (now.getTime() - existing.lastViewedAt.getTime() > SESSION_TIMEOUT_MS);
 
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Session timeout calculation', {
+      now: now.toISOString(),
+      lastViewedAt: existing.lastViewedAt?.toISOString(),
+      elapsedMs,
+      elapsedMinutes: elapsedMs ? Math.floor(elapsedMs / 60000) : null,
+      SESSION_TIMEOUT_MS,
+      isNewSession
+    });
+
     if (!isNewSession) {
       // Same session - just update lastViewedAt, no visit increment
-      return await this.blockLearningStateRepository.upsert({
+      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Same session - no visit increment');
+      const result = await this.blockLearningStateRepository.upsert({
         userId: identity.userId,
         navigationNodeId,
         blockId,
@@ -633,12 +681,21 @@ export class LearningProgressService {
         expectedTimeSec, // Phase 4.5: Update if changed (repository preserves if undefined)
         lastViewedAt: now,
       });
+      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] Same session update', {
+        id: result.id,
+        visitCount: result.visitCount
+      });
+      return result;
     }
 
     // New session
     const isCompleted = existing.completedAt !== null;
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] New session - incrementing visit', {
+      isCompleted,
+      willIncrementRevision: isCompleted
+    });
     
-    return await this.blockLearningStateRepository.upsert({
+    const result = await this.blockLearningStateRepository.upsert({
       userId: identity.userId,
       navigationNodeId,
       blockId,
@@ -649,6 +706,12 @@ export class LearningProgressService {
       expectedTimeSec, // Phase 4.5: Update if changed (repository preserves if undefined)
       lastViewedAt: now,
     });
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] New session recorded', {
+      id: result.id,
+      visitCount: result.visitCount,
+      revisionCount: result.revisionCount
+    });
+    return result;
   }
 
   /**
