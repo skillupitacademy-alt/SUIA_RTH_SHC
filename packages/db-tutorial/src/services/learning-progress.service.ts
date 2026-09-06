@@ -587,11 +587,24 @@ export class LearningProgressService {
 
     // Phase 4.5: Fetch tutorial content to extract expectedTimeSec
     // Follow pattern from resolveRequiredBlocks - use authenticated brand
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Fetching tutorial content', {
+      subtopicId,
+      navigationNodeId,
+      brand: identity.brand
+    });
+    
     const section = await this.sectionRepository.getTutorialByPageIdentity(
       subtopicId,
       navigationNodeId,
       identity.brand
     );
+
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Tutorial content fetched', {
+      hasSectionFound: !!section,
+      hasContent: !!section?.content,
+      hasBlocks: !!section?.content?.blocks,
+      blocksCount: section?.content?.blocks?.length || 0
+    });
 
     // Extract expectedTimeSec from block envelope (NOT page content)
     let expectedTimeSec: number | null = null;
@@ -600,6 +613,15 @@ export class LearningProgressService {
         (b: any) => b.id === blockId && b.version === blockVersion
       );
       expectedTimeSec = block?.expectedTimeSec ?? null;
+      
+      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Block lookup in content', {
+        requestedBlockId: blockId,
+        requestedBlockVersion: blockVersion,
+        blockFound: !!block,
+        extractedExpectedTimeSec: expectedTimeSec
+      });
+    } else {
+      console.warn('[ILS-DEBUG][SERVICE][recordBlockVisit][WARN] No blocks found in section content');
     }
 
     // Get existing block state

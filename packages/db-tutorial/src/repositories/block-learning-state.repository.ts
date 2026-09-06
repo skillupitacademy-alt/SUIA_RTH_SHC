@@ -128,23 +128,46 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
    * @returns Block state or null if not found
    */
   async findOne(identity: BlockIdentity): Promise<BlockLearningState | null> {
-    const rows = await this.runRead(
-      this.dbInstance
-        .select()
-        .from(blockLearningState)
-        .where(
-          and(
-            eq(blockLearningState.userId, identity.userId),
-            eq(blockLearningState.navigationNodeId, identity.navigationNodeId),
-            eq(blockLearningState.blockId, identity.blockId),
-            eq(blockLearningState.blockVersion, identity.blockVersion),
-            activeBlockState
-          )
-        ),
-      'BlockLearningStateRepository.findOne'
-    );
+    console.log('[ILS-DEBUG][REPOSITORY][blockLearningState] findOne called', {
+      userId: identity.userId,
+      navigationNodeId: identity.navigationNodeId,
+      blockId: identity.blockId,
+      blockVersion: identity.blockVersion
+    });
+    
+    try {
+      const rows = await this.runRead(
+        this.dbInstance
+          .select()
+          .from(blockLearningState)
+          .where(
+            and(
+              eq(blockLearningState.userId, identity.userId),
+              eq(blockLearningState.navigationNodeId, identity.navigationNodeId),
+              eq(blockLearningState.blockId, identity.blockId),
+              eq(blockLearningState.blockVersion, identity.blockVersion),
+              activeBlockState
+            )
+          ),
+        'BlockLearningStateRepository.findOne'
+      );
 
-    return rows[0] ?? null;
+      const result = rows[0] ?? null;
+      console.log('[ILS-DEBUG][REPOSITORY][blockLearningState] findOne result', {
+        found: !!result,
+        visitCount: result?.visitCount,
+        lastViewedAt: result?.lastViewedAt
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('[ILS-DEBUG][REPOSITORY][blockLearningState][ERROR] findOne failed:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      throw error;
+    }
   }
 
   /**

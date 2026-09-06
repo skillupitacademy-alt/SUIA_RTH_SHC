@@ -142,7 +142,11 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     if (error instanceof NavigationNodeNotFoundError) {
-      console.error('[ILS-DEBUG][API][block-visit][ERROR] NavigationNodeNotFoundError:', error.message);
+      console.error('[ILS-DEBUG][API][block-visit][ERROR] NavigationNodeNotFoundError:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return NextResponse.json(
         { error: error.message },
         { status: 404 }
@@ -150,7 +154,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof InvalidNavigationHierarchyError) {
-      console.error('[ILS-DEBUG][API][block-visit][ERROR] InvalidNavigationHierarchyError:', error.message);
+      console.error('[ILS-DEBUG][API][block-visit][ERROR] InvalidNavigationHierarchyError:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return NextResponse.json(
         { error: error.message },
         { status: 400 }
@@ -158,14 +166,24 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof LearningProgressError) {
-      console.error('[ILS-DEBUG][API][block-visit][ERROR] LearningProgressError:', error.message);
+      console.error('[ILS-DEBUG][API][block-visit][ERROR] LearningProgressError:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return NextResponse.json(
         { error: error.message },
         { status: 400 }
       );
     }
 
-    console.error('[ILS-DEBUG][API][block-visit][ERROR] Unexpected error:', error);
+    console.error('[ILS-DEBUG][API][block-visit][ERROR] Unexpected error:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      errorType: typeof error,
+      errorConstructor: error?.constructor?.name
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
