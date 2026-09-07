@@ -1,12 +1,18 @@
 /**
- * Phase 4.3: Block-Level Learning Progress Service Tests
+ * Phase 4.6: Block-Level Learning Progress Service Tests
  * 
  * Tests for block-level visit tracking, time tracking, and time comparison methods.
  * 
  * SCOPE:
- * - recordBlockVisit() - session-aware visit semantics
+ * - recordBlockVisit() - atomic session-aware visit semantics (Phase 4.6)
  * - recordBlockActiveTime() - block-level time tracking with 600s limit
  * - calculateBlockTimeComparison() - pure time comparison calculation
+ * 
+ * Phase 4.6 Changes:
+ * - Session tracking based on sessionId identity (not time-based)
+ * - Visit/revision decisions made atomically in database
+ * - No SELECT before upsert in service layer
+ * - lastSessionId persisted for atomic session transition detection
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -66,7 +72,7 @@ class MockNavigationProgressRepository implements Partial<ITutorialNavigationPro
   }
 }
 
-// Mock BlockLearningStateRepository for Phase 4.3 testing
+// Mock BlockLearningStateRepository for Phase 4.6 testing
 class MockBlockLearningStateRepository {
   private states: Map<string, BlockLearningState> = new Map();
   private idCounter = 0;
@@ -90,6 +96,7 @@ class MockBlockLearningStateRepository {
     navigationNodeId: string;
     blockId: string;
     blockVersion: string;
+    lastSessionId?: string;  // Phase 4.6: Session identity
     visitCount?: number;
     revisionCount?: number;
     activeTimeSec?: number;
@@ -100,6 +107,7 @@ class MockBlockLearningStateRepository {
   }): Promise<BlockLearningState> {
     const key = `${data.userId}:${data.navigationNodeId}:${data.blockId}:${data.blockVersion}`;
     const existing = this.states.get(key);
+    const now = new Date();
 
     if (!existing) {
       // Create new
@@ -109,34 +117,51 @@ class MockBlockLearningStateRepository {
         navigationNodeId: data.navigationNodeId,
         blockId: data.blockId,
         blockVersion: data.blockVersion,
-        visitCount: data.visitCount ?? 0,
+        // Phase 4.6: Atomic visit count (first visit if lastSessionId provided)
+        visitCount: data.lastSessionId ? 1 : (data.visitCount ?? 0),
         revisionCount: data.revisionCount ?? 0,
         activeTimeSec: data.activeTimeSec ?? 0,
         expectedTimeSec: data.expectedTimeSec ?? null,
-        firstViewedAt: data.firstViewedAt ?? null,
+        // Phase 4.6: Atomic firstViewedAt (initialize if lastSessionId provided)
+        firstViewedAt: data.lastSessionId ? now : (data.firstViewedAt ?? null),
         lastViewedAt: data.lastViewedAt ?? null,
         completedAt: data.completedAt ?? null,
+        lastSessionId: data.lastSessionId ?? null,  // Phase 4.6
         version: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
         deletedAt: null,
       };
       this.states.set(key, newState);
       return newState;
     }
 
-    // Update existing (atomic counter increments)
+    // Phase 4.6: Atomic session-aware update
+    // Simulate database-side session comparison using IS DISTINCT FROM
+    const isSessionChange = data.lastSessionId !== undefined && 
+                           existing.lastSessionId !== data.lastSessionId;
+    
     const updated: BlockLearningState = {
       ...existing,
-      visitCount: existing.visitCount + (data.visitCount ?? 0),
-      revisionCount: existing.revisionCount + (data.revisionCount ?? 0),
+      // Phase 4.6: Atomic visit count (increment only on session change)
+      visitCount: data.lastSessionId
+        ? (isSessionChange ? existing.visitCount + 1 : existing.visitCount)
+        : existing.visitCount + (data.visitCount ?? 0),
+      // Phase 4.6: Atomic revision count (increment on session change + completed)
+      revisionCount: data.lastSessionId
+        ? (isSessionChange && existing.completedAt !== null ? existing.revisionCount + 1 : existing.revisionCount)
+        : existing.revisionCount + (data.revisionCount ?? 0),
+      // Active time: simple increment (unchanged)
       activeTimeSec: existing.activeTimeSec + (data.activeTimeSec ?? 0),
       expectedTimeSec: data.expectedTimeSec !== undefined ? data.expectedTimeSec : existing.expectedTimeSec,
-      firstViewedAt: data.firstViewedAt !== undefined ? data.firstViewedAt : existing.firstViewedAt,
+      // Phase 4.6: firstViewedAt preserved (initialized on first visit when lastSessionId was NULL)
+      firstViewedAt: existing.firstViewedAt ?? now,
       lastViewedAt: data.lastViewedAt ?? existing.lastViewedAt,
       completedAt: data.completedAt !== undefined ? data.completedAt : existing.completedAt,
+      // Phase 4.6: Persist session identity
+      lastSessionId: data.lastSessionId ?? existing.lastSessionId,
       version: existing.version + 1,
-      updatedAt: new Date(),
+      updatedAt: now,
     };
     this.states.set(key, updated);
     return updated;
@@ -158,7 +183,7 @@ class MockBlockLearningStateRepository {
 // TESTS
 // ============================================================================
 
-describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
+describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Tracking', () => {
   let service: LearningProgressService;
   let mockBlockRepo: MockBlockLearningStateRepository;
   let mockSectionRepo: MockSectionRepository;
@@ -202,7 +227,7 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
       expect(result.lastViewedAt).toBeInstanceOf(Date);
     });
 
-    it('does not increment visit on same session (time-based)', async () => {
+    it('does not increment visit on same session (session-identity-based)', async () => {
       // First visit
       const first = await service.recordBlockVisit(
         testIdentity,
@@ -214,8 +239,9 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
       );
 
       expect(first.visitCount).toBe(1);
+      expect(first.lastSessionId).toBe('session-1');
 
-      // Immediate second call (within 30 min) - same session
+      // Second call with same sessionId - same session
       const second = await service.recordBlockVisit(
         testIdentity,
         'node-1',
@@ -225,10 +251,11 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         'session-1'
       );
 
-      expect(second.visitCount).toBe(1); // No increment
+      expect(second.visitCount).toBe(1); // No increment - same session
+      expect(second.lastSessionId).toBe('session-1');
     });
 
-    it('increments visit on new session (time-based)', async () => {
+    it('increments visit on new session (session-identity-based)', async () => {
       // First visit
       const first = await service.recordBlockVisit(
         testIdentity,
@@ -239,13 +266,10 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         'session-1'
       );
 
-      // Simulate old lastViewedAt (> 30 minutes ago)
-      mockBlockRepo.setState({
-        ...first,
-        lastViewedAt: new Date(Date.now() - 31 * 60 * 1000), // 31 minutes ago
-      });
+      expect(first.visitCount).toBe(1);
+      expect(first.lastSessionId).toBe('session-1');
 
-      // Second visit - should be new session
+      // Second visit with different sessionId - new session
       const second = await service.recordBlockVisit(
         testIdentity,
         'node-1',
@@ -255,8 +279,9 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         'session-2'
       );
 
-      expect(second.visitCount).toBe(2); // Incremented
+      expect(second.visitCount).toBe(2); // Incremented - new session
       expect(second.revisionCount).toBe(0); // Not completed
+      expect(second.lastSessionId).toBe('session-2');
     });
 
     it('increments revision on new session + completed block', async () => {
@@ -270,14 +295,16 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         'session-1'
       );
 
-      // Simulate completed block with old lastViewedAt
+      expect(first.visitCount).toBe(1);
+      expect(first.lastSessionId).toBe('session-1');
+
+      // Mark block as completed
       mockBlockRepo.setState({
         ...first,
-        completedAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-        lastViewedAt: new Date(Date.now() - 31 * 60 * 1000), // 31 minutes ago
+        completedAt: new Date(),
       });
 
-      // Second visit - new session + completed
+      // Second visit with different sessionId - new session + completed
       const second = await service.recordBlockVisit(
         testIdentity,
         'node-1',
@@ -287,8 +314,9 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         'session-2'
       );
 
-      expect(second.visitCount).toBe(2); // Incremented
-      expect(second.revisionCount).toBe(1); // Incremented (revision)
+      expect(second.visitCount).toBe(2); // Incremented - new session
+      expect(second.revisionCount).toBe(1); // Incremented - revision (completed + new session)
+      expect(second.lastSessionId).toBe('session-2');
     });
 
     it('validates block identity', async () => {
@@ -497,6 +525,7 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         firstViewedAt: new Date(),
         lastViewedAt: new Date(),
         completedAt: null,
+        lastSessionId: null,  // Phase 4.6
         version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -525,6 +554,7 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         firstViewedAt: new Date(),
         lastViewedAt: new Date(),
         completedAt: null,
+        lastSessionId: null,  // Phase 4.6
         version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -553,6 +583,7 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         firstViewedAt: new Date(),
         lastViewedAt: new Date(),
         completedAt: null,
+        lastSessionId: null,  // Phase 4.6
         version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -581,6 +612,7 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         firstViewedAt: new Date(),
         lastViewedAt: new Date(),
         completedAt: null,
+        lastSessionId: null,  // Phase 4.6
         version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -609,6 +641,7 @@ describe('LearningProgressService - Phase 4.3 Block-Level Tracking', () => {
         firstViewedAt: new Date(),
         lastViewedAt: new Date(),
         completedAt: null,
+        lastSessionId: null,  // Phase 4.6
         version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),

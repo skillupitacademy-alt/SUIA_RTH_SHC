@@ -541,6 +541,24 @@ export class LearningProgressService {
    * 
    * AUTHORIZATION: SELF-SCOPED - uses authenticated identity.userId ONLY
    */
+  /**
+   * Record block visit - Phase 4.6 Atomic Session Tracking
+   * 
+   * Records a learner's visit to a specific block within a navigation context.
+   * 
+   * Phase 4.6 Architecture:
+   * - Single atomic repository upsert (no SELECT before write)
+   * - Database determines session transition via SQL CASE
+   * - Visit/revision increments handled atomically in PostgreSQL
+   * - Passes sessionId to repository for atomic comparison
+   * 
+   * @param identity - Authenticated learner identity
+   * @param navigationNodeId - Navigation context (sidebar node)
+   * @param subtopicId - Content identifier for hierarchy validation
+   * @param blockId - Block instance UUID
+   * @param blockVersion - Block content version (D1, C1, S1, etc.)
+   * @param sessionId - Session identity for atomic visit tracking
+   */
   async recordBlockVisit(
     identity: AuthenticatedIdentity,
     navigationNodeId: string,
@@ -549,7 +567,7 @@ export class LearningProgressService {
     blockVersion: string,
     sessionId: string
   ): Promise<BlockLearningState> {
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Function entry', {
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Function entry (Phase 4.6)', {
       userId: identity.userId,
       brand: identity.brand,
       navigationNodeId,
@@ -586,7 +604,6 @@ export class LearningProgressService {
     }
 
     // Phase 4.5: Fetch tutorial content to extract expectedTimeSec
-    // Follow pattern from resolveRequiredBlocks - use authenticated brand
     console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Fetching tutorial content', {
       subtopicId,
       navigationNodeId,
@@ -606,7 +623,7 @@ export class LearningProgressService {
       blocksCount: section?.content?.blocks?.length || 0
     });
 
-    // Extract expectedTimeSec from block envelope (NOT page content)
+    // Extract expectedTimeSec from block envelope
     let expectedTimeSec: number | null = null;
     if (section?.content?.blocks) {
       const block = section.content.blocks.find(
@@ -624,115 +641,27 @@ export class LearningProgressService {
       console.warn('[ILS-DEBUG][SERVICE][recordBlockVisit][WARN] No blocks found in section content');
     }
 
-    // Get existing block state
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Checking for existing block state');
-    const existing = await this.blockLearningStateRepository.findOne({
-      userId: identity.userId,
-      navigationNodeId,
-      blockId,
-      blockVersion,
-    });
-
-    if (existing) {
-      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Existing record found', {
-        existingVisitCount: existing.visitCount,
-        existingLastViewedAt: existing.lastViewedAt,
-        existingCompletedAt: existing.completedAt
-      });
-    } else {
-      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] No existing record - first visit');
-    }
-
     const now = new Date();
 
-    // Session-aware visit logic (service layer responsibility)
-    if (!existing) {
-      // First visit - create new state
-      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Creating new block state (first visit)');
-      const result = await this.blockLearningStateRepository.upsert({
-        userId: identity.userId,
-        navigationNodeId,
-        blockId,
-        blockVersion,
-        visitCount: 1,
-        revisionCount: 0,
-        activeTimeSec: 0,
-        expectedTimeSec, // Phase 4.5: Populate from block envelope
-        firstViewedAt: now,
-        lastViewedAt: now,
-      });
-      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] New record created', {
-        id: result.id,
-        visitCount: result.visitCount
-      });
-      return result;
-    }
-
-    // Existing state - check session
-    // NOTE: Service layer tracks "last session" by comparing with current sessionId
-    // This is a simplification - in production, you might want to store sessionId 
-    // in a separate table or use a more sophisticated session tracking mechanism
-    
-    // For now: if lastViewedAt is recent (within 30 minutes) = same session
-    // This matches typical web session timeout behavior
-    const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
-    const elapsedMs = existing.lastViewedAt ? (now.getTime() - existing.lastViewedAt.getTime()) : null;
-    const isNewSession = !existing.lastViewedAt || 
-                         (now.getTime() - existing.lastViewedAt.getTime() > SESSION_TIMEOUT_MS);
-
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Session timeout calculation', {
-      now: now.toISOString(),
-      lastViewedAt: existing.lastViewedAt?.toISOString(),
-      elapsedMs,
-      elapsedMinutes: elapsedMs ? Math.floor(elapsedMs / 60000) : null,
-      SESSION_TIMEOUT_MS,
-      isNewSession
-    });
-
-    if (!isNewSession) {
-      // Same session - just update lastViewedAt, no visit increment
-      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Same session - no visit increment');
-      const result = await this.blockLearningStateRepository.upsert({
-        userId: identity.userId,
-        navigationNodeId,
-        blockId,
-        blockVersion,
-        visitCount: 0, // No increment
-        revisionCount: 0,
-        activeTimeSec: 0,
-        expectedTimeSec, // Phase 4.5: Update if changed (repository preserves if undefined)
-        lastViewedAt: now,
-      });
-      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] Same session update', {
-        id: result.id,
-        visitCount: result.visitCount
-      });
-      return result;
-    }
-
-    // New session
-    const isCompleted = existing.completedAt !== null;
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] New session - incrementing visit', {
-      isCompleted,
-      willIncrementRevision: isCompleted
-    });
-    
+    // Phase 4.6: Single atomic upsert - repository handles all visit/revision logic
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Executing atomic upsert (Phase 4.6)');
     const result = await this.blockLearningStateRepository.upsert({
       userId: identity.userId,
       navigationNodeId,
       blockId,
       blockVersion,
-      visitCount: 1, // Increment
-      revisionCount: isCompleted ? 1 : 0, // Increment revision if already completed
-      activeTimeSec: 0,
-      expectedTimeSec, // Phase 4.5: Update if changed (repository preserves if undefined)
+      lastSessionId: sessionId,  // Phase 4.6: Database compares for session transition
+      expectedTimeSec,
       lastViewedAt: now,
     });
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] New session recorded', {
+    
+    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] Atomic upsert completed', {
       id: result.id,
       visitCount: result.visitCount,
-      revisionCount: result.revisionCount
+      revisionCount: result.revisionCount,
+      lastSessionId: result.lastSessionId
     });
+    
     return result;
   }
 

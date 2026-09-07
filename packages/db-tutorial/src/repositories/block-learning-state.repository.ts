@@ -1,5 +1,5 @@
 /**
- * Block Learning State Repository - Phase 4.2
+ * Block Learning State Repository - Phase 4.6
  * 
  * Repository layer for per-block learner progress and telemetry.
  * 
@@ -8,15 +8,20 @@
  * RESPONSIBILITIES:
  * - Persistence and retrieval of block learning state
  * - Atomic counter updates (concurrent-safe)
+ * - Session-aware visit/revision tracking (Phase 4.6 - database-side logic)
  * - Soft-delete support
  * - Query by user, navigation node, completion status
  * 
  * NOT RESPONSIBLE FOR:
- * - Visit deduplication (service layer with session logic)
  * - Time comparison classification (future phase)
  * - Active block detection (ActiveBlockContext)
  * - expectedTimeSec calculation (from published document)
  * - Brand resolution (userId is already brand-scoped)
+ * 
+ * Phase 4.6 ARCHITECTURE:
+ * - Visit/revision decisions made atomically in PostgreSQL (not service layer)
+ * - Uses IS DISTINCT FROM for NULL-safe session comparison
+ * - Reuses proven SQL helpers from page-level implementation
  */
 
 import { and, eq, isNull, isNotNull, sql } from 'drizzle-orm';
@@ -28,6 +33,8 @@ import type { TutorialDbClientLike } from '@quiz/types';
 import {
   buildAtomicTimeIncrement,
   buildAtomicVersionIncrement,
+  buildAtomicVisitCountIncrement,
+  buildAtomicFirstViewedAtInit,
 } from './tutorial-navigation-progress-sql.helpers';
 
 import { TutorialRepositoryBase } from './base.repository';
@@ -76,6 +83,9 @@ export interface UpdateBlockLearningStateInput {
  * Counters represent INCREMENTS when provided:
  * - visitCount: 1 to increment visit
  * - activeTimeSec: seconds to add
+ * 
+ * Phase 4.6: Session tracking for atomic visit/revision logic
+ * - lastSessionId: Session identity for database-side session transition detection
  */
 export interface UpsertBlockLearningStateInput {
   // Identity (required)
@@ -83,6 +93,9 @@ export interface UpsertBlockLearningStateInput {
   navigationNodeId: string;
   blockId: string;
   blockVersion: string;
+
+  // Session tracking (Phase 4.6 - atomic session-aware metrics)
+  lastSessionId?: string;
 
   // Telemetry (optional - treated as increments in conflict handler)
   visitCount?: number;
@@ -313,28 +326,59 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
               blockLearningState.blockVersion,
             ],
             // WHERE clause for partial unique index (active records only)
-            where: sql`${blockLearningState.deletedAt} IS NULL`,
+            targetWhere: sql`${blockLearningState.deletedAt} IS NULL`,
             // Atomic updates on conflict
             set: {
-              // Atomic counter increments (cumulative)
-              visitCount:
-                data.visitCount !== undefined
-                  ? buildAtomicTimeIncrement(blockLearningState.visitCount, data.visitCount)
-                  : blockLearningState.visitCount,
-              revisionCount:
-                data.revisionCount !== undefined
-                  ? buildAtomicTimeIncrement(blockLearningState.revisionCount, data.revisionCount)
-                  : blockLearningState.revisionCount,
+              // Phase 4.6: Atomic session-aware visit count
+              // Increments ONLY when session changes (database determines transition)
+              // Uses IS DISTINCT FROM for NULL-safe session comparison
+              visitCount: data.lastSessionId
+                ? buildAtomicVisitCountIncrement(
+                    blockLearningState.visitCount,
+                    blockLearningState.lastSessionId,
+                    data.lastSessionId
+                  )
+                : blockLearningState.visitCount,
+
+              // Phase 4.6: Atomic session-aware revision count
+              // Increments when: session changes AND block is completed
+              // Logic: WHEN lastSessionId IS DISTINCT FROM newSessionId AND completedAt IS NOT NULL
+              revisionCount: data.lastSessionId
+                ? sql`
+                    CASE
+                      WHEN ${blockLearningState.lastSessionId} IS DISTINCT FROM ${data.lastSessionId}
+                        AND ${blockLearningState.completedAt} IS NOT NULL
+                      THEN ${blockLearningState.revisionCount} + 1
+                      ELSE ${blockLearningState.revisionCount}
+                    END
+                  `
+                : blockLearningState.revisionCount,
+
+              // Active time: simple atomic increment (unchanged - works for both visit and active-time calls)
               activeTimeSec:
                 data.activeTimeSec !== undefined
                   ? buildAtomicTimeIncrement(blockLearningState.activeTimeSec, data.activeTimeSec)
                   : blockLearningState.activeTimeSec,
 
+              // Phase 4.6: Atomic firstViewedAt initialization
+              // Sets timestamp ONLY on first visit (when lastSessionId IS NULL)
+              // Reuses proven page-level helper
+              firstViewedAt: data.lastSessionId
+                ? buildAtomicFirstViewedAtInit(
+                    blockLearningState.firstViewedAt,
+                    blockLearningState.lastSessionId,
+                    now
+                  )
+                : data.firstViewedAt !== undefined
+                  ? data.firstViewedAt
+                  : blockLearningState.firstViewedAt,
+
+              // Phase 4.6: Persist session identity (enables atomic session transition detection)
+              lastSessionId: data.lastSessionId ?? blockLearningState.lastSessionId,
+
               // Update other fields if provided, preserve if not
               expectedTimeSec:
                 data.expectedTimeSec !== undefined ? data.expectedTimeSec : blockLearningState.expectedTimeSec,
-              firstViewedAt:
-                data.firstViewedAt !== undefined ? data.firstViewedAt : blockLearningState.firstViewedAt,
               lastViewedAt: data.lastViewedAt ?? now, // Always update lastViewedAt
               completedAt: data.completedAt !== undefined ? data.completedAt : blockLearningState.completedAt,
 

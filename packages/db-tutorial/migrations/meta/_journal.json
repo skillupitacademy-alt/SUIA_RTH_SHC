@@ -169,6 +169,13 @@
       "when": 1788587362377,
       "tag": "0023_lame_deathbird",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1788738165011,
+      "tag": "0024_first_wendell_rand",
+      "breakpoints": true
     }
   ]
 }

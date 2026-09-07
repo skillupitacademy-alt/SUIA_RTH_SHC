@@ -14,13 +14,14 @@ import { sql } from 'drizzle-orm';
  * - blockVersion: Block content version (D1, C1, S1, etc.)
  * 
  * TELEMETRY:
- * - visitCount: Block-level visit tracking
- * - revisionCount: Return visits after completion
+ * - visitCount: Block-level visit tracking (atomic session-aware)
+ * - revisionCount: Return visits after completion (atomic session-aware)
  * - activeTimeSec: Measured active engagement time (independent from page time)
  * - expectedTimeSec: Authored expected time from published document (nullable)
+ * - lastSessionId: Session identity for atomic visit/revision logic (Phase 4.6)
  * 
  * TIMESTAMPS:
- * - firstViewedAt: First block observation
+ * - firstViewedAt: First block observation (atomic initialization)
  * - lastViewedAt: Most recent observation
  * - completedAt: Denormalized completion timestamp
  *   (authoritative source: tutorial_navigation_progress.completed_blocks)
@@ -28,7 +29,7 @@ import { sql } from 'drizzle-orm';
  * ARCHITECTURE:
  * - Independent from page-level progress (separate measurement scopes)
  * - Generic (works for any block type via canonical identity)
- * - Session-agnostic (visit logic managed by service layer, not stored here)
+ * - Session-aware (Phase 4.6: atomic session tracking in database, not service)
  * - Cross-page blocks have separate telemetry per navigationNodeId
  */
 export const blockLearningState = pgTable('block_learning_state', {
@@ -47,6 +48,9 @@ export const blockLearningState = pgTable('block_learning_state', {
   visitCount: integer('visit_count').notNull().default(0),
   revisionCount: integer('revision_count').notNull().default(0),
   activeTimeSec: integer('active_time_sec').notNull().default(0),
+  
+  // Session Tracking (Phase 4.6 - Atomic session-aware metrics)
+  lastSessionId: text('last_session_id'),  // Nullable - NULL = no prior session
   
   // Expected Time (authored metadata from published document)
   expectedTimeSec: integer('expected_time_sec'),  // Nullable - may not exist for all blocks

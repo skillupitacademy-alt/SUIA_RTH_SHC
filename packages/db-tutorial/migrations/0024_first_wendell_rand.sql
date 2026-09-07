@@ -1,0 +1,1 @@
+ALTER TABLE "block_learning_state" ADD COLUMN "last_session_id" text;
