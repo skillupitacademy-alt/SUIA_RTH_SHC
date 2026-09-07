@@ -19,6 +19,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
+import { db } from '../../db';
+import { blockLearningState } from '../../schema/block-learning-state';
+import { and, eq } from 'drizzle-orm';
 import { BlockLearningStateRepository } from '../block-learning-state.repository';
 import type { BlockIdentity } from '../block-learning-state.repository';
 
@@ -32,8 +35,18 @@ describe('BlockLearningStateRepository - PostgreSQL Integration (Phase 4.6)', ()
     blockVersion: 'D1',
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     repository = new BlockLearningStateRepository();
+
+    // Clean test identity before each test to ensure isolation
+    await db.delete(blockLearningState).where(
+      and(
+        eq(blockLearningState.userId, testIdentity.userId),
+        eq(blockLearningState.navigationNodeId, testIdentity.navigationNodeId),
+        eq(blockLearningState.blockId, testIdentity.blockId),
+        eq(blockLearningState.blockVersion, testIdentity.blockVersion),
+      )
+    );
   });
 
   // ==========================================================================

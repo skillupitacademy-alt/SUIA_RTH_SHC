@@ -283,9 +283,11 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
       navigationNodeId: data.navigationNodeId,
       blockId: data.blockId,
       blockVersion: data.blockVersion,
+      lastSessionId: data.lastSessionId,  // Phase 4.6 diagnostic
       visitCount: data.visitCount,
       revisionCount: data.revisionCount,
       activeTimeSec: data.activeTimeSec,
+      expectedTimeSec: data.expectedTimeSec,
       timestamp: new Date().toISOString()
     });
     
@@ -302,15 +304,20 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
             blockId: data.blockId,
             blockVersion: data.blockVersion,
 
+            // Session tracking (Phase 4.6)
+            lastSessionId: data.lastSessionId ?? null,
+
             // Telemetry (initial values)
+            // Phase 4.6: First session-tracked visit initializes to semantic values
             expectedTimeSec: data.expectedTimeSec ?? null,
-            visitCount: data.visitCount ?? 0,
+            visitCount: data.lastSessionId ? 1 : (data.visitCount ?? 0),
             revisionCount: data.revisionCount ?? 0,
             activeTimeSec: data.activeTimeSec ?? 0,
 
             // Timestamps (initial values)
-            firstViewedAt: data.firstViewedAt ?? null,
-            lastViewedAt: data.lastViewedAt ?? null,
+            // Phase 4.6: First session-tracked visit initializes timestamps
+            firstViewedAt: data.lastSessionId ? now : (data.firstViewedAt ?? null),
+            lastViewedAt: data.lastViewedAt ?? now,
             completedAt: data.completedAt ?? null,
 
             // Audit
@@ -400,6 +407,7 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
         id: result.id,
         visitCount: result.visitCount,
         revisionCount: result.revisionCount,
+        lastSessionId: result.lastSessionId,  // Phase 4.6 diagnostic
         lastViewedAt: result.lastViewedAt
       });
 
