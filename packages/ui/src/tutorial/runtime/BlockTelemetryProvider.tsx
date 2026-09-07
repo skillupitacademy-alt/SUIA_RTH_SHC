@@ -173,7 +173,7 @@ export function BlockTelemetryProvider({
       });
     }
     
-    console.log(`[BlockTelemetry] Added to pending queue: ${blockId} +${Math.floor(ms/1000)}s (total pending: ${Math.floor((existing?.pendingMs ?? 0) + ms)/1000}s)`);
+    // console.log(`[BlockTelemetry] Added to pending queue: ${blockId} +${Math.floor(ms/1000)}s (total pending: ${Math.floor((existing?.pendingMs ?? 0) + ms)/1000}s)`);
   }, [getPendingKey]);
   
   /**
@@ -211,19 +211,19 @@ export function BlockTelemetryProvider({
     blockId: string,
     blockVersion: string
   ): Promise<void> => {
-    console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit called', {
-      blockId,
-      blockVersion,
-      enabled,
-      hasSessionId: !!sessionIdRef.current,
-      sessionId: sessionIdRef.current,
-      navigationNodeId,
-      subtopicId,
-      timestamp: new Date().toISOString()
-    });
+    // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit called', {
+    //   blockId,
+    //   blockVersion,
+    //   enabled,
+    //   hasSessionId: !!sessionIdRef.current,
+    //   sessionId: sessionIdRef.current,
+    //   navigationNodeId,
+    //   subtopicId,
+    //   timestamp: new Date().toISOString()
+    // });
     
     if (!enabled || !sessionIdRef.current) {
-      console.warn('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit SKIPPED - disabled or no sessionId');
+      // console.warn('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit SKIPPED - disabled or no sessionId');
       return;
     }
     
@@ -232,7 +232,7 @@ export function BlockTelemetryProvider({
       lastVisitIdentityRef.current?.blockId === blockId &&
       lastVisitIdentityRef.current?.blockVersion === blockVersion
     ) {
-      console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit SKIPPED - duplicate');
+      // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit SKIPPED - duplicate');
       return;
     }
     
@@ -247,12 +247,12 @@ export function BlockTelemetryProvider({
       sectionId,
     };
     
-    console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] POST /api/tutorial/ils/block-visit', {
-      url: '/api/tutorial/ils/block-visit',
-      method: 'POST',
-      hasSessionIdHeader: !!sessionIdRef.current,
-      payload: requestPayload
-    });
+    // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] POST /api/tutorial/ils/block-visit', {
+    //   url: '/api/tutorial/ils/block-visit',
+    //   method: 'POST',
+    //   hasSessionIdHeader: !!sessionIdRef.current,
+    //   payload: requestPayload
+    // });
     
     try {
       const response = await fetch('/api/tutorial/ils/block-visit', {
@@ -265,25 +265,25 @@ export function BlockTelemetryProvider({
         body: JSON.stringify(requestPayload),
       });
       
-      console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] POST /api/tutorial/ils/block-visit response', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
+      // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] POST /api/tutorial/ils/block-visit response', {
+      //   status: response.status,
+      //   statusText: response.statusText,
+      //   ok: response.ok
+      // });
       
       if (!response.ok) {
         const responseText = await response.text();
-        console.warn('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][WARN] Visit failed', {
-          status: response.status,
-          responseBody: responseText
-        });
+        // console.warn('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][WARN] Visit failed', {
+        //   status: response.status,
+        //   responseBody: responseText
+        // });
       } else {
         const responseData = await response.json();
-        console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][SUCCESS] Visit succeeded', responseData);
+        // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][SUCCESS] Visit succeeded', responseData);
       }
     } catch (error) {
       // Silent failure - telemetry must not break UX
-      console.error('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][ERROR] Visit error:', error);
+      // console.error('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][ERROR] Visit error:', error);
     }
   }, [enabled, navigationNodeId, subtopicId, sectionId]);
   
@@ -382,11 +382,11 @@ export function BlockTelemetryProvider({
         if (totalRemaining > 0) {
           // Update entry with remainder
           pending.pendingMs = totalRemaining;
-          console.log(`[BlockTelemetry] Delivered ${safeIncrement}s for ${pending.blockId}, ${Math.floor(totalRemaining/1000)}s remaining`);
+          // console.log(`[BlockTelemetry] Delivered ${safeIncrement}s for ${pending.blockId}, ${Math.floor(totalRemaining/1000)}s remaining`);
         } else {
           // Fully delivered - remove from queue
           pendingQueueRef.current.delete(key);
-          console.log(`[BlockTelemetry] Fully delivered ${pending.blockId}`);
+          // console.log(`[BlockTelemetry] Fully delivered ${pending.blockId}`);
         }
       }).finally(() => {
         flushPromiseRef.current = null;

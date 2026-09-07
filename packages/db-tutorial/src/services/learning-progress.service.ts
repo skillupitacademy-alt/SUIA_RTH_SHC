@@ -567,29 +567,29 @@ export class LearningProgressService {
     blockVersion: string,
     sessionId: string
   ): Promise<BlockLearningState> {
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Function entry (Phase 4.6)', {
-      userId: identity.userId,
-      brand: identity.brand,
-      navigationNodeId,
-      blockId,
-      blockVersion,
-      sessionId,
-      subtopicId,
-      timestamp: new Date().toISOString()
-    });
+    // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Function entry (Phase 4.6)', {
+    //   userId: identity.userId,
+    //   brand: identity.brand,
+    //   navigationNodeId,
+    //   blockId,
+    //   blockVersion,
+    //   sessionId,
+    //   subtopicId,
+    //   timestamp: new Date().toISOString()
+    // });
     
     // Validate inputs
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Validating inputs');
+    // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Validating inputs');
     validateUserId(identity.userId);
     validateNavigationNodeId(navigationNodeId);
     validateBlockId(blockId);
     validateBlockVersion(blockVersion);
     validateSessionId(sessionId);
     validateSubtopicId(subtopicId);
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Input validation passed');
+    // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Input validation passed');
 
     // Validate navigation hierarchy
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Validating navigation hierarchy');
+    // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Validating navigation hierarchy');
     try {
       await this.validateNavigationHierarchy(
         navigationNodeId,
@@ -597,18 +597,18 @@ export class LearningProgressService {
         null,
         identity
       );
-      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Hierarchy validation passed');
+      // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Hierarchy validation passed');
     } catch (error) {
-      console.error('[ILS-DEBUG][SERVICE][recordBlockVisit][ERROR] Hierarchy validation failed:', error);
+      // console.error('[ILS-DEBUG][SERVICE][recordBlockVisit][ERROR] Hierarchy validation failed:', error);
       throw error;
     }
 
     // Phase 4.5: Fetch tutorial content to extract expectedTimeSec
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Fetching tutorial content', {
-      subtopicId,
-      navigationNodeId,
-      brand: identity.brand
-    });
+    // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Fetching tutorial content', {
+    //   subtopicId,
+    //   navigationNodeId,
+    //   brand: identity.brand
+    // });
     
     const section = await this.sectionRepository.getTutorialByPageIdentity(
       subtopicId,
@@ -616,12 +616,12 @@ export class LearningProgressService {
       identity.brand
     );
 
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Tutorial content fetched', {
-      hasSectionFound: !!section,
-      hasContent: !!section?.content,
-      hasBlocks: !!section?.content?.blocks,
-      blocksCount: section?.content?.blocks?.length || 0
-    });
+    // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Tutorial content fetched', {
+    //   hasSectionFound: !!section,
+    //   hasContent: !!section?.content,
+    //   hasBlocks: !!section?.content?.blocks,
+    //   blocksCount: section?.content?.blocks?.length || 0
+    // });
 
     // Extract expectedTimeSec from block envelope
     let expectedTimeSec: number | null = null;
@@ -631,20 +631,20 @@ export class LearningProgressService {
       );
       expectedTimeSec = block?.expectedTimeSec ?? null;
       
-      console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Block lookup in content', {
-        requestedBlockId: blockId,
-        requestedBlockVersion: blockVersion,
-        blockFound: !!block,
-        extractedExpectedTimeSec: expectedTimeSec
-      });
+      // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Block lookup in content', {
+      //   requestedBlockId: blockId,
+      //   requestedBlockVersion: blockVersion,
+      //   blockFound: !!block,
+      //   extractedExpectedTimeSec: expectedTimeSec
+      // });
     } else {
-      console.warn('[ILS-DEBUG][SERVICE][recordBlockVisit][WARN] No blocks found in section content');
+      // console.warn('[ILS-DEBUG][SERVICE][recordBlockVisit][WARN] No blocks found in section content');
     }
 
     const now = new Date();
 
     // Phase 4.6: Single atomic upsert - repository handles all visit/revision logic
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Executing atomic upsert (Phase 4.6)');
+    // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit] Executing atomic upsert (Phase 4.6)');
     const result = await this.blockLearningStateRepository.upsert({
       userId: identity.userId,
       navigationNodeId,
@@ -655,12 +655,12 @@ export class LearningProgressService {
       lastViewedAt: now,
     });
     
-    console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] Atomic upsert completed', {
-      id: result.id,
-      visitCount: result.visitCount,
-      revisionCount: result.revisionCount,
-      lastSessionId: result.lastSessionId
-    });
+    // console.log('[ILS-DEBUG][SERVICE][recordBlockVisit][SUCCESS] Atomic upsert completed', {
+    //   id: result.id,
+    //   visitCount: result.visitCount,
+    //   revisionCount: result.revisionCount,
+    //   lastSessionId: result.lastSessionId
+    // });
     
     return result;
   }

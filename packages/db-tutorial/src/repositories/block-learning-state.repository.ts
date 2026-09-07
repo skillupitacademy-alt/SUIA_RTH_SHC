@@ -141,13 +141,6 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
    * @returns Block state or null if not found
    */
   async findOne(identity: BlockIdentity): Promise<BlockLearningState | null> {
-    console.log('[ILS-DEBUG][REPOSITORY][blockLearningState] findOne called', {
-      userId: identity.userId,
-      navigationNodeId: identity.navigationNodeId,
-      blockId: identity.blockId,
-      blockVersion: identity.blockVersion
-    });
-    
     try {
       const rows = await this.runRead(
         this.dbInstance
@@ -166,19 +159,8 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
       );
 
       const result = rows[0] ?? null;
-      console.log('[ILS-DEBUG][REPOSITORY][blockLearningState] findOne result', {
-        found: !!result,
-        visitCount: result?.visitCount,
-        lastViewedAt: result?.lastViewedAt
-      });
-      
       return result;
     } catch (error) {
-      console.error('[ILS-DEBUG][REPOSITORY][blockLearningState][ERROR] findOne failed:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
       throw error;
     }
   }
@@ -278,19 +260,6 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
    * @returns Created or updated block state
    */
   async upsert(data: UpsertBlockLearningStateInput): Promise<BlockLearningState> {
-    console.log('[ILS-DEBUG][REPOSITORY][blockLearningState] upsert called', {
-      userId: data.userId,
-      navigationNodeId: data.navigationNodeId,
-      blockId: data.blockId,
-      blockVersion: data.blockVersion,
-      lastSessionId: data.lastSessionId,  // Phase 4.6 diagnostic
-      visitCount: data.visitCount,
-      revisionCount: data.revisionCount,
-      activeTimeSec: data.activeTimeSec,
-      expectedTimeSec: data.expectedTimeSec,
-      timestamp: new Date().toISOString()
-    });
-    
     const now = new Date();
 
     try {
@@ -399,21 +368,11 @@ export class BlockLearningStateRepository extends TutorialRepositoryBase {
       );
 
       if (!result) {
-        console.error('[ILS-DEBUG][REPOSITORY][blockLearningState][ERROR] No result returned from upsert');
         throw new Error('Failed to upsert block learning state');
       }
 
-      console.log('[ILS-DEBUG][REPOSITORY][blockLearningState][SUCCESS] upsert completed', {
-        id: result.id,
-        visitCount: result.visitCount,
-        revisionCount: result.revisionCount,
-        lastSessionId: result.lastSessionId,  // Phase 4.6 diagnostic
-        lastViewedAt: result.lastViewedAt
-      });
-
       return result;
     } catch (error) {
-      console.error('[ILS-DEBUG][REPOSITORY][blockLearningState][ERROR] upsert failed:', error);
       throw error;
     }
   }
