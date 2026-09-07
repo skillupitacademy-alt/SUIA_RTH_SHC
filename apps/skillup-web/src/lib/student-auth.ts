@@ -51,12 +51,12 @@ function getPayloadRoles(payload: UserTokenPayload): string[] {
   // 📊 SECURITY AUDIT: Log role normalization violations (dev only)
   const hadMixedCase = roles.some(role => role !== role.toLowerCase());
   if (hadMixedCase && process.env.NODE_ENV !== 'production') {
-    console.warn('⚠️ SECURITY: Role normalization in SkillUp auth', JSON.stringify({
-      tag: 'SKILLUP_ROLE_NORMALIZATION',
-      original: roles,
-      normalized: normalizedRoles,
-      timestamp: new Date().toISOString(),
-    }));
+    // console.warn('⚠️ SECURITY: Role normalization in SkillUp auth', JSON.stringify({
+    //   tag: 'SKILLUP_ROLE_NORMALIZATION',
+    //   original: roles,
+    //   normalized: normalizedRoles,
+    //   timestamp: new Date().toISOString(),
+    // }));
   }
   
   return normalizedRoles;
@@ -71,27 +71,27 @@ function hasSkillupAccess(payload: UserTokenPayload): boolean {
 }
 
 export async function requireStudentAuth(request: NextRequest): Promise<StudentAuthResult> {
-  console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Starting authentication');
+  // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Starting authentication');
   
   const token = getRequestToken(request);
   if (token === null) {
-    console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] No token found');
+    // console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] No token found');
     return {
       ok: false,
       response: NextResponse.json({ error: 'Authentication required' }, { status: 401 }),
     };
   }
 
-  console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Token found, verifying...');
+  // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Token found, verifying...');
 
   try {
     const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
-    console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Token verified', {
-      hasBrand: !!payload.brand,
-      brand: payload.brand,
-      hasPlatforms: !!payload.platforms,
-      platforms: payload.platforms
-    });
+    // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Token verified', {
+    //   hasBrand: !!payload.brand,
+    //   brand: payload.brand,
+    //   hasPlatforms: !!payload.platforms,
+    //   platforms: payload.platforms
+    // });
     
     const roles = getPayloadRoles(payload);
     const userId =
@@ -101,13 +101,13 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
           ? payload.userId.trim()
           : null;
 
-    console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Extracted identity', {
-      userId,
-      roles
-    });
+    // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Extracted identity', {
+    //   userId,
+    //   roles
+    // });
 
     if (userId === null) {
-      console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] No userId in payload');
+      // console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] No userId in payload');
       return {
         ok: false,
         response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
@@ -115,12 +115,12 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
     }
 
     const skillupAccessCheck = hasSkillupAccess(payload);
-    console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Brand check', {
-      hasSkillupAccess: skillupAccessCheck
-    });
+    // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Brand check', {
+    //   hasSkillupAccess: skillupAccessCheck
+    // });
     
     if (hasSkillupAccess(payload) === false) {
-      console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] Brand check failed - no SkillUp access');
+      // console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] Brand check failed - no SkillUp access');
       return {
         ok: false,
         response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
@@ -128,23 +128,23 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
     }
 
     const roleCheck = roles.some((role) => ALLOWED_ROLES.has(role));
-    console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Role check', {
-      hasAllowedRole: roleCheck,
-      roles
-    });
+    // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Role check', {
+    //   hasAllowedRole: roleCheck,
+    //   roles
+    // });
     
     if (roles.some((role) => ALLOWED_ROLES.has(role)) === false) {
-      console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] Role check failed - no allowed role');
+      // console.warn('[ILS-DEBUG][AUTH][requireStudentAuth][FAILED] Role check failed - no allowed role');
       return {
         ok: false,
         response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
       };
     }
 
-    console.log('[ILS-DEBUG][AUTH][requireStudentAuth][SUCCESS]', { userId });
+    // console.log('[ILS-DEBUG][AUTH][requireStudentAuth][SUCCESS]', { userId });
     return { ok: true, userId, payload };
   } catch (error) {
-    console.error('[ILS-DEBUG][AUTH][requireStudentAuth][ERROR] Token verification failed:', error);
+    // console.error('[ILS-DEBUG][AUTH][requireStudentAuth][ERROR] Token verification failed:', error);
     return {
       ok: false,
       response: NextResponse.json({ error: 'Authentication required' }, { status: 401 }),

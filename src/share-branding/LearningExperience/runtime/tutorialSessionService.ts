@@ -90,16 +90,16 @@ export function getOrCreateTutorialLearningSessionId(): string | null {
   try {
     const existing = sessionStorage.getItem(TUTORIAL_LEARNING_SESSION_KEY);
     if (existing !== null && isValidSessionId(existing)) {
-      console.log('[ILS-DEBUG][BROWSER][tutorialSessionService] Session ID retrieved from sessionStorage:', existing);
+      // console.log('[ILS-DEBUG][BROWSER][tutorialSessionService] Session ID retrieved from sessionStorage:', existing);
       return existing;
     }
     const sessionId = generateSessionId();
-    console.log('[ILS-DEBUG][BROWSER][tutorialSessionService] NEW session ID generated:', sessionId);
+    // console.log('[ILS-DEBUG][BROWSER][tutorialSessionService] NEW session ID generated:', sessionId);
     sessionStorage.setItem(TUTORIAL_LEARNING_SESSION_KEY, sessionId);
     return sessionId;
   } catch (error) {
     // Graceful degradation for private-browsing / quota errors.
-    console.error('[ILS-DEBUG][BROWSER][tutorialSessionService][ERROR] SessionStorage access failed:', error);
+    // console.error('[ILS-DEBUG][BROWSER][tutorialSessionService][ERROR] SessionStorage access failed:', error);
     return generateSessionId();
   }
 }
