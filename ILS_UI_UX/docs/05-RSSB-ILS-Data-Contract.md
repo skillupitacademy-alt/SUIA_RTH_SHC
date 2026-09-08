@@ -24,6 +24,34 @@ RSSB (passive observer - displays active block only)
 
 ---
 
+## 🔍 CRITICAL IMPLEMENTATION CLARIFICATION
+
+**THE BACKEND METRICS INFRASTRUCTURE ALREADY EXISTS.**
+
+This is **NOT** a greenfield implementation. This is a **READ-PATH ENHANCEMENT**.
+
+**Already Implemented (Phase 4.6):**
+- ✅ `block_learning_state` database table with all required fields
+- ✅ `BlockLearningStateRepository` with upsert/write operations
+- ✅ `LearningProgressService` recording methods (recordBlockActiveTime, recordBlockVisit, etc.)
+- ✅ Block metric persistence (visit_count, revision_count, active_time_sec, etc.)
+- ✅ Runtime integration (IntersectionObserver → ActiveBlockContext → telemetry)
+
+**Evidence:** Runtime logs show `BlockLearningStateRepository.upsert()` executing with block identities (D1, C1) and metric values (active_time_sec: 14, etc.)
+
+**What's Missing:**
+- ❌ Repository READ method for block states (may exist but underutilized)
+- ❌ `getNavigationProgress()` querying block_learning_state table
+- ❌ Navigation API exposing full block metrics
+- ❌ ILSProvider mapping complete metrics to activeBlockProgress
+
+**Implementation Mandate:**
+> **INVESTIGATE FIRST. REUSE EXISTING INFRASTRUCTURE. DO NOT REBUILD THE BACKEND.**
+
+This task is primarily about **exposing existing persisted data through the ILS read contract**, not creating new metric recording logic.
+
+---
+
 ## 🎯 EXECUTIVE SUMMARY
 
 **Purpose:** Establish the authoritative data contract between RSSB and ILS runtime
@@ -224,51 +252,107 @@ WHERE deleted_at IS NULL
 
 ## 🚨 PART 5: THE CORE PROBLEM
 
-### What Exists
+**CRITICAL CLARIFICATION:** The backend block-level metrics infrastructure **ALREADY EXISTS**.
+
+### Write Path (ALREADY IMPLEMENTED ✅)
 
 ```text
-Database (block_learning_state)
+IntersectionObserver
         ↓
-    HAS ALL DATA
+ActiveBlockContext
+        ↓
+Block activity tracking
+        ↓
+LearningProgressService.recordBlockActiveTime()
+LearningProgressService.recordBlockVisit()
+        ↓
+BlockLearningStateRepository.upsert()
+        ↓
+block_learning_state table
+        ↓
+METRICS PERSISTED:
+- visit_count
+- revision_count
+- active_time_sec
+- expected_time_sec
+- first_viewed_at
+- last_viewed_at
+- completed_at
+```
+
+**Evidence:** Runtime logs show `BlockLearningStateRepository.upsert()` executing with block identity (D1, C1, etc.) and `active_time_sec` values.
+
+### Read Path (INCOMPLETE ❌)
+
+```text
+block_learning_state table
+        ↓
+BlockLearningStateRepository (read method?)
         ↓
 LearningProgressService.getNavigationProgress()
         ↓
-    DOES NOT QUERY block_learning_state
+    ⚠️ Currently returns limited block data
         ↓
 NavigationProgressResponse
         ↓
-    ONLY INCLUDES completedBlocks[]
+    ⚠️ Only includes completedBlocks[] (minimal)
         ↓
 ILSProvider
         ↓
-    ONLY EXPOSES isCompleted + completedAt
+    ⚠️ Only exposes isCompleted + completedAt
         ↓
 RSSB
         ↓
-    CANNOT RENDER MOST SECTIONS
+    ❌ Cannot render most sections
 ```
 
-### What's Needed
+### The Gap
+
+**NOT MISSING:**
+- ✅ Database schema
+- ✅ Metric recording logic
+- ✅ Repository upsert operations
+- ✅ Service write methods
+- ✅ Block-level persistence
+
+**MISSING:**
+- ❌ Repository read method for block states (or underutilized existing method)
+- ❌ Service querying block_learning_state in getNavigationProgress()
+- ❌ API exposing full block metrics
+- ❌ ILSProvider mapping complete metrics to activeBlockProgress
+
+### What Gate 3C Actually Needs
 
 ```text
-Database (block_learning_state)
+INVESTIGATE:
+        ↓
+Existing BlockLearningStateRepository
+        ↓
+Does read method exist?
+        │
+        ├─ YES → Reuse it
+        └─ NO  → Add minimal read method
+        ↓
+ENHANCE:
         ↓
 LearningProgressService.getNavigationProgress()
         ↓
-    ENHANCED: Query block_learning_state table
+Query existing block_learning_state records
         ↓
-NavigationProgressResponse
+Map to blocks[] DTO
         ↓
-    ENHANCED: Include blocks[] with full metrics
+EXPOSE:
         ↓
-ILSProvider
+Navigation API returns blocks[]
         ↓
-    ENHANCED: Expose complete activeBlockProgress
+ILSProvider stores blocks[] internally
         ↓
-RSSB
+ILSProvider resolves activeBlockProgress from blocks[]
         ↓
-    CAN RENDER ALL SECTIONS
+RSSB consumes complete activeBlockProgress
 ```
+
+**This is a READ-SIDE enhancement, NOT a backend rebuild.**
 
 ---
 
@@ -316,13 +400,20 @@ interface NavigationProgressWithCalculatedDTO {
 5. ✅ Backwards compatible - existing consumers unaffected
 
 **Implementation Steps:**
-1. Create `BlockLearningStateRepository.getBlockStates()` method
-2. Call in `LearningProgressService.getNavigationProgress()`
-3. Add `blocks[]` to DTO
-4. Update `NavigationProgressResponse` interface
-5. Update `ILSProvider` to store `blocks[]` internally
-6. Enhance `ILSActiveBlockProgress` interface
-7. ILSProvider resolves active block from internal `blocks[]` array
+
+**⚠️ CRITICAL: Investigate before implementing**
+
+1. **Inspect existing `BlockLearningStateRepository`** - Does a read method already exist?
+2. **Verify existing write path** - Confirm metrics are being recorded correctly
+3. **Inspect `LearningProgressService.getNavigationProgress()`** - What does it currently do?
+4. **Reuse or minimally extend** - Do NOT rebuild what exists
+5. Add repository read for block states (only if needed)
+6. Enhance `getNavigationProgress()` to query block states
+7. Add `blocks[]` to DTO (backwards compatible)
+8. Update `NavigationProgressResponse` interface
+9. Update `ILSProvider` to store `blocks[]` internally
+10. Enhance `ILSActiveBlockProgress` interface
+11. ILSProvider resolves active block from internal `blocks[]` array
 
 ---
 
@@ -517,14 +608,18 @@ activeBlockProgress.isCompleted = false
 - [x] Verify database schema
 - [x] Identify data gap
 
-### Phase 2: API Enhancement (NEXT)
+### Phase 2: Repository Investigation & Enhancement (NEXT)
 
-- [ ] Create `BlockLearningStateRepository.getBlockStates()` method
-- [ ] Enhance `LearningProgressService.getNavigationProgress()`
-- [ ] Add `blocks[]` to navigation response DTO
+- [ ] **INVESTIGATE:** Inspect `BlockLearningStateRepository` for existing read methods
+- [ ] **INVESTIGATE:** Verify existing metric recording (write path)
+- [ ] **INVESTIGATE:** Inspect `LearningProgressService.getNavigationProgress()` current implementation
+- [ ] **REUSE OR EXTEND:** Add/enhance repository read method (only if needed)
+- [ ] **ENHANCE:** Modify `getNavigationProgress()` to query block states
+- [ ] Add `blocks[]` to navigation response DTO (backwards compatible)
 - [ ] Update API response interface
-- [ ] Write tests for enhanced API
+- [ ] Write tests for enhanced read path
 - [ ] Verify backwards compatibility
+- [ ] Verify no regressions in write path
 
 ### Phase 3: ILSProvider Enhancement
 
