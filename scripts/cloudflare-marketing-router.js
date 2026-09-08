@@ -1,6 +1,6 @@
 const ORIGINS = {
-  "www.realtutorialhub.com": "https://realtutorialhub-site-581488566988.asia-south1.run.app",
-  "www.skillupitacademy.com": "https://skillupitacademy-site-581488566988.asia-south1.run.app",
+  "www.realtutorialhub.com": "https://origin-www.realtutorialhub.com",
+  "www.skillupitacademy.com": "https://origin-www.skillupitacademy.com",
 };
 
 const REDIRECTS = {
