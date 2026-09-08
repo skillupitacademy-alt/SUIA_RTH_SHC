@@ -735,3 +735,406 @@ Create a new hypothetical block (X1) and answer:
 ---
 
 **Audit End** | Status: READY TO EXECUTE | Blocks: Gate 3C Implementation
+
+
+---
+
+## 🔴 CRITICAL AUDIT ADDITIONS
+
+### Additional Required Audits (13-18)
+
+The initial 12 audits establish architectural intent. The following 6 audits verify **operational correctness** and **true universality**.
+
+---
+
+### ✅ AUDIT 13: Database Correctness & Concurrency
+
+**Objective:** Verify repository implementation matches actual database constraints
+
+**Critical Issue:** Existing evidence shows PostgreSQL `42P10` errors indicating ON CONFLICT mismatch
+
+**Questions:**
+
+1. **Does ON CONFLICT target match database constraint?**
+   - [ ] Repository specifies correct columns?
+   - [ ] Partial unique index handled correctly?
+   - [ ] `WHERE deleted_at IS NULL` respected?
+
+2. **Concurrent upsert safety:**
+   - [ ] Multiple simultaneous visits handled atomically?
+   - [ ] Session-aware increment logic correct?
+   - [ ] No race conditions?
+
+3. **Soft delete handling:**
+   - [ ] Deleted rows excluded from reads?
+   - [ ] Deleted rows don't violate unique constraint?
+   - [ ] Repository filters correctly?
+
+**Investigation Steps:**
+1. Read actual database migration files
+2. Find exact unique constraint definition
+3. Compare with repository ON CONFLICT clause
+4. Check ORM/query builder soft-delete handling
+5. Review any existing concurrency tests
+
+**Expected vs Actual:**
+```typescript
+// Expected
+ON CONFLICT (user_id, navigation_node_id, block_id, block_version)
+WHERE deleted_at IS NULL
+
+// Verify repository matches
+```
+
+---
+
+### ✅ AUDIT 14: API Serialization & Data Types
+
+**Objective:** Verify type consistency across all boundaries
+
+**Trace timestamp representation:**
+```text
+PostgreSQL timestamp
+       ↓
+ORM/Drizzle Date
+       ↓
+Service layer Date
+       ↓
+API DTO string (ISO)
+       ↓
+HTTP response string
+       ↓
+ILSProvider Date
+       ↓
+React component Date
+```
+
+**Questions:**
+
+1. **Consistent serialization?**
+   - [ ] Timestamps → ISO strings in API?
+   - [ ] Strings → Date objects in ILSProvider?
+   - [ ] No timezone corruption?
+
+2. **Null handling?**
+   - [ ] `null` preserved through API boundary?
+   - [ ] Not converted to `undefined`?
+   - [ ] Not converted to empty string?
+
+3. **Number precision?**
+   - [ ] `activeTimeSec` as integer?
+   - [ ] No floating point errors?
+   - [ ] No string/number confusion?
+
+---
+
+### ✅ AUDIT 15: Composer Integration
+
+**Objective:** Verify Composer treats all blocks generically
+
+**Questions:**
+
+1. **Block assembly logic:**
+   - [ ] Same code path for all block types?
+   - [ ] No `if (type === 'definition')` branches?
+   - [ ] No special D1/C1 handling?
+
+2. **Block metadata:**
+   - [ ] `expectedTimeSec` available for any block?
+   - [ ] Identity propagated generically?
+   - [ ] No block registration required?
+
+3. **New block addition:**
+   - [ ] Can add X1 to `blocks[]` without Composer changes?
+   - [ ] Telemetry automatic?
+
+**Investigation Steps:**
+1. Find Composer implementation
+2. Find TutorialDocument assembly
+3. Search for block-type conditionals
+4. Verify metadata propagation
+
+---
+
+### ✅ AUDIT 16: Operational Verification
+
+**Objective:** Distinguish "exists" from "works"
+
+**Four-State Classification:**
+
+For each subsystem, separately verify:
+
+| State | Meaning | Evidence Required |
+|-------|---------|-------------------|
+| **EXISTS** | Code/schema present | File/table exists |
+| **GENERIC** | No block-specific logic | No D1/C1 branches |
+| **VERIFIED WORKING** | Operational tests pass | Tests execute successfully |
+| **READY FOR CONTRACT** | Sufficient for production | All blockers resolved |
+
+**Apply to:**
+- visitCount recording
+- revisionCount logic
+- activeTimeSec tracking
+- expectedTimeSec propagation
+- firstViewedAt initialization
+- lastViewedAt updates
+- completedAt recording
+- Database upserts
+- API reads
+- ILSProvider mapping
+
+**Example:**
+```text
+recordBlockVisit():
+  ✅ EXISTS (method found)
+  ✅ GENERIC (no block-type conditionals)
+  ❌ VERIFIED WORKING (42P10 errors in logs)
+  ❌ READY FOR CONTRACT (blocker must be fixed)
+```
+
+---
+
+### ✅ AUDIT 17: Test Coverage Reality Check
+
+**Objective:** Verify tests prove universality, not just D1/C1
+
+**Questions:**
+
+1. **Multi-block-type tests:**
+   - [ ] Tests exercise D1 AND C1 AND mock X1?
+   - [ ] Tests prove generic block handling?
+   - [ ] OR tests only use D1?
+
+2. **Integration tests:**
+   - [ ] End-to-end telemetry flow tested?
+   - [ ] DOM → ActiveBlockContext → ILS tested?
+   - [ ] Multiple block types in one page tested?
+
+3. **Negative tests:**
+   - [ ] Missing block state handled?
+   - [ ] Null expected time handled?
+   - [ ] Concurrent visits handled?
+
+**Expected:**
+```typescript
+// ✅ GOOD (proves universality)
+test('any block with data-block-* participates', () => {
+  const blocks = [
+    { id: 'd1', type: 'definition', version: 'D1' },
+    { id: 'c1', type: 'code', version: 'C1' },
+    { id: 'x1', type: 'introduction', version: 'X1' }
+  ];
+  // All three tracked identically
+});
+
+// ❌ BAD (only proves D1 works)
+test('D1 telemetry works', () => {
+  const d1 = { id: 'd1', type: 'definition', version: 'D1' };
+  // ...
+});
+```
+
+---
+
+### ✅ AUDIT 18: Hypothetical X1 Full Lifecycle Test
+
+**Objective:** Simulate complete universal block participation
+
+**Scenario:** Project receives new Introduction block (X1)
+
+```typescript
+const X1 = {
+  id: "intro-uuid-12345",
+  type: "introduction",
+  version: "X1",
+  expectedTimeSec: 180,
+  content: {
+    title: "Welcome to JavaScript",
+    body: "..."
+  }
+};
+```
+
+**Walk X1 Through Entire System:**
+
+1. **Composer:**
+   - [ ] Can Composer include X1 in `blocks[]`?
+   - [ ] WITHOUT X1-specific code?
+
+2. **TutorialDocument:**
+   - [ ] Is X1 serialized same as D1/C1?
+   - [ ] Metadata preserved?
+
+3. **Tutorial Page:**
+   - [ ] Does X1 render with generic block renderer?
+   - [ ] Data attributes applied?
+   - [ ] `data-block-id="intro-uuid-12345"`?
+   - [ ] `data-block-type="introduction"`?
+   - [ ] `data-block-version="X1"`?
+
+4. **ActiveBlockContext:**
+   - [ ] IntersectionObserver detects X1?
+   - [ ] Identity extracted correctly?
+   - [ ] No X1-specific observer needed?
+
+5. **Telemetry:**
+   - [ ] Visit recorded when X1 enters viewport?
+   - [ ] Active time tracked for X1?
+   - [ ] Completion recorded when triggered?
+   - [ ] WITHOUT calling `recordX1Visit()`?
+
+6. **block_learning_state:**
+   - [ ] Row created with X1 identity?
+   - [ ] visitCount incremented?
+   - [ ] activeTimeSec accumulated?
+   - [ ] expectedTimeSec = 180?
+
+7. **Navigation API:**
+   - [ ] X1 included in `blocks[]` response?
+   - [ ] Metrics populated?
+
+8. **ILSProvider:**
+   - [ ] When X1 becomes active block?
+   - [ ] `activeBlockProgress` resolves to X1 metrics?
+   - [ ] WITHOUT X1-specific mapping?
+
+9. **RSSB:**
+   - [ ] Displays X1 metrics automatically?
+   - [ ] Shows "Introduction" as block type?
+   - [ ] Shows "3m 0s" as expected time?
+
+10. **LSNB:**
+    - [ ] Shows X1 in navigation tree?
+    - [ ] Reflects X1 completion state?
+
+**Final Answer:**
+
+**PASS:** X1 participates fully with zero X1-specific telemetry code
+
+**FAIL:** Any step requires X1-specific implementation
+
+---
+
+## 📋 EXPANDED ACCEPTANCE CRITERIA
+
+**Gate 3C.1 audit is COMPLETE when:**
+
+### Architecture (Original)
+- [ ] All 12 original audits verified
+- [ ] Block telemetry producer path is generic
+- [ ] No D1/C1 special-casing found
+
+### Operational Correctness (New)
+- [ ] **Audit 13:** Database constraints verified correct
+- [ ] **Audit 13:** Concurrent upserts proven safe
+- [ ] **Audit 14:** API serialization verified consistent
+- [ ] **Audit 15:** Composer verified generic
+- [ ] **Audit 16:** All metrics in "VERIFIED WORKING" state
+- [ ] **Audit 17:** Tests prove universality (not just D1)
+- [ ] **Audit 18:** X1 lifecycle test passes
+
+### Contract Readiness
+- [ ] All blockers identified
+- [ ] All critical blockers resolved
+- [ ] Non-critical blockers documented for future
+- [ ] `ILSActiveBlockProgress` contract reviewed and approved
+
+---
+
+## 🎯 AUDIT VERDICT CRITERIA
+
+### 🟢 GREEN - FREEZE CONTRACT
+
+**All conditions met:**
+1. ✅ All 18 audits pass
+2. ✅ No D1/C1 special-casing found
+3. ✅ X1 simulation proves universality
+4. ✅ Database/concurrency verified
+5. ✅ All metrics in "VERIFIED WORKING" state
+6. ✅ No critical blockers
+
+**Action:** Freeze `ILSActiveBlockProgress` contract, proceed to Gate 3C implementation
+
+### 🟡 YELLOW - FIX THEN FREEZE
+
+**Conditions:**
+1. ✅ Architecture fundamentally correct
+2. ⚠️ One or more operational issues exist
+3. ⚠️ Read path incomplete
+4. ⚠️ Database/concurrency issues found
+5. ✅ No architectural redesign needed
+
+**Example Issues:**
+- ON CONFLICT target mismatch
+- Missing repository read method
+- Incomplete test coverage
+- API serialization inconsistency
+
+**Action:** Fix identified issues, re-verify, THEN freeze contract
+
+### 🔴 RED - BLOCK IMPLEMENTATION
+
+**Any condition met:**
+1. ❌ D1/C1 special-casing found in telemetry
+2. ❌ X1 simulation requires X1-specific code
+3. ❌ Architecture not universal
+4. ❌ Multiple critical blockers
+5. ❌ Fundamental design flaw identified
+
+**Action:** Refactor to universal architecture, perform new audit
+
+---
+
+## 🚀 CRITICAL PRINCIPLE
+
+**DO NOT OPTIMIZE FOR "MAKE RSSB WORK"**
+
+Optimize for:
+
+> **Create a stable universal learning contract that allows every current and future tutorial block to participate automatically.**
+
+**The Ultimate Test:**
+
+> Can a newly created block X1 be added to the system through Composer and automatically receive ILS/LSNB/RSSB treatment without ANY X1-specific telemetry code?
+
+**Required Answer:** YES
+
+**If NO:** Architecture has failed the universality requirement.
+
+---
+
+## 📝 IMPORTANT DISTINCTIONS
+
+### Architecture vs Implementation
+
+```text
+"Generic telemetry architecture exists"
+        ≠
+"Generic telemetry implementation works correctly"
+```
+
+### Evidence vs Assumption
+
+```text
+"Database has these columns"
+        ≠
+"These columns are populated correctly"
+        ≠
+"These columns can be read reliably"
+        ≠
+"Contract is ready to freeze"
+```
+
+### Passes Tests vs Production Ready
+
+```text
+"D1 telemetry tests pass"
+        ≠
+"Telemetry is universal"
+        ≠
+"X1 will work automatically"
+```
+
+---
+
+**Audit Expansion Complete** | Status: COMPREHENSIVE AUDIT READY | 18 Audits Required
