@@ -29,6 +29,15 @@
       "buildable": true,
       "health_check_required": true
     },
+    "realtutorialhub-site": {
+      "name": "realtutorialhub-site",
+      "package_name": "@quiz/realtutorialhub-site",
+      "source_path": "apps/realtutorialhub-site",
+      "compose_name": "realtutorialhub-site",
+      "image_name": "quiz-platform-realtutorialhub-site",
+      "buildable": true,
+      "health_check_required": true
+    },
     "realtutorialhub-quiz": {
       "name": "realtutorialhub-quiz",
       "package_name": "@quiz/realtutorialhub-quiz",
@@ -53,6 +62,15 @@
       "source_path": "apps/skillup-web",
       "compose_name": "skillup-web",
       "image_name": "quiz-platform-skillup-web",
+      "buildable": true,
+      "health_check_required": true
+    },
+    "skillupitacademy-site": {
+      "name": "skillupitacademy-site",
+      "package_name": "@quiz/skillupitacademy-site",
+      "source_path": "apps/skillupitacademy-site",
+      "compose_name": "skillupitacademy-site",
+      "image_name": "quiz-platform-skillupitacademy-site",
       "buildable": true,
       "health_check_required": true
     },

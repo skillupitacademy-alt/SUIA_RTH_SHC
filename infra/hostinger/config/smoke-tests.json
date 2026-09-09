@@ -23,6 +23,14 @@
       "timeout_seconds": 15,
       "required": true
     },
+    "realtutorialhub-site": {
+      "name": "RTH Marketing Homepage",
+      "method": "GET",
+      "url": "http://realtutorialhub-site:3004/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
+      "required": true
+    },
     "realtutorialhub-quiz": {
       "name": "RTH Quiz Homepage",
       "method": "GET",
@@ -45,6 +53,14 @@
       "url": "http://skillup-web:3004/api/healthz",
       "expected_status": 200,
       "timeout_seconds": 10,
+      "required": true
+    },
+    "skillupitacademy-site": {
+      "name": "SkillUp Marketing Homepage",
+      "method": "GET",
+      "url": "http://skillupitacademy-site:3005/",
+      "expected_status": 200,
+      "timeout_seconds": 15,
       "required": true
     },
     "skillup-admin": {

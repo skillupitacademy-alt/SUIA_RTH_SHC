@@ -37,7 +37,11 @@ services:
         condition: service_healthy
       realtutorialhub-web:
         condition: service_healthy
+      realtutorialhub-site:
+        condition: service_healthy
       skillup-web:
+        condition: service_healthy
+      skillupitacademy-site:
         condition: service_healthy
       skillup-admin:
         condition: service_healthy
@@ -160,6 +164,30 @@ services:
       <<: *next-health-defaults
       test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3003/ || exit 1"]
 
+  realtutorialhub-site:
+    <<: *common-defaults
+    env_file:
+      - /opt/platform/env/shared/.env
+      - /opt/platform/env/brands/realtutorialhub.env
+      - /opt/platform/env/services/realtutorialhub-site.env
+    build:
+      context: ../../..
+      dockerfile: apps/realtutorialhub-site/Dockerfile
+      args:
+        NEXT_PUBLIC_RTH_META_PIXEL_ID: ${NEXT_PUBLIC_RTH_META_PIXEL_ID}
+        NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID: ${NEXT_PUBLIC_RTH_GA4_MEASUREMENT_ID}
+        NEXT_PUBLIC_RTH_GTM_CONTAINER_ID: ${NEXT_PUBLIC_RTH_GTM_CONTAINER_ID}
+        NEXT_PUBLIC_ANALYTICS_ENABLED: ${NEXT_PUBLIC_ANALYTICS_ENABLED}
+        NEXT_PUBLIC_ANALYTICS_ENV: ${NEXT_PUBLIC_ANALYTICS_ENV}
+        NEXT_PUBLIC_SHC_CONTENT_BASE_URL: ${NEXT_PUBLIC_SHC_CONTENT_BASE_URL}
+        MARKETING_CONTENT_API_BASE_URL: ${MARKETING_CONTENT_API_BASE_URL}
+        NEXT_PUBLIC_RTH_ANALYTICS_ENDPOINT: ${NEXT_PUBLIC_RTH_ANALYTICS_ENDPOINT}
+    expose:
+      - "3004"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3004/ || exit 1"]
+
   skillup-web:
     <<: *common-defaults
     env_file:
@@ -174,6 +202,30 @@ services:
     healthcheck:
       <<: *next-health-defaults
       test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3004/api/healthz || exit 1"]
+
+  skillupitacademy-site:
+    <<: *common-defaults
+    env_file:
+      - /opt/platform/env/shared/.env
+      - /opt/platform/env/brands/skillup.env
+      - /opt/platform/env/services/skillupitacademy-site.env
+    build:
+      context: ../../..
+      dockerfile: apps/skillupitacademy-site/Dockerfile
+      args:
+        NEXT_PUBLIC_SUIA_META_PIXEL_ID: ${NEXT_PUBLIC_SUIA_META_PIXEL_ID}
+        NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID: ${NEXT_PUBLIC_SUIA_GA4_MEASUREMENT_ID}
+        NEXT_PUBLIC_SUIA_GTM_CONTAINER_ID: ${NEXT_PUBLIC_SUIA_GTM_CONTAINER_ID}
+        NEXT_PUBLIC_ANALYTICS_ENABLED: ${NEXT_PUBLIC_ANALYTICS_ENABLED}
+        NEXT_PUBLIC_ANALYTICS_ENV: ${NEXT_PUBLIC_ANALYTICS_ENV}
+        NEXT_PUBLIC_SHC_CONTENT_BASE_URL: ${NEXT_PUBLIC_SHC_CONTENT_BASE_URL}
+        MARKETING_CONTENT_API_BASE_URL: ${MARKETING_CONTENT_API_BASE_URL}
+        NEXT_PUBLIC_SUIA_ANALYTICS_ENDPOINT: ${NEXT_PUBLIC_SUIA_ANALYTICS_ENDPOINT}
+    expose:
+      - "3005"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3005/ || exit 1"]
 
   skillup-admin:
     <<: *common-defaults

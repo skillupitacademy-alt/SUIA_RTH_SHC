@@ -37,7 +37,11 @@ services:
         condition: service_healthy
       realtutorialhub-web:
         condition: service_healthy
+      realtutorialhub-site:
+        condition: service_healthy
       skillup-web:
+        condition: service_healthy
+      skillupitacademy-site:
         condition: service_healthy
       skillup-admin:
         condition: service_healthy
@@ -130,6 +134,19 @@ services:
       <<: *next-health-defaults
       test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3003/ || exit 1"]
 
+  realtutorialhub-site:
+    <<: *common-defaults
+    image: quiz-platform-realtutorialhub-site:latest
+    env_file:
+      - /opt/platform/env/shared/.env
+      - /opt/platform/env/brands/realtutorialhub.env
+      - /opt/platform/env/services/realtutorialhub-site.env
+    expose:
+      - "3004"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3004/ || exit 1"]
+
   skillup-web:
     <<: *common-defaults
     image: quiz-platform-skillup-web:latest
@@ -142,6 +159,19 @@ services:
     healthcheck:
       <<: *next-health-defaults
       test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3004/api/healthz || exit 1"]
+
+  skillupitacademy-site:
+    <<: *common-defaults
+    image: quiz-platform-skillupitacademy-site:latest
+    env_file:
+      - /opt/platform/env/shared/.env
+      - /opt/platform/env/brands/skillup.env
+      - /opt/platform/env/services/skillupitacademy-site.env
+    expose:
+      - "3005"
+    healthcheck:
+      <<: *next-health-defaults
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:3005/ || exit 1"]
 
   skillup-admin:
     <<: *common-defaults

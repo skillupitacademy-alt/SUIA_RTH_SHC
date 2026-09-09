@@ -37,7 +37,17 @@ services:
     cpus: "1.00"
     logging: *app-logging
 
+  realtutorialhub-site:
+    mem_limit: 768m
+    cpus: "1.00"
+    logging: *app-logging
+
   skillup-web:
+    mem_limit: 768m
+    cpus: "1.00"
+    logging: *app-logging
+
+  skillupitacademy-site:
     mem_limit: 768m
     cpus: "1.00"
     logging: *app-logging
