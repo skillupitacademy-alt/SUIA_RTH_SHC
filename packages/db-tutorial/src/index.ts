@@ -76,6 +76,7 @@ export type {
   LearningState,
   NavigationProgressDTO,
   NavigationProgressWithCalculatedDTO,
+  BlockLearningStateDTO,
   CompletionDecision,
 } from './services/learning-progress.service';
 export {

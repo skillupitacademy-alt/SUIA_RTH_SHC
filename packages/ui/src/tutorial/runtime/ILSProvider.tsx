@@ -67,9 +67,7 @@ export interface ILSOverallProgress {
  * Active Block Progress
  * Completion status for the currently visible block
  * 
- * CURRENT LIMITATION:
- * Per-block analytics (visitCount, activeTimeSec, timeComparison) not available in API.
- * Provider exposes completion status only.
+ * Gate 3C.1R: Now includes per-block telemetry metrics from block_learning_state
  */
 export interface ILSActiveBlockProgress {
   blockId: string;
@@ -78,11 +76,13 @@ export interface ILSActiveBlockProgress {
   isCompleted: boolean;
   completedAt: Date | null;
   
-  // Future fields when API provides per-block analytics:
-  // visitCount?: number;
-  // activeTimeSec?: number;
-  // expectedTimeSec?: number;
-  // timeComparison?: { differenceSec: number; percentageOfExpected: number; belowExpected: boolean };
+  // Gate 3C.1R: Block-level telemetry metrics
+  visitCount: number;
+  revisionCount: number;
+  activeTimeSec: number;
+  expectedTimeSec: number | null;
+  firstViewedAt: Date | null;
+  lastViewedAt: Date | null;
 }
 
 /**
@@ -140,7 +140,24 @@ interface CompletedBlockRecord {
 }
 
 /**
+ * Block Learning State from API (Gate 3C.1R)
+ */
+interface BlockLearningStateResponse {
+  blockId: string;
+  blockVersion: string;
+  visitCount: number;
+  revisionCount: number;
+  activeTimeSec: number;
+  expectedTimeSec: number | null;
+  firstViewedAt: string | null;
+  lastViewedAt: string | null;
+  completedAt: string | null;
+}
+
+/**
  * Navigation Progress Response (from API)
+ * 
+ * Gate 3C.1R: Now includes per-block telemetry metrics
  */
 interface NavigationProgressResponse {
   navigationNodeId: string;
@@ -151,6 +168,7 @@ interface NavigationProgressResponse {
   completedBlocks: CompletedBlockRecord[];
   completedBlockCount: number;
   totalBlockCount: number;
+  blocks: BlockLearningStateResponse[]; // Gate 3C.1R: Per-block telemetry
   timeSpentActiveSec: number;
   visitCount: number;
   revisionCount: number;
@@ -217,9 +235,10 @@ export function ILSProvider({
   const [error, setError] = useState<Error | null>(null);
   
   /**
-   * Store completed blocks in ref to avoid re-fetching on active block changes
+   * Store blocks in ref to avoid re-fetching on active block changes
+   * Gate 3C.1R: Changed from completedBlocks to full block telemetry state
    */
-  const completedBlocksRef = React.useRef<CompletedBlockRecord[] | null>(null);
+  const blocksRef = React.useRef<BlockLearningStateResponse[] | null>(null);
   
   /**
    * Track current page identity to prevent stale responses from old pages
@@ -286,7 +305,7 @@ export function ILSProvider({
       });
       
       // Store completed blocks for active block lookup
-      return data.completedBlocks;
+      return data.blocks; // Gate 3C.1R: Return blocks instead of completedBlocks
       
     } catch (err) {
       // Verify error still belongs to current page
@@ -314,29 +333,54 @@ export function ILSProvider({
   }, [navigationNodeId, subtopicId]);
   
   /**
-   * Derive active block progress from completed blocks array
+   * Derive active block progress from blocks array
+   * Gate 3C.1R: Now uses full block telemetry state instead of just completedBlocks
    */
   const updateActiveBlockProgress = useCallback(
-    (activeBlock: ActiveBlockIdentity | null, completedBlocks: CompletedBlockRecord[] | null) => {
-      if (!activeBlock || !completedBlocks) {
+    (activeBlock: ActiveBlockIdentity | null, blocks: BlockLearningStateResponse[] | null) => {
+      if (!activeBlock || !blocks) {
         setActiveBlockProgress(null);
         return;
       }
       
-      // Find matching completed block by blockId + blockVersion
-      const completedBlock = completedBlocks.find(
+      // Find matching block by blockId + blockVersion
+      const blockState = blocks.find(
         (block) =>
           block.blockId === activeBlock.blockId &&
           block.blockVersion === activeBlock.blockVersion
       );
       
-      setActiveBlockProgress({
-        blockId: activeBlock.blockId,
-        blockType: activeBlock.blockType,
-        blockVersion: activeBlock.blockVersion || '',
-        isCompleted: !!completedBlock,
-        completedAt: completedBlock ? new Date(completedBlock.completedAt) : null,
-      });
+      if (blockState) {
+        // Block has telemetry state - map all fields
+        setActiveBlockProgress({
+          blockId: activeBlock.blockId,
+          blockType: activeBlock.blockType,
+          blockVersion: activeBlock.blockVersion || '',
+          isCompleted: !!blockState.completedAt,
+          completedAt: blockState.completedAt ? new Date(blockState.completedAt) : null,
+          visitCount: blockState.visitCount,
+          revisionCount: blockState.revisionCount,
+          activeTimeSec: blockState.activeTimeSec,
+          expectedTimeSec: blockState.expectedTimeSec,
+          firstViewedAt: blockState.firstViewedAt ? new Date(blockState.firstViewedAt) : null,
+          lastViewedAt: blockState.lastViewedAt ? new Date(blockState.lastViewedAt) : null,
+        });
+      } else {
+        // No telemetry record yet - zero/default semantics
+        setActiveBlockProgress({
+          blockId: activeBlock.blockId,
+          blockType: activeBlock.blockType,
+          blockVersion: activeBlock.blockVersion || '',
+          isCompleted: false,
+          completedAt: null,
+          visitCount: 0,
+          revisionCount: 0,
+          activeTimeSec: 0,
+          expectedTimeSec: null,
+          firstViewedAt: null,
+          lastViewedAt: null,
+        });
+      }
     },
     []
   );
@@ -360,12 +404,12 @@ export function ILSProvider({
     currentPageIdentityRef.current = { navigationNodeId, subtopicId };
     
     // CRITICAL: Clear old cached blocks when page changes
-    completedBlocksRef.current = null;
+    blocksRef.current = null;
     setActiveBlockProgress(null);
     
     fetchProgress().then((blocks) => {
       if (isMounted && blocks) {
-        completedBlocksRef.current = blocks;
+        blocksRef.current = blocks;
         // Use current activeBlock from ref, not captured closure value
         updateActiveBlockProgress(activeBlockRef.current, blocks);
       }
@@ -382,8 +426,8 @@ export function ILSProvider({
    * Uses stored completedBlocks to avoid refetching navigation progress
    */
   useEffect(() => {
-    if (completedBlocksRef.current && activeBlock) {
-      updateActiveBlockProgress(activeBlock, completedBlocksRef.current);
+    if (blocksRef.current && activeBlock) {
+      updateActiveBlockProgress(activeBlock, blocksRef.current);
     }
   }, [activeBlock, updateActiveBlockProgress]);
   
@@ -393,7 +437,7 @@ export function ILSProvider({
   const refresh = useCallback(async () => {
     const blocks = await fetchProgress();
     if (blocks) {
-      completedBlocksRef.current = blocks;
+      blocksRef.current = blocks;
       updateActiveBlockProgress(activeBlock, blocks);
     }
   }, [fetchProgress, activeBlock, updateActiveBlockProgress]);

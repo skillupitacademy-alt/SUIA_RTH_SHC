@@ -44,6 +44,7 @@ import {
   type AuthenticatedIdentity,
   type NavigationProgressDTO,
   type NavigationProgressWithCalculatedDTO,
+  type BlockLearningStateDTO,
   type CompletionDecision,
   LearningProgressError,
   NavigationNodeNotFoundError,
@@ -76,6 +77,7 @@ export type {
   AuthenticatedIdentity,
   NavigationProgressDTO,
   NavigationProgressWithCalculatedDTO,
+  BlockLearningStateDTO,
   CompletionDecision,
 };
 
@@ -187,7 +189,13 @@ export class LearningProgressService {
       identity
     );
 
-    return this.toDTO(progress, requiredBlocks);
+    // Gate 3C.1R: Fetch block-level telemetry state
+    const blockStates = await this.blockLearningStateRepository.findByNavigationNode(
+      identity.userId,
+      navigationNodeId
+    );
+
+    return this.toDTO(progress, requiredBlocks, blockStates);
   }
 
   /**
@@ -217,7 +225,14 @@ export class LearningProgressService {
         record.navigationNodeId,
         identity
       );
-      results.push(this.toDTO(record, requiredBlocks));
+      
+      // Gate 3C.1R: Fetch block-level telemetry state
+      const blockStates = await this.blockLearningStateRepository.findByNavigationNode(
+        identity.userId,
+        record.navigationNodeId
+      );
+      
+      results.push(this.toDTO(record, requiredBlocks, blockStates));
     }
 
     return results;
@@ -283,7 +298,8 @@ export class LearningProgressService {
       identity
     );
 
-    return this.toDTO(updated, requiredBlocks);
+    // Gate 3C.1R: Return without re-fetching block states for write operations
+    return this.toDTO(updated, requiredBlocks, []);
   }
 
   /**
@@ -354,7 +370,8 @@ export class LearningProgressService {
       identity
     );
 
-    return this.toDTO(updated, requiredBlocks);
+    // Gate 3C.1R: Return without re-fetching block states for write operations
+    return this.toDTO(updated, requiredBlocks, []);
   }
 
   /**
@@ -416,7 +433,8 @@ export class LearningProgressService {
       identity
     );
 
-    return this.toDTO(updated, requiredBlocks);
+    // Gate 3C.1R: Return without re-fetching block states for write operations
+    return this.toDTO(updated, requiredBlocks, []);
   }
 
   /**
@@ -500,7 +518,8 @@ export class LearningProgressService {
       navigationNodeId
     );
 
-    return this.toDTO(updated, requiredBlocks);
+    // Gate 3C.1R: Return without re-fetching block states for write operations
+    return this.toDTO(updated, requiredBlocks, []);
   }
 
   /**
@@ -873,18 +892,35 @@ export class LearningProgressService {
   /**
    * Convert repository record to DTO with calculated progress
    * 
+   * Gate 3C.1R: Now includes per-block telemetry state
+   * 
    * @param record - Progress record from repository
    * @param requiredBlocks - Required blocks for progress calculation
-   * @returns DTO with required blocks context
+   * @param blockStates - Per-block telemetry from block_learning_state table
+   * @returns DTO with required blocks context and per-block metrics
    */
   private toDTO(
     record: TutorialNavigationProgressRecord,
-    requiredBlocks: Array<{ blockId: string; blockVersion: string }>
+    requiredBlocks: Array<{ blockId: string; blockVersion: string }>,
+    blockStates: BlockLearningState[]
   ): NavigationProgressWithCalculatedDTO {
     const progressPercentage = this.calculateProgressPercentage(
       record.completedBlocks,
       requiredBlocks
     );
+
+    // Map block states to DTO format
+    const blocks: BlockLearningStateDTO[] = blockStates.map((state) => ({
+      blockId: state.blockId,
+      blockVersion: state.blockVersion,
+      visitCount: state.visitCount,
+      revisionCount: state.revisionCount,
+      activeTimeSec: state.activeTimeSec,
+      expectedTimeSec: state.expectedTimeSec, // Nullable - content-authored value
+      firstViewedAt: state.firstViewedAt,
+      lastViewedAt: state.lastViewedAt,
+      completedAt: state.completedAt,
+    }));
 
     return {
       navigationNodeId: record.navigationNodeId,
@@ -896,6 +932,7 @@ export class LearningProgressService {
       completedBlockCount: record.completedBlocks.length,
       totalBlockCount: requiredBlocks.length,
       requiredBlocks, // Include canonical requirements in DTO
+      blocks, // Gate 3C.1R: Per-block telemetry metrics
       timeSpentActiveSec: record.timeSpentActiveSec,
       visitCount: record.visitCount,
       revisionCount: record.revisionCount,

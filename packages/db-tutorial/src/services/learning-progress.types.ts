@@ -63,13 +63,36 @@ export interface NavigationProgressDTO {
 }
 
 /**
+ * Block Learning State DTO
+ * 
+ * Per-block telemetry metrics returned to consumers.
+ * Derived from block_learning_state table.
+ * 
+ * Gate 3C.1R: Universal block-level progress exposure
+ */
+export interface BlockLearningStateDTO {
+  blockId: string;
+  blockVersion: string;
+  visitCount: number;
+  revisionCount: number;
+  activeTimeSec: number;
+  expectedTimeSec: number | null; // Content-authored value, nullable
+  firstViewedAt: Date | null;
+  lastViewedAt: Date | null;
+  completedAt: Date | null;
+}
+
+/**
  * Navigation Progress DTO with calculated progress
  * 
  * Extended DTO that includes calculated progress percentage based on required blocks.
  * Used when required blocks context is available.
+ * 
+ * Gate 3C.1R: Now includes per-block telemetry metrics
  */
 export interface NavigationProgressWithCalculatedDTO extends NavigationProgressDTO {
   requiredBlocks: Array<{ blockId: string; blockVersion: string }>;
+  blocks: BlockLearningStateDTO[]; // Per-block telemetry metrics
 }
 
 /**
