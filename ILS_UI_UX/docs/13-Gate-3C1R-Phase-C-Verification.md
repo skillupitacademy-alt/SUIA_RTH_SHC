@@ -718,6 +718,21 @@ if (blockState) {
 
 ---
 
+> **⚠️ HISTORICAL STATUS — SUPERSEDED**
+>
+> The sections above containing "API runtime verification DEFERRED" and "YELLOW verdict" 
+> reflect the pre-HTTP-closure state of Phase C (commits 776f11fb through 0ab67e1f).
+>
+> They are retained intentionally as historical audit evidence showing the progression:
+> - Initial YELLOW: Service/API runtime not yet verified
+> - Service runtime verified (commit 0ab67e1f)
+> - **HTTP runtime verified (commit aaeeb5d5) → GREEN**
+>
+> The **PHASE C — FINAL HTTP RUNTIME CLOSURE** section below supersedes the deferred 
+> API-runtime status and establishes the final GREEN verdict with complete HTTP evidence.
+
+---
+
 ## PHASE C CLOSURE RE-AUDIT
 
 **Date:** 2026-09-10  
@@ -1008,7 +1023,7 @@ blockVersion === ['"]X1['"]|blockType === ['"]X1['"]
 
 ✅ **Layer 3: Service → DTO**
 - DTO mapping: `BlockLearningState[]` → `BlockLearningStateDTO[]`
-- Runtime verification: All 9 fields present and correct
+- Runtime verification: All 9 required fields present in DTO
 - JSON serialization automatic
 
 ✅ **Layer 4: DTO → API**
@@ -1086,9 +1101,16 @@ blockVersion === ['"]X1['"]|blockType === ['"]X1['"]
 
 ---
 
-### Evidence Limitations: NONE
+### Evidence Limitations
 
-All critical verification complete. API runtime test is optional enhancement, not prerequisite for GREEN verdict.
+No blocking evidence limitations remain for Gate 3C.1R.
+
+The final HTTP test directly exercises the real navigation-progress HTTP endpoint,
+real authentication boundary, real service path, and real serialized response.
+
+UI runtime/browser interaction was not separately exercised; UI correctness remains
+verified through implementation inspection and TypeScript compilation. This is
+non-blocking for the Phase C read-path contract.
 
 ---
 
@@ -1435,14 +1457,14 @@ Exit Code: 0
 | Universal architecture      | Code search             | ✅ PASS | No branching         |
 | UI integration              | Code inspection         | ✅ PASS | Provider verified    |
 
-**Overall:** ✅ **59/59 verifications PASS**
+**Aggregate verification evidence:** ✅ **59 PASS**
 
 **Breakdown:**
-- Repository: 8 tests ✅
-- Service: 11 tests ✅
-- **HTTP: 20 tests ✅ (NEW)**
-- TypeScript: 2 checks ✅
-- Code inspections: 18 verifications ✅
+- Repository runtime assertions: 8 ✅
+- Service runtime assertions: 11 ✅
+- **HTTP runtime assertions: 20 ✅ (NEW)**
+- TypeScript compilation checks: 2 ✅
+- Code/architecture inspections: 18 ✅
 
 ---
 
@@ -1564,9 +1586,14 @@ Exit Code: 0
 
 ---
 
-### Evidence Limitations: NONE
+### Evidence Limitations
+
+No blocking evidence limitations remain for Gate 3C.1R.
 
 All required verification complete. **HTTP API runtime path now proven end-to-end.**
+
+UI runtime/browser interaction was not separately exercised; UI correctness remains
+verified through implementation inspection and TypeScript compilation.
 
 ---
 
