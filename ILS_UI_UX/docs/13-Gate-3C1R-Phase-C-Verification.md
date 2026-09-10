@@ -1196,3 +1196,483 @@ Phase C is now **fully closed** with runtime evidence across all critical layers
 ---
 
 **End of Phase C Closure Re-Audit**
+
+
+---
+
+## PHASE C — FINAL HTTP RUNTIME CLOSURE
+
+**Date:** 2026-09-10  
+**Objective:** Complete Phase C verification by proving the real HTTP API → Service → Repository → Database read path  
+**Method:** Direct HTTP GET test against running api-server with internal authentication  
+
+---
+
+### STEP 1: API Route Verification
+
+**Route discovered:**
+```
+GET /api/tutorial/ils/navigation/:nodeId?subtopicId=xxx
+```
+
+**Implementation:**
+- File: `apps/api-server/src/app/api/tutorial/ils/navigation/[nodeId]/route.ts`
+- Service invoked: `LearningProgressService.getNavigationProgress()`
+- Response wrapper: `{ data: progress }`
+
+**Authentication:**
+- Header: `x-internal-secret` (lowercase)
+- Header: `x-user-id` (lowercase)
+- Header: `x-brand` (lowercase, NOT `x-authenticated-brand`)
+
+---
+
+### STEP 4-6: HTTP Runtime Test Created
+
+**Script:** `scripts/_gate_3c1r_test_phase_c_http_navigation.ts`
+
+**Test Configuration:**
+- API Server: `http://localhost:3000`
+- Navigation node: `whatisjava`
+- Subtopic: `414f63eb-cccf-4bd1-bcc0-b52df69ce499`
+- User: `54726a2e-fca5-4d93-abc6-e7cee97a86f8`
+- Brand: `realtutorialhub`
+
+**Test Coverage:**
+- H1: HTTP 200 for authenticated request
+- H2: JSON response
+- H3: Response object structure
+- H4: blocks[] exists
+- H5: blocks[] populated
+- H6: D1 present in blocks[]
+- H7: C1 present in blocks[]
+- H8: All 9 telemetry fields present (D1 + C1)
+- H9: Telemetry values survived serialization
+- H10: Universal D1/C1 endpoint
+- H11: Missing auth → 401
+- H12: Invalid auth → 401
+- H13: Unauthorized telemetry blocked
+
+---
+
+### STEP 7: HTTP Test Execution
+
+**Result:** ✅ **20/20 TESTS PASS**
+
+**Execution Evidence:**
+
+```
+================================================================================
+GATE 3C.1R — FINAL HTTP RUNTIME VERIFICATION
+================================================================================
+
+API base URL: http://localhost:3000
+Route: GET /api/tutorial/ils/navigation/:nodeId
+Navigation node: whatisjava
+Subtopic: 414f63eb-cccf-4bd1-bcc0-b52df69ce499
+User: 54726a2e-fca5-4d93-abc6-e7cee97a86f8
+Brand: realtutorialhub
+
+--------------------------------------------------------------------------------
+HTTP RUNTIME TESTS
+--------------------------------------------------------------------------------
+
+=== AUTHENTICATED REQUEST ===
+
+PASS: H1: authenticated navigation-progress request returns HTTP 200
+PASS: H2: response is JSON (content-type: application/json)
+PASS: H3: navigation-progress response is a JSON object
+PASS: H3b: response contains data wrapper
+PASS: H4: navigation-progress response contains blocks[]
+PASS: H5: blocks[] contains at least D1 and C1 (received 2)
+PASS: H6: D1 exists in blocks[]
+PASS: H6b: D1 blockVersion is D1
+PASS: H7: C1 exists in blocks[]
+PASS: H7b: C1 blockVersion is C1
+
+H8a: D1 contains all 9 required telemetry fields
+  ✓ blockId
+  ✓ blockVersion
+  ✓ visitCount
+  ✓ revisionCount
+  ✓ activeTimeSec
+  ✓ expectedTimeSec
+  ✓ firstViewedAt
+  ✓ lastViewedAt
+  ✓ completedAt
+
+H8b: C1 contains all 9 required telemetry fields
+  ✓ blockId
+  ✓ blockVersion
+  ✓ visitCount
+  ✓ revisionCount
+  ✓ activeTimeSec
+  ✓ expectedTimeSec
+  ✓ firstViewedAt
+  ✓ lastViewedAt
+  ✓ completedAt
+
+PASS: H9a: D1 visitCount contains persisted telemetry (received 2)
+PASS: H9b: D1 activeTimeSec contains persisted telemetry (received 60)
+PASS: H9c: C1 visitCount contains persisted telemetry (received 2)
+PASS: H9d: C1 activeTimeSec contains persisted telemetry (received 29)
+PASS: H10: both D1 and C1 returned through same universal HTTP endpoint
+
+=== AUTHENTICATION BOUNDARY TESTS ===
+
+PASS: H11: missing internal authentication returns HTTP 401
+PASS: H12: invalid internal authentication returns HTTP 401
+PASS: H13: unauthorized request does not expose authenticated user telemetry
+
+================================================================================
+FINAL RESULT
+================================================================================
+
+Tests passed: 20
+Tests failed: 0
+
+✅ FINAL HTTP RUNTIME VERIFICATION: PASS
+```
+
+---
+
+### HTTP Response Evidence
+
+**Sample D1 telemetry (from HTTP response):**
+```json
+{
+  "blockId": "79ae6e0f-0374-4dfe-8d76-cefbe42f8996",
+  "blockVersion": "D1",
+  "visitCount": 2,
+  "activeTimeSec": 60,
+  "expectedTimeSec": 180
+}
+```
+
+**Sample C1 telemetry (from HTTP response):**
+```json
+{
+  "blockId": "fb6b1e9d-3fe2-48f5-891e-73f8e22797b9",
+  "blockVersion": "C1",
+  "visitCount": 2,
+  "activeTimeSec": 29,
+  "expectedTimeSec": 300
+}
+```
+
+**Complete end-to-end path verified:**
+```
+HTTP GET request
+  ↓
+http://localhost:3000/api/tutorial/ils/navigation/whatisjava?subtopicId=xxx
+  ↓
+Real api-server route
+  ↓
+Real validateRequest() authentication middleware
+  ↓
+Real authenticated identity (userId + brand)
+  ↓
+Real LearningProgressService.getNavigationProgress()
+  ↓
+Real BlockLearningStateRepository.findByNavigationNode()
+  ↓
+Real PostgreSQL tutorial_prod database
+  ↓
+NavigationProgressWithCalculatedDTO with blocks[]
+  ↓
+JSON serialization
+  ↓
+HTTP 200 response with { data: { blocks: [...] } }
+```
+
+---
+
+### STEP 8: Regression Test Results
+
+**Repository test:** ✅ **8/8 PASS**
+```bash
+npx tsx scripts/_gate_3c1r_test_phase_c_repository.ts
+Exit Code: 0
+```
+
+**Service test:** ✅ **11/11 PASS**
+```bash
+npx tsx scripts/_gate_3c1r_test_phase_c_service.ts
+Exit Code: 0
+```
+
+**TypeScript (db-tutorial):** ✅ **PASS**
+```bash
+cd packages/db-tutorial
+npx tsc --noEmit
+Exit Code: 0
+```
+
+**TypeScript (ui):** ✅ **PASS**
+```bash
+cd packages/ui
+npx tsc --noEmit
+Exit Code: 0
+```
+
+**All regression tests:** ✅ **PASS**
+
+---
+
+### Complete Verification Matrix (Final)
+
+| Layer                       | Verification Method     | Result  | Evidence             |
+| --------------------------- | ----------------------- | ------- | -------------------- |
+| Database → Repository       | Runtime test (8 tests)  | ✅ PASS | Phase C repository   |
+| Navigation hierarchy        | Database query          | ✅ PASS | Hierarchy check      |
+| Repository → Service        | Runtime test (11 tests) | ✅ PASS | Phase C service      |
+| Service → DTO               | Runtime inspection      | ✅ PASS | Service test         |
+| DTO → HTTP                  | **HTTP runtime test**   | ✅ PASS | **20 HTTP tests**    |
+| HTTP → JSON serialization   | **HTTP response**       | ✅ PASS | **blocks[] verified** |
+| Authentication boundary     | **HTTP 401 tests**      | ✅ PASS | **Missing/invalid**  |
+| TypeScript (db-tutorial)    | tsc --noEmit            | ✅ PASS | Compilation          |
+| TypeScript (ui)             | tsc --noEmit            | ✅ PASS | Compilation          |
+| Universal architecture      | Code search             | ✅ PASS | No branching         |
+| UI integration              | Code inspection         | ✅ PASS | Provider verified    |
+
+**Overall:** ✅ **59/59 verifications PASS**
+
+**Breakdown:**
+- Repository: 8 tests ✅
+- Service: 11 tests ✅
+- **HTTP: 20 tests ✅ (NEW)**
+- TypeScript: 2 checks ✅
+- Code inspections: 18 verifications ✅
+
+---
+
+### Contract Status After HTTP Closure
+
+**Repository, service, DTO, authentication boundary, and HTTP API runtime paths have been verified.**
+
+**No blocking evidence limitations remain for Gate 3C.1R.**
+
+---
+
+### BLOCKER 2 STATUS: ✅ **FULLY RESOLVED**
+
+**Original Definition:**
+> "Read path incomplete — block metrics are not exposed through the navigation progress path."
+
+**Complete Resolution Evidence:**
+
+✅ **Layer 1: Database → Repository**
+- Method: `findByNavigationNode()`
+- Evidence: 8/8 runtime tests PASS
+- D1 and C1 both retrieved
+
+✅ **Layer 2: Repository → Service**
+- Method: `getNavigationProgress()`
+- Evidence: 11/11 runtime tests PASS
+- `result.blocks[]` contains D1 + C1
+
+✅ **Layer 3: Service → DTO**
+- Type: `NavigationProgressWithCalculatedDTO`
+- Evidence: All 9 fields present
+- JSON serialization automatic
+
+✅ **Layer 4: DTO → HTTP API**
+- Route: `GET /api/tutorial/ils/navigation/:nodeId`
+- Evidence: **20/20 HTTP tests PASS**
+- Real HTTP endpoint verified
+
+✅ **Layer 5: HTTP → Authentication**
+- Middleware: `validateRequest()`
+- Evidence: 401 for missing/invalid secret
+- Identity propagation verified
+
+✅ **Layer 6: API → UI**
+- Provider: `ILSProvider`
+- Evidence: Code inspection + TypeScript
+- Consumer verified
+
+✅ **Layer 7: Universality**
+- No D1-specific code
+- No C1-specific code
+- No X1-specific code
+- Generic implementation throughout
+- **HTTP runtime proof:** D1 and C1 through same endpoint
+
+**BLOCKER 2:** ✅ **FULLY RESOLVED WITH HTTP EVIDENCE**
+
+---
+
+## FINAL PHASE C VERDICT: ✅ **GREEN**
+
+**Rationale:**
+
+1. ✅ **Repository Layer: OPERATIONAL**
+   - 8/8 runtime tests passed
+   - D1 and C1 telemetry verified
+
+2. ✅ **Service Layer: OPERATIONAL**
+   - 11/11 runtime tests passed
+   - Real navigation hierarchy used
+   - Real telemetry retrieved
+
+3. ✅ **HTTP API Layer: OPERATIONAL** ⭐ **NEW**
+   - **20/20 HTTP tests passed**
+   - **Real HTTP endpoint exercised**
+   - **Real authentication verified**
+   - **D1 and C1 telemetry in HTTP response**
+   - **JSON serialization verified**
+
+4. ✅ **Type Safety: VERIFIED**
+   - Both packages compile without errors
+   - DTO types match implementation
+
+5. ✅ **Authentication: VERIFIED**
+   - Missing secret → 401
+   - Invalid secret → 401
+   - Authorized request → 200 with data
+
+6. ✅ **Universality: VERIFIED**
+   - No block-specific branching found
+   - D1 and C1 use same HTTP endpoint
+   - X1-ready architecture
+
+7. ✅ **UI Integration: VERIFIED**
+   - Code inspection confirms correct implementation
+   - TypeScript confirms type compatibility
+
+**Why GREEN:**
+- ✅ Repository: Runtime proof
+- ✅ Service: Runtime proof
+- ✅ **HTTP API: Runtime proof** (NEW)
+- ✅ DTO: Runtime proof
+- ✅ Authentication: Runtime proof (NEW)
+- ✅ UI: Code proof + Type proof
+- ✅ All layers verified end-to-end
+- ✅ Blocker 2 fully resolved with HTTP evidence
+- ✅ Architecture universal and extensible
+
+**Why NOT YELLOW:**
+- HTTP API runtime now verified (gap closed)
+- No remaining verification gaps
+- All required evidence complete
+
+**Why NOT RED:**
+- No implementation failures
+- No architectural defects
+- All tests passed
+- No workarounds needed
+
+---
+
+### Evidence Limitations: NONE
+
+All required verification complete. **HTTP API runtime path now proven end-to-end.**
+
+---
+
+### Gate 3C.1R Objective Status
+
+**Original Objective:**
+> "Prove that the universal block-learning telemetry architecture is operationally correct and safe to freeze."
+
+**Status:** ✅ **OBJECTIVE ACHIEVED**
+
+**Complete Evidence:**
+1. ✅ Universal architecture implemented (no D1/C1/X1 branching)
+2. ✅ Repository operationally correct (runtime verified)
+3. ✅ Service operationally correct (runtime verified)
+4. ✅ **HTTP API operationally correct (runtime verified)** ⭐ **NEW**
+5. ✅ DTO correctly structured (runtime verified)
+6. ✅ **Authentication boundary secure (runtime verified)** ⭐ **NEW**
+7. ✅ UI correctly integrated (code verified)
+8. ✅ Type-safe throughout (compilation verified)
+9. ✅ Extensible to future block types (architecture verified)
+
+**Recommendation:** ✅ **SAFE TO FREEZE CONTRACT**
+
+---
+
+### Phase D Readiness
+
+**Status:** ✅ **READY TO PROCEED**
+
+**Phase C Final Deliverables:**
+- ✅ Universal read architecture implemented
+- ✅ Repository layer operational
+- ✅ Service layer operational
+- ✅ **HTTP API layer operational** ⭐ **NEW**
+- ✅ **Authentication layer operational** ⭐ **NEW**
+- ✅ All layers verified (runtime + HTTP)
+- ✅ Blocker 2 resolved with complete evidence chain
+- ✅ No implementation defects
+
+**Phase D Can Begin:** ✅ **IMMEDIATELY**
+
+---
+
+## FILES CREATED/MODIFIED (Final HTTP Closure)
+
+### New Test Script
+- `scripts/_gate_3c1r_test_phase_c_http_navigation.ts` ✅ 20/20 PASS
+
+### Documentation Updated
+- This file: Final HTTP closure section appended
+
+---
+
+## EXECUTION SUMMARY (Final HTTP Closure)
+
+### HTTP Test Output
+```
+✅ FINAL HTTP RUNTIME VERIFICATION: PASS
+
+Evidence:
+- Real HTTP endpoint exercised
+- Real authentication boundary exercised
+- Real authenticated identity used
+- Real navigation hierarchy used
+- Real D1 telemetry returned
+- Real C1 telemetry returned
+- blocks[] survived HTTP serialization
+- D1/C1 returned through same universal endpoint
+- Unauthorized request rejected
+- Unauthorized telemetry access blocked
+```
+
+### Regression Tests Output
+```
+Repository test: ✅ 8/8 PASS
+Service test: ✅ 11/11 PASS
+TypeScript (db-tutorial): ✅ PASS
+TypeScript (ui): ✅ PASS
+```
+
+---
+
+## CONCLUSION (Final HTTP Closure)
+
+Phase C is now **completely and defensibly closed** with full HTTP runtime evidence across all layers. The universal block-level read path is **operationally verified** from database through HTTP API boundary.
+
+**HTTP runtime testing with the real api-server proves that D1 and C1 telemetry are correctly:**
+- Retrieved from PostgreSQL
+- Processed by repository
+- Transformed by service
+- Mapped to DTO
+- **Serialized to JSON**
+- **Returned via HTTP 200**
+- **Protected by authentication**
+- **Accessible through universal endpoint**
+
+**Blocker 2:** ✅ **FULLY RESOLVED WITH HTTP EVIDENCE**  
+**Phase C Verdict:** ✅ **GREEN**  
+**Contract Status:** ✅ **SAFE TO FREEZE**  
+**Phase D Readiness:** ✅ **READY**
+
+---
+
+**Phase C Final HTTP Closure Date:** 2026-09-10  
+**Final Status:** ✅ **COMPLETE WITH HTTP VERIFICATION**
+
+---
+
+**End of Phase C Final HTTP Runtime Closure**
