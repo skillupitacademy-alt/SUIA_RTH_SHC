@@ -46,31 +46,57 @@ const mockSubtopicId = 'subtopic-uuid-456';
 const mockSectionId = 'section-uuid-789';
 
 const mockProgressResponse = {
-  navigationNodeId: mockNavigationNodeId,
-  sectionId: mockSectionId,
-  subtopicId: mockSubtopicId,
-  status: 'in_progress' as const,
-  progressPercentage: 66.67,
-  completedBlocks: [
-    {
-      blockId: 'block-d1-uuid',
-      blockVersion: 'D1',
-      completedAt: '2026-09-01T10:30:00.000Z',
-    },
-    {
-      blockId: 'block-c1-uuid',
-      blockVersion: 'C1',
-      completedAt: '2026-09-01T11:00:00.000Z',
-    },
-  ],
-  completedBlockCount: 2,
-  totalBlockCount: 3,
-  timeSpentActiveSec: 450,
-  visitCount: 3,
-  revisionCount: 1,
-  firstViewedAt: '2026-09-01T10:00:00.000Z',
-  lastViewedAt: '2026-09-01T11:00:00.000Z',
-  completedAt: null,
+  data: {
+    navigationNodeId: mockNavigationNodeId,
+    sectionId: mockSectionId,
+    subtopicId: mockSubtopicId,
+    status: 'in_progress' as const,
+    progressPercentage: 66.67,
+    completedBlockCount: 2,
+    totalBlockCount: 3,
+    timeSpentActiveSec: 450,
+    visitCount: 3,
+    revisionCount: 1,
+    firstViewedAt: '2026-09-01T10:00:00.000Z',
+    lastViewedAt: '2026-09-01T11:00:00.000Z',
+    completedAt: null,
+    // Gate 3C.1R: Full block telemetry state (not just completedBlocks)
+    blocks: [
+      {
+        blockId: 'block-d1-uuid',
+        blockVersion: 'D1',
+        visitCount: 2,
+        revisionCount: 1,
+        activeTimeSec: 120,
+        expectedTimeSec: 180,
+        firstViewedAt: '2026-09-01T10:00:00.000Z',
+        lastViewedAt: '2026-09-01T10:15:00.000Z',
+        completedAt: '2026-09-01T10:30:00.000Z',
+      },
+      {
+        blockId: 'block-c1-uuid',
+        blockVersion: 'C1',
+        visitCount: 1,
+        revisionCount: 0,
+        activeTimeSec: 240,
+        expectedTimeSec: 300,
+        firstViewedAt: '2026-09-01T10:45:00.000Z',
+        lastViewedAt: '2026-09-01T11:00:00.000Z',
+        completedAt: '2026-09-01T11:00:00.000Z',
+      },
+      {
+        blockId: 'block-s1-uuid',
+        blockVersion: 'S1',
+        visitCount: 0,
+        revisionCount: 0,
+        activeTimeSec: 0,
+        expectedTimeSec: null,
+        firstViewedAt: null,
+        lastViewedAt: null,
+        completedAt: null,
+      },
+    ],
+  },
 };
 
 describe('ILSProvider - Phase 4', () => {
@@ -243,11 +269,13 @@ describe('ILSProvider - Phase 4', () => {
   // Test 12: No-progress state (empty completed blocks)
   it('should handle no-progress state correctly', async () => {
     const emptyProgressResponse = {
-      ...mockProgressResponse,
-      completedBlocks: [],
-      completedBlockCount: 0,
-      progressPercentage: 0,
-      status: 'not_started' as const,
+      data: {
+        ...mockProgressResponse.data,
+        completedBlocks: [],
+        completedBlockCount: 0,
+        progressPercentage: 0,
+        status: 'not_started' as const,
+      },
     };
 
     (global.fetch as any).mockReset();
@@ -480,31 +508,47 @@ describe('ILSProvider - Phase 4', () => {
     const pageBSubtopicId = 'subtopic-page-b';
 
     const pageAResponse = {
-      ...mockProgressResponse,
-      navigationNodeId: pageANavigationNodeId,
-      subtopicId: pageASubtopicId,
-      completedBlocks: [
-        {
-          blockId: 'page-a-block-1',
-          blockVersion: 'D1',
-          completedAt: '2026-09-01T10:30:00.000Z',
-        },
-      ],
-      completedBlockCount: 1,
+      data: {
+        ...mockProgressResponse.data,
+        navigationNodeId: pageANavigationNodeId,
+        subtopicId: pageASubtopicId,
+        blocks: [
+          {
+            blockId: 'page-a-block-1',
+            blockVersion: 'D1',
+            visitCount: 1,
+            revisionCount: 0,
+            activeTimeSec: 120,
+            expectedTimeSec: 180,
+            firstViewedAt: '2026-09-01T10:00:00.000Z',
+            lastViewedAt: '2026-09-01T10:30:00.000Z',
+            completedAt: '2026-09-01T10:30:00.000Z',
+          },
+        ],
+        completedBlockCount: 1,
+      },
     };
 
     const pageBResponse = {
-      ...mockProgressResponse,
-      navigationNodeId: pageBNavigationNodeId,
-      subtopicId: pageBSubtopicId,
-      completedBlocks: [
-        {
-          blockId: 'page-b-block-1',
-          blockVersion: 'D1',
-          completedAt: '2026-09-01T11:30:00.000Z',
-        },
-      ],
-      completedBlockCount: 1,
+      data: {
+        ...mockProgressResponse.data,
+        navigationNodeId: pageBNavigationNodeId,
+        subtopicId: pageBSubtopicId,
+        blocks: [
+          {
+            blockId: 'page-b-block-1',
+            blockVersion: 'D1',
+            visitCount: 1,
+            revisionCount: 0,
+            activeTimeSec: 150,
+            expectedTimeSec: 200,
+            firstViewedAt: '2026-09-01T11:00:00.000Z',
+            lastViewedAt: '2026-09-01T11:30:00.000Z',
+            completedAt: '2026-09-01T11:30:00.000Z',
+          },
+        ],
+        completedBlockCount: 1,
+      },
     };
 
     (global.fetch as any).mockReset();
@@ -616,27 +660,31 @@ describe('ILSProvider - Phase 4', () => {
     });
 
     const pageAResponse = {
-      ...mockProgressResponse,
-      navigationNodeId: pageANavigationNodeId,
-      subtopicId: pageASubtopicId,
-      status: 'completed' as const,
-      progressPercentage: 100,
-      completedBlocks: [
-        { blockId: 'page-a-block-1', blockVersion: 'D1', completedAt: '2026-09-01T10:00:00.000Z' },
-      ],
-      completedBlockCount: 1,
+      data: {
+        ...mockProgressResponse.data,
+        navigationNodeId: pageANavigationNodeId,
+        subtopicId: pageASubtopicId,
+        status: 'completed' as const,
+        progressPercentage: 100,
+        completedBlocks: [
+          { blockId: 'page-a-block-1', blockVersion: 'D1', completedAt: '2026-09-01T10:00:00.000Z' },
+        ],
+        completedBlockCount: 1,
+      },
     };
 
     const pageBResponse = {
-      ...mockProgressResponse,
-      navigationNodeId: pageBNavigationNodeId,
-      subtopicId: pageBSubtopicId,
-      status: 'in_progress' as const,
-      progressPercentage: 50,
-      completedBlocks: [
-        { blockId: 'page-b-block-1', blockVersion: 'D1', completedAt: '2026-09-01T11:00:00.000Z' },
-      ],
-      completedBlockCount: 1,
+      data: {
+        ...mockProgressResponse.data,
+        navigationNodeId: pageBNavigationNodeId,
+        subtopicId: pageBSubtopicId,
+        status: 'in_progress' as const,
+        progressPercentage: 50,
+        completedBlocks: [
+          { blockId: 'page-b-block-1', blockVersion: 'D1', completedAt: '2026-09-01T11:00:00.000Z' },
+        ],
+        completedBlockCount: 1,
+      },
     };
 
     (global.fetch as any).mockReset();

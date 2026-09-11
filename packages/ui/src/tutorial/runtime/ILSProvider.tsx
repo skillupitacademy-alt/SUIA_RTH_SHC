@@ -259,12 +259,20 @@ export function ILSProvider({
       // Call BFF endpoint (works for both SkillUp and RTH)
       const url = `/api/tutorial/ils/navigation/${navigationNodeId}?subtopicId=${subtopicId}`;
       
+      console.log('[ILSProvider] fetchProgress - starting request', { url });
+      
       const response = await fetch(url, {
         method: 'GET',
         credentials: 'include', // Include cookies for authentication
         headers: {
           'Content-Type': 'application/json',
         },
+      });
+      
+      console.log('[ILSProvider] fetchProgress - response received', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText,
       });
       
       if (!response.ok) {
@@ -278,7 +286,15 @@ export function ILSProvider({
         throw new Error(errorData.error || `Failed to fetch progress: ${response.status}`);
       }
       
-      const data: NavigationProgressResponse = await response.json();
+      // Unwrap the API response wrapper: { data: NavigationProgressResponse }
+      const responseBody = await response.json();
+      const data: NavigationProgressResponse = responseBody.data;
+      
+      console.log('[ILSProvider] fetchProgress - data parsed', {
+        hasBlocks: !!data.blocks,
+        blocksCount: data.blocks?.length,
+        navigationNodeId: data.navigationNodeId,
+      });
       
       // CRITICAL: Verify this response still belongs to current page
       if (
@@ -338,17 +354,33 @@ export function ILSProvider({
    */
   const updateActiveBlockProgress = useCallback(
     (activeBlock: ActiveBlockIdentity | null, blocks: BlockLearningStateResponse[] | null) => {
+      console.log('[ILSProvider] updateActiveBlockProgress called', {
+        hasActiveBlock: !!activeBlock,
+        activeBlock,
+        hasBlocks: !!blocks,
+        blocksCount: blocks?.length,
+      });
+      
       if (!activeBlock || !blocks) {
+        console.log('[ILSProvider] Setting activeBlockProgress to null (no activeBlock or blocks)');
         setActiveBlockProgress(null);
         return;
       }
       
       // Find matching block by blockId + blockVersion
+      // STRICT MATCHING: Both blockId AND blockVersion must match
       const blockState = blocks.find(
         (block) =>
           block.blockId === activeBlock.blockId &&
           block.blockVersion === activeBlock.blockVersion
       );
+      
+      console.log('[ILSProvider] Block matching result', {
+        found: !!blockState,
+        activeBlockId: activeBlock.blockId,
+        activeBlockVersion: activeBlock.blockVersion,
+        blockState,
+      });
       
       if (blockState) {
         // Block has telemetry state - map all fields
@@ -409,6 +441,11 @@ export function ILSProvider({
     
     fetchProgress().then((blocks) => {
       if (isMounted && blocks) {
+        console.log('[ILSProvider] fetchProgress completed', {
+          blocksCount: blocks.length,
+          activeBlockRefValue: activeBlockRef.current,
+          willCallUpdate: !!activeBlockRef.current,
+        });
         blocksRef.current = blocks;
         // Use current activeBlock from ref, not captured closure value
         updateActiveBlockProgress(activeBlockRef.current, blocks);
@@ -426,8 +463,17 @@ export function ILSProvider({
    * Uses stored completedBlocks to avoid refetching navigation progress
    */
   useEffect(() => {
+    console.log('[ILSProvider] activeBlock changed effect', {
+      hasBlocksRef: !!blocksRef.current,
+      hasActiveBlock: !!activeBlock,
+      activeBlock,
+    });
+    
     if (blocksRef.current && activeBlock) {
       updateActiveBlockProgress(activeBlock, blocksRef.current);
+    } else if (!activeBlock) {
+      console.log('[ILSProvider] No active block - setting activeBlockProgress to null');
+      setActiveBlockProgress(null);
     }
   }, [activeBlock, updateActiveBlockProgress]);
   
