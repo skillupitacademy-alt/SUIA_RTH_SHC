@@ -29,6 +29,13 @@
 
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useActiveBlock, type ActiveBlockIdentity } from './ActiveBlockContext';
+import { 
+  splitActiveTimeSeconds, 
+  createDeliveryEvents,
+  BlockTelemetryDeliveryQueue,
+  type DeliveryEvent as DeliveryEventType,
+  type SendBlockActiveTime,
+} from './blockTelemetryDelivery';
 
 export interface BlockTelemetryProviderProps {
   /**
@@ -80,6 +87,20 @@ interface TimingState {
 }
 
 /**
+ * Phase D-2: Use production delivery event type
+ */
+type DeliveryEvent = DeliveryEventType;
+
+/**
+ * Phase D-2: Live accumulator (mutable)
+ */
+interface LiveAccumulator {
+  blockId: string;
+  blockVersion: string;
+  pendingMs: number;
+}
+
+/**
  * Pending active time awaiting delivery
  * CRITICAL: Survives block transitions and flush failures
  */
@@ -120,9 +141,8 @@ export function BlockTelemetryProvider({
   // Current timing state (actively accumulating for current block)
   const timingStateRef = useRef<TimingState | null>(null);
   
-  // Pending active-time queue (measured but undelivered, survives transitions)
-  // Map structure: blockId+blockVersion → pendingMs
-  const pendingQueueRef = useRef<Map<string, PendingActiveTime>>(new Map());
+  // Phase D-2: Production delivery queue
+  const deliveryQueueRef = useRef<BlockTelemetryDeliveryQueue | null>(null);
   
   // Last visit identity (for duplicate prevention)
   const lastVisitIdentityRef = useRef<RequestIdentity | null>(null);
@@ -145,57 +165,50 @@ export function BlockTelemetryProvider({
   }, [propSessionId]);
   
   /**
-   * Get unique key for pending queue
+   * Phase D-2 F2: Snapshot/swap - capture timing and create frozen delivery events
+   * CRITICAL: This prevents telemetry loss during in-flight delivery
    */
-  const getPendingKey = useCallback((blockId: string, blockVersion: string): string => {
-    return `${blockId}::${blockVersion}`;
-  }, []);
-  
-  /**
-   * Add measured time to pending delivery queue
-   * Aggregates if entry already exists for this block
-   */
-  const addToPendingQueue = useCallback((blockId: string, blockVersion: string, ms: number) => {
-    if (ms <= 0) return;
-    
-    const key = getPendingKey(blockId, blockVersion);
-    const existing = pendingQueueRef.current.get(key);
-    
-    if (existing) {
-      // Aggregate with existing pending time
-      existing.pendingMs += ms;
-    } else {
-      // Create new pending entry
-      pendingQueueRef.current.set(key, {
-        blockId,
-        blockVersion,
-        pendingMs: ms,
-      });
-    }
-    
-    // console.log(`[BlockTelemetry] Added to pending queue: ${blockId} +${Math.floor(ms/1000)}s (total pending: ${Math.floor((existing?.pendingMs ?? 0) + ms)/1000}s)`);
-  }, [getPendingKey]);
-  
-  /**
-   * Capture currently accumulated time without destroying timing state
-   */
-  const captureCurrentTiming = useCallback((): { blockId: string; blockVersion: string; ms: number } | null => {
+  const snapshotAndCreateEvents = useCallback((): DeliveryEvent[] => {
     const state = timingStateRef.current;
-    if (!state) return null;
+    if (!state) return [];
     
+    // Calculate total accumulated time
     let totalMs = state.accumulatedMs;
-    
-    if (!state.isPaused && state.startTime > 0) {
+    if (!state.isPaused && state.startTime >= 0) {
       const now = performance.now();
       totalMs += (now - state.startTime);
     }
     
-    return {
+    if (totalMs <= 0) return [];
+    
+    // Phase D-2: SNAPSHOT current state
+    const snapshotMs = totalMs;
+    
+    // Phase D-2: SWAP - reset accumulator IMMEDIATELY (before network I/O)
+    state.accumulatedMs = 0;
+    state.startTime = state.isPaused ? 0 : performance.now();
+    
+    // Calculate whole seconds and preserve sub-second remainder
+    const wholeSeconds = Math.floor(snapshotMs / 1000);
+    const remainderMs = snapshotMs % 1000;
+    
+    // Preserve remainder in live accumulator
+    if (remainderMs > 0) {
+      state.accumulatedMs = remainderMs;
+    }
+    
+    if (wholeSeconds <= 0) return [];
+    
+    // Phase D-2 F1/F4: Use production event creator with splitting
+    return createDeliveryEvents({
+      navigationNodeId,
+      subtopicId,
+      sectionId,
       blockId: state.blockId,
       blockVersion: state.blockVersion,
-      ms: totalMs,
-    };
-  }, []);
+      activeTimeSec: wholeSeconds,
+    });
+  }, [navigationNodeId, subtopicId, sectionId]);
   
   /**
    * Emit block visit event
@@ -288,145 +301,103 @@ export function BlockTelemetryProvider({
   }, [enabled, navigationNodeId, subtopicId, sectionId]);
   
   /**
-   * Emit active time increment
-   * CRITICAL: activeTimeSec is an INCREMENT (delta), not cumulative
-   * 
-   * @returns true if request succeeded, false if failed (for retry logic)
+   * Phase D-2: Initialize production delivery queue
    */
-  const emitActiveTime = useCallback(async (
-    blockId: string,
-    blockVersion: string,
-    incrementSec: number
-  ): Promise<boolean> => {
-    if (!enabled || !sessionIdRef.current || incrementSec <= 0) return false;
-    
-    // Enforce maximum increment (600 seconds per Phase 4.4 API limit)
-    const safeIncrement = Math.min(incrementSec, 600);
-    
-    try {
-      const response = await fetch('/api/tutorial/ils/block-active-time', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-session-id': sessionIdRef.current,
-        },
-        body: JSON.stringify({
-          navigationNodeId,
-          subtopicId,
-          blockId,
-          blockVersion,
-          activeTimeSec: safeIncrement,
-          sectionId,
-        }),
-      });
-      
-      if (!response.ok) {
-        console.warn(`[BlockTelemetry] Active time failed: ${response.status}`);
-        return false; // Request failed - time should be retried
+  const sendBlockActiveTime: SendBlockActiveTime = useCallback(
+    async (event: DeliveryEvent) => {
+      if (!enabled || !sessionIdRef.current) {
+        return {
+          processed: false,
+          alreadyProcessed: false,
+        };
       }
       
-      return true; // Success
-    } catch (error) {
-      // Silent failure - telemetry must not break UX
-      console.error('[BlockTelemetry] Active time error:', error);
-      return false; // Network error - time should be retried
-    }
-  }, [enabled, navigationNodeId, subtopicId, sectionId]);
+      try {
+        const response = await fetch('/api/tutorial/ils/block-active-time', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-session-id': sessionIdRef.current,
+          },
+          body: JSON.stringify({
+            navigationNodeId: event.navigationNodeId,
+            subtopicId: event.subtopicId,
+            sectionId: event.sectionId,
+            blockId: event.blockId,
+            blockVersion: event.blockVersion,
+            eventId: event.eventId,
+            activeTimeSec: event.activeTimeSec,
+          }),
+        });
+        
+        if (!response.ok) {
+          return {
+            processed: false,
+            alreadyProcessed: false,
+          };
+        }
+        
+        const result = await response.json();
+        
+        return {
+          processed: result.processed === true,
+          alreadyProcessed: result.alreadyProcessed === true,
+        };
+      } catch (error) {
+        return {
+          processed: false,
+          alreadyProcessed: false,
+        };
+      }
+    },
+    [enabled]
+  );
   
   /**
-   * Try to deliver pending queue entries
-   * Respects 600s API limit and preserves remainders
-   * CRITICAL: Does NOT destroy pending entries on failure
+   * Phase D-2: Lazy-init production delivery queue
    */
-  const tryDeliverPending = useCallback(async (): Promise<void> => {
-    if (pendingQueueRef.current.size === 0) return;
+  const getDeliveryQueue = useCallback((): BlockTelemetryDeliveryQueue => {
+    if (!deliveryQueueRef.current) {
+      deliveryQueueRef.current = new BlockTelemetryDeliveryQueue(sendBlockActiveTime);
+    }
+    return deliveryQueueRef.current;
+  }, [sendBlockActiveTime]);
+  
+  /**
+   * Phase D-2: Flush current timing and deliver all queued events
+   */
+  const flushAllPending = useCallback(async (): Promise<void> => {
+    // Phase D-2 F2: Snapshot/swap to create frozen delivery events
+    const newEvents = snapshotAndCreateEvents();
+    
+    // Add new events to production delivery queue
+    const queue = getDeliveryQueue();
+    for (const event of newEvents) {
+      queue.enqueue(event);
+    }
+    
+    if (queue.getQueuedEventIds().length === 0) return;
     
     // Wait for any in-flight delivery (serialization)
     if (flushPromiseRef.current) {
       await flushPromiseRef.current;
     }
     
-    // Process each pending entry
-    const entries = Array.from(pendingQueueRef.current.entries());
+    // Phase D-2 F3: Attempt delivery of all queued events using production queue
+    const eventIds = queue.getQueuedEventIds();
     
-    for (const [key, pending] of entries) {
-      const incrementSec = Math.floor(pending.pendingMs / 1000);
-      
-      if (incrementSec <= 0) {
-        // Clean up entries with <1s
-        pendingQueueRef.current.delete(key);
-        continue;
-      }
-      
-      // Cap at 600s per API limit
-      const safeIncrement = Math.min(incrementSec, 600);
-      const remainderSec = incrementSec - safeIncrement;
-      
-      // Attempt delivery
-      const flushPromise = emitActiveTime(
-        pending.blockId,
-        pending.blockVersion,
-        safeIncrement
-      ).then((success) => {
-        if (!success) {
-          console.warn(`[BlockTelemetry] Delivery failed for ${pending.blockId}, will retry`);
-          return;
-        }
-        
-        // SUCCESS: Update or remove pending entry
-        const fractionalMs = pending.pendingMs % 1000;
-        const remainderMs = remainderSec * 1000;
-        const totalRemaining = fractionalMs + remainderMs;
-        
-        if (totalRemaining > 0) {
-          // Update entry with remainder
-          pending.pendingMs = totalRemaining;
-          // console.log(`[BlockTelemetry] Delivered ${safeIncrement}s for ${pending.blockId}, ${Math.floor(totalRemaining/1000)}s remaining`);
-        } else {
-          // Fully delivered - remove from queue
-          pendingQueueRef.current.delete(key);
-          // console.log(`[BlockTelemetry] Fully delivered ${pending.blockId}`);
-        }
+    for (const eventId of eventIds) {
+      const flushPromise = queue.deliver(eventId).then(() => {
+        // Acknowledgement handled by queue
       }).finally(() => {
         flushPromiseRef.current = null;
       });
       
       flushPromiseRef.current = flushPromise;
       await flushPromise;
-      
-      // Continue with next entry (allows partial progress)
     }
-  }, [emitActiveTime]);
-  
-  /**
-   * Detach current timing to pending queue
-   * CRITICAL: Must be called BEFORE stopTiming() to prevent data loss
-   */
-  const detachCurrentToPending = useCallback(() => {
-    const captured = captureCurrentTiming();
-    if (!captured || captured.ms <= 0) return;
-    
-    addToPendingQueue(captured.blockId, captured.blockVersion, captured.ms);
-    
-    // Clear current timing state to prevent double-counting
-    if (timingStateRef.current) {
-      timingStateRef.current.accumulatedMs = 0;
-      timingStateRef.current.startTime = performance.now();
-    }
-  }, [captureCurrentTiming, addToPendingQueue]);
-  
-  /**
-   * Flush current timing + attempt delivery of all pending
-   * This is the primary entry point for heartbeat/transition flush
-   */
-  const flushAllPending = useCallback(async (): Promise<void> => {
-    // 1. Detach current timing to pending queue (if any)
-    detachCurrentToPending();
-    
-    // 2. Attempt delivery of all pending entries
-    await tryDeliverPending();
-  }, [detachCurrentToPending, tryDeliverPending]);
+  }, [snapshotAndCreateEvents, getDeliveryQueue]);
   
   /**
    * Start timing for a block
@@ -460,7 +431,7 @@ export function BlockTelemetryProvider({
       
       if (document.visibilityState === 'hidden') {
         // Pause: accumulate elapsed time and stop timer
-        if (!state.isPaused && state.startTime > 0) {
+        if (!state.isPaused && state.startTime >= 0) {
           const now = performance.now();
           state.accumulatedMs += (now - state.startTime);
           state.startTime = 0;
@@ -490,53 +461,45 @@ export function BlockTelemetryProvider({
     
     const currentState = timingStateRef.current;
     
-    if (!activeBlock) {
-      // No active block - detach timing and stop
-      if (currentState) {
-        // Detach to pending queue (safe even if flush fails)
-        detachCurrentToPending();
-        stopTiming();
-        
-        // Best-effort delivery (non-blocking)
-        void tryDeliverPending();
-      }
-      return;
-    }
-    
-    // Coerce undefined blockVersion to 'unversioned' (Phase 4.4 API requirement)
-    const blockVersion = activeBlock.blockVersion || 'unversioned';
-    
-    // Check if this is the same block
-    if (
-      currentState &&
-      currentState.blockId === activeBlock.blockId &&
-      currentState.blockVersion === blockVersion
-    ) {
-      // Same block - no action needed
-      return;
-    }
-    
-    // Block change: Safe transition with durable pending queue
+    // Block change: Safe transition with durable delivery queue
     const transitionToNewBlock = async () => {
-      // 1. CRITICAL: Detach old block's timing to pending queue BEFORE stopping
-      //    This ensures measured time survives even if delivery fails
+      if (!activeBlock) {
+        // No active block - flush and stop
+        if (currentState) {
+          await flushAllPending();
+          stopTiming();
+        }
+        return;
+      }
+      
+      // Coerce undefined blockVersion to 'unversioned' (Phase 4.4 API requirement)
+      const blockVersion = activeBlock.blockVersion || 'unversioned';
+      
+      // Check if this is the same block
+      if (
+        currentState &&
+        currentState.blockId === activeBlock.blockId &&
+        currentState.blockVersion === blockVersion
+      ) {
+        // Same block - no action needed
+        return;
+      }
+      
+      // 1. CRITICAL Phase D-2: Flush old block BEFORE stopping (snapshot/swap preserves in-flight accumulation)
       if (currentState) {
-        detachCurrentToPending();
+        await flushAllPending();
         stopTiming();
       }
       
-      // 2. Best-effort delivery (non-blocking, failures preserved in queue)
-      void tryDeliverPending();
-      
-      // 3. Emit visit for new block
+      // 2. Emit visit for new block
       await emitVisit(activeBlock.blockId, blockVersion);
       
-      // 4. Start timing for new block
+      // 3. Start timing for new block
       startTiming(activeBlock.blockId, blockVersion);
     };
     
     void transitionToNewBlock();
-  }, [activeBlock, enabled, detachCurrentToPending, tryDeliverPending, emitVisit, startTiming, stopTiming]);
+  }, [activeBlock, enabled, flushAllPending, emitVisit, startTiming, stopTiming]);
   
   /**
    * Heartbeat: Periodically flush accumulated time and retry pending
@@ -561,18 +524,10 @@ export function BlockTelemetryProvider({
    */
   useEffect(() => {
     return () => {
-      // Detach current timing to pending queue
-      if (timingStateRef.current) {
-        const captured = captureCurrentTiming();
-        if (captured && captured.ms > 0) {
-          addToPendingQueue(captured.blockId, captured.blockVersion, captured.ms);
-        }
-      }
-      
-      // Best-effort delivery of all pending
-      void tryDeliverPending();
+      // Phase D-2: Final flush using snapshot/swap
+      void flushAllPending();
     };
-  }, [captureCurrentTiming, addToPendingQueue, tryDeliverPending]);
+  }, [flushAllPending]);
   
   return <>{children}</>;
 }

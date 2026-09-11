@@ -47,6 +47,7 @@ export * from './student-badges';
 export * from './tutorial-progress';
 export * from './tutorial-navigation-progress'; // Phase 2.6: Navigation-node progress
 export * from './block-learning-state'; // Phase 4: Block-level learning state
+export * from './block-telemetry-events'; // Phase D-2: Event idempotency
 // REMOVED: export * from './tutorial-video-links'; (legacy - dropped Phase B)
 export * from './badges';
 export * from './certificates';

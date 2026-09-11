@@ -48,7 +48,11 @@ interface ActiveBlockContextValue {
   activeBlock: ActiveBlockState;
 }
 
-const ActiveBlockContext = createContext<ActiveBlockContextValue | undefined>(undefined);
+/**
+ * Active Block Context
+ * Exported for testing purposes - allows test harnesses to control active block state
+ */
+export const ActiveBlockContext = createContext<ActiveBlockContextValue | undefined>(undefined);
 
 /**
  * Hook to access current active block
