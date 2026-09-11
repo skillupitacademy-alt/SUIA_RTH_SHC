@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Menu, Search } from 'lucide-react';
+import { Bell, Menu, Search, BarChart3 } from 'lucide-react';
 import type { BrandTutorialTheme, TutorialFooterNavigationItem, TutorialNavigationTree } from '@quiz/types';
 
 interface TutorialHeaderProps {
@@ -9,6 +9,7 @@ interface TutorialHeaderProps {
   brand: TutorialNavigationTree['brand'];
   theme: BrandTutorialTheme;
   onMenuClick?: () => void;
+  onProgressClick?: () => void; // New: RSSB trigger
 }
 
 interface TutorialFooterProps {
@@ -17,7 +18,7 @@ interface TutorialFooterProps {
   theme: BrandTutorialTheme;
 }
 
-export function TutorialHeader({ crumbs, active, brand, theme, onMenuClick }: TutorialHeaderProps) {
+export function TutorialHeader({ crumbs, active, brand, theme, onMenuClick, onProgressClick }: TutorialHeaderProps) {
   const badgeLabel = brand.shortName?.slice(0, 1) || brand.name.slice(0, 1);
 
   return (
@@ -45,6 +46,16 @@ export function TutorialHeader({ crumbs, active, brand, theme, onMenuClick }: Tu
           <span className="flex-1">Search anything...</span>
           <Search className="h-4 w-4" style={{ color: theme.secondary }} />
         </div>
+        <button 
+          type="button" 
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dfe7f1] transition-colors hover:bg-slate-50" 
+          style={{ color: theme.secondary }}
+          onClick={onProgressClick}
+          aria-label="Learning progress"
+          title="Learning Progress"
+        >
+          <BarChart3 className="h-4 w-4" />
+        </button>
         <button type="button" className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#dfe7f1]" style={{ color: theme.secondary }} aria-label="Notifications">
           <Bell className="h-4 w-4" />
           <span className="absolute right-2 top-1 h-2 w-2 rounded-full" style={{ backgroundColor: theme.primary }} />

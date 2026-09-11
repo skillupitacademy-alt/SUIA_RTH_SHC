@@ -16,6 +16,9 @@ export * from './runtime/ILSProvider';
 // Phase 4.5: Block Telemetry
 export * from './runtime/BlockTelemetryProvider';
 
+// Macro 4: Learning Progress Sidebar (RSSB)
+export * from './runtime/LearningProgressSidebar';
+
 // Individual block components
 export * from './blocks/HeadingBlock';
 export * from './blocks/ParagraphBlock';

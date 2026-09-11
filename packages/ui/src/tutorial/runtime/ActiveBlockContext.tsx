@@ -235,8 +235,33 @@ export function ActiveBlockProvider({
       rafRef.current = null;
       const newActiveBlock = determineActiveBlock();
       
+      console.log('[ActiveBlockProvider] updateActiveBlock determined', {
+        newActiveBlock,
+        visibleBlocksCount: visibleBlocksRef.current.size,
+      });
+      
       // Only update if actually changed
       setActiveBlock((current) => {
+        const changed = (() => {
+          if (!current && !newActiveBlock) return false;
+          if (!current || !newActiveBlock) return true;
+          if (
+            current.blockId === newActiveBlock.blockId &&
+            current.blockType === newActiveBlock.blockType &&
+            current.blockVersion === newActiveBlock.blockVersion
+          ) {
+            return false;
+          }
+          return true;
+        })();
+        
+        if (changed) {
+          console.log('[ActiveBlockProvider] activeBlock STATE CHANGE', {
+            from: current,
+            to: newActiveBlock,
+          });
+        }
+        
         if (!current && !newActiveBlock) return current;
         if (!current || !newActiveBlock) return newActiveBlock;
         if (
@@ -255,6 +280,15 @@ export function ActiveBlockProvider({
    * IntersectionObserver callback
    */
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
+    console.log('[ActiveBlockProvider] IntersectionObserver callback', {
+      entriesCount: entries.length,
+      entries: entries.map(e => ({
+        blockId: e.target.getAttribute('data-block-id'),
+        isIntersecting: e.isIntersecting,
+        intersectionRatio: e.intersectionRatio,
+      })),
+    });
+    
     // Update visible blocks map
     for (const entry of entries) {
       if (entry.isIntersecting) {
@@ -272,6 +306,12 @@ export function ActiveBlockProvider({
    * Initialize observer and observe all blocks
    */
   useEffect(() => {
+    console.log('[ActiveBlockProvider] Observer initialization effect START', {
+      hasContainerRef: !!containerRef,
+      containerCurrent: containerRef?.current,
+      containerExists: !!containerRef?.current,
+    });
+    
     // Find container
     const container = containerRef?.current;
     
@@ -282,15 +322,37 @@ export function ActiveBlockProvider({
       // Production mode: Query only top-level blocks (direct children of container)
       // This ensures container blocks are observed but NOT their nested children
       blocks = container.querySelectorAll(':scope > [data-block-id]');
+      console.log('[ActiveBlockProvider] Queried container for blocks', {
+        containerTagName: container.tagName,
+        containerClassName: container.className,
+        blocksFound: blocks.length,
+        selector: ':scope > [data-block-id]',
+      });
     } else {
       // Test/fallback mode: Query all blocks in document
       console.warn('[ActiveBlockProvider] containerRef not provided - observing all blocks');
       blocks = document.querySelectorAll('[data-block-id]');
+      console.log('[ActiveBlockProvider] Queried document for blocks', {
+        blocksFound: blocks.length,
+      });
     }
     
     if (blocks.length === 0) {
+      console.warn('[ActiveBlockProvider] ZERO BLOCKS FOUND - returning without creating observer', {
+        hasContainer: !!container,
+        containerHTML: container ? container.innerHTML.substring(0, 200) : 'N/A',
+      });
       return;
     }
+    
+    console.log('[ActiveBlockProvider] Blocks discovered - creating observer', {
+      blockCount: blocks.length,
+      blockIdentities: Array.from(blocks).map(el => ({
+        id: el.getAttribute('data-block-id'),
+        type: el.getAttribute('data-block-type'),
+        version: el.getAttribute('data-block-version'),
+      })),
+    });
 
     // Store canonical DOM order for deterministic tie-breaking
     blockElementsRef.current = Array.from(blocks);
@@ -308,9 +370,15 @@ export function ActiveBlockProvider({
     blocks.forEach((block) => {
       observer.observe(block);
     });
+    
+    console.log('[ActiveBlockProvider] Observer created and observing blocks', {
+      observedCount: blocks.length,
+      observerActive: true,
+    });
 
     // Cleanup
     return () => {
+      console.log('[ActiveBlockProvider] Cleanup - disconnecting observer');
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;

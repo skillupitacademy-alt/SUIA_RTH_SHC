@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import type { TutorialPagePayload } from '@quiz/types';
 import type { TutorialRuntimeContext } from '../runtime/TutorialRuntimeContext';
-import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider, BlockTelemetryProvider } from '@quiz/ui';
+import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider, BlockTelemetryProvider, LearningProgressSidebar } from '@quiz/ui';
 import { TutorialCodeContent } from './TutorialCodeContent';
 import { TutorialDefinitionContent } from './TutorialDefinitionContent';
 import { TutorialSummaryContent } from './TutorialSummaryContent';
@@ -20,6 +20,7 @@ interface TutorialPageShellProps {
 
 export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isProgressSidebarOpen, setIsProgressSidebarOpen] = useState(false); // Macro 4: RSSB state
   const [completedUrls, setCompletedUrls] = useState<Set<string> | undefined>(undefined);
   const [tutorialSessionId, setTutorialSessionId] = useState<string | null>(null);
 
@@ -159,6 +160,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
         brand={payload.sidebar.brand}
         theme={payload.theme}
         onMenuClick={() => setIsSidebarOpen((current) => !current)}
+        onProgressClick={() => setIsProgressSidebarOpen((current) => !current)} // Macro 4: RSSB trigger
       />
       <div className="flex w-full min-w-0 gap-0 bg-white">
         {isSidebarOpen && (
@@ -230,6 +232,16 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
           </div>
         </BlockTelemetryProvider>
+        
+        {/* Macro 4: Learning Progress Sidebar (RSSB) - Must be inside ILSProvider */}
+        <LearningProgressSidebar
+          isOpen={isProgressSidebarOpen}
+          onClose={() => setIsProgressSidebarOpen(false)}
+          brand={{
+            primaryColor: payload.theme.primary,
+            secondaryColor: payload.theme.secondary,
+          }}
+        />
       </ILSProvider>
       </ActiveBlockProvider>
       </div>
