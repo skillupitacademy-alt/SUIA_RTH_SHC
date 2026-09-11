@@ -39,6 +39,8 @@ import type {
 } from '@quiz/types';
 import type { TutorialSectionRepository } from '../repositories/tutorial-section.repository';
 import type { BlockLearningStateRepository, BlockLearningState } from '../repositories/block-learning-state.repository';
+import type { BlockTelemetryEventRepository } from '../repositories/block-telemetry-event.repository'; // Phase D-2
+import { db } from '../db'; // Phase D-2: For transactions (use actual db, not TutorialDbClientLike)
 import {
   type LearningState,
   type AuthenticatedIdentity,
@@ -65,6 +67,7 @@ import {
   validateBlockId,
   validateBlockVersion,
   validateSubtopicId,
+  validateEventId, // Phase D-2
 } from './learning-progress.validation';
 import {
   resolveRequiredBlocks as resolveRequiredBlocksImpl,
@@ -135,7 +138,8 @@ export class LearningProgressService {
   constructor(
     private readonly progressRepository: ITutorialNavigationProgressRepository,
     private readonly sectionRepository: TutorialSectionRepository,
-    private readonly blockLearningStateRepository: BlockLearningStateRepository
+    private readonly blockLearningStateRepository: BlockLearningStateRepository,
+    private readonly blockTelemetryEventRepository: BlockTelemetryEventRepository // Phase D-2
   ) {}
 
   /**
@@ -707,20 +711,34 @@ export class LearningProgressService {
    * 
    * AUTHORIZATION: SELF-SCOPED - uses authenticated identity.userId ONLY
    */
+  /**
+   * Phase D-2: Record block active time (idempotent)
+   * 
+   * CRITICAL TRANSACTION DESIGN:
+   * - Claim event atomically with ON CONFLICT DO NOTHING
+   * - If new event: accumulate active time
+   * - If duplicate: validate payload immutability, do NOT accumulate again
+   * - Event claim + time accumulation commit or rollback together
+   * 
+   * @param eventId - Client-generated UUID for idempotency
+   * @returns Object with state and processing metadata
+   */
   async recordBlockActiveTime(
     identity: AuthenticatedIdentity,
     navigationNodeId: string,
     subtopicId: string,
     blockId: string,
     blockVersion: string,
+    eventId: string,
     activeTimeSec: number
-  ): Promise<BlockLearningState> {
+  ): Promise<{ state: BlockLearningState; wasProcessed: boolean; wasAlreadyProcessed: boolean }> {
     // Validate inputs
     validateUserId(identity.userId);
     validateNavigationNodeId(navigationNodeId);
     validateBlockId(blockId);
     validateBlockVersion(blockVersion);
     validateSubtopicId(subtopicId);
+    validateEventId(eventId);
 
     // Block-level time validation (stricter than page-level)
     if (activeTimeSec < 0) {
@@ -746,15 +764,125 @@ export class LearningProgressService {
 
     const now = new Date();
 
-    // Upsert with atomic time increment
-    // Repository handles the atomic SQL increment on conflict
-    return await this.blockLearningStateRepository.upsert({
-      userId: identity.userId,
-      navigationNodeId,
-      blockId,
-      blockVersion,
-      activeTimeSec,
-      lastViewedAt: now,
+    // ATOMIC TRANSACTION: Event claim + active time accumulation
+    // Use the actual db instance which has .transaction() method
+    return await db.transaction(async (tx) => {
+      // Use transaction-scoped repositories
+      const txBlockTelemetryRepo = this.blockTelemetryEventRepository.withDb(tx as never);
+      const txBlockStateRepo = this.blockLearningStateRepository.withDb(tx as never);
+
+      // Attempt to claim event atomically
+      const claimedEvent = await txBlockTelemetryRepo.claimEvent({
+        eventId,
+        userId: identity.userId,
+        navigationNodeId,
+        blockId,
+        blockVersion,
+        activeTimeSec,
+      });
+
+      if (claimedEvent) {
+        // NEW EVENT: Accumulate active time
+        const updatedState = await txBlockStateRepo.upsert({
+          userId: identity.userId,
+          navigationNodeId,
+          blockId,
+          blockVersion,
+          activeTimeSec,
+          lastViewedAt: now,
+        });
+
+        // Return with metadata indicating new processing
+        return { state: updatedState, wasProcessed: true, wasAlreadyProcessed: false };
+      } else {
+        // DUPLICATE EVENT: Validate payload immutability
+        const existingEvent = await txBlockTelemetryRepo.findByEventId(eventId);
+
+        if (!existingEvent) {
+          // Should never happen (claimEvent returned null but event doesn't exist)
+          throw new LearningProgressError(
+            'Event claim failed but event not found',
+            'EVENT_CLAIM_INCONSISTENCY',
+            { eventId }
+          );
+        }
+
+        // Validate immutable payload
+        if (
+          existingEvent.userId !== identity.userId ||
+          existingEvent.navigationNodeId !== navigationNodeId ||
+          existingEvent.blockId !== blockId ||
+          existingEvent.blockVersion !== blockVersion ||
+          existingEvent.activeTimeSec !== activeTimeSec
+        ) {
+          throw new LearningProgressError(
+            'Event payload conflict - same eventId with different payload',
+            'EVENT_PAYLOAD_CONFLICT',
+            {
+              eventId,
+              existing: {
+                userId: existingEvent.userId,
+                navigationNodeId: existingEvent.navigationNodeId,
+                blockId: existingEvent.blockId,
+                blockVersion: existingEvent.blockVersion,
+                activeTimeSec: existingEvent.activeTimeSec,
+              },
+              requested: {
+                userId: identity.userId,
+                navigationNodeId,
+                blockId,
+                blockVersion,
+                activeTimeSec,
+              },
+            }
+          );
+        }
+
+        // IDEMPOTENT SUCCESS: Return current learning state (do NOT accumulate again)
+        // 
+        // D2-9 CRITICAL: Event ledger is authoritative for idempotency.
+        // Even if block_learning_state is soft-deleted/absent, the duplicate
+        // event must NOT be reprocessed.
+        const currentState = await txBlockStateRepo.findOne({
+          userId: identity.userId,
+          navigationNodeId,
+          blockId,
+          blockVersion,
+        });
+
+        if (!currentState) {
+          // Event exists but state is currently absent (soft-deleted or not yet created).
+          // The event ledger is authoritative: this is a duplicate and must NOT be reprocessed.
+          // 
+          // Return minimal stub state to satisfy API contract while preserving idempotency.
+          // DO NOT create/restore state merely to make duplicate pass.
+          // DO NOT reapply the active-time delta.
+          const stubState: BlockLearningState = {
+            id: '', // Not persisted
+            userId: identity.userId,
+            navigationNodeId,
+            blockId,
+            blockVersion,
+            visitCount: 0,
+            revisionCount: 0,
+            activeTimeSec: 0, // Cannot determine true value without state
+            lastSessionId: null,
+            firstViewedAt: null,
+            lastViewedAt: null,
+            completedAt: null,
+            expectedTimeSec: null,
+            version: 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            deletedAt: null,
+          };
+
+          return { state: stubState, wasProcessed: false, wasAlreadyProcessed: true };
+        }
+
+        // Return with metadata indicating duplicate
+        return { state: currentState, wasProcessed: false, wasAlreadyProcessed: true };
+      }
     });
   }
 

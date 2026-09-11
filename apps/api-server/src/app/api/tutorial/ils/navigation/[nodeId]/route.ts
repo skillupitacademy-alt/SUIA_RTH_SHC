@@ -18,6 +18,7 @@ import {
   TutorialSectionRepository,
   UnauthorizedProgressAccessError,
   BlockLearningStateRepository,
+  BlockTelemetryEventRepository, // Phase D-2
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -75,7 +76,8 @@ export async function GET(
     const progressRepo = new TutorialNavigationProgressRepository();
     const sectionRepo = new TutorialSectionRepository();
     const blockRepo = new BlockLearningStateRepository();
-    const service = new LearningProgressService(progressRepo, sectionRepo, blockRepo);
+    const telemetryRepo = new BlockTelemetryEventRepository(); // Phase D-2: 4th param
+    const service = new LearningProgressService(progressRepo, sectionRepo, blockRepo, telemetryRepo);
 
     const progress = await service.getNavigationProgress(
       identity,

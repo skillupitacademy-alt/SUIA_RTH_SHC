@@ -342,10 +342,20 @@ describe('LearningProgressService', () => {
     mockSectionRepo.registerSection('subtopic-1', 'node-2', 'section-2');
     mockSectionRepo.registerSection('subtopic-2', 'node-3', 'section-3');
     
+    // Phase D-2: Add mock telemetry repository
+    const mockTelemetryRepo = {
+      withDb: () => mockTelemetryRepo,
+      claimEvent: vi.fn(),
+      findByEventId: vi.fn(),
+      findByBlockIdentity: vi.fn(),
+      countByBlockIdentity: vi.fn(),
+    } as any;
+    
     service = new LearningProgressService(
       mockRepo,
       mockSectionRepo as unknown as TutorialSectionRepository,
-      mockBlockRepo as any
+      mockBlockRepo as any,
+      mockTelemetryRepo // Phase D-2: 4th parameter
     );
   });
 

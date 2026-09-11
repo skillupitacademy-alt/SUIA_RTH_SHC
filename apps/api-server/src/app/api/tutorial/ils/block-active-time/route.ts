@@ -2,24 +2,28 @@
  * POST /api/tutorial/ils/block-active-time
  * 
  * Phase 4.4: Record active time spent on a specific block.
+ * Phase D-2: Idempotent delivery via eventId
  * 
  * AUTHORIZATION: Self-scoped via authenticated identity
  * BRAND: Scoped via authenticated brand context
  * TIME LIMIT: 600 seconds (block-level, stricter than page-level 3600s)
+ * IDEMPOTENCY: Duplicate eventId returns idempotent success (not 409)
  */
 
 import {
   type AuthenticatedIdentity,
   InvalidNavigationHierarchyError,
   LearningProgressService,
-  NavigationNodeNotFoundError,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
   BlockLearningStateRepository,
+  BlockTelemetryEventRepository, // Phase D-2
   InvalidTimeUpdateError,
   LearningProgressError,
+  NavigationNodeNotFoundError,
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@quiz/db-tutorial'; // Phase D-2: For transactions
 
 import { validateRequest } from '@/middleware/internal-auth.middleware';
 import { recordBlockActiveTimeBodySchema } from '@/schemas/ils.schemas';
@@ -72,22 +76,35 @@ export async function POST(request: NextRequest) {
     const progressRepo = new TutorialNavigationProgressRepository();
     const sectionRepo = new TutorialSectionRepository();
     const blockRepo = new BlockLearningStateRepository();
+    const telemetryRepo = new BlockTelemetryEventRepository(db); // Phase D-2
     
-    // Instantiate service with Phase 4.3 constructor
-    const service = new LearningProgressService(progressRepo, sectionRepo, blockRepo);
+    // Instantiate service with Phase D-2 constructor (4 params)
+    const service = new LearningProgressService(
+      progressRepo,
+      sectionRepo,
+      blockRepo,
+      telemetryRepo // Phase D-2
+    );
 
-    // Call Phase 4.3 service method
-    const blockState = await service.recordBlockActiveTime(
+    // Call Phase D-2 service method with eventId
+    const result = await service.recordBlockActiveTime(
       identity,
       parsed.data.navigationNodeId,
       parsed.data.subtopicId,
       parsed.data.blockId,
       parsed.data.blockVersion,
+      parsed.data.eventId, // Phase D-2
       parsed.data.activeTimeSec
     );
 
+    // Return idempotent success with processing metadata
+    // Phase D-2: Expose whether this was new processing or duplicate
     return NextResponse.json(
-      { data: blockState },
+      {
+        data: result.state,
+        processed: result.wasProcessed,
+        alreadyProcessed: result.wasAlreadyProcessed,
+      },
       {
         status: 200,
         headers: { 'Cache-Control': 'no-cache' },

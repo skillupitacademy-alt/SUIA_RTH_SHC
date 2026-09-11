@@ -16,6 +16,7 @@ import {
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
   BlockLearningStateRepository,
+  BlockTelemetryEventRepository, // Phase D-2
   InvalidTimeUpdateError,
   LearningProgressError,
 } from '@quiz/db-tutorial';
@@ -113,8 +114,9 @@ export async function POST(request: NextRequest) {
     const sectionRepo = new TutorialSectionRepository();
     const blockRepo = new BlockLearningStateRepository();
     
-    // Instantiate service with Phase 4.3 constructor
-    const service = new LearningProgressService(progressRepo, sectionRepo, blockRepo);
+    // Instantiate service with Phase D-2 constructor (4 params)
+    const telemetryRepo = new BlockTelemetryEventRepository();
+    const service = new LearningProgressService(progressRepo, sectionRepo, blockRepo, telemetryRepo);
 
     // console.log('[ILS-DEBUG][API][block-visit] Calling LearningProgressService.recordBlockVisit()');
     

@@ -16,6 +16,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { randomUUID } from 'crypto';
 import { LearningProgressService, type AuthenticatedIdentity } from '../learning-progress.service';
 import type { ITutorialNavigationProgressRepository } from '@quiz/types';
 import type { TutorialSectionRepository } from '../../repositories/tutorial-section.repository';
@@ -196,13 +197,33 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
     mockSectionRepo = new MockSectionRepository();
     mockProgressRepo = new MockNavigationProgressRepository();
 
+    // Phase D-2: Mock telemetry repository with basic idempotency
+    const eventLedger = new Map<string, any>();
+    
+    const mockTelemetryRepo = {
+      withDb: () => mockTelemetryRepo,
+      claimEvent: vi.fn().mockImplementation(async (data: any) => {
+        if (eventLedger.has(data.eventId)) {
+          return null; // Duplicate - not claimed
+        }
+        eventLedger.set(data.eventId, data);
+        return data; // First time - claimed
+      }),
+      findByEventId: vi.fn().mockImplementation(async (eventId: string) => {
+        return eventLedger.get(eventId) || null;
+      }),
+      findByBlockIdentity: vi.fn().mockResolvedValue([]),
+      countByBlockIdentity: vi.fn().mockResolvedValue(0),
+    } as any;
+
     // Register valid hierarchy
     mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1');
 
     service = new LearningProgressService(
       mockProgressRepo as any,
       mockSectionRepo as unknown as TutorialSectionRepository,
-      mockBlockRepo as any
+      mockBlockRepo as any,
+      mockTelemetryRepo // Phase D-2: 4th parameter
     );
   });
 
@@ -378,6 +399,10 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
 
   describe('recordBlockActiveTime', () => {
     it('accumulates active time', async () => {
+      // Phase D-2: Generate unique event IDs
+      const eventId1 = randomUUID();
+      const eventId2 = randomUUID();
+
       // First time update
       const first = await service.recordBlockActiveTime(
         testIdentity,
@@ -385,39 +410,46 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
         'subtopic-1',
         'block-1',
         'D1',
+        eventId1, // Phase D-2: eventId parameter
         120
       );
 
-      expect(first.activeTimeSec).toBe(120);
+      expect(first.state.activeTimeSec).toBe(120); // Phase D-2: result.state.X
 
-      // Second time update
+      // Second time update (different event)
       const second = await service.recordBlockActiveTime(
         testIdentity,
         'node-1',
         'subtopic-1',
         'block-1',
         'D1',
+        eventId2, // Phase D-2: eventId parameter
         60
       );
 
-      expect(second.activeTimeSec).toBe(180); // Accumulated
+      expect(second.state.activeTimeSec).toBe(180); // Phase D-2: result.state.X (accumulated)
     });
 
     it('creates state if none exists (visitCount=0)', async () => {
+      const eventId = randomUUID();
+      
       const result = await service.recordBlockActiveTime(
         testIdentity,
         'node-1',
         'subtopic-1',
         'block-1',
         'D1',
+        eventId, // Phase D-2: eventId parameter
         30
       );
 
-      expect(result.activeTimeSec).toBe(30);
-      expect(result.visitCount).toBe(0); // No visit manufactured
+      expect(result.state.activeTimeSec).toBe(30); // Phase D-2: result.state.X
+      expect(result.state.visitCount).toBe(0); // Phase D-2: result.state.X - No visit manufactured
     });
 
     it('enforces 600 second block-level time limit', async () => {
+      const eventId = randomUUID();
+      
       await expect(
         service.recordBlockActiveTime(
           testIdentity,
@@ -425,12 +457,15 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
           'subtopic-1',
           'block-1',
           'D1',
+          eventId, // Phase D-2: eventId parameter
           601
         )
       ).rejects.toThrow('max 600 seconds');
     });
 
     it('rejects negative time', async () => {
+      const eventId = randomUUID();
+      
       await expect(
         service.recordBlockActiveTime(
           testIdentity,
@@ -438,22 +473,27 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
           'subtopic-1',
           'block-1',
           'D1',
+          eventId, // Phase D-2: eventId parameter
           -10
         )
       ).rejects.toThrow('cannot be negative');
     });
 
     it('validates block identity', async () => {
+      const eventId = randomUUID();
+      
       await expect(
-        service.recordBlockActiveTime(testIdentity, 'node-1', 'subtopic-1', '', 'D1', 30)
+        service.recordBlockActiveTime(testIdentity, 'node-1', 'subtopic-1', '', 'D1', eventId, 30)
       ).rejects.toThrow('Invalid blockId');
 
       await expect(
-        service.recordBlockActiveTime(testIdentity, 'node-1', 'subtopic-1', 'block-1', '', 30)
+        service.recordBlockActiveTime(testIdentity, 'node-1', 'subtopic-1', 'block-1', '', eventId, 30)
       ).rejects.toThrow('Invalid blockVersion');
     });
 
     it('validates navigation hierarchy', async () => {
+      const eventId = randomUUID();
+      
       await expect(
         service.recordBlockActiveTime(
           testIdentity,
@@ -461,6 +501,7 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
           'subtopic-1',
           'block-1',
           'D1',
+          eventId, // Phase D-2: eventId parameter
           30
         )
       ).rejects.toThrow();
@@ -484,6 +525,8 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
         blockVersion: 'D1',
       });
 
+      const eventId = randomUUID();
+
       // Record time
       await service.recordBlockActiveTime(
         testIdentity,
@@ -491,6 +534,7 @@ describe('LearningProgressService - Phase 4.6 Block-Level Atomic Session Trackin
         'subtopic-1',
         'block-1',
         'D1',
+        eventId, // Phase D-2: eventId parameter
         30
       );
 

@@ -131,6 +131,7 @@ export type RecordBlockVisitBody = z.infer<typeof recordBlockVisitBodySchema>;
  * POST /api/tutorial/ils/block-active-time
  * 
  * Phase 4.4: Block-level time tracking
+ * Phase D-2: Idempotent delivery via eventId
  * Block-level limit is 600 seconds (stricter than page-level 3600)
  */
 export const recordBlockActiveTimeBodySchema = z.object({
@@ -142,6 +143,7 @@ export const recordBlockActiveTimeBodySchema = z.object({
     .int('Time must be an integer')
     .min(0, 'Time cannot be negative')
     .max(600, 'Time increment too large (max 600 seconds)'),
+  eventId: uuidSchema, // Phase D-2: Client-generated UUID for idempotency
   sectionId: uuidSchema.optional().nullable(),
 });
 

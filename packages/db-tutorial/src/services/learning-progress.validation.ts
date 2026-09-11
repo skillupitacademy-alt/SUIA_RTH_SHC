@@ -110,3 +110,30 @@ export function validateSubtopicId(subtopicId: string): void {
     );
   }
 }
+
+/**
+ * Validate event ID
+ * 
+ * Event ID is a client-generated UUID used for telemetry idempotency.
+ * 
+ * @throws {LearningProgressError} if eventId is invalid
+ */
+export function validateEventId(eventId: string): void {
+  if (!eventId || typeof eventId !== 'string' || eventId.trim() === '') {
+    throw new LearningProgressError(
+      'Invalid eventId - UUID required for idempotent delivery',
+      'INVALID_EVENT_ID',
+      { eventId }
+    );
+  }
+
+  // Basic UUID format validation (8-4-4-4-12 hex pattern)
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidPattern.test(eventId)) {
+    throw new LearningProgressError(
+      'Invalid eventId format - must be valid UUID',
+      'INVALID_EVENT_ID',
+      { eventId }
+    );
+  }
+}
