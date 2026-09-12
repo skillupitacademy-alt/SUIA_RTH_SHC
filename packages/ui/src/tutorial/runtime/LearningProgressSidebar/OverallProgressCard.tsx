@@ -68,6 +68,11 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
       className="flex flex-col gap-[14px] rounded-[18px] p-5"
       style={{
         backgroundColor: brand.primaryColor,
+        borderRadius: '18px',
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '14px',
         boxShadow: `0 10px 25px ${brand.primaryColor}40`, // 40 = 25% opacity in hex
         color: '#ffffff',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -82,39 +87,55 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
       }}
     >
       {/* Top section: badge + percentage + subtext */}
-      <div className="flex flex-col items-start gap-1">
+      <div className="flex flex-col items-start gap-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
         {/* Status Badge - ILS_UI_UX/style.css line 350-361 */}
         <span
           className="rounded-[12px] px-[10px] py-1 text-[12px] font-bold uppercase tracking-wider backdrop-blur-[4px]"
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.25)',
             color: '#ffffff',
+            padding: '4px 10px',
+            borderRadius: '12px',
+            fontSize: '12px',
+            fontWeight: 700,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
           }}
         >
           {statusText}
         </span>
         
         {/* Overall Percentage - ILS_UI_UX/style.css line 363-368 */}
-        <div className="text-[34px] font-extrabold text-white">
+        <div className="text-[34px] font-extrabold text-white" style={{ fontSize: '34px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
           {Math.round(progressPercentage)}%
         </div>
         
         {/* Subtext - ILS_UI_UX/index.html line 119 */}
-        <p className="text-[14px] font-semibold" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+        <p className="text-[14px] font-semibold" style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '14px', fontWeight: 600, margin: 0 }}>
           {completedBlockCount} of {totalBlockCount} blocks completed
         </p>
       </div>
       
       {/* Progress Bar - ILS_UI_UX/style.css line 377-392 */}
       <div
-        className="h-[8px] w-full overflow-hidden rounded-[4px]"
-        style={{ backgroundColor: 'rgba(255, 255, 255, 0.25)' }}
+        className="my-3 h-[8px] w-full overflow-hidden rounded-[4px] border border-white/10"
+        style={{
+          width: '100%',
+          height: '8px',
+          backgroundColor: 'rgba(255, 255, 255, 0.25)',
+          borderRadius: '4px',
+          overflow: 'hidden',
+          margin: '12px 0',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
       >
         <div
           className="h-full rounded-[4px] transition-[width] duration-300 ease-in-out"
           style={{
             width: `${progressPercentage}%`,
+            height: '100%',
             backgroundColor: '#ffffff',
+            borderRadius: '4px',
             boxShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
           }}
         />
@@ -123,17 +144,25 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
       {/* 4-Column Summary Grid - ILS_UI_UX/index.html lines 125-142 */}
       <div
         className="grid grid-cols-4 gap-2 rounded-[12px] p-3 text-center backdrop-blur-[4px]"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
+        style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.15)',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '8px',
+          padding: '12px',
+          borderRadius: '12px',
+          textAlign: 'center',
+        }}
       >
         {/* COMPLETED */}
         <div>
           <span
             className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+            style={{ color: 'rgba(255, 255, 255, 0.8)', display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}
           >
             COMPLETED
           </span>
-          <span className="text-[15px] font-extrabold text-white">
+          <span className="text-[15px] font-extrabold text-white" style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff' }}>
             {completedBlockCount}
           </span>
         </div>
@@ -142,11 +171,11 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
         <div>
           <span
             className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+            style={{ color: 'rgba(255, 255, 255, 0.8)', display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}
           >
             TOTAL
           </span>
-          <span className="text-[15px] font-extrabold text-white">
+          <span className="text-[15px] font-extrabold text-white" style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff' }}>
             {totalBlockCount}
           </span>
         </div>
@@ -155,11 +184,11 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
         <div>
           <span
             className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+            style={{ color: 'rgba(255, 255, 255, 0.8)', display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}
           >
             REQUIRED
           </span>
-          <span className="text-[15px] font-extrabold text-white">
+          <span className="text-[15px] font-extrabold text-white" style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff' }}>
             {totalBlockCount}
           </span>
         </div>
@@ -168,11 +197,11 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
         <div>
           <span
             className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+            style={{ color: 'rgba(255, 255, 255, 0.8)', display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}
           >
             ACTIVE
           </span>
-          <span className="text-[15px] font-extrabold text-white">
+          <span className="text-[15px] font-extrabold text-white" style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff' }}>
             {formatSeconds(timeSpentActiveSec)}
           </span>
         </div>

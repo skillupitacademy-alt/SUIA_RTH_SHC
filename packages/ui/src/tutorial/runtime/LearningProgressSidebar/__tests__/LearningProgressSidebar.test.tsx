@@ -117,7 +117,7 @@ describe('LearningProgressSidebar', () => {
     
     expect(screen.getByText('Lifecycle & Overview')).toBeInTheDocument();
     expect(screen.getByText('Engagement Metrics')).toBeInTheDocument();
-    expect(screen.getByText('◷ Time Analysis')).toBeInTheDocument();
+    expect(screen.getByText('Time Analysis')).toBeInTheDocument();
   });
   
   it('should display loading state', () => {

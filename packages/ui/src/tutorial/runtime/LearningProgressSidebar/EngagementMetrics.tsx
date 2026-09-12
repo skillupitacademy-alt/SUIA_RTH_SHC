@@ -60,6 +60,12 @@ export function EngagementMetrics({ activeBlockProgress }: EngagementMetricsProp
       className="flex h-[90px] flex-col justify-between rounded-[14px] p-4"
       style={{
         backgroundColor: '#ff7300',
+        height: '90px',
+        padding: '16px',
+        borderRadius: '14px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
         boxShadow: '0 8px 20px rgba(255, 115, 0, 0.25)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
@@ -75,27 +81,27 @@ export function EngagementMetrics({ activeBlockProgress }: EngagementMetricsProp
       {/* Card Label - ILS_UI_UX/style.css line 168-175 */}
       <div
         className="text-[11px] font-bold uppercase tracking-wider"
-        style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+        style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
       >
         {label}
       </div>
       
       {/* Card Value - ILS_UI_UX/style.css line 277-281 (adjusted to 22px for uniformity) */}
-      <div className="text-[22px] font-extrabold text-white">
+      <div className="text-[22px] font-extrabold text-white" style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff' }}>
         {value}
       </div>
     </div>
   );
   
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Section Title - ILS_UI_UX/style.css line 134-139 */}
-      <h3 className="text-[16px] font-bold text-[#334155]">
+      <h3 className="text-[16px] font-bold text-[#334155]" style={{ fontSize: '16px', fontWeight: 700, color: '#334155', margin: 0 }}>
         Engagement Metrics
       </h3>
       
       {/* 2x2 Grid - ILS_UI_UX/index.html lines 70-89 */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
         <EngagementCard label="VISIT COUNT" value={visitCount} />
         <EngagementCard label="REVISION COUNT" value={revisionCount} />
         <EngagementCard label="ATTEMPTS" value="—" />

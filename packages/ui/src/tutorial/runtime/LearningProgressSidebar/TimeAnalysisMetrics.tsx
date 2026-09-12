@@ -8,6 +8,7 @@
 'use client';
 
 import React from 'react';
+import { Clock } from 'lucide-react';
 import type { ILSActiveBlockProgress } from '../ILSProvider';
 import { formatSeconds } from './utils';
 
@@ -47,8 +48,9 @@ export function TimeAnalysisMetrics({ activeBlockProgress }: TimeAnalysisMetrics
   if (!activeBlockProgress) {
     return (
       <div className="flex flex-col gap-3">
-        <h3 className="text-[16px] font-bold text-[#334155]">
-          ◷ Time Analysis
+        <h3 className="flex items-center gap-2 text-[16px] font-bold text-[#334155]">
+          <Clock className="h-4 w-4 text-[#334155]" />
+          <span>Time Analysis</span>
         </h3>
         <div className="rounded-[14px] border border-[#edf2f7] bg-white py-8 text-center text-sm text-gray-500">
           No active block data
@@ -80,6 +82,12 @@ export function TimeAnalysisMetrics({ activeBlockProgress }: TimeAnalysisMetrics
       className="flex h-[90px] flex-col justify-between rounded-[14px] p-4"
       style={{
         backgroundColor: '#0091d5',
+        height: '90px',
+        padding: '16px',
+        borderRadius: '14px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
         boxShadow: '0 8px 20px rgba(0, 145, 213, 0.25)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
@@ -95,27 +103,28 @@ export function TimeAnalysisMetrics({ activeBlockProgress }: TimeAnalysisMetrics
       {/* Card Label */}
       <div
         className="text-[11px] font-bold uppercase tracking-wider"
-        style={{ color: 'rgba(255, 255, 255, 0.9)' }}
+        style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
       >
         {label}
       </div>
       
       {/* Card Value */}
-      <div className="text-[22px] font-extrabold text-white">
+      <div className="text-[22px] font-extrabold text-white" style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff' }}>
         {value}
       </div>
     </div>
   );
   
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Section Title */}
-      <h3 className="text-[16px] font-bold text-[#334155]">
-        ◷ Time Analysis
+      <h3 className="flex items-center gap-2 text-[16px] font-bold text-[#334155]" style={{ fontSize: '16px', fontWeight: 700, color: '#334155', margin: 0 }}>
+        <Clock className="h-4 w-4 text-[#334155]" />
+        <span>Time Analysis</span>
       </h3>
       
       {/* 2x2 Grid - ILS_UI_UX/index.html lines 91-111 */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
         <TimeCard 
           label="ACTIVE TIME" 
           value={formatSeconds(activeTimeSec)} 

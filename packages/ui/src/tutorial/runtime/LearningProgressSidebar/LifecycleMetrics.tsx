@@ -57,9 +57,9 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
   const statusDisplay = isBlockCompleted ? 'COMPLETED' : '—';
   
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Section Title - ILS_UI_UX/style.css line 134-139 */}
-      <h3 className="text-[16px] font-bold text-[#334155]">
+      <h3 className="text-[16px] font-bold text-[#334155]" style={{ fontSize: '16px', fontWeight: 700, color: '#334155', margin: 0 }}>
         Lifecycle & Overview
       </h3>
       
