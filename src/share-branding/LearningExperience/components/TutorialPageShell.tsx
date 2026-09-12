@@ -162,7 +162,9 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
         onMenuClick={() => setIsSidebarOpen((current) => !current)}
         onProgressClick={() => setIsProgressSidebarOpen((current) => !current)} // Macro 4: RSSB trigger
       />
+      {/* B.2-R-2: 3-Column Docked Layout - LSNB | Content | RSSB */}
       <div className="flex w-full min-w-0 gap-0 bg-white">
+        {/* LEFT: LSNB (independent) */}
         {isSidebarOpen && (
           <TutorialLeftSidebar
             tree={payload.sidebar}
@@ -177,6 +179,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             }}
           />
         )}
+        
         <ActiveBlockProvider containerRef={contentContainerRef}>
           <ILSProvider
             navigationNodeId={runtimeContext.navigationNodeId}
@@ -189,61 +192,62 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
               sectionId={runtimeContext.sectionId}
               sessionId={tutorialSessionId}
             >
+              {/* CENTER: Tutorial Content (full width, RSSB overlays when open) */}
               <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
-              <div ref={contentContainerRef} className="w-full space-y-6">
-              {hasBlocks ? (
-                // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
-                payload.content.blocks.map((block) => {
-                  // Phase 2.5: Construct block runtime context for each block
-                  // Type-safe version extraction without unsafe cast
-                  const blockVersion = ('version' in block && typeof block.version === 'string')
-                    ? block.version
-                    : 'unversioned';
-                  const blockRuntimeContext = createBlockRuntimeContext(
-                    block.id,
-                    block.type,
-                    blockVersion
-                  );
+                <div ref={contentContainerRef} className="w-full space-y-6">
+                  {hasBlocks ? (
+                    // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
+                    payload.content.blocks.map((block) => {
+                      // Phase 2.5: Construct block runtime context for each block
+                      // Type-safe version extraction without unsafe cast
+                      const blockVersion = ('version' in block && typeof block.version === 'string')
+                        ? block.version
+                        : 'unversioned';
+                      const blockRuntimeContext = createBlockRuntimeContext(
+                        block.id,
+                        block.type,
+                        blockVersion
+                      );
 
-                  return (
-                    <TutorialBlockRenderer
-                      key={block.id}
-                      block={block}
-                      theme={payload.theme}
-                      depth={0}
-                      runtimeContext={blockRuntimeContext}
-                    />
-                  );
-                })
-              ) : hasLegacyContent ? (
-                // Temporary Legacy Fallback: Render old content structure
-                <>
-                  {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
-                  {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
-                  {payload.content.summary && <TutorialSummaryContent payload={payload.content.summary} theme={payload.theme} />}
-                </>
-              ) : (
-                // Empty/Unpublished State
-                <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
-                  Content is not published for this subtopic yet.
-                </section>
-              )}
-            </div>
-            <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
-          </div>
-        </BlockTelemetryProvider>
-        
-        {/* Macro 4: Learning Progress Sidebar (RSSB) - Must be inside ILSProvider */}
-        <LearningProgressSidebar
-          isOpen={isProgressSidebarOpen}
-          onClose={() => setIsProgressSidebarOpen(false)}
-          brand={{
-            primaryColor: payload.theme.primary,
-            secondaryColor: payload.theme.secondary,
-          }}
-        />
-      </ILSProvider>
-      </ActiveBlockProvider>
+                      return (
+                        <TutorialBlockRenderer
+                          key={block.id}
+                          block={block}
+                          theme={payload.theme}
+                          depth={0}
+                          runtimeContext={blockRuntimeContext}
+                        />
+                      );
+                    })
+                  ) : hasLegacyContent ? (
+                    // Temporary Legacy Fallback: Render old content structure
+                    <>
+                      {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
+                      {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
+                      {payload.content.summary && <TutorialSummaryContent payload={payload.content.summary} theme={payload.theme} />}
+                    </>
+                  ) : (
+                    // Empty/Unpublished State
+                    <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
+                      Content is not published for this subtopic yet.
+                    </section>
+                  )}
+                </div>
+                <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
+              </div>
+              
+              {/* RIGHT: RSSB (fixed overlay - opens from right) - Must be inside ILSProvider */}
+              <LearningProgressSidebar
+                isOpen={isProgressSidebarOpen}
+                onClose={() => setIsProgressSidebarOpen(false)}
+                brand={{
+                  primaryColor: payload.theme.primary,
+                  secondaryColor: payload.theme.secondary,
+                }}
+              />
+            </BlockTelemetryProvider>
+          </ILSProvider>
+        </ActiveBlockProvider>
       </div>
     </main>
   );

@@ -45,10 +45,10 @@ export interface LearningProgressSidebarProps {
  * - Panel (fixed right, 440px, slide transition)
  *   - Header (title + close button)
  *   - Scroll Content (4 sections with 24px gap)
- *     1. Overall Progress (brand.primaryColor)
- *     2. Lifecycle Metrics (brand.secondaryColor)
- *     3. Engagement Metrics (#ff7300 FIXED)
- *     4. Time Analysis (#0091d5 FIXED)
+ *     1. Lifecycle & Overview (brand.secondaryColor)
+ *     2. Engagement Metrics (#ff7300 FIXED)
+ *     3. ◷ Time Analysis (#0091d5 FIXED)
+ *     4. Overall Progress (brand.primaryColor)
  * 
  * DATA SOURCE: useILS() only (passive consumer)
  * NO manual block selector (follows ActiveBlockContext automatically)
@@ -58,25 +58,16 @@ export function LearningProgressSidebar({ isOpen, onClose, brand }: LearningProg
   
   return (
     <>
-      {/* Backdrop Overlay - ILS_UI_UX/style.css line 30-42 */}
-      <div
-        className={`fixed inset-0 z-[100] bg-[rgba(15,23,42,0.35)] backdrop-blur-[2px] transition-all duration-300 ${
-          isOpen ? 'visible opacity-100' : 'invisible opacity-0'
-        }`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      
-      {/* Sidebar Panel - ILS_UI_UX/style.css line 44-56 */}
+      {/* RIGHT: Docked RSSB Panel - B.2-R-2 Architecture */}
       <aside
-        className={`fixed right-0 top-0 z-[101] flex h-screen w-[440px] max-w-[90vw] flex-col bg-white text-[#1e293b] shadow-[-10px_0_30px_rgba(0,0,0,0.08)] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`flex h-screen w-[440px] max-w-[90vw] flex-col bg-white text-[#1e293b] shadow-[-10px_0_30px_rgba(0,0,0,0.08)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          isOpen ? 'fixed right-0 top-0 z-[101] translate-x-0' : 'fixed right-0 top-0 z-[101] translate-x-full'
         }`}
       >
         {/* Header - ILS_UI_UX/style.css line 59-72 */}
         <header className="flex items-center justify-between border-b border-[#edf2f7] px-[28px] py-[24px]">
           <h2 className="text-[20px] font-bold text-[#1a202c]">
-            Learning Progress
+            ◎ Your Progress
           </h2>
           <button
             type="button"
@@ -96,26 +87,26 @@ export function LearningProgressSidebar({ isOpen, onClose, brand }: LearningProg
             </div>
           ) : (
             <>
-              {/* Section 1: Overall Progress */}
-              <OverallProgressCard 
-                overallProgress={overallProgress}
-                brand={brand}
-              />
-              
-              {/* Section 2: Lifecycle Metrics */}
+              {/* Section 1: Lifecycle & Overview */}
               <LifecycleMetrics
                 activeBlockProgress={activeBlockProgress}
                 brand={brand}
               />
               
-              {/* Section 3: Engagement Metrics */}
+              {/* Section 2: Engagement Metrics */}
               <EngagementMetrics
                 activeBlockProgress={activeBlockProgress}
               />
               
-              {/* Section 4: Time Analysis */}
+              {/* Section 3: ◷ Time Analysis */}
               <TimeAnalysisMetrics
                 activeBlockProgress={activeBlockProgress}
+              />
+              
+              {/* Section 4: Overall Progress */}
+              <OverallProgressCard 
+                overallProgress={overallProgress}
+                brand={brand}
               />
             </>
           )}

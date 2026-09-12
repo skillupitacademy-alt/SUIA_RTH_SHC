@@ -42,7 +42,7 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
     return (
       <div className="flex flex-col gap-3">
         <h3 className="text-[16px] font-bold text-[#334155]">
-          Lifecycle Metrics
+          Lifecycle & Overview
         </h3>
         <div className="rounded-[14px] border border-[#edf2f7] bg-white py-8 text-center text-sm text-gray-500">
           No active block data
@@ -57,18 +57,19 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
     <div className="flex flex-col gap-3">
       {/* Section Title - ILS_UI_UX/style.css line 134-139 */}
       <h3 className="text-[16px] font-bold text-[#334155]">
-        Lifecycle Metrics
+        Lifecycle & Overview
       </h3>
       
       {/* Lifecycle Table - ILS_UI_UX/style.css line 176-256 */}
       <table
-        className="w-full overflow-hidden rounded-[14px] transition-all duration-200 ease-in-out hover:-translate-y-[7px]"
+        className="w-full overflow-hidden rounded-[14px] hover:-translate-y-[7px]"
         style={{
           backgroundColor: brand.secondaryColor,
           color: '#ffffff',
           borderCollapse: 'separate',
           borderSpacing: 0,
           boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12)',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.boxShadow = '0 14px 30px rgba(0, 0, 0, 0.18)';

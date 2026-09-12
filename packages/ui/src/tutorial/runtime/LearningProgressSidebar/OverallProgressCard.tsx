@@ -65,11 +65,12 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
   
   return (
     <div
-      className="flex flex-col gap-[14px] rounded-[18px] p-5 transition-all duration-200 ease-in-out hover:-translate-y-[5px]"
+      className="flex flex-col gap-[14px] rounded-[18px] p-5 hover:-translate-y-[5px]"
       style={{
         backgroundColor: brand.primaryColor,
         boxShadow: `0 10px 25px ${brand.primaryColor}40`, // 40 = 25% opacity in hex
         color: '#ffffff',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = `0 14px 30px ${brand.primaryColor}59`; // 59 = 35% opacity

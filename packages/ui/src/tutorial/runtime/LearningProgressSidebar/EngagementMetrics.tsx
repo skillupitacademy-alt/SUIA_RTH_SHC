@@ -57,10 +57,11 @@ export function EngagementMetrics({ activeBlockProgress }: EngagementMetricsProp
   // Card component for 2x2 grid items
   const EngagementCard = ({ label, value }: { label: string; value: string | number }) => (
     <div
-      className="flex h-[90px] flex-col justify-between rounded-[14px] p-4 transition-all duration-200 ease-in-out hover:-translate-y-[5px]"
+      className="flex h-[90px] flex-col justify-between rounded-[14px] p-4 hover:-translate-y-[5px]"
       style={{
         backgroundColor: '#ff7300',
         boxShadow: '0 8px 20px rgba(255, 115, 0, 0.25)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = '0 12px 24px rgba(255, 115, 0, 0.35)';

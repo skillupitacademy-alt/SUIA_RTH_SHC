@@ -48,7 +48,7 @@ export function TimeAnalysisMetrics({ activeBlockProgress }: TimeAnalysisMetrics
     return (
       <div className="flex flex-col gap-3">
         <h3 className="text-[16px] font-bold text-[#334155]">
-          Time Analysis
+          ◷ Time Analysis
         </h3>
         <div className="rounded-[14px] border border-[#edf2f7] bg-white py-8 text-center text-sm text-gray-500">
           No active block data
@@ -68,10 +68,11 @@ export function TimeAnalysisMetrics({ activeBlockProgress }: TimeAnalysisMetrics
   // Card component for 2x2 grid items
   const TimeCard = ({ label, value }: { label: string; value: string | number }) => (
     <div
-      className="flex h-[90px] flex-col justify-between rounded-[14px] p-4 transition-all duration-200 ease-in-out hover:-translate-y-[5px]"
+      className="flex h-[90px] flex-col justify-between rounded-[14px] p-4 hover:-translate-y-[5px]"
       style={{
         backgroundColor: '#0091d5',
         boxShadow: '0 8px 20px rgba(0, 145, 213, 0.25)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 145, 213, 0.35)';
@@ -99,7 +100,7 @@ export function TimeAnalysisMetrics({ activeBlockProgress }: TimeAnalysisMetrics
     <div className="flex flex-col gap-3">
       {/* Section Title */}
       <h3 className="text-[16px] font-bold text-[#334155]">
-        Time Analysis
+        ◷ Time Analysis
       </h3>
       
       {/* 2x2 Grid */}
