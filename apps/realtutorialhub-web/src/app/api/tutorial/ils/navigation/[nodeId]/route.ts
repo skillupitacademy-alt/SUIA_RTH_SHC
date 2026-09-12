@@ -43,7 +43,7 @@ export async function GET(
     
     // Call API server with brand context
     const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
-    const url = new URL(`${apiUrl}/api/tutorial/ils/navigation/${params.nodeId}`);
+    const url = new URL(`${apiUrl}/tutorial/ils/navigation/${params.nodeId}`);
     url.searchParams.set('subtopicId', subtopicId);
     
     const response = await fetch(url.toString(), {
