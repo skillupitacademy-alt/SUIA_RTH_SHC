@@ -78,7 +78,7 @@ describe('LearningProgressSidebar', () => {
     );
     
     const aside = container.querySelector('aside');
-    expect(aside).toHaveClass('translate-x-full');
+    expect(aside).toHaveClass('w-0');
   });
   
   it('should render with isOpen=true (visible)', () => {
@@ -91,10 +91,10 @@ describe('LearningProgressSidebar', () => {
     );
     
     const aside = container.querySelector('aside');
-    expect(aside).toHaveClass('translate-x-0');
+    expect(aside).toHaveClass('w-[440px]');
   });
   
-  it('should display "Learning Progress" title', () => {
+  it('should display "◎ Your Progress" title', () => {
     render(
       <LearningProgressSidebar
         isOpen={true}
@@ -103,10 +103,10 @@ describe('LearningProgressSidebar', () => {
       />
     );
     
-    expect(screen.getByText('Learning Progress')).toBeInTheDocument();
+    expect(screen.getByText('◎ Your Progress')).toBeInTheDocument();
   });
   
-  it('should display all 4 section titles', () => {
+  it('should display all section titles', () => {
     render(
       <LearningProgressSidebar
         isOpen={true}
@@ -115,9 +115,9 @@ describe('LearningProgressSidebar', () => {
       />
     );
     
-    expect(screen.getByText('Lifecycle Metrics')).toBeInTheDocument();
+    expect(screen.getByText('Lifecycle & Overview')).toBeInTheDocument();
     expect(screen.getByText('Engagement Metrics')).toBeInTheDocument();
-    expect(screen.getByText('Time Analysis')).toBeInTheDocument();
+    expect(screen.getByText('◷ Time Analysis')).toBeInTheDocument();
   });
   
   it('should display loading state', () => {
@@ -147,27 +147,6 @@ describe('LearningProgressSidebar', () => {
     
     const closeButton = screen.getByLabelText('Close sidebar');
     closeButton.click();
-    
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-  
-  it('should call onClose when overlay clicked', () => {
-    const onClose = vi.fn();
-    
-    const { container } = render(
-      <LearningProgressSidebar
-        isOpen={true}
-        onClose={onClose}
-        brand={defaultBrand}
-      />
-    );
-    
-    const overlay = container.querySelector('div[aria-hidden="true"]');
-    expect(overlay).toBeTruthy();
-    
-    if (overlay) {
-      overlay.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    }
     
     expect(onClose).toHaveBeenCalledTimes(1);
   });

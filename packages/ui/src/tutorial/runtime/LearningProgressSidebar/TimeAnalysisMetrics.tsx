@@ -59,25 +59,37 @@ export function TimeAnalysisMetrics({ activeBlockProgress }: TimeAnalysisMetrics
   
   const { activeTimeSec, expectedTimeSec } = activeBlockProgress;
   
-  // Calculate PACE only if expected time is available (NOT null)
-  // Raw prototype arithmetic - NOT educational classification
-  const pace = expectedTimeSec !== null && expectedTimeSec > 0
-    ? Math.round((activeTimeSec / expectedTimeSec) * 100)
-    : null;
+  // Difference: activeTimeSec - expectedTimeSec (e.g. +65s, -30s, 0s)
+  let diffDisplay = "—";
+  if (expectedTimeSec !== null && expectedTimeSec !== undefined) {
+    const diffSec = activeTimeSec - expectedTimeSec;
+    const diffSign = diffSec > 0 ? '+' : '';
+    diffDisplay = `${diffSign}${diffSec}s`;
+  }
+
+  // Calculate vs expected percentage: 154.17% (2 decimals if not integer, matching prototype Image 2)
+  let vsExpectedDisplay = "—";
+  if (expectedTimeSec !== null && expectedTimeSec > 0) {
+    const rawPct = (activeTimeSec / expectedTimeSec) * 100;
+    vsExpectedDisplay = Number.isInteger(rawPct) ? `${rawPct}%` : `${rawPct.toFixed(2)}%`;
+  }
   
   // Card component for 2x2 grid items
   const TimeCard = ({ label, value }: { label: string; value: string | number }) => (
     <div
-      className="flex h-[90px] flex-col justify-between rounded-[14px] p-4 hover:-translate-y-[5px]"
+      className="flex h-[90px] flex-col justify-between rounded-[14px] p-4"
       style={{
         backgroundColor: '#0091d5',
         boxShadow: '0 8px 20px rgba(0, 145, 213, 0.25)',
+        transform: 'translateY(-2px)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
       onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-5px)';
         e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 145, 213, 0.35)';
       }}
       onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
         e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 145, 213, 0.25)';
       }}
     >
@@ -103,23 +115,23 @@ export function TimeAnalysisMetrics({ activeBlockProgress }: TimeAnalysisMetrics
         ◷ Time Analysis
       </h3>
       
-      {/* 2x2 Grid */}
+      {/* 2x2 Grid - ILS_UI_UX/index.html lines 91-111 */}
       <div className="grid grid-cols-2 gap-3">
         <TimeCard 
           label="ACTIVE TIME" 
           value={formatSeconds(activeTimeSec)} 
         />
         <TimeCard 
-          label="EXPECTED" 
+          label="EXPECTED TIME" 
           value={expectedTimeSec !== null ? formatSeconds(expectedTimeSec) : "—"} 
         />
         <TimeCard 
-          label="PACE" 
-          value={pace !== null ? `${pace}%` : "—"} 
+          label="DIFFERENCE" 
+          value={diffDisplay} 
         />
         <TimeCard 
-          label="STATUS" 
-          value="On Track" 
+          label="VS EXPECTED" 
+          value={vsExpectedDisplay} 
         />
       </div>
     </div>

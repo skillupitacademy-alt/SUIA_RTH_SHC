@@ -57,16 +57,19 @@ export function EngagementMetrics({ activeBlockProgress }: EngagementMetricsProp
   // Card component for 2x2 grid items
   const EngagementCard = ({ label, value }: { label: string; value: string | number }) => (
     <div
-      className="flex h-[90px] flex-col justify-between rounded-[14px] p-4 hover:-translate-y-[5px]"
+      className="flex h-[90px] flex-col justify-between rounded-[14px] p-4"
       style={{
         backgroundColor: '#ff7300',
         boxShadow: '0 8px 20px rgba(255, 115, 0, 0.25)',
+        transform: 'translateY(-2px)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
       onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-5px)';
         e.currentTarget.style.boxShadow = '0 12px 24px rgba(255, 115, 0, 0.35)';
       }}
       onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
         e.currentTarget.style.boxShadow = '0 8px 20px rgba(255, 115, 0, 0.25)';
       }}
     >
@@ -92,10 +95,10 @@ export function EngagementMetrics({ activeBlockProgress }: EngagementMetricsProp
         Engagement Metrics
       </h3>
       
-      {/* 2x2 Grid - ILS_UI_UX/style.css line 262-268 */}
+      {/* 2x2 Grid - ILS_UI_UX/index.html lines 70-89 */}
       <div className="grid grid-cols-2 gap-3">
-        <EngagementCard label="VISITS" value={visitCount} />
-        <EngagementCard label="REVISIONS" value={revisionCount} />
+        <EngagementCard label="VISIT COUNT" value={visitCount} />
+        <EngagementCard label="REVISION COUNT" value={revisionCount} />
         <EngagementCard label="ATTEMPTS" value="—" />
         <EngagementCard label="SCORE" value="—" />
       </div>

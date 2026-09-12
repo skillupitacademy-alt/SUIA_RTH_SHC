@@ -65,17 +65,20 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
   
   return (
     <div
-      className="flex flex-col gap-[14px] rounded-[18px] p-5 hover:-translate-y-[5px]"
+      className="flex flex-col gap-[14px] rounded-[18px] p-5"
       style={{
         backgroundColor: brand.primaryColor,
         boxShadow: `0 10px 25px ${brand.primaryColor}40`, // 40 = 25% opacity in hex
         color: '#ffffff',
+        transform: 'translateY(-2px)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
       onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-5px)';
         e.currentTarget.style.boxShadow = `0 14px 30px ${brand.primaryColor}59`; // 59 = 35% opacity
       }}
       onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
         e.currentTarget.style.boxShadow = `0 10px 25px ${brand.primaryColor}40`;
       }}
     >
@@ -97,9 +100,9 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
           {Math.round(progressPercentage)}%
         </div>
         
-        {/* Subtext - ILS_UI_UX/style.css line 370-375 */}
+        {/* Subtext - ILS_UI_UX/index.html line 119 */}
         <p className="text-[14px] font-semibold" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-          Overall Progress
+          {completedBlockCount} of {totalBlockCount} blocks completed
         </p>
       </div>
       
@@ -118,60 +121,60 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
         />
       </div>
       
-      {/* 4-Column Summary Grid - ILS_UI_UX/style.css line 394-415 */}
+      {/* 4-Column Summary Grid - ILS_UI_UX/index.html lines 125-142 */}
       <div
         className="grid grid-cols-4 gap-2 rounded-[12px] p-3 text-center backdrop-blur-[4px]"
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
       >
-        {/* SEEN */}
+        {/* COMPLETED */}
         <div>
           <span
             className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
             style={{ color: 'rgba(255, 255, 255, 0.8)' }}
           >
-            SEEN
+            COMPLETED
           </span>
           <span className="text-[15px] font-extrabold text-white">
-            {visitCount}
+            {completedBlockCount}
           </span>
         </div>
         
-        {/* TIME */}
+        {/* TOTAL */}
         <div>
           <span
             className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
             style={{ color: 'rgba(255, 255, 255, 0.8)' }}
           >
-            TIME
+            TOTAL
+          </span>
+          <span className="text-[15px] font-extrabold text-white">
+            {totalBlockCount}
+          </span>
+        </div>
+        
+        {/* REQUIRED */}
+        <div>
+          <span
+            className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
+            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+          >
+            REQUIRED
+          </span>
+          <span className="text-[15px] font-extrabold text-white">
+            {totalBlockCount}
+          </span>
+        </div>
+        
+        {/* ACTIVE */}
+        <div>
+          <span
+            className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
+            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+          >
+            ACTIVE
           </span>
           <span className="text-[15px] font-extrabold text-white">
             {formatSeconds(timeSpentActiveSec)}
-          </span>
-        </div>
-        
-        {/* REVISED */}
-        <div>
-          <span
-            className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
-          >
-            REVISED
-          </span>
-          <span className="text-[15px] font-extrabold text-white">
-            {revisionCount}
-          </span>
-        </div>
-        
-        {/* DONE */}
-        <div>
-          <span
-            className="mb-0.5 block text-[11px] font-bold uppercase tracking-wider"
-            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
-          >
-            DONE
-          </span>
-          <span className="text-[15px] font-extrabold text-white">
-            {completedBlockCount}/{totalBlockCount}
           </span>
         </div>
       </div>

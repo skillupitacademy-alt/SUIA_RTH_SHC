@@ -57,22 +57,22 @@ export function LearningProgressSidebar({ isOpen, onClose, brand }: LearningProg
   const { overallProgress, activeBlockProgress, loading } = useILS();
   
   return (
-    <>
-      {/* RIGHT: Docked RSSB Panel - B.2-R-2 Architecture */}
-      <aside
-        className={`flex h-screen w-[440px] max-w-[90vw] flex-col bg-white text-[#1e293b] shadow-[-10px_0_30px_rgba(0,0,0,0.08)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          isOpen ? 'fixed right-0 top-0 z-[101] translate-x-0' : 'fixed right-0 top-0 z-[101] translate-x-full'
-        }`}
-      >
+    <aside
+      aria-label="Your Progress"
+      className={`sticky top-[71px] z-10 flex h-[calc(100dvh-71px)] shrink-0 flex-col overflow-hidden bg-white text-[#1e293b] transition-all duration-300 ease-in-out ${
+        isOpen ? 'w-[440px] border-l border-[#edf2f7] opacity-100' : 'w-0 border-none opacity-0 pointer-events-none'
+      }`}
+    >
+      <div className="flex h-full w-[440px] flex-col overflow-hidden">
         {/* Header - ILS_UI_UX/style.css line 59-72 */}
-        <header className="flex items-center justify-between border-b border-[#edf2f7] px-[28px] py-[24px]">
+        <header className="flex shrink-0 items-center justify-between border-b border-[#edf2f7] px-[28px] py-[24px]">
           <h2 className="text-[20px] font-bold text-[#1a202c]">
             ◎ Your Progress
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="border-none bg-transparent text-[28px] leading-none text-[#a0aec0] transition-colors duration-150 hover:text-[#1a202c]"
+            className="cursor-pointer border-none bg-transparent text-[28px] leading-none text-[#a0aec0] transition-colors duration-150 hover:text-[#1a202c]"
             aria-label="Close sidebar"
           >
             <X className="h-7 w-7" />
@@ -80,7 +80,7 @@ export function LearningProgressSidebar({ isOpen, onClose, brand }: LearningProg
         </header>
         
         {/* Scrollable Content - ILS_UI_UX/style.css line 76-89 */}
-        <div className="flex flex-col gap-[24px] overflow-y-auto px-[28px] py-[24px] scrollbar-none">
+        <div className="flex flex-1 flex-col gap-[24px] overflow-y-auto px-[28px] py-[24px] scrollbar-none">
           {loading ? (
             <div className="py-8 text-center text-sm text-gray-500">
               Loading progress...
@@ -111,7 +111,7 @@ export function LearningProgressSidebar({ isOpen, onClose, brand }: LearningProg
             </>
           )}
         </div>
-      </aside>
-    </>
+      </div>
+    </aside>
   );
 }

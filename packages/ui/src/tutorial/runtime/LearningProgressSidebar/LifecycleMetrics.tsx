@@ -14,6 +14,7 @@ import { formatDate } from './utils';
 interface LifecycleMetricsProps {
   activeBlockProgress: ILSActiveBlockProgress | null;
   brand: {
+    primaryColor?: string;
     secondaryColor: string;
   };
 }
@@ -51,7 +52,9 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
     );
   }
   
-  const { firstViewedAt, lastViewedAt, completedAt } = activeBlockProgress;
+  const { firstViewedAt, lastViewedAt, completedAt, isCompleted } = activeBlockProgress;
+  const isBlockCompleted = Boolean(completedAt || isCompleted);
+  const statusDisplay = isBlockCompleted ? 'COMPLETED' : '—';
   
   return (
     <div className="flex flex-col gap-3">
@@ -60,21 +63,24 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
         Lifecycle & Overview
       </h3>
       
-      {/* Lifecycle Table - ILS_UI_UX/style.css line 176-256 */}
+      {/* Lifecycle Table - ILS_UI_UX/style.css line 176-256 (.table-pink) */}
       <table
-        className="w-full overflow-hidden rounded-[14px] hover:-translate-y-[7px]"
+        className="w-full overflow-hidden rounded-[14px]"
         style={{
-          backgroundColor: brand.secondaryColor,
+          backgroundColor: brand.primaryColor || '#f54a8d',
           color: '#ffffff',
           borderCollapse: 'separate',
           borderSpacing: 0,
+          transform: 'translateY(-4px)',
           boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12)',
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         }}
         onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-7px)';
           e.currentTarget.style.boxShadow = '0 14px 30px rgba(0, 0, 0, 0.18)';
         }}
         onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
           e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.12)';
         }}
       >
@@ -131,23 +137,46 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
             </td>
           </tr>
           
-          {/* Completed At - green #5cf0b0 if completed, "—" if null */}
+          {/* Completed At */}
           <tr>
             <td
               className="px-4 py-3 text-[14px] font-semibold"
               style={{
                 color: 'rgba(255, 255, 255, 0.9)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
               }}
             >
               Completed At
             </td>
             <td
-              className="px-4 py-3 text-right text-[14px] font-extrabold"
+              className="px-4 py-3 text-right text-[14px] font-extrabold text-white"
               style={{
-                color: completedAt ? '#5cf0b0' : '#ffffff',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
               }}
             >
               {formatDate(completedAt)}
+            </td>
+          </tr>
+
+          {/* Status - green #5cf0b0 if completed, "—" if not completed */}
+          <tr>
+            <td
+              className="px-4 py-3 text-[14px] font-semibold"
+              style={{
+                color: 'rgba(255, 255, 255, 0.9)',
+                borderBottom: 'none',
+              }}
+            >
+              Status
+            </td>
+            <td
+              className="px-4 py-3 text-right text-[14px] font-extrabold"
+              style={{
+                color: isBlockCompleted ? '#5cf0b0' : '#ffffff',
+                borderBottom: 'none',
+              }}
+            >
+              {statusDisplay}
             </td>
           </tr>
         </tbody>
