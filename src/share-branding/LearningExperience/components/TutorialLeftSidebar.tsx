@@ -225,7 +225,15 @@ export function TutorialLeftSidebar({ tree, activeUrl, completedUrls, onNavigate
   const progress = clampProgress(tree.progress.percentage);
 
   return (
-    <aside aria-label="Tutorial navigation" className="sticky top-0 z-10 flex h-[100dvh] w-[404px] shrink-0 flex-col overflow-hidden border-r border-[#e5eaf1] bg-white text-[#071f63] shadow-sm">
+    <aside
+      aria-label="Tutorial navigation"
+      className="sticky top-[71px] z-10 flex h-[calc(100dvh-71px)] max-h-[calc(100dvh-71px)] w-[404px] shrink-0 flex-col overflow-hidden border-r border-[#e5eaf1] bg-white text-[#071f63] shadow-sm"
+      style={{
+        top: '71px',
+        height: 'calc(100dvh - 71px)',
+        maxHeight: 'calc(100dvh - 71px)',
+      }}
+    >
       <header className="flex shrink-0 items-center gap-4 px-6 pb-5 pt-8">
         <div className="flex h-[68px] w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-[14px] text-[20px] font-extrabold text-white" style={{ backgroundColor: tree.theme.primary }}>
           {tree.brand.logoUrl ? (
@@ -264,7 +272,7 @@ export function TutorialLeftSidebar({ tree, activeUrl, completedUrls, onNavigate
 
       <nav className="min-h-0 flex-1 overflow-hidden pb-5 pl-3.5 pr-6" aria-label="Tutorial curriculum">
         <div className="tutorial-left-sidebar-scroll h-full overflow-y-auto overflow-x-hidden overscroll-contain">
-          <div className="min-w-0 pb-8 pt-1">
+          <div className="min-w-0 pb-[80px] pt-1" style={{ paddingBottom: '80px' }}>
             {tree.topics.map((node) => (
               <TreeNode key={node.id} node={node} level={0} activeUrl={activeUrl} completedUrls={completedUrls} expanded={expanded} setExpanded={setExpanded} colors={tree.theme} onNavigate={onNavigate} />
             ))}

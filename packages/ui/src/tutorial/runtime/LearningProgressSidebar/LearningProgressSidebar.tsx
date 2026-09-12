@@ -58,10 +58,13 @@ export function LearningProgressSidebar({ isOpen, brand }: LearningProgressSideb
   return (
     <aside
       aria-label="Your Progress"
-      className={`sticky top-0 z-10 flex h-[100dvh] shrink-0 flex-col overflow-hidden bg-white text-[#1e293b] transition-all duration-300 ease-in-out ${
+      className={`sticky top-[71px] z-10 flex h-[calc(100dvh-71px)] max-h-[calc(100dvh-71px)] shrink-0 flex-col overflow-hidden bg-white text-[#1e293b] transition-all duration-300 ease-in-out ${
         isOpen ? 'w-[440px] border-l border-[#edf2f7] opacity-100' : 'w-0 border-none opacity-0 pointer-events-none'
       }`}
       style={{
+        top: '71px',
+        height: 'calc(100dvh - 71px)',
+        maxHeight: 'calc(100dvh - 71px)',
         width: isOpen ? '440px' : '0px',
         minWidth: isOpen ? '440px' : '0px',
         maxWidth: isOpen ? '440px' : '0px',
@@ -86,13 +89,13 @@ export function LearningProgressSidebar({ isOpen, brand }: LearningProgressSideb
         {/* Scrollable Content - self-contained internal scroll matching LSNB architecture */}
         <div className="min-h-0 flex-1 overflow-hidden" style={{ minHeight: 0, flex: '1 1 0%', overflow: 'hidden' }}>
           <div 
-            className="tutorial-rssb-scroll h-full overflow-y-auto overflow-x-hidden overscroll-contain px-[28px] py-[24px] pb-[48px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            className="tutorial-rssb-scroll h-full overflow-y-auto overflow-x-hidden overscroll-contain px-[28px] py-[24px] pb-[80px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             style={{
               height: '100%',
               overflowY: 'auto',
               overflowX: 'hidden',
               overscrollBehavior: 'contain',
-              padding: '24px 28px 48px 28px',
+              padding: '24px 28px 80px 28px',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
             }}
