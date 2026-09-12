@@ -57,7 +57,7 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
   const statusDisplay = isBlockCompleted ? 'COMPLETED' : '—';
   
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Section Title - ILS_UI_UX/style.css line 134-139 */}
       <h3 className="text-[16px] font-bold text-[#334155]">
         Lifecycle & Overview
@@ -71,16 +71,15 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
           color: '#ffffff',
           borderCollapse: 'separate',
           borderSpacing: 0,
-          transform: 'translateY(-4px)',
           boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12)',
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-7px)';
+          e.currentTarget.style.transform = 'translateY(-3px)';
           e.currentTarget.style.boxShadow = '0 14px 30px rgba(0, 0, 0, 0.18)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.transform = 'none';
           e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.12)';
         }}
       >

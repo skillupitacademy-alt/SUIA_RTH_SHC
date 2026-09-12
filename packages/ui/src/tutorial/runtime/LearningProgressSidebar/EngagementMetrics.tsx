@@ -61,15 +61,14 @@ export function EngagementMetrics({ activeBlockProgress }: EngagementMetricsProp
       style={{
         backgroundColor: '#ff7300',
         boxShadow: '0 8px 20px rgba(255, 115, 0, 0.25)',
-        transform: 'translateY(-2px)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-5px)';
+        e.currentTarget.style.transform = 'translateY(-3px)';
         e.currentTarget.style.boxShadow = '0 12px 24px rgba(255, 115, 0, 0.35)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.transform = 'none';
         e.currentTarget.style.boxShadow = '0 8px 20px rgba(255, 115, 0, 0.25)';
       }}
     >
@@ -89,7 +88,7 @@ export function EngagementMetrics({ activeBlockProgress }: EngagementMetricsProp
   );
   
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Section Title - ILS_UI_UX/style.css line 134-139 */}
       <h3 className="text-[16px] font-bold text-[#334155]">
         Engagement Metrics

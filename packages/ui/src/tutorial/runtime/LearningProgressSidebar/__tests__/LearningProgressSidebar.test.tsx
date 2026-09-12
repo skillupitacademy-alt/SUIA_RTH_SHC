@@ -133,22 +133,5 @@ describe('LearningProgressSidebar', () => {
     
     expect(screen.getByText('Loading progress...')).toBeInTheDocument();
   });
-  
-  it('should call onClose when close button clicked', () => {
-    const onClose = vi.fn();
-    
-    render(
-      <LearningProgressSidebar
-        isOpen={true}
-        onClose={onClose}
-        brand={defaultBrand}
-      />
-    );
-    
-    const closeButton = screen.getByLabelText('Close sidebar');
-    closeButton.click();
-    
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
 });
 

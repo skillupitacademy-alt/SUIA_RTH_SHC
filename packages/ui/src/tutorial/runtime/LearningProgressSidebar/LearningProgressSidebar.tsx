@@ -8,7 +8,6 @@
 'use client';
 
 import React from 'react';
-import { X } from 'lucide-react';
 import { useILS } from '../ILSProvider';
 import { OverallProgressCard } from './OverallProgressCard';
 import { LifecycleMetrics } from './LifecycleMetrics';
@@ -23,9 +22,9 @@ export interface LearningProgressSidebarProps {
   isOpen: boolean;
   
   /**
-   * Close handler
+   * Optional close handler
    */
-  onClose: () => void;
+  onClose?: () => void;
   
   /**
    * Brand configuration for primary/secondary colors
@@ -53,34 +52,26 @@ export interface LearningProgressSidebarProps {
  * DATA SOURCE: useILS() only (passive consumer)
  * NO manual block selector (follows ActiveBlockContext automatically)
  */
-export function LearningProgressSidebar({ isOpen, onClose, brand }: LearningProgressSidebarProps) {
+export function LearningProgressSidebar({ isOpen, brand }: LearningProgressSidebarProps) {
   const { overallProgress, activeBlockProgress, loading } = useILS();
   
   return (
     <aside
       aria-label="Your Progress"
-      className={`sticky top-[71px] z-10 flex h-[calc(100dvh-71px)] shrink-0 flex-col overflow-hidden bg-white text-[#1e293b] transition-all duration-300 ease-in-out ${
+      className={`sticky top-[71px] z-10 flex h-[calc(100dvh-71px)] max-h-[calc(100dvh-71px)] shrink-0 flex-col overflow-hidden bg-white text-[#1e293b] transition-all duration-300 ease-in-out ${
         isOpen ? 'w-[440px] border-l border-[#edf2f7] opacity-100' : 'w-0 border-none opacity-0 pointer-events-none'
       }`}
     >
       <div className="flex h-full w-[440px] flex-col overflow-hidden">
         {/* Header - ILS_UI_UX/style.css line 59-72 */}
-        <header className="flex shrink-0 items-center justify-between border-b border-[#edf2f7] px-[28px] py-[24px]">
+        <header className="flex shrink-0 items-center justify-between border-b border-[#edf2f7] px-[28px] py-[22px]">
           <h2 className="text-[20px] font-bold text-[#1a202c]">
             ◎ Your Progress
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="cursor-pointer border-none bg-transparent text-[28px] leading-none text-[#a0aec0] transition-colors duration-150 hover:text-[#1a202c]"
-            aria-label="Close sidebar"
-          >
-            <X className="h-7 w-7" />
-          </button>
         </header>
         
-        {/* Scrollable Content - ILS_UI_UX/style.css line 76-89 */}
-        <div className="flex flex-1 flex-col gap-[24px] overflow-y-auto px-[28px] py-[24px] scrollbar-none">
+        {/* Scrollable Content - self-contained internal scroll with hidden scrollbar */}
+        <div className="tutorial-rssb-scroll flex min-h-0 flex-1 flex-col gap-[32px] overflow-y-auto overscroll-contain px-[28px] py-[24px] pb-[48px]">
           {loading ? (
             <div className="py-8 text-center text-sm text-gray-500">
               Loading progress...
@@ -112,6 +103,18 @@ export function LearningProgressSidebar({ isOpen, onClose, brand }: LearningProg
           )}
         </div>
       </div>
+
+      <style jsx global>{`
+        .tutorial-rssb-scroll {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .tutorial-rssb-scroll::-webkit-scrollbar {
+          display: none;
+          width: 0;
+          height: 0;
+        }
+      `}</style>
     </aside>
   );
 }

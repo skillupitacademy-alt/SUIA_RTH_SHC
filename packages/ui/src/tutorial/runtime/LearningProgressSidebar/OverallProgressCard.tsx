@@ -70,15 +70,14 @@ export function OverallProgressCard({ overallProgress, brand }: OverallProgressC
         backgroundColor: brand.primaryColor,
         boxShadow: `0 10px 25px ${brand.primaryColor}40`, // 40 = 25% opacity in hex
         color: '#ffffff',
-        transform: 'translateY(-2px)',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-5px)';
+        e.currentTarget.style.transform = 'translateY(-3px)';
         e.currentTarget.style.boxShadow = `0 14px 30px ${brand.primaryColor}59`; // 59 = 35% opacity
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.transform = 'none';
         e.currentTarget.style.boxShadow = `0 10px 25px ${brand.primaryColor}40`;
       }}
     >
