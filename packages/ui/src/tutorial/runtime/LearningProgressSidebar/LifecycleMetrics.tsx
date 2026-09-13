@@ -63,11 +63,11 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
         Lifecycle & Overview
       </h3>
       
-      {/* Lifecycle Table - ILS_UI_UX/style.css line 176-256 (.table-pink) */}
+      {/* Lifecycle Table - ILS_UI_UX/style.css line 176-256 (Uses brand.secondaryColor for elegant contrast) */}
       <table
         className="w-full overflow-hidden rounded-[14px]"
         style={{
-          backgroundColor: brand.primaryColor || '#f54a8d',
+          backgroundColor: brand.secondaryColor || '#133382',
           color: '#ffffff',
           borderCollapse: 'separate',
           borderSpacing: 0,
