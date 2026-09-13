@@ -1,0 +1,20 @@
+[
+  {
+    "brand": "realtutorialhub",
+    "email": "testing@...",
+    "timestamp": "2026-09-12T12:31:15.476Z",
+    "loginSuccess": false,
+    "apiResponse": null,
+    "statusCode": 0,
+    "error": "Login failed - no cookies returned"
+  },
+  {
+    "brand": "skillup",
+    "email": "testing@...",
+    "timestamp": "2026-09-12T12:31:16.901Z",
+    "loginSuccess": false,
+    "apiResponse": null,
+    "statusCode": 0,
+    "error": "Login failed - no cookies returned"
+  }
+]

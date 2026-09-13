@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-09-12T12:35:09.821Z",
+  "results": [
+    {
+      "brand": "realtutorialhub",
+      "success": false,
+      "error": "Navigation API failed: 404 - <!DOCTYPE html><html lang=\"en\" data-tutorial-theme=\"classic\" class=\"__variable_f367f3 __variable_ed3508 __variable_e36b36\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-widt"
+    },
+    {
+      "brand": "skillup",
+      "success": false,
+      "error": "Navigation API failed: 404 - <!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_ed3508 __variable_e36b36\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel"
+    }
+  ]
+}

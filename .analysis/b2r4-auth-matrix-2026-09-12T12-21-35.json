@@ -1,0 +1,106 @@
+[
+  {
+    "test": "API Direct (3000) - RTH",
+    "url": "http://localhost:3000/api/auth/login",
+    "status": 200,
+    "success": true,
+    "responseBody": {
+      "user": {
+        "id": "54726a2e-fca5-4d93-abc6-e7cee97a86f8",
+        "email": "ajayshah@gmail.com",
+        "name": "Ajay Shah",
+        "isVerified": true,
+        "createdAt": "2026-01-25T03:39:51.368Z",
+        "onboarded": true,
+        "onboardingCompleted": true,
+        "role": "student",
+        "roles": [
+          "student"
+        ],
+        "isAdmin": false
+      }
+    }
+  },
+  {
+    "test": "API Direct (3000) - SkillUp",
+    "url": "http://localhost:3000/api/auth/login",
+    "status": 200,
+    "success": true,
+    "responseBody": {
+      "user": {
+        "id": "b438fb19-fa32-4df4-93b4-91837a5a15ef",
+        "email": "student@skillupitacademy.com",
+        "name": "Suresh Joshi",
+        "isVerified": true,
+        "createdAt": "2026-03-26T15:02:59.157Z",
+        "onboarded": true,
+        "onboardingCompleted": true,
+        "role": "student",
+        "roles": [
+          "student"
+        ],
+        "isAdmin": false
+      }
+    }
+  },
+  {
+    "test": "RTH BFF (3003)",
+    "url": "http://localhost:3003/api/auth/login",
+    "status": 400,
+    "success": false,
+    "responseBody": {
+      "error": "Bad Request",
+      "reason": "brand_unresolved",
+      "message": "Unable to resolve brand from request hostname",
+      "requestId": "b45a6d5c-0fcc-4348-b0e0-9dbdb5068ec9"
+    },
+    "error": "Bad Request",
+    "reason": "brand_unresolved",
+    "requestId": "b45a6d5c-0fcc-4348-b0e0-9dbdb5068ec9"
+  },
+  {
+    "test": "SkillUp BFF (3009)",
+    "url": "http://localhost:3009/api/auth/login",
+    "status": 400,
+    "success": false,
+    "responseBody": {
+      "error": "Bad Request",
+      "reason": "brand_unresolved",
+      "message": "Unable to resolve brand from request hostname",
+      "requestId": "a960e071-d936-4a7a-8d75-f0418df72b94"
+    },
+    "error": "Bad Request",
+    "reason": "brand_unresolved",
+    "requestId": "a960e071-d936-4a7a-8d75-f0418df72b94"
+  },
+  {
+    "test": "Gateway (8787) - RTH",
+    "url": "http://localhost:8787/api/auth/login",
+    "status": 400,
+    "success": false,
+    "responseBody": {
+      "error": "Bad Request",
+      "reason": "brand_unresolved",
+      "message": "Unable to resolve brand from request hostname",
+      "requestId": "90158e06-079d-4686-82a1-0630bb0073f2"
+    },
+    "error": "Bad Request",
+    "reason": "brand_unresolved",
+    "requestId": "90158e06-079d-4686-82a1-0630bb0073f2"
+  },
+  {
+    "test": "Gateway (8787) - SkillUp",
+    "url": "http://localhost:8787/api/auth/login",
+    "status": 400,
+    "success": false,
+    "responseBody": {
+      "error": "Bad Request",
+      "reason": "brand_unresolved",
+      "message": "Unable to resolve brand from request hostname",
+      "requestId": "004b1d6e-4ac9-4cb6-98b4-407eaba8f8f6"
+    },
+    "error": "Bad Request",
+    "reason": "brand_unresolved",
+    "requestId": "004b1d6e-4ac9-4cb6-98b4-407eaba8f8f6"
+  }
+]

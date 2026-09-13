@@ -1,0 +1,22 @@
+[
+  {
+    "brand": "realtutorialhub",
+    "email": "ajayshah@...",
+    "navigationNodeId": "whatisjava",
+    "timestamp": "2026-09-12T11:04:01.619Z",
+    "loginSuccess": false,
+    "apiResponse": null,
+    "statusCode": 0,
+    "error": "Login failed - no cookies returned"
+  },
+  {
+    "brand": "skillup",
+    "email": "student@...",
+    "navigationNodeId": "whatisjava",
+    "timestamp": "2026-09-12T11:04:22.499Z",
+    "loginSuccess": false,
+    "apiResponse": null,
+    "statusCode": 0,
+    "error": "Login failed - no cookies returned"
+  }
+]

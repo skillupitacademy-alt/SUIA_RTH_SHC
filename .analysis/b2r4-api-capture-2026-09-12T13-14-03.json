@@ -1,0 +1,138 @@
+{
+  "timestamp": "2026-09-12T13:14:03.505Z",
+  "results": [
+    {
+      "brand": "realtutorialhub",
+      "success": true,
+      "apiData": {
+        "data": {
+          "navigationNodeId": "whatisjava",
+          "sectionId": "cce5ff0e-0fb1-458e-808a-9858f2e7605d",
+          "subtopicId": "414f63eb-cccf-4bd1-bcc0-b52df69ce499",
+          "status": "in_progress",
+          "progressPercentage": 0,
+          "completedBlocks": [
+            {
+              "blockId": "gate-3c1r-phase-d-block-le3-1789057672929-cbxbbt",
+              "completedAt": "2026-09-10T16:27:53.526Z",
+              "blockVersion": "D1"
+            },
+            {
+              "blockId": "gate-3c1r-phase-d-block-le4-1789057673771-og3ccr",
+              "completedAt": "2026-09-10T16:27:54.612Z",
+              "blockVersion": "D1"
+            },
+            {
+              "blockId": "gate-3c1r-phase-d-block-le7-1789057676750-8zifbx",
+              "completedAt": "2026-09-10T16:27:57.319Z",
+              "blockVersion": "D1"
+            },
+            {
+              "blockId": "gate-3c1r-phase-d-completion-1789058906687-fjogsh",
+              "completedAt": "2026-09-10T16:48:29.168Z",
+              "blockVersion": "D1"
+            }
+          ],
+          "completedBlockCount": 4,
+          "totalBlockCount": 2,
+          "requiredBlocks": [
+            {
+              "blockId": "79ae6e0f-0374-4dfe-8d76-cefbe42f8996",
+              "blockVersion": "D1"
+            },
+            {
+              "blockId": "fb6b1e9d-3fe2-48f5-891e-73f8e22797b9",
+              "blockVersion": "C1"
+            }
+          ],
+          "blocks": [
+            {
+              "blockId": "79ae6e0f-0374-4dfe-8d76-cefbe42f8996",
+              "blockVersion": "D1",
+              "visitCount": 4,
+              "revisionCount": 0,
+              "activeTimeSec": 1086,
+              "expectedTimeSec": 180,
+              "firstViewedAt": "2026-09-11T23:43:20.943Z",
+              "lastViewedAt": "2026-09-12T06:26:19.271Z",
+              "completedAt": null
+            },
+            {
+              "blockId": "fb6b1e9d-3fe2-48f5-891e-73f8e22797b9",
+              "blockVersion": "C1",
+              "visitCount": 4,
+              "revisionCount": 0,
+              "activeTimeSec": 100,
+              "expectedTimeSec": 300,
+              "firstViewedAt": "2026-09-11T23:54:57.706Z",
+              "lastViewedAt": "2026-09-12T06:10:04.409Z",
+              "completedAt": null
+            }
+          ],
+          "timeSpentActiveSec": 0,
+          "visitCount": 60,
+          "revisionCount": 0,
+          "firstViewedAt": "2026-09-04T21:21:29.632Z",
+          "lastViewedAt": "2026-09-12T06:24:28.133Z",
+          "completedAt": null
+        }
+      }
+    },
+    {
+      "brand": "skillup",
+      "success": true,
+      "apiData": {
+        "data": {
+          "navigationNodeId": "whatisjava",
+          "sectionId": "cce5ff0e-0fb1-458e-808a-9858f2e7605d",
+          "subtopicId": "414f63eb-cccf-4bd1-bcc0-b52df69ce499",
+          "status": "not_started",
+          "progressPercentage": 0,
+          "completedBlocks": [],
+          "completedBlockCount": 0,
+          "totalBlockCount": 2,
+          "requiredBlocks": [
+            {
+              "blockId": "79ae6e0f-0374-4dfe-8d76-cefbe42f8996",
+              "blockVersion": "D1"
+            },
+            {
+              "blockId": "fb6b1e9d-3fe2-48f5-891e-73f8e22797b9",
+              "blockVersion": "C1"
+            }
+          ],
+          "blocks": [
+            {
+              "blockId": "79ae6e0f-0374-4dfe-8d76-cefbe42f8996",
+              "blockVersion": "D1",
+              "visitCount": 9,
+              "revisionCount": 0,
+              "activeTimeSec": 2964,
+              "expectedTimeSec": 180,
+              "firstViewedAt": "2026-09-07T10:11:56.585Z",
+              "lastViewedAt": "2026-09-12T06:23:20.833Z",
+              "completedAt": null
+            },
+            {
+              "blockId": "fb6b1e9d-3fe2-48f5-891e-73f8e22797b9",
+              "blockVersion": "C1",
+              "visitCount": 6,
+              "revisionCount": 0,
+              "activeTimeSec": 473,
+              "expectedTimeSec": 300,
+              "firstViewedAt": null,
+              "lastViewedAt": "2026-09-12T06:24:09.285Z",
+              "completedAt": null
+            }
+          ],
+          "timeSpentActiveSec": 0,
+          "visitCount": 68,
+          "revisionCount": 0,
+          "firstViewedAt": "2026-09-04T20:38:06.339Z",
+          "lastViewedAt": "2026-09-12T06:10:23.880Z",
+          "completedAt": null
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-09-12T13:02:27.107Z",
+  "results": [
+    {
+      "url": "http://skillup.localhost:3009/api/tutorial/ils/navigation/whatisjava?subtopicId=414f63eb-cccf-4bd1-bcc0-b52df69ce499",
+      "status": 404,
+      "statusText": "Not Found",
+      "contentType": "text/html; charset=utf-8",
+      "isHtml": true,
+      "bodyLength": 15790,
+      "bodyPreview": "<!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_ed3508 __variable_e36b36\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel"
+    },
+    {
+      "url": "http://skillup.localhost:3009/api/tutorial/ils/navigation/whatisjava",
+      "status": 404,
+      "statusText": "Not Found",
+      "contentType": "text/html; charset=utf-8",
+      "isHtml": true,
+      "bodyLength": 15640,
+      "bodyPreview": "<!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_ed3508 __variable_e36b36\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel"
+    },
+    {
+      "url": "http://skillup.localhost:3009/api/tutorial/ils/navigation/what-is-java?subtopicId=414f63eb-cccf-4bd1-bcc0-b52df69ce499",
+      "status": 404,
+      "statusText": "Not Found",
+      "contentType": "text/html; charset=utf-8",
+      "isHtml": true,
+      "bodyLength": 15800,
+      "bodyPreview": "<!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_ed3508 __variable_e36b36\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel"
+    },
+    {
+      "url": "http://skillup.localhost:3009/api/tutorial/ils",
+      "status": 403,
+      "statusText": "Forbidden",
+      "contentType": "application/json",
+      "isHtml": false,
+      "bodyLength": 21,
+      "bodyPreview": "{\"error\":\"Forbidden\"}"
+    }
+  ]
+}

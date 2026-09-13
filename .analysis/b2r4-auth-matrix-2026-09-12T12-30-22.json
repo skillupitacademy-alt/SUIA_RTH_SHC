@@ -1,0 +1,120 @@
+[
+  {
+    "test": "API Direct (3000) - RTH",
+    "url": "http://localhost:3000/api/auth/login",
+    "status": 200,
+    "success": true,
+    "responseBody": {
+      "user": {
+        "id": "54726a2e-fca5-4d93-abc6-e7cee97a86f8",
+        "email": "ajayshah@gmail.com",
+        "name": "Ajay Shah",
+        "isVerified": true,
+        "createdAt": "2026-01-25T03:39:51.368Z",
+        "onboarded": true,
+        "onboardingCompleted": true,
+        "role": "student",
+        "roles": [
+          "student"
+        ],
+        "isAdmin": false
+      }
+    }
+  },
+  {
+    "test": "API Direct (3000) - SkillUp",
+    "url": "http://localhost:3000/api/auth/login",
+    "status": 200,
+    "success": true,
+    "responseBody": {
+      "user": {
+        "id": "b438fb19-fa32-4df4-93b4-91837a5a15ef",
+        "email": "student@skillupitacademy.com",
+        "name": "Suresh Joshi",
+        "isVerified": true,
+        "createdAt": "2026-03-26T15:02:59.157Z",
+        "onboarded": true,
+        "onboardingCompleted": true,
+        "role": "student",
+        "roles": [
+          "student"
+        ],
+        "isAdmin": false
+      }
+    }
+  },
+  {
+    "test": "RTH BFF (realtutorialhub.localhost:3003)",
+    "url": "http://realtutorialhub.localhost:3003/api/auth/login",
+    "status": 200,
+    "success": true,
+    "responseBody": {
+      "user": {
+        "id": "54726a2e-fca5-4d93-abc6-e7cee97a86f8",
+        "email": "ajayshah@gmail.com",
+        "name": "Ajay Shah",
+        "isVerified": true,
+        "createdAt": "2026-01-25T03:39:51.368Z",
+        "onboarded": true,
+        "onboardingCompleted": true,
+        "role": "student",
+        "roles": [
+          "student"
+        ],
+        "isAdmin": false
+      }
+    }
+  },
+  {
+    "test": "SkillUp BFF (skillup.localhost:3009)",
+    "url": "http://skillup.localhost:3009/api/auth/login",
+    "status": 200,
+    "success": true,
+    "responseBody": {
+      "user": {
+        "id": "b438fb19-fa32-4df4-93b4-91837a5a15ef",
+        "email": "student@skillupitacademy.com",
+        "name": "Suresh Joshi",
+        "isVerified": true,
+        "createdAt": "2026-03-26T15:02:59.157Z",
+        "onboarded": true,
+        "onboardingCompleted": true,
+        "role": "student",
+        "roles": [
+          "student"
+        ],
+        "isAdmin": false
+      }
+    }
+  },
+  {
+    "test": "Gateway (8787) - RTH via branded host header",
+    "url": "http://localhost:8787/api/auth/login",
+    "status": 400,
+    "success": false,
+    "responseBody": {
+      "error": "Bad Request",
+      "reason": "brand_unresolved",
+      "message": "Unable to resolve brand from request hostname",
+      "requestId": "28d62d2b-3e79-476b-8b2b-acbc906ccb6f"
+    },
+    "error": "Bad Request",
+    "reason": "brand_unresolved",
+    "requestId": "28d62d2b-3e79-476b-8b2b-acbc906ccb6f"
+  },
+  {
+    "test": "Gateway (8787) - SkillUp via branded host header",
+    "url": "http://localhost:8787/api/auth/login",
+    "status": 400,
+    "success": false,
+    "responseBody": {
+      "error": "Bad Request",
+      "reason": "brand_unresolved",
+      "message": "Unable to resolve brand from request hostname",
+      "requestId": "435fde4c-adfb-4c1a-bdaa-59328d138a50"
+    },
+    "error": "Bad Request",
+    "reason": "brand_unresolved",
+    "requestId": "435fde4c-adfb-4c1a-bdaa-59328d138a50"
+  }
+]
