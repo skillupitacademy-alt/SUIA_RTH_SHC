@@ -15,6 +15,7 @@ import { buildTutorialPrompt } from '../prompts/tutorialPrompt.shared';
 import { getDefinitionD1Prompt } from '../blocks/definition/D1/definitionD1.prompt';
 import { getCodeC1Prompt } from '../blocks/code/C1/codeC1.prompt';
 import { getSummaryS1Prompt } from '../blocks/summary/S1/summaryS1.prompt';
+import { getIntroductionI1Prompt } from '../blocks/introduction/I1/introductionI1.prompt';
 
 interface AiInstructionContainerProps {
   domainName: string;
@@ -64,6 +65,10 @@ export function AiInstructionContainer({
     
     if (blockType === 'summary') {
       return getSummaryS1Prompt(context);
+    }
+    
+    if (blockType === 'introduction') {
+      return getIntroductionI1Prompt(context);
     }
 
     // Fallback using shared infrastructure
@@ -183,6 +188,15 @@ Do not include markdown code fences.`
                 <li><strong>Focused descriptions:</strong> 1–3 clear sentences explaining that single property.</li>
                 <li><strong>Responsive presentation:</strong> UI automatically handles 1 col (mobile), 2 col (tablet), 3–4 col (desktop). <em>Do NOT add UI layout metadata to the JSON.</em></li>
                 <li><strong>Strict JSON only:</strong> Return pure JSON matching the D1 schema with no markdown code blocks or system metadata.</li>
+              </ul>
+            ) : blockType === 'introduction' ? (
+              <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
+                <li><strong>9 required sections:</strong> Hero, Learning Goal, Topic, Where Fit, Solution, Where Used, Roadmap, Why Matters, Key Takeaway.</li>
+                <li><strong>Controlled icons:</strong> Use ONLY approved Lucide icons (book-open, target, code, rocket, globe, etc.). Do NOT invent icon names.</li>
+                <li><strong>Highlight cards:</strong> Mark 1-2 cards with <code>"highlight": true</code> in flowCards and useCases for visual emphasis.</li>
+                <li><strong>Motto format:</strong> Exactly 4 short lines forming inspirational statement (e.g., "Know / Your Path. / Learn with / Purpose.").</li>
+                <li><strong>Runnable code:</strong> Solution code must be complete and executable, not pseudo-code.</li>
+                <li><strong>Strict JSON only:</strong> Return pure JSON matching the I1 schema with no markdown code blocks or system metadata.</li>
               </ul>
             ) : (
               <p className="text-[11px] text-slate-600">
