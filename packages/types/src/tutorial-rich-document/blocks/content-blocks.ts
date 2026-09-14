@@ -309,3 +309,146 @@ export interface SummaryBlock extends BaseBlock {
     points: string[];
   };
 }
+
+/**
+ * 12. Introduction Block - Icon Registry
+ * Controlled set of approved Lucide icons for I1
+ */
+export type IntroductionIconKey =
+  | 'book-open'
+  | 'target'
+  | 'lightbulb'
+  | 'route'
+  | 'code'
+  | 'layers'
+  | 'check-circle'
+  | 'arrow-right'
+  | 'graduation-cap'
+  | 'rocket'
+  | 'wrench'
+  | 'globe'
+  | 'zap'
+  | 'star'
+  | 'box';
+
+/**
+ * Introduction I1 - Page Structure
+ * Author content contract for Introduction I1 version
+ * 
+ * Provides comprehensive roadmap-style overview with 9 sections:
+ * 1. Hero (badge, title, subtitle, motto)
+ * 2. Learning Goal
+ * 3. The Topic
+ * 4. Where Does It Fit? (flow cards)
+ * 5. The Solution (code example)
+ * 6. Where Is It Used? (use cases)
+ * 7. What Will You Learn? (roadmap)
+ * 8. Why This Matters (benefits)
+ * 9. Key Takeaway
+ */
+export interface IntroductionI1Page {
+  // Hero Section
+  badge: string;
+  title: string;
+  subtitle: string;
+  
+  // Mountain Roadmap - Handwritten motto (4 lines)
+  motto: {
+    lines: [string, string, string, string];
+  };
+  
+  // Learning Goal
+  learningGoal: string;
+  
+  // Section 1: The Topic
+  topic: {
+    title: string;
+    description: string;
+    quote: string;
+  };
+  
+  // Section 2: Where Does It Fit?
+  whereFit: {
+    title: string;
+    description: string;
+    flowCards: Array<{
+      title: string;
+      subtitle: string;
+      icon: IntroductionIconKey;
+      highlight?: boolean;
+    }>;
+  };
+  
+  // Section 3: The Solution
+  solution: {
+    title: string;
+    description: string;
+    code: {
+      language: string;
+      code: string;
+    };
+  };
+  
+  // Section 4: Where Is It Used?
+  whereUsed: {
+    title: string;
+    description: string;
+    useCases: Array<{
+      title: string;
+      description: string;
+      icon: IntroductionIconKey;
+      highlight?: boolean;
+    }>;
+  };
+  
+  // Section 5: What Will You Learn?
+  roadmap: {
+    title: string;
+    description: string;
+    steps: Array<{
+      title: string;
+      subtitle: string;
+    }>;
+  };
+  
+  // Section 6: Why This Matters
+  whyMatters: {
+    title: string;
+    benefits: Array<{
+      title: string;
+      subtitle: string;
+      icon: IntroductionIconKey;
+    }>;
+  };
+  
+  // Key Takeaway
+  keyTakeaway: string;
+}
+
+/**
+ * Introduction I1 - Author Content
+ * Wraps page structure in content.page
+ */
+export interface IntroductionI1AuthorContent {
+  page: IntroductionI1Page;
+}
+
+/**
+ * Introduction I1 Block
+ * Canonical block with version envelope
+ */
+export interface IntroductionI1Block extends BaseBlock {
+  type: 'introduction';
+  version: 'I1';
+  content: IntroductionI1AuthorContent;
+}
+
+/**
+ * Introduction Block (Version Union)
+ * All Introduction block versions
+ */
+export type IntroductionBlock = IntroductionI1Block;
+// Future versions:
+// | IntroductionI2Block
+// | IntroductionI3Block
+// ...

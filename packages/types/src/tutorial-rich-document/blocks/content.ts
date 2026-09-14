@@ -302,14 +302,15 @@ export type ContentBlock =
   | ImageBlock
   | CalloutBlock
   | DefinitionBlock
+  | IntroductionBlock
   | ExampleBlock
   | QuoteBlock
   | SummaryBlock
   | DiagramBlock
   | ComparisonBlock;
 
-// Import CodeBlockVersioned from content-blocks for version-specific Code blocks
-import type { CodeBlockVersioned } from './content-blocks';
+// Import versioned blocks from content-blocks
+import type { CodeBlockVersioned, IntroductionBlock } from './content-blocks';
 
 /**
  * Extended ContentBlock including versioned blocks

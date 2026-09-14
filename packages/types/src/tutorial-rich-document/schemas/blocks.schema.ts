@@ -20,6 +20,7 @@ import {
   DiagramBlockSchema,
   ComparisonBlockSchema,
 } from './content-blocks.schema';
+import { IntroductionI1BlockSchema } from './introduction-i1.schema';
 import {
   ContainerBlockSchema,
   TwoColumnBlockSchema,
@@ -33,6 +34,7 @@ import { CodeC1BlockSchema } from './code-c1.schema';
 export * from './content-blocks.schema';
 export * from './container-blocks.schema';
 export * from './code-c1.schema';
+export * from './introduction-i1.schema';
 
 /**
  * Union of Code blocks: legacy CodeBlock + versioned CodeC1Block
@@ -53,6 +55,7 @@ export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() =>
     ImageBlockSchema,
     CalloutBlockSchema,
     DefinitionBlockSchema,
+    IntroductionI1BlockSchema,
     ExampleBlockSchema,
     QuoteBlockSchema,
     SummaryBlockSchema,

@@ -129,8 +129,10 @@ export const CalloutBlockSchema = z.object({
 // Definition D1 Block Schema (version-scoped architecture)
 // Reuses the canonical D1 schemas from definition-d1.schema.ts
 import { DefinitionD1BlockSchema } from './definition-d1.schema';
+import { IntroductionI1BlockSchema } from './introduction-i1.schema';
 
 export const DefinitionBlockSchema = DefinitionD1BlockSchema;
+export const IntroductionBlockSchema = IntroductionI1BlockSchema;
 
 export const ExampleBlockSchema = z.object({
   id: BlockIdSchema,
@@ -207,6 +209,7 @@ export const ContentBlockSchema = z.discriminatedUnion('type', [
   ImageBlockSchema,
   CalloutBlockSchema,
   DefinitionBlockSchema,
+  IntroductionBlockSchema,
   ExampleBlockSchema,
   QuoteBlockSchema,
   SummaryBlockSchema,
