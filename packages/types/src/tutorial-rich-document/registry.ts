@@ -160,6 +160,15 @@ export const BLOCK_REGISTRY: Record<BlockType, BlockRegistryEntry> = {
     supportsChildren: false,
     tags: ['definition', 'term', 'glossary'],
   },
+  introduction: {
+    type: 'introduction',
+    label: 'Introduction',
+    description: 'Complete roadmap-style overview',
+    category: 'educational',
+    icon: 'Compass',
+    supportsChildren: false,
+    tags: ['introduction', 'overview', 'roadmap', 'learning-path'],
+  },
   summary: {
     type: 'summary',
     label: 'Summary',

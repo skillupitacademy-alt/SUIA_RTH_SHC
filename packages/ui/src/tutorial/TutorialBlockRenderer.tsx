@@ -5,12 +5,12 @@ import { MAX_NESTING_DEPTH } from '@quiz/types';
 import { HeadingBlock } from './blocks/HeadingBlock';
 import { ParagraphBlock } from './blocks/ParagraphBlock';
 import { ListBlock } from './blocks/ListBlock';
-import { CodeBlock } from './blocks/CodeBlock';
 import { CodeC1Block } from './blocks/CodeC1Block';
 import { TableBlock } from './blocks/TableBlock';
 import { ImageBlock } from './blocks/ImageBlock';
 import { CalloutBlock } from './blocks/CalloutBlock';
 import { DefinitionBlock } from './blocks/DefinitionBlock';
+import { IntroductionBlock } from './blocks/IntroductionBlock';
 import { ExampleBlock } from './blocks/ExampleBlock';
 import { QuoteBlock } from './blocks/QuoteBlock';
 import { SummaryBlock } from './blocks/SummaryBlock';
@@ -91,6 +91,8 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '',
         return <CalloutBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'definition':
         return <DefinitionBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
+      case 'introduction':
+        return <IntroductionBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'example':
         return <ExampleBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'quote':

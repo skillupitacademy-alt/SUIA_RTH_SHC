@@ -18,6 +18,15 @@ export type {
   CodeC1MemoryModelConnection,
 } from './content-blocks';
 
+// Export version-specific Introduction block types from content-blocks
+export type {
+  IntroductionI1Page,
+  IntroductionI1AuthorContent,
+  IntroductionI1Block,
+  IntroductionBlock,
+  IntroductionIconKey,
+} from './content-blocks';
+
 import type { ContentBlockExtended } from './content';
 import type { ContainerBlock } from './container';
 

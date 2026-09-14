@@ -131,6 +131,12 @@ export function tutorialBlocksToInstances(
           expectedTimeSec: block.expectedTimeSec,
         };
 
+      case 'introduction':
+        // Introduction blocks are not yet editable in the GUI
+        throw new Error(
+          `Introduction blocks are not yet supported in the editor. Block ID: ${block.id}`
+        );
+
       default: {
         // Type narrowing: all other block types (heading, paragraph, etc.) are not yet supported
         // in the GUI. When they are added, extend this switch.
