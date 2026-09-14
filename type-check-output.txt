@@ -1,0 +1,189 @@
+﻿
+> quiz-platform@0.0.0 type-check
+> cross-env NODE_OPTIONS=--max-old-space-size=6144 turbo run type-check --concurrency=4
+
+npm : ΓÇó turbo 2.9.6
+At line:1 char:40
++ ... d "e:\onlinewebsites\quiz-platform" ; npm run type-check 2>&1 | Out-F 
+...
++                                           ~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÇó turbo 2.9.6:String) [], Re 
+   moteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+   ΓÇó Packages in scope: @quiz/analytics-collector-service, @quiz/api-client, @quiz/api-gateway, @quiz/api-server, @quiz/auth, @quiz/db, @quiz/db-payment, @quiz/db-people, @quiz/db-placement, @quiz/db-rth, @quiz/db-skillup, @quiz/db-tutorial, @quiz/eslint-config, @quiz/events, @quiz/faculty-app, @quiz/identity-bridge, @quiz/marketing-site, @quiz/observability, @quiz/realtutorialhub-admin, @quiz/realtutorialhub-quiz, @quiz/realtutorialhub-site, @quiz/realtutorialhub-web, @quiz/skillhub-placement, @quiz/skillhubcore-admin, @quiz/skillhubcore-service, @quiz/skillup-admin, @quiz/skillup-web, @quiz/skillupitacademy-site, @quiz/types, @quiz/ui, @quiz/validation
+   ΓÇó Running type-check in 31 packages
+   ΓÇó Remote caching disabled
+
+@quiz/marketing-site:type-check: cache hit, replaying logs b42dce199a4a59ca
+@quiz/marketing-site:type-check: 
+@quiz/marketing-site:type-check: > @quiz/marketing-site@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\marketing-site
+@quiz/marketing-site:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/marketing-site:type-check: 
+@quiz/observability:type-check: cache hit, replaying logs b75f06f29772a927
+@quiz/observability:type-check: 
+@quiz/observability:type-check: > @quiz/observability@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\observability
+@quiz/observability:type-check: > tsc --noEmit
+@quiz/observability:type-check: 
+@quiz/events:type-check: cache hit, replaying logs 1fc336a96843aaae
+@quiz/events:type-check: 
+@quiz/events:type-check: > @quiz/events@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\events
+@quiz/events:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/events:type-check: 
+@quiz/api-client:type-check: cache hit, replaying logs f266ee95dc8bebb1
+@quiz/api-client:type-check: 
+@quiz/api-client:type-check: > @quiz/api-client@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\api-client
+@quiz/api-client:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/api-client:type-check: 
+@quiz/realtutorialhub-site:type-check: cache hit, replaying logs cc5abb5f5d1c7459
+@quiz/realtutorialhub-site:type-check: 
+@quiz/realtutorialhub-site:type-check: > @quiz/realtutorialhub-site@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\realtutorialhub-site
+@quiz/realtutorialhub-site:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/realtutorialhub-site:type-check: 
+@quiz/skillupitacademy-site:type-check: cache hit, replaying logs f2139de7b2bac44e
+@quiz/skillupitacademy-site:type-check: 
+@quiz/skillupitacademy-site:type-check: > @quiz/skillupitacademy-site@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\skillupitacademy-site
+@quiz/skillupitacademy-site:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/skillupitacademy-site:type-check: 
+@quiz/analytics-collector-service:type-check: cache hit, replaying logs 10f745a89746a319
+@quiz/analytics-collector-service:type-check: 
+@quiz/analytics-collector-service:type-check: > @quiz/analytics-collector-service@0.1.0 type-check E:\onlinewebsites\quiz-platform\services\analytics-collector-service
+@quiz/analytics-collector-service:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/analytics-collector-service:type-check: 
+@quiz/db-placement:type-check: cache hit, replaying logs 96d69bd7d7bed49c
+@quiz/db-placement:type-check: 
+@quiz/db-placement:type-check: > @quiz/db-placement@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\db-placement
+@quiz/db-placement:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/db-placement:type-check: 
+@quiz/db-payment:type-check: cache hit, replaying logs da0b3357de338f48
+@quiz/db-payment:type-check: 
+@quiz/db-payment:type-check: > @quiz/db-payment@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\db-payment
+@quiz/db-payment:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/db-payment:type-check: 
+@quiz/auth:type-check: cache hit, replaying logs 84389f355053f9fd
+@quiz/auth:type-check: 
+@quiz/auth:type-check: > @quiz/auth@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\auth
+@quiz/auth:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/auth:type-check: 
+@quiz/ui:type-check: cache hit, replaying logs e4d30142ad81d160
+@quiz/ui:type-check: 
+@quiz/ui:type-check: > @quiz/ui@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\ui
+@quiz/ui:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/ui:type-check: 
+@quiz/db-rth:type-check: cache hit, replaying logs 513087ac9b073db8
+@quiz/db-rth:type-check: 
+@quiz/db-rth:type-check: > @quiz/db-rth@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\db-rth
+@quiz/db-rth:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/db-rth:type-check: 
+@quiz/validation:type-check: cache hit, replaying logs 41844340cfbee75d
+@quiz/validation:type-check: 
+@quiz/validation:type-check: > @quiz/validation@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\validation
+@quiz/validation:type-check: > tsc --noEmit -p tsconfig.json --pretty false
+@quiz/validation:type-check: 
+@quiz/db-skillup:type-check: cache hit, replaying logs 5dd61894abb20476
+@quiz/db-skillup:type-check: 
+@quiz/db-skillup:type-check: > @quiz/db-skillup@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\db-skillup
+@quiz/db-skillup:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/db-skillup:type-check: 
+@quiz/db-people:type-check: cache hit, replaying logs 89bd8c474a9a8c59
+@quiz/db-people:type-check: 
+@quiz/db-people:type-check: > @quiz/db-people@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\db-people
+@quiz/db-people:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/db-people:type-check: 
+@quiz/api-gateway:type-check: cache hit, replaying logs ab2456a2ca5b7c31
+@quiz/api-gateway:type-check: 
+@quiz/api-gateway:type-check: > @quiz/api-gateway@0.1.0 type-check E:\onlinewebsites\quiz-platform\services\api-gateway
+@quiz/api-gateway:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/api-gateway:type-check: 
+@quiz/skillhub-placement:type-check: cache hit, replaying logs ba767900e787eb3a
+@quiz/skillhub-placement:type-check: 
+@quiz/skillhub-placement:type-check: > @quiz/skillhub-placement@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\skillhub-placement
+@quiz/skillhub-placement:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/skillhub-placement:type-check: 
+@quiz/realtutorialhub-quiz:type-check: cache miss, executing 15a2bf2090859a7e
+@quiz/db-tutorial:type-check: cache hit, replaying logs eb39068fb6a9916f
+@quiz/db-tutorial:type-check: 
+@quiz/db-tutorial:type-check: > @quiz/db-tutorial@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\db-tutorial
+@quiz/db-tutorial:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/db-tutorial:type-check: 
+@quiz/skillhubcore-service:type-check: cache hit, replaying logs b924c97113bb073a
+@quiz/skillhubcore-service:type-check: 
+@quiz/skillhubcore-service:type-check: > @quiz/skillhubcore-service@0.1.0 type-check E:\onlinewebsites\quiz-platform\services\skillhubcore-service
+@quiz/skillhubcore-service:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/skillhubcore-service:type-check: 
+@quiz/faculty-app:type-check: cache hit, replaying logs 385468571716dd7a
+@quiz/faculty-app:type-check: 
+@quiz/faculty-app:type-check: > @quiz/faculty-app@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\faculty-app
+@quiz/faculty-app:type-check: > node scripts/ensure-next-types.mjs && tsc --noEmit -p tsconfig.json
+@quiz/faculty-app:type-check: 
+@quiz/identity-bridge:type-check: cache hit, replaying logs 6feeaafc0a7b6c12
+@quiz/identity-bridge:type-check: 
+@quiz/identity-bridge:type-check: > @quiz/identity-bridge@0.1.0 type-check E:\onlinewebsites\quiz-platform\packages\identity-bridge
+@quiz/identity-bridge:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/identity-bridge:type-check: 
+@quiz/skillup-admin:type-check: cache hit, replaying logs 3de543233bf0e4cb
+@quiz/skillup-admin:type-check: 
+@quiz/skillup-admin:type-check: > @quiz/skillup-admin@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\skillup-admin
+@quiz/skillup-admin:type-check: > node scripts/ensure-next-types.mjs && tsc --noEmit -p tsconfig.json
+@quiz/skillup-admin:type-check: 
+@quiz/skillup-web:type-check: cache miss, executing 943b303c0b17ea33
+@quiz/realtutorialhub-web:type-check: cache miss, executing 3045537acec0e98b
+@quiz/skillhubcore-admin:type-check: cache miss, executing 8802d61af87287de
+@quiz/realtutorialhub-quiz:type-check: 
+@quiz/realtutorialhub-quiz:type-check: > @quiz/realtutorialhub-quiz@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\realtutorialhub-quiz
+@quiz/realtutorialhub-quiz:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/realtutorialhub-quiz:type-check: 
+@quiz/skillup-web:type-check: 
+@quiz/skillup-web:type-check: > @quiz/skillup-web@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\skillup-web
+@quiz/skillup-web:type-check: > tsc --noEmit -p tsconfig.json
+@quiz/skillup-web:type-check: 
+@quiz/skillhubcore-admin:type-check: 
+@quiz/skillhubcore-admin:type-check: > @quiz/skillhubcore-admin@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\skillhubcore-admin
+@quiz/skillhubcore-admin:type-check: > node scripts/ensure-next-types.mjs && tsc --noEmit -p tsconfig.json
+@quiz/skillhubcore-admin:type-check: 
+@quiz/realtutorialhub-web:type-check: 
+@quiz/realtutorialhub-web:type-check: > @quiz/realtutorialhub-web@0.1.0 type-check E:\onlinewebsites\quiz-platform\apps\realtutorialhub-web
+@quiz/realtutorialhub-web:type-check: > node scripts/ensure-next-types.mjs && tsc --noEmit -p tsconfig.json
+@quiz/realtutorialhub-web:type-check: 
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(115,43): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(115,48): error TS1002: Unterminated string literal.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(116,11): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(117,27): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(118,25): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(119,44): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(120,15): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(121,12): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(122,32): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(123,39): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(124,11): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(125,15): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(126,13): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(127,15): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(128,25): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(128,33): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(129,19): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(130,19): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(131,24): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(131,32): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(132,35): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(133,33): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(134,33): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(135,11): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(136,20): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(136,32): error TS1005: ';' expected.
+@quiz/skillhubcore-admin:type-check: .next/dev/types/routes.d.ts(137,1): error TS1128: Declaration or statement expected.
+@quiz/skillhubcore-admin:type-check: ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.
+@quiz/realtutorialhub-admin:type-check: cache miss, executing 1cd52b6ffbc7f373
+@quiz/api-server:type-check: cache miss, executing 31e91ee0edc4dbc3
+ ERROR  @quiz/skillhubcore-admin#type-check: command 
+(E:\onlinewebsites\quiz-platform\apps\skillhubcore-admin) 
+C:\Users\RealTutorialHub\AppData\Roaming\npm\pnpm.cmd run type-check exited 
+(1)
+
+ Tasks:    22 successful, 28 total
+Cached:    22 cached, 28 total
+  Time:    8.603s 
+Failed:    @quiz/skillhubcore-admin#type-check
+
+ ERROR  run failed: command  exited (1)

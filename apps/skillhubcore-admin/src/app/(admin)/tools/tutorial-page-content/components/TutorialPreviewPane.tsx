@@ -15,6 +15,7 @@ import type {
   TutorialSummaryPayload,
   TutorialBlock,
   DefinitionD1AuthorContent,
+  IntroductionI1AuthorContent,
 } from '@quiz/types';
 
 import { themeForBrand } from '../theme/brandTheme';
@@ -125,6 +126,18 @@ export function TutorialPreviewPane({
                 theme={theme} 
               />
             )}
+            {activeBlockType === 'introduction' && (
+              <TutorialBlockRenderer
+                block={{
+                  id: 'preview',
+                  type: 'introduction',
+                  version: activeBlockVersion,
+                  content: activeBlockPreview as IntroductionI1AuthorContent,
+                } as TutorialBlock}
+                theme={theme}
+                depth={0}
+              />
+            )}
           </div>
         ) : (
           documentBlocks.length === 0 ? (
@@ -171,6 +184,16 @@ export function TutorialPreviewPane({
                       <TutorialSummaryContent 
                         payload={instance.payload as TutorialSummaryPayload} 
                         theme={theme} 
+                      />
+                    </div>
+                  )}
+                  
+                  {instance.type === 'introduction' && (
+                    <div data-tutorial-block-type="introduction">
+                      <TutorialBlockRenderer
+                        block={toTutorialBlock(instance)}
+                        theme={theme}
+                        depth={0}
                       />
                     </div>
                   )}

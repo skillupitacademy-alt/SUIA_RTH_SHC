@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Functions in JavaScript - Complete Roadmap & Overview</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Plus Jakarta Sans, Fira Code & Caveat -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#F54A8D',
+                            'pink-dark': '#E03375',
+                            'pink-light': '#FFF0F5',
+                            'pink-soft': '#FDF2F8',
+                            navy: '#0F172A',
+                            'navy-blue': '#133382',
+                            'blue-soft': '#F0F5FF',
+                            'mint-light': '#ECFDF5',
+                            'mint-dark': '#059669',
+                            muted: '#64748B',
+                            editor: '#0B132B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        code: ['Fira Code', 'monospace'],
+                        hand: ['Caveat', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FFFFFF;
+            color: #0F172A;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .handwritten-text {
+            font-family: 'Caveat', cursive;
+        }
+
+        .pink-underline {
+            position: relative;
+            display: inline-block;
+        }
+        .pink-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: #F54A8D;
+            border-radius: 2px;
+        }
+
+        /* Flow Arrow Styling */
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #F54A8D;
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen pb-12">
+
+    <div id="app" class="max-w-[1140px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+
+        <!-- TOP HEADER NAVBAR -->
+        <header class="flex flex-col sm:flex-row items-center justify-between py-4 border-b border-slate-100 gap-4">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-pink flex items-center justify-center text-white text-xl shadow-md shadow-brand-pink/20">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <div class="font-extrabold text-2xl tracking-tight text-brand-pink leading-none">
+                        SUIA
+                    </div>
+                    <div class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Skill Up IT Academy</div>
+                </div>
+            </div>
+
+            <!-- Search Bar & User Actions -->
+            <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
+                <div class="relative w-full sm:w-80">
+                    <input type="text" placeholder="Search anything..." class="w-full bg-slate-50 border border-slate-200/80 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-pink/30 transition-all placeholder:text-slate-400">
+                    <button class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-pink transition-colors">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Bell Notification -->
+                <button class="relative w-10 h-10 rounded-full bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-brand-pink transition-colors flex-shrink-0">
+                    <i class="fa-regular fa-bell text-base"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-pink"></span>
+                </button>
+
+                <!-- Profile Avatar -->
+                <div class="w-10 h-10 rounded-full bg-brand-pink text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-pink/20">
+                    S
+                </div>
+            </div>
+        </header>
+
+        <!-- BREADCRUMBS -->
+        <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 py-4 overflow-x-auto whitespace-nowrap">
+            <a href="#" class="hover:text-brand-pink transition-colors"><i class="fa-solid fa-house"></i></a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-category">Full Stack Development</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-module">Frontend Development (FE)</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-topic">JavaScript</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <span class="font-bold text-brand-pink" id="bc-lesson">Introduction: Learning Roadmap & Overview</span>
+        </nav>
+
+        <!-- HERO SECTION -->
+        <section class="mt-2 mb-8 relative">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <!-- Left Title Content -->
+                <div class="lg:col-span-6 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-pink-light text-brand-pink font-bold text-xs">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span id="hero-badge">Introduction Block – Complete Edition</span>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-navy-blue tracking-tight leading-tight" id="hero-title">
+                        <span class="pink-underline">Functions in</span> JavaScript
+                    </h1>
+
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl" id="hero-subtitle">
+                        Let's see where functions fit in the bigger picture, understand the roadmap ahead, and explore practical solutions and real-world uses.
+                    </p>
+                </div>
+
+                <!-- Right Visual Mountain Roadmap Illustration -->
+                <div class="lg:col-span-6 relative flex justify-center">
+                    <div class="w-full max-w-[480px] h-[220px] rounded-3xl bg-gradient-to-br from-blue-50/80 via-sky-100/70 to-teal-50/60 p-4 relative overflow-hidden shadow-sm border border-sky-100">
+                        
+                        <!-- Handwritten Motto Top Left -->
+                        <div class="absolute top-3 left-4 z-10">
+                            <div class="handwritten-text text-brand-navy-blue font-bold text-xl leading-tight">
+                                Know<br>Your Path.<br>Learn with<br><span class="text-brand-navy-blue font-extrabold">Purpose.</span>
+                            </div>
+                        </div>
+
+                        <!-- Vector SVG Mountain Roadmap -->
+                        <svg viewBox="0 0 400 200" class="w-full h-full absolute inset-0">
+                            <path d="M120 200 L180 100 L240 200 Z" fill="#93C5FD" opacity="0.4"/>
+                            <path d="M190 200 L280 60 L380 200 Z" fill="#60A5FA" opacity="0.5"/>
+                            <path d="M250 200 L340 30 L400 200 Z" fill="#3B82F6" opacity="0.6"/>
+                            <polygon points="340,30 325,55 335,52 340,58 348,50 355,55" fill="#FFFFFF"/>
+                            <polygon points="280,60 268,80 276,78 280,84 288,77 292,80" fill="#FFFFFF"/>
+                            <path d="M230 180 Q 250 160 270 145 T 310 110 T 335 50" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-dasharray="3,3"/>
+                            <path d="M230 180 Q 250 160 270 145 T 310 110 T 335 50" fill="none" stroke="#F54A8D" stroke-width="2"/>
+                            
+                            <!-- Hiker Character -->
+                            <g transform="translate(140, 130)">
+                                <line x1="20" y1="45" x2="15" y2="60" stroke="#0F172A" stroke-width="4"/>
+                                <line x1="25" y1="45" x2="32" y2="58" stroke="#0F172A" stroke-width="4"/>
+                                <rect x="5" y="15" width="12" height="22" rx="4" fill="#0284C7"/>
+                                <path d="M15 15 C15 15 28 15 28 35 C28 45 20 45 20 45 Z" fill="#F54A8D"/>
+                                <circle cx="22" cy="8" r="7" fill="#FED7AA"/>
+                                <path d="M18 5 C 18 1, 28 1, 28 8 Z" fill="#0F172A"/>
+                            </g>
+
+                            <!-- Path Pins -->
+                            <g transform="translate(230, 175)">
+                                <circle cx="0" cy="0" r="7" fill="#F54A8D"/>
+                                <circle cx="0" cy="0" r="3" fill="#FFFFFF"/>
+                                <rect x="8" y="-10" width="60" height="20" rx="10" fill="#FFFFFF"/>
+                                <text x="14" y="3" font-size="9" font-weight="bold" fill="#0F172A" font-family="Plus Jakarta Sans">Start Here</text>
+                            </g>
+                            <g transform="translate(265, 140)">
+                                <circle cx="0" cy="0" r="7" fill="#F54A8D"/>
+                                <circle cx="0" cy="0" r="3" fill="#FFFFFF"/>
+                                <rect x="8" y="-10" width="48" height="20" rx="10" fill="#FFFFFF"/>
+                                <text x="14" y="3" font-size="9" font-weight="bold" fill="#0F172A" font-family="Plus Jakarta Sans">Learn</text>
+                            </g>
+                            <g transform="translate(305, 100)">
+                                <circle cx="0" cy="0" r="7" fill="#F54A8D"/>
+                                <circle cx="0" cy="0" r="3" fill="#FFFFFF"/>
+                                <rect x="8" y="-10" width="54" height="20" rx="10" fill="#FFFFFF"/>
+                                <text x="14" y="3" font-size="9" font-weight="bold" fill="#0F172A" font-family="Plus Jakarta Sans">Practice</text>
+                            </g>
+                            <g transform="translate(335, 45)">
+                                <line x1="0" y1="0" x2="0" y2="-20" stroke="#DC2626" stroke-width="2"/>
+                                <path d="M0 -20 L12 -15 L0 -10 Z" fill="#DC2626"/>
+                                <rect x="10" y="-22" width="50" height="20" rx="10" fill="#FFFFFF"/>
+                                <text x="17" y="-9" font-size="9" font-weight="bold" fill="#0F172A" font-family="Plus Jakarta Sans">Master</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEARNING GOAL CARD -->
+        <section class="mb-10">
+            <div class="bg-brand-pink-light border border-pink-100 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                <div class="w-14 h-14 rounded-full bg-pink-100/80 flex items-center justify-center text-brand-pink text-2xl flex-shrink-0">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-brand-pink font-bold text-lg sm:text-xl">Learning Goal</h3>
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="learning-goal-text">
+                        Understand what functions are, where they fit in JavaScript, how to write solutions with them, and what you will learn in this topic.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 1: THE TOPIC -->
+        <section class="mb-10 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    1
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue" id="sec1-title">The Topic</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <div class="lg:col-span-7">
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="sec1-desc">
+                        In this lesson, we are learning about functions in JavaScript. Functions allow us to group a set of statements together and execute them whenever needed.
+                    </p>
+                </div>
+                <div class="lg:col-span-5 bg-brand-blue-soft rounded-2xl p-5 flex items-center gap-4 border border-blue-100">
+                    <div class="text-brand-pink text-4xl font-serif font-bold leading-none select-none pl-2">
+                        <i class="fa-solid fa-quote-left"></i>
+                    </div>
+                    <p class="text-slate-700 font-semibold text-sm leading-snug" id="sec1-quote">
+                        Functions are an essential part of modern JavaScript development.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: WHERE DOES IT FIT? -->
+        <section class="mb-10 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    2
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue" id="sec2-title">Where Does It Fit?</h2>
+            </div>
+
+            <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="sec2-desc">
+                Functions are a core concept in JavaScript and play a key role in many areas of the language.
+            </p>
+
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-2 pt-2" id="where-fit-flow">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+        <!-- SECTION 3: THE SOLUTION: FUNCTIONS (From Attached Image 1) -->
+        <section class="mb-10 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    3
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">The Solution: Functions</h2>
+            </div>
+
+            <p class="text-slate-700 text-sm sm:text-base leading-relaxed">
+                We create a function that takes a list of prices, calculates the total, and returns the result. Now we can use this function whenever we need to calculate a total.
+            </p>
+
+            <!-- Code Editor Box -->
+            <div class="bg-brand-editor rounded-2xl overflow-hidden shadow-xl border border-slate-800 text-white font-code text-xs">
+                <div class="bg-slate-900/90 px-5 py-3 flex items-center justify-between border-b border-slate-800 font-sans">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                        <span class="text-slate-300 font-bold text-xs ml-2">JavaScript</span>
+                    </div>
+                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border border-slate-700">
+                        <i class="fa-regular fa-copy text-[11px]"></i> Copy
+                    </button>
+                </div>
+                <div class="p-5 overflow-x-auto leading-relaxed text-slate-200 text-sm">
+                    <pre><code><span class="text-purple-400">function</span> <span class="text-amber-300">calculateTotal</span>(prices) {
+  <span class="text-purple-400">let</span> total = <span class="text-orange-300">0</span>;
+  <span class="text-purple-400">for</span> (<span class="text-purple-400">const</span> price <span class="text-purple-400">of</span> prices) {
+    total += price;
+  }
+  <span class="text-purple-400">return</span> total;
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: WHERE IS IT USED? (From Attached Image 2) -->
+        <section class="mb-10 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    4
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">Where Is It Used?</h2>
+            </div>
+
+            <p class="text-slate-700 text-sm sm:text-base leading-relaxed">
+                The same function can be used in many places across the application.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <!-- Card 1 -->
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 text-center space-y-3 shadow-sm hover:border-pink-100 transition-all">
+                    <div class="w-12 h-12 rounded-full bg-pink-100 text-brand-pink flex items-center justify-center text-xl mx-auto shadow-sm">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <h4 class="font-bold text-brand-navy-blue text-lg">Shopping Cart</h4>
+                    <p class="text-xs sm:text-sm text-slate-600">Calculate total price.</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-brand-pink-light/30 border border-pink-100 rounded-2xl p-6 text-center space-y-3 shadow-sm">
+                    <div class="w-12 h-12 rounded-full bg-pink-100 text-brand-pink flex items-center justify-center text-xl mx-auto shadow-sm">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <h4 class="font-bold text-brand-navy-blue text-lg">Checkout</h4>
+                    <p class="text-xs sm:text-sm text-slate-600">Verify final amount.</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-white border border-slate-100 rounded-2xl p-6 text-center space-y-3 shadow-sm hover:border-blue-100 transition-all">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl mx-auto shadow-sm">
+                        <i class="fa-solid fa-chart-bar"></i>
+                    </div>
+                    <h4 class="font-bold text-brand-navy-blue text-lg">Reports</h4>
+                    <p class="text-xs sm:text-sm text-slate-600">Analyze sales data.</p>
+                </div>
+                <!-- Card 4 -->
+                <div class="bg-brand-pink-light/30 border border-pink-100 rounded-2xl p-6 text-center space-y-3 shadow-sm">
+                    <div class="w-12 h-12 rounded-full bg-pink-100 text-brand-pink flex items-center justify-center text-xl mx-auto shadow-sm">
+                        <i class="fa-solid fa-gear"></i>
+                    </div>
+                    <h4 class="font-bold text-brand-navy-blue text-lg">Admin Tools</h4>
+                    <p class="text-xs sm:text-sm text-slate-600">Process bulk price data.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: WHAT WILL YOU LEARN? -->
+        <section class="mb-10 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    5
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue" id="sec3-title">What Will You Learn?</h2>
+            </div>
+
+            <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="sec3-desc">
+                Here is the roadmap for functions. Each step builds on the previous one.
+            </p>
+
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-2 pt-2" id="roadmap-flow">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+        <!-- SECTION 6: WHY THIS MATTERS -->
+        <section class="mb-10 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    6
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue" id="sec4-title">Why This Matters</h2>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2" id="why-grid">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+        <!-- KEY TAKEAWAY CARD -->
+        <section class="mb-10">
+            <div class="bg-brand-mint-light border border-emerald-100 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                <div class="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl flex-shrink-0 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-brand-mint-dark font-bold text-lg sm:text-xl">Key Takeaway</h3>
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="key-takeaway-text">
+                        Functions are a fundamental building block in JavaScript. They help you write cleaner, more organized, and scalable code, and they are used throughout real-world development.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER NAVIGATION BUTTONS -->
+        <footer class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
+            <button class="w-full sm:w-auto px-6 py-3 rounded-xl border-2 border-brand-pink text-brand-pink font-bold text-sm hover:bg-brand-pink-light transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Previous Lesson
+            </button>
+            <button class="w-full sm:w-auto px-8 py-3 rounded-xl bg-brand-pink text-white font-bold text-sm shadow-lg shadow-brand-pink/20 hover:bg-brand-pink-dark transition-all flex items-center justify-center gap-2">
+                Next Lesson <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </footer>
+
+    </div>
+
+    <!-- EMBEDDED SCRIPT FOR DYNAMIC SECTIONS -->
+    <script>
+        const lessonData = {
+            section2: {
+                flowCards: [
+                    {
+                        type: "standard",
+                        iconType: "badge",
+                        badgeText: "JS",
+                        badgeBg: "bg-amber-400 text-black font-black text-xs px-2 py-1 rounded",
+                        title: "JavaScript",
+                        subtitle: "The programming language for the web."
+                    },
+                    {
+                        type: "standard",
+                        iconType: "fa",
+                        icon: "fa-code",
+                        iconBg: "bg-blue-100 text-blue-600",
+                        title: "Core Language Features",
+                        subtitle: "Variables, data types, operators, control flow, and functions."
+                    },
+                    {
+                        type: "highlight",
+                        iconType: "math",
+                        mathText: "f(x)",
+                        title: "Functions",
+                        subtitle: "Reusable blocks of code to perform specific tasks."
+                    },
+                    {
+                        type: "standard",
+                        iconType: "fa",
+                        icon: "fa-cube",
+                        iconBg: "bg-blue-100 text-blue-600",
+                        title: "Build Applications",
+                        subtitle: "Use functions in real projects, libraries, and frameworks."
+                    },
+                    {
+                        type: "standard",
+                        iconType: "fa",
+                        icon: "fa-globe",
+                        iconBg: "bg-blue-100 text-blue-600",
+                        title: "Real-World Impact",
+                        subtitle: "Functions power web apps, APIs, frontend frameworks, and more."
+                    }
+                ]
+            },
+            section3: {
+                roadmapSteps: [
+                    { step: 1, title: "What is a Function?", subtitle: "Understand basics and purpose." },
+                    { step: 2, title: "Creating Functions", subtitle: "Learn different definitions." },
+                    { step: 3, title: "Parameters & Args", subtitle: "Pass data into functions." },
+                    { step: 4, title: "Return Values", subtitle: "Get results from functions." },
+                    { step: 5, title: "Function Types", subtitle: "Named, anonymous, arrow." },
+                    { step: 6, title: "Best Practices", subtitle: "Write clean reusable code." }
+                ]
+            },
+            section4: {
+                cards: [
+                    { title: "Reusability", subtitle: "Write once,\nuse many times.", icon: "fa-solid fa-gear", bgColor: "bg-brand-pink-light", iconBg: "bg-pink-100", iconColor: "text-brand-pink" },
+                    { title: "Efficiency", subtitle: "Less code,\nfaster development.", icon: "fa-solid fa-bolt", bgColor: "bg-brand-blue-soft", iconBg: "bg-blue-100", iconColor: "text-blue-600" },
+                    { title: "Better Organization", subtitle: "Break complex problems\ninto smaller parts.", icon: "fa-solid fa-puzzle-piece", bgColor: "bg-brand-pink-light", iconBg: "bg-pink-100", iconColor: "text-brand-pink" },
+                    { title: "Real-World Applications", subtitle: "Used in web development,\nAPIs, libraries, and frameworks.", icon: "fa-solid fa-chart-line", bgColor: "bg-brand-blue-soft", iconBg: "bg-blue-100", iconColor: "text-blue-600" }
+                ]
+            }
+        };
+
+        function initLesson() {
+            // Section 2 Flow Cards
+            const flowContainer = document.getElementById('where-fit-flow');
+            let flowHTML = "";
+            lessonData.section2.flowCards.forEach((card, index) => {
+                let iconContent = "";
+                if (card.iconType === "badge") {
+                    iconContent = `<span class="${card.badgeBg}">${card.badgeText}</span>`;
+                } else if (card.iconType === "math") {
+                    iconContent = `<span class="text-brand-pink font-serif italic font-extrabold text-2xl">${card.mathText}</span>`;
+                } else {
+                    iconContent = `<div class="w-9 h-9 rounded-full ${card.iconBg} flex items-center justify-center text-base"><i class="fa-solid ${card.icon}"></i></div>`;
+                }
+
+                if (card.type === "highlight") {
+                    flowHTML += `
+                        <div class="flex-1 w-full bg-white border-2 border-brand-pink rounded-2xl p-4 text-center space-y-2 flex flex-col items-center justify-start shadow-sm">
+                            <div class="h-10 flex items-center justify-center">${iconContent}</div>
+                            <h4 class="font-bold text-brand-pink text-sm sm:text-base leading-snug">${card.title}</h4>
+                            <p class="text-xs text-slate-600 leading-tight">${card.subtitle}</p>
+                        </div>
+                    `;
+                } else {
+                    flowHTML += `
+                        <div class="flex-1 w-full bg-slate-50/80 border border-slate-100 rounded-2xl p-4 text-center space-y-2 flex flex-col items-center justify-start">
+                            <div class="h-10 flex items-center justify-center">${iconContent}</div>
+                            <h4 class="font-bold text-brand-navy-blue text-sm sm:text-base leading-snug">${card.title}</h4>
+                            <p class="text-xs text-slate-500 leading-tight">${card.subtitle}</p>
+                        </div>
+                    `;
+                }
+
+                if (index < lessonData.section2.flowCards.length - 1) {
+                    flowHTML += `
+                        <div class="flow-arrow my-1 lg:my-0">
+                            <i class="fa-solid fa-arrow-right hidden lg:block text-brand-pink"></i>
+                            <i class="fa-solid fa-arrow-down block lg:hidden text-brand-pink"></i>
+                        </div>
+                    `;
+                }
+            });
+            flowContainer.innerHTML = flowHTML;
+
+            // Roadmap Steps
+            const roadmapContainer = document.getElementById('roadmap-flow');
+            let roadmapHTML = "";
+            lessonData.section3.roadmapSteps.forEach((item, index) => {
+                roadmapHTML += `
+                    <div class="flex-1 w-full bg-slate-50/80 border border-slate-100 rounded-2xl p-4 text-center space-y-2 flex flex-col items-center justify-start">
+                        <div class="w-7 h-7 rounded-full bg-brand-pink text-white font-extrabold text-xs flex items-center justify-center shadow-sm">
+                            ${item.step}
+                        </div>
+                        <h4 class="font-bold text-brand-navy-blue text-xs sm:text-sm leading-snug">${item.title}</h4>
+                        <p class="text-[11px] text-slate-500 leading-tight">${item.subtitle}</p>
+                    </div>
+                `;
+
+                if (index < lessonData.section3.roadmapSteps.length - 1) {
+                    roadmapHTML += `
+                        <div class="flow-arrow my-1 lg:my-0">
+                            <i class="fa-solid fa-arrow-right hidden lg:block text-brand-pink text-xs"></i>
+                            <i class="fa-solid fa-arrow-down block lg:hidden text-brand-pink text-xs"></i>
+                        </div>
+                    `;
+                }
+            });
+            roadmapContainer.innerHTML = roadmapHTML;
+
+            // Why Grid
+            const whyGrid = document.getElementById('why-grid');
+            whyGrid.innerHTML = lessonData.section4.cards.map(card => `
+                <div class="${card.bgColor} rounded-2xl p-6 text-center space-y-3 flex flex-col items-center justify-start border border-slate-100">
+                    <div class="w-12 h-12 rounded-full ${card.iconBg} ${card.iconColor} flex items-center justify-center text-xl shadow-sm">
+                        <i class="${card.icon}"></i>
+                    </div>
+                    <h4 class="font-bold text-brand-navy-blue text-base sm:text-lg leading-snug">${card.title}</h4>
+                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">${card.subtitle}</p>
+                </div>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', initLesson);
+    </script>
+</body>
+</html>

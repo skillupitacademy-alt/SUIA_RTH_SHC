@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type {
   TutorialCodePayload,
   TutorialDefinitionPayload,
+  TutorialIntroductionPayload,
   TutorialPageContentType,
   TutorialSidebarBrandId,
   TutorialSummaryPayload,
@@ -295,7 +296,7 @@ export function TutorialPageContentBuilderClient() {
   function handleAddBlockInstance() {
     try {
       const parsed = parseSource(sourceFormat, sourceContent, form.blockType) as 
-        TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload;
+        TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | TutorialIntroductionPayload;
       
       // Extract expectedTimeSec at root level if present (AI-generated metadata)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic payload parsing requires any
@@ -310,7 +311,7 @@ export function TutorialPageContentBuilderClient() {
       }
       
       // Canonicalize C1 blocks immediately upon Add/Update
-      let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | CodeC1AuthorContent = normalizedParsed;
+      let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | TutorialIntroductionPayload | CodeC1AuthorContent = normalizedParsed;
       let payloadFormat: 'legacy' | 'canonical' = 'legacy';
       
       if (form.blockType === 'code' && selectedVersion.code === 'C1') {

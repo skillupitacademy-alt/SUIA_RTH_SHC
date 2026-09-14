@@ -3,6 +3,7 @@ import type { BlockRegistryEntry, BlockVersionRegistryEntry } from './types';
 import { definitionRegistry } from './entries/definition.registry';
 import { codeRegistry } from './entries/code.registry';
 import { summaryRegistry } from './entries/summary.registry';
+import { introductionRegistry } from './entries/introduction.registry';
 
 /**
  * Block Registry Public API
@@ -19,6 +20,7 @@ export function getBlockTypes(): BlockRegistryEntry[] {
     definitionRegistry,
     codeRegistry,
     summaryRegistry,
+    introductionRegistry,
   ];
 }
 

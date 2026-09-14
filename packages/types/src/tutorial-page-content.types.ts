@@ -1,7 +1,7 @@
 import type { BrandTutorialTheme, TutorialNavigationTree, TutorialSidebarBrandId } from './tutorial-sidebar.types';
 import type { TutorialBlock } from './tutorial-rich-document/blocks';
 
-export type TutorialPageContentType = 'definition' | 'code' | 'summary';
+export type TutorialPageContentType = 'definition' | 'code' | 'summary' | 'introduction';
 export type TutorialContentSourceFormat = 'json' | 'markdown';
 export type TutorialContentStatus = 'draft' | 'published';
 
@@ -131,10 +131,93 @@ export interface TutorialSummaryPayload {
   };
 }
 
+/**
+ * Introduction I1 icon type - matches IntroductionIconKeySchema
+ */
+export type IntroductionIconKey =
+  | 'book-open'
+  | 'target'
+  | 'lightbulb'
+  | 'route'
+  | 'code'
+  | 'layers'
+  | 'check-circle'
+  | 'arrow-right'
+  | 'graduation-cap'
+  | 'rocket'
+  | 'wrench'
+  | 'globe'
+  | 'zap'
+  | 'star'
+  | 'box';
+
+export interface TutorialIntroductionPayload {
+  page: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    motto: {
+      lines: [string, string, string, string];
+    };
+    learningGoal: string;
+    topic: {
+      title: string;
+      description: string;
+      quote: string;
+    };
+    whereFit: {
+      title: string;
+      description: string;
+      flowCards: Array<{
+        title: string;
+        subtitle: string;
+        icon: IntroductionIconKey;
+        highlight?: boolean;
+      }>;
+    };
+    solution: {
+      title: string;
+      description: string;
+      code: {
+        language: string;
+        code: string;
+      };
+    };
+    whereUsed: {
+      title: string;
+      description: string;
+      useCases: Array<{
+        title: string;
+        description: string;
+        icon: IntroductionIconKey;
+        highlight?: boolean;
+      }>;
+    };
+    roadmap: {
+      title: string;
+      description: string;
+      steps: Array<{
+        title: string;
+        subtitle: string;
+      }>;
+    };
+    whyMatters: {
+      title: string;
+      benefits: Array<{
+        title: string;
+        subtitle: string;
+        icon: IntroductionIconKey;
+      }>;
+    };
+    keyTakeaway: string;
+  };
+}
+
 export type TutorialContentPayloadByType = {
   definition: TutorialDefinitionPayload;
   code: TutorialCodePayload;
   summary: TutorialSummaryPayload;
+  introduction: TutorialIntroductionPayload;
 };
 
 export interface TutorialPageContentRecord<T extends TutorialPageContentType = TutorialPageContentType> {

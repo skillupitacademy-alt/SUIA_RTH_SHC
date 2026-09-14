@@ -11,11 +11,13 @@ import type {
   TutorialBlock,
   DefinitionD1AuthorContent,
   CodeC1AuthorContent,
+  IntroductionI1AuthorContent,
 } from '@quiz/types/tutorial-rich-document';
 import type {
   TutorialDefinitionPayload,
   TutorialCodePayload,
   TutorialSummaryPayload,
+  TutorialIntroductionPayload,
   TutorialPageContentType,
 } from '@quiz/types/tutorial-page-content.types';
 import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
@@ -29,7 +31,7 @@ export interface BlockInstance {
   version: string;
   versionCode: string;
   title: string;
-  payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | CodeC1AuthorContent;
+  payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | TutorialIntroductionPayload | CodeC1AuthorContent;
   payloadFormat: 'legacy' | 'canonical';
   sourceFormat: 'json' | 'markdown';
   sourceContent: string;
@@ -48,6 +50,7 @@ export function extractBlockTitle(payload: unknown, type: TutorialPageContentTyp
   if (type === 'definition') return p.page?.intro || 'Concept Definition';
   if (type === 'code') return p.code?.language ? `${p.code.language} Example` : 'Code Example';
   if (type === 'summary') return 'Revision Summary';
+  if (type === 'introduction') return p.page?.title || 'Introduction';
   return 'Block Instance';
 }
 
@@ -64,7 +67,7 @@ export function tutorialBlocksToInstances(
   blocks: TutorialBlock[]
 ): BlockInstance[] {
   return blocks.map((block) => {
-    let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | CodeC1AuthorContent;
+    let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | TutorialIntroductionPayload | CodeC1AuthorContent;
     let sourceContent: string;
 
     switch (block.type) {
@@ -132,10 +135,22 @@ export function tutorialBlocksToInstances(
         };
 
       case 'introduction':
-        // Introduction blocks are not yet editable in the GUI
-        throw new Error(
-          `Introduction blocks are not yet supported in the editor. Block ID: ${block.id}`
-        );
+        // Introduction blocks are now supported for editing
+        payload = block.content as unknown as TutorialIntroductionPayload;
+        sourceContent = JSON.stringify(payload, null, 2);
+
+        return {
+          id: block.id,
+          type: 'introduction',
+          version: 'v1',
+          versionCode: ('version' in block && block.version) ? block.version : 'I1', // Preserve database version, fallback to I1
+          title: extractBlockTitle(payload, 'introduction'),
+          payload,
+          payloadFormat: 'legacy', // Introduction blocks use legacy format (matches TutorialIntroductionPayload)
+          sourceFormat: 'json',
+          sourceContent,
+          expectedTimeSec: block.expectedTimeSec,
+        };
 
       default: {
         // Type narrowing: all other block types (heading, paragraph, etc.) are not yet supported
@@ -257,6 +272,25 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
 
       throw new Error(
         `Unsupported summary version: ${instance.versionCode}`
+      );
+    }
+
+    case 'introduction': {
+      if (instance.versionCode === 'I1') {
+        // Transform TutorialIntroductionPayload to IntroductionI1AuthorContent
+        const introPayload = instance.payload as TutorialIntroductionPayload;
+        
+        return {
+          id: instance.id,
+          type: 'introduction',
+          version: 'I1',
+          content: introPayload as unknown as IntroductionI1AuthorContent,
+          expectedTimeSec: instance.expectedTimeSec,
+        };
+      }
+
+      throw new Error(
+        `Unsupported introduction version: ${instance.versionCode}. Only I1 is currently supported.`
       );
     }
 
