@@ -245,7 +245,7 @@ function IntroductionI1View({
 
         {/* Flow Cards Container */}
         <div className="flex flex-col lg:flex-row items-center gap-2">
-          {page.whereFit.flowCards.map((card: any, index: number) => {
+          {page.whereFit.flowCards.map((card, index: number) => {
             const IconComponent = getIcon(card.icon);
             return (
               <React.Fragment key={index}>
@@ -347,7 +347,7 @@ function IntroductionI1View({
 
         {/* Use Cases Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {page.whereUsed.useCases.map((useCase: any, index: number) => {
+          {page.whereUsed.useCases.map((useCase, index: number) => {
             const IconComponent = getIcon(useCase.icon);
             return (
               <div
@@ -396,7 +396,7 @@ function IntroductionI1View({
 
         {/* Roadmap Steps Flow */}
         <div className="flex flex-col lg:flex-row items-center gap-2 overflow-x-auto">
-          {page.roadmap.steps.map((step: any, index: number) => (
+          {page.roadmap.steps.map((step, index: number) => (
             <React.Fragment key={index}>
               <div className="flex-1 w-full bg-slate-50/80 border border-slate-100 rounded-2xl p-4 text-center space-y-2">
                 <div
@@ -441,7 +441,7 @@ function IntroductionI1View({
 
         {/* Benefits Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {page.whyMatters.benefits.map((benefit: any, index: number) => {
+          {page.whyMatters.benefits.map((benefit, index: number) => {
             const IconComponent = getIcon(benefit.icon);
             return (
               <div
