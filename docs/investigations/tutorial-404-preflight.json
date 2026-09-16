@@ -1,0 +1,152 @@
+{
+  "investigation": "tutorial-404-preflight",
+  "mode": "read-only",
+  "targetUrl": "http://skillup.localhost:3009/tutorial-v2/full-stack-development/backend-development/python/completepython",
+  "startedAt": "2026-09-15T01:07:06.382Z",
+  "urlParameters": {
+    "domainSlug": "full-stack-development",
+    "subjectSlug": "backend-development",
+    "topicSlug": "python",
+    "subtopicSlug": "completepython",
+    "brand": "skillup"
+  },
+  "checks": [
+    {
+      "check": "database_connection",
+      "status": "VERIFIED",
+      "note": "DATABASE_URL_TUTORIAL present (value redacted)"
+    },
+    {
+      "check": "domain_resolution",
+      "input": "full-stack-development",
+      "found": true,
+      "result": {
+        "id": "658b00bf-ae25-4f47-990a-58a573ee8240",
+        "name": "Full Stack Development",
+        "created_at": "2026-08-24T23:17:03.380Z"
+      },
+      "allDomains": [
+        {
+          "id": "658b00bf-ae25-4f47-990a-58a573ee8240",
+          "name": "Full Stack Development",
+          "slug": "full-stack-development"
+        }
+      ]
+    },
+    {
+      "check": "subject_resolution",
+      "input": "backend-development",
+      "parentDomain": "658b00bf-ae25-4f47-990a-58a573ee8240",
+      "found": true,
+      "result": {
+        "id": "0facd94f-1b62-414c-8ded-921fb7e68086",
+        "name": "Backend Development",
+        "domain_id": "658b00bf-ae25-4f47-990a-58a573ee8240"
+      },
+      "allSubjects": [
+        {
+          "id": "0facd94f-1b62-414c-8ded-921fb7e68086",
+          "name": "Backend Development",
+          "slug": "backend-development"
+        }
+      ]
+    },
+    {
+      "check": "topic_resolution",
+      "input": "python",
+      "parentSubject": "0facd94f-1b62-414c-8ded-921fb7e68086",
+      "found": true,
+      "result": {
+        "id": "43616b9b-fee9-4d1c-b4ff-8ae5123a3da0",
+        "name": "Python",
+        "subject_id": "0facd94f-1b62-414c-8ded-921fb7e68086"
+      },
+      "allTopics": [
+        {
+          "id": "fb47747d-ac1c-4091-bd8e-a8a7d7378e07",
+          "name": "Java",
+          "slug": "java",
+          "compact": "java"
+        },
+        {
+          "id": "43616b9b-fee9-4d1c-b4ff-8ae5123a3da0",
+          "name": "Python",
+          "slug": "python",
+          "compact": "python"
+        }
+      ]
+    },
+    {
+      "check": "subtopic_resolution",
+      "input": "completepython",
+      "parentTopic": "43616b9b-fee9-4d1c-b4ff-8ae5123a3da0",
+      "found": true,
+      "result": {
+        "id": "497f6cf0-a74e-4e6a-a5c2-eea5395f50c9",
+        "name": "Complete Python",
+        "slug": "complete-python-5b1cfc3d",
+        "external_id": "5b1cfc3d-8744-4ae6-903c-ea79aaf648a0",
+        "topic_id": "43616b9b-fee9-4d1c-b4ff-8ae5123a3da0"
+      },
+      "allSubtopics": [
+        {
+          "id": "497f6cf0-a74e-4e6a-a5c2-eea5395f50c9",
+          "name": "Complete Python",
+          "slug": "complete-python-5b1cfc3d",
+          "externalId": "5b1cfc3d-8744-4ae6-903c-ea79aaf648a0",
+          "nameSlug": "complete-python",
+          "nameCompact": "completepython"
+        }
+      ]
+    },
+    {
+      "check": "tutorial_sections",
+      "subtopicId": "497f6cf0-a74e-4e6a-a5c2-eea5395f50c9",
+      "sectionsFound": 1,
+      "sections": [
+        {
+          "id": "05b5cfa0-e45b-4fb6-93de-d47545d6c02f",
+          "navigationNodeId": "whatispython",
+          "status": "deployed",
+          "brandId": "shared",
+          "orderIndex": 0
+        }
+      ]
+    },
+    {
+      "check": "sidebar_check",
+      "subtopicId": "497f6cf0-a74e-4e6a-a5c2-eea5395f50c9",
+      "sidebarsFound": 0,
+      "sidebars": []
+    }
+  ],
+  "findings": [
+    {
+      "severity": "INFO",
+      "stage": "hierarchy_complete",
+      "finding": "Hierarchy resolution completed successfully",
+      "hierarchy": {
+        "domain": {
+          "id": "658b00bf-ae25-4f47-990a-58a573ee8240",
+          "name": "Full Stack Development"
+        },
+        "subject": {
+          "id": "0facd94f-1b62-414c-8ded-921fb7e68086",
+          "name": "Backend Development"
+        },
+        "topic": {
+          "id": "43616b9b-fee9-4d1c-b4ff-8ae5123a3da0",
+          "name": "Python"
+        },
+        "subtopic": {
+          "id": "497f6cf0-a74e-4e6a-a5c2-eea5395f50c9",
+          "name": "Complete Python",
+          "slug": "complete-python-5b1cfc3d",
+          "externalId": "5b1cfc3d-8744-4ae6-903c-ea79aaf648a0"
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "completedAt": "2026-09-15T01:07:07.058Z"
+}
