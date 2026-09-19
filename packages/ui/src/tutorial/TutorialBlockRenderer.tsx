@@ -91,8 +91,23 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '',
         return <CalloutBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'definition':
         return <DefinitionBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-      case 'introduction':
+      case 'introduction': {
+        // Introduction I1 is the only supported version
+        if (!('version' in block) || block.version !== 'I1') {
+          throw new Error(
+            `Unsupported Introduction version. I1 is required. Received: ${('version' in block) ? (block as any).version : 'no version'}`
+          );
+        }
+
+        // Theme is required for canonical locked I1 renderer
+        if (!theme?.primary || !theme?.secondary) {
+          throw new Error(
+            `Missing required brand theme for Introduction I1 block ${block.id}`
+          );
+        }
+
         return <IntroductionBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
+      }
       case 'example':
         return <ExampleBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'quote':
@@ -117,10 +132,11 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '',
       }
     }
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.error(`[TutorialBlockRenderer] Failed rendering block ${block.id} (${block.type}):`, err);
     return (
       <div role="alert" className="my-2 p-2 text-xs text-rose-500 bg-rose-50 dark:bg-rose-950/30 rounded border border-rose-200 dark:border-rose-900">
-        Error rendering block: {block.id}
+        Error rendering block: {block.id} - {errorMessage}
       </div>
     );
   }

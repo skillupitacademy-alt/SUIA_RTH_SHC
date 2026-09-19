@@ -22,27 +22,22 @@ import type { IntroductionIconKey } from '@quiz/types';
 /**
  * Introduction Block - Version Router
  * Routes to version-specific implementation based on block.version
+ *
+ * Note: Router-level validation ensures block.version === 'I1' and theme is present.
  */
 export function IntroductionBlock({
   block,
   className = '',
   theme,
 }: BlockComponentProps<IIntroductionBlock>) {
-  // Explicit version check
-  if (!block.version) {
-    throw new Error(
-      `[IntroductionBlock] Missing version field for block ${block.id}`
-    );
-  }
-
-  // Version routing
+  // Router guarantees version is 'I1' - simplified routing
   switch (block.version) {
     case 'I1':
-      return <IntroductionI1View block={block} theme={theme} className={className} />;
+      return <IntroductionI1View block={block} theme={theme!} className={className} />;
     default:
-      throw new Error(
-        `[IntroductionBlock] Unsupported Introduction version: ${block.version}`
-      );
+      // TypeScript exhaustiveness check (should never execute due to router validation)
+      const _exhaustive: never = block.version;
+      return null;
   }
 }
 
@@ -96,18 +91,12 @@ function IntroductionI1View({
   className = '',
 }: {
   block: IIntroductionBlock;
-  theme?: DomainTheme;
+  theme: DomainTheme; // Router guarantees theme is present
   className?: string;
 }) {
   const page = block.content.page;
 
-  // Theme is required for canonical locked renderer
-  if (!theme?.primary || !theme?.secondary) {
-    throw new Error(
-      `[IntroductionI1View] Missing required brand theme for Introduction I1 block ${block.id}`
-    );
-  }
-
+  // Router guarantees theme.primary and theme.secondary exist
   const primary = theme.primary;
   const secondary = theme.secondary;
 
