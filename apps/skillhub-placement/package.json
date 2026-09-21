@@ -12,7 +12,7 @@
   "dependencies": {
     "@quiz/auth": "workspace:*",
     "@quiz/db-placement": "workspace:*",
-    "@types/node": "^20",
+    "@types/node": "^26",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.23",
