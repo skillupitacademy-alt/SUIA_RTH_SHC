@@ -92,7 +92,7 @@ function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'
       theme: {
         primary: '#f54a8d',
         primaryDark: '#d63d7a',
-        secondary: '#0B1B3D',
+        secondary: '#133382',
         activeBackground: '#fff0f6',
         completed: '#08a64a',
       },

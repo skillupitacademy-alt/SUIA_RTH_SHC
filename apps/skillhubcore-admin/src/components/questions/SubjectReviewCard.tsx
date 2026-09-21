@@ -59,7 +59,7 @@ export const SubjectReviewCard = React.memo(({
 
                     <div className={cn(
                         "w-10 h-10 rounded-2xl flex items-center justify-center font-bold border-2 transition-all duration-300",
-                        isSelected === true ? "bg-[#0B1B3D] text-white border-[#0B1B3D] shadow-lg" : "bg-[#f54a8d]/10 text-[#0B1B3D] border-[#f54a8d]/20"
+                        isSelected === true ? "bg-[#133382] text-white border-[#133382] shadow-lg" : "bg-[#f54a8d]/10 text-[#133382] border-[#f54a8d]/20"
                     )}>
                         #{index + 1}
                     </div>
@@ -110,7 +110,7 @@ export const SubjectReviewCard = React.memo(({
                     <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Hierarchy Root</h4>
-                            <div className="flex items-center gap-2 text-[#0B1B3D]">
+                            <div className="flex items-center gap-2 text-[#133382]">
                                 <Layers size={14} />
                                 <span className="text-sm font-black uppercase tracking-tight">{(subject.domain?.name != null && subject.domain.name !== '') ? (subject.domain.name as string) : 'Unlinked'}</span>
                             </div>

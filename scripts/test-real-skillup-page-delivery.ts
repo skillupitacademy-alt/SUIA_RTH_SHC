@@ -115,7 +115,7 @@ async function main() {
 
     if (payload.sidebar.theme) {
       assertEqual(payload.sidebar.theme.primary, '#f54a8d', 'theme.primary is correct');
-      assertEqual(payload.sidebar.theme.secondary, '#0B1B3D', 'theme.secondary is correct');
+      assertEqual(payload.sidebar.theme.secondary, '#133382', 'theme.secondary is correct');
     }
 
     if (payload.sidebar.subject) {

@@ -2,7 +2,7 @@
  * Lifecycle Metrics
  * 
  * Prototype Authority: ILS_UI_UX/index.html lines 70-94 + style.css lines 176-256
- * Section color: brand.secondaryColor (RTH: #124fd6, SkillUp: #0B1B3D)
+ * Section color: brand.secondaryColor (RTH: #124fd6, SkillUp: #133382)
  */
 
 'use client';
@@ -67,7 +67,7 @@ export function LifecycleMetrics({ activeBlockProgress, brand }: LifecycleMetric
       <table
         className="w-full overflow-hidden rounded-[14px]"
         style={{
-          backgroundColor: brand.secondaryColor || '#0B1B3D',
+          backgroundColor: brand.secondaryColor || '#133382',
           color: '#ffffff',
           borderCollapse: 'separate',
           borderSpacing: 0,

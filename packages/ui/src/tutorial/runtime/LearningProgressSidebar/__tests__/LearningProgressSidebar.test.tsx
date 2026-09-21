@@ -23,7 +23,7 @@ const mockUseILS = vi.mocked(ILSProviderModule.useILS);
 describe('LearningProgressSidebar', () => {
   const defaultBrand = {
     primaryColor: '#f54a8d',
-    secondaryColor: '#0B1B3D',
+    secondaryColor: '#133382',
   };
   
   const mockILSData: ILSContextValue = {

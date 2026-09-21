@@ -10,7 +10,7 @@ export interface BrandConfig {
   // Colors
   primaryColor: string; // RTH: #d03f00 | SkillUp: #f54a8d
   primaryColorDark: string; // RTH: #b63600 | SkillUp: #d63d7a
-  secondaryColor: string; // RTH: #124fd6 | SkillUp: #0B1B3D
+  secondaryColor: string; // RTH: #124fd6 | SkillUp: #133382
   primaryRgb: string; // For shadow rgba(), e.g. "208,63,0"
   accentBackground: string;
 
@@ -127,7 +127,7 @@ export const skillUpConfig: BrandConfig = {
 
   primaryColor: '#f54a8d',
   primaryColorDark: '#d63d7a',
-  secondaryColor: '#0B1B3D',
+  secondaryColor: '#133382',
   primaryRgb: '245,74,141',
   accentBackground: '#fff0f6',
 

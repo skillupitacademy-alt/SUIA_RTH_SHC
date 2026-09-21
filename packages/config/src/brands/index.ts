@@ -196,7 +196,7 @@ export const skillupBrand: SharedBrandDefinition = {
   brandName: 'SkillUp IT Academy',
   navLabel: 'SkillUp',
   primaryColor: '#f54a8d',
-  secondaryColor: '#0B1B3D',
+  secondaryColor: '#133382',
   tertiaryColor: '#0f766e',
   heroHeadingLine1: 'Skill Up.',
   heroHeadingLine2: 'Stand Out.',
@@ -215,7 +215,7 @@ export const skillupBrand: SharedBrandDefinition = {
   ],
   journeySteps: [
     { title: 'Learn', accent: '#f54a8d' },
-    { title: 'Practice', accent: '#0B1B3D' },
+    { title: 'Practice', accent: '#133382' },
     { title: 'Ask Mentor', accent: '#0f766e' },
     { title: 'Build Profile', accent: '#7c3aed' },
     { title: 'Get Placement Ready', accent: '#0891b2' },
