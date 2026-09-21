@@ -18,7 +18,7 @@ import type {
 } from '@quiz/types';
 import type { TutorialSectionRepository } from '../../repositories/tutorial-section.repository';
 import type { TutorialSection } from '../../schema/tutorial-sections';
-import type { BlockLearningState } from '../../schema/block-learning-state';
+import type { BlockLearningState } from '../../repositories/block-learning-state.repository';
 
 // Mock section repository for hierarchy validation
 class MockSectionRepository {
