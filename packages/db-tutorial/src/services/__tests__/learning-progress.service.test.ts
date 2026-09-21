@@ -18,6 +18,7 @@ import type {
 } from '@quiz/types';
 import type { TutorialSectionRepository } from '../../repositories/tutorial-section.repository';
 import type { TutorialSection } from '../../schema/tutorial-sections';
+import type { BlockLearningState } from '../../schema/block-learning-state';
 
 // Mock section repository for hierarchy validation
 class MockSectionRepository {
@@ -295,6 +296,8 @@ class MockNavigationProgressRepository implements ITutorialNavigationProgressRep
 
 // Mock BlockLearningStateRepository for Phase 4.3
 class MockBlockLearningStateRepository {
+  private states: BlockLearningState[] = [];
+
   withDb(): this {
     return this;
   }
@@ -303,9 +306,16 @@ class MockBlockLearningStateRepository {
     return null; // Simple mock - always returns null (no existing state)
   }
 
+  async findByNavigationNode(userId: string, navigationNodeId: string): Promise<BlockLearningState[]> {
+    // Return states matching userId and navigationNodeId
+    return this.states.filter(
+      (state) => state.userId === userId && state.navigationNodeId === navigationNodeId
+    );
+  }
+
   async upsert(data: any): Promise<any> {
     // Return a mock block learning state
-    return {
+    const mockState = {
       id: `block-${Date.now()}`,
       userId: data.userId,
       navigationNodeId: data.navigationNodeId,
@@ -323,6 +333,16 @@ class MockBlockLearningStateRepository {
       updatedAt: new Date(),
       deletedAt: null,
     };
+    
+    // Store in internal array for findByNavigationNode
+    this.states.push(mockState);
+    
+    return mockState;
+  }
+  
+  // Helper for tests to clear state between tests
+  clear(): void {
+    this.states = [];
   }
 }
 
@@ -336,6 +356,9 @@ describe('LearningProgressService', () => {
     mockRepo = new MockNavigationProgressRepository();
     mockSectionRepo = new MockSectionRepository();
     mockBlockRepo = new MockBlockLearningStateRepository();
+    
+    // Clear mock state between tests
+    mockBlockRepo.clear();
     
     // Register default valid hierarchy for tests
     mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1');
