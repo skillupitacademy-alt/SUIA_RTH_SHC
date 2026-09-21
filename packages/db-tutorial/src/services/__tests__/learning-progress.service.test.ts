@@ -713,9 +713,9 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
-            { id: 'block-C1', version: 'C1' } as any,
-            { id: 'block-S1', version: 'S1' } as any,
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['point 1'] } } as any,
           ],
         };
       }
@@ -745,9 +745,9 @@ describe('LearningProgressService', () => {
         section.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
-            { id: 'block-C1', version: 'C1' } as any,
-            { id: 'block-S1', version: 'S1' } as any,
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['point 1'] } } as any,
           ],
         };
       }
@@ -861,9 +861,9 @@ describe('LearningProgressService', () => {
         sectionA.content = {
           schemaVersion: 1,
           blocks: [
-            { id: 'block-D1', version: 'D1' } as any,
-            { id: 'block-C1', version: 'C1' } as any,
-            { id: 'block-S1', version: 'S1' } as any,
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['point 1'] } } as any,
           ],
         };
       }
@@ -1311,6 +1311,195 @@ describe('LearningProgressService', () => {
       expect(result.status).toBe('completed');
       expect(result.completedAt).toBeTruthy();
       expect(result.progressPercentage).toBe(100);
+    });
+  });
+
+  describe('Generic Progress Participation Contract (Phase 2B.13)', () => {
+    it('TEST: I1 included via generic progressRole contract', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Page with I1, D1, C1 (all instructional)
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-I1', type: 'introduction', version: 'I1' } as any,
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+          ],
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // Get progress - should resolve 3 required blocks (I1, D1, C1)
+      const progress = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      
+      expect(progress.totalBlockCount).toBe(3);
+      expect(progress.completedBlockCount).toBe(0);
+      expect(progress.progressPercentage).toBe(0);
+
+      // Complete I1
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-I1', 'introduction', 'I1');
+      const progress1 = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      expect(progress1.completedBlockCount).toBe(1);
+      expect(progress1.progressPercentage).toBe(33); // 1/3 = 33.33% → 33
+
+      // Complete D1
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-D1', 'definition', 'D1');
+      const progress2 = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      expect(progress2.completedBlockCount).toBe(2);
+      expect(progress2.progressPercentage).toBe(67); // 2/3 = 66.67% → 67
+
+      // Complete C1
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-C1', 'code', 'C1');
+      const progress3 = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      expect(progress3.completedBlockCount).toBe(3);
+      expect(progress3.progressPercentage).toBe(100);
+    });
+
+    it('TEST: S1 included via generic progressRole contract', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Page with I1, D1, C1, S1 (all instructional)
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-I1', type: 'introduction', version: 'I1' } as any,
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['Key point 1', 'Key point 2'] } } as any,
+          ],
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-1',
+        subtopicId: 'subtopic-1',
+      });
+
+      // Get progress - should resolve 4 required blocks
+      const progress = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      
+      expect(progress.totalBlockCount).toBe(4);
+      expect(progress.completedBlockCount).toBe(0);
+      expect(progress.progressPercentage).toBe(0);
+
+      // Complete all four
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-I1', 'introduction', 'I1');
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-D1', 'definition', 'D1');
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-C1', 'code', 'C1');
+      
+      const progress3 = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      expect(progress3.completedBlockCount).toBe(3);
+      expect(progress3.progressPercentage).toBe(75); // 3/4
+
+      // Complete S1
+      await service.recordBlockCompletion(identity, 'node-1', 'subtopic-1', null, 'block-S1', 'summary', 'S1');
+      const progress4 = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      expect(progress4.completedBlockCount).toBe(4);
+      expect(progress4.progressPercentage).toBe(100);
+    });
+
+    it('TEST: Generic resolver works without hard-coded version list', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Mix of different versions - all should work
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+            { id: 'block-I1', type: 'introduction', version: 'I1' } as any,
+            { id: 'block-S1', type: 'summary', version: 'S1', content: { points: ['point'] } } as any,
+          ],
+        };
+      }
+
+      const progress = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      
+      // All 4 instructional blocks should be required
+      expect(progress.totalBlockCount).toBe(4);
+    });
+
+    it('TEST: Structural blocks excluded automatically', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Page with instructional + structural blocks
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const section = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (section) {
+        section.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'heading-1', type: 'heading', content: { text: 'Section 1', level: 2 } } as any,
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'para-1', type: 'paragraph', content: { text: 'Some text' } } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+          ],
+        };
+      }
+
+      const progress = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      
+      // Only D1 and C1 should be required (heading and paragraph excluded)
+      expect(progress.totalBlockCount).toBe(2);
+    });
+
+    it('TEST: Dynamic page composition determines denominator', async () => {
+      const identity: AuthenticatedIdentity = { userId: 'user-1', brand: 'shared' };
+      
+      // Page A: 2 instructional blocks
+      mockSectionRepo.registerSection('subtopic-1', 'node-1', 'section-1', 'shared');
+      const sectionA = await mockSectionRepo.getTutorialByPageIdentity('subtopic-1', 'node-1', 'shared');
+      if (sectionA) {
+        sectionA.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+          ],
+        };
+      }
+
+      const progressA = await service.getNavigationProgress(identity, 'node-1', 'subtopic-1');
+      expect(progressA.totalBlockCount).toBe(2);
+
+      // Page B: 3 instructional blocks
+      mockSectionRepo.registerSection('subtopic-2', 'node-2', 'section-2', 'shared');
+      const sectionB = await mockSectionRepo.getTutorialByPageIdentity('subtopic-2', 'node-2', 'shared');
+      if (sectionB) {
+        sectionB.content = {
+          schemaVersion: 1,
+          blocks: [
+            { id: 'block-I1', type: 'introduction', version: 'I1' } as any,
+            { id: 'block-D1', type: 'definition', version: 'D1' } as any,
+            { id: 'block-C1', type: 'code', version: 'C1' } as any,
+          ],
+        };
+      }
+
+      await mockRepo.createProgress({
+        userId: 'user-1',
+        navigationNodeId: 'node-2',
+        subtopicId: 'subtopic-2',
+      });
+
+      const progressB = await service.getNavigationProgress(identity, 'node-2', 'subtopic-2');
+      expect(progressB.totalBlockCount).toBe(3);
     });
   });
 

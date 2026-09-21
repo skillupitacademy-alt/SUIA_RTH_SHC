@@ -243,17 +243,6 @@ export interface QuoteBlock extends BaseBlock {
 }
 
 /**
- * Summary block
- */
-export interface SummaryBlock extends BaseBlock {
-  type: 'summary';
-  content: {
-    title?: string;
-    points: string[];
-  };
-}
-
-/**
  * Diagram block (Mermaid or asset reference)
  */
 export interface DiagramBlock extends BaseBlock {
@@ -310,7 +299,7 @@ export type ContentBlock =
   | ComparisonBlock;
 
 // Import versioned blocks from content-blocks
-import type { CodeBlockVersioned, IntroductionBlock } from './content-blocks';
+import type { CodeBlockVersioned, IntroductionBlock, SummaryBlock } from './content-blocks';
 
 /**
  * Extended ContentBlock including versioned blocks

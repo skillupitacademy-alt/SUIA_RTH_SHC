@@ -17,6 +17,9 @@ import { PresentationConfigSchema } from './presentation.schema';
 // Base block ID schema
 export const BlockIdSchema = z.string().min(MIN_BLOCK_ID_LENGTH).max(MAX_BLOCK_ID_LENGTH);
 
+// Block progress role schema
+export const BlockProgressRoleSchema = z.enum(['instructional', 'structural', 'assessment', 'media']);
+
 // Code language schema
 export const CodeLanguageSchema = z.enum(SUPPORTED_CODE_LANGUAGES);
 
@@ -159,15 +162,31 @@ export const QuoteBlockSchema = z.object({
   presentation: PresentationConfigSchema,
 });
 
-export const SummaryBlockSchema = z.object({
+/**
+ * Summary S1 - Author Content Schema
+ */
+export const SummaryS1AuthorContentSchema = z.object({
+  title: z.string().max(200).optional(),
+  points: z.array(z.string().min(1)).min(1).max(20),
+}).strict();
+
+/**
+ * Summary S1 Block Schema
+ */
+export const SummaryS1BlockSchema = z.object({
   id: BlockIdSchema,
   type: z.literal('summary'),
-  content: z.object({
-    title: z.string().max(200).optional(),
-    points: z.array(z.string().min(1)).min(1).max(20),
-  }),
-  presentation: PresentationConfigSchema,
-});
+  version: z.literal('S1'),
+  content: SummaryS1AuthorContentSchema,
+  presentation: PresentationConfigSchema.optional(),
+  expectedTimeSec: z.number().int().positive().optional(),
+  progressRole: BlockProgressRoleSchema.default('instructional').optional(),
+}).strict();
+
+/**
+ * Summary Block Schema (Version Union)
+ */
+export const SummaryBlockSchema = SummaryS1BlockSchema;
 
 export const DiagramBlockSchema = z.object({
   id: BlockIdSchema,

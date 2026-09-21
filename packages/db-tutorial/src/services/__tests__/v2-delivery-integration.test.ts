@@ -351,6 +351,7 @@ describe('V2 Delivery Integration Test', () => {
       const summaryBlock: TutorialBlock = {
         id: randomUUID(),
         type: 'summary',
+        version: 'S1',
         content: {
           title: 'Key Points',
           points: [
@@ -359,7 +360,7 @@ describe('V2 Delivery Integration Test', () => {
             'Functions return values'
           ]
         }
-      };
+      } as any;
 
       const document: TutorialDocument = {
         schemaVersion: 1,

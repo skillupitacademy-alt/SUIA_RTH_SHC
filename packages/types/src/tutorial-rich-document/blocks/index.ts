@@ -27,6 +27,16 @@ export type {
   IntroductionIconKey,
 } from './content-blocks';
 
+// Export version-specific Summary block types from content-blocks
+export type {
+  SummaryS1AuthorContent,
+  SummaryS1Block,
+  SummaryBlock,
+} from './content-blocks';
+
+// Export BlockProgressRole type
+export type { BlockProgressRole } from './content-blocks';
+
 import type { ContentBlockExtended } from './content';
 import type { ContainerBlock } from './container';
 

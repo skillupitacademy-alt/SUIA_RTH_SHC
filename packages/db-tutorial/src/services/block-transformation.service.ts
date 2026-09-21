@@ -403,10 +403,11 @@ export class BlockTransformationService {
     // Extract key points from document
     const points = this.extractKeyPoints(document);
 
-    // Create canonical SummaryBlock
+    // Create canonical SummaryS1Block
     const summaryBlock: SummaryBlock = {
       id: crypto.randomUUID(),
       type: 'summary',
+      version: 'S1',
       content: {
         title: 'Summary',
         points,
