@@ -27,13 +27,17 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { resolveRequiredBlocks } from '../learning-progress.hierarchy-resolution';
 import type { TutorialSectionRepository } from '../../repositories/tutorial-section.repository';
 import type { AuthenticatedIdentity } from '../learning-progress.types';
-import type { 
-  TutorialDocument,
-  DefinitionD1Block,
-  CodeC1Block,
-  IntroductionI1Block,
-  SummaryS1Block
-} from '@quiz/types';
+import type { TutorialDocument } from '@quiz/types';
+import {
+  createD1Fixture,
+  createC1Fixture,
+  createI1Fixture,
+  createS1Fixture,
+  createAssessmentFixture,
+  createStructuralFixture,
+  createUnversionedFixture,
+  createTutorialDocument
+} from './test-fixtures';
 
 // Mock repository
 class MockTutorialSectionRepository implements Partial<TutorialSectionRepository> {
@@ -46,10 +50,10 @@ class MockTutorialSectionRepository implements Partial<TutorialSectionRepository
   async getTutorialByPageIdentity(
     subtopicId: string,
     navigationNodeId: string,
-    brand: string
-  ): Promise<{ id: string; content: TutorialDocument } | null> {
+    brandId?: string
+  ): Promise<any> {
     if (!this.mockContent) {
-      return null;
+      return undefined;
     }
     return {
       id: 'test-section-id',
@@ -72,26 +76,12 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
 
   describe('Single Versioned Block Types', () => {
     it('should include D1 block with default progressRole=instructional', async () => {
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Test Term',
-          definition: 'Test definition',
-          showAsCallout: true
-        }
-        // No explicit progressRole - should default to 'instructional'
-      };
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
 
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [d1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([d1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -103,26 +93,12 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
     });
 
     it('should include C1 block with default progressRole=instructional', async () => {
-      const c1Block: CodeC1Block = {
-        id: 'c1-block-1',
-        type: 'code',
-        version: 'C1',
-        authorContent: {
-          language: 'typescript',
-          code: 'const x = 1;',
-          showLineNumbers: true,
-          highlightedLines: []
-        }
-      };
+      const c1Block = createC1Fixture({ id: 'c1-block-1' });
 
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [c1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([c1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -134,25 +110,12 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
     });
 
     it('should include I1 block with default progressRole=instructional', async () => {
-      const i1Block: IntroductionI1Block = {
-        id: 'i1-block-1',
-        type: 'introduction',
-        version: 'I1',
-        authorContent: {
-          heading: 'Test Introduction',
-          description: 'Test description',
-          icon: 'book'
-        }
-      };
+      const i1Block = createI1Fixture({ id: 'i1-block-1' });
 
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [i1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([i1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -164,24 +127,12 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
     });
 
     it('should include S1 block with default progressRole=instructional', async () => {
-      const s1Block: SummaryS1Block = {
-        id: 's1-block-1',
-        type: 'summary',
-        version: 'S1',
-        authorContent: {
-          heading: 'Test Summary',
-          keyPoints: ['Point 1', 'Point 2']
-        }
-      };
+      const s1Block = createS1Fixture({ id: 's1-block-1' });
 
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [s1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([s1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -195,37 +146,13 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
 
   describe('Multiple Versioned Blocks', () => {
     it('should include D1+C1 blocks in document order', async () => {
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Test Term',
-          definition: 'Test definition',
-          showAsCallout: true
-        }
-      };
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
+      const c1Block = createC1Fixture({ id: 'c1-block-1' });
 
-      const c1Block: CodeC1Block = {
-        id: 'c1-block-1',
-        type: 'code',
-        version: 'C1',
-        authorContent: {
-          language: 'typescript',
-          code: 'const x = 1;',
-          showLineNumbers: true,
-          highlightedLines: []
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [d1Block, c1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([d1Block, c1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -238,48 +165,14 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
     });
 
     it('should include I1+D1+C1 blocks in document order', async () => {
-      const i1Block: IntroductionI1Block = {
-        id: 'i1-block-1',
-        type: 'introduction',
-        version: 'I1',
-        authorContent: {
-          heading: 'Introduction',
-          description: 'Description',
-          icon: 'book'
-        }
-      };
+      const i1Block = createI1Fixture({ id: 'i1-block-1' });
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
+      const c1Block = createC1Fixture({ id: 'c1-block-1' });
 
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      const c1Block: CodeC1Block = {
-        id: 'c1-block-1',
-        type: 'code',
-        version: 'C1',
-        authorContent: {
-          language: 'typescript',
-          code: 'const x = 1;',
-          showLineNumbers: true,
-          highlightedLines: []
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [i1Block, d1Block, c1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([i1Block, d1Block, c1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -292,59 +185,16 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
       ]);
     });
 
-    it('should include I1+D1+C1+S1 blocks in document order', async () => {
-      const i1Block: IntroductionI1Block = {
-        id: 'i1-block-1',
-        type: 'introduction',
-        version: 'I1',
-        authorContent: {
-          heading: 'Introduction',
-          description: 'Description',
-          icon: 'book'
-        }
-      };
+    it('should include I1+D1+C1+S1 blocks (full page composition)', async () => {
+      const i1Block = createI1Fixture({ id: 'i1-block-1' });
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
+      const c1Block = createC1Fixture({ id: 'c1-block-1' });
+      const s1Block = createS1Fixture({ id: 's1-block-1' });
 
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      const c1Block: CodeC1Block = {
-        id: 'c1-block-1',
-        type: 'code',
-        version: 'C1',
-        authorContent: {
-          language: 'typescript',
-          code: 'const x = 1;',
-          showLineNumbers: true,
-          highlightedLines: []
-        }
-      };
-
-      const s1Block: SummaryS1Block = {
-        id: 's1-block-1',
-        type: 'summary',
-        version: 'S1',
-        authorContent: {
-          heading: 'Summary',
-          keyPoints: ['Point 1']
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [i1Block, d1Block, c1Block, s1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([i1Block, d1Block, c1Block, s1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -360,93 +210,40 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
   });
 
   describe('Assessment Block Exclusion', () => {
-    it('should exclude block with progressRole=assessment', async () => {
-      const assessmentBlock = {
-        id: 'q1-block-1',
-        type: 'question',
-        version: 'Q1',
-        progressRole: 'assessment' as const,
-        authorContent: {
-          question: 'What is 2+2?',
-          answers: [
-            { id: 'a1', text: '3', correct: false },
-            { id: 'a2', text: '4', correct: true }
-          ]
-        }
-      };
+    it('should exclude assessment blocks (progressRole=assessment)', async () => {
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
+      const assessmentBlock = createAssessmentFixture('assessment-1');
 
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [d1Block, assessmentBlock]
-      });
+      mockRepo.setMockContent(createTutorialDocument([d1Block, assessmentBlock]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
-      // Should only include D1, not the assessment block
+      // Only D1 included, assessment excluded
       expect(result).toEqual([
         { blockId: 'd1-block-1', blockVersion: 'D1' }
       ]);
     });
 
-    it('should exclude multiple assessment blocks', async () => {
-      const q1Block = {
-        id: 'q1-block-1',
-        type: 'question',
-        version: 'Q1',
-        progressRole: 'assessment' as const,
-        authorContent: { question: 'Question 1' }
-      };
+    it('should handle page with multiple assessment blocks', async () => {
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
+      const q1Block = createAssessmentFixture('q1');
+      const ex1Block = createAssessmentFixture('ex1');
 
-      const ex1Block = {
-        id: 'ex1-block-1',
-        type: 'exercise',
-        version: 'EX1',
-        progressRole: 'assessment' as const,
-        authorContent: { title: 'Exercise 1' }
-      };
-
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [q1Block, d1Block, ex1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([q1Block, d1Block, ex1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
-      // Should only include D1, not the assessment blocks
+      // Only D1 included
       expect(result).toEqual([
         { blockId: 'd1-block-1', blockVersion: 'D1' }
       ]);
@@ -454,43 +251,20 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
   });
 
   describe('Structural Block Exclusion', () => {
-    it('should exclude block with progressRole=structural', async () => {
-      const structuralBlock = {
-        id: 'heading-1',
-        type: 'heading',
-        version: 'H1',
-        progressRole: 'structural' as const,
-        authorContent: {
-          text: 'Section Heading',
-          level: 2
-        }
-      };
+    it('should exclude structural blocks (progressRole=structural)', async () => {
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
+      const structuralBlock = createStructuralFixture('heading-1');
 
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [structuralBlock, d1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([structuralBlock, d1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
-      // Should only include D1, not the structural block
+      // Only D1 included, structural excluded
       expect(result).toEqual([
         { blockId: 'd1-block-1', blockVersion: 'D1' }
       ]);
@@ -498,39 +272,20 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
   });
 
   describe('Unversioned Block Exclusion', () => {
-    it('should exclude blocks without version field', async () => {
-      const unversionedBlock = {
-        id: 'paragraph-1',
-        type: 'paragraph',
-        // No version field
-        content: 'This is a paragraph'
-      };
+    it('should exclude unversioned blocks (no version field)', async () => {
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
+      const unversionedBlock = createUnversionedFixture('paragraph-1');
 
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [unversionedBlock, d1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([unversionedBlock, d1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
-      // Should only include D1, not the unversioned block
+      // Only D1 included, unversioned excluded
       expect(result).toEqual([
         { blockId: 'd1-block-1', blockVersion: 'D1' }
       ]);
@@ -538,207 +293,174 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
   });
 
   describe('Fail-Open Default Behavior', () => {
-    it('should default to instructional when progressRole is missing', async () => {
-      const blockWithoutProgressRole = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        // No progressRole field - should default to 'instructional'
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [blockWithoutProgressRole]
+    it('should default missing progressRole to instructional (backward compatibility)', async () => {
+      const blockWithoutProgressRole = createD1Fixture({ 
+        id: 'd1-legacy',
+        progressRole: undefined // Simulate legacy block without progressRole
       });
 
+      mockRepo.setMockContent(createTutorialDocument([blockWithoutProgressRole]));
+
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
-      // Should include the block because it defaults to 'instructional'
+      // Should be included with fail-open default
       expect(result).toEqual([
-        { blockId: 'd1-block-1', blockVersion: 'D1' }
+        { blockId: 'd1-legacy', blockVersion: 'D1' }
+      ]);
+    });
+  });
+
+  describe('Expected Time Separation', () => {
+    it('should include blocks with expectedTimeSec (metadata, not eligibility)', async () => {
+      const d1WithTime = createD1Fixture({ 
+        id: 'd1-with-time',
+        expectedTimeSec: 120
+      });
+
+      mockRepo.setMockContent(createTutorialDocument([d1WithTime]));
+
+      const result = await resolveRequiredBlocks(
+        mockRepo as any,
+        'subtopic-1',
+        'nav-node-1',
+        identity
+      );
+
+      expect(result).toEqual([
+        { blockId: 'd1-with-time', blockVersion: 'D1' }
       ]);
     });
 
-    it('should respect explicit progressRole=instructional', async () => {
-      const blockWithExplicitRole: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        progressRole: 'instructional', // Explicit
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [blockWithExplicitRole]
+    it('should include blocks without expectedTimeSec (field is optional)', async () => {
+      const d1WithoutTime = createD1Fixture({ 
+        id: 'd1-no-time',
+        expectedTimeSec: undefined
       });
 
+      mockRepo.setMockContent(createTutorialDocument([d1WithoutTime]));
+
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
       expect(result).toEqual([
-        { blockId: 'd1-block-1', blockVersion: 'D1' }
+        { blockId: 'd1-no-time', blockVersion: 'D1' }
+      ]);
+    });
+
+    it('should treat expectedTimeSec independently from progressRole', async () => {
+      const d1WithTime = createD1Fixture({ 
+        id: 'd1-with-time',
+        progressRole: 'instructional',
+        expectedTimeSec: 180
+      });
+      
+      const d1WithoutTime = createD1Fixture({ 
+        id: 'd1-no-time',
+        progressRole: 'instructional',
+        expectedTimeSec: undefined
+      });
+
+      mockRepo.setMockContent(createTutorialDocument([d1WithTime, d1WithoutTime]));
+
+      const result = await resolveRequiredBlocks(
+        mockRepo as any,
+        'subtopic-1',
+        'nav-node-1',
+        identity
+      );
+
+      // Both included regardless of expectedTimeSec
+      expect(result).toEqual([
+        { blockId: 'd1-with-time', blockVersion: 'D1' },
+        { blockId: 'd1-no-time', blockVersion: 'D1' }
       ]);
     });
   });
 
   describe('Future Instructional Block Extensibility', () => {
-    it('should include hypothetical O1 (observation) block', async () => {
+    it('should include hypothetical future instructional block (O1) without resolver changes', async () => {
+      const d1Block = createD1Fixture({ id: 'd1-block-1' });
+      
+      // Hypothetical future versioned block
       const o1Block = {
-        id: 'o1-block-1',
-        type: 'observation',
+        id: 'o1-future-1',
+        type: 'objective',
         version: 'O1',
-        progressRole: 'instructional' as const,
-        authorContent: {
-          title: 'Key Observation',
-          description: 'Important point to notice'
+        progressRole: 'instructional',
+        content: {
+          page: {
+            title: 'Learning Objective',
+            description: 'Future block type'
+          }
         }
       };
 
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [o1Block, d1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([o1Block as any, d1Block]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
-      // Should include both - demonstrates future extensibility
+      // Both should be included - resolver is generic
       expect(result).toEqual([
-        { blockId: 'o1-block-1', blockVersion: 'O1' },
+        { blockId: 'o1-future-1', blockVersion: 'O1' },
         { blockId: 'd1-block-1', blockVersion: 'D1' }
       ]);
     });
 
-    it('should include hypothetical T1 (tip) block with default progressRole', async () => {
+    it('should handle mixed current and future instructional blocks', async () => {
+      const d1Block = createD1Fixture({ id: 'd1-current' });
       const t1Block = {
-        id: 't1-block-1',
-        type: 'tip',
+        id: 't1-future',
+        type: 'task',
         version: 'T1',
-        // No progressRole - should default to 'instructional'
-        authorContent: {
-          title: 'Pro Tip',
-          content: 'Helpful advice'
-        }
+        progressRole: 'instructional',
+        content: { page: { title: 'Task Block' } }
       };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [t1Block]
-      });
-
-      const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
-        'subtopic-1',
-        'nav-node-1',
-        identity
-      );
-
-      // Should include - demonstrates fail-open default works for future blocks
-      expect(result).toEqual([
-        { blockId: 't1-block-1', blockVersion: 'T1' }
-      ]);
-    });
-
-    it('should work with mixed future and current instructional blocks', async () => {
       const r1Block = {
-        id: 'r1-block-1',
-        type: 'resource',
+        id: 'r1-future',
+        type: 'reference',
         version: 'R1',
-        progressRole: 'instructional' as const,
-        authorContent: {
-          title: 'Additional Resource',
-          url: 'https://example.com'
-        }
+        progressRole: 'instructional',
+        content: { page: { title: 'Reference Block' } }
       };
 
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      const t1Block = {
-        id: 't1-block-1',
-        type: 'tip',
-        version: 'T1',
-        progressRole: 'instructional' as const,
-        authorContent: {
-          title: 'Tip',
-          content: 'Content'
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [r1Block, d1Block, t1Block]
-      });
+      mockRepo.setMockContent(createTutorialDocument([d1Block, t1Block as any, r1Block as any]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
-      // Should include all instructional blocks regardless of version name
+      // All should be included
       expect(result).toEqual([
-        { blockId: 'r1-block-1', blockVersion: 'R1' },
-        { blockId: 'd1-block-1', blockVersion: 'D1' },
-        { blockId: 't1-block-1', blockVersion: 'T1' }
+        { blockId: 'd1-current', blockVersion: 'D1' },
+        { blockId: 't1-future', blockVersion: 'T1' },
+        { blockId: 'r1-future', blockVersion: 'R1' }
       ]);
     });
   });
 
   describe('Empty Content Cases', () => {
-    it('should return empty array when section not found', async () => {
+    it('should return empty array when section does not exist', async () => {
       mockRepo.setMockContent(null);
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -748,14 +470,10 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
     });
 
     it('should return empty array when blocks array is empty', async () => {
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: []
-      });
+      mockRepo.setMockContent(createTutorialDocument([]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -764,31 +482,14 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
       expect(result).toEqual([]);
     });
 
-    it('should return empty array when no instructional blocks present', async () => {
-      const assessmentBlock = {
-        id: 'q1-block-1',
-        type: 'question',
-        version: 'Q1',
-        progressRole: 'assessment' as const,
-        authorContent: { question: 'Question?' }
-      };
+    it('should return empty array when all blocks are non-instructional', async () => {
+      const assessmentBlock = createAssessmentFixture('q1');
+      const structuralBlock = createStructuralFixture('heading-1');
 
-      const structuralBlock = {
-        id: 'heading-1',
-        type: 'heading',
-        version: 'H1',
-        progressRole: 'structural' as const,
-        authorContent: { text: 'Heading', level: 2 }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [assessmentBlock, structuralBlock]
-      });
+      mockRepo.setMockContent(createTutorialDocument([assessmentBlock, structuralBlock]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
@@ -799,211 +500,30 @@ describe('resolveRequiredBlocks() - Direct Unit Tests', () => {
   });
 
   describe('Mixed Content Scenarios', () => {
-    it('should filter correctly with instructional + assessment + structural + unversioned', async () => {
-      const i1Block: IntroductionI1Block = {
-        id: 'i1-block-1',
-        type: 'introduction',
-        version: 'I1',
-        progressRole: 'instructional',
-        authorContent: {
-          heading: 'Introduction',
-          description: 'Description',
-          icon: 'book'
-        }
-      };
+    it('should handle page with instructional + assessment + structural blocks', async () => {
+      const i1Block = createI1Fixture({ id: 'i1-1' });
+      const headingBlock = createStructuralFixture('heading-1');
+      const d1Block = createD1Fixture({ id: 'd1-1' });
+      const quizBlock = createAssessmentFixture('quiz-1');
+      const c1Block = createC1Fixture({ id: 'c1-1' });
+      const paragraphBlock = createUnversionedFixture('para-1');
 
-      const structuralBlock = {
-        id: 'heading-1',
-        type: 'heading',
-        version: 'H1',
-        progressRole: 'structural' as const,
-        authorContent: { text: 'Heading', level: 2 }
-      };
-
-      const d1Block: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        // No progressRole - defaults to instructional
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      const unversionedBlock = {
-        id: 'paragraph-1',
-        type: 'paragraph',
-        content: 'Paragraph content'
-      };
-
-      const assessmentBlock = {
-        id: 'q1-block-1',
-        type: 'question',
-        version: 'Q1',
-        progressRole: 'assessment' as const,
-        authorContent: { question: 'Question?' }
-      };
-
-      const c1Block: CodeC1Block = {
-        id: 'c1-block-1',
-        type: 'code',
-        version: 'C1',
-        progressRole: 'instructional',
-        authorContent: {
-          language: 'typescript',
-          code: 'const x = 1;',
-          showLineNumbers: true,
-          highlightedLines: []
-        }
-      };
-
-      const s1Block: SummaryS1Block = {
-        id: 's1-block-1',
-        type: 'summary',
-        version: 'S1',
-        // No progressRole - defaults to instructional
-        authorContent: {
-          heading: 'Summary',
-          keyPoints: ['Point 1']
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [
-          i1Block,
-          structuralBlock,
-          d1Block,
-          unversionedBlock,
-          assessmentBlock,
-          c1Block,
-          s1Block
-        ]
-      });
+      mockRepo.setMockContent(createTutorialDocument([i1Block, headingBlock, d1Block, quizBlock, c1Block, paragraphBlock]));
 
       const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
+        mockRepo as any,
         'subtopic-1',
         'nav-node-1',
         identity
       );
 
-      // Should only include instructional blocks: I1, D1, C1, S1
-      // Should exclude: structural (H1), unversioned (paragraph), assessment (Q1)
+      // Only instructional blocks included
       expect(result).toEqual([
-        { blockId: 'i1-block-1', blockVersion: 'I1' },
-        { blockId: 'd1-block-1', blockVersion: 'D1' },
-        { blockId: 'c1-block-1', blockVersion: 'C1' },
-        { blockId: 's1-block-1', blockVersion: 'S1' }
-      ]);
-    });
-  });
-
-  describe('expectedTimeSec Independence', () => {
-    it('should include blocks with expectedTimeSec (analytics metadata)', async () => {
-      const d1BlockWithTime: DefinitionD1Block & { expectedTimeSec: number } = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        progressRole: 'instructional',
-        expectedTimeSec: 120, // Analytics metadata - does NOT affect eligibility
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [d1BlockWithTime]
-      });
-
-      const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
-        'subtopic-1',
-        'nav-node-1',
-        identity
-      );
-
-      expect(result).toEqual([
-        { blockId: 'd1-block-1', blockVersion: 'D1' }
-      ]);
-    });
-
-    it('should include blocks without expectedTimeSec (missing analytics)', async () => {
-      const d1BlockNoTime: DefinitionD1Block = {
-        id: 'd1-block-1',
-        type: 'definition',
-        version: 'D1',
-        progressRole: 'instructional',
-        // No expectedTimeSec - still eligible because progressRole=instructional
-        authorContent: {
-          term: 'Term',
-          definition: 'Definition',
-          showAsCallout: true
-        }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [d1BlockNoTime]
-      });
-
-      const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
-        'subtopic-1',
-        'nav-node-1',
-        identity
-      );
-
-      expect(result).toEqual([
-        { blockId: 'd1-block-1', blockVersion: 'D1' }
-      ]);
-    });
-
-    it('should treat expectedTimeSec as independent from progressRole determination', async () => {
-      const blockWithTime = {
-        id: 'block-1',
-        type: 'tip',
-        version: 'T1',
-        progressRole: 'instructional' as const,
-        expectedTimeSec: 60,
-        authorContent: { title: 'Tip', content: 'Content' }
-      };
-
-      const blockWithoutTime = {
-        id: 'block-2',
-        type: 'tip',
-        version: 'T1',
-        progressRole: 'instructional' as const,
-        // No expectedTimeSec
-        authorContent: { title: 'Tip 2', content: 'Content 2' }
-      };
-
-      mockRepo.setMockContent({
-        version: '1.0',
-        brand: 'rth',
-        blocks: [blockWithTime, blockWithoutTime]
-      });
-
-      const result = await resolveRequiredBlocks(
-        mockRepo as TutorialSectionRepository,
-        'subtopic-1',
-        'nav-node-1',
-        identity
-      );
-
-      // Both should be included - expectedTimeSec does NOT affect eligibility
-      expect(result).toEqual([
-        { blockId: 'block-1', blockVersion: 'T1' },
-        { blockId: 'block-2', blockVersion: 'T1' }
+        { blockId: 'i1-1', blockVersion: 'I1' },
+        { blockId: 'd1-1', blockVersion: 'D1' },
+        { blockId: 'c1-1', blockVersion: 'C1' }
       ]);
     });
   });
 });
+

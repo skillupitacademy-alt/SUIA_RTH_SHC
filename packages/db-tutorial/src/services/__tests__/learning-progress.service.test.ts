@@ -314,8 +314,8 @@ class MockBlockLearningStateRepository {
   }
 
   async upsert(data: any): Promise<any> {
-    // Return a mock block learning state
-    const mockState = {
+    // Return a mock block learning state matching production schema
+    const mockState: BlockLearningState = {
       id: `block-${Date.now()}`,
       userId: data.userId,
       navigationNodeId: data.navigationNodeId,
@@ -324,6 +324,7 @@ class MockBlockLearningStateRepository {
       visitCount: data.visitCount ?? 0,
       revisionCount: data.revisionCount ?? 0,
       activeTimeSec: data.activeTimeSec ?? 0,
+      lastSessionId: data.lastSessionId ?? null,  // Phase 4.6: Session tracking
       expectedTimeSec: data.expectedTimeSec ?? null,
       firstViewedAt: data.firstViewedAt ?? new Date(),
       lastViewedAt: data.lastViewedAt ?? new Date(),
