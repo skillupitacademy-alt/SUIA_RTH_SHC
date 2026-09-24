@@ -12,18 +12,18 @@
 
 import {
   type AuthenticatedIdentity,
-  InvalidNavigationHierarchyError,
-  LearningProgressService,
-  TutorialNavigationProgressRepository,
-  TutorialSectionRepository,
   BlockLearningStateRepository,
   BlockTelemetryEventRepository, // Phase D-2
+  InvalidNavigationHierarchyError,
   InvalidTimeUpdateError,
   LearningProgressError,
+  LearningProgressService,
   NavigationNodeNotFoundError,
+  TutorialNavigationProgressRepository,
+  TutorialSectionRepository,
 } from '@quiz/db-tutorial';
-import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@quiz/db-tutorial'; // Phase D-2: For transactions
+import { NextRequest, NextResponse } from 'next/server';
 
 import { validateRequest } from '@/middleware/internal-auth.middleware';
 import { recordBlockActiveTimeBodySchema } from '@/schemas/ils.schemas';

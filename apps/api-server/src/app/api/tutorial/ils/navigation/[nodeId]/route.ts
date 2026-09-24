@@ -11,14 +11,14 @@
 
 import {
   type AuthenticatedIdentity,
+  BlockLearningStateRepository,
+  BlockTelemetryEventRepository, // Phase D-2
   InvalidNavigationHierarchyError,
   LearningProgressService,
   NavigationNodeNotFoundError,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
   UnauthorizedProgressAccessError,
-  BlockLearningStateRepository,
-  BlockTelemetryEventRepository, // Phase D-2
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 

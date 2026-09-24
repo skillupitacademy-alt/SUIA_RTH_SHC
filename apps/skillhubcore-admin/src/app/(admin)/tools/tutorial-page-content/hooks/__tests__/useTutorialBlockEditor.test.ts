@@ -9,7 +9,7 @@ import type { BlockInstance } from '../../document/documentTransformation';
 
 // Mock the C1 converter
 vi.mock('../../blocks/code/C1/codeC1.converter', () => ({
-  toCanonicalCodeC1: vi.fn((input) => ({
+  toCanonicalCodeC1: vi.fn(() => ({
     content: {
       snippets: [],
       steps: [],
@@ -167,7 +167,7 @@ describe('useTutorialBlockEditor', () => {
         expect(newBlock?.expectedTimeSec).toBe(240);
 
         // Payload should NOT contain expectedTimeSec
-        const payload = newBlock?.payload as any;
+        const payload = newBlock?.payload as unknown as Record<string, unknown>;
         expect(payload.expectedTimeSec).toBeUndefined();
       }
     });

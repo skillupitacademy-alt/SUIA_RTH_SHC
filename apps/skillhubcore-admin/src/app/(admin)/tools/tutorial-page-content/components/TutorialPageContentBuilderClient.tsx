@@ -1,15 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-import type {
-  TutorialDocument,
-  TutorialBlock,
-} from '@quiz/types';
-
-import {
-  type BlockInstance,
-} from '../document/documentTransformation';
 import { TutorialComposerHeader } from './TutorialComposerHeader';
 import { TutorialHierarchySelector } from './TutorialHierarchySelector';
 import { TutorialNavigationNodeSelector } from './TutorialNavigationNodeSelector'; // Phase 1

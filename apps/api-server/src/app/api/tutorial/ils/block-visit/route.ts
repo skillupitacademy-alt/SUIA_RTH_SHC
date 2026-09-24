@@ -10,15 +10,14 @@
 
 import {
   type AuthenticatedIdentity,
+  BlockLearningStateRepository,
+  BlockTelemetryEventRepository, // Phase D-2
   InvalidNavigationHierarchyError,
+  LearningProgressError,
   LearningProgressService,
   NavigationNodeNotFoundError,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
-  BlockLearningStateRepository,
-  BlockTelemetryEventRepository, // Phase D-2
-  InvalidTimeUpdateError,
-  LearningProgressError,
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -82,8 +81,8 @@ export async function POST(request: NextRequest) {
       // console.log('[ILS-DEBUG][API][block-visit] Request body parsed', {
       //   bodyKeys: body ? Object.keys(body as any) : []
       // });
-    } catch (error) {
-      // console.error('[ILS-DEBUG][API][block-visit][ERROR] Invalid JSON:', error);
+    } catch {
+      // console.error('[ILS-DEBUG][API][block-visit][ERROR] Invalid JSON');
       return NextResponse.json(
         { error: 'Invalid JSON payload' },
         { status: 400 }

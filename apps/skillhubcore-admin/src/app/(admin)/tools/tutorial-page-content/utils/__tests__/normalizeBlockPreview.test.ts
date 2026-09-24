@@ -12,6 +12,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { normalizeBlockPreview } from '../normalizeBlockPreview';
+import type { CodeC1AuthorContent } from '@quiz/types';
 
 describe('normalizeBlockPreview', () => {
   describe('C1 Code Block Canonicalization', () => {
@@ -48,7 +49,7 @@ describe('normalizeBlockPreview', () => {
       expect(result.memoryModelWarning).toBe('');
       
       // Verify it's canonical C1 structure
-      const canonical = result.content as any;
+      const canonical = result.content as CodeC1AuthorContent;
       expect(canonical.page).toBeDefined();
       expect(canonical.page.type).toBe('code');
       expect(canonical.page.title).toBe('Variables in Python');
@@ -86,7 +87,7 @@ describe('normalizeBlockPreview', () => {
 
       // Should successfully canonicalize (not fallback)
       expect(result.content).toBeDefined();
-      const canonical = result.content as any;
+      const canonical = result.content as CodeC1AuthorContent;
       expect(canonical.page).toBeDefined();
       expect(canonical.page.type).toBe('code');
       expect(canonical.page.memoryModel).toBeDefined();
@@ -126,7 +127,7 @@ describe('normalizeBlockPreview', () => {
 
       // Should successfully canonicalize
       expect(result.content).toBeDefined();
-      const canonical = result.content as any;
+      const canonical = result.content as CodeC1AuthorContent;
       expect(canonical.page.type).toBe('code');
       expect(canonical.page.memoryModel).toBeUndefined();
       expect(result.memoryModelWarning).toBe('');
@@ -230,7 +231,7 @@ describe('normalizeBlockPreview', () => {
         someField: 'someValue',
       };
 
-      const result = normalizeBlockPreview(unknownPayload, 'unknown' as any, 'V1');
+      const result = normalizeBlockPreview(unknownPayload, 'unknown' as 'definition', 'V1');
 
       expect(result.content).toBe(unknownPayload);
       expect(result.memoryModelWarning).toBe('');
@@ -335,7 +336,7 @@ describe('normalizeBlockPreview', () => {
       expect(result1.memoryModelWarning).toBe(result2.memoryModelWarning);
       
       // Verify successful canonicalization (not fallback)
-      const canonical1 = result1.content as any;
+      const canonical1 = result1.content as CodeC1AuthorContent;
       expect(canonical1.page.type).toBe('code');
       expect(canonical1.page.title).toBe('Variable Declaration');
     });

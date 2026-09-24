@@ -193,8 +193,8 @@ Do not include markdown code fences.`
               <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
                 <li><strong>9 required sections:</strong> Hero, Learning Goal, Topic, Where Fit, Solution, Where Used, Roadmap, Why Matters, Key Takeaway.</li>
                 <li><strong>Controlled icons:</strong> Use ONLY approved Lucide icons (book-open, target, code, rocket, globe, etc.). Do NOT invent icon names.</li>
-                <li><strong>Highlight cards:</strong> Mark 1-2 cards with <code>"highlight": true</code> in flowCards and useCases for visual emphasis.</li>
-                <li><strong>Motto format:</strong> Exactly 4 short lines forming inspirational statement (e.g., "Know / Your Path. / Learn with / Purpose.").</li>
+                <li><strong>Highlight cards:</strong> Mark 1-2 cards with <code>&quot;highlight&quot;: true</code> in flowCards and useCases for visual emphasis.</li>
+                <li><strong>Motto format:</strong> Exactly 4 short lines forming inspirational statement (e.g., &quot;Know / Your Path. / Learn with / Purpose.&quot;).</li>
                 <li><strong>Runnable code:</strong> Solution code must be complete and executable, not pseudo-code.</li>
                 <li><strong>Strict JSON only:</strong> Return pure JSON matching the I1 schema with no markdown code blocks or system metadata.</li>
               </ul>

@@ -11,7 +11,6 @@ import type { TutorialBlock } from '@quiz/types/tutorial-rich-document';
 import {
   tutorialBlocksToInstances,
   toTutorialBlock,
-  type BlockInstance,
 } from '../documentTransformation';
 
 describe('documentTransformation: expectedTimeSec Flow', () => {
@@ -217,8 +216,8 @@ describe('documentTransformation: expectedTimeSec Flow', () => {
       expect(instance.expectedTimeSec).toBe(180);
 
       // Verify it's NOT in payload
-      expect((instance.payload as any).expectedTimeSec).toBeUndefined();
-      expect((instance.payload as any).page?.expectedTimeSec).toBeUndefined();
+      expect((instance.payload as unknown as Record<string, unknown>).expectedTimeSec).toBeUndefined();
+      expect(((instance.payload as unknown as Record<string, unknown>).page as Record<string, unknown> | undefined)?.expectedTimeSec).toBeUndefined();
     });
 
     it('should NOT have expectedTimeSec in C1 payload.page', () => {
@@ -252,8 +251,8 @@ describe('documentTransformation: expectedTimeSec Flow', () => {
       expect(instance.expectedTimeSec).toBe(240);
 
       // Verify it's NOT in payload
-      expect((instance.payload as any).expectedTimeSec).toBeUndefined();
-      expect((instance.payload as any).page?.expectedTimeSec).toBeUndefined();
+      expect((instance.payload as unknown as Record<string, unknown>).expectedTimeSec).toBeUndefined();
+      expect(((instance.payload as unknown as Record<string, unknown>).page as Record<string, unknown> | undefined)?.expectedTimeSec).toBeUndefined();
     });
   });
 });

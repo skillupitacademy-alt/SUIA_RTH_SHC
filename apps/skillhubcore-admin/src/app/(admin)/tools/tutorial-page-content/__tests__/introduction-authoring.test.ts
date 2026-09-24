@@ -319,7 +319,7 @@ Functions are reusable code blocks.`;
       const tutorialBlock = toTutorialBlock(blockInstance);
       
       expect(tutorialBlock.expectedTimeSec).toBe(300);
-      expect((tutorialBlock.content as any).expectedTimeSec).toBeUndefined();
+      expect((tutorialBlock.content as Record<string, unknown>).expectedTimeSec).toBeUndefined();
     });
   });
 

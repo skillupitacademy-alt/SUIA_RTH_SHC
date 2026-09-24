@@ -125,7 +125,7 @@ describe('buildPublishedTutorialUrl', () => {
 
     it('should throw error when segment is null/undefined (via type coercion)', () => {
       expect(() =>
-        buildPublishedTutorialUrl('domain', 'subject', 'topic', 'subtopic', null as any)
+        buildPublishedTutorialUrl('domain', 'subject', 'topic', 'subtopic', null as unknown as string)
       ).toThrow('Incomplete tutorial navigation identity.');
     });
   });
