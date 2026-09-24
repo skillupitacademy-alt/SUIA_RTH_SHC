@@ -469,6 +469,7 @@ describe('V2 Delivery Integration Test', () => {
         {
           id: randomUUID(),
           type: 'summary',
+          version: 'S1',
           content: {
             title: 'Summary',
             points: ['Point 1', 'Point 2']

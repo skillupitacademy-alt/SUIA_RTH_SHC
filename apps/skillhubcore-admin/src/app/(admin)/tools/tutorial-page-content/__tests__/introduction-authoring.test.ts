@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { getBlockTypes, getBlockType, getVersions } from '../registry';
 import { parseSource } from '../document/sourceParser';
 import { toTutorialBlock, tutorialBlocksToInstances, extractBlockTitle } from '../document/documentTransformation';
-import type { TutorialIntroductionPayload } from '@quiz/types';
+import type { TutorialIntroductionPayload, TutorialBlock } from '@quiz/types';
 
 describe('Introduction Block Authoring Pipeline', () => {
   describe('Stage 1: Dropdown Registration', () => {
@@ -282,7 +282,9 @@ Functions are reusable code blocks.`;
       const tutorialBlock = toTutorialBlock(blockInstance);
       
       expect(tutorialBlock.type).toBe('introduction');
-      expect(tutorialBlock.version).toBe('I1');
+      if (tutorialBlock.type === 'introduction') {
+        expect(tutorialBlock.version).toBe('I1');
+      }
       expect(tutorialBlock.id).toBe('test-id');
       expect(tutorialBlock.expectedTimeSec).toBe(300);
     });
@@ -323,7 +325,7 @@ Functions are reusable code blocks.`;
 
   describe('Stage 7: Document Transformation - tutorialBlocksToInstances', () => {
     it('converts TutorialBlock to BlockInstance', () => {
-      const tutorialBlocks = [{
+      const tutorialBlocks: TutorialBlock[] = [{
         id: 'test-id',
         type: 'introduction' as const,
         version: 'I1',
@@ -344,7 +346,7 @@ Functions are reusable code blocks.`;
           },
         },
         expectedTimeSec: 300,
-      }];
+      }] as TutorialBlock[];
 
       const instances = tutorialBlocksToInstances(tutorialBlocks);
       

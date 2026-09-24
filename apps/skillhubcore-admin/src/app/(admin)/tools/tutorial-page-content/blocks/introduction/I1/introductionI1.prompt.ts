@@ -24,7 +24,7 @@ export function getIntroductionI1Prompt(
 Return ONLY a valid JSON object matching this exact schema:
 
 {
-  "expectedTimeSec": 420,
+  "expectedTimeSec": <AI-estimated-value>,
   "page": {
     "badge": "Introduction Block – ${context.topicName} Edition",
     "title": "${context.navigationNodeName}",
@@ -170,12 +170,30 @@ Return ONLY a valid JSON object matching this exact schema:
   }
 }
 
+# expectedTimeSec Estimation for I1 Blocks
+
+After generating the complete introduction content above, estimate expectedTimeSec by considering:
+
+- Hero + learning goal (~30-60 sec)
+- Topic overview (~30-60 sec)
+- Where fit flow cards you generated (~60-90 sec based on card count)
+- Solution code review (~60-120 sec based on code length)
+- Use cases you created (~60-90 sec based on case count)
+- Roadmap steps you defined (~90-150 sec based on step count)
+- Benefits you listed (~60-90 sec based on benefit count)
+- Key takeaway (~20-30 sec)
+
+I1 blocks are comprehensive roadmap-style introductions with substantial visual content.
+Replace <AI-estimated-value> with your assessment as a positive integer (seconds).
+See the GLOBAL BLOCK METADATA section for complete estimation guidelines.
+
 # IMPORTANT: expectedTimeSec METADATA
 
 - expectedTimeSec is BLOCK METADATA at ROOT level
 - It MUST NOT appear inside page
-- Use a whole positive number representing estimated completion time in seconds
-- Example: 420 means 7 minutes (typical for comprehensive introduction)
+- It MUST be a whole positive integer representing estimated learner time in seconds
+- The value MUST be independently estimated from the actual generated content
+- Do NOT copy a template/example value
 
 # ICON REGISTRY (CONTROLLED VOCABULARY)
 
