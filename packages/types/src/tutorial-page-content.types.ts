@@ -1,5 +1,5 @@
 import type { BrandTutorialTheme, TutorialNavigationTree, TutorialSidebarBrandId } from './tutorial-sidebar.types';
-import type { TutorialBlock } from './tutorial-rich-document/blocks';
+import type { TutorialBlock, IntroductionIconKey } from './tutorial-rich-document/blocks';
 
 export type TutorialPageContentType = 'definition' | 'code' | 'summary' | 'introduction';
 export type TutorialContentSourceFormat = 'json' | 'markdown';
@@ -130,26 +130,6 @@ export interface TutorialSummaryPayload {
     text: string;
   };
 }
-
-/**
- * Introduction I1 icon type - matches IntroductionIconKeySchema
- */
-export type IntroductionIconKey =
-  | 'book-open'
-  | 'target'
-  | 'lightbulb'
-  | 'route'
-  | 'code'
-  | 'layers'
-  | 'check-circle'
-  | 'arrow-right'
-  | 'graduation-cap'
-  | 'rocket'
-  | 'wrench'
-  | 'globe'
-  | 'zap'
-  | 'star'
-  | 'box';
 
 export interface TutorialIntroductionPayload {
   page: {

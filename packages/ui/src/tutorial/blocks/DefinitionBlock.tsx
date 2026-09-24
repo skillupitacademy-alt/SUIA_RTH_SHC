@@ -9,7 +9,8 @@ import type { IDefinitionBlock, BlockComponentProps, DomainTheme } from '../type
 export function DefinitionBlock({ 
   block, 
   className = '',
-  theme
+  theme,
+  runtimeContext
 }: BlockComponentProps<IDefinitionBlock>) {
   // Explicit version check
   if (!block.version) {
@@ -21,7 +22,7 @@ export function DefinitionBlock({
   // Version routing
   switch (block.version) {
     case 'D1':
-      return <DefinitionD1View block={block} theme={theme} className={className} />;
+      return <DefinitionD1View block={block} theme={theme} className={className} runtimeContext={runtimeContext} />;
     default:
       throw new Error(
         `[DefinitionBlock] Unsupported Definition version: ${block.version}`
@@ -45,13 +46,16 @@ export function DefinitionBlock({
 function DefinitionD1View({ 
   block, 
   theme,
-  className = '' 
+  className = '',
+  runtimeContext
 }: { 
   block: IDefinitionBlock;
   theme?: DomainTheme;
   className?: string;
+  runtimeContext?: BlockComponentProps<IDefinitionBlock>['runtimeContext'];
 }) {
   const page = block.content.page;
+  
   const characteristics = Array.isArray(page.characteristics) ? page.characteristics : [];
   const explanation = Array.isArray(page.explanation) ? page.explanation : [];
 

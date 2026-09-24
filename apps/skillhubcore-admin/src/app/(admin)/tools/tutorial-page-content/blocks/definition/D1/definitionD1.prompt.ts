@@ -24,7 +24,7 @@ export function getDefinitionD1Prompt(
 Return ONLY a valid JSON object matching this exact schema:
 
 {
-  "expectedTimeSec": 180,
+  "expectedTimeSec": <AI-estimated-value>,
   "page": {
     "type": "definition",
     "category": "${context.topicName}",
@@ -55,12 +55,18 @@ Return ONLY a valid JSON object matching this exact schema:
   }
 }
 
-# IMPORTANT: expectedTimeSec STRUCTURE
+# expectedTimeSec Estimation for D1 Blocks
 
-- expectedTimeSec is a COMPOSER/BLOCK METADATA FIELD at ROOT level
-- It MUST NOT appear inside page
-- It should be a whole positive number representing estimated completion time in seconds
-- Example: 180 means 3 minutes
+After generating the complete definition content above, estimate expectedTimeSec by considering:
+
+- Intro + definition reading time (~20-40 sec)
+- Explanation paragraphs you generated (~30-60 sec per paragraph)
+- Code example review time (~30-60 sec)
+- Number of characteristics you created (~15-30 sec per characteristic)
+- Takeaway reading (~10-20 sec)
+
+Replace <AI-estimated-value> with your assessment as a positive integer (seconds).
+See the GLOBAL BLOCK METADATA section for complete estimation guidelines.
 
 # KEY CHARACTERISTICS RULES
 

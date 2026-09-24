@@ -162,6 +162,7 @@ export const IntroductionI1BlockSchema = z.object({
   content: IntroductionI1AuthorContentSchema,
   presentation: PresentationConfigSchema,
   expectedTimeSec: z.number().int().positive().optional(),
+  progressRole: z.enum(['instructional', 'structural', 'assessment', 'media']).default('instructional').optional(),
 });
 
 /**

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   BookOpen,
   Check,
@@ -18,19 +18,50 @@ import type { TutorialNavigationNode, TutorialNavigationTree, TutorialNodeStatus
 interface TutorialLeftSidebarProps {
   tree: TutorialNavigationTree;
   activeUrl?: string;
+  activeNavigationNodeId?: string; // Phase 2A: Canonical page identity
   completedUrls?: Set<string>;
   onNavigate?: (url: string, node: TutorialNavigationNode) => void;
+  
+  // Phase 2A: Current page progress from ILS (optional - for future R/Y/G mapping)
+  // When undefined, LSNB uses existing completion-based status display
+  currentPageProgress?: {
+    progressPercentage: number;
+    status: 'not_started' | 'in_progress' | 'completed';
+  } | null;
 }
 
-function collectInitialExpanded(nodes: TutorialNavigationNode[], activeUrl?: string) {
+/**
+ * Phase 2A: Collapsed-by-default navigation
+ * 
+ * BEHAVIOR:
+ * - Collapsed by default (no nodes expanded initially)
+ * - Only expands ancestor path of current page
+ * - Ignores node.expanded flag (server-driven expansion disabled)
+ * - Current page remains discoverable
+ * 
+ * IDENTITY:
+ * - Prefers activeNavigationNodeId (canonical) over activeUrl
+ * - Falls back to URL matching for backward compatibility
+ */
+function collectInitialExpanded(
+  nodes: TutorialNavigationNode[], 
+  activeUrl?: string,
+  activeNavigationNodeId?: string
+) {
   const expanded = new Set<string>();
 
   function walk(node: TutorialNavigationNode): boolean {
     const children = node.children ?? [];
     const hasActiveChild = children.some((child) => walk(child));
-    const isActive = Boolean(activeUrl && node.url === activeUrl);
+    
+    // Check if this node is the current page
+    const isActiveById = Boolean(activeNavigationNodeId && node.id === activeNavigationNodeId);
+    const isActiveByUrl = Boolean(activeUrl && node.url === activeUrl);
+    const isActive = isActiveById || isActiveByUrl;
 
-    if (node.expanded || hasActiveChild) {
+    // Phase 2A: ONLY expand if this node contains the active page
+    // DO NOT expand based on node.expanded flag
+    if (hasActiveChild) {
       expanded.add(node.id);
     }
 
@@ -43,6 +74,30 @@ function collectInitialExpanded(nodes: TutorialNavigationNode[], activeUrl?: str
 
 function clampProgress(value: number) {
   return Math.max(0, Math.min(100, Math.round(Number.isFinite(value) ? value : 0)));
+}
+
+/**
+ * Phase 2B: Map canonical ILS/RSSB progress percentage to R/Y/G color
+ * 
+ * THRESHOLDS:
+ * - null/undefined → null (no color override, use existing status)
+ * - 0-49% → 'red'
+ * - 50-99% → 'yellow'
+ * - 100% → 'green'
+ * 
+ * USAGE:
+ * - ONLY for current page (identified by activeNavigationNodeId)
+ * - Consumes existing canonical progress from ILS/RSSB
+ * - Does NOT calculate completion itself
+ * - revisionCount does NOT affect color
+ */
+function getPageProgressColor(
+  progressPercentage: number | null | undefined
+): 'red' | 'yellow' | 'green' | null {
+  if (progressPercentage == null) return null;
+  if (progressPercentage >= 100) return 'green';
+  if (progressPercentage >= 50) return 'yellow';
+  return 'red';
 }
 
 function isNodeCompleted(node: TutorialNavigationNode, completedUrls?: Set<string>) {
@@ -103,7 +158,56 @@ function NodeIcon({ icon, level }: { icon?: string; level: number }) {
   return <Folder className={className} />;
 }
 
-function StatusMark({ status, colors }: { status: TutorialNodeStatus; colors: TutorialNavigationTree['theme'] }) {
+/**
+ * Phase 2B: R/Y/G visual indicator for page-level completion
+ * 
+ * BEHAVIOR:
+ * - When progressColor is provided: render R/Y/G filled circle (current page only)
+ * - When progressColor is null: use existing status-based display (all other pages)
+ * 
+ * R/Y/G MAPPING (current page only):
+ * - 'red': 0-49% progress
+ * - 'yellow': 50-99% progress
+ * - 'green': 100% progress
+ * 
+ * PRESERVATION:
+ * - Non-current pages continue using existing status marks
+ * - Selected state (activeBackground/border) remains independent of R/Y/G
+ */
+function StatusMark({ 
+  status, 
+  colors, 
+  progressColor 
+}: { 
+  status: TutorialNodeStatus; 
+  colors: TutorialNavigationTree['theme'];
+  progressColor?: 'red' | 'yellow' | 'green' | null;
+}) {
+  // Phase 2B: R/Y/G override for current page
+  if (progressColor) {
+    const colorMap = {
+      red: '#ef4444',     // Tailwind red-500
+      yellow: '#eab308',  // Tailwind yellow-500
+      green: '#22c55e',   // Tailwind green-500
+    };
+    
+    const labelMap = {
+      red: 'Progress: 0-49%',
+      yellow: 'Progress: 50-99%',
+      green: 'Progress: 100%',
+    };
+    
+    return (
+      <span 
+        className="h-[18px] w-[18px] rounded-full" 
+        style={{ backgroundColor: colorMap[progressColor] }} 
+        title={labelMap[progressColor]} 
+        aria-label={labelMap[progressColor]} 
+      />
+    );
+  }
+  
+  // Existing status-based display (all other pages)
   if (status === 'completed') {
     return (
       <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full text-white" style={{ backgroundColor: colors.completed }} title="Completed" aria-label="Completed">
@@ -123,27 +227,47 @@ function TreeNode({
   node,
   level,
   activeUrl,
+  activeNavigationNodeId,
   completedUrls,
   expanded,
   setExpanded,
   colors,
   onNavigate,
+  currentPageProgress,
 }: {
   node: TutorialNavigationNode;
   level: number;
   activeUrl?: string;
+  activeNavigationNodeId?: string;
   completedUrls?: Set<string>;
   expanded: Set<string>;
   setExpanded: (next: Set<string>) => void;
   colors: TutorialNavigationTree['theme'];
   onNavigate?: (url: string, node: TutorialNavigationNode) => void;
+  currentPageProgress?: {
+    progressPercentage: number;
+    status: 'not_started' | 'in_progress' | 'completed';
+  } | null;
 }) {
   const children = node.children ?? [];
   const hasChildren = children.length > 0;
   const isExpanded = expanded.has(node.id);
-  const isActive = Boolean(activeUrl && node.url === activeUrl);
+  
+  // Phase 2A: Prefer canonical navigationNodeId over URL matching
+  const isActiveById = Boolean(activeNavigationNodeId && node.id === activeNavigationNodeId);
+  const isActiveByUrl = Boolean(activeUrl && node.url === activeUrl);
+  const isActive = isActiveById || isActiveByUrl;
+  
   const effectiveStatus = getEffectiveStatus(node, activeUrl, completedUrls);
   const childIndent = Math.max(10, 22 - Math.max(0, level - 1) * 3);
+  
+  // Phase 2B: R/Y/G color for current page only
+  // - Only applies when this node is the current page (isActive)
+  // - Consumes canonical ILS/RSSB progress from currentPageProgress
+  // - null/undefined → use existing status display
+  const progressColor = isActive && currentPageProgress 
+    ? getPageProgressColor(currentPageProgress.progressPercentage) 
+    : null;
 
   const toggle = () => {
     if (!hasChildren) {
@@ -201,7 +325,7 @@ function TreeNode({
         </span>
 
         <span className="flex h-7 w-7 items-center justify-center">
-          <StatusMark status={effectiveStatus} colors={colors} />
+          <StatusMark status={effectiveStatus} colors={colors} progressColor={progressColor} />
         </span>
       </button>
 
@@ -211,7 +335,18 @@ function TreeNode({
           {children.map((child) => (
             <div key={child.id} className="relative min-w-0">
               <span className="absolute top-[25px] h-px w-2.5 bg-[#d5dfeb]" style={{ left: -4 }} aria-hidden="true" />
-              <TreeNode node={child} level={level + 1} activeUrl={activeUrl} completedUrls={completedUrls} expanded={expanded} setExpanded={setExpanded} colors={colors} onNavigate={onNavigate} />
+              <TreeNode 
+                node={child} 
+                level={level + 1} 
+                activeUrl={activeUrl} 
+                activeNavigationNodeId={activeNavigationNodeId}
+                completedUrls={completedUrls} 
+                expanded={expanded} 
+                setExpanded={setExpanded} 
+                colors={colors} 
+                onNavigate={onNavigate}
+                currentPageProgress={currentPageProgress}
+              />
             </div>
           ))}
         </div>
@@ -220,9 +355,34 @@ function TreeNode({
   );
 }
 
-export function TutorialLeftSidebar({ tree, activeUrl, completedUrls, onNavigate }: TutorialLeftSidebarProps) {
-  const [expanded, setExpanded] = useState(() => collectInitialExpanded(tree.topics, activeUrl));
+export function TutorialLeftSidebar({ tree, activeUrl, activeNavigationNodeId, completedUrls, onNavigate, currentPageProgress }: TutorialLeftSidebarProps) {
+  const [expanded, setExpanded] = useState(() => collectInitialExpanded(tree.topics, activeUrl, activeNavigationNodeId));
   const progress = clampProgress(tree.progress.percentage);
+  
+  // Phase 2A Remediation: Make ancestor expansion reactive to navigation changes
+  // When the current page changes, ensure its ancestor path becomes visible
+  // Preserve user-controlled manual expansion for unrelated branches
+  useEffect(() => {
+    const requiredExpanded = collectInitialExpanded(tree.topics, activeUrl, activeNavigationNodeId);
+    
+    setExpanded((currentExpanded) => {
+      // Merge: keep existing user expansions + ensure required ancestors are visible
+      const merged = new Set(currentExpanded);
+      
+      // Add all required ancestors for the current page
+      requiredExpanded.forEach((nodeId) => {
+        merged.add(nodeId);
+      });
+      
+      // Return merged set (preserves manual expansions + adds required ancestors)
+      return merged;
+    });
+  }, [activeNavigationNodeId, activeUrl, tree.topics]);
+  
+  // Phase 2B: R/Y/G visualization implemented
+  // Maps currentPageProgress.progressPercentage to color for current page only
+  // 0-49% → RED, 50-99% → YELLOW, 100% → GREEN
+  // Non-current pages continue using existing completion-based status
 
   return (
     <aside
@@ -274,7 +434,19 @@ export function TutorialLeftSidebar({ tree, activeUrl, completedUrls, onNavigate
         <div className="tutorial-left-sidebar-scroll h-full overflow-y-auto overflow-x-hidden overscroll-contain">
           <div className="min-w-0 pb-[80px] pt-1" style={{ paddingBottom: '80px' }}>
             {tree.topics.map((node) => (
-              <TreeNode key={node.id} node={node} level={0} activeUrl={activeUrl} completedUrls={completedUrls} expanded={expanded} setExpanded={setExpanded} colors={tree.theme} onNavigate={onNavigate} />
+              <TreeNode 
+                key={node.id} 
+                node={node} 
+                level={0} 
+                activeUrl={activeUrl} 
+                activeNavigationNodeId={activeNavigationNodeId}
+                completedUrls={completedUrls} 
+                expanded={expanded} 
+                setExpanded={setExpanded} 
+                colors={tree.theme} 
+                onNavigate={onNavigate}
+                currentPageProgress={currentPageProgress}
+              />
             ))}
           </div>
         </div>

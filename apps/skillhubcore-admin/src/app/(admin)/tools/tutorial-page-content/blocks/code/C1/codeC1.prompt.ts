@@ -30,7 +30,7 @@ Return ONLY valid JSON. Do NOT include markdown code fences.
 # REQUIRED STRUCTURE
 
 {
-  "expectedTimeSec": 180,
+  "expectedTimeSec": <AI-estimated-value>,
   "page": {
     "type": "CODE + EXPLANATION",
     "title": "Example: [Descriptive Title]",
@@ -142,12 +142,19 @@ Return ONLY valid JSON. Do NOT include markdown code fences.
   }
 }
 
-# IMPORTANT: expectedTimeSec METADATA
+# expectedTimeSec Estimation for C1 Blocks
 
-- expectedTimeSec is BLOCK METADATA at ROOT level
-- It MUST NOT appear inside page, code, or any other section
-- Use a whole positive number representing estimated completion time in seconds
-- Example: 180 means 3 minutes
+After generating the complete code block content above, estimate expectedTimeSec by considering:
+
+- Introduction reading (~20-30 sec)
+- Code comprehension based on lines and complexity you generated (~60-180 sec)
+- Step-by-step explanation review (~20-40 sec per step you created)
+- Memory model study time (~60-120 sec)
+- Output analysis (~15-30 sec)
+- Takeaway + tip reading (~30-60 sec)
+
+Replace <AI-estimated-value> with your assessment as a positive integer (seconds).
+See the GLOBAL BLOCK METADATA section for complete estimation guidelines.
 
 # MEMORY MODEL REQUIREMENTS
 

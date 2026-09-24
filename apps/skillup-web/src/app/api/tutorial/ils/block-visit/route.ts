@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
       //   hasBody: !!body,
       //   bodyKeys: body ? Object.keys(body as any) : []
       // });
-    } catch (error) {
-      // console.error('[ILS-DEBUG][BFF][block-visit][ERROR] Invalid JSON', error);
+    } catch {
+      // console.error('[ILS-DEBUG][BFF][block-visit][ERROR] Invalid JSON');
       return NextResponse.json(
         { error: 'Invalid JSON payload' },
         { status: 400 }

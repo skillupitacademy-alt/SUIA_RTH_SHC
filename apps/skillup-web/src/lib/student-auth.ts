@@ -114,9 +114,8 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
       };
     }
 
-    const skillupAccessCheck = hasSkillupAccess(payload);
     // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Brand check', {
-    //   hasSkillupAccess: skillupAccessCheck
+    //   hasSkillupAccess: hasSkillupAccess(payload)
     // });
     
     if (hasSkillupAccess(payload) === false) {
@@ -127,9 +126,8 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
       };
     }
 
-    const roleCheck = roles.some((role) => ALLOWED_ROLES.has(role));
     // console.log('[ILS-DEBUG][AUTH][requireStudentAuth] Role check', {
-    //   hasAllowedRole: roleCheck,
+    //   hasAllowedRole: roles.some((role) => ALLOWED_ROLES.has(role)),
     //   roles
     // });
     
@@ -143,8 +141,8 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
 
     // console.log('[ILS-DEBUG][AUTH][requireStudentAuth][SUCCESS]', { userId });
     return { ok: true, userId, payload };
-  } catch (error) {
-    // console.error('[ILS-DEBUG][AUTH][requireStudentAuth][ERROR] Token verification failed:', error);
+  } catch {
+    // console.error('[ILS-DEBUG][AUTH][requireStudentAuth][ERROR] Token verification failed');
     return {
       ok: false,
       response: NextResponse.json({ error: 'Authentication required' }, { status: 401 }),

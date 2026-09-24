@@ -13,7 +13,7 @@ import { Code2, Copy, Lightbulb, MessageCircle, Monitor, Star, Terminal, Check, 
 import type { BlockComponentProps } from '../types';
 import type { CodeC1Block as CodeC1BlockType } from '@quiz/types';
 
-export function CodeC1Block({ block, theme: providedTheme }: BlockComponentProps<CodeC1BlockType>) {
+export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: BlockComponentProps<CodeC1BlockType>) {
   const page = block.content.page;
 
   // Fallback theme for when theme is not provided

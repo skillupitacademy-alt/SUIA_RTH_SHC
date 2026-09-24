@@ -262,6 +262,7 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
         return {
           id: instance.id,
           type: 'summary',
+          version: 'S1',
           content: {
             title: summaryPayload.page?.title,
             points: points.length > 0 ? points : ['Summary content'],

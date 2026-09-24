@@ -9,11 +9,11 @@
 
 import {
   type AuthenticatedIdentity,
+  BlockLearningStateRepository,
+  BlockTelemetryEventRepository, // Phase D-2
   LearningProgressService,
   TutorialNavigationProgressRepository,
   TutorialSectionRepository,
-  BlockLearningStateRepository,
-  BlockTelemetryEventRepository, // Phase D-2
 } from '@quiz/db-tutorial';
 import { NextRequest, NextResponse } from 'next/server';
 

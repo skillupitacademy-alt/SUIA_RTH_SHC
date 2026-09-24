@@ -27,6 +27,7 @@ export * from './registry';
 export * from './registries/definition-versions';
 export * from './registries/code-versions';
 export * from './validation';
+export * from './validation/expectedTimeSec.validator';
 
 // Re-export key types for convenience
 export type {

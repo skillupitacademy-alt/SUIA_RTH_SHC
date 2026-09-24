@@ -1179,7 +1179,7 @@ describe('BlockSuggestionService', () => {
             case 'quote':
               return { id, type: 'quote' as const, content: { text: 'Quote' } };
             case 'summary':
-              return { id, type: 'summary' as const, content: { points: ['Point 1'] } };
+              return { id, type: 'summary' as const, version: 'S1', content: { points: ['Point 1'] } } as any;
             case 'diagram':
               return { id, type: 'diagram' as const, content: { diagramType: 'mermaid', diagramData: 'graph TD;' } };
             case 'comparison':
@@ -1252,7 +1252,7 @@ describe('BlockSuggestionService', () => {
           { id: 'e1', type: 'example', content: { explanation: 'For example, you can use map()' } },
           
           // Existing summary - should NOT generate another summary suggestion
-          { id: 's1', type: 'summary', content: { points: ['Key point 1', 'Key point 2'] } },
+          { id: 's1', type: 'summary', version: 'S1', content: { points: ['Key point 1', 'Key point 2'] } } as any,
           
           // Existing diagram - should NOT generate another diagram suggestion
           { id: 'dg1', type: 'diagram', content: { diagramType: 'mermaid', diagramData: 'graph TD;' } },

@@ -26,8 +26,15 @@ import type { TutorialSectionRepository } from '../repositories/tutorial-section
  * 
  * ARCHITECTURE:
  * - Required blocks come from TutorialDocument.blocks[]
- * - Extracts blocks with version='D1'|'C1'|'S1' (required interactive blocks)
+ * - Uses generic progressRole contract (instructional | structural | assessment | media)
+ * - Versioned instructional blocks (D1, C1, I1, S1, etc.) default to progressRole='instructional'
  * - Returns blockId + blockVersion pairs for progress calculation
+ * 
+ * GENERIC CONTRACT:
+ * - Does NOT hard-code version names (D1, C1, I1, S1)
+ * - Works for future instructional UBRC versions automatically
+ * - Assessment blocks (Q, EX, T) excluded via progressRole='assessment'
+ * - Structural blocks (heading, paragraph) excluded (no version or progressRole='structural')
  * 
  * CRITICAL: Uses authenticated brand - caller CANNOT override
  * 
@@ -56,21 +63,26 @@ export async function resolveRequiredBlocks(
 
   const requiredBlocks: Array<{ blockId: string; blockVersion: string }> = [];
 
-  // Extract blocks with required versions (D1, C1, S1)
+  // Extract blocks with instructional progress role
   for (const block of section.content.blocks) {
     // Check if block has version field (versioned blocks)
-    const versionedBlock = block as { id: string; version?: string };
+    const versionedBlock = block as { 
+      id: string; 
+      version?: string;
+      progressRole?: 'instructional' | 'structural' | 'assessment' | 'media';
+    };
     
-    if (
-      versionedBlock.version &&
-      (versionedBlock.version === 'D1' ||
-        versionedBlock.version === 'C1' ||
-        versionedBlock.version === 'S1')
-    ) {
-      requiredBlocks.push({
-        blockId: versionedBlock.id,
-        blockVersion: versionedBlock.version,
-      });
+    if (versionedBlock.version) {
+      // Determine progress role (default to 'instructional' for versioned blocks)
+      const progressRole = versionedBlock.progressRole ?? 'instructional';
+      
+      // Include only instructional blocks in page progress
+      if (progressRole === 'instructional') {
+        requiredBlocks.push({
+          blockId: versionedBlock.id,
+          blockVersion: versionedBlock.version,
+        });
+      }
     }
   }
 

@@ -1,10 +1,10 @@
 ﻿'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 import type { TutorialPagePayload } from '@quiz/types';
 import type { TutorialRuntimeContext } from '../runtime/TutorialRuntimeContext';
-import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider, BlockTelemetryProvider, LearningProgressSidebar } from '@quiz/ui';
+import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider, BlockTelemetryProvider, LearningProgressSidebar, useILS } from '@quiz/ui';
 import { TutorialCodeContent } from './TutorialCodeContent';
 import { TutorialDefinitionContent } from './TutorialDefinitionContent';
 import { TutorialSummaryContent } from './TutorialSummaryContent';
@@ -12,6 +12,31 @@ import { TutorialLeftSidebar } from './TutorialLeftSidebar';
 import { TutorialFooterNavigation, TutorialHeader } from './TutorialPageChrome';
 import { trackTutorialEvent } from '../runtime/tutorialTrackingService';
 import { getOrCreateTutorialLearningSessionId } from '../runtime/tutorialSessionService';
+
+/**
+ * Phase 2A: ILS Progress Bridge
+ * 
+ * Internal component that consumes ILS context and passes progress to parent.
+ * This allows LSNB (outside ILS context) to receive current page progress.
+ */
+function ILSProgressBridge({ onProgressUpdate }: { 
+  onProgressUpdate: (progress: { progressPercentage: number; status: 'not_started' | 'in_progress' | 'completed' } | null) => void 
+}) {
+  const { overallProgress } = useILS();
+  
+  useEffect(() => {
+    if (overallProgress) {
+      onProgressUpdate({
+        progressPercentage: overallProgress.progressPercentage,
+        status: overallProgress.status as 'not_started' | 'in_progress' | 'completed',
+      });
+    } else {
+      onProgressUpdate(null);
+    }
+  }, [overallProgress, onProgressUpdate]);
+  
+  return null; // This component only bridges data, renders nothing
+}
 
 interface TutorialPageShellProps {
   payload: TutorialPagePayload;
@@ -26,6 +51,20 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
 
   // Phase 3C-A: Ref to canonical tutorial block container for ActiveBlockProvider
   const contentContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Phase 2A: Store ILS progress for LSNB (passed from inner component)
+  const [currentPageProgress, setCurrentPageProgress] = useState<{
+    progressPercentage: number;
+    status: 'not_started' | 'in_progress' | 'completed';
+  } | null>(null);
+  
+  // Phase 2A: Stable callback for ILS progress updates
+  const handleProgressUpdate = useCallback((progress: {
+    progressPercentage: number;
+    status: 'not_started' | 'in_progress' | 'completed';
+  } | null) => {
+    setCurrentPageProgress(progress);
+  }, []);
 
   /**
    * ILS Step 1: Tutorial Learning Session initialization.
@@ -169,6 +208,8 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
           <TutorialLeftSidebar
             tree={payload.sidebar}
             activeUrl={payload.activeUrl}
+            activeNavigationNodeId={runtimeContext.navigationNodeId} // Phase 2A: Canonical page identity
+            currentPageProgress={currentPageProgress} // Phase 2A: ILS-derived current page progress
             // Phase 2.5: Pass actual completed URLs from learner progress
             completedUrls={completedUrls}
             // Phase 2.5: onNavigate can be used for client-side tracking
@@ -186,6 +227,9 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             subtopicId={runtimeContext.hierarchy.subtopicId}
             sectionId={runtimeContext.sectionId}
           >
+            {/* Phase 2A: Bridge ILS progress to LSNB (outside ILS context) */}
+            <ILSProgressBridge onProgressUpdate={handleProgressUpdate} />
+            
             <BlockTelemetryProvider
               navigationNodeId={runtimeContext.navigationNodeId}
               subtopicId={runtimeContext.hierarchy.subtopicId}

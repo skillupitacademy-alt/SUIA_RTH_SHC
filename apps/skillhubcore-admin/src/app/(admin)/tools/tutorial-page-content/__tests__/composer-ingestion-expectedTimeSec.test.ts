@@ -54,9 +54,8 @@ describe('Composer AI JSON Ingestion - expectedTimeSec', () => {
         },
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const expectedTimeSec = typeof (aiJson as any).expectedTimeSec === 'number'
-        ? (aiJson as any).expectedTimeSec
+      const expectedTimeSec = typeof (aiJson as Record<string, unknown>).expectedTimeSec === 'number'
+        ? (aiJson as Record<string, unknown>).expectedTimeSec as number
         : undefined;
 
       expect(expectedTimeSec).toBeUndefined();
@@ -64,7 +63,7 @@ describe('Composer AI JSON Ingestion - expectedTimeSec', () => {
 
     it('ignores invalid expectedTimeSec types', () => {
       const aiJson = {
-        expectedTimeSec: 'not-a-number' as any,
+        expectedTimeSec: 'not-a-number' as unknown,
         page: {
           type: 'definition' as const,
           category: 'Test',
@@ -152,9 +151,8 @@ describe('Composer AI JSON Ingestion - expectedTimeSec', () => {
         },
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const expectedTimeSec = typeof (aiJson as any).expectedTimeSec === 'number'
-        ? (aiJson as any).expectedTimeSec
+      const expectedTimeSec = typeof (aiJson as Record<string, unknown>).expectedTimeSec === 'number'
+        ? (aiJson as Record<string, unknown>).expectedTimeSec as number
         : undefined;
 
       expect(expectedTimeSec).toBeUndefined();
@@ -200,15 +198,14 @@ describe('Composer AI JSON Ingestion - expectedTimeSec', () => {
       };
 
       // Simulate Composer ingestion with normalization
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rawParsed = aiJson as any;
+      const rawParsed = aiJson as Record<string, unknown>;
       const expectedTimeSec = typeof rawParsed.expectedTimeSec === 'number'
-        ? rawParsed.expectedTimeSec
+        ? rawParsed.expectedTimeSec as number
         : undefined;
       
       // Normalize payload: remove expectedTimeSec (metadata at BlockInstance level only)
       const normalizedPayload = { ...aiJson };
-      delete (normalizedPayload as any).expectedTimeSec;
+      delete (normalizedPayload as Record<string, unknown>).expectedTimeSec;
       
       const payload = normalizedPayload;
 
@@ -233,7 +230,7 @@ describe('Composer AI JSON Ingestion - expectedTimeSec', () => {
       expect(blockInstance.payload).toHaveProperty('page');
       
       // 3. expectedTimeSec NOT duplicated inside payload
-      expect((blockInstance.payload as any).expectedTimeSec).toBeUndefined();
+      expect((blockInstance.payload as Record<string, unknown>).expectedTimeSec).toBeUndefined();
       expect(blockInstance.payload.page).not.toHaveProperty('expectedTimeSec');
     });
 
@@ -257,15 +254,14 @@ describe('Composer AI JSON Ingestion - expectedTimeSec', () => {
       };
 
       // Simulate Composer C1 ingestion path
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rawParsed = aiJson as any;
+      const rawParsed = aiJson as Record<string, unknown>;
       const expectedTimeSec = typeof rawParsed.expectedTimeSec === 'number'
-        ? rawParsed.expectedTimeSec
+        ? rawParsed.expectedTimeSec as number
         : undefined;
       
       // Normalize payload before C1 canonicalization
       const normalizedPayload = { ...aiJson };
-      delete (normalizedPayload as any).expectedTimeSec;
+      delete (normalizedPayload as Record<string, unknown>).expectedTimeSec;
       
       // After C1 canonicalization, payload structure changes but expectedTimeSec remains separate
       const blockInstance = {
@@ -284,7 +280,7 @@ describe('Composer AI JSON Ingestion - expectedTimeSec', () => {
       // Verify C1 preserves the contract
       expect(blockInstance.expectedTimeSec).toBe(240);
       expect(blockInstance.payload).toHaveProperty('page');
-      expect((blockInstance.payload as any).expectedTimeSec).toBeUndefined();
+      expect((blockInstance.payload as Record<string, unknown>).expectedTimeSec).toBeUndefined();
       expect(blockInstance.payload.page).not.toHaveProperty('expectedTimeSec');
     });
   });

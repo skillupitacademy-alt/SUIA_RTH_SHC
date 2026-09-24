@@ -9,6 +9,29 @@
 import { PresentationConfig } from '../presentation';
 
 /**
+ * Learning Progress Role
+ * 
+ * Determines how a block participates in progress tracking:
+ * 
+ * - 'instructional': Counted toward page R/Y/G progress (D1, C1, I1, S1, O1, V1, etc.)
+ * - 'structural': Content organization, no completion semantics (heading, paragraph, list)
+ * - 'assessment': Has completion but tracked separately from page progress (Q, EX, T, etc.)
+ * - 'media': Passive content, no interaction required (image, video, diagram)
+ * 
+ * DEFAULT BEHAVIOR:
+ * - Versioned blocks (D1, C1, I1, S1, etc.): Default to 'instructional'
+ * - Base content blocks: Default to 'structural'
+ * - Quiz/exercise blocks: Explicitly 'assessment'
+ * - Media blocks: Default to 'media'
+ */
+export type BlockProgressRole = 
+  | 'instructional'
+  | 'structural'
+  | 'assessment'
+  | 'media'
+  ;
+
+/**
  * Base structure for all blocks
  */
 interface BaseBlock {
@@ -31,6 +54,23 @@ interface BaseBlock {
    * expectedTimeSec: 180  // 3 minutes
    */
   expectedTimeSec?: number;
+  
+  /**
+   * Learning progress role
+   * 
+   * Determines how this block participates in progress tracking.
+   * See BlockProgressRole documentation for semantic meanings.
+   * 
+   * DEFAULT RULES:
+   * - Versioned instructional blocks (D1, C1, I1, S1): Default 'instructional' (can be omitted)
+   * - Structural blocks (heading, paragraph, list): Default 'structural' (can be omitted)
+   * - Assessment blocks (Q, EX, T): Must explicitly declare 'assessment'
+   * - Media blocks (image, video): Default 'media' (can be omitted)
+   * 
+   * @example
+   * progressRole: 'instructional'
+   */
+  progressRole?: BlockProgressRole;
 }
 
 /**
@@ -301,14 +341,33 @@ export interface QuoteBlock extends BaseBlock {
 
 /**
  * 11. Summary Block (bullet point summary)
+ * 
+ * Summary S1 - Author Content
  */
-export interface SummaryBlock extends BaseBlock {
-  type: 'summary';
-  content: {
-    title?: string;
-    points: string[];
-  };
+export interface SummaryS1AuthorContent {
+  title?: string;
+  points: string[];
 }
+
+/**
+ * Summary S1 Block
+ * Canonical block with version envelope
+ */
+export interface SummaryS1Block extends BaseBlock {
+  type: 'summary';
+  version: 'S1';
+  content: SummaryS1AuthorContent;
+}
+
+/**
+ * Summary Block (Version Union)
+ * All Summary block versions
+ */
+export type SummaryBlock = SummaryS1Block;
+// Future versions:
+// | SummaryS2Block
+// | SummaryS3Block
+// ...
 
 /**
  * 12. Introduction Block - Icon Registry

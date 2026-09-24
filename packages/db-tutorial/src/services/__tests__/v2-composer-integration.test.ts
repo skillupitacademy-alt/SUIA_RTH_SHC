@@ -232,6 +232,7 @@ describe('V2 Composer Integration Test', () => {
       const summaryBlock: TutorialBlock = {
         id: randomUUID(),
         type: 'summary',
+        version: 'S1',
         content: {
           title: 'Key Points',
           points: [
@@ -364,6 +365,7 @@ describe('V2 Composer Integration Test', () => {
         {
           id: summaryFinalId,
           type: 'summary',
+          version: 'S1',
           content: {
             title: 'Summary',
             points: ['Point 1', 'Point 2']
@@ -519,11 +521,12 @@ describe('V2 Composer Integration Test', () => {
       const summaryBlock: TutorialBlock = {
         id: summaryAppendedId,
         type: 'summary',
+        version: 'S1',
         content: {
           title: 'Summary',
           points: ['Point 1', 'Point 2']
         }
-      };
+      } as any;
 
       const updated = await composerService.appendBlockToTutorial(
         tutorial.id,
