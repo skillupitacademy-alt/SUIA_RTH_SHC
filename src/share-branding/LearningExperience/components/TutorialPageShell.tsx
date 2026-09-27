@@ -59,6 +59,13 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
     [payload.content.blocks]
   );
   
+  // Phase 2B.18 Step 1.3: Feature flag for automatic completion rollout
+  // Production default: false (safe rollout)
+  // E2E environment: true (certification)
+  // Controlled via NEXT_PUBLIC_ENABLE_AUTO_COMPLETION environment variable
+  const automaticCompletionEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_AUTO_COMPLETION === 'true';
+  
   // Phase 2A: Store ILS progress for LSNB (passed from inner component)
   const [currentPageProgress, setCurrentPageProgress] = useState<{
     progressPercentage: number;
@@ -256,7 +263,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
              * - Step 1.3: Wiring + E2E certification (this integration)
              */}
             <InstructionalBlockCompletionOrchestrator
-              enabled={false}
+              enabled={automaticCompletionEnabled}
               navigationNodeId={runtimeContext.navigationNodeId}
               subtopicId={runtimeContext.hierarchy.subtopicId}
               sectionId={runtimeContext.sectionId}
@@ -269,7 +276,10 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
                 sessionId={tutorialSessionId}
               >
                 {/* CENTER: Tutorial Content (full width, RSSB overlays when open) */}
-                <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
+                <div 
+                  className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white"
+                  data-auto-completion-enabled={automaticCompletionEnabled ? 'true' : 'false'}
+                >
                   <div ref={contentContainerRef} className="w-full space-y-6">
                     {hasBlocks ? (
                       // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer

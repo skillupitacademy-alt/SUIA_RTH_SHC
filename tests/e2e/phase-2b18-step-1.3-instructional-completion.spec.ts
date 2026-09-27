@@ -43,18 +43,18 @@ import { test, expect, type Page } from '@playwright/test';
 // CONFIGURATION
 // ============================================================
 
-const BASE_URL = 'http://localhost:3009';
-const STUDENT_EMAIL = 'student@skillupitacademy.com';
-const STUDENT_PASSWORD = 'testing';
+const BASE_URL = process.env.SUIA_BASE_URL ?? 'http://skillup.localhost:3009';
+const STUDENT_EMAIL = process.env.SUIA_EMAIL ?? 'student@skillupitacademy.com';
+const STUDENT_PASSWORD = process.env.SUIA_PASSWORD ?? 'testing';
 
-// Tutorial page with instructional blocks
-const DOMAIN = 'programming';
-const SUBJECT = 'java';
-const TOPIC = 'java-basics';
-const SUBTOPIC = 'whatisjava';
-const NAVIGATION_NODE_ID = 'what-is-java';
+// Real published tutorial page with instructional blocks
+const DOMAIN = 'full-stack-development';
+const SUBJECT = 'backend-development';
+const TOPIC = 'python';
+const SUBTOPIC_SLUG = 'complete-python-5b1cfc3d';
+const NAVIGATION_NODE_ID = 'whatispython';
 
-const TUTORIAL_URL = `/tutorial-v2/${DOMAIN}/${SUBJECT}/${TOPIC}/${SUBTOPIC}/${NAVIGATION_NODE_ID}`;
+const TUTORIAL_URL = `/tutorial-v2/${DOMAIN}/${SUBJECT}/${TOPIC}/${SUBTOPIC_SLUG}/${NAVIGATION_NODE_ID}`;
 
 // ============================================================
 // HELPER FUNCTIONS
@@ -64,9 +64,10 @@ const TUTORIAL_URL = `/tutorial-v2/${DOMAIN}/${SUBJECT}/${TOPIC}/${SUBTOPIC}/${N
  * Authenticate as learner
  */
 async function loginAsLearner(page: Page) {
-  await page.goto(`${BASE_URL}/login`);
-  await page.fill('input[type="email"]', STUDENT_EMAIL);
-  await page.fill('input[type="password"]', STUDENT_PASSWORD);
+  await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
+  await page.waitForSelector('input#email', { state: 'visible', timeout: 15000 });
+  await page.fill('input#email', STUDENT_EMAIL);
+  await page.fill('input#password', STUDENT_PASSWORD);
   await page.click('button[type="submit"]');
   await page.waitForURL(/\/student/, { timeout: 10000 });
 }
