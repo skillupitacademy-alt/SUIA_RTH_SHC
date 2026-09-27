@@ -21,6 +21,7 @@
 import type {
   TutorialTrackingEvent,
   TutorialProgressState,
+  TrackingDeliveryResult,
 } from './TutorialRuntimeContext';
 import { readTutorialLearningSessionId } from './tutorialSessionService';
 
@@ -51,9 +52,13 @@ function mapBlockTypeForBackend(blockType: string): string {
  * Track a learner activity event
  * 
  * IMPORTANT:
- * - This is async but failures are swallowed (logged only)
- * - Caller should not await or check result
- * - Use fire-and-forget pattern to avoid blocking UI
+ * - This is async but failures do NOT throw into caller
+ * - Returns delivery result so caller can observe success/failure
+ * - Use for distinguishing delivered vs failed completion requests
+ * 
+ * FAILURE ISOLATION PRESERVED:
+ * - Tracking failures do not break learner content rendering
+ * - Caller receives explicit result, not exception
  * 
  * PHASE 5 RSSB:
  * - Now calls ILS API with complete block identity (blockId + blockType + blockVersion)
@@ -62,7 +67,7 @@ function mapBlockTypeForBackend(blockType: string): string {
  */
 export async function trackTutorialEvent(
   event: TutorialTrackingEvent
-): Promise<void> {
+): Promise<TrackingDeliveryResult> {
   try {
     // ILS Phase 2: page_view -> VisitEvent persistence
     if (event.eventType === 'page_view') {
@@ -71,7 +76,7 @@ export async function trackTutorialEvent(
       
       if (!learningSessionId) {
         console.warn('[Tutorial Tracking] page_view: No learning session available (SSR or storage unavailable)');
-        return;
+        return { delivered: false, reason: 'validation' };
       }
       
       // Validate required Visit fields
@@ -80,7 +85,7 @@ export async function trackTutorialEvent(
           navigationNodeId: event.navigationNodeId,
           subtopicId: event.subtopicId,
         });
-        return;
+        return { delivered: false, reason: 'validation' };
       }
       
       // Call Visit API with learning session ID in BOTH channels:
@@ -103,7 +108,7 @@ export async function trackTutorialEvent(
       
       if (!response.ok) {
         console.warn(`[Tutorial Tracking] Visit API returned ${response.status}`);
-        return;
+        return { delivered: false, reason: 'http' };
       }
       
       console.log('[Tutorial Tracking] page_view persisted:', {
@@ -111,7 +116,7 @@ export async function trackTutorialEvent(
         subtopicId: event.subtopicId,
         sessionId: learningSessionId,
       });
-      return;
+      return { delivered: true };
     }
 
     // Only track block_complete events via API
@@ -122,7 +127,7 @@ export async function trackTutorialEvent(
         learnerId: event.learnerId,
         navigationNodeId: event.navigationNodeId,
       });
-      return;
+      return { delivered: true }; // Non-persisted events considered "delivered"
     }
 
     // Validate required fields for persistence
@@ -134,14 +139,20 @@ export async function trackTutorialEvent(
         subtopicId: event.subtopicId,
         navigationNodeId: event.navigationNodeId,
       });
-      return;
+      return { delivered: false, reason: 'validation' };
     }
 
     // Map D1/C1/S1 types to backend-compatible types
     const backendBlockType = mapBlockTypeForBackend(event.blockType);
 
     // Call ILS API with complete block identity
-    // API contract: { navigationNodeId, subtopicId, sectionId, blockId, blockType, blockVersion, sessionId? }
+    // API contract: { navigationNodeId, subtopicId, sectionId, blockId, blockType, blockVersion }
+    // 
+    // SESSION TRACKING NOTE:
+    // Completion does NOT send sessionId (by design)
+    // - Repository explicitly sets lastSessionId: null for completions
+    // - Session tracking happens via visit flow only
+    // - Revision detection uses visit-based session transitions
     const response = await fetch('/api/tutorial/ils/block-completion', {
       method: 'POST',
       headers: {
@@ -155,13 +166,13 @@ export async function trackTutorialEvent(
         blockId: event.blockId,
         blockType: backendBlockType,
         blockVersion: event.blockVersion,
-        // sessionId: optional, not yet tracked
+        // sessionId intentionally NOT sent - completion does not update lastSessionId
       }),
     });
 
     if (!response.ok) {
       console.warn(`[Tutorial Tracking] ILS block-completion API POST returned ${response.status}`);
-      return;
+      return { delivered: false, reason: 'http' };
     }
 
     console.log('[Tutorial Tracking] Block complete tracked (ILS API):', {
@@ -174,10 +185,13 @@ export async function trackTutorialEvent(
       backendBlockType,
     });
 
+    return { delivered: true };
+
   } catch (error) {
     // CRITICAL: Do not throw - tracking failure must not break content
+    // Return delivery failure so caller can observe and potentially retry
     console.error('[Tutorial Tracking] Failed to track event:', error);
-    // Explicitly do not rethrow
+    return { delivered: false, reason: 'network' };
   }
 }
 
@@ -240,8 +254,22 @@ export async function getTutorialProgress(
  * 
  * IMPORTANT:
  * - Idempotent (safe to call multiple times)
- * - Async but non-blocking (fire-and-forget)
- * - Failure is logged but does not throw
+ * - Async but does NOT throw on failure (preserves failure isolation)
+ * - Returns explicit delivery result (success/failure observable)
+ * 
+ * SESSION TRACKING:
+ * - Completion does NOT update lastSessionId (by design)
+ * - Session tracking happens via visit flow only
+ * - Revision detection uses visit-based session transitions
+ * 
+ * AUTHENTICATION:
+ * - learnerId parameter is legacy (API ignores, derives from cookies)
+ * - Actual authentication via validateRequest() → context.userId
+ * 
+ * STEP 1.2 CORRECTION:
+ * - Now returns TrackingDeliveryResult
+ * - Caller can distinguish delivered vs failed
+ * - Does NOT throw (failure isolation preserved)
  */
 export async function markBlockComplete(
   learnerId: string,
@@ -251,9 +279,9 @@ export async function markBlockComplete(
   blockId: string,
   blockType: string,
   blockVersion: string
-): Promise<void> {
+): Promise<TrackingDeliveryResult> {
   try {
-    await trackTutorialEvent({
+    const result = await trackTutorialEvent({
       eventType: 'block_complete',
       learnerId,
       navigationNodeId,
@@ -263,8 +291,12 @@ export async function markBlockComplete(
       blockType,
       blockVersion,
     });
+    return result;
   } catch (error) {
+    // Should not reach here (trackTutorialEvent handles its own errors)
+    // But preserve defensive error handling
     console.error('[Tutorial Tracking] Failed to mark block complete:', error);
+    return { delivered: false, reason: 'network' };
   }
 }
 

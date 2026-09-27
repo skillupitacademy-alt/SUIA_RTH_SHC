@@ -103,6 +103,18 @@ export interface TutorialBlockRuntimeContext {
 }
 
 /**
+ * Delivery result for completion/tracking operations
+ * 
+ * Allows caller to distinguish successful delivery from failures
+ * WITHOUT breaking the failure-isolation principle.
+ * 
+ * Tracking failures still do not throw into UI rendering.
+ */
+export type TrackingDeliveryResult =
+  | { delivered: true }
+  | { delivered: false; reason: 'network' | 'http' | 'validation' };
+
+/**
  * TutorialTrackingEvent
  *
  * Universal learner activity tracking contract.

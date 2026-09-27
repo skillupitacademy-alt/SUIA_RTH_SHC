@@ -144,16 +144,16 @@ describe('tutorialTrackingService - Phase 2 page_view', () => {
     vi.spyOn(sessionService, 'readTutorialLearningSessionId').mockReturnValue(null);
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     
-    // Should not throw
-    await expect(
-      trackTutorialEvent({
-        eventType: 'page_view',
-        learnerId: 'learner-123',
-        navigationNodeId: 'nav-node-1',
-        subtopicId: 'subtopic-1',
-        sectionId: null,
-      })
-    ).resolves.toBeUndefined();
+    // Should return validation failure, not throw
+    const result = await trackTutorialEvent({
+      eventType: 'page_view',
+      learnerId: 'learner-123',
+      navigationNodeId: 'nav-node-1',
+      subtopicId: 'subtopic-1',
+      sectionId: null,
+    });
+    
+    expect(result).toEqual({ delivered: false, reason: 'validation' });
   });
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -171,16 +171,16 @@ describe('tutorialTrackingService - Phase 2 page_view', () => {
     
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     
-    // Should not throw
-    await expect(
-      trackTutorialEvent({
-        eventType: 'page_view',
-        learnerId: 'learner-123',
-        navigationNodeId: 'nav-node-1',
-        subtopicId: 'subtopic-1',
-        sectionId: null,
-      })
-    ).resolves.toBeUndefined();
+    // Should return http failure, not throw
+    const result = await trackTutorialEvent({
+      eventType: 'page_view',
+      learnerId: 'learner-123',
+      navigationNodeId: 'nav-node-1',
+      subtopicId: 'subtopic-1',
+      sectionId: null,
+    });
+    
+    expect(result).toEqual({ delivered: false, reason: 'http' });
     
     // Verify failure was logged
     expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -198,16 +198,16 @@ describe('tutorialTrackingService - Phase 2 page_view', () => {
     
     vi.spyOn(console, 'error').mockImplementation(() => {});
     
-    // Should not throw
-    await expect(
-      trackTutorialEvent({
-        eventType: 'page_view',
-        learnerId: 'learner-123',
-        navigationNodeId: 'nav-node-1',
-        subtopicId: 'subtopic-1',
-        sectionId: null,
-      })
-    ).resolves.toBeUndefined();
+    // Should return network failure, not throw
+    const result = await trackTutorialEvent({
+      eventType: 'page_view',
+      learnerId: 'learner-123',
+      navigationNodeId: 'nav-node-1',
+      subtopicId: 'subtopic-1',
+      sectionId: null,
+    });
+    
+    expect(result).toEqual({ delivered: false, reason: 'network' });
   });
 
   // ═══════════════════════════════════════════════════════════════════════
