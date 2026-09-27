@@ -19,6 +19,10 @@ export * from './runtime/BlockTelemetryProvider';
 // Macro 4: Learning Progress Sidebar (RSSB)
 export * from './runtime/LearningProgressSidebar';
 
+// Phase 2B.18: Instructional Block Completion
+export * from './runtime/InstructionalBlockCompletionOrchestrator';
+export * from './runtime/buildBlockMetadataResolver';
+
 // Individual block components
 export * from './blocks/HeadingBlock';
 export * from './blocks/ParagraphBlock';

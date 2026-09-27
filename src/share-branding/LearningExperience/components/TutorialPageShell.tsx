@@ -1,10 +1,10 @@
 ﻿'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 import type { TutorialPagePayload } from '@quiz/types';
 import type { TutorialRuntimeContext } from '../runtime/TutorialRuntimeContext';
-import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider, BlockTelemetryProvider, LearningProgressSidebar, useILS } from '@quiz/ui';
+import { TutorialBlockRenderer, ActiveBlockProvider, ILSProvider, BlockTelemetryProvider, LearningProgressSidebar, useILS, InstructionalBlockCompletionOrchestrator, buildBlockMetadataResolver } from '@quiz/ui';
 import { TutorialCodeContent } from './TutorialCodeContent';
 import { TutorialDefinitionContent } from './TutorialDefinitionContent';
 import { TutorialSummaryContent } from './TutorialSummaryContent';
@@ -51,6 +51,13 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
 
   // Phase 3C-A: Ref to canonical tutorial block container for ActiveBlockProvider
   const contentContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Phase 2B.18 Step 1.3: Build metadata resolver from published TutorialDocument.blocks
+  // Memoized to prevent unnecessary resolver rebuilds on unrelated state changes
+  const resolveBlockMetadata = useMemo(
+    () => buildBlockMetadataResolver(payload.content.blocks),
+    [payload.content.blocks]
+  );
   
   // Phase 2A: Store ILS progress for LSNB (passed from inner component)
   const [currentPageProgress, setCurrentPageProgress] = useState<{
@@ -230,66 +237,92 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             {/* Phase 2A: Bridge ILS progress to LSNB (outside ILS context) */}
             <ILSProgressBridge onProgressUpdate={handleProgressUpdate} />
             
-            <BlockTelemetryProvider
+            {/* Phase 2B.18 Step 1.3: Automatic Instructional Block Completion Orchestrator
+             * 
+             * Monitors ILS progress and automatically completes instructional blocks
+             * when activeTimeSec >= expectedTimeSec × 0.80.
+             * 
+             * INTEGRATION POINTS:
+             * - ILSProvider: activeBlockProgress, markBlockComplete()
+             * - TutorialRuntimeContext: navigationNodeId, sectionId, subtopicId (from runtimeContext)
+             * - TutorialDocument.blocks: metadata source for resolver
+             * 
+             * ROLLOUT CONTROL:
+             * - enabled={false}: Safe default for Step 1.3 initial integration
+             * - Future: Replace with feature flag system
+             * 
+             * CERTIFICATION:
+             * - Step 1.2: Orchestrator logic certified (72/72 tests)
+             * - Step 1.3: Wiring + E2E certification (this integration)
+             */}
+            <InstructionalBlockCompletionOrchestrator
+              enabled={false}
               navigationNodeId={runtimeContext.navigationNodeId}
               subtopicId={runtimeContext.hierarchy.subtopicId}
               sectionId={runtimeContext.sectionId}
-              sessionId={tutorialSessionId}
+              resolveBlockMetadata={resolveBlockMetadata}
             >
-              {/* CENTER: Tutorial Content (full width, RSSB overlays when open) */}
-              <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
-                <div ref={contentContainerRef} className="w-full space-y-6">
-                  {hasBlocks ? (
-                    // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
-                    payload.content.blocks.map((block) => {
-                      // Phase 2.5: Construct block runtime context for each block
-                      // Type-safe version extraction without unsafe cast
-                      const blockVersion = ('version' in block && typeof block.version === 'string')
-                        ? block.version
-                        : 'unversioned';
-                      const blockRuntimeContext = createBlockRuntimeContext(
-                        block.id,
-                        block.type,
-                        blockVersion
-                      );
+              <BlockTelemetryProvider
+                navigationNodeId={runtimeContext.navigationNodeId}
+                subtopicId={runtimeContext.hierarchy.subtopicId}
+                sectionId={runtimeContext.sectionId}
+                sessionId={tutorialSessionId}
+              >
+                {/* CENTER: Tutorial Content (full width, RSSB overlays when open) */}
+                <div className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white">
+                  <div ref={contentContainerRef} className="w-full space-y-6">
+                    {hasBlocks ? (
+                      // V2 Canonical Path: Render blocks[] using TutorialBlockRenderer
+                      payload.content.blocks.map((block) => {
+                        // Phase 2.5: Construct block runtime context for each block
+                        // Type-safe version extraction without unsafe cast
+                        const blockVersion = ('version' in block && typeof block.version === 'string')
+                          ? block.version
+                          : 'unversioned';
+                        const blockRuntimeContext = createBlockRuntimeContext(
+                          block.id,
+                          block.type,
+                          blockVersion
+                        );
 
-                      return (
-                        <TutorialBlockRenderer
-                          key={block.id}
-                          block={block}
-                          theme={payload.theme}
-                          depth={0}
-                          runtimeContext={blockRuntimeContext}
-                        />
-                      );
-                    })
-                  ) : hasLegacyContent ? (
-                    // Temporary Legacy Fallback: Render old content structure
-                    <>
-                      {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
-                      {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
-                      {payload.content.summary && <TutorialSummaryContent payload={payload.content.summary} theme={payload.theme} />}
-                    </>
-                  ) : (
-                    // Empty/Unpublished State
-                    <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
-                      Content is not published for this subtopic yet.
-                    </section>
-                  )}
+                        return (
+                          <TutorialBlockRenderer
+                            key={block.id}
+                            block={block}
+                            theme={payload.theme}
+                            depth={0}
+                            runtimeContext={blockRuntimeContext}
+                          />
+                        );
+                      })
+                    ) : hasLegacyContent ? (
+                      // Temporary Legacy Fallback: Render old content structure
+                      <>
+                        {payload.content.definition && <TutorialDefinitionContent payload={payload.content.definition} theme={payload.theme} />}
+                        {payload.content.code && <TutorialCodeContent payload={payload.content.code} theme={payload.theme} />}
+                        {payload.content.summary && <TutorialSummaryContent payload={payload.content.summary} theme={payload.theme} />}
+                      </>
+                    ) : (
+                      // Empty/Unpublished State
+                      <section className="rounded-xl border border-[#e4eaf2] bg-white p-6 text-[#071f63] shadow-sm">
+                        Content is not published for this subtopic yet.
+                      </section>
+                    )}
+                  </div>
+                  <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
                 </div>
-                <TutorialFooterNavigation previous={payload.footer.previous} next={payload.footer.next} theme={payload.theme} />
-              </div>
-              
-              {/* RIGHT: RSSB (fixed overlay - opens from right) - Must be inside ILSProvider */}
-              <LearningProgressSidebar
-                isOpen={isProgressSidebarOpen}
-                onClose={() => setIsProgressSidebarOpen(false)}
-                brand={{
-                  primaryColor: payload.theme.primary,
-                  secondaryColor: payload.theme.secondary,
-                }}
-              />
-            </BlockTelemetryProvider>
+                
+                {/* RIGHT: RSSB (fixed overlay - opens from right) - Must be inside ILSProvider */}
+                <LearningProgressSidebar
+                  isOpen={isProgressSidebarOpen}
+                  onClose={() => setIsProgressSidebarOpen(false)}
+                  brand={{
+                    primaryColor: payload.theme.primary,
+                    secondaryColor: payload.theme.secondary,
+                  }}
+                />
+              </BlockTelemetryProvider>
+            </InstructionalBlockCompletionOrchestrator>
           </ILSProvider>
         </ActiveBlockProvider>
       </div>
