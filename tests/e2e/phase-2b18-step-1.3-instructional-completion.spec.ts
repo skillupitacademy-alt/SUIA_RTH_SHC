@@ -117,36 +117,6 @@ async function loginAsLearner(page: Page) {
   console.log('[E2E] Logged in successfully. Current URL:', page.url());
 }
 
-/**
- * Track network requests for completion API
- */
-interface CompletionRequest {
-  url: string;
-  method: string;
-  body: any;
-  timestamp: number;
-}
-
-function trackCompletionRequests(page: Page): CompletionRequest[] {
-  const requests: CompletionRequest[] = [];
-  
-  page.on('request', (request) => {
-    if (
-      request.method() === 'POST' &&
-      request.url().includes('/api/tutorial/ils/block-completion')
-    ) {
-      requests.push({
-        url: request.url(),
-        method: request.method(),
-        body: request.postDataJSON(),
-        timestamp: Date.now(),
-      });
-    }
-  });
-  
-  return requests;
-}
-
 // ============================================================
 // CERTIFICATION TESTS
 // ============================================================
@@ -157,7 +127,7 @@ test.describe('Phase 2B.18 Step 1.3 - Wiring Certification', () => {
   });
 
   test('A. Orchestrator mounted in Tutorial Page', async ({ page }) => {
-    await page.goto(`${BASE_URL}${TUTORIAL_URL}`);
+    await page.goto(`${BASE_URL}${JAVA_WHATISJAVA_D1.blockPath}`);
     
     // Wait for page to load
     await expect(page.locator('main')).toBeVisible();
@@ -170,7 +140,7 @@ test.describe('Phase 2B.18 Step 1.3 - Wiring Certification', () => {
   });
 
   test('B. Published blocks rendered', async ({ page }) => {
-    await page.goto(`${BASE_URL}${TUTORIAL_URL}`);
+    await page.goto(`${BASE_URL}${JAVA_WHATISJAVA_D1.blockPath}`);
     
     // Verify blocks rendered (TutorialBlockRenderer)
     const blocks = page.locator('[data-block-id]');
@@ -181,9 +151,9 @@ test.describe('Phase 2B.18 Step 1.3 - Wiring Certification', () => {
   });
 
   test('C. Feature disabled → no completion activity', async ({ page }) => {
-    const completionRequests = trackCompletionRequests(page);
+    const completionRequests = observeCompletionRequests(page);
     
-    await page.goto(`${BASE_URL}${TUTORIAL_URL}`);
+    await page.goto(`${BASE_URL}${JAVA_WHATISJAVA_D1.blockPath}`);
     await page.waitForTimeout(5000); // Wait for potential completion
     
     // Verify NO completion requests when disabled
