@@ -73,6 +73,12 @@ export default defineConfig({
         '**/ils-tutorial-session.spec.ts',
         '**/phase-2b18-step-1.3-instructional-completion.spec.ts',
         '**/diagnostic-block-identity-fix.spec.ts',
+        '**/gate-e-short-runtime-proof.spec.ts',
+        '**/gate-fgh-automatic-completion-certification.spec.ts',
+        '**/feature-flag-preflight.spec.ts',
+        '**/inspect-ils-progress.spec.ts',
+        '**/gate-f-diagnostic.spec.ts',
+        '**/gate-f-forensic-console-capture.spec.ts',
       ],
     },
 

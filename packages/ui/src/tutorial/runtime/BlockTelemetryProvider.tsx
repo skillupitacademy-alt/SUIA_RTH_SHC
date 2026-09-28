@@ -27,8 +27,9 @@
 
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useContext } from 'react';
 import { useActiveBlock, type ActiveBlockIdentity } from './ActiveBlockContext';
+import { TelemetryCallbackContext } from './TelemetryCallbackContext';
 import { 
   splitActiveTimeSeconds, 
   createDeliveryEvents,
@@ -134,6 +135,9 @@ export function BlockTelemetryProvider({
   enabled = true,
 }: BlockTelemetryProviderProps) {
   const { activeBlock } = useActiveBlock();
+  
+  // STEP 1: Consume telemetry callback context (behavior implementation deferred to Step 2)
+  const telemetryCallbackContext = useContext(TelemetryCallbackContext);
   
   // Session ID from props
   const sessionIdRef = useRef<string | null>(propSessionId);
@@ -302,6 +306,7 @@ export function BlockTelemetryProvider({
   
   /**
    * Phase D-2: Initialize production delivery queue
+   * Phase 2B.18 Step 1.3 Step 2: Propagate authoritative server state via callback
    */
   const sendBlockActiveTime: SendBlockActiveTime = useCallback(
     async (event: DeliveryEvent) => {
@@ -340,9 +345,30 @@ export function BlockTelemetryProvider({
         
         const result = await response.json();
         
+        // Phase 2B.18 Step 1.3 Step 2: Extract acknowledgement flags
+        const processed = result.processed === true;
+        const alreadyProcessed = result.alreadyProcessed === true;
+        
+        // Phase 2B.18 Step 1.3 Step 2: Invoke callback ONLY on successful delivery
+        // CRITICAL: Both processed=true AND alreadyProcessed=true are successful outcomes
+        // CRITICAL: Callback failure MUST NOT convert successful delivery into retry
+        if ((processed || alreadyProcessed) && result.data) {
+          const callback = telemetryCallbackContext?.onActiveTimeDeliveryAcknowledged;
+          if (callback) {
+            try {
+              // Phase 2B.18 Step 1.3 Step 2: Transport authoritative cumulative server state
+              callback(event.blockId, event.blockVersion, result.data);
+            } catch (callbackError) {
+              // Isolation: callback failure does not affect delivery success
+              // Server has already persisted the active time - callback is a notification
+              console.error('[BlockTelemetry] Callback failed (delivery successful):', callbackError);
+            }
+          }
+        }
+        
         return {
-          processed: result.processed === true,
-          alreadyProcessed: result.alreadyProcessed === true,
+          processed,
+          alreadyProcessed,
         };
       } catch (error) {
         return {
@@ -351,7 +377,7 @@ export function BlockTelemetryProvider({
         };
       }
     },
-    [enabled]
+    [enabled, telemetryCallbackContext]
   );
   
   /**

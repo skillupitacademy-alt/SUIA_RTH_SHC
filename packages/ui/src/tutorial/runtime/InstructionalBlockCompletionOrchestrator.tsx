@@ -319,6 +319,16 @@ export function InstructionalBlockCompletionOrchestrator({
         activeTimeSec: blockProgress.activeTimeSec,
       };
       
+      // GATE F FORENSIC: Log input values (diagnostic only - no behavior change)
+      console.log('[GATE F FORENSIC] Evaluation inputs:', {
+        blockId,
+        blockVersion,
+        'blockProgress.isCompleted': blockProgress.isCompleted,
+        'blockProgress.activeTimeSec': blockProgress.activeTimeSec,
+        'metadata.progressRole': metadata.progressRole,
+        'metadata.expectedTimeSec': metadata.expectedTimeSec,
+      });
+      
       // Evaluate completion
       let evaluation: CompletionEvaluation;
       try {
@@ -336,6 +346,16 @@ export function InstructionalBlockCompletionOrchestrator({
         blockId,
         blockVersion,
         evaluation,
+      });
+      
+      // GATE F FORENSIC: Expanded values (diagnostic only - no behavior change)
+      console.log('[GATE F FORENSIC] Evaluation details:', {
+        blockId,
+        blockVersion,
+        'evaluation.shouldComplete': evaluation.shouldComplete,
+        'evaluation.reason': evaluation.reason,
+        'evaluation.completionRatio': evaluation.completionRatio,
+        'evaluation.thresholdRatio': evaluation.thresholdRatio,
       });
       
       // Trigger completion if threshold met
@@ -364,6 +384,18 @@ export function InstructionalBlockCompletionOrchestrator({
    * Monitor activeBlockProgress and trigger evaluation
    */
   useEffect(() => {
+    // DIAGNOSTIC: Log every time this effect runs
+    console.log('[InstructionalBlockCompletion] useEffect triggered', {
+      enabled,
+      hasActiveBlockProgress: !!activeBlockProgress,
+      activeBlockProgress: activeBlockProgress ? {
+        blockId: activeBlockProgress.blockId,
+        blockVersion: activeBlockProgress.blockVersion,
+        isCompleted: activeBlockProgress.isCompleted,
+        activeTimeSec: activeBlockProgress.activeTimeSec,
+      } : null,
+    });
+    
     if (!enabled || !activeBlockProgress) return;
     
     // Evaluate current active block

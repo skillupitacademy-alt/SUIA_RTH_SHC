@@ -37,7 +37,8 @@ export async function navigateToD1Block(page: Page, baseURL: string): Promise<vo
   });
   
   // Wait for page to load and orchestrator to mount
-  await page.waitForLoadState('networkidle');
+  // Use domcontentloaded instead of networkidle to avoid timeout on pending resources
+  await page.waitForLoadState('domcontentloaded');
   
   // CRITICAL: Scroll D1 block into view to make it the active block
   // The ActiveBlockProvider tracks which block is in viewport via IntersectionObserver

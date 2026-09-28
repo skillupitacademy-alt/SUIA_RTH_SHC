@@ -36,6 +36,11 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useActiveBlock, type ActiveBlockIdentity } from './ActiveBlockContext';
+import { 
+  TelemetryCallbackContext, 
+  type BlockLearningStateResponse as TelemetryBlockState,
+  type OnActiveTimeDeliveryAcknowledged 
+} from './TelemetryCallbackContext';
 
 /**
  * Learning state values
@@ -488,6 +493,97 @@ export function ILSProvider({
     }
   }, [fetchProgress, activeBlock, updateActiveBlockProgress]);
   
+  /**
+   * Handle telemetry delivery acknowledgement
+   * 
+   * Phase 2B.18 Step 1.3 Step 3: ILS cache replacement
+   * 
+   * This callback receives authoritative server state after successful
+   * telemetry delivery (both processed=true and alreadyProcessed=true cases).
+   * 
+   * CRITICAL OPERATIONS:
+   * 1. Update blocksRef.current immutably with authoritative state (REPLACE not accumulate)
+   * 2. Derive new activeBlockProgress if affected block is currently active
+   * 3. Trigger orchestrator re-evaluation via new activeBlockProgress reference
+   * 
+   * SERVER STATE IS CUMULATIVE:
+   * state.activeTimeSec is the total accumulated time, not a delta.
+   * We use replacement semantics to prevent drift.
+   */
+  const handleActiveTimeDeliveryAcknowledged: OnActiveTimeDeliveryAcknowledged = useCallback(
+    (blockId: string, blockVersion: string, state: TelemetryBlockState) => {
+      console.log('[ILSProvider] [Step 3] Telemetry delivery acknowledged', {
+        blockId,
+        blockVersion,
+        authoritativeActiveTimeSec: state.activeTimeSec,
+      });
+      
+      // Phase 2B.18 Step 3: Immutable cache replacement
+      if (!blocksRef.current) {
+        console.warn('[ILSProvider] [Step 3] No blocks cache - cannot update');
+        return;
+      }
+      
+      // Phase 2B.18 Step 3: Find existing block index
+      const existingIndex = blocksRef.current.findIndex(
+        (block) => block.blockId === blockId && block.blockVersion === blockVersion
+      );
+      
+      // Phase 2B.18 Step 3: Normalize server state to BlockLearningStateResponse
+      // TelemetryBlockState and BlockLearningStateResponse are structurally compatible
+      const normalizedState: BlockLearningStateResponse = {
+        blockId: state.blockId,
+        blockVersion: state.blockVersion,
+        visitCount: state.visitCount,
+        revisionCount: state.revisionCount,
+        activeTimeSec: state.activeTimeSec, // CUMULATIVE (not delta)
+        expectedTimeSec: state.expectedTimeSec,
+        firstViewedAt: state.firstViewedAt,
+        lastViewedAt: state.lastViewedAt,
+        completedAt: state.completedAt,
+      };
+      
+      // Phase 2B.18 Step 3: Immutable replacement (not mutation)
+      if (existingIndex !== -1) {
+        // Replace existing block state
+        blocksRef.current = [
+          ...blocksRef.current.slice(0, existingIndex),
+          normalizedState,
+          ...blocksRef.current.slice(existingIndex + 1),
+        ];
+      } else {
+        // Add new block state
+        blocksRef.current = [...blocksRef.current, normalizedState];
+      }
+      
+      console.log('[ILSProvider] [Step 3] Cache updated', {
+        operation: existingIndex !== -1 ? 'replace' : 'add',
+        index: existingIndex,
+        newActiveTimeSec: normalizedState.activeTimeSec,
+      });
+      
+      // Phase 2B.18 Step 3: CRITICAL - Update activeBlockProgress if this is the active block
+      // This creates a new reference that will trigger orchestrator re-evaluation
+      const currentActiveBlock = activeBlockRef.current;
+      if (
+        currentActiveBlock &&
+        currentActiveBlock.blockId === blockId &&
+        currentActiveBlock.blockVersion === blockVersion
+      ) {
+        console.log('[ILSProvider] [Step 3] Acknowledged block IS active block - updating activeBlockProgress');
+        
+        // Derive new activeBlockProgress from fresh authoritative state
+        updateActiveBlockProgress(currentActiveBlock, blocksRef.current);
+      } else {
+        console.log('[ILSProvider] [Step 3] Acknowledged block is NOT active block', {
+          acknowledgedBlock: { blockId, blockVersion },
+          currentActiveBlock,
+        });
+      }
+    },
+    [updateActiveBlockProgress]
+  );
+  
   const contextValue: ILSContextValue = {
     navigationNodeId,
     subtopicId,
@@ -499,5 +595,15 @@ export function ILSProvider({
     refresh,
   };
   
-  return <ILSContext.Provider value={contextValue}>{children}</ILSContext.Provider>;
+  const telemetryCallbackValue = {
+    onActiveTimeDeliveryAcknowledged: handleActiveTimeDeliveryAcknowledged,
+  };
+  
+  return (
+    <ILSContext.Provider value={contextValue}>
+      <TelemetryCallbackContext.Provider value={telemetryCallbackValue}>
+        {children}
+      </TelemetryCallbackContext.Provider>
+    </ILSContext.Provider>
+  );
 }
