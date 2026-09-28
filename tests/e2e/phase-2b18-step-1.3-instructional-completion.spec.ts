@@ -43,9 +43,10 @@ import {
   getILSCompletionStatus,
   getILSBlockIdentity,
   waitForILSActiveTime,
-  setupCompletionAPIInterception,
+  observeCompletionRequests,
   verifyBlockCompleted,
   clearBrowserState,
+  type CompletionRequestRecord,
 } from './helpers/phase-2b18-step-1.3.helpers';
 
 // ============================================================
@@ -191,25 +192,11 @@ test.describe('Phase 2B.18 Step 1.3 - E2E Certification (Real ILS)', () => {
   test('E/F/G/H. Complete instructional block lifecycle', async ({ page }) => {
     console.log('[E2E] Starting combined lifecycle test (E/F/G/H)');
     
-    // Setup completion API interception
-    const { waitForCompletion } = await setupCompletionAPIInterception(page);
-    let completionRequestCount = 0;
-    let completionRequestBody: any = null;
-    
-    // Track all completion requests
-    page.on('request', (request) => {
-      if (
-        request.method() === 'POST' &&
-        request.url().includes('/api/tutorial/ils/blocks/complete')
-      ) {
-        completionRequestCount++;
-        completionRequestBody = request.postDataJSON();
-        console.log(`[E2E] Completion request #${completionRequestCount}:`, completionRequestBody);
-      }
-    });
+    // Setup completion API observation (non-intercepting)
+    const completionRequests = observeCompletionRequests(page);
     
     // E1. Navigate to D1 block with feature flag enabled
-    await navigateToD1Block(page);
+    await navigateToD1Block(page, BASE_URL);
     console.log('[E2E] Navigated to D1 block');
     
     // E2. Verify initial state (not completed, activeTimeSec = 0)
@@ -239,26 +226,41 @@ test.describe('Phase 2B.18 Step 1.3 - E2E Certification (Real ILS)', () => {
     await waitForILSActiveTime(page, JAVA_WHATISJAVA_D1.completionThresholdSec);
     console.log('[E2E] ✓ Threshold reached');
     
-    // E5. Wait for completion API call
+    // E5. Wait for completion API call (observe from request array)
     console.log('[E2E] Waiting for completion API call...');
-    await waitForCompletion();
+    
+    // Poll for completion request (may take a few seconds after threshold)
+    let completionFound = false;
+    for (let i = 0; i < 10; i++) {
+      if (completionRequests.length > 0) {
+        completionFound = true;
+        break;
+      }
+      await page.waitForTimeout(1000);
+    }
+    
+    expect(completionFound).toBe(true);
     console.log('[E2E] ✓ Completion API called');
     
     // E6. Verify single completion POST (not multiple)
-    expect(completionRequestCount).toBe(1);
+    expect(completionRequests.length).toBe(1);
     console.log('[E2E] ✓ Single completion POST (H verified)');
     
     // E7. Verify completion request body (L verification)
-    expect(completionRequestBody).toBeDefined();
-    expect(completionRequestBody.navigationNodeId).toBe(JAVA_WHATISJAVA_D1.navigationNodeId);
-    expect(completionRequestBody.blockId).toBe(JAVA_WHATISJAVA_D1.blockId);
-    expect(completionRequestBody.blockVersion).toBe(JAVA_WHATISJAVA_D1.blockVersion);
-    expect(completionRequestBody.subtopicId).toBe(JAVA_WHATISJAVA_D1.subtopicId);
-    expect(completionRequestBody.sectionId).toBe(JAVA_WHATISJAVA_D1.sectionId);
+    const completionRequest = completionRequests[0];
+    expect(completionRequest.body).toBeDefined();
+    expect(completionRequest.body!.navigationNodeId).toBe(JAVA_WHATISJAVA_D1.navigationNodeId);
+    expect(completionRequest.body!.blockId).toBe(JAVA_WHATISJAVA_D1.blockId);
+    expect(completionRequest.body!.blockVersion).toBe(JAVA_WHATISJAVA_D1.blockVersion);
+    expect(completionRequest.body!.subtopicId).toBe(JAVA_WHATISJAVA_D1.subtopicId);
+    expect(completionRequest.body!.sectionId).toBe(JAVA_WHATISJAVA_D1.sectionId);
     
     // Verify forbidden fields NOT present
-    expect(completionRequestBody.sessionId).toBeUndefined();
-    expect(completionRequestBody.learnerId).toBeUndefined();
+    expect(completionRequest.body!.sessionId).toBeUndefined();
+    expect(completionRequest.body!.learnerId).toBeUndefined();
+    
+    // Verify HTTP 200 response
+    expect(completionRequest.responseStatus).toBe(200);
     console.log('[E2E] ✓ Correct identity (L verified)');
     
     // E8. Wait for ILS state to reflect completion
@@ -269,19 +271,19 @@ test.describe('Phase 2B.18 Step 1.3 - E2E Certification (Real ILS)', () => {
     console.log('[E2E] ✓ Completion persisted in ILS state (F verified)');
     
     // G1. Refresh page and verify completion persists
-    console.log('[E2E] Refreshing page...');
-    const preRefreshRequestCount = completionRequestCount;
+    console.log('[E2E] Refreshing page to verify backend persistence...');
+    const preRefreshRequestCount = completionRequests.length;
     
     await page.reload({ waitUntil: 'networkidle' });
     await page.waitForTimeout(2000);
     
-    // G2. Verify block still completed after refresh
+    // G2. Verify block still completed after refresh (proves backend persistence)
     const isCompletedAfterRefresh = await getILSCompletionStatus(page);
     expect(isCompletedAfterRefresh).toBe(true);
-    console.log('[E2E] ✓ Completion persists after refresh (G verified)');
+    console.log('[E2E] ✓ Completion persists after refresh - backend persistence verified (F+G verified)');
     
     // G3. Verify NO new completion POST after refresh
-    expect(completionRequestCount).toBe(preRefreshRequestCount);
+    expect(completionRequests.length).toBe(preRefreshRequestCount);
     console.log('[E2E] ✓ No duplicate completion after refresh');
     
     // H. Cause multiple ILS updates (scroll, interact) - verify still only one POST total
@@ -290,7 +292,7 @@ test.describe('Phase 2B.18 Step 1.3 - E2E Certification (Real ILS)', () => {
     await page.mouse.wheel(0, 500);
     await page.waitForTimeout(3000);
     
-    expect(completionRequestCount).toBe(1);
+    expect(completionRequests.length).toBe(1);
     console.log('[E2E] ✓ Duplicate ILS updates → single POST (H verified)');
     
     console.log('[E2E] ✓✓✓ Complete lifecycle certified (E/F/G/H)');

@@ -9,10 +9,16 @@ import { JAVA_WHATISJAVA_D1, SELECTORS } from '../fixtures/phase-2b18-step-1.3.f
 
 /**
  * Navigate to Java D1 block with authentication
+ * 
+ * Uses baseURL from Playwright config (suia project baseURL)
+ * or constructs full URL from BASE_URL constant if needed.
  */
-export async function navigateToD1Block(page: Page): Promise<void> {
+export async function navigateToD1Block(page: Page, baseURL: string): Promise<void> {
+  // Construct full URL
+  const fullURL = `${baseURL}${JAVA_WHATISJAVA_D1.blockPath}`;
+  
   // Navigate to Java tutorial D1 block
-  await page.goto(JAVA_WHATISJAVA_D1.blockPath);
+  await page.goto(fullURL);
   
   // Wait for page to load and orchestrator to mount
   await page.waitForLoadState('networkidle');
@@ -60,15 +66,17 @@ export async function getILSBlockIdentity(page: Page): Promise<{
  * CRITICAL: This polls REAL ILS state, validating actual accumulation.
  * 
  * @param page - Playwright page
- * @param targetSeconds - Target activeTimeSec threshold
+ * @param targetSeconds - Target activeTimeSec threshold (168 for D1)
  * @param pollIntervalMs - How often to check (default: 5000ms = 5 seconds)
- * @param timeoutMs - Maximum wait time (default: 180000ms = 3 minutes)
+ * @param timeoutMs - Maximum wait time (default: 300000ms = 5 minutes)
+ *   Note: Threshold is 168 seconds, but timeout includes margin for
+ *   heartbeat/scheduling variance. Does NOT alter the 80% threshold.
  */
 export async function waitForILSActiveTime(
   page: Page,
   targetSeconds: number,
   pollIntervalMs: number = 5000,
-  timeoutMs: number = 180000
+  timeoutMs: number = 300000
 ): Promise<void> {
   const startTime = Date.now();
   
@@ -96,40 +104,74 @@ export async function waitForILSActiveTime(
 }
 
 /**
- * Verify completion API was called with correct payload
- * 
- * Intercepts POST /api/tutorial/ils/blocks/complete to verify:
- * - Request body matches expected block identity
- * - Response indicates success
+ * Completion request record from observation
  */
-export async function setupCompletionAPIInterception(page: Page): Promise<{
-  waitForCompletion: () => Promise<void>;
-}> {
-  let completionPromise: Promise<void>;
-  let resolveCompletion: () => void;
+export interface CompletionRequestRecord {
+  url: string;
+  method: string;
+  body: Record<string, unknown> | null;
+  responseStatus?: number;
+  timestamp: number;
+}
+
+/**
+ * Observe completion API requests (non-intercepting)
+ * 
+ * Uses page.on('request') and page.on('response') to observe REAL requests
+ * while allowing them to reach the REAL backend.
+ * 
+ * CRITICAL: Does NOT use page.route() interception.
+ * The certification requires observing real requests to real backend.
+ * 
+ * Actual endpoint: /api/tutorial/ils/block-completion
+ * (from tutorialTrackingService.ts markBlockComplete implementation)
+ */
+export function observeCompletionRequests(
+  page: Page
+): CompletionRequestRecord[] {
+  const requests: CompletionRequestRecord[] = [];
   
-  // Create promise that resolves when completion API is called
-  completionPromise = new Promise((resolve) => {
-    resolveCompletion = resolve;
+  page.on('request', (request) => {
+    if (
+      request.method() !== 'POST' ||
+      !request.url().includes('/api/tutorial/ils/block-completion')
+    ) {
+      return;
+    }
+    
+    let body: Record<string, unknown> | null = null;
+    
+    try {
+      body = request.postDataJSON();
+    } catch {
+      body = null;
+    }
+    
+    requests.push({
+      url: request.url(),
+      method: request.method(),
+      body,
+      timestamp: Date.now(),
+    });
+    
+    console.log('[E2E] Completion API request observed:', body);
   });
   
-  // Intercept completion API calls
-  await page.route('**/api/tutorial/ils/blocks/complete', async (route) => {
-    const request = route.request();
-    const postData = request.postDataJSON();
+  page.on('response', (response) => {
+    const matchingRequest = requests.find(
+      (entry) =>
+        entry.url === response.url() &&
+        entry.method === response.request().method() &&
+        entry.responseStatus === undefined
+    );
     
-    console.log('[E2E] Completion API called:', postData);
-    
-    // Continue with real API call
-    await route.continue();
-    
-    // Resolve promise to signal completion
-    resolveCompletion();
+    if (matchingRequest) {
+      matchingRequest.responseStatus = response.status();
+      console.log('[E2E] Completion API response:', response.status());
+    }
   });
   
-  return {
-    waitForCompletion: () => completionPromise,
-  };
+  return requests;
 }
 
 /**
