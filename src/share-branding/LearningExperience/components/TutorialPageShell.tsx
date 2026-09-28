@@ -38,6 +38,45 @@ function ILSProgressBridge({ onProgressUpdate }: {
   return null; // This component only bridges data, renders nothing
 }
 
+/**
+ * Phase 2B.18 Step 1.3: ILS Test Observability Bridge
+ * 
+ * Internal component that exposes ILS activeTimeSec for E2E test observation.
+ * Updates DOM attribute for Playwright to verify real ILS accumulation.
+ * 
+ * CRITICAL: This exposes REAL ILS state, not synthetic test data.
+ */
+function ILSTestObservabilityBridge({ 
+  containerRef 
+}: { 
+  containerRef: React.RefObject<HTMLDivElement | null>
+}) {
+  const { activeBlockProgress } = useILS();
+  
+  useEffect(() => {
+    if (containerRef.current) {
+      // Expose real ILS activeTimeSec for E2E verification
+      containerRef.current.setAttribute(
+        'data-ils-active-time-sec',
+        String(activeBlockProgress?.activeTimeSec ?? 0)
+      );
+      
+      // Expose block identity for E2E test correlation
+      if (activeBlockProgress) {
+        containerRef.current.setAttribute('data-ils-block-id', activeBlockProgress.blockId);
+        containerRef.current.setAttribute('data-ils-block-version', activeBlockProgress.blockVersion);
+        containerRef.current.setAttribute('data-ils-is-completed', String(activeBlockProgress.isCompleted));
+      } else {
+        containerRef.current.removeAttribute('data-ils-block-id');
+        containerRef.current.removeAttribute('data-ils-block-version');
+        containerRef.current.removeAttribute('data-ils-is-completed');
+      }
+    }
+  }, [activeBlockProgress, containerRef]);
+  
+  return null;
+}
+
 interface TutorialPageShellProps {
   payload: TutorialPagePayload;
   runtimeContext: TutorialRuntimeContext;
@@ -243,6 +282,9 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
           >
             {/* Phase 2A: Bridge ILS progress to LSNB (outside ILS context) */}
             <ILSProgressBridge onProgressUpdate={handleProgressUpdate} />
+            
+            {/* Phase 2B.18 Step 1.3: Expose ILS activeTimeSec for E2E test observation */}
+            <ILSTestObservabilityBridge containerRef={contentContainerRef} />
             
             {/* Phase 2B.18 Step 1.3: Automatic Instructional Block Completion Orchestrator
              * 

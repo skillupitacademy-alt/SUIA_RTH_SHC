@@ -8,14 +8,14 @@
  * 
  * SCOPE:
  * - Step 1.2: Orchestrator logic certified (72/72 tests PASS)
- * - Step 1.3: Wiring + real browser validation (this file)
+ * - Step 1.3: Wiring + E2E browser certification (this file)
  * 
  * CERTIFICATION GATES:
  * ✓ A. Orchestrator mounted in real Tutorial Page
  * ✓ B. Correct provider hierarchy (ILSProvider → Orchestrator)
  * ✓ C. Published TutorialDocument.blocks supplied to resolver
  * ✓ D. enabled prop controls orchestrator activation
- * □ E. 80% threshold triggers completion POST
+ * □ E. 80% threshold triggers completion POST (REAL ILS accumulation)
  * □ F. Completion persists in backend
  * □ G. Page refresh preserves completion
  * □ H. Duplicate ILS updates → single POST (F1 verified)
@@ -24,20 +24,29 @@
  * □ K. Disabled feature → no completion
  * □ L. Correct identity (navigationNodeId, blockId, blockVersion)
  * 
- * STATUS: WIRING CERTIFIED, E2E BLOCKED
+ * STATUS: WIRING CERTIFIED, E2E IMPLEMENTATION IN PROGRESS
  * 
- * BLOCKER:
- * Orchestrator integrated with enabled={false} for safe rollout (Step 1.3 requirement).
- * E2E tests require enabled={true} to observe automatic completion behavior.
- * 
- * RESOLUTION PATH:
- * 1. Add feature flag infrastructure (env var or runtime config)
- * 2. Enable orchestrator in E2E environment only
- * 3. Execute E2E certification scenarios
- * 4. Gradual production rollout after E2E certification
+ * CRITICAL EXECUTION REQUIREMENTS:
+ * - REAL ILS activeTimeSec accumulation (NOT waitForTimeout)
+ * - REAL completion API (NOT mocked)
+ * - REAL persistence (NOT simulated)
+ * - 80% threshold UNCHANGED (168 seconds for D1 block)
+ * - Observe real ILS state via DOM attributes
+ * - Combine E/F/G/H in single 168-second journey
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { JAVA_WHATISJAVA_D1, SELECTORS } from './fixtures/phase-2b18-step-1.3.fixture';
+import {
+  navigateToD1Block,
+  getILSActiveTimeSec,
+  getILSCompletionStatus,
+  getILSBlockIdentity,
+  waitForILSActiveTime,
+  setupCompletionAPIInterception,
+  verifyBlockCompleted,
+  clearBrowserState,
+} from './helpers/phase-2b18-step-1.3.helpers';
 
 // ============================================================
 // CONFIGURATION
@@ -47,36 +56,22 @@ const BASE_URL = process.env.SUIA_BASE_URL ?? 'http://skillup.localhost:3009';
 const STUDENT_EMAIL = process.env.SUIA_EMAIL ?? 'student@skillupitacademy.com';
 const STUDENT_PASSWORD = process.env.SUIA_PASSWORD ?? 'testing';
 
-// Real published tutorial page - Java "What is Java" (whatisjava)
-// Fixture analysis: .analysis/STEP-1.3-E2E-FIXTURE-ANALYSIS.md
-const DOMAIN = 'full-stack-development';
-const SUBJECT = 'backend-development';
-const TOPIC = 'java';
-const SUBTOPIC_SLUG = 'what-is-java-12efacf1';
-const NAVIGATION_NODE_ID = 'whatisjava';
-const SUBTOPIC_ID = '414f63eb-cccf-4bd1-bcc0-b52df69ce499';
-const SECTION_ID = '45f4e65b-2178-4bca-867e-9377f064fb20';
-
-// DEFINITION block (D1) - fastest available instructional block
-// progressRole: undefined → resolver defaults to 'instructional'
-const TEST_BLOCK = {
-  id: '8680bd00-ecfe-4da7-a78f-9b6a0b6a1749',
-  type: 'definition',
-  version: 'D1',
-  expectedTimeSec: 210, // 3.5 minutes
-  threshold80Percent: 168, // 2.8 minutes - REAL ILS MUST REACH THIS
-};
-
-const TUTORIAL_URL = `/tutorial-v2/${DOMAIN}/${SUBJECT}/${TOPIC}/${SUBTOPIC_SLUG}/${NAVIGATION_NODE_ID}`;
-
 /**
  * E2E TEST CONSTRAINT:
  * 
  * The real ILS must accumulate 168 seconds of active time to trigger completion.
  * This is NOT faked or mocked - tests will wait for genuine ILS progress.
  * 
- * Expected test duration: ~3-5 minutes per scenario
- * Full suite: ~30-40 minutes
+ * Test strategy:
+ * - E/F/G/H combined: Single 168-second journey (efficiency)
+ * - I/J: Search for real fixtures or document unavailable
+ * - K: Separate flag-OFF server
+ * - L: Verification after any completion
+ * 
+ * Expected test duration:
+ * - Combined E/F/G/H: ~3-5 minutes (single wait)
+ * - Others: <1 minute each
+ * - Total suite: ~10-15 minutes
  * 
  * This is the correct tradeoff per strict execution guidelines:
  * - Real ILS active-time tracking (not faked)
@@ -176,137 +171,182 @@ test.describe('Phase 2B.18 Step 1.3 - Wiring Certification', () => {
   });
 });
 
-test.describe('Phase 2B.18 Step 1.3 - E2E Certification (BLOCKED)', () => {
-  test.skip('Skipped: Orchestrator disabled for safe rollout', () => {
-    // This entire suite is blocked until orchestrator is enabled
+test.describe('Phase 2B.18 Step 1.3 - E2E Certification (Real ILS)', () => {
+  test.beforeEach(async ({ page }) => {
+    await loginAsLearner(page);
+    await clearBrowserState(page);
   });
 
-  test.skip('E. Automatic completion at 80% threshold', async ({ page }) => {
-    /**
-     * TEST SCENARIO:
-     * 1. Login as learner
-     * 2. Navigate to tutorial page with instructional block
-     * 3. Interact with block to accumulate active time
-     * 4. Verify ILS activeTimeSec reaches 80% of expectedTimeSec
-     * 5. Wait for ILS progress update
-     * 6. Verify completion POST to /api/tutorial/ils/block-completion
-     * 7. Verify request body contains correct identity
-     * 
-     * EXPECTED RESULT:
-     * - Single POST request
-     * - Body: { navigationNodeId, blockId, blockVersion, subtopicId, sectionId }
-     * - No sessionId in body or headers
-     * - HTTP 200 response
-     */
+  /**
+   * COMBINED JOURNEY: E → F → G → H
+   * 
+   * Single 168-second wait tests complete lifecycle:
+   * E. Automatic completion at 80% threshold
+   * F. Completion persists in backend
+   * G. Page refresh preserves completion
+   * H. Duplicate ILS updates → single POST
+   * 
+   * Duration: ~3-5 minutes total
+   */
+  test('E/F/G/H. Complete instructional block lifecycle', async ({ page }) => {
+    console.log('[E2E] Starting combined lifecycle test (E/F/G/H)');
+    
+    // Setup completion API interception
+    const { waitForCompletion } = await setupCompletionAPIInterception(page);
+    let completionRequestCount = 0;
+    let completionRequestBody: any = null;
+    
+    // Track all completion requests
+    page.on('request', (request) => {
+      if (
+        request.method() === 'POST' &&
+        request.url().includes('/api/tutorial/ils/blocks/complete')
+      ) {
+        completionRequestCount++;
+        completionRequestBody = request.postDataJSON();
+        console.log(`[E2E] Completion request #${completionRequestCount}:`, completionRequestBody);
+      }
+    });
+    
+    // E1. Navigate to D1 block with feature flag enabled
+    await navigateToD1Block(page);
+    console.log('[E2E] Navigated to D1 block');
+    
+    // E2. Verify initial state (not completed, activeTimeSec = 0)
+    let activeTimeSec = await getILSActiveTimeSec(page);
+    let isCompleted = await getILSCompletionStatus(page);
+    const blockIdentity = await getILSBlockIdentity(page);
+    
+    console.log('[E2E] Initial state:', { activeTimeSec, isCompleted, blockIdentity });
+    
+    expect(isCompleted).toBe(false);
+    expect(blockIdentity.blockId).toBe(JAVA_WHATISJAVA_D1.blockId);
+    expect(blockIdentity.blockVersion).toBe(JAVA_WHATISJAVA_D1.blockVersion);
+    
+    // E3. Verify real ILS is accumulating (check after 10 seconds)
+    console.log('[E2E] Waiting 10 seconds to verify ILS accumulation...');
+    await page.waitForTimeout(10000);
+    
+    const activeTimeSec10s = await getILSActiveTimeSec(page);
+    console.log('[E2E] After 10s, activeTimeSec:', activeTimeSec10s);
+    
+    expect(activeTimeSec10s).toBeGreaterThan(0);
+    expect(activeTimeSec10s).toBeGreaterThanOrEqual(5); // At least 5 seconds accumulated
+    console.log('[E2E] ✓ Real ILS accumulation verified');
+    
+    // E4. Wait for 168-second threshold (with polling)
+    console.log('[E2E] Waiting for 168-second threshold...');
+    await waitForILSActiveTime(page, JAVA_WHATISJAVA_D1.completionThresholdSec);
+    console.log('[E2E] ✓ Threshold reached');
+    
+    // E5. Wait for completion API call
+    console.log('[E2E] Waiting for completion API call...');
+    await waitForCompletion();
+    console.log('[E2E] ✓ Completion API called');
+    
+    // E6. Verify single completion POST (not multiple)
+    expect(completionRequestCount).toBe(1);
+    console.log('[E2E] ✓ Single completion POST (H verified)');
+    
+    // E7. Verify completion request body (L verification)
+    expect(completionRequestBody).toBeDefined();
+    expect(completionRequestBody.navigationNodeId).toBe(JAVA_WHATISJAVA_D1.navigationNodeId);
+    expect(completionRequestBody.blockId).toBe(JAVA_WHATISJAVA_D1.blockId);
+    expect(completionRequestBody.blockVersion).toBe(JAVA_WHATISJAVA_D1.blockVersion);
+    expect(completionRequestBody.subtopicId).toBe(JAVA_WHATISJAVA_D1.subtopicId);
+    expect(completionRequestBody.sectionId).toBe(JAVA_WHATISJAVA_D1.sectionId);
+    
+    // Verify forbidden fields NOT present
+    expect(completionRequestBody.sessionId).toBeUndefined();
+    expect(completionRequestBody.learnerId).toBeUndefined();
+    console.log('[E2E] ✓ Correct identity (L verified)');
+    
+    // E8. Wait for ILS state to reflect completion
+    await page.waitForTimeout(2000); // Allow ILS refresh
+    
+    // E9. Verify block marked complete in ILS state
+    await verifyBlockCompleted(page);
+    console.log('[E2E] ✓ Completion persisted in ILS state (F verified)');
+    
+    // G1. Refresh page and verify completion persists
+    console.log('[E2E] Refreshing page...');
+    const preRefreshRequestCount = completionRequestCount;
+    
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.waitForTimeout(2000);
+    
+    // G2. Verify block still completed after refresh
+    const isCompletedAfterRefresh = await getILSCompletionStatus(page);
+    expect(isCompletedAfterRefresh).toBe(true);
+    console.log('[E2E] ✓ Completion persists after refresh (G verified)');
+    
+    // G3. Verify NO new completion POST after refresh
+    expect(completionRequestCount).toBe(preRefreshRequestCount);
+    console.log('[E2E] ✓ No duplicate completion after refresh');
+    
+    // H. Cause multiple ILS updates (scroll, interact) - verify still only one POST total
+    console.log('[E2E] Triggering additional ILS updates...');
+    await page.mouse.move(100, 100);
+    await page.mouse.wheel(0, 500);
+    await page.waitForTimeout(3000);
+    
+    expect(completionRequestCount).toBe(1);
+    console.log('[E2E] ✓ Duplicate ILS updates → single POST (H verified)');
+    
+    console.log('[E2E] ✓✓✓ Complete lifecycle certified (E/F/G/H)');
   });
 
-  test.skip('F. Completion persists in backend', async ({ page }) => {
+  test('I. Assessment blocks excluded', async ({ page }) => {
     /**
      * TEST SCENARIO:
-     * 1. Complete instructional block (80% threshold)
-     * 2. Query progress API: GET /api/tutorial/ils/progress?navigationNodeId=...
-     * 3. Verify completedBlocks contains block identity
+     * 1. Search for real assessment block fixture
+     * 2. If found: Navigate and verify NO completion POST
+     * 3. If not found: Document unavailability
      * 
-     * EXPECTED RESULT:
-     * - Backend tutorial_navigation_progress contains completion
-     * - completed_blocks JSON array includes blockId + blockVersion
+     * EXPECTED: progressRole: "assessment" blocks do NOT auto-complete
      */
+    test.skip('Search for assessment block fixture or document unavailable');
+    
+    // TODO: Query database for block with progressRole: "assessment"
+    // If available, implement test similar to E test but verify NO completion
   });
 
-  test.skip('G. Page refresh preserves completion', async ({ page }) => {
+  test('J. Missing expectedTimeSec → no completion', async ({ page }) => {
     /**
      * TEST SCENARIO:
-     * 1. Complete block
-     * 2. Verify UI shows completion
-     * 3. Refresh page
-     * 4. Verify block remains completed (no re-trigger)
-     * 5. Verify NO new completion POST
+     * 1. Search for real block with expectedTimeSec = null
+     * 2. If found: Navigate and verify NO completion POST
+     * 3. If not found: Document unavailability
      * 
-     * EXPECTED RESULT:
-     * - ILS loads persisted completion state
-     * - Orchestrator sees hasCompletionAttempt() = true
-     * - No duplicate completion
+     * EXPECTED: Blocks without timing metadata do NOT auto-complete
      */
+    test.skip('Search for null-expectedTimeSec fixture or document unavailable');
+    
+    // TODO: Query database for block with expected_time_sec IS NULL
   });
 
-  test.skip('H. Duplicate ILS updates → single POST', async ({ page }) => {
+  test('K. Disabled feature → no completion', async ({ page }) => {
     /**
      * TEST SCENARIO:
-     * 1. Track all completion POSTs
-     * 2. Trigger block interaction
-     * 3. Reach 80% threshold
-     * 4. Cause multiple ILS progress updates (scroll, click, etc.)
-     * 5. Verify only ONE completion POST
+     * 1. Start server with NEXT_PUBLIC_ENABLE_AUTO_COMPLETION=false
+     * 2. Navigate to D1 block
+     * 3. Accumulate > 168 seconds
+     * 4. Verify NO completion POST
      * 
-     * EXPECTED RESULT:
-     * - inFlightAttemptsRef prevents duplicate
-     * - F1 test scenario from Step 1.2
-     * - completionRequests.length === 1
+     * EXPECTED: Feature flag controls orchestrator activation
      */
+    test.skip('Requires separate server instance with flag OFF');
+    
+    // TODO: Implement server restart with environment override
+    // Or use separate test environment configuration
   });
 
-  test.skip('I. Assessment blocks excluded', async ({ page }) => {
+  test('L. Correct completion identity (standalone verification)', async ({ page }) => {
     /**
-     * TEST SCENARIO:
-     * 1. Navigate to page with assessment block (progressRole: "assessment")
-     * 2. Interact with assessment
-     * 3. Accumulate active time > expectedTimeSec
-     * 4. Verify NO automatic completion POST
-     * 
-     * EXPECTED RESULT:
-     * - progressRole filter works
-     * - Assessment completion uses different flow
-     * - No instructional completion triggered
+     * This is already verified in E test, but can be isolated if needed.
+     * L is satisfied by E7 verification.
      */
-  });
-
-  test.skip('J. Missing expectedTimeSec → no completion', async ({ page }) => {
-    /**
-     * TEST SCENARIO:
-     * 1. Navigate to block with expectedTimeSec = null
-     * 2. Interact extensively
-     * 3. Verify NO completion POST
-     * 
-     * EXPECTED RESULT:
-     * - Evaluator returns { completed: false, reason: "missing_expected_time" }
-     * - No NaN/Infinity calculation
-     */
-  });
-
-  test.skip('K. Disabled feature → no completion', async ({ page }) => {
-    /**
-     * TEST SCENARIO:
-     * 1. Set enabled={false} via feature flag
-     * 2. Reach 80% threshold
-     * 3. Verify NO completion POST
-     * 
-     * EXPECTED RESULT:
-     * - Orchestrator early-return when disabled
-     * - Safe rollout control works
-     */
-  });
-
-  test.skip('L. Correct completion identity', async ({ page }) => {
-    /**
-     * TEST SCENARIO:
-     * 1. Trigger completion
-     * 2. Intercept POST request
-     * 3. Verify body identity
-     * 
-     * EXPECTED BODY:
-     * {
-     *   navigationNodeId: "what-is-java",
-     *   blockId: "intro-notes",
-     *   blockVersion: "1",
-     *   subtopicId: "<uuid>",
-     *   sectionId: "<uuid>"
-     * }
-     * 
-     * FORBIDDEN:
-     * - sessionId in body
-     * - x-session-id header
-     * - learnerId in body (backend derives from auth)
-     */
+    test.skip('Already verified in E/F/G/H combined test (E7)');
   });
 });
 
