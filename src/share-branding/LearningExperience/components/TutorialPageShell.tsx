@@ -106,6 +106,10 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
   // Phase 3C-A: Ref to canonical tutorial block container for ActiveBlockProvider
   const contentContainerRef = useRef<HTMLDivElement>(null);
   
+  // Phase 2B.18 Step 1.3: Separate ref for ILS test observability (outer container)
+  // This ref targets the outer div with data-auto-completion-enabled for E2E attribute exposure
+  const ilsObservabilityContainerRef = useRef<HTMLDivElement>(null);
+  
   // Phase 2B.18 Step 1.3: Build metadata resolver from published TutorialDocument.blocks
   // Memoized to prevent unnecessary resolver rebuilds on unrelated state changes
   const resolveBlockMetadata = useMemo(
@@ -308,7 +312,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
             <ILSProgressBridge onProgressUpdate={handleProgressUpdate} />
             
             {/* Phase 2B.18 Step 1.3: Expose ILS activeTimeSec for E2E test observation */}
-            <ILSTestObservabilityBridge containerRef={contentContainerRef} />
+            <ILSTestObservabilityBridge containerRef={ilsObservabilityContainerRef} />
             
             {/* Phase 2B.18 Step 1.3: Automatic Instructional Block Completion Orchestrator
              * 
@@ -343,6 +347,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
               >
                 {/* CENTER: Tutorial Content (full width, RSSB overlays when open) */}
                 <div 
+                  ref={ilsObservabilityContainerRef}
                   className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white"
                   data-auto-completion-enabled={automaticCompletionEnabled ? 'true' : 'false'}
                   data-auto-completion-env-value={process.env.NEXT_PUBLIC_ENABLE_AUTO_COMPLETION ?? 'undefined'}

@@ -72,6 +72,7 @@ export default defineConfig({
       testMatch: [
         '**/ils-tutorial-session.spec.ts',
         '**/phase-2b18-step-1.3-instructional-completion.spec.ts',
+        '**/diagnostic-block-identity-fix.spec.ts',
       ],
     },
 
