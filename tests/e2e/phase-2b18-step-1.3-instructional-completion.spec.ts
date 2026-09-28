@@ -47,14 +47,43 @@ const BASE_URL = process.env.SUIA_BASE_URL ?? 'http://skillup.localhost:3009';
 const STUDENT_EMAIL = process.env.SUIA_EMAIL ?? 'student@skillupitacademy.com';
 const STUDENT_PASSWORD = process.env.SUIA_PASSWORD ?? 'testing';
 
-// Real published tutorial page with instructional blocks
+// Real published tutorial page - Java "What is Java" (whatisjava)
+// Fixture analysis: .analysis/STEP-1.3-E2E-FIXTURE-ANALYSIS.md
 const DOMAIN = 'full-stack-development';
 const SUBJECT = 'backend-development';
-const TOPIC = 'python';
-const SUBTOPIC_SLUG = 'complete-python-5b1cfc3d';
-const NAVIGATION_NODE_ID = 'whatispython';
+const TOPIC = 'java';
+const SUBTOPIC_SLUG = 'what-is-java-12efacf1';
+const NAVIGATION_NODE_ID = 'whatisjava';
+const SUBTOPIC_ID = '414f63eb-cccf-4bd1-bcc0-b52df69ce499';
+const SECTION_ID = '45f4e65b-2178-4bca-867e-9377f064fb20';
+
+// DEFINITION block (D1) - fastest available instructional block
+// progressRole: undefined → resolver defaults to 'instructional'
+const TEST_BLOCK = {
+  id: '8680bd00-ecfe-4da7-a78f-9b6a0b6a1749',
+  type: 'definition',
+  version: 'D1',
+  expectedTimeSec: 210, // 3.5 minutes
+  threshold80Percent: 168, // 2.8 minutes - REAL ILS MUST REACH THIS
+};
 
 const TUTORIAL_URL = `/tutorial-v2/${DOMAIN}/${SUBJECT}/${TOPIC}/${SUBTOPIC_SLUG}/${NAVIGATION_NODE_ID}`;
+
+/**
+ * E2E TEST CONSTRAINT:
+ * 
+ * The real ILS must accumulate 168 seconds of active time to trigger completion.
+ * This is NOT faked or mocked - tests will wait for genuine ILS progress.
+ * 
+ * Expected test duration: ~3-5 minutes per scenario
+ * Full suite: ~30-40 minutes
+ * 
+ * This is the correct tradeoff per strict execution guidelines:
+ * - Real ILS active-time tracking (not faked)
+ * - Real 80% threshold (not altered for convenience)
+ * - Real completion API (not mocked)
+ * - Real persistence (not simulated)
+ */
 
 // ============================================================
 // HELPER FUNCTIONS
