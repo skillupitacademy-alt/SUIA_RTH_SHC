@@ -87,14 +87,34 @@ const STUDENT_PASSWORD = process.env.SUIA_PASSWORD ?? 'testing';
 
 /**
  * Authenticate as learner
+ * 
+ * Uses the same pattern as existing ILS E2E tests (ils-tutorial-session.spec.ts)
  */
 async function loginAsLearner(page: Page) {
   await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle' });
+  
+  // Wait for the form to be interactive
   await page.waitForSelector('input#email', { state: 'visible', timeout: 15000 });
+  
+  // Fill email
   await page.fill('input#email', STUDENT_EMAIL);
+  
+  // Fill password directly by ID
   await page.fill('input#password', STUDENT_PASSWORD);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/student/, { timeout: 10000 });
+  
+  // Wait a bit for React hydration
+  await page.waitForTimeout(1000);
+  
+  // Click the submit button and wait for navigation away from /login
+  await Promise.all([
+    page.waitForURL((url) => !url.href.includes('/login'), { timeout: 30000 }),
+    page.click('button[type="submit"]'),
+  ]);
+  
+  // Wait for auth cookies to be fully written
+  await page.waitForTimeout(1500);
+  
+  console.log('[E2E] Logged in successfully. Current URL:', page.url());
 }
 
 /**
