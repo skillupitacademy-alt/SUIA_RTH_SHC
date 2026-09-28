@@ -39,6 +39,16 @@ export async function navigateToD1Block(page: Page, baseURL: string): Promise<vo
   // Wait for page to load and orchestrator to mount
   await page.waitForLoadState('networkidle');
   
+  // CRITICAL: Scroll D1 block into view to make it the active block
+  // The ActiveBlockProvider tracks which block is in viewport via IntersectionObserver
+  // Without scrolling, the I1 (introduction) block remains active
+  console.log('[E2E] Scrolling D1 block into view...');
+  const d1BlockLocator = page.locator(`[data-block-id="${JAVA_WHATISJAVA_D1.blockId}"]`);
+  await d1BlockLocator.scrollIntoViewIfNeeded();
+  
+  // Wait for ActiveBlockProvider to update (IntersectionObserver callback)
+  await page.waitForTimeout(1000);
+  
   // Capture final URL
   const finalURL = page.url();
   console.log('[E2E] Final URL after navigation:', finalURL);
@@ -114,15 +124,45 @@ export async function getILSCompletionStatus(page: Page): Promise<boolean> {
 
 /**
  * Get ILS block identity from DOM attributes
+ * 
+ * Waits for ILS to populate block identity attributes (max 30 seconds)
  */
 export async function getILSBlockIdentity(page: Page): Promise<{
   blockId: string | null;
   blockVersion: string | null;
 }> {
   const container = page.locator(SELECTORS.autoCompletionEnabled);
-  const blockId = await container.getAttribute('data-ils-block-id');
-  const blockVersion = await container.getAttribute('data-ils-block-version');
-  return { blockId, blockVersion };
+  
+  // Wait for container to exist
+  try {
+    await container.waitFor({ state: 'attached', timeout: 10000 });
+    console.log('[E2E] Container found, waiting for ILS block identity...');
+    
+    // Poll for blockId attribute (ILS needs time to load active block)
+    // Increased to 60 attempts × 500ms = 30 seconds max wait
+    for (let i = 0; i < 60; i++) {
+      const blockId = await container.getAttribute('data-ils-block-id');
+      if (blockId) {
+        const blockVersion = await container.getAttribute('data-ils-block-version');
+        console.log('[E2E] Block identity found:', { blockId, blockVersion, attemptsNeeded: i + 1 });
+        return { blockId, blockVersion };
+      }
+      
+      // Log every 5 seconds
+      if (i % 10 === 0 && i > 0) {
+        console.log(`[E2E] Still waiting for block identity... (${i * 0.5}s elapsed)`);
+      }
+      
+      await page.waitForTimeout(500); // Wait 500ms between polls
+    }
+    
+    // Timeout - return null
+    console.warn('[E2E] Timeout waiting for ILS block identity attributes (30s)');
+    return { blockId: null, blockVersion: null };
+  } catch (error) {
+    console.error('[E2E] Error reading block identity:', error);
+    return { blockId: null, blockVersion: null };
+  }
 }
 
 /**

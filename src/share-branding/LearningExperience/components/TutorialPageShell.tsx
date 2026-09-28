@@ -54,6 +54,13 @@ function ILSTestObservabilityBridge({
   const { activeBlockProgress } = useILS();
   
   useEffect(() => {
+    console.log('[ILSTestObservabilityBridge] Update effect', {
+      hasContainer: !!containerRef.current,
+      hasProgress: !!activeBlockProgress,
+      blockId: activeBlockProgress?.blockId,
+      blockVersion: activeBlockProgress?.blockVersion,
+    });
+    
     if (containerRef.current) {
       // Expose real ILS activeTimeSec for E2E verification
       containerRef.current.setAttribute(
@@ -66,10 +73,18 @@ function ILSTestObservabilityBridge({
         containerRef.current.setAttribute('data-ils-block-id', activeBlockProgress.blockId);
         containerRef.current.setAttribute('data-ils-block-version', activeBlockProgress.blockVersion);
         containerRef.current.setAttribute('data-ils-is-completed', String(activeBlockProgress.isCompleted));
+        
+        console.log('[ILSTestObservabilityBridge] Attributes set', {
+          blockId: activeBlockProgress.blockId,
+          blockVersion: activeBlockProgress.blockVersion,
+          activeTimeSec: activeBlockProgress.activeTimeSec,
+        });
       } else {
         containerRef.current.removeAttribute('data-ils-block-id');
         containerRef.current.removeAttribute('data-ils-block-version');
         containerRef.current.removeAttribute('data-ils-is-completed');
+        
+        console.log('[ILSTestObservabilityBridge] Attributes removed (no activeBlockProgress)');
       }
     }
   }, [activeBlockProgress, containerRef]);

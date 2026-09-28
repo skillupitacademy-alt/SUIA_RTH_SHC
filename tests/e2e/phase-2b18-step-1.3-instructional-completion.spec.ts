@@ -122,11 +122,8 @@ async function loginAsLearner(page: Page) {
 // ============================================================
 
 test.describe('Phase 2B.18 Step 1.3 - Wiring Certification', () => {
-  test.beforeEach(async ({ page }) => {
-    await loginAsLearner(page);
-  });
-
   test('A. Orchestrator mounted in Tutorial Page', async ({ page }) => {
+    await loginAsLearner(page);
     await page.goto(`${BASE_URL}${JAVA_WHATISJAVA_D1.blockPath}`);
     
     // Wait for page to load
@@ -140,6 +137,7 @@ test.describe('Phase 2B.18 Step 1.3 - Wiring Certification', () => {
   });
 
   test('B. Published blocks rendered', async ({ page }) => {
+    await loginAsLearner(page);
     await page.goto(`${BASE_URL}${JAVA_WHATISJAVA_D1.blockPath}`);
     
     // Verify blocks rendered (TutorialBlockRenderer)
@@ -151,6 +149,7 @@ test.describe('Phase 2B.18 Step 1.3 - Wiring Certification', () => {
   });
 
   test('C. Feature disabled → no completion activity', async ({ page }) => {
+    await loginAsLearner(page);
     const completionRequests = observeCompletionRequests(page);
     
     await page.goto(`${BASE_URL}${JAVA_WHATISJAVA_D1.blockPath}`);
@@ -163,10 +162,6 @@ test.describe('Phase 2B.18 Step 1.3 - Wiring Certification', () => {
 });
 
 test.describe('Phase 2B.18 Step 1.3 - E2E Certification (Real ILS)', () => {
-  test.beforeEach(async ({ page }) => {
-    await loginAsLearner(page);
-    await clearBrowserState(page);
-  });
 
   /**
    * COMBINED JOURNEY: E → F → G → H
@@ -180,6 +175,10 @@ test.describe('Phase 2B.18 Step 1.3 - E2E Certification (Real ILS)', () => {
    * Duration: ~3-5 minutes total
    */
   test('E/F/G/H. Complete instructional block lifecycle', async ({ page }) => {
+    // Clear state and login fresh
+    await page.context().clearCookies();
+    await loginAsLearner(page);
+    
     console.log('[E2E] Starting combined lifecycle test (E/F/G/H)');
     
     // Setup completion API observation (non-intercepting)

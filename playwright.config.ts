@@ -35,19 +35,28 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: ['**/ils-tutorial-session.spec.ts'],
+      testIgnore: [
+        '**/ils-tutorial-session.spec.ts',
+        '**/phase-2b18-step-1.3-instructional-completion.spec.ts',
+      ],
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testIgnore: ['**/ils-tutorial-session.spec.ts'],
+      testIgnore: [
+        '**/ils-tutorial-session.spec.ts',
+        '**/phase-2b18-step-1.3-instructional-completion.spec.ts',
+      ],
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testIgnore: ['**/ils-tutorial-session.spec.ts'],
+      testIgnore: [
+        '**/ils-tutorial-session.spec.ts',
+        '**/phase-2b18-step-1.3-instructional-completion.spec.ts',
+      ],
     },
 
     /**
@@ -60,7 +69,10 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         baseURL: process.env.SUIA_BASE_URL ?? 'http://skillup.localhost:3009',
       },
-      testMatch: ['**/ils-tutorial-session.spec.ts'],
+      testMatch: [
+        '**/ils-tutorial-session.spec.ts',
+        '**/phase-2b18-step-1.3-instructional-completion.spec.ts',
+      ],
     },
 
     /**
