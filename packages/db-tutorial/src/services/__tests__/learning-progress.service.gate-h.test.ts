@@ -53,12 +53,7 @@ class MockSectionRepository {
       brandId: brandId as 'shared' | 'realtutorialhub' | 'skillup' | 'skillhubcore',
       content: {
         schemaVersion: 1,
-        blocks: requiredBlocks.map((block) => ({
-          id: block.blockId,
-          type: 'definition',
-          version: block.blockVersion,
-          content: {} as any,
-        })),
+        blocks: [] as any, // Simplified - we don't need actual block objects for this test
       },
     };
     this.sections.set(key, mockSection as TutorialSection);
@@ -116,6 +111,38 @@ class MockProgressRepository implements ITutorialNavigationProgressRepository {
     throw new Error('Not implemented');
   }
 
+  async isBlockCompleted(): Promise<boolean> {
+    throw new Error('Not implemented');
+  }
+
+  async recordTime(): Promise<TutorialNavigationProgressRecord> {
+    throw new Error('Not implemented');
+  }
+
+  async incrementRevision(): Promise<TutorialNavigationProgressRecord> {
+    throw new Error('Not implemented');
+  }
+
+  async completeNode(): Promise<TutorialNavigationProgressRecord> {
+    throw new Error('Not implemented');
+  }
+
+  async archiveProgress(): Promise<TutorialNavigationProgressRecord> {
+    throw new Error('Not implemented');
+  }
+
+  async restoreProgress(): Promise<TutorialNavigationProgressRecord> {
+    throw new Error('Not implemented');
+  }
+
+  async getCompletedNodes(): Promise<string[]> {
+    throw new Error('Not implemented');
+  }
+
+  async isNodeComplete(): Promise<boolean> {
+    throw new Error('Not implemented');
+  }
+
   setMockRecord(userId: string, navigationNodeId: string, record: TutorialNavigationProgressRecord): void {
     const key = `${userId}:${navigationNodeId}`;
     this.records.set(key, record);
@@ -134,11 +161,26 @@ class MockBlockLearningStateRepository {
   }
 }
 
+class MockBlockTelemetryEventRepository {
+  withDb(): this {
+    return this;
+  }
+
+  async claimEvent() {
+    throw new Error('Not implemented');
+  }
+
+  async findByEventId() {
+    throw new Error('Not implemented');
+  }
+}
+
 describe('Gate H: Canonical Block Completion Mapping', () => {
   let service: LearningProgressService;
   let mockProgressRepo: MockProgressRepository;
   let mockSectionRepo: MockSectionRepository;
   let mockBlockRepo: MockBlockLearningStateRepository;
+  let mockTelemetryRepo: MockBlockTelemetryEventRepository;
 
   const BLOCK_ID_D1 = '8680bd00-ecfe-4da7-a78f-9b6a0b6a1749';
   const BLOCK_ID_C1 = 'c1-block-id';
@@ -150,22 +192,22 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
 
   const identity: AuthenticatedIdentity = {
     userId: USER_ID,
-    brandId: 'shared',
-    roles: ['student'],
+    brand: 'shared',
   };
 
   beforeEach(() => {
     mockProgressRepo = new MockProgressRepository();
     mockSectionRepo = new MockSectionRepository();
     mockBlockRepo = new MockBlockLearningStateRepository();
+    mockTelemetryRepo = new MockBlockTelemetryEventRepository();
 
     service = new LearningProgressService(
       mockProgressRepo,
       mockSectionRepo as unknown as TutorialSectionRepository,
-      mockBlockRepo as any
+      mockBlockRepo as any,
+      mockTelemetryRepo as any
     );
 
-    // Register section with required blocks
     mockSectionRepo.registerSection(
       SUBTOPIC_ID,
       NAVIGATION_NODE_ID,
@@ -174,9 +216,38 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
         { blockId: BLOCK_ID_I1, blockVersion: 'I1' },
         { blockId: BLOCK_ID_D1, blockVersion: 'D1' },
         { blockId: BLOCK_ID_C1, blockVersion: 'C1' },
-      ]
+      ],
+      'shared'
     );
   });
+
+  // Helper to create complete BlockLearningState fixture
+  function createBlockState(
+    blockId: string,
+    blockVersion: string,
+    overrides: Partial<BlockLearningState> = {}
+  ): BlockLearningState {
+    return {
+      id: `block-state-${blockId}`,
+      userId: USER_ID,
+      navigationNodeId: NAVIGATION_NODE_ID,
+      blockId,
+      blockVersion,
+      activeTimeSec: 0,
+      expectedTimeSec: 210,
+      visitCount: 1,
+      revisionCount: 0,
+      lastSessionId: null,
+      firstViewedAt: new Date(),
+      lastViewedAt: new Date(),
+      completedAt: null,
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+      ...overrides,
+    };
+  }
 
   it('uses completed_blocks when block_learning_state.completedAt is NULL', async () => {
     // GATE H CORE SCENARIO:
@@ -211,21 +282,10 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
       deletedAt: null,
     };
 
-    const blockState: BlockLearningState = {
-      userId: USER_ID,
-      navigationNodeId: NAVIGATION_NODE_ID,
-      blockId: BLOCK_ID_D1,
-      blockVersion: 'D1',
+    const blockState = createBlockState(BLOCK_ID_D1, 'D1', {
       activeTimeSec: 192,
-      expectedTimeSec: 210,
-      visitCount: 1,
-      revisionCount: 0,
-      firstViewedAt: new Date(),
-      lastViewedAt: new Date(),
       completedAt: null, // ❌ NULL (bug scenario)
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
     mockProgressRepo.setMockRecord(USER_ID, NAVIGATION_NODE_ID, progressRecord);
     mockBlockRepo.setMockStates([blockState]);
@@ -270,21 +330,10 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
       deletedAt: null,
     };
 
-    const blockState: BlockLearningState = {
-      userId: USER_ID,
-      navigationNodeId: NAVIGATION_NODE_ID,
-      blockId: BLOCK_ID_D1,
-      blockVersion: 'D1', // D1, not D2
+    const blockState = createBlockState(BLOCK_ID_D1, 'D1', {
       activeTimeSec: 192,
-      expectedTimeSec: 210,
-      visitCount: 1,
-      revisionCount: 0,
-      firstViewedAt: new Date(),
-      lastViewedAt: new Date(),
       completedAt: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
     mockProgressRepo.setMockRecord(USER_ID, NAVIGATION_NODE_ID, progressRecord);
     mockBlockRepo.setMockStates([blockState]);
@@ -327,21 +376,10 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
       deletedAt: null,
     };
 
-    const blockState: BlockLearningState = {
-      userId: USER_ID,
-      navigationNodeId: NAVIGATION_NODE_ID,
-      blockId: BLOCK_ID_D1,
-      blockVersion: 'D1',
+    const blockState = createBlockState(BLOCK_ID_D1, 'D1', {
       activeTimeSec: 192,
-      expectedTimeSec: 210,
-      visitCount: 1,
-      revisionCount: 0,
-      firstViewedAt: new Date(),
-      lastViewedAt: new Date(),
       completedAt: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
     mockProgressRepo.setMockRecord(USER_ID, NAVIGATION_NODE_ID, progressRecord);
     mockBlockRepo.setMockStates([blockState]);
@@ -357,7 +395,6 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
   });
 
   it('falls back to block_learning_state.completedAt when canonical completion is absent', async () => {
-    // Legacy/explicit completion scenario
     const legacyTimestamp = new Date('2026-09-28T18:00:00.000Z');
 
     const progressRecord: TutorialNavigationProgressRecord = {
@@ -381,21 +418,10 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
       deletedAt: null,
     };
 
-    const blockState: BlockLearningState = {
-      userId: USER_ID,
-      navigationNodeId: NAVIGATION_NODE_ID,
-      blockId: BLOCK_ID_D1,
-      blockVersion: 'D1',
+    const blockState = createBlockState(BLOCK_ID_D1, 'D1', {
       activeTimeSec: 192,
-      expectedTimeSec: 210,
-      visitCount: 1,
-      revisionCount: 0,
-      firstViewedAt: new Date(),
-      lastViewedAt: new Date(),
       completedAt: legacyTimestamp, // Legacy completion
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
     mockProgressRepo.setMockRecord(USER_ID, NAVIGATION_NODE_ID, progressRecord);
     mockBlockRepo.setMockStates([blockState]);
@@ -442,21 +468,10 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
       deletedAt: null,
     };
 
-    const blockState: BlockLearningState = {
-      userId: USER_ID,
-      navigationNodeId: NAVIGATION_NODE_ID,
-      blockId: BLOCK_ID_D1,
-      blockVersion: 'D1',
+    const blockState = createBlockState(BLOCK_ID_D1, 'D1', {
       activeTimeSec: 192,
-      expectedTimeSec: 210,
-      visitCount: 1,
-      revisionCount: 0,
-      firstViewedAt: new Date(),
-      lastViewedAt: new Date(),
       completedAt: legacyTimestamp, // Conflicting legacy timestamp
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
     mockProgressRepo.setMockRecord(USER_ID, NAVIGATION_NODE_ID, progressRecord);
     mockBlockRepo.setMockStates([blockState]);
@@ -501,51 +516,18 @@ describe('Gate H: Canonical Block Completion Mapping', () => {
     };
 
     const blockStates: BlockLearningState[] = [
-      {
-        userId: USER_ID,
-        navigationNodeId: NAVIGATION_NODE_ID,
-        blockId: BLOCK_ID_I1,
-        blockVersion: 'I1',
+      createBlockState(BLOCK_ID_I1, 'I1', {
         activeTimeSec: 50,
         expectedTimeSec: 60,
-        visitCount: 1,
-        revisionCount: 0,
-        firstViewedAt: new Date(),
-        lastViewedAt: new Date(),
-        completedAt: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        userId: USER_ID,
-        navigationNodeId: NAVIGATION_NODE_ID,
-        blockId: BLOCK_ID_D1,
-        blockVersion: 'D1',
+      }),
+      createBlockState(BLOCK_ID_D1, 'D1', {
         activeTimeSec: 192,
-        expectedTimeSec: 210,
-        visitCount: 1,
-        revisionCount: 0,
-        firstViewedAt: new Date(),
-        lastViewedAt: new Date(),
         completedAt: null, // NULL but has canonical completion
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        userId: USER_ID,
-        navigationNodeId: NAVIGATION_NODE_ID,
-        blockId: BLOCK_ID_C1,
-        blockVersion: 'C1',
+      }),
+      createBlockState(BLOCK_ID_C1, 'C1', {
         activeTimeSec: 30,
         expectedTimeSec: 90,
-        visitCount: 1,
-        revisionCount: 0,
-        firstViewedAt: new Date(),
-        lastViewedAt: new Date(),
-        completedAt: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+      }),
     ];
 
     mockProgressRepo.setMockRecord(USER_ID, NAVIGATION_NODE_ID, progressRecord);
