@@ -17,13 +17,78 @@ export async function navigateToD1Block(page: Page, baseURL: string): Promise<vo
   // Construct full URL
   const fullURL = `${baseURL}${JAVA_WHATISJAVA_D1.blockPath}`;
   
+  // Capture browser console messages
+  page.on('console', msg => {
+    console.log(`[Browser Console ${msg.type()}]:`, msg.text());
+  });
+  
+  // Capture page errors
+  page.on('pageerror', error => {
+    console.log('[Browser Page Error]:', error.message);
+  });
+  
   // Navigate to Java tutorial D1 block
-  await page.goto(fullURL);
+  const response = await page.goto(fullURL);
+  
+  console.log('[E2E] Navigation response:', {
+    url: response?.url(),
+    status: response?.status(),
+    statusText: response?.statusText(),
+  });
   
   // Wait for page to load and orchestrator to mount
   await page.waitForLoadState('networkidle');
   
-  // Verify auto-completion is enabled
+  // Capture final URL
+  const finalURL = page.url();
+  console.log('[E2E] Final URL after navigation:', finalURL);
+  
+  // CRITICAL DIAGNOSTIC: Inspect exact DOM state before assertion
+  console.log('[E2E] Inspecting DOM state...');
+  
+  // Check for any elements with data-auto-completion attributes
+  const elementCount = await page.locator('[data-auto-completion-enabled]').count();
+  console.log('[E2E] Elements with data-auto-completion-enabled:', elementCount);
+  
+  if (elementCount === 0) {
+    // No elements found - inspect main to see what's actually there
+    const mainContent = await page.locator('main').evaluate((main) => {
+      const contentDiv = main.querySelector('.min-w-0.flex-1');
+      return {
+        mainExists: !!main,
+        contentDivExists: !!contentDiv,
+        contentDivAttributes: contentDiv ? Array.from(contentDiv.attributes).map(attr => ({
+          name: attr.name,
+          value: attr.value,
+        })) : null,
+        htmlSnippet: main.innerHTML.substring(0, 500),
+        hasAutoCompletionInHTML: main.innerHTML.includes('data-auto-completion'),
+      };
+    });
+    
+    console.log('[E2E] Main content inspection:', JSON.stringify(mainContent, null, 2));
+    
+    // Save page content for analysis
+    const pageContent = await page.content();
+    console.log('[E2E] Page content length:', pageContent.length);
+    console.log('[E2E] Has data-auto-completion in full HTML:', pageContent.includes('data-auto-completion'));
+    
+    // Take screenshot
+    await page.screenshot({ path: 'test-results/dom-state-diagnostic.png', fullPage: true });
+    console.log('[E2E] Screenshot saved to test-results/dom-state-diagnostic.png');
+  } else {
+    // Elements found - inspect their values
+    const attributes = await page.locator('[data-auto-completion-enabled]').first().evaluate((el) => ({
+      enabled: el.getAttribute('data-auto-completion-enabled'),
+      envValue: el.getAttribute('data-auto-completion-env-value'),
+      tagName: el.tagName,
+      className: el.className,
+    }));
+    
+    console.log('[E2E] Found element attributes:', JSON.stringify(attributes, null, 2));
+  }
+  
+  // Now verify auto-completion is enabled
   await expect(page.locator(SELECTORS.autoCompletionEnabled)).toBeVisible();
 }
 

@@ -105,6 +105,15 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
   const automaticCompletionEnabled =
     process.env.NEXT_PUBLIC_ENABLE_AUTO_COMPLETION === 'true';
   
+  // TEMPORARY DIAGNOSTIC: Expose evaluated env value for E2E verification
+  // This proves what Next.js actually compiled into the bundle
+  const envValueForDiagnostic = process.env.NEXT_PUBLIC_ENABLE_AUTO_COMPLETION ?? 'undefined';
+  
+  console.log('[TutorialPageShell] Auto-completion flag evaluation:', {
+    rawValue: process.env.NEXT_PUBLIC_ENABLE_AUTO_COMPLETION,
+    enabled: automaticCompletionEnabled,
+  });
+  
   // Phase 2A: Store ILS progress for LSNB (passed from inner component)
   const [currentPageProgress, setCurrentPageProgress] = useState<{
     progressPercentage: number;
@@ -321,6 +330,7 @@ export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShell
                 <div 
                   className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8 bg-white"
                   data-auto-completion-enabled={automaticCompletionEnabled ? 'true' : 'false'}
+                  data-auto-completion-env-value={process.env.NEXT_PUBLIC_ENABLE_AUTO_COMPLETION ?? 'undefined'}
                 >
                   <div ref={contentContainerRef} className="w-full space-y-6">
                     {hasBlocks ? (
