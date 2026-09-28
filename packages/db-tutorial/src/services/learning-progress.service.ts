@@ -1018,6 +1018,64 @@ export class LearningProgressService {
   }
 
   /**
+   * Resolve block completion timestamp from canonical source
+   * 
+   * Completion authority
+   * --------------------
+   * 
+   * Canonical:
+   *   tutorial_navigation_progress.completed_blocks
+   * 
+   * Legacy fallback:
+   *   block_learning_state.completed_at
+   * 
+   * Why:
+   *   Automatic block completion currently persists the canonical
+   *   completion record in tutorial_navigation_progress but does not
+   *   necessarily populate block_learning_state.completed_at.
+   * 
+   * Therefore block_learning_state.completed_at must not override
+   * an existing canonical completion record.
+   * 
+   * Matching identity:
+   *   blockId + blockVersion
+   * 
+   * @param record - Navigation progress record with canonical completions
+   * @param state - Block learning state with telemetry data
+   * @returns Resolved completion timestamp or null
+   */
+  private resolveBlockCompletedAt(
+    record: TutorialNavigationProgressRecord,
+    state: BlockLearningState
+  ): Date | null {
+    const authoritativeCompletion = record.completedBlocks.find(
+      (completion) =>
+        completion.blockId === state.blockId &&
+        completion.blockVersion === state.blockVersion
+    );
+
+    if (!authoritativeCompletion) {
+      return state.completedAt;
+    }
+
+    const completedAt = new Date(authoritativeCompletion.completedAt);
+
+    if (Number.isNaN(completedAt.getTime())) {
+      throw new LearningProgressError(
+        `Invalid completion timestamp for block ${state.blockId}@${state.blockVersion}`,
+        'INVALID_BLOCK_COMPLETION_TIMESTAMP',
+        {
+          blockId: state.blockId,
+          blockVersion: state.blockVersion,
+          completedAt: authoritativeCompletion.completedAt,
+        }
+      );
+    }
+
+    return completedAt;
+  }
+
+  /**
    * Convert repository record to DTO with calculated progress
    * 
    * Gate 3C.1R: Now includes per-block telemetry state
@@ -1037,29 +1095,35 @@ export class LearningProgressService {
       requiredBlocks
     );
 
-    // Map block states to DTO format
-    // Gate H Fix: Use authoritative completion from tutorial_navigation_progress.completed_blocks
-    // This prevents duplicate completion after reload when automatic completion
-    // updates completed_blocks but not block_learning_state.completed_at
-    const blocks: BlockLearningStateDTO[] = blockStates.map((state) => {
-      const authoritativeCompletion = record.completedBlocks.find(
-        (c) => c.blockId === state.blockId && c.blockVersion === state.blockVersion
-      );
-
-      return {
-        blockId: state.blockId,
-        blockVersion: state.blockVersion,
-        visitCount: state.visitCount,
-        revisionCount: state.revisionCount,
-        activeTimeSec: state.activeTimeSec,
-        expectedTimeSec: state.expectedTimeSec, // Nullable - content-authored value
-        firstViewedAt: state.firstViewedAt,
-        lastViewedAt: state.lastViewedAt,
-        completedAt: authoritativeCompletion
-          ? new Date(authoritativeCompletion.completedAt)
-          : state.completedAt,
-      };
-    });
+    /**
+     * Completion authority
+     * --------------------
+     * 
+     * Canonical:
+     *   tutorial_navigation_progress.completed_blocks
+     * 
+     * Legacy fallback:
+     *   block_learning_state.completed_at
+     * 
+     * Why:
+     *   Automatic block completion currently persists the canonical
+     *   completion record in tutorial_navigation_progress but does not
+     *   necessarily populate block_learning_state.completed_at.
+     * 
+     * Matching identity:
+     *   blockId + blockVersion
+     */
+    const blocks: BlockLearningStateDTO[] = blockStates.map((state) => ({
+      blockId: state.blockId,
+      blockVersion: state.blockVersion,
+      visitCount: state.visitCount,
+      revisionCount: state.revisionCount,
+      activeTimeSec: state.activeTimeSec,
+      expectedTimeSec: state.expectedTimeSec,
+      firstViewedAt: state.firstViewedAt,
+      lastViewedAt: state.lastViewedAt,
+      completedAt: this.resolveBlockCompletedAt(record, state),
+    }));
 
     return {
       navigationNodeId: record.navigationNodeId,

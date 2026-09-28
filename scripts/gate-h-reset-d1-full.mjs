@@ -52,8 +52,9 @@ async function main() {
        WHERE user_id = $1
          AND navigation_node_id = $2
          AND block_id = $3
+         AND block_version = $4
        RETURNING block_version, active_time_sec, completed_at`,
-      [CORRECT_SHADOW_USER_ID, NAVIGATION_NODE_ID, BLOCK_ID]
+      [CORRECT_SHADOW_USER_ID, NAVIGATION_NODE_ID, BLOCK_ID, BLOCK_VERSION]
     );
 
     if (deleteBlockState.rowCount === 0) {
@@ -102,7 +103,7 @@ async function main() {
         console.log('\nSTEP 3: Removing D1 from completed_blocks...');
         const updateResult = await pool.query(
           `UPDATE tutorial_navigation_progress
-           SET completed_blocks = $1,
+           SET completed_blocks = $1::jsonb,
                updated_at = NOW()
            WHERE id = $2
            RETURNING completed_blocks`,
@@ -122,8 +123,9 @@ async function main() {
        FROM block_learning_state
        WHERE user_id = $1
          AND navigation_node_id = $2
-         AND block_id = $3`,
-      [CORRECT_SHADOW_USER_ID, NAVIGATION_NODE_ID, BLOCK_ID]
+         AND block_id = $3
+         AND block_version = $4`,
+      [CORRECT_SHADOW_USER_ID, NAVIGATION_NODE_ID, BLOCK_ID, BLOCK_VERSION]
     );
 
     const blockStateCount = parseInt(verifyBlockState.rows[0].count);
