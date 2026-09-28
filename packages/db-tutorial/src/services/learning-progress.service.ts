@@ -1038,17 +1038,28 @@ export class LearningProgressService {
     );
 
     // Map block states to DTO format
-    const blocks: BlockLearningStateDTO[] = blockStates.map((state) => ({
-      blockId: state.blockId,
-      blockVersion: state.blockVersion,
-      visitCount: state.visitCount,
-      revisionCount: state.revisionCount,
-      activeTimeSec: state.activeTimeSec,
-      expectedTimeSec: state.expectedTimeSec, // Nullable - content-authored value
-      firstViewedAt: state.firstViewedAt,
-      lastViewedAt: state.lastViewedAt,
-      completedAt: state.completedAt,
-    }));
+    // Gate H Fix: Use authoritative completion from tutorial_navigation_progress.completed_blocks
+    // This prevents duplicate completion after reload when automatic completion
+    // updates completed_blocks but not block_learning_state.completed_at
+    const blocks: BlockLearningStateDTO[] = blockStates.map((state) => {
+      const authoritativeCompletion = record.completedBlocks.find(
+        (c) => c.blockId === state.blockId && c.blockVersion === state.blockVersion
+      );
+
+      return {
+        blockId: state.blockId,
+        blockVersion: state.blockVersion,
+        visitCount: state.visitCount,
+        revisionCount: state.revisionCount,
+        activeTimeSec: state.activeTimeSec,
+        expectedTimeSec: state.expectedTimeSec, // Nullable - content-authored value
+        firstViewedAt: state.firstViewedAt,
+        lastViewedAt: state.lastViewedAt,
+        completedAt: authoritativeCompletion
+          ? new Date(authoritativeCompletion.completedAt)
+          : state.completedAt,
+      };
+    });
 
     return {
       navigationNodeId: record.navigationNodeId,
