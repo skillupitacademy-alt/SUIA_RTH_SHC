@@ -1113,17 +1113,32 @@ export class LearningProgressService {
      * Matching identity:
      *   blockId + blockVersion
      */
-    const blocks: BlockLearningStateDTO[] = blockStates.map((state) => ({
-      blockId: state.blockId,
-      blockVersion: state.blockVersion,
-      visitCount: state.visitCount,
-      revisionCount: state.revisionCount,
-      activeTimeSec: state.activeTimeSec,
-      expectedTimeSec: state.expectedTimeSec,
-      firstViewedAt: state.firstViewedAt,
-      lastViewedAt: state.lastViewedAt,
-      completedAt: this.resolveBlockCompletedAt(record, state),
-    }));
+    const blocks: BlockLearningStateDTO[] = blockStates.map((state) => {
+      const completedAt = this.resolveBlockCompletedAt(record, state);
+      
+      // GATE H FORENSIC: Log D1 completedAt resolution
+      if (state.blockId === '8680bd00-ecfe-4da7-a78f-9b6a0b6a1749') {
+        console.log('[GATE H FORENSIC] D1 completedAt in toDTO():', {
+          blockId: state.blockId,
+          blockVersion: state.blockVersion,
+          'block_learning_state.completedAt': state.completedAt,
+          'resolveBlockCompletedAt() result': completedAt,
+          'canonical completed_blocks count': record.completedBlocks.length,
+        });
+      }
+      
+      return {
+        blockId: state.blockId,
+        blockVersion: state.blockVersion,
+        visitCount: state.visitCount,
+        revisionCount: state.revisionCount,
+        activeTimeSec: state.activeTimeSec,
+        expectedTimeSec: state.expectedTimeSec,
+        firstViewedAt: state.firstViewedAt,
+        lastViewedAt: state.lastViewedAt,
+        completedAt,
+      };
+    });
 
     return {
       navigationNodeId: record.navigationNodeId,

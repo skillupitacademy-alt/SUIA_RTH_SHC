@@ -529,18 +529,32 @@ export function ILSProvider({
         (block) => block.blockId === blockId && block.blockVersion === blockVersion
       );
       
+      // Gate H Fix: Preserve canonical completion during telemetry updates
+      // Get existing block state to preserve completedAt if present
+      const existingBlock = existingIndex !== -1 ? blocksRef.current[existingIndex] : null;
+      
       // Phase 2B.18 Step 3: Normalize server state to BlockLearningStateResponse
-      // TelemetryBlockState and BlockLearningStateResponse are structurally compatible
+      // Telemetry updates should refresh metrics but NEVER regress a known completion
       const normalizedState: BlockLearningStateResponse = {
         blockId: state.blockId,
         blockVersion: state.blockVersion,
+        
+        // Telemetry-authoritative fields (always update from server)
         visitCount: state.visitCount,
         revisionCount: state.revisionCount,
         activeTimeSec: state.activeTimeSec, // CUMULATIVE (not delta)
+        
+        // Metadata fields (server-authoritative)
         expectedTimeSec: state.expectedTimeSec,
         firstViewedAt: state.firstViewedAt,
         lastViewedAt: state.lastViewedAt,
-        completedAt: state.completedAt,
+        
+        // Gate H: Monotonic completion invariant
+        // Once completedAt is set (from canonical source), it must never regress to null
+        // null → timestamp: allowed (new completion)
+        // timestamp → timestamp: allowed (no change expected, but safe)
+        // timestamp → null: FORBIDDEN (would cause duplicate completion)
+        completedAt: existingBlock?.completedAt ?? state.completedAt,
       };
       
       // Phase 2B.18 Step 3: Immutable replacement (not mutation)
@@ -560,6 +574,10 @@ export function ILSProvider({
         operation: existingIndex !== -1 ? 'replace' : 'add',
         index: existingIndex,
         newActiveTimeSec: normalizedState.activeTimeSec,
+        completedAtPreserved: existingBlock?.completedAt != null && state.completedAt == null,
+        existingCompletedAt: existingBlock?.completedAt,
+        incomingCompletedAt: state.completedAt,
+        finalCompletedAt: normalizedState.completedAt,
       });
       
       // Phase 2B.18 Step 3: CRITICAL - Update activeBlockProgress if this is the active block

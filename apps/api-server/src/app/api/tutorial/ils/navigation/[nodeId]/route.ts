@@ -85,6 +85,19 @@ export async function GET(
       parsed.data.subtopicId
     );
 
+    // GATE H FORENSIC: Log D1 block state in response
+    const d1Block = progress.blocks.find(b => b.blockId === '8680bd00-ecfe-4da7-a78f-9b6a0b6a1749');
+    if (d1Block) {
+      console.log('[GATE H FORENSIC] D1 in navigation API response:', {
+        blockId: d1Block.blockId,
+        blockVersion: d1Block.blockVersion,
+        activeTimeSec: d1Block.activeTimeSec,
+        expectedTimeSec: d1Block.expectedTimeSec,
+        completedAt: d1Block.completedAt,
+        isCompleted: d1Block.isCompleted,
+      });
+    }
+
     return NextResponse.json(
       { data: progress },
       {

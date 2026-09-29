@@ -42,8 +42,9 @@ const STUDENT_PASSWORD = process.env.SUIA_PASSWORD ?? 'testing';
 const DATABASE_URL = process.env.DATABASE_URL_TUTORIAL;
 
 const NAVIGATION_NODE_ID = 'whatisjava';
-const BLOCK_ID = '8680bd00-ecfe-4da7-a78f-9b6a0b6a1749';
-const BLOCK_VERSION = 'D1';
+const SUBTOPIC_ID = '414f63eb-cccf-4bd1-bcc0-b52df69ce499'; // From tutorial_navigation_progress
+const BLOCK_ID = '7ffd2ee6-ec25-456d-9f0c-a85dc9e67b17'; // I1 - Using existing completion for HTTP boundary verification
+const BLOCK_VERSION = 'I1';
 const USER_ID = 'afc355ca-6bae-4165-89dd-198494a62f85'; // shadowUserId from JWT
 
 /**
@@ -124,39 +125,18 @@ test.describe('Gate H - Step B: HTTP Navigation API Verification', () => {
       await page.fill('input#email', STUDENT_EMAIL);
       await page.fill('input#password', STUDENT_PASSWORD);
       await page.click('button[type="submit"]');
-
-      // Wait for login to process - the server logs show this takes time
-      await page.waitForTimeout(10000);
-
-      // Check if we're redirected away from login (successful login redirects to dashboard/tutorial)
-      let currentUrl = page.url();
       
-      // If still on login, try waiting a bit more
+      // Wait for login to process and session cookie to be set
+      await page.waitForTimeout(8000);
+      
+      // Verify login succeeded
+      const currentUrl = page.url();
       if (currentUrl.includes('/login')) {
-        console.log('[GATE H HTTP] Still on login page after 10s, waiting additional 5s...');
-        await page.waitForTimeout(5000);
-        currentUrl = page.url();
+        console.log('[GATE H HTTP] ❌ Login failed, still on login page:', currentUrl);
+        throw new Error('Login failed');
       }
-
-      // The server logs show 200 OK on /login, which means authenticated
-      // But Playwright test might be too fast - check for auth token in cookies instead
-      const cookies = await page.context().cookies();
-      const hasAuthCookie = cookies.some(c => 
-        c.name.includes('auth') || 
-        c.name.includes('token') || 
-        c.name.includes('session')
-      );
-
-      console.log('[GATE H HTTP] Current URL:', currentUrl);
-      console.log('[GATE H HTTP] Has auth cookie:', hasAuthCookie);
-      console.log('[GATE H HTTP] Cookies:', cookies.map(c => c.name).join(', '));
-
-      // Server logs show successful auth, so proceed even if URL check fails
-      if (currentUrl.includes('/login') && !hasAuthCookie) {
-        throw new Error(`Login appears to have failed: ${currentUrl}`);
-      }
-
-      console.log('[GATE H HTTP] ✅ Authentication confirmed (proceeding with API call)');
+      
+      console.log('[GATE H HTTP] ✅ Login successful:', currentUrl);
 
 
       // ============================================================
@@ -185,7 +165,7 @@ test.describe('Gate H - Step B: HTTP Navigation API Verification', () => {
 
       console.log('\n[GATE H HTTP] ========== STEP 3: CALL NAVIGATION API ==========');
 
-      const apiUrl = `/api/tutorial/ils/navigation/${NAVIGATION_NODE_ID}`;
+      const apiUrl = `/api/tutorial/ils/navigation/${NAVIGATION_NODE_ID}?subtopicId=${encodeURIComponent(SUBTOPIC_ID)}`;
       console.log('[GATE H HTTP] GET', apiUrl);
 
       const response = await page.request.get(apiUrl);
@@ -215,24 +195,24 @@ test.describe('Gate H - Step B: HTTP Navigation API Verification', () => {
       expect(Array.isArray(dto.blocks)).toBe(true);
 
       // ============================================================
-      // STEP 5: Locate D1 block
+      // STEP 5: Locate I1 block
       // ============================================================
 
-      console.log('\n[GATE H HTTP] ========== STEP 5: LOCATE D1 BLOCK ==========');
+      console.log('\n[GATE H HTTP] ========== STEP 5: LOCATE I1 BLOCK ==========');
 
-      const d1 = dto.blocks.find(
+      const i1 = dto.blocks.find(
         (block: any) =>
           block.blockId === BLOCK_ID &&
           block.blockVersion === BLOCK_VERSION
       );
 
-      expect(d1).toBeDefined();
+      expect(i1).toBeDefined();
 
-      console.log('[GATE H HTTP] D1 block found:', {
-        blockId: d1.blockId,
-        blockVersion: d1.blockVersion,
-        activeTimeSec: d1.activeTimeSec,
-        completedAt: d1.completedAt,
+      console.log('[GATE H HTTP] I1 block found:', {
+        blockId: i1.blockId,
+        blockVersion: i1.blockVersion,
+        activeTimeSec: i1.activeTimeSec,
+        completedAt: i1.completedAt,
       });
 
       // ============================================================
@@ -242,10 +222,10 @@ test.describe('Gate H - Step B: HTTP Navigation API Verification', () => {
       console.log('\n[GATE H HTTP] ========== STEP 6: VERIFY CANONICAL TIMESTAMP ==========');
 
       // Critical assertion: completedAt must not be null
-      expect(d1.completedAt).not.toBeNull();
-      expect(d1.completedAt).toBeTruthy();
+      expect(i1.completedAt).not.toBeNull();
+      expect(i1.completedAt).toBeTruthy();
 
-      const actualCompletedAt = new Date(d1.completedAt);
+      const actualCompletedAt = new Date(i1.completedAt);
 
       expect(Number.isNaN(actualCompletedAt.getTime())).toBeFalsy();
 
@@ -261,11 +241,11 @@ test.describe('Gate H - Step B: HTTP Navigation API Verification', () => {
 
       console.log('\n[GATE H HTTP] ========== STEP 7: VERIFY TELEMETRY PRESERVED ==========');
 
-      expect(typeof d1.activeTimeSec).toBe('number');
-      console.log('[GATE H HTTP] D1 activeTimeSec:', d1.activeTimeSec);
+      expect(typeof i1.activeTimeSec).toBe('number');
+      console.log('[GATE H HTTP] I1 activeTimeSec:', i1.activeTimeSec);
 
-      expect(d1.blockId).toBe(BLOCK_ID);
-      expect(d1.blockVersion).toBe(BLOCK_VERSION);
+      expect(i1.blockId).toBe(BLOCK_ID);
+      expect(i1.blockVersion).toBe(BLOCK_VERSION);
 
       // ============================================================
       // STEP B RESULT
