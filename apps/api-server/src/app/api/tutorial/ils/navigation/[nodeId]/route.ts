@@ -94,7 +94,6 @@ export async function GET(
         activeTimeSec: d1Block.activeTimeSec,
         expectedTimeSec: d1Block.expectedTimeSec,
         completedAt: d1Block.completedAt,
-        isCompleted: d1Block.isCompleted,
       });
     }
 
