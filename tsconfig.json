@@ -3,6 +3,7 @@
     "compilerOptions": {
         "target": "ES2020",
         "baseUrl": ".",
+        "rootDir": ".",
         "module": "ESNext",
         "lib": [
             "ES2020",
