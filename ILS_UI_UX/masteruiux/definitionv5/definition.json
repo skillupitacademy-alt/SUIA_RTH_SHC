@@ -1,0 +1,50 @@
+{
+  "page": {
+    "category": "PYTHON FUNDAMENTALS",
+
+    "title": "What Is a Variable in Python?",
+
+    "introduction": "Before working with functions, classes, data structures, and other Python concepts, it is important to understand how variables work and how Python associates names with objects.",
+
+    "definition": "A variable in Python is a name that refers to an object stored in memory.",
+
+    "explanation": [
+      {
+        "type": "paragraph",
+        "content": "When Python executes <code>x = 10</code>, the name <code>x</code> becomes associated with an integer object representing the value <code>10</code>."
+      },
+
+      {
+        "type": "paragraph",
+        "content": "A Python variable is therefore better understood as a <code>name binding</code> or <code>reference</code> rather than a box that directly contains a value."
+      },
+
+      {
+        "type": "paragraph",
+        "content": "This model becomes especially important when multiple variables refer to the same object or when a variable is reassigned to a different object."
+      }
+    ],
+
+    "importance": {
+      "icon": "fa-solid fa-lightbulb",
+
+      "title": "Understanding Variables Is Fundamental to Python",
+
+      "description": [
+        {
+          "type": "paragraph",
+          "content": "Variables are used throughout Python programs to give meaningful names to objects and make those objects accessible during program execution."
+        },
+
+        {
+          "type": "paragraph",
+          "content": "Understanding how names, references, and objects work provides the foundation for learning assignment, mutability, function arguments, object identity, memory management, and many other Python concepts."
+        }
+      ],
+
+      "impact": "A strong understanding of Python variables makes it easier to reason about what happens when values are assigned, reassigned, shared between names, or passed into functions."
+    },
+
+    "takeaway": "Understanding variables is important because variables are one of the fundamental mechanisms through which Python programs access and work with objects. Once the name–object relationship is clear, many later Python concepts become easier to understand."
+  }
+}

@@ -1,0 +1,413 @@
+{
+  "component": "definition",
+  "schemaVersion": "1.0.0",
+
+  "topic": {
+    "domain": "Programming Languages",
+    "subject": "Python",
+    "topic": "Variables"
+  },
+
+  "theme": {
+    "primary": "#F54A8D",
+    "secondary": "#0B1B3D",
+
+    "background": "#FFFFFF",
+    "visualCanvas": "#F8FAFC",
+
+    "surface": "#FFFFFF",
+    "surfaceSoft": "#F7F9FC",
+
+    "border": "#D9E0EA",
+    "borderLight": "#E5EAF1",
+
+    "mutedText": "#45658F",
+
+    "pinkHighlight": "#FFF7FA",
+    "pinkBorder": "#F2C4D8"
+  },
+
+  "presentation": {
+    "defaultVersion": "D8",
+
+    "availableVersions": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+    ]
+  },
+
+  "versions": [
+
+    {
+      "id": "D1",
+
+      "name": "Classic Definition",
+
+      "description":
+        "H1 → Definition heading → highlighted definition card → explanation paragraph",
+
+      "definition":
+        "A variable is a name that refers to an object so that the program can access that object.",
+
+      "explanation":
+        "In Python, assignment binds a name to an object. The name can later be rebound to another object."
+    },
+
+
+    {
+      "id": "D2",
+
+      "name": "Definition + Key Characteristics",
+
+      "description":
+        "Definition → explanation → 4–6 key characteristics",
+
+      "definition":
+        "A Python variable is a name used to reference an object during program execution.",
+
+      "explanation":
+        "Understanding these characteristics helps explain assignment, reassignment, identity, and object behavior.",
+
+      "characteristics": [
+
+        {
+          "title": "Name",
+
+          "description":
+            "A variable provides a readable name for a reference."
+        },
+
+        {
+          "title": "Reference",
+
+          "description":
+            "The name refers to an object rather than acting as a fixed storage box."
+        },
+
+        {
+          "title": "Dynamic Binding",
+
+          "description":
+            "A name can be rebound to another object."
+        },
+
+        {
+          "title": "Object Identity",
+
+          "description":
+            "The referenced object has its own identity."
+        },
+
+        {
+          "title": "Scope",
+
+          "description":
+            "The meaning and lifetime of a name depend on its scope."
+        }
+
+      ]
+    },
+
+
+    {
+      "id": "D3",
+
+      "name": "Definition + Real-World Analogy",
+
+      "description":
+        "Definition → technical explanation → real-world analogy card",
+
+      "definition":
+        "A variable can be understood as a name associated with an object.",
+
+      "explanation":
+        "The name provides a convenient way for code to refer to the object without repeatedly describing the object itself.",
+
+      "analogy": {
+
+        "title": "Real-World Analogy",
+
+        "description":
+          "Think of a labeled locker. The label helps you identify which locker you mean; changing the label's association does not mean the label itself becomes the locker."
+
+      }
+    },
+
+
+    {
+      "id": "D4",
+
+      "name": "Definition + Why It Matters",
+
+      "description":
+        "Definition → explanation → Why is this important?",
+
+      "definition":
+        "A variable gives a program a reusable name through which an object can be accessed.",
+
+      "explanation":
+        "Variables make programs easier to read, reason about, and modify because values or objects can be referred to by meaningful names.",
+
+      "whyItMatters":
+        "Without meaningful names, programs would be much harder to express and maintain. Naming lets later statements refer to data without repeating the original construction."
+
+    },
+
+
+    {
+      "id": "D5",
+
+      "name": "Definition + Visual Concept",
+
+      "description":
+        "Definition → short explanation → infographic / visual model",
+
+      "definition":
+        "A Python variable name refers to an object.",
+
+      "explanation":
+        "The simplest mental model is a name connected to an object. The object has its own value and identity.",
+
+      "visual": {
+
+        "type": "concept",
+
+        "title":
+          "Variable → Object Relationship",
+
+        "nodes": [
+
+          {
+            "id": "variable-x",
+
+            "label": "Variable: x",
+
+            "kind": "variable"
+          },
+
+          {
+            "id": "object-10",
+
+            "label": "Object: 10",
+
+            "kind": "object"
+          }
+
+        ],
+
+        "connections": [
+
+          {
+            "from": "variable-x",
+
+            "to": "object-10",
+
+            "relation": "references",
+
+            "label": "references"
+          }
+
+        ]
+
+      }
+
+    },
+
+
+    {
+      "id": "D6",
+
+      "name": "Definition + Technical Breakdown",
+
+      "description":
+        "Definition → terminology → technical explanation → key points",
+
+      "definition":
+        "In Python, assignment binds a name to an object within a namespace.",
+
+      "explanation":
+        "This terminology gives a more precise model than treating a Python variable as a simple memory box.",
+
+      "terminology": [
+
+        {
+          "term": "Name",
+
+          "description":
+            "Identifier used by the program."
+        },
+
+        {
+          "term": "Namespace",
+
+          "description":
+            "Mapping in which names are associated with objects."
+        },
+
+        {
+          "term": "Object",
+
+          "description":
+            "Runtime entity with identity, type, and value."
+        },
+
+        {
+          "term": "Binding",
+
+          "description":
+            "Association between a name and an object."
+        }
+
+      ]
+
+    },
+
+
+    {
+      "id": "D7",
+
+      "name": "Definition + Example",
+
+      "description":
+        "Definition → explanation → simple code/example → takeaway",
+
+      "definition":
+        "A variable is a name that can refer to an object.",
+
+      "explanation":
+        "The assignment statement below binds the name x to an integer object.",
+
+      "example": {
+
+        "language": "python",
+
+        "code":
+          "x = 10"
+
+      },
+
+      "takeaway":
+        "The important idea is the relationship between the name x and the object represented by 10."
+
+    },
+
+
+    {
+      "id": "D8",
+
+      "name": "Complete Learning Card",
+
+      "description":
+        "Definition → explanation → characteristics → visual → example → key takeaway",
+
+      "definition":
+        "A Python variable is a name that refers to an object.",
+
+      "explanation":
+        "This complete presentation combines the conceptual, technical, visual, and practical views into one learning card.",
+
+      "characteristics": [
+
+        {
+          "title": "Name",
+
+          "description":
+            "Provides a readable identifier."
+        },
+
+        {
+          "title": "Reference",
+
+          "description":
+            "Refers to an object."
+        },
+
+        {
+          "title": "Dynamic Binding",
+
+          "description":
+            "Can be rebound to another object."
+        },
+
+        {
+          "title": "Identity",
+
+          "description":
+            "The object has its own identity."
+        },
+
+        {
+          "title": "Scope",
+
+          "description":
+            "Name visibility depends on scope."
+        }
+
+      ],
+
+      "visual": {
+
+        "type": "concept",
+
+        "title":
+          "Variable → Object Relationship",
+
+        "nodes": [
+
+          {
+            "id": "variable-x",
+
+            "label": "x",
+
+            "kind": "variable"
+          },
+
+          {
+            "id": "object-10",
+
+            "label": "Object: 10",
+
+            "kind": "object"
+          }
+
+        ],
+
+        "connections": [
+
+          {
+            "from": "variable-x",
+
+            "to": "object-10",
+
+            "relation": "references",
+
+            "label": "references"
+          }
+
+        ]
+
+      },
+
+      "example": {
+
+        "language": "python",
+
+        "code":
+          "x = 10\ny = x"
+
+      },
+
+      "takeaway":
+        "Think in terms of names, objects, and bindings rather than treating a Python variable as a fixed box containing a value."
+
+    }
+
+  ]
+
+}

@@ -1,0 +1,35 @@
+{
+  "navigationNodeId": "java-basics",
+  "status": "IN_PROGRESS",
+  "progressPercentage": 66.67,
+  "completedBlockCount": 2,
+  "totalBlockCount": 3,
+  "sectionId": "section-uuid",
+  "subtopicId": "subtopic-uuid",
+  "blocks": [
+    {
+      "blockId": "d1-block-uuid",
+      "blockVersion": "D1",
+      "status": "COMPLETED",
+      "firstViewedAt": "2026-08-31T15:55:00Z",
+      "lastViewedAt": "2026-08-31T16:00:00Z",
+      "completedAt": "2026-08-31T16:00:00Z",
+      "visitCount": 3,
+      "revisionCount": 2,
+      "attempts": 1,
+      "score": null,
+      "activeTimeSec": 185,
+      "expectedTimeSec": 120,
+      "timeComparison": {
+        "percentageOfExpected": 154.17,
+        "differenceSec": 65,
+        "belowExpected": false
+      },
+      "interactionHistory": [
+        { "type": "VIEW", "occurredAt": "2026-08-31T15:55:00Z" },
+        { "type": "EXPAND", "occurredAt": "2026-08-31T15:56:10Z" },
+        { "type": "COMPLETE", "occurredAt": "2026-08-31T16:00:00Z" }
+      ]
+    }
+  ]
+}

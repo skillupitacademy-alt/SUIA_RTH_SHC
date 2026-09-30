@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    SkillHubCore Admin | Tutorial Composer
+  </title>
+
+
+  <!-- ======================================================
+       INTER
+       ====================================================== -->
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+
+  <!-- ======================================================
+       FONT AWESOME
+       ====================================================== -->
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  >
+
+
+  <!-- ======================================================
+       CSS
+       ====================================================== -->
+
+  <link
+    rel="stylesheet"
+    href="tutorialcomposer.css"
+  >
+
+</head>
+
+
+<body>
+
+
+  <main class="composer-page">
+
+
+    <!-- ====================================================
+         HEADER
+         ==================================================== -->
+
+    <header class="composer-header">
+
+      <div class="brand-mark">
+        SHC
+      </div>
+
+      <div>
+
+        <h1>
+          SkillHubCore Admin
+        </h1>
+
+        <p>
+          Tutorial Content Composer
+        </p>
+
+      </div>
+
+    </header>
+
+
+    <!-- ====================================================
+         CURRICULUM SELECTION
+         ==================================================== -->
+
+    <section class="card curriculum-card">
+
+      <div class="card-header">
+
+        <div>
+
+          <span class="eyebrow">
+            TUTORIAL ARCHITECTURE
+          </span>
+
+          <h2>
+            Select Curriculum Location
+          </h2>
+
+          <p>
+            Choose the Domain → Subject → Topic → Subtopic
+            where this tutorial belongs.
+          </p>
+
+        </div>
+
+        <span
+          id="dataStatus"
+          class="status-badge loading"
+        >
+          Loading curriculum...
+        </span>
+
+      </div>
+
+
+      <!-- DOMAIN -->
+
+      <div class="field">
+
+        <label for="domainSelect">
+          Domain
+        </label>
+
+        <select
+          id="domainSelect"
+          disabled
+        >
+
+          <option value="">
+            Loading domains...
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- SUBJECT -->
+
+      <div class="field">
+
+        <label for="subjectSelect">
+          Subject
+        </label>
+
+        <select
+          id="subjectSelect"
+          disabled
+        >
+
+          <option value="">
+            Select subject
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- TOPIC -->
+
+      <div class="field">
+
+        <label for="topicSelect">
+          Topic
+        </label>
+
+        <select
+          id="topicSelect"
+          disabled
+        >
+
+          <option value="">
+            Select topic
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- SUBTOPIC -->
+
+      <div class="field">
+
+        <label for="subtopicSelect">
+          Subtopic
+        </label>
+
+        <select
+          id="subtopicSelect"
+          disabled
+        >
+
+          <option value="">
+            Select subtopic
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- SELECTED PATH -->
+
+      <div class="selection-path">
+
+        <span>
+          Selected location
+        </span>
+
+        <strong id="selectionPath">
+          Nothing selected
+        </strong>
+
+      </div>
+
+    </section>
+
+
+    <!-- ====================================================
+         CONTENT COMPOSER
+         ==================================================== -->
+
+    <section class="card authoring-card">
+
+      <div class="card-header">
+
+        <div>
+
+          <span class="eyebrow">
+            CONTENT AUTHORING
+          </span>
+
+          <h2>
+            Tutorial Content
+          </h2>
+
+          <p>
+            Upload JSON / Markdown or paste content below.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- ==================================================
+           FILE UPLOAD
+           ================================================== -->
+
+      <div class="upload-area">
+
+        <input
+          id="contentFile"
+          type="file"
+          accept=".json,.md,.markdown,application/json,text/markdown"
+        >
+
+        <label
+          for="contentFile"
+          class="upload-button"
+        >
+
+          <i
+            class="fa-solid fa-cloud-arrow-up"
+            aria-hidden="true"
+          ></i>
+
+          Upload JSON / Markdown
+
+        </label>
+
+
+        <span
+          id="fileName"
+          class="file-name"
+        >
+          No file loaded
+        </span>
+
+      </div>
+
+
+      <!-- ==================================================
+           THREE COLUMN WORKSPACE
+
+           LEFT:
+           Sidebar Preview
+
+           CENTER:
+           Editor
+
+           RIGHT:
+           Content Preview
+           ================================================== -->
+
+      <div class="composer-workspace">
+
+
+        <!-- =================================================
+             LEFT SIDEBAR PREVIEW
+             ================================================= -->
+
+        <aside
+          class="sidebar-preview-panel"
+          aria-label="Tutorial sidebar preview"
+        >
+
+          <div class="panel-header">
+
+            <div>
+
+              <span class="panel-eyebrow">
+                SIDEBAR PREVIEW
+              </span>
+
+              <h3>
+                Tutorial Navigation
+              </h3>
+
+            </div>
+
+            <span
+              id="sidebarNodeCount"
+              class="node-count"
+            >
+              0
+            </span>
+
+          </div>
+
+
+          <div
+            id="sidebarPreview"
+            class="tutorial-sidebar"
+          >
+
+            <div class="sidebar-empty">
+
+              <i
+                class="fa-regular fa-folder-open"
+              ></i>
+
+              <strong>
+                No content loaded
+              </strong>
+
+              <span>
+                Upload or paste tutorial JSON/Markdown.
+              </span>
+
+            </div>
+
+          </div>
+
+        </aside>
+
+
+        <!-- =================================================
+             CENTER EDITOR
+             ================================================= -->
+
+        <div class="editor-panel">
+
+          <div class="editor-toolbar">
+
+            <strong>
+              Content Editor
+            </strong>
+
+            <span id="contentFormat">
+              JSON / Markdown
+            </span>
+
+          </div>
+
+
+          <textarea
+            id="contentEditor"
+            spellcheck="false"
+            placeholder="Paste JSON or Markdown content here..."
+          ></textarea>
+
+
+          <div
+            id="validationMessage"
+            class="validation-message"
+          >
+            Waiting for content
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             RIGHT PREVIEW
+             ================================================= -->
+
+        <aside class="content-preview-panel">
+
+          <div class="panel-header">
+
+            <div>
+
+              <span class="panel-eyebrow">
+                CONTENT PREVIEW
+              </span>
+
+              <h3 id="previewTitle">
+                No content loaded
+              </h3>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="previewContent"
+            class="content-preview"
+          >
+
+            <div class="preview-empty">
+
+              <i
+                class="fa-regular fa-file-lines"
+              ></i>
+
+              <strong>
+                Content preview
+              </strong>
+
+              <span>
+                Load tutorial content to preview it here.
+              </span>
+
+            </div>
+
+          </div>
+
+        </aside>
+
+
+      </div>
+
+
+      <!-- ==================================================
+           PUBLISH INFORMATION
+           ================================================== -->
+
+      <div class="publish-information">
+
+        <div class="publish-location">
+
+          <span>
+            Publish Location
+          </span>
+
+          <strong id="previewDomain">
+            —
+          </strong>
+
+          <i class="fa-solid fa-chevron-right"></i>
+
+          <strong id="previewSubject">
+            —
+          </strong>
+
+          <i class="fa-solid fa-chevron-right"></i>
+
+          <strong id="previewTopic">
+            —
+          </strong>
+
+          <i class="fa-solid fa-chevron-right"></i>
+
+          <strong id="previewSubtopic">
+            —
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <button
+            id="publishButton"
+            type="button"
+            disabled
+          >
+            <i class="fa-solid fa-floppy-disk"></i>
+
+            Save Draft
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <p
+        id="publishMessage"
+        class="publish-message"
+      >
+        Select Domain → Subject → Topic → Subtopic.
+      </p>
+
+    </section>
+
+
+  </main>
+
+
+  <script
+    src="tutorialcomposer.js"
+    defer
+  ></script>
+
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+{
+  "page": {
+    "category": "PYTHON FUNDAMENTALS",
+
+    "title": "What Is a Variable in Python?",
+
+    "introduction": "Before understanding more advanced Python concepts, it is important to understand how variables work and how they relate to objects in memory.",
+
+    "definition": "A variable in Python is a name that refers to an object stored in memory.",
+
+    "explanation": [
+      {
+        "type": "paragraph",
+        "content": "When you create a variable such as <code>x = 10</code>, Python does not place the value <code>10</code> directly inside the variable. Instead, Python creates or uses an integer object and makes the name <code>x</code> refer to that object."
+      },
+
+      {
+        "type": "paragraph",
+        "content": "This distinction is important because a Python variable is better understood as a <code>reference</code> or <code>name binding</code> rather than a box that physically stores a value."
+      },
+
+      {
+        "type": "paragraph",
+        "content": "For example, when Python executes <code>x = 10</code>, the name <code>x</code> becomes associated with an integer object representing the value <code>10</code>."
+      }
+    ],
+
+    "takeaway": "Remember: in Python, a variable is a name that refers to an object. The variable itself is not the object and does not directly contain the object's value."
+  }
+}

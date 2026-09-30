@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Functions in JavaScript - Complete Roadmap & Overview - SUIA</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Plus Jakarta Sans, Fira Code & Caveat -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700;800&family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#F54A8D',
+                            'pink-dark': '#E03375',
+                            'pink-light': '#FFF0F5',
+                            'pink-soft': '#FDF2F8',
+                            navy: '#0F172A',
+                            'navy-blue': '#133382',
+                            'blue-soft': '#F0F5FF',
+                            'mint-light': '#ECFDF5',
+                            'mint-dark': '#059669',
+                            muted: '#64748B',
+                            editor: '#0B132B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        code: ['Fira Code', 'monospace'],
+                        hand: ['Caveat', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FAFAFA;
+            color: #0F172A;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .handwritten-text {
+            font-family: 'Caveat', cursive;
+        }
+
+        .pink-underline {
+            position: relative;
+            display: inline-block;
+        }
+        .pink-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: #F54A8D;
+            border-radius: 2px;
+        }
+
+        /* Custom scrollbar styling */
+        pre::-webkit-scrollbar, textarea::-webkit-scrollbar, div::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        pre::-webkit-scrollbar-thumb, textarea::-webkit-scrollbar-thumb, div::-webkit-scrollbar-thumb {
+            background-color: #CBD5E1;
+            border-radius: 4px;
+        }
+        pre::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover {
+            background-color: #94A3B8;
+        }
+
+        .tab-btn.active {
+            background-color: #F54A8D;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(245, 74, 141, 0.25);
+        }
+
+        @keyframes subtle-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.015); }
+        }
+        .animate-pulse-subtle {
+            animation: subtle-pulse 3.5s infinite ease-in-out;
+        }
+
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #F54A8D;
+        }
+    </style>
+</head>
+<body class="bg-slate-50/60 min-h-screen pb-16">
+
+    <div id="app" class="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+
+        <!-- TOP HEADER NAVBAR -->
+        <header class="flex flex-col sm:flex-row items-center justify-between py-4 border-b border-slate-200/80 gap-4 bg-white px-4 sm:px-6 rounded-2xl shadow-xs">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-pink flex items-center justify-center text-white text-xl shadow-md shadow-brand-pink/20">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <div class="font-extrabold text-2xl tracking-tight text-brand-pink leading-none" id="brand-title">
+                        SUIA
+                    </div>
+                    <div class="text-[10px] font-bold tracking-wider text-slate-500 uppercase" id="brand-subtitle">Skill Up IT Academy</div>
+                </div>
+            </div>
+
+            <!-- Block I4 Badge Title (Options / Tabs removed) -->
+            <div class="inline-flex items-center gap-2 bg-brand-pink text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-brand-pink/20">
+                <i class="fa-solid fa-map"></i>
+                <span>Block I4: Roadmap</span>
+            </div>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <div class="relative w-full sm:w-60">
+                    <input type="text" id="global-search" oninput="handleSearch(this.value)" placeholder="Search topic content..." class="w-full bg-slate-50 border border-slate-200/80 rounded-full py-1.5 pl-4 pr-9 text-xs focus:outline-none focus:ring-2 focus:ring-brand-pink/30 transition-all placeholder:text-slate-400">
+                    <button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-pink transition-colors">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Bell Notification -->
+                <button onclick="showToast('Notifications: 2 new interactive challenges ready!')" class="relative w-9 h-9 rounded-full bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-brand-pink transition-colors flex-shrink-0">
+                    <i class="fa-regular fa-bell text-sm"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-pink"></span>
+                </button>
+
+                <!-- Profile Avatar -->
+                <div class="w-9 h-9 rounded-full bg-brand-pink text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-pink/20 cursor-pointer" title="Student Profile">
+                    S
+                </div>
+            </div>
+        </header>
+
+        <!-- BREADCRUMBS NAVBAR -->
+        <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 py-4 overflow-x-auto whitespace-nowrap">
+            <a href="#" class="hover:text-brand-pink transition-colors"><i class="fa-solid fa-house"></i></a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-category">Full Stack Development</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-module">Frontend Development (FE)</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-topic">JavaScript</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <span class="font-bold text-brand-pink" id="bc-lesson">Introduction Block</span>
+        </nav>
+
+        <!-- HERO SECTION -->
+        <section class="mt-1 mb-8 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs relative overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <!-- Left Content Header -->
+                <div class="lg:col-span-6 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-pink-light text-brand-pink font-bold text-xs border border-pink-100">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span id="hero-badge">Introduction Block – I6</span>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-navy-blue tracking-tight leading-tight" id="hero-title">
+                        <span class="pink-underline">Functions in</span> JavaScript
+                    </h1>
+
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl" id="hero-subtitle">
+                        A complete introduction to functions — what they are, why they are important, where they fit, how they are used in real life, and what we will learn in this lesson.
+                    </p>
+
+                    <!-- Data source info badge -->
+                    <div class="flex items-center gap-3 pt-2">
+                        <span class="text-xs font-semibold text-slate-400">Data Source:</span>
+                        <span class="inline-flex items-center gap-1 text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+                            <i class="fa-solid fa-database text-brand-pink text-[10px]"></i> data.json
+                        </span>
+                        <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md">
+                            <i class="fa-solid fa-bolt text-[10px]"></i> Maximum Data Rendered
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Right Hero Vector Graphics Illustration -->
+                <div class="lg:col-span-6 relative flex justify-center" id="hero-illustration-container">
+                    <!-- Vector Graphic injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- LEARNING GOAL CARD -->
+        <section class="mb-8">
+            <div class="bg-brand-pink-light border border-pink-100/90 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 shadow-xs">
+                <!-- Target Icon Circle -->
+                <div class="w-14 h-14 rounded-2xl bg-white text-brand-pink flex items-center justify-center text-2xl flex-shrink-0 shadow-sm border border-pink-100">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <!-- Text Content -->
+                <div class="space-y-1">
+                    <h3 class="text-brand-pink font-extrabold text-lg sm:text-xl flex items-center gap-2">
+                        Learning Goal
+                    </h3>
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed font-medium" id="learning-goal-text">
+                        Loading learning goal...
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DYNAMIC MAIN CONTENT VIEWPORT -->
+        <main id="main-content-viewport" class="space-y-10">
+            <!-- Content dynamically rendered by renderBlock() from active JSON -->
+        </main>
+
+        <!-- KEY TAKEAWAY CARD -->
+        <section class="my-10">
+            <div class="bg-brand-mint-light border border-emerald-100/90 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 shadow-xs">
+                <!-- Star Circle -->
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl flex-shrink-0 shadow-md shadow-emerald-500/20">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <!-- Content -->
+                <div class="space-y-1">
+                    <h3 class="text-brand-mint-dark font-extrabold text-lg sm:text-xl">Key Takeaway</h3>
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="key-takeaway-text">
+                        Loading key takeaway...
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER NAVIGATION BUTTONS -->
+        <footer class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200/80">
+            <button onclick="navigateLesson(-1)" class="w-full sm:w-auto px-6 py-3 rounded-xl border-2 border-brand-pink text-brand-pink font-bold text-sm hover:bg-brand-pink-light transition-all flex items-center justify-center gap-2 shadow-xs">
+                <i class="fa-solid fa-arrow-left"></i> Switch Block View
+            </button>
+            <div class="text-xs text-slate-400 font-semibold text-center">
+                Skill Up IT Academy Curriculum &bull; Maximum Data Render Engine
+            </div>
+            <button onclick="navigateLesson(1)" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-brand-pink text-white font-bold text-sm shadow-lg shadow-brand-pink/20 hover:bg-brand-pink-dark transition-all flex items-center justify-center gap-2">
+                Next Block <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </footer>
+
+    </div>
+
+    <!-- JSON SOURCE MODAL / LIVE EDITOR -->
+    <div id="json-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="bg-slate-900 text-white p-4 px-6 flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-brand-pink text-white flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base">data.json — Live Source of Truth</h3>
+                        <p class="text-slate-400 text-xs">Edit JSON directly to update all UI sections instantly!</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetJsonData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Defaults
+                    </button>
+                    <button onclick="applyJsonData()" class="px-4 py-1.5 rounded-lg bg-brand-pink hover:bg-brand-pink-dark text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-brand-pink/20">
+                        <i class="fa-solid fa-check"></i> Apply Changes
+                    </button>
+                    <button onclick="toggleJsonModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm ml-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Modal Body Textarea -->
+            <div class="p-4 bg-brand-editor flex-1 overflow-hidden flex flex-col">
+                <textarea id="json-editor-textarea" class="w-full h-full bg-slate-950 text-emerald-400 font-code text-xs p-4 rounded-xl focus:outline-none border border-slate-800 resize-none leading-relaxed" spellcheck="false"></textarea>
+            </div>
+            <!-- Modal Footer -->
+            <div class="p-3 px-6 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-medium">
+                <span id="json-status"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Valid JSON payload loaded</span>
+                <span>Press <strong>Apply Changes</strong> to re-render page</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-box" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // COMPREHENSIVE DATA.JSON MODEL CONTAINING MAXIMUM DETAILED CONTENT
+        const defaultDataJson = {
+            "meta": {
+                "category": "Full Stack Development",
+                "module": "Frontend Development (FE)",
+                "topic": "JavaScript",
+                "academy": "SUIA",
+                "fullName": "Skill Up IT Academy"
+            },
+            "blocks": {
+                "I6": {
+                    "badge": "Introduction Block – I6",
+                    "lessonTitle": "Introduction: Complete Overview",
+                    "hero": {
+                        "title": "Functions in JavaScript",
+                        "subtitle": "A complete introduction to functions — what they are, why they are important, where they fit, how they are used in real life, and what we will learn in this lesson."
+                    },
+                    "learningGoal": "Get a complete understanding of functions, including what they are, why they matter, where they are used, how they help in real-world applications, and what we will learn in this lesson.",
+                    "section1": {
+                        "title": "What is a Function?",
+                        "description": "A function is a reusable block of code designed to perform a specific task. You can give it a name, pass input values (parameters), and it can return a result after executing the code inside it.",
+                        "highlights": [
+                            "Encapsulates logic into reusable blocks",
+                            "Accepts parameters and returns output values",
+                            "Executes on-demand whenever invoked"
+                        ]
+                    },
+                    "section2": {
+                        "title": "Why is it Important?",
+                        "items": [
+                            "Helps avoid writing the same code repeatedly (DRY Principle)",
+                            "Makes code modular, clean, and organized",
+                            "Improves development efficiency and team collaboration",
+                            "Easier to test, debug, and maintain complex logic",
+                            "Supports larger, enterprise-scale web applications"
+                        ]
+                    },
+                    "section3": {
+                        "title": "Where is it Used?",
+                        "items": [
+                            {
+                                "title": "Web Applications",
+                                "subtitle": "Handle user clicks, forms, and browser events",
+                                "icon": "fa-globe",
+                                "iconColor": "text-blue-600"
+                            },
+                            {
+                                "title": "Mobile Applications",
+                                "subtitle": "Share reusable logic across screens & views",
+                                "icon": "fa-mobile-screen-button",
+                                "iconColor": "text-blue-600"
+                            },
+                            {
+                                "title": "Libraries & Frameworks",
+                                "subtitle": "Power React components, Angular services, etc.",
+                                "icon": "fa-gear",
+                                "iconColor": "text-blue-600"
+                            },
+                            {
+                                "title": "Data Processing",
+                                "subtitle": "Transform, filter, aggregate, and analyze data",
+                                "icon": "fa-database",
+                                "iconColor": "text-brand-pink"
+                            },
+                            {
+                                "title": "Backend & APIs",
+                                "subtitle": "Process requests, database queries, and responses",
+                                "icon": "fa-cloud",
+                                "iconColor": "text-blue-600"
+                            },
+                            {
+                                "title": "Game Development",
+                                "subtitle": "Control game loops, physics, and state logic",
+                                "icon": "fa-gamepad",
+                                "iconColor": "text-brand-pink"
+                            }
+                        ]
+                    },
+                    "section4": {
+                        "title": "Real-World Example",
+                        "description": "An e-commerce website needs to calculate the total price of items in a shopping cart.",
+                        "cartItems": [
+                            { "name": "Laptop", "price": 799 },
+                            { "name": "Headphones", "price": 199 },
+                            { "name": "Mouse", "price": 49 },
+                            { "name": "Keyboard", "price": 89 }
+                        ],
+                        "footnote": "Instead of writing duplicate calculation code for every order, we invoke a single reusable calculateTotal() function."
+                    },
+                    "section5": {
+                        "title": "Example Code",
+                        "codeSnippet": "function calculateTotal(prices) {\n  let total = 0;\n  for (const price of prices) {\n    total += price;\n  }\n  return total;\n}\n\nconst items = [799, 199, 49, 89];\nconsole.log(calculateTotal(items)); // Output: 1136"
+                    },
+                    "section6": {
+                        "title": "What Will You Learn?",
+                        "steps": [
+                            {
+                                "num": "1",
+                                "title": "1. Basics",
+                                "desc": "Understand what functions are and basic syntax.",
+                                "icon": "fa-regular fa-file-lines"
+                            },
+                            {
+                                "num": "2",
+                                "title": "2. Creating Functions",
+                                "desc": "Learn declarations and expressions.",
+                                "icon": "fa-solid fa-code"
+                            },
+                            {
+                                "num": "3",
+                                "title": "3. Parameters & Args",
+                                "desc": "Pass dynamic inputs into functions.",
+                                "icon": "fa-solid fa-sliders"
+                            },
+                            {
+                                "num": "4",
+                                "title": "4. Return Values",
+                                "desc": "Get output results back from functions.",
+                                "icon": "fa-solid fa-right-left"
+                            },
+                            {
+                                "num": "5",
+                                "title": "5. Function Types",
+                                "desc": "Named, anonymous, arrow functions & callbacks.",
+                                "icon": "fa-solid fa-gear"
+                            },
+                            {
+                                "num": "6",
+                                "title": "6. Best Practices",
+                                "desc": "Write clean, reusable, and efficient code.",
+                                "icon": "fa-regular fa-circle-check"
+                            }
+                        ]
+                    },
+                    "keyTakeaway": "Functions are a fundamental building block in JavaScript. They help you write cleaner, more organized, maintainable, and scalable code, and they are used in almost every real-world application."
+                },
+                "I4": {
+                    "badge": "Introduction Block – I4",
+                    "lessonTitle": "Introduction: Learning Roadmap",
+                    "hero": {
+                        "title": "Functions in JavaScript",
+                        "subtitle": "Let's see where functions fit in the bigger picture and what we will learn in this lesson. This will help you understand the context and the roadmap ahead."
+                    },
+                    "learningGoal": "Understand what functions are, where they fit in JavaScript, and what you will learn in this topic.",
+                    "section1": {
+                        "title": "1. The Topic",
+                        "description": "In this lesson, we are learning about functions in JavaScript. Functions allow us to group a set of statements together and execute them whenever needed.",
+                        "quote": "Functions are the heart and soul of modern JavaScript programming."
+                    },
+                    "section2": {
+                        "title": "2. Where Does It Fit?",
+                        "description": "Functions are a core concept in JavaScript and play a key role in many areas of the language environment.",
+                        "flowCards": [
+                            {
+                                "type": "standard",
+                                "iconType": "badge",
+                                "badgeText": "JS",
+                                "badgeBg": "bg-amber-400 text-black font-black text-xs px-2 py-1 rounded",
+                                "title": "JavaScript",
+                                "subtitle": "The core programming language for the web platform."
+                            },
+                            {
+                                "type": "standard",
+                                "iconType": "fa",
+                                "icon": "fa-code",
+                                "iconBg": "bg-blue-100 text-blue-600",
+                                "title": "Core Features",
+                                "subtitle": "Variables, data types, operators, and control flow."
+                            },
+                            {
+                                "type": "highlight",
+                                "iconType": "math",
+                                "mathText": "f(x)",
+                                "title": "Functions",
+                                "subtitle": "Reusable blocks of code performing dedicated tasks."
+                            },
+                            {
+                                "type": "standard",
+                                "iconType": "fa",
+                                "icon": "fa-cube",
+                                "iconBg": "bg-blue-100 text-blue-600",
+                                "title": "Build Applications",
+                                "subtitle": "Construct modular components, handlers & services."
+                            },
+                            {
+                                "type": "standard",
+                                "iconType": "fa",
+                                "icon": "fa-globe",
+                                "iconBg": "bg-blue-100 text-blue-600",
+                                "title": "Real-World Impact",
+                                "subtitle": "Powers interactive websites, APIs, mobile apps & backend."
+                            }
+                        ]
+                    },
+                    "section3": {
+                        "title": "3. What Will You Learn?",
+                        "description": "Here is the sequential learning roadmap for functions. Each step builds directly on top of the previous step.",
+                        "roadmapSteps": [
+                            {
+                                "step": 1,
+                                "title": "What is a Function?",
+                                "subtitle": "Understand the core concept, syntax structure, and invocation."
+                            },
+                            {
+                                "step": 2,
+                                "title": "Creating Functions",
+                                "subtitle": "Learn Declarations, Expressions, and Arrow syntax."
+                            },
+                            {
+                                "step": 3,
+                                "title": "Parameters & Arguments",
+                                "subtitle": "Pass dynamic inputs, default values, and rest params."
+                            },
+                            {
+                                "step": 4,
+                                "title": "Return Values",
+                                "subtitle": "Output results, early returns, and returning objects."
+                            },
+                            {
+                                "step": 5,
+                                "title": "Function Types",
+                                "subtitle": "Callbacks, IIFEs, Higher-Order Functions, and Closures."
+                            },
+                            {
+                                "step": 6,
+                                "title": "Best Practices",
+                                "subtitle": "Write pure, clean, modular, and maintainable functions."
+                            }
+                        ]
+                    },
+                    "section4": {
+                        "title": "4. Why This Matters",
+                        "cards": [
+                            {
+                                "title": "Reusability",
+                                "subtitle": "Write code once,\nuse it endlessly across your app.",
+                                "icon": "fa-solid fa-gear",
+                                "bgColor": "bg-brand-pink-light/60",
+                                "iconBg": "bg-pink-100",
+                                "iconColor": "text-brand-pink"
+                            },
+                            {
+                                "title": "Efficiency",
+                                "subtitle": "Reduce duplicate code,\nspeed up execution and dev cycles.",
+                                "icon": "fa-solid fa-bolt",
+                                "bgColor": "bg-brand-blue-soft/70",
+                                "iconBg": "bg-blue-100",
+                                "iconColor": "text-blue-600"
+                            },
+                            {
+                                "title": "Better Organization",
+                                "subtitle": "Break complex problems\ninto clean, isolated functions.",
+                                "icon": "fa-solid fa-puzzle-piece",
+                                "bgColor": "bg-brand-pink-light/60",
+                                "iconBg": "bg-pink-100",
+                                "iconColor": "text-brand-pink"
+                            },
+                            {
+                                "title": "Real-World Standard",
+                                "subtitle": "Core building block\nin React, Vue, Node.js & APIs.",
+                                "icon": "fa-solid fa-chart-line",
+                                "bgColor": "bg-brand-blue-soft/70",
+                                "iconBg": "bg-blue-100",
+                                "iconColor": "text-blue-600"
+                            }
+                        ]
+                    },
+                    "keyTakeaway": "Mastering functions provides the structural foundation required for DOM manipulation, event handling, async code, and modern JavaScript frameworks like React."
+                }
+            }
+        };
+
+        // Active State initialized with deep copy of JSON
+        let activeData = JSON.parse(JSON.stringify(defaultDataJson));
+        let activeBlockKey = "I4";
+
+        function initApp() {
+            renderHeaderAndMeta();
+            renderBlock(activeBlockKey);
+        }
+
+        function renderHeaderAndMeta() {
+            document.getElementById('brand-title').innerText = activeData.meta.academy;
+            document.getElementById('brand-subtitle').innerText = activeData.meta.fullName;
+            document.getElementById('bc-category').innerText = activeData.meta.category;
+            document.getElementById('bc-module').innerText = activeData.meta.module;
+            document.getElementById('bc-topic').innerText = activeData.meta.topic;
+        }
+
+        function renderBlock(blockKey) {
+            const blockData = activeData.blocks[blockKey];
+            if (!blockData) return;
+
+            // Render Hero Details
+            document.getElementById('hero-badge').innerText = blockData.badge;
+            document.getElementById('hero-title').innerHTML = `<span class="pink-underline">${blockData.hero.title.split(' ')[0]} ${blockData.hero.title.split(' ')[1] || ''}</span> ${blockData.hero.title.split(' ').slice(2).join(' ')}`;
+            document.getElementById('hero-subtitle').innerText = blockData.hero.subtitle;
+            document.getElementById('bc-lesson').innerText = blockData.lessonTitle;
+            document.getElementById('learning-goal-text').innerText = blockData.learningGoal;
+            document.getElementById('key-takeaway-text').innerText = blockData.keyTakeaway;
+
+            // Render Hero Vector Illustration
+            const illuContainer = document.getElementById('hero-illustration-container');
+            illuContainer.innerHTML = `
+                <div class="w-full max-w-[480px] h-[220px] rounded-3xl bg-gradient-to-br from-blue-50/80 via-sky-100/70 to-teal-50/60 p-4 relative overflow-hidden shadow-sm border border-sky-100 animate-pulse-subtle">
+                    <div class="absolute top-3 left-4 z-10">
+                        <div class="handwritten-text text-brand-navy-blue font-bold text-xl leading-tight">
+                            Know<br>Your Path.<br>Learn with<br><span class="text-brand-navy-blue font-extrabold">Purpose.</span>
+                        </div>
+                    </div>
+                    <svg viewBox="0 0 400 200" class="w-full h-full absolute inset-0">
+                        <path d="M120 200 L180 100 L240 200 Z" fill="#93C5FD" opacity="0.4"/>
+                        <path d="M190 200 L280 60 L380 200 Z" fill="#60A5FA" opacity="0.5"/>
+                        <path d="M250 200 L340 30 L400 200 Z" fill="#3B82F6" opacity="0.6"/>
+                        <polygon points="340,30 325,55 335,52 340,58 348,50 355,55" fill="#FFFFFF"/>
+                        <polygon points="280,60 268,80 276,78 280,84 288,77 292,80" fill="#FFFFFF"/>
+                        <path d="M230 180 Q 250 160 270 145 T 310 110 T 335 50" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-dasharray="3,3"/>
+                        <path d="M230 180 Q 250 160 270 145 T 310 110 T 335 50" fill="none" stroke="#F54A8D" stroke-width="2"/>
+                        <g transform="translate(230, 175)">
+                            <circle cx="0" cy="0" r="7" fill="#F54A8D"/>
+                            <rect x="8" y="-10" width="60" height="20" rx="10" fill="#FFFFFF"/>
+                            <text x="14" y="3" font-size="9" font-weight="bold" fill="#0F172A">Start Here</text>
+                        </g>
+                        <g transform="translate(305, 100)">
+                            <circle cx="0" cy="0" r="7" fill="#F54A8D"/>
+                            <rect x="8" y="-10" width="54" height="20" rx="10" fill="#FFFFFF"/>
+                            <text x="14" y="3" font-size="9" font-weight="bold" fill="#0F172A">Practice</text>
+                        </g>
+                    </svg>
+                </div>
+            `;
+
+            // Render Body Content (Block I4 Roadmap)
+            const viewport = document.getElementById('main-content-viewport');
+            viewport.innerHTML = renderBlockI4Html(blockData);
+        }
+
+        function renderHeaderAndMeta() {
+            document.getElementById('brand-title').innerText = activeData.meta.academy;
+            document.getElementById('brand-subtitle').innerText = activeData.meta.fullName;
+            document.getElementById('bc-category').innerText = activeData.meta.category;
+            document.getElementById('bc-module').innerText = activeData.meta.module;
+            document.getElementById('bc-topic').innerText = activeData.meta.topic;
+        }
+
+        function switchBlock(blockKey) {
+            activeBlockKey = blockKey;
+            
+            document.getElementById('tab-btn-I6').classList.toggle('active', blockKey === 'I6');
+            document.getElementById('tab-btn-I4').classList.toggle('active', blockKey === 'I4');
+
+            renderBlock(blockKey);
+            showToast(`Switched view to Block ${blockKey}`);
+        }
+
+        function renderBlock(blockKey) {
+            const blockData = activeData.blocks[blockKey];
+            if (!blockData) return;
+
+            // Render Hero Details
+            document.getElementById('hero-badge').innerText = blockData.badge;
+            document.getElementById('hero-title').innerHTML = `<span class="pink-underline">${blockData.hero.title.split(' ')[0]} ${blockData.hero.title.split(' ')[1] || ''}</span> ${blockData.hero.title.split(' ').slice(2).join(' ')}`;
+            document.getElementById('hero-subtitle').innerText = blockData.hero.subtitle;
+            document.getElementById('bc-lesson').innerText = blockData.lessonTitle;
+            document.getElementById('learning-goal-text').innerText = blockData.learningGoal;
+            document.getElementById('key-takeaway-text').innerText = blockData.keyTakeaway;
+
+            // Render Hero Vector Illustration
+            const illuContainer = document.getElementById('hero-illustration-container');
+            if (blockKey === 'I6') {
+                illuContainer.innerHTML = `
+                    <div class="w-full max-w-[480px] h-[230px] rounded-3xl bg-gradient-to-br from-amber-50/70 via-rose-50/60 to-red-50/50 p-4 relative overflow-hidden shadow-sm border border-rose-100/80 animate-pulse-subtle">
+                        <div class="absolute top-3 left-4 bg-pink-100 text-brand-pink text-xs font-bold px-3 py-1 rounded-full shadow-sm z-10 border border-pink-200">What?</div>
+                        <div class="absolute top-16 left-2 bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm z-10 border border-sky-200">Why?</div>
+                        <div class="absolute bottom-6 left-6 bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm z-10 border border-emerald-200">Where?</div>
+                        <div class="absolute top-6 right-24 bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-xl shadow-sm z-10 border border-purple-200">Real World<br>Use?</div>
+                        <div class="absolute top-24 right-20 bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-xl shadow-sm z-10 border border-orange-200">What's<br>Next?</div>
+
+                        <div class="absolute top-3 right-3 z-10 text-right">
+                            <div class="handwritten-text text-brand-navy-blue font-bold text-lg leading-tight">
+                                Learn<br>Build<br><span class="text-brand-pink font-extrabold">Apply</span><br>Grow!
+                            </div>
+                        </div>
+
+                        <svg viewBox="0 0 450 200" class="w-full h-full absolute inset-0">
+                            <circle cx="280" cy="115" r="70" fill="#FED7AA" opacity="0.4"/>
+                            <g transform="translate(305, 10)">
+                                <circle cx="15" cy="15" r="18" fill="#FDE047" opacity="0.4"/>
+                                <path d="M15 2 C 7 2, 1 8, 1 16 C 1 21, 5 25, 9 28 L 9 32 L 21 32 L 21 28 C 25 25, 29 21, 29 16 C 29 8, 23 2, 15 2 Z" fill="#EAB308"/>
+                                <rect x="11" y="32" width="8" height="3" rx="1" fill="#94A3B8"/>
+                                <rect x="12" y="36" width="6" height="2" rx="1" fill="#64748B"/>
+                                <line x1="15" y1="-4" x2="15" y2="-8" stroke="#EAB308" stroke-width="2.5" stroke-linecap="round"/>
+                            </g>
+                            <g transform="translate(255, 45)">
+                                <path d="M 10 90 Q 25 55 55 55 Q 85 55 100 90 Z" fill="#F54A8D"/>
+                                <rect x="47" y="44" width="16" height="14" fill="#FED7AA" rx="4"/>
+                                <circle cx="55" cy="32" r="19" fill="#FED7AA"/>
+                                <circle cx="50" cy="30" r="2" fill="#0F172A"/>
+                                <circle cx="64" cy="30" r="2" fill="#0F172A"/>
+                                <path d="M 52 38 Q 57 42 62 38" fill="none" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
+                            </g>
+                            <g transform="translate(290, 125)">
+                                <path d="M 5 35 L 55 35 L 50 5 L 10 5 Z" fill="#1E293B"/>
+                                <rect x="12" y="8" width="31" height="22" rx="2" fill="#38BDF8"/>
+                                <circle cx="27.5" cy="19" r="3" fill="#FFFFFF"/>
+                                <path d="M 0 35 L 60 35 L 65 42 L -5 42 Z" fill="#64748B"/>
+                            </g>
+                        </svg>
+                    </div>
+                `;
+            } else {
+                illuContainer.innerHTML = `
+                    <div class="w-full max-w-[480px] h-[220px] rounded-3xl bg-gradient-to-br from-blue-50/80 via-sky-100/70 to-teal-50/60 p-4 relative overflow-hidden shadow-sm border border-sky-100 animate-pulse-subtle">
+                        <div class="absolute top-3 left-4 z-10">
+                            <div class="handwritten-text text-brand-navy-blue font-bold text-xl leading-tight">
+                                Know<br>Your Path.<br>Learn with<br><span class="text-brand-navy-blue font-extrabold">Purpose.</span>
+                            </div>
+                        </div>
+                        <svg viewBox="0 0 400 200" class="w-full h-full absolute inset-0">
+                            <path d="M120 200 L180 100 L240 200 Z" fill="#93C5FD" opacity="0.4"/>
+                            <path d="M190 200 L280 60 L380 200 Z" fill="#60A5FA" opacity="0.5"/>
+                            <path d="M250 200 L340 30 L400 200 Z" fill="#3B82F6" opacity="0.6"/>
+                            <polygon points="340,30 325,55 335,52 340,58 348,50 355,55" fill="#FFFFFF"/>
+                            <polygon points="280,60 268,80 276,78 280,84 288,77 292,80" fill="#FFFFFF"/>
+                            <path d="M230 180 Q 250 160 270 145 T 310 110 T 335 50" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-dasharray="3,3"/>
+                            <path d="M230 180 Q 250 160 270 145 T 310 110 T 335 50" fill="none" stroke="#F54A8D" stroke-width="2"/>
+                            <g transform="translate(230, 175)">
+                                <circle cx="0" cy="0" r="7" fill="#F54A8D"/>
+                                <rect x="8" y="-10" width="60" height="20" rx="10" fill="#FFFFFF"/>
+                                <text x="14" y="3" font-size="9" font-weight="bold" fill="#0F172A">Start Here</text>
+                            </g>
+                            <g transform="translate(305, 100)">
+                                <circle cx="0" cy="0" r="7" fill="#F54A8D"/>
+                                <rect x="8" y="-10" width="54" height="20" rx="10" fill="#FFFFFF"/>
+                                <text x="14" y="3" font-size="9" font-weight="bold" fill="#0F172A">Practice</text>
+                            </g>
+                        </svg>
+                    </div>
+                `;
+            }
+
+            // Render Body Content
+            const viewport = document.getElementById('main-content-viewport');
+            if (blockKey === 'I6') {
+                viewport.innerHTML = renderBlockI6Html(blockData);
+            } else {
+                viewport.innerHTML = renderBlockI4Html(blockData);
+            }
+        }
+
+        function renderBlockI6Html(b) {
+            const calculatedTotal = b.section4.cartItems ? b.section4.cartItems.reduce((acc, curr) => acc + curr.price, 0) : 1136;
+
+            return `
+                <!-- 3-COLUMN GRID: SECTIONS 1, 2, 3 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <!-- SECTION 1: WHAT IS A FUNCTION? -->
+                    <section class="space-y-4 flex flex-col">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">1</span>
+                            <h2 class="text-lg sm:text-xl font-bold text-brand-navy-blue">${b.section1.title}</h2>
+                        </div>
+                        <div class="bg-brand-pink-light/40 border border-pink-100 rounded-2xl p-6 text-center space-y-4 flex-1 flex flex-col items-center justify-center shadow-2xs">
+                            <div class="w-14 h-14 rounded-2xl bg-white text-brand-pink flex items-center justify-center text-2xl shadow-sm border border-pink-100">
+                                <i class="fa-regular fa-file-lines"></i>
+                            </div>
+                            <p class="text-slate-700 text-sm leading-relaxed">${b.section1.description}</p>
+                            ${b.section1.highlights ? `
+                                <div class="w-full text-left pt-2 space-y-1 border-t border-pink-100/60">
+                                    ${b.section1.highlights.map(h => `<div class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-check text-brand-pink"></i> ${h}</div>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </section>
+
+                    <!-- SECTION 2: WHY IS IT IMPORTANT? -->
+                    <section class="space-y-4 flex flex-col">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">2</span>
+                            <h2 class="text-lg sm:text-xl font-bold text-brand-navy-blue">${b.section2.title}</h2>
+                        </div>
+                        <div class="bg-brand-pink-light/30 border border-pink-100 rounded-2xl p-4 flex-1 space-y-2.5">
+                            ${b.section2.items.map(text => `
+                                <div class="flex items-start gap-3 bg-white p-3 rounded-xl border border-pink-100/60 shadow-2xs hover:border-pink-200 transition-all">
+                                    <div class="w-5 h-5 rounded-full bg-brand-pink text-white flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                    <span class="text-xs sm:text-sm text-slate-700 font-medium leading-tight">${text}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </section>
+
+                    <!-- SECTION 3: WHERE IS IT USED? -->
+                    <section class="space-y-4 flex flex-col">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">3</span>
+                            <h2 class="text-lg sm:text-xl font-bold text-brand-navy-blue">${b.section3.title}</h2>
+                        </div>
+                        <div class="space-y-2.5 flex-1">
+                            ${b.section3.items.map(item => `
+                                <div class="bg-brand-blue-soft/70 border border-blue-100/80 rounded-xl px-3.5 py-2.5 flex items-center gap-3 shadow-2xs hover:bg-brand-blue-soft transition-all">
+                                    <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center ${item.iconColor} text-sm flex-shrink-0 shadow-2xs">
+                                        <i class="fa-solid ${item.icon}"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <h4 class="font-bold text-brand-navy-blue text-xs sm:text-sm truncate">${item.title}</h4>
+                                        <p class="text-[11px] text-slate-500 truncate">${item.subtitle}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- 2-COLUMN GRID: SECTIONS 4 & 5 -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                    <!-- SECTION 4: REAL-WORLD EXAMPLE -->
+                    <section class="lg:col-span-6 space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">4</span>
+                                <h2 class="text-lg sm:text-xl font-bold text-brand-navy-blue">${b.section4.title}</h2>
+                            </div>
+                            <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">${b.section4.description}</p>
+                        </div>
+
+                        <div class="bg-brand-blue-soft/60 border border-blue-100 rounded-2xl p-5 mt-2 flex-1 flex flex-col justify-between">
+                            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 my-auto py-2">
+                                <!-- Shopping Cart Graphic -->
+                                <div class="relative w-36 h-36 flex-shrink-0">
+                                    <svg viewBox="0 0 160 160" class="w-full h-full">
+                                        <rect x="35" y="25" width="45" height="30" rx="3" fill="#334155"/>
+                                        <rect x="40" y="30" width="35" height="20" fill="#38BDF8"/>
+                                        <path d="M 80 30 L 110 30 L 115 65 L 75 65 Z" fill="#F54A8D"/>
+                                        <rect x="55" y="45" width="38" height="25" rx="2" fill="#F59E0B"/>
+                                        <path d="M 20 50 L 35 50 L 50 100 L 125 100 L 140 55 L 40 55" fill="none" stroke="#EF4444" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M 45 70 L 133 70 M 48 85 L 128 85" stroke="#EF4444" stroke-width="3"/>
+                                        <circle cx="60" cy="115" r="8" fill="#1E293B"/>
+                                        <circle cx="115" cy="115" r="8" fill="#1E293B"/>
+                                    </svg>
+                                </div>
+
+                                <!-- Dynamic Receipt Card -->
+                                <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs w-full max-w-[230px] space-y-2 text-xs">
+                                    ${b.section4.cartItems ? b.section4.cartItems.map(item => `
+                                        <div class="flex justify-between items-center text-slate-600 font-medium">
+                                            <span>${item.name}</span>
+                                            <span class="font-bold text-slate-800">$${item.price}</span>
+                                        </div>
+                                    `).join('') : ''}
+                                    <div class="border-b border-dashed border-slate-300 pt-1"></div>
+                                    <div class="flex justify-between items-center pt-1">
+                                        <span class="font-extrabold text-sm text-brand-navy-blue">Calculated Total</span>
+                                        <span class="font-extrabold text-lg text-brand-pink" id="dynamic-total-tag">$${calculatedTotal}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center text-xs text-slate-500 mt-2 font-medium">${b.section4.footnote}</p>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 5: EXAMPLE CODE -->
+                    <section class="lg:col-span-6 space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">5</span>
+                                <h2 class="text-lg sm:text-xl font-bold text-brand-navy-blue">${b.section5.title}</h2>
+                            </div>
+                        </div>
+
+                        <div class="bg-brand-editor rounded-2xl overflow-hidden shadow-lg border border-slate-800 text-white font-code text-xs sm:text-sm flex-1 flex flex-col justify-between">
+                            <div class="bg-slate-900/90 px-4 py-3 flex items-center justify-between border-b border-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                                    <span class="ml-2 text-slate-400 font-sans text-xs font-medium">JavaScript</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="runCodeSnippet()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-md transition-all font-sans font-semibold">
+                                        <i class="fa-solid fa-play"></i> Run Code
+                                    </button>
+                                    <button onclick="copyCodeSnippet()" id="copy-btn" class="flex items-center gap-1.5 text-slate-400 hover:text-white text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-md transition-all font-sans">
+                                        <i class="fa-regular fa-copy"></i> <span>Copy Snippet</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-4 overflow-x-auto flex gap-4 leading-relaxed my-auto">
+                                <pre class="text-slate-200 font-code"><code id="code-snippet-body">${escapeHtml(b.section5.codeSnippet)}</code></pre>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- SECTION 6: WHAT WILL YOU LEARN? -->
+                <section class="space-y-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">6</span>
+                        <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">${b.section6.title}</h2>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 relative">
+                        ${b.section6.steps.map((step, idx) => `
+                            <div class="relative bg-brand-pink-light/30 border border-pink-100/80 rounded-2xl p-4 text-center space-y-2 flex flex-col items-center justify-between shadow-2xs hover:scale-102 transition-transform">
+                                <div class="absolute top-2.5 left-2.5 w-6 h-6 rounded-full bg-brand-pink text-white font-bold text-xs flex items-center justify-center">
+                                    ${step.num}
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-pink-100 text-brand-pink flex items-center justify-center text-base mt-2">
+                                    <i class="${step.icon}"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-brand-navy-blue text-xs sm:text-sm leading-snug">${step.title}</h4>
+                                    <p class="text-[11px] text-slate-500 mt-1 leading-tight">${step.desc}</p>
+                                </div>
+                                ${idx < b.section6.steps.length - 1 ? `
+                                    <div class="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-brand-pink text-xs bg-white rounded-full p-0.5 shadow-2xs border border-pink-100">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderBlockI4Html(b) {
+            return `
+                <div class="space-y-10">
+
+                    <!-- SECTION 1: THE TOPIC -->
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">1</span>
+                            <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">${b.section1.title}</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                            <div class="lg:col-span-7">
+                                <p class="text-slate-700 text-sm sm:text-base leading-relaxed bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
+                                    ${b.section1.description}
+                                </p>
+                            </div>
+                            <div class="lg:col-span-5 bg-brand-blue-soft rounded-2xl p-5 flex items-center gap-4 border border-blue-100 shadow-2xs">
+                                <div class="text-brand-pink text-3xl font-serif font-bold leading-none select-none pl-2">
+                                    <i class="fa-solid fa-quote-left"></i>
+                                </div>
+                                <p class="text-slate-700 font-semibold text-sm leading-snug italic">
+                                    "${b.section1.quote || 'Functions are an essential part of modern JavaScript development.'}"
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 2: WHERE DOES IT FIT? (FLOW CARDS) -->
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">2</span>
+                            <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">${b.section2.title}</h2>
+                        </div>
+
+                        <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">${b.section2.description || 'Functions are a core concept in JavaScript and play a key role in many areas.'}</p>
+
+                        <div class="flex flex-col lg:flex-row items-center justify-between gap-3 pt-2">
+                            ${b.section2.flowCards ? b.section2.flowCards.map((card, idx) => {
+                                let iconHTML = "";
+                                if (card.iconType === "badge") {
+                                    iconHTML = `<span class="${card.badgeBg}">${card.badgeText}</span>`;
+                                } else if (card.iconType === "math") {
+                                    iconHTML = `<span class="text-brand-pink font-serif italic font-extrabold text-2xl">${card.mathText}</span>`;
+                                } else {
+                                    iconHTML = `<div class="w-9 h-9 rounded-full ${card.iconBg} flex items-center justify-center text-base"><i class="fa-solid ${card.icon}"></i></div>`;
+                                }
+
+                                const cardBody = card.type === "highlight" ? `
+                                    <div class="flex-1 w-full bg-white border-2 border-brand-pink rounded-2xl p-4 text-center space-y-2 flex flex-col items-center justify-start shadow-sm">
+                                        <div class="h-10 flex items-center justify-center">${iconHTML}</div>
+                                        <h4 class="font-bold text-brand-pink text-sm sm:text-base leading-snug">${card.title}</h4>
+                                        <p class="text-xs text-slate-600 leading-tight">${card.subtitle}</p>
+                                    </div>
+                                ` : `
+                                    <div class="flex-1 w-full bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 text-center space-y-2 flex flex-col items-center justify-start">
+                                        <div class="h-10 flex items-center justify-center">${iconHTML}</div>
+                                        <h4 class="font-bold text-brand-navy-blue text-sm sm:text-base leading-snug">${card.title}</h4>
+                                        <p class="text-xs text-slate-500 leading-tight">${card.subtitle}</p>
+                                    </div>
+                                `;
+
+                                const arrowHTML = idx < b.section2.flowCards.length - 1 ? `
+                                    <div class="flow-arrow my-1 lg:my-0">
+                                        <i class="fa-solid fa-arrow-right hidden lg:block text-brand-pink"></i>
+                                        <i class="fa-solid fa-arrow-down block lg:hidden text-brand-pink"></i>
+                                    </div>
+                                ` : '';
+
+                                return cardBody + arrowHTML;
+                            }).join('') : ''}
+                        </div>
+                    </section>
+
+                    <!-- SECTION 3: ROADMAP STEPS -->
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">3</span>
+                            <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">${b.section3.title}</h2>
+                        </div>
+
+                        <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">${b.section3.description || 'Here is the roadmap for functions. Each step builds on the previous one.'}</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-2">
+                            ${b.section3.roadmapSteps ? b.section3.roadmapSteps.map(step => `
+                                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-2 flex flex-col justify-between text-center hover:border-brand-pink/40 transition-all">
+                                    <div class="w-7 h-7 mx-auto rounded-full bg-brand-pink text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+                                        ${step.step}
+                                    </div>
+                                    <h4 class="font-bold text-brand-navy-blue text-xs sm:text-sm leading-snug">${step.title}</h4>
+                                    <p class="text-[11px] text-slate-500 leading-tight">${step.subtitle}</p>
+                                </div>
+                            `).join('') : ''}
+                        </div>
+                    </section>
+
+                    <!-- SECTION 4: WHY THIS MATTERS -->
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">4</span>
+                            <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">${b.section4.title}</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                            ${b.section4.cards ? b.section4.cards.map(card => `
+                                <div class="${card.bgColor} rounded-2xl p-6 text-center space-y-3 flex flex-col items-center justify-start border border-slate-100 shadow-2xs">
+                                    <div class="w-12 h-12 rounded-full ${card.iconBg} ${card.iconColor} flex items-center justify-center text-xl shadow-sm">
+                                        <i class="${card.icon}"></i>
+                                    </div>
+                                    <h4 class="font-bold text-brand-navy-blue text-base sm:text-lg leading-snug">${card.title}</h4>
+                                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">${card.subtitle}</p>
+                                </div>
+                            `).join('') : ''}
+                        </div>
+                    </section>
+
+                </div>
+            `;
+        }
+
+        function copyCodeSnippet() {
+            const codeText = activeData.blocks[activeBlockKey]?.section5?.codeSnippet || '';
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = codeText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            const btn = document.getElementById('copy-btn');
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span class="text-emerald-400">Copied!</span>`;
+                setTimeout(() => {
+                    btn.innerHTML = `<i class="fa-regular fa-copy"></i> <span>Copy Snippet</span>`;
+                }, 2000);
+            }
+            showToast("Code snippet copied to clipboard!");
+        }
+
+        function runCodeSnippet() {
+            const codeText = activeData.blocks[activeBlockKey]?.section5?.codeSnippet || '';
+            try {
+                let logs = [];
+                const originalLog = console.log;
+                console.log = function(...args) {
+                    logs.push(args.join(' '));
+                    originalLog.apply(console, args);
+                };
+                
+                // Execute snippet in safe scope
+                new Function(codeText)();
+                console.log = originalLog;
+
+                const result = logs.length > 0 ? logs.join('\n') : "Function executed cleanly.";
+                showToast(`Code Executed: Output => ${result}`);
+            } catch (err) {
+                showToast(`Execution Error: ${err.message}`);
+            }
+        }
+
+        function toggleJsonModal() {
+            const modal = document.getElementById('json-modal');
+            const textarea = document.getElementById('json-editor-textarea');
+            if (modal.classList.contains('hidden')) {
+                textarea.value = JSON.stringify(activeData, null, 2);
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function applyJsonData() {
+            const textarea = document.getElementById('json-editor-textarea');
+            try {
+                const parsed = JSON.parse(textarea.value);
+                activeData = parsed;
+                renderHeaderAndMeta();
+                renderBlock(activeBlockKey);
+                toggleJsonModal();
+                showToast("Source data updated successfully from JSON!");
+            } catch (err) {
+                alert("JSON Syntax Error: " + err.message);
+            }
+        }
+
+        function resetJsonData() {
+            activeData = JSON.parse(JSON.stringify(defaultDataJson));
+            document.getElementById('json-editor-textarea').value = JSON.stringify(activeData, null, 2);
+            renderHeaderAndMeta();
+            renderBlock(activeBlockKey);
+            showToast("JSON payload restored to default data!");
+        }
+
+        function navigateLesson(direction) {
+            if (activeBlockKey === 'I6') {
+                switchBlock('I4');
+            } else {
+                switchBlock('I6');
+            }
+        }
+
+        function handleSearch(term) {
+            if (!term.trim()) return;
+            const matchCount = (JSON.stringify(activeData).toLowerCase().match(new RegExp(term.toLowerCase(), 'g')) || []).length;
+            if (matchCount > 0) {
+                showToast(`Found ${matchCount} matches for "${term}" in data model`);
+            } else {
+                showToast(`No matches found for "${term}"`);
+            }
+        }
+
+        function showToast(msg) {
+            const toastBox = document.getElementById('toast-box');
+            const toast = document.createElement('div');
+            toast.className = 'bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 transition-all transform translate-y-2 opacity-0 pointer-events-auto';
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-brand-pink"></i> ${msg}`;
+            
+            toastBox.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2600);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initialize App on DOM load
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

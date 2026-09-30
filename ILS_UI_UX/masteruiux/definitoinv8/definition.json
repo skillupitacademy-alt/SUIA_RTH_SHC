@@ -1,0 +1,299 @@
+{
+  "page": {
+    "category": "PYTHON FUNDAMENTALS",
+
+    "title": "How Do You Add Two Numbers in Python?",
+
+    "introduction": "A simple Python program demonstrates several fundamental programming concepts together: receiving input, converting data types, assigning values to names, performing arithmetic, and displaying output.",
+
+    "definition": "A Python program is a sequence of instructions that the Python interpreter executes to perform a task. In this example, the program accepts two numbers, calculates their sum, and displays the result.",
+
+    "explanation": [
+      {
+        "type": "paragraph",
+        "content": "A complete learning example should connect the concept, its important characteristics, a visual representation, and an executable example."
+      },
+      {
+        "type": "paragraph",
+        "content": "The following program demonstrates a simple input-processing-output flow. The user enters two values, Python converts those values from text into integers, performs addition, and finally displays the calculated result."
+      },
+      {
+        "type": "heading",
+        "content": "The execution flow"
+      },
+      {
+        "type": "paragraph",
+        "content": "The program can be understood as four simple stages: <strong>Input → Conversion → Calculation → Output</strong>."
+      }
+    ],
+
+    "characteristics": [
+      {
+        "icon": "fa-solid fa-keyboard",
+        "title": "Input",
+        "description": "The program receives two values from the user through the input() function."
+      },
+      {
+        "icon": "fa-solid fa-arrows-rotate",
+        "title": "Type Conversion",
+        "description": "The int() function converts the text returned by input() into integer values."
+      },
+      {
+        "icon": "fa-solid fa-calculator",
+        "title": "Calculation",
+        "description": "The + operator performs arithmetic addition on the two integer values."
+      },
+      {
+        "icon": "fa-solid fa-box",
+        "title": "Assignment",
+        "description": "The calculated result is assigned to the name sum."
+      },
+      {
+        "icon": "fa-solid fa-display",
+        "title": "Output",
+        "description": "The print() function displays the final result to the terminal."
+      },
+      {
+        "icon": "fa-solid fa-arrow-right",
+        "title": "Sequential Execution",
+        "description": "Python executes the statements in the program sequentially from top to bottom."
+      }
+    ],
+
+    "visual": {
+      "introduction": "The program follows a simple data-flow model in which user input moves through conversion and calculation before becoming the final output.",
+
+      "rows": [
+        [
+          {
+            "type": "node",
+            "icon": "fa-solid fa-keyboard",
+            "title": "User Input",
+            "description": "Two numbers entered by the user"
+          },
+
+          {
+            "type": "connector",
+            "direction": "horizontal",
+            "icon": "fa-solid fa-arrow-right"
+          },
+
+          {
+            "type": "node",
+            "icon": "fa-solid fa-arrows-rotate",
+            "title": "int() Conversion",
+            "description": "Text → Integer"
+          },
+
+          {
+            "type": "connector",
+            "direction": "horizontal",
+            "icon": "fa-solid fa-arrow-right"
+          },
+
+          {
+            "type": "node",
+            "icon": "fa-solid fa-calculator",
+            "title": "Addition",
+            "description": "num1 + num2",
+            "highlight": true
+          },
+
+          {
+            "type": "connector",
+            "direction": "horizontal",
+            "icon": "fa-solid fa-arrow-right"
+          },
+
+          {
+            "type": "node",
+            "icon": "fa-solid fa-display",
+            "title": "Output",
+            "description": "Sum = 30"
+          }
+        ]
+      ],
+
+      "explanation": [
+        {
+          "type": "paragraph",
+          "content": "The user first provides two values. Each value is passed through <code>int()</code> so Python can treat it as an integer."
+        },
+        {
+          "type": "paragraph",
+          "content": "The two integers are then added together. The resulting value is stored in <code>sum</code> and displayed using <code>print()</code>."
+        }
+      ]
+    },
+
+    "example": {
+      "introduction": "Let's implement the complete flow using Python. The program accepts two integers from the user and prints their sum.",
+
+      "filename": "sum_two_numbers.py",
+
+      "language": "python",
+
+      "description": "This example demonstrates input, integer conversion, assignment, arithmetic addition, and output in a single small Python program.",
+
+      "code": [
+        {
+          "content": "num1 = int(input(\"Enter first number: \"))",
+          "tokens": [
+            {
+              "type": "variable",
+              "value": "num1"
+            },
+            {
+              "type": "operator",
+              "value": " = "
+            },
+            {
+              "type": "builtin",
+              "value": "int"
+            },
+            {
+              "type": "punctuation",
+              "value": "("
+            },
+            {
+              "type": "function",
+              "value": "input"
+            },
+            {
+              "type": "punctuation",
+              "value": "("
+            },
+            {
+              "type": "string",
+              "value": "\"Enter first number: \""
+            },
+            {
+              "type": "punctuation",
+              "value": "))"
+            }
+          ]
+        },
+
+        {
+          "content": "num2 = int(input(\"Enter second number: \"))",
+          "tokens": [
+            {
+              "type": "variable",
+              "value": "num2"
+            },
+            {
+              "type": "operator",
+              "value": " = "
+            },
+            {
+              "type": "builtin",
+              "value": "int"
+            },
+            {
+              "type": "punctuation",
+              "value": "("
+            },
+            {
+              "type": "function",
+              "value": "input"
+            },
+            {
+              "type": "punctuation",
+              "value": "("
+            },
+            {
+              "type": "string",
+              "value": "\"Enter second number: \""
+            },
+            {
+              "type": "punctuation",
+              "value": "))"
+            }
+          ]
+        },
+
+        {
+          "content": "sum = num1 + num2",
+          "tokens": [
+            {
+              "type": "variable",
+              "value": "sum"
+            },
+            {
+              "type": "operator",
+              "value": " = "
+            },
+            {
+              "type": "variable",
+              "value": "num1"
+            },
+            {
+              "type": "operator",
+              "value": " + "
+            },
+            {
+              "type": "variable",
+              "value": "num2"
+            }
+          ]
+        },
+
+        {
+          "content": "print(\"Sum =\", sum)",
+          "tokens": [
+            {
+              "type": "builtin",
+              "value": "print"
+            },
+            {
+              "type": "punctuation",
+              "value": "("
+            },
+            {
+              "type": "string",
+              "value": "\"Sum =\""
+            },
+            {
+              "type": "punctuation",
+              "value": ", "
+            },
+            {
+              "type": "variable",
+              "value": "sum"
+            },
+            {
+              "type": "punctuation",
+              "value": ")"
+            }
+          ]
+        }
+      ],
+
+      "output": {
+        "label": "Terminal Output",
+        "value": "Enter first number: 10\nEnter second number: 20\nSum = 30"
+      },
+
+      "explanation": [
+        {
+          "type": "paragraph",
+          "content": "The first line calls <code>input()</code> to receive the first value. Because input() returns text, <code>int()</code> converts that text into an integer and the result is assigned to <code>num1</code>."
+        },
+        {
+          "type": "paragraph",
+          "content": "The second line performs the same operation for the second value and stores it in <code>num2</code>."
+        },
+        {
+          "type": "paragraph",
+          "content": "The expression <code>num1 + num2</code> performs integer addition and assigns the resulting value to <code>sum</code>."
+        },
+        {
+          "type": "paragraph",
+          "content": "Finally, <code>print(\"Sum =\", sum)</code> sends the calculated result to the terminal."
+        }
+      ]
+    },
+
+    "takeaway": "The complete example connects the definition, characteristics, visual flow, and executable code into one learning model: receive input, convert it to integers, calculate the sum, and display the result."
+  }
+}

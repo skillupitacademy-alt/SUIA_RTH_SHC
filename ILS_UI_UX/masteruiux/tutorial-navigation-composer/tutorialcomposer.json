@@ -1,0 +1,57 @@
+{
+  "type": "tutorial",
+
+  "title": "Python Lists",
+
+  "route": {
+    "domain": "data-science",
+    "subject": "python",
+    "topic": "data-structures",
+    "subtopic": "lists"
+  },
+
+  "notes": {
+    "markdown": "# Python Lists\n\nA list is an ordered, mutable collection in Python."
+  },
+
+  "layman": {
+    "simpleExplanation": "Think of a Python list like a flexible shopping basket that can hold multiple items.",
+    "analogyOrStory": "You can add items, remove items and change existing items in the basket.",
+    "example1": {
+      "company": "Netflix",
+      "content": "A list can represent a sequence of items that must be processed in order."
+    },
+    "example2": {
+      "company": "Amazon",
+      "content": "A list can represent products selected by a customer."
+    }
+  },
+
+  "real_life": {
+    "title": "A Shopping List",
+    "scenario": "Imagine writing several products on a shopping list and changing the list while shopping.",
+    "why_it_matters": "Programming applications frequently need to store and manipulate collections of related values."
+  },
+
+  "technical": {
+    "markdown": "Python lists are ordered, mutable sequences. They support indexing, slicing and dynamic resizing."
+  },
+
+  "code": {
+    "language": "python",
+    "code": "numbers = [10, 20, 30]\n\nnumbers.append(40)\n\nprint(numbers)"
+  },
+
+  "ai_tutor": {
+    "qa_pairs": [
+      {
+        "question": "Are Python lists mutable?",
+        "answer": "Yes. Existing list elements can be changed after the list is created."
+      },
+      {
+        "question": "Can a Python list contain different data types?",
+        "answer": "Yes. A Python list can contain objects of different types."
+      }
+    ]
+  }
+}

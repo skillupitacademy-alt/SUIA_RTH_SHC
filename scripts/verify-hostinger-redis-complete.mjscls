@@ -1,0 +1,45 @@
+﻿#!/usr/bin/env node
+/**
+ * Hostinger Production Redis Verification
+ * Fixed RESP encoding with String.raw
+ */
+import { exec } from 'child_process';
+import { promisify } from 'util';
+const execAsync = promisify(exec);
+const VPS_HOST = '72.61.115.49';
+const VPS_USER = 'root';
+const SSH_TARGET = `${VPS_USER}@${VPS_HOST}`;
+const COMPOSE_DIR = '/opt/platform/compose';
+const API_CONTAINER = 'quiz-platform-api-server-1';
+const CONTAINER_NAMES = ['quiz-platform-api-server-1','quiz-platform-realtutorialhub-web-1','quiz-platform-skillup-web-1','quiz-platform-skillhubcore-service-1'];
+const NEW_UPSTASH_HOST = 'aware-weasel-320883.upstash.io';
+const OLD_UPSTASH_HOST = 'national-goose-7390.upstash.io';
+const TEMP_REST_SCRIPT = '/tmp/verify-upstash-rest.cjs';
+const TEMP_TCP_SCRIPT = '/tmp/verify-redis-tls.cjs';
+const RTH_TEST_EMAIL = 'ajayshah@gmail.com';
+const RTH_TEST_PASSWORD = 'testing';
+const RTH_PROD_URL = 'https://user.realtutorialhub.com';
+const SKILLUP_TEST_EMAIL = 'student@skillupitacademy.com';
+const SKILLUP_TEST_PASSWORD = 'testing';
+const SKILLUP_PROD_URL = 'https://user.skillupitacademy.com';
+let failures = 0, warnings = 0;
+function pass(m) { console.log(`✅ [PASS] ${m}`); }
+function fail(m) { console.error(`❌ [FAIL] ${m}`); failures++; }
+function warn(m) { console.log(`⚠️  [WARN] ${m}`); warnings++; }
+function info(m) { console.log(`[INFO] ${m}`); }
+function section(t) { console.log(''); console.log('='.repeat(72)); console.log(t); console.log('='.repeat(72)); console.log(''); }
+async function sshCommand(cmd) {
+  try {
+    const esc = cmd.replace(/"/g, '\\"');
+    const { stdout, stderr } = await execAsync(`ssh ${SSH_TARGET} "${esc}"`, { maxBuffer: 10 * 1024 * 1024 });
+    return { success: true, stdout: stdout.trim(), stderr: stderr.trim() };
+  } catch (error) {
+    return { success: false, error: error.message, stdout: error.stdout?.trim?.() ?? '', stderr: error.stderr?.trim?.() ?? '' };
+  }
+}
+async function writeRemoteScript(remotePath, source) {
+  const encoded = Buffer.from(source, 'utf8').toString('base64');
+  const command = [`printf '%s' '${encoded}' | base64 -d > ${remotePath}`, `chmod 600 ${remotePath}`].join(' && ');
+  const result = await sshCommand(command);
+  if (!result.success) throw new Error(`Failed to create remote script ${remotePath}: ${result.error}`);
+}

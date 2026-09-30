@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Functions in Everyday Life - SUIA Roadmap</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Fonts: Plus Jakarta Sans, Fira Code & Caveat -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700;800&family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#F54A8D',
+                            'pink-dark': '#E03375',
+                            'pink-light': '#FFF0F5',
+                            'pink-soft': '#FDF2F8',
+                            navy: '#0F172A',
+                            'navy-blue': '#133382',
+                            'blue-soft': '#F0F5FF',
+                            'mint-light': '#ECFDF5',
+                            'mint-dark': '#059669',
+                            muted: '#64748B',
+                            editor: '#0B132B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        code: ['Fira Code', 'monospace'],
+                        hand: ['Caveat', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FFFFFF;
+            color: #0F172A;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .handwritten-text {
+            font-family: 'Caveat', cursive;
+        }
+
+        .pink-underline {
+            position: relative;
+            display: inline-block;
+        }
+        .pink-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: #F54A8D;
+            border-radius: 2px;
+        }
+
+        /* Custom scrollbar for clean code snippet view */
+        pre::-webkit-scrollbar {
+            height: 6px;
+        }
+        pre::-webkit-scrollbar-thumb {
+            background-color: #334155;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen pb-12">
+
+    <div id="app" class="max-w-[1140px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+
+        <!-- TOP HEADER NAVBAR -->
+        <header class="flex flex-col sm:flex-row items-center justify-between py-4 border-b border-slate-100 gap-4">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-pink flex items-center justify-center text-white text-xl shadow-md shadow-brand-pink/20">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <div class="font-extrabold text-2xl tracking-tight text-brand-pink leading-none">
+                        SUIA
+                    </div>
+                    <div class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Skill Up IT Academy</div>
+                </div>
+            </div>
+
+            <!-- Search Bar & User Actions -->
+            <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
+                <div class="relative w-full sm:w-80">
+                    <input type="text" placeholder="Search anything..." class="w-full bg-slate-50 border border-slate-200/80 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-pink/30 transition-all placeholder:text-slate-400">
+                    <button class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-pink transition-colors">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Notification Bell -->
+                <button class="relative w-10 h-10 rounded-full bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-brand-pink transition-colors flex-shrink-0">
+                    <i class="fa-regular fa-bell text-base"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-pink"></span>
+                </button>
+
+                <!-- Profile Avatar -->
+                <div class="w-10 h-10 rounded-full bg-brand-pink text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-pink/20">
+                    S
+                </div>
+            </div>
+        </header>
+
+        <!-- BREADCRUMBS -->
+        <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 py-4 overflow-x-auto whitespace-nowrap">
+            <a href="#" class="hover:text-brand-pink transition-colors"><i class="fa-solid fa-house"></i></a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-category">Full Stack Development</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-module">Frontend Development (FE)</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-topic">JavaScript</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <span class="font-bold text-brand-pink" id="bc-lesson">Introduction: Real-World Perspective</span>
+        </nav>
+
+        <!-- HERO SECTION -->
+        <section class="mt-2 mb-8 relative">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <!-- Left Content -->
+                <div class="lg:col-span-6 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-pink-light text-brand-pink font-bold text-xs">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span id="hero-badge">Introduction Block – I5</span>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-navy-blue tracking-tight leading-tight" id="hero-title">
+                        Functions in <span class="pink-underline">Everyday Life</span>
+                    </h1>
+
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl" id="hero-subtitle">
+                        Let's explore a real-world situation to see why functions are needed and how they help us build better JavaScript programs.
+                    </p>
+                </div>
+
+                <!-- Right Hero Graphic Illustration -->
+                <div class="lg:col-span-6 relative flex justify-center">
+                    <div class="w-full max-w-[480px] h-[220px] rounded-3xl bg-gradient-to-br from-amber-50/70 via-rose-50/60 to-red-50/50 p-4 relative overflow-hidden shadow-sm border border-rose-100/80">
+                        
+                        <!-- Handwritten Motto Top Right -->
+                        <div class="absolute top-3 right-4 z-10 text-right">
+                            <div class="handwritten-text text-brand-navy-blue font-bold text-xl leading-snug">
+                                Real Problems<br>
+                                <span class="text-brand-pink font-extrabold">Real Solutions</span><br>
+                                Real Skills!
+                            </div>
+                        </div>
+
+                        <!-- Vector SVG Illustration: Developer thinking, lightbulb, laptop, stacked books -->
+                        <svg viewBox="0 0 450 200" class="w-full h-full absolute inset-0">
+                            <!-- Background Circles -->
+                            <circle cx="270" cy="110" r="75" fill="#FED7AA" opacity="0.4"/>
+                            <circle cx="380" cy="150" r="50" fill="#FBCFE8" opacity="0.5"/>
+
+                            <!-- Glowing Lightbulb -->
+                            <g transform="translate(325, 15)">
+                                <circle cx="15" cy="15" r="18" fill="#FDE047" opacity="0.3"/>
+                                <path d="M15 2 C 7 2, 1 8, 1 16 C 1 21, 5 25, 9 28 L 9 32 L 21 32 L 21 28 C 25 25, 29 21, 29 16 C 29 8, 23 2, 15 2 Z" fill="#EAB308"/>
+                                <rect x="11" y="32" width="8" height="3" rx="1" fill="#94A3B8"/>
+                                <rect x="12" y="36" width="6" height="2" rx="1" fill="#64748B"/>
+                                <!-- Rays -->
+                                <line x1="15" y1="-4" x2="15" y2="-8" stroke="#EAB308" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="31" y1="2" x2="35" y2="-1" stroke="#EAB308" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="-1" y1="2" x2="-5" y2="-1" stroke="#EAB308" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="34" y1="16" x2="39" y2="16" stroke="#EAB308" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="-4" y1="16" x2="-9" y2="16" stroke="#EAB308" stroke-width="2.5" stroke-linecap="round"/>
+                            </g>
+
+                            <!-- Developer Character -->
+                            <g transform="translate(250, 45)">
+                                <!-- Body Hoodie (Pink) -->
+                                <path d="M 10 90 Q 25 55 55 55 Q 85 55 100 90 Z" fill="#F54A8D"/>
+                                <path d="M 45 55 L 45 90 M 65 55 L 65 90" stroke="#E03375" stroke-width="2"/>
+                                <!-- Neck -->
+                                <rect x="47" y="44" width="16" height="14" fill="#FED7AA" rx="4"/>
+                                <!-- Head -->
+                                <circle cx="55" cy="32" r="19" fill="#FED7AA"/>
+                                <!-- Hair -->
+                                <path d="M 36 30 C 35 15, 48 10, 60 14 C 74 12, 76 25, 74 30 C 72 20, 60 18, 55 22 C 50 18, 40 22, 36 30 Z" fill="#0F172A"/>
+                                <!-- Face Details -->
+                                <circle cx="50" cy="30" r="2" fill="#0F172A"/>
+                                <circle cx="64" cy="30" r="2" fill="#0F172A"/>
+                                <path d="M 52 38 Q 57 42 62 38" fill="none" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
+                                <!-- Arm Raised Pointing Up -->
+                                <path d="M 85 65 L 105 35 Q 108 30 110 33 Q 112 36 107 42 L 92 75 Z" fill="#F54A8D"/>
+                                <circle cx="107" cy="31" r="4" fill="#FED7AA"/>
+                            </g>
+
+                            <!-- Laptop -->
+                            <g transform="translate(290, 120)">
+                                <path d="M 5 35 L 55 35 L 50 5 L 10 5 Z" fill="#1E293B"/>
+                                <rect x="12" y="8" width="31" height="22" rx="2" fill="#38BDF8"/>
+                                <!-- Apple/Brand logo on laptop back -->
+                                <circle cx="27.5" cy="19" r="3" fill="#FFFFFF"/>
+                                <!-- Base -->
+                                <path d="M 0 35 L 60 35 L 65 42 L -5 42 Z" fill="#64748B"/>
+                            </g>
+
+                            <!-- Books Stack & Plant on Right -->
+                            <g transform="translate(385, 140)">
+                                <!-- Books -->
+                                <rect x="0" y="32" width="55" height="12" rx="3" fill="#1E40AF"/>
+                                <text x="14" y="41" font-size="8" font-weight="bold" fill="#FFFFFF" font-family="Plus Jakarta Sans">Grow</text>
+                                
+                                <rect x="4" y="20" width="50" height="12" rx="3" fill="#2563EB"/>
+                                <text x="16" y="29" font-size="8" font-weight="bold" fill="#FFFFFF" font-family="Plus Jakarta Sans">Build</text>
+
+                                <rect x="8" y="8" width="44" height="12" rx="3" fill="#DC2626"/>
+                                <text x="18" y="17" font-size="8" font-weight="bold" fill="#FFFFFF" font-family="Plus Jakarta Sans">Learn</text>
+
+                                <!-- Potted Plant -->
+                                <path d="M -25 44 L -10 44 L -13 25 L -22 25 Z" fill="#D97706"/>
+                                <path d="M -18 25 Q -30 10 -25 -2 Q -10 10 -18 25 Z" fill="#16A34A"/>
+                                <path d="M -18 25 Q -5 10 -10 -5 Q -20 5 -18 25 Z" fill="#22C55E"/>
+                            </g>
+                        </svg>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEARNING GOAL CARD -->
+        <section class="mb-10">
+            <div class="bg-brand-pink-light border border-pink-100 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                <!-- Target Icon Circle -->
+                <div class="w-14 h-14 rounded-full bg-pink-100/80 flex items-center justify-center text-brand-pink text-2xl flex-shrink-0">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <!-- Text Content -->
+                <div class="space-y-1">
+                    <h3 class="text-brand-pink font-bold text-lg sm:text-xl">Learning Goal</h3>
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="learning-goal-text">
+                        Understand how real-world programming problems lead to the need for functions, and see how functions provide a clean and reusable solution.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTIONS 1 & 2 GRID CONTAINER -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+            
+            <!-- SECTION 1: REAL-WORLD SITUATION -->
+            <section class="space-y-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                            1
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue" id="sec1-title">Real-World Situation</h2>
+                    </div>
+
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="sec1-desc">
+                        You are building an e-commerce website. Customers add products to their cart, and the website needs to calculate the total price frequently.
+                    </p>
+                </div>
+
+                <!-- E-Commerce Cart Illustration Card -->
+                <div class="bg-brand-blue-soft/60 border border-blue-100 rounded-2xl p-5 mt-2">
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                        
+                        <!-- SVG Red Shopping Cart loaded with items -->
+                        <div class="relative w-36 h-36 flex-shrink-0">
+                            <svg viewBox="0 0 160 160" class="w-full h-full">
+                                <!-- Laptop in cart -->
+                                <rect x="35" y="25" width="45" height="30" rx="3" fill="#334155"/>
+                                <rect x="40" y="30" width="35" height="20" fill="#38BDF8"/>
+                                
+                                <!-- Pink Gift Bag -->
+                                <path d="M 80 30 L 110 30 L 115 65 L 75 65 Z" fill="#F54A8D"/>
+                                <path d="M 88 30 C 88 20, 102 20, 102 30" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+
+                                <!-- Blue Parcel Box -->
+                                <rect x="55" y="45" width="38" height="25" rx="2" fill="#2563EB"/>
+                                <line x1="74" y1="45" x2="74" y2="70" stroke="#60A5FA" stroke-width="2"/>
+                                <line x1="55" y1="57.5" x2="93" y2="57.5" stroke="#60A5FA" stroke-width="2"/>
+
+                                <!-- Red Shopping Cart Basket -->
+                                <path d="M 20 50 L 35 50 L 50 100 L 125 100 L 140 55 L 40 55" fill="none" stroke="#EF4444" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M 45 70 L 133 70 M 48 85 L 128 85" stroke="#EF4444" stroke-width="3"/>
+
+                                <!-- Wheels -->
+                                <circle cx="60" cy="115" r="8" fill="#1E293B"/>
+                                <circle cx="60" cy="115" r="3" fill="#94A3B8"/>
+
+                                <circle cx="115" cy="115" r="8" fill="#1E293B"/>
+                                <circle cx="115" cy="115" r="3" fill="#94A3B8"/>
+                            </svg>
+                        </div>
+
+                        <!-- Receipt Table Box -->
+                        <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm w-full max-w-[210px] space-y-2 text-xs">
+                            <div class="flex justify-between items-center text-slate-600 font-medium">
+                                <span>Laptop</span>
+                                <span class="font-bold text-slate-800">$799</span>
+                            </div>
+                            <div class="flex justify-between items-center text-slate-600 font-medium">
+                                <span>Headphones</span>
+                                <span class="font-bold text-slate-800">$199</span>
+                            </div>
+                            <div class="flex justify-between items-center text-slate-600 font-medium">
+                                <span>Mouse</span>
+                                <span class="font-bold text-slate-800">$49</span>
+                            </div>
+
+                            <div class="border-b border-dashed border-slate-300 pt-1"></div>
+
+                            <div class="flex justify-between items-center pt-1">
+                                <span class="font-extrabold text-sm text-brand-navy-blue">Total</span>
+                                <span class="font-extrabold text-xl text-brand-pink" id="receipt-total-mark">?</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-center text-xs text-slate-500 mt-4 font-medium" id="sec1-footnote">
+                        The total needs to be calculated every time products are added or removed.
+                    </p>
+                </div>
+            </section>
+
+            <!-- SECTION 2: THE REQUIREMENT (NEED) -->
+            <section class="space-y-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                            2
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue" id="sec2-title">The Requirement (Need)</h2>
+                    </div>
+
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="sec2-desc">
+                        We need a way to calculate the total price from a list of product prices. This calculation will be used many times in different parts of the application.
+                    </p>
+                </div>
+
+                <!-- 3 Feature Cards List Container -->
+                <div class="bg-brand-blue-soft/60 border border-blue-100 rounded-2xl p-4 space-y-3" id="requirements-list">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- SECTIONS 3 & 4 GRID CONTAINER -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+
+            <!-- SECTION 3: THE SOLUTION: FUNCTIONS -->
+            <section class="space-y-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                            3
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue" id="sec3-title">The Solution: Functions</h2>
+                    </div>
+
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="sec3-desc">
+                        We create a function that takes a list of prices, calculates the total, and returns the result. Now we can use this function whenever we need to calculate a total.
+                    </p>
+                </div>
+
+                <!-- Code Block Window -->
+                <div class="bg-brand-editor rounded-2xl overflow-hidden shadow-lg border border-slate-800 text-white font-code text-xs sm:text-sm">
+                    <!-- Editor Bar -->
+                    <div class="bg-slate-900/90 px-4 py-3 flex items-center justify-between border-b border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                            <span class="ml-2 text-slate-400 font-sans text-xs font-medium">JavaScript</span>
+                        </div>
+                        <button onclick="copyCodeSnippet()" id="copy-btn" class="flex items-center gap-1.5 text-slate-400 hover:text-white text-xs bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-md transition-all">
+                            <i class="fa-regular fa-copy"></i> <span>Copy</span>
+                        </button>
+                    </div>
+
+                    <!-- Code Content with Line Numbers -->
+                    <div class="p-4 overflow-x-auto flex gap-4 leading-relaxed">
+                        <div class="select-none text-slate-600 text-right pr-2 border-r border-slate-800 space-y-1">
+                            <div>1</div>
+                            <div>2</div>
+                            <div>3</div>
+                            <div>4</div>
+                            <div>5</div>
+                            <div>6</div>
+                        </div>
+                        <pre class="text-slate-200 font-code"><code id="code-snippet-body">
+<span class="text-pink-400">function</span> <span class="text-sky-300">calculateTotal</span>(<span class="text-amber-300">prices</span>) {
+  <span class="text-pink-400">let</span> <span class="text-slate-100">total</span> = <span class="text-emerald-400">0</span>;
+  <span class="text-pink-400">for</span> (<span class="text-pink-400">const</span> <span class="text-slate-100">price</span> <span class="text-pink-400">of</span> <span class="text-amber-300">prices</span>) {
+    <span class="text-slate-100">total</span> += <span class="text-slate-100">price</span>;
+  }
+  <span class="text-pink-400">return</span> <span class="text-slate-100">total</span>;
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: WHERE IS IT USED? -->
+            <section class="space-y-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                            4
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue" id="sec4-title">Where Is It Used?</h2>
+                    </div>
+
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="sec4-desc">
+                        The same function can be used in many places across the application.
+                    </p>
+                </div>
+
+                <!-- 4 Grid Cards (2x2) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="where-used-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- KEY TAKEAWAY CARD -->
+        <section class="mb-10">
+            <div class="bg-brand-mint-light border border-emerald-100 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                <!-- Star Circle -->
+                <div class="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl flex-shrink-0 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <!-- Content -->
+                <div class="space-y-1">
+                    <h3 class="text-brand-mint-dark font-bold text-lg sm:text-xl">Key Takeaway</h3>
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="key-takeaway-text">
+                        Functions are created because real-world applications often need to perform the same task multiple times. They help us write cleaner, more organized, and maintainable code.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER NAVIGATION BUTTONS -->
+        <footer class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
+            <button class="w-full sm:w-auto px-6 py-3 rounded-xl border-2 border-brand-pink text-brand-pink font-bold text-sm hover:bg-brand-pink-light transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Previous Lesson
+            </button>
+            <button class="w-full sm:w-auto px-8 py-3 rounded-xl bg-brand-pink text-white font-bold text-sm shadow-lg shadow-brand-pink/20 hover:bg-brand-pink-dark transition-all flex items-center justify-center gap-2">
+                Next Lesson <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </footer>
+
+    </div>
+
+    <!-- EMBEDDED JSON DATA & SCRIPT -->
+    <script>
+        // Data Model for Introduction Block – I5
+        const lessonData = {
+            meta: {
+                category: "Full Stack Development",
+                module: "Frontend Development (FE)",
+                topic: "JavaScript",
+                lessonTitle: "Introduction: Real-World Perspective",
+                blockBadge: "Introduction Block – I5"
+            },
+            hero: {
+                title: "Functions in Everyday Life",
+                subtitle: "Let's explore a real-world situation to see why functions are needed and how they help us build better JavaScript programs."
+            },
+            learningGoal: "Understand how real-world programming problems lead to the need for functions, and see how functions provide a clean and reusable solution.",
+            section1: {
+                title: "Real-World Situation",
+                description: "You are building an e-commerce website. Customers add products to their cart, and the website needs to calculate the total price frequently.",
+                footnote: "The total needs to be calculated every time products are added or removed."
+            },
+            section2: {
+                title: "The Requirement (Need)",
+                description: "We need a way to calculate the total price from a list of product prices. This calculation will be used many times in different parts of the application.",
+                requirements: [
+                    {
+                        title: "Reusability",
+                        subtitle: "Use the same logic multiple times.",
+                        icon: "fa-arrows-rotate"
+                    },
+                    {
+                        title: "Consistency",
+                        subtitle: "Ensure the calculation is accurate everywhere.",
+                        icon: "fa-code"
+                    },
+                    {
+                        title: "Maintainability",
+                        subtitle: "Update the logic in one place if needed.",
+                        icon: "fa-regular fa-clock"
+                    }
+                ]
+            },
+            section3: {
+                title: "The Solution: Functions",
+                description: "We create a function that takes a list of prices, calculates the total, and returns the result. Now we can use this function whenever we need to calculate a total.",
+                rawCode: `function calculateTotal(prices) {
+  let total = 0;
+  for (const price of prices) {
+    total += price;
+  }
+  return total;
+}`
+            },
+            section4: {
+                title: "Where Is It Used?",
+                description: "The same function can be used in many places across the application.",
+                cards: [
+                    {
+                        title: "Shopping Cart",
+                        subtitle: "Calculate total price.",
+                        icon: "fa-solid fa-cart-shopping",
+                        bgColor: "bg-white",
+                        iconBg: "bg-pink-100",
+                        iconColor: "text-brand-pink"
+                    },
+                    {
+                        title: "Checkout",
+                        subtitle: "Verify final amount.",
+                        icon: "fa-regular fa-credit-card",
+                        bgColor: "bg-brand-pink-light/60",
+                        iconBg: "bg-pink-100",
+                        iconColor: "text-brand-pink"
+                    },
+                    {
+                        title: "Reports",
+                        subtitle: "Analyze sales data.",
+                        icon: "fa-solid fa-chart-column",
+                        bgColor: "bg-brand-blue-soft/60",
+                        iconBg: "bg-blue-100",
+                        iconColor: "text-blue-600"
+                    },
+                    {
+                        title: "Admin Tools",
+                        subtitle: "Process bulk price data.",
+                        icon: "fa-solid fa-gear",
+                        bgColor: "bg-brand-pink-light/60",
+                        iconBg: "bg-pink-100",
+                        iconColor: "text-brand-pink"
+                    }
+                ]
+            },
+            keyTakeaway: "Functions are created because real-world applications often need to perform the same task multiple times. They help us write cleaner, more organized, and maintainable code."
+        };
+
+        function initLesson() {
+            // Meta & Breadcrumbs
+            document.getElementById('bc-category').innerText = lessonData.meta.category;
+            document.getElementById('bc-module').innerText = lessonData.meta.module;
+            document.getElementById('bc-topic').innerText = lessonData.meta.topic;
+            document.getElementById('bc-lesson').innerText = lessonData.meta.lessonTitle;
+            document.getElementById('hero-badge').innerText = lessonData.meta.blockBadge;
+
+            // Hero Subtitle
+            document.getElementById('hero-subtitle').innerText = lessonData.hero.subtitle;
+
+            // Learning Goal
+            document.getElementById('learning-goal-text').innerText = lessonData.learningGoal;
+
+            // Section 1
+            document.getElementById('sec1-title').innerText = lessonData.section1.title;
+            document.getElementById('sec1-desc').innerText = lessonData.section1.description;
+            document.getElementById('sec1-footnote').innerText = lessonData.section1.footnote;
+
+            // Section 2 Requirements List
+            document.getElementById('sec2-title').innerText = lessonData.section2.title;
+            document.getElementById('sec2-desc').innerText = lessonData.section2.description;
+
+            const reqContainer = document.getElementById('requirements-list');
+            reqContainer.innerHTML = lessonData.section2.requirements.map(item => `
+                <div class="bg-white rounded-xl p-3.5 flex items-center gap-4 border border-slate-100 shadow-sm">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid ${item.icon}"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-brand-navy-blue text-sm sm:text-base">${item.title}</h4>
+                        <p class="text-xs text-slate-500">${item.subtitle}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Section 3
+            document.getElementById('sec3-title').innerText = lessonData.section3.title;
+            document.getElementById('sec3-desc').innerText = lessonData.section3.description;
+
+            // Section 4 Where Used Grid
+            document.getElementById('sec4-title').innerText = lessonData.section4.title;
+            document.getElementById('sec4-desc').innerText = lessonData.section4.description;
+
+            const whereGrid = document.getElementById('where-used-grid');
+            whereGrid.innerHTML = lessonData.section4.cards.map(card => `
+                <div class="${card.bgColor} border border-slate-100 rounded-2xl p-6 text-center space-y-3 flex flex-col items-center justify-center shadow-sm">
+                    <div class="w-12 h-12 rounded-full ${card.iconBg} ${card.iconColor} flex items-center justify-center text-xl">
+                        <i class="${card.icon}"></i>
+                    </div>
+                    <h4 class="font-bold text-brand-navy-blue text-base">${card.title}</h4>
+                    <p class="text-xs text-slate-500">${card.subtitle}</p>
+                </div>
+            `).join('');
+
+            // Key Takeaway
+            document.getElementById('key-takeaway-text').innerText = lessonData.keyTakeaway;
+        }
+
+        // Copy Code to Clipboard Functionality
+        function copyCodeSnippet() {
+            const codeText = lessonData.section3.rawCode;
+            const btn = document.getElementById('copy-btn');
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = codeText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span class="text-emerald-400">Copied!</span>`;
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fa-regular fa-copy"></i> <span>Copy</span>`;
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', initLesson);
+    </script>
+</body>
+</html>

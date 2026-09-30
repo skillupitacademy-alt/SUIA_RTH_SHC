@@ -1,0 +1,87 @@
+{
+  "page": {
+    "category": "PYTHON FUNDAMENTALS",
+
+    "title": "What Is a Variable in Python?",
+
+    "introduction": "Before working with functions, classes, data structures, and other Python concepts, it is important to understand how Python associates names with objects.",
+
+    "definition": "A variable in Python is a name that refers to an object stored in memory.",
+
+    "explanation": [
+      {
+        "type": "paragraph",
+        "content": "When Python executes <code>x = 10</code>, the name <code>x</code> becomes associated with an integer object representing the value <code>10</code>."
+      },
+
+      {
+        "type": "paragraph",
+        "content": "A Python variable is therefore better understood as a <code>name binding</code> or <code>reference</code> rather than a box that directly contains a value."
+      },
+
+      {
+        "type": "paragraph",
+        "content": "The visual model below shows the basic relationship between a variable name and the object to which that name refers."
+      }
+    ],
+
+    "visual": {
+      "introduction": "Think of a Python variable as a name that provides a way to reach and work with an object.",
+
+      "model": [
+        {
+          "type": "row",
+          "items": [
+            {
+              "type": "node",
+              "icon": "fa-solid fa-tag",
+              "title": "Variable Name",
+              "description": "<code>x</code>",
+              "highlight": true
+            },
+
+            {
+              "type": "connector",
+              "direction": "horizontal",
+              "icon": "fa-solid fa-arrow-right"
+            },
+
+            {
+              "type": "node",
+              "icon": "fa-solid fa-cube",
+              "title": "Object",
+              "description": "Integer object"
+            },
+
+            {
+              "type": "connector",
+              "direction": "horizontal",
+              "icon": "fa-solid fa-arrow-right"
+            },
+
+            {
+              "type": "node",
+              "icon": "fa-solid fa-hashtag",
+              "title": "Value",
+              "description": "<code>10</code>"
+            }
+          ]
+        }
+      ],
+
+      "explanation": [
+        {
+          "type": "paragraph",
+          "content": "In <code>x = 10</code>, Python creates or uses an integer object representing <code>10</code> and binds the name <code>x</code> to that object."
+        },
+
+        {
+          "type": "paragraph",
+          "content": "The name <code>x</code> is not the object itself. It is a reference that allows the program to access the object."
+        }
+      ]
+    },
+
+    "takeaway": "A Python variable is best understood as a name bound to an object. This name–object relationship is fundamental to understanding assignment, object identity, mutability, and function arguments."
+  }
+}
