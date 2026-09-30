@@ -30,8 +30,8 @@
 
 **Frozen Date:** 2026-09-30  
 **Frozen By:** Human Architecture Authority  
-**Freeze Commit:** [To be recorded after git commit]  
-**Repository State:** Clean working tree before freeze  
+**Freeze Commit:** 9176c510  
+**Repository State:** Clean working tree after freeze  
 **Branch:** main  
 
 ---
@@ -240,7 +240,7 @@
 | 0.6 | FROZEN | [prior commit] |
 | 0.7 | FROZEN | 4161d8e0 |
 | 0.8 | FROZEN | f81240e2 |
-| **0.9** | **FROZEN** | **[this commit]** |
+| **0.9** | **FROZEN** | **9176c510** |
 | 0.10 | NOT AUTHORIZED | — |
 
 ### Next Steps
