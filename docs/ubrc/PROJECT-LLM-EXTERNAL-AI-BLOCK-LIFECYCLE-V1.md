@@ -54,6 +54,90 @@ This architecture defines:
 
 ---
 
+## ARCHITECTURE PRINCIPLE: GENERIC LIFECYCLE, DYNAMIC REPOSITORY DISCOVERY
+
+**Core Principle:**
+
+This document defines the **generic, reusable lifecycle architecture** for creating ANY tutorial block through the External AI → Human → Project LLM → Platform flow.
+
+**It does NOT define current repository implementation details.**
+
+Even though platform features (UBRC, ILS, LSNB, RSSB, Tutorial Composer, Renderer, etc.) may already exist in the repository, this document intentionally remains **implementation-independent**.
+
+### Three-Layer Separation
+
+**Layer 1: Lifecycle Architecture (This Document)**
+- Defines WHAT must happen
+- Defines WHO is responsible
+- Defines WHEN decisions occur
+- Defines WHERE boundaries exist
+
+**Does NOT define:**
+- Current repository file paths
+- Current implementation mechanisms
+- Current runtime internal details
+- Current database schemas
+- Specific API endpoints
+
+**Layer 2: Project LLM Repository Discovery (Dynamic)**
+
+When a block is created, Project LLM:
+1. Inspects the ACTUAL current repository
+2. Discovers current implementation of required capabilities
+3. Generates block-specific External AI Creation Brief
+4. Adapts candidate to current platform conventions
+5. Verifies integration against current runtime implementation
+
+**Layer 3: Block-Specific Creation Brief (Generated)**
+
+For each block (e.g., Summary, Introduction, Quiz):
+- Contains current platform compatibility requirements
+- Generated against specific repository revision
+- Includes discovered implementation constraints
+- Updated if platform evolves
+
+### Why This Separation Matters
+
+**Benefit 1: Future-Proof Architecture**
+
+Repository implementation can evolve without rewriting this document.
+
+Example: If UBRC moves from one file structure to another, the lifecycle architecture remains valid. Only Project LLM discovery logic updates.
+
+**Benefit 2: Reusable Process**
+
+The same lifecycle architecture works for:
+- Summary Block (instructional, ILS participation)
+- Quiz Block (interactive, RSSB participation)
+- Code Block (practice, ILS + RSSB)
+- Introduction Block (structural, different LSNB role)
+- Future blocks not yet conceived
+
+**Benefit 3: Accurate Status**
+
+Architecture document does not claim implementation details it hasn't verified.
+
+**Benefit 4: Preserves Phase 1A Decision Space**
+
+Phase 1A (Project LLM Architecture Design) remains responsible for:
+- Repository discovery mechanism
+- Architecture audit framework
+- Adaptation engine design
+- Integration sequencing
+- Evidence storage architecture
+
+This document does not pre-decide those implementation details.
+
+### Application to Worked Examples
+
+Worked examples in this document demonstrate the **lifecycle flow**, not the **current repository implementation**.
+
+Specific repository paths, component names, file locations, database tables, and runtime mechanisms in examples are **illustrative** to show what Project LLM would discover and work with.
+
+They are NOT verified claims about the current repository state.
+
+---
+
 ## THREE ACTORS
 
 ### Actor 1: External AI (Block Factory)
@@ -352,6 +436,23 @@ PRODUCTION
 
 ## WORKED EXAMPLE: SUMMARY BLOCK
 
+> **⚠️ ILLUSTRATIVE EXAMPLE ONLY — NOT ACTUAL EVIDENCE**
+>
+> The following worked example demonstrates the **intended lifecycle flow** for creating a Summary Block through the External AI → Project LLM → Platform integration process.
+>
+> **THIS IS NOT EVIDENCE that:**
+> - Summary Block has been implemented
+> - Summary Block has been certified
+> - The runtime verification results are real
+> - The test coverage values are actual
+> - The performance metrics are measured
+> - The Git commits/branches exist
+> - The evidence files exist
+>
+> All validation results, evidence filenames, database records, Git commits, coverage percentages, performance values, and certification statuses in this example are **hypothetical** to illustrate what Project LLM would produce during an actual block integration.
+>
+> **Actual Summary Block integration** (if performed in the future) would produce real evidence through the Project LLM validation pipeline, independently verified against the running repository and platform runtimes.
+
 ### Step 1: Human Defines Requirement
 
 ```
@@ -374,58 +475,81 @@ Instructional block (ILS participation)
 
 ---
 
-### Step 2: Project LLM Inspects Repository
+### Step 2: Project LLM Discovers Current Repository Implementation
 
-Before creating the External AI brief, Project LLM inspects the **actual repository**:
+**ARCHITECTURE PRINCIPLE:**
+
+The Project LLM must inspect the ACTUAL repository at the time a block is created to discover current implementation details.
+
+The lifecycle architecture defines WHAT must be discovered, not HOW the current repository implements it.
+
+**Required Discoveries:**
+
+1. **Current Canonical Block Model**
+   - Block type definitions and type system
+   - Schema patterns and conventions
+   - Content model structure
+
+2. **Current UBRC Requirements**
+   - Required block identity attributes
+   - Runtime observation mechanisms
+   - ActiveBlock context participation pattern
+
+3. **Current ILS Integration Model**
+   - Passive vs active participation approach
+   - Telemetry boundaries
+   - Completion evaluation mechanism
+
+4. **Current LSNB Relationship**
+   - Progress role classification system
+   - Completion → navigation progression model
+   - Block-level vs universal control boundaries
+
+5. **Current RSSB Applicability Model**
+   - Which block classifications require RSSB
+   - Synchronization boundaries
+   - State ownership model
+
+6. **Current Tutorial Composer Architecture**
+   - Block registration patterns
+   - Palette integration approach
+   - Document serialization format
+
+7. **Current Renderer Architecture**
+   - Renderer registry pattern
+   - Block-to-component mapping
+   - Runtime rendering approach
+
+8. **Current Testing & Validation Framework**
+   - Test organization conventions
+   - Validation layers implemented
+   - Evidence collection requirements
+
+9. **Current Project Conventions**
+   - TypeScript configuration
+   - React patterns (functional vs class components)
+   - Styling approach
+   - Accessibility standards
+   - Responsive design patterns
+   - SSR compatibility requirements
+
+**These discoveries are then incorporated into the block-specific External AI Creation Brief with current, verified implementation constraints.**
+
+**Example Discovery Output (Illustrative):**
 
 ```
-Current Block Architecture:
-- TutorialBlock union type
-- BlockType discriminator
-- Canonical schema model
-- Tutorial Document Builder
-- TutorialBlockRenderer registry
-- Tutorial Composer
-
-Existing Block Types:
-- introduction
-- content
-- quiz
-- code
-- ...
-
-Does 'summary' exist?
-NO → new block type required
-
-Current UBRC Model:
-- data-block-id (required)
-- data-block-type (required)
-- data-block-version (required)
-- ActiveBlockContext observation
-
-Current ILS Model:
-- Universal ILS runtime
-- Passive block participation
-- No direct API calls
-- Block provides identity, runtime observes
-
-Current LSNB Model:
-- progressRole classification
-- ILS → completion evaluation → LSNB
-- Block does not directly write LSNB
-
-Current RSSB Model:
-- Universal synchronization runtime
-- Block does not implement sync
-- Platform handles cross-tab/device state
-
-Current Conventions:
-- TypeScript strict mode
-- Functional React components
-- Tailwind for styling
-- Accessibility required
-- Responsive required
-- SSR compatible
+[EXAMPLE] Current Block Architecture Discovery:
+- Canonical block type union exists: YES
+- New block type 'summary' exists: NO → creation required
+- UBRC identity attributes: data-block-id, data-block-type, data-block-version
+- ILS participation model: Universal passive runtime
+- LSNB progression model: progressRole classification
+- RSSB applicability: Determined per-block during audit
+- Composer: Existing, requires new block registration
+- Renderer: Existing, requires new block registration
+- Testing: Jest + React Testing Library + Playwright
+- Conventions: TypeScript strict, functional React, Tailwind CSS
+[END EXAMPLE]
 ```
 
 ---
@@ -855,54 +979,33 @@ Decision: ACCEPT HANDOFF
 Project LLM inspects the **actual repository** (not External AI's assumptions):
 
 ```
-REPOSITORY AUDIT
-────────────────
+[EXAMPLE] REPOSITORY AUDIT
+
+Project LLM would inspect the actual repository to determine:
 
 Block type 'summary' exists?
-NO → new block type required
+[Discovery: NO → new block type creation required]
 
 Current block types:
-- introduction
-- content
-- quiz
-- code
+[Discovery: introduction, content, quiz, code, ...]
 
-Block type union location:
-packages/tutorial-engine/src/types/blocks.ts
+Current architecture patterns:
+[Discovery: Block type union, schema patterns, builder patterns, etc.]
 
-Canonical schema location:
-packages/tutorial-engine/src/schemas/
+Integration points:
+[Discovery: Renderer registry pattern, Composer registration approach]
 
-Document Builder location:
-packages/tutorial-engine/src/builders/
+Runtime participation:
+[Discovery: UBRC identity requirements, ILS participation model, LSNB progression model]
 
-Renderer registry:
-packages/tutorial-engine/src/renderers/registry.ts
+Project conventions:
+[Discovery: TypeScript strict mode, functional React, Tailwind styling]
 
-Composer registry:
-apps/realtutorialhub-web/src/features/tutorial-composer/
+[END EXAMPLE]
 
-UBRC implementation:
-packages/tutorial-engine/src/runtime/ubrc/
-
-ILS runtime:
-packages/tutorial-engine/src/runtime/ils/
-
-LSNB integration:
-packages/tutorial-engine/src/runtime/lsnb/
-
-RSSB integration:
-NOT APPLICABLE for instructional blocks
-
-Test location:
-packages/tutorial-engine/src/blocks/__tests__/
-
-Conventions:
-- Functional components
-- TypeScript strict
-- Tailwind utility classes
-- Accessibility required
-- SSR compatible
+**Note:** Specific file paths, package names, and internal implementation
+details would be discovered from the actual repository at the time of
+integration. This architecture does not hard-code those implementation details.
 ```
 
 ---
@@ -1037,13 +1140,11 @@ Added E2E tests
 Added UBRC runtime tests
 Added ILS runtime tests
 
-[10] File Locations
-packages/tutorial-engine/src/blocks/SummaryBlock.tsx
-packages/tutorial-engine/src/types/blocks.ts (updated)
-packages/tutorial-engine/src/schemas/summary.ts
-packages/tutorial-engine/src/builders/summary.ts
-packages/tutorial-engine/src/renderers/registry.ts (updated)
-apps/realtutorialhub-web/src/features/tutorial-composer/ (updated)
+[10] Integration File Updates
+[EXAMPLE ONLY - actual file paths determined during integration]
+Project LLM would integrate the block into appropriate locations
+based on current repository architecture discovered during audit.
+[END EXAMPLE]
 ```
 
 ---
@@ -1087,44 +1188,54 @@ COMPOSER INTEGRATION: COMPLETE
 
 ### Step 16: Project LLM Verifies UBRC Runtime
 
+**[ILLUSTRATIVE EXAMPLE]**
+
+In an actual Summary Block integration, Project LLM would:
+1. Render the block in actual Tutorial Page
+2. Inspect DOM for required identity attributes
+3. Verify ActiveBlockContext recognition
+4. Verify universal runtime observation
+5. Verify identity propagation to ILS
+6. Produce evidence package
+
+Example verification flow (hypothetical):
+
 ```
-UBRC RUNTIME VERIFICATION
-──────────────────────────
+[EXAMPLE] UBRC RUNTIME VERIFICATION
 
 [1] DOM Identity
-Rendered block contains:
-  data-block-id="summary-abc123"
-  data-block-type="summary"
-  data-block-version="1"
-Status: ✓
+Rendered block contains required attributes: ✓
 
-[2] ActiveBlockContext
-Block recognized by ActiveBlockContext
-Status: ✓
+[2] ActiveBlockContext  
+Block recognized by runtime: ✓
 
 [3] Block Observation
-Universal runtime observes block lifecycle
-Status: ✓
+Universal runtime observes lifecycle: ✓
 
 [4] Identity Propagation
-Block identity available to ILS runtime
-Status: ✓
+Block identity available to ILS: ✓
 
-UBRC VERIFICATION: PASS
-Evidence: ubrc-runtime-test-summary-block.log
+Result: UBRC VERIFICATION PASS (hypothetical)
+Evidence file: ubrc-runtime-test-summary-block.log (hypothetical)
+[END EXAMPLE]
 ```
+
+**[END ILLUSTRATIVE EXAMPLE]**
 
 ---
 
 ### Step 17: Project LLM Verifies ILS Runtime
 
+**[ILLUSTRATIVE EXAMPLE]**
+
+Example ILS verification flow (hypothetical):
+
 ```
-ILS RUNTIME VERIFICATION
-────────────────────────
+[EXAMPLE] ILS RUNTIME VERIFICATION
 
 [1] Passive Participation
 Block does not implement timer: ✓
-Block does not POST telemetry: ✓
+Block does not POST telemetry: ✓  
 Block does not call ILS API: ✓
 
 [2] Universal Runtime Observation
@@ -1136,30 +1247,33 @@ ILS runtime evaluates completion: ✓
 Block metadata includes expectedTimeSec: ✓
 
 [4] Completion Evaluation
-ILS evaluates completion based on:
-  - Active time threshold
-  - Expected time
-Status: ✓
+ILS evaluates completion: ✓
 
-[5] Database Evidence
+[5] Database Evidence (hypothetical)
 ils_block_activity records created: ✓
 Tutorial progress updated: ✓
 
-ILS VERIFICATION: PASS
-Evidence: ils-runtime-test-summary-block.log
-Database: ils_block_activity table screenshot
+Result: ILS VERIFICATION PASS (hypothetical)
+Evidence: ils-runtime-test-summary-block.log (hypothetical)
+Database: ils_block_activity table screenshot (hypothetical)
+[END EXAMPLE]
 ```
+
+**[END ILLUSTRATIVE EXAMPLE]**
 
 ---
 
 ### Step 18: Project LLM Verifies LSNB Relationship
 
+**[ILLUSTRATIVE EXAMPLE]**
+
+Example LSNB verification flow (hypothetical):
+
 ```
-LSNB VERIFICATION
-─────────────────
+[EXAMPLE] LSNB VERIFICATION
 
 [1] Progress Role Classification
-Summary block progressRole: 'instructional'
+Summary block progressRole: 'instructional' (hypothetical)
 Status: ✓
 
 [2] ILS → LSNB Flow
@@ -1171,94 +1285,110 @@ LSNB updated via platform: ✓
 No direct LSNB API calls: ✓
 No local navigation state: ✓
 
-[4] Database Evidence
+[4] Database Evidence (hypothetical)
 learner_sequence_navigation_bridge records: ✓
 Tutorial completion: ✓
 
-LSNB VERIFICATION: PASS
-Evidence: lsnb-runtime-test-summary-block.log
+Result: LSNB VERIFICATION PASS (hypothetical)
+Evidence: lsnb-runtime-test-summary-block.log (hypothetical)
+[END EXAMPLE]
 ```
+
+**[END ILLUSTRATIVE EXAMPLE]**
 
 ---
 
-### Step 19: Project LLM Verifies RSSB
+### Step 19: Project LLM Determines RSSB Applicability
 
-```
-RSSB VERIFICATION
-─────────────────
+**RSSB applicability is determined by Project LLM during the architecture audit based on:**
 
-Summary Block Classification: Instructional
+1. Block classification (instructional/interactive/media/practice)
+2. State persistence requirements
+3. Cross-session resume requirements
+4. Current platform RSSB model
 
-RSSB Participation: NOT APPLICABLE
+**For the Summary Block example:**
 
-Reason:
-Summary block does not maintain resumable state.
-It is informational/instructional content.
+Project LLM audit would determine:
+- Block type: Instructional (informational)
+- State persistence: None required (hypothetical determination)
+- Cross-session resume: Not applicable
+- RSSB participation: N/A (for this example)
 
-No RSSB verification required.
+**Result:** RSSB verification skipped for this block type.
 
-RSSB VERIFICATION: N/A
-```
+**Note:** Different block types may have different RSSB requirements. Quiz blocks, code editors, video players, or practice exercises may require RSSB participation for state synchronization.
+
+**RSSB applicability is NOT universally determined by this architecture; it is determined per-block during Project LLM integration audit.**
 
 ---
 
 ### Step 20: Project LLM Runs Validation Pipeline
 
+**[ILLUSTRATIVE EXAMPLE]**
+
+Example validation pipeline execution (hypothetical):
+
 ```
-VALIDATION PIPELINE
-───────────────────
+[EXAMPLE] VALIDATION PIPELINE
 
 L1: Static Analysis
-TypeScript compilation: ✓
-ESLint: ✓
-Type checking: ✓
+TypeScript compilation: ✓ (hypothetical)
+ESLint: ✓ (hypothetical)
+Type checking: ✓ (hypothetical)
 
 L2: Unit Tests
-SummaryBlock unit tests: ✓
-Coverage: 95%
+SummaryBlock unit tests: ✓ (hypothetical)
+Coverage: 95% (hypothetical)
 
 L3: Component Tests
-SummaryBlock component tests: ✓
-Accessibility tests: ✓
-Responsive tests: ✓
+SummaryBlock component tests: ✓ (hypothetical)
+Accessibility tests: ✓ (hypothetical)
+Responsive tests: ✓ (hypothetical)
 
 L4: Integration Tests
-Composer integration: ✓
-Renderer integration: ✓
-Document Builder: ✓
+Composer integration: ✓ (hypothetical)
+Renderer integration: ✓ (hypothetical)
+Document Builder: ✓ (hypothetical)
 
 L5: Runtime Tests
-UBRC: ✓
-ILS: ✓
-LSNB: ✓
-RSSB: N/A
+UBRC: ✓ (hypothetical)
+ILS: ✓ (hypothetical)
+LSNB: ✓ (hypothetical)
+RSSB: N/A (for this example)
 
 L6: E2E Tests
-Create tutorial with Summary block: ✓
-Render Summary block: ✓
-Observe ILS participation: ✓
-Complete Summary block: ✓
-Verify learning progress: ✓
+Create tutorial with Summary block: ✓ (hypothetical)
+Render Summary block: ✓ (hypothetical)
+Observe ILS participation: ✓ (hypothetical)
+Complete Summary block: ✓ (hypothetical)
+Verify learning progress: ✓ (hypothetical)
 
 L7: Quality Attributes
-Accessibility (WCAG 2.1 AA): ✓
-Performance (< 100ms render): ✓
-Security (no XSS vulnerabilities): ✓
-SSR compatibility: ✓
+Accessibility (WCAG 2.1 AA): ✓ (hypothetical)
+Performance (< 100ms render): ✓ (hypothetical)
+Security (no XSS vulnerabilities): ✓ (hypothetical)
+SSR compatibility: ✓ (hypothetical)
 
 L8: Certification Readiness
-All validations passed: ✓
+All validations passed: ✓ (hypothetical)
 
-VALIDATION: COMPLETE
+Result: VALIDATION COMPLETE (hypothetical)
+[END EXAMPLE]
 ```
+
+**[END ILLUSTRATIVE EXAMPLE]**
 
 ---
 
 ### Step 21: Project LLM Produces Evidence Package
 
+**[ILLUSTRATIVE EXAMPLE]**
+
+Example evidence package structure (hypothetical):
+
 ```
-SUMMARY BLOCK CERTIFICATION PACKAGE
-────────────────────────────────────
+[EXAMPLE] SUMMARY BLOCK CERTIFICATION PACKAGE
 
 1. Original prototype (HTML/CSS/JS)
 2. Human Gate 1 approval record
@@ -1275,13 +1405,23 @@ SUMMARY BLOCK CERTIFICATION PACKAGE
 13. Responsive test results
 14. SSR test results
 15. Security audit results
-16. Unit test results (95% coverage)
+16. Unit test results (95% coverage - hypothetical)
 17. Component test results
 18. Integration test results
 19. E2E test results
-20. Build evidence (successful)
-21. Runtime logs
-22. Database evidence screenshots
+20. Build evidence (successful - hypothetical)
+21. Runtime logs (hypothetical)
+22. Database evidence screenshots (hypothetical)
+23. Git commit (hypothetical)
+24. Remaining exceptions: NONE (hypothetical)
+
+Technical Certification Status: CERTIFICATION_READY (hypothetical)
+[END EXAMPLE]
+```
+
+**[END ILLUSTRATIVE EXAMPLE]**
+
+---
 23. Git commit (integration branch)
 24. Remaining exceptions: NONE
 
@@ -1292,35 +1432,40 @@ TECHNICAL CERTIFICATION STATUS: CERTIFICATION_READY
 
 ### Step 22: Project LLM Presents Evidence to Human
 
-Project LLM provides Human with the complete certification package.
+**[ILLUSTRATIVE EXAMPLE]**
 
-**Project LLM Report:**
+Project LLM would provide Human with the complete certification package.
+
+Example certification report (hypothetical):
 
 ```
-SUMMARY BLOCK — CERTIFICATION REPORT
+[EXAMPLE] SUMMARY BLOCK — CERTIFICATION REPORT
 
 Block Type: summary
-Candidate: External AI (Claude 3.5 Sonnet)
-Gate 1 Status: APPROVED (2026-10-01)
+Candidate: External AI (hypothetical: Claude 3.5 Sonnet)
+Gate 1 Status: APPROVED (hypothetical date)
 
-Repository Integration: COMPLETE
-Composer Integration: COMPLETE
-UBRC Verification: PASS
-ILS Verification: PASS
-LSNB Verification: PASS
-RSSB Verification: N/A (not applicable)
+Repository Integration: COMPLETE (hypothetical)
+Composer Integration: COMPLETE (hypothetical)
+UBRC Verification: PASS (hypothetical)
+ILS Verification: PASS (hypothetical)
+LSNB Verification: PASS (hypothetical)
+RSSB Verification: N/A (determined not applicable for this example)
 
-Validation: ALL PASSED
-Evidence: COMPLETE
+Validation: ALL PASSED (hypothetical)
+Evidence: COMPLETE (hypothetical)
 
-Technical Certification Status: CERTIFICATION_READY
+Technical Certification Status: CERTIFICATION_READY (hypothetical)
 
 Recommended Human Decision: APPROVE FOR PRODUCTION
 
-Evidence Package: [link]
-Git Branch: feature/summary-block
-Commit: abc123...
+Evidence Package: [link] (hypothetical)
+Git Branch: feature/summary-block (hypothetical)
+Commit: abc123... (hypothetical)
+[END EXAMPLE]
 ```
+
+**[END ILLUSTRATIVE EXAMPLE]**
 
 ---
 
@@ -1347,9 +1492,32 @@ Human verifies:
 
 ### Step 24: Certified Block
 
-After Human approval:
+**[ILLUSTRATIVE EXAMPLE]**
+
+After Human approval (hypothetical):
 
 ```
+[EXAMPLE] Summary Block: CERTIFIED
+
+Status: APPROVED FOR PRODUCTION (hypothetical)
+Approval Date: (hypothetical)
+Approval Authority: Human Architecture Authority
+
+Git: Merged to main (hypothetical)
+Deployment: Included in next release (hypothetical)
+
+Available In:
+- Tutorial Composer
+- Tutorial Page rendering
+- UBRC runtime
+- ILS runtime
+- LSNB progression
+[END EXAMPLE]
+```
+
+**[END ILLUSTRATIVE EXAMPLE]**
+
+---
 Summary Block: CERTIFIED
 
 Status: APPROVED FOR PRODUCTION
@@ -1811,7 +1979,27 @@ The `skillhubcore-admin` application will eventually provide a **control plane G
 
 ## PHASE 1 NEXT STEPS
 
-With this architecture documented, the recommended next steps are:
+**IMPORTANT:** This reference architecture defines the lifecycle model and actor responsibilities. **Phase 1A-1F remain responsible for actual implementation decisions.**
+
+**This document does NOT pre-decide:**
+
+- Project LLM internal architecture (Phase 1A responsibility)
+- Repository discovery mechanism implementation (Phase 1A)
+- Architecture audit framework implementation (Phase 1A)
+- Adaptation engine algorithms (Phase 1A)
+- Integration sequencing logic (Phase 1A)
+- Evidence storage architecture (Phase 1C)
+- External AI API integration method (Phase 1D)
+- Control plane database schema (Phase 1D)
+- skillhubcore-admin UI/UX design (Phase 1E)
+- Candidate package file format details (Phase 1B)
+- Validation pipeline implementation (Phase 1C)
+
+**Phase 1A must independently design those systems based on:**
+- This lifecycle architecture (guidance)
+- Phase 0.1-0.10 governance (constraints)
+- Actual repository capabilities (current state)
+- Engineering requirements (performance, scalability, maintainability)
 
 ### Phase 1A: Project LLM Architecture Design
 - Define Project LLM internal architecture
@@ -1846,7 +2034,7 @@ With this architecture documented, the recommended next steps are:
 - Implement dashboards
 
 ### Phase 1F: First Real Block
-- Create External AI Creation Brief for Summary Block
+- Create External AI Creation Brief for Summary Block (or other block)
 - Handoff to External AI (Gemini/Claude)
 - Execute complete lifecycle
 - Document lessons learned
@@ -1899,18 +2087,26 @@ With this architecture documented, the recommended next steps are:
 
 ### Compliance with Phase 0 Governance ✓
 
-This architecture is compliant with Phase 0.1-0.10:
+This architecture aligns with Phase 0.1-0.10:
 
-- **Phase 0.1:** External AI/Project LLM/Human actor boundaries preserved
-- **Phase 0.2:** Gate 1 and Gate 2 approval gates implemented
-- **Phase 0.3:** Repository modification boundaries respected
-- **Phase 0.4:** Runtime boundaries preserved
-- **Phase 0.5:** Handoff protocol implemented
-- **Phase 0.6:** Evidence and certification model implemented
-- **Phase 0.7:** Validation pipeline implemented
-- **Phase 0.8:** STOP conditions and escalation implemented
-- **Phase 0.9:** Rollback and checkpoint model implemented
-- **Phase 0.10:** Versioning model acknowledged (future V2 if needed)
+- **Phase 0.1:** External AI/Project LLM/Human actor boundaries are architecturally defined and separated
+- **Phase 0.2:** Gate 1 and Gate 2 approval gates are incorporated into the lifecycle architecture
+- **Phase 0.3:** Repository modification boundaries are represented in the STOP conditions and Project LLM responsibility model
+- **Phase 0.4:** Runtime boundaries are incorporated into the platform integration requirements
+- **Phase 0.5:** Handoff protocol is architecturally defined with two distinct handovers
+- **Phase 0.6:** Evidence and certification model distinguishes candidate evidence from production certification
+- **Phase 0.7:** Validation pipeline architecture incorporates L1-L8 validation layers
+- **Phase 0.8:** STOP conditions and escalation are architecturally defined as mandatory
+- **Phase 0.9:** Rollback and checkpoint model is architecturally represented
+- **Phase 0.10:** Versioning model is acknowledged (V2 of this document would follow Phase 0.10 procedures)
+
+**Implementation Status:**
+- **Architecture:** DEFINED (this document)
+- **Project LLM Engine:** NOT YET IMPLEMENTED (Phase 1B future work)
+- **Control Plane GUI:** NOT YET IMPLEMENTED (Phase 1E future work)
+- **First Block Integration:** NOT YET PERFORMED (Phase 1F future work)
+
+**Phase 1A-1F remain future implementation work.**
 
 ### Architectural Consistency ✓
 
@@ -1922,14 +2118,17 @@ This architecture is compliant with Phase 0.1-0.10:
 - CERTIFICATION_READY ≠ CERTIFIED distinction preserved
 - STOP mechanism is mandatory, not optional
 
-### Known Gaps
+### Known Gaps (Expected at Architectural Stage)
 
 - Control plane GUI not yet designed
 - External AI API integration not yet defined
 - Evidence storage infrastructure not yet defined
 - Performance targets not yet established
+- Repository discovery mechanism not yet implemented
+- Validation pipeline not yet implemented
+- First block integration not yet performed
 
-**These gaps are expected at this architectural stage.**
+**These gaps are expected and normal for a reference architecture document. Phase 1A-1F will address implementation details.**
 
 ---
 
@@ -1954,6 +2153,7 @@ This architecture establishes the operational model for External AI → Project 
 | Date | Event | Description |
 |------|-------|-------------|
 | 2026-10-01 | Created | Initial architecture document created after Phase 0 framework completion |
+| 2026-10-01 | Correction | Applied targeted corrections: generic architecture principle, illustrative example disclaimers, evidence accuracy, implementation status terminology |
 
 ---
 
