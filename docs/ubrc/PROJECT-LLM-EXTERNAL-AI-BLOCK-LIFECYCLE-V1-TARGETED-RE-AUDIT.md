@@ -209,7 +209,7 @@ This duplicate lacked [EXAMPLE] or hypothetical qualifiers.
 10. **Database evidence:** Only as "(hypothetical)" examples ✓
 11. **Runtime evidence:** Only inside [ILLUSTRATIVE EXAMPLE] blocks ✓
 
-**Status:** SCAN COMPLETE ✓ — No unqualified evidence-looking claims found
+**Status:** SCAN COMPLETE ✓ — No unqualified block certification, runtime-result, test-result, or production-deployment claims were found. One repository-specific implementation reference (Boundary 4 path) was removed to preserve the implementation-independent architecture principle.
 
 ---
 

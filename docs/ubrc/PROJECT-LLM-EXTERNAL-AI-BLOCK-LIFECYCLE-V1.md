@@ -560,6 +560,8 @@ The lifecycle architecture defines WHAT must be discovered, not HOW the current 
 
 This is an example of what Project LLM would generate for a Summary Block based on current repository discovery. This is NOT the current repository authoritative specification. Actual Creation Briefs would be generated against the actual repository state at the time of block creation.
 
+**All technology versions, filenames, attributes, test frameworks, and implementation constraints shown below are illustrative and must be regenerated from the actual repository during a real lifecycle.**
+
 ```markdown
 # SUMMARY BLOCK — EXTERNAL AI CREATION BRIEF (EXAMPLE)
 
@@ -1016,6 +1018,8 @@ integration. This architecture does not hard-code those implementation details.
 
 ### Step 13: Project LLM Performs Architecture Audit
 
+**[ILLUSTRATIVE EXAMPLE — HYPOTHETICAL]**
+
 ```
 ARCHITECTURE AUDIT
 ──────────────────
@@ -1095,9 +1099,13 @@ Decision: RUN security audit
 AUDIT RESULT: ADAPTATIONS REQUIRED
 ```
 
+**[END ILLUSTRATIVE EXAMPLE]**
+
 ---
 
 ### Step 14: Project LLM Adapts Candidate
+
+**[ILLUSTRATIVE EXAMPLE — HYPOTHETICAL]**
 
 ```
 ADAPTATIONS APPLIED
@@ -1150,6 +1158,8 @@ Project LLM would integrate the block into appropriate locations
 based on current repository architecture discovered during audit.
 [END EXAMPLE]
 ```
+
+**[END ILLUSTRATIVE EXAMPLE]**
 
 ---
 
@@ -1646,38 +1656,48 @@ CERTIFICATION_READY → APPROVE → CERTIFIED
 
 ### Boundary 4: Tutorial Composer Integration
 
-**Tutorial Composer already exists in the running project:**
-```
-apps/realtutorialhub-web/src/features/tutorial-composer/
-```
+**Architectural Rule:**
 
-**Project LLM integrates new blocks INTO the existing Composer.**
+The Project LLM integrates new blocks into the platform's existing Tutorial Composer architecture discovered during repository inspection.
+
+**The lifecycle architecture does NOT prescribe:**
+- Composer's current file paths or package structure
+- Composer's registration mechanism implementation
+- Composer's palette implementation details
+- Current repository layout
+
+**Project LLM must:**
+- Discover the current Composer integration mechanism during repository audit
+- Integrate through that discovered mechanism
+- Follow the established integration pattern
 
 **Project LLM does NOT:**
 - Create a second Composer
 - Bypass Composer
-- Directly modify Tutorial Pages without Composer
+- Directly modify Tutorial Pages without following the established Composer integration path
 
-**Integration flow:**
+**Generic Integration Flow (Implementation-Independent):**
 ```
 New Block
     ↓
-Canonical Schema
+Canonical Schema (discovered pattern)
     ↓
-Document Builder
+Document Builder (discovered location)
     ↓
-Composer Registration
+Composer Registration (discovered mechanism)
     ↓
-Composer Palette
+Composer Palette (discovered integration)
     ↓
-Composer Creation
+Composer Creation (discovered handler)
     ↓
-Tutorial Document
+Tutorial Document (discovered format)
     ↓
-TutorialBlockRenderer
+TutorialBlockRenderer (discovered registry)
     ↓
-Tutorial Page
+Tutorial Page (discovered rendering)
 ```
+
+**Note:** Specific file paths, package names, and implementation details are discovered dynamically by Project LLM during repository audit, not hard-coded in this architecture.
 
 ---
 
