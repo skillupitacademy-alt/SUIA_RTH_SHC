@@ -17,6 +17,7 @@
 - Metadata extraction boundary: VERIFIED (inline extraction from canonical content, no dedicated resolver)
 - Runtime schema validation: VERIFIED (TutorialDocumentSchema, BlockProgressRoleSchema, expectedTimeSec, progressRole schemas exist)
 - Content sanitization: VERIFIED (two-phase validation+sanitization pipeline, SVG/URL attack prevention, trust boundary)
+- LearningProgressSidebar metrics: VERIFIED (passive ILS consumer, 12 display + 3 derived metrics, complete data lineage)
 - Composer integration: NOT YET INVESTIGATED
 - Testing/certification: NOT YET INVESTIGATED
 - Cross-family correlation: PARTIAL
@@ -108,6 +109,7 @@ Stage 5 documents **what exists**, not what should exist or why it exists.
 | **06F_BLOCK_METADATA_RESOLUTION.md** | T4 block metadata derivation (expectedTimeSec extraction) | ✅ COMPLETE |
 | **06G_RUNTIME_SCHEMA_VALIDATION.md** | T5 runtime schema (TutorialDocumentSchema, BlockProgressRoleSchema, validation) | ✅ COMPLETE |
 | **06H_SANITIZATION_AND_VALIDATION.md** | T6 content sanitization (trust boundary, XSS prevention, validation+sanitization pipeline) | ✅ COMPLETE |
+| **06I_LEARNER_PROGRESS_SIDEBAR_METRICS.md** | T7 RSSB metric calculations (LifecycleMetrics, EngagementMetrics, TimeAnalysisMetrics, data lineage) | ✅ COMPLETE |
 | **07_COMPOSER_AND_CREATION_PIPELINE.md** | Authoring tools, creation workflow, External AI integration | ⏳ NOT YET INVESTIGATED |
 | **08_TESTING_VALIDATION_AND_CERTIFICATION.md** | Test coverage, validation rules, certification evidence | ⏳ NOT YET INVESTIGATED |
 | **09_CROSS_FAMILY_CORRELATION.md** | 132 frozen entries → production implementation mapping | ✅ PARTIAL |
@@ -225,7 +227,7 @@ ActiveBlockContext (viewport tracking)
 | Investigation | Status |
 |---|---|
 | **sanitizeDocument() logic** | ✅ VERIFIED (two-phase validation+sanitization pipeline, SVG/URL attack vectors, trust boundary) |
-| **LearningProgressSidebar metric calculations** | ⏳ NOT YET INSPECTED (LifecycleMetrics, EngagementMetrics, TimeAnalysisMetrics internals) |
+| **LearningProgressSidebar metric calculations** | ✅ VERIFIED (passive ILS consumer, useILS() hook, 4 metric components, complete lineage to 3-authority model) |
 | **Authentication middleware origin** | ⏳ NOT YET INSPECTED (getAuthenticatedIdentity() implementation) |
 | Runtime schema validation invocation | ✅ VERIFIED (TutorialDocumentSchema.safeParse() in tutorial-delivery.service.ts) |
 | Composer composition restrictions | ⏳ NOT YET INVESTIGATED |
@@ -315,11 +317,10 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 - Content sanitization and validation pipeline documented ✅
 
 **Next Priority:**
-1. Investigate LearningProgressSidebar metric calculations (LifecycleMetrics, EngagementMetrics, TimeAnalysisMetrics)
-2. Investigate Composer integration and semantic composition rules
-3. Investigate testing and certification evidence
-4. Resolve UBRC / LSNB / RSSB terminology evidence
-5. Finalize Stage 5 and create Project LLM Creation Guideline
+1. Investigate Composer integration and semantic composition rules
+2. Investigate testing and certification evidence
+3. Resolve UBRC / LSNB / RSSB terminology evidence
+4. Finalize Stage 5 and create Project LLM Creation Guideline
 
 ---
 
@@ -337,6 +338,7 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | 06I complete: LearningProgressSidebar metric calculations verified (passive ILS consumer, 12 display + 3 derived metrics, complete data lineage to 3-authority model, ATTEMPTS/SCORE unavailable) |
 | 2026-10-03 | 06H complete: Content sanitization and validation pipeline verified (two-phase: validation→sanitization, method-specific failure handling) |
 | 2026-10-02 | Stage 5 restructured into organized document set |
 | 2026-10-02 | Learner rendering path verified end-to-end; schema/sanitization internals remain partial |
