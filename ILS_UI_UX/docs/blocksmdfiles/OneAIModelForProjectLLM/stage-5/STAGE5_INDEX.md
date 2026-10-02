@@ -229,7 +229,8 @@ ActiveBlockContext (viewport tracking)
 | Investigation | Status |
 |---|---|
 | **sanitizeDocument() logic** | ✅ VERIFIED (two-phase validation+sanitization pipeline, SVG/URL attack vectors, trust boundary) |
-| **LearningProgressSidebar metric calculations** | ✅ VERIFIED (UI-side: passive ILS consumer, ILSProvider construction, metric components, telemetry cache updates); ⏳ API aggregation not inspected (06J recommended) |
+| **LearningProgressSidebar metric calculations** | ✅ VERIFIED (UI-side: passive ILS consumer, ILSProvider construction, metric components, telemetry cache updates) |
+| **ILS API aggregation** | ✅ VERIFIED (server-side: DB→service→DTO→response, completion authority confirmed, requiredBlocks resolution) |
 | **Authentication middleware origin** | ⏳ NOT YET INSPECTED (getAuthenticatedIdentity() implementation) |
 | Runtime schema validation invocation | ✅ VERIFIED (TutorialDocumentSchema.safeParse() in tutorial-delivery.service.ts) |
 | Composer composition restrictions | ⏳ NOT YET INVESTIGATED |
