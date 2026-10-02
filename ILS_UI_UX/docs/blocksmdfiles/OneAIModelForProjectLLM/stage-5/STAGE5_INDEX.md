@@ -20,7 +20,7 @@
 - LearningProgressSidebar metrics: VERIFIED (UI-side: passive ILS consumer, ILSProvider construction, 17 metric entries, telemetry cache updates)
 - ILS API aggregation: VERIFIED (server-side: DB→service→DTO→response, completion authority confirmed, requiredBlocks resolution, role-based requirements)
 - Complete end-to-end ILS lineage: VERIFIED (06B-06J together establish database→API→UI chain)
-- Composer integration: NOT YET INVESTIGATED
+- Composer integration: VERIFIED (TutorialComposerService architecture, BLOCK_REGISTRY, MAX_NESTING_DEPTH enforcement, draft/published/archived workflow, validation before persistence)
 - Testing/certification: NOT YET INVESTIGATED
 - Cross-family correlation: PARTIAL
 - UBRC: NOT FOUND
@@ -112,7 +112,8 @@ Stage 5 documents **what exists**, not what should exist or why it exists.
 | **06G_RUNTIME_SCHEMA_VALIDATION.md** | T5 runtime schema (TutorialDocumentSchema, BlockProgressRoleSchema, validation) | ✅ COMPLETE |
 | **06H_SANITIZATION_AND_VALIDATION.md** | T6 content sanitization (trust boundary, XSS prevention, validation+sanitization pipeline) | ✅ COMPLETE |
 | **06I_LEARNER_PROGRESS_SIDEBAR_METRICS.md** | T7 RSSB metric calculations (LifecycleMetrics, EngagementMetrics, TimeAnalysisMetrics, data lineage) | ✅ COMPLETE |
-| **07_COMPOSER_AND_CREATION_PIPELINE.md** | Authoring tools, creation workflow, External AI integration | ⏳ NOT YET INVESTIGATED |
+| **06J_ILS_API_IMPLEMENTATION.md** | T8 ILS API aggregation (server-side DB→service→DTO, completion authority, requiredBlocks resolution) | ✅ COMPLETE |
+| **07_COMPOSER_AND_CREATION_PIPELINE.md** | Authoring tools, composition rules, External AI integration | ✅ COMPLETE |
 | **08_TESTING_VALIDATION_AND_CERTIFICATION.md** | Test coverage, validation rules, certification evidence | ⏳ NOT YET INVESTIGATED |
 | **09_CROSS_FAMILY_CORRELATION.md** | 132 frozen entries → production implementation mapping | ✅ PARTIAL |
 | **10_FINDINGS_GAPS_AND_CONTRADICTIONS.md** | Summary of verified/partial/not-found/contradictions | ✅ COMPLETE |
@@ -215,12 +216,14 @@ ActiveBlockContext (viewport tracking)
 | expectedTimeSec in ILS data | ✅ VERIFIED |
 | BlockTelemetryProvider | ✅ VERIFIED (visit tracking, active time accumulation, 600s chunking, idempotency) |
 | InstructionalBlockCompletionOrchestrator | ✅ VERIFIED (80% threshold, pure evaluation, deduplication) |
-| LearningProgressSidebar (RSSB) | ✅ VERIFIED (structure, ILS consumption) |
-| Block completion chain | ✅ VERIFIED (client → API → service → repository → tutorial_navigation_progress.completed_blocks[]) |
-| Block visit persistence | ✅ VERIFIED (route → service → repository → block_learning_state, session-aware atomics) |
-| Block active-time persistence | ✅ VERIFIED (route → service → transaction → event ledger + state upsert, idempotent) |
-| Telemetry dual-ledger model | ✅ VERIFIED (block_telemetry_events = immutable ledger, block_learning_state = cumulative state) |
-| Three-authority model | ✅ VERIFIED (completion authority, telemetry event authority, cumulative state authority) |
+| **LearningProgressSidebar (RSSB)** | ✅ VERIFIED (structure, ILS consumption) |
+| **Block completion chain** | ✅ VERIFIED (client → API → service → repository → tutorial_navigation_progress.completed_blocks[]) |
+| **Block visit persistence** | ✅ VERIFIED (route → service → repository → block_learning_state, session-aware atomics) |
+| **Block active-time persistence** | ✅ VERIFIED (route → service → transaction → event ledger + state upsert, idempotent) |
+| **Telemetry dual-ledger model** | ✅ VERIFIED (block_telemetry_events = immutable ledger, block_learning_state = cumulative state) |
+| **Three-authority model** | ✅ VERIFIED (completion authority, telemetry event authority, cumulative state authority) |
+| **Composer architecture** | ✅ VERIFIED (TutorialComposerService, BLOCK_REGISTRY, draft/published/archived workflow, validation before persistence) |
+| **Composition rules enforcement** | ✅ PARTIAL (MAX_NESTING_DEPTH=3 verified, educational ordering rules not found) |
 
 ---
 
@@ -231,10 +234,13 @@ ActiveBlockContext (viewport tracking)
 | **sanitizeDocument() logic** | ✅ VERIFIED (two-phase validation+sanitization pipeline, SVG/URL attack vectors, trust boundary) |
 | **LearningProgressSidebar metric calculations** | ✅ VERIFIED (UI-side: passive ILS consumer, ILSProvider construction, metric components, telemetry cache updates) |
 | **ILS API aggregation** | ✅ VERIFIED (server-side: DB→service→DTO→response, completion authority confirmed, requiredBlocks resolution) |
+| **Composer architecture and validation** | ✅ VERIFIED (TutorialComposerService, BLOCK_REGISTRY, validation before persistence) |
+| **MAX_NESTING_DEPTH enforcement** | ✅ VERIFIED (enforced at validation + runtime) |
 | **Authentication middleware origin** | ⏳ NOT YET INSPECTED (getAuthenticatedIdentity() implementation) |
-| Runtime schema validation invocation | ✅ VERIFIED (TutorialDocumentSchema.safeParse() in tutorial-delivery.service.ts) |
-| Composer composition restrictions | ⏳ NOT YET INVESTIGATED |
-| Semantic composition rules | ⏳ NOT YET VERIFIED |
+| **Composer semantic composition rules** | ⏳ NOT VERIFIED (educational ordering, versioned blocks in containers) |
+| **External AI integration** | ❌ NOT FOUND (no evidence in production Composer) |
+| **Project LLM verification boundary** | ❌ NOT FOUND (no evidence in production Composer) |
+| **Runtime schema validation invocation** | ✅ VERIFIED (TutorialDocumentSchema.safeParse() in tutorial-delivery.service.ts) |
 | Test coverage | ⏳ NOT YET INVESTIGATED |
 | Certification evidence | ⏳ NOT YET INVESTIGATED |
 | UBRC definition | ❌ NOT FOUND |
@@ -299,11 +305,10 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 **Three-Authority Model:** VERIFIED (T3 synthesis complete with corrections)
 
 **Remaining Investigations:**
-1. Composer integration / semantic composition (07)
-2. Testing and certification evidence (08)
-3. Cross-family correlation completion (09)
-4. UBRC / LSNB / RSSB terminology resolution
-5. Final findings/gaps/contradictions refinement (10)
+1. Testing and certification evidence (08)
+2. Cross-family correlation completion (09)
+3. UBRC / LSNB / RSSB terminology resolution
+4. Final findings/gaps/contradictions refinement (10)
 
 **Readiness for Project LLM Creation Guideline:** ✅ RUNTIME FOUNDATION COMPLETE
 - Educational corpus frozen and ready ✅
@@ -338,6 +343,7 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | 07 complete: Composer and creation pipeline verified (TutorialComposerService, BLOCK_REGISTRY, MAX_NESTING_DEPTH=3 enforcement, draft/publish workflow, validation before persistence). External AI integration NOT FOUND. |
 | 2026-10-03 | 06J complete: ILS API implementation verified (server-side aggregation from 3 DB authorities, completion authority confirmed, requiredBlocks vs blocks[] distinction, role-based requirements) |
 | 2026-10-03 | 06I corrected: UI-side metric construction VERIFIED, API aggregation path acknowledged as not inspected (06J recommended for complete lineage) |
 | 2026-10-03 | 06I complete: LearningProgressSidebar metric calculations verified (passive ILS consumer, 17 metric entries, ILSProvider construction, telemetry cache updates) |
