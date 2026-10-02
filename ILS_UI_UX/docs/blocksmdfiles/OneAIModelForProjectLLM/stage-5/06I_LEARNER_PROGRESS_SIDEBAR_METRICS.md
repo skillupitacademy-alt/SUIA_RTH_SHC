@@ -13,11 +13,14 @@
 
 **VERIFIED:** `LearningProgressSidebar` (RSSB) is a **passive consumer** of ILS state. It does NOT independently query the database, select blocks, or calculate block identity. All metrics are derived from `useILS()` → `ILSProvider` → `/api/tutorial/ils/navigation/:nodeId` API.
 
-**Key Finding:** The sidebar displays **12 distinct metrics** across 4 visual sections, sourced from two data structures:
-- **Navigation-level metrics** (`ILSOverallProgress`): 9 metrics
-- **Block-level metrics** (`ILSActiveBlockProgress`): 12 metrics (6 direct display + 6 derived)
+**Key Finding:** The sidebar displays **17 metric entries** across 4 visual sections:
+- **12 direct display metrics** (simple formatting, no calculation)
+- **3 derived metrics** (Status boolean, Difference arithmetic, VsExpected percentage)
+- **2 unavailable placeholders** (ATTEMPTS, SCORE hard-coded `"—"`)
 
 **Critical Discrepancy:** Component comments reference prototype design intentions that differ from actual implementation (e.g., "PACE/STATUS" vs "DIFFERENCE/VS EXPECTED", "3 rows" vs 4 rows).
+
+**Evidence Boundary:** 06I verifies the **UI-side metric construction and display chain** from `ILSProvider` → sidebar components. The **server-side API aggregation** from database → API response is documented but not independently verified in this investigation (deferred to future 06J — ILS API Implementation).
 
 **Evidence Chain:**
 ```
@@ -656,44 +659,63 @@ formatDate(new Date(...))     → "Jan 10, 2026"
 
 ## §10. Data Lineage to Three-Authority Model
 
-### 10.1 Connection to 06E (VERIFIED)
+### 10.1 Connection to 06E (VERIFIED FOR UI LAYER, API AGGREGATION NOT INSPECTED)
 
 **From 06E (Three-Authority Model):**
 - **Completion Authority:** `tutorial_navigation_progress.completed_blocks[]`
 - **Event Ledger Authority:** `block_telemetry_events`
 - **Cumulative State Authority:** `block_learning_state`
 
-**06I Finding:** `ILSActiveBlockProgress` fields map directly to `block_learning_state` columns:
+**06I Finding:** `ILSActiveBlockProgress` fields **correspond to** `block_learning_state` column semantics as established by 06B-06F:
 
-| ILSActiveBlockProgress Field | block_learning_state Column | Authority (from 06E) |
+| ILSActiveBlockProgress Field | Corresponding Authority (from 06E) | 06I Verification |
 |---|---|---|
-| `visitCount` | `visit_count` | Cumulative State (atomic counters) |
-| `revisionCount` | `revision_count` | Cumulative State (atomic counters) |
-| `activeTimeSec` | `active_time_sec` | Cumulative State (upsert sum) |
-| `expectedTimeSec` | `expected_time_sec` | Metadata (extracted, see 06F) |
-| `firstViewedAt` | `first_viewed_at` | Cumulative State (MIN semantics) |
-| `lastViewedAt` | `last_viewed_at` | Cumulative State (MAX semantics) |
-| `completedAt` | `completed_at` | Completion Authority (resolved via completion check) |
+| `visitCount` | Cumulative State (`visit_count` atomic counter) | Consumed from API `blocks[]` |
+| `revisionCount` | Cumulative State (`revision_count` atomic counter) | Consumed from API `blocks[]` |
+| `activeTimeSec` | Cumulative State (`active_time_sec` upsert) | Consumed from API `blocks[]` |
+| `expectedTimeSec` | Metadata (extracted, see 06F) | Consumed from API `blocks[]` |
+| `firstViewedAt` | Cumulative State (MIN semantics) | Consumed from API `blocks[]` |
+| `lastViewedAt` | Cumulative State (MAX semantics) | Consumed from API `blocks[]` |
+| `completedAt` | Completion Authority (06B/06E) | Consumed from API `blocks[]` |
 
-**Evidence State:** VERIFIED — Sidebar metrics are direct consumers of the three-authority persistence model
+**Evidence State:** VERIFIED — Sidebar metrics consume API-provided state that corresponds to the three-authority model
+
+**Important Qualification:** 06I verifies that `ILSProvider` receives and maps these fields from the API response. The **server-side aggregation** from `block_learning_state` table → API `blocks[]` array is **not independently inspected in 06I**. That lineage is established by correlation with 06B-06F evidence, not by direct API source inspection.
+
+**Recommendation:** Create **06J — ILS API Implementation** to verify server-side aggregation path: `database → /api/tutorial/ils/navigation/:nodeId → API response`
 
 ---
 
-### 10.2 Connection to 06B/06C/06D (VERIFIED)
+### 10.2 Connection to 06B/06C/06D (VERIFIED FOR UI CONSUMPTION)
 
 **From 06B (Completion Chain):**
 - `completedAt` and `isCompleted` derive from `tutorial_navigation_progress.completed_blocks[]`
-- Sidebar Status metric consumes this completion authority
+- Sidebar Status metric consumes this completion state via API response
 
 **From 06C (Visit Persistence):**
-- `visitCount` and `revisionCount` come from `block_learning_state` atomic counters
-- Sidebar EngagementMetrics displays these values directly
+- `visitCount` and `revisionCount` persisted to `block_learning_state` atomic counters
+- Sidebar EngagementMetrics displays these values via API response
 
 **From 06D (Active-Time Persistence):**
-- `activeTimeSec` comes from `block_learning_state.active_time_sec` (cumulative)
-- Sidebar TimeAnalysisMetrics displays and derives from this value
+- `activeTimeSec` persisted to `block_learning_state.active_time_sec` (cumulative)
+- Sidebar TimeAnalysisMetrics displays and derives from this value via API response
 
-**Evidence State:** VERIFIED — Complete lineage from persistence → API → ILS → sidebar
+**Evidence State:** VERIFIED — UI-side consumption chain from API → ILSProvider → sidebar components
+
+**Important Qualification:** The connection to 06B/06C/06D is established by **correlation** (field name/semantic correspondence) rather than **direct API source inspection**. 06I verifies that sidebar metrics consume API-provided fields; it does not independently re-verify the database → API aggregation path established by 06B-06D.
+
+**Complete Verified Chain:**
+```
+Database persistence (06B/06C/06D)
+        ↓
+  [API aggregation — NOT INSPECTED IN 06I]
+        ↓
+  API response (blocks[] array)
+        ↓
+  ILSProvider (06I VERIFIED)
+        ↓
+  Sidebar components (06I VERIFIED)
+```
 
 ---
 
@@ -727,20 +749,28 @@ formatDate(new Date(...))     → "Jan 10, 2026"
 
 ### 12.1 VERIFIED Findings
 
+**UI-Side Metric Construction (VERIFIED):**
 1. ✅ `LearningProgressSidebar` is a **passive ILS consumer** (no independent queries)
 2. ✅ All metrics sourced from `useILS()` hook
 3. ✅ `ILSProvider` fetches data from single API endpoint
-4. ✅ `ILSActiveBlockProgress` constructed by strict `blockId` + `blockVersion` matching
-5. ✅ Zero/default semantics for blocks without telemetry state
-6. ✅ LifecycleMetrics displays 4 fields (First/Last/Completed/Status)
-7. ✅ EngagementMetrics displays 2 real + 2 unavailable fields
-8. ✅ TimeAnalysisMetrics calculates DIFFERENCE and VS EXPECTED (not PACE/STATUS)
-9. ✅ OverallProgressCard displays navigation-level progress
-10. ✅ No learning classification thresholds in TimeAnalysisMetrics
-11. ✅ ATTEMPTS and SCORE are explicitly unavailable (no quiz system)
-12. ✅ Complete data lineage: database → API → ILS → sidebar components
-13. ✅ Telemetry update integration maintains cache coherence
-14. ✅ Monotonic completion invariant preserved (Gate H)
+4. ✅ `ILSProvider` maps API response → `ILSOverallProgress` (date normalization only)
+5. ✅ `ILSActiveBlockProgress` constructed by strict `blockId` + `blockVersion` matching
+6. ✅ Zero/default semantics for blocks without telemetry state
+7. ✅ Telemetry cache update maintains monotonic completion invariant (Gate H)
+8. ✅ LifecycleMetrics displays 4 fields (First/Last/Completed/Status)
+9. ✅ EngagementMetrics displays 2 real + 2 unavailable fields
+10. ✅ TimeAnalysisMetrics calculates DIFFERENCE and VS EXPECTED (not PACE/STATUS)
+11. ✅ OverallProgressCard displays navigation-level progress
+12. ✅ No learning classification thresholds in TimeAnalysisMetrics
+13. ✅ ATTEMPTS and SCORE are explicitly unavailable (no quiz system)
+14. ✅ 17 total metric entries displayed (12 direct + 3 derived + 2 unavailable)
+
+**Correlation to Three-Authority Model (VERIFIED BY CORRESPONDENCE):**
+15. ✅ Sidebar metric fields correspond to database authorities established by 06B-06E
+16. ✅ Field semantics align with cumulative state / completion authority / metadata extraction
+
+**API Aggregation Path (NOT INSPECTED IN 06I):**
+17. ❓ Server-side aggregation from `block_learning_state` → API `blocks[]` (deferred to 06J)
 
 ---
 
@@ -875,10 +905,11 @@ LearningProgressSidebar (passive display)
 - How does API calculate `progressPercentage`?
 - How does API determine `status` enum value?
 - What happens if API returns stale data?
+- Does API join `tutorial_navigation_progress` with `block_learning_state`?
 
 **Status:** OUT OF SCOPE for 06I (UI metric display investigation)
 
-**Recommendation:** Create **06J — ILS API Implementation** investigation if needed
+**Recommendation:** Create **06J — ILS API Implementation** investigation to close the server-side aggregation gap and complete end-to-end lineage verification
 
 ---
 
