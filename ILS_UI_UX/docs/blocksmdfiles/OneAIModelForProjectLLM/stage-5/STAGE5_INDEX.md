@@ -344,6 +344,7 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | 07 final source reconciliation: Registry corrected to actual source (18 entries: heading/paragraph/list/code/example/image/diagram/table/comparison/callout/quote/definition/introduction/summary/two-column/three-column/card-grid/timeline), authorization corrected (5 methods with TODOs, not 6), stale transitionStatus() removed, stale updateTutorial() corrected to updateTutorialContent(), speculative "future planned features" removed |
 | 2026-10-03 | 07 evidence cleanup: MAX_BLOCKS_PER_DOCUMENT reclassified DECLARED/NOT VERIFIED, authorization TODOs enumerated accurately (6 methods), service API corrected to match actual source, container list corrected (CardGrid not Tabbed), speculative AI interpretation removed |
 | 2026-10-03 | 07 corrected: V2 lifecycle is draft→deployed→archived (not published), authorization TODOs observed in service layer, External AI/Project LLM scoped to "inspected Composer surface", MAX_NESTING_DEPTH enforcement clarified as schema-layer delegation |
 | 2026-10-03 | 07 complete: Composer and creation pipeline verified (TutorialComposerService, BLOCK_REGISTRY, MAX_NESTING_DEPTH=3 enforcement, draft/publish workflow, validation before persistence). External AI integration NOT FOUND. |

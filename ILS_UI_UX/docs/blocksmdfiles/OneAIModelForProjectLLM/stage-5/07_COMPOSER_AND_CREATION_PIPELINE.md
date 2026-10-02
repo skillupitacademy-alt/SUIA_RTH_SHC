@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Investigation 07 establishes **VERIFIED** evidence for production Composer architecture, composition rule enforcement, and validation workflow. The Composer exists as server-side service (`TutorialComposerService`) with explicit validation, block registry, and publish workflow. **MAX_NESTING_DEPTH = 3** is enforced at document validation. Container nesting is supported via type system but specific semantic restrictions (e.g., versioned blocks inside containers) remain **NOT VERIFIED**. External AI integration points are **NOT FOUND** in production codebase—no evidence of External AI → candidate block workflow or Project LLM verification boundary exists.
+Investigation 07 establishes **VERIFIED** evidence for production Composer architecture, composition rule enforcement, and validation workflow. The Composer exists as server-side service (`TutorialComposerService`) with explicit validation, block registry (18 registered types), and publish workflow. **MAX_NESTING_DEPTH = 3** is enforced via schema validation layer. Container nesting is supported via type system but specific semantic restrictions (e.g., versioned blocks inside containers) remain **NOT VERIFIED**. Service-layer authorization enforcement is **NOT VERIFIED** (explicit TODOs observed in 5 mutation methods). External AI integration points and Project LLM verification boundary are **NOT FOUND in the inspected Composer/creation-pipeline surface**.
 
 ---
 
@@ -44,7 +44,6 @@ export class TutorialComposerService {
    - Validates TutorialDocumentSchema via `safeParse()`
    - Checks hierarchy (domainId/subjectId/topicId/subtopicId resolution)
    - Initializes as `status: 'draft'`
-   - **Authorization**: Contains explicit TODO for authorization check
 
 2. **`appendBlockToTutorial()`**:
    - Appends block to existing tutorial
@@ -69,56 +68,77 @@ export class TutorialComposerService {
 
 **Registry Location**: `packages/types/src/tutorial-rich-document/registry.ts`
 
-**Registry Structure**:
+**Registry Structure** (from actual source):
 
 ```typescript
 export interface BlockRegistryEntry {
   type: BlockType;
   label: string;
-  category: BlockCategory;
   description: string;
+  category: BlockCategory;
   icon?: string;
-  supportsChildren?: boolean;
-  isContainer?: boolean;
-  isVersioned?: boolean;
-  version?: string;
+  supportsChildren: boolean;
+  maxChildren?: number;
+  allowedChildTypes?: BlockType[];
+  isExperimental?: boolean;
+  tags?: string[];
 }
 
-export const BLOCK_REGISTRY: Record<BlockType, BlockRegistryEntry> = {
-  // Versioned educational blocks
-  'intro-v1': { type: 'intro-v1', label: 'Introduction', category: 'educational', isVersioned: true, version: '1' },
-  'definition-v1': { type: 'definition-v1', label: 'Definition', category: 'educational', isVersioned: true, version: '1' },
-  'code-v1': { type: 'code-v1', label: 'Code Block', category: 'educational', isVersioned: true, version: '1' },
-
-  // Structural blocks
-  'heading': { type: 'heading', label: 'Heading', category: 'structural' },
-  'text': { type: 'text', label: 'Text', category: 'structural' },
-  'code': { type: 'code', label: 'Code', category: 'structural' },
-  'quote': { type: 'quote', label: 'Quote', category: 'structural' },
-  'list': { type: 'list', label: 'List', category: 'structural' },
-  'link': { type: 'link', label: 'Link', category: 'structural' },
-
-  // Container blocks
-  'two-column': { type: 'two-column', label: 'Two Column', category: 'layout', isContainer: true, supportsChildren: true },
-  'three-column': { type: 'three-column', label: 'Three Column', category: 'layout', isContainer: true, supportsChildren: true },
-  'tabbed': { type: 'tabbed', label: 'Tabbed', category: 'layout', isContainer: true, supportsChildren: true },
-  'timeline': { type: 'timeline', label: 'Timeline', category: 'layout', isContainer: true, supportsChildren: true },
-
-  // Specialized blocks
-  'diagram': { type: 'diagram', label: 'Diagram', category: 'specialized' },
-  'comparison': { type: 'comparison', label: 'Comparison', category: 'specialized' },
-  'example': { type: 'example', label: 'Example', category: 'specialized' },
-  'callout': { type: 'callout', label: 'Callout', category: 'specialized' },
-};
+export type BlockCategory = 
+  | 'text'           // Heading, Paragraph
+  | 'list'           // List
+  | 'code'           // Code, Example
+  | 'media'          // Image, Diagram
+  | 'structure'      // Table, Comparison
+  | 'emphasis'       // Callout, Quote
+  | 'educational'    // Definition, Summary
+  | 'layout';        // TwoColumn, ThreeColumn, CardGrid, Timeline
 ```
 
-**Registry API**:
-- `getBlockTypes()` → returns all BlockType strings
-- `getBlockType(type: BlockType)` → returns BlockRegistryEntry
-- `getBlockInfo(type: BlockType)` → returns metadata
-- `SECTION_BLOCK_PALETTES[sectionType]` → returns allowed blocks per section
+**Registry Entries** (18 total):
 
-**Evidence**: Registry structure and API functions read from source.
+**Text blocks (2)**:
+- `heading`: Heading, section heading (H1-H6)
+- `paragraph`: Paragraph, text paragraph
+
+**List blocks (1)**:
+- `list`: List, ordered or unordered list
+
+**Code blocks (2)**:
+- `code`: Code, code block with syntax highlighting
+- `example`: Example, code example with explanation
+
+**Media blocks (2)**:
+- `image`: Image, image with caption
+- `diagram`: Diagram, diagram or flowchart
+
+**Structure blocks (2)**:
+- `table`: Table, data table
+- `comparison`: Comparison, feature comparison table
+
+**Emphasis blocks (2)**:
+- `callout`: Callout, important notice or tip
+- `quote`: Quote, quotation block
+
+**Educational blocks (3)**:
+- `definition`: Definition, term definition
+- `introduction`: Introduction, complete roadmap-style overview
+- `summary`: Summary, key points summary
+
+**Layout blocks (4)** — containers with `supportsChildren: true`:
+- `two-column`: Two Column, two-column layout
+- `three-column`: Three Column, three-column layout
+- `card-grid`: Card Grid, grid of cards (maxChildren: 20)
+- `timeline`: Timeline, timeline with events (maxChildren: 50)
+
+**Registry API**:
+- `getBlockInfo(type: BlockType)` → returns BlockRegistryEntry
+- `getBlocksByCategory(category: BlockCategory)` → returns entries by category
+- `getContainerBlocks()` → returns entries with `supportsChildren: true`
+- `getContentBlocks()` → returns entries with `supportsChildren: false`
+- `searchBlocksByTag(tag: string)` → returns entries matching tag
+
+**Evidence**: Complete registry read from `packages/types/src/tutorial-rich-document/registry.ts`.
 
 ---
 
@@ -254,32 +274,12 @@ if (!validation.success) {
 
 **Status Transitions (V2 Implementation)**:
 
-```typescript
-type TutorialStatus = 'draft' | 'deployed' | 'archived';
+V2 TutorialComposerService uses `TutorialStatus = 'draft' | 'deployed' | 'archived'`.
 
-// From TutorialComposerService
-async transitionStatus(
-  tutorialId: string,
-  newStatus: TutorialStatus,
-  userId?: string
-): Promise<Tutorial> {
-  // Validation before publishing
-  if (newStatus === 'deployed') {
-    const tutorial = await this.getTutorial(tutorialId);
-    const validation = TutorialDocumentSchema.safeParse(tutorial.document);
-    if (!validation.success) {
-      throw new Error('Cannot publish invalid tutorial document');
-    }
-  }
-
-  // Update status
-  return await this.tutorialRepository.update(tutorialId, {
-    status: newStatus,
-    publishedAt: newStatus === 'deployed' ? new Date() : null,
-    updatedBy: userId,
-  });
-}
-```
+Status changes occur through dedicated methods:
+- `publishTutorial()` transitions `draft → deployed` (with validation)
+- `archiveTutorial()` transitions to `archived` status
+- `updateTutorialStatus()` allows explicit status transitions with userId audit trail
 
 **Workflow States**:
 
@@ -294,14 +294,14 @@ async transitionStatus(
   // TODO: Add authorization check
   // await this.assertCanEditTutorial(...)
   ```
-- Authorization TODOs present in: `createTutorial()`, `updateTutorialContent()`, `updateTutorialStatus()`, `publishTutorial()`, `archiveTutorial()`, `appendBlockToTutorial()`
+- Authorization TODOs observed in: `updateTutorialContent()`, `updateTutorialStatus()`, `publishTutorial()`, `archiveTutorial()`, `appendBlockToTutorial()`
 
 **Save Operations**:
-- `updateTutorial()` updates draft without status change
+- `updateTutorialContent()` updates tutorial content without changing status
 - `appendBlockToTutorial()` appends block and re-validates document
 - No explicit "approval" workflow found (single-user authoring model)
 
-**Evidence**: Service methods and status transitions verified from source. Authorization enforcement explicitly marked as TODO in inspected service.
+**Evidence**: Service methods and status transitions verified from source. Authorization enforcement explicitly marked as TODO in inspected mutation methods.
 
 ---
 
@@ -417,7 +417,7 @@ async transitionStatus(
 ### ✅ VERIFIED
 
 1. TutorialComposerService architecture (create/append/publish/archive)
-2. BLOCK_REGISTRY structure (17+ block types, categories, metadata)
+2. BLOCK_REGISTRY structure (18 registered block types observed in inspected registry source)
 3. MAX_NESTING_DEPTH = 3 enforcement via TutorialDocumentSchema validation (Composer delegates to schema layer)
 4. Container recursion support (TwoColumn/ThreeColumn/CardGrid/Timeline)
 5. Draft → Deployed → Archived status workflow (V2 implementation)
@@ -432,7 +432,7 @@ async transitionStatus(
 3. SECTION_BLOCK_PALETTES enforcement in Composer
 4. Educational ordering rules from Stage 3 corpus
 5. Complete Composer UI workflow (block editing forms, preview)
-6. **Service-layer authorization enforcement** (explicit TODOs observed in createTutorial, updateTutorialContent, updateTutorialStatus, publishTutorial, archiveTutorial, appendBlockToTutorial)
+6. **Service-layer authorization enforcement** (explicit TODOs observed in: updateTutorialContent, updateTutorialStatus, publishTutorial, archiveTutorial, appendBlockToTutorial)
 
 ### ❌ NOT FOUND (in inspected Composer surface)
 
@@ -489,7 +489,9 @@ This investigation does not establish whether such functionality exists outside 
 
 ## Conclusion
 
-Investigation 07 establishes **complete evidence for production Composer architecture** as direct human authoring tool with schema-validated document persistence. Composition rule enforcement is **VERIFIED** for nesting depth limits (via schema validation layer) and container recursion, but **NOT VERIFIED** for educational ordering rules from Stage 3 corpus or service-layer authorization (explicit TODOs observed). External AI integration and Project LLM verification boundary are **NOT FOUND** in the inspected Composer surface—no conclusion is made about whether these exist elsewhere in the repository or represent future planned features.
+Investigation 07 establishes **complete evidence for production Composer architecture** as direct human authoring tool with schema-validated document persistence. Composition rule enforcement is **VERIFIED** for nesting depth limits (via schema validation layer) and container recursion, but **NOT VERIFIED** for educational ordering rules from Stage 3 corpus or service-layer authorization (explicit TODOs observed in 5 mutation methods). External AI integration and Project LLM verification boundary are **NOT FOUND in the inspected Composer/creation-pipeline surface**.
+
+This investigation does not establish whether such functionality exists outside the inspected surface.
 
 **V2 Status Lifecycle**: `draft → deployed → archived` (verified from actual TutorialComposerService source)
 
