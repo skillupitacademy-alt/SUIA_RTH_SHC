@@ -1558,3 +1558,265 @@ Total: 6 reference versions
 **No repository architecture files should be changed from this analysis yet.** We should finish the 18-family Markdown investigation first, then perform the cross-corpus reconciliation, and only after that update `TUTORIAL_COMPONENT_ARCHITECTURE.md` and `UniversalBlockImplementatoin.md` against the current UBRC/ILS/LSNB/RSSB/Universal Tutorial Page/Tutorial Composer architecture.
 
 **Next file: `ObjectiveBlock.md`.**
+
+
+---
+
+# PROJECT LLM GOVERNANCE APPENDIX — INTRODUCTIONBLOCK
+
+## 1. Document Authority
+
+This document is an **Educational Reference Corpus source for IntroductionBlock**.
+
+It is authoritative for the documented semantic and presentation characteristics of:
+
+```text
+IntroductionBlock
+├── I1 — Simple Topic Introduction
+├── I2 — Problem → Need → Topic
+├── I3 — What → Why → Where
+├── I4 — Topic → Context → Roadmap
+├── I5 — Real-World Introduction
+└── I6 — Complete Lesson Introduction
+```
+
+The IntroductionBlock family is therefore treated as having **six verified reference versions** in this corpus.
+
+---
+
+## 2. Global Version Matrix Boundary
+
+Earlier sections of this document contain a broader proposed **18-family / 141-presentation-version architecture**.
+
+That global matrix is a **cross-family reference/proposal** and must not override the dedicated Markdown specification of another educational family.
+
+For family-level version reconciliation, Project LLM must use:
+
+```text
+Dedicated Family Markdown
+        ↓
+Family Version Authority
+```
+
+and treat cross-family references in this document as:
+
+```text
+Cross-Reference / Historical Proposal
+```
+
+until validated against the corresponding dedicated family Markdown file.
+
+Therefore:
+
+> The version count or version range mentioned for another family in IntroductionBlock.md must not be treated as final merely because it appears in this document.
+
+---
+
+## 3. Reference Version vs Production Implementation
+
+The I1–I6 specifications in this document describe **reference educational designs**.
+
+They do not, by themselves, establish:
+
+- current production database schemas;
+- current API contracts;
+- current Tutorial Composer implementation;
+- current TutorialBlockRenderer implementation;
+- current Tutorial Page runtime implementation;
+- current UBRC implementation;
+- current ILS integration;
+- current LSNB integration;
+- current RSSB integration;
+- production certification status.
+
+Project LLM must not infer any of these solely from this document.
+
+---
+
+## 4. Reference JSON / HTML Boundary
+
+JSON structures, HTML structures, CSS/layout descriptions, semantic HTML vocabulary, responsive behavior, and accessibility guidance in this document are **reference design evidence**.
+
+They must not automatically be treated as the current production schema or runtime contract.
+
+The Project LLM adaptation flow is:
+
+```text
+Educational Reference
+        ↓
+Semantic Understanding
+        ↓
+Reference Content Model
+        ↓
+Candidate Composition
+        ↓
+Production Contract Resolution
+        ↓
+Repository Adapter
+        ↓
+Runtime Validation
+```
+
+The reference prototype must not be rewritten merely to make it appear to already match production architecture.
+
+---
+
+## 5. Introduction Version Selection
+
+I6 is documented as the most comprehensive Introduction pattern and may be suitable for larger lessons.
+
+However:
+
+> I6 being described as a premium/default reference pattern does not make I6 mandatory for every production tutorial.
+
+Version selection must depend on:
+
+- instructional purpose;
+- topic scope;
+- learner context;
+- author intent;
+- composition requirements;
+- current production authoring rules.
+
+---
+
+## 6. Roadmap and Runtime Navigation Boundary
+
+Roadmap elements in I4 and I6 are educational/presentation structures.
+
+A roadmap item must not automatically be interpreted as:
+
+- an LSNB navigation node;
+- a canonical Tutorial Page section;
+- a runtime navigation identifier;
+- a completion state;
+- a learner-state transition.
+
+Those mappings require independent repository/runtime evidence.
+
+---
+
+## 7. Runtime Responsibility Boundary
+
+IntroductionBlock should remain primarily responsible for:
+
+```text
+Content
++
+Educational structure
++
+Presentation
++
+Version semantics
++
+Accessibility
++
+Responsive behavior
+```
+
+It must not be assumed to own:
+
+```text
+ILS telemetry
+LSNB state
+RSSB state
+Navigation engine
+Completion engine
+Database persistence
+Assessment
+Synchronization
+```
+
+unless a separate verified production contract explicitly assigns such responsibility.
+
+---
+
+## 8. Mix-and-Match Composition Rule
+
+Existing Introduction versions may be used as reusable educational/presentation patterns in a derived composition.
+
+For example:
+
+```text
+I2 structure
++
+I3 conceptual orientation
++
+I5 real-world context
+```
+
+may produce a candidate composed Introduction.
+
+Such a composition must be recorded as:
+
+```text
+Derived Composition
++
+Source Provenance
+```
+
+and must not automatically receive a new authoritative version number such as `I7`.
+
+A new numbered version requires an explicit architectural/content decision.
+
+---
+
+## 9. Evidence Classification
+
+For Project LLM purposes, the following classifications apply:
+
+```text
+I1–I6
+    = VERIFIED REFERENCE_VERSION
+
+Global 18-family / 141-version matrix
+    = CROSS-FAMILY REFERENCE / HISTORICAL PROPOSAL
+
+Reference HTML / JSON
+    = VERIFIED REFERENCE_DESIGN
+
+Production schema
+    = NOT VERIFIED FROM THIS FILE
+
+Composer implementation
+    = NOT VERIFIED FROM THIS FILE
+
+Renderer implementation
+    = NOT VERIFIED FROM THIS FILE
+
+UBRC
+    = NOT VERIFIED FROM THIS FILE
+
+ILS
+    = NOT VERIFIED FROM THIS FILE
+
+LSNB
+    = NOT VERIFIED FROM THIS FILE
+
+RSSB
+    = NOT VERIFIED FROM THIS FILE
+
+Production certification
+    = NOT VERIFIED FROM THIS FILE
+```
+
+---
+
+## 10. Project LLM Rule
+
+> **The Project LLM must never infer a production implementation, runtime contract, Composer capability, renderer capability, telemetry ownership, navigation state, learner state, assessment responsibility, or certification status solely from an educational Markdown reference file.**
+
+The educational corpus defines the **learning semantics and reference presentation patterns**.
+
+The current repository and verified runtime evidence determine the **production implementation and runtime contract**.
+
+---
+
+# END PROJECT LLM GOVERNANCE APPENDIX
+
+---
+
+**Document Status:** Educational Reference Corpus with Project LLM Governance Boundaries  
+**Authority Level:** IntroductionBlock Family Specification (I1-I6)  
+**Cross-Family Matrix:** Historical Proposal — Subject to Dedicated Family Verification  
+**Last Updated:** 2026-10-02 (Governance Appendix Added)
