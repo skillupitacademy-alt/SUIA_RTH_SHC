@@ -392,7 +392,7 @@ Status changes occur through dedicated methods:
 
 1. **TutorialBlockSelector** (`components/TutorialBlockSelector.tsx`):
    - Allows selecting block types from BLOCK_REGISTRY
-   - Displays block categories (educational, structural, layout, specialized)
+   - Displays block categories from BLOCK_REGISTRY
 
 2. **Section API Routes** (`api/tutorial-composer/sections/`):
    - Create/update/delete section operations
