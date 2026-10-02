@@ -43,7 +43,7 @@ export class TutorialComposerService {
 }
 ```
 
-**Status Field**: `TutorialStatus = 'draft' | 'published' | 'archived'`
+**Status Field**: `TutorialStatus = 'draft' | 'deployed' | 'archived'` (V2 implementation)
 
 **Key Methods**:
 
@@ -59,9 +59,11 @@ export class TutorialComposerService {
    - Returns updated Tutorial record
 
 3. **`publishTutorial()`**:
-   - Transitions status `draft → published`
+   - Transitions status `draft → deployed`
    - Validates document before publishing
+   - Rejects empty documents
    - Records publication timestamp
+   - **Authorization**: Contains explicit TODO for authorization check
 
 **Evidence**: Complete service implementation read from source.
 
@@ -128,9 +130,9 @@ export const BLOCK_REGISTRY: Record<BlockType, BlockRegistryEntry> = {
 
 ## 3. Container and Nesting Restrictions Enforced by Composer
 
-### Evidence State: ✅ VERIFIED (MAX_NESTING_DEPTH), ⏳ NOT VERIFIED (semantic restrictions)
+### Evidence State: ✅ VERIFIED (MAX_NESTING_DEPTH via schema validation), ⏳ NOT VERIFIED (semantic restrictions)
 
-**3A. Nesting Depth Enforcement**
+**3A. Nesting Depth Enforcement via Schema Validation**
 
 **Constant Declaration**: `packages/types/src/tutorial-rich-document/constants.ts`
 
@@ -189,10 +191,7 @@ export function TutorialBlockRenderer({ blocks, depth = 0 }: Props) {
 }
 ```
 
-**Evidence Classification**: ✅ VERIFIED — `MAX_NESTING_DEPTH = 3` enforced at:
-1. Document validation (before persistence)
-2. Runtime rendering (fail-safe)
-3. Depth calculation recursively counts container depth only
+**Evidence Classification**: ✅ VERIFIED — Composer invokes TutorialDocumentSchema validation, and that validation enforces `MAX_NESTING_DEPTH = 3`. Runtime rendering (from Investigation 04) independently has the corresponding fail-safe. Composer does not enforce nesting depth directly—it delegates to schema validation layer.
 
 **3B. Container Types Supporting Nested Blocks**
 
@@ -257,12 +256,12 @@ if (!validation.success) {
 
 ## 5. Draft/Save/Publish/Approval Workflow
 
-### Evidence State: ✅ VERIFIED
+### Evidence State: ✅ VERIFIED (status transitions), ⏳ NOT VERIFIED (authorization enforcement)
 
-**Status Transitions**:
+**Status Transitions (V2 Implementation)**:
 
 ```typescript
-type TutorialStatus = 'draft' | 'published' | 'archived';
+type TutorialStatus = 'draft' | 'deployed' | 'archived';
 
 // From TutorialComposerService
 async transitionStatus(
@@ -271,7 +270,7 @@ async transitionStatus(
   userId?: string
 ): Promise<Tutorial> {
   // Validation before publishing
-  if (newStatus === 'published') {
+  if (newStatus === 'deployed') {
     const tutorial = await this.getTutorial(tutorialId);
     const validation = TutorialDocumentSchema.safeParse(tutorial.document);
     if (!validation.success) {
@@ -282,7 +281,7 @@ async transitionStatus(
   // Update status
   return await this.tutorialRepository.update(tutorialId, {
     status: newStatus,
-    publishedAt: newStatus === 'published' ? new Date() : null,
+    publishedAt: newStatus === 'deployed' ? new Date() : null,
     updatedBy: userId,
   });
 }
@@ -291,15 +290,24 @@ async transitionStatus(
 **Workflow States**:
 
 1. **Draft**: Initial state after `createTutorial()`
-2. **Published**: After `publishTutorial()` (requires valid document)
+2. **Deployed**: After `publishTutorial()` (requires valid document, rejects empty documents)
 3. **Archived**: After `archiveTutorial()` (soft delete)
+
+**Authorization Status**: 
+- Service methods accept `userId` parameter for audit trail
+- **Authorization checks NOT VERIFIED**: Explicit TODOs observed in source:
+  ```typescript
+  // TODO: Add authorization check
+  // await this.assertCanEditTutorial(...)
+  ```
+- Authorization TODOs present in: `updateTutorial()`, `publishTutorial()`, `archiveTutorial()`
 
 **Save Operations**:
 - `updateTutorial()` updates draft without status change
 - `appendBlockToTutorial()` appends block and re-validates document
 - No explicit "approval" workflow found (single-user authoring model)
 
-**Evidence**: Service methods and status transitions verified from source.
+**Evidence**: Service methods and status transitions verified from source. Authorization enforcement explicitly marked as TODO in inspected service.
 
 ---
 
@@ -347,7 +355,7 @@ async transitionStatus(
 
 ## 7. External AI Integration
 
-### Evidence State: ❌ NOT FOUND
+### Evidence State: ❌ NOT FOUND in inspected Composer surface
 
 **Search Coverage**:
 - Searched for: `external.*ai`, `openai`, `anthropic`, `claude`, `gpt.*integration`, `ai.*candidate`, `ai.*workflow`
@@ -359,31 +367,24 @@ async transitionStatus(
 - No AI-generated content ingestion workflow
 - Only incidental references: marketing copy mentioning "OpenAI API" as course topic
 
-**Authority Boundary Missing**:
-
-From Stage 5 steering guidance:
-> "External AI = candidate creator, Project LLM = verifier/adapter, Composer = authoring layer"
-
-**Production Reality**: No evidence of External AI → Project LLM → Composer pipeline exists. Composer operates as direct human authoring tool.
-
-**Evidence Classification**: ❌ NOT FOUND — No External AI integration points exist in production Composer.
+**Evidence Classification**: ❌ NOT FOUND in the inspected Composer/creation pipeline surface. No conclusion is made about AI functionality elsewhere in the repository or outside this production surface.
 
 ---
 
 ## 8. Project LLM Verification/Adapter Boundary
 
-### Evidence State: ❌ NOT FOUND
+### Evidence State: ❌ NOT FOUND in inspected Composer surface
 
 **Expected Boundary** (from Stage 5 steering):
 - External AI generates candidate educational blocks
 - Project LLM verifies educational quality, adapts to platform schemas
 - Composer persists verified blocks
 
-**Production Reality**: No evidence of Project LLM as verification layer. Composer directly accepts TutorialBlock objects conforming to TutorialDocumentSchema.
+**Production Reality**: No evidence of Project LLM as verification layer in inspected Composer surface. Composer directly accepts TutorialBlock objects conforming to TutorialDocumentSchema.
 
 **Validation Present**: TutorialDocumentSchema validation (06G/06H) ensures type safety and sanitization, but this is **not** AI-mediated educational verification—it's structural/security validation.
 
-**Evidence Classification**: ❌ NOT FOUND — No Project LLM verification boundary exists in production Composer.
+**Evidence Classification**: ❌ NOT FOUND in the inspected Composer/creation pipeline surface. No conclusion is made about AI functionality elsewhere in the repository or outside this production surface.
 
 ---
 
@@ -423,10 +424,12 @@ From Stage 5 steering guidance:
 
 1. TutorialComposerService architecture (create/append/publish/archive)
 2. BLOCK_REGISTRY structure (17+ block types, categories, metadata)
-3. MAX_NESTING_DEPTH = 3 enforcement (validation + runtime)
+3. MAX_NESTING_DEPTH = 3 enforcement via TutorialDocumentSchema validation (Composer delegates to schema layer)
 4. Container recursion support (TwoColumn/ThreeColumn/Tabbed/Timeline)
-5. Draft → Published → Archived status workflow
+5. Draft → Deployed → Archived status workflow (V2 implementation)
 6. Validation before persistence (TutorialDocumentSchema at all mutation points)
+7. Append-based composition (multiple blocks of same type allowed)
+8. Empty document rejection at publish
 
 ### ⏳ NOT VERIFIED
 
@@ -434,8 +437,9 @@ From Stage 5 steering guidance:
 2. SECTION_BLOCK_PALETTES enforcement in Composer
 3. Educational ordering rules from Stage 3 corpus
 4. Complete Composer UI workflow (block editing forms, preview)
+5. **Service-layer authorization enforcement** (explicit TODOs observed in createTutorial, updateTutorial, publishTutorial, archiveTutorial)
 
-### ❌ NOT FOUND
+### ❌ NOT FOUND (in inspected Composer surface)
 
 1. External AI integration points
 2. Project LLM verification/adapter boundary
@@ -452,15 +456,12 @@ From Stage 5 steering guidance:
 
 | Authority | Expected Role (Steering) | Actual Role (Production) |
 |---|---|---|
-| External AI | Candidate block creator | ❌ NOT FOUND |
-| Project LLM | Educational verifier/adapter | ❌ NOT FOUND |
-| Composer | Authoring layer, persistence | ✅ VERIFIED (human-authored blocks) |
+| External AI | Candidate block creator | ❌ NOT FOUND in inspected Composer surface |
+| Project LLM | Educational verifier/adapter | ❌ NOT FOUND in inspected Composer surface |
+| Composer | Authoring layer, persistence | ✅ VERIFIED (human-authored blocks, schema validation) |
 | Runtime | Lifecycle, telemetry, progress | ✅ VERIFIED (from 06A-06J) |
 
-**Interpretation**: Production Composer is **direct human authoring tool**, not AI-mediated pipeline. External AI/Project LLM boundary may be:
-1. Future planned architecture (not yet implemented)
-2. Misunderstood from corpus (corpus may describe different system)
-3. Implemented outside tutorial system (e.g., course content generation)
+**Interpretation**: Production Composer in the inspected surface is **direct human authoring tool with schema-validated document persistence**, not AI-mediated pipeline. External AI/Project LLM boundary may exist elsewhere in the repository, may be future planned architecture, or may represent corpus misinterpretation. Stage 5 makes no conclusion about which explanation is correct.
 
 ---
 
@@ -491,7 +492,9 @@ From Stage 5 steering guidance:
 
 ## Conclusion
 
-Investigation 07 establishes **complete evidence for production Composer architecture** as direct human authoring tool with structural validation. Composition rule enforcement is **VERIFIED** for nesting depth limits and container recursion, but **NOT VERIFIED** for educational ordering rules from Stage 3 corpus. External AI integration and Project LLM verification boundary are **NOT FOUND** in production codebase—these may represent future planned features or misunderstood corpus references rather than current implementation.
+Investigation 07 establishes **complete evidence for production Composer architecture** as direct human authoring tool with schema-validated document persistence. Composition rule enforcement is **VERIFIED** for nesting depth limits (via schema validation layer) and container recursion, but **NOT VERIFIED** for educational ordering rules from Stage 3 corpus or service-layer authorization (explicit TODOs observed). External AI integration and Project LLM verification boundary are **NOT FOUND** in the inspected Composer surface—no conclusion is made about whether these exist elsewhere in the repository or represent future planned features.
+
+**V2 Status Lifecycle**: `draft → deployed → archived` (verified from actual TutorialComposerService source)
 
 **Next Investigation**: 08 (Testing and Certification Evidence)
 

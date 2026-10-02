@@ -20,7 +20,7 @@
 - LearningProgressSidebar metrics: VERIFIED (UI-side: passive ILS consumer, ILSProvider construction, 17 metric entries, telemetry cache updates)
 - ILS API aggregation: VERIFIED (server-side: DB→service→DTO→response, completion authority confirmed, requiredBlocks resolution, role-based requirements)
 - Complete end-to-end ILS lineage: VERIFIED (06B-06J together establish database→API→UI chain)
-- Composer integration: VERIFIED (TutorialComposerService architecture, BLOCK_REGISTRY, MAX_NESTING_DEPTH enforcement, draft/published/archived workflow, validation before persistence)
+- Composer integration: VERIFIED (TutorialComposerService architecture, BLOCK_REGISTRY, MAX_NESTING_DEPTH via schema validation, draft/deployed/archived workflow V2, validation before persistence, authorization TODOs observed)
 - Testing/certification: NOT YET INVESTIGATED
 - Cross-family correlation: PARTIAL
 - UBRC: NOT FOUND
@@ -222,8 +222,9 @@ ActiveBlockContext (viewport tracking)
 | **Block active-time persistence** | ✅ VERIFIED (route → service → transaction → event ledger + state upsert, idempotent) |
 | **Telemetry dual-ledger model** | ✅ VERIFIED (block_telemetry_events = immutable ledger, block_learning_state = cumulative state) |
 | **Three-authority model** | ✅ VERIFIED (completion authority, telemetry event authority, cumulative state authority) |
-| **Composer architecture** | ✅ VERIFIED (TutorialComposerService, BLOCK_REGISTRY, draft/published/archived workflow, validation before persistence) |
-| **Composition rules enforcement** | ✅ PARTIAL (MAX_NESTING_DEPTH=3 verified, educational ordering rules not found) |
+| **Composer architecture** | ✅ VERIFIED (TutorialComposerService, BLOCK_REGISTRY, draft/deployed/archived workflow, validation before persistence) |
+| **Composition rules enforcement** | ✅ PARTIAL (MAX_NESTING_DEPTH=3 via schema validation verified, educational ordering rules not found) |
+| **Composer authorization enforcement** | ⏳ NOT VERIFIED (explicit TODOs observed in service layer) |
 
 ---
 
@@ -238,8 +239,9 @@ ActiveBlockContext (viewport tracking)
 | **MAX_NESTING_DEPTH enforcement** | ✅ VERIFIED (enforced at validation + runtime) |
 | **Authentication middleware origin** | ⏳ NOT YET INSPECTED (getAuthenticatedIdentity() implementation) |
 | **Composer semantic composition rules** | ⏳ NOT VERIFIED (educational ordering, versioned blocks in containers) |
-| **External AI integration** | ❌ NOT FOUND (no evidence in production Composer) |
-| **Project LLM verification boundary** | ❌ NOT FOUND (no evidence in production Composer) |
+| **Composer authorization enforcement** | ⏳ NOT VERIFIED (explicit TODOs observed in service layer) |
+| **External AI integration in Composer** | ❌ NOT FOUND (in inspected Composer surface) |
+| **Project LLM verification boundary** | ❌ NOT FOUND (in inspected Composer surface) |
 | **Runtime schema validation invocation** | ✅ VERIFIED (TutorialDocumentSchema.safeParse() in tutorial-delivery.service.ts) |
 | Test coverage | ⏳ NOT YET INVESTIGATED |
 | Certification evidence | ⏳ NOT YET INVESTIGATED |
@@ -322,10 +324,9 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 - Content sanitization and validation pipeline documented ✅
 
 **Next Priority:**
-1. Investigate Composer integration and semantic composition rules
-2. Investigate testing and certification evidence
-3. Resolve UBRC / LSNB / RSSB terminology evidence
-4. Finalize Stage 5 and create Project LLM Creation Guideline
+1. Investigate testing and certification evidence
+2. Resolve UBRC / LSNB / RSSB terminology evidence
+3. Finalize Stage 5 and create Project LLM Creation Guideline
 
 ---
 
@@ -343,6 +344,7 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | 07 corrected: V2 lifecycle is draft→deployed→archived (not published), authorization TODOs observed in service layer, External AI/Project LLM scoped to "inspected Composer surface", MAX_NESTING_DEPTH enforcement clarified as schema-layer delegation |
 | 2026-10-03 | 07 complete: Composer and creation pipeline verified (TutorialComposerService, BLOCK_REGISTRY, MAX_NESTING_DEPTH=3 enforcement, draft/publish workflow, validation before persistence). External AI integration NOT FOUND. |
 | 2026-10-03 | 06J complete: ILS API implementation verified (server-side aggregation from 3 DB authorities, completion authority confirmed, requiredBlocks vs blocks[] distinction, role-based requirements) |
 | 2026-10-03 | 06I corrected: UI-side metric construction VERIFIED, API aggregation path acknowledged as not inspected (06J recommended for complete lineage) |
