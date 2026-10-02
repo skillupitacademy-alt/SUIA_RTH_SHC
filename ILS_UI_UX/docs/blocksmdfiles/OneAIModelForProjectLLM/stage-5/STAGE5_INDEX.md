@@ -26,7 +26,7 @@
 - UBRC: NOT FOUND
 - LSNB acronym expansion: NOT VERIFIED
 - RSSB acronym expansion: NOT VERIFIED (LearningProgressSidebar component observed in runtime hierarchy)  
-**Date:** 2026-10-02  
+**Date:** 2026-10-03  
 
 ---
 
@@ -299,14 +299,11 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 **Three-Authority Model:** VERIFIED (T3 synthesis complete with corrections)
 
 **Remaining Investigations:**
-1. LearningProgressSidebar metric calculations (06I) — **LifecycleMetrics, EngagementMetrics, TimeAnalysisMetrics**
-2. Composer integration / semantic composition (07)
-3. Testing and certification evidence (08)
-4. Cross-family correlation completion (09)
-5. UBRC / LSNB / RSSB terminology resolution
-6. Final findings/gaps/contradictions refinement (10)
-6. Final findings/gaps/contradictions refinement (10)
-7. UBRC / LSNB / RSSB terminology resolution
+1. Composer integration / semantic composition (07)
+2. Testing and certification evidence (08)
+3. Cross-family correlation completion (09)
+4. UBRC / LSNB / RSSB terminology resolution
+5. Final findings/gaps/contradictions refinement (10)
 
 **Readiness for Project LLM Creation Guideline:** ✅ RUNTIME FOUNDATION COMPLETE
 - Educational corpus frozen and ready ✅
