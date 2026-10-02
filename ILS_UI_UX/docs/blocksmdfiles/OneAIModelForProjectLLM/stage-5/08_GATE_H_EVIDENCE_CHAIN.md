@@ -206,20 +206,24 @@ Orchestrator (sees isCompleted=true, no duplicate)
 
 ## 6. Hypotheses
 
-### Hypothesis A: Implementation Fix Sufficient
+### Hypothesis A: Implementation Fix Sufficient **(STRENGTHENED by commit evidence)**
 
-**Theory**: Monotonic completion invariant fix makes 40-second observation valid. Test passes without needing 3-second immediate check.
+**Theory**: Monotonic completion invariant fix makes 40-second observation valid. Test passes without needing 3-second immediate check. The 40-second observation may actually be the **stronger runtime test** because it verifies duplicate prevention *through active telemetry cycles*.
 
 **Evidence For**:
-- Implementation fix prevents telemetry from regressing `completedAt`
+- Implementation fix prevents telemetry from regressing `completedAt` (verified in commit 736675b2)
 - Commit message says "Gate H is production-ready"
+- Commit message explicitly claims "Test Results (Full 40s Observation)" with "0 duplicates after reload + telemetry"
+- Commit message notes "Active-time tracking continued (2 POSTs after reload)" - telemetry occurred during observation
 - Test file at certification commit already has 40-second observation
+- Architecture: `existingBlock?.completedAt ?? state.completedAt` prevents `timestamp → null` regression
 
 **Evidence Against**:
 - Timing fix document explicitly describes 3-second strategy as required
-- Document says 40-second observation "allows corruption"
+- Console output claims 3-second strategy not present in executable code
+- Documentation/code inconsistency remains unexplained
 
-**Status**: ⏳ REQUIRES EXECUTION EVIDENCE
+**Status**: ⏳ REQUIRES EXECUTION EVIDENCE (but now **favored hypothesis** given implementation fix)
 
 ### Hypothesis B: Documentation/Code Mismatch
 
@@ -252,69 +256,145 @@ Orchestrator (sees isCompleted=true, no duplicate)
 
 ---
 
-## 7. Required Next Steps
+## 7. Required Next Steps - **Execution Artifact Archaeology**
 
-### Priority 1: Execution Evidence
+### Priority 1: Locate Playwright Execution Artifact
 
-1. **Analyze Playwright HTML report** (`playwright-report/index.html`)
-   - Extract actual test execution output
-   - Verify test passed with 40-second observation
-   - Check for any duplicate completion warnings
+**Critical Question**: Did the monotonic completion implementation fix make the 40-second test pass?
 
-2. **Search for raw test output logs**
-   - Check `.codex/logs/` for Playwright execution logs
-   - Search for "Gate H" test console output
-   - Verify actual `duplicateCompletions` value
+**Evidence Chain Required**:
+```
+736675b2 source
+      ↓
+actual Playwright execution artifact
+      ↓
+actual Gate H assertion
+      ↓
+actual duplicateCompletions = 0
+      ↓
+telemetry occurred during observation
+      ↓
+completedAt remained preserved
+      ↓
+no duplicate POST
+      ↓
+Gate H E2E execution VERIFIED
+```
 
-3. **Trace git history for test timing changes**
-   - Check if earlier commit had 3-second check
-   - Verify when 40-second observation was introduced
-   - Identify if timing strategy was reverted
+**Investigation Steps**:
 
-### Priority 2: Implementation Verification
+1. **Find Playwright report for certification commit 736675b2**
+   - Check `playwright-report/index.html` timestamp
+   - Search for execution artifacts dated 2026-09-29 (certification date)
+   - Look for test run logs in `.codex/logs/` or `.analysis/`
 
-1. **Trace `ILSProvider.tsx` monotonic completion invariant**
-   - Verify fix actually prevents telemetry corruption
-   - Test hypothesis: implementation fix makes 40s observation valid
+2. **Extract actual Gate H execution output**
+   - Locate console output showing "Gate H" assertions
+   - Find actual `duplicateCompletions` value
+   - Verify "2 POSTs after reload" claim from commit message
+   - Check if telemetry responses show `completedAt` preservation
 
-2. **Check for late duplicate evidence**
-   - Search certification documents for extended observation warnings
-   - Verify if late duplicates documented as acceptable
+3. **Verify execution matches certified source**
+   - Compare execution timestamp vs commit 736675b2 timestamp
+   - Confirm test file version matches certification commit
+   - Verify execution ran against implementation fix (monotonic invariant)
 
-### Priority 3: Service-Level Tests
+4. **Trace telemetry behavior during 40s observation**
+   - Check if active-time POSTs occurred
+   - Verify telemetry responses had `completedAt: null`
+   - Confirm `existingBlock.completedAt` preserved timestamp
+   - Verify orchestrator saw `isCompleted: true` throughout
 
-1. **Read `learning-progress.service.gate-h.test.ts`**
-   - Check if service-level test has different timing strategy
-   - Verify service tests actually executed (search for 6/6 PASS evidence)
+### Priority 2: Alternative Evidence Sources
+
+If Playwright report unavailable or inconclusive:
+
+1. **Search commit history for execution evidence**
+   - Check if commit 736675b2 or nearby commits contain test output
+   - Look for `.analysis/` documents created on 2026-09-29
+   - Search for "GATE-H-CERTIFICATION" documents with raw output
+
+2. **Check for diagnostic scripts mentioned in commit**
+   - `gate-h-diagnostic-navigation-response.mjs` - already documented
+   - `gate-h-direct-http-navigation-test.mjs` - check for execution output
+   - `gate-h-forensic-state-capture.mjs` - may contain telemetry traces
+
+3. **Inspect service-level Gate H test**
+   - Read `learning-progress.service.gate-h.test.ts`
+   - Check if service test has execution output
+   - Verify service test validates monotonic completion invariant
+
+### Priority 3: Resolve Documentation Discrepancy
+
+Once execution evidence located:
+
+**If 40-second test passed with 0 duplicates through telemetry**:
+- Classification: Implementation fix made 40s observation valid
+- Conclusion: Timing-fix document contains stale/incorrect timing language
+- Status: Gate H E2E certification **VERIFIED** (stronger test than 3s check)
+
+**If execution shows late duplicate or failed assertion**:
+- Classification: Test/documentation discrepancy unresolved
+- Requires: Further investigation into why commit claims certification
+- Status: Gate H E2E certification **DECLARED / NOT VERIFIED**
+
+**If execution evidence cannot be located**:
+- Classification: Certification claim documented but not independently verified
+- Status: Gate H E2E remains **DECLARED** (documentation-based only)
 
 ---
 
-## 8. Provisional Classification
+## 8. Provisional Classification **(Updated with Implementation Context)**
 
 Until execution evidence resolves the test/documentation discrepancy:
 
-| Evidence Type | Classification |
-|---|---|
-| Gate H certification claim | ✅ VERIFIED as documented claim |
-| Gate H test file | ✅ VERIFIED (exists) |
-| Gate H test assertions | ✅ VERIFIED (40s observation, 0 duplicates expected) |
-| Gate H test execution | ⏳ NOT YET VERIFIED (Playwright report not analyzed) |
-| Gate H timing strategy | 🔍 DISCREPANT (documentation ≠ code) |
-| Gate H implementation fix | ✅ VERIFIED (monotonic completion invariant) |
-| Gate H final certification | 🟡 **NOT YET ACCEPTED** (execution evidence required) |
+| Evidence Type | Classification | Rationale |
+|---|---|---|
+| Gate H certification claim | ✅ VERIFIED as documented claim | GATE-H-CERTIFICATION-SUMMARY.md exists, claims CERTIFIED 2026-09-29 |
+| Gate H test file | ✅ VERIFIED | Exists at certification commit 736675b2 |
+| Gate H test assertions | ✅ VERIFIED | 40s observation, `expect(duplicateCompletions).toBe(0)` at line 421 |
+| Certification commit 736675b2 | ✅ VERIFIED | Commit inspected, contains implementation + test changes |
+| Monotonic completion invariant | ✅ VERIFIED | `existingBlock?.completedAt ?? state.completedAt` in ILSProvider.tsx |
+| Implementation architecture | ✅ VERIFIED | Prevents `timestamp → null` regression during telemetry |
+| 40s executable assertion | ✅ VERIFIED | Actual committed source at 736675b2 contains it |
+| 3s documented strategy | ✅ VERIFIED as documentation | Present in timing-fix doc and console output |
+| Documentation ↔ code consistency | ❌ **CONTRADICTS** | 3s documented vs 40s executed |
+| Commit execution claim | ✅ **DOCUMENTED/DECLARED** | Commit records "0 duplicates after reload + telemetry" |
+| Raw Playwright execution trace | ⏳ NOT YET VERIFIED | Playwright report timestamp/content not yet inspected |
+| Actual runtime duplicateCompletions value | ⏳ NOT YET VERIFIED | Commit claim ≠ raw execution output |
+| Telemetry POST behavior during 40s | ⏳ NOT YET VERIFIED | Commit claims "2 POSTs after reload", not yet traced |
+| completedAt preservation through telemetry | ⏳ NOT YET VERIFIED | Implementation fix behavior not yet execution-verified |
+| Gate H E2E test execution | ⏳ NOT YET VERIFIED | Execution artifact not yet located |
+| Final Gate H E2E certification | 🟡 **NOT YET ACCEPTED** | Execution evidence archaeology required |
+
+**Key Insight**: Implementation fix changes the runtime behavior such that the **40-second observation may be the stronger test** (verifies duplicate prevention through active telemetry cycles), not the weaker one. Timing-fix document may contain stale language describing pre-fix behavior.
+
+**Critical Distinction**: We are not claiming the certification is invalid. We are establishing that **execution evidence is required** to independently verify the documented certification claim and resolve the timing strategy discrepancy.
 
 ---
 
 ## Conclusion
 
-Gate H has **extensive certification documentation** and **implementation fix**, but forensic analysis reveals **material discrepancy between documented test strategy (3-second immediate check) and executable test code (40-second observation)**. Until actual execution evidence is independently traced from Playwright report or test logs, Gate H cannot be classified as VERIFIED under Investigation 08 evidence standards.
+Gate H has **extensive certification documentation**, **verified implementation fix** (monotonic completion invariant), and **executable test at certification commit**. Forensic analysis reveals **material discrepancy between documented test strategy (3-second immediate check) and executable test code (40-second observation)**.
 
-**Recommended Classification**: Gate H implementation fix VERIFIED, Gate H E2E certification **NOT YET FORENSICALLY CLOSED**.
+**Critical Finding**: The implementation fix prevents `completedAt` regression during telemetry acknowledgement, which may make the 40-second observation the **stronger runtime test** (verifies duplicate prevention through active telemetry cycles). The timing-fix document may contain stale language describing pre-fix behavior.
 
-**Next Investigation Pass**: Analyze `playwright-report/index.html` and search for raw test execution logs to resolve test/documentation discrepancy.
+**Current Status**: Until actual Playwright execution artifact is located and analyzed, Gate H E2E certification remains **DOCUMENTED/DECLARED** but not independently **VERIFIED**. The certification commit itself claims successful execution with "0 duplicates after reload + telemetry" and "2 POSTs after reload", but raw execution output is required to confirm these claims.
+
+**Recommended Classification**: 
+- Gate H **implementation fix**: ✅ VERIFIED
+- Gate H **E2E test execution**: ⏳ REQUIRES EXECUTION ARTIFACT ARCHAEOLOGY
+- Gate H **final certification**: 🟡 **RECONCILIATION IN PROGRESS**
+
+**Not Concluded**:
+- ❌ Gate H certification is invalid
+- ❌ 40-second test is incorrect
+- ❌ Implementation fix is insufficient
+
+**Next Investigation Pass**: Execution artifact archaeology to locate Playwright report from 2026-09-29, extract actual Gate H assertion result, verify telemetry behavior during 40s observation, and resolve timing strategy discrepancy.
 
 ---
 
-**Evidence Chain Status**: 🔍 RECONCILIATION REQUIRED  
+**Evidence Chain Status**: 🔍 EXECUTION ARCHAEOLOGY REQUIRED  
 **Investigation 08 Overall**: 🔄 IN PROGRESS
 
