@@ -23,23 +23,15 @@ export class TutorialComposerService {
   // Document lifecycle
   async createTutorial(params: CreateTutorialParams): Promise<Tutorial>
   async getTutorial(id: string): Promise<Tutorial | null>
-  async updateTutorial(id: string, updates: UpdateTutorialParams): Promise<Tutorial>
-  async deleteTutorial(id: string): Promise<void>
-
+  async updateTutorialContent(id: string, updates: UpdateTutorialContentParams): Promise<Tutorial>
+  async updateTutorialStatus(id: string, status: TutorialStatus, userId?: string): Promise<Tutorial>
+  
   // Block composition
   async appendBlockToTutorial(tutorialId: string, block: TutorialBlock): Promise<Tutorial>
 
   // Publication workflow
   async publishTutorial(tutorialId: string, params?: PublishParams): Promise<Tutorial>
-  async unpublishTutorial(tutorialId: string): Promise<Tutorial>
   async archiveTutorial(tutorialId: string): Promise<Tutorial>
-
-  // Status transitions
-  async transitionStatus(
-    tutorialId: string,
-    newStatus: TutorialStatus,
-    userId?: string
-  ): Promise<Tutorial>
 }
 ```
 
@@ -52,11 +44,13 @@ export class TutorialComposerService {
    - Validates TutorialDocumentSchema via `safeParse()`
    - Checks hierarchy (domainId/subjectId/topicId/subtopicId resolution)
    - Initializes as `status: 'draft'`
+   - **Authorization**: Contains explicit TODO for authorization check
 
 2. **`appendBlockToTutorial()`**:
    - Appends block to existing tutorial
    - Re-validates entire document with updated blocks array
    - Returns updated Tutorial record
+   - **Authorization**: Contains explicit TODO for authorization check
 
 3. **`publishTutorial()`**:
    - Transitions status `draft → deployed`
@@ -199,10 +193,10 @@ Four container types support nested `TutorialBlock[]`:
 
 1. **TwoColumnBlock**: `{ leftBlocks: TutorialBlock[], rightBlocks: TutorialBlock[] }`
 2. **ThreeColumnBlock**: `{ leftBlocks: TutorialBlock[], centerBlocks: TutorialBlock[], rightBlocks: TutorialBlock[] }`
-3. **TabbedBlock**: `{ tabs: Array<{ title: string, blocks: TutorialBlock[] }> }`
+3. **CardGridBlock**: `{ cards: Array<{ title?, description?, blocks: TutorialBlock[] }> }`
 4. **TimelineBlock**: `{ items: Array<{ id, title, date?, description?, blocks?: TutorialBlock[] }> }`
 
-**Evidence**: Type definitions read from `packages/types/src/tutorial-rich-document/blocks/`.
+**Evidence**: BLOCK_REGISTRY entries read from `packages/types/src/tutorial-rich-document/registry.ts`, CardGridBlock component verified in `packages/ui/src/tutorial/blocks/`.
 
 **3C. Semantic Restrictions Beyond Depth**
 
@@ -227,9 +221,9 @@ Four container types support nested `TutorialBlock[]`:
 
 | Rule Category | Enforcement Status | Evidence |
 |---|---|---|
-| MAX_NESTING_DEPTH = 3 | ✅ VERIFIED | Enforced at validation + runtime |
-| Container recursion support | ✅ VERIFIED | TwoColumn/ThreeColumn/Tabbed/Timeline all accept `TutorialBlock[]` |
-| MAX_BLOCKS_PER_DOCUMENT = 500 | ✅ VERIFIED | Constant declared, enforcement not inspected |
+| MAX_NESTING_DEPTH = 3 | ✅ VERIFIED | Enforced via TutorialDocumentSchema validation + runtime fail-safe |
+| Container recursion support | ✅ VERIFIED | TwoColumn/ThreeColumn/CardGrid/Timeline all accept `TutorialBlock[]` |
+| MAX_BLOCKS_PER_DOCUMENT = 500 | ⏳ DECLARED / NOT VERIFIED | Constant declared, enforcement not inspected |
 | Section-specific block palettes | ✅ DECLARED | `SECTION_BLOCK_PALETTES` exists, usage not traced |
 | Educational ordering rules | ⏳ NOT VERIFIED | No evidence of "Intro before Definition" enforcement |
 | Prerequisite block validation | ⏳ NOT VERIFIED | No evidence of prerequisite checking logic |
@@ -300,7 +294,7 @@ async transitionStatus(
   // TODO: Add authorization check
   // await this.assertCanEditTutorial(...)
   ```
-- Authorization TODOs present in: `updateTutorial()`, `publishTutorial()`, `archiveTutorial()`
+- Authorization TODOs present in: `createTutorial()`, `updateTutorialContent()`, `updateTutorialStatus()`, `publishTutorial()`, `archiveTutorial()`, `appendBlockToTutorial()`
 
 **Save Operations**:
 - `updateTutorial()` updates draft without status change
@@ -425,19 +419,20 @@ async transitionStatus(
 1. TutorialComposerService architecture (create/append/publish/archive)
 2. BLOCK_REGISTRY structure (17+ block types, categories, metadata)
 3. MAX_NESTING_DEPTH = 3 enforcement via TutorialDocumentSchema validation (Composer delegates to schema layer)
-4. Container recursion support (TwoColumn/ThreeColumn/Tabbed/Timeline)
+4. Container recursion support (TwoColumn/ThreeColumn/CardGrid/Timeline)
 5. Draft → Deployed → Archived status workflow (V2 implementation)
 6. Validation before persistence (TutorialDocumentSchema at all mutation points)
 7. Append-based composition (multiple blocks of same type allowed)
 8. Empty document rejection at publish
 
-### ⏳ NOT VERIFIED
+### ⏳ NOT VERIFIED / DECLARED
 
-1. Semantic nesting restrictions (versioned blocks in containers?)
-2. SECTION_BLOCK_PALETTES enforcement in Composer
-3. Educational ordering rules from Stage 3 corpus
-4. Complete Composer UI workflow (block editing forms, preview)
-5. **Service-layer authorization enforcement** (explicit TODOs observed in createTutorial, updateTutorial, publishTutorial, archiveTutorial)
+1. **MAX_BLOCKS_PER_DOCUMENT = 500**: Constant declared, enforcement not inspected
+2. Semantic nesting restrictions (versioned blocks in containers?)
+3. SECTION_BLOCK_PALETTES enforcement in Composer
+4. Educational ordering rules from Stage 3 corpus
+5. Complete Composer UI workflow (block editing forms, preview)
+6. **Service-layer authorization enforcement** (explicit TODOs observed in createTutorial, updateTutorialContent, updateTutorialStatus, publishTutorial, archiveTutorial, appendBlockToTutorial)
 
 ### ❌ NOT FOUND (in inspected Composer surface)
 
@@ -461,7 +456,9 @@ async transitionStatus(
 | Composer | Authoring layer, persistence | ✅ VERIFIED (human-authored blocks, schema validation) |
 | Runtime | Lifecycle, telemetry, progress | ✅ VERIFIED (from 06A-06J) |
 
-**Interpretation**: Production Composer in the inspected surface is **direct human authoring tool with schema-validated document persistence**, not AI-mediated pipeline. External AI/Project LLM boundary may exist elsewhere in the repository, may be future planned architecture, or may represent corpus misinterpretation. Stage 5 makes no conclusion about which explanation is correct.
+**Production Evidence**: No External AI → candidate block workflow or Project LLM verification/adapter boundary was found in the inspected Composer/creation-pipeline surface.
+
+This investigation does not establish whether such functionality exists outside the inspected surface.
 
 ---
 
