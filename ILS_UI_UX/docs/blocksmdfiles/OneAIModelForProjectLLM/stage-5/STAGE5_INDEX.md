@@ -312,16 +312,14 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 - Persistence chains fully traced ✅
 - Metadata derivation boundary established ✅
 - Runtime schema validation documented ✅
+- Content sanitization and validation pipeline documented ✅
 
 **Next Priority:**
-1. Investigate sanitizeDocument() - trace where TutorialDocumentSchema validation is invoked in production learner delivery path
-4. Inspect TutorialDocumentSchema runtime validation
-5. Inspect sanitizeDocument() logic
-6. Inspect LearningProgressSidebar metric calculations
-7. Investigate Composer integration and semantic composition rules
-8. Investigate testing and certification evidence
-9. Resolve UBRC / LSNB / RSSB terminology evidence
-10. Finalize Stage 5 and create Project LLM Creation Guideline
+1. Investigate LearningProgressSidebar metric calculations (LifecycleMetrics, EngagementMetrics, TimeAnalysisMetrics)
+2. Investigate Composer integration and semantic composition rules
+3. Investigate testing and certification evidence
+4. Resolve UBRC / LSNB / RSSB terminology evidence
+5. Finalize Stage 5 and create Project LLM Creation Guideline
 
 ---
 
@@ -339,6 +337,7 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | 06H complete: Content sanitization and validation pipeline verified (two-phase: validation→sanitization, method-specific failure handling) |
 | 2026-10-02 | Stage 5 restructured into organized document set |
 | 2026-10-02 | Learner rendering path verified end-to-end; schema/sanitization internals remain partial |
 | 2026-10-02 | Evidence corrections applied (expectedTimeSec, RSSB, ComparisonBlock) |

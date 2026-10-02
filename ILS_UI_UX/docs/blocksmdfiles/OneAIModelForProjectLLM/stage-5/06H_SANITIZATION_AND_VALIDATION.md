@@ -63,14 +63,14 @@ const validationResult = TutorialDocumentSchema.safeParse(
 );
 
 if (!validationResult.success) {
-  throw new Error(
-    `Tutorial content failed schema validation: ${validationResult.error.message}`
-  );
+  // getTutorialByPage: returns tutorial: null
+  // getSingleTutorialById: throws InvalidTutorialContentError
+  // Both prevent delivery of invalid content
 }
 ```
 
 **Evidence State:** VERIFIED — Schema validation occurs BEFORE sanitization  
-**Failure Mode:** Throws error, prevents delivery if schema invalid  
+**Failure Mode:** Prevents delivery if schema invalid (method-specific behavior: null return vs throw)  
 **Location:** Database → Validation → [STOP if invalid] → Sanitization → Delivery
 
 ---
@@ -205,22 +205,34 @@ interface SanitizationResult {
 
 ### 4.1 Schema Validation Failure (VERIFIED)
 
-**Location:** `tutorial-delivery.service.ts` lines ~274-278
+**Location:** `tutorial-delivery.service.ts` 
 
+**Different failure behaviors by method:**
+
+**`getTutorialByPage()` (lines ~274-278):**
 ```typescript
 if (!validationResult.success) {
-  throw new Error(
+  // Returns tutorial: null (does not throw)
+  // Prevents delivery by returning null payload
+}
+```
+
+**`getSingleTutorialById()` (different method):**
+```typescript
+if (!validationResult.success) {
+  throw new InvalidTutorialContentError(
     `Tutorial content failed schema validation: ${validationResult.error.message}`
   );
 }
 ```
 
 **Behavior:**
-- **Throws error** — prevents delivery
-- **Includes Zod error details** — shows which fields failed
+- **Both methods prevent delivery** of invalid content
+- **Different failure modes:** `getTutorialByPage()` returns null; `getSingleTutorialById()` throws
+- **Includes Zod error details** — shows which fields failed (when throwing)
 - **Stops pipeline** — sanitization never runs if validation fails
 
-**Evidence State:** VERIFIED — Hard fail prevents delivery of malformed documents
+**Evidence State:** VERIFIED — Validation prevents delivery; failure mode is method-specific
 
 ---
 
@@ -302,19 +314,25 @@ warnings.push(`Block ${block.id}: Image assetId sanitized`);
 
 ### 6.2 Delivery Path Integration (VERIFIED)
 
-**Two delivery methods both use identical pipeline:**
+**Multiple delivery methods apply validation → sanitization sequence:**
 
 **Method 1:** `getTutorialByPage(domainSlug, subjectSlug, ...)`  
-**Method 2:** `getTutorialByNavigationNode(nodeId, userId, brand)`
+**Method 2:** `getTutorialByNavigationNode(nodeId, userId, brand)`  
+**Method 3:** `getSingleTutorialById(tutorialId, userId, brand)`
 
-Both execute:
+All execute the same **validation → sanitization sequence**:
 ```
-DB retrieval → Schema validation [throws] → Sanitization [continues] → Return sanitized
+DB retrieval → Schema validation [stops if invalid] → Sanitization [continues] → Return sanitized
 ```
 
-**Evidence:** Lines ~258-290, ~358-385 of `tutorial-delivery.service.ts`
+**Failure behavior differs by method:**
+- `getTutorialByPage()`: Returns `tutorial: null` on validation failure
+- `getSingleTutorialById()`: Throws `InvalidTutorialContentError` on validation failure
+- Both prevent delivery of invalid content
 
-**Consistency:** VERIFIED — No delivery path bypasses validation or sanitization
+**Evidence:** Lines ~258-290, ~358-385, and additional delivery methods in `tutorial-delivery.service.ts`
+
+**Consistency:** VERIFIED — All verified delivery paths apply validation → sanitization sequence; no bypass paths found
 
 ---
 
@@ -457,8 +475,8 @@ Invoked from: `packages/db-tutorial/src/services/tutorial-delivery.service.ts` (
 
 ### Q4: What is the trust boundary behavior?
 
-**VERIFIED:** Two-phase hard boundary:
-- **Phase 1 (Validation):** Hard fail, throws error, stops delivery
+**VERIFIED:** Validation → Sanitization sequence with method-specific failure handling:
+- **Phase 1 (Validation):** Prevents delivery (returns null or throws, depending on method)
 - **Phase 2 (Sanitization):** Soft fail, logs warnings, continues delivery
 
 Both phases protect learners from malformed/malicious content.
@@ -468,7 +486,7 @@ Both phases protect learners from malformed/malicious content.
 ### Q5: How are validation failures handled?
 
 **VERIFIED:**
-- **Schema validation:** Throws error with Zod message, prevents delivery
+- **Schema validation:** Prevents delivery (method-specific: returns null or throws error)
 - **Sanitization:** Never throws, returns modified document + warnings
 
 ---
