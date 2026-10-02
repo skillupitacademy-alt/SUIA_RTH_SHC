@@ -16,7 +16,7 @@
 - Three-authority model: VERIFIED (completion in tutorial_navigation_progress, telemetry events in block_telemetry_events, cumulative state in block_learning_state)
 - Metadata extraction boundary: VERIFIED (inline extraction from canonical content, no dedicated resolver)
 - Runtime schema validation: VERIFIED (TutorialDocumentSchema, BlockProgressRoleSchema, expectedTimeSec, progressRole schemas exist)
-- Schema validation invocation: NOT YET VERIFIED (deferred to 06H sanitizeDocument investigation)
+- Content sanitization: VERIFIED (two-phase validation+sanitization pipeline, SVG/URL attack prevention, trust boundary)
 - Composer integration: NOT YET INVESTIGATED
 - Testing/certification: NOT YET INVESTIGATED
 - Cross-family correlation: PARTIAL
@@ -107,6 +107,7 @@ Stage 5 documents **what exists**, not what should exist or why it exists.
 | **06E_TELEMETRY_AUTHORITY_AND_LEDGER.md** | T3 telemetry authority reconciliation | ✅ COMPLETE |
 | **06F_BLOCK_METADATA_RESOLUTION.md** | T4 block metadata derivation (expectedTimeSec extraction) | ✅ COMPLETE |
 | **06G_RUNTIME_SCHEMA_VALIDATION.md** | T5 runtime schema (TutorialDocumentSchema, BlockProgressRoleSchema, validation) | ✅ COMPLETE |
+| **06H_SANITIZATION_AND_VALIDATION.md** | T6 content sanitization (trust boundary, XSS prevention, validation+sanitization pipeline) | ✅ COMPLETE |
 | **07_COMPOSER_AND_CREATION_PIPELINE.md** | Authoring tools, creation workflow, External AI integration | ⏳ NOT YET INVESTIGATED |
 | **08_TESTING_VALIDATION_AND_CERTIFICATION.md** | Test coverage, validation rules, certification evidence | ⏳ NOT YET INVESTIGATED |
 | **09_CROSS_FAMILY_CORRELATION.md** | 132 frozen entries → production implementation mapping | ✅ PARTIAL |
@@ -223,10 +224,10 @@ ActiveBlockContext (viewport tracking)
 
 | Investigation | Status |
 |---|---|
-| **sanitizeDocument() logic** | ⏳ NOT YET INSPECTED (content sanitization rules, schema validation invocation) |
-| **Authentication middleware origin** | ⏳ NOT YET INSPECTED (getAuthenticatedIdentity() implementation) |
+| **sanitizeDocument() logic** | ✅ VERIFIED (two-phase validation+sanitization pipeline, SVG/URL attack vectors, trust boundary) |
 | **LearningProgressSidebar metric calculations** | ⏳ NOT YET INSPECTED (LifecycleMetrics, EngagementMetrics, TimeAnalysisMetrics internals) |
-| Runtime schema validation invocation | ⏳ NOT YET VERIFIED (where safeParse() called in production) |
+| **Authentication middleware origin** | ⏳ NOT YET INSPECTED (getAuthenticatedIdentity() implementation) |
+| Runtime schema validation invocation | ✅ VERIFIED (TutorialDocumentSchema.safeParse() in tutorial-delivery.service.ts) |
 | Composer composition restrictions | ⏳ NOT YET INVESTIGATED |
 | Semantic composition rules | ⏳ NOT YET VERIFIED |
 | Test coverage | ⏳ NOT YET INVESTIGATED |
@@ -293,11 +294,12 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 **Three-Authority Model:** VERIFIED (T3 synthesis complete with corrections)
 
 **Remaining Investigations:**
-1. sanitizeDocument() logic (06H) — **where schema validation invoked, transformation rules**
-2. LearningProgressSidebar metric calculations (06I)
-3. Composer integration / semantic composition (07)
-4. Testing and certification evidence (08)
-5. Cross-family correlation completion (09)
+1. LearningProgressSidebar metric calculations (06I) — **LifecycleMetrics, EngagementMetrics, TimeAnalysisMetrics**
+2. Composer integration / semantic composition (07)
+3. Testing and certification evidence (08)
+4. Cross-family correlation completion (09)
+5. UBRC / LSNB / RSSB terminology resolution
+6. Final findings/gaps/contradictions refinement (10)
 6. Final findings/gaps/contradictions refinement (10)
 7. UBRC / LSNB / RSSB terminology resolution
 
