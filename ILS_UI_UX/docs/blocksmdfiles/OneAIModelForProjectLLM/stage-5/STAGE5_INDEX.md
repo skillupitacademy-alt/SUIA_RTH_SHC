@@ -17,7 +17,9 @@
 - Metadata extraction boundary: VERIFIED (inline extraction from canonical content, no dedicated resolver)
 - Runtime schema validation: VERIFIED (TutorialDocumentSchema, BlockProgressRoleSchema, expectedTimeSec, progressRole schemas exist)
 - Content sanitization: VERIFIED (two-phase validation+sanitization pipeline, SVG/URL attack prevention, trust boundary)
-- LearningProgressSidebar metrics: VERIFIED (UI-side: passive ILS consumer, ILSProvider construction, 17 metric entries, telemetry cache updates); API aggregation path not inspected (see 06J recommendation)
+- LearningProgressSidebar metrics: VERIFIED (UI-side: passive ILS consumer, ILSProvider construction, 17 metric entries, telemetry cache updates)
+- ILS API aggregation: VERIFIED (server-side: DB→service→DTO→response, completion authority confirmed, requiredBlocks resolution, role-based requirements)
+- Complete end-to-end ILS lineage: VERIFIED (06B-06J together establish database→API→UI chain)
 - Composer integration: NOT YET INVESTIGATED
 - Testing/certification: NOT YET INVESTIGATED
 - Cross-family correlation: PARTIAL
@@ -317,11 +319,10 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 - Content sanitization and validation pipeline documented ✅
 
 **Next Priority:**
-1. **06J — ILS API Implementation** (recommended to close server-side aggregation gap for complete end-to-end lineage)
-2. Investigate Composer integration and semantic composition rules
-3. Investigate testing and certification evidence
-4. Resolve UBRC / LSNB / RSSB terminology evidence
-5. Finalize Stage 5 and create Project LLM Creation Guideline
+1. Investigate Composer integration and semantic composition rules
+2. Investigate testing and certification evidence
+3. Resolve UBRC / LSNB / RSSB terminology evidence
+4. Finalize Stage 5 and create Project LLM Creation Guideline
 
 ---
 
@@ -339,6 +340,7 @@ FROZEN EDUCATIONAL CORPUS (Stages 1–4)
 
 | Date | Change |
 |---|---|
+| 2026-10-03 | 06J complete: ILS API implementation verified (server-side aggregation from 3 DB authorities, completion authority confirmed, requiredBlocks vs blocks[] distinction, role-based requirements) |
 | 2026-10-03 | 06I corrected: UI-side metric construction VERIFIED, API aggregation path acknowledged as not inspected (06J recommended for complete lineage) |
 | 2026-10-03 | 06I complete: LearningProgressSidebar metric calculations verified (passive ILS consumer, 17 metric entries, ILSProvider construction, telemetry cache updates) |
 | 2026-10-03 | 06H complete: Content sanitization and validation pipeline verified (two-phase: validation→sanitization, method-specific failure handling) |
