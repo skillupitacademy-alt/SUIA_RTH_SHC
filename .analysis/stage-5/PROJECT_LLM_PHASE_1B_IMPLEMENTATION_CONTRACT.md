@@ -83,10 +83,8 @@ This document defines the **locked implementation specification** for Project LL
 | **Human Approval UI** | Existing Composer JSON editor |
 
 **Terminology:**
-- **UBRC** = Unique Block Runtime Contract
-- **LSNB** = Lesson-Scoped Navigation Boundary
-- **RSSB** = Runtime State Synchronization Boundary
 - **ILS** = In-Lesson System (progress tracking and state management)
+- **UBRC**, **LSNB**, **RSSB** = Project architectural acronyms (expansions not repository-verified; usage retained from existing codebase)
 
 ### 1.2 Architecture Diagram
 
@@ -494,23 +492,42 @@ import { RealProvider } from './providers/RealProvider';
  * Initialize Project LLM service with appropriate provider
  * 
  * Strategy:
- * - Development/test: Use TestProvider
- * - Production: Use RealProvider (after provider selection)
+ * - Development/test: Use TestProvider (default)
+ * - Production: Use RealProvider (requires environment configuration)
+ * 
+ * IMPORTANT: TestProvider is the default during Phase 1B.
+ * RealProvider requires explicit opt-in via environment variable
+ * to prevent initialization failures when provider selection is deferred.
  */
 export function createProjectLLMService(): ProjectLLMService {
-  const useTestProvider = process.env.NODE_ENV === 'development' 
-    || process.env.PROJECT_LLM_USE_TEST_PROVIDER === 'true';
+  // Default to TestProvider unless explicitly configured for real provider
+  const useRealProvider = process.env.PROJECT_LLM_USE_REAL_PROVIDER === 'true';
   
-  const provider = useTestProvider 
-    ? new TestProvider()
-    : new RealProvider();
+  const provider = useRealProvider
+    ? new RealProvider()
+    : new TestProvider();
   
   return new ProjectLLMService(provider);
 }
 
-// Singleton instance
+// Singleton instance (safe initialization: TestProvider is default)
 export const projectLLMService = createProjectLLMService();
 ```
+
+**Environment Variable Strategy:**
+
+| Environment | Configuration | Behavior |
+|---|---|---|
+| **Development (default)** | None required | TestProvider (mock) |
+| **Development (explicit)** | `PROJECT_LLM_USE_REAL_PROVIDER=true` + API key | RealProvider |
+| **Production (Phase 1B)** | None required | TestProvider (vertical slice proof) |
+| **Production (Phase 2+)** | `PROJECT_LLM_USE_REAL_PROVIDER=true` + API key | RealProvider |
+
+**Rationale:**
+- TestProvider is always safe to instantiate (no external dependencies)
+- RealProvider requires explicit opt-in to prevent accidental initialization
+- Phase 1B proves vertical slice with TestProvider
+- Provider selection decision deferred to separate gate
 
 ---
 
@@ -684,8 +701,6 @@ if (blockWasGeneratedByAI) {
 
 ---
 
-## 8. AUTHORIZATION
-
 ### 8.1 Permission Enforcement
 
 **Decision:** Reuse existing `TUTORIAL_AUTHOR_CREATE` permission
@@ -699,6 +714,12 @@ if (blockWasGeneratedByAI) {
 
 **File:** `apps/skillhubcore-admin/src/app/api/project-llm/generate-i1/route.ts`
 
+**Authorization Requirements:**
+
+1. **Permission-level:** `TUTORIAL_AUTHOR_CREATE` (admin, super_admin roles)
+2. **Resource-level:** `requireSubtopicAccess(user, subtopicId)` — same as existing Composer save API
+3. **Resource-level:** `requireBrandAccess(user, brandId)` — same as existing Composer save API
+
 **Implementation:**
 
 ```typescript
@@ -710,20 +731,50 @@ export async function POST(request: NextRequest) {
   }
   const { user } = authResult;
   
-  // 2. Authorize TUTORIAL_AUTHOR_CREATE (server-side)
+  // 2. Authorize TUTORIAL_AUTHOR_CREATE permission (server-side)
   const authError = requireTutorialAuthorCreatePermission(user);
   if (authError) {
     return createAuthErrorResponse(authError);
   }
   
-  // 3. Proceed with generation
+  // 3. Authorize subtopic access (server-side, same as existing Composer API)
+  const subtopicAuthError = requireSubtopicAccess(user, requestBody.subtopicId);
+  if (subtopicAuthError) {
+    return createAuthErrorResponse(subtopicAuthError);
+  }
+  
+  // 4. Authorize brand access (server-side, same as existing Composer API)
+  const brandId = requestBody.brandId ?? 'shared';
+  const brandAuthError = requireBrandAccess(user, brandId);
+  if (brandAuthError) {
+    return createAuthErrorResponse(brandAuthError);
+  }
+  
+  // 5. Proceed with generation
   // ...
 }
 ```
 
-**Client-Side UI:** May optionally hide "Generate with AI" button if user lacks permission, but SERVER-SIDE enforcement is authoritative.
+**Request Body (Updated):**
 
-**Roles Granted:** `admin`, `super_admin`
+The generation API must receive `subtopicId` and `brandId` for resource-level authorization:
+
+```typescript
+{
+  prompt: string;              // Complete I1 generation prompt
+  context: {                   // Human-readable context (for provenance)
+    domainName: string;
+    subjectName: string;
+    topicName: string;
+    subtopicName: string;
+    navigationNodeName: string;
+  };
+  subtopicId: number;          // Resource identity (for authorization)
+  brandId?: string;            // Resource identity (for authorization, defaults to 'shared')
+}
+```
+
+**Client-Side UI:** May optionally hide "Generate with AI" button if user lacks permission, but SERVER-SIDE enforcement is authoritative.
 
 ---
 
@@ -749,7 +800,9 @@ export async function POST(request: NextRequest) {
     "topicName": "string",
     "subtopicName": "string",
     "navigationNodeName": "string"
-  }
+  },
+  "subtopicId": "number (resource identity for authorization)",
+  "brandId": "string | undefined (resource identity for authorization, defaults to 'shared')"
 }
 ```
 
@@ -801,6 +854,8 @@ import {
   authenticateRequest,
   createAuthErrorResponse,
   requireTutorialAuthorCreatePermission,
+  requireSubtopicAccess,
+  requireBrandAccess,
 } from '@/lib/auth-helpers';
 import { projectLLMService } from '@/lib/project-llm';
 
@@ -815,7 +870,7 @@ export async function POST(request: NextRequest) {
     }
     const { user } = authResult;
 
-    // Step 2: Authorize TUTORIAL_AUTHOR_CREATE (server-side)
+    // Step 2: Authorize TUTORIAL_AUTHOR_CREATE permission (server-side)
     const authError = requireTutorialAuthorCreatePermission(user);
     if (authError) {
       return createAuthErrorResponse(authError);
@@ -823,9 +878,9 @@ export async function POST(request: NextRequest) {
 
     // Step 3: Parse request body
     const body = await request.json();
-    const { prompt, context } = body;
+    const { prompt, context, subtopicId, brandId } = body;
 
-    // Step 4: Validate input
+    // Step 4: Validate required fields
     if (!prompt || typeof prompt !== 'string') {
       return NextResponse.json(
         { 
@@ -841,13 +896,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 5: Call service (server-only, has access to secrets)
+    if (!subtopicId || typeof subtopicId !== 'number') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Invalid subtopicId',
+          provenance: {
+            provider: 'unknown',
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+          }
+        },
+        { status: 400 }
+      );
+    }
+
+    // Step 5: Authorize subtopic access (server-side, same as existing Composer API)
+    const subtopicAuthError = requireSubtopicAccess(user, subtopicId);
+    if (subtopicAuthError) {
+      return createAuthErrorResponse(subtopicAuthError);
+    }
+
+    // Step 6: Authorize brand access (server-side, same as existing Composer API)
+    const effectiveBrandId = brandId ?? 'shared';
+    const brandAuthError = requireBrandAccess(user, effectiveBrandId);
+    if (brandAuthError) {
+      return createAuthErrorResponse(brandAuthError);
+    }
+
+    // Step 7: Call service (server-only, has access to secrets)
     const result = await projectLLMService.generateI1({
       prompt,
       context,
     });
 
-    // Step 6: Return result
+    // Step 8: Return result
     return NextResponse.json(result, { 
       status: result.success ? 200 : 422 
     });
@@ -905,6 +988,8 @@ async function handleGenerateWithAI() {
           subtopicName,
           navigationNodeName,
         },
+        subtopicId: form.subtopicId,    // Resource identity for authorization
+        brandId: form.brandId,          // Resource identity for authorization
       }),
     });
     
@@ -926,6 +1011,8 @@ async function handleGenerateWithAI() {
   }
 }
 ```
+
+**Note:** The parent component (`TutorialPageContentBuilderClient.tsx`) has `form.subtopicId` and `form.brandId` available and will pass them to the handler.
 
 ### 9.3 Loading State
 
@@ -1342,7 +1429,7 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 
 ## DOCUMENT STATUS
 
-**Contract Status:** 🟢 READY FOR APPROVAL — CORRECTIONS APPLIED  
+**Contract Status:** 🟢 READY FOR APPROVAL — FINAL LOCK CORRECTIONS APPLIED  
 **Architecture Decision:** ✅ APPROVED (Option B)  
 **Implementation:** ⏸️ BLOCKED until Human Architecture Authority approval  
 **Production Code:** UNCHANGED  
@@ -1353,15 +1440,21 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 
 ## CORRECTIONS APPLIED
 
-**All 8 corrections from forensic review have been applied:**
+**All 8 corrections from initial forensic review applied (2026-10-03):**
 
-✅ **Critical #1:** Added API route specification (Section 9.1); client calls API, not service directly  
-✅ **Critical #2:** Added provider secrets specification (Section 2.4); environment variables, server-only  
-✅ **Important #3:** Corrected aiModelUsed to store model identifier (Sections 3.1, 7.2, 7.3)  
-✅ **Important #4:** Clarified server-side authorization enforcement (Section 8.1)  
-✅ **Important #5:** Added rejection path E2E test (Section 10.3, 14.1)  
-✅ **Important #6:** Added explicit security acceptance criteria (Sections 14.2, 14.3)  
-✅ **Minor #7:** Added ILS terminology definition (Section 1.1)  
-✅ **Minor #8:** Clarified provider decision timing (Section 16)  
-✅ **Updated:** Architecture diagram with correct client/server boundary (Section 1.2)
+✅ **Critical #1:** Added API route specification; client calls API, not service directly  
+✅ **Critical #2:** Added provider secrets specification; environment variables, server-only  
+✅ **Important #3:** Corrected aiModelUsed to store model identifier (not provider)  
+✅ **Important #4:** Clarified server-side authorization enforcement  
+✅ **Important #5:** Added rejection path E2E test (verify NO database write)  
+✅ **Important #6:** Added explicit security acceptance criteria  
+✅ **Minor #7:** Added ILS terminology definition  
+✅ **Minor #8:** Clarified provider decision timing  
+✅ **Updated:** Architecture diagram with correct client/server boundary
+
+**Final lock corrections applied (2026-10-03):**
+
+✅ **Lock Correction #1:** Resource-level authorization added (requireSubtopicAccess + requireBrandAccess, same as existing Composer API)  
+✅ **Lock Correction #2:** RealProvider initialization safe-by-default (TestProvider default, explicit opt-in for RealProvider)  
+✅ **Lock Correction #3:** UBRC/LSNB/RSSB terminology marked as not repository-verified (expansions removed from locked contract)
 
