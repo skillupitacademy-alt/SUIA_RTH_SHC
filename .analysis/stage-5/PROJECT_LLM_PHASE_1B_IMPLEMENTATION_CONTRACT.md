@@ -3,7 +3,7 @@
 **Document Type:** Locked Implementation Specification  
 **Phase:** Project LLM Phase 1B Step 3  
 **Date:** 2026-10-03  
-**Status:** DRAFT — IN PROGRESS  
+**Status:** READY FOR APPROVAL — All corrections applied  
 **Architecture Decision:** ✅ APPROVED (Option B - Node/TypeScript in Composer)  
 **Production Code Changes:** NONE (specification phase)  
 **Repository State:** UNCHANGED  
@@ -82,48 +82,76 @@ This document defines the **locked implementation specification** for Project LL
 | **Persistence** | tutorialSaveService (extend for metadata) |
 | **Human Approval UI** | Existing Composer JSON editor |
 
+**Terminology:**
+- **UBRC** = Unique Block Runtime Contract
+- **LSNB** = Lesson-Scoped Navigation Boundary
+- **RSSB** = Runtime State Synchronization Boundary
+- **ILS** = In-Lesson System (progress tracking and state management)
+
 ### 1.2 Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ EXISTING COMPOSER UI                                        │
+│ CLIENT COMPONENT (Browser)                                  │
 │                                                             │
 │ 1. User selects hierarchy (Domain/Subject/Topic/Subtopic)  │
 │ 2. User selects block type = 'introduction', version = 'I1'│
 │ 3. Composer builds TutorialPromptContext ✅ REUSE          │
 │ 4. getIntroductionI1Prompt(context) ✅ REUSE               │
 │                                                             │
-├─────────────────────────────────────────────────────────────┤
-│ NEW: PROJECT LLM GENERATION LAYER                          │
-│                                                             │
 │ 5. User clicks "Generate with AI" button ⭐ NEW           │
 │    ↓                                                       │
-│ 6. ProjectLLMService.generateI1(prompt)                    │
-│    ├─ Provider abstraction (vendor-neutral)                │
-│    ├─ Call provider.generate(prompt)                       │
-│    ├─ Parse JSON response                                  │
-│    ├─ Validate IntroductionI1AuthorContentSchema          │
-│    └─ Return { success, candidate, provenance, error }     │
+│ 6. Client calls fetch('/api/project-llm/generate-i1')     │
+│    with { prompt, context }                                │
 │    ↓                                                       │
-│ 7. Candidate appears in Composer JSON editor ⭐ NEW       │
-│                                                             │
 ├─────────────────────────────────────────────────────────────┤
-│ EXISTING COMPOSER UI (REVIEW & SAVE)                       │
+│ SERVER API ROUTE (Server Only)                             │
 │                                                             │
-│ 8. Human reviews/edits candidate ✅ REUSE                  │
-│ 9. Human clicks "Add to Document" ✅ REUSE                 │
-│10. BlockInstance creation ✅ REUSE                         │
-│11. toTutorialBlock() transformation ✅ REUSE               │
-│12. tutorialSaveService ⚠️ EXTEND (AI metadata)            │
+│ /api/project-llm/generate-i1/route.ts                      │
+│    ├─ authenticateRequest() ← JWT validation               │
+│    ├─ requireTutorialAuthorCreatePermission()              │
+│    ├─ Parse request (prompt, context)                      │
+│    ├─ Call ProjectLLMService.generateI1() (server-only)   │
+│    └─ Return { success, candidate, provenance }            │
+│    ↓                                                       │
+├─────────────────────────────────────────────────────────────┤
+│ SERVICE LAYER (Server Only)                                │
+│                                                             │
+│ ProjectLLMService                                          │
+│    ├─ Provider abstraction (TestProvider | RealProvider)   │
+│    ├─ Provider.generate(prompt)                            │
+│    ├─ JSON.parse(response.text)                            │
+│    ├─ validateIntroductionI1AIOutput()                     │
+│    └─ Return candidate + provenance                        │
+│    ↓                                                       │
+│ Provider Secrets (Server Only)                             │
+│    └─ process.env.PROJECT_LLM_API_KEY (never exposed)      │
+│    ↓                                                       │
+├─────────────────────────────────────────────────────────────┤
+│ CLIENT COMPONENT (Browser) — REVIEW & SAVE                 │
+│                                                             │
+│ 7. Candidate JSON returned to client ⭐ NEW               │
+│ 8. Candidate appears in Composer JSON editor ⭐ NEW       │
+│                                                             │
+│ 9. Human reviews/edits candidate ✅ REUSE                  │
+│10. Human clicks "Add to Document" ✅ REUSE                 │
+│11. BlockInstance creation ✅ REUSE                         │
+│12. toTutorialBlock() transformation ✅ REUSE               │
+│13. tutorialSaveService ⚠️ EXTEND (AI metadata)            │
 │    ├─ generatedByAi = true ⭐ NEW                         │
-│    ├─ aiModelUsed = provider name ⭐ NEW                  │
-│    └─ generationJobId = uuid ⭐ NEW                       │
-│13. POST /api/tutorial-composer/sections ✅ REUSE           │
-│14. tutorial_sections persisted ✅ REUSE                    │
-│15. Runtime delivery ✅ REUSE                               │
+│    ├─ aiModelUsed = provenance.model ?? null ⭐ NEW       │
+│    └─ generationJobId = provenance.requestId ⭐ NEW       │
+│14. POST /api/tutorial-composer/sections ✅ REUSE           │
+│15. tutorial_sections persisted ✅ REUSE                    │
+│16. Runtime delivery ✅ REUSE                               │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Key Security Boundaries:**
+- Client (browser) → Server API Route: JWT authentication + authorization
+- Server API Route → Service Layer: Server-only, provider secrets protected
+- Service Layer → Provider: Server-only, API keys from environment variables
 
 ---
 
@@ -290,17 +318,42 @@ export class TestProvider implements ProjectLLMProvider {
  * Actual provider selection (OpenAI, Anthropic, Gemini) is a separate
  * decision to be made after this implementation contract is approved.
  * 
+ * Configuration via environment variables (server-only):
+ * - PROJECT_LLM_PROVIDER_NAME: 'openai' | 'anthropic' | 'gemini' | ...
+ * - PROJECT_LLM_API_KEY: Provider API key (REQUIRED, server-only)
+ * - PROJECT_LLM_MODEL: Model identifier (optional, provider-specific)
+ * 
+ * SECURITY:
+ * - API keys MUST remain server-side
+ * - NEVER expose in client bundles
+ * - NEVER log API keys
+ * - Read from process.env at runtime (not build-time)
+ * 
  * Implementation will:
  * 1. Import vendor SDK (e.g., OpenAI, Anthropic)
  * 2. Map GenerationRequest to vendor format
- * 3. Call vendor API
+ * 3. Call vendor API using server-side API key
  * 4. Map vendor response to GenerationResponse
  * 5. Handle vendor-specific errors → ProviderError
  */
 export class RealProvider implements ProjectLLMProvider {
-  readonly name = 'production-provider';
+  readonly name: string;
+  private readonly apiKey: string;
+  private readonly model?: string;
+  
+  constructor() {
+    // Server-side environment variables
+    this.name = process.env.PROJECT_LLM_PROVIDER_NAME || 'unknown';
+    this.apiKey = process.env.PROJECT_LLM_API_KEY || '';
+    this.model = process.env.PROJECT_LLM_MODEL;
+    
+    if (!this.apiKey) {
+      throw new Error('PROJECT_LLM_API_KEY environment variable required');
+    }
+  }
   
   async generate(request: GenerationRequest): Promise<GenerationResponse> {
+    // Provider-specific SDK call using this.apiKey (server-side only)
     throw new Error('RealProvider not yet implemented - provider selection pending');
   }
 }
@@ -348,16 +401,16 @@ export interface GenerateI1Result {
 }
 
 export interface GenerationProvenance {
-  /** Provider name (vendor-neutral) */
+  /** Provider name (vendor-neutral, e.g., "test-mock", "openai-provider") */
   provider: string;
   
-  /** Model used (provider's internal label) */
-  model?: string;
+  /** Model identifier (e.g., "gpt-4-turbo", "claude-3-5-sonnet", "test-mock-model") */
+  model: string | null;
   
   /** Generation timestamp */
   timestamp: Date;
   
-  /** Request ID for correlation */
+  /** Request ID for correlation (written to generationJobId) */
   requestId: string;
   
   /** Token usage (if available) */
@@ -595,7 +648,7 @@ Persist to tutorial_sections
 // tutorial_sections table
 {
   generatedByAi: true,                    // ⭐ NEW: Set to true
-  aiModelUsed: 'test-mock',               // ⭐ NEW: Provider name (vendor-neutral)
+  aiModelUsed: 'test-mock-model',         // ⭐ NEW: Model identifier (NOT provider name)
   generationJobId: '<uuid>',              // ⭐ NEW: Request ID (provenance)
   qualityScore: null,                     // Phase 2
   hallucinationScore: null,               // Phase 2
@@ -605,6 +658,12 @@ Persist to tutorial_sections
   rejectionReason: null,                  // Not used (rejection = no save)
 }
 ```
+
+**aiModelUsed semantics:**
+- Stores MODEL identifier, not provider name
+- TestProvider returns `model: "test-mock-model"`
+- RealProvider returns actual model (e.g., `model: "gpt-4-turbo"`, `model: "claude-3-5-sonnet"`)
+- Value = `provenance.model ?? null`
 
 ### 7.3 Metadata Write Location
 
@@ -617,7 +676,7 @@ Persist to tutorial_sections
 if (blockWasGeneratedByAI) {
   metadata = {
     generatedByAi: true,
-    aiModelUsed: provenance.provider,
+    aiModelUsed: provenance.model ?? null,    // Model identifier, NOT provider name
     generationJobId: provenance.requestId,
   };
 }
@@ -627,28 +686,192 @@ if (blockWasGeneratedByAI) {
 
 ## 8. AUTHORIZATION
 
-### 8.1 Permission Reuse
+### 8.1 Permission Enforcement
 
 **Decision:** Reuse existing `TUTORIAL_AUTHOR_CREATE` permission
 
 **Rationale:**
-- Human initiates generation = same as human authoring
-- Same security boundary
+- Human initiates generation = same security boundary as manual authoring
+- Same permission scope
 - No new permission needed for Phase 1B
 
-**Permission Check:**
+**Enforcement Point:** SERVER-SIDE in API route
+
+**File:** `apps/skillhubcore-admin/src/app/api/project-llm/generate-i1/route.ts`
+
+**Implementation:**
+
 ```typescript
-// Existing check at Composer UI level
-requireTutorialAuthorCreatePermission(user);
+export async function POST(request: NextRequest) {
+  // 1. Authenticate request (server-side)
+  const authResult = await authenticateRequest(request);
+  if ('type' in authResult) {
+    return createAuthErrorResponse(authResult);
+  }
+  const { user } = authResult;
+  
+  // 2. Authorize TUTORIAL_AUTHOR_CREATE (server-side)
+  const authError = requireTutorialAuthorCreatePermission(user);
+  if (authError) {
+    return createAuthErrorResponse(authError);
+  }
+  
+  // 3. Proceed with generation
+  // ...
+}
 ```
+
+**Client-Side UI:** May optionally hide "Generate with AI" button if user lacks permission, but SERVER-SIDE enforcement is authoritative.
 
 **Roles Granted:** `admin`, `super_admin`
 
 ---
 
-## 9. UI INTEGRATION
+## 9. UI INTEGRATION & API ROUTE
 
-### 9.1 "Generate with AI" Button
+### 9.1 API Route Specification (Server-Side)
+
+**File:** `apps/skillhubcore-admin/src/app/api/project-llm/generate-i1/route.ts`
+
+**Method:** POST
+
+**Authentication:** Required (JWT session)
+
+**Authorization:** TUTORIAL_AUTHOR_CREATE permission (server-side enforcement)
+
+**Request Body:**
+```json
+{
+  "prompt": "string (complete I1 generation prompt)",
+  "context": {
+    "domainName": "string",
+    "subjectName": "string",
+    "topicName": "string",
+    "subtopicName": "string",
+    "navigationNodeName": "string"
+  }
+}
+```
+
+**Response (Success 200):**
+```json
+{
+  "success": true,
+  "candidate": { 
+    ...IntroductionI1AuthorContent 
+  },
+  "provenance": {
+    "provider": "string",
+    "model": "string | null",
+    "timestamp": "ISO-8601 date",
+    "requestId": "uuid",
+    "usage": {
+      "promptTokens": 1000,
+      "completionTokens": 800,
+      "totalTokens": 1800
+    } | null
+  }
+}
+```
+
+**Response (Error 400/401/403/422/500):**
+```json
+{
+  "success": false,
+  "error": "string (error message)",
+  "provenance": {
+    "provider": "string",
+    "timestamp": "ISO-8601 date",
+    "requestId": "uuid"
+  }
+}
+```
+
+**Security:**
+- Server-side authentication enforcement (`authenticateRequest`)
+- Server-side authorization enforcement (`requireTutorialAuthorCreatePermission`)
+- Provider credentials never exposed to client
+- Service layer server-only (not imported by client components)
+
+**Implementation:**
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  authenticateRequest,
+  createAuthErrorResponse,
+  requireTutorialAuthorCreatePermission,
+} from '@/lib/auth-helpers';
+import { projectLLMService } from '@/lib/project-llm';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(request: NextRequest) {
+  try {
+    // Step 1: Authenticate request (server-side)
+    const authResult = await authenticateRequest(request);
+    if ('type' in authResult) {
+      return createAuthErrorResponse(authResult);
+    }
+    const { user } = authResult;
+
+    // Step 2: Authorize TUTORIAL_AUTHOR_CREATE (server-side)
+    const authError = requireTutorialAuthorCreatePermission(user);
+    if (authError) {
+      return createAuthErrorResponse(authError);
+    }
+
+    // Step 3: Parse request body
+    const body = await request.json();
+    const { prompt, context } = body;
+
+    // Step 4: Validate input
+    if (!prompt || typeof prompt !== 'string') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Invalid prompt',
+          provenance: {
+            provider: 'unknown',
+            timestamp: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+          }
+        },
+        { status: 400 }
+      );
+    }
+
+    // Step 5: Call service (server-only, has access to secrets)
+    const result = await projectLLMService.generateI1({
+      prompt,
+      context,
+    });
+
+    // Step 6: Return result
+    return NextResponse.json(result, { 
+      status: result.success ? 200 : 422 
+    });
+    
+  } catch (error) {
+    console.error('[Project LLM API] Generation error:', error);
+    
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        provenance: {
+          provider: 'unknown',
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+        },
+      },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### 9.2 "Generate with AI" Button (Client Component)
 
 **Location:** `apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/components/AiInstructionContainer.tsx`
 
@@ -663,36 +886,48 @@ requireTutorialAuthorCreatePermission(user);
 async function handleGenerateWithAI() {
   setLoading(true);
   
-  // 1. Get prompt from existing getIntroductionI1Prompt()
-  const prompt = getIntroductionI1Prompt(context);
-  
-  // 2. Call Project LLM service
-  const result = await projectLLMService.generateI1({
-    prompt,
-    context: {
-      domainName,
-      subjectName,
-      topicName,
-      subtopicName,
-      navigationNodeName,
-    },
-  });
-  
-  // 3. Handle result
-  if (result.success) {
-    // Populate JSON editor with candidate
-    setJsonEditorContent(JSON.stringify(result.candidate, null, 2));
-    setProvenance(result.provenance);
-  } else {
-    // Show error
-    showError(result.error);
+  try {
+    // 1. Get prompt from existing getIntroductionI1Prompt()
+    const prompt = getIntroductionI1Prompt(context);
+    
+    // 2. Call API route (server-side, NOT direct service call)
+    const response = await fetch('/api/project-llm/generate-i1', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        context: {
+          domainName,
+          subjectName,
+          topicName,
+          subtopicName,
+          navigationNodeName,
+        },
+      }),
+    });
+    
+    const result = await response.json();
+    
+    // 3. Handle result
+    if (result.success) {
+      // Populate JSON editor with candidate
+      setJsonEditorContent(JSON.stringify(result.candidate, null, 2));
+      setProvenance(result.provenance);
+    } else {
+      // Show error
+      showError(result.error);
+    }
+  } catch (error) {
+    showError(error instanceof Error ? error.message : 'Network error');
+  } finally {
+    setLoading(false);
   }
-  
-  setLoading(false);
 }
 ```
 
-### 9.2 Loading State
+### 9.3 Loading State
 
 - Show spinner while generating
 - Disable button during generation
@@ -748,7 +983,7 @@ apps/skillhubcore-admin/src/lib/project-llm/__tests__/integration/
 
 ### 10.3 E2E Tests
 
-**Complete User Journey:**
+**Complete User Journey (Approval Path):**
 1. User selects hierarchy
 2. User clicks "Generate with AI"
 3. Candidate appears in editor
@@ -758,9 +993,22 @@ apps/skillhubcore-admin/src/lib/project-llm/__tests__/integration/
 7. Verify AI metadata in database
 8. Verify runtime renders correctly
 
+**Complete User Journey (Rejection Path):**
+1. User selects hierarchy
+2. User clicks "Generate with AI"
+3. Candidate appears in editor
+4. User reviews candidate
+5. User rejects/discards candidate (clears editor or navigates away)
+6. **Verify NO database write occurred**
+7. **Verify NO tutorial_sections record created**
+8. **Verify generationJobId not persisted**
+
 **Test File:**
 ```
 tests/e2e/project-llm-introduction-i1-generation.spec.ts
+  ├─ test: complete flow with approval
+  ├─ test: complete flow with rejection (NO database write)
+  └─ test: complete flow with error handling
 ```
 
 ---
@@ -951,7 +1199,7 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 | **Human Approval** | Existing Composer review workflow works with AI-generated candidates |
 | **Metadata Population** | generatedByAi, aiModelUsed, generationJobId written on save |
 | **Error Handling** | Provider errors, JSON parse errors, validation errors handled gracefully |
-| **Transient Candidate** | No candidate persistence; rejection discards without database write |
+| **Transient Candidate** | Approved candidate persists; rejected candidate leaves no database trace |
 
 ### 14.2 Non-Functional Requirements
 
@@ -959,7 +1207,10 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 |---|---|
 | **Performance** | Generation completes in <30 seconds (TestProvider: <2 seconds) |
 | **Resilience** | Provider timeout handled gracefully, fallback to manual workflow |
-| **Security** | Reuses existing TUTORIAL_AUTHOR_CREATE permission |
+| **Security - Authorization** | TUTORIAL_AUTHOR_CREATE enforced server-side in API route; client cannot bypass |
+| **Security - Secrets** | Provider API keys remain server-side; bundle analysis confirms no secrets in client code |
+| **Security - Authentication** | JWT authentication enforced at API route; unauthenticated requests rejected |
+| **Security - Input Validation** | Prompt and context validated; malicious input rejected |
 | **Observability** | All generation events logged with requestId correlation |
 | **Testability** | >80% code coverage for Project LLM module |
 
@@ -969,9 +1220,10 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 |---|---|
 | **Unit Tests** | Test suite passes, coverage >80% |
 | **Integration Tests** | Generation flow end-to-end passes |
-| **E2E Test** | Complete user journey passes |
+| **E2E Test** | Complete user journey passes (approval AND rejection paths) |
 | **Manual Verification** | Screenshots of each UI state, database state verification |
 | **Log Correlation** | requestId traceable through logs |
+| **Security Verification** | Bundle analysis report (no secrets in client); authorization test (API rejects unauthorized) |
 
 ---
 
@@ -998,9 +1250,16 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 
 ## 16. OUT OF SCOPE (PHASE 2+)
 
-**Explicitly deferred:**
+**Explicitly deferred to separate decision AFTER contract approval:**
 
-- ❌ Real LLM provider integration (separate decision)
+- ❌ Real LLM provider selection (OpenAI, Anthropic, Gemini, or other)
+- ❌ Real LLM provider SDK integration
+- ❌ Provider API key configuration
+
+**Note:** RealProvider implementation is a placeholder during Phase 1B. TestProvider is the functional provider for proving the vertical slice. Real provider selection and integration is a separate approval gate AFTER implementation contract is locked and BEFORE production deployment.
+
+**Explicitly deferred to Phase 2+:**
+
 - ❌ I2-I6 block implementations
 - ❌ Quality scoring mechanisms
 - ❌ Hallucination detection
@@ -1083,10 +1342,26 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 
 ## DOCUMENT STATUS
 
-**Contract Status:** 🟡 DRAFT — IN PROGRESS  
+**Contract Status:** 🟢 READY FOR APPROVAL — CORRECTIONS APPLIED  
 **Architecture Decision:** ✅ APPROVED (Option B)  
-**Implementation:** ⏸️ BLOCKED until contract approved  
+**Implementation:** ⏸️ BLOCKED until Human Architecture Authority approval  
 **Production Code:** UNCHANGED  
 
-**Next Action:** Complete contract, submit for Human Architecture Authority approval.
+**Next Action:** Submit for Human Architecture Authority final approval.
+
+---
+
+## CORRECTIONS APPLIED
+
+**All 8 corrections from forensic review have been applied:**
+
+✅ **Critical #1:** Added API route specification (Section 9.1); client calls API, not service directly  
+✅ **Critical #2:** Added provider secrets specification (Section 2.4); environment variables, server-only  
+✅ **Important #3:** Corrected aiModelUsed to store model identifier (Sections 3.1, 7.2, 7.3)  
+✅ **Important #4:** Clarified server-side authorization enforcement (Section 8.1)  
+✅ **Important #5:** Added rejection path E2E test (Section 10.3, 14.1)  
+✅ **Important #6:** Added explicit security acceptance criteria (Sections 14.2, 14.3)  
+✅ **Minor #7:** Added ILS terminology definition (Section 1.1)  
+✅ **Minor #8:** Clarified provider decision timing (Section 16)  
+✅ **Updated:** Architecture diagram with correct client/server boundary (Section 1.2)
 
