@@ -100,7 +100,7 @@ This document defines the **locked implementation specification** for Project LL
 │ 5. User clicks "Generate with AI" button ⭐ NEW           │
 │    ↓                                                       │
 │ 6. Client calls fetch('/api/project-llm/generate-i1')     │
-│    with { prompt, context }                                │
+│    with { prompt, context, subtopicId, brandId }           │
 │    ↓                                                       │
 ├─────────────────────────────────────────────────────────────┤
 │ SERVER API ROUTE (Server Only)                             │
@@ -958,61 +958,151 @@ export async function POST(request: NextRequest) {
 
 **Location:** `apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/components/AiInstructionContainer.tsx`
 
-**Implementation:**
+**Component Props (Updated):**
 
 ```typescript
-// Add button next to existing prompt display
-<Button onClick={handleGenerateWithAI}>
-  Generate with AI
-</Button>
+interface AiInstructionContainerProps {
+  // Generation context (human-readable, used in prompts)
+  domainName: string;
+  subjectName: string;
+  topicName: string;
+  subtopicName: string;
+  navigationNodeName: string;
+  blockName: string;
+  versionName: string;
+  blockType: TutorialPageContentType;
+  versionId: string;
 
-async function handleGenerateWithAI() {
-  setLoading(true);
-  
-  try {
-    // 1. Get prompt from existing getIntroductionI1Prompt()
-    const prompt = getIntroductionI1Prompt(context);
-    
-    // 2. Call API route (server-side, NOT direct service call)
-    const response = await fetch('/api/project-llm/generate-i1', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt,
-        context: {
-          domainName,
-          subjectName,
-          topicName,
-          subtopicName,
-          navigationNodeName,
-        },
-        subtopicId: form.subtopicId,    // Resource identity for authorization
-        brandId: form.brandId,          // Resource identity for authorization
-      }),
-    });
-    
-    const result = await response.json();
-    
-    // 3. Handle result
-    if (result.success) {
-      // Populate JSON editor with candidate
-      setJsonEditorContent(JSON.stringify(result.candidate, null, 2));
-      setProvenance(result.provenance);
-    } else {
-      // Show error
-      showError(result.error);
-    }
-  } catch (error) {
-    showError(error instanceof Error ? error.message : 'Network error');
-  } finally {
-    setLoading(false);
-  }
+  // Authorization context (resource identity, NOT part of TutorialPromptContext)
+  // These are passed separately to the API for authorization,
+  // never included in generation prompts or AI-generated content
+  subtopicId: number;
+  brandId?: string;
 }
 ```
 
-**Note:** The parent component (`TutorialPageContentBuilderClient.tsx`) has `form.subtopicId` and `form.brandId` available and will pass them to the handler.
+**Parent Component Invocation:**
+
+The parent component (`TutorialPageContentBuilderClient.tsx`) must pass authorization identities:
+
+```tsx
+<AiInstructionContainer
+  domainName={domainName}
+  subjectName={subjectName}
+  topicName={topicName}
+  subtopicName={subtopicName}
+  navigationNodeName={navigationNodeName}
+  blockName={currentBlockConfig.label}
+  versionName={selectedVersion.label}
+  blockType={form.blockType}
+  versionId={form.versionId}
+  subtopicId={form.subtopicId}     // ⭐ Authorization identity
+  brandId={form.brandId}           // ⭐ Authorization identity
+/>
+```
+
+**Implementation:**
+
+```typescript
+export function AiInstructionContainer({
+  domainName,
+  subjectName,
+  topicName,
+  subtopicName,
+  navigationNodeName,
+  blockName,
+  versionName,
+  blockType,
+  versionId,
+  subtopicId,    // Authorization identity (separate from generation context)
+  brandId,       // Authorization identity (separate from generation context)
+}: AiInstructionContainerProps) {
+  
+  // ... existing state ...
+  
+  async function handleGenerateWithAI() {
+    setLoading(true);
+    
+    try {
+      // 1. Build TutorialPromptContext (human-readable, NO database IDs)
+      const context: TutorialPromptContext = {
+        domainName,
+        subjectName,
+        topicName,
+        subtopicName,
+        navigationNodeName,
+        blockName,
+        versionName,
+        versionId,
+      };
+      
+      // 2. Get prompt from existing getIntroductionI1Prompt()
+      const prompt = getIntroductionI1Prompt(context);
+      
+      // 3. Call API route with generation context + authorization identities
+      const response = await fetch('/api/project-llm/generate-i1', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,                  // Complete generation prompt
+          context,                 // Human-readable generation context (for provenance)
+          subtopicId,              // Resource identity (for authorization)
+          brandId,                 // Resource identity (for authorization)
+        }),
+      });
+      
+      const result = await response.json();
+      
+      // 4. Handle result
+      if (result.success) {
+        // Populate JSON editor with candidate
+        setJsonEditorContent(JSON.stringify(result.candidate, null, 2));
+        setProvenance(result.provenance);
+      } else {
+        // Show error
+        showError(result.error);
+      }
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Network error');
+    } finally {
+      setLoading(false);
+    }
+  }
+  
+  return (
+    <div>
+      {/* ... existing prompt display ... */}
+      <Button onClick={handleGenerateWithAI} disabled={loading}>
+        {loading ? 'Generating...' : 'Generate with AI'}
+      </Button>
+    </div>
+  );
+}
+```
+
+**Key Design Principle:**
+
+```
+TutorialPromptContext
+      ↓
+Human-readable generation context only
+(domainName, subjectName, topicName, etc.)
+      ↓
+Used in AI prompts and provenance
+
+subtopicId / brandId
+      ↓
+Authorization metadata only
+(never in prompts, never in generated content)
+      ↓
+POST /api/project-llm/generate-i1
+      ↓
+Server-side authorization enforcement
+```
+
+This preserves the important separation between **content-generation context** and **authorization/resource identity**, as established in the existing `TutorialPromptContext` contract.
 
 ### 9.3 Loading State
 
@@ -1429,7 +1519,7 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 
 ## DOCUMENT STATUS
 
-**Contract Status:** 🟢 READY FOR APPROVAL — FINAL LOCK CORRECTIONS APPLIED  
+**Contract Status:** 🟢 READY FOR APPROVAL — FINAL UI/API WIRING CORRECTION APPLIED  
 **Architecture Decision:** ✅ APPROVED (Option B)  
 **Implementation:** ⏸️ BLOCKED until Human Architecture Authority approval  
 **Production Code:** UNCHANGED  
@@ -1454,7 +1544,16 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 
 **Final lock corrections applied (2026-10-03):**
 
-✅ **Lock Correction #1:** Resource-level authorization added (requireSubtopicAccess + requireBrandAccess, same as existing Composer API)  
-✅ **Lock Correction #2:** RealProvider initialization safe-by-default (TestProvider default, explicit opt-in for RealProvider)  
-✅ **Lock Correction #3:** UBRC/LSNB/RSSB terminology marked as not repository-verified (expansions removed from locked contract)
+✅ **Lock Correction #1:** Resource-level authorization added (requireSubtopicAccess + requireBrandAccess)  
+✅ **Lock Correction #2:** RealProvider initialization safe-by-default (TestProvider default, explicit opt-in)  
+✅ **Lock Correction #3:** UBRC/LSNB/RSSB terminology marked as not repository-verified
+
+**Final UI/API wiring correction applied (2026-10-03):**
+
+✅ **Wiring Correction:** Component interface consistency enforced
+- `AiInstructionContainerProps` updated with `subtopicId` and `brandId` props (authorization identities)
+- Parent component invocation specified: passes `form.subtopicId` and `form.brandId`
+- Handler implementation shows separation: `TutorialPromptContext` (generation) vs `subtopicId`/`brandId` (authorization)
+- Architecture diagram updated: client → API with `{ prompt, context, subtopicId, brandId }`
+- Key design principle documented: content-generation context separate from authorization/resource identity
 
