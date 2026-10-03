@@ -3,10 +3,11 @@
 **Document Type:** Locked Implementation Specification  
 **Phase:** Project LLM Phase 1B Step 3  
 **Date:** 2026-10-03  
-**Status:** READY FOR APPROVAL — All corrections applied  
+**Status:** ✅ APPROVED & LOCKED — Human Architecture Authority Decision  
 **Architecture Decision:** ✅ APPROVED (Option B - Node/TypeScript in Composer)  
 **Production Code Changes:** NONE (specification phase)  
 **Repository State:** UNCHANGED  
+**Implementation:** AUTHORIZED — Phase 1 (Foundation) may begin  
 
 ---
 
@@ -1519,12 +1520,41 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 
 ## DOCUMENT STATUS
 
-**Contract Status:** 🟢 READY FOR APPROVAL — FINAL UI/API WIRING CORRECTION APPLIED  
-**Architecture Decision:** ✅ APPROVED (Option B)  
-**Implementation:** ⏸️ BLOCKED until Human Architecture Authority approval  
-**Production Code:** UNCHANGED  
+**Contract Status:** ✅ **APPROVED & LOCKED** — Human Architecture Authority Decision (2026-10-03)  
+**Architecture Decision:** ✅ APPROVED (Option B - Node/TypeScript in Composer)  
+**Implementation:** ✅ AUTHORIZED — Phase 1 (Foundation) may begin  
+**Production Code:** UNCHANGED (specification phase complete)  
 
-**Next Action:** Submit for Human Architecture Authority final approval.
+---
+
+## HUMAN ARCHITECTURE AUTHORITY APPROVAL
+
+**Approved By:** Human Architecture Authority  
+**Date:** 2026-10-03  
+**Decision:** APPROVED — LOCK CONTRACT
+
+**Authorization:**
+- ✅ Phase 1B implementation may begin according to this locked contract
+- ✅ Implementation follows locked sequence: Phase 1 (Foundation) → Phase 6 (Certification)
+- ⏸️ Real provider selection/integration remains separate approval gate (AFTER Phase 1B, BEFORE production deployment)
+
+**Locked Architectural Decisions:**
+
+1. ✅ **Service Boundary:** Node.js/TypeScript inside SkillHubCore-admin/Composer (Option B)
+2. ✅ **Scope:** Introduction I1 automation only (Phase 1B)
+3. ✅ **Client/Server:** Browser → API route → ProjectLLMService → provider
+4. ✅ **Security:** Browser never directly imports/calls ProjectLLMService
+5. ✅ **Secrets:** Provider credentials server-only (environment variables)
+6. ✅ **Context Separation:** TutorialPromptContext contains no database/resource identities
+7. ✅ **Authorization:** subtopicId/brandId separate, server-side enforcement
+8. ✅ **Provider:** TestProvider functional for Phase 1B; real provider separate gate
+9. ✅ **Candidate Model:** Transient (no persistence until human approval)
+10. ✅ **Rejection:** No database write on rejection
+11. ✅ **Metadata:** aiModelUsed stores model identifier (not provider name)
+12. ✅ **Provenance:** generationJobId is UUID provenance/request ID (not job FK)
+13. ✅ **Responsibility:** Existing Composer/runtime/document/persistence unchanged
+14. ✅ **Validation:** Reuse existing schemas (no new validation)
+15. ✅ **Authorization:** Reuse existing permissions + resource-level enforcement
 
 ---
 
@@ -1556,4 +1586,37 @@ tests/e2e/project-llm-introduction-i1-generation.spec.ts
 - Handler implementation shows separation: `TutorialPromptContext` (generation) vs `subtopicId`/`brandId` (authorization)
 - Architecture diagram updated: client → API with `{ prompt, context, subtopicId, brandId }`
 - Key design principle documented: content-generation context separate from authorization/resource identity
+
+**Total corrections applied:** 12 (8 initial + 3 lock + 1 wiring)
+
+---
+
+## NEXT ACTIONS
+
+**Immediate (Approved):**
+1. ✅ Begin Phase 1: Foundation (Week 1)
+   - Provider abstraction interface
+   - TestProvider implementation
+   - Mock I1 fixture
+   - Unit tests
+
+**Subsequent Phases (Approved):**
+2. Phase 2: Service Layer (Week 2)
+3. Phase 3: API & UI Integration (Week 2-3)
+4. Phase 4: Metadata & Persistence (Week 3)
+5. Phase 5: E2E & Verification (Week 3-4)
+6. Phase 6: Documentation & Handoff (Week 4)
+
+**Deferred (Separate Approval Gate):**
+- ⏸️ Real LLM provider selection (OpenAI, Anthropic, Gemini, or other)
+- ⏸️ Real LLM provider SDK integration
+- ⏸️ Provider API key configuration
+- ⏸️ Production deployment with real provider
+
+**Out of Scope (Phase 2+):**
+- I2-I6 block implementations
+- Quality scoring, hallucination detection
+- Automatic publication, multi-block generation
+- Schema healing, regeneration UI
+- Async generation, rate limiting, cost tracking
 
