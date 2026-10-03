@@ -454,19 +454,32 @@ Python FastAPI Project LLM Service
 
 ### Human Decision
 
-**STATUS: PENDING**
+**STATUS: ✅ APPROVED**
 
-**Date:** _____________
+**Date:** 2026-10-03
 
-**Approved By:** _____________
+**Approved By:** Human Architecture Authority
 
 **Decision:**
-- [ ] APPROVE Option B (Node/TypeScript in Composer)
+- [x] APPROVE Option B (Node/TypeScript in Composer)
 - [ ] APPROVE Option C (New Python/FastAPI Service)
 - [ ] MODIFY (specify changes): _______________
 - [ ] REJECT (specify alternative): _______________
 
-**Rationale:** _____________
+**Rationale:**
+
+Based on forensic evidence:
+
+1. **Question Factory precedent** — Existing TypeScript pattern for prompt construction, hierarchy/context handling, JSON contracts, validation, and schema healing within Composer
+2. **No Python/FastAPI generation reference** — question-judge is duplicate detection only, not LLM generation
+3. **Natural Composer boundary** — Project LLM belongs at the generation boundary where Tutorial Composer creates content
+4. **Minimal infrastructure** — No new service deployment, authentication, or operational complexity
+5. **Provider abstraction preserved** — Technology decision is about service boundary, not provider lock-in
+6. **Production architecture alignment** — Extension of existing Composer workflow, not parallel system
+
+**Architecture Decision:** Build Project LLM as Node.js/TypeScript capability within existing SkillHubCore-admin/Composer application boundary.
+
+**Next Document:** `PROJECT_LLM_PHASE_1B_IMPLEMENTATION_CONTRACT.md` — Locked implementation specification
 
 ---
 
@@ -512,13 +525,13 @@ Python FastAPI Project LLM Service
 
 **Evidence Gathering:** ✅ COMPLETE  
 **Recommendation:** ✅ PROVIDED (Option B)  
-**Human Decision:** ⏸️ **PENDING**  
+**Human Decision:** ✅ **APPROVED (Option B - Node/TypeScript in Composer)**  
 **Production Code:** UNCHANGED  
 
-**Blocked Items:**
-- Phase 1B Step 3 (Implementation Contract) — blocked until technology/service boundary approved
-- Provider selection — blocked until technology locked (separate decision after this)
-- Implementation — blocked until contract approved
+**Unblocked Items:**
+- ✅ Phase 1B Step 3 (Implementation Contract) — technology/service boundary approved
+- ⏸️ Provider selection — separate decision after implementation contract
+- ⏸️ Implementation — blocked until implementation contract complete
 
-**Next Action:** Human Architecture Authority reviews evidence and approves technology/service boundary decision.
+**Next Action:** Create `PROJECT_LLM_PHASE_1B_IMPLEMENTATION_CONTRACT.md` — locked implementation specification defining exact Project LLM boundary, I1 vertical slice, provider abstraction, validation, candidate lifecycle, human approval, provenance, authorization, testing, evidence collection, and implementation gates.
 
