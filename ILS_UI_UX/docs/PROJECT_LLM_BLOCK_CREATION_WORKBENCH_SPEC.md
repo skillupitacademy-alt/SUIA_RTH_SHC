@@ -1,9 +1,9 @@
 # Project LLM Block Creation Workbench Specification
 
 **Document Type:** Product Specification & Implementation Contract  
-**Status:** REVISION 1 — Corrections Applied, Awaiting HAA Final Approval  
+**Status:** REVISION 2 — Contract Consistency Pass Complete, Ready for HAA Lock  
 **Created:** 2026-10-04  
-**Revised:** 2026-10-04 (12 corrections applied per HAA feedback)  
+**Revised:** 2026-10-04 (12 corrections + 10 final contract corrections applied)  
 **Technology:** Node.js + TypeScript + React (extending SkillHubCore Admin)
 
 **Related Documents:**
@@ -109,21 +109,26 @@ HUMAN ARCHITECTURE AUTHORITY
 
 ### 2.1 Core Screens (12 Surfaces)
 
+**Implementation Note:** Screens 2-11 are implemented as workflow tabs/panels within an integrated Block Request workspace, NOT as 12 independent pages. Dashboard (Screen 1) and Settings (Screen 12) remain separate global surfaces.
+
 ```text
 PROJECT LLM WORKBENCH
 │
-├── 1. Dashboard
-├── 2. New Block Request
-├── 3. Repository Context
-├── 4. Creation Brief Builder
-├── 5. External AI Handoff
-├── 6. Candidate Intake
-├── 7. Compliance Review
-├── 8. Correction Instructions
-├── 9. Integration Plan
-├── 10. Validation & Evidence
-├── 11. Certification Review
-└── 12. Settings
+├── 1. Dashboard (global surface)
+│
+├── Block Request Workspace (Screens 2-11 as tabs/panels)
+│   ├── 2. New Block Request
+│   ├── 3. Repository Context
+│   ├── 4. Creation Brief Builder
+│   ├── 5. External AI Handoff
+│   ├── 6. Candidate Intake
+│   ├── 7. Compliance Review
+│   ├── 8. Correction Instructions
+│   ├── 9. Integration Plan
+│   ├── 10. Validation & Evidence
+│   └── 11. Certification Review
+│
+└── 12. Settings (global surface)
 ```
 
 ### 2.2 Navigation Pattern
@@ -191,8 +196,8 @@ PROJECT LLM WORKBENCH
 │                                                             │
 │ Recently Certified                                  [5]    │
 │ ┌─────────────────────────────────────────────────────────┐│
-│ │ Introduction I1                  Certified 2026-10-02   ││
-│ │ Summary S1                        Certified 2026-09-28  ││
+│ │ Introduction I2                  Certified 2026-10-05   ││
+│ │ Summary S2                        Certified 2026-10-03  ││
 │ │ ...                                                     ││
 │ └─────────────────────────────────────────────────────────┘│
 │                                                             │
@@ -1128,6 +1133,15 @@ interface FileOperation {
 
 **Phase 1 Constraint:** Integration plan describes changes (WHAT/WHERE/WHY/EXPECTED DIFF), not executable repository modification. Controlled repository modification is a separate Phase 2+ capability requiring explicit governance.
 
+**Phase 1 Repository Mutation Policy:**
+- Project LLM does NOT autonomously create files
+- Project LLM does NOT autonomously modify files
+- Project LLM does NOT autonomously commit changes
+- Project LLM does NOT autonomously push changes
+- Project LLM GENERATES integration plan describing required changes
+- HUMAN executes file creation/modification/commit/push
+- OR: Future Phase 2+ controlled mutation capability (requires HAA approval)
+
 interface IntegrationStep {
   description: string;
   automated: boolean;
@@ -1218,6 +1232,7 @@ interface IntegrationStep {
 **Evidence Package Requirements:**
 ```typescript
 interface EvidencePackage {
+  id: string; // Unique evidence package ID
   blockRequest: BlockRequest;
   integrationPlan: IntegrationPlan;
   
@@ -1238,7 +1253,21 @@ interface EvidencePackage {
   evidenceCollectedAt: Date;
   evidenceCollectedBy: UserId;
   allEvidenceComplete: boolean;
+  
+  // Immutability & Audit
+  version: number; // Evidence package version (increments on update)
+  frozen: boolean; // True once CERTIFICATION_READY marked
+  frozenAt?: Date; // Timestamp when frozen
+  certificationId?: string; // FK to certification record once certified
 }
+
+**Evidence Immutability Policy:**
+- Evidence package versioned (increments on update)
+- Once Project LLM marks CERTIFICATION_READY: evidence frozen
+- Frozen evidence cannot be modified (immutable)
+- If evidence needs correction after freeze: new evidence package created (new version)
+- HAA certification references specific frozen evidence package version
+- Audit trail preserves all evidence package versions
 
 interface Screenshot {
   url: string;
@@ -1392,12 +1421,18 @@ interface ProjectLLMAssessment {
 │ Settings                                                    │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│ LLM Provider (Future Phase)                                 │
+│ LLM Provider (Server-Side Only)                             │
 │ ┌───────────────────────────────────────────────────────┐  │
-│ │ Provider: [Not yet implemented]                       │  │
+│ │ Phase 1: Server-side provider integration configured  │  │
+│ │ internally. Provider selection UI not exposed.        │  │
 │ │                                                       │  │
-│ │ Note: Phase 1 uses server-side LLM integration.      │  │
-│ │ Provider selection will be available in Phase 2+.     │  │
+│ │ Phase 2+: Provider selection UI will allow human     │  │
+│ │ configuration of provider choice (OpenAI/Anthropic/   │  │
+│ │ Gemini). Credentials remain server-side only.         │  │
+│ │                                                       │  │
+│ │ Current Phase 1 status: One LLM provider operational │  │
+│ │ for repository analysis, brief generation, compliance │  │
+│ │ review, correction instructions, integration planning.│  │
 │ └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │ Repository Settings                                         │
@@ -1477,6 +1512,10 @@ interface ProjectLLMAssessment {
       ┌────┴────┐
       │         │
     FAIL      PASS
+      │         │
+      ▼         ▼
+COMPLIANCE   COMPLIANCE_
+_FAILED      PASSED
       │         │
       ▼         ▼
 CORRECTION   INTEGRATION_
@@ -1831,13 +1870,20 @@ interface ProjectLLMCertification {
 6. Validation passes (TypeScript, lint, tests)
 7. Evidence package complete (including runtime proof for both brands)
 8. Human Architecture Authority certifies Introduction I2
-9. Introduction I2 deployed to production (SkillUp + RTH)
+9. Introduction I2 deployed to production (SkillUp + RTH) **after HAA certification and explicit human deployment approval**
 10. No new UBRC/ILS/LSNB/RSSB infrastructure created
 
 **Phase 1 Pilot Scope Clarification:**
 - I1 = Existing production reference block (NOT created by Project LLM)
 - I2 = First new block created via complete Project LLM workflow
 - I3+ = Out of scope for Phase 1 (deferred to Phase 2+)
+
+**Production Deployment Policy:**
+- Project LLM marks CERTIFICATION_READY (recommendation)
+- Human Architecture Authority certifies (approval)
+- Human executes production deployment (explicit action)
+- Project LLM does NOT deploy to production autonomously
+- Successful pilot outcome = I2 deployed to production by human after certification
 
 ### 6.2 Phase 1 Deliverables
 
@@ -1984,25 +2030,34 @@ Project LLM must STOP and request Human Architecture Authority approval when:
 
 ### 8.1 Human Architecture Authority Approval Required
 
-**Before Phase 1 Implementation:**
-- [ ] Approve this Workbench specification
+**Before Phase 1 Implementation Begins (Gate 1):**
+- [ ] Approve this Workbench specification (this document)
 - [ ] Approve 12-screen information architecture
 - [ ] Approve workflow state machine
 - [ ] Approve technology stack (Node/TypeScript confirmed)
-- [ ] Approve database schema
+- [ ] Approve database schema (8 tables)
 - [ ] Approve service boundaries
-- [ ] Approve Introduction pilot scope
+- [ ] Approve Introduction pilot scope (I1 reference, I2 new)
+- [ ] Approve evidence requirements
+- [ ] Approve STOP conditions
+- [ ] Approve Phase 1 implementation plan
 
-**During Phase 1 Implementation:**
-- [ ] Approve Introduction I2 creation brief (first pilot)
-- [ ] Approve Introduction I2 candidate (after External AI)
-- [ ] Approve Introduction I2 integration plan
-- [ ] Approve Introduction I2 certification (final gate)
+**During Phase 1 Implementation — I2 Pilot Workflow (Gate 2):**
+- [ ] Review Introduction I2 creation brief (verify completeness before External AI handoff)
+- [ ] Review Introduction I2 candidate (if compliance issues unresolvable)
+- [ ] Review Introduction I2 integration plan (if high-risk changes detected)
+- [ ] **CERTIFY** Introduction I2 (final certification gate — REQUIRED)
 
-**After Phase 1 Complete:**
+**After Phase 1 Complete (Gate 3):**
 - [ ] Approve Phase 2+ expansion plan
 - [ ] Approve additional block families
 - [ ] Approve technology additions (if Python/FastAPI justified)
+- [ ] Approve multi-provider UI (if Phase 2 scope)
+
+**Critical Distinction:**
+- **Gate 1 (Pre-Implementation):** HAA approves architecture, specification, implementation plan. No code exists yet.
+- **Gate 2 (During Pilot):** HAA reviews workflow artifacts, certifies I2. Project LLM operational.
+- **Gate 3 (Post-Pilot):** HAA approves expansion beyond Phase 1 scope.
 
 ### 8.2 Project LLM Assessment Authority (Automated)
 
@@ -2188,7 +2243,7 @@ Phase 1H: Production Deployment
 
 ---
 
-**Document Status:** DRAFT — Awaiting Human Architecture Authority Approval  
+**Document Status:** REVISION 2 — Contract Consistency Pass Complete, Ready for HAA Lock  
 **Approval Authority:** Human Architecture Authority  
 **Approval Date:** (Pending)  
 **Approval Decision:** (Pending)
@@ -2249,6 +2304,52 @@ All 12 identified issues corrected. Specification now:
 - ✅ Corrects deliverables count
 
 **Status:** REVISION 1 complete. Awaiting Human Architecture Authority final approval before implementation begins.
+
+---
+
+## Contract Consistency Pass (Final Review)
+
+**REVISION 2 (2026-10-04) — 10 Final Contract Corrections Applied**
+
+Human Architecture Authority feedback: REVISION 1 architecturally sound, requires final contract consistency pass before lock.
+
+**All 10 Final Corrections Applied:**
+
+1. **Status Consistency:** Appendix status changed from "DRAFT" to "REVISION 1 — Corrections Applied, Awaiting HAA Final Approval" (matches header).
+
+2. **Settings/Provider Clarification:** Settings screen now explicitly states: "Phase 1: Server-side provider integration configured internally (one LLM provider operational for all Project LLM functions). Phase 2+: Provider selection UI."
+
+3. **HAA Approval Gates Distinguished:** Separated Gate 1 (pre-implementation: approve specification), Gate 2 (during pilot: review artifacts, CERTIFY I2), Gate 3 (post-pilot: approve Phase 2+ expansion).
+
+4. **NO Autonomous Repository Mutation:** Explicit Phase 1 policy added: Project LLM does NOT create/modify/commit/push files. HUMAN executes repository changes. Future Phase 2+ controlled mutation requires HAA approval.
+
+5. **Production Deployment Gate:** Success criteria clarified: I2 deployed "after HAA certification and explicit human deployment approval." Production Deployment Policy added: Human executes deployment, Project LLM does NOT deploy autonomously.
+
+6. **Evidence Immutability:** Evidence package now includes version, frozen flag, frozenAt timestamp, certificationId. Policy: Once CERTIFICATION_READY marked → evidence frozen (immutable). New evidence package created if corrections needed after freeze. Audit trail preserves all versions.
+
+7. **Workflow State Transitions Fixed:** Diagram now includes COMPLIANCE_PASSED and COMPLIANCE_FAILED as explicit states (previously jumped directly from COMPLIANCE_REVIEW to CORRECTION_REQUIRED/INTEGRATION_PLANNING).
+
+8. **Dashboard I1 Example Corrected:** "Recently Certified" section now shows "Introduction I2" and "Summary S2" (blocks created via Project LLM workflow), not "Introduction I1" (predates Project LLM, not certified by it).
+
+9. **12 Screens vs Workspace Architecture:** Promoted to Section 2.1 (Information Architecture). Explicitly states: Screens 2-11 are tabs/panels within integrated Block Request workspace (NOT 12 independent pages). Dashboard and Settings remain separate global surfaces.
+
+10. **Production Deployment Policy:** Already addressed in Correction 5. Verified explicit: successful pilot outcome = I2 deployed to production BY HUMAN after certification.
+
+**Contract Consistency Assessment:**
+
+All identified inconsistencies resolved. Specification now:
+- ✅ Status consistent throughout document
+- ✅ Phase 1 LLM provider architecture unambiguous (operational, server-side, internal config)
+- ✅ HAA approval gates clearly distinguished (pre-implementation, during-pilot, post-pilot)
+- ✅ NO autonomous repository mutation in Phase 1 (explicit policy)
+- ✅ Production deployment requires HAA certification + explicit human action
+- ✅ Evidence immutable after CERTIFICATION_READY (versioned, auditable)
+- ✅ Workflow state diagram complete (includes COMPLIANCE_PASSED/FAILED)
+- ✅ Dashboard examples do not imply I1 created by Project LLM
+- ✅ UI architecture clarified early (workspace model, not 12 pages)
+- ✅ Pilot outcome clear (human deploys I2 after certification)
+
+**Status:** REVISION 2 complete. Contract consistency verified. Ready for Human Architecture Authority final approval/lock.
 
 ---
 
