@@ -49,7 +49,7 @@ export const codeTutorialDocument: TutorialDocument = {
         title: 'Counter Example',
         explanation: 'Here is a simple counter that demonstrates variable reassignment:',
         code: 'let count = 0;\ncount = count + 1;\nconsole.log(count);',
-        output: '1',
+        expectedOutput: '1',
         notes: 'The let keyword allows us to change the value of count.',
       },
     },

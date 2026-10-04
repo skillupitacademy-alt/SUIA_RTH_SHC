@@ -3,12 +3,12 @@
  * Matches the actual I1 schema with content.page.* structure
  */
 
-import type { IIntroductionBlock } from '../../blocks/introduction';
+import type { IntroductionI1Block } from '../../blocks/content-blocks';
 
 /**
  * Standard I1 fixture demonstrating all required sections
  */
-export const introductionI1Fixture: IIntroductionBlock = {
+export const introductionI1Fixture: IntroductionI1Block = {
   id: '550e8400-e29b-41d4-a716-446655440001',
   type: 'introduction',
   version: 'I1',
@@ -82,7 +82,7 @@ export const introductionI1Fixture: IIntroductionBlock = {
 /**
  * Minimal I1 fixture using minimum collection sizes
  */
-export const introductionI1MinimalFixture: IIntroductionBlock = {
+export const introductionI1MinimalFixture: IntroductionI1Block = {
   id: '550e8400-e29b-41d4-a716-446655440002',
   type: 'introduction',
   version: 'I1',
@@ -135,7 +135,7 @@ export const introductionI1MinimalFixture: IIntroductionBlock = {
 /**
  * Maximal I1 fixture using maximum collection sizes
  */
-export const introductionI1MaximalFixture: IIntroductionBlock = {
+export const introductionI1MaximalFixture: IntroductionI1Block = {
   id: '550e8400-e29b-41d4-a716-446655440003',
   type: 'introduction',
   version: 'I1',

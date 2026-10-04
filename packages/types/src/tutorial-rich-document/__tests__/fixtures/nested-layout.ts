@@ -42,6 +42,7 @@ export const nestedLayoutDocument: TutorialDocument = {
               content: {
                 cards: [
                   {
+                    id: 'card-pros',
                     title: 'Pros',
                     blocks: [
                       {
@@ -49,12 +50,17 @@ export const nestedLayoutDocument: TutorialDocument = {
                         type: 'list',
                         content: {
                           style: 'unordered',
-                          items: ['Large ecosystem', 'Strong community', 'Flexible'],
+                          items: [
+                            { text: 'Large ecosystem' },
+                            { text: 'Strong community' },
+                            { text: 'Flexible' },
+                          ],
                         },
                       },
                     ],
                   },
                   {
+                    id: 'card-cons',
                     title: 'Cons',
                     blocks: [
                       {
@@ -62,12 +68,17 @@ export const nestedLayoutDocument: TutorialDocument = {
                         type: 'list',
                         content: {
                           style: 'unordered',
-                          items: ['Steep learning curve', 'JSX syntax'],
+                          items: [
+                            { text: 'Steep learning curve' },
+                            { text: 'JSX syntax' },
+                          ],
                         },
                       },
                     ],
                   },
                 ],
+              },
+              presentation: {
                 columns: 2,
               },
             },
@@ -109,11 +120,10 @@ export const nestedLayoutDocument: TutorialDocument = {
       content: {
         title: 'Feature Comparison',
         entities: ['React', 'Vue'],
-        features: ['Learning Curve', 'Performance', 'Ecosystem'],
-        rows: [
-          ['Moderate-Steep', 'Easy-Moderate'],
-          ['Excellent', 'Excellent'],
-          ['Very Large', 'Growing'],
+        features: [
+          { name: 'Learning Curve', values: ['Moderate-Steep', 'Easy-Moderate'] },
+          { name: 'Performance', values: ['Excellent', 'Excellent'] },
+          { name: 'Ecosystem', values: ['Very Large', 'Growing'] },
         ],
       },
     },

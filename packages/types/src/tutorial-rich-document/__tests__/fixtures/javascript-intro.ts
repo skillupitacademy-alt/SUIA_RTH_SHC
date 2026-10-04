@@ -44,7 +44,10 @@ export const javascriptIntroDocument: TutorialDocument = {
       type: 'list',
       content: {
         style: 'unordered',
-        items: ['Client-Side', 'Server-Side'],
+        items: [
+          { text: 'Client-Side' },
+          { text: 'Server-Side' },
+        ],
       },
     },
     {
@@ -58,10 +61,10 @@ export const javascriptIntroDocument: TutorialDocument = {
       content: {
         style: 'unordered',
         items: [
-          'High-level',
-          'Dynamically Typed',
-          'Multi-Paradigm',
-          'Event-Driven & Asynchronous',
+          { text: 'High-level' },
+          { text: 'Dynamically Typed' },
+          { text: 'Multi-Paradigm' },
+          { text: 'Event-Driven & Asynchronous' },
         ],
       },
     },

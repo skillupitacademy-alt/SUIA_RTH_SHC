@@ -73,7 +73,7 @@ describe('TutorialDocument', () => {
 
     it('should reject code blocks in overview section', () => {
       const docWithCode = {
-        schemaVersion: 1,
+        schemaVersion: 1 as const,
         blocks: [
           {
             id: 'code1',
@@ -96,7 +96,7 @@ describe('TutorialDocument', () => {
 
     it('should detect duplicate block IDs', () => {
       const docWithDuplicates = {
-        schemaVersion: 1,
+        schemaVersion: 1 as const,
         blocks: [
           {
             id: 'duplicate',

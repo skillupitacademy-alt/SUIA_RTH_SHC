@@ -27,35 +27,50 @@ export const tableTutorialDocument: TutorialDocument = {
       type: 'table',
       content: {
         columns: [
-          { key: 'type', label: 'Type', alignment: 'left' },
-          { key: 'description', label: 'Description', alignment: 'left' },
-          { key: 'example', label: 'Example', alignment: 'center' },
+          { id: 'type', label: 'Type', alignment: 'left' },
+          { id: 'description', label: 'Description', alignment: 'left' },
+          { id: 'example', label: 'Example', alignment: 'center' },
         ],
         rows: [
           {
-            type: 'String',
-            description: 'Text data',
-            example: '"Hello"',
+            id: 'row_1',
+            cells: [
+              { columnId: 'type', value: 'String' },
+              { columnId: 'description', value: 'Text data' },
+              { columnId: 'example', value: '"Hello"' },
+            ],
           },
           {
-            type: 'Number',
-            description: 'Numeric data',
-            example: '42',
+            id: 'row_2',
+            cells: [
+              { columnId: 'type', value: 'Number' },
+              { columnId: 'description', value: 'Numeric data' },
+              { columnId: 'example', value: '42' },
+            ],
           },
           {
-            type: 'Boolean',
-            description: 'True or false',
-            example: 'true',
+            id: 'row_3',
+            cells: [
+              { columnId: 'type', value: 'Boolean' },
+              { columnId: 'description', value: 'True or false' },
+              { columnId: 'example', value: 'true' },
+            ],
           },
           {
-            type: 'Undefined',
-            description: 'Variable declared but not assigned',
-            example: 'undefined',
+            id: 'row_4',
+            cells: [
+              { columnId: 'type', value: 'Undefined' },
+              { columnId: 'description', value: 'Variable declared but not assigned' },
+              { columnId: 'example', value: 'undefined' },
+            ],
           },
           {
-            type: 'Null',
-            description: 'Intentional absence of value',
-            example: 'null',
+            id: 'row_5',
+            cells: [
+              { columnId: 'type', value: 'Null' },
+              { columnId: 'description', value: 'Intentional absence of value' },
+              { columnId: 'example', value: 'null' },
+            ],
           },
         ],
         hasHeader: true,
@@ -63,11 +78,11 @@ export const tableTutorialDocument: TutorialDocument = {
     },
     {
       id: 'definition1',
-      type: 'definition',
+      type: 'callout',
       content: {
-        term: 'Primitive Type',
-        definition: 'A data type that is not an object and has no methods.',
-        example: 'Numbers, strings, and booleans are primitive types.',
+        variant: 'info',
+        title: 'Primitive Type',
+        text: 'A data type that is not an object and has no methods. Numbers, strings, and booleans are primitive types.',
       },
     },
   ],
