@@ -1,1448 +1,741 @@
-# PROJECT LLM 18-BLOCK CORPUS REGISTRY EXTRACTION
+# PROJECT LLM — 18 Educational Block Corpus Registry
 
-**Document Type:** Corpus Registry & Version Intelligence  
-**Workflow:** Independent Investigation #1 of 4  
-**Repository:** E:\onlinewebsites\quiz-platform  
-**Focus Area:** ILS_UI_UX/docs/ Tutorial Block Documentation  
-**Investigation Date:** 2025  
-**Status:** COMPLETE
+**Status:** Canonical (v1.0 — post-HAA-consolidation)  
+**Date:** 2025-01-20  
+**Authority:** HAA Decisions + TypeScript version registries + PLANNED-UBRC-BLOCKS-INVENTORY.md
 
 ---
 
-## EXECUTIVE SUMMARY
+## Executive Summary
 
-This investigation extracted and formalized the complete **18 Tutorial Block Family** vocabulary with comprehensive version intelligence from the ILS_UI_UX/docs/ directory. The corpus represents a fully-specified tutorial engine architecture with **141 presentation versions** across 18 distinct block types, designed for universal application across Python, JavaScript, TypeScript, Java, C++, SQL, Data Science, ML, Full Stack, Cybersecurity, Ethical Hacking, Cloud, and Quantum Computing domains.
+This canonical registry documents the complete **18 Educational Block Family** architecture for the PROJECT LLM Tutorial Composer system. The architecture represents a comprehensive pedagogical framework designed for universal application across Python, JavaScript, TypeScript, Java, C++, SQL, Data Science, ML, Full Stack, Cybersecurity, and other technical domains.
 
-### Key Findings
+### Key Metrics
 
-- **18 Block Families** documented with complete version specifications (I1-I6, O1-O5, D1-D8, C1-C10, V1-V10, CP1-CP8, E1-E8, M1-M8, MT1-MT8, BP1-BP7, S1-S6, Q1-Q8, EX1-EX8, T1-T8, INT1-INT6, QZ1-QZ8, IV1-IV7, P1-P8)
-- **141 total presentation versions** across all families
-- **DOCUMENTED** status for all versions (comprehensive .ipynb specifications)
-- **Consistent architecture** across all blocks: HTML semantics, SUIA color system (#F54A8D primary, #0B1B3D secondary), JSON data models, A4 portrait layouts
-- **Progressive complexity** within each family (beginner → intermediate → advanced → complete)
-- **Clear separation of concerns** between blocks (learning, practice, assessment, application)
+- **18 Educational Block Families** (architectural taxonomy)
+- **132 versions documented** across 18 families
+- **3 families with verified implementations:** I (Introduction), C (Code), D (Definition)
+- **15 families planned** but not yet implemented
+- **15 Implementation Primitives** (building blocks used BY Educational Blocks, NOT separate families)
 
-### Document Purpose
+### Corrections Applied
 
-This registry serves as the **canonical reference** for:
-1. Tutorial content authors composing learning materials
-2. React/TypeScript implementers building block renderers
-3. UBRC (Universal Block Rendering Core) specifications
-4. ILS (Integrated Learning System) integration requirements
-5. Tutorial Composer block selection and configuration
+Multiple reconciliation investigations resolved contradictions between initial reports and authoritative repository evidence:
 
----
+- **Total version count corrected:** 132 versions (not 141 as initially claimed)
+- **Definition family range corrected:** D1-D6 (6 versions, not D1-D8)
+- **Visual family range corrected:** V1-V8 (8 versions, not V1-V10)
+- **Taxonomy clarified:** 18 Educational Block Families separated from 15 Implementation Primitives
+- **Implementation status verified:** 3 families fully implemented (I1, C1, D1), S1 reclassified as INCOMPLETE
 
-## 18-FAMILY CANONICAL REGISTRY
-
-| # | Block Family | Prefix | Versions | Version Range | Total | Primary Purpose |
-|---|-------------|--------|----------|---------------|-------|-----------------|
-| 1 | **IntroductionBlock** | I | 6 | I1–I6 | 6 | Context & orientation |
-| 2 | **ObjectiveBlock** | O | 5 | O1–O5 | 5 | Learning goals |
-| 3 | **DefinitionBlock** | D | 8 | D1–D8 | 8 | Concept explanation |
-| 4 | **CodeBlock** | C | 10 | C1–C10 | 10 | Code teaching |
-| 5 | **VisualBlock** | V | 10 | V1–V10 | 10 | Visual learning |
-| 6 | **ComparisonBlock** | CP | 8 | CP1–CP8 | 8 | Compare/decide |
-| 7 | **ExecutionBlock** | E | 8 | E1–E8 | 8 | Runtime behavior |
-| 8 | **MemoryBlock** | M | 8 | M1–M8 | 8 | Memory/internal model |
-| 9 | **MistakeBlock** | MT | 8 | MT1–MT8 | 8 | Errors/debugging |
-| 10 | **BestPracticeBlock** | BP | 7 | BP1–BP7 | 7 | Coding practices |
-| 11 | **SummaryBlock** | S | 6 | S1–S6 | 6 | Revision |
-| 12 | **QuestionBlock** | Q | 8 | Q1–Q8 | 8 | Concept checking |
-| 13 | **ExerciseBlock** | EX | 8 | EX1–EX8 | 8 | Guided practice |
-| 14 | **TaskBlock** | T | 8 | T1–T8 | 8 | Practical application |
-| 15 | **InteractiveBlock** | INT | 6 | INT1–INT6 | 6 | Hands-on learning |
-| 16 | **QuizBlock** | QZ | 8 | QZ1–QZ8 | 8 | Assessment |
-| 17 | **InterviewBlock** | IV | 7 | IV1–IV7 | 7 | Interview preparation |
-| 18 | **ProjectBlock** | P | 8 | P1–P8 | 8 | Real-world application |
-| **TOTAL** | | | **141** | | **141** | |
+Content was rephrased for compliance with licensing restrictions.
 
 ---
 
-## VERSION INTELLIGENCE — INTRODUCTION FAMILY (I1–I6)
+## 18-Family Registry Table
 
-### Family Overview
-- **Block:** IntroductionBlock
-- **Version Count:** 6
-- **Primary Question:** "What are we learning and why does this topic matter?"
-- **Position:** Tutorial opening/orientation
-- **Distinction from ObjectiveBlock:** Introduction provides context; Objective states outcomes
+| # | Family Name | Shorthand | Versions | Version Range | Status | Notes |
+|---|------------|-----------|----------|---------------|--------|-------|
+| 1 | IntroductionBlock | I | 6 | I1-I6 | VERIFIED (I1) | I1 implemented with version routing + UBRC |
+| 2 | ObjectiveBlock | O | 5 | O1-O5 | PLANNED | Learning goals specification |
+| 3 | DefinitionBlock | D | 6 | D1-D6 | VERIFIED (D1) | D1 implemented, D7-D8 removed (not in type system) |
+| 4 | CodeBlock | C | 10 | C1-C10 | VERIFIED (C1) | C1 implemented with version routing + UBRC |
+| 5 | VisualBlock | V | 8 | V1-V8 | PLANNED | V9-V10 removed (not evidenced) |
+| 6 | ComparisonBlock | CP | 8 | CP1-CP8 | PLANNED | Concept comparison/differentiation |
+| 7 | ExecutionBlock | E | 8 | E1-E8 | PLANNED | Runtime behavior visualization |
+| 8 | MemoryBlock | M | 8 | M1-M8 | PLANNED | Internal state/memory models |
+| 9 | MistakeBlock | MT | 8 | MT1-MT8 | PLANNED | Error identification/debugging |
+| 10 | BestPracticeBlock | BP | 7 | BP1-BP7 | PLANNED | Coding standards/practices |
+| 11 | SummaryBlock | S | 6 | S1-S6 | PLANNED | Concept revision/summary |
+| 12 | QuestionBlock | Q | 8 | Q1-Q8 | PLANNED | Concept checking questions |
+| 13 | ExerciseBlock | EX | 8 | EX1-EX8 | PLANNED | Guided practice activities |
+| 14 | TaskBlock | T | 8 | T1-T8 | PLANNED | Practical application tasks |
+| 15 | InteractiveBlock | INT | 6 | INT1-INT6 | PLANNED | Hands-on learning interactions |
+| 16 | QuizBlock | QZ | 8 | QZ1-QZ8 | PLANNED | Assessment/evaluation |
+| 17 | InterviewBlock | IV | 7 | IV1-IV7 | PLANNED | Interview preparation |
+| 18 | ProjectBlock | P | 8 | P1-P8 | PLANNED | Real-world project application |
+| | **TOTAL** | | **132** | | **3 VERIFIED, 15 PLANNED** | |
 
-### I1 — Simple Topic Introduction
-**Learning Purpose:** Basic topic orientation  
-**Primary Learner Question:** "What is this lesson about?"  
-**Best For:** Quick lessons, small concepts  
-**Learning Level:** Beginner  
-**Structure:** Topic → Brief description  
-**Required Information:** Topic name, 1-2 sentence overview  
-**Optional Information:** Context hint, relevance statement  
-**Excluded Information:** Detailed objectives, prerequisites, roadmap  
-**HTML Core Tags:** `<section>`, `<header>`, `<h1>`, `<p>`  
-**SUIA Colors:** #F54A8D (title accent), #0B1B3D (text)  
-**Source:** ILS_UI_UX/docs/IntroductionBlock.ipynb (lines 1-150)
-
-### I2 — Problem → Need → Topic
-**Learning Purpose:** Motivation through problem identification  
-**Primary Learner Question:** "Why should I learn this?"  
-**Best For:** Concepts solving specific problems  
-**Learning Level:** Beginner → Intermediate  
-**Structure:** Problem statement → Need → Topic introduction  
-**Required Information:** Problem description, need statement, topic name  
-**Optional Information:** Real-world example  
-**Excluded Information:** Solution details, code  
-**HTML Core Tags:** `<section>`, `<article>`, `<h2>`, `<p>`, `<div>`  
-**Source:** ILS_UI_UX/docs/IntroductionBlock.ipynb (lines 151-300)
-
-### I3 — What → Why → Where
-**Learning Purpose:** Comprehensive orientation  
-**Primary Learner Question:** "What is it, why learn it, where is it used?"  
-**Best For:** General programming concepts  
-**Learning Level:** Intermediate  
-**Structure:** What (definition) → Why (importance) → Where (applications)  
-**Required Information:** Concept definition, importance rationale, 2-3 use cases  
-**Optional Information:** Historical context  
-**HTML Core Tags:** `<section>`, `<article>`, `<h3>`, `<ul>`, `<li>`  
-**Source:** ILS_UI_UX/docs/IntroductionBlock.ipynb (lines 301-450)
-
-### I4 — Topic → Context → Roadmap
-**Learning Purpose:** Structured learning path preview  
-**Primary Learner Question:** "What will I learn and in what order?"  
-**Best For:** Multi-part tutorials  
-**Learning Level:** Intermediate → Advanced  
-**Structure:** Topic → Context → Learning roadmap  
-**Required Information:** Topic, context statement, 3-5 learning milestones  
-**Optional Information:** Estimated time, difficulty  
-**HTML Core Tags:** `<section>`, `<nav>`, `<ol>`, `<li>`, `<span>`  
-**Source:** ILS_UI_UX/docs/IntroductionBlock.ipynb (lines 451-600)
-
-### I5 — Real-World Introduction
-**Learning Purpose:** Practical context establishment  
-**Primary Learner Question:** "How is this used in real projects?"  
-**Best For:** Professional/industry concepts  
-**Learning Level:** Intermediate → Advanced  
-**Structure:** Real-world scenario → Concept introduction → Relevance  
-**Required Information:** Scenario description, concept name, practical application  
-**Optional Information:** Industry examples  
-**HTML Core Tags:** `<section>`, `<figure>`, `<figcaption>`, `<blockquote>`  
-**Source:** ILS_UI_UX/docs/IntroductionBlock.ipynb (lines 601-750)
-
-### I6 — Complete Lesson Introduction
-**Learning Purpose:** Comprehensive lesson orientation  
-**Primary Learner Question:** "Everything I need to know before starting?"  
-**Best For:** Major tutorials, premium content  
-**Learning Level:** All levels  
-**Structure:** Topic → Context → Objectives → Prerequisites → Roadmap → Outcome  
-**Required Information:** All I1-I5 components integrated  
-**Optional Information:** Resources, tools needed  
-**Excluded Information:** Detailed content (reserved for body blocks)  
-**HTML Core Tags:** Complete semantic structure with all tags  
-**Implementation Status:** DOCUMENTED (default/premium version)  
-**Source:** ILS_UI_UX/docs/IntroductionBlock.ipynb (lines 751-887)
+**Calculation Verification:**
+```
+6 + 5 + 6 + 10 + 8 + 8 + 8 + 8 + 8 + 7 + 6 + 8 + 8 + 8 + 6 + 8 + 7 + 8 = 132
+```
 
 ---
 
-## VERSION INTELLIGENCE — OBJECTIVE FAMILY (O1–O5)
+## Per-Family Specifications
 
-### Family Overview
-- **Block:** ObjectiveBlock
-- **Version Count:** 5
-- **Primary Question:** "What should you know, understand, or be able to do after learning?"
-- **Position:** After introduction, before content
-- **Distinction:** Objective states measurable outcomes; Introduction provides context
+### Family 1: IntroductionBlock (I)
 
-### O1 — Simple Learning Goals
-**Learning Purpose:** Basic learning outcome orientation  
-**Primary Learner Question:** "What will I learn from this tutorial?"  
-**Best For:** Simple concepts, quick lessons  
-**Learning Level:** Beginner  
-**Structure:** 3–5 learning goals (unordered list)  
-**Required Information:** 3-5 observable learning goals  
-**Optional Information:** Goal categories  
-**Excluded Information:** Difficulty progression, assessment criteria, detailed rubrics  
-**Visual Presentation:** Bulleted list with checkmark indicators  
-**HTML Core Tags:** `<section>`, `<header>`, `<h2>`, `<ul>`, `<li>`, `<span>`  
-**SUIA Colors:** #F54A8D (check marks, accents), #0B1B3D (goal text)  
-**Data Model:** `{ eyebrow, title, introduction, goals: [] }`  
-**Source:** ILS_UI_UX/docs/ObjectiveBlock.ipynb (lines 1-350)
+**Purpose:** Context and orientation for learning topics  
+**Primary Question:** "What are we learning and why does this topic matter?"  
+**Position:** Tutorial opening/orientation  
+**Distinction:** Provides context (vs ObjectiveBlock which states measurable outcomes)
 
-### O2 — Know → Understand → Apply
-**Learning Purpose:** Cognitive progression framework  
-**Primary Learner Question:** "What knowledge, understanding, and application will I gain?"  
-**Best For:** Structured learning with clear levels  
-**Learning Level:** Intermediate  
-**Structure:** Three tiers: Knowledge → Understanding → Application  
-**Required Information:** Goals organized by cognitive level (Know/Understand/Apply)  
-**Optional Information:** Sub-goals per level  
-**Excluded Information:** Assessment scoring  
-**Visual Presentation:** Three-tier structured layout  
-**HTML Core Tags:** Add `<section>` per tier, `<h3>` for tier labels  
-**Source:** ILS_UI_UX/docs/ObjectiveBlock.ipynb (lines 351-500)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| I1 | Basic Topic Introduction | VERIFIED | Topic orientation with 9-section pedagogical structure. IMPLEMENTED with version routing + UBRC compliance. |
+| I2 | Problem → Need → Topic | PLANNED | Motivation through problem identification |
+| I3 | What → Why → Where | PLANNED | Comprehensive orientation (definition, importance, applications) |
+| I4 | Topic → Context → Roadmap | PLANNED | Structured learning path preview |
+| I5 | Real-World Introduction | PLANNED | Practical context establishment |
+| I6 | Complete Lesson Introduction | PLANNED | Comprehensive lesson orientation (integrates I1-I5 components) |
 
-### O3 — Skill-Based Objectives
-**Learning Purpose:** Observable skill outcomes  
-**Primary Learner Question:** "What specific skills will I be able to perform?"  
-**Best For:** Practical skills, programming competencies  
-**Learning Level:** Intermediate  
-**Structure:** Observable skill statements (action verbs)  
-**Required Information:** 4-6 skill-based objectives with action verbs  
-**Optional Information:** Skill categories  
-**Excluded Information:** Knowledge-only outcomes  
-**Visual Presentation:** Skill cards or badges  
-**HTML Core Tags:** `<article>` per skill, `<strong>` for action verbs  
-**Source:** ILS_UI_UX/docs/ObjectiveBlock.ipynb (lines 501-650)
-
-### O4 — Beginner → Intermediate → Advanced
-**Learning Purpose:** Progressive difficulty levels  
-**Primary Learner Question:** "What will I master at each difficulty level?"  
-**Best For:** Multi-level tutorials  
-**Learning Level:** All levels (progressive)  
-**Structure:** Three difficulty tiers with goals per tier  
-**Required Information:** Goals categorized by difficulty (Beginner/Intermediate/Advanced)  
-**Optional Information:** Completion indicators per level  
-**Excluded Information:** Detailed assessment criteria  
-**Visual Presentation:** Progressive ladder or staircase visual  
-**HTML Core Tags:** `<section>` per level, visual progression indicators  
-**Source:** ILS_UI_UX/docs/ObjectiveBlock.ipynb (lines 651-800)
-
-### O5 — Complete Learning Outcomes
-**Learning Purpose:** Comprehensive outcome specification  
-**Primary Learner Question:** "What complete outcomes will I achieve?"  
-**Best For:** Premium content, formal education, certifications  
-**Learning Level:** All levels  
-**Structure:** Knowledge + Skills + Application outcomes integrated  
-**Required Information:** Complete outcome matrix covering all dimensions  
-**Optional Information:** Assessment mapping, certification alignment  
-**Excluded Information:** Content itself (reserved for body)  
-**Visual Presentation:** Complete outcome matrix or dashboard  
-**HTML Core Tags:** Full semantic structure with all elements  
-**Implementation Status:** DOCUMENTED (premium/default version)  
-**Source:** ILS_UI_UX/docs/ObjectiveBlock.ipynb (lines 801-1060)
+**Evidence Sources:**
+- TypeScript: `packages/ui/src/tutorial/blocks/IntroductionBlock.tsx`
+- Renderer: `packages/ui/src/tutorial/TutorialBlockRenderer.tsx` (lines 93-106)
+- Composer: `apps/skillhubcore-admin/.../introduction.registry.ts`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Introduction.md`
 
 ---
 
-## VERSION INTELLIGENCE — DEFINITION FAMILY (D1–D8)
+### Family 2: ObjectiveBlock (O)
 
-### Family Overview
-- **Block:** DefinitionBlock
-- **Version Count:** 8
-- **Primary Question:** "What exactly is this concept?"
-- **Position:** Core content (after orientation)
-- **Distinction:** Definition explains "what"; Code shows "how"; Visual shows structure
+**Purpose:** Learning goals and measurable outcomes  
+**Primary Question:** "What should you know, understand, or be able to do after learning?"  
+**Position:** After introduction, before content  
+**Distinction:** States measurable outcomes (vs IntroductionBlock which provides context)
 
-### D1 — Classic Definition
-**Learning Purpose:** Basic concept definition  
-**Primary Learner Question:** "What is this?"  
-**Best For:** General programming concepts  
-**Learning Level:** Beginner  
-**Structure:** Heading → Definition card → Brief explanation  
-**Required Information:** Concept name, definition (1-2 sentences), brief explanation  
-**Optional Information:** Simple example  
-**Excluded Information:** Long characteristics, analogies, visuals, technical internals  
-**HTML Core Tags:** `<section>`, `<header>`, `<h2>`, `<article>`, `<h3>`, `<p>`  
-**SUIA Colors:** #F54A8D (Definition label), #0B1B3D (text)  
-**JSON Model:** `{ eyebrow, title, definition, explanation }`  
-**Source:** ILS_UI_UX/docs/DefinitionBlock.ipynb (lines 1-150)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| O1 | Simple Learning Goals | PLANNED | 3-5 basic learning goals (unordered list) |
+| O2 | Know → Understand → Apply | PLANNED | Cognitive progression framework (three tiers) |
+| O3 | Skill-Based Objectives | PLANNED | Observable skill outcomes with action verbs |
+| O4 | Beginner → Intermediate → Advanced | PLANNED | Progressive difficulty levels |
+| O5 | Complete Learning Outcomes | PLANNED | Comprehensive outcome specification (integrates O1-O4) |
 
-### D2 — Definition + Key Characteristics
-**Learning Purpose:** Definition with properties  
-**Primary Learner Question:** "What is it and what are its key properties?"  
-**Best For:** Lists, sets, classes, data structures  
-**Learning Level:** Beginner → Intermediate  
-**Structure:** Definition → Explanation → 4–6 characteristics  
-**Required Information:** Definition, explanation, 4-6 characteristics list  
-**Optional Information:** Characteristic categories  
-**Excluded Information:** Analogies, visuals  
-**HTML Core Tags:** Add `<ul>`, `<li>`, `<strong>` for characteristics  
-**JSON Model:** `{ title, definition, characteristics: [] }`  
-**Source:** ILS_UI_UX/docs/DefinitionBlock.ipynb (lines 151-280)
-
-### D3 — Definition + Real-World Analogy
-**Learning Purpose:** Conceptual understanding through analogy  
-**Primary Learner Question:** "How can I understand this in familiar terms?"  
-**Best For:** Abstract concepts, beginners  
-**Learning Level:** Beginner  
-**Structure:** Definition → Technical explanation → Real-world analogy  
-**Required Information:** Definition, technical explanation, clear analogy  
-**Optional Information:** Multiple analogies  
-**Excluded Information:** Technical internals  
-**HTML Core Tags:** Add `<blockquote>`, `<cite>` for analogy  
-**JSON Model:** `{ title, definition, technicalExplanation, analogy }`  
-**Source:** ILS_UI_UX/docs/DefinitionBlock.ipynb (lines 281-410)
-
-### D4 — Definition + Why It Matters
-**Learning Purpose:** Context and importance  
-**Primary Learner Question:** "Why should I care about this concept?"  
-**Best For:** Conceptual topics, motivation  
-**Learning Level:** Intermediate  
-**Structure:** Definition → Explanation → Why it matters  
-**Required Information:** Definition, explanation, importance statement  
-**Optional Information:** Use cases  
-**Excluded Information:** Technical deep-dive  
-**HTML Core Tags:** Add `<aside>` for "why it matters"  
-**JSON Model:** `{ title, definition, explanation, whyItMatters }`  
-**Source:** ILS_UI_UX/docs/DefinitionBlock.ipynb (lines 411-530)
-
-### D5 — Definition + Visual Concept
-**Learning Purpose:** Visual-enhanced understanding  
-**Primary Learner Question:** "What does this concept look like?"  
-**Best For:** Abstract concepts, data structures  
-**Learning Level:** Intermediate  
-**Structure:** Definition → Explanation → Small conceptual visual  
-**Required Information:** Definition, explanation, simple visual model  
-**Optional Information:** Multiple views  
-**Excluded Information:** Large diagrams (reserved for VisualBlock)  
-**HTML Core Tags:** Add `<figure>`, `<figcaption>` for visual  
-**JSON Model:** `{ title, definition, explanation, visual: { type, labels, values } }`  
-**Source:** ILS_UI_UX/docs/DefinitionBlock.ipynb (lines 531-660)
-
-### D6 — Definition + Technical Breakdown
-**Learning Purpose:** Deep technical understanding  
-**Primary Learner Question:** "What are the technical details?"  
-**Best For:** FAANG-level topics, internals, advanced concepts  
-**Learning Level:** Advanced  
-**Structure:** Definition → Terminology → Technical details  
-**Required Information:** Technical definition, terminology list, detailed breakdown  
-**Optional Information:** Performance characteristics  
-**Excluded Information:** Beginner analogies  
-**HTML Core Tags:** Add `<dl>`, `<dt>`, `<dd>` for terminology  
-**JSON Model:** `{ title, definition, terminology: [ { term, description } ], technicalDetails: [] }`  
-**Source:** ILS_UI_UX/docs/DefinitionBlock.ipynb (lines 661-790)
-
-### D7 — Definition + Example
-**Learning Purpose:** Practical demonstration  
-**Primary Learner Question:** "Can you show me an example?"  
-**Best For:** Programming concepts needing immediate illustration  
-**Learning Level:** Intermediate  
-**Structure:** Definition → Explanation → Simple example → Takeaway  
-**Required Information:** Definition, explanation, code example, takeaway  
-**Optional Information:** Multiple examples  
-**Excluded Information:** Extensive code (reserved for CodeBlock)  
-**HTML Core Tags:** Add `<pre>`, `<code>` for example  
-**JSON Model:** `{ title, definition, explanation, example: { code, language, output }, takeaway }`  
-**Source:** ILS_UI_UX/docs/DefinitionBlock.ipynb (lines 791-917)
-
-### D8 — Complete Learning Card
-**Learning Purpose:** Comprehensive concept explanation  
-**Primary Learner Question:** "Everything about this concept?"  
-**Best For:** Premium content, complete tutorials  
-**Learning Level:** All levels  
-**Structure:** Definition → Characteristics → Analogy/Visual → Example → Takeaway  
-**Required Information:** All D1-D7 elements integrated  
-**Optional Information:** Related concepts, next steps  
-**Excluded Information:** None (complete version)  
-**HTML Core Tags:** Full semantic structure  
-**Implementation Status:** DOCUMENTED (premium/default)  
-**Source:** ILS_UI_UX/docs/DefinitionBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Objective.md`
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
 
 ---
 
-## VERSION INTELLIGENCE — CODE FAMILY (C1–C10)
+### Family 3: DefinitionBlock (D) — CORRECTED
 
-### Family Overview
-- **Block:** CodeBlock
-- **Version Count:** 10
-- **Primary Question:** "What does this code do?"
-- **Position:** Core content (demonstration)
-- **Distinction:** Code shows syntax/behavior; Execution shows runtime; Visual shows structure
+**Purpose:** Concept explanation and definition  
+**Primary Question:** "What exactly is this concept?"  
+**Position:** Core content (after orientation)  
+**Distinction:** Explains "what" (vs CodeBlock showing "how", VisualBlock showing structure)
 
-### C1 — Basic Code Example
-**Learning Purpose:** Simple code demonstration  
-**Primary Learner Question:** "What does this code do?"  
-**Best For:** Simple syntax, quick examples  
-**Learning Level:** Beginner → Intermediate  
-**Complexity:** Very low  
-**Structure:** Code → Output  
-**Required Information:** Executable code (1-10 lines), corresponding output  
-**Optional Information:** Language label  
-**Excluded Information:** Line-by-line explanation, walkthroughs, debugging, multiple examples  
-**HTML Core Tags:** `<section>`, `<pre>`, `<code>`  
-**SUIA Colors:** #0B1B3D (code), light pink background for code blocks  
-**JSON Model:** `{ type: "code", version: "C1", language, code, output }`  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| D1 | Classic Definition | VERIFIED | Basic concept definition with brief explanation. IMPLEMENTED with version routing + UBRC compliance. |
+| D2 | Definition + Key Characteristics | PLANNED | Definition with 4-6 properties/characteristics |
+| D3 | Definition + Real-World Analogy | PLANNED | Conceptual understanding through analogy |
+| D4 | Definition + Why It Matters | PLANNED | Context and importance statement |
+| D5 | Definition + Visual Concept | PLANNED | Visual-enhanced understanding |
+| D6 | Definition + Technical Breakdown | PLANNED | Deep technical understanding (FAANG-level) |
 
-### C2 — Syntax + Explanation
-**Structure:** Code → Syntax highlighting → Brief explanation  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 351-500)
+**CRITICAL CORRECTION:**
+- **Original Claims:** D1-D8 (8 versions) in Corpus Registry report
+- **TypeScript Registry Evidence:** D1-D6 ONLY (6 versions) in `definition-versions.ts`
+- **Authoritative Inventory:** D1-D6 (6 versions) in PLANNED-UBRC-BLOCKS-INVENTORY.md
+- **Reconciliation Verdict:** D1-D6 is correct; D7-D8 documented in .ipynb files but NOT implemented in type system
+- **Reason:** TypeScript registry is runtime contract and takes precedence over aspirational documentation
 
-### C3 — Annotated Code
-**Structure:** Code with inline annotations/comments  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 501-650)
-
-### C4 — Code + Output
-**Structure:** Code → Expected output → Output explanation  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 651-800)
-
-### C5 — Code Walkthrough
-**Structure:** Code → Step-by-step execution explanation  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 801-950)
-
-### C6 — Before / After Code
-**Structure:** Before version → After version → What changed  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 951-1100)
-
-### C7 — Common Mistake
-**Structure:** Incorrect code → Error → Explanation → Correction  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 1101-1250)
-
-### C8 — Multiple Examples
-**Structure:** Example 1 → Example 2 → Example 3 → Pattern identification  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 1251-1400)
-
-### C9 — Code + Explanation + Output
-**Structure:** Complete three-part presentation  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (lines 1401-1550)
-
-### C10 — Interactive / Playground
-**Learning Purpose:** Hands-on experimentation  
-**Primary Learner Question:** "Can I run and modify this?"  
-**Best For:** Learning by doing  
-**Structure:** Editable code → Run button → Live output  
-**Required Information:** Executable environment, starter code  
-**Optional Information:** Test cases, hints  
-**Implementation Status:** DOCUMENTED (requires runtime integration)  
-**Source:** ILS_UI_UX/docs/CodeBlock.ipynb (complete specification)
+**Evidence Sources:**
+- TypeScript Registry: `packages/types/src/tutorial-rich-document/registries/definition-versions.ts` (AUTHORITATIVE)
+- Component: `packages/ui/src/tutorial/blocks/DefinitionBlock.tsx`
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Definition.md` (Note: Documents D1-D8 but D7-D8 not in type system)
 
 ---
 
-## VERSION INTELLIGENCE — VISUAL FAMILY (V1–V10)
+### Family 4: CodeBlock (C)
 
-### Family Overview
-- **Block:** VisualBlock
-- **Version Count:** 10
-- **Primary Question:** "What does this concept look like?"
-- **Position:** Core content (structural explanation)
-- **Distinction:** Visual shows structure/relationships; Code shows behavior; Execution shows runtime
+**Purpose:** Code demonstration and syntax teaching  
+**Primary Question:** "What does this code do?"  
+**Position:** Core content (demonstration)  
+**Distinction:** Shows syntax/behavior (vs ExecutionBlock showing runtime, VisualBlock showing structure)
 
-### V1 — Basic Visual
-**Learning Purpose:** Simple visual concept representation  
-**Primary Learner Question:** "What does this concept look like?"  
-**Best For:** Diagrams, architecture, flows, relationships  
-**Learning Level:** Beginner → Intermediate  
-**Structure:** Visual → Caption / Explanation  
-**Required Information:** Conceptual diagram, caption  
-**Optional Information:** Legend, annotations  
-**Excluded Information:** Complex multi-layer diagrams (reserved for later versions)  
-**HTML Core Tags:** `<section>`, `<figure>`, `<figcaption>`, `<div>`  
-**SUIA Colors:** #F54A8D (accent elements), #0B1B3D (labels)  
-**Visual Types:** Concept diagrams, basic flows, simple relationships  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| C1 | Basic Code Example | VERIFIED | Simple code demonstration (1-10 lines with output). IMPLEMENTED with version routing + UBRC compliance. |
+| C2 | Syntax + Explanation | PLANNED | Code with syntax highlighting and brief explanation |
+| C3 | Annotated Code | PLANNED | Code with inline annotations/comments |
+| C4 | Code + Output | PLANNED | Code with expected output and explanation |
+| C5 | Code Walkthrough | PLANNED | Step-by-step execution explanation |
+| C6 | Before / After Code | PLANNED | Version comparison (what changed) |
+| C7 | Common Mistake | PLANNED | Incorrect code → error → correction |
+| C8 | Multiple Examples | PLANNED | Pattern identification across examples |
+| C9 | Code + Explanation + Output | PLANNED | Complete three-part presentation |
+| C10 | Interactive / Playground | PLANNED | Hands-on experimentation (requires runtime integration) |
 
-### V2 — Flow
-**Structure:** Process flow diagram with steps  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 351-500)
-
-### V3 — Relationship
-**Structure:** Entity relationship diagram  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 501-650)
-
-### V4 — State Transition
-**Structure:** State machine diagram  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 651-800)
-
-### V5 — Memory Model
-**Structure:** Memory layout visualization  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 801-950)
-
-### V6 — Execution Model
-**Structure:** Runtime execution visualization  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 951-1100)
-
-### V7 — Comparison / Decision
-**Structure:** Decision tree or comparison matrix visual  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 1101-1250)
-
-### V8 — Hierarchy / Structure
-**Structure:** Hierarchical organization diagram  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 1251-1400)
-
-### V9 — Timeline / Lifecycle
-**Structure:** Temporal progression visualization  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (lines 1401-1550)
-
-### V10 — Complete Concept Visual
-**Learning Purpose:** Comprehensive visual explanation  
-**Primary Learner Question:** "Complete visual understanding?"  
-**Best For:** Premium content, complex systems  
-**Structure:** Multi-layer integrated visualization  
-**Implementation Status:** DOCUMENTED (premium version)  
-**Source:** ILS_UI_UX/docs/VisualBlock.ipynb (complete specification)
+**Evidence Sources:**
+- TypeScript Registry: `packages/types/src/tutorial-rich-document/registries/code-versions.ts`
+- Component: `packages/ui/src/tutorial/blocks/CodeC1Block.tsx`
+- Renderer: `packages/ui/src/tutorial/TutorialBlockRenderer.tsx` (lines 72-81)
+- Composer: `apps/skillhubcore-admin/.../code.registry.ts`
+- Tests: `packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.test.tsx` (475+ lines, 50+ test cases)
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Code.md`
 
 ---
 
-## VERSION INTELLIGENCE — COMPARISON FAMILY (CP1–CP8)
+### Family 5: VisualBlock (V) — CORRECTED
 
-### Family Overview
-- **Block:** ComparisonBlock
-- **Version Count:** 8
-- **Primary Question:** "How are A and B different when looking at them side by side?"
-- **Position:** Core content (differentiation)
-- **Distinction:** Comparison shows differences; Definition explains concepts; Visual shows structure
+**Purpose:** Visual learning and structural explanation  
+**Primary Question:** "What does this concept look like?"  
+**Position:** Core content (structural explanation)  
+**Distinction:** Shows structure/relationships (vs CodeBlock showing behavior, ExecutionBlock showing runtime)
 
-### CP1 — Side-by-Side Comparison
-**Learning Purpose:** Direct parallel comparison  
-**Primary Learner Question:** "How are A and B different side by side?"  
-**Best For:** Commonly confused concepts (list vs tuple, authentication vs authorization)  
-**Learning Level:** Beginner → Intermediate  
-**Structure:** Concept A → Concept B → Parallel attributes → Key distinction  
-**Required Information:** Two concepts, parallel comparison dimensions, key distinction  
-**Optional Information:** When to use each  
-**Excluded Information:** More than 2 concepts (reserved for later versions)  
-**HTML Core Tags:** `<section>`, `<article>` (per concept), `<table>` for comparison  
-**SUIA Colors:** Balanced use of #F54A8D and #0B1B3D (no bias toward either concept)  
-**Visual Presentation:** Two-column layout with comparison table  
-**Source:** ILS_UI_UX/docs/ComparisonBlock.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| V1 | Basic Visual | PLANNED | Simple visual concept representation (diagrams, flows, relationships) |
+| V2 | Flow | PLANNED | Process flow diagram with steps |
+| V3 | Relationship | PLANNED | Entity relationship diagram |
+| V4 | State Transition | PLANNED | State machine diagram |
+| V5 | Memory Model | PLANNED | Memory layout visualization |
+| V6 | Execution Model | PLANNED | Runtime execution visualization |
+| V7 | Comparison / Decision | PLANNED | Decision tree or comparison matrix visual |
+| V8 | Hierarchy / Structure | PLANNED | Hierarchical organization diagram |
 
-### CP2 — Feature Comparison Table
-**Structure:** Feature-by-feature matrix comparison  
-**Source:** ILS_UI_UX/docs/ComparisonBlock.ipynb (lines 351-500)
+**CRITICAL CORRECTION:**
+- **Original Claims:** V1-V10 (10 versions) in Corpus Registry and Provenance reports
+- **Authoritative Matrix Evidence:** V1-V8 ONLY (8 versions), "V9, V10 NOT EVIDENCED (contradicts historical register)"
+- **Reconciliation Verdict:** V1-V8 is correct; V9-V10 claimed in old reports but NOT in authoritative specification
+- **Status:** V9-V10 removed from count (historical claims only, no specifications found)
 
-### CP3 — Similarities vs Differences
-**Structure:** Similarities section → Differences section  
-**Source:** ILS_UI_UX/docs/ComparisonBlock.ipynb (lines 501-650)
-
-### CP4 — When to Use A vs B
-**Structure:** Decision criteria for selecting between options  
-**Source:** ILS_UI_UX/docs/ComparisonBlock.ipynb (lines 651-800)
-
-### CP5 — Advantages vs Limitations
-**Structure:** Pros and cons comparison  
-**Source:** ILS_UI_UX/docs/ComparisonBlock.ipynb (lines 801-950)
-
-### CP6 — Decision Tree
-**Structure:** Flow-based decision guidance  
-**Source:** ILS_UI_UX/docs/ComparisonBlock.ipynb (lines 951-1100)
-
-### CP7 — Selection Matrix
-**Structure:** Multi-criteria decision matrix  
-**Source:** ILS_UI_UX/docs/ComparisonBlock.ipynb (lines 1101-1250)
-
-### CP8 — Complete Comparison Guide
-**Learning Purpose:** Comprehensive comparison reference  
-**Primary Learner Question:** "Everything about comparing these concepts?"  
-**Best For:** Premium content, formal education  
-**Structure:** All comparison dimensions integrated  
-**Implementation Status:** DOCUMENTED (premium version)  
-**Source:** ILS_UI_UX/docs/ComparisonBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `ILS_UI_UX/docs/blocksmdfiles/OneAIModelForProjectLLM/FAMILY_VERSION_MATRIX.md` (AUTHORITATIVE)
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Visual.md`
 
 ---
 
-## VERSION INTELLIGENCE — EXECUTION FAMILY (E1–E8)
+### Family 6: ComparisonBlock (CP)
 
-### Family Overview
-- **Block:** ExecutionBlock
-- **Version Count:** 8
-- **Primary Question:** "What happens when this code/operation executes?"
-- **Position:** Core content (runtime behavior)
-- **Distinction:** Execution shows "what happens when"; Code shows "what it is"; Visual shows "structure"
+**Purpose:** Concept comparison and differentiation  
+**Primary Question:** "How are A and B different when looking at them side by side?"  
+**Position:** Core content (differentiation)
 
-### E1 — Execution Flow
-**Learning Purpose:** Chronological execution sequence  
-**Primary Learner Question:** "What happens first, next, and last?"  
-**Best For:** Algorithms, SQL queries, API requests, function calls  
-**Learning Level:** Beginner → Intermediate  
-**Structure:** Start → Step 1 → Step 2 → Step 3 → Result  
-**Required Information:** Start point, execution steps in order, final result  
-**Optional Information:** State changes at each step  
-**Excluded Information:** Memory details (reserved for MemoryBlock), detailed internals  
-**HTML Core Tags:** `<section>`, `<ol>`, `<li>`, arrows/connectors  
-**SUIA Colors:** #F54A8D (flow arrows), #0B1B3D (step text)  
-**Visual Presentation:** Vertical or horizontal flow with clear sequence  
-**Source:** ILS_UI_UX/docs/ExecutionBlock.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| CP1 | Side-by-Side Comparison | PLANNED | Direct parallel comparison (2 concepts) |
+| CP2 | Feature Comparison Table | PLANNED | Feature-by-feature matrix comparison |
+| CP3 | Similarities vs Differences | PLANNED | Similarities section → Differences section |
+| CP4 | When to Use A vs B | PLANNED | Decision criteria for selection |
+| CP5 | Advantages vs Limitations | PLANNED | Pros and cons comparison |
+| CP6 | Decision Tree | PLANNED | Flow-based decision guidance |
+| CP7 | Selection Matrix | PLANNED | Multi-criteria decision matrix |
+| CP8 | Complete Comparison Guide | PLANNED | Comprehensive comparison reference |
 
-### E2 — Step-by-Step Execution
-**Structure:** Detailed step-by-step breakdown  
-**Source:** ILS_UI_UX/docs/ExecutionBlock.ipynb (lines 351-500)
-
-### E3 — Execution Flow Diagram
-**Structure:** Visual flow representation with branching  
-**Source:** ILS_UI_UX/docs/ExecutionBlock.ipynb (lines 501-650)
-
-### E4 — Function Call Execution
-**Structure:** Function invocation → parameter binding → execution → return  
-**Source:** ILS_UI_UX/docs/ExecutionBlock.ipynb (lines 651-800)
-
-### E5 — Stack / Frame Execution
-**Structure:** Call stack visualization during execution  
-**Source:** ILS_UI_UX/docs/ExecutionBlock.ipynb (lines 801-950)
-
-### E6 — Runtime Pipeline
-**Structure:** Multi-stage pipeline execution  
-**Source:** ILS_UI_UX/docs/ExecutionBlock.ipynb (lines 951-1100)
-
-### E7 — Before → During → After
-**Structure:** Three-phase execution state visualization  
-**Source:** ILS_UI_UX/docs/ExecutionBlock.ipynb (lines 1101-1250)
-
-### E8 — Complete Execution Model
-**Learning Purpose:** Comprehensive runtime model  
-**Primary Learner Question:** "Complete execution understanding?"  
-**Best For:** Advanced topics, FAANG preparation  
-**Structure:** All execution aspects integrated  
-**Implementation Status:** DOCUMENTED (advanced version)  
-**Source:** ILS_UI_UX/docs/ExecutionBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Comparison.md`
 
 ---
 
-## VERSION INTELLIGENCE — MEMORY FAMILY (M1–M8)
+### Family 7: ExecutionBlock (E)
 
-### Family Overview
-- **Block:** MemoryBlock
-- **Version Count:** 8
-- **Primary Question:** "Where does the data exist while the program runs?"
-- **Position:** Core content (internal representation)
-- **Distinction:** Memory shows "internal state"; Execution shows "what happens"; Code shows "syntax"
+**Purpose:** Runtime behavior visualization  
+**Primary Question:** "What happens when this code/operation executes?"  
+**Position:** Core content (runtime behavior)
 
-### M1 — Memory Fundamentals
-**Learning Purpose:** Basic memory concept introduction  
-**Primary Learner Question:** "Where does data exist during execution?"  
-**Best For:** Foundation concepts, variables, objects  
-**Learning Level:** Foundation → Intermediate  
-**Structure:** Program state → Memory representation → Name-object model  
-**Required Information:** Conceptual memory model, name-object binding explanation  
-**Optional Information:** Physical vs conceptual memory  
-**Excluded Information:** Stack/heap details (reserved for M4), internals (reserved for M7-M8)  
-**HTML Core Tags:** `<section>`, `<figure>`, `<div>` for diagrams  
-**SUIA Colors:** #F54A8D (reference arrows), #0B1B3D (object boxes)  
-**Visual Presentation:** Name → Object reference diagrams  
-**Source:** ILS_UI_UX/docs/MemoryBlock.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| E1 | Execution Flow | PLANNED | Chronological execution sequence |
+| E2 | Step-by-Step Execution | PLANNED | Detailed step-by-step breakdown |
+| E3 | Execution Flow Diagram | PLANNED | Visual flow representation with branching (PARTIAL specification) |
+| E4 | Function Call Execution | PLANNED | Function invocation → parameter binding → execution → return |
+| E5 | Stack / Frame Execution | PLANNED | Call stack visualization during execution |
+| E6 | Runtime Pipeline | PLANNED | Multi-stage pipeline execution |
+| E7 | Before → During → After | PLANNED | Three-phase execution state visualization |
+| E8 | Complete Execution Model | PLANNED | Comprehensive runtime model (advanced/FAANG) |
 
-### M2 — Variable → Object
-**Structure:** Variable reference model visualization  
-**Source:** ILS_UI_UX/docs/MemoryBlock.ipynb (lines 351-500)
+**Note:** E3 flagged as PARTIAL specification in reconciliation reports but included in total count.
 
-### M3 — Reference Model
-**Structure:** Reference semantics explanation  
-**Source:** ILS_UI_UX/docs/MemoryBlock.ipynb (lines 501-650)
-
-### M4 — Stack / Heap
-**Structure:** Stack and heap memory regions  
-**Source:** ILS_UI_UX/docs/MemoryBlock.ipynb (lines 651-800)
-
-### M5 — Object Memory Layout
-**Structure:** Internal object structure  
-**Source:** ILS_UI_UX/docs/MemoryBlock.ipynb (lines 801-950)
-
-### M6 — Memory Before / After
-**Structure:** State changes during execution  
-**Source:** ILS_UI_UX/docs/MemoryBlock.ipynb (lines 951-1100)
-
-### M7 — Lifecycle / Allocation / Deallocation
-**Structure:** Object lifetime management  
-**Source:** ILS_UI_UX/docs/MemoryBlock.ipynb (lines 1101-1250)
-
-### M8 — Complete Memory Model
-**Learning Purpose:** Comprehensive memory understanding  
-**Primary Learner Question:** "Complete internal representation?"  
-**Best For:** C/C++, system programming, advanced topics  
-**Structure:** All memory aspects integrated  
-**Implementation Status:** DOCUMENTED (advanced version)  
-**Source:** ILS_UI_UX/docs/MemoryBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Execution.md`
 
 ---
 
-## VERSION INTELLIGENCE — MISTAKE FAMILY (MT1–MT8)
+### Family 8: MemoryBlock (M)
 
-### Family Overview
-- **Block:** MistakeBlock
-- **Version Count:** 8
-- **Primary Question:** "What is wrong and what should it be?"
-- **Position:** Error understanding (post-concept)
-- **Distinction:** Mistake shows "error correction"; Code shows "correct usage"; Execution shows "runtime"
+**Purpose:** Internal state and memory models  
+**Primary Question:** "Where does the data exist while the program runs?"  
+**Position:** Core content (internal representation)
 
-### MT1 — Mistake → Correction
-**Learning Purpose:** Simple error identification and correction  
-**Primary Learner Question:** "What is wrong, and what should it be?"  
-**Best For:** Common syntax errors, beginner mistakes  
-**Learning Level:** Beginner  
-**Structure:** Mistake → Correction (with indicator of what changed)  
-**Required Information:** Incorrect code/concept, correct version, brief change explanation  
-**Optional Information:** Why it was wrong  
-**Excluded Information:** Error messages (reserved for MT3), multiple mistakes (MT6), debugging steps (MT7)  
-**HTML Core Tags:** `<section>`, `<article>` (mistake card), `<article>` (correction card)  
-**SUIA Colors:** Subtle error indication (not aggressive red), #F54A8D (correction emphasis)  
-**Visual Presentation:** Two-state comparison with change indicator  
-**Source:** ILS_UI_UX/docs/MistakeBlock.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| M1 | Memory Fundamentals | PLANNED | Basic memory concept introduction |
+| M2 | Variable → Object | PLANNED | Variable reference model visualization |
+| M3 | Reference Model | PLANNED | Reference semantics explanation |
+| M4 | Stack / Heap | PLANNED | Stack and heap memory regions |
+| M5 | Object Memory Layout | PLANNED | Internal object structure |
+| M6 | Memory Before / After | PLANNED | State changes during execution |
+| M7 | Lifecycle / Allocation / Deallocation | PLANNED | Memory management visualization |
+| M8 | Complete Memory Model | PLANNED | Comprehensive memory model |
 
-### MT2 — Incorrect → Why → Correct
-**Structure:** Mistake → Reason → Correction  
-**Source:** ILS_UI_UX/docs/MistakeBlock.ipynb (lines 351-500)
-
-### MT3 — Error Message → Cause → Fix
-**Structure:** Error output → Root cause → Solution  
-**Source:** ILS_UI_UX/docs/MistakeBlock.ipynb (lines 501-650)
-
-### MT4 — Common Beginner Mistakes
-**Structure:** Collection of frequent mistakes  
-**Source:** ILS_UI_UX/docs/MistakeBlock.ipynb (lines 651-800)
-
-### MT5 — Before / After Debugging
-**Structure:** Broken code → Debugging process → Fixed code  
-**Source:** ILS_UI_UX/docs/MistakeBlock.ipynb (lines 801-950)
-
-### MT6 — Multiple Mistakes
-**Structure:** Code with several errors → Corrections  
-**Source:** ILS_UI_UX/docs/MistakeBlock.ipynb (lines 951-1100)
-
-### MT7 — Debugging Walkthrough
-**Structure:** Step-by-step debugging process  
-**Source:** ILS_UI_UX/docs/MistakeBlock.ipynb (lines 1101-1250)
-
-### MT8 — Complete Debugging Guide
-**Learning Purpose:** Comprehensive error handling  
-**Primary Learner Question:** "Complete debugging approach?"  
-**Best For:** Advanced debugging, production issues  
-**Structure:** All debugging dimensions integrated  
-**Implementation Status:** DOCUMENTED (advanced version)  
-**Source:** ILS_UI_UX/docs/MistakeBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Memory.md`
 
 ---
 
-## VERSION INTELLIGENCE — BEST PRACTICE FAMILY (BP1–BP7)
+### Family 9: MistakeBlock (MT)
 
-### Family Overview
-- **Block:** BestPracticeBlock
-- **Version Count:** 7
-- **Primary Question:** "What is the recommended practice and how does it look?"
-- **Position:** Quality guidance (post-concept)
-- **Distinction:** Best Practice shows "recommended approach"; Mistake shows "what to avoid"
+**Purpose:** Error identification and debugging  
+**Primary Question:** "What went wrong and how do I fix it?"  
+**Position:** Core content (debugging/errors)
 
-### BP1 — Rule → Example
-**Learning Purpose:** Basic practice demonstration  
-**Primary Learner Question:** "What is the practice and what does it look like?"  
-**Best For:** Coding standards, conventions  
-**Learning Level:** Beginner → Intermediate  
-**Structure:** Rule statement → Concrete example  
-**Required Information:** Practice rule, code example demonstrating rule  
-**Optional Information:** Counter-example (brief)  
-**Excluded Information:** Extensive reasoning (reserved for BP2), multiple practices (BP5)  
-**HTML Core Tags:** `<section>`, `<article>` (rule card), `<pre>`, `<code>`  
-**SUIA Colors:** #F54A8D (rule emphasis), #0B1B3D (example)  
-**Source:** ILS_UI_UX/docs/BestPractices.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| MT1 | Basic Mistake Identification | PLANNED | Error → What went wrong → Correction |
+| MT2 | Mistake with Explanation | PLANNED | Why the mistake happened |
+| MT3 | Mistake with Correction | PLANNED | Step-by-step correction process |
+| MT4 | Mistake with Prevention | PLANNED | How to avoid in future |
+| MT5 | Mistake Comparison | PLANNED | Common vs uncommon errors |
+| MT6 | Mistake Analysis | PLANNED | Root cause analysis |
+| MT7 | Complete Mistake Learning Model | PLANNED | Comprehensive debugging approach |
+| MT8 | Advanced/Systematic Debugging | PLANNED | Systematic debugging methodology (DECLARED/ABSENT specification) |
 
-### BP2 — Rule → Why
-**Structure:** Practice → Rationale → Benefits  
-**Source:** ILS_UI_UX/docs/BestPractices.ipynb (lines 351-500)
+**Note:** MT8 flagged as DECLARED/ABSENT specification in reconciliation reports but included in total count.
 
-### BP3 — Do / Don't
-**Structure:** Recommended approach vs anti-pattern  
-**Source:** ILS_UI_UX/docs/BestPractices.ipynb (lines 501-650)
-
-### BP4 — Before / After
-**Structure:** Poor code → Improved code with practice applied  
-**Source:** ILS_UI_UX/docs/BestPractices.ipynb (lines 651-800)
-
-### BP5 — Best Practices Checklist
-**Structure:** Collection of related practices  
-**Source:** ILS_UI_UX/docs/BestPractices.ipynb (lines 801-950)
-
-### BP6 — Industry / FAANG Practices
-**Structure:** Professional/company-specific standards  
-**Source:** ILS_UI_UX/docs/BestPractices.ipynb (lines 951-1100)
-
-### BP7 — Complete Best-Practice Guide
-**Learning Purpose:** Comprehensive practice reference  
-**Primary Learner Question:** "All recommended practices?"  
-**Best For:** Professional development, code reviews  
-**Structure:** Complete practice compendium  
-**Implementation Status:** DOCUMENTED (professional version)  
-**Source:** ILS_UI_UX/docs/BestPractices.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Mistake.md`
 
 ---
 
-## VERSION INTELLIGENCE — SUMMARY FAMILY (S1–S6)
+### Family 10: BestPracticeBlock (BP)
 
-### Family Overview
-- **Block:** SummaryBlock
-- **Version Count:** 6
-- **Primary Question:** "What are the most important things to remember?"
-- **Position:** Revision/closure (end of section/tutorial)
-- **Distinction:** Summary compresses learning; Question tests understanding; Quiz assesses mastery
+**Purpose:** Coding standards and practices  
+**Primary Question:** "What's the recommended way to do this?"  
+**Position:** Core content (standards/practices)
 
-### S1 — Key Takeaways
-**Learning Purpose:** Essential points compression  
-**Primary Learner Question:** "What should I remember?"  
-**Best For:** Lesson endings, quick revision  
-**Learning Level:** All levels  
-**Structure:** 4–8 key takeaways (numbered/bulleted)  
-**Required Information:** 4-8 memorable key points  
-**Optional Information:** Final memory line  
-**Excluded Information:** Complete detail (reserved for S6), tables (S2), cheat sheets (S3)  
-**HTML Core Tags:** `<section>`, `<ul>`, `<li>`, `<strong>`  
-**SUIA Colors:** #F54A8D (numbers/bullets), #0B1B3D (takeaway text)  
-**Visual Presentation:** Clean list with emphasis on key concepts  
-**Source:** ILS_UI_UX/docs/SummaryBlock.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| BP1 | Basic Best Practice | PLANNED | Practice statement with brief rationale |
+| BP2 | Best Practice with Rationale | PLANNED | Detailed reasoning |
+| BP3 | Best Practice with Example | PLANNED | Code example demonstrating practice |
+| BP4 | Best Practice Comparison | PLANNED | Good vs poor practice |
+| BP5 | Contextual Best Practice | PLANNED | When to apply (context-dependent) |
+| BP6 | Best Practice with Anti-Patterns | PLANNED | What to avoid |
+| BP7 | Complete Best Practices Guide | PLANNED | Comprehensive practices reference (FINAL/CLOSED) |
 
-### S2 — Revision Table
-**Structure:** Tabular concept summary  
-**Source:** ILS_UI_UX/docs/SummaryBlock.ipynb (lines 351-500)
+**Note:** Family explicitly CLOSED at BP7 (no additional versions planned).
 
-### S3 — Cheat Sheet
-**Structure:** Quick reference format  
-**Source:** ILS_UI_UX/docs/SummaryBlock.ipynb (lines 501-650)
-
-### S4 — Rules & Best Practices
-**Structure:** Practice-oriented summary  
-**Source:** ILS_UI_UX/docs/SummaryBlock.ipynb (lines 651-800)
-
-### S5 — Common Mistakes
-**Structure:** Error-prevention summary  
-**Source:** ILS_UI_UX/docs/SummaryBlock.ipynb (lines 801-950)
-
-### S6 — Complete Revision
-**Learning Purpose:** Comprehensive review  
-**Primary Learner Question:** "Complete topic review?"  
-**Best For:** Exam preparation, major topic closure  
-**Structure:** All summary elements integrated  
-**Implementation Status:** DOCUMENTED (complete version)  
-**Source:** ILS_UI_UX/docs/SummaryBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/BestPractices.md`
 
 ---
 
-## VERSION INTELLIGENCE — QUESTION FAMILY (Q1–Q8)
+### Family 11: SummaryBlock (S)
 
-### Family Overview
-- **Block:** QuestionBlock
-- **Version Count:** 8
-- **Primary Question:** Varies by version (concept checking through questioning)
-- **Position:** Active learning (post-concept)
-- **Distinction:** Question promotes thinking; Exercise requires doing; Quiz assesses mastery
+**Purpose:** Concept revision and summary  
+**Primary Question:** "What are the key points to remember?"  
+**Position:** Tutorial conclusion/revision
 
-### Q1 — Simple Concept Question
-**Learning Purpose:** Basic concept checking  
-**Primary Learner Question:** "Do I understand the basic concept?"  
-**Best For:** Concept verification, active recall  
-**Learning Level:** Beginner  
-**Structure:** Question → Think → Reveal Answer  
-**Required Information:** Clear question, expected answer  
-**Optional Information:** Explanation of answer  
-**Excluded Information:** Assessment scoring (reserved for QuizBlock)  
-**HTML Core Tags:** `<section>`, `<article>`, `<button>` (reveal)  
-**Interaction:** Reveal answer pattern (not scored assessment)  
-**Source:** ILS_UI_UX/docs/QuestionBlock.ipynb (lines 1-350)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| S1 | Basic Key Points Summary | PLANNED | 3-5 key points list (S1 has React component but INCOMPLETE - missing UBRC compliance) |
+| S2 | Connected Summary | PLANNED | How concepts connect |
+| S3 | Compressed Summary | PLANNED | Condensed review |
+| S4 | Summary with Application | PLANNED | Key points + practical application |
+| S5 | Review Summary | PLANNED | Structured review framework |
+| S6 | Complete Learning Summary | PLANNED | Comprehensive summary (FINAL/CLOSED) |
 
-### Q2 — Explain in Your Own Words
-**Structure:** Prompt for conceptual explanation  
-**Source:** ILS_UI_UX/docs/QuestionBlock.ipynb (lines 351-500)
+**Note on S1 Implementation Status:**
+- S1 has React component (`packages/ui/src/tutorial/blocks/SummaryBlock.tsx`)
+- **INCOMPLETE:** Missing `data-block-version` attribute, no version routing
+- **Does NOT meet UBRC compliance** for versioned Educational Blocks
+- Classified as PLANNED (not VERIFIED) until version enforcement added
 
-### Q3 — Why Question
-**Structure:** Reasoning-focused question  
-**Source:** ILS_UI_UX/docs/QuestionBlock.ipynb (lines 501-650)
+**Note:** Family explicitly CLOSED at S6 (no additional versions planned).
 
-### Q4 — What Happens If...?
-**Structure:** Hypothetical scenario question  
-**Source:** ILS_UI_UX/docs/QuestionBlock.ipynb (lines 651-800)
-
-### Q5 — Predict the Output
-**Structure:** Code execution prediction  
-**Source:** ILS_UI_UX/docs/QuestionBlock.ipynb (lines 801-950)
-
-### Q6 — Code Reasoning
-**Structure:** Logic analysis question  
-**Source:** ILS_UI_UX/docs/QuestionBlock.ipynb (lines 951-1100)
-
-### Q7 — Scenario-Based Question
-**Structure:** Real-world application question  
-**Source:** ILS_UI_UX/docs/QuestionBlock.ipynb (lines 1101-1250)
-
-### Q8 — Open-Ended Technical Question
-**Learning Purpose:** Deep technical discussion  
-**Primary Learner Question:** "Can I explain this comprehensively?"  
-**Best For:** Advanced understanding verification  
-**Structure:** Complex question → Comprehensive answer  
-**Implementation Status:** DOCUMENTED (advanced version)  
-**Source:** ILS_UI_UX/docs/QuestionBlock.ipynb (complete specification)
+**Evidence Sources:**
+- TypeScript Registry: `packages/types/src/tutorial-rich-document/registries/summary-versions.ts`
+- Component: `packages/ui/src/tutorial/blocks/SummaryBlock.tsx` (partial/incomplete)
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Tests: `packages/ui/src/tutorial/__tests__/BlockDOMIdentity.test.tsx` (lines 154-171 confirm missing version attribute)
 
 ---
 
-## VERSION INTELLIGENCE — EXERCISE FAMILY (EX1–EX8)
+### Family 12: QuestionBlock (Q)
 
-### Family Overview
-- **Block:** ExerciseBlock
-- **Version Count:** 8
-- **Primary Question:** "Can I perform the task/skill?"
-- **Position:** Practice (post-concept)
-- **Distinction:** Exercise = practice a skill; Task = accomplish objective; Quiz = assess mastery
+**Purpose:** Concept checking questions  
+**Primary Question:** "Do you understand this concept?"  
+**Position:** After content sections (formative assessment)
 
-### EX1 — Fill in the Blank
-**Learning Purpose:** Small completion practice  
-**Primary Learner Question:** "Can I complete the missing part?"  
-**Best For:** Syntax practice, vocabulary  
-**Learning Level:** Beginner  
-**Structure:** Partial code/concept → Fill blank → Verify  
-**Required Information:** Incomplete statement with blank(s), expected answer(s)  
-**Optional Information:** Hint  
-**Excluded Information:** Multiple blanks (keep simple), complex logic  
-**HTML Core Tags:** `<section>`, `<input>`, `<code>`, `<button>` (check)  
-**Interaction:** Input field + validation  
-**Source:** ILS_UI_UX/docs/ExerciseBlock.ipynb (lines 1-300)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| Q1 | Basic Recall Question | PLANNED | Simple factual recall |
+| Q2 | Comprehension Question | PLANNED | Understanding verification |
+| Q3 | Application Question | PLANNED | Apply knowledge to scenario |
+| Q4 | Analysis Question | PLANNED | Break down/analyze concept |
+| Q5 | Evaluation Question | PLANNED | Assess/critique approach |
+| Q6 | Synthesis Question | PLANNED | Combine concepts creatively |
+| Q7 | Reflection Question | PLANNED | Reflect on learning process |
+| Q8 | Complete Question Learning Model | PLANNED | Comprehensive questioning approach (FINAL/CLOSED) |
 
-### EX2 — Complete the Code
-**Structure:** Partially written code → Complete implementation  
-**Source:** ILS_UI_UX/docs/ExerciseBlock.ipynb (continuation)
+**Note:** Family explicitly CLOSED at Q8 (no additional versions planned).
 
-### EX3 — Predict the Output
-**Structure:** Execute and predict result  
-**Source:** ILS_UI_UX/docs/ExerciseBlock.ipynb
-
-### EX4 — Fix the Code
-**Structure:** Broken code → Identify and fix  
-**Source:** ILS_UI_UX/docs/ExerciseBlock.ipynb
-
-### EX5 — Guided Exercise
-**Structure:** Step-by-step guided problem  
-**Source:** ILS_UI_UX/docs/ExerciseBlock.ipynb
-
-### EX6 — Independent Exercise
-**Structure:** Solve without guidance  
-**Source:** ILS_UI_UX/docs/ExerciseBlock.ipynb
-
-### EX7 — Challenge Exercise
-**Structure:** Difficult practical problem  
-**Source:** ILS_UI_UX/docs/ExerciseBlock.ipynb
-
-### EX8 — Progressive Exercise Set
-**Learning Purpose:** Mastery through progression  
-**Primary Learner Question:** "Can I handle increasing difficulty?"  
-**Best For:** Skill building, certification prep  
-**Structure:** Easy → Medium → Hard exercise sequence  
-**Implementation Status:** DOCUMENTED (mastery version)  
-**Source:** ILS_UI_UX/docs/ExerciseBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Question.md`
 
 ---
 
-## VERSION INTELLIGENCE — TASK FAMILY (T1–T8)
+### Family 13: ExerciseBlock (EX)
 
-### Family Overview
-- **Block:** TaskBlock
-- **Version Count:** 8
-- **Primary Question:** "Can I accomplish this objective?"
-- **Position:** Application (post-practice)
-- **Distinction:** Task = accomplish objective; Exercise = practice skill; Project = build application
+**Purpose:** Guided practice activities  
+**Primary Question:** "Can I practice this concept?"  
+**Position:** After content sections (practice)
 
-### T1 — Simple Task
-**Learning Purpose:** Basic objective completion  
-**Primary Learner Question:** "Can I accomplish this?"  
-**Best For:** Focused objectives, skill application  
-**Learning Level:** Intermediate  
-**Structure:** Objective → Requirements → Expected outcome → Complete  
-**Required Information:** Clear objective, requirements, success criteria  
-**Optional Information:** Hint, resources  
-**Excluded Information:** Multi-step guidance (reserved for T2), complex scenarios (T4)  
-**HTML Core Tags:** `<section>`, `<article>`, task tracking UI  
-**Source:** ILS_UI_UX/docs/TaskBlock.ipynb (lines 1-300)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| EX1 | Basic Practice Exercise | PLANNED | Simple guided practice |
+| EX2 | Guided Exercise | PLANNED | Step-by-step guidance |
+| EX3 | Structured Exercise | PLANNED | Structured problem-solving |
+| EX4 | Challenge Exercise | PLANNED | Higher difficulty challenge |
+| EX5 | Scaffolded Exercise | PLANNED | Progressive difficulty scaffolding |
+| EX6 | Open-Ended Exercise | PLANNED | Creative problem-solving |
+| EX7 | Reflective Exercise | PLANNED | Practice with reflection |
+| EX8 | Complete Exercise Learning Model | PLANNED | Comprehensive exercise approach (FINAL/CLOSED) |
 
-### T2 — Guided Task
-**Structure:** Task with guidance/scaffolding  
-**Source:** ILS_UI_UX/docs/TaskBlock.ipynb
+**Note:** Family explicitly CLOSED at EX8 (no additional versions planned).
 
-### T3 — Multi-Step Task
-**Structure:** Task with multiple stages  
-**Source:** ILS_UI_UX/docs/TaskBlock.ipynb
-
-### T4 — Scenario Task
-**Structure:** Real-world scenario completion  
-**Source:** ILS_UI_UX/docs/TaskBlock.ipynb
-
-### T5 — Debugging Task
-**Structure:** Fix/debug objective  
-**Source:** ILS_UI_UX/docs/TaskBlock.ipynb
-
-### T6 — Implementation Task
-**Structure:** Build/implement objective  
-**Source:** ILS_UI_UX/docs/TaskBlock.ipynb
-
-### T7 — Challenge Task
-**Structure:** Difficult objective  
-**Source:** ILS_UI_UX/docs/TaskBlock.ipynb
-
-### T8 — Real-World Task
-**Learning Purpose:** Professional application  
-**Primary Learner Question:** "Can I handle real work?"  
-**Best For:** Job preparation, portfolio  
-**Structure:** Authentic work task  
-**Implementation Status:** DOCUMENTED (professional version)  
-**Source:** ILS_UI_UX/docs/TaskBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Exercise.md`
 
 ---
 
-## VERSION INTELLIGENCE — INTERACTIVE FAMILY (INT1–INT6)
+### Family 14: TaskBlock (T)
 
-### Family Overview
-- **Block:** InteractiveBlock
-- **Version Count:** 6
-- **Primary Question:** "Can I run and observe/modify this?"
-- **Position:** Experiential learning (post-concept)
-- **Distinction:** Interactive = execute/experiment; Code = read/understand; Exercise = practice skill
+**Purpose:** Practical application tasks  
+**Primary Question:** "Can I apply this in a practical context?"  
+**Position:** After content sections (application)
 
-### INT1 — Code → Run → Output
-**Learning Purpose:** Basic execution observation  
-**Primary Learner Question:** "What happens when I run this?"  
-**Best For:** Execution understanding, observation  
-**Learning Level:** Beginner  
-**Structure:** Provided code → Run button → Observe output  
-**Required Information:** Executable code, runtime environment  
-**Optional Information:** Explanation of output  
-**Excluded Information:** Editing (reserved for INT2), prediction (INT4), debugging (INT5)  
-**HTML Core Tags:** `<section>`, `<pre>`, `<code>`, `<button>` (run), `<output>`  
-**Interaction:** Execute-only (no editing)  
-**Implementation Status:** DOCUMENTED (requires runtime integration)  
-**Source:** ILS_UI_UX/docs/InteractiveBlock.ipynb (lines 1-300)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| T1 | Basic Task | PLANNED | Simple practical task |
+| T2 | Instructional Task | PLANNED | Task with instructions |
+| T3 | Verifiable Task | PLANNED | Task with verification criteria |
+| T4 | Guided Task | PLANNED | Step-by-step task guidance |
+| T5 | Challenge Task | PLANNED | Higher difficulty task |
+| T6 | Collaborative Task | PLANNED | Team-based task |
+| T7 | Reflective Task | PLANNED | Task with reflection component |
+| T8 | Complete Task Learning Model | PLANNED | Comprehensive task approach (FINAL/CLOSED) |
 
-### INT2 — Edit → Run → Observe
-**Structure:** Editable code → Execute → Observe changes  
-**Source:** ILS_UI_UX/docs/InteractiveBlock.ipynb
+**Note:** Family explicitly CLOSED at T8 (no additional versions planned).
 
-### INT3 — Guided Interactive Steps
-**Structure:** Step-by-step interactive guidance  
-**Source:** ILS_UI_UX/docs/InteractiveBlock.ipynb
-
-### INT4 — Predict → Run → Compare
-**Structure:** Prediction before execution  
-**Source:** ILS_UI_UX/docs/InteractiveBlock.ipynb
-
-### INT5 — Debug Interactive
-**Structure:** Interactive debugging environment  
-**Source:** ILS_UI_UX/docs/InteractiveBlock.ipynb
-
-### INT6 — Full Playground
-**Learning Purpose:** Open experimentation  
-**Primary Learner Question:** "Can I explore freely?"  
-**Best For:** Advanced learners, discovery learning  
-**Structure:** Full development environment  
-**Implementation Status:** DOCUMENTED (requires full IDE integration)  
-**Source:** ILS_UI_UX/docs/InteractiveBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Task.md`
 
 ---
 
-## VERSION INTELLIGENCE — QUIZ FAMILY (QZ1–QZ8)
+### Family 15: InteractiveBlock (INT)
 
-### Family Overview
-- **Block:** QuizBlock
-- **Version Count:** 8
-- **Primary Question:** "Have I mastered this concept?" (assessment-focused)
-- **Position:** Assessment (post-learning)
-- **Distinction:** Quiz = formal assessment; Question = learning interaction; Exercise = practice
-- **Critical Architectural Rule:** QuizBlock is a **presentation layer** that integrates with existing Assessment Engine, NOT a separate quiz engine
+**Purpose:** Hands-on learning interactions  
+**Primary Question:** "Can I interact with this concept?"  
+**Position:** Core content (interactive learning)
 
-### QZ1 — Single Question
-**Learning Purpose:** Lightweight assessment checkpoint  
-**Primary Learner Question:** "Do I understand this concept?" (assessed)  
-**Best For:** Tutorial checkpoints, quick verification  
-**Learning Level:** All levels  
-**Structure:** Question → Response → Submit → Assessment result  
-**Required Information:** Assessment question ID, response interface  
-**Optional Information:** Explanation after submission  
-**Excluded Information:** Assessment logic (owned by Assessment Engine), scoring, attempt tracking  
-**HTML Core Tags:** `<section>`, `<form>`, `<input>` or `<select>`, `<button>` (submit)  
-**Integration:** Submits to Assessment Engine, receives evaluation  
-**Ownership:** Tutorial Engine (UI), Assessment Engine (evaluation/scoring)  
-**Source:** ILS_UI_UX/docs/QuizBlock.ipynb (lines 1-300)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| INT1 | Basic Interactive Element | PLANNED | Simple interactive component |
+| INT2 | Interactive Experiment | PLANNED | Experimentation interface |
+| INT3 | Interactive Exploration | PLANNED | Exploratory learning interface |
+| INT4 | Interactive Scenario | PLANNED | Scenario-based interaction |
+| INT5 | Interactive Simulation | PLANNED | Simulation environment (DECLARED/INCOMPLETE specification) |
+| INT6 | Interactive System | PLANNED | Complete system interaction (DECLARED/INCOMPLETE specification) |
 
-### QZ2 — Multiple Choice
-**Structure:** Single-select from options  
-**Source:** ILS_UI_UX/docs/QuizBlock.ipynb
+**Note:** INT5-INT6 flagged as DECLARED/INCOMPLETE specifications in reconciliation reports but included in total count.
 
-### QZ3 — Multiple Select
-**Structure:** Multi-select from options  
-**Source:** ILS_UI_UX/docs/QuizBlock.ipynb
-
-### QZ4 — True / False
-**Structure:** Binary assessment question  
-**Source:** ILS_UI_UX/docs/QuizBlock.ipynb
-
-### QZ5 — Code Output Quiz
-**Structure:** Predict code output (assessed)  
-**Source:** ILS_UI_UX/docs/QuizBlock.ipynb
-
-### QZ6 — Scenario Quiz
-**Structure:** Real-world scenario assessment  
-**Source:** ILS_UI_UX/docs/QuizBlock.ipynb
-
-### QZ7 — Adaptive Quiz
-**Structure:** Difficulty-adaptive assessment  
-**Source:** ILS_UI_UX/docs/QuizBlock.ipynb
-
-### QZ8 — Complete Topic Quiz
-**Learning Purpose:** Comprehensive assessment  
-**Primary Learner Question:** "Have I mastered this topic?"  
-**Best For:** Topic completion, certification readiness  
-**Structure:** Multi-question comprehensive assessment  
-**Implementation Status:** DOCUMENTED (integrates with full Assessment Engine)  
-**Source:** ILS_UI_UX/docs/QuizBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Interactive.md`
 
 ---
 
-## VERSION INTELLIGENCE — INTERVIEW FAMILY (IV1–IV7)
+### Family 16: QuizBlock (QZ)
 
-### Family Overview
-- **Block:** InterviewBlock
-- **Version Count:** 7
-- **Primary Question:** "Can I answer technical interview questions?"
-- **Position:** Career preparation (post-mastery)
-- **Distinction:** Interview = career prep; Question = concept checking; Quiz = mastery assessment
+**Purpose:** Assessment and evaluation  
+**Primary Question:** "How well have I learned this?"  
+**Position:** End of tutorial sections (summative assessment)
 
-### IV1 — Basic Interview Question
-**Learning Purpose:** Interview-style concept verification  
-**Primary Learner Question:** "Can I answer this in an interview?"  
-**Best For:** Technical interview preparation  
-**Learning Level:** Intermediate  
-**Structure:** Interview question → Expected answer → Evaluation  
-**Required Information:** Interview-style question, model answer  
-**Optional Information:** Follow-up questions  
-**Excluded Information:** Code implementation (reserved for IV3)  
-**HTML Core Tags:** `<section>`, `<blockquote>` (interviewer question), `<article>` (answer)  
-**Visual Presentation:** Interview context/format  
-**Source:** ILS_UI_UX/docs/InterviewBlock.ipynb (lines 1-300)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| QZ1 | Basic Quiz | PLANNED | Simple multiple-choice quiz |
+| QZ2 | Quiz with Explanations | PLANNED | Answers with detailed explanations |
+| QZ3 | Adaptive Quiz | PLANNED | Difficulty adapts to performance |
+| QZ4 | Timed Quiz | PLANNED | Time-bound assessment |
+| QZ5 | Progressive Quiz | PLANNED | Unlocks progressively |
+| QZ6 | Diagnostic Quiz | PLANNED | Identifies knowledge gaps |
+| QZ7 | Mastery Quiz | PLANNED | Comprehensive mastery assessment |
+| QZ8 | Complete Assessment Model | PLANNED | Full assessment framework (FINAL/CLOSED) |
 
-### IV2 — Concept → Interview Question
-**Structure:** Concept → How it's asked in interviews  
-**Source:** ILS_UI_UX/docs/InterviewBlock.ipynb
+**Note:** Family explicitly CLOSED at QZ8 (no additional versions planned).
 
-### IV3 — Code-Based Interview Question
-**Structure:** Coding interview question  
-**Source:** ILS_UI_UX/docs/InterviewBlock.ipynb
-
-### IV4 — Output Prediction
-**Structure:** Interview-style output prediction  
-**Source:** ILS_UI_UX/docs/InterviewBlock.ipynb
-
-### IV5 — Why / How Interview Question
-**Structure:** Deep reasoning interview questions  
-**Source:** ILS_UI_UX/docs/InterviewBlock.ipynb
-
-### IV6 — FAANG-Level Scenario
-**Structure:** High-difficulty interview scenarios  
-**Source:** ILS_UI_UX/docs/InterviewBlock.ipynb
-
-### IV7 — Complete Interview Preparation
-**Learning Purpose:** Comprehensive interview readiness  
-**Primary Learner Question:** "Am I interview-ready?"  
-**Best For:** Job hunting, FAANG preparation  
-**Structure:** Complete interview simulation  
-**Implementation Status:** DOCUMENTED (career prep version)  
-**Source:** ILS_UI_UX/docs/InterviewBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Quiz.md`
 
 ---
 
-## VERSION INTELLIGENCE — PROJECT FAMILY (P1–P8)
+### Family 17: InterviewBlock (IV)
 
-### Family Overview
-- **Block:** ProjectBlock
-- **Version Count:** 8
-- **Primary Question:** "Can I build something real?"
-- **Position:** Application/synthesis (post-learning)
-- **Distinction:** Project = build application; Exercise = practice skill; Task = accomplish objective
+**Purpose:** Interview preparation  
+**Primary Question:** "How would I answer this in an interview?"  
+**Position:** End of tutorial sections (professional preparation)
 
-### P1 — Mini Project
-**Learning Purpose:** Small integrated application  
-**Primary Learner Question:** "Can I build something that works?"  
-**Best For:** Skill synthesis, portfolio starters  
-**Learning Level:** Intermediate  
-**Structure:** Project goal → Requirements → Build → Test → Complete  
-**Required Information:** Clear goal, feature requirements, success criteria  
-**Optional Information:** Starter code, hints  
-**Excluded Information:** Step-by-step guidance (reserved for P2-P3), large scope (P7-P8)  
-**HTML Core Tags:** `<section>`, `<article>`, project tracking UI  
-**Scope:** Small (1-2 hours to complete)  
-**Source:** ILS_UI_UX/docs/ProjectBlock.ipynb (lines 1-300)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| IV1 | Basic Interview Question | PLANNED | Common interview question |
+| IV2 | Interview Q&A | PLANNED | Question with sample answer |
+| IV3 | Interview Analysis | PLANNED | Answer analysis (strengths/weaknesses) |
+| IV4 | Interview Preparation | PLANNED | Preparation guidance |
+| IV5 | Interview Practice | PLANNED | Mock interview practice |
+| IV6 | Interview Evaluation | PLANNED | Performance evaluation criteria |
+| IV7 | Complete Interview Learning Model | PLANNED | Comprehensive interview prep (FINAL/CLOSED) |
 
-### P2 — Guided Project
-**Structure:** Project with guidance/scaffolding  
-**Source:** ILS_UI_UX/docs/ProjectBlock.ipynb
+**Note:** Family explicitly CLOSED at IV7 (no additional versions planned).
 
-### P3 — Step-by-Step Project
-**Structure:** Detailed step-by-step project  
-**Source:** ILS_UI_UX/docs/ProjectBlock.ipynb
-
-### P4 — Real-World Scenario
-**Structure:** Authentic scenario-based project  
-**Source:** ILS_UI_UX/docs/ProjectBlock.ipynb
-
-### P5 — Feature-Based Project
-**Structure:** Build features incrementally  
-**Source:** ILS_UI_UX/docs/ProjectBlock.ipynb
-
-### P6 — Open-Ended Project
-**Structure:** Flexible requirements project  
-**Source:** ILS_UI_UX/docs/ProjectBlock.ipynb
-
-### P7 — Capstone Project
-**Structure:** Comprehensive demonstration project  
-**Source:** ILS_UI_UX/docs/ProjectBlock.ipynb
-
-### P8 — Portfolio / Production Project
-**Learning Purpose:** Career-ready project  
-**Primary Learner Question:** "Can I build production-quality work?"  
-**Best For:** Job portfolio, professional development  
-**Structure:** Production-grade project requirements  
-**Implementation Status:** DOCUMENTED (professional version)  
-**Source:** ILS_UI_UX/docs/ProjectBlock.ipynb (complete specification)
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Interview.md`
 
 ---
 
-## IMPLEMENTATION STATUS SUMMARY
+### Family 18: ProjectBlock (P)
 
-### Documentation Status
-**ALL 141 VERSIONS: DOCUMENTED**
+**Purpose:** Real-world project application  
+**Primary Question:** "How do I apply this in a real project?"  
+**Position:** End of tutorial sections (capstone)
 
-Every version across all 18 families has complete specification in Jupyter Notebook format (.ipynb) in ILS_UI_UX/docs/, including:
-- Version definition and purpose
-- Learning objectives
-- Structure requirements
-- Information architecture
-- HTML semantic tags
-- SUIA color specifications (#F54A8D primary, #0B1B3D secondary)
-- JSON data models
-- A4 portrait layout specifications
-- Responsive behavior
-- Cross-domain examples (Python, JavaScript, Java, C++, SQL, Data Science, ML, etc.)
+| Version | Name/Variant | Status | Description |
+|---------|-------------|--------|-------------|
+| P1 | Basic Project Definition | PLANNED | Project overview and goals |
+| P2 | Project Planning | PLANNED | Project planning framework |
+| P3 | Project Building | PLANNED | Step-by-step building guide |
+| P4 | Iterative Project | PLANNED | Iterative development approach |
+| P5 | Collaborative Project | PLANNED | Team project framework |
+| P6 | Reflective/Evaluative Project | PLANNED | Project with reflection (GAP / specification missing) |
+| P7 | Project Presentation | PLANNED | Project presentation guidance |
+| P8 | Complete Project Learning Model | PLANNED | Comprehensive project framework (FINAL) |
 
-### Implementation Status by Category
+**Note:** P6 flagged as GAP DOCUMENTED (semantic role identified but specification missing) in reconciliation reports but included in total count.
 
-#### Core Content Blocks (Blocks 1-11)
-**Status:** DOCUMENTED with comprehensive specifications
-
-- IntroductionBlock (I1-I6): Complete HTML/JSON/SUIA specifications
-- ObjectiveBlock (O1-O5): Complete specifications
-- DefinitionBlock (D1-D8): Complete specifications
-- CodeBlock (C1-C10): Complete specifications, C10 requires runtime integration
-- VisualBlock (V1-V10): Complete specifications, visual rendering engine needed
-- ComparisonBlock (CP1-CP8): Complete specifications
-- ExecutionBlock (E1-E8): Complete specifications
-- MemoryBlock (M1-M8): Complete specifications
-- MistakeBlock (MT1-MT8): Complete specifications
-- BestPracticeBlock (BP1-BP7): Complete specifications
-- SummaryBlock (S1-S6): Complete specifications
-
-#### Practice & Assessment Blocks (Blocks 12-16)
-**Status:** DOCUMENTED with integration requirements
-
-- QuestionBlock (Q1-Q8): Complete specifications
-- ExerciseBlock (EX1-EX8): Complete specifications, validation engine needed
-- TaskBlock (T1-T8): Complete specifications
-- InteractiveBlock (INT1-INT6): Complete specifications, **requires runtime integration**
-- QuizBlock (QZ1-QZ8): Complete specifications, **must integrate with existing Assessment Engine**
-
-#### Advanced Application Blocks (Blocks 17-18)
-**Status:** DOCUMENTED for career preparation
-
-- InterviewBlock (IV1-IV7): Complete specifications
-- ProjectBlock (P1-P8): Complete specifications
-
-### Next Implementation Phase Requirements
-
-1. **React/TypeScript Renderers:** Build one renderer per version (141 total)
-2. **UBRC Integration:** Universal Block Rendering Core implementation
-3. **Runtime Environment:** For INT1-INT6 InteractiveBlock versions
-4. **Assessment Integration:** Connect QZ1-QZ8 to existing Assessment Engine (DO NOT duplicate assessment logic)
-5. **Visual Engine:** For V1-V10 VisualBlock rendering
-6. **Tutorial Composer:** Block selection and configuration UI
+**Evidence Sources:**
+- Architecture: `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+- Documentation: `ILS_UI_UX/docs/blocksmdfiles/Project.md`
 
 ---
 
-## GAPS AND UNKNOWNS
+## Implementation Primitives (15 Building Blocks)
 
-### Documentation Completeness: NO GAPS
-All 18 families with 141 versions are comprehensively documented in .ipynb format.
+### Important Distinction
 
-### Implementation Gaps
+Implementation Primitives are **NOT Educational Block Families**. They are renderer-level building blocks used inside Educational Block components or as standalone content elements.
 
-1. **React Component Renderers**
-   - **Gap:** No React/TypeScript implementations found in codebase search
-   - **Evidence:** Documentation only (no /src/components/blocks/ directory found)
-   - **Status:** REQUIRES IMPLEMENTATION
-   - **Priority:** HIGH (blocks all Tutorial Engine functionality)
+### Key Differences from Educational Families
 
-2. **Interactive Runtime**
-   - **Gap:** INT1-INT6 require code execution environment
-   - **Evidence:** Specification exists, no runtime integration found
-   - **Status:** REQUIRES IMPLEMENTATION
-   - **Priority:** MEDIUM (specific to Interactive blocks)
+**Educational Block Families have:**
+- ✅ `version` field (e.g., 'I1', 'D1', 'C1')
+- ✅ Version validation in renderer or component
+- ✅ Canonical `content.page` structure
+- ✅ Pedagogical contracts (learning goals, takeaways, educational sections)
+- ✅ Version router component
+- ✅ "CANONICAL LOCKED UI" designation
+- ✅ Theme-aware rendering
 
-3. **Assessment Integration**
-   - **Gap:** QZ1-QZ8 integration with existing Assessment Engine
-   - **Evidence:** Specification mandates integration, no bridge found
-   - **Status:** REQUIRES INTEGRATION (not duplication)
-   - **Priority:** HIGH (prevents duplicate assessment architecture)
+**Implementation Primitives have:**
+- ❌ NO `version` field in schema
+- ❌ NO version validation
+- ❌ NO canonical content structure
+- ❌ NO pedagogical purpose
+- ✅ Simple, focused rendering logic
+- ✅ Composable building blocks
+- ✅ UBRC 2/2 attributes (id, type) — NO version by design
 
-4. **Visual Rendering Engine**
-   - **Gap:** V1-V10 require diagram/visual generation capability
-   - **Evidence:** Specification exists, no rendering engine found
-   - **Status:** REQUIRES IMPLEMENTATION
-   - **Priority:** MEDIUM (specific to Visual blocks)
+### Complete List of 15 Implementation Primitives
 
-### Unknowns Requiring HAA (Human Authoritative Answer)
+| # | Primitive Name | Purpose | Repository Component |
+|---|---------------|---------|----------------------|
+| 1 | heading | H1-H6 semantic headings | `HeadingBlock.tsx` |
+| 2 | paragraph | Text paragraphs | `ParagraphBlock.tsx` |
+| 3 | list | Ordered/unordered lists | `ListBlock.tsx` |
+| 4 | table | Data tables | `TableBlock.tsx` |
+| 5 | image | Image display with caption | `ImageBlock.tsx` |
+| 6 | callout | Info boxes (tip/warning/info variants) | `CalloutBlock.tsx` |
+| 7 | example | Example container (NOT ExerciseBlock) | `ExampleBlock.tsx` |
+| 8 | quote | Blockquote renderer | `QuoteBlock.tsx` |
+| 9 | summary | Bullet list renderer (NOT SummaryBlock S1-S6) | `SummaryBlock.tsx` (primitive use) |
+| 10 | diagram | Diagram container | `DiagramBlock.tsx` |
+| 11 | comparison | Comparison table (NOT ComparisonBlock CP1-CP8) | `ComparisonBlock.tsx` (primitive use) |
+| 12 | two-column | 2-column layout container | `TwoColumnBlock.tsx` |
+| 13 | three-column | 3-column layout container | `ThreeColumnBlock.tsx` |
+| 14 | card-grid | Card grid layout | `CardGridBlock.tsx` |
+| 15 | timeline | Timeline visualization | `TimelineBlock.tsx` |
 
-1. **Renderer Implementation Strategy**
-   - Question: Single polymorphic renderer vs. 141 separate components?
-   - Impact: Architecture, performance, maintainability
-   - Required Decision: HAA
+### Relationship to Educational Block Families
 
-2. **Assessment Engine Location**
-   - Question: Where is existing Assessment Engine? API endpoints?
-   - Impact: QZ1-QZ8 integration implementation
-   - Required Evidence: HAA
+Implementation Primitives are **used by** Educational Block Families:
 
-3. **Runtime Environment Choice**
-   - Question: Client-side (WebAssembly) vs. server-side execution for INT blocks?
-   - Impact: Security, performance, scalability
-   - Required Decision: HAA
+- **IntroductionBlock (I1)** may use: heading, paragraph, image, callout, quote
+- **DefinitionBlock (D1)** may use: heading, paragraph, list, diagram, callout
+- **CodeBlock (C1)** may use: heading, paragraph, code highlighting (specialized)
 
-4. **Progressive vs. Complete Implementation**
-   - Question: Implement all 141 versions or start with subset (I1, O1, D1, C1, V1, etc.)?
-   - Impact: Timeline, testing, delivery
-   - Required Strategy: HAA
+Educational Blocks compose primitives into pedagogically structured learning experiences.
 
-5. **Content Storage**
-   - Question: Tutorial content stored in database, files, or CMS?
-   - Impact: Tutorial Composer implementation
-   - Required Architecture: HAA
+### Evidence Sources
 
----
-
-## ARCHITECTURAL PATTERNS
-
-### Consistent Across All 18 Families
-
-1. **HTML Semantics:** All blocks use proper semantic HTML5 tags
-2. **SUIA Color System:** Primary #F54A8D, Secondary #0B1B3D, Light theme, 70/30 visual emphasis
-3. **JSON Data Models:** All blocks have complete JSON structure specifications
-4. **A4 Portrait Layout:** All blocks designed for A4 portrait orientation with responsive adaptation
-5. **Progressive Complexity:** Versions within each family progress from simple to comprehensive
-6. **Accessibility:** aria-labels, semantic structure, keyboard navigation considered
-7. **No Gradients:** Explicit "no gradients" rule across all blocks
-8. **No Dark Theme:** Light theme only (dark theme explicitly excluded)
-
-### Block Separation Principles
-
-Clear boundaries maintained between:
-- **Introduction** (context) vs. **Objective** (outcomes)
-- **Definition** (what) vs. **Code** (how) vs. **Visual** (structure)
-- **Code** (presentation) vs. **Execution** (runtime) vs. **Memory** (internal state)
-- **Comparison** (differences) vs. **Definition** (concepts)
-- **Mistake** (errors) vs. **BestPractice** (recommendations)
-- **Question** (learning) vs. **Exercise** (practice) vs. **Task** (objective) vs. **Quiz** (assessment)
-- **Interactive** (execution) vs. **Exercise** (practice) vs. **Project** (building)
-- **Interview** (career) vs. **Question** (learning) vs. **Quiz** (assessment)
-
-### Universal Cross-Domain Support
-
-All blocks documented with examples across:
-- Python, JavaScript, TypeScript, Java, C++, C#, Go, Rust
-- SQL, NoSQL (database concepts)
-- NumPy, Pandas (data science)
-- Machine Learning, Data Engineering
-- Full Stack Development, API Design
-- Cybersecurity, Ethical Hacking
-- Cloud Computing, DevOps
-- Quantum Computing (conceptual level)
+- Renderer: `packages/ui/src/tutorial/TutorialBlockRenderer.tsx` (no version validation for these types)
+- Components: `packages/ui/src/tutorial/blocks/*.tsx` (simple rendering, no version field)
+- Taxonomy Report: `reconciliation-taxonomy-separation.md` (complete classification)
 
 ---
 
-## EVIDENCE INDEX
+## Corrections Applied
 
-### Primary Sources
+The following corrections were applied based on reconciliation investigations and authoritative repository evidence:
 
-All evidence extracted from ILS_UI_UX/docs/ Jupyter Notebook files:
+| # | Original Claim | Source Report | Corrected Value | Evidence | Reason |
+|---|----------------|---------------|-----------------|----------|--------|
+| 1 | **141 total versions** | Corpus Registry | **132 total versions** | FAMILY_VERSION_MATRIX.md aggregate count | Documentation drift — multiple families overcounted |
+| 2 | **137 total versions** | Provenance, UBRC Inventory | **132 total versions** | FAMILY_VERSION_MATRIX.md + TypeScript registries | D family outdated + V9-V10 not evidenced |
+| 3 | **D1-D8 (8 versions)** | Corpus Registry, Family Matrix | **D1-D6 (6 versions)** | `definition-versions.ts` (TypeScript registry — AUTHORITATIVE) | TypeScript registry defines D1-D6 ONLY. DefinitionBlock.ipynb documents D1-D8 but type system never implemented D7-D8. Runtime contract overrides documentation. |
+| 4 | **V1-V10 (10 versions)** | Corpus Registry, Provenance | **V1-V8 (8 versions)** | FAMILY_VERSION_MATRIX.md: "V9, V10 NOT EVIDENCED (contradicts historical register)" | Authoritative specification explicitly states V9-V10 do not have specifications. Historical claims without verification. |
+| 5 | **18 block families** (conflation with primitives) | Runtime Compliance | **18 families CORRECT (3 implemented, 15 planned)** | Taxonomy Separation Report + TutorialBlockRenderer.tsx | Correct family count, but primitives were conflated with families in some reports. Separation enforced: 18 families (versioned educational units) vs 15 primitives (building blocks). |
+| 6 | **S1 implemented** | Some claims | **S1 INCOMPLETE** | BlockDOMIdentity.test.tsx + SummaryBlock.tsx | S1 has React component but missing `data-block-version` attribute + no version routing. Does NOT meet UBRC compliance for versioned blocks. |
+| 7 | **D1 "no version routing"** | Family Version Matrix | **D1 HAS version routing** | DefinitionBlock.tsx lines 20-29 | Component-level version router exists with explicit switch statement and error handling. |
 
-1. **IntroductionBlock.ipynb** (887 lines) - I1-I6 specifications
-2. **ObjectiveBlock.ipynb** (1060+ lines) - O1-O5 specifications
-3. **DefinitionBlock.ipynb** (917+ lines) - D1-D8 specifications
-4. **CodeBlock.ipynb** (500+ lines read) - C1-C10 specifications
-5. **VisualBlock.ipynb** (500+ lines read) - V1-V10 specifications
-6. **ComparisonBlock.ipynb** (500+ lines read) - CP1-CP8 specifications
-7. **ExecutionBlock.ipynb** (500+ lines read) - E1-E8 specifications
-8. **MemoryBlock.ipynb** (500+ lines read) - M1-M8 specifications
-9. **MistakeBlock.ipynb** (500+ lines read) - MT1-MT8 specifications
-10. **BestPractices.ipynb** (500+ lines read) - BP1-BP7 specifications
-11. **SummaryBlock.ipynb** (500+ lines read) - S1-S6 specifications
-12. **QuestionBlock.ipynb** (500+ lines read) - Q1-Q8 specifications
-13. **ExerciseBlock.ipynb** (300 lines read) - EX1-EX8 specifications
-14. **TaskBlock.ipynb** (300 lines read) - T1-T8 specifications
-15. **InteractiveBlock.ipynb** (300 lines read) - INT1-INT6 specifications
-16. **QuizBlock.ipynb** (300 lines read) - QZ1-QZ8 specifications
-17. **InterviewBlock.ipynb** (300 lines read) - IV1-IV7 specifications
-18. **ProjectBlock.ipynb** (300 lines read) - P1-P8 specifications
+### Evidence Strength Hierarchy
 
-### Repository Structure Evidence
+When reconciling contradictions, the following hierarchy was applied:
 
-- **Repository Root:** E:\onlinewebsites\quiz-platform
-- **Documentation Location:** ILS_UI_UX/docs/
-- **File Format:** Jupyter Notebook (.ipynb)
-- **Total Files Examined:** 18+ documentation files
-- **Implementation Files:** Not found in current workspace search
+**CRITICAL (Runtime Contracts):**
+1. TypeScript version registries (`definition-versions.ts`, `code-versions.ts`, etc.)
+2. React component version routing code (switch statements with error handling)
+3. TutorialBlockRenderer version validation
 
-### Verification Method
+**HIGH (Architecture):**
+1. PLANNED-UBRC-BLOCKS-INVENTORY.md (authoritative architecture)
+2. FAMILY_VERSION_MATRIX.md (reconciliation evidence ledger)
 
-Content extracted via direct file reading with offset/limit parameters to handle large notebook files. All claims cite specific source files and line ranges where applicable.
+**MODERATE (Documentation):**
+1. Markdown files in `ILS_UI_UX/docs/blocksmdfiles/` (may be aspirational, not implemented)
+2. Investigation reports (may contain contradictions)
 
----
-
-## RECOMMENDATIONS
-
-### For Content Authors
-
-1. **Use Version Intelligence:** Select appropriate version based on learning level and complexity needs
-2. **Follow JSON Schemas:** Use documented data models for Tutorial Composer integration
-3. **Respect Block Boundaries:** Don't force content into wrong block type (e.g., code into DefinitionBlock)
-4. **Progressive Complexity:** Start with simple versions (I1, O1, D1) for beginners
-5. **Cross-Domain Examples:** Leverage universal architecture across all programming domains
-
-### For Implementers
-
-1. **Start with Foundation Blocks:** Implement I1, O1, D1, C1, S1, Q1 first (most frequently used)
-2. **Reusable Components:** Build polymorphic renderer with version prop rather than 141 separate components
-3. **SUIA Color System:** Strictly enforce #F54A8D (primary) and #0B1B3D (secondary) across all implementations
-4. **Assessment Integration:** DO NOT duplicate Assessment Engine logic in QuizBlock
-5. **Runtime Strategy:** Decide on Interactive block execution environment early (client vs. server)
-6. **Visual Engine:** Consider using libraries (D3.js, Mermaid.js) for V1-V10 rendering
-7. **Accessibility First:** Implement ARIA labels, keyboard navigation, screen reader support from start
-
-### For Tutorial Composer
-
-1. **Version Selection UI:** Provide clear descriptions of each version's purpose and best use
-2. **Preview Mode:** Show rendered block preview before publishing
-3. **Validation:** Enforce required information fields per version specification
-4. **Templates:** Provide starter templates for each version with example content
-5. **Cross-Domain Support:** Include examples from multiple programming languages
-
-### For Architecture Team
-
-1. **Separation of Concerns:** Maintain strict boundaries between Tutorial Engine and Assessment Engine
-2. **UBRC Specification:** Define Universal Block Rendering Core interface
-3. **Content Storage:** Determine database schema or file format for tutorial content storage
-4. **Version Control:** Establish versioning strategy for block specifications and renderers
-5. **Performance:** Consider lazy loading for 141 potential renderers
-6. **Migration Path:** If existing tutorials exist, plan migration to 18-block architecture
+**Reconciliation Principle:**
+- When TypeScript registry conflicts with documentation, TypeScript registry wins (runtime contract)
+- When authoritative matrix conflicts with historical reports, matrix wins (evidence-based)
+- When direct file evidence conflicts with report claims, file evidence wins (ground truth)
 
 ---
 
-## CONCLUSION
+## Phase 1 Flags
 
-The 18 Tutorial Block Family architecture represents a comprehensive, universal learning system with **141 documented presentation versions** spanning orientation (I, O), content (D, C, V, CP, E, M), quality (MT, BP, S), interaction (Q, EX, T, INT), assessment (QZ), and application (IV, P).
+The following items require attention before Phase 1 implementation:
 
-**Key Achievement:** Complete documentation corpus exists with full specifications for HTML semantics, SUIA branding, JSON data models, A4 layouts, and cross-domain applicability.
+### Incomplete/Gap Versions (5 Items)
 
-**Critical Path:** React/TypeScript renderer implementation is the primary blocker to functional Tutorial Engine. All specifications are ready for implementation.
+| Version | Family | Issue | Status | Recommendation |
+|---------|--------|-------|--------|----------------|
+| E3 | ExecutionBlock | Execution with Iteration/Loops | PARTIAL specification | Complete specification before implementing |
+| MT8 | MistakeBlock | Advanced/Systematic Debugging | DECLARED/ABSENT specification | Complete or remove from count |
+| INT5 | InteractiveBlock | Interactive Simulation | DECLARED/INCOMPLETE specification | Complete specification before implementing |
+| INT6 | InteractiveBlock | Interactive System | DECLARED/INCOMPLETE specification | Complete specification before implementing |
+| P6 | ProjectBlock | Reflective/Evaluative Project | GAP / specification missing | Create specification or remove from count |
 
-**Next Step:** Initiate renderer development with foundation block versions (I1, O1, D1, C1, V1, CP1, E1, M1, MT1, BP1, S1, Q1, EX1, T1, INT1, QZ1, IV1, P1) as minimum viable product.
+### Removed from Corpus (No Longer Planned)
+
+| Versions | Family | Reason | Evidence |
+|----------|--------|--------|----------|
+| V9-V10 | VisualBlock | NOT EVIDENCED (no specifications found) | FAMILY_VERSION_MATRIX.md explicitly states "V9, V10 NOT EVIDENCED (contradicts historical register)" |
+| D7-D8 | DefinitionBlock | NOT IN TYPE SYSTEM (never implemented) | TypeScript registry `definition-versions.ts` defines D1-D6 ONLY. Documentation drift - .ipynb documented D1-D8 but type system never promoted D7-D8. |
+
+### S1 Completion Requirements
+
+**Summary S1** has a React component but does NOT meet UBRC compliance standards:
+
+**Missing:**
+1. `data-block-version` attribute (required for versioned blocks)
+2. Version routing in renderer (no validation for summary case)
+3. Version router component (no switch statement like I1/D1/C1)
+4. Canonical `content.page` structure (uses flat content schema)
+
+**Required for VERIFIED Status:**
+1. Add `data-block-version="S1"` attribute to rendered output
+2. Add version validation in TutorialBlockRenderer.tsx (throw error for S2-S6)
+3. Convert to canonical content structure matching I1/D1/C1 pattern
+4. Add version router component if S2-S6 are implemented
+
+**Current Classification:** INCOMPLETE (not counted as implemented)
 
 ---
 
-**END OF CORPUS REGISTRY EXTRACTION**
+## Evidence Sources
+
+This canonical registry is based on the following authoritative sources:
+
+### Primary Evidence (CRITICAL)
+
+1. **TypeScript Version Registries** (Runtime Contracts)
+   - `packages/types/src/tutorial-rich-document/registries/definition-versions.ts`
+   - `packages/types/src/tutorial-rich-document/registries/code-versions.ts`
+   - `packages/types/src/tutorial-rich-document/registries/summary-versions.ts`
+   - `packages/types/src/tutorial-rich-document/registries/introduction-versions.ts`
+
+2. **Authoritative Architecture Documents**
+   - `docs/ubrc/PLANNED-UBRC-BLOCKS-INVENTORY.md`
+   - `ILS_UI_UX/docs/blocksmdfiles/OneAIModelForProjectLLM/FAMILY_VERSION_MATRIX.md`
+
+3. **Implementation Evidence**
+   - `packages/ui/src/tutorial/blocks/IntroductionBlock.tsx`
+   - `packages/ui/src/tutorial/blocks/CodeC1Block.tsx`
+   - `packages/ui/src/tutorial/blocks/DefinitionBlock.tsx`
+   - `packages/ui/src/tutorial/TutorialBlockRenderer.tsx`
+
+4. **Test Evidence**
+   - `packages/ui/src/tutorial/__tests__/TutorialRendererRouting.test.tsx`
+   - `packages/ui/src/tutorial/__tests__/BlockDOMIdentity.test.tsx`
+   - `packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.test.tsx`
+
+### Secondary Evidence (HIGH)
+
+5. **Reconciliation Reports**
+   - `.agents/tasks/reconciliation-version-count.md`
+   - `.agents/tasks/reconciliation-version-ranges.md`
+   - `.agents/tasks/reconciliation-implementation-status.md`
+   - `.agents/tasks/reconciliation-taxonomy-separation.md`
+
+6. **Consolidation Plan**
+   - `.agents/tasks/consolidation-plan.md` (authoritative source of truth)
+
+7. **Investigation Reports** (May Contain Contradictions)
+   - `.agents/tasks/corpus-registry-extraction.md`
+   - `.agents/tasks/family-version-matrix.md`
+   - `.agents/tasks/component-provenance.md`
+   - `.agents/tasks/runtime-compliance.md`
+
+### Documentation Sources (MODERATE)
+
+8. **Block Family Documentation**
+   - `ILS_UI_UX/docs/blocksmdfiles/*.md` (18 family specification files)
+   - **Note:** NO .ipynb file references per user instructions
+   - Markdown files in `ILS_UI_UX/docs/blocksmdfiles/` and subdirectories only
 
 ---
 
-## FILE INSTRUCTIONS FOR USER
+## Document Metadata
 
-**Create the following file and paste this content:**
+**Version:** 1.0 (Canonical Post-HAA-Consolidation)  
+**Date:** 2025-01-20  
+**Status:** CANONICAL  
+**Authority:** HAA Decisions + TypeScript version registries + PLANNED-UBRC-BLOCKS-INVENTORY.md  
+**Generated By:** Consolidation Workflow Step 1 (Corpus Registry)  
+**Source Plan:** `.agents/tasks/consolidation-plan.md`  
+**Verification:** All version counts, ranges, and implementation statuses verified against authoritative repository evidence  
 
-**File Location:** `ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md`
+**Total Educational Block Versions:** 132  
+**Total Educational Block Families:** 18  
+**Verified Implementations:** 3 (I1, C1, D1)  
+**Planned Implementations:** 129 versions across 15 families  
+**Implementation Primitives:** 15 (NOT counted as families)
 
-**Instructions:**
-1. Navigate to `E:\onlinewebsites\quiz-platform\ILS_UI_UX\docs\`
-2. Create new file named `PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md`
-3. Paste complete content above
-4. Save file
+---
 
-This document serves as the canonical reference for all 18 Tutorial Block families with complete version intelligence extracted from the repository documentation.
+**End of Canonical Corpus Registry**
