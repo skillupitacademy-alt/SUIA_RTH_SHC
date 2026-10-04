@@ -1,0 +1,70 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": 1,
+      "category": "STATE_MACHINE_CORRECTNESS",
+      "severity": "BLOCKING",
+      "label": "COMPLIANCE_FAILED dispatch gap",
+      "description": "COMPLIANCE_FAILED state dispatches directly to Agent I, but the state machine shows COMPLIANCE_FAILED should transition to CORRECTION_REQUIRED, then Agent I runs. Change the dispatch so COMPLIANCE_FAILED transitions to CORRECTION_REQUIRED without running an agent, then CORRECTION_REQUIRED dispatches to Agent I.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": 2,
+      "category": "STATE_MACHINE_CORRECTNESS",
+      "severity": "BLOCKING",
+      "label": "Correction loop counter increments on wrong state",
+      "description": "The increment guard checks `current.state === 'CORRECTION_REQUIRED'` but at that point current.state is still the *pre-transition* state. Change the condition to check both current.state and result.nextState correctly.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": 3,
+      "category": "AUTONOMOUS_PROGRESSION_LOGIC",
+      "severity": "BLOCKING",
+      "label": "Agent I runs twice in correction path",
+      "description": "Both COMPLIANCE_FAILED and CORRECTION_REQUIRED dispatch to Agent I. Remove the COMPLIANCE_FAILED dispatch; only CORRECTION_REQUIRED should invoke Agent I.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": 4,
+      "category": "AUTHORITY_GATE_INTEGRITY",
+      "severity": "BLOCKING",
+      "label": "Implementation approval gate not enforced",
+      "description": "assertImplementationApprovalRequired exists but is never called. Add a gate enforcement step when transitioning from INTEGRATION_PLANNED to AWAITING_IMPLEMENTATION_APPROVAL.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": 5,
+      "category": "STATE_MACHINE_CORRECTNESS",
+      "severity": "BLOCKING",
+      "label": "Evidence package allows certification despite blocking failures",
+      "description": "CertificationPackage has certificationReady boolean but no enforcement that prevents Agent L from setting it true when evidencePackage.blockingFailures is non-empty. Add a check in evaluateStopConditions or in the Agent L stub contract.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": 6,
+      "category": "AUTONOMOUS_PROGRESSION_LOGIC",
+      "severity": "BLOCKING",
+      "label": "AWAITING_IMPLEMENTATION_APPROVAL returns WAITING but never advances",
+      "description": "The orchestrator pauses at AWAITING_IMPLEMENTATION_APPROVAL (authority-required), but there's no agent dispatch for IMPLEMENTATION_APPROVED to continue the workflow after the gate opens. Add a dispatch case for IMPLEMENTATION_APPROVED that transitions to IMPLEMENTED.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": 7,
+      "category": "AUTONOMOUS_PROGRESSION_LOGIC",
+      "severity": "REQUIRED",
+      "label": "VALIDATION_IN_PROGRESS has no agent dispatch",
+      "description": "The state exists in the state machine but no agent handles it. Either add a dispatch case or clarify that Agent K runs on IMPLEMENTED and produces VALIDATION_IN_PROGRESS as an intermediate state before reporting CERTIFICATION_READY or VALIDATION_FAILED.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": 8,
+      "category": "CONTRACT_COMPLETENESS",
+      "severity": "REQUIRED",
+      "label": "assertGuiApprovalExists checks handoff.guiApproval.decision but CandidatePackage uses guiApproved boolean",
+      "description": "The gate function references handoff.guiApproval.decision, but the candidate artifact type has a top-level guiApproved boolean field. Either the gate should check candidate.guiApproved, or the candidate should store a reference to the handoff approval object.",
+      "confidence": "confirmed"
+    }
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\fm-contract-review.md"
+}
