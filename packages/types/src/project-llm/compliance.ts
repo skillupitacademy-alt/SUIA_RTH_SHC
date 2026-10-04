@@ -57,3 +57,42 @@ export interface IntegrationStep {
   automatable: boolean;
   completed: boolean;
 }
+
+export type ComplianceResult = 'PASS' | 'FAIL' | 'WARNING' | 'UNKNOWN';
+export type ComplianceCategory =
+  | 'ARCHITECTURE'
+  | 'FAMILY_VERSION'
+  | 'COMPOSER'
+  | 'TUTORIAL_DOCUMENT'
+  | 'TUTORIAL_RENDERER'
+  | 'UBRC'
+  | 'ILS'
+  | 'LSNB'
+  | 'RSSB'
+  | 'THEME'
+  | 'SECURITY'
+  | 'ACCESSIBILITY'
+  | 'TESTING'
+  | 'EVIDENCE';
+
+export interface ComplianceFindingDetail {
+  findingId: string;
+  category: ComplianceCategory;
+  result: ComplianceResult;
+  ruleId: string;
+  message: string;
+  artifactPath?: string;
+  evidence?: string[];
+  remediation?: string;
+}
+
+export interface ComplianceReview {
+  reviewId: string;
+  candidateId: string;
+  targetFamilyId: string;
+  targetVersionId: string;
+  findings: ComplianceFindingDetail[];
+  overallResult: ComplianceResult;
+  reviewedAt: string;
+  reviewer: 'PROJECT_LLM';
+}
