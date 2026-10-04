@@ -1,8 +1,9 @@
 # Project LLM Block Creation Workbench Specification
 
 **Document Type:** Product Specification & Implementation Contract  
-**Status:** DRAFT — Awaiting Human Architecture Authority Approval  
+**Status:** REVISION 1 — Corrections Applied, Awaiting HAA Final Approval  
 **Created:** 2026-10-04  
+**Revised:** 2026-10-04 (12 corrections applied per HAA feedback)  
 **Technology:** Node.js + TypeScript + React (extending SkillHubCore Admin)
 
 **Related Documents:**
@@ -22,7 +23,7 @@
 
 **Technology Stack:** Node.js + TypeScript + React (extends existing SkillHubCore Admin / Tutorial Composer)
 
-**Phase 1 Scope:** Introduction block family pilot (I1/I2/I3) proving complete workflow from requirement → certified block
+**Phase 1 Scope:** Introduction block family pilot — I1 as existing reference, I2 as first new block created via complete workflow (requirement → creation brief → External AI → compliance → integration → validation → evidence → certification → production)
 
 ---
 
@@ -379,14 +380,21 @@ type WorkflowStatus =
 - `DiscoveryStatusIndicator`
 
 **Repository Intelligence Required:**
-- Locate existing block implementations
-- Locate schemas, types, validators
-- Locate Composer registry entries
-- Locate TutorialBlockRenderer
-- Locate ILS/LSNB/RSSB contracts
-- Verify UBRC compliance patterns
-- Identify file paths for new block
-- Verify multi-brand support patterns
+- Locate existing block implementations (with evidence)
+- Locate schemas, types, validators (with file paths verified)
+- Locate Composer registry entries (with actual imports verified)
+- Locate TutorialBlockRenderer (with actual implementation verified)
+- Locate ILS/LSNB/RSSB contracts (with runtime evidence)
+- Verify UBRC compliance patterns (from actual code, not assumptions)
+- Identify file paths for new block (from actual directory structure)
+- Verify multi-brand support patterns (from actual theme implementation)
+
+**Evidence-Based Discovery Principle:**
+- Project LLM must verify every path/import/contract claim with repository evidence
+- If repository evidence unavailable: mark UNKNOWN, do not assume
+- UNKNOWN findings require STOP → Human review
+- "Documentation says X" is NOT evidence that repository implements X
+- Only actual verified file paths, imports, and contracts are evidence
 
 **State:**
 ```typescript
@@ -792,7 +800,7 @@ interface CandidateFile {
 - `ComplianceCheckItem`
 - `ComplianceStatusIndicator`
 - `FindingsPanel`
-- `OverrideDialog` (Human Architecture Authority only)
+- `ComplianceOverrideDialog` (Human Architecture Authority only — records override reason, authority, evidence, and adds to audit trail; does NOT bypass evidence requirements)
 
 **Compliance Checks:**
 
@@ -1110,10 +1118,15 @@ interface IntegrationPlan {
 interface FileOperation {
   path: string;
   operation: 'CREATE' | 'MODIFY';
-  content?: string;
-  changes?: string[];
+  description: string; // WHAT must change
+  reason: string; // WHY it must change
+  expectedDiff: string; // Expected changes (not full content)
+  validationRequired: string[]; // Tests/checks required
+  humanApprovalRequired: boolean;
   verified: boolean;
 }
+
+**Phase 1 Constraint:** Integration plan describes changes (WHAT/WHERE/WHY/EXPECTED DIFF), not executable repository modification. Controlled repository modification is a separate Phase 2+ capability requiring explicit governance.
 
 interface IntegrationStep {
   description: string;
@@ -1592,22 +1605,32 @@ type TransitionTrigger =
 │                                                             │
 │  LLM Integration                                            │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │ LLMProviderAbstraction                               │   │
+│  │ LLMProviderAbstraction (interface)                   │   │
 │  │ │                                                    │   │
-│  │ ├── OpenAIProvider (Phase 2+)                       │   │
-│  │ ├── AnthropicProvider (Phase 2+)                    │   │
-│  │ └── GeminiProvider (Phase 2+)                       │   │
+│  │ ├── Phase 1: One server-side provider integration   │   │
+│  │ │   (selected by internal configuration)            │   │
+│  │ │                                                    │   │
+│  │ └── Phase 2+: Multi-provider selection UI           │   │
+│  │     ├── OpenAIProvider                              │   │
+│  │     ├── AnthropicProvider                           │   │
+│  │     └── GeminiProvider                              │   │
 │  │                                                    │   │
 │  │ Server-side only (secrets protected)                 │   │
+│  │ Provider credentials never exposed to browser        │   │
 │  └──────────────────────────────────────────────────────┘   │
 │                                                             │
 │  Data Layer                                                 │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │ PostgreSQL (via existing Drizzle setup)              │   │
 │  │ project_llm_requests                                 │   │
+│  │ project_llm_repository_contexts                      │   │
+│  │ project_llm_creation_briefs                          │   │
 │  │ project_llm_candidates                               │   │
-│  │ project_llm_reviews                                  │   │
-│  │ project_llm_evidence                                 │   │
+│  │ project_llm_compliance_reviews                       │   │
+│  │ project_llm_integration_plans                        │   │
+│  │ project_llm_evidence_packages                        │   │
+│  │ project_llm_certifications                           │   │
+│  │ (8 tables total)                                     │   │
 │  └──────────────────────────────────────────────────────┘   │
 │                                                             │
 │  Integration with Existing Systems                          │
@@ -1797,19 +1820,24 @@ interface ProjectLLMCertification {
 
 ### 6.1 Phase 1 Objectives
 
-**Primary Goal:** Prove the complete workflow with Introduction block family
+**Primary Goal:** Prove the complete workflow with Introduction block family (I1 as reference, I2 as first new certified block)
 
 **Success Criteria:**
-1. Repository intelligence discovers existing Introduction I1
-2. Creation brief generated for Introduction I2
-3. External AI workflow produces compliant candidate
-4. Compliance review passes all checks
-5. Integration plan identifies correct files
+1. Repository intelligence discovers existing Introduction I1 (with evidence)
+2. Creation brief generated for Introduction I2 (based on I1 reference + requirements)
+3. External AI workflow produces compliant candidate (GUI approval → React/TypeScript)
+4. Compliance review passes all checks (or correction loop succeeds)
+5. Integration plan identifies correct files (evidence-based, not assumed)
 6. Validation passes (TypeScript, lint, tests)
-7. Evidence package complete (including runtime proof)
+7. Evidence package complete (including runtime proof for both brands)
 8. Human Architecture Authority certifies Introduction I2
 9. Introduction I2 deployed to production (SkillUp + RTH)
 10. No new UBRC/ILS/LSNB/RSSB infrastructure created
+
+**Phase 1 Pilot Scope Clarification:**
+- I1 = Existing production reference block (NOT created by Project LLM)
+- I2 = First new block created via complete Project LLM workflow
+- I3+ = Out of scope for Phase 1 (deferred to Phase 2+)
 
 ### 6.2 Phase 1 Deliverables
 
@@ -1831,7 +1859,7 @@ interface ProjectLLMCertification {
 - WorkflowOrchestrator
 
 **Database:**
-- 7 tables created
+- 8 tables created
 - Schema migrations
 - Audit trail
 
@@ -1849,7 +1877,8 @@ interface ProjectLLMCertification {
 ### 6.3 Phase 1 Out of Scope
 
 ```text
-❌ I2-I6 block families (deferred to Phase 2+)
+❌ Introduction I3+ (deferred to Phase 2+)
+❌ Summary, Definition, Code, Objective, Visual families (deferred to Phase 2+)
 ❌ LLM provider selection UI (server-side only in Phase 1)
 ❌ Automated GUI approval (human + External AI in Phase 1)
 ❌ Automated certification (human approval required)
@@ -1937,10 +1966,17 @@ Project LLM must STOP and request Human Architecture Authority approval when:
    - Tests cannot be written
 
 5. **Certification ambiguity:**
-   - Project LLM confidence < 80%
-   - Warnings present
+   - Evidence insufficient to support certification
+   - Warnings present requiring human judgment
    - Edge cases unverified
-   - Novel patterns detected
+   - Novel patterns detected requiring architecture review
+   - Multiple compliance findings with unclear priority
+
+**Evidence-Based STOP (NOT confidence-based):**
+- STOP decisions based on evidence sufficiency, not LLM confidence scores
+- LLM confidence displayed as advisory metadata only
+- STOP triggers: Evidence gaps, contract violations, runtime proof missing, novel architecture, ambiguity requiring human judgment
+- Never substitute confidence percentage for actual evidence
 
 ---
 
@@ -1968,22 +2004,27 @@ Project LLM must STOP and request Human Architecture Authority approval when:
 - [ ] Approve additional block families
 - [ ] Approve technology additions (if Python/FastAPI justified)
 
-### 8.2 Project LLM Approval Authority (Automated)
+### 8.2 Project LLM Assessment Authority (Automated)
 
-Project LLM can autonomously approve:
-- Repository discovery results (subject to verification)
-- Creation brief generation (human copies, doesn't re-approve)
-- Compliance review PASS (human reviews evidence, not compliance matrix)
-- Integration plan (human reviews before execution)
-- Validation results (human reviews evidence, not test output)
-- Evidence package completeness (human reviews content, not completeness check)
+Project LLM can autonomously assess/evaluate/recommend:
+- Repository discovery results → generates assessment (human verifies before using)
+- Creation brief generation → generates brief (human copies, reviews if needed)
+- Compliance review PASS/FAIL → generates assessment (human reviews evidence)
+- Integration plan → generates plan (human approves before execution)
+- Validation results → generates assessment (human reviews evidence)
+- Evidence package completeness → determines completeness (human reviews content)
+- CERTIFICATION_READY recommendation → makes recommendation (human makes final decision)
 
 Project LLM CANNOT autonomously approve:
-- Architecture changes
-- Database schema changes
-- New runtime contracts
-- CERTIFICATION_READY → CERTIFIED transition
-- Production deployment
+- Architecture changes (requires human approval)
+- Database schema changes (requires human approval)
+- New runtime contracts (requires human approval)
+- CERTIFICATION_READY → CERTIFIED transition (requires Human Architecture Authority)
+- Production deployment (requires human approval)
+
+**Critical Distinction:**
+- **Assessment/Evaluation/Recommendation:** Project LLM determines status and makes recommendation
+- **Approval/Authority:** Human Architecture Authority makes binding decisions
 
 ---
 
@@ -2046,48 +2087,68 @@ Project LLM CANNOT autonomously approve:
 
 ### 10.2 Implementation Sequence (After Approval)
 
+**Recommended: Vertical Slice Approach**
+
+Build thin vertical slice early (usable Workbench while building Workbench):
+
 ```text
 Phase 1A: Foundation
-├── Database schema + migrations
-├── Service skeletons
-├── Workflow orchestrator
-└── Basic repository intelligence
+├── Database schema + migrations (8 tables)
+├── Service interfaces + contracts
+├── Workflow state machine
+└── Basic API routes
 
-Phase 1B: Core Services
-├── RepositoryIntelligenceService (Introduction family)
-├── ReferenceIntelligenceService (Introduction I1)
+Phase 1B: Minimal Workbench Shell
+├── Dashboard skeleton
+├── Request workspace shell
+├── Navigation
+└── State management
+
+Phase 1C: Repository Intelligence
+├── RepositoryIntelligenceService
+├── Evidence-based discovery
+├── Repository Context screen
+└── Discovery verification UI
+
+Phase 1D: Creation Brief
+├── ReferenceIntelligenceService
 ├── CreationBriefService
-├── ComplianceReviewService
-└── CorrectionGeneratorService
+├── Brief Builder screen
+└── External AI Handoff screen
 
-Phase 1C: Integration Services
+Phase 1E: Compliance Engine
+├── Candidate Intake screen
+├── ComplianceReviewService
+├── CorrectionGeneratorService
+├── Compliance Review screen
+└── Correction Instructions screen
+
+Phase 1F: Integration & Validation
 ├── IntegrationPlannerService
 ├── ValidationService
 ├── EvidenceCollectorService
-└── End-to-end workflow tested
+├── Integration Plan screen
+├── Validation & Evidence screen
+└── Certification Review screen
 
-Phase 1D: Workbench GUI
-├── Screens 1-6 (Dashboard → Candidate Intake)
-├── Screens 7-9 (Compliance → Integration)
-├── Screens 10-12 (Validation → Settings)
-└── Integration with SkillHubCore Admin
-
-Phase 1E: Pilot
-├── Introduction I2 creation brief
+Phase 1G: Introduction I2 Pilot
+├── End-to-end workflow
+├── I1 as reference
+├── I2 creation brief
 ├── External AI workflow
-├── Candidate intake + compliance review
+├── Candidate compliance review
 ├── Integration + validation
 ├── Evidence collection
-├── Human Architecture Authority certification
-└── Production deployment (SkillUp + RTH)
+└── Human certification
 
-Phase 1F: Documentation & Handoff
-├── User guide
-├── Architecture docs
-├── API docs
-├── Evidence requirements guide
-└── Phase 2+ planning
+Phase 1H: Production Deployment
+├── Introduction I2 certified
+├── Production deployment (SkillUp + RTH)
+├── Runtime verification
+└── Documentation & handoff
 ```
+
+**UI Implementation Note:** Build workflow as integrated Block Request workspace (not 12 independent pages). Dashboard and Settings remain separate global surfaces. Screens 2-11 become workflow tabs/panels within Block Request workspace.
 
 ---
 
@@ -2135,3 +2196,60 @@ Phase 1F: Documentation & Handoff
 ---
 
 **Once approved, this document becomes the implementation contract for Project LLM Block Creation Workbench Phase 1.**
+
+
+---
+
+## Revision History
+
+### Revision 1 (2026-10-04) — 12 Corrections Applied
+
+**Human Architecture Authority Feedback:** Architecture direction APPROVED IN PRINCIPLE. Specification requires corrections before final approval.
+
+**Corrections Applied:**
+
+1. **Pilot Scope Clarification:** Changed "I1/I2/I3 pilot" to "I1 as existing reference, I2 as first new block created via workflow". I1 is NOT created by Project LLM—it is the production reference. I3+ out of scope for Phase 1.
+
+2. **Database Table Count Correction:** Changed "7 tables" to "8 tables" throughout document. Database schema section defines 8 tables (requests, repository_contexts, creation_briefs, candidates, compliance_reviews, integration_plans, evidence_packages, certifications).
+
+3. **LLM Provider Architecture Clarification:** Phase 1 implements provider abstraction + one server-side provider integration (internal configuration). Multi-provider selection UI deferred to Phase 2+. Provider credentials never exposed to browser.
+
+4. **AI Authority Terminology:** Changed "Project LLM can autonomously approve" to "Project LLM can autonomously assess/evaluate/recommend". Added explicit distinction between AI assessment and Human Architecture Authority approval. Project LLM evaluates/recommends; Human approves.
+
+5. **Override Dialog Governance:** Renamed `OverrideDialog` to `ComplianceOverrideDialog`. Clarified that override records reason, authority, evidence, and adds to audit trail. Override does NOT bypass evidence requirements.
+
+6. **Integration Plan Repository Modification Boundary:** Changed `FileOperation` interface from `content?: string` (unrestricted write) to descriptive fields (description, reason, expectedDiff, validationRequired, humanApprovalRequired). Phase 1 Integration Plan describes changes (WHAT/WHERE/WHY), not executable repository modification. Controlled repository modification is Phase 2+ capability requiring explicit governance.
+
+7. **Evidence-Based Repository Discovery:** Added "Evidence-Based Discovery Principle" section. Project LLM must verify every path/import/contract claim with repository evidence. If evidence unavailable: mark UNKNOWN, trigger STOP. "Documentation says X" is NOT evidence that repository implements X. Only verified file paths, imports, contracts are evidence.
+
+8. **Evidence-Based STOP Conditions:** Removed "Project LLM confidence < 80%" as STOP trigger. Changed to evidence-based STOP: evidence gaps, contract violations, runtime proof missing, novel architecture, ambiguity requiring human judgment. LLM confidence displayed as advisory metadata only, never substitutes for actual evidence.
+
+9. **Phase 1 Success Criteria Clarification:** Added explicit pilot scope: I1 = existing reference (NOT created by Project LLM), I2 = first new block created via workflow, I3+ = out of scope Phase 1.
+
+10. **Out-of-Scope Wording Correction:** Changed "I2-I6 block families" (confusing wording) to "Introduction I3+" and "Summary, Definition, Code, Objective, Visual families" (clear delineation). I2 is IN scope as the pilot; I3+ and other families are out of scope.
+
+11. **Implementation Sequence Reordered:** Changed from "build all services first, then GUI" to "vertical slice approach" (usable Workbench while building Workbench). Build thin slice: Foundation → Minimal Shell → Repository Intelligence → Brief → Compliance → Integration → Pilot. Added UI implementation note: Build workflow as integrated Block Request workspace (not 12 independent pages).
+
+12. **Deliverables Table Count Correction:** Changed "7 tables created" to "8 tables created" in Phase 1 deliverables summary.
+
+**Assessment After Corrections:**
+
+All 12 identified issues corrected. Specification now:
+- ✅ Clarifies I1 reference vs. I2 pilot
+- ✅ Corrects database table count
+- ✅ Defines Phase 1 LLM provider architecture
+- ✅ Distinguishes AI assessment from human approval
+- ✅ Strengthens override governance
+- ✅ Tightens integration plan boundaries
+- ✅ Enforces evidence-based discovery
+- ✅ Removes confidence-based STOP (evidence-based only)
+- ✅ Clarifies Phase 1 scope (I2 pilot, not I1/I2/I3)
+- ✅ Corrects out-of-scope wording
+- ✅ Reorders implementation sequence (vertical slice)
+- ✅ Corrects deliverables count
+
+**Status:** REVISION 1 complete. Awaiting Human Architecture Authority final approval before implementation begins.
+
+---
+
+**Once approved, this document becomes the locked implementation contract for Project LLM Block Creation Workbench Phase 1.**
