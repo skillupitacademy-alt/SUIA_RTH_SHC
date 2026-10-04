@@ -12,7 +12,7 @@
 ### Authoritative Counts
 
 - **18 Educational Block Families** (taxonomy/architecture)
-- **132 versions documented** across 18 families (126 verified + 6 incomplete/gap)
+- **133 versions documented** across 18 families (127 verified + 6 incomplete/gap)
 - **3 families implemented:** I1, C1, D1 (VERIFIED with version routing + UBRC compliance)
 - **15 families documented but not yet implemented**
 - **15 implementation primitives** (heading, paragraph, list, etc.) — building blocks used by Educational Blocks, NOT separate families
@@ -31,7 +31,7 @@
 
 | Original Claim | Corrected Value | Evidence Source |
 |----------------|-----------------|-----------------|
-| 141 total versions | **132 total versions** | FAMILY_VERSION_MATRIX.md, TypeScript registries |
+| 141 total versions | **133 total versions** | FAMILY_VERSION_MATRIX.md, TypeScript registries (arithmetic correction applied) |
 | D1-D8 (8 versions) | **D1-D6 (6 versions)** | definition-versions.ts (AUTHORITATIVE) |
 | V1-V10 (10 versions) | **V1-V8 (8 versions)** | FAMILY_VERSION_MATRIX.md (V9-V10 NOT EVIDENCED) |
 | S1 implemented | **S1 INCOMPLETE** | Missing data-block-version attribute, no version routing |
@@ -446,13 +446,13 @@ These are **NOT Educational Block Families** — they are reusable building bloc
 
 | # | Original Claim | Corrected Value | Evidence Source | Reason |
 |---|----------------|-----------------|-----------------|--------|
-| 1 | **141 total versions** | **132 total versions** | FAMILY_VERSION_MATRIX.md aggregate | Documentation drift — overcounted |
+| 1 | **141 total versions** | **133 total versions** | FAMILY_VERSION_MATRIX.md aggregate | Documentation drift — overcounted, arithmetic error in summation corrected |
 | 2 | **D1-D8 (8 versions)** | **D1-D6 (6 versions)** | definition-versions.ts (AUTHORITATIVE) | TypeScript registry defines D1-D6 ONLY. DefinitionBlock.ipynb documents D1-D8 but type system never implemented D7-D8. |
 | 3 | **V1-V10 (10 versions)** | **V1-V8 (8 versions)** | FAMILY_VERSION_MATRIX.md: "V9, V10 NOT EVIDENCED" | Authoritative specification explicitly states V9-V10 do not have specifications. |
 | 4 | **S1 implemented** | **S1 INCOMPLETE** | BlockDOMIdentity.test.tsx + SummaryBlock.tsx | S1 has React component but missing `data-block-version` attribute + no version routing. Does NOT meet UBRC compliance. |
 | 5 | **2 or 4 families implemented** | **3 families implemented** | Implementation Status Report + repository evidence | I1, C1, D1 are VERIFIED (not 2, not 4). |
 | 6 | **D1 "no version routing"** | **D1 HAS version routing** | DefinitionBlock.tsx lines 20-29 | Family Version Matrix incorrectly claimed "no version routing" but component-level version router exists. |
-| 7 | **137 total versions** (Provenance) | **132 total versions** | FAMILY_VERSION_MATRIX.md + TypeScript registries | D family outdated (used D1-D6 count) + V9-V10 not evidenced. |
+| 7 | **137 total versions** (Provenance) | **133 total versions** | FAMILY_VERSION_MATRIX.md + TypeScript registries | D family outdated (used D1-D6 count) + V9-V10 not evidenced + arithmetic correction applied. |
 | 8 | **18 block families + primitives conflated** | **18 families SEPARATE from 15 primitives** | Taxonomy Separation Report + TutorialBlockRenderer.tsx | Primitives (heading, paragraph, list, etc.) are building blocks, NOT versioned families. |
 
 ### Evidence Strength Hierarchy
@@ -553,7 +553,7 @@ These are **NOT Educational Block Families** — they are reusable building bloc
 
 ## Version Count Verification
 
-### Calculation by Family (132 Total)
+### Calculation by Family (133 Total)
 
 ```
 Introduction (I):    6 versions  (I1-I6)
@@ -575,12 +575,12 @@ Quiz (QZ):           8 versions  (QZ1-QZ8)
 Interview (IV):      7 versions  (IV1-IV7)
 Project (P):         8 versions  (P1-P8)
 ────────────────────────────────────────
-TOTAL:             132 versions
+TOTAL:             133 versions
 ```
 
 **Verification:**
 ```
-6 + 5 + 6 + 10 + 8 + 8 + 8 + 8 + 8 + 7 + 6 + 8 + 8 + 8 + 6 + 8 + 7 + 8 = 132 ✓
+6 + 5 + 6 + 10 + 8 + 8 + 8 + 8 + 8 + 7 + 6 + 8 + 8 + 8 + 6 + 8 + 7 + 8 = 133 ✓
 ```
 
 ---

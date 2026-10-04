@@ -164,7 +164,7 @@ if (totalVersions !== CORPUS_VERSIONS_TOTAL) {
 export const BLOCK_CORPUS_REGISTRY: ProjectLlmCorpusRegistry = {
   status: {
     families: 18,
-    documentedVersions: 132,
+    documentedVersions: 133,
   },
   families: BLOCK_FAMILIES,
   documentationSources: [

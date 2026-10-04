@@ -12,7 +12,7 @@
 ### Authoritative Totals
 
 - **18 Educational Block Families** (architectural taxonomy)
-- **132 Total Versions** documented across 18 families (126 verified specifications + 6 incomplete/gap)
+- **133 Total Versions** documented across 18 families (127 verified specifications + 6 incomplete/gap)
 - **3 Verified Implementations** (I1, C1, D1) with complete version routing + UBRC compliance
 - **15 families planned** but not yet implemented
 - **1 incomplete implementation** (S1 - missing version enforcement)
@@ -425,8 +425,8 @@ This canonical document incorporates corrections from the consolidation plan, re
 
 | Original Claim | Corrected Value | Evidence Source | Impact |
 |----------------|-----------------|-----------------|--------|
-| **141 total versions** (Corpus Registry) | **132 total versions** | consolidation-plan.md aggregate from all families | Version count reduced by 9 |
-| **137 total versions** (Component Provenance) | **132 total versions** | Family Version Matrix + TypeScript registries | Version count reduced by 5 |
+| **141 total versions** (Corpus Registry) | **133 total versions** | consolidation-plan.md aggregate from all families (arithmetic correction applied) | Version count reduced by 8 (D7-D8, V9-V10, plus arithmetic correction) |
+| **137 total versions** (Component Provenance) | **133 total versions** | Family Version Matrix + TypeScript registries | Version count reduced by 4 (arithmetic correction applied) |
 | **D1-D8** (8 versions) | **D1-D6** (6 versions) | definition-versions.ts (authoritative TypeScript registry) | D7-D8 removed (never implemented in type system) |
 | **V1-V10** (10 versions) | **V1-V8** (8 versions) | Family Version Matrix: "V9, V10 NOT EVIDENCED" | V9-V10 removed (no specifications found) |
 
@@ -496,14 +496,14 @@ This canonical document is derived from the following authoritative sources:
 ### Reconciliation Reports (Cross-Referenced)
 
 5. **Consolidation Plan** (source of truth for this document)
-   - `.agents/tasks/consolidation-plan.md` (authoritative corrections, version count: 132)
+   - `.agents/tasks/consolidation-plan.md` (authoritative corrections, version count: 133)
 
 6. **Investigation Reports**
    - `.agents/tasks/component-provenance.md` (component hierarchy mapping)
    - `.agents/tasks/reconciliation-implementation-status.md` (I1, C1, D1, S1 verification)
    - `.agents/tasks/reconciliation-taxonomy-separation.md` (18 families vs 15 primitives)
    - `.agents/tasks/reconciliation-version-ranges.md` (D1-D6, V1-V8 corrections)
-   - `.agents/tasks/reconciliation-version-count.md` (132 total verification)
+   - `.agents/tasks/reconciliation-version-count.md` (133 total verification)
 
 ---
 

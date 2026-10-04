@@ -14,7 +14,7 @@ export interface ProjectLlmCorpusStatus {
   /** Total educational block families in architectural taxonomy */
   readonly families: 18;
   /** Total documented versions across all families in the reference corpus */
-  readonly documentedVersions: 132;
+  readonly documentedVersions: 133;
 }
 
 export interface BlockFamilyReference {
@@ -40,4 +40,4 @@ export interface ProjectLlmCorpusRegistry {
 
 /** Compile-time constants for corpus counts */
 export const CORPUS_FAMILIES_TOTAL = 18 as const;
-export const CORPUS_VERSIONS_TOTAL = 132 as const;
+export const CORPUS_VERSIONS_TOTAL = 133 as const;

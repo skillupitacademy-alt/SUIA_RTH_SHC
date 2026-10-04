@@ -13,7 +13,7 @@ This canonical registry documents the complete **18 Educational Block Family** a
 ### Key Metrics
 
 - **18 Educational Block Families** (architectural taxonomy)
-- **132 versions documented** across 18 families
+- **133 versions documented** across 18 families
 - **3 families with verified implementations:** I (Introduction), C (Code), D (Definition)
 - **15 families planned** but not yet implemented
 - **15 Implementation Primitives** (building blocks used BY Educational Blocks, NOT separate families)
@@ -22,7 +22,7 @@ This canonical registry documents the complete **18 Educational Block Family** a
 
 Multiple reconciliation investigations resolved contradictions between initial reports and authoritative repository evidence:
 
-- **Total version count corrected:** 132 versions (not 141 as initially claimed)
+- **Total version count corrected:** 133 versions (not 141 as initially claimed, arithmetic error in original summation corrected)
 - **Definition family range corrected:** D1-D6 (6 versions, not D1-D8)
 - **Visual family range corrected:** V1-V8 (8 versions, not V1-V10)
 - **Taxonomy clarified:** 18 Educational Block Families separated from 15 Implementation Primitives
@@ -54,11 +54,11 @@ Content was rephrased for compliance with licensing restrictions.
 | 16 | QuizBlock | QZ | 8 | QZ1-QZ8 | PLANNED | Assessment/evaluation |
 | 17 | InterviewBlock | IV | 7 | IV1-IV7 | PLANNED | Interview preparation |
 | 18 | ProjectBlock | P | 8 | P1-P8 | PLANNED | Real-world project application |
-| | **TOTAL** | | **132** | | **3 VERIFIED, 15 PLANNED** | |
+| | **TOTAL** | | **133** | | **3 VERIFIED, 15 PLANNED** | |
 
 **Calculation Verification:**
 ```
-6 + 5 + 6 + 10 + 8 + 8 + 8 + 8 + 8 + 7 + 6 + 8 + 8 + 8 + 6 + 8 + 7 + 8 = 132
+6 + 5 + 6 + 10 + 8 + 8 + 8 + 8 + 8 + 7 + 6 + 8 + 8 + 8 + 6 + 8 + 7 + 8 = 133
 ```
 
 ---
@@ -594,8 +594,8 @@ The following corrections were applied based on reconciliation investigations an
 
 | # | Original Claim | Source Report | Corrected Value | Evidence | Reason |
 |---|----------------|---------------|-----------------|----------|--------|
-| 1 | **141 total versions** | Corpus Registry | **132 total versions** | FAMILY_VERSION_MATRIX.md aggregate count | Documentation drift — multiple families overcounted |
-| 2 | **137 total versions** | Provenance, UBRC Inventory | **132 total versions** | FAMILY_VERSION_MATRIX.md + TypeScript registries | D family outdated + V9-V10 not evidenced |
+| 1 | **141 total versions** | Corpus Registry | **133 total versions** | FAMILY_VERSION_MATRIX.md aggregate count | Documentation drift — multiple families overcounted |
+| 2 | **137 total versions** | Provenance, UBRC Inventory | **133 total versions** | FAMILY_VERSION_MATRIX.md + TypeScript registries | D family outdated + V9-V10 not evidenced |
 | 3 | **D1-D8 (8 versions)** | Corpus Registry, Family Matrix | **D1-D6 (6 versions)** | `definition-versions.ts` (TypeScript registry — AUTHORITATIVE) | TypeScript registry defines D1-D6 ONLY. DefinitionBlock.ipynb documents D1-D8 but type system never implemented D7-D8. Runtime contract overrides documentation. |
 | 4 | **V1-V10 (10 versions)** | Corpus Registry, Provenance | **V1-V8 (8 versions)** | FAMILY_VERSION_MATRIX.md: "V9, V10 NOT EVIDENCED (contradicts historical register)" | Authoritative specification explicitly states V9-V10 do not have specifications. Historical claims without verification. |
 | 5 | **18 block families** (conflation with primitives) | Runtime Compliance | **18 families CORRECT (3 implemented, 15 planned)** | Taxonomy Separation Report + TutorialBlockRenderer.tsx | Correct family count, but primitives were conflated with families in some reports. Separation enforced: 18 families (versioned educational units) vs 15 primitives (building blocks). |
@@ -730,7 +730,7 @@ This canonical registry is based on the following authoritative sources:
 **Source Plan:** `.agents/tasks/consolidation-plan.md`  
 **Verification:** All version counts, ranges, and implementation statuses verified against authoritative repository evidence  
 
-**Total Educational Block Versions:** 132  
+**Total Educational Block Versions:** 133  
 **Total Educational Block Families:** 18  
 **Verified Implementations:** 3 (I1, C1, D1)  
 **Planned Implementations:** 129 versions across 15 families  
