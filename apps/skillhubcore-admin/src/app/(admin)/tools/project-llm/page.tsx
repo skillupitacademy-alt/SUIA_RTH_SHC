@@ -50,7 +50,7 @@ const agentLanes: AgentLane[] = [
     badge: '18-BLOCK CORPUS',
     badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
     buttonColor: 'bg-indigo-600 hover:bg-indigo-700 text-white',
-    items: ['18 families, 132 versions', '3 verified, 1 incomplete, 15 planned', 'Reference patterns: I1, C1, D1'],
+    items: ['18 families, 133 versions', '3 verified, 1 incomplete, 14 planned', 'Reference patterns: I1, C1, D1'],
   },
   {
     id: 'creation-brief',

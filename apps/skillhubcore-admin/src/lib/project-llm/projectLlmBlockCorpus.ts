@@ -4,7 +4,7 @@
  * Static TypeScript fixture enumerating all 18 educational block families
  * with their documented versions. Sourced from canonical documentation.
  * 
- * Invariant: 18 families, 132 total versions
+ * Invariant: 18 families, 133 total versions
  */
 
 import {

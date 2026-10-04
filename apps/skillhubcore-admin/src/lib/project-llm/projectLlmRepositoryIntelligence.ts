@@ -77,7 +77,7 @@ const INCOMPLETE_IMPLEMENTATIONS: BlockVersionImplementationStatus[] = [
   },
 ];
 
-// Planned families (15 families not yet implemented)
+// Planned families (14 families not yet implemented)
 const PLANNED_FAMILY_IDS = ['O', 'V', 'CP', 'E', 'M', 'MT', 'BP', 'Q', 'EX', 'T', 'INT', 'QZ', 'IV', 'P'];
 
 // 15 implementation primitives (building blocks, NOT educational families)

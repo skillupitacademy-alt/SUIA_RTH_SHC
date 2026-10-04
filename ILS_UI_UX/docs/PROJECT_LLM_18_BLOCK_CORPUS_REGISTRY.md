@@ -15,7 +15,7 @@ This canonical registry documents the complete **18 Educational Block Family** a
 - **18 Educational Block Families** (architectural taxonomy)
 - **133 versions documented** across 18 families
 - **3 families with verified implementations:** I (Introduction), C (Code), D (Definition)
-- **15 families planned** but not yet implemented
+- **14 families planned** but not yet implemented
 - **15 Implementation Primitives** (building blocks used BY Educational Blocks, NOT separate families)
 
 ### Corrections Applied
@@ -46,7 +46,7 @@ Content was rephrased for compliance with licensing restrictions.
 | 8 | MemoryBlock | M | 8 | M1-M8 | PLANNED | Internal state/memory models |
 | 9 | MistakeBlock | MT | 8 | MT1-MT8 | PLANNED | Error identification/debugging |
 | 10 | BestPracticeBlock | BP | 7 | BP1-BP7 | PLANNED | Coding standards/practices |
-| 11 | SummaryBlock | S | 6 | S1-S6 | PLANNED | Concept revision/summary |
+| 11 | SummaryBlock | S | 6 | S1-S6 | INCOMPLETE (S1 partial) | S1 functional but missing UBRC data-block-version; not reference-quality |
 | 12 | QuestionBlock | Q | 8 | Q1-Q8 | PLANNED | Concept checking questions |
 | 13 | ExerciseBlock | EX | 8 | EX1-EX8 | PLANNED | Guided practice activities |
 | 14 | TaskBlock | T | 8 | T1-T8 | PLANNED | Practical application tasks |
@@ -54,7 +54,7 @@ Content was rephrased for compliance with licensing restrictions.
 | 16 | QuizBlock | QZ | 8 | QZ1-QZ8 | PLANNED | Assessment/evaluation |
 | 17 | InterviewBlock | IV | 7 | IV1-IV7 | PLANNED | Interview preparation |
 | 18 | ProjectBlock | P | 8 | P1-P8 | PLANNED | Real-world project application |
-| | **TOTAL** | | **133** | | **3 VERIFIED, 15 PLANNED** | |
+| | **TOTAL** | | **133** | | **3 VERIFIED, 14 PLANNED, 1 INCOMPLETE** | |
 
 **Calculation Verification:**
 ```
