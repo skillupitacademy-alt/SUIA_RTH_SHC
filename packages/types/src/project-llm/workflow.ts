@@ -6,6 +6,20 @@ import type { IntegrationPlanRecord } from './integration';
 import type { EvidencePackage } from './evidence';
 import type { CertificationPackage } from './certification';
 
+/**
+ * AGENT G gate variant: verifies the candidate package itself carries
+ * the guiApproved flag, which Agent G sets by copying the handoff approval.
+ * This is the runtime-checkable form of the GUI approval gate.
+ */
+export function assertCandidateGuiApproved(candidate: CandidatePackage): void {
+  if (!candidate.guiApproved) {
+    throw new Error(
+      `Candidate ${candidate.candidateId} does not carry GUI approval. ` +
+      'Agent G must only produce a CandidatePackage when guiApproval.decision === APPROVED on the handoff record.',
+    );
+  }
+}
+
 export type ProjectLlmWorkflowState =
   | 'REQUEST_CREATED'
   | 'BRIEF_READY'

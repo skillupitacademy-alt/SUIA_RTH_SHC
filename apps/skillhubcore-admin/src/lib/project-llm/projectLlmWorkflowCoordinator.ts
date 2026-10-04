@@ -23,7 +23,6 @@ import {
 } from '@quiz/types/project-llm';
 import type {
   ExternalAiHandoff,
-  CandidatePackage,
   IntegrationPlanRecord,
   CertificationPackage,
 } from '@quiz/types/project-llm';
@@ -178,6 +177,15 @@ export function evaluateStopConditions(
     return 'MISSING_EVIDENCE';
   }
 
+  // Evidence blocking failures prevent certification
+  if (
+    state === 'CERTIFICATION_READY' &&
+    artifacts.evidencePackage &&
+    artifacts.evidencePackage.blockingFailures.length > 0
+  ) {
+    return 'MISSING_EVIDENCE';
+  }
+
   // Security failures always stop immediately
   if (artifacts.complianceReview) {
     const hasSecurityFail = artifacts.complianceReview.findings.some(
@@ -211,7 +219,7 @@ export function evaluateStopConditions(
 type AgentFn<T> = (workflow: ProjectLlmWorkflow) => Promise<AgentExecutionResult<T>>;
 
 const NOT_IMPLEMENTED_STUB = (agentName: string): AgentFn<unknown> =>
-  async (_workflow) => ({
+  async () => ({
     agent: agentName,
     success: false,
     nextState: null,
@@ -283,6 +291,54 @@ export async function runWorkflow(
       return { status: 'STOPPED', workflow: stopped, reason: stopReason };
     }
 
+    // Auto-transitions: states that advance to the next state without agent execution
+    if (current.state === 'COMPLIANCE_FAILED') {
+      assertValidTransition(current.state, 'CORRECTION_REQUIRED');
+      current = {
+        ...current,
+        state: 'CORRECTION_REQUIRED',
+        metadata: { ...current.metadata, updatedAt: new Date().toISOString() },
+      };
+      await store.save(current);
+      continue;
+    }
+
+    if (current.state === 'VALIDATION_FAILED') {
+      assertValidTransition(current.state, 'CORRECTION_REQUIRED');
+      current = {
+        ...current,
+        state: 'CORRECTION_REQUIRED',
+        metadata: { ...current.metadata, updatedAt: new Date().toISOString() },
+      };
+      await store.save(current);
+      continue;
+    }
+
+    if (current.state === 'INTEGRATION_PLANNED') {
+      if (current.artifacts.integrationPlan) {
+        assertImplementationApprovalRequired(current.artifacts.integrationPlan);
+      }
+      assertValidTransition(current.state, 'AWAITING_IMPLEMENTATION_APPROVAL');
+      current = {
+        ...current,
+        state: 'AWAITING_IMPLEMENTATION_APPROVAL',
+        metadata: { ...current.metadata, updatedAt: new Date().toISOString() },
+      };
+      await store.save(current);
+      continue;
+    }
+
+    if (current.state === 'IMPLEMENTATION_APPROVED') {
+      assertValidTransition(current.state, 'IMPLEMENTED');
+      current = {
+        ...current,
+        state: 'IMPLEMENTED',
+        metadata: { ...current.metadata, updatedAt: new Date().toISOString() },
+      };
+      await store.save(current);
+      continue;
+    }
+
     // Dispatch to the correct agent for the current state
     let result: AgentExecutionResult<unknown>;
 
@@ -296,15 +352,16 @@ export async function runWorkflow(
       case 'CANDIDATE_READY':
         result = await runAgentH(current);
         break;
-      case 'COMPLIANCE_FAILED':
       case 'CORRECTION_REQUIRED':
-      case 'VALIDATION_FAILED':
         result = await runAgentI(current);
         break;
       case 'COMPLIANCE_PASSED':
         result = await runAgentJ(current);
         break;
+      // Agent K handles both IMPLEMENTED (start validation) and
+      // VALIDATION_IN_PROGRESS (continue/complete validation)
       case 'IMPLEMENTED':
+      case 'VALIDATION_IN_PROGRESS':
         result = await runAgentK(current);
         break;
       case 'CERTIFICATION_READY':
