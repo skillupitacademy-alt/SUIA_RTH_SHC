@@ -173,11 +173,11 @@ export default function ProjectLlmWorkbenchPage() {
           <span className="text-xs font-mono font-semibold text-slate-400">Corpus & Runtime</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
+          <div className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 hover:shadow-2xl transition-all duration-300 cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Corpus Families</p>
-                <p className="mt-1 text-2xl font-black text-slate-900 font-outfit">{corpus.status.families}</p>
+                <p className="mt-1 text-2xl font-black text-indigo-600 font-outfit">{corpus.status.families}</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
                 <Layers size={20} />
@@ -186,11 +186,11 @@ export default function ProjectLlmWorkbenchPage() {
             <p className="mt-2 text-xs text-slate-500 font-medium">Educational block families</p>
           </div>
           
-          <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
+          <div className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 hover:shadow-2xl transition-all duration-300 cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Documented Versions</p>
-                <p className="mt-1 text-2xl font-black text-slate-900 font-outfit">{corpus.status.documentedVersions}</p>
+                <p className="mt-1 text-2xl font-black text-purple-600 font-outfit">{corpus.status.documentedVersions}</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
                 <FileText size={20} />
@@ -199,7 +199,7 @@ export default function ProjectLlmWorkbenchPage() {
             <p className="mt-2 text-xs text-slate-500 font-medium">Across all families</p>
           </div>
           
-          <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
+          <div className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 hover:shadow-2xl transition-all duration-300 cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Verified Runtime</p>
@@ -212,7 +212,7 @@ export default function ProjectLlmWorkbenchPage() {
             <p className="mt-2 text-xs text-slate-500 font-medium">I1, C1, D1 implementations</p>
           </div>
           
-          <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
+          <div className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 hover:shadow-2xl transition-all duration-300 cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Planned Families</p>
