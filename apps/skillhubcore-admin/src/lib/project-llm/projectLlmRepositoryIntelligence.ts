@@ -129,7 +129,7 @@ const RUNTIME_REGISTRY: ProjectLlmRuntimeRegistry = {
   status: {
     verifiedImplementations: 3,
     incompleteImplementations: 1,
-    plannedFamilies: 15,
+    plannedFamilies: 14,
   },
   verifiedImplementations: VERIFIED_IMPLEMENTATIONS,
   incompleteImplementations: INCOMPLETE_IMPLEMENTATIONS,

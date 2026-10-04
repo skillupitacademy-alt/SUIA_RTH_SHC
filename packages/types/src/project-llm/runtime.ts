@@ -14,8 +14,8 @@ export interface ProjectLlmRuntimeStatus {
   readonly verifiedImplementations: 3;
   /** Number of incomplete runtime implementations (S1) */
   readonly incompleteImplementations: 1;
-  /** Number of planned educational families not yet implemented (15) */
-  readonly plannedFamilies: 15;
+  /** Number of planned educational families not yet implemented (14: O,V,CP,E,M,MT,BP,Q,EX,T,INT,QZ,IV,P) */
+  readonly plannedFamilies: 14;
 }
 
 export type UbrcComplianceLevel = 'FULL' | 'PARTIAL' | 'NONE';
@@ -49,4 +49,4 @@ export interface ProjectLlmRuntimeRegistry {
 /** Compile-time constants for runtime counts */
 export const RUNTIME_VERIFIED_COUNT = 3 as const;
 export const RUNTIME_INCOMPLETE_COUNT = 1 as const;
-export const RUNTIME_PLANNED_FAMILIES_COUNT = 15 as const;
+export const RUNTIME_PLANNED_FAMILIES_COUNT = 14 as const;
