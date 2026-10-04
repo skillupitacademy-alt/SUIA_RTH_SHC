@@ -564,7 +564,7 @@ export function generateCreationBrief(request: CreationBriefRequest): CreationBr
  * Convenience function for generating I2 creation brief
  */
 export function generateI2CreationBrief(
-  request: Omit<CreationBriefRequest, 'targetFamilyId' | 'targetVersionId'>
+  request: Omit<CreationBriefRequest, 'targetFamilyId' | 'targetVersionId' | 'targetStage'>
 ): CreationBrief {
   return generateCreationBrief({
     ...request,
