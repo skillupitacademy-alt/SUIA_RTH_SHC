@@ -154,7 +154,7 @@ export function buildConstraints(): CreationBriefConstraint[] {
       severity: 'REQUIRED',
       title: 'Composer Compatibility',
       instruction:
-        'Block must be renderable by TutorialBlockRenderer and authourable via Tutorial Composer.',
+        'Block must be renderable by TutorialBlockRenderer and authorable via Tutorial Composer.',
     },
     {
       id: 'E-007',
