@@ -224,3 +224,6 @@ export type {
   DefinitionD1AIInputContext,
   CodeC1AIInputContext,
 } from './tutorial-composer/ai-context';
+
+// Project LLM Domain Contracts (Agent C)
+export * from './project-llm';
