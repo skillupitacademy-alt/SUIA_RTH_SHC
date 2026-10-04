@@ -10,3 +10,4 @@ export * from './runtime';
 export * from './request';
 export * from './compliance';
 export * from './repository-intelligence';
+export * from './creation-brief';

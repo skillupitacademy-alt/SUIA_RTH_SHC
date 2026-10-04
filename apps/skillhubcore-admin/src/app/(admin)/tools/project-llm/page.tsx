@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { PROJECT_LLM_REPOSITORY_INTELLIGENCE } from '@/lib/project-llm';
+import { CreationBriefPanel } from './components/CreationBriefPanel';
 
 export const metadata = {
   title: 'Project LLM | SkillHubCore Admin',
@@ -115,6 +116,13 @@ const guardrails = [
 
 export default function ProjectLlmWorkbenchPage() {
   const { corpus, runtime } = PROJECT_LLM_REPOSITORY_INTELLIGENCE;
+  
+  // Dynamic repo-intel items
+  const repoIntelItems = [
+    `${corpus.status.families} families, ${corpus.status.documentedVersions} versions`,
+    `${runtime.status.verifiedImplementations} verified, ${runtime.status.incompleteImplementations} incomplete, ${runtime.status.plannedFamilies} planned`,
+    'Reference patterns: I1, C1, D1',
+  ];
   
   return (
     <div className="space-y-8">
@@ -281,6 +289,8 @@ export default function ProjectLlmWorkbenchPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {agentLanes.map((lane) => {
             const Icon = lane.icon;
+            // Use dynamic items for repo-intel lane
+            const displayItems = lane.id === 'repo-intel' ? repoIntelItems : lane.items;
             return (
               <div
                 key={lane.id}
@@ -306,7 +316,7 @@ export default function ProjectLlmWorkbenchPage() {
 
                   {/* Items Checklist */}
                   <div className="space-y-2 pt-1">
-                    {lane.items.map((item) => (
+                    {displayItems.map((item) => (
                       <div key={item} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
                         <ShieldCheck size={14} className="text-emerald-500 shrink-0" />
                         <span>{item}</span>
@@ -332,6 +342,9 @@ export default function ProjectLlmWorkbenchPage() {
           })}
         </div>
       </div>
+
+      {/* Creation Brief Panel */}
+      <CreationBriefPanel />
 
       {/* Bottom Row: Phase 1 Pilot & Next Slice Architecture Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

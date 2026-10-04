@@ -7,3 +7,4 @@
 export * from './projectLlmBlockCorpus';
 export * from './projectLlmReferencePatterns';
 export * from './projectLlmRepositoryIntelligence';
+export * from './projectLlmCreationBrief';
