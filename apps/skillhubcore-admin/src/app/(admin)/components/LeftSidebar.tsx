@@ -26,6 +26,7 @@ import {
   Award,
   BadgeCheck,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 
 interface LeftSidebarProps {
@@ -191,6 +192,7 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">AI Content Workspace</h2>
             <nav className="space-y-1">
               {[
+                { icon: Sparkles, label: 'Project LLM', href: '/tools/project-llm', color: 'text-fuchsia-400' },
                 { icon: Layers, label: 'Tutorial Block Composer', href: '/tools/tutorial-block-composer', color: 'text-rose-400' },
                 { icon: BookOpen, label: 'Tutorial Left Sidebar', href: '/tools/tutorial-left-sidebar', color: 'text-orange-400' },
                 { icon: FileText, label: 'Tutorial Page Content', href: '/tools/tutorial-page-content', color: 'text-pink-400' },
