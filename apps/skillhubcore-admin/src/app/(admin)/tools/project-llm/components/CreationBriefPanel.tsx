@@ -16,6 +16,11 @@ export function CreationBriefPanel() {
   const [briefError, setBriefError] = useState<string | null>(null);
 
   // Generate brief when inputs change
+  // Note: topic, audience, and notes default to empty strings. When the user
+  // clears a field, useMemo recalculates with empty string, which is then
+  // converted to undefined via ternary (topic || undefined) in the generator
+  // call. This ensures optional fields are properly omitted from the brief
+  // when not provided, rather than being included as empty strings.
   const brief = useMemo<CreationBrief | null>(() => {
     try {
       setBriefError(null);
@@ -73,10 +78,11 @@ export function CreationBriefPanel() {
           {/* Form Fields */}
           <div className="space-y-4 pt-2">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 font-mono mb-1.5">
+              <label htmlFor="learning-intent" className="block text-xs font-bold uppercase tracking-wider text-slate-600 font-mono mb-1.5">
                 Learning Intent *
               </label>
               <textarea
+                id="learning-intent"
                 value={learningIntent}
                 onChange={(e) => setLearningIntent(e.target.value)}
                 rows={5}
@@ -87,10 +93,11 @@ export function CreationBriefPanel() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 font-mono mb-1.5">
+              <label htmlFor="topic" className="block text-xs font-bold uppercase tracking-wider text-slate-600 font-mono mb-1.5">
                 Topic / domain
               </label>
               <input
+                id="topic"
                 type="text"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
@@ -100,10 +107,11 @@ export function CreationBriefPanel() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 font-mono mb-1.5">
+              <label htmlFor="audience" className="block text-xs font-bold uppercase tracking-wider text-slate-600 font-mono mb-1.5">
                 Audience
               </label>
               <input
+                id="audience"
                 type="text"
                 value={audience}
                 onChange={(e) => setAudience(e.target.value)}
@@ -113,10 +121,11 @@ export function CreationBriefPanel() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 font-mono mb-1.5">
+              <label htmlFor="notes" className="block text-xs font-bold uppercase tracking-wider text-slate-600 font-mono mb-1.5">
                 Additional notes
               </label>
               <textarea
+                id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}

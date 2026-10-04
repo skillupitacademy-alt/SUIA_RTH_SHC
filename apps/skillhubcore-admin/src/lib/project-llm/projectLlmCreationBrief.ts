@@ -4,6 +4,12 @@
  * Agent E: Deterministic creation brief generator that converts
  * block creation requests + repository intelligence into structured
  * external AI handoff briefs.
+ * 
+ * CORPUS COUNT UPDATE PROTOCOL:
+ * When adding families or versions to the corpus, update the expected
+ * constants in assertRepositoryIntelligenceIntegrity() to match the
+ * new counts. This ensures brief generation only proceeds when the
+ * repository intelligence is in a known, validated state.
  */
 
 import {
@@ -19,6 +25,8 @@ import { REFERENCE_PATTERNS } from './projectLlmReferencePatterns';
 /**
  * Validate repository intelligence integrity before brief generation.
  * Throws if corpus/runtime counts don't match expected constants.
+ * 
+ * @throws {Error} if repository intelligence counts don't match expected values
  */
 export function assertRepositoryIntelligenceIntegrity(): void {
   const { corpus, runtime } = PROJECT_LLM_REPOSITORY_INTELLIGENCE;
@@ -54,8 +62,14 @@ export function assertRepositoryIntelligenceIntegrity(): void {
   }
 }
 
+// Run integrity check at module initialization to ensure all functions
+// operate on validated repository intelligence
+assertRepositoryIntelligenceIntegrity();
+
 /**
- * Resolve family name from family ID
+ * Resolve family name from family ID.
+ * Note: keyFiles in reference patterns are symbolic references documenting
+ * the canonical implementation structure, not filesystem path validation targets.
  */
 export function resolveFamilyName(familyId: string): string | undefined {
   const family = PROJECT_LLM_REPOSITORY_INTELLIGENCE.corpus.families.find(
@@ -176,7 +190,11 @@ export function buildRuntimeRequirements(): string[] {
 }
 
 /**
- * Build validation checklist
+ * Build validation checklist.
+ * Note: This checklist is for human reviewer use during GUI prototype and
+ * React candidate review. It is not programmatically enforced — the human
+ * reviewer manually verifies each item before approving progression to the
+ * next stage.
  */
 export function buildValidationChecklist(): string[] {
   return [
@@ -418,7 +436,7 @@ export function buildPrompt(
   // Final Instruction
   sections.push('## FINAL INSTRUCTION');
   sections.push(
-    'You are acting as an external AI assistant. Your job is to create the artifacts described above.'
+    'Create the artifacts described above following all constraints and workflow steps.'
   );
   sections.push(
     'Do not call any external APIs. Do not request or store credentials. Do not deploy anything.'

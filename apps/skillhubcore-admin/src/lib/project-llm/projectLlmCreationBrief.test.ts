@@ -2,7 +2,7 @@
  * Project LLM Creation Brief Engine Tests
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   generateCreationBrief,
   generateI2CreationBrief,
@@ -26,31 +26,10 @@ describe('projectLlmCreationBrief', () => {
       expect(() => assertRepositoryIntelligenceIntegrity()).not.toThrow();
     });
 
-    it('detects incorrect documentedVersions count', () => {
-      // Mock the intelligence module to return wrong value
-      vi.doMock('./projectLlmRepositoryIntelligence', () => ({
-        PROJECT_LLM_REPOSITORY_INTELLIGENCE: {
-          corpus: {
-            status: {
-              families: 18,
-              documentedVersions: 132, // Wrong!
-            },
-            families: [],
-          },
-          runtime: {
-            status: {
-              verifiedImplementations: 3,
-              incompleteImplementations: 1,
-              plannedFamilies: 14,
-            },
-          },
-        },
-      }));
-
-      // This test would require re-importing the module with the mock
-      // For now, we'll just verify the current implementation doesn't throw
-      expect(() => assertRepositoryIntelligenceIntegrity()).not.toThrow();
-    });
+    // Note: Integrity check runs at module initialization, so mocking tests
+    // would require unstable module mocking patterns. Testing integrity failure
+    // paths is deferred to integration tests where corpus mutations can be
+    // simulated safely.
   });
 
   describe('resolveFamilyName', () => {
@@ -119,32 +98,49 @@ describe('projectLlmCreationBrief', () => {
       expect(constraints).toHaveLength(8);
     });
 
-    it('includes E-001 Prototype First constraint', () => {
+    it('includes E-001 Prototype First constraint with correct instruction', () => {
       const constraints = buildConstraints();
       const e001 = constraints.find((c) => c.id === 'E-001');
       expect(e001).toBeDefined();
       expect(e001?.severity).toBe('MANDATORY');
       expect(e001?.title).toBe('Prototype First');
+      expect(e001?.instruction).toContain('HTML/CSS/JS/JSON prototype');
+      expect(e001?.instruction).toContain('before any React/TypeScript');
     });
 
-    it('includes E-002 Human GUI Approval Required constraint', () => {
+    it('includes E-002 Human GUI Approval Required constraint with STOP instruction', () => {
       const constraints = buildConstraints();
       const e002 = constraints.find((c) => c.id === 'E-002');
       expect(e002).toBeDefined();
       expect(e002?.severity).toBe('MANDATORY');
+      expect(e002?.instruction).toContain('STOP');
+      expect(e002?.instruction).toContain('explicit human approval');
     });
 
-    it('includes UBRC Compatibility constraint', () => {
+    it('includes UBRC Compatibility constraint with DOM attribute requirements', () => {
       const constraints = buildConstraints();
       const ubrc = constraints.find((c) => c.id === 'E-004');
       expect(ubrc).toBeDefined();
       expect(ubrc?.severity).toBe('REQUIRED');
+      expect(ubrc?.instruction).toContain('data-block-type');
+      expect(ubrc?.instruction).toContain('data-block-version');
+      expect(ubrc?.instruction).toContain('data-block-id');
     });
 
-    it('includes prohibited constraints', () => {
+    it('includes prohibited constraints with specific platform component restrictions', () => {
       const constraints = buildConstraints();
       const prohibited = constraints.filter((c) => c.severity === 'PROHIBITED');
       expect(prohibited.length).toBeGreaterThan(0);
+      
+      const e007 = constraints.find((c) => c.id === 'E-007');
+      expect(e007?.instruction).toContain('ILS');
+      expect(e007?.instruction).toContain('LSNB');
+      expect(e007?.instruction).toContain('RSSB');
+      
+      const e008 = constraints.find((c) => c.id === 'E-008');
+      expect(e008?.instruction).toContain('commit');
+      expect(e008?.instruction).toContain('push');
+      expect(e008?.instruction).toContain('deploy');
     });
   });
 
@@ -154,16 +150,30 @@ describe('projectLlmCreationBrief', () => {
       expect(requirements).toHaveLength(8);
     });
 
-    it('includes UBRC requirement', () => {
+    it('includes UBRC requirement with specific DOM attribute names', () => {
       const requirements = buildRuntimeRequirements();
       const ubrc = requirements.find((r) => r.includes('UBRC'));
       expect(ubrc).toBeDefined();
+      expect(ubrc).toContain('data-block-type');
+      expect(ubrc).toContain('data-block-version');
+      expect(ubrc).toContain('data-block-id');
     });
 
     it('includes no ILS API calls requirement', () => {
       const requirements = buildRuntimeRequirements();
       const ils = requirements.find((r) => r.includes('ILS'));
       expect(ils).toBeDefined();
+      expect(ils).toContain('must not call');
+    });
+
+    it('includes LSNB and RSSB infrastructure restrictions', () => {
+      const requirements = buildRuntimeRequirements();
+      const lsnb = requirements.find((r) => r.includes('LSNB'));
+      const rssb = requirements.find((r) => r.includes('RSSB'));
+      expect(lsnb).toBeDefined();
+      expect(rssb).toBeDefined();
+      expect(lsnb).toContain('must not embed');
+      expect(rssb).toContain('must not embed');
     });
   });
 
@@ -173,10 +183,21 @@ describe('projectLlmCreationBrief', () => {
       expect(checklist).toHaveLength(12);
     });
 
-    it('includes GUI prototype review item', () => {
+    it('includes GUI prototype review item with approval gate reference', () => {
       const checklist = buildValidationChecklist();
       const gui = checklist.find((item) => item.includes('GUI prototype'));
       expect(gui).toBeDefined();
+      expect(gui).toContain('before React/TypeScript');
+    });
+
+    it('includes platform safety checklist items', () => {
+      const checklist = buildValidationChecklist();
+      const ilsCheck = checklist.find((item) => item.includes('No ILS API calls'));
+      const lsnbCheck = checklist.find((item) => item.includes('No LSNB'));
+      const rssbCheck = checklist.find((item) => item.includes('No RSSB'));
+      expect(ilsCheck).toBeDefined();
+      expect(lsnbCheck).toBeDefined();
+      expect(rssbCheck).toBeDefined();
     });
   });
 
@@ -186,11 +207,21 @@ describe('projectLlmCreationBrief', () => {
       expect(workflow).toHaveLength(9);
     });
 
-    it('includes STOP instruction at step 6', () => {
+    it('includes STOP instruction at step 6 with explicit approval gate', () => {
       const workflow = buildExternalAiWorkflow();
       const step6 = workflow.find((step) => step.includes('Step 6'));
       expect(step6).toBeDefined();
       expect(step6).toContain('STOP');
+      expect(step6).toContain('Do NOT proceed');
+      expect(step6).toContain('explicit written approval');
+    });
+
+    it('includes React/TypeScript candidate creation only after approval', () => {
+      const workflow = buildExternalAiWorkflow();
+      const step7 = workflow.find((step) => step.includes('Step 7'));
+      expect(step7).toBeDefined();
+      expect(step7).toContain('After receiving human approval');
+      expect(step7).toContain('React/TypeScript candidate');
     });
   });
 
@@ -200,10 +231,16 @@ describe('projectLlmCreationBrief', () => {
       expect(gate).toHaveLength(7);
     });
 
-    it('describes approval outcomes', () => {
+    it('describes approval outcomes with specific actions', () => {
       const gate = buildHumanApprovalGate();
-      const approved = gate.find((item) => item.includes('APPROVED'));
-      expect(approved).toBeDefined();
+      const combined = gate.join(' ');
+      
+      expect(combined).toContain('APPROVED');
+      expect(combined).toContain('Proceed to React/TypeScript');
+      expect(combined).toContain('REJECTED');
+      expect(combined).toContain('Discard prototype');
+      expect(combined).toContain('NEEDS_CORRECTION');
+      expect(combined).toContain('Apply specified corrections');
     });
   });
 
@@ -219,18 +256,34 @@ describe('projectLlmCreationBrief', () => {
       expect(migrations).toBeDefined();
     });
 
-    it('prohibits LLM provider integration', () => {
+    it('prohibits LLM provider integration with specific provider names', () => {
       const actions = buildProhibitedActions();
       const llm = actions.find((a) => a.includes('OpenAI'));
       expect(llm).toBeDefined();
+      expect(llm).toContain('Anthropic');
+      expect(llm).toContain('Gemini');
     });
 
-    it('does not mention specific API key names', () => {
+    it('prohibits provider API credentials generically without naming specific key formats', () => {
+      const actions = buildProhibitedActions();
+      const credentials = actions.find((a) => a.includes('provider API credentials'));
+      expect(credentials).toBeDefined();
+      expect(credentials).toContain('such as provider API keys');
+    });
+
+    it('does not mention specific API key environment variable names', () => {
       const actions = buildProhibitedActions();
       const combined = actions.join(' ');
       expect(combined).not.toContain('OPENAI_API_KEY');
       expect(combined).not.toContain('ANTHROPIC_API_KEY');
       expect(combined).not.toContain('GEMINI_API_KEY');
+    });
+
+    it('prohibits platform infrastructure modifications', () => {
+      const actions = buildProhibitedActions();
+      const infrastructure = actions.find((a) => a.includes('ILS') && a.includes('LSNB'));
+      expect(infrastructure).toBeDefined();
+      expect(infrastructure).toContain('RSSB');
     });
   });
 
