@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
-import type { ScannerResult } from '../contracts/scanner.js';
+import type { ScannerResult, Finding } from '../contracts/scanner.js';
 import type { Evidence } from '../contracts/evidence.js';
 import type { ApplicationInfo, PackageInfo, ServiceInfo } from '../contracts/snapshot.js';
 
@@ -25,7 +25,7 @@ export async function scanRepositoryStructure(
   const scannerName = 'D1-structure-scanner';
   const timestamp = new Date().toISOString();
   const evidence: Evidence[] = [];
-  const findings = [];
+  const findings: Finding[] = [];
 
   const applications: ApplicationInfo[] = [];
   const packages: PackageInfo[] = [];

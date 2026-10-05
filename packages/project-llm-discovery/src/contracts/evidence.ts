@@ -3,7 +3,23 @@ export interface Evidence {
   scannerName: string;
   timestamp: string;
   path: string;
-  kind: 'file' | 'directory' | 'package' | 'import' | 'export' | 'test';
+  kind:
+    | 'file'
+    | 'directory'
+    | 'package'
+    | 'import'
+    | 'export'
+    | 'test'
+    | 'ui-component'
+    | 'api-route'
+    | 'service'
+    | 'schema'
+    | 'documentation'
+    | 'component'
+    | 'config'
+    | 'test-directory'
+    | 'test-file'
+    | 'type-definition';
   claim: string;
   locator: string;
   contentHash: string;

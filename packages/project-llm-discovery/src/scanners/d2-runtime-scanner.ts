@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
-import type { ScannerResult } from '../contracts/scanner.js';
+import type { ScannerResult, Finding } from '../contracts/scanner.js';
 import type { Evidence } from '../contracts/evidence.js';
 import type { FrameworkInfo, WorkspaceInfo, BuildSystemInfo } from '../contracts/snapshot.js';
 
@@ -35,7 +35,7 @@ export async function scanRuntime(
   const scannerName = 'D2-runtime-scanner';
   const timestamp = new Date().toISOString();
   const evidence: Evidence[] = [];
-  const findings = [];
+  const findings: Finding[] = [];
 
   const frameworks: FrameworkInfo[] = [];
   let workspace: WorkspaceInfo = {
