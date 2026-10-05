@@ -26,6 +26,11 @@ export type {
 
 export { FilesystemRepositoryAdapter } from './adapters/index.js';
 export {
+  RepositoryAccessError,
+  FileNotFoundError,
+  PermissionError,
+} from './contracts/errors.js';
+export {
   scanRepositoryStructure,
   scanRuntime,
   scanBlocks,

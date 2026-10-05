@@ -8,6 +8,7 @@ import type {
   BlockRenderer,
   BlockVerification,
   BlockDiscrepancy,
+  VerificationLevel,
 } from '../contracts/snapshot.js';
 import { FileNotFoundError, RepositoryAccessError } from '../contracts/errors.js';
 
@@ -22,18 +23,33 @@ interface BlocksData {
 const BLOCK_CORPUS_DOC_PATH = 'ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md';
 const BLOCK_TYPES_PATH = 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts';
 const BLOCK_RENDERERS_DIR = 'packages/ui/src/tutorial/blocks';
+const TUTORIAL_BLOCK_RENDERER_PATH = 'packages/ui/src/tutorial/TutorialBlockRenderer.tsx';
 
 /**
  * D3 Blocks Scanner
  * 
- * Discovers educational block implementation state across 4 dimensions:
- * 1. DOCUMENTED: Families/versions documented in PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md
- * 2. IMPLEMENTED: Type definitions in content-blocks.ts
- * 3. RENDERED: React components in packages/ui/src/tutorial/blocks/
- * 4. VERIFIED: Cross-referenced complete implementations (documented + type + renderer).
- *    Future: add REGISTERED (in TutorialBlockRenderer registry), UBRC (data-block-version attribute), TESTED (test coverage) checks.
+ * Discovers educational block implementation state across 6 verification levels:
  * 
- * CRITICAL: Maintains 4 separate states, never collapses them.
+ * 1. DISCOVERED: Base state (block exists in some form)
+ * 2. IMPLEMENTED: Type definition exists in content-blocks.ts
+ * 3. RENDERED: React component file exists in packages/ui/src/tutorial/blocks/
+ * 4. REGISTERED: Runtime dispatch case exists in TutorialBlockRenderer.tsx switch statement
+ * 5. TESTED: Test coverage exists for the block
+ * 6. VERIFIED: All predicates pass (documented + implemented + rendered + registered + tested)
+ * 
+ * Evidence-driven verification:
+ * - documented: Parsed from PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md (not assumed)
+ * - implemented: Type definition found in content-blocks.ts
+ * - rendered: Component file exists in blocks/ directory
+ * - registered: Runtime dispatch case found in TutorialBlockRenderer.tsx
+ * - tested: Test coverage exists (M1 scope: not yet implemented)
+ * 
+ * M1 scope limitations:
+ * - UBRC compliance (data-block-version attribute) is deferred to M2
+ * - Test coverage detection is deferred to M2
+ * 
+ * CRITICAL: Maintains separate states for documented/implemented/rendered/verified.
+ * Never collapses states or makes false assumptions.
  */
 export async function scanBlocks(
   adapter: RepositoryAdapter

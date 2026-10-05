@@ -102,6 +102,45 @@ if (validation.warnings.length > 0) {
 // V9: Determinism (can be skipped for performance)
 ```
 
+## Error Handling
+
+The discovery system uses typed errors to distinguish between different failure modes:
+
+### Error Types
+
+- **FileNotFoundError**: Thrown when a requested file or directory does not exist (ENOENT). Scanners typically log this as an info or warning finding and continue, since many files are optional.
+
+- **PermissionError**: Thrown when file system access is denied (EACCES/EPERM). This indicates an infrastructure problem that must be resolved. Scanners propagate this upward and fail the scan.
+
+- **RepositoryAccessError**: Thrown for other I/O failures (network issues, corrupted files, etc.). This is a critical error that scanners propagate upward.
+
+### Handling Errors
+
+```typescript
+import { 
+  buildSnapshot, 
+  FileNotFoundError, 
+  PermissionError, 
+  RepositoryAccessError 
+} from '@quiz/project-llm-discovery';
+
+try {
+  const snapshot = await buildSnapshot(repositoryRoot, adapter);
+} catch (error) {
+  if (error instanceof PermissionError) {
+    console.error('Access denied:', error.filePath);
+    console.error('Required permission:', error.requiredPermission);
+  } else if (error instanceof RepositoryAccessError) {
+    console.error('Repository access failed:', error.message);
+    console.error('Original error:', error.originalError);
+  } else {
+    throw error;
+  }
+}
+```
+
+**Note**: `FileNotFoundError` is rarely thrown from `buildSnapshot()` because scanners treat missing optional files as warnings, not errors. It may appear when calling adapter methods directly.
+
 ### Fixture Reconciliation
 
 ```typescript

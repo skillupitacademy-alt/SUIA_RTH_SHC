@@ -8,6 +8,7 @@ import type {
   ComposerSchema,
   ComposerUI,
 } from '../contracts/snapshot.js';
+import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
 
 interface ComposerData {
   services: ComposerService[];
@@ -43,109 +44,193 @@ export async function scanComposer(
   const ui: ComposerUI[] = [];
 
   // Step 1: Discover Composer service
-  if (await adapter.fileExists(COMPOSER_SERVICE_PATH)) {
-    const serviceContent = await adapter.readFile(COMPOSER_SERVICE_PATH);
-    const contentHash = await adapter.getFileHash(COMPOSER_SERVICE_PATH);
+  try {
+    if (await adapter.fileExists(COMPOSER_SERVICE_PATH)) {
+      const serviceContent = await adapter.readFile(COMPOSER_SERVICE_PATH);
+      const contentHash = await adapter.getFileHash(COMPOSER_SERVICE_PATH);
 
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: COMPOSER_SERVICE_PATH,
-      kind: 'service',
-      claim: 'TutorialComposerService discovered',
-      locator: `file:${COMPOSER_SERVICE_PATH}`,
-      contentHash,
-    });
-
-    const serviceMethods = parseServiceMethods(serviceContent);
-    services.push({
-      name: 'TutorialComposerService',
-      path: COMPOSER_SERVICE_PATH,
-      methods: serviceMethods,
-    });
-  }
-
-  // Step 2: Discover Composer API routes
-  if (await adapter.fileExists(COMPOSER_API_DIR)) {
-    const apiFiles = await adapter.listFiles(COMPOSER_API_DIR);
-    const routeFiles = apiFiles.filter(f => f.endsWith('route.ts'));
-
-    for (const routeFile of routeFiles) {
-      const contentHash = await adapter.getFileHash(routeFile);
       evidence.push({
         evidenceId: randomUUID(),
         scannerName,
         timestamp,
-        path: routeFile,
-        kind: 'api-route',
-        claim: 'Composer API route discovered',
-        locator: `file:${routeFile}`,
+        path: COMPOSER_SERVICE_PATH,
+        kind: 'service',
+        claim: 'TutorialComposerService discovered',
+        locator: `file:${COMPOSER_SERVICE_PATH}`,
         contentHash,
       });
 
-      const apiInfo = parseApiRoute(routeFile);
-      if (apiInfo !== null) {
-        apis.push(apiInfo);
+      const serviceMethods = parseServiceMethods(serviceContent);
+      services.push({
+        name: 'TutorialComposerService',
+        path: COMPOSER_SERVICE_PATH,
+        methods: serviceMethods,
+      });
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'warning',
+        category: 'composer-discovery',
+        message: `Composer service file not found: ${COMPOSER_SERVICE_PATH}`,
+      });
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'composer-discovery',
+        message: `Failed to read composer service: ${error.message}`,
+      });
+      throw error;
+    } else {
+      throw error;
+    }
+  }
+
+  // Step 2: Discover Composer API routes
+  try {
+    if (await adapter.fileExists(COMPOSER_API_DIR)) {
+      const apiFiles = await adapter.listFiles(COMPOSER_API_DIR);
+      const routeFiles = apiFiles.filter(f => f.endsWith('route.ts'));
+
+      for (const routeFile of routeFiles) {
+        const contentHash = await adapter.getFileHash(routeFile);
+        evidence.push({
+          evidenceId: randomUUID(),
+          scannerName,
+          timestamp,
+          path: routeFile,
+          kind: 'api-route',
+          claim: 'Composer API route discovered',
+          locator: `file:${routeFile}`,
+          contentHash,
+        });
+
+        const apiInfo = parseApiRoute(routeFile);
+        if (apiInfo !== null) {
+          apis.push(apiInfo);
+        }
       }
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'info',
+        category: 'composer-discovery',
+        message: `Composer API directory not found: ${COMPOSER_API_DIR}`,
+      });
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'composer-discovery',
+        message: `Failed to list composer API routes: ${error.message}`,
+      });
+      throw error;
+    } else {
+      throw error;
     }
   }
 
   // Step 3: Discover Composer schemas (TutorialDocument)
-  if (await adapter.fileExists(COMPOSER_SCHEMA_DIR)) {
-    const schemaFiles = await adapter.listFiles(COMPOSER_SCHEMA_DIR);
-    const tsFiles = schemaFiles.filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'));
+  try {
+    if (await adapter.fileExists(COMPOSER_SCHEMA_DIR)) {
+      const schemaFiles = await adapter.listFiles(COMPOSER_SCHEMA_DIR);
+      const tsFiles = schemaFiles.filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts'));
 
-    for (const schemaFile of tsFiles) {
-      // Only process index.ts and schema files
-      if (!schemaFile.includes('index.ts') && !schemaFile.includes('schema')) {
-        continue;
+      for (const schemaFile of tsFiles) {
+        // Only process index.ts and schema files
+        if (!schemaFile.includes('index.ts') && !schemaFile.includes('schema')) {
+          continue;
+        }
+
+        const contentHash = await adapter.getFileHash(schemaFile);
+        evidence.push({
+          evidenceId: randomUUID(),
+          scannerName,
+          timestamp,
+          path: schemaFile,
+          kind: 'schema',
+          claim: 'Composer schema file discovered',
+          locator: `file:${schemaFile}`,
+          contentHash,
+        });
+
+        const schemaInfo = parseSchemaFile(schemaFile);
+        if (schemaInfo !== null) {
+          schemas.push(schemaInfo);
+        }
       }
-
-      const contentHash = await adapter.getFileHash(schemaFile);
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: schemaFile,
-        kind: 'schema',
-        claim: 'Composer schema file discovered',
-        locator: `file:${schemaFile}`,
-        contentHash,
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'info',
+        category: 'composer-discovery',
+        message: `Composer schema directory not found: ${COMPOSER_SCHEMA_DIR}`,
       });
-
-      const schemaInfo = parseSchemaFile(schemaFile);
-      if (schemaInfo !== null) {
-        schemas.push(schemaInfo);
-      }
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'composer-discovery',
+        message: `Failed to list composer schemas: ${error.message}`,
+      });
+      throw error;
+    } else {
+      throw error;
     }
   }
 
   // Step 4: Discover Composer UI components
-  if (await adapter.fileExists(COMPOSER_UI_DIR)) {
-    const uiFiles = await adapter.listFiles(COMPOSER_UI_DIR);
-    const composerUIFiles = uiFiles.filter(f => 
-      f.toLowerCase().includes('composer') && 
-      (f.endsWith('.tsx') || f.endsWith('.ts'))
-    );
+  try {
+    if (await adapter.fileExists(COMPOSER_UI_DIR)) {
+      const uiFiles = await adapter.listFiles(COMPOSER_UI_DIR);
+      const composerUIFiles = uiFiles.filter(f => 
+        f.toLowerCase().includes('composer') && 
+        (f.endsWith('.tsx') || f.endsWith('.ts'))
+      );
 
-    for (const uiFile of composerUIFiles) {
-      const contentHash = await adapter.getFileHash(uiFile);
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: uiFile,
-        kind: 'ui-component',
-        claim: 'Composer UI component discovered',
-        locator: `file:${uiFile}`,
-        contentHash,
-      });
+      for (const uiFile of composerUIFiles) {
+        const contentHash = await adapter.getFileHash(uiFile);
+        evidence.push({
+          evidenceId: randomUUID(),
+          scannerName,
+          timestamp,
+          path: uiFile,
+          kind: 'ui-component',
+          claim: 'Composer UI component discovered',
+          locator: `file:${uiFile}`,
+          contentHash,
+        });
 
-      const uiInfo = parseUIComponent(uiFile);
-      if (uiInfo !== null) {
-        ui.push(uiInfo);
+        const uiInfo = parseUIComponent(uiFile);
+        if (uiInfo !== null) {
+          ui.push(uiInfo);
+        }
       }
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'info',
+        category: 'composer-discovery',
+        message: `Composer UI directory not found: ${COMPOSER_UI_DIR}`,
+      });
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'composer-discovery',
+        message: `Failed to list composer UI components: ${error.message}`,
+      });
+      throw error;
+    } else {
+      throw error;
     }
   }
 

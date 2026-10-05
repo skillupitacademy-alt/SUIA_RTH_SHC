@@ -3,6 +3,7 @@ import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
 import type { Evidence } from '../contracts/evidence.js';
 import type { FrameworkInfo, WorkspaceInfo, BuildSystemInfo } from '../contracts/snapshot.js';
+import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
 
 interface RuntimeData {
   frameworks: FrameworkInfo[];
@@ -265,19 +266,29 @@ async function getAppDirectories(adapter: RepositoryAdapter, pattern: string): P
   // Simple glob expansion for apps/* pattern
   if (pattern.endsWith('/*')) {
     const baseDir = pattern.slice(0, -2);
-    const files = await adapter.listFiles(baseDir);
     
-    // Extract unique directory names
-    const dirs = new Set<string>();
-    for (const file of files) {
-      const relativePath = file.replace(baseDir + '/', '').replace(baseDir + '\\', '');
-      const firstSegment = relativePath.split(/[/\\]/)[0];
-      if (firstSegment !== undefined && firstSegment !== '') {
-        dirs.add(`${baseDir}/${firstSegment}`);
+    try {
+      const files = await adapter.listFiles(baseDir);
+      
+      // Extract unique directory names
+      const dirs = new Set<string>();
+      for (const file of files) {
+        const relativePath = file.replace(baseDir + '/', '').replace(baseDir + '\\', '');
+        const firstSegment = relativePath.split(/[/\\]/)[0];
+        if (firstSegment !== undefined && firstSegment !== '') {
+          dirs.add(`${baseDir}/${firstSegment}`);
+        }
       }
+      
+      return Array.from(dirs);
+    } catch (error) {
+      if (error instanceof FileNotFoundError) {
+        // Base directory doesn't exist
+        return [];
+      }
+      // PermissionError or RepositoryAccessError: propagate upward
+      throw error;
     }
-    
-    return Array.from(dirs);
   }
   
   // Direct path

@@ -62,13 +62,39 @@ export interface BlockRenderer {
   registeredInRenderer: boolean;
 }
 
+/**
+ * Verification level progression for block implementations.
+ * Each level requires all previous predicates to pass.
+ * 
+ * - DISCOVERED: Base state (block exists in some form)
+ * - IMPLEMENTED: Type definition exists in content-blocks.ts
+ * - RENDERED: React component file exists in packages/ui/src/tutorial/blocks/
+ * - REGISTERED: Runtime dispatch case exists in TutorialBlockRenderer.tsx switch statement
+ * - TESTED: Test coverage exists for the block
+ * - VERIFIED: All predicates pass (documented + implemented + rendered + registered + tested)
+ * 
+ * Note: UBRC compliance (data-block-version attribute validation) is M2 scope.
+ */
+export type VerificationLevel =
+  | "DISCOVERED"
+  | "IMPLEMENTED"
+  | "RENDERED"
+  | "REGISTERED"
+  | "TESTED"
+  | "VERIFIED";
+
 export interface BlockVerification {
   blockType: string;
   version?: string;
+  /** Actually found in PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md */
   documented: boolean;
   implemented: boolean;
   rendered: boolean;
+  /** Runtime dispatch case exists in TutorialBlockRenderer.tsx */
+  registered: boolean;
   tested: boolean;
+  /** Highest verification level achieved based on evidence */
+  verificationLevel: VerificationLevel;
 }
 
 export interface BlockDiscrepancy {

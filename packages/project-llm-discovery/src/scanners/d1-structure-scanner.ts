@@ -4,6 +4,7 @@ import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
 import type { Evidence } from '../contracts/evidence.js';
 import type { ApplicationInfo, PackageInfo, ServiceInfo } from '../contracts/snapshot.js';
+import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
 
 interface StructureData {
   applications: ApplicationInfo[];
@@ -212,20 +213,29 @@ async function scanDirectory(adapter: RepositoryAdapter, path: string): Promise<
     return [];
   }
 
-  // List all entries in directory (non-recursive for top-level scan)
-  const allFiles = await adapter.listFiles(path);
-  
-  // Extract unique directory names at the top level
-  const dirs = new Set<string>();
-  for (const file of allFiles) {
-    const relativePath = file.replace(path + '/', '').replace(path + '\\', '');
-    const firstSegment = relativePath.split(/[/\\]/)[0];
-    if (firstSegment !== undefined && firstSegment !== '') {
-      dirs.add(firstSegment);
+  try {
+    // List all entries in directory (non-recursive for top-level scan)
+    const allFiles = await adapter.listFiles(path);
+    
+    // Extract unique directory names at the top level
+    const dirs = new Set<string>();
+    for (const file of allFiles) {
+      const relativePath = file.replace(path + '/', '').replace(path + '\\', '');
+      const firstSegment = relativePath.split(/[/\\]/)[0];
+      if (firstSegment !== undefined && firstSegment !== '') {
+        dirs.add(firstSegment);
+      }
     }
+    
+    return Array.from(dirs);
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      // Directory disappeared during scan (rare race condition)
+      return [];
+    }
+    // PermissionError or RepositoryAccessError: propagate upward
+    throw error;
   }
-  
-  return Array.from(dirs);
 }
 
 function detectFramework(pkg: PackageJson): string {

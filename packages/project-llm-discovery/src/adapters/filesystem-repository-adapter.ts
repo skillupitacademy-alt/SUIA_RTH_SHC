@@ -76,9 +76,12 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
             const subFiles = await this.listFiles(relativePath, pattern);
             files.push(...subFiles);
           } catch (error) {
-            // Skip directories we can't access, but don't fail the entire operation
-            // This handles permission errors, symlink issues, etc.
-            continue;
+            // FileNotFoundError: directory disappeared during scan (race condition), skip it
+            if (error instanceof FileNotFoundError) {
+              continue;
+            }
+            // PermissionError or RepositoryAccessError: propagate upward
+            throw error;
           }
         } else if (entry.isFile()) {
           // Apply pattern filter if provided

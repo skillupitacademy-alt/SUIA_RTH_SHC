@@ -4,6 +4,7 @@ import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
 import type { Evidence } from '../contracts/evidence.js';
 import type { DependencyNode, DependencyEdge, PackageInfo } from '../contracts/snapshot.js';
+import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
 
 interface DependenciesData {
   nodes: DependencyNode[];
@@ -53,76 +54,97 @@ export async function scanDependencies(
     const pkgJsonPath = join(pkg.path, 'package.json').replace(/\\/g, '/');
 
     if (await adapter.fileExists(pkgJsonPath)) {
-      const pkgContent = await adapter.readFile(pkgJsonPath);
-      const contentHash = await adapter.getFileHash(pkgJsonPath);
-
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: pkgJsonPath,
-        kind: 'package',
-        claim: 'Package dependencies analyzed',
-        locator: `file:${pkgJsonPath}`,
-        contentHash,
-      });
-
       try {
-        const pkgJson = JSON.parse(pkgContent) as {
-          dependencies?: Record<string, string>;
-          devDependencies?: Record<string, string>;
-          peerDependencies?: Record<string, string>;
-        };
+        const pkgContent = await adapter.readFile(pkgJsonPath);
+        const contentHash = await adapter.getFileHash(pkgJsonPath);
 
-        // Add dependency edges
-        if (pkgJson.dependencies !== undefined) {
-          for (const [depName] of Object.entries(pkgJson.dependencies)) {
-            // Only track workspace dependencies (@quiz/*)
-            if (depName.startsWith('@quiz/')) {
-              edges.push({
-                from: pkg.name,
-                to: depName,
-                kind: 'dependency',
-              });
-            }
-          }
-        }
-
-        // Add devDependency edges
-        if (pkgJson.devDependencies !== undefined) {
-          for (const [depName] of Object.entries(pkgJson.devDependencies)) {
-            // Only track workspace dependencies (@quiz/*)
-            if (depName.startsWith('@quiz/')) {
-              edges.push({
-                from: pkg.name,
-                to: depName,
-                kind: 'devDependency',
-              });
-            }
-          }
-        }
-
-        // Add peerDependency edges
-        if (pkgJson.peerDependencies !== undefined) {
-          for (const [depName] of Object.entries(pkgJson.peerDependencies)) {
-            // Only track workspace dependencies (@quiz/*)
-            if (depName.startsWith('@quiz/')) {
-              edges.push({
-                from: pkg.name,
-                to: depName,
-                kind: 'peerDependency',
-              });
-            }
-          }
-        }
-      } catch {
-        // Skip invalid package.json
-        findings.push({
-          findingId: randomUUID(),
-          severity: 'warning',
-          category: 'dependencies-parsing',
-          message: `Failed to parse ${pkgJsonPath}`,
+        evidence.push({
+          evidenceId: randomUUID(),
+          scannerName,
+          timestamp,
+          path: pkgJsonPath,
+          kind: 'package',
+          claim: 'Package dependencies analyzed',
+          locator: `file:${pkgJsonPath}`,
+          contentHash,
         });
+
+        try {
+          const pkgJson = JSON.parse(pkgContent) as {
+            dependencies?: Record<string, string>;
+            devDependencies?: Record<string, string>;
+            peerDependencies?: Record<string, string>;
+          };
+
+          // Add dependency edges
+          if (pkgJson.dependencies !== undefined) {
+            for (const [depName] of Object.entries(pkgJson.dependencies)) {
+              // Only track workspace dependencies (@quiz/*)
+              if (depName.startsWith('@quiz/')) {
+                edges.push({
+                  from: pkg.name,
+                  to: depName,
+                  kind: 'dependency',
+                });
+              }
+            }
+          }
+
+          // Add devDependency edges
+          if (pkgJson.devDependencies !== undefined) {
+            for (const [depName] of Object.entries(pkgJson.devDependencies)) {
+              // Only track workspace dependencies (@quiz/*)
+              if (depName.startsWith('@quiz/')) {
+                edges.push({
+                  from: pkg.name,
+                  to: depName,
+                  kind: 'devDependency',
+                });
+              }
+            }
+          }
+
+          // Add peerDependency edges
+          if (pkgJson.peerDependencies !== undefined) {
+            for (const [depName] of Object.entries(pkgJson.peerDependencies)) {
+              // Only track workspace dependencies (@quiz/*)
+              if (depName.startsWith('@quiz/')) {
+                edges.push({
+                  from: pkg.name,
+                  to: depName,
+                  kind: 'peerDependency',
+                });
+              }
+            }
+          }
+        } catch {
+          // Skip invalid package.json
+          findings.push({
+            findingId: randomUUID(),
+            severity: 'warning',
+            category: 'dependencies-parsing',
+            message: `Failed to parse ${pkgJsonPath}`,
+          });
+        }
+      } catch (error) {
+        if (error instanceof FileNotFoundError) {
+          findings.push({
+            findingId: randomUUID(),
+            severity: 'warning',
+            category: 'dependencies-parsing',
+            message: `Package file not found: ${pkgJsonPath} (existed during structure scan but missing now)`,
+          });
+        } else if (error instanceof RepositoryAccessError) {
+          findings.push({
+            findingId: randomUUID(),
+            severity: 'error',
+            category: 'dependencies-parsing',
+            message: `Failed to read package file: ${error.message}`,
+          });
+          throw error;
+        } else {
+          throw error;
+        }
       }
     }
   }
