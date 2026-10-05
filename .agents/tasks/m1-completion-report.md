@@ -68,7 +68,7 @@ The system successfully discovers and validates the Quiz Platform monorepo struc
 | **Dependency Nodes** | ≥15 | ✅ Workspace packages mapped |
 | **Dependency Edges** | ≥1 | ✅ Workspace dependencies graphed |
 | **Unit Test Suites** | ≥1 | ✅ Discovered via `vitest.workspace.ts` |
-| **Integration Test Suites** | ≥1 | ✅ Discovered via `vitest.workspace.ts` |
+| **Integration Test Suites** | 6 | ✅ Discovered in `packages/project-llm-discovery/__tests__/integration` |
 | **E2E Test Suites** | ≥1 | ✅ Discovered via `playwright.config.ts` |
 
 **Expected vs Actual:**
@@ -94,11 +94,11 @@ The system successfully discovers and validates the Quiz Platform monorepo struc
 - **Discovered:** pnpm v9.15.4, Turbo v2.3.3, Next.js 16.1.6, Node.js 20.x
 
 #### D3: Blocks Scanner
-- **Purpose:** Discover Educational Block Families (4-state model)
+- **Purpose:** Discover Educational Block Families (5-state model)
 - **Status:** ✅ Operational
-- **Outputs:** `documented`, `implemented`, `rendered`, `verified` (4 separate arrays)
+- **Outputs:** `documented`, `implemented`, `rendered`, `verified`, `discrepancies` (5 separate arrays)
 - **Evidence:** Registry doc, type interfaces, renderer components hashed
-- **Critical:** 4-state model preserved (no state collapse)
+- **Critical:** 5-state model preserved (documented + implemented + rendered + verified + discrepancies tracked separately)
 
 #### D4: Composer Scanner
 - **Purpose:** Locate Tutorial Composer service, APIs, schemas, UI
@@ -137,10 +137,10 @@ All 9 validation checks implemented and operational:
 
 | Check | Purpose | Status |
 |-------|---------|--------|
-| **V1: Schema** | Validate snapshot structure with Zod | ✅ Pass |
+| **V1: Schema** | Validate snapshot structure with Zod (strict schemas, no `any` types) | ✅ Pass |
 | **V2: Reference Integrity** | Verify cross-references (blocks, composer) | ✅ Pass |
 | **V3: Evidence Paths** | Confirm evidence file paths exist | ✅ Pass (with acceptable warnings) |
-| **V4: Block Consistency** | Verify 4-state model preserved | ✅ Pass |
+| **V4: Block Consistency** | Verify 5-state model preserved (documented, implemented, rendered, verified, discrepancies) | ✅ Pass |
 | **V5: Composer** | Assert exactly 1 Composer service | ✅ Pass |
 | **V6: Dependency Graph** | Detect circular dependencies | ✅ Pass (no cycles) |
 | **V7: Test References** | Validate test file paths | ✅ Pass (with acceptable warnings) |
@@ -348,7 +348,7 @@ console.log(`Valid: ${validation.valid}`);
 ## Critical Constraints Satisfied
 
 ### Governance (CONTRIBUTING.md)
-- ✅ No `any` types (explicit types or `unknown` used)
+- ✅ No `any` types (V1 validator uses strict typed Zod schemas, no `z.any()`)
 - ✅ Strict boolean checks (no truthiness)
 - ✅ Type/value import separation
 - ✅ No `console.log` in production code (test assertions only)
@@ -359,7 +359,7 @@ console.log(`Valid: ${validation.valid}`);
 
 ### Architecture (M1 Specification)
 - ✅ No LLM in core discovery
-- ✅ 4-state block model preserved (no collapse)
+- ✅ 5-state block model preserved (documented, implemented, rendered, verified, discrepancies tracked separately - no collapse)
 - ✅ Repository adapter abstraction (all file access through interface)
 - ✅ Evidence traceability (every claim backed by file path + hash)
 - ✅ Deterministic hashing (exclude timestamps, sort keys, SHA-256)

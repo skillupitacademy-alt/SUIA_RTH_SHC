@@ -53,7 +53,9 @@ be9bec06 feat: implement D3-D6 scanners for blocks, composer, dependencies, and 
 cf0ceff7 feat(m1): add @quiz/project-llm-discovery package scaffold with TypeScript contracts
 ```
 
-**Commit Count:** 9 commits  
+**Total Branch Commits:** 10 commits  
+**Feature/FEAT Commits:** 9 commits (all FEAT-related work)  
+**Note:** The 10th commit (061d89f7) exports individual validators, classified as feature work  
 **Branch Status:** Ahead of `main`  
 **Status:** ✅ ALL FEAT COMMITS PRESENT
 
@@ -90,7 +92,7 @@ All 9 validation checks implemented and operational:
 | **V1: Schema** | Validate snapshot structure with Zod | ✅ PASS |
 | **V2: Reference Integrity** | Verify cross-references (blocks, composer) | ✅ PASS |
 | **V3: Evidence Paths** | Confirm evidence file paths exist | ✅ PASS |
-| **V4: Block Consistency** | Verify 4-state model preserved | ✅ PASS |
+| **V4: Block Consistency** | Verify 5-state model preserved (documented, implemented, rendered, verified, discrepancies) | ✅ PASS |
 | **V5: Composer** | Assert exactly 1 Composer service | ✅ PASS |
 | **V6: Dependency Graph** | Detect circular dependencies | ✅ PASS |
 | **V7: Test References** | Validate test file paths | ✅ PASS |
@@ -136,7 +138,7 @@ All 9 validation checks implemented and operational:
 | **Dependency Nodes** | ≥15 | ✅ Mapped |
 | **Dependency Edges** | ≥1 | ✅ Graphed |
 | **Unit Test Suites** | ≥1 | ✅ Discovered |
-| **Integration Test Suites** | ≥1 | ✅ Discovered |
+| **Integration Test Suites** | 6 | ✅ Discovered (`packages/project-llm-discovery/__tests__/integration`) |
 | **E2E Test Suites** | ≥1 | ✅ Discovered |
 
 ---
@@ -146,7 +148,7 @@ All 9 validation checks implemented and operational:
 All M1 critical constraints satisfied:
 
 ### Governance (CONTRIBUTING.md)
-- ✅ No `any` types
+- ✅ No `any` types (V1 validator corrected to use strict Zod schemas)
 - ✅ Strict boolean checks
 - ✅ Type/value import separation
 - ✅ No `console.log` in production code
@@ -157,7 +159,7 @@ All M1 critical constraints satisfied:
 
 ### Architecture (M1 Specification)
 - ✅ No LLM in core discovery
-- ✅ 4-state block model preserved
+- ✅ 5-state block model preserved (documented, implemented, rendered, verified, discrepancies tracked separately)
 - ✅ Repository adapter abstraction
 - ✅ Evidence traceability
 - ✅ Deterministic hashing

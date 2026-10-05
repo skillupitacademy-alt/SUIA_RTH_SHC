@@ -19,7 +19,7 @@ Every discovery claim is backed by cryptographic evidence (file path + SHA-256 c
 
 - **Deterministic Snapshots**: Same repository commit → same `canonicalHash` (SHA-256)
 - **Evidence Traceability**: Every claim backed by file path + content hash
-- **4-State Block Model**: Tracks DOCUMENTED, IMPLEMENTED, RENDERED, VERIFIED states separately
+- **5-State Block Model**: Tracks DOCUMENTED, IMPLEMENTED, RENDERED, VERIFIED, DISCREPANCIES separately
 - **Repository Adapter Abstraction**: Extensible to remote repositories (GitHub, GitLab, etc.)
 - **9 Validation Checks**: Schema, reference integrity, evidence paths, block consistency, single Composer, acyclic dependencies, test references, evidence completeness, determinism
 - **Fixture Reconciliation**: Compares against legacy `projectLlmRepositoryIntelligence.ts` for migration verification
@@ -244,11 +244,12 @@ The snapshot follows a versioned schema (currently `1.0.0`). Key fields:
 - `workspace`: pnpm workspace configuration
 - `buildSystem`: Turbo configuration
 
-### Blocks Data (4-State Model)
+### Blocks Data (5-State Model)
 - `documented`: Block families in `ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md`
 - `implemented`: Block type interfaces in `packages/types/src/tutorial-rich-document/blocks/`
 - `rendered`: Block renderers in `packages/ui/src/tutorial/blocks/`
 - `verified`: Blocks with complete implementation + rendering + UBRC versioning
+- `discrepancies`: Documented blocks not yet implemented (tracked as warnings for migration planning)
 
 ### Composer Data
 - `services`: Tutorial Composer service class (should be exactly 1)
