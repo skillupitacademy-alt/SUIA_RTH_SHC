@@ -117,6 +117,18 @@
 
 ---
 
+## PL-012 — M0 Correction Loop Policy
+
+**Decision:** M0_APPROVED_WITH_CORRECTIONS verdict triggers mandatory state name corrections before M1 Repository Discovery. Critical corrections (blocking M1) are state names where the runtime diverges from M0 canonical specification. Recommended corrections improve canonical consistency. Critical corrections must be resolved before M1 begins; recommended corrections may be batched into an M0.1 alignment pass.
+
+**Status:** ACCEPTED
+
+**Consequence:** The M0 correction loop is a governance gate. Skipping critical corrections is a workflow violation. Recommended corrections that are deferred must be tracked as open work items in the next milestone planning.
+
+**Date:** 2026-10-05
+
+---
+
 ## Open Architecture Decisions
 
 No new unresolved architecture conflict was silently resolved in M0.

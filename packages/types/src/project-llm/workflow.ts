@@ -21,7 +21,7 @@ export function assertCandidateGuiApproved(candidate: CandidatePackage): void {
 }
 
 export type ProjectLlmWorkflowState =
-  | 'REQUEST_CREATED'
+  | 'REQUESTED'
   | 'BRIEF_READY'
   | 'HANDOFF_READY'
   | 'AWAITING_GUI_APPROVAL'
@@ -72,7 +72,7 @@ export const AUTHORITY_REQUIRED_STATES: ReadonlySet<ProjectLlmWorkflowState> = n
  * Only transitions listed here are valid; any other transition is a governance violation.
  */
 export const ALLOWED_TRANSITIONS: Readonly<Record<ProjectLlmWorkflowState, readonly ProjectLlmWorkflowState[]>> = {
-  REQUEST_CREATED: ['BRIEF_READY'],
+  REQUESTED: ['BRIEF_READY'],
   BRIEF_READY: ['HANDOFF_READY'],
   HANDOFF_READY: ['AWAITING_GUI_APPROVAL'],
   AWAITING_GUI_APPROVAL: ['GUI_APPROVED', 'STOPPED'],
