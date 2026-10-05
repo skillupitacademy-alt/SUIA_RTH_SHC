@@ -1,3 +1,3 @@
-HEAD: d597ba2c3888ac799f0ab94b5f6df86fda5940ea
+HEAD: 94120a2af986f04af587390787b465d20d99c48e
 Determinism fix: array sorting in canonical hash computation
-Test result: PASS (820d449579ccadbcef676135f75b470fb74ade5d11a65d3b82418f1ee41140c7)
+Test result: PASS (5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7)
