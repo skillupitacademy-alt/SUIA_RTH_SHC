@@ -189,4 +189,139 @@ describe('Determinism Integration Tests', () => {
       expect(evidence.evidenceId).toMatch(/^evidence-[0-9a-f]{16}$/);
     }
   });
+
+  describe('Canonical JSON evidence ID generation properties', () => {
+    it('IDEMPOTENCE: same (kind, path, symbol, contentHash) inputs produce same evidence ID on repeated calls', async () => {
+      const adapter = createMockAdapter();
+      const repositoryRoot = '/mock/repo';
+
+      // Build snapshot multiple times
+      const snapshot1 = await buildSnapshot(repositoryRoot, adapter);
+      const snapshot2 = await buildSnapshot(repositoryRoot, adapter);
+      const snapshot3 = await buildSnapshot(repositoryRoot, adapter);
+
+      // Find the same evidence across all snapshots
+      const packageEvidence1 = snapshot1.evidence.find(e => e.path === 'package.json');
+      const packageEvidence2 = snapshot2.evidence.find(e => e.path === 'package.json');
+      const packageEvidence3 = snapshot3.evidence.find(e => e.path === 'package.json');
+
+      expect(packageEvidence1).toBeDefined();
+      expect(packageEvidence2).toBeDefined();
+      expect(packageEvidence3).toBeDefined();
+
+      // Evidence IDs must be identical across all three scans
+      expect(packageEvidence1!.evidenceId).toBe(packageEvidence2!.evidenceId);
+      expect(packageEvidence2!.evidenceId).toBe(packageEvidence3!.evidenceId);
+      expect(packageEvidence1!.evidenceId).toBe(packageEvidence3!.evidenceId);
+    });
+
+    it('SYMBOL SENSITIVITY: changing only the symbol field produces different evidence ID', async () => {
+      // Import the generator to test directly
+      const { generateDeterministicEvidenceId } = await import('../../src/utils/path-utils.js');
+      
+      // Test that same kind, path, and contentHash but different symbols produce different IDs
+      const id1 = generateDeterministicEvidenceId(
+        'component',
+        'packages/core/src/index.ts',
+        'samehash',
+        'symbolA'
+      );
+      const id2 = generateDeterministicEvidenceId(
+        'component',
+        'packages/core/src/index.ts',
+        'samehash',
+        'symbolB'
+      );
+
+      // Evidence IDs must differ when only symbol changes
+      expect(id1).not.toBe(id2);
+    });
+
+    it('PATH NORMALIZATION: Windows and Unix path separators produce same evidence ID', async () => {
+      // Import the generator function
+      const { generateDeterministicEvidenceId } = await import('../../src/utils/path-utils.js');
+
+      const windowsStylePath = 'packages\\core\\src\\index.ts';
+      const unixStylePath = 'packages/core/src/index.ts';
+
+      const id1 = generateDeterministicEvidenceId(
+        'file',
+        windowsStylePath,
+        'abc123hash'
+      );
+      const id2 = generateDeterministicEvidenceId(
+        'file',
+        unixStylePath,
+        'abc123hash'
+      );
+
+      // Both should produce identical evidence IDs
+      expect(id1).toBe(id2);
+    });
+
+    it('MUTATION DETECTION: changing contentHash produces different evidence ID AND different canonical snapshot hash', async () => {
+      const adapter = createMockAdapter();
+      const repositoryRoot = '/mock/repo';
+
+      // Build baseline snapshot
+      const snapshot1 = await buildSnapshot(repositoryRoot, adapter);
+      const baselineEvidence = snapshot1.evidence.find(e => e.path === 'package.json');
+      const baselineHash = snapshot1.canonicalHash;
+
+      expect(baselineEvidence).toBeDefined();
+      const baselineEvidenceId = baselineEvidence!.evidenceId;
+
+      // Create adapter with mutated content hash for package.json
+      const mutatedAdapter = createMockAdapter({
+        getFileHash: async (path: string) => {
+          if (path === 'package.json') {
+            return 'MUTATED-HASH-xyz789'; // Different from original 'abc123def456'
+          }
+          return adapter.getFileHash(path);
+        },
+      });
+
+      // Build snapshot with mutation
+      const snapshot2 = await buildSnapshot(repositoryRoot, mutatedAdapter);
+      const mutatedEvidence = snapshot2.evidence.find(e => e.path === 'package.json');
+      const mutatedHash = snapshot2.canonicalHash;
+
+      expect(mutatedEvidence).toBeDefined();
+      const mutatedEvidenceId = mutatedEvidence!.evidenceId;
+
+      // 1. Evidence ID must be different (contentHash is part of evidence ID)
+      expect(mutatedEvidenceId).not.toBe(baselineEvidenceId);
+
+      // 2. Canonical snapshot hash must be different (because evidence ID changed)
+      expect(mutatedHash).not.toBe(baselineHash);
+    });
+
+    it('NULL SYMBOL EQUIVALENCE: symbol=undefined and symbol=null produce same evidence ID', async () => {
+      // Import the generator function
+      const { generateDeterministicEvidenceId } = await import('../../src/utils/path-utils.js');
+
+      const idWithUndefined = generateDeterministicEvidenceId(
+        'package',
+        'apps/admin/package.json',
+        'abc123hash',
+        undefined
+      );
+      const idWithNull = generateDeterministicEvidenceId(
+        'package',
+        'apps/admin/package.json',
+        'abc123hash',
+        null as unknown as undefined // TypeScript typing workaround
+      );
+      const idWithoutSymbol = generateDeterministicEvidenceId(
+        'package',
+        'apps/admin/package.json',
+        'abc123hash'
+      );
+
+      // All three should produce identical IDs because JSON.stringify converts both undefined and null to null
+      expect(idWithUndefined).toBe(idWithNull);
+      expect(idWithUndefined).toBe(idWithoutSymbol);
+      expect(idWithNull).toBe(idWithoutSymbol);
+    });
+  });
 });
