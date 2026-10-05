@@ -33,3 +33,5 @@ export {
   scanDependencies,
   scanTests,
 } from './scanners/index.js';
+export { buildSnapshot, computeSnapshotHash } from './snapshot/index.js';
+export { EvidenceCollector, normalizeEvidence } from './evidence/index.js';
