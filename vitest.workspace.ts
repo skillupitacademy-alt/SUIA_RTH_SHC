@@ -4,4 +4,5 @@ export default [
   'apps/admin-app/vitest.config.ts',
   'packages/db/vitest.config.ts',
   'packages/api-client/vitest.config.ts',
+  'packages/project-llm-discovery/vitest.config.ts',
 ]

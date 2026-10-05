@@ -103,6 +103,12 @@
             "@quiz/observability": [
                 "./packages/observability/src/index.ts"
             ],
+            "@quiz/project-llm-discovery": [
+                "./packages/project-llm-discovery/src/index.ts"
+            ],
+            "@quiz/project-llm-discovery/*": [
+                "./packages/project-llm-discovery/src/*"
+            ],
             "@/*": [
                 "./apps/realtutorialhub-quiz/src/*",
                 "./apps/realtutorialhub-admin/src/*",
