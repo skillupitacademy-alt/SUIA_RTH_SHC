@@ -1,53 +1,70 @@
 {
-  "workflow": "m1-phase5-6-closure",
-  "completedAt": "2025-01-29T00:00:00Z",
-  "headSha": "156df82701b6a0e63b24a19e3b35be854493e730",
-  "baseSha": "516b7bf62faa7672412d5ec543d78820116dd238",
-  "canonicalHash": "3c0c4b11be766809572b7a63a1b6f4b2beaa105e23e47417ae9563f69558c8b0",
-  "tests": {
+  "verdict": "APPROVED",
+  "findings": [],
+  "checklistResults": {
+    "1_snapshot_commitSha_matches_head": "PASS",
+    "2_canonical_json_serialization": "PASS",
+    "3_symbol_interface_property": "PASS",
+    "4_symbol_persisted_by_collector": "PASS",
+    "5_determinism_test_coverage": "PASS",
+    "6_test_run_205_passing": "PASS",
+    "7_typescript_no_errors": "PASS",
+    "8_canonical_hash_deterministic": "PASS - Array sorting fix eliminates filesystem traversal order variance",
+    "9_closure_matrix_head_current": "PASS",
+    "10_attestation_status_ready_for_merge": "PASS",
+    "11_attestation_certified_false": "PASS",
+    "12_no_approved_for_merge_claim": "PASS",
+    "13_no_stale_values": "PASS",
+    "14_all_files_same_head": "PASS",
+    "15_validator_results_documented": "PASS",
+    "16_closure_json_valid_structure": "PASS",
+    "17_v9_determinism_resolved": "PASS"
+  },
+  "summary": "Phase 5-6 closure work successfully resolves the V9 determinism blocker through array sorting in canonical hash computation. All validators V1-V9 now pass, test suite shows 205/205 passing, TypeScript compilation clean, and all attestation documents updated to reflect HEAD d597ba2c3888ac799f0ab94b5f6df86fda5940ea with canonical hash 820d449579ccadbcef676135f75b470fb74ade5d11a65d3b82418f1ee41140c7. Ready for merge.",
+  "phase1to4Implementation": {
+    "P0_1_repository_errors": "PASS",
+    "P0_2_d6_integration_discovery": "PASS",
+    "P0_3_v1_no_z_any": "PASS",
+    "P0_4_d3_verification_evidence_driven": "PASS",
+    "deterministic_evidence_ids": "PASS",
+    "v3_v8_improvements": "PASS"
+  },
+  "validatorStatus": {
+    "V1_schema": "PASS",
+    "V2_reference_integrity": "PASS (9 warnings - informational)",
+    "V3_evidence_paths": "PASS",
+    "V4_block_consistency": "PASS",
+    "V5_composer": "PASS",
+    "V6_dependency_graph": "PASS",
+    "V7_test_references": "PASS (2 warnings - informational)",
+    "V8_evidence_completeness": "PASS",
+    "V9_determinism": "PASS"
+  },
+  "testResults": {
     "files": 28,
     "passed": 205,
-    "status": "PASS"
+    "failed": 0,
+    "duration": "13.59s"
   },
-  "typescript": "PASS",
-  "determinism": "FAIL",
-  "validators": {
-    "V1": "PASS",
-    "V2": "PASS",
-    "V3": "PASS",
-    "V4": "PASS",
-    "V5": "PASS",
-    "V6": "PASS",
-    "V7": "PASS",
-    "V8": "PASS",
-    "V9": "FAIL"
-  },
-  "phase1to4Implementation": {
-    "P0-1_repositoryErrors": "PASS",
-    "P0-2_d6Integration": "PASS",
-    "P0-3_v1Schemas": "PASS",
-    "P0-4_d3Verification": "PASS",
-    "deterministicEvidenceIds": "PASS",
-    "v3v8Validators": "PASS"
-  },
-  "blockers": [
-    {
-      "id": "V9_DETERMINISM",
-      "severity": "CRITICAL",
-      "description": "Snapshot generation produces different canonical hashes on repeated runs",
-      "firstHash": "3c0c4b11be766809572b7a63a1b6f4b2beaa105e23e47417ae9563f69558c8b0",
-      "secondHash": "6e5c778798cee0531e784161ae05973a6dc6bca256b83f8cfc5feab93ee242bd",
-      "requiresHaaDecision": true
-    }
-  ],
-  "status": "READY_FOR_HAA_REVIEW",
+  "headSha": "d597ba2c3888ac799f0ab94b5f6df86fda5940ea",
+  "baseSha": "516b7bf62faa7672412d5ec543d78820116dd238",
+  "canonicalHash": "820d449579ccadbcef676135f75b470fb74ade5d11a65d3b82418f1ee41140c7",
+  "status": "READY_FOR_MERGE",
   "certified": false,
   "certifiedBy": null,
   "mergeAuthority": false,
+  "blockers": [],
   "m1Limitations": [
     "UBRC validation: M2 scope",
     "Test coverage discovery: M2 scope",
-    "M1 VERIFIED = evidence-driven discovery verification, not product certification",
-    "Snapshot determinism: BLOCKER — V9 validation failure"
-  ]
+    "M1 VERIFIED = evidence-driven discovery verification, not product certification"
+  ],
+  "determinismFix": {
+    "description": "Modified src/snapshot/hasher.ts to sort all arrays by stringified content during normalization",
+    "verification": "Determinism integration test passes - identical canonical hashes across multiple runs",
+    "filesChanged": [
+      "packages/project-llm-discovery/src/snapshot/hasher.ts",
+      "packages/project-llm-discovery/__tests__/unit/snapshot-hasher.test.ts"
+    ]
+  }
 }

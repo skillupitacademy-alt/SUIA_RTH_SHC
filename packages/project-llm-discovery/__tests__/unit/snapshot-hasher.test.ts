@@ -162,7 +162,7 @@ describe('computeSnapshotHash', () => {
     expect(hash).toBe(hash2);
   });
 
-  it('should handle arrays deterministically', () => {
+  it('should handle arrays deterministically (order-independent)', () => {
     const snapshot1: Omit<RepositorySnapshot, 'canonicalHash'> = {
       ...createBaseSnapshot(),
       evidence: [
@@ -218,8 +218,9 @@ describe('computeSnapshotHash', () => {
     const hash1 = computeSnapshotHash(snapshot1);
     const hash2 = computeSnapshotHash(snapshot2);
 
-    // Array order matters in hash computation
-    expect(hash1).not.toBe(hash2);
+    // Arrays are sorted before hashing to eliminate filesystem traversal order variance
+    // Same evidence in different order should produce the same hash
+    expect(hash1).toBe(hash2);
   });
 
   it('should detect changes in nested data', () => {

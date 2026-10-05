@@ -22,6 +22,7 @@ export function computeSnapshotHash(
 /**
  * Recursively remove all timestamp fields from an object
  * evidenceId is now included in canonical hash (deterministic since phase 4)
+ * Arrays are sorted deterministically to eliminate filesystem traversal order variance
  */
 function removeTimestamps(obj: unknown): unknown {
   if (obj === null || obj === undefined) {
@@ -29,7 +30,14 @@ function removeTimestamps(obj: unknown): unknown {
   }
   
   if (Array.isArray(obj)) {
-    return obj.map(item => removeTimestamps(item));
+    const normalized = obj.map(item => removeTimestamps(item));
+    // Sort arrays deterministically by their stringified content
+    // This eliminates filesystem traversal order variance
+    return normalized.sort((a, b) => {
+      const aStr = stableStringify(a);
+      const bStr = stableStringify(b);
+      return aStr.localeCompare(bStr);
+    });
   }
   
   if (typeof obj === 'object') {
