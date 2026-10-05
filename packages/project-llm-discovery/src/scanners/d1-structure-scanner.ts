@@ -1,10 +1,9 @@
-import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
-import type { Evidence } from '../contracts/evidence.js';
 import type { ApplicationInfo, PackageInfo, ServiceInfo } from '../contracts/snapshot.js';
-import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
+import { FileNotFoundError } from '../adapters/index.js';
+import { EvidenceCollector } from '../evidence/collector.js';
 
 interface StructureData {
   applications: ApplicationInfo[];
@@ -25,7 +24,7 @@ export async function scanRepositoryStructure(
 ): Promise<ScannerResult<StructureData>> {
   const scannerName = 'D1-structure-scanner';
   const timestamp = new Date().toISOString();
-  const evidence: Evidence[] = [];
+  const collector = new EvidenceCollector();
   const findings: Finding[] = [];
 
   const applications: ApplicationInfo[] = [];
@@ -41,32 +40,32 @@ export async function scanRepositoryStructure(
     const pkgJsonPath = join(appPath, 'package.json');
     
     // Generate evidence for directory
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: appPath,
-      kind: 'directory',
-      claim: 'Application directory discovered',
-      locator: `directory:${appPath}`,
-      contentHash: '',
-    });
+    collector.add(
+      collector.createEvidence(
+        scannerName,
+        'directory',
+        appPath,
+        '',
+        'Application directory discovered',
+        `directory:${appPath}`
+      )
+    );
 
     if (await adapter.fileExists(pkgJsonPath)) {
       const pkgContent = await adapter.readFile(pkgJsonPath);
       const contentHash = await adapter.getFileHash(pkgJsonPath);
       
       // Generate evidence for package.json
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: pkgJsonPath,
-        kind: 'package',
-        claim: 'Application package.json discovered',
-        locator: `file:${pkgJsonPath}`,
-        contentHash,
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'package',
+          pkgJsonPath,
+          contentHash,
+          'Application package.json discovered',
+          `file:${pkgJsonPath}`
+        )
+      );
 
       try {
         const pkg: PackageJson = JSON.parse(pkgContent);
@@ -93,32 +92,32 @@ export async function scanRepositoryStructure(
     const pkgJsonPath = join(packagePath, 'package.json');
     
     // Generate evidence for directory
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: packagePath,
-      kind: 'directory',
-      claim: 'Package directory discovered',
-      locator: `directory:${packagePath}`,
-      contentHash: '',
-    });
+    collector.add(
+      collector.createEvidence(
+        scannerName,
+        'directory',
+        packagePath,
+        '',
+        'Package directory discovered',
+        `directory:${packagePath}`
+      )
+    );
 
     if (await adapter.fileExists(pkgJsonPath)) {
       const pkgContent = await adapter.readFile(pkgJsonPath);
       const contentHash = await adapter.getFileHash(pkgJsonPath);
       
       // Generate evidence for package.json
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: pkgJsonPath,
-        kind: 'package',
-        claim: 'Package package.json discovered',
-        locator: `file:${pkgJsonPath}`,
-        contentHash,
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'package',
+          pkgJsonPath,
+          contentHash,
+          'Package package.json discovered',
+          `file:${pkgJsonPath}`
+        )
+      );
 
       try {
         const pkg: PackageJson = JSON.parse(pkgContent);
@@ -152,32 +151,32 @@ export async function scanRepositoryStructure(
     const pkgJsonPath = join(servicePath, 'package.json');
     
     // Generate evidence for directory
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: servicePath,
-      kind: 'directory',
-      claim: 'Service directory discovered',
-      locator: `directory:${servicePath}`,
-      contentHash: '',
-    });
+    collector.add(
+      collector.createEvidence(
+        scannerName,
+        'directory',
+        servicePath,
+        '',
+        'Service directory discovered',
+        `directory:${servicePath}`
+      )
+    );
 
     if (await adapter.fileExists(pkgJsonPath)) {
       const pkgContent = await adapter.readFile(pkgJsonPath);
       const contentHash = await adapter.getFileHash(pkgJsonPath);
       
       // Generate evidence for package.json
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: pkgJsonPath,
-        kind: 'package',
-        claim: 'Service package.json discovered',
-        locator: `file:${pkgJsonPath}`,
-        contentHash,
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'package',
+          pkgJsonPath,
+          contentHash,
+          'Service package.json discovered',
+          `file:${pkgJsonPath}`
+        )
+      );
 
       try {
         const pkg: PackageJson = JSON.parse(pkgContent);
@@ -197,7 +196,7 @@ export async function scanRepositoryStructure(
   return {
     scannerName,
     timestamp,
-    evidence,
+    evidence: collector.getAll(),
     findings,
     data: {
       applications,

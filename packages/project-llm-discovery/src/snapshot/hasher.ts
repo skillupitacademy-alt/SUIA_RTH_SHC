@@ -4,6 +4,7 @@ import type { RepositorySnapshot } from '../contracts/snapshot.js';
 /**
  * Compute a deterministic SHA-256 hash of a repository snapshot
  * Excludes timestamp and canonicalHash fields for determinism
+ * Includes evidenceId in hash (deterministic since phase 4)
  */
 export function computeSnapshotHash(
   snapshot: Omit<RepositorySnapshot, 'canonicalHash'>
@@ -20,6 +21,7 @@ export function computeSnapshotHash(
 
 /**
  * Recursively remove all timestamp fields from an object
+ * evidenceId is now included in canonical hash (deterministic since phase 4)
  */
 function removeTimestamps(obj: unknown): unknown {
   if (obj === null || obj === undefined) {
@@ -33,8 +35,9 @@ function removeTimestamps(obj: unknown): unknown {
   if (typeof obj === 'object') {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
-      // Exclude timestamp, evidenceId, and findingId fields (contain timestamps/randomness)
-      if (key === 'timestamp' || key === 'scanTimestamp' || key === 'evidenceId' || key === 'findingId') {
+      // Exclude timestamp and findingId fields (contain timestamps/randomness)
+      // evidenceId is now deterministic and included in hash
+      if (key === 'timestamp' || key === 'scanTimestamp' || key === 'findingId') {
         continue;
       }
       result[key] = removeTimestamps(value);

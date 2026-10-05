@@ -1,31 +1,45 @@
 import type { RepositorySnapshot } from '../contracts/snapshot.js';
 import type { ValidationError, ValidationWarning } from './validator.js';
+import { normalizePath } from '../utils/path-utils.js';
 
+/**
+ * Validate that all discovered entities have corresponding evidence
+ * 
+ * Uses exact normalized path matching to ensure evidence exists for:
+ * - Applications
+ * - Packages
+ * - Services
+ * - Block implementations
+ * - Composer services
+ */
 export async function validateEvidenceCompleteness(
   snapshot: RepositorySnapshot
 ): Promise<{ errors: ValidationError[]; warnings: ValidationWarning[] }> {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
 
-  // Build map of evidence by path and claim
-  const evidenceByPath = new Map<string, string[]>();
-  const evidenceClaimKeywords = new Set<string>();
+  // Build set of normalized evidence paths
+  const evidencePaths = new Set<string>(
+    snapshot.evidence.map(e => normalizePath(e.path))
+  );
 
-  for (const evidence of snapshot.evidence) {
-    const claims = evidenceByPath.get(evidence.path) ?? [];
-    claims.push(evidence.claim);
-    evidenceByPath.set(evidence.path, claims);
-
-    // Extract keywords from claim for matching
-    const keywords = evidence.claim.toLowerCase().split(/\s+/);
-    for (const keyword of keywords) {
-      evidenceClaimKeywords.add(keyword);
+  // Helper to check if any evidence path is within entity path
+  function hasEvidenceForPath(entityPath: string): boolean {
+    const normalizedEntityPath = normalizePath(entityPath);
+    for (const evidencePath of evidencePaths) {
+      // Check if evidence is within entity directory or is the entity path itself
+      if (evidencePath.startsWith(normalizedEntityPath + '/') || 
+          evidencePath.startsWith(normalizedEntityPath + '\\') ||
+          evidencePath === normalizedEntityPath) {
+        return true;
+      }
     }
+    return false;
   }
 
   // Check applications
   for (const app of snapshot.structure.applications) {
-    if (!evidenceByPath.has(app.path) && !hasMatchingEvidence(app.name, evidenceClaimKeywords)) {
+    if (!hasEvidenceForPath(app.path)) {
       warnings.push({
         validator: 'V8-evidence-completeness',
         code: 'MISSING_APPLICATION_EVIDENCE',
@@ -38,7 +52,7 @@ export async function validateEvidenceCompleteness(
 
   // Check packages
   for (const pkg of snapshot.structure.packages) {
-    if (!evidenceByPath.has(pkg.path) && !hasMatchingEvidence(pkg.name, evidenceClaimKeywords)) {
+    if (!hasEvidenceForPath(pkg.path)) {
       warnings.push({
         validator: 'V8-evidence-completeness',
         code: 'MISSING_PACKAGE_EVIDENCE',
@@ -51,7 +65,7 @@ export async function validateEvidenceCompleteness(
 
   // Check services
   for (const service of snapshot.structure.services) {
-    if (!evidenceByPath.has(service.path) && !hasMatchingEvidence(service.name, evidenceClaimKeywords)) {
+    if (!hasEvidenceForPath(service.path)) {
       warnings.push({
         validator: 'V8-evidence-completeness',
         code: 'MISSING_SERVICE_EVIDENCE',
@@ -64,7 +78,7 @@ export async function validateEvidenceCompleteness(
 
   // Check block implementations
   for (const block of snapshot.blocks.implemented) {
-    if (!evidenceByPath.has(block.path) && !hasMatchingEvidence(block.type, evidenceClaimKeywords)) {
+    if (!hasEvidenceForPath(block.path)) {
       warnings.push({
         validator: 'V8-evidence-completeness',
         code: 'MISSING_BLOCK_IMPLEMENTATION_EVIDENCE',
@@ -77,7 +91,7 @@ export async function validateEvidenceCompleteness(
 
   // Check composer services
   for (const composer of snapshot.composer.services) {
-    if (!evidenceByPath.has(composer.path) && !hasMatchingEvidence(composer.name, evidenceClaimKeywords)) {
+    if (!hasEvidenceForPath(composer.path)) {
       warnings.push({
         validator: 'V8-evidence-completeness',
         code: 'MISSING_COMPOSER_EVIDENCE',
@@ -91,12 +105,3 @@ export async function validateEvidenceCompleteness(
   return { errors, warnings };
 }
 
-function hasMatchingEvidence(entityName: string, evidenceKeywords: Set<string>): boolean {
-  const entityKeywords = entityName.toLowerCase().split(/[\/\-_@]/);
-  for (const keyword of entityKeywords) {
-    if (keyword.length > 2 && evidenceKeywords.has(keyword)) {
-      return true;
-    }
-  }
-  return false;
-}

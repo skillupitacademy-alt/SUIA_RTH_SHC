@@ -1,9 +1,9 @@
-import { randomUUID } from 'node:crypto';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
-import type { Evidence } from '../contracts/evidence.js';
 import type { TestSuite } from '../contracts/snapshot.js';
 import { FileNotFoundError, RepositoryAccessError } from '../contracts/errors.js';
+import { EvidenceCollector } from '../evidence/collector.js';
+import { randomUUID } from 'node:crypto';
 
 interface TestsData {
   unit: TestSuite[];
@@ -27,7 +27,7 @@ export async function scanTests(
 ): Promise<ScannerResult<TestsData>> {
   const scannerName = 'D6-tests-scanner';
   const timestamp = new Date().toISOString();
-  const evidence: Evidence[] = [];
+  const collector = new EvidenceCollector();
   const findings: Finding[] = [];
 
   const unit: TestSuite[] = [];
@@ -40,16 +40,16 @@ export async function scanTests(
       const vitestContent = await adapter.readFile(VITEST_WORKSPACE_PATH);
       const contentHash = await adapter.getFileHash(VITEST_WORKSPACE_PATH);
 
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: VITEST_WORKSPACE_PATH,
-        kind: 'config',
-        claim: 'Vitest workspace configuration discovered',
-        locator: `file:${VITEST_WORKSPACE_PATH}`,
-        contentHash,
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'config',
+          VITEST_WORKSPACE_PATH,
+          contentHash,
+          'Vitest workspace configuration discovered',
+          `file:${VITEST_WORKSPACE_PATH}`
+        )
+      );
 
       // Parse vitest workspace for test projects
       const vitestProjects = parseVitestWorkspace(vitestContent);
@@ -132,16 +132,19 @@ export async function scanTests(
       // Generate evidence for each test file
       try {
         const contentHash = await adapter.getFileHash(testFile);
-        evidence.push({
-          evidenceId: randomUUID(),
-          scannerName,
-          timestamp,
-          path: testFile,
-          kind: 'test-file',
-          claim: 'Test file discovered',
-          locator: `file:${testFile}`,
-          contentHash,
-        });
+        const testName = testFile.split('/').pop()?.replace('.test.ts', '') ?? '';
+        
+        collector.add(
+          collector.createEvidence(
+            scannerName,
+            'test-file',
+            testFile,
+            contentHash,
+            'Test file discovered',
+            `file:${testFile}`,
+            testName
+          )
+        );
       } catch (error) {
         if (error instanceof FileNotFoundError) {
           findings.push({
@@ -190,16 +193,16 @@ export async function scanTests(
       const playwrightContent = await adapter.readFile(PLAYWRIGHT_CONFIG_PATH);
       const contentHash = await adapter.getFileHash(PLAYWRIGHT_CONFIG_PATH);
 
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: PLAYWRIGHT_CONFIG_PATH,
-        kind: 'config',
-        claim: 'Playwright E2E configuration discovered',
-        locator: `file:${PLAYWRIGHT_CONFIG_PATH}`,
-        contentHash,
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'config',
+          PLAYWRIGHT_CONFIG_PATH,
+          contentHash,
+          'Playwright E2E configuration discovered',
+          `file:${PLAYWRIGHT_CONFIG_PATH}`
+        )
+      );
 
       const testDir = parsePlaywrightTestDir(playwrightContent);
       if (testDir !== null) {
@@ -237,16 +240,16 @@ export async function scanTests(
       const allFiles = await adapter.listFiles('.');
       const e2eFiles = allFiles.filter(f => f.startsWith(e2eDir));
       
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: e2eDir,
-        kind: 'test-directory',
-        claim: 'E2E test directory discovered',
-        locator: `directory:${e2eDir}`,
-        contentHash: '',
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'test-directory',
+          e2eDir,
+          '',
+          'E2E test directory discovered',
+          `directory:${e2eDir}`
+        )
+      );
 
       // Check if this directory is already covered by Playwright config
       const normalizedPath = e2eDir.replace(/^\.\//, '');
@@ -303,7 +306,7 @@ export async function scanTests(
   return {
     scannerName,
     timestamp,
-    evidence,
+    evidence: collector.getAll(),
     findings,
     data: {
       unit,

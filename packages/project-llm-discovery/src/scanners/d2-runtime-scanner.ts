@@ -1,9 +1,8 @@
-import { randomUUID } from 'node:crypto';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
-import type { Evidence } from '../contracts/evidence.js';
 import type { FrameworkInfo, WorkspaceInfo, BuildSystemInfo } from '../contracts/snapshot.js';
-import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
+import { FileNotFoundError } from '../adapters/index.js';
+import { EvidenceCollector } from '../evidence/collector.js';
 
 interface RuntimeData {
   frameworks: FrameworkInfo[];
@@ -35,7 +34,7 @@ export async function scanRuntime(
 ): Promise<ScannerResult<RuntimeData>> {
   const scannerName = 'D2-runtime-scanner';
   const timestamp = new Date().toISOString();
-  const evidence: Evidence[] = [];
+  const collector = new EvidenceCollector();
   const findings: Finding[] = [];
 
   const frameworks: FrameworkInfo[] = [];
@@ -56,16 +55,16 @@ export async function scanRuntime(
     const content = await adapter.readFile(pnpmWorkspacePath);
     const contentHash = await adapter.getFileHash(pnpmWorkspacePath);
     
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: pnpmWorkspacePath,
-      kind: 'file',
-      claim: 'pnpm workspace configuration discovered',
-      locator: `file:${pnpmWorkspacePath}`,
-      contentHash,
-    });
+    collector.add(
+      collector.createEvidence(
+        scannerName,
+        'file',
+        pnpmWorkspacePath,
+        contentHash,
+        'pnpm workspace configuration discovered',
+        `file:${pnpmWorkspacePath}`
+      )
+    );
 
     try {
       const pnpmWorkspace = parseYaml(content);
@@ -85,16 +84,16 @@ export async function scanRuntime(
     const content = await adapter.readFile(turboJsonPath);
     const contentHash = await adapter.getFileHash(turboJsonPath);
     
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: turboJsonPath,
-      kind: 'file',
-      claim: 'Turbo build configuration discovered',
-      locator: `file:${turboJsonPath}`,
-      contentHash,
-    });
+    collector.add(
+      collector.createEvidence(
+        scannerName,
+        'file',
+        turboJsonPath,
+        contentHash,
+        'Turbo build configuration discovered',
+        `file:${turboJsonPath}`
+      )
+    );
 
     try {
       const turboConfig: TurboConfig = JSON.parse(content);
@@ -114,16 +113,16 @@ export async function scanRuntime(
     const content = await adapter.readFile(packageJsonPath);
     const contentHash = await adapter.getFileHash(packageJsonPath);
     
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: packageJsonPath,
-      kind: 'file',
-      claim: 'Root package.json discovered',
-      locator: `file:${packageJsonPath}`,
-      contentHash,
-    });
+    collector.add(
+      collector.createEvidence(
+        scannerName,
+        'file',
+        packageJsonPath,
+        contentHash,
+        'Root package.json discovered',
+        `file:${packageJsonPath}`
+      )
+    );
 
     try {
       const pkg: PackageJson = JSON.parse(content);
@@ -174,16 +173,16 @@ export async function scanRuntime(
           const content = await adapter.readFile(appPackageJsonPath);
           const contentHash = await adapter.getFileHash(appPackageJsonPath);
           
-          evidence.push({
-            evidenceId: randomUUID(),
-            scannerName,
-            timestamp,
-            path: appPackageJsonPath,
-            kind: 'package',
-            claim: `App package.json discovered for framework detection`,
-            locator: `file:${appPackageJsonPath}`,
-            contentHash,
-          });
+          collector.add(
+            collector.createEvidence(
+              scannerName,
+              'package',
+              appPackageJsonPath,
+              contentHash,
+              `App package.json discovered for framework detection`,
+              `file:${appPackageJsonPath}`
+            )
+          );
 
           try {
             const pkg: PackageJson = JSON.parse(content);
@@ -217,7 +216,7 @@ export async function scanRuntime(
   return {
     scannerName,
     timestamp,
-    evidence,
+    evidence: collector.getAll(),
     findings,
     data: {
       frameworks,

@@ -1,7 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
-import type { Evidence } from '../contracts/evidence.js';
 import type {
   BlockFamilyDoc,
   BlockImplementation,
@@ -11,6 +9,8 @@ import type {
   VerificationLevel,
 } from '../contracts/snapshot.js';
 import { FileNotFoundError, RepositoryAccessError } from '../contracts/errors.js';
+import { EvidenceCollector } from '../evidence/collector.js';
+import { randomUUID } from 'node:crypto';
 
 interface BlocksData {
   documented: BlockFamilyDoc[];
@@ -56,7 +56,7 @@ export async function scanBlocks(
 ): Promise<ScannerResult<BlocksData>> {
   const scannerName = 'D3-blocks-scanner';
   const timestamp = new Date().toISOString();
-  const evidence: Evidence[] = [];
+  const collector = new EvidenceCollector();
   const findings: Finding[] = [];
 
   const documented: BlockFamilyDoc[] = [];
@@ -71,16 +71,16 @@ export async function scanBlocks(
       const docContent = await adapter.readFile(BLOCK_CORPUS_DOC_PATH);
       const contentHash = await adapter.getFileHash(BLOCK_CORPUS_DOC_PATH);
 
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: BLOCK_CORPUS_DOC_PATH,
-        kind: 'documentation',
-        claim: 'Block corpus registry documentation discovered',
-        locator: `file:${BLOCK_CORPUS_DOC_PATH}`,
-        contentHash,
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'documentation',
+          BLOCK_CORPUS_DOC_PATH,
+          contentHash,
+          'Block corpus registry documentation discovered',
+          `file:${BLOCK_CORPUS_DOC_PATH}`
+        )
+      );
 
       // Parse markdown table for 18 families
       const familiesDoc = parseBlockCorpusRegistry(docContent);
@@ -113,16 +113,16 @@ export async function scanBlocks(
       const typesContent = await adapter.readFile(BLOCK_TYPES_PATH);
       const contentHash = await adapter.getFileHash(BLOCK_TYPES_PATH);
 
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: BLOCK_TYPES_PATH,
-        kind: 'type-definition',
-        claim: 'Block type definitions discovered',
-        locator: `file:${BLOCK_TYPES_PATH}`,
-        contentHash,
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'type-definition',
+          BLOCK_TYPES_PATH,
+          contentHash,
+          'Block type definitions discovered',
+          `file:${BLOCK_TYPES_PATH}`
+        )
+      );
 
       const implementedBlocks = parseBlockTypeDefinitions(typesContent);
       implemented.push(...implementedBlocks);
@@ -157,18 +157,23 @@ export async function scanBlocks(
       for (const tsxFile of tsxFiles) {
         try {
           const contentHash = await adapter.getFileHash(tsxFile);
-          evidence.push({
-            evidenceId: randomUUID(),
-            scannerName,
-            timestamp,
-            path: tsxFile,
-            kind: 'component',
-            claim: 'Block renderer component discovered',
-            locator: `file:${tsxFile}`,
-            contentHash,
-          });
-
           const rendererInfo = parseRendererComponent(tsxFile);
+          
+          // Use block type as symbol for deterministic ID
+          const blockSymbol = rendererInfo?.blockType ?? tsxFile.split('/').pop()?.replace('.tsx', '') ?? '';
+          
+          collector.add(
+            collector.createEvidence(
+              scannerName,
+              'component',
+              tsxFile,
+              contentHash,
+              'Block renderer component discovered',
+              `file:${tsxFile}`,
+              blockSymbol
+            )
+          );
+
           if (rendererInfo !== null) {
             rendered.push(rendererInfo);
           }
@@ -234,7 +239,7 @@ export async function scanBlocks(
   return {
     scannerName,
     timestamp,
-    evidence,
+    evidence: collector.getAll(),
     findings,
     data: {
       documented,

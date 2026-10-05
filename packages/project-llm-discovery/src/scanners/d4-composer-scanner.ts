@@ -1,7 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
-import type { Evidence } from '../contracts/evidence.js';
 import type {
   ComposerService,
   ComposerAPI,
@@ -9,6 +7,8 @@ import type {
   ComposerUI,
 } from '../contracts/snapshot.js';
 import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
+import { EvidenceCollector } from '../evidence/collector.js';
+import { randomUUID } from 'node:crypto';
 
 interface ComposerData {
   services: ComposerService[];
@@ -35,7 +35,7 @@ export async function scanComposer(
 ): Promise<ScannerResult<ComposerData>> {
   const scannerName = 'D4-composer-scanner';
   const timestamp = new Date().toISOString();
-  const evidence: Evidence[] = [];
+  const collector = new EvidenceCollector();
   const findings: Finding[] = [];
 
   const services: ComposerService[] = [];
@@ -49,16 +49,17 @@ export async function scanComposer(
       const serviceContent = await adapter.readFile(COMPOSER_SERVICE_PATH);
       const contentHash = await adapter.getFileHash(COMPOSER_SERVICE_PATH);
 
-      evidence.push({
-        evidenceId: randomUUID(),
-        scannerName,
-        timestamp,
-        path: COMPOSER_SERVICE_PATH,
-        kind: 'service',
-        claim: 'TutorialComposerService discovered',
-        locator: `file:${COMPOSER_SERVICE_PATH}`,
-        contentHash,
-      });
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'service',
+          COMPOSER_SERVICE_PATH,
+          contentHash,
+          'TutorialComposerService discovered',
+          `file:${COMPOSER_SERVICE_PATH}`,
+          'TutorialComposerService'
+        )
+      );
 
       const serviceMethods = parseServiceMethods(serviceContent);
       services.push({
@@ -96,16 +97,19 @@ export async function scanComposer(
 
       for (const routeFile of routeFiles) {
         const contentHash = await adapter.getFileHash(routeFile);
-        evidence.push({
-          evidenceId: randomUUID(),
-          scannerName,
-          timestamp,
-          path: routeFile,
-          kind: 'api-route',
-          claim: 'Composer API route discovered',
-          locator: `file:${routeFile}`,
-          contentHash,
-        });
+        const apiName = parseApiRoute(routeFile)?.endpoint ?? routeFile.split('/').pop()?.replace('.ts', '') ?? '';
+        
+        collector.add(
+          collector.createEvidence(
+            scannerName,
+            'api-route',
+            routeFile,
+            contentHash,
+            'Composer API route discovered',
+            `file:${routeFile}`,
+            apiName
+          )
+        );
 
         const apiInfo = parseApiRoute(routeFile);
         if (apiInfo !== null) {
@@ -147,16 +151,19 @@ export async function scanComposer(
         }
 
         const contentHash = await adapter.getFileHash(schemaFile);
-        evidence.push({
-          evidenceId: randomUUID(),
-          scannerName,
-          timestamp,
-          path: schemaFile,
-          kind: 'schema',
-          claim: 'Composer schema file discovered',
-          locator: `file:${schemaFile}`,
-          contentHash,
-        });
+        const schemaName = parseSchemaFile(schemaFile)?.name ?? schemaFile.split('/').pop()?.replace('.ts', '') ?? '';
+        
+        collector.add(
+          collector.createEvidence(
+            scannerName,
+            'schema',
+            schemaFile,
+            contentHash,
+            'Composer schema file discovered',
+            `file:${schemaFile}`,
+            schemaName
+          )
+        );
 
         const schemaInfo = parseSchemaFile(schemaFile);
         if (schemaInfo !== null) {
@@ -196,16 +203,19 @@ export async function scanComposer(
 
       for (const uiFile of composerUIFiles) {
         const contentHash = await adapter.getFileHash(uiFile);
-        evidence.push({
-          evidenceId: randomUUID(),
-          scannerName,
-          timestamp,
-          path: uiFile,
-          kind: 'ui-component',
-          claim: 'Composer UI component discovered',
-          locator: `file:${uiFile}`,
-          contentHash,
-        });
+        const uiName = parseUIComponent(uiFile)?.component ?? uiFile.split('/').pop()?.replace(/\.tsx?$/, '') ?? '';
+        
+        collector.add(
+          collector.createEvidence(
+            scannerName,
+            'ui-component',
+            uiFile,
+            contentHash,
+            'Composer UI component discovered',
+            `file:${uiFile}`,
+            uiName
+          )
+        );
 
         const uiInfo = parseUIComponent(uiFile);
         if (uiInfo !== null) {
@@ -270,7 +280,7 @@ export async function scanComposer(
   return {
     scannerName,
     timestamp,
-    evidence,
+    evidence: collector.getAll(),
     findings,
     data: {
       services,

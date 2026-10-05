@@ -1,10 +1,10 @@
-import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
-import type { Evidence } from '../contracts/evidence.js';
 import type { DependencyNode, DependencyEdge, PackageInfo } from '../contracts/snapshot.js';
 import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
+import { EvidenceCollector } from '../evidence/collector.js';
+import { randomUUID } from 'node:crypto';
 
 interface DependenciesData {
   nodes: DependencyNode[];
@@ -32,7 +32,7 @@ export async function scanDependencies(
 ): Promise<ScannerResult<DependenciesData>> {
   const scannerName = 'D5-dependencies-scanner';
   const timestamp = new Date().toISOString();
-  const evidence: Evidence[] = [];
+  const collector = new EvidenceCollector();
   const findings: Finding[] = [];
 
   const nodes: DependencyNode[] = [];
@@ -58,16 +58,17 @@ export async function scanDependencies(
         const pkgContent = await adapter.readFile(pkgJsonPath);
         const contentHash = await adapter.getFileHash(pkgJsonPath);
 
-        evidence.push({
-          evidenceId: randomUUID(),
-          scannerName,
-          timestamp,
-          path: pkgJsonPath,
-          kind: 'package',
-          claim: 'Package dependencies analyzed',
-          locator: `file:${pkgJsonPath}`,
-          contentHash,
-        });
+        collector.add(
+          collector.createEvidence(
+            scannerName,
+            'package',
+            pkgJsonPath,
+            contentHash,
+            'Package dependencies analyzed',
+            `file:${pkgJsonPath}`,
+            pkg.name
+          )
+        );
 
         try {
           const pkgJson = JSON.parse(pkgContent) as {
@@ -171,7 +172,7 @@ export async function scanDependencies(
   return {
     scannerName,
     timestamp,
-    evidence,
+    evidence: collector.getAll(),
     findings,
     data: {
       nodes,

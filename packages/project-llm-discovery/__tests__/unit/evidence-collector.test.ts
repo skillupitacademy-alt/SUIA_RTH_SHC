@@ -123,47 +123,154 @@ describe('EvidenceCollector', () => {
     expect(result1).toEqual(result2); // Same content
   });
 
-  it('should generate deterministic evidence IDs from scanner name and path', () => {
-    const collector = new EvidenceCollector();
-    const timestamp = '2024-01-01T00:00:00.000Z';
+  describe('createEvidence', () => {
+    it('should create evidence with deterministic ID for same inputs', () => {
+      const collector = new EvidenceCollector();
 
-    const id1 = collector.generateEvidenceId('D1-scanner', 'test/path', timestamp);
-    const id2 = collector.generateEvidenceId('D1-scanner', 'test/path', timestamp);
+      const evidence1 = collector.createEvidence(
+        'D1-scanner',
+        'package',
+        'apps/admin/package.json',
+        'abc123def456',
+        'Package discovered',
+        'file:apps/admin/package.json'
+      );
 
-    expect(id1).toBe(id2); // Same inputs produce same hash
-    expect(id1).toMatch(/^[a-f0-9]{64}$/); // SHA-256 hex string
-  });
+      const evidence2 = collector.createEvidence(
+        'D1-scanner',
+        'package',
+        'apps/admin/package.json',
+        'abc123def456',
+        'Package discovered',
+        'file:apps/admin/package.json'
+      );
 
-  it('should generate different IDs for different inputs', () => {
-    const collector = new EvidenceCollector();
-    const timestamp = '2024-01-01T00:00:00.000Z';
+      expect(evidence1.evidenceId).toBe(evidence2.evidenceId);
+      expect(evidence1.evidenceId).toMatch(/^evidence-[0-9a-f]{16}$/);
+    });
 
-    const id1 = collector.generateEvidenceId('D1-scanner', 'test/path1', timestamp);
-    const id2 = collector.generateEvidenceId('D1-scanner', 'test/path2', timestamp);
-    const id3 = collector.generateEvidenceId('D2-scanner', 'test/path1', timestamp);
+    it('should create different IDs for different content hashes', () => {
+      const collector = new EvidenceCollector();
 
-    expect(id1).not.toBe(id2); // Different paths
-    expect(id1).not.toBe(id3); // Different scanners
-  });
+      const evidence1 = collector.createEvidence(
+        'D1-scanner',
+        'package',
+        'apps/admin/package.json',
+        'hash1',
+        'Package discovered',
+        'file:apps/admin/package.json'
+      );
 
-  it('should generate unique IDs for different timestamps', () => {
-    const collector = new EvidenceCollector();
+      const evidence2 = collector.createEvidence(
+        'D1-scanner',
+        'package',
+        'apps/admin/package.json',
+        'hash2',
+        'Package discovered',
+        'file:apps/admin/package.json'
+      );
 
-    const id1 = collector.generateEvidenceId('D1-scanner', 'test/path', '2024-01-01T00:00:00.000Z');
-    const id2 = collector.generateEvidenceId('D1-scanner', 'test/path', '2024-01-01T00:00:01.000Z');
+      expect(evidence1.evidenceId).not.toBe(evidence2.evidenceId);
+    });
 
-    expect(id1).not.toBe(id2); // Different timestamps
-  });
+    it('should create different IDs when symbol parameter differs', () => {
+      const collector = new EvidenceCollector();
 
-  it('should use current timestamp if not provided', () => {
-    const collector = new EvidenceCollector();
+      const evidence1 = collector.createEvidence(
+        'D3-scanner',
+        'component',
+        'src/blocks/doc.md',
+        'abc123',
+        'Block discovered',
+        'file:src/blocks/doc.md',
+        'BlockV1'
+      );
 
-    const id1 = collector.generateEvidenceId('D1-scanner', 'test/path');
-    const id2 = collector.generateEvidenceId('D1-scanner', 'test/path');
+      const evidence2 = collector.createEvidence(
+        'D3-scanner',
+        'component',
+        'src/blocks/doc.md',
+        'abc123',
+        'Block discovered',
+        'file:src/blocks/doc.md',
+        'BlockV2'
+      );
 
-    // Since timestamps are different, IDs should be different
-    expect(id1).toMatch(/^[a-f0-9]{64}$/);
-    expect(id2).toMatch(/^[a-f0-9]{64}$/);
-    // They might be different due to timestamp variance
+      expect(evidence1.evidenceId).not.toBe(evidence2.evidenceId);
+    });
+
+    it('should create evidence with all required fields', () => {
+      const collector = new EvidenceCollector();
+
+      const evidence = collector.createEvidence(
+        'D1-scanner',
+        'package',
+        'apps/admin/package.json',
+        'abc123',
+        'Package discovered',
+        'file:apps/admin/package.json'
+      );
+
+      expect(evidence.evidenceId).toBeDefined();
+      expect(evidence.scannerName).toBe('D1-scanner');
+      expect(evidence.timestamp).toBeDefined();
+      expect(evidence.path).toBe('apps/admin/package.json');
+      expect(evidence.kind).toBe('package');
+      expect(evidence.claim).toBe('Package discovered');
+      expect(evidence.locator).toBe('file:apps/admin/package.json');
+      expect(evidence.contentHash).toBe('abc123');
+    });
+
+    it('should include metadata when provided', () => {
+      const collector = new EvidenceCollector();
+      const metadata = { version: '1.0.0', type: 'library' };
+
+      const evidence = collector.createEvidence(
+        'D1-scanner',
+        'package',
+        'packages/ui/package.json',
+        'abc123',
+        'Package discovered',
+        'file:packages/ui/package.json',
+        undefined,
+        metadata
+      );
+
+      expect(evidence.metadata).toEqual(metadata);
+    });
+
+    it('should not include metadata field when not provided', () => {
+      const collector = new EvidenceCollector();
+
+      const evidence = collector.createEvidence(
+        'D1-scanner',
+        'directory',
+        'apps/admin',
+        '',
+        'Directory discovered',
+        'directory:apps/admin'
+      );
+
+      expect(evidence.metadata).toBeUndefined();
+    });
+
+    it('should set timestamp to current ISO time', () => {
+      const collector = new EvidenceCollector();
+      const before = new Date().toISOString();
+
+      const evidence = collector.createEvidence(
+        'D1-scanner',
+        'package',
+        'apps/admin/package.json',
+        'abc123',
+        'Package discovered',
+        'file:apps/admin/package.json'
+      );
+
+      const after = new Date().toISOString();
+
+      expect(evidence.timestamp).toBeDefined();
+      expect(evidence.timestamp >= before && evidence.timestamp <= after).toBe(true);
+    });
   });
 });
