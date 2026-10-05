@@ -53,8 +53,10 @@ export async function buildSnapshot(
   collector.addAll(testsResult.evidence);
   allFindings.push(...testsResult.findings);
 
-  // Normalize evidence
-  const normalizedEvidence = normalizeEvidence(collector.getAll());
+  // Normalize evidence and sort by evidenceId for deterministic ordering
+  const normalizedEvidence = normalizeEvidence(collector.getAll()).sort((a, b) =>
+    a.evidenceId.localeCompare(b.evidenceId)
+  );
 
   // Get repository metadata
   const commitSha = await adapter.getGitCommit();
