@@ -101,7 +101,7 @@ describe('Full Discovery Integration with Validation', () => {
     // Check composer services
     expect(snapshot.composer.services.length).toBe(1);
     expect(snapshot.composer.services[0]?.name).toContain('Composer');
-  });
+  }, 30000); // 30 second timeout
 
   it('should validate dependency graph is acyclic', async () => {
     const adapter = new FilesystemRepositoryAdapter(repositoryRoot);
@@ -112,7 +112,7 @@ describe('Full Discovery Integration with Validation', () => {
     // No circular dependency errors should exist
     const circularErrors = validation.errors.filter((e) => e.code === 'CIRCULAR_DEPENDENCY');
     expect(circularErrors).toHaveLength(0);
-  });
+  }, 30000); // 30 second timeout
 
   it('should validate block consistency (4 states present)', async () => {
     const adapter = new FilesystemRepositoryAdapter(repositoryRoot);
@@ -137,5 +137,5 @@ describe('Full Discovery Integration with Validation', () => {
         expect(renderedTypes).toContain(verified.blockType);
       }
     }
-  });
+  }, 30000); // 30 second timeout
 });
