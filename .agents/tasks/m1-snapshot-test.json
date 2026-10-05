@@ -1,0 +1,4066 @@
+{
+  "schemaVersion": "1.0.0",
+  "repository": {
+    "owner": "onlinewebsites",
+    "name": "quiz-platform",
+    "commitSha": "061d89f71315bb4d04e33cf54be4d7556f6b6dcb",
+    "scanTimestamp": "2026-10-05T11:15:53.324Z"
+  },
+  "structure": {
+    "applications": [
+      {
+        "name": "@quiz/api-server",
+        "path": "apps\\api-server",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/faculty-app",
+        "path": "apps\\faculty-app",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/realtutorialhub-admin",
+        "path": "apps\\realtutorialhub-admin",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/realtutorialhub-quiz",
+        "path": "apps\\realtutorialhub-quiz",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/realtutorialhub-site",
+        "path": "apps\\realtutorialhub-site",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/realtutorialhub-web",
+        "path": "apps\\realtutorialhub-web",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/skillhub-placement",
+        "path": "apps\\skillhub-placement",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/skillhubcore-admin",
+        "path": "apps\\skillhubcore-admin",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/skillup-admin",
+        "path": "apps\\skillup-admin",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/skillup-web",
+        "path": "apps\\skillup-web",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/skillupitacademy-site",
+        "path": "apps\\skillupitacademy-site",
+        "type": "application",
+        "framework": "next",
+        "entrypoint": "src/index.ts"
+      }
+    ],
+    "packages": [
+      {
+        "name": "@quiz/api-client",
+        "path": "packages\\api-client",
+        "version": "0.1.0",
+        "dependencies": [
+          "typescript",
+          "vitest",
+          "@vitest/coverage-v8"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/auth",
+        "path": "packages\\auth",
+        "version": "0.1.0",
+        "dependencies": [
+          "@quiz/types",
+          "bcryptjs",
+          "jose",
+          "@upstash/redis",
+          "typescript",
+          "@vitest/coverage-v8",
+          "vite-tsconfig-paths",
+          "vitest"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/db",
+        "path": "packages\\db",
+        "version": "0.1.0",
+        "dependencies": [
+          "@neondatabase/serverless",
+          "@types/pg",
+          "bcryptjs",
+          "dotenv",
+          "drizzle-orm",
+          "pg",
+          "ws",
+          "zod",
+          "drizzle-kit",
+          "vitest",
+          "@vitest/coverage-v8"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/db-payment",
+        "path": "packages\\db-payment",
+        "version": "0.1.0",
+        "dependencies": [
+          "@neondatabase/serverless",
+          "drizzle-orm",
+          "typescript",
+          "ws",
+          "zod",
+          "@quiz/eslint-config",
+          "@vitest/coverage-v8",
+          "drizzle-kit",
+          "tsx",
+          "vite-tsconfig-paths",
+          "vitest"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/db-people",
+        "path": "packages\\db-people",
+        "version": "0.1.0",
+        "dependencies": [
+          "@neondatabase/serverless",
+          "@quiz/db",
+          "@quiz/types",
+          "@upstash/redis",
+          "drizzle-orm",
+          "pino",
+          "typescript",
+          "ws",
+          "zod",
+          "@vitest/coverage-v8",
+          "drizzle-kit",
+          "tsx",
+          "vite-tsconfig-paths",
+          "vitest"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/db-placement",
+        "path": "packages\\db-placement",
+        "version": "0.1.0",
+        "dependencies": [
+          "@neondatabase/serverless",
+          "@upstash/vector",
+          "drizzle-orm",
+          "dotenv",
+          "pg",
+          "typescript",
+          "ws",
+          "zod",
+          "@quiz/eslint-config",
+          "@vitest/coverage-v8",
+          "drizzle-kit",
+          "tsx",
+          "vite-tsconfig-paths",
+          "vitest"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/db-rth",
+        "path": "packages\\db-rth",
+        "version": "0.1.0",
+        "dependencies": [
+          "@neondatabase/serverless",
+          "@quiz/types",
+          "drizzle-orm",
+          "dotenv",
+          "zod",
+          "@vitest/coverage-v8",
+          "drizzle-kit",
+          "tsx",
+          "vitest"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/db-skillup",
+        "path": "packages\\db-skillup",
+        "version": "0.1.0",
+        "dependencies": [
+          "@neondatabase/serverless",
+          "@quiz/types",
+          "drizzle-orm",
+          "dotenv",
+          "zod",
+          "@vitest/coverage-v8",
+          "drizzle-kit",
+          "tsx",
+          "vitest"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/db-tutorial",
+        "path": "packages\\db-tutorial",
+        "version": "0.1.0",
+        "dependencies": [
+          "@neondatabase/serverless",
+          "@upstash/qstash",
+          "@upstash/vector",
+          "@quiz/db",
+          "@quiz/types",
+          "@quiz/validation",
+          "drizzle-orm",
+          "pino",
+          "ws",
+          "typescript",
+          "zod",
+          "@vitest/coverage-v8",
+          "drizzle-kit",
+          "vite-tsconfig-paths",
+          "vitest",
+          "tsx"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/eslint-config",
+        "path": "packages\\eslint-config",
+        "version": "1.0.0",
+        "dependencies": [
+          "@typescript-eslint/eslint-plugin",
+          "@typescript-eslint/parser",
+          "eslint-plugin-jsx-a11y",
+          "eslint-plugin-simple-import-sort"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/events",
+        "path": "packages\\events",
+        "version": "0.1.0",
+        "dependencies": [
+          "@upstash/qstash",
+          "typescript",
+          "zod",
+          "@vitest/coverage-v8",
+          "vite-tsconfig-paths",
+          "vitest"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/identity-bridge",
+        "path": "packages\\identity-bridge",
+        "version": "0.1.0",
+        "dependencies": [
+          "@quiz/db-people",
+          "@quiz/types",
+          "drizzle-orm",
+          "pino",
+          "@vitest/coverage-v8",
+          "tsx",
+          "vitest"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/marketing-site",
+        "path": "packages\\marketing-site",
+        "version": "0.1.0",
+        "dependencies": [
+          "@tsparticles/engine",
+          "@tsparticles/react",
+          "@tsparticles/slim",
+          "aos",
+          "framer-motion",
+          "html-to-image",
+          "jspdf",
+          "lenis",
+          "lucide-react",
+          "next",
+          "qrcode",
+          "react",
+          "react-dom",
+          "react-icons",
+          "zod",
+          "@types/aos",
+          "@types/node",
+          "@types/qrcode",
+          "@types/react",
+          "@types/react-dom",
+          "typescript"
+        ],
+        "exports": [
+          ".",
+          "./MarketingHome",
+          "./brand",
+          "./content/*",
+          "./config/*",
+          "./lib/analytics/*",
+          "./lib/analytics/server/*",
+          "./lib/privacy/*",
+          "./lib/feature-flags/*",
+          "./lib/domain-tracking/*",
+          "./lib/event-bus/*",
+          "./lib/observability/*",
+          "./course-layout",
+          "./course-page",
+          "./certificates/CertificateGeneratorPage",
+          "./certificates/CertificatePreviewPage",
+          "./components/*",
+          "./lib/*"
+        ]
+      },
+      {
+        "name": "@quiz/observability",
+        "path": "packages\\observability",
+        "version": "0.1.0",
+        "dependencies": [
+          "typescript"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/project-llm-discovery",
+        "path": "packages\\project-llm-discovery",
+        "version": "1.0.0",
+        "dependencies": [
+          "typescript",
+          "zod",
+          "@quiz/types",
+          "vitest",
+          "@vitest/coverage-v8"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/types",
+        "path": "packages\\types",
+        "version": "0.1.0",
+        "dependencies": [
+          "typescript",
+          "zod"
+        ],
+        "exports": []
+      },
+      {
+        "name": "@quiz/ui",
+        "path": "packages\\ui",
+        "version": "0.1.0",
+        "dependencies": [
+          "@quiz/types",
+          "@radix-ui/react-accordion",
+          "@radix-ui/react-alert-dialog",
+          "@radix-ui/react-aspect-ratio",
+          "@radix-ui/react-avatar",
+          "@radix-ui/react-checkbox",
+          "@radix-ui/react-collapsible",
+          "@radix-ui/react-context-menu",
+          "@radix-ui/react-dialog",
+          "@radix-ui/react-dropdown-menu",
+          "@radix-ui/react-hover-card",
+          "@radix-ui/react-label",
+          "@radix-ui/react-menubar",
+          "@radix-ui/react-navigation-menu",
+          "@radix-ui/react-popover",
+          "@radix-ui/react-progress",
+          "@radix-ui/react-radio-group",
+          "@radix-ui/react-scroll-area",
+          "@radix-ui/react-select",
+          "@radix-ui/react-separator",
+          "@radix-ui/react-slider",
+          "@radix-ui/react-slot",
+          "@radix-ui/react-switch",
+          "@radix-ui/react-tabs",
+          "@radix-ui/react-toggle",
+          "@radix-ui/react-toggle-group",
+          "@radix-ui/react-tooltip",
+          "class-variance-authority",
+          "dompurify",
+          "clsx",
+          "embla-carousel-react",
+          "input-otp",
+          "lucide-react",
+          "react-day-picker",
+          "react-hook-form",
+          "react-resizable-panels",
+          "recharts",
+          "tailwind-merge",
+          "vaul",
+          "zustand",
+          "typescript",
+          "tailwindcss"
+        ],
+        "exports": [
+          ".",
+          "./tailwind.preset",
+          "./package.json"
+        ]
+      },
+      {
+        "name": "@quiz/validation",
+        "path": "packages\\validation",
+        "version": "0.1.0",
+        "dependencies": [
+          "@quiz/types",
+          "typescript",
+          "zod"
+        ],
+        "exports": []
+      }
+    ],
+    "services": [
+      {
+        "name": "@quiz/analytics-collector-service",
+        "path": "services\\analytics-collector-service",
+        "type": "service",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/api-gateway",
+        "path": "services\\api-gateway",
+        "type": "service",
+        "entrypoint": "src/index.ts"
+      },
+      {
+        "name": "@quiz/skillhubcore-service",
+        "path": "services\\skillhubcore-service",
+        "type": "service",
+        "entrypoint": "src/index.ts"
+      }
+    ]
+  },
+  "runtime": {
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "16.1.6",
+        "packages": [
+          "next",
+          "@quiz/api-server",
+          "@quiz/faculty-app",
+          "@quiz/realtutorialhub-admin",
+          "@quiz/realtutorialhub-quiz",
+          "@quiz/realtutorialhub-site",
+          "@quiz/realtutorialhub-web",
+          "@quiz/skillhub-placement",
+          "@quiz/skillhubcore-admin",
+          "@quiz/skillup-admin",
+          "@quiz/skillup-web",
+          "@quiz/skillupitacademy-site"
+        ]
+      }
+    ],
+    "workspace": {
+      "manager": "pnpm",
+      "version": "unknown",
+      "packages": [
+        "apps/*",
+        "apps/realtutorialhub-admin",
+        "apps/realtutorialhub-quiz",
+        "apps/skillup-web",
+        "apps/skillup-admin",
+        "apps/faculty-app",
+        "apps/skillhubcore-admin",
+        "services/api-gateway",
+        "packages/*",
+        "services/*"
+      ]
+    },
+    "buildSystem": {
+      "tool": "turbo",
+      "version": "^2.3.3",
+      "config": "{\"build\":{\"dependsOn\":[\"^build\"],\"outputs\":[\".next/**\",\"next-env.d.ts\",\"dist/**\"]},\"lint\":{\"dependsOn\":[\"^lint\"]},\"dev\":{\"cache\":false,\"persistent\":true},\"test\":{\"dependsOn\":[\"^build\"]},\"type-check\":{\"dependsOn\":[\"^type-check\"]}}"
+    }
+  },
+  "blocks": {
+    "documented": [
+      {
+        "family": "I",
+        "versions": [
+          "I1",
+          "I2",
+          "I3",
+          "I4",
+          "I5",
+          "I6"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "O",
+        "versions": [
+          "O1",
+          "O2",
+          "O3",
+          "O4",
+          "O5"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "D",
+        "versions": [
+          "D1",
+          "D2",
+          "D3",
+          "D4",
+          "D5",
+          "D6"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "C",
+        "versions": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8",
+          "C9",
+          "C10"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "V",
+        "versions": [
+          "V1",
+          "V2",
+          "V3",
+          "V4",
+          "V5",
+          "V6",
+          "V7",
+          "V8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "CP",
+        "versions": [
+          "CP1",
+          "CP2",
+          "CP3",
+          "CP4",
+          "CP5",
+          "CP6",
+          "CP7",
+          "CP8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "E",
+        "versions": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E7",
+          "E8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "M",
+        "versions": [
+          "M1",
+          "M2",
+          "M3",
+          "M4",
+          "M5",
+          "M6",
+          "M7",
+          "M8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "MT",
+        "versions": [
+          "MT1",
+          "MT2",
+          "MT3",
+          "MT4",
+          "MT5",
+          "MT6",
+          "MT7",
+          "MT8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "BP",
+        "versions": [
+          "BP1",
+          "BP2",
+          "BP3",
+          "BP4",
+          "BP5",
+          "BP6",
+          "BP7"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "S",
+        "versions": [
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5",
+          "S6"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "Q",
+        "versions": [
+          "Q1",
+          "Q2",
+          "Q3",
+          "Q4",
+          "Q5",
+          "Q6",
+          "Q7",
+          "Q8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "EX",
+        "versions": [
+          "EX1",
+          "EX2",
+          "EX3",
+          "EX4",
+          "EX5",
+          "EX6",
+          "EX7",
+          "EX8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "T",
+        "versions": [
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "T7",
+          "T8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "INT",
+        "versions": [
+          "INT1",
+          "INT2",
+          "INT3",
+          "INT4",
+          "INT5",
+          "INT6"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "QZ",
+        "versions": [
+          "QZ1",
+          "QZ2",
+          "QZ3",
+          "QZ4",
+          "QZ5",
+          "QZ6",
+          "QZ7",
+          "QZ8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "IV",
+        "versions": [
+          "IV1",
+          "IV2",
+          "IV3",
+          "IV4",
+          "IV5",
+          "IV6",
+          "IV7"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      },
+      {
+        "family": "P",
+        "versions": [
+          "P1",
+          "P2",
+          "P3",
+          "P4",
+          "P5",
+          "P6",
+          "P7",
+          "P8"
+        ],
+        "documentationPath": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md"
+      }
+    ],
+    "implemented": [
+      {
+        "type": "definition",
+        "version": "D1",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "code",
+        "version": "C1",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "summary",
+        "version": "S1",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "introduction",
+        "version": "I1",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "heading",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "paragraph",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "list",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "code",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "table",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "image",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "callout",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "example",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      },
+      {
+        "type": "quote",
+        "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "exported": true
+      }
+    ],
+    "rendered": [
+      {
+        "blockType": "callout",
+        "componentPath": "packages/ui/src/tutorial/blocks/CalloutBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "card-grid",
+        "componentPath": "packages/ui/src/tutorial/blocks/CardGridBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "code",
+        "componentPath": "packages/ui/src/tutorial/blocks/CodeBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "code",
+        "componentPath": "packages/ui/src/tutorial/blocks/CodeC1Block.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "comparison",
+        "componentPath": "packages/ui/src/tutorial/blocks/ComparisonBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "definition",
+        "componentPath": "packages/ui/src/tutorial/blocks/DefinitionBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "diagram",
+        "componentPath": "packages/ui/src/tutorial/blocks/DiagramBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "example",
+        "componentPath": "packages/ui/src/tutorial/blocks/ExampleBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "heading",
+        "componentPath": "packages/ui/src/tutorial/blocks/HeadingBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "image",
+        "componentPath": "packages/ui/src/tutorial/blocks/ImageBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "introduction",
+        "componentPath": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "list",
+        "componentPath": "packages/ui/src/tutorial/blocks/ListBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "paragraph",
+        "componentPath": "packages/ui/src/tutorial/blocks/ParagraphBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "quote",
+        "componentPath": "packages/ui/src/tutorial/blocks/QuoteBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "summary",
+        "componentPath": "packages/ui/src/tutorial/blocks/SummaryBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "table",
+        "componentPath": "packages/ui/src/tutorial/blocks/TableBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "three-column",
+        "componentPath": "packages/ui/src/tutorial/blocks/ThreeColumnBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "timeline",
+        "componentPath": "packages/ui/src/tutorial/blocks/TimelineBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "two-column",
+        "componentPath": "packages/ui/src/tutorial/blocks/TwoColumnBlock.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "code-c1-block.clipboard.test",
+        "componentPath": "packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.clipboard.test.tsx",
+        "registeredInRenderer": true
+      },
+      {
+        "blockType": "code-c1-block.test",
+        "componentPath": "packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.test.tsx",
+        "registeredInRenderer": true
+      }
+    ],
+    "verified": [
+      {
+        "blockType": "definition",
+        "version": "D1",
+        "documented": true,
+        "implemented": true,
+        "rendered": true,
+        "tested": false
+      },
+      {
+        "blockType": "code",
+        "version": "C1",
+        "documented": true,
+        "implemented": true,
+        "rendered": true,
+        "tested": false
+      },
+      {
+        "blockType": "introduction",
+        "version": "I1",
+        "documented": true,
+        "implemented": true,
+        "rendered": true,
+        "tested": false
+      }
+    ],
+    "discrepancies": [
+      {
+        "blockType": "i",
+        "version": "I2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for I2 in content-blocks.ts"
+      },
+      {
+        "blockType": "i",
+        "version": "I3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for I3 in content-blocks.ts"
+      },
+      {
+        "blockType": "i",
+        "version": "I4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for I4 in content-blocks.ts"
+      },
+      {
+        "blockType": "i",
+        "version": "I5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for I5 in content-blocks.ts"
+      },
+      {
+        "blockType": "i",
+        "version": "I6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for I6 in content-blocks.ts"
+      },
+      {
+        "blockType": "o",
+        "version": "O1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for O1 in content-blocks.ts"
+      },
+      {
+        "blockType": "o",
+        "version": "O2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for O2 in content-blocks.ts"
+      },
+      {
+        "blockType": "o",
+        "version": "O3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for O3 in content-blocks.ts"
+      },
+      {
+        "blockType": "o",
+        "version": "O4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for O4 in content-blocks.ts"
+      },
+      {
+        "blockType": "o",
+        "version": "O5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for O5 in content-blocks.ts"
+      },
+      {
+        "blockType": "d",
+        "version": "D2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for D2 in content-blocks.ts"
+      },
+      {
+        "blockType": "d",
+        "version": "D3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for D3 in content-blocks.ts"
+      },
+      {
+        "blockType": "d",
+        "version": "D4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for D4 in content-blocks.ts"
+      },
+      {
+        "blockType": "d",
+        "version": "D5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for D5 in content-blocks.ts"
+      },
+      {
+        "blockType": "d",
+        "version": "D6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for D6 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C2 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C3 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C4 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C5 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C6 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C7 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C8 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C9",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C9 in content-blocks.ts"
+      },
+      {
+        "blockType": "c",
+        "version": "C10",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for C10 in content-blocks.ts"
+      },
+      {
+        "blockType": "v",
+        "version": "V1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for V1 in content-blocks.ts"
+      },
+      {
+        "blockType": "v",
+        "version": "V2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for V2 in content-blocks.ts"
+      },
+      {
+        "blockType": "v",
+        "version": "V3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for V3 in content-blocks.ts"
+      },
+      {
+        "blockType": "v",
+        "version": "V4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for V4 in content-blocks.ts"
+      },
+      {
+        "blockType": "v",
+        "version": "V5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for V5 in content-blocks.ts"
+      },
+      {
+        "blockType": "v",
+        "version": "V6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for V6 in content-blocks.ts"
+      },
+      {
+        "blockType": "v",
+        "version": "V7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for V7 in content-blocks.ts"
+      },
+      {
+        "blockType": "v",
+        "version": "V8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for V8 in content-blocks.ts"
+      },
+      {
+        "blockType": "cp",
+        "version": "CP1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for CP1 in content-blocks.ts"
+      },
+      {
+        "blockType": "cp",
+        "version": "CP2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for CP2 in content-blocks.ts"
+      },
+      {
+        "blockType": "cp",
+        "version": "CP3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for CP3 in content-blocks.ts"
+      },
+      {
+        "blockType": "cp",
+        "version": "CP4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for CP4 in content-blocks.ts"
+      },
+      {
+        "blockType": "cp",
+        "version": "CP5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for CP5 in content-blocks.ts"
+      },
+      {
+        "blockType": "cp",
+        "version": "CP6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for CP6 in content-blocks.ts"
+      },
+      {
+        "blockType": "cp",
+        "version": "CP7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for CP7 in content-blocks.ts"
+      },
+      {
+        "blockType": "cp",
+        "version": "CP8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for CP8 in content-blocks.ts"
+      },
+      {
+        "blockType": "e",
+        "version": "E1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for E1 in content-blocks.ts"
+      },
+      {
+        "blockType": "e",
+        "version": "E2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for E2 in content-blocks.ts"
+      },
+      {
+        "blockType": "e",
+        "version": "E3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for E3 in content-blocks.ts"
+      },
+      {
+        "blockType": "e",
+        "version": "E4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for E4 in content-blocks.ts"
+      },
+      {
+        "blockType": "e",
+        "version": "E5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for E5 in content-blocks.ts"
+      },
+      {
+        "blockType": "e",
+        "version": "E6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for E6 in content-blocks.ts"
+      },
+      {
+        "blockType": "e",
+        "version": "E7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for E7 in content-blocks.ts"
+      },
+      {
+        "blockType": "e",
+        "version": "E8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for E8 in content-blocks.ts"
+      },
+      {
+        "blockType": "m",
+        "version": "M1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for M1 in content-blocks.ts"
+      },
+      {
+        "blockType": "m",
+        "version": "M2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for M2 in content-blocks.ts"
+      },
+      {
+        "blockType": "m",
+        "version": "M3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for M3 in content-blocks.ts"
+      },
+      {
+        "blockType": "m",
+        "version": "M4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for M4 in content-blocks.ts"
+      },
+      {
+        "blockType": "m",
+        "version": "M5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for M5 in content-blocks.ts"
+      },
+      {
+        "blockType": "m",
+        "version": "M6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for M6 in content-blocks.ts"
+      },
+      {
+        "blockType": "m",
+        "version": "M7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for M7 in content-blocks.ts"
+      },
+      {
+        "blockType": "m",
+        "version": "M8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for M8 in content-blocks.ts"
+      },
+      {
+        "blockType": "mt",
+        "version": "MT1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for MT1 in content-blocks.ts"
+      },
+      {
+        "blockType": "mt",
+        "version": "MT2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for MT2 in content-blocks.ts"
+      },
+      {
+        "blockType": "mt",
+        "version": "MT3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for MT3 in content-blocks.ts"
+      },
+      {
+        "blockType": "mt",
+        "version": "MT4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for MT4 in content-blocks.ts"
+      },
+      {
+        "blockType": "mt",
+        "version": "MT5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for MT5 in content-blocks.ts"
+      },
+      {
+        "blockType": "mt",
+        "version": "MT6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for MT6 in content-blocks.ts"
+      },
+      {
+        "blockType": "mt",
+        "version": "MT7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for MT7 in content-blocks.ts"
+      },
+      {
+        "blockType": "mt",
+        "version": "MT8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for MT8 in content-blocks.ts"
+      },
+      {
+        "blockType": "bp",
+        "version": "BP1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for BP1 in content-blocks.ts"
+      },
+      {
+        "blockType": "bp",
+        "version": "BP2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for BP2 in content-blocks.ts"
+      },
+      {
+        "blockType": "bp",
+        "version": "BP3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for BP3 in content-blocks.ts"
+      },
+      {
+        "blockType": "bp",
+        "version": "BP4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for BP4 in content-blocks.ts"
+      },
+      {
+        "blockType": "bp",
+        "version": "BP5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for BP5 in content-blocks.ts"
+      },
+      {
+        "blockType": "bp",
+        "version": "BP6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for BP6 in content-blocks.ts"
+      },
+      {
+        "blockType": "bp",
+        "version": "BP7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for BP7 in content-blocks.ts"
+      },
+      {
+        "blockType": "s",
+        "version": "S2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for S2 in content-blocks.ts"
+      },
+      {
+        "blockType": "s",
+        "version": "S3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for S3 in content-blocks.ts"
+      },
+      {
+        "blockType": "s",
+        "version": "S4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for S4 in content-blocks.ts"
+      },
+      {
+        "blockType": "s",
+        "version": "S5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for S5 in content-blocks.ts"
+      },
+      {
+        "blockType": "s",
+        "version": "S6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for S6 in content-blocks.ts"
+      },
+      {
+        "blockType": "q",
+        "version": "Q1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for Q1 in content-blocks.ts"
+      },
+      {
+        "blockType": "q",
+        "version": "Q2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for Q2 in content-blocks.ts"
+      },
+      {
+        "blockType": "q",
+        "version": "Q3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for Q3 in content-blocks.ts"
+      },
+      {
+        "blockType": "q",
+        "version": "Q4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for Q4 in content-blocks.ts"
+      },
+      {
+        "blockType": "q",
+        "version": "Q5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for Q5 in content-blocks.ts"
+      },
+      {
+        "blockType": "q",
+        "version": "Q6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for Q6 in content-blocks.ts"
+      },
+      {
+        "blockType": "q",
+        "version": "Q7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for Q7 in content-blocks.ts"
+      },
+      {
+        "blockType": "q",
+        "version": "Q8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for Q8 in content-blocks.ts"
+      },
+      {
+        "blockType": "ex",
+        "version": "EX1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for EX1 in content-blocks.ts"
+      },
+      {
+        "blockType": "ex",
+        "version": "EX2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for EX2 in content-blocks.ts"
+      },
+      {
+        "blockType": "ex",
+        "version": "EX3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for EX3 in content-blocks.ts"
+      },
+      {
+        "blockType": "ex",
+        "version": "EX4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for EX4 in content-blocks.ts"
+      },
+      {
+        "blockType": "ex",
+        "version": "EX5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for EX5 in content-blocks.ts"
+      },
+      {
+        "blockType": "ex",
+        "version": "EX6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for EX6 in content-blocks.ts"
+      },
+      {
+        "blockType": "ex",
+        "version": "EX7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for EX7 in content-blocks.ts"
+      },
+      {
+        "blockType": "ex",
+        "version": "EX8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for EX8 in content-blocks.ts"
+      },
+      {
+        "blockType": "t",
+        "version": "T1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for T1 in content-blocks.ts"
+      },
+      {
+        "blockType": "t",
+        "version": "T2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for T2 in content-blocks.ts"
+      },
+      {
+        "blockType": "t",
+        "version": "T3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for T3 in content-blocks.ts"
+      },
+      {
+        "blockType": "t",
+        "version": "T4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for T4 in content-blocks.ts"
+      },
+      {
+        "blockType": "t",
+        "version": "T5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for T5 in content-blocks.ts"
+      },
+      {
+        "blockType": "t",
+        "version": "T6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for T6 in content-blocks.ts"
+      },
+      {
+        "blockType": "t",
+        "version": "T7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for T7 in content-blocks.ts"
+      },
+      {
+        "blockType": "t",
+        "version": "T8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for T8 in content-blocks.ts"
+      },
+      {
+        "blockType": "int",
+        "version": "INT1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for INT1 in content-blocks.ts"
+      },
+      {
+        "blockType": "int",
+        "version": "INT2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for INT2 in content-blocks.ts"
+      },
+      {
+        "blockType": "int",
+        "version": "INT3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for INT3 in content-blocks.ts"
+      },
+      {
+        "blockType": "int",
+        "version": "INT4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for INT4 in content-blocks.ts"
+      },
+      {
+        "blockType": "int",
+        "version": "INT5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for INT5 in content-blocks.ts"
+      },
+      {
+        "blockType": "int",
+        "version": "INT6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for INT6 in content-blocks.ts"
+      },
+      {
+        "blockType": "qz",
+        "version": "QZ1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for QZ1 in content-blocks.ts"
+      },
+      {
+        "blockType": "qz",
+        "version": "QZ2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for QZ2 in content-blocks.ts"
+      },
+      {
+        "blockType": "qz",
+        "version": "QZ3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for QZ3 in content-blocks.ts"
+      },
+      {
+        "blockType": "qz",
+        "version": "QZ4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for QZ4 in content-blocks.ts"
+      },
+      {
+        "blockType": "qz",
+        "version": "QZ5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for QZ5 in content-blocks.ts"
+      },
+      {
+        "blockType": "qz",
+        "version": "QZ6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for QZ6 in content-blocks.ts"
+      },
+      {
+        "blockType": "qz",
+        "version": "QZ7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for QZ7 in content-blocks.ts"
+      },
+      {
+        "blockType": "qz",
+        "version": "QZ8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for QZ8 in content-blocks.ts"
+      },
+      {
+        "blockType": "iv",
+        "version": "IV1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for IV1 in content-blocks.ts"
+      },
+      {
+        "blockType": "iv",
+        "version": "IV2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for IV2 in content-blocks.ts"
+      },
+      {
+        "blockType": "iv",
+        "version": "IV3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for IV3 in content-blocks.ts"
+      },
+      {
+        "blockType": "iv",
+        "version": "IV4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for IV4 in content-blocks.ts"
+      },
+      {
+        "blockType": "iv",
+        "version": "IV5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for IV5 in content-blocks.ts"
+      },
+      {
+        "blockType": "iv",
+        "version": "IV6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for IV6 in content-blocks.ts"
+      },
+      {
+        "blockType": "iv",
+        "version": "IV7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for IV7 in content-blocks.ts"
+      },
+      {
+        "blockType": "p",
+        "version": "P1",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for P1 in content-blocks.ts"
+      },
+      {
+        "blockType": "p",
+        "version": "P2",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for P2 in content-blocks.ts"
+      },
+      {
+        "blockType": "p",
+        "version": "P3",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for P3 in content-blocks.ts"
+      },
+      {
+        "blockType": "p",
+        "version": "P4",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for P4 in content-blocks.ts"
+      },
+      {
+        "blockType": "p",
+        "version": "P5",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for P5 in content-blocks.ts"
+      },
+      {
+        "blockType": "p",
+        "version": "P6",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for P6 in content-blocks.ts"
+      },
+      {
+        "blockType": "p",
+        "version": "P7",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for P7 in content-blocks.ts"
+      },
+      {
+        "blockType": "p",
+        "version": "P8",
+        "issue": "DOCUMENTED but not IMPLEMENTED",
+        "severity": "warning",
+        "recommendation": "Implement type definition for P8 in content-blocks.ts"
+      }
+    ]
+  },
+  "composer": {
+    "services": [
+      {
+        "name": "TutorialComposerService",
+        "path": "packages/db-tutorial/src/services/tutorial-composer.service.ts",
+        "methods": [
+          "createTutorial",
+          "getTutorial",
+          "getTutorialByPageIdentity",
+          "getTutorialBySubtopic",
+          "queryTutorials",
+          "updateTutorialContent",
+          "updateTutorialStatus",
+          "publishTutorial",
+          "archiveTutorial",
+          "appendBlockToTutorial",
+          "appendBlockToSection"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "endpoint": "/api/tutorial-composer/analysis",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts"
+      },
+      {
+        "endpoint": "/api/tutorial-composer/block-suggestions",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts"
+      },
+      {
+        "endpoint": "/api/tutorial-composer/import",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts"
+      },
+      {
+        "endpoint": "/api/tutorial-composer/presentation-ideas",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts"
+      },
+      {
+        "endpoint": "/api/tutorial-composer/sections",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts"
+      },
+      {
+        "endpoint": "/api/tutorial-composer/sections/[sectionId]/blocks",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts"
+      },
+      {
+        "endpoint": "/api/tutorial-composer/sections/[sectionId]/publish",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts"
+      },
+      {
+        "endpoint": "/api/tutorial-composer/sections/[sectionId]",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts"
+      },
+      {
+        "endpoint": "/api/tutorial-composer/sections/[sectionId]/suggestions/apply",
+        "method": "POST",
+        "handler": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts"
+      }
+    ],
+    "schemas": [
+      {
+        "name": "index",
+        "path": "packages/types/src/tutorial-rich-document/blocks/index.ts",
+        "tables": []
+      },
+      {
+        "name": "index",
+        "path": "packages/types/src/tutorial-rich-document/index.ts",
+        "tables": []
+      },
+      {
+        "name": "blocks.schema",
+        "path": "packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts",
+        "tables": []
+      },
+      {
+        "name": "code-c1.schema",
+        "path": "packages/types/src/tutorial-rich-document/schemas/code-c1.schema.ts",
+        "tables": []
+      },
+      {
+        "name": "container-blocks.schema",
+        "path": "packages/types/src/tutorial-rich-document/schemas/container-blocks.schema.ts",
+        "tables": []
+      },
+      {
+        "name": "content-blocks.schema",
+        "path": "packages/types/src/tutorial-rich-document/schemas/content-blocks.schema.ts",
+        "tables": []
+      },
+      {
+        "name": "definition-d1.schema",
+        "path": "packages/types/src/tutorial-rich-document/schemas/definition-d1.schema.ts",
+        "tables": []
+      },
+      {
+        "name": "document.schema",
+        "path": "packages/types/src/tutorial-rich-document/schemas/document.schema.ts",
+        "tables": []
+      },
+      {
+        "name": "introduction-i1.schema",
+        "path": "packages/types/src/tutorial-rich-document/schemas/introduction-i1.schema.ts",
+        "tables": []
+      },
+      {
+        "name": "presentation.schema",
+        "path": "packages/types/src/tutorial-rich-document/schemas/presentation.schema.ts",
+        "tables": []
+      },
+      {
+        "name": "index",
+        "path": "packages/types/src/tutorial-rich-document/__tests__/fixtures/index.ts",
+        "tables": []
+      }
+    ],
+    "ui": [
+      {
+        "component": "page",
+        "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-block-composer/page.tsx",
+        "blocksUsed": []
+      },
+      {
+        "component": "TutorialComposerHeader",
+        "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/components/TutorialComposerHeader.tsx",
+        "blocksUsed": []
+      },
+      {
+        "component": "useTutorialComposerForm",
+        "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/hooks/useTutorialComposerForm.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "useTutorialComposerForm.test",
+        "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/hooks/__tests__/useTutorialComposerForm.test.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "composer-ingestion-expectedTimeSec.test",
+        "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/__tests__/composer-ingestion-expectedTimeSec.test.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route.test",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/__tests__/route.test.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "route.integration.test",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.integration.test.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "tutorial-document.fixtures",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/fixtures/tutorial-document.fixtures.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "test-db.helpers",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/helpers/test-db.helpers.ts",
+        "blocksUsed": []
+      },
+      {
+        "component": "validate-fixtures.test",
+        "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/validate-fixtures.test.ts",
+        "blocksUsed": []
+      }
+    ]
+  },
+  "dependencies": {
+    "nodes": [
+      {
+        "id": "@quiz/api-client",
+        "name": "@quiz/api-client",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/auth",
+        "name": "@quiz/auth",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/db",
+        "name": "@quiz/db",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/db-payment",
+        "name": "@quiz/db-payment",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/db-people",
+        "name": "@quiz/db-people",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/db-placement",
+        "name": "@quiz/db-placement",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/db-rth",
+        "name": "@quiz/db-rth",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/db-skillup",
+        "name": "@quiz/db-skillup",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/db-tutorial",
+        "name": "@quiz/db-tutorial",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/eslint-config",
+        "name": "@quiz/eslint-config",
+        "version": "1.0.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/events",
+        "name": "@quiz/events",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/identity-bridge",
+        "name": "@quiz/identity-bridge",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/marketing-site",
+        "name": "@quiz/marketing-site",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/observability",
+        "name": "@quiz/observability",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/project-llm-discovery",
+        "name": "@quiz/project-llm-discovery",
+        "version": "1.0.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/types",
+        "name": "@quiz/types",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/ui",
+        "name": "@quiz/ui",
+        "version": "0.1.0",
+        "type": "package"
+      },
+      {
+        "id": "@quiz/validation",
+        "name": "@quiz/validation",
+        "version": "0.1.0",
+        "type": "package"
+      }
+    ],
+    "edges": [
+      {
+        "from": "@quiz/auth",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/db-payment",
+        "to": "@quiz/eslint-config",
+        "kind": "devDependency"
+      },
+      {
+        "from": "@quiz/db-people",
+        "to": "@quiz/db",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/db-people",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/db-placement",
+        "to": "@quiz/eslint-config",
+        "kind": "devDependency"
+      },
+      {
+        "from": "@quiz/db-rth",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/db-skillup",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/db-tutorial",
+        "to": "@quiz/db",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/db-tutorial",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/db-tutorial",
+        "to": "@quiz/validation",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/identity-bridge",
+        "to": "@quiz/db-people",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/identity-bridge",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/project-llm-discovery",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/ui",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      },
+      {
+        "from": "@quiz/validation",
+        "to": "@quiz/types",
+        "kind": "dependency"
+      }
+    ]
+  },
+  "tests": {
+    "unit": [
+      {
+        "name": "apps/api-server/vitest.config.ts",
+        "path": "apps/api-server/vitest.config.ts",
+        "testCount": 0
+      },
+      {
+        "name": "apps/web-app/vitest.config.ts",
+        "path": "apps/web-app/vitest.config.ts",
+        "testCount": 0
+      },
+      {
+        "name": "apps/admin-app/vitest.config.ts",
+        "path": "apps/admin-app/vitest.config.ts",
+        "testCount": 0
+      },
+      {
+        "name": "packages/db/vitest.config.ts",
+        "path": "packages/db/vitest.config.ts",
+        "testCount": 0
+      },
+      {
+        "name": "packages/api-client/vitest.config.ts",
+        "path": "packages/api-client/vitest.config.ts",
+        "testCount": 0
+      },
+      {
+        "name": "packages/project-llm-discovery/vitest.config.ts",
+        "path": "packages/project-llm-discovery/vitest.config.ts",
+        "testCount": 0
+      }
+    ],
+    "integration": [],
+    "e2e": [
+      {
+        "name": "Playwright E2E",
+        "path": "./tests/e2e",
+        "testCount": 0
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "evidenceId": "32a6b089-e93b-40b5-a8b3-1eafa6652a22",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/api-server/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/api-server/package.json",
+      "contentHash": "ddbe27cf6cc07cae53a27d148fd8cfaa94a21d534622adaf5942e012b897443a"
+    },
+    {
+      "evidenceId": "c1a57b28-9645-4d59-b485-0612db76aad4",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/faculty-app/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/faculty-app/package.json",
+      "contentHash": "221f95963f4ea50abda891012d233258d2a79063f2af85b5e8f433700f98a88c"
+    },
+    {
+      "evidenceId": "0bac34b0-b07b-4996-9502-5aea6d732822",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/faculty-app/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/faculty-app/package.json",
+      "contentHash": "221f95963f4ea50abda891012d233258d2a79063f2af85b5e8f433700f98a88c"
+    },
+    {
+      "evidenceId": "5fbd0937-acff-4333-ac0f-f6c763990885",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/realtutorialhub-admin/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/realtutorialhub-admin/package.json",
+      "contentHash": "ce03a99e54ec04e3a3145bdb0d66f0f8ed12d9ee8ce60a5dea90b186abb253f3"
+    },
+    {
+      "evidenceId": "ed95bd7c-cd92-4c1d-b87b-bb888115f65f",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/realtutorialhub-admin/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/realtutorialhub-admin/package.json",
+      "contentHash": "ce03a99e54ec04e3a3145bdb0d66f0f8ed12d9ee8ce60a5dea90b186abb253f3"
+    },
+    {
+      "evidenceId": "adcba24e-7e6f-4d25-a37d-944239644ea3",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/realtutorialhub-quiz/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/realtutorialhub-quiz/package.json",
+      "contentHash": "54c8697a32fc938449b412069056db3add57af38e3e73e349c3940f4c390cbe5"
+    },
+    {
+      "evidenceId": "0da9a07c-cdc0-47dd-83e6-4fa0d7adc176",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/realtutorialhub-quiz/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/realtutorialhub-quiz/package.json",
+      "contentHash": "54c8697a32fc938449b412069056db3add57af38e3e73e349c3940f4c390cbe5"
+    },
+    {
+      "evidenceId": "ac38501d-a21d-446e-ae1a-8772ea69e61c",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/realtutorialhub-site/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/realtutorialhub-site/package.json",
+      "contentHash": "e0914823c87e12af956e25b861db6a64a4bcf49d9f4f788c34630cf545e336a5"
+    },
+    {
+      "evidenceId": "3a255e18-d145-4d3a-bdcd-54db209e4d96",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/realtutorialhub-web/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/realtutorialhub-web/package.json",
+      "contentHash": "b0b01222dfab65f94f81d45272721a8040daa33dd40e69ba3bc4066f1bcfc6b7"
+    },
+    {
+      "evidenceId": "cec725b5-4e32-44be-b168-64b224edd4f8",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/skillhub-placement/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/skillhub-placement/package.json",
+      "contentHash": "fcbd1e9083cf94f276a7986b8601679421e7e513c58262eb267b93a1bfa9dbca"
+    },
+    {
+      "evidenceId": "f4bec02a-113b-409e-a4a7-3bd5548282c4",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/skillhubcore-admin/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/skillhubcore-admin/package.json",
+      "contentHash": "3a6aa64d7ea5a36c8bd8da36e2234ad110262f779e322de93112ba6e49409ded"
+    },
+    {
+      "evidenceId": "15d5a0a9-bd35-4166-b7a4-b031940c7e8c",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/skillhubcore-admin/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/skillhubcore-admin/package.json",
+      "contentHash": "3a6aa64d7ea5a36c8bd8da36e2234ad110262f779e322de93112ba6e49409ded"
+    },
+    {
+      "evidenceId": "34e7568d-4021-4802-a818-54d9109ac98d",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-block-composer/page.tsx",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-block-composer/page.tsx",
+      "contentHash": "d5880b29af2d237bea7c01959091cdbc1e09dcd8ca109a200c9f480444171e44"
+    },
+    {
+      "evidenceId": "ffbd3d5c-1249-4995-a407-fb6964024221",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/__tests__/composer-ingestion-expectedTimeSec.test.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/__tests__/composer-ingestion-expectedTimeSec.test.ts",
+      "contentHash": "ae6079ca6adf619952fd60b7bac089c0e9c467c10235b94b2f2454f39290770f"
+    },
+    {
+      "evidenceId": "6ea1a69a-c3c0-4d8c-a846-446039294779",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/components/TutorialComposerHeader.tsx",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/components/TutorialComposerHeader.tsx",
+      "contentHash": "b8d0b80e5b5904947f6ec05e815e9f6391e732189e03066476fdf5598c3abe7a"
+    },
+    {
+      "evidenceId": "fab48c80-72dc-4a73-8767-58cb9c08524a",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/hooks/__tests__/useTutorialComposerForm.test.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/hooks/__tests__/useTutorialComposerForm.test.ts",
+      "contentHash": "a26226dfa13056c9e6e17be7ef7c4c84a08eaf8c724e822ccf26bc085f6c197f"
+    },
+    {
+      "evidenceId": "6c495fab-020a-40bf-82a0-0adf2c63b7c1",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/hooks/useTutorialComposerForm.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/hooks/useTutorialComposerForm.ts",
+      "contentHash": "30584b48e489313df41869ca727e91d234eb710b90ebe87de4ad0b4338b65719"
+    },
+    {
+      "evidenceId": "0ef99cf3-39c2-48de-9418-b2d7446e0022",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/fixtures/tutorial-document.fixtures.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/fixtures/tutorial-document.fixtures.ts",
+      "contentHash": "2e5f542260322c6346ba59efbe6010d9608c8d42d8faf1ae3b03af25b8abee6a"
+    },
+    {
+      "evidenceId": "36dcc805-7d45-42f9-8ad5-44c82d7ab658",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/helpers/test-db.helpers.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/helpers/test-db.helpers.ts",
+      "contentHash": "2a46ee61e0db92816f44beb050020b76ae079387d8a132d9cc5a67d4cb343644"
+    },
+    {
+      "evidenceId": "758f42ec-df34-4eaf-99ac-2eae159223ed",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/validate-fixtures.test.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/__tests__/validate-fixtures.test.ts",
+      "contentHash": "7dce17b25f6492e10066cc17987d70321f7e9a29cd0453e910238954acb2f716"
+    },
+    {
+      "evidenceId": "eaa349ef-05a6-4c96-9000-5d9a401d6e1a",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
+      "contentHash": "4d548febfb7a92992dac9f284fa064051b89595945211a988777b8c40dc22698"
+    },
+    {
+      "evidenceId": "e424c8af-19f2-4f3c-a76d-aab48e10ccc2",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
+      "contentHash": "4d548febfb7a92992dac9f284fa064051b89595945211a988777b8c40dc22698"
+    },
+    {
+      "evidenceId": "a944efd1-2006-4e24-bab8-d0f1fa748fd3",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
+      "contentHash": "8061663ca322d272d03b44ee584becf4720e925d96bdc5f0b1c2f250bec36443"
+    },
+    {
+      "evidenceId": "43d6a4bd-8d41-44c5-9f89-4143eeb62731",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
+      "contentHash": "8061663ca322d272d03b44ee584becf4720e925d96bdc5f0b1c2f250bec36443"
+    },
+    {
+      "evidenceId": "18bbd11e-90a7-4955-b623-2262e7ff007a",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts",
+      "contentHash": "2ee04505d6c35b9ed004497ecd644edfc25d23b63b6c18844236fbf25242b1da"
+    },
+    {
+      "evidenceId": "72c4aa1d-0225-4429-b630-3745350637fb",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts",
+      "contentHash": "2ee04505d6c35b9ed004497ecd644edfc25d23b63b6c18844236fbf25242b1da"
+    },
+    {
+      "evidenceId": "dc07d259-1642-4b0c-8500-619e0fd6b646",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/__tests__/route.test.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/__tests__/route.test.ts",
+      "contentHash": "b446b422082c59f09842ca7ce9546102345ec87b18a0dc5a5668dc2a4c49a438"
+    },
+    {
+      "evidenceId": "9730e19e-e73f-4fa0-82bc-a79da8c9e2b1",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
+      "contentHash": "4ab2cf6770f452cc4e5138f15e2b549d2f4af8859f8cbb4540d9b9b64b9fc0bb"
+    },
+    {
+      "evidenceId": "7823e6f1-c127-4838-af03-a4c9818c003a",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
+      "contentHash": "4ab2cf6770f452cc4e5138f15e2b549d2f4af8859f8cbb4540d9b9b64b9fc0bb"
+    },
+    {
+      "evidenceId": "6f5b390b-b83e-40a0-8e5b-257ac53f926d",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+      "contentHash": "d4b8a36035a04cf869fe5966cc91094819498502697632babf2e4c8c442719e2"
+    },
+    {
+      "evidenceId": "dbc646a2-47fc-4b70-8564-b544c23ea026",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
+      "contentHash": "d4b8a36035a04cf869fe5966cc91094819498502697632babf2e4c8c442719e2"
+    },
+    {
+      "evidenceId": "f46167b6-93ac-4448-9528-a9b43dbaf7bf",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+      "contentHash": "bd1330c6fae579d82f73eea6b23de03f14c825879ca88dfb528585cda2e33c0e"
+    },
+    {
+      "evidenceId": "0877fec8-7f1b-4d63-adcf-905358be871b",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
+      "contentHash": "bd1330c6fae579d82f73eea6b23de03f14c825879ca88dfb528585cda2e33c0e"
+    },
+    {
+      "evidenceId": "50fea9f6-7ca5-4e51-8b73-a631bf07e543",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "contentHash": "5cf695ba953cb2b0230c2c34ebece32b7e89978793a590275cdd712e6c63d3d1"
+    },
+    {
+      "evidenceId": "f19c2a68-1b01-45d0-8431-c36860aa8c8b",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
+      "contentHash": "5cf695ba953cb2b0230c2c34ebece32b7e89978793a590275cdd712e6c63d3d1"
+    },
+    {
+      "evidenceId": "0dd4c76e-7857-4533-94fa-e3fbe0db3525",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.integration.test.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/__tests__/route.integration.test.ts",
+      "contentHash": "e983b1cff503a6783581532a8b70b9771fb4b2b1b7f1979e46201c0184a43fbd"
+    },
+    {
+      "evidenceId": "2e5df395-2da9-46ec-b33b-35ca2ee4a60b",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+      "contentHash": "7c9b6bd22e1dd60169936f75cbabf3419f80d82998e18c9509c8c2e304be5c23"
+    },
+    {
+      "evidenceId": "49574477-d6c2-4110-a338-3bd2ed87ba40",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/suggestions/apply/route.ts",
+      "contentHash": "7c9b6bd22e1dd60169936f75cbabf3419f80d82998e18c9509c8c2e304be5c23"
+    },
+    {
+      "evidenceId": "e943307e-5a65-4c59-802d-0e1c579b9259",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+      "kind": "api-route",
+      "claim": "Composer API route discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+      "contentHash": "28b77acfec78b040f4962fbf371fec1150e9e77b579a08b7bc301fb6c7a992d6"
+    },
+    {
+      "evidenceId": "b01eee72-09c1-4cfb-9e9b-9233cb48d115",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+      "kind": "ui-component",
+      "claim": "Composer UI component discovered",
+      "locator": "file:apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
+      "contentHash": "28b77acfec78b040f4962fbf371fec1150e9e77b579a08b7bc301fb6c7a992d6"
+    },
+    {
+      "evidenceId": "97c51aa5-f271-4249-923a-931531564ec5",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/skillup-admin/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/skillup-admin/package.json",
+      "contentHash": "5597b018658b0309c757f767e64d468744e02f59d712fce8f12893309f2c8221"
+    },
+    {
+      "evidenceId": "9401842c-da6e-4586-9420-cbd1c337e2b9",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/skillup-admin/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/skillup-admin/package.json",
+      "contentHash": "5597b018658b0309c757f767e64d468744e02f59d712fce8f12893309f2c8221"
+    },
+    {
+      "evidenceId": "ed1ed618-159c-492e-b3f5-92614c1a24e9",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/skillup-web/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/skillup-web/package.json",
+      "contentHash": "e6e660fcf874d8f303ce83d671637a394335e72aab1bf4fb5e1ab45f91ddf43d"
+    },
+    {
+      "evidenceId": "46db0cdd-bebe-465c-98f0-0e10ae5d04c3",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/skillup-web/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/skillup-web/package.json",
+      "contentHash": "e6e660fcf874d8f303ce83d671637a394335e72aab1bf4fb5e1ab45f91ddf43d"
+    },
+    {
+      "evidenceId": "8aea2fbf-2a18-411b-a6bd-dd55151a0a4c",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "apps/skillupitacademy-site/package.json",
+      "kind": "package",
+      "claim": "App package.json discovered for framework detection",
+      "locator": "file:apps/skillupitacademy-site/package.json",
+      "contentHash": "9580e7910c00131fa354b58fbb38f37463bd72fe990957f353ca09df8ecfd42c"
+    },
+    {
+      "evidenceId": "2be8cb4c-d67b-464a-8966-783760bc38cf",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\api-server",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\api-server",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "ebaac01f-9dc6-4775-bc28-6e377777440e",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\api-server\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\api-server\\package.json",
+      "contentHash": "ddbe27cf6cc07cae53a27d148fd8cfaa94a21d534622adaf5942e012b897443a"
+    },
+    {
+      "evidenceId": "d007cdf0-8c47-42bb-8a48-c13e559dd3d5",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\faculty-app",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\faculty-app",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "e869225f-7649-4faf-8401-3fb714f8c2de",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\faculty-app\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\faculty-app\\package.json",
+      "contentHash": "221f95963f4ea50abda891012d233258d2a79063f2af85b5e8f433700f98a88c"
+    },
+    {
+      "evidenceId": "6353fb67-2e32-4333-a71c-187a51f550c7",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\question-judge",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\question-judge",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "8ecaf73f-ec98-456a-ac02-ced604830e99",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\realtutorialhub-admin",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\realtutorialhub-admin",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "e426d74e-25d8-4b98-a964-467c4e537fe6",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\realtutorialhub-admin\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\realtutorialhub-admin\\package.json",
+      "contentHash": "ce03a99e54ec04e3a3145bdb0d66f0f8ed12d9ee8ce60a5dea90b186abb253f3"
+    },
+    {
+      "evidenceId": "b8dc845d-3945-4164-849a-d7dd71167686",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\realtutorialhub-quiz",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\realtutorialhub-quiz",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "5cbcc823-edaa-478f-8d81-71b2f62f821b",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\realtutorialhub-quiz\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\realtutorialhub-quiz\\package.json",
+      "contentHash": "54c8697a32fc938449b412069056db3add57af38e3e73e349c3940f4c390cbe5"
+    },
+    {
+      "evidenceId": "14aa0610-df85-4bca-9514-a556caecaefc",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\realtutorialhub-site",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\realtutorialhub-site",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "786ba417-7f64-4c98-b343-8d27bb79460b",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\realtutorialhub-site\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\realtutorialhub-site\\package.json",
+      "contentHash": "e0914823c87e12af956e25b861db6a64a4bcf49d9f4f788c34630cf545e336a5"
+    },
+    {
+      "evidenceId": "74e18aa6-5973-4015-add3-49a1becb278a",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\realtutorialhub-web",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\realtutorialhub-web",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "cd6e5992-02c3-446c-9cee-8501b4418eb3",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\realtutorialhub-web\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\realtutorialhub-web\\package.json",
+      "contentHash": "b0b01222dfab65f94f81d45272721a8040daa33dd40e69ba3bc4066f1bcfc6b7"
+    },
+    {
+      "evidenceId": "5dc373f3-5481-447c-825f-c1265334ca6d",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillhub-placement",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\skillhub-placement",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "4ac3fc9c-e1fc-4a5d-9479-a2adf30674f5",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillhub-placement\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\skillhub-placement\\package.json",
+      "contentHash": "fcbd1e9083cf94f276a7986b8601679421e7e513c58262eb267b93a1bfa9dbca"
+    },
+    {
+      "evidenceId": "a0379542-7346-41aa-8d4c-42f8bcddecc6",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillhubcore-admin",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\skillhubcore-admin",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "43347665-a7db-46c1-a741-693da0b82978",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillhubcore-admin\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\skillhubcore-admin\\package.json",
+      "contentHash": "3a6aa64d7ea5a36c8bd8da36e2234ad110262f779e322de93112ba6e49409ded"
+    },
+    {
+      "evidenceId": "2ee1d89e-1338-4199-819f-2b96b8f8ed9e",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillup-admin",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\skillup-admin",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "b19dcd16-5474-4a42-a1bb-6e8dd51406dd",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillup-admin\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\skillup-admin\\package.json",
+      "contentHash": "5597b018658b0309c757f767e64d468744e02f59d712fce8f12893309f2c8221"
+    },
+    {
+      "evidenceId": "a33e2c9c-cf10-4c83-9b53-630a6289708d",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillup-web",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\skillup-web",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "4c7dfa87-6eed-4924-87ef-ced664b7cf2d",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillup-web\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\skillup-web\\package.json",
+      "contentHash": "e6e660fcf874d8f303ce83d671637a394335e72aab1bf4fb5e1ab45f91ddf43d"
+    },
+    {
+      "evidenceId": "efbdd4c5-85cf-4209-8020-3a322f340dbb",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillupitacademy-site",
+      "kind": "directory",
+      "claim": "Application directory discovered",
+      "locator": "directory:apps\\skillupitacademy-site",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "483679ab-8aa7-4318-99d8-23383d3c210c",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "apps\\skillupitacademy-site\\package.json",
+      "kind": "package",
+      "claim": "Application package.json discovered",
+      "locator": "file:apps\\skillupitacademy-site\\package.json",
+      "contentHash": "9580e7910c00131fa354b58fbb38f37463bd72fe990957f353ca09df8ecfd42c"
+    },
+    {
+      "evidenceId": "a7500829-f104-4f6b-bce3-bdabe950a104",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md",
+      "kind": "documentation",
+      "claim": "Block corpus registry documentation discovered",
+      "locator": "file:ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md",
+      "contentHash": "972abebed0aad8975bdfd5a1a354a52d9da3b1a1d189ff2ee2ee02dde9ad7b7d"
+    },
+    {
+      "evidenceId": "e8063e32-210b-46c7-8b65-5769d9dec4c7",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "package.json",
+      "kind": "file",
+      "claim": "Root package.json discovered",
+      "locator": "file:package.json",
+      "contentHash": "8629148803afb8faac458aa9f7dcc20fe0caca93a6ec2a44c800d2e4f65b170f"
+    },
+    {
+      "evidenceId": "5b26c01a-d248-486a-97c2-e2f235a2dc00",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/api-client/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/api-client/package.json",
+      "contentHash": "c34175d4031acbedb52d638bd944c9be4ef9a0e669f1e8294bcdc1ca78be403d"
+    },
+    {
+      "evidenceId": "a1f85efe-dac8-41eb-b54b-75d689797916",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/auth/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/auth/package.json",
+      "contentHash": "4121e099dd349013eb185087d97824dc9111ca9d876b098fcf20df75adf5b19d"
+    },
+    {
+      "evidenceId": "a191ccbd-707a-46af-9dec-1a4541ce8dc1",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/db-payment/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/db-payment/package.json",
+      "contentHash": "486a0a7406ed09716742513f9e7f8a32f40ecd5e777f06f5dae059cb8fd18714"
+    },
+    {
+      "evidenceId": "5b28fe31-3531-474b-8564-01f85d14eca0",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/db-people/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/db-people/package.json",
+      "contentHash": "f45c52487971aa3510d237ed9b6c5e93a79a6bd39925c64dce0f2aba890fb5a8"
+    },
+    {
+      "evidenceId": "352dff67-9be8-40c3-a6c3-80322fab5d62",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/db-placement/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/db-placement/package.json",
+      "contentHash": "78bcbcb5ed95958a4046b6395e9dd71546e58d9fc8c384040e30baad3f7733a0"
+    },
+    {
+      "evidenceId": "ad90735f-31e4-422c-96af-0504760ae82b",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/db-rth/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/db-rth/package.json",
+      "contentHash": "c58e4f0e8f82ad1b4c4098fe2f2de476f088bf2188c7171b4e0a9ff1b0b9dae2"
+    },
+    {
+      "evidenceId": "d918b3e9-4eb9-4d1f-b673-a3cd9f479c6c",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/db-skillup/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/db-skillup/package.json",
+      "contentHash": "61ee25467839cced27c9c1e5110309898af9b553c1de1d7b52a8a233692db838"
+    },
+    {
+      "evidenceId": "2eaca180-97b6-40fb-b27d-be5d872c2878",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/db-tutorial/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/db-tutorial/package.json",
+      "contentHash": "9a1656f62643d14f977fd5c270416c5642da70e5ea022e5b436eba7639c560ae"
+    },
+    {
+      "evidenceId": "7a756995-cd43-4d60-b332-8f47ad32dabd",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/db-tutorial/src/services/tutorial-composer.service.ts",
+      "kind": "service",
+      "claim": "TutorialComposerService discovered",
+      "locator": "file:packages/db-tutorial/src/services/tutorial-composer.service.ts",
+      "contentHash": "26ca20f41b8a203b67b49487da6b56ab351f3dfefc40d7cdfb02d7b291633a29"
+    },
+    {
+      "evidenceId": "489e6c45-9dda-4dbc-8faa-88be6aea5d7c",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/db/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/db/package.json",
+      "contentHash": "0171d77ffdfa11a585f9f5bc5648812152202347bb8dbe2e41b3f27f6ff3e6df"
+    },
+    {
+      "evidenceId": "caf52008-4891-453f-b108-3194276a0cab",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/eslint-config/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/eslint-config/package.json",
+      "contentHash": "8cc8c8316721d83d56920647bc57a9298a58632c5caba13d1fa172292404cc0c"
+    },
+    {
+      "evidenceId": "17a6f4da-c550-459f-9908-a01da3523df0",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/events/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/events/package.json",
+      "contentHash": "6ce1b7ae26cdb378406c99af1379b1326cc3fc79f3c6c682c69b9baea6d9b0c7"
+    },
+    {
+      "evidenceId": "06f719e0-4164-4ed5-bad5-c1e8483aec96",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/identity-bridge/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/identity-bridge/package.json",
+      "contentHash": "d2dcd8bfcbe696507d8828f7157bc9047707cbc3ed2852f26b37044ac0858f5e"
+    },
+    {
+      "evidenceId": "02263edc-27e5-4da7-8d79-9ede0d265b22",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/marketing-site/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/marketing-site/package.json",
+      "contentHash": "7bd10d729928f0e18c9303c37510b0db5451e6a8994c1081151a1241e6508f51"
+    },
+    {
+      "evidenceId": "344a483f-92d7-4f1f-9fb9-03c3148eb1cd",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/observability/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/observability/package.json",
+      "contentHash": "65ffbf4842ef4f52eef8bcd094295c8904a24386cd7b61426628aef5fc072a80"
+    },
+    {
+      "evidenceId": "701e35f7-c486-4389-afa0-83e69cab6560",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/project-llm-discovery/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/project-llm-discovery/package.json",
+      "contentHash": "c1baf5aa9401b450c591addbc57b3c28bfacb6d507206419f871da427d446188"
+    },
+    {
+      "evidenceId": "4e9b9263-a491-4a98-ac2e-758368e4c56d",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/types/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/types/package.json",
+      "contentHash": "8d7b2e1060f1d04e06651692ad9987287be5e81bd4c779658d88291084396a6e"
+    },
+    {
+      "evidenceId": "494d8fca-1740-4952-9389-b53a6ad51e25",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/__tests__/fixtures/index.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/__tests__/fixtures/index.ts",
+      "contentHash": "b383efdd85c8ee9c85607680ace4f16e94030b95414465a2f227adb334779ec6"
+    },
+    {
+      "evidenceId": "e231e994-8f84-47c7-8d81-5608f30db786",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+      "kind": "type-definition",
+      "claim": "Block type definitions discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+      "contentHash": "d0d5755b6649ef7a948c3d604247f32f085e455a166a3fe160fafa617d6027db"
+    },
+    {
+      "evidenceId": "bdff79c6-6ce9-4256-a70e-07e6b33667c6",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/blocks/index.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/blocks/index.ts",
+      "contentHash": "23debe55ff87bf5d5596e7296172c05cf1c3fe8d2b85f29af405234db2591a5b"
+    },
+    {
+      "evidenceId": "6625a6ca-760e-438b-8b47-d48f7e9214de",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/index.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/index.ts",
+      "contentHash": "101181b6482a90d2bab09f9d3c65907d41f3adb30801cd50d4bb148468cdcf8c"
+    },
+    {
+      "evidenceId": "6fdf87d9-e027-434f-b622-8689f96f31ed",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts",
+      "contentHash": "da539b7fe4b17451d8c1a687365615cb95029e04d0ca98a694d41562bd773d8b"
+    },
+    {
+      "evidenceId": "482524c3-590f-444c-abc3-3604da9f4ecc",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/schemas/code-c1.schema.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/schemas/code-c1.schema.ts",
+      "contentHash": "1bce9f2cfbc7aaa31c08b97da6a16a29ec26da97d65c9351a0ce87f95098d071"
+    },
+    {
+      "evidenceId": "8d7fe5fe-add6-417c-a603-77bdaa820a59",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/schemas/container-blocks.schema.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/schemas/container-blocks.schema.ts",
+      "contentHash": "62b8eb21f557990518815824fb5c7330c745f12fa644a350c43137be49899eac"
+    },
+    {
+      "evidenceId": "2957a6dc-8363-44d8-9ea3-10e71c54ea10",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/schemas/content-blocks.schema.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/schemas/content-blocks.schema.ts",
+      "contentHash": "93a3468f107289f8a4f862bf6d6bd5d982a5b0afe2ea39b154d66051506c67a7"
+    },
+    {
+      "evidenceId": "5413d377-6e82-48c6-8258-a0acffc46d34",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/schemas/definition-d1.schema.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/schemas/definition-d1.schema.ts",
+      "contentHash": "04e3e68d14ac24418ad4a6d30ed46593294493e22132ec3015f0b6f98e389c45"
+    },
+    {
+      "evidenceId": "791ab1fb-bb52-403e-8d2e-f1b735ce55a4",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/schemas/document.schema.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/schemas/document.schema.ts",
+      "contentHash": "211d66d4f765621243ab9a2f6d6caba30e765a196fc13b838e883206c4f9f92c"
+    },
+    {
+      "evidenceId": "64ba031d-506b-41ca-95e5-ea6b06dcbffa",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/schemas/introduction-i1.schema.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/schemas/introduction-i1.schema.ts",
+      "contentHash": "47e39280a7b8f62dc36e81b9978a0375a6e0ff2fd2f9a64a0e3c68c91e875782"
+    },
+    {
+      "evidenceId": "82daa73d-0eaa-459e-a6c5-ccd62e27bdc2",
+      "scannerName": "D4-composer-scanner",
+      "timestamp": "2026-10-05T11:15:46.507Z",
+      "path": "packages/types/src/tutorial-rich-document/schemas/presentation.schema.ts",
+      "kind": "schema",
+      "claim": "Composer schema file discovered",
+      "locator": "file:packages/types/src/tutorial-rich-document/schemas/presentation.schema.ts",
+      "contentHash": "63711e11bce763238ba67d308c6d3f6095fe23a33729e73720398686caa97993"
+    },
+    {
+      "evidenceId": "842db909-2b26-4d41-a0aa-76781a85144c",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/ui/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/ui/package.json",
+      "contentHash": "76335ba85a9f0a3bab905aa37f6898a01463d45d33c0507785b389836a793732"
+    },
+    {
+      "evidenceId": "f7079318-080b-4a46-abc5-8bdba7331810",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.clipboard.test.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.clipboard.test.tsx",
+      "contentHash": "3a575f65fc71faf2d331f0275fd1dfb2d82f21bf4ecf99d3f04fb245a7b25b9a"
+    },
+    {
+      "evidenceId": "75d18964-f746-47d6-98d1-f223f38d462f",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.test.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.test.tsx",
+      "contentHash": "bd426c79a473fad3621dc1c5779174a81037a7cd6929f42c1829f10f044667a4"
+    },
+    {
+      "evidenceId": "9c6a20ed-c01a-4f34-bac2-e462856818b2",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/CalloutBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/CalloutBlock.tsx",
+      "contentHash": "00714d5a44127084eda7bc603e36adf41d2eb01b12b11eaded616485d0c376ef"
+    },
+    {
+      "evidenceId": "884c0ecc-e234-433d-a9ca-d66c43020e7b",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/CardGridBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/CardGridBlock.tsx",
+      "contentHash": "b6e97c95e77b257c48c101e3cbdeca5599b60094e07f7145cef6dd6a11f77cbe"
+    },
+    {
+      "evidenceId": "6c691600-cf64-4ef5-a8f7-7f03dd9c9155",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/CodeBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/CodeBlock.tsx",
+      "contentHash": "4fc64ae6bfe168cbb60fe473f9054a0ead741b52e0df026d9e10befe611c5576"
+    },
+    {
+      "evidenceId": "16091876-c65b-42ef-a454-5595564c7958",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/CodeC1Block.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/CodeC1Block.tsx",
+      "contentHash": "7a8e69d71af98974d19f1e5c88585fe6f1f1f35be0e2fe8626a564850176c892"
+    },
+    {
+      "evidenceId": "f5079047-8fed-4b40-bf64-dcd10bc73c6d",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/ComparisonBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/ComparisonBlock.tsx",
+      "contentHash": "ff2e31ed1351788708c4b97777955c71b1e8ed07dfe8d703bd7fa93a29ed1b7a"
+    },
+    {
+      "evidenceId": "d8fcd842-7deb-4e45-b21e-e166ee349837",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/DefinitionBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/DefinitionBlock.tsx",
+      "contentHash": "ad4a7241add80baf8cbf1bfd299a0e005d00f6d4a141ef9ba9e03e385df034cf"
+    },
+    {
+      "evidenceId": "767d0095-5791-4f8e-bcfd-95beedf28c37",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/DiagramBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/DiagramBlock.tsx",
+      "contentHash": "12d12ca1bc80e7bfd8382afb95881c9fb13fdb3009760a66c941ae0fef8a1879"
+    },
+    {
+      "evidenceId": "336cb3bf-5f79-4916-ab39-2ad5fde9a596",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/ExampleBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/ExampleBlock.tsx",
+      "contentHash": "08367d0435fb2a14d54be3984fd255f8bbe87a9c25408ec503cef79f3826312b"
+    },
+    {
+      "evidenceId": "735b924b-d139-4b9c-8b98-87426c6a7bbe",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/HeadingBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/HeadingBlock.tsx",
+      "contentHash": "50dd9ce1a7c598f239f7fd1c4081f10d570ea3873774e30a2839903833d7fc9d"
+    },
+    {
+      "evidenceId": "a4b41fc7-7196-4dab-93be-1336e9cc52a6",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/ImageBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/ImageBlock.tsx",
+      "contentHash": "2e6d163fbdee935085de70edfac10c2f45810c47a4f17ac70e8c31bb4319fef1"
+    },
+    {
+      "evidenceId": "feec73a2-d4da-4d2e-a35d-8734664697f0",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+      "contentHash": "0f3b4ce84cfb82d58407d45beb1fc94a7d6592990000b1e30b05120836eb44e5"
+    },
+    {
+      "evidenceId": "0c9092b1-f900-4c11-9b65-9f924c6fe4f5",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/ListBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/ListBlock.tsx",
+      "contentHash": "ad9c6821799ad54f1bc1ca18226f0955495bb069443b55440cf92e8e46ea2b23"
+    },
+    {
+      "evidenceId": "28ad7eb6-49b2-436e-9706-5a5c83b72abf",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/ParagraphBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/ParagraphBlock.tsx",
+      "contentHash": "2374dec8a33bb959904d48c570760242853726003ed4d6fc4c27626a84f97d2d"
+    },
+    {
+      "evidenceId": "2ab9cfe7-bf7d-42d0-b6d3-0737b989c7cd",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/QuoteBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/QuoteBlock.tsx",
+      "contentHash": "650082bbf1f885e5955352cd4dc44f123f31884df233fb5cbfe65ee14899ea55"
+    },
+    {
+      "evidenceId": "c270b08b-cb4a-4002-89e3-4db60b27b7f5",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/SummaryBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/SummaryBlock.tsx",
+      "contentHash": "d7bdc9c434604efd1b3e58b1b451272efb91922981686f4571a247470eca0f1c"
+    },
+    {
+      "evidenceId": "67405c7f-2da4-4084-8818-376aabb8358c",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/TableBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/TableBlock.tsx",
+      "contentHash": "760d3158bfd838ac8c75ee60775532d3dce78942954bb5baa3396ebd45042618"
+    },
+    {
+      "evidenceId": "c4843ad0-061d-4af3-97f4-ff0a5a4d9a66",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/ThreeColumnBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/ThreeColumnBlock.tsx",
+      "contentHash": "84a22f5870a57b78b246d6ed3cddce95e90f035f184daa7e6f4115a9e892d38f"
+    },
+    {
+      "evidenceId": "2ffce068-887b-4441-845a-f6beec7764e6",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/TimelineBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/TimelineBlock.tsx",
+      "contentHash": "fd43aa335055842bfc24fb8463f733174a55653b7e5adb6b0789dc8f8df4f7fa"
+    },
+    {
+      "evidenceId": "bcfeb01d-5501-4e09-9563-a6c9e5374da7",
+      "scannerName": "D3-blocks-scanner",
+      "timestamp": "2026-10-05T11:15:46.498Z",
+      "path": "packages/ui/src/tutorial/blocks/TwoColumnBlock.tsx",
+      "kind": "component",
+      "claim": "Block renderer component discovered",
+      "locator": "file:packages/ui/src/tutorial/blocks/TwoColumnBlock.tsx",
+      "contentHash": "9f950adee5a4009f2359141954f04660a7c3a181b12c4f407a2b458bae12763a"
+    },
+    {
+      "evidenceId": "fc8f5442-f393-4a05-a748-0178f106107b",
+      "scannerName": "D5-dependencies-scanner",
+      "timestamp": "2026-10-05T11:15:46.531Z",
+      "path": "packages/validation/package.json",
+      "kind": "package",
+      "claim": "Package dependencies analyzed",
+      "locator": "file:packages/validation/package.json",
+      "contentHash": "c7e8a69297ec1286c82657d39681f748c05218616fa5b64b6e7356d139b58b11"
+    },
+    {
+      "evidenceId": "5b6fa184-0812-422f-a6dc-b7982307d022",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\api-client",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\api-client",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "d58e76a3-472e-4f3f-84f8-fbc76dcc192b",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\api-client\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\api-client\\package.json",
+      "contentHash": "c34175d4031acbedb52d638bd944c9be4ef9a0e669f1e8294bcdc1ca78be403d"
+    },
+    {
+      "evidenceId": "a3ee1e12-c09c-40cc-bdb5-a1df94bcda78",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\auth",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\auth",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "47141761-f747-4977-b787-1f1be338e930",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\auth\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\auth\\package.json",
+      "contentHash": "4121e099dd349013eb185087d97824dc9111ca9d876b098fcf20df75adf5b19d"
+    },
+    {
+      "evidenceId": "03de2d86-356d-44bc-8f77-7a12be70aa3b",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\config",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\config",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "cb18d696-1038-4690-b677-85e3e3dd8976",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\db",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "14d6741e-e026-4220-b622-27c26da06b92",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-payment",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\db-payment",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "341fb58b-09d8-4959-b1c8-1b24649f5188",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-payment\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\db-payment\\package.json",
+      "contentHash": "486a0a7406ed09716742513f9e7f8a32f40ecd5e777f06f5dae059cb8fd18714"
+    },
+    {
+      "evidenceId": "b849d2cd-f5c9-4a39-aa8c-dc9d70bc8b53",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-people",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\db-people",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "df659725-ed91-42ac-8850-3098d2527383",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-people\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\db-people\\package.json",
+      "contentHash": "f45c52487971aa3510d237ed9b6c5e93a79a6bd39925c64dce0f2aba890fb5a8"
+    },
+    {
+      "evidenceId": "a7fdb97e-d070-4f0e-ace4-33c45e4eb492",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-placement",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\db-placement",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "b1ab8386-5f5a-43a8-92b9-2558a8f310f0",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-placement\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\db-placement\\package.json",
+      "contentHash": "78bcbcb5ed95958a4046b6395e9dd71546e58d9fc8c384040e30baad3f7733a0"
+    },
+    {
+      "evidenceId": "e31a8ce1-f2c8-4812-af1a-f6e211628cfc",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-rth",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\db-rth",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "1aba1c33-a03d-4c82-ad6b-c32c65c64ad8",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-rth\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\db-rth\\package.json",
+      "contentHash": "c58e4f0e8f82ad1b4c4098fe2f2de476f088bf2188c7171b4e0a9ff1b0b9dae2"
+    },
+    {
+      "evidenceId": "99b14f85-ac0f-49c8-b6cf-cf3d9ddc65f6",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-skillup",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\db-skillup",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "8ec366d7-8128-425f-b730-68dbf51977b7",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-skillup\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\db-skillup\\package.json",
+      "contentHash": "61ee25467839cced27c9c1e5110309898af9b553c1de1d7b52a8a233692db838"
+    },
+    {
+      "evidenceId": "a83b873e-ccee-4641-8cd4-b237def10975",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-tutorial",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\db-tutorial",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "4a270115-8938-4e46-9570-4c175672c66a",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db-tutorial\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\db-tutorial\\package.json",
+      "contentHash": "9a1656f62643d14f977fd5c270416c5642da70e5ea022e5b436eba7639c560ae"
+    },
+    {
+      "evidenceId": "80f30c03-ac60-416f-88d7-d5f8989bd278",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\db\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\db\\package.json",
+      "contentHash": "0171d77ffdfa11a585f9f5bc5648812152202347bb8dbe2e41b3f27f6ff3e6df"
+    },
+    {
+      "evidenceId": "9370712d-f4a5-44f1-9724-2e9fce0f4f94",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\eslint-config",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\eslint-config",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "c1597927-b60d-49a7-bf10-da9c3119adb8",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\eslint-config\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\eslint-config\\package.json",
+      "contentHash": "8cc8c8316721d83d56920647bc57a9298a58632c5caba13d1fa172292404cc0c"
+    },
+    {
+      "evidenceId": "5742726c-a8cd-4905-ad99-2623d1fa800b",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\events",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\events",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "6055e7ca-a361-487b-b621-edaeb810b8fa",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\events\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\events\\package.json",
+      "contentHash": "6ce1b7ae26cdb378406c99af1379b1326cc3fc79f3c6c682c69b9baea6d9b0c7"
+    },
+    {
+      "evidenceId": "d48a328f-c284-43c6-97a3-f5db65637bd4",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\identity-bridge",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\identity-bridge",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "27aaca59-0427-409a-b3ca-118ba19adcfe",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\identity-bridge\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\identity-bridge\\package.json",
+      "contentHash": "d2dcd8bfcbe696507d8828f7157bc9047707cbc3ed2852f26b37044ac0858f5e"
+    },
+    {
+      "evidenceId": "cdfe27c3-5315-4922-b8a3-f2c7b78fc995",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\marketing-site",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\marketing-site",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "992267e4-400f-418b-a87b-09017a12afda",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\marketing-site\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\marketing-site\\package.json",
+      "contentHash": "7bd10d729928f0e18c9303c37510b0db5451e6a8994c1081151a1241e6508f51"
+    },
+    {
+      "evidenceId": "a2a065e5-71df-4a8f-9222-478458c46ee3",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\observability",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\observability",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "90d0fe67-ad1c-4596-bda1-d1eddbb7d9ff",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\observability\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\observability\\package.json",
+      "contentHash": "65ffbf4842ef4f52eef8bcd094295c8904a24386cd7b61426628aef5fc072a80"
+    },
+    {
+      "evidenceId": "af087c8c-35bf-494e-95d0-67429feecda7",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\project-llm-discovery",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\project-llm-discovery",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "60e991dd-7551-489c-b680-f9baff10852e",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\project-llm-discovery\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\project-llm-discovery\\package.json",
+      "contentHash": "c1baf5aa9401b450c591addbc57b3c28bfacb6d507206419f871da427d446188"
+    },
+    {
+      "evidenceId": "b9ca39d7-1042-4a9c-afff-2fc4722353c8",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\types",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\types",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "c9df5f13-7798-443e-bd97-055f483a0bc3",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\types\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\types\\package.json",
+      "contentHash": "8d7b2e1060f1d04e06651692ad9987287be5e81bd4c779658d88291084396a6e"
+    },
+    {
+      "evidenceId": "5c1afc51-fbcc-4fb5-bf68-d161e45d0747",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\ui",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\ui",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "d20afddb-ed9b-4726-b992-1696cb9d2395",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\ui\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\ui\\package.json",
+      "contentHash": "76335ba85a9f0a3bab905aa37f6898a01463d45d33c0507785b389836a793732"
+    },
+    {
+      "evidenceId": "43c18fa2-2499-4a8f-a786-253390814b9b",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\validation",
+      "kind": "directory",
+      "claim": "Package directory discovered",
+      "locator": "directory:packages\\validation",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "6d236718-d69b-423b-885a-1f79208db8c8",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "packages\\validation\\package.json",
+      "kind": "package",
+      "claim": "Package package.json discovered",
+      "locator": "file:packages\\validation\\package.json",
+      "contentHash": "c7e8a69297ec1286c82657d39681f748c05218616fa5b64b6e7356d139b58b11"
+    },
+    {
+      "evidenceId": "c42fb8db-0bf7-4384-8e2e-5f2c4d30dba9",
+      "scannerName": "D6-tests-scanner",
+      "timestamp": "2026-10-05T11:15:46.540Z",
+      "path": "playwright.config.ts",
+      "kind": "config",
+      "claim": "Playwright E2E configuration discovered",
+      "locator": "file:playwright.config.ts",
+      "contentHash": "d753b738fed718a1b27b9232fa6496dc4bff3a2f1b6ca33014553ae4fc1a79a1"
+    },
+    {
+      "evidenceId": "f6c9e509-7e0e-44fb-9faa-3dbbbd634273",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "pnpm-workspace.yaml",
+      "kind": "file",
+      "claim": "pnpm workspace configuration discovered",
+      "locator": "file:pnpm-workspace.yaml",
+      "contentHash": "d8f26ea4a21e5f1648ba9cc04ddfe411c7498ea348f1e47dc0445d5608e6bbae"
+    },
+    {
+      "evidenceId": "6cebfe5c-0c5c-409b-b005-24600eb07287",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "services\\a.txt",
+      "kind": "directory",
+      "claim": "Service directory discovered",
+      "locator": "directory:services\\a.txt",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "f638052a-82ba-4837-a67f-891f926c4fd9",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "services\\analytics-collector-service",
+      "kind": "directory",
+      "claim": "Service directory discovered",
+      "locator": "directory:services\\analytics-collector-service",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "ce318f84-9b66-441e-b7b6-b65f739d6d9b",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "services\\analytics-collector-service\\package.json",
+      "kind": "package",
+      "claim": "Service package.json discovered",
+      "locator": "file:services\\analytics-collector-service\\package.json",
+      "contentHash": "218dc3b32d73853f47fa3659eb8cdcf91913848e8184cf65cc85778a944a677e"
+    },
+    {
+      "evidenceId": "a58048d8-db38-402a-96ed-2bacf0381e2c",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "services\\api-gateway",
+      "kind": "directory",
+      "claim": "Service directory discovered",
+      "locator": "directory:services\\api-gateway",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "b7dab693-95d5-4117-8cc6-7f1bc4805a40",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "services\\api-gateway\\package.json",
+      "kind": "package",
+      "claim": "Service package.json discovered",
+      "locator": "file:services\\api-gateway\\package.json",
+      "contentHash": "6892064fb38086a673d22d6f09f0f0014f62f0b67355659182e07d8a45a076b9"
+    },
+    {
+      "evidenceId": "e719371d-46e8-4e39-9c42-c0f127297661",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "services\\skillhubcore-service",
+      "kind": "directory",
+      "claim": "Service directory discovered",
+      "locator": "directory:services\\skillhubcore-service",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "742f96db-dcf4-43d1-b4f9-180a1c019392",
+      "scannerName": "D1-structure-scanner",
+      "timestamp": "2026-10-05T11:15:45.155Z",
+      "path": "services\\skillhubcore-service\\package.json",
+      "kind": "package",
+      "claim": "Service package.json discovered",
+      "locator": "file:services\\skillhubcore-service\\package.json",
+      "contentHash": "efb72e86e7282300435faaf69e4887e7eff11e5b47d6b5c8e938775da870388b"
+    },
+    {
+      "evidenceId": "c5ac9bfd-c293-4ec9-b4b7-2f6463314f03",
+      "scannerName": "D6-tests-scanner",
+      "timestamp": "2026-10-05T11:15:46.540Z",
+      "path": "tests/e2e",
+      "kind": "test-directory",
+      "claim": "E2E test directory discovered",
+      "locator": "directory:tests/e2e",
+      "contentHash": ""
+    },
+    {
+      "evidenceId": "26aadeb3-8b9c-4089-84c2-d053d2512bfd",
+      "scannerName": "D2-runtime-scanner",
+      "timestamp": "2026-10-05T11:15:45.888Z",
+      "path": "turbo.json",
+      "kind": "file",
+      "claim": "Turbo build configuration discovered",
+      "locator": "file:turbo.json",
+      "contentHash": "99e25e35b29b4a3e3e545d9e6f87b29baf53b70cb15da3f64494fd91f620a839"
+    },
+    {
+      "evidenceId": "dd2169d2-5e58-4847-9117-db8e2c7e8009",
+      "scannerName": "D6-tests-scanner",
+      "timestamp": "2026-10-05T11:15:46.540Z",
+      "path": "vitest.workspace.ts",
+      "kind": "config",
+      "claim": "Vitest workspace configuration discovered",
+      "locator": "file:vitest.workspace.ts",
+      "contentHash": "8d7a333e9b0ddb5b61f309679c19b2bacba7d62d9555a71afad3d913f30d4174"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "593f6960-efbb-4858-a2ab-3f9b1f8ca988",
+      "severity": "info",
+      "category": "blocks-discovery",
+      "message": "Discovered 18 documented block families, 13 implemented blocks, 21 rendered blocks, 3 verified blocks"
+    },
+    {
+      "findingId": "894c16ba-f12c-4fae-8a23-31b1c75dfc39",
+      "severity": "warning",
+      "category": "blocks-discrepancy",
+      "message": "Found 129 block discrepancies between documentation and implementation"
+    },
+    {
+      "findingId": "6b486178-8f28-4811-99bb-5d59a715832c",
+      "severity": "info",
+      "category": "composer-validation",
+      "message": "Single TutorialComposerService confirmed (no parallel Composer detected)"
+    },
+    {
+      "findingId": "9c1cfe55-57c8-4826-82c4-ce5251e3d31a",
+      "severity": "info",
+      "category": "composer-discovery",
+      "message": "Discovered 1 composer services, 9 API routes, 11 schemas, 19 UI components"
+    },
+    {
+      "findingId": "f947d9e8-cce7-4ef5-8fb7-889218ac43b1",
+      "severity": "info",
+      "category": "dependencies-discovery",
+      "message": "Built dependency graph with 18 nodes and 15 workspace dependency edges"
+    },
+    {
+      "findingId": "4d519409-6157-415b-9a79-8ec6fa836342",
+      "severity": "info",
+      "category": "tests-discovery",
+      "message": "Discovered 6 unit test suites, 0 integration test suites, 1 E2E test suites"
+    }
+  ],
+  "canonicalHash": "fa0c6182d2edc6599aa5eb69030201881cf81517b7fd6961c7eaf60b1ef5092e"
+}

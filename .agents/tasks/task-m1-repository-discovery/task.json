@@ -1,0 +1,14 @@
+{
+  "task_id": "task-m1-repository-discovery",
+  "task_description": "M1 Repository Discovery: Build automated discovery system for 12 apps, 21 packages, 3 services, 18 Educational Block Families (133 versions), Tutorial Composer, dependencies, and test infrastructure. Generate deterministic repository snapshots with evidence traceability.",
+  "status": "pending",
+  "feature_order": [
+    "FEAT-001",
+    "FEAT-002",
+    "FEAT-003",
+    "FEAT-004",
+    "FEAT-005",
+    "FEAT-006"
+  ],
+  "blocked_reason": null
+}
