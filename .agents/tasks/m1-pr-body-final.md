@@ -1,7 +1,8 @@
 ## M1 Repository Discovery — Phase 5–6 Closure
 
-**Status:** ✅ READY_FOR_MERGE  
-**All requirements satisfied. V9 determinism blocker resolved.**
+**Status:** ✅ READY_FOR_HAA_REVIEW  
+**HAA Approval:** REQUIRED before merge  
+**All technical requirements satisfied. V9 determinism blocker resolved.**
 
 ### Evidence Summary
 | Item | Value |

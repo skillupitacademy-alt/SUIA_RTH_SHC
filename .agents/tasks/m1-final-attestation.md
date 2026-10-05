@@ -5,7 +5,7 @@
 **Package:** `@quiz/project-llm-discovery` v1.0.0  
 **Branch:** `m1-repository-discovery`  
 **HEAD:** `d597ba2c3888ac799f0ab94b5f6df86fda5940ea`  
-**Status:** ✅ READY_FOR_MERGE (All blockers resolved)  
+**Status:** ✅ READY_FOR_HAA_REVIEW (Technical implementation complete; requires HAA approval)  
 
 ---
 
