@@ -207,7 +207,7 @@ export async function scanBlocks(
   }
 
   // Step 4: Cross-reference for VERIFIED blocks
-  const verifiedBlocks = crossReferenceBlocks(implemented, rendered, documented);
+  const verifiedBlocks = await crossReferenceBlocks(implemented, rendered, documented, adapter);
   verified.push(...verifiedBlocks);
 
   // Step 5: Detect discrepancies
@@ -393,21 +393,130 @@ function parseRendererComponent(filePath: string): BlockRenderer | null {
 }
 
 /**
- * Cross-reference implemented and rendered blocks for VERIFIED status
+ * Check runtime registration in TutorialBlockRenderer.tsx
  * 
- * VERIFIED = documented + type definition + renderer exists + UBRC compliant
+ * Parses the switch statement to find actual dispatch cases like:
+ *   case 'introduction':
+ *   case 'code':
+ *   case 'heading':
  * 
- * Current implementation checks: documented (in registry) + type (implemented) + renderer (component exists).
- * Future work: REGISTERED (check TutorialBlockRenderer registry), UBRC (data-block-version attribute), TESTED (test coverage).
+ * Returns Set of registered block types that have runtime dispatch handlers.
  * 
- * EXCLUSIONS:
- * - S1 (SummaryBlock): Has type + renderer but missing UBRC data-block-version attribute
+ * This is stronger evidence than component file existence - it proves the
+ * block can actually be rendered at runtime via the dispatcher.
  */
-function crossReferenceBlocks(
+async function checkRuntimeRegistration(
+  adapter: RepositoryAdapter
+): Promise<Set<string>> {
+  const registered = new Set<string>();
+
+  try {
+    if (!(await adapter.fileExists(TUTORIAL_BLOCK_RENDERER_PATH))) {
+      return registered;
+    }
+
+    const content = await adapter.readFile(TUTORIAL_BLOCK_RENDERER_PATH);
+
+    // Match case statements in the switch block:
+    // case 'heading':
+    // case 'paragraph':
+    // case 'code': {
+    const caseRegex = /case\s+['"]([^'"]+)['"]\s*:/g;
+    let match;
+
+    while ((match = caseRegex.exec(content)) !== null) {
+      const blockType = match[1];
+      if (blockType !== undefined && blockType !== 'default') {
+        registered.add(blockType);
+      }
+    }
+  } catch (error) {
+    // If file doesn't exist or can't be read, return empty set
+    // Don't throw - this is discovery, not validation
+  }
+
+  return registered;
+}
+
+/**
+ * Derive verification level from evidence predicates
+ * 
+ * Each level requires all previous predicates to pass:
+ * - DISCOVERED: Base state (always true if we're examining it)
+ * - IMPLEMENTED: implemented = true
+ * - RENDERED: implemented + rendered = true
+ * - REGISTERED: implemented + rendered + registered = true
+ * - TESTED: implemented + rendered + registered + tested = true
+ * - VERIFIED: documented + implemented + rendered + registered + tested = true
+ * 
+ * Note: documented is only required for VERIFIED (the highest level).
+ * This allows tracking implementation progress for blocks not yet documented.
+ */
+function deriveVerificationLevel(evidence: {
+  documented: boolean;
+  implemented: boolean;
+  rendered: boolean;
+  registered: boolean;
+  tested: boolean;
+}): VerificationLevel {
+  // Check levels from highest to lowest
+  if (
+    evidence.documented &&
+    evidence.implemented &&
+    evidence.rendered &&
+    evidence.registered &&
+    evidence.tested
+  ) {
+    return 'VERIFIED';
+  }
+
+  if (
+    evidence.implemented &&
+    evidence.rendered &&
+    evidence.registered &&
+    evidence.tested
+  ) {
+    return 'TESTED';
+  }
+
+  if (evidence.implemented && evidence.rendered && evidence.registered) {
+    return 'REGISTERED';
+  }
+
+  if (evidence.implemented && evidence.rendered) {
+    return 'RENDERED';
+  }
+
+  if (evidence.implemented) {
+    return 'IMPLEMENTED';
+  }
+
+  return 'DISCOVERED';
+}
+
+/**
+ * Cross-reference implemented and rendered blocks for verification status
+ * 
+ * Evidence-driven verification:
+ * - documented: Parsed from PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md (not assumed)
+ * - implemented: Type definition found in content-blocks.ts
+ * - rendered: Component file exists in blocks/ directory
+ * - registered: Runtime dispatch case found in TutorialBlockRenderer.tsx
+ * - tested: Test coverage exists (M1 scope: always false, deferred to M2)
+ * 
+ * Verification levels (DISCOVERED → IMPLEMENTED → RENDERED → REGISTERED → TESTED → VERIFIED)
+ * are derived from evidence predicates via deriveVerificationLevel().
+ * 
+ * M1 scope limitations:
+ * - UBRC compliance check is deferred to M2
+ * - Test coverage detection is deferred to M2 (tested always false)
+ */
+async function crossReferenceBlocks(
   implemented: BlockImplementation[],
   rendered: BlockRenderer[],
-  documented: BlockFamilyDoc[]
-): BlockVerification[] {
+  documented: BlockFamilyDoc[],
+  adapter: RepositoryAdapter
+): Promise<BlockVerification[]> {
   const verified: BlockVerification[] = [];
 
   // Build set of documented versions for cross-reference
@@ -418,28 +527,38 @@ function crossReferenceBlocks(
     }
   }
 
-  for (const impl of implemented) {
-    // Check if renderer exists for this block type
-    const hasRenderer = rendered.some(r => r.blockType === impl.type);
-    
-    // Check if documented in registry
-    const isDocumented = impl.version !== undefined && documentedVersions.has(impl.version);
-    
-    // VERIFIED requires both documented AND rendered
-    // Future: add REGISTERED, UBRC, TESTED checks
-    const isVerified = isDocumented && hasRenderer;
+  // Get runtime registered block types from TutorialBlockRenderer.tsx
+  const registeredTypes = await checkRuntimeRegistration(adapter);
 
-    // Only add to verified list if criteria met
-    if (isVerified && impl.version !== undefined) {
-      verified.push({
-        blockType: impl.type,
-        version: impl.version,
-        documented: isDocumented,
-        implemented: true,
-        rendered: hasRenderer,
-        tested: false,
-      });
-    }
+  for (const impl of implemented) {
+    // Gather evidence
+    const hasRenderer = rendered.some(r => r.blockType === impl.type);
+    const isRegistered = registeredTypes.has(impl.type);
+    const isDocumented = impl.version !== undefined && documentedVersions.has(impl.version);
+    const isTested = false; // M1 scope: test coverage detection deferred to M2
+
+    const evidence = {
+      documented: isDocumented,
+      implemented: true,
+      rendered: hasRenderer,
+      registered: isRegistered,
+      tested: isTested,
+    };
+
+    const level = deriveVerificationLevel(evidence);
+
+    // Add all implemented blocks to verified list with their actual verification level
+    // This allows tracking partial implementation states
+    verified.push({
+      blockType: impl.type,
+      version: impl.version,
+      documented: isDocumented,
+      implemented: true,
+      rendered: hasRenderer,
+      registered: isRegistered,
+      tested: isTested,
+      verificationLevel: level,
+    });
   }
 
   return verified;
