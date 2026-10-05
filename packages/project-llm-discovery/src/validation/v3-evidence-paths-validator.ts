@@ -62,7 +62,9 @@ export async function validateEvidencePaths(
       }
     } else {
       // Path exists - verify content hash for files (not directories)
-      if (evidence.contentHash !== '') {
+      // Skip hash verification for directories (contentHash is empty string by contract)
+      // and for any evidence kind that is explicitly a directory
+      if (evidence.contentHash !== '' && evidence.kind !== 'directory') {
         const currentHash = await adapter.getFileHash(evidence.path);
         if (currentHash !== evidence.contentHash) {
           warnings.push({

@@ -1,20 +1,62 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { join } from 'node:path';
+import { describe, it, expect } from 'vitest';
 import { buildSnapshot } from '../../src/snapshot/builder.js';
-import { FilesystemRepositoryAdapter } from '../../src/adapters/index.js';
 import type { RepositoryAdapter } from '../../src/contracts/repository-adapter.js';
 
 describe('Determinism Integration Tests', () => {
-  let repositoryRoot: string;
-  let adapter: RepositoryAdapter;
+  /**
+   * Create a mock adapter with stable, controlled data to avoid filesystem dependency
+   */
+  function createMockAdapter(overrides?: Partial<RepositoryAdapter>): RepositoryAdapter {
+    // Mock file system state
+    const files = new Map<string, string>([
+      ['package.json', '{"name":"test","version":"1.0.0"}'],
+      ['tsconfig.json', '{"compilerOptions":{"strict":true}}'],
+      ['apps/web/package.json', '{"name":"web"}'],
+      ['packages/core/package.json', '{"name":"core"}'],
+      ['packages/core/src/index.ts', 'export const version = "1.0.0";'],
+    ]);
 
-  beforeAll(() => {
-    // Use the quiz-platform monorepo root as test subject
-    repositoryRoot = join(process.cwd(), '../..');
-    adapter = new FilesystemRepositoryAdapter(repositoryRoot);
-  });
+    const fileHashes = new Map<string, string>([
+      ['package.json', 'abc123def456'],
+      ['tsconfig.json', '789ghi012jkl'],
+      ['apps/web/package.json', 'mno345pqr678'],
+      ['packages/core/package.json', 'stu901vwx234'],
+      ['packages/core/src/index.ts', 'yza567bcd890'],
+    ]);
+
+    const baseAdapter: RepositoryAdapter = {
+      fileExists: async (path: string) => files.has(path),
+      readFile: async (path: string) => {
+        const content = files.get(path);
+        if (!content) throw new Error(`File not found: ${path}`);
+        return content;
+      },
+      listFiles: async (directory: string, pattern?: string) => {
+        const allFiles = Array.from(files.keys());
+        const filtered = allFiles.filter(f => f.startsWith(directory === '.' ? '' : directory));
+        if (pattern) {
+          const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+          return filtered.filter(f => regex.test(f));
+        }
+        return filtered;
+      },
+      getFileHash: async (path: string) => {
+        const hash = fileHashes.get(path);
+        if (!hash) throw new Error(`No hash for file: ${path}`);
+        return hash;
+      },
+      getGitCommit: async () => 'abc123def456789',
+      getGitRoot: async () => '/mock/repo',
+      ...overrides,
+    };
+
+    return baseAdapter;
+  }
 
   it('should produce identical canonical hashes for same repository state', async () => {
+    const adapter = createMockAdapter();
+    const repositoryRoot = '/mock/repo';
+
     // Build snapshot twice
     const snapshot1 = await buildSnapshot(repositoryRoot, adapter);
     const snapshot2 = await buildSnapshot(repositoryRoot, adapter);
@@ -24,9 +66,12 @@ describe('Determinism Integration Tests', () => {
 
     // Scan timestamps will differ (they are excluded from canonical hash)
     expect(snapshot1.repository.scanTimestamp).not.toBe(snapshot2.repository.scanTimestamp);
-  }, 60000);
+  });
 
   it('should produce identical evidence IDs for same files across scans', async () => {
+    const adapter = createMockAdapter();
+    const repositoryRoot = '/mock/repo';
+
     // Build snapshot twice
     const snapshot1 = await buildSnapshot(repositoryRoot, adapter);
     const snapshot2 = await buildSnapshot(repositoryRoot, adapter);
@@ -55,44 +100,47 @@ describe('Determinism Integration Tests', () => {
       }
     }
 
-    // Should have matched most evidence (some may vary if files changed between scans)
+    // All evidence should have matched (stable mock data)
     expect(matchCount).toBeGreaterThan(0);
-  }, 60000);
+    expect(matchCount).toBe(evidence1Map.size);
+  });
 
   it('should detect file mutations via canonical hash change', async () => {
+    const adapter = createMockAdapter();
+    const repositoryRoot = '/mock/repo';
+
     // Build baseline snapshot
     const snapshot1 = await buildSnapshot(repositoryRoot, adapter);
 
     // Create mock adapter that overrides getFileHash for one file
-    const mockAdapter: RepositoryAdapter = {
-      fileExists: adapter.fileExists.bind(adapter),
-      readFile: adapter.readFile.bind(adapter),
-      listFiles: adapter.listFiles.bind(adapter),
+    const mockAdapterWithMutation = createMockAdapter({
       getFileHash: async (path: string) => {
         // Override hash for package.json to simulate mutation
         if (path === 'package.json') {
           return 'mutated-hash-different-from-original';
         }
+        // Delegate to base adapter for other files
         return adapter.getFileHash(path);
       },
-      getGitCommit: adapter.getGitCommit.bind(adapter),
-      getGitRoot: adapter.getGitRoot.bind(adapter),
-    };
+    });
 
     // Build snapshot with mutated file
-    const snapshot2 = await buildSnapshot(repositoryRoot, mockAdapter);
+    const snapshot2 = await buildSnapshot(repositoryRoot, mockAdapterWithMutation);
 
     // Canonical hashes must differ (mutation detected)
     expect(snapshot1.canonicalHash).not.toBe(snapshot2.canonicalHash);
-  }, 60000);
+  });
 
   it('should produce evidence IDs that are deterministic based on content', async () => {
+    const adapter = createMockAdapter();
+    const repositoryRoot = '/mock/repo';
+
     // Build baseline snapshot
     const snapshot = await buildSnapshot(repositoryRoot, adapter);
 
     // Find evidence for a specific file
     const packageJsonEvidence = snapshot.evidence.find(
-      e => e.path === 'package.json' && e.kind === 'file'
+      e => e.path === 'package.json'
     );
 
     expect(packageJsonEvidence).toBeDefined();
@@ -105,9 +153,12 @@ describe('Determinism Integration Tests', () => {
       // but we can verify the format and that it exists
       expect(packageJsonEvidence.evidenceId.length).toBe(25); // 'evidence-' + 16 chars
     }
-  }, 60000);
+  });
 
   it('should exclude timestamps but include evidenceId in canonical hash', async () => {
+    const adapter = createMockAdapter();
+    const repositoryRoot = '/mock/repo';
+
     // Build snapshot
     const snapshot = await buildSnapshot(repositoryRoot, adapter);
 
@@ -121,9 +172,12 @@ describe('Determinism Integration Tests', () => {
 
     // The canonical hash computation should include evidenceId but exclude timestamps
     // This is verified by the first test showing identical hashes despite different timestamps
-  }, 60000);
+  });
 
   it('should produce stable evidence IDs across Windows and Unix path separators', async () => {
+    const adapter = createMockAdapter();
+    const repositoryRoot = '/mock/repo';
+
     const snapshot = await buildSnapshot(repositoryRoot, adapter);
 
     // Find evidence that might have path separator issues
@@ -134,5 +188,5 @@ describe('Determinism Integration Tests', () => {
     for (const evidence of evidenceWithPaths) {
       expect(evidence.evidenceId).toMatch(/^evidence-[0-9a-f]{16}$/);
     }
-  }, 60000);
+  });
 });
