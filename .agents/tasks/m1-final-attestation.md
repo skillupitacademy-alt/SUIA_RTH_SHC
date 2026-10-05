@@ -1,10 +1,11 @@
 # M1 Repository Discovery — Final Attestation
 
-**Date:** 2026-10-05  
+**Date:** 2025-01-29  
 **Milestone:** M1 Repository Discovery  
 **Package:** `@quiz/project-llm-discovery` v1.0.0  
 **Branch:** `m1-repository-discovery`  
-**Status:** ✅ COMPLETE AND VERIFIED  
+**HEAD:** `156df82701b6a0e63b24a19e3b35be854493e730`  
+**Status:** ⚠️ READY_FOR_HAA_REVIEW (V9 determinism blocker)  
 
 ---
 
@@ -12,28 +13,33 @@
 
 ### Test Execution
 **Command:** `pnpm --filter @quiz/project-llm-discovery test`  
-**Date:** 2026-10-05 16:45:44  
-**Duration:** 20.58s  
+**Date:** 2025-01-29  
+**Duration:** 20.10s  
 
 **Results:**
-- **Test Files:** 24 passed (24)
-- **Tests:** 136 passed (136)
+- **Test Files:** 28 passed (28)
+- **Tests:** 205 passed (205)
 - **Pass Rate:** 100%
 - **Status:** ✅ ALL TESTS PASS
 
+**Note:** Test count increased from 200 (Phase 4) to 205 (Phase 5), indicating additional test coverage was added during Phase 4 implementation.
+
 ### Build Verification
-**Command:** `pnpm --filter @quiz/project-llm-discovery build`  
-**Result:** No build script required (TypeScript library)  
+**Command:** `npx tsc --noEmit`  
+**Date:** 2025-01-21  
+**Result:** Exit code 0 — TypeScript compilation succeeded with no errors  
 **Status:** ✅ VERIFIED
 
 ---
 
 ## Canonical Hash
 
-**Source:** `e:\onlinewebsites\quiz-platform/.agents/tasks/m1-snapshot-test.json`  
-**Canonical Hash:** `fa0c6182d2edc6599aa5eb69030201881cf81517b7fd6961c7eaf60b1ef5092e`  
+**Source:** `.agents/tasks/m1-snapshot-final.json`  
+**HEAD SHA:** `156df82701b6a0e63b24a19e3b35be854493e730`  
+**Canonical Hash:** `3c0c4b11be766809572b7a63a1b6f4b2beaa105e23e47417ae9563f69558c8b0`  
 **Format:** 64-character SHA-256 hex string  
-**Status:** ✅ VALID
+**Determinism Status:** ❌ FAIL — V9 validator detected non-deterministic snapshot generation  
+**Details:** Running snapshot generation twice produced different hashes (see V9 finding below)
 
 ---
 
@@ -63,23 +69,28 @@ cf0ceff7 feat(m1): add @quiz/project-llm-discovery package scaffold with TypeScr
 
 ## Determinism Statement
 
-**DETERMINISM PROVEN:** `snapshot1.canonicalHash === snapshot2.canonicalHash`
+**DETERMINISM STATUS:** ❌ FAIL — Non-deterministic snapshot generation detected by V9 validator
 
-**Test:** `test-determinism-proof.test.ts`  
+**Test:** V9 validator regenerates snapshot and compares canonical hashes  
 **Method:**
-1. Run `buildSnapshot()` twice on the same repository commit
-2. Assert `snapshot1.canonicalHash === snapshot2.canonicalHash`
-3. Assert deep equality of all data fields (excluding timestamps)
+1. Run `buildSnapshot()` on repository at HEAD
+2. Run `buildSnapshot()` again on same HEAD
+3. Compare `canonicalHash` values
 
-**Result:** ✅ PASS
+**Result:** ❌ FAIL — Different hashes produced
 
-**Property:** Same repository `commitSha` → same `canonicalHash`
+**First hash:** `3c0c4b11be766809572b7a63a1b6f4b2beaa105e23e47417ae9563f69558c8b0`  
+**Second hash:** `6e5c778798cee0531e784161ae05973a6dc6bca256b83f8cfc5feab93ee242bd`
 
-**Mechanism:**
-- Exclude `scanTimestamp` from hash calculation (varies between runs)
-- Include `commitSha` in hash calculation (tracks repository state)
-- Sort all object keys before JSON serialization (stable order)
-- Use SHA-256 for cryptographic integrity
+**Expected:** Same repository `commitSha` → same `canonicalHash`  
+**Actual:** Same repository `commitSha` → different `canonicalHash`
+
+**Root Cause:** Despite Phase 4 implementing deterministic evidence IDs, non-deterministic elements remain in the snapshot generation pipeline. Likely causes:
+- Evidence collection order varies between runs (filesystem traversal)
+- Evidence arrays not sorted before serialization
+- Other non-canonical data leaking into hash
+
+**Blocker Status:** This is a **BLOCKER** for M1 merge approval per original requirements.
 
 ---
 
@@ -87,20 +98,39 @@ cf0ceff7 feat(m1): add @quiz/project-llm-discovery package scaffold with TypeScr
 
 All 9 validation checks implemented and operational:
 
-| Check | Purpose | Status |
-|-------|---------|--------|
-| **V1: Schema** | Validate snapshot structure with Zod | ✅ PASS |
-| **V2: Reference Integrity** | Verify cross-references (blocks, composer) | ✅ PASS |
-| **V3: Evidence Paths** | Confirm evidence file paths exist | ✅ PASS |
-| **V4: Block Consistency** | Verify 5-state model preserved (documented, implemented, rendered, verified, discrepancies) | ✅ PASS |
-| **V5: Composer** | Assert exactly 1 Composer service | ✅ PASS |
-| **V6: Dependency Graph** | Detect circular dependencies | ✅ PASS |
-| **V7: Test References** | Validate test file paths | ✅ PASS |
-| **V8: Evidence Completeness** | Check all entities have evidence | ✅ PASS |
-| **V9: Determinism** | Verify hash stability | ✅ PASS |
+| Check | Purpose | Status | Notes |
+|-------|---------|--------|-------|
+| **V1: Schema** | Validate snapshot structure with Zod | ✅ PASS | Schema validation passed |
+| **V2: Reference Integrity** | Verify cross-references (blocks, composer) | ✅ PASS | 9 informational API warnings (acceptable) |
+| **V3: Evidence Paths** | Confirm evidence file paths exist | ✅ PASS | All evidence paths validated |
+| **V4: Block Consistency** | Verify 5-state model preserved | ✅ PASS | Block consistency verified |
+| **V5: Composer** | Assert exactly 1 Composer service | ✅ PASS | Single composer confirmed |
+| **V6: Dependency Graph** | Detect circular dependencies | ✅ PASS | Acyclic graph confirmed |
+| **V7: Test References** | Validate test file paths | ✅ PASS | 2 missing config warnings (M2 scope) |
+| **V8: Evidence Completeness** | Check all entities have evidence | ✅ PASS | Evidence completeness validated |
+| **V9: Determinism** | Verify hash stability | ❌ FAIL | **DETERMINISM_VIOLATION (BLOCKER)** |
 
-**Overall Validation Result:** `valid: true`  
-**Status:** ✅ ALL VALIDATORS PASS
+**Overall Validation Result:** `FAIL (1 error, 11 warnings)`  
+**Status:** ❌ V9 BLOCKER PRESENT
+
+### Critical V9 Finding
+
+**Code:** `DETERMINISM_VIOLATION`  
+**Severity:** BLOCKER  
+**Message:** Snapshot canonical hash is not deterministic. Same repository state produced different hashes.
+
+**Details:**
+- First hash: `3c0c4b11be766809572b7a63a1b6f4b2beaa105e23e47417ae9563f69558c8b0`
+- Second hash: `6e5c778798cee0531e784161ae05973a6dc6bca256b83f8cfc5feab93ee242bd`
+
+**Impact:** The snapshot generation process is non-deterministic, meaning running the scanner twice on the same repository state produces different canonical hashes. This violates a core M1 requirement.
+
+**Root Cause:** The deterministic evidence ID implementation (Phase 4) was intended to resolve this, but the snapshot generation pipeline still contains non-deterministic elements, likely:
+1. Non-deterministic ordering of evidence from filesystem traversal
+2. Evidence arrays not sorted before hash computation
+3. Timestamps or non-canonical data leaking into hash computation
+
+**Recommendation:** Investigation required before merge approval.
 
 ---
 
@@ -108,17 +138,28 @@ All 9 validation checks implemented and operational:
 
 **Legacy Fixture:** `apps/skillhubcore-admin/src/lib/project-llm/projectLlmRepositoryIntelligence.ts`
 
-**Reconciliation Test:** `fixture-reconciliation.test.ts`
+**Reconciliation Test:** Comparison between legacy fixture and snapshot
 
 **Results:**
 
-| Claim | Legacy Value | Snapshot Value | Status |
-|-------|--------------|----------------|--------|
-| **Verified Implementations** | I1, C1, D1 (3 blocks) | ≥1 verified | ✅ MATCH |
-| **Incomplete Implementations** | S1 (1 block) | Implemented but not verified | ✅ MATCH |
-| **Planned Families** | 14 families | Documented but not implemented | ✅ MATCH |
+| Category | Status | Details |
+|----------|--------|---------|
+| **Verified Implementations** | ✅ MATCH (14) | 14 comparisons matched between legacy and snapshot |
+| **Discrepancies** | ⚠️ 2 FOUND | I1 and S1 discrepancies (informational) |
 
-**Result:** ✅ ALL RECONCILIATION CHECKS MATCH
+**Discrepancy Details:**
+
+1. **I1 (IntroductionBlock v1)**
+   - Legacy: `RUNTIME_INTEGRATED` (verified)
+   - Snapshot: Not found in `blocks.verified[]`
+   - Note: Block does not meet current VERIFIED criteria or evidence not found
+
+2. **S1 (Summary block)**
+   - Legacy: `IMPLEMENTED` (incomplete)
+   - Snapshot: Not found in snapshot
+   - Note: Block removed/refactored or not detected by scanner
+
+**Assessment:** The 2 discrepancies are informational only. New snapshot is source of truth per M1 specification.
 
 ---
 
@@ -148,7 +189,7 @@ All 9 validation checks implemented and operational:
 All M1 critical constraints satisfied:
 
 ### Governance (CONTRIBUTING.md)
-- ✅ No `any` types (V1 validator corrected to use strict Zod schemas)
+- ✅ No `any` types (V1 validator uses strict Zod schemas)
 - ✅ Strict boolean checks
 - ✅ Type/value import separation
 - ✅ No `console.log` in production code
@@ -159,19 +200,19 @@ All M1 critical constraints satisfied:
 
 ### Architecture (M1 Specification)
 - ✅ No LLM in core discovery
-- ✅ 5-state block model preserved (documented, implemented, rendered, verified, discrepancies tracked separately)
+- ✅ 5-state block model preserved
 - ✅ Repository adapter abstraction
-- ✅ Evidence traceability
-- ✅ Deterministic hashing
+- ✅ Evidence traceability (deterministic IDs implemented)
+- ❌ Deterministic hashing (V9 FAIL — non-deterministic snapshot)
 - ✅ Single Composer assertion
 - ✅ Legacy fixture informational only
 
 ### Testing
-- ✅ Unit tests (24 test files)
-- ✅ Integration tests
-- ✅ Determinism tests
-- ✅ All tests pass (136/136)
+- ✅ Unit tests (28 test files)
+- ✅ Integration tests (6 files discovered)
+- ✅ All tests pass (205/205)
 - ✅ Coverage >80%
+- ❌ Determinism validation (V9 validator detected failure)
 
 ---
 
@@ -201,39 +242,97 @@ All M1 critical constraints satisfied:
 ### Branch Status
 - **Branch:** `m1-repository-discovery`
 - **Base:** `main`
-- **Commits Ahead:** 9
-- **Status:** Ready for merge
+- **HEAD:** `156df82701b6a0e63b24a19e3b35be854493e730`
+- **Base SHA:** `516b7bf62faa7672412d5ec543d78820116dd238`
+- **Status:** Awaiting HAA review
 
 ### Pre-Merge Checklist
-- ✅ All tests pass (136/136)
-- ✅ All validators pass (V1-V9)
-- ✅ Determinism proven
-- ✅ Fixture reconciliation complete
+- ✅ All tests pass (205/205 across 28 files)
+- ✅ V1-V8 validators pass
+- ❌ V9 determinism validator fails (BLOCKER)
+- ⚠️ Fixture reconciliation: 2 informational discrepancies
 - ✅ Documentation complete
-- ✅ No uncommitted changes (verified below)
 - ✅ No lint errors
 - ✅ No type errors
-- ✅ Canonical hash verified
+- ⚠️ Canonical hash: non-deterministic generation detected
 
 ### Merge Recommendation
-**APPROVED FOR MERGE TO MAIN**
+**READY_FOR_HAA_REVIEW — Determinism blocker requires HAA decision**
 
-This branch is ready for code review and merge. All M1 deliverables are complete, verified, and tested.
+This branch has completed Phase 1-4 implementation with all P0 corrections applied. Tests pass, TypeScript compiles, and V1-V8 validators pass. However, V9 determinism validation detected a **BLOCKER**: snapshot generation is non-deterministic despite Phase 4 deterministic evidence ID implementation.
+
+**HAA must decide:**
+1. Investigate and fix determinism issue before merge, OR
+2. Accept non-deterministic snapshots with documented rationale and update M1 requirements, OR
+3. Defer merge pending investigation
+
+**This PR is NOT self-certified and does NOT claim merge authority.**
 
 ---
 
 ## Final Declaration
 
-**M1 Repository Discovery milestone is COMPLETE.**
+**M1 Repository Discovery Phase 1-4 implementation is COMPLETE with one critical blocker.**
 
-All deliverables implemented, all tests passing, all constraints satisfied, all success criteria achieved. The `@quiz/project-llm-discovery` package v1.0.0 is production-ready for M2 milestone work.
+**Phase 1-4 Achievements:**
+- ✅ All P0 defects corrected (repository errors, D6 discovery, V1 schemas, D3 verification)
+- ✅ Deterministic evidence IDs implemented
+- ✅ V3/V8 validators improved
+- ✅ 205/205 tests passing (28 test files)
+- ✅ TypeScript compilation clean
+- ✅ V1-V8 validators passing
 
-**Ready for code review and merge to `main`.**
+**Critical Outstanding Issue:**
+- ❌ V9 determinism validation: Snapshot generation produces different canonical hashes on repeated runs despite deterministic evidence ID implementation
+
+**Status:** READY_FOR_HAA_REVIEW  
+**Certification:** NOT self-certified — HAA approval required  
+**Merge Authority:** NONE claimed  
+
+**HAA must review the V9 determinism blocker and decide on path forward before merge.**
 
 ---
 
-**Attestation Author:** AI Agent (wf-coder)  
-**Attestation Date:** 2026-10-05  
-**Workflow:** `wf_61879e7e0a571315`  
-**Step:** `finalize`  
+**Machine-Readable Evidence Block:**
+
+```json
+{
+  "headSha": "156df82701b6a0e63b24a19e3b35be854493e730",
+  "baseSha": "516b7bf62faa7672412d5ec543d78820116dd238",
+  "tests": { "files": 28, "passed": 205 },
+  "snapshot": {
+    "commitSha": "156df82701b6a0e63b24a19e3b35be854493e730",
+    "canonicalHash": "3c0c4b11be766809572b7a63a1b6f4b2beaa105e23e47417ae9563f69558c8b0"
+  },
+  "validators": {
+    "V1": "PASS",
+    "V2": "PASS",
+    "V3": "PASS",
+    "V4": "PASS",
+    "V5": "PASS",
+    "V6": "PASS",
+    "V7": "PASS",
+    "V8": "PASS",
+    "V9": "FAIL"
+  },
+  "determinism": "FAIL",
+  "typescript": "PASS",
+  "status": "READY_FOR_HAA_REVIEW",
+  "certified": false,
+  "certifiedBy": null,
+  "m1Limitations": [
+    "UBRC validation: M2 scope",
+    "Test coverage discovery: M2 scope",
+    "M1 VERIFIED = evidence-driven discovery verification, not product certification",
+    "Snapshot determinism: BLOCKER — V9 validation failure"
+  ]
+}
+```
+
+---
+
+**Attestation Author:** AI Agent (workflow step)  
+**Attestation Date:** 2025-01-29  
+**Workflow:** `wf_9b5c6ee7a7ad458a`  
+**Phase:** Phase 5-6 Closure  
 

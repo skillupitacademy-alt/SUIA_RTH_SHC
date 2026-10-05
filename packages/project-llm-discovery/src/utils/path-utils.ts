@@ -57,11 +57,16 @@ export function generateDeterministicEvidenceId(
   // Normalize the path for cross-platform consistency
   const normalizedPath = normalizePath(path);
   
-  // Construct the input string for hashing
-  const input = kind + normalizedPath + (symbol ?? '') + contentHash;
+  // Construct canonical JSON for hashing
+  const canonicalInput = JSON.stringify({
+    kind,
+    path: normalizedPath,
+    symbol: symbol ?? null,
+    contentHash,
+  });
   
   // Compute SHA-256 hash
-  const hash = createHash('sha256').update(input).digest('hex');
+  const hash = createHash('sha256').update(canonicalInput).digest('hex');
   
   // Return evidence ID with first 16 hex characters
   return `evidence-${hash.slice(0, 16)}`;

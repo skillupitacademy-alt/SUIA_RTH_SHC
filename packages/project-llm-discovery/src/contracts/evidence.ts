@@ -72,6 +72,7 @@ export interface Evidence {
     | 'test-directory'
     | 'test-file'
     | 'type-definition';
+  symbol?: string; // explicit identity component used in deterministic ID
   claim: string;
   locator: string;
   contentHash: string;

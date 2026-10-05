@@ -1,37 +1,49 @@
 # M1 Closure Matrix
 
-Generated against HEAD: 08b8958ecc2051379b7c0acead0a6d175f0f0a2c
-Status: CORRECTION_REQUIRED — not merge-ready
+Generated against HEAD: 156df82701b6a0e63b24a19e3b35be854493e730
+Status: PHASE_5_COMPLETE — awaiting HAA review
 
-## P0 — Must Fix Before Merge
+## Phase 1-4 Implementation Results
 
-| ID | Finding | Severity | Location | Fix Required |
-|----|---------|----------|----------|--------------|
-| P0-1 | Silent repository-level errors swallowed in scanners — errors do not surface to callers | High | D1-D6 scanners | Re-throw or return structured errors so callers can distinguish failure from empty result |
-| P0-2 | D6 integration-suite discovery returns 0 despite integration test files existing under `__tests__/integration/` | High | D6 scanner | Fix directory-traversal path matching to detect `__tests__/integration/` entries |
-| P0-3 | V1 uses `z.any()` for nearly all major snapshot structures, contradicting governance claim of "no any types" | High | v1-schema-validator.ts | Replace `z.any()` with typed Zod schemas matching the interfaces in `snapshot.ts` |
-| P0-4 | D3 "VERIFIED" flag is set based only on type-definition + renderer presence; UBRC compliance is not checked; `documented: true` is assumed | High | D3 block scanner | Implement actual UBRC compliance check or change flag name/semantics to match what is actually verified |
-| P0-5 | Stale attestation artifacts reference SHA `2973c399` and placeholder dates as current | Medium | `.agents/tasks/` | Mark stale or delete; update baseline to CURRENT_HEAD (done in steps 1–2 above) |
-| P0-6 | Commit-count discrepancy: attestation says 9 commits, GitHub reports 10 | Medium | Attestation docs | Update attestation to accurately reflect total vs feature commit counts |
+| Gate | Item | Status | Evidence |
+|------|------|--------|----------|
+| P0-1 | Repository errors surfaced | ✅ PASS | FilesystemRepositoryAdapter error handling + tests |
+| P0-2 | D6 integration discovery | ✅ PASS | Snapshot shows 6 integration test files discovered |
+| P0-3 | V1 schemas (no z.any()) | ✅ PASS | V1 validator uses typed schemas |
+| P0-4 | D3 verification evidence-driven | ✅ PASS | D3 checks runtime registration, verificationLevel logic |
+| Evidence | Evidence determinism | ✅ PASS | Deterministic evidence IDs implemented |
+| Validators | V1-V8 validators | ✅ PASS | All pass with 11 acceptable warnings |
+| Validators | V9 determinism | ❌ FAIL | Non-deterministic snapshot generation (BLOCKER) |
+| Build | TypeScript compilation | ✅ PASS | Exit code 0, no errors |
+| Tests | Test suite | ✅ PASS | 205/205 tests passed (28 files) |
+| Snapshot | Canonical hash | ⚠️ UNSTABLE | 3c0c4b11... (non-deterministic per V9) |
+| Docs | Phase 5-6 closure | ✅ PASS | This document and attestation updated |
 
-## P1 — Defer to M2
+## Critical Finding: V9 Determinism Failure
 
-| ID | Finding | Severity | Notes |
-|----|---------|----------|-------|
-| P1-1 | V3 missing-evidence path emits warning instead of error, allowing `valid: true` with broken evidence paths | Medium-High | Acceptable for M1 if policy explicitly states historical missing evidence is non-blocking; document the policy |
-| P1-2 | V8 evidence completeness uses keyword substring matching instead of strict one-to-one entity↔evidence binding | Medium | Hardening gap; strengthen before M2 integration workflows depend on it |
-| P1-3 | D1/D2 toolchain version detection relies on assumptions rather than executing the toolchain | Medium | Defer; document as known limitation |
-| P1-4 | D4 schema extraction is shallow; Composer/API/deep-schema analysis not implemented | Medium | Defer to M2 |
-| P1-5 | D5 dependency scope analysis incomplete — full graph not built | Low-Medium | Defer to M2 |
+**Status:** BLOCKER for merge approval  
+**Code:** `DETERMINISM_VIOLATION`  
+**Details:** Running the snapshot generator twice on the same repository state produces different canonical hashes:
+- First hash: `3c0c4b11be766809572b7a63a1b6f4b2beaa105e23e47417ae9563f69558c8b0`
+- Second hash: `6e5c778798cee0531e784161ae05973a6dc6bca256b83f8cfc5feab93ee242bd`
 
-## Merge Gates (all P0 items must be CLOSED)
+**Root cause:** Despite Phase 4 implementing deterministic evidence IDs, the snapshot generation pipeline still contains non-deterministic elements (likely evidence collection ordering from filesystem traversal).
 
-1. [ ] Silent scanner errors — structured error propagation implemented and tested
-2. [ ] D6 integration discovery — returns ≥1 for the new package's `__tests__/integration/` directory
-3. [ ] V1 `z.any()` eliminated — all major snapshot fields use typed Zod schemas
-4. [ ] D3 VERIFIED semantics — accurate flag name/semantics; UBRC check real or explicitly deferred with renamed flag
-5. [ ] Stale artifacts — all `.agents/tasks/` docs reflect CURRENT_HEAD
-6. [ ] Commit count — attestation accurately reflects 10 total / 9 feature commits
-7. [ ] TypeScript compiles without errors on `m1-repository-discovery`
-8. [ ] All existing tests pass
-9. [ ] Snapshot determinism test passes (re-run after code corrections)
+**Recommendation:** Investigation required before merge:
+1. Verify evidence array sorting before hash computation
+2. Check filesystem traversal order guarantees
+3. Confirm all timestamps excluded from canonical hash
+4. Review evidence collector for ordering stability
+
+## HAA Review Gates
+
+All gates must be validated by HAA before merge:
+
+1. [ ] V9 determinism violation resolved or accepted with documented rationale
+2. [ ] All P0 corrections verified in source code
+3. [ ] Test count increase from 200→205 explained and validated
+4. [ ] Snapshot canonical hash stability confirmed or waived
+5. [ ] Phase 1-4 implementation completeness confirmed
+6. [ ] M1 limitations documented and accepted
+7. [ ] No regression in existing functionality
+8. [ ] Documentation sync verified
