@@ -1,51 +1,21 @@
-## M1 Repository Discovery — Phase 5–6 Closure
+## M1 Repository Discovery
 
-**Status:** ✅ READY_FOR_HAA_REVIEW  
-**HAA Approval:** REQUIRED before merge  
-**All technical requirements satisfied. V9 determinism blocker resolved.**
+| Field | Value |
+|---|---|
+| Branch | `m1-repository-discovery` |
+| HEAD | `187a0ccc3b0a414222be0b43d8a9c0be39a64402` |
+| Snapshot canonicalHash | `c4c328afede726241730a490a15a065c6c685398c62419e8d1185cfb08ada101` |
+| Tests | 205/205 passing |
+| Validators | V1-V9 all PASS |
+| Status | `READY_FOR_HAA_REVIEW` |
+| HAA Approval | **REQUIRED** |
+| certified | false |
+| mergeAuthority | false |
 
-### Evidence Summary
-| Item | Value |
-|------|-------|
-| HEAD | 57d325c88839ebc8b1be7651e37811a1b3987385 |
-| Base | 516b7bf62faa7672412d5ec543d78820116dd238 |
-| Tests | 205/205 (28 files) |
-| Snapshot canonicalHash | 4b115da6babd6e21e8fc497921c1f65dcbfff4721e332fa944d3636f034f465f |
-| TypeScript | PASS |
-| V1-V9 validators | ALL PASS |
-| Snapshot determinism | PASS — array sorting eliminates traversal variance |
+### Evidence Chain
+- `snapshot.repository.commitSha` = `187a0ccc3b0a414222be0b43d8a9c0be39a64402`
+- `snapshot-run2.repository.commitSha` = `187a0ccc3b0a414222be0b43d8a9c0be39a64402`
+- Both canonical hashes identical (determinism verified)
 
-### Phase 1-4 Implementation Summary
-
-All P0 corrections from the original audit have been implemented:
-
-- ✅ **P0-1**: Repository errors now surface to callers (no silent swallowing)
-- ✅ **P0-2**: D6 integration discovery now detects integration test files (6 found)
-- ✅ **P0-3**: V1 validator uses typed Zod schemas (no z.any())
-- ✅ **P0-4**: D3 verification is evidence-driven (checks runtime registration, derives documented status)
-- ✅ **Deterministic evidence IDs**: Phase 4 implementation complete
-- ✅ **V3/V8 improvements**: Evidence validation strengthened
-- ✅ **V9 determinism**: Array sorting fix ensures stable canonical hashes
-
-### V9 Determinism Resolution
-
-**Previous issue:** Non-deterministic snapshot generation due to filesystem traversal order variance.
-
-**Root cause:** Evidence arrays were not sorted before hash computation.
-
-**Fix applied:** Modified `src/snapshot/hasher.ts` to sort all arrays by stringified content during normalization, ensuring deterministic ordering.
-
-**Verification:** 
-- Determinism integration test: PASS (identical hashes across runs)
-- V9 validator: PASS (0 errors, 0 warnings)
-- Test suite: 205/205 passing
-
-### Known M1 Limitations (by design)
-- UBRC validation: M2 scope
-- Test coverage discovery: M2 scope
-- M1 VERIFIED = evidence-driven discovery verification, not product certification
-
-### Related Documents
-- `.agents/tasks/m1-closure-matrix.md` — Gate status and resolution details
-- `.agents/tasks/m1-final-attestation.md` — Complete evidence and test results
-- `.agents/tasks/m1-phase5-validator-report.md` — Full V1-V9 validator output
+### Governance
+This PR is not self-merge authorized. HAA approval is required before merge.
