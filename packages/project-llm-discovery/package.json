@@ -1,0 +1,22 @@
+{
+  "name": "@quiz/project-llm-discovery",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "typescript": "^5.7.2",
+    "zod": "^3.24.1",
+    "@quiz/types": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18"
+  }
+}

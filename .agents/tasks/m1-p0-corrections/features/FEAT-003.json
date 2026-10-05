@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-003",
+  "type": "fix",
+  "description": "Fix P0-2: V1 schema strength. V1 uses z.any() for applications, packages, services, frameworks, workspace, buildSystem, and many other snapshot fields, violating governance 'No any types' and providing almost no validation. Replace all z.any() with proper Zod schemas matching TypeScript interfaces in src/contracts/snapshot.ts. This is the schema validator's core responsibility.",
+  "status": "pending",
+  "steps": [
+    "1. Read src/contracts/snapshot.ts interfaces: ApplicationInfo, PackageInfo, ServiceInfo, FrameworkInfo, WorkspaceInfo, BuildSystemInfo, BlockFamilyDoc, BlockImplementation, BlockRenderer, BlockVerification, BlockDiscrepancy, ComposerService, ComposerAPI, ComposerSchema, ComposerUI, DependencyNode, DependencyEdge, TestSuite. These are the target shapes for Zod schemas.",
+    "2. In v1-schema-validator.ts, define ApplicationInfoSchema = z.object({ name: z.string(), path: z.string(), type: z.string(), framework: z.string(), entrypoint: z.string() }). Match ApplicationInfo interface exactly.",
+    "3. Define PackageInfoSchema = z.object({ name: z.string(), path: z.string(), version: z.string(), dependencies: z.array(z.string()), exports: z.array(z.string()) }). Match PackageInfo interface.",
+    "4. Define ServiceInfoSchema = z.object({ name: z.string(), path: z.string(), type: z.string(), port: z.number().optional(), entrypoint: z.string() }). Match ServiceInfo interface.",
+    "5. Define FrameworkInfoSchema, WorkspaceInfoSchema, BuildSystemInfoSchema matching their interfaces. WorkspaceInfo: { manager: string, version: string, packages: string[] }. BuildSystemInfo: { tool: string, version: string, config: string }.",
+    "6. Define BlockFamilyDocSchema, BlockImplementationSchema, BlockRendererSchema, BlockVerificationSchema, BlockDiscrepancySchema matching block-related interfaces. BlockVerification: { blockType: string, version?: string, documented: boolean, implemented: boolean, rendered: boolean, tested: boolean }.",
+    "7. Define ComposerServiceSchema, ComposerAPISchema, ComposerSchemaObjSchema (rename to avoid conflict with zod Schema), ComposerUISchema. ComposerService: { name: string, path: string, methods: string[] }.",
+    "8. Define DependencyNodeSchema, DependencyEdgeSchema, TestSuiteSchema. TestSuite: { name: string, path: string, testCount: number, coverage?: { statements, branches, functions, lines all number } }.",
+    "9. Replace line 41 `applications: z.array(z.any())` with `applications: z.array(ApplicationInfoSchema)`. Replace line 42 `packages: z.array(z.any())` with `packages: z.array(PackageInfoSchema)`. Replace line 43 `services: z.array(z.any())` with `services: z.array(ServiceInfoSchema)`.",
+    "10. Replace line 47 `frameworks: z.array(z.any())` with `frameworks: z.array(FrameworkInfoSchema)`. Replace line 48 `workspace: z.any()` with `workspace: WorkspaceInfoSchema`. Replace line 49 `buildSystem: z.any()` with `buildSystem: BuildSystemInfoSchema`.",
+    "11. Replace line 52-56 blocks object z.any() arrays with proper schemas: documented: z.array(BlockFamilyDocSchema), implemented: z.array(BlockImplementationSchema), rendered: z.array(BlockRendererSchema), verified: z.array(BlockVerificationSchema), discrepancies: z.array(BlockDiscrepancySchema).",
+    "12. Replace line 59-62 composer object z.any() arrays: services: z.array(ComposerServiceSchema), apis: z.array(ComposerAPISchema), schemas: z.array(ComposerSchemaObjSchema), ui: z.array(ComposerUISchema).",
+    "13. Replace line 65-66 dependencies: nodes: z.array(DependencyNodeSchema), edges: z.array(DependencyEdgeSchema).",
+    "14. Replace line 69-71 tests: unit: z.array(TestSuiteSchema), integration: z.array(TestSuiteSchema), e2e: z.array(TestSuiteSchema).",
+    "15. Line 74 findings: z.array(z.any()) — leave as z.any() temporarily since Finding type uses discriminated union with optional fields. Add TODO comment: '// TODO: Define FindingSchema for strict validation'.",
+    "16. Create __tests__/unit/validation/v1-schema-validator.test.ts with tests: should pass valid snapshot with all fields properly typed, should fail when application missing required field (name), should fail when package.version is number instead of string, should fail when workspace is z.any() placeholder (after fix, this should be object), should include detailed Zod error path in ValidationError.",
+    "17. Update any existing integration tests that construct snapshots: ensure they provide properly typed data matching new schemas, not placeholder objects that would fail validation."
+  ],
+  "acceptance_criteria": [
+    "v1-schema-validator.ts contains zero instances of z.any() in SnapshotSchema (except findings array with TODO comment)",
+    "All major snapshot interfaces have corresponding Zod schemas: ApplicationInfo, PackageInfo, ServiceInfo, Framework, Workspace, BuildSystem, Block types, Composer types, Dependency types, TestSuite",
+    "V1 validation catches type mismatches: e.g., passing number for string field fails with clear Zod error",
+    "Type check passes: pnpm --filter @quiz/project-llm-discovery type-check",
+    "All tests pass: pnpm --filter @quiz/project-llm-discovery test including new v1-schema-validator.test.ts"
+  ],
+  "verification": [
+    "Run pnpm --filter @quiz/project-llm-discovery type-check — no errors",
+    "Run pnpm --filter @quiz/project-llm-discovery test — v1-schema-validator.test.ts passes all schema enforcement tests",
+    "Grep check: grep -c 'z\\.any()' packages/project-llm-discovery/src/validation/v1-schema-validator.ts should return 1 (only findings array) or 0 if findings also fixed"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
