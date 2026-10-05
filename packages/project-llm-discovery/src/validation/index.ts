@@ -13,6 +13,17 @@ import { validateDeterminism } from './v9-determinism-validator.js';
 
 export type { ValidationResult, ValidationError, ValidationWarning } from './validator.js';
 
+// Export individual validators (V1-V9)
+export { validateSchema } from './v1-schema-validator.js';
+export { validateReferenceIntegrity } from './v2-reference-integrity-validator.js';
+export { validateEvidencePaths } from './v3-evidence-paths-validator.js';
+export { validateBlockConsistency } from './v4-block-consistency-validator.js';
+export { validateComposer } from './v5-composer-validator.js';
+export { validateDependencyGraph } from './v6-dependency-graph-validator.js';
+export { validateTestReferences } from './v7-test-references-validator.js';
+export { validateEvidenceCompleteness } from './v8-evidence-completeness-validator.js';
+export { validateDeterminism } from './v9-determinism-validator.js';
+
 /**
  * Validate a repository snapshot using all 9 validators (V1-V9)
  * @param snapshot The snapshot to validate
