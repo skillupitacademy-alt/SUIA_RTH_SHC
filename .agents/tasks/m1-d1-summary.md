@@ -14,7 +14,8 @@
 | Deliverable | Status | Output File | Key Findings |
 |-------------|--------|-------------|--------------|
 | **D1.1 Main Repository Structure** | ✅ COMPLETE | `m1-d1-repository-structure.md` | 12 apps, 21 packages, 3 services, Composer located, Agent E confirmed, Block types found |
-| **D1.2 Documentation Inventory** | ✅ COMPLETE | `m1-d1-ils-documentation-inventory.md` | 474 .md files (138 ILS_UI_UX, 64 docs/phases, 272 .analysis), M0 canonical docs confirmed |
+| **D1.2 ILS/UI/UX Documentation** | ✅ COMPLETE | `m1-d1-ils-documentation-inventory.md` | 474 .md files (138 ILS_UI_UX, 64 docs/phases, 272 .analysis), M0 canonical docs confirmed |
+| **D1.3 Phase Documentation** | ✅ COMPLETE | `m1-d1-phases-documentation-inventory.md` | Phase evolution (Phase 1-5), MACRO 3/4, Gate documentation, M0/M1 relationship mapped |
 
 ---
 
