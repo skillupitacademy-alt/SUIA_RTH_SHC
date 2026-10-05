@@ -23,3 +23,6 @@ export type {
   TestSuite,
   RepositorySnapshot,
 } from './contracts/index.js';
+
+export { FilesystemRepositoryAdapter } from './adapters/index.js';
+export { scanRepositoryStructure, scanRuntime } from './scanners/index.js';
