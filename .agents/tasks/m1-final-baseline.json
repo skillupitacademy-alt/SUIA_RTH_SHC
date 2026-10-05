@@ -1,0 +1,13 @@
+{
+  "milestone": "M1",
+  "name": "Repository Discovery",
+  "baseBranch": "main",
+  "baseSha": "516b7bf6",
+  "headBranch": "m1-repository-discovery",
+  "headSha": "08b8958ecc2051379b7c0acead0a6d175f0f0a2c",
+  "status": "CORRECTION_REQUIRED",
+  "mergeReady": false,
+  "attestationStatus": "STALE",
+  "snapshotStatus": "STALE",
+  "reviewStatus": "REQUIRES_REVALIDATION"
+}

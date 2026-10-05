@@ -1,8 +1,10 @@
 # M1 P0 Corrections — Verification Report
 
+> **STALE — superseded as of 08b8958ecc2051379b7c0acead0a6d175f0f0a2c. Do not treat attestations here as current.**
+
 **Date:** 2024-01-XX  
 **Branch:** m1-repository-discovery  
-**Commit:** 2973c399
+**Commit:** 2973c399 (stale at time of writing)
 
 ## Executive Summary
 

@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { FilesystemRepositoryAdapter } from '../../src/adapters/filesystem-repository-adapter.js';
 import { FileNotFoundError, RepositoryAccessError, PermissionError } from '../../src/contracts/errors.js';
 
+// Node.js error interface for testing
+interface NodeError extends Error {
+  code?: string;
+  errno?: number;
+  path?: string;
+  syscall?: string;
+}
+
 // Mock the node modules
 const mockReadFile = vi.fn();
 const mockAccess = vi.fn();
@@ -45,16 +53,14 @@ describe('FilesystemRepositoryAdapter', () => {
     });
 
     it('should throw FileNotFoundError when file does not exist', async () => {
-      const error: any = new Error('File not found');
-      error.code = 'ENOENT';
+      const error = Object.assign(new Error('File not found'), { code: 'ENOENT' }) as NodeError;
       mockReadFile.mockRejectedValue(error);
 
       await expect(adapter.readFile('missing.txt')).rejects.toThrow(FileNotFoundError);
     });
 
     it('should throw PermissionError when access denied', async () => {
-      const error: any = new Error('Permission denied');
-      error.code = 'EACCES';
+      const error = Object.assign(new Error('Permission denied'), { code: 'EACCES' }) as NodeError;
       mockReadFile.mockRejectedValue(error);
 
       await expect(adapter.readFile('restricted.txt')).rejects.toThrow(PermissionError);
@@ -78,8 +84,7 @@ describe('FilesystemRepositoryAdapter', () => {
     });
 
     it('should return false when file does not exist', async () => {
-      const error: any = new Error('Not found');
-      error.code = 'ENOENT';
+      const error = Object.assign(new Error('Not found'), { code: 'ENOENT' }) as NodeError;
       mockAccess.mockRejectedValue(error);
 
       const result = await adapter.fileExists('missing.txt');
@@ -88,8 +93,7 @@ describe('FilesystemRepositoryAdapter', () => {
     });
 
     it('should throw PermissionError when access permission denied', async () => {
-      const error: any = new Error('Permission denied');
-      error.code = 'EACCES';
+      const error = Object.assign(new Error('Permission denied'), { code: 'EACCES' }) as NodeError;
       mockAccess.mockRejectedValue(error);
 
       await expect(adapter.fileExists('restricted.txt')).rejects.toThrow(PermissionError);
@@ -129,8 +133,7 @@ describe('FilesystemRepositoryAdapter', () => {
     });
 
     it('should throw error when directory not found', async () => {
-      const error: any = new Error('Directory not found');
-      error.code = 'ENOENT';
+      const error = Object.assign(new Error('Directory not found'), { code: 'ENOENT' }) as NodeError;
       mockReaddir.mockRejectedValue(error);
 
       await expect(adapter.listFiles('missing')).rejects.toThrow(FileNotFoundError);
@@ -156,8 +159,7 @@ describe('FilesystemRepositoryAdapter', () => {
     });
 
     it('should throw error when file not found', async () => {
-      const error: any = new Error('File not found');
-      error.code = 'ENOENT';
+      const error = Object.assign(new Error('File not found'), { code: 'ENOENT' }) as NodeError;
       mockReadFile.mockRejectedValue(error);
 
       await expect(adapter.getFileHash('missing.txt')).rejects.toThrow(FileNotFoundError);
