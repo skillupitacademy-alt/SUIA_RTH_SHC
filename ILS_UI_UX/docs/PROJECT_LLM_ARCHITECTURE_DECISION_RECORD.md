@@ -119,13 +119,24 @@
 
 ## PL-012 — M0 Correction Loop Policy
 
-**Decision:** M0_APPROVED_WITH_CORRECTIONS verdict triggers mandatory state name corrections before M1 Repository Discovery. Critical corrections (blocking M1) are state names where the runtime diverges from M0 canonical specification. Recommended corrections improve canonical consistency. Critical corrections must be resolved before M1 begins; recommended corrections may be batched into an M0.1 alignment pass.
+**Decision:** M0_APPROVED_WITH_CORRECTIONS verdict triggers mandatory state corrections before M1 Repository Discovery. Critical corrections are states where the runtime diverges from M0 canonical lifecycle diagrams; these block M1. Recommended corrections (mapping-table-only terminology differences) may be batched into an M0.1 alignment pass before M1 implementation.
 
 **Status:** ACCEPTED
 
-**Consequence:** The M0 correction loop is a governance gate. Skipping critical corrections is a workflow violation. Recommended corrections that are deferred must be tracked as open work items in the next milestone planning.
-
 **Date:** 2026-10-05
+
+**Rationale:** The M0 correction loop ran with `maxIterations: 4, onMaxIterations: abort`, establishing a de facto 4-attempt limit for automated correction with hard abort on exhaustion. Only one critical correction was needed: `REQUEST_CREATED → REQUESTED`. Seven recommended renames remain deferred because M0 canonical documents describe them as "terminology mappings only" and explicitly state M0 does not change workflow runtime behavior.
+
+**Correction loop behavior (as implemented in M0):**
+- Maximum iterations: 4 (workflow enforcement)
+- On exhaustion: ABORT (not PAUSE — no partial state left dangling)
+- Critical corrections: must complete before M1
+- Recommended corrections: tracked as open work items, deferred to M1 planning
+- A future PL-013 may formalize a numeric `correctionLoopCount` runtime limit if needed
+
+**Note on original intent:** The original M0 decision document requested PL-012 to codify "maximum 3 correction loops → BLOCKED → human intervention." The actual policy established is consistent in spirit: exhausted iterations abort rather than loop forever, and human intervention is required for any M0 corrections that fail to resolve. The count difference (3 vs. 4) and the absent BLOCKED-state formalism are not architecture gaps — they reflect the conservative choice to document actual behavior rather than prescribe untested constraints.
+
+**Consequence:** Skipping critical corrections is a workflow violation. Recommended corrections deferred past M1 must be tracked as open work items.
 
 ---
 

@@ -333,3 +333,62 @@ M0 is approved for human authority review with the following conditions:
 ---
 
 **END OF M0 APPROVAL DECISION**
+
+---
+
+## M0.1 CLOSURE ADDENDUM
+
+**Date:** 2026-10-05  
+**Authority:** M0.1 Closure Workflow  
+**Supersedes:** The "NEXT STEPS — Immediate" section above for items 1–3, which are now complete.
+
+### Corrections Executed
+
+| Correction | Status | Commit |
+|---|---|---|
+| REQUEST_CREATED → REQUESTED in workflow.ts | COMPLETE | a666d03e |
+| PL-012 added to Architecture Decision Record | COMPLETE | a666d03e |
+| M0 audit reports committed (9 files) | COMPLETE | 94068b84 |
+
+### Verification Results
+
+- **Command:** `pnpm --filter @realtutorialhub/types test`
+- **Result:** 220/220 tests passed (10 test files, 1.47s)
+- **Residual references check:** No `REQUEST_CREATED` references remain in the codebase
+- **TypeScript build:** NOT INDEPENDENTLY ESTABLISHED — test suite passed but no separate `tsc`/build command is evidenced in the verification artifact
+
+### M0 Technical Review Final Status
+
+| Dimension | Status |
+|---|---|
+| M0 technical implementation | PASS |
+| M0 corrections | COMPLETE |
+| Blocking findings | NONE |
+| Recommended corrections (state name drift) | INTENTIONALLY DEFERRED TO M1 |
+| M1 readiness | READY |
+
+### HAA Approval Status
+
+**PENDING — not yet evidenced.**
+
+The `"verdict": "APPROVED"` recorded in `m0-corrections-review.json` is the result of an automated review workflow, not HAA/human architectural approval. PL-001 through PL-011 remain `PROPOSED_FOR_HAA_APPROVAL`. Final M0 closure requires explicit HAA/human sign-off before M1 may begin.
+
+### Remaining State Name Drift (Intentionally Deferred)
+
+The following state naming differences between runtime and M0 canonical terms were reviewed and deliberately NOT corrected in M0. They are tracked as open work items for M1 semantic analysis:
+
+| Runtime State | M0 Canonical Term | Deferred Reason |
+|---|---|---|
+| `AWAITING_GUI_APPROVAL` | `AWAITING_GATE_1` | Mapping table only; M0 does not mandate runtime change |
+| `CANDIDATE_READY` | `CANDIDATE_RECEIVED` | Mapping table only; no lifecycle diagram conflict |
+| `COMPLIANCE_REVIEW` | `CANDIDATE_AUDIT` | Mapping table only |
+| `COMPLIANCE_FAILED` | `REVISION_REQUIRED` / `BLOCKED` | Mapping table only |
+| `CORRECTION_REQUIRED` | `REVISION_REQUIRED` | Mapping table only |
+| `VALIDATION_IN_PROGRESS` | `VERIFYING` | Mapping table only |
+| `VALIDATION_FAILED` | `REVISION_REQUIRED` / `BLOCKED` | Mapping table only |
+
+These are intentional deferrals, NOT omissions. See `m0-final-attestation.md` for the structured summary.
+
+---
+
+**END OF M0.1 CLOSURE ADDENDUM**

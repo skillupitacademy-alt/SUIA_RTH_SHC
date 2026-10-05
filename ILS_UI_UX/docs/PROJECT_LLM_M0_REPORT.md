@@ -212,3 +212,48 @@ Final M0 status:
 ```text
 READY_FOR_HUMAN_APPROVAL
 ```
+
+---
+
+## 11. M0.1 Closure — Corrections Executed and Verified
+
+**Date:** 2026-10-05  
+**Status:** CORRECTIONS COMPLETE — AWAITING HAA APPROVAL
+
+### Corrections Executed
+
+| Correction | Commit | Status |
+|---|---|---|
+| `REQUEST_CREATED → REQUESTED` in `packages/types/src/project-llm/workflow.ts` | a666d03e | COMPLETE |
+| PL-012 added to `PROJECT_LLM_ARCHITECTURE_DECISION_RECORD.md` | a666d03e | COMPLETE |
+
+### Verification Results
+
+- **Test command:** `pnpm --filter @realtutorialhub/types test`
+- **Outcome:** 220/220 tests passed (10 test files, 1.47s)
+- **Residual check:** No `REQUEST_CREATED` references remain
+- **Separate TypeScript build:** NOT INDEPENDENTLY ESTABLISHED (test run only)
+
+### Section 3 Terminology Mapping — Clarification
+
+The table in Section 3 lists terminology differences between previous/current runtime terms and M0 canonical terms. The entries for `AWAITING_GUI_APPROVAL`, `CANDIDATE_READY`, `COMPLIANCE_REVIEW`, `COMPLIANCE_FAILED`, `CORRECTION_REQUIRED`, `VALIDATION_IN_PROGRESS`, and `VALIDATION_FAILED` are **intentionally deferred** pending M1 semantic analysis. They are not omissions. The only mapping-table entry corrected in M0 was `REQUEST_CREATED → REQUESTED`, because it was the sole state where M0 canonical lifecycle diagrams (not just the mapping table) explicitly used different terminology.
+
+### Architecture Decisions Update
+
+Section 2 (Architecture Decisions Recorded) should now include PL-012:
+
+| Decision | Summary |
+|---|---|
+| PL-012 | M0 correction loop policy — critical corrections block M1, recommended corrections may batch into M0.1 |
+
+### Final M0 Technical Status
+
+| Dimension | Status |
+|---|---|
+| M0 implementation | PASS |
+| M0 corrections | COMPLETE |
+| Blocking findings | NONE |
+| M1 readiness | READY |
+| HAA approval | PENDING |
+
+**Note:** `READY_FOR_HUMAN_APPROVAL` in the document header remains accurate. This section records that the technical work is complete and the package is ready for human/HAA review, not that such review has occurred.
