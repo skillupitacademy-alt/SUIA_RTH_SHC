@@ -25,4 +25,11 @@ export type {
 } from './contracts/index.js';
 
 export { FilesystemRepositoryAdapter } from './adapters/index.js';
-export { scanRepositoryStructure, scanRuntime } from './scanners/index.js';
+export {
+  scanRepositoryStructure,
+  scanRuntime,
+  scanBlocks,
+  scanComposer,
+  scanDependencies,
+  scanTests,
+} from './scanners/index.js';
