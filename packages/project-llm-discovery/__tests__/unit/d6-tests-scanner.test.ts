@@ -68,8 +68,8 @@ export default defineWorkspace([
       listFiles: vi.fn().mockImplementation(async (path: string) => {
         if (path === '.') {
           return [
-            'packages/types/src/blocks.test.ts',
-            'packages/ui/src/components/Button.spec.ts',
+            'packages/types/__tests__/blocks.test.ts',
+            'packages/ui/__tests__/components/Button.spec.ts',
             'node_modules/some-lib/test.test.ts', // Should be ignored
           ];
         }

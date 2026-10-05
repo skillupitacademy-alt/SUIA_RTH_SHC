@@ -9,6 +9,7 @@ import type {
   BlockVerification,
   BlockDiscrepancy,
 } from '../contracts/snapshot.js';
+import { FileNotFoundError, RepositoryAccessError } from '../contracts/errors.js';
 
 interface BlocksData {
   documented: BlockFamilyDoc[];
@@ -29,7 +30,8 @@ const BLOCK_RENDERERS_DIR = 'packages/ui/src/tutorial/blocks';
  * 1. DOCUMENTED: Families/versions documented in PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md
  * 2. IMPLEMENTED: Type definitions in content-blocks.ts
  * 3. RENDERED: React components in packages/ui/src/tutorial/blocks/
- * 4. VERIFIED: Cross-referenced complete implementations (type + renderer + UBRC compliant)
+ * 4. VERIFIED: Cross-referenced complete implementations (documented + type + renderer).
+ *    Future: add REGISTERED (in TutorialBlockRenderer registry), UBRC (data-block-version attribute), TESTED (test coverage) checks.
  * 
  * CRITICAL: Maintains 4 separate states, never collapses them.
  */
@@ -48,74 +50,148 @@ export async function scanBlocks(
   const discrepancies: BlockDiscrepancy[] = [];
 
   // Step 1: Discover DOCUMENTED blocks from block corpus registry
-  if (await adapter.fileExists(BLOCK_CORPUS_DOC_PATH)) {
-    const docContent = await adapter.readFile(BLOCK_CORPUS_DOC_PATH);
-    const contentHash = await adapter.getFileHash(BLOCK_CORPUS_DOC_PATH);
+  try {
+    if (await adapter.fileExists(BLOCK_CORPUS_DOC_PATH)) {
+      const docContent = await adapter.readFile(BLOCK_CORPUS_DOC_PATH);
+      const contentHash = await adapter.getFileHash(BLOCK_CORPUS_DOC_PATH);
 
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: BLOCK_CORPUS_DOC_PATH,
-      kind: 'documentation',
-      claim: 'Block corpus registry documentation discovered',
-      locator: `file:${BLOCK_CORPUS_DOC_PATH}`,
-      contentHash,
-    });
-
-    // Parse markdown table for 18 families
-    const familiesDoc = parseBlockCorpusRegistry(docContent);
-    documented.push(...familiesDoc);
-  }
-
-  // Step 2: Discover IMPLEMENTED blocks from TypeScript type definitions
-  if (await adapter.fileExists(BLOCK_TYPES_PATH)) {
-    const typesContent = await adapter.readFile(BLOCK_TYPES_PATH);
-    const contentHash = await adapter.getFileHash(BLOCK_TYPES_PATH);
-
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: BLOCK_TYPES_PATH,
-      kind: 'type-definition',
-      claim: 'Block type definitions discovered',
-      locator: `file:${BLOCK_TYPES_PATH}`,
-      contentHash,
-    });
-
-    const implementedBlocks = parseBlockTypeDefinitions(typesContent);
-    implemented.push(...implementedBlocks);
-  }
-
-  // Step 3: Discover RENDERED blocks from React components
-  if (await adapter.fileExists(BLOCK_RENDERERS_DIR)) {
-    const rendererFiles = await adapter.listFiles(BLOCK_RENDERERS_DIR);
-    const tsxFiles = rendererFiles.filter(f => f.endsWith('.tsx'));
-
-    for (const tsxFile of tsxFiles) {
-      const contentHash = await adapter.getFileHash(tsxFile);
       evidence.push({
         evidenceId: randomUUID(),
         scannerName,
         timestamp,
-        path: tsxFile,
-        kind: 'component',
-        claim: 'Block renderer component discovered',
-        locator: `file:${tsxFile}`,
+        path: BLOCK_CORPUS_DOC_PATH,
+        kind: 'documentation',
+        claim: 'Block corpus registry documentation discovered',
+        locator: `file:${BLOCK_CORPUS_DOC_PATH}`,
         contentHash,
       });
 
-      const rendererInfo = parseRendererComponent(tsxFile);
-      if (rendererInfo !== null) {
-        rendered.push(rendererInfo);
+      // Parse markdown table for 18 families
+      const familiesDoc = parseBlockCorpusRegistry(docContent);
+      documented.push(...familiesDoc);
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'warning',
+        category: 'blocks-discovery',
+        message: `Block corpus registry not found: ${BLOCK_CORPUS_DOC_PATH}`,
+        recommendation: 'Create block corpus registry documentation',
+      });
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'blocks-discovery',
+        message: `Failed to read block corpus registry: ${error.message}`,
+      });
+    } else {
+      throw error;
+    }
+  }
+
+  // Step 2: Discover IMPLEMENTED blocks from TypeScript type definitions
+  try {
+    if (await adapter.fileExists(BLOCK_TYPES_PATH)) {
+      const typesContent = await adapter.readFile(BLOCK_TYPES_PATH);
+      const contentHash = await adapter.getFileHash(BLOCK_TYPES_PATH);
+
+      evidence.push({
+        evidenceId: randomUUID(),
+        scannerName,
+        timestamp,
+        path: BLOCK_TYPES_PATH,
+        kind: 'type-definition',
+        claim: 'Block type definitions discovered',
+        locator: `file:${BLOCK_TYPES_PATH}`,
+        contentHash,
+      });
+
+      const implementedBlocks = parseBlockTypeDefinitions(typesContent);
+      implemented.push(...implementedBlocks);
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'warning',
+        category: 'blocks-discovery',
+        message: `Block type definitions not found: ${BLOCK_TYPES_PATH}`,
+        recommendation: 'Create block type definitions file',
+      });
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'blocks-discovery',
+        message: `Failed to read block type definitions: ${error.message}`,
+      });
+    } else {
+      throw error;
+    }
+  }
+
+  // Step 3: Discover RENDERED blocks from React components
+  try {
+    if (await adapter.fileExists(BLOCK_RENDERERS_DIR)) {
+      const rendererFiles = await adapter.listFiles(BLOCK_RENDERERS_DIR);
+      const tsxFiles = rendererFiles.filter(f => f.endsWith('.tsx'));
+
+      for (const tsxFile of tsxFiles) {
+        try {
+          const contentHash = await adapter.getFileHash(tsxFile);
+          evidence.push({
+            evidenceId: randomUUID(),
+            scannerName,
+            timestamp,
+            path: tsxFile,
+            kind: 'component',
+            claim: 'Block renderer component discovered',
+            locator: `file:${tsxFile}`,
+            contentHash,
+          });
+
+          const rendererInfo = parseRendererComponent(tsxFile);
+          if (rendererInfo !== null) {
+            rendered.push(rendererInfo);
+          }
+        } catch (error) {
+          if (error instanceof FileNotFoundError) {
+            findings.push({
+              findingId: randomUUID(),
+              severity: 'warning',
+              category: 'blocks-discovery',
+              message: `Renderer file disappeared during scan: ${tsxFile}`,
+            });
+          }
+          // Continue processing other files
+        }
       }
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'warning',
+        category: 'blocks-discovery',
+        message: `Block renderers directory not found: ${BLOCK_RENDERERS_DIR}`,
+        recommendation: 'Create block renderers directory',
+      });
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'blocks-discovery',
+        message: `Failed to list block renderers: ${error.message}`,
+      });
+    } else {
+      throw error;
     }
   }
 
   // Step 4: Cross-reference for VERIFIED blocks
-  // VERIFIED = type definition + renderer + UBRC compliant
-  const verifiedBlocks = crossReferenceBlocks(implemented, rendered);
+  const verifiedBlocks = crossReferenceBlocks(implemented, rendered, documented);
   verified.push(...verifiedBlocks);
 
   // Step 5: Detect discrepancies
@@ -302,44 +378,50 @@ function parseRendererComponent(filePath: string): BlockRenderer | null {
 
 /**
  * Cross-reference implemented and rendered blocks for VERIFIED status
- * VERIFIED = type definition + renderer exists + UBRC compliant
+ * 
+ * VERIFIED = documented + type definition + renderer exists + UBRC compliant
+ * 
+ * Current implementation checks: documented (in registry) + type (implemented) + renderer (component exists).
+ * Future work: REGISTERED (check TutorialBlockRenderer registry), UBRC (data-block-version attribute), TESTED (test coverage).
  * 
  * EXCLUSIONS:
  * - S1 (SummaryBlock): Has type + renderer but missing UBRC data-block-version attribute
  */
 function crossReferenceBlocks(
   implemented: BlockImplementation[],
-  rendered: BlockRenderer[]
+  rendered: BlockRenderer[],
+  documented: BlockFamilyDoc[]
 ): BlockVerification[] {
   const verified: BlockVerification[] = [];
 
-  // Known incomplete blocks (missing UBRC compliance)
-  const incompleteBlocks = new Set(['S1']);
+  // Build set of documented versions for cross-reference
+  const documentedVersions = new Set<string>();
+  for (const doc of documented) {
+    for (const version of doc.versions) {
+      documentedVersions.add(version);
+    }
+  }
 
   for (const impl of implemented) {
-    // Skip incomplete blocks
-    if (impl.version !== undefined && incompleteBlocks.has(impl.version)) {
-      continue;
-    }
-
     // Check if renderer exists for this block type
     const hasRenderer = rendered.some(r => r.blockType === impl.type);
-
-    // VERIFIED criteria:
-    // 1. Type definition exists (we're iterating implemented blocks)
-    // 2. Renderer exists
-    // 3. For versioned blocks (I1, C1, D1, S1), assume UBRC compliant if both exist
-    const isVerified = hasRenderer;
+    
+    // Check if documented in registry
+    const isDocumented = impl.version !== undefined && documentedVersions.has(impl.version);
+    
+    // VERIFIED requires both documented AND rendered
+    // Future: add REGISTERED, UBRC, TESTED checks
+    const isVerified = isDocumented && hasRenderer;
 
     // Only add to verified list if criteria met
     if (isVerified && impl.version !== undefined) {
       verified.push({
         blockType: impl.type,
         version: impl.version,
-        documented: true, // Assume documented if implemented
+        documented: isDocumented,
         implemented: true,
         rendered: hasRenderer,
-        tested: false, // Would require test discovery
+        tested: false,
       });
     }
   }

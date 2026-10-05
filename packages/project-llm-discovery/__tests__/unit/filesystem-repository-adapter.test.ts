@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { FilesystemRepositoryAdapter } from '../../src/adapters/filesystem-repository-adapter.js';
+import { FileNotFoundError, RepositoryAccessError, PermissionError } from '../../src/contracts/errors.js';
 
 // Mock the node modules
 const mockReadFile = vi.fn();
@@ -43,12 +44,27 @@ describe('FilesystemRepositoryAdapter', () => {
       );
     });
 
-    it('should return empty string on failure', async () => {
-      mockReadFile.mockRejectedValue(new Error('File not found'));
+    it('should throw FileNotFoundError when file does not exist', async () => {
+      const error: any = new Error('File not found');
+      error.code = 'ENOENT';
+      mockReadFile.mockRejectedValue(error);
 
-      const result = await adapter.readFile('missing.txt');
+      await expect(adapter.readFile('missing.txt')).rejects.toThrow(FileNotFoundError);
+    });
 
-      expect(result).toBe('');
+    it('should throw PermissionError when access denied', async () => {
+      const error: any = new Error('Permission denied');
+      error.code = 'EACCES';
+      mockReadFile.mockRejectedValue(error);
+
+      await expect(adapter.readFile('restricted.txt')).rejects.toThrow(PermissionError);
+    });
+
+    it('should throw RepositoryAccessError for other errors', async () => {
+      const error = new Error('Unknown error');
+      mockReadFile.mockRejectedValue(error);
+
+      await expect(adapter.readFile('error.txt')).rejects.toThrow(RepositoryAccessError);
     });
   });
 
@@ -62,11 +78,21 @@ describe('FilesystemRepositoryAdapter', () => {
     });
 
     it('should return false when file does not exist', async () => {
-      mockAccess.mockRejectedValue(new Error('Not found'));
+      const error: any = new Error('Not found');
+      error.code = 'ENOENT';
+      mockAccess.mockRejectedValue(error);
 
       const result = await adapter.fileExists('missing.txt');
 
       expect(result).toBe(false);
+    });
+
+    it('should throw PermissionError when access permission denied', async () => {
+      const error: any = new Error('Permission denied');
+      error.code = 'EACCES';
+      mockAccess.mockRejectedValue(error);
+
+      await expect(adapter.fileExists('restricted.txt')).rejects.toThrow(PermissionError);
     });
   });
 
@@ -102,12 +128,12 @@ describe('FilesystemRepositoryAdapter', () => {
       expect(result).toContain('testdir/file1.txt');
     });
 
-    it('should return empty array on failure', async () => {
-      mockReaddir.mockRejectedValue(new Error('Directory not found'));
+    it('should throw error when directory not found', async () => {
+      const error: any = new Error('Directory not found');
+      error.code = 'ENOENT';
+      mockReaddir.mockRejectedValue(error);
 
-      const result = await adapter.listFiles('missing');
-
-      expect(result).toEqual([]);
+      await expect(adapter.listFiles('missing')).rejects.toThrow(FileNotFoundError);
     });
   });
 
@@ -129,12 +155,12 @@ describe('FilesystemRepositoryAdapter', () => {
       expect(mockHash.digest).toHaveBeenCalledWith('hex');
     });
 
-    it('should return empty string on failure', async () => {
-      mockReadFile.mockRejectedValue(new Error('File not found'));
+    it('should throw error when file not found', async () => {
+      const error: any = new Error('File not found');
+      error.code = 'ENOENT';
+      mockReadFile.mockRejectedValue(error);
 
-      const result = await adapter.getFileHash('missing.txt');
-
-      expect(result).toBe('');
+      await expect(adapter.getFileHash('missing.txt')).rejects.toThrow(FileNotFoundError);
     });
   });
 
@@ -151,14 +177,12 @@ describe('FilesystemRepositoryAdapter', () => {
       });
     });
 
-    it('should return empty string on failure', async () => {
+    it('should throw error when not a git repository', async () => {
       mockExecSync.mockImplementation(() => {
         throw new Error('Not a git repository');
       });
 
-      const result = await adapter.getGitCommit();
-
-      expect(result).toBe('');
+      await expect(adapter.getGitCommit()).rejects.toThrow(RepositoryAccessError);
     });
   });
 
@@ -175,14 +199,12 @@ describe('FilesystemRepositoryAdapter', () => {
       });
     });
 
-    it('should return empty string on failure', async () => {
+    it('should throw error when not a git repository', async () => {
       mockExecSync.mockImplementation(() => {
         throw new Error('Not a git repository');
       });
 
-      const result = await adapter.getGitRoot();
-
-      expect(result).toBe('');
+      await expect(adapter.getGitRoot()).rejects.toThrow(RepositoryAccessError);
     });
   });
 });

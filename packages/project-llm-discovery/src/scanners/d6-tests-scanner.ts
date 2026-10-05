@@ -3,6 +3,7 @@ import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
 import type { ScannerResult, Finding } from '../contracts/scanner.js';
 import type { Evidence } from '../contracts/evidence.js';
 import type { TestSuite } from '../contracts/snapshot.js';
+import { FileNotFoundError, RepositoryAccessError } from '../contracts/errors.js';
 
 interface TestsData {
   unit: TestSuite[];
@@ -34,152 +35,251 @@ export async function scanTests(
   const e2e: TestSuite[] = [];
 
   // Step 1: Discover Vitest workspace configuration
-  if (await adapter.fileExists(VITEST_WORKSPACE_PATH)) {
-    const vitestContent = await adapter.readFile(VITEST_WORKSPACE_PATH);
-    const contentHash = await adapter.getFileHash(VITEST_WORKSPACE_PATH);
+  try {
+    if (await adapter.fileExists(VITEST_WORKSPACE_PATH)) {
+      const vitestContent = await adapter.readFile(VITEST_WORKSPACE_PATH);
+      const contentHash = await adapter.getFileHash(VITEST_WORKSPACE_PATH);
 
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: VITEST_WORKSPACE_PATH,
-      kind: 'config',
-      claim: 'Vitest workspace configuration discovered',
-      locator: `file:${VITEST_WORKSPACE_PATH}`,
-      contentHash,
-    });
-
-    // Parse vitest workspace for test projects
-    const vitestProjects = parseVitestWorkspace(vitestContent);
-    
-    for (const project of vitestProjects) {
-      unit.push({
-        name: project,
-        path: project,
-        testCount: 0, // Would need to scan actual test files
+      evidence.push({
+        evidenceId: randomUUID(),
+        scannerName,
+        timestamp,
+        path: VITEST_WORKSPACE_PATH,
+        kind: 'config',
+        claim: 'Vitest workspace configuration discovered',
+        locator: `file:${VITEST_WORKSPACE_PATH}`,
+        contentHash,
       });
+
+      // Parse vitest workspace for test projects
+      const vitestProjects = parseVitestWorkspace(vitestContent);
+      
+      for (const project of vitestProjects) {
+        unit.push({
+          name: project,
+          path: project,
+          testCount: 0, // Would need to scan actual test files
+        });
+      }
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'info',
+        category: 'tests-discovery',
+        message: `Vitest workspace configuration not found: ${VITEST_WORKSPACE_PATH}`,
+      });
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'tests-discovery',
+        message: `Failed to read vitest configuration: ${error.message}`,
+      });
+    } else {
+      throw error;
     }
   }
 
-  // Step 2: Discover __tests__ directories
-  const allFiles = await adapter.listFiles('.');
-  const testDirs = allFiles.filter(f => f.includes('__tests__'));
-  
-  // Group by unit vs integration
-  for (const testDir of testDirs) {
-    const contentHash = await adapter.getFileHash(testDir);
-    
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: testDir,
-      kind: 'test-directory',
-      claim: 'Test directory discovered',
-      locator: `directory:${testDir}`,
-      contentHash,
-    });
+  // Step 2: Discover test files and group by type
+  try {
+    const allFiles = await adapter.listFiles('.');
+    const testFiles = allFiles.filter(f => 
+      ((f.endsWith('.test.ts') || f.endsWith('.spec.ts') || f.endsWith('.ts')) && 
+       f.includes('__tests__')) &&
+      !f.includes('node_modules')
+    );
 
-    if (testDir.includes('integration')) {
+    const unitDirs = new Set<string>();
+    const integrationDirs = new Set<string>();
+    const testFileCounts = new Map<string, number>();
+
+    for (const testFile of testFiles) {
+      // Skip e2e tests (handled separately)
+      if (testFile.includes('/e2e/') || testFile.includes('\\e2e\\')) {
+        continue;
+      }
+
+      // Determine type based on path
+      const isIntegration = testFile.includes('/__tests__/integration/') || 
+                            testFile.includes('\\__tests__\\integration\\');
+      const isUnit = testFile.includes('/__tests__/unit/') || 
+                     testFile.includes('\\__tests__\\unit\\') ||
+                     (testFile.includes('__tests__') && !isIntegration);
+
+      if (isIntegration) {
+        // Extract directory path (e.g., "packages/project-llm-discovery/__tests__/integration")
+        // Normalize to forward slashes first
+        const normalizedPath = testFile.replace(/\\/g, '/');
+        const dirMatch = normalizedPath.match(/^(.+\/__tests__\/integration)/);
+        if (dirMatch && dirMatch[1]) {
+          const dir = dirMatch[1];
+          integrationDirs.add(dir);
+          testFileCounts.set(dir, (testFileCounts.get(dir) ?? 0) + 1);
+        }
+      } else if (isUnit) {
+        // Extract package or component directory
+        const normalizedPath = testFile.replace(/\\/g, '/');
+        const dirMatch = normalizedPath.match(/^(.+\/__tests__)/);
+        if (dirMatch && dirMatch[1]) {
+          const dir = dirMatch[1];
+          unitDirs.add(dir);
+          testFileCounts.set(dir, (testFileCounts.get(dir) ?? 0) + 1);
+        }
+      }
+
+      // Generate evidence for each test file
+      try {
+        const contentHash = await adapter.getFileHash(testFile);
+        evidence.push({
+          evidenceId: randomUUID(),
+          scannerName,
+          timestamp,
+          path: testFile,
+          kind: 'test-file',
+          claim: 'Test file discovered',
+          locator: `file:${testFile}`,
+          contentHash,
+        });
+      } catch (error) {
+        if (error instanceof FileNotFoundError) {
+          findings.push({
+            findingId: randomUUID(),
+            severity: 'warning',
+            category: 'tests-discovery',
+            message: `Test file disappeared during scan: ${testFile}`,
+          });
+        }
+        // Continue processing other files
+      }
+    }
+
+    // Convert sets to TestSuite arrays
+    for (const dir of integrationDirs) {
       integration.push({
-        name: testDir,
-        path: testDir,
-        testCount: 0,
+        name: dir.split('/').pop() ?? dir,
+        path: dir,
+        testCount: testFileCounts.get(dir) ?? 0,
       });
-    } else if (testDir.includes('unit') || testDir.includes('__tests__')) {
-      // Avoid duplicates - only add if not already in unit tests
-      const existsInUnit = unit.some(suite => testDir.startsWith(suite.path));
-      if (!existsInUnit) {
-        unit.push({
-          name: testDir,
+    }
+
+    for (const dir of unitDirs) {
+      unit.push({
+        name: dir.split('/').pop() ?? dir,
+        path: dir,
+        testCount: testFileCounts.get(dir) ?? 0,
+      });
+    }
+  } catch (error) {
+    if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'tests-discovery',
+        message: `Failed to list test files: ${error.message}`,
+      });
+    } else {
+      throw error;
+    }
+  }
+
+  // Step 3: Discover Playwright E2E configuration
+  try {
+    if (await adapter.fileExists(PLAYWRIGHT_CONFIG_PATH)) {
+      const playwrightContent = await adapter.readFile(PLAYWRIGHT_CONFIG_PATH);
+      const contentHash = await adapter.getFileHash(PLAYWRIGHT_CONFIG_PATH);
+
+      evidence.push({
+        evidenceId: randomUUID(),
+        scannerName,
+        timestamp,
+        path: PLAYWRIGHT_CONFIG_PATH,
+        kind: 'config',
+        claim: 'Playwright E2E configuration discovered',
+        locator: `file:${PLAYWRIGHT_CONFIG_PATH}`,
+        contentHash,
+      });
+
+      const testDir = parsePlaywrightTestDir(playwrightContent);
+      if (testDir !== null) {
+        e2e.push({
+          name: 'Playwright E2E',
           path: testDir,
           testCount: 0,
         });
       }
     }
-  }
-
-  // Step 3: Discover test files (*.test.ts, *.spec.ts)
-  const testFiles = allFiles.filter(f => 
-    (f.endsWith('.test.ts') || f.endsWith('.spec.ts')) && 
-    !f.includes('node_modules')
-  );
-
-  for (const testFile of testFiles) {
-    const contentHash = await adapter.getFileHash(testFile);
-    
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: testFile,
-      kind: 'test-file',
-      claim: 'Test file discovered',
-      locator: `file:${testFile}`,
-      contentHash,
-    });
-  }
-
-  // Step 4: Discover Playwright E2E configuration
-  if (await adapter.fileExists(PLAYWRIGHT_CONFIG_PATH)) {
-    const playwrightContent = await adapter.readFile(PLAYWRIGHT_CONFIG_PATH);
-    const contentHash = await adapter.getFileHash(PLAYWRIGHT_CONFIG_PATH);
-
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: PLAYWRIGHT_CONFIG_PATH,
-      kind: 'config',
-      claim: 'Playwright E2E configuration discovered',
-      locator: `file:${PLAYWRIGHT_CONFIG_PATH}`,
-      contentHash,
-    });
-
-    const testDir = parsePlaywrightTestDir(playwrightContent);
-    if (testDir !== null) {
-      e2e.push({
-        name: 'Playwright E2E',
-        path: testDir,
-        testCount: 0,
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'info',
+        category: 'tests-discovery',
+        message: `Playwright configuration not found: ${PLAYWRIGHT_CONFIG_PATH}`,
       });
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'tests-discovery',
+        message: `Failed to read Playwright configuration: ${error.message}`,
+      });
+    } else {
+      throw error;
     }
   }
 
-  // Step 5: Discover tests/e2e/ directory
+  // Step 4: Discover tests/e2e/ directory
   const e2eDir = 'tests/e2e';
-  if (await adapter.fileExists(e2eDir)) {
-    const e2eFiles = allFiles.filter(f => f.startsWith(e2eDir));
-    
-    evidence.push({
-      evidenceId: randomUUID(),
-      scannerName,
-      timestamp,
-      path: e2eDir,
-      kind: 'test-directory',
-      claim: 'E2E test directory discovered',
-      locator: `directory:${e2eDir}`,
-      contentHash: '',
-    });
-
-    // Check if this directory is already covered by Playwright config
-    const normalizedPath = e2eDir.replace(/^\.\//, '');
-    const existingSuite = e2e.find(suite => 
-      suite.path === e2eDir || 
-      suite.path === `./${e2eDir}` ||
-      suite.path.replace(/^\.\//, '') === normalizedPath
-    );
-
-    if (existingSuite !== undefined) {
-      // Update test count if we found actual files
-      existingSuite.testCount = Math.max(existingSuite.testCount, e2eFiles.length);
-    } else {
-      // Add new suite
-      e2e.push({
-        name: 'E2E Tests',
+  try {
+    if (await adapter.fileExists(e2eDir)) {
+      const allFiles = await adapter.listFiles('.');
+      const e2eFiles = allFiles.filter(f => f.startsWith(e2eDir));
+      
+      evidence.push({
+        evidenceId: randomUUID(),
+        scannerName,
+        timestamp,
         path: e2eDir,
-        testCount: e2eFiles.length,
+        kind: 'test-directory',
+        claim: 'E2E test directory discovered',
+        locator: `directory:${e2eDir}`,
+        contentHash: '',
       });
+
+      // Check if this directory is already covered by Playwright config
+      const normalizedPath = e2eDir.replace(/^\.\//, '');
+      const existingSuite = e2e.find(suite => 
+        suite.path === e2eDir || 
+        suite.path === `./${e2eDir}` ||
+        suite.path.replace(/^\.\//, '') === normalizedPath
+      );
+
+      if (existingSuite !== undefined) {
+        // Update test count if we found actual files
+        existingSuite.testCount = Math.max(existingSuite.testCount, e2eFiles.length);
+      } else {
+        // Add new suite
+        e2e.push({
+          name: 'E2E Tests',
+          path: e2eDir,
+          testCount: e2eFiles.length,
+        });
+      }
+    }
+  } catch (error) {
+    if (error instanceof FileNotFoundError) {
+      // E2E directory is optional, no finding needed
+    } else if (error instanceof RepositoryAccessError) {
+      findings.push({
+        findingId: randomUUID(),
+        severity: 'error',
+        category: 'tests-discovery',
+        message: `Failed to access E2E directory: ${error.message}`,
+      });
+    } else {
+      throw error;
     }
   }
 

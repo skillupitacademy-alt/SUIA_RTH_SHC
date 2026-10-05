@@ -4,6 +4,11 @@ import { execSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { constants } from 'node:fs';
 import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
+import {
+  RepositoryAccessError,
+  FileNotFoundError,
+  PermissionError,
+} from '../contracts/errors.js';
 
 export class FilesystemRepositoryAdapter implements RepositoryAdapter {
   constructor(private readonly rootPath: string) {}
@@ -12,8 +17,20 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
     try {
       const fullPath = resolve(this.rootPath, path);
       return await readFile(fullPath, 'utf-8');
-    } catch {
-      return '';
+    } catch (error: unknown) {
+      if (error instanceof Error && 'code' in error) {
+        if (error.code === 'ENOENT') {
+          throw new FileNotFoundError(path, this.rootPath);
+        }
+        if (error.code === 'EACCES' || error.code === 'EPERM') {
+          throw new PermissionError(path, this.rootPath, 'read');
+        }
+      }
+      throw new RepositoryAccessError(
+        `Failed to read file: ${path}`,
+        this.rootPath,
+        error
+      );
     }
   }
 
@@ -22,8 +39,20 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
       const fullPath = resolve(this.rootPath, path);
       await access(fullPath, constants.F_OK);
       return true;
-    } catch {
-      return false;
+    } catch (error: unknown) {
+      if (error instanceof Error && 'code' in error) {
+        if (error.code === 'ENOENT') {
+          return false;
+        }
+        if (error.code === 'EACCES' || error.code === 'EPERM') {
+          throw new PermissionError(path, this.rootPath, 'access');
+        }
+      }
+      throw new RepositoryAccessError(
+        `Failed to check file existence: ${path}`,
+        this.rootPath,
+        error
+      );
     }
   }
 
@@ -38,8 +67,19 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
         
         if (entry.isDirectory()) {
           // Recursively list files in subdirectories
-          const subFiles = await this.listFiles(relativePath, pattern);
-          files.push(...subFiles);
+          // Skip common directories that might cause issues
+          if (entry.name === 'node_modules' || entry.name === '.git') {
+            continue;
+          }
+          
+          try {
+            const subFiles = await this.listFiles(relativePath, pattern);
+            files.push(...subFiles);
+          } catch (error) {
+            // Skip directories we can't access, but don't fail the entire operation
+            // This handles permission errors, symlink issues, etc.
+            continue;
+          }
         } else if (entry.isFile()) {
           // Apply pattern filter if provided
           if (pattern === undefined || this.matchPattern(entry.name, pattern)) {
@@ -49,21 +89,30 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
       }
       
       return files;
-    } catch {
-      return [];
+    } catch (error: unknown) {
+      if (error instanceof Error && 'code' in error) {
+        if (error.code === 'ENOENT') {
+          throw new FileNotFoundError(directory, this.rootPath);
+        }
+        if (error.code === 'EACCES' || error.code === 'EPERM') {
+          throw new PermissionError(directory, this.rootPath, 'read');
+        }
+      }
+      // Re-throw if it's already one of our custom errors
+      if (error instanceof RepositoryAccessError) {
+        throw error;
+      }
+      throw new RepositoryAccessError(
+        `Failed to list files in directory: ${directory}`,
+        this.rootPath,
+        error
+      );
     }
   }
 
   async getFileHash(path: string): Promise<string> {
-    try {
-      const content = await this.readFile(path);
-      if (content === '') {
-        return '';
-      }
-      return createHash('sha256').update(content, 'utf-8').digest('hex');
-    } catch {
-      return '';
-    }
+    const content = await this.readFile(path);
+    return createHash('sha256').update(content, 'utf-8').digest('hex');
   }
 
   async getGitCommit(): Promise<string> {
@@ -73,8 +122,12 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
         encoding: 'utf-8',
       }).trim();
       return commit;
-    } catch {
-      return '';
+    } catch (error: unknown) {
+      throw new RepositoryAccessError(
+        'Failed to get git commit',
+        this.rootPath,
+        error
+      );
     }
   }
 
@@ -85,8 +138,12 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
         encoding: 'utf-8',
       }).trim();
       return root;
-    } catch {
-      return '';
+    } catch (error: unknown) {
+      throw new RepositoryAccessError(
+        'Failed to get git root',
+        this.rootPath,
+        error
+      );
     }
   }
 

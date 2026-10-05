@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Fix P0-4: Repository error handling. FilesystemRepositoryAdapter silently swallows all errors, returning empty strings/arrays instead of explicit error types. This makes infrastructure failures (permission denied, disk errors) indistinguishable from 'entity not found'. Create explicit error classes (RepositoryAccessError, FileNotFoundError, PermissionError) and throw them instead of returning empty values. Update adapter implementation and all scanner error handling.",
+  "status": "pending",
+  "steps": [
+    "1. Create src/contracts/errors.ts defining three error classes: RepositoryAccessError (base class with repositoryPath, originalError), FileNotFoundError extends RepositoryAccessError (adds filePath), PermissionError extends RepositoryAccessError (adds requiredPermission). All extend Error, preserve stack traces, include structured details.",
+    "2. Update FilesystemRepositoryAdapter.readFile: remove try/catch that returns ''. Instead let errors propagate, but catch ENOENT specifically and throw new FileNotFoundError. Catch EACCES/EPERM and throw new PermissionError. Other errors wrapped in RepositoryAccessError.",
+    "3. Update FilesystemRepositoryAdapter.fileExists: keep try/catch returning false for ENOENT (path doesn't exist is a valid false result). Throw PermissionError for EACCES/EPERM. Throw RepositoryAccessError for other errors.",
+    "4. Update FilesystemRepositoryAdapter.listFiles: remove try/catch that returns []. Throw FileNotFoundError for ENOENT, PermissionError for EACCES/EPERM, RepositoryAccessError for others. Ensure recursive calls preserve errors.",
+    "5. Update FilesystemRepositoryAdapter.getFileHash: propagate readFile errors (which now throw). If content is empty string for legitimate reason, return empty hash. Remove redundant catch block.",
+    "6. Update FilesystemRepositoryAdapter.getGitCommit and getGitRoot: throw RepositoryAccessError if git command fails. Include stderr in error details.",
+    "7. Update RepositoryAdapter interface JSDoc to document error semantics: readFile throws FileNotFoundError/PermissionError/RepositoryAccessError. fileExists returns false for ENOENT, throws for permission/access errors. listFiles throws if directory inaccessible. Document that callers must handle errors explicitly.",
+    "8. Update all scanners (d1-d6) to handle RepositoryAccessError in critical paths: wrap adapter calls in try/catch, add findings with severity 'error' when infrastructure fails, add findings with severity 'info' when optional paths don't exist (e.g., Playwright config missing).",
+    "9. Create __tests__/unit/adapters/filesystem-repository-adapter.test.ts with tests for: FileNotFoundError thrown on missing file read, PermissionError thrown on EACCES, RepositoryAccessError thrown on other fs errors, fileExists returns false for ENOENT without throwing, listFiles throws on permission denied.",
+    "10. Update existing unit tests for d1-d6 scanners to mock adapter methods that can now throw errors. Verify scanners handle errors gracefully and add appropriate findings."
+  ],
+  "acceptance_criteria": [
+    "FilesystemRepositoryAdapter throws FileNotFoundError when readFile called on missing path",
+    "FilesystemRepositoryAdapter throws PermissionError when access denied (mocked EACCES)",
+    "FilesystemRepositoryAdapter.fileExists returns false for ENOENT, throws PermissionError for EACCES",
+    "Scanners handle RepositoryAccessError and add error-severity findings instead of silently producing empty data",
+    "Type check passes: pnpm --filter @quiz/project-llm-discovery type-check",
+    "All tests pass: pnpm --filter @quiz/project-llm-discovery test"
+  ],
+  "verification": [
+    "Run pnpm --filter @quiz/project-llm-discovery type-check — no errors",
+    "Run pnpm --filter @quiz/project-llm-discovery test — all tests pass including new adapter error tests"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

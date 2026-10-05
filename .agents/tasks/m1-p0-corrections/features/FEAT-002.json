@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-002",
+  "type": "fix",
+  "description": "Fix P0-3: D6 integration test discovery. D6 reports 0 integration test suites but 6 integration test files exist under packages/project-llm-discovery/__tests__/integration/. Detection logic checks `testDir.includes('integration')` but actual file discovery via listFiles('.') returns paths like 'packages/project-llm-discovery/__tests__/integration/test-d3-d6.ts' which the code groups incorrectly. Fix path matching to correctly identify integration suites from discovered test files.",
+  "status": "pending",
+  "steps": [
+    "1. Read d6-tests-scanner.ts lines 52-89 (test directory grouping logic). Current code: `if (testDir.includes('integration')) { integration.push(...) }` but testDir is a file path from listFiles, not a directory.",
+    "2. Change grouping logic: iterate over test files (not testDirs). For each .test.ts or .spec.ts file discovered, check if its path contains '/__tests__/integration/' or '__tests__\\\\integration\\\\' (handle both forward and backslash). If yes, extract the directory path and add to integration suites. If path contains '/__tests__/unit/' or generic '__tests__/', add to unit suites. If path contains '/e2e/' or 'tests/e2e/', skip (handled separately).",
+    "3. Deduplicate integration/unit suite entries by path. Currently code says 'const existsInUnit = unit.some(suite => testDir.startsWith(suite.path))' but this logic is backwards. Fix: track suite directories as Set<string>, only add unique directories as TestSuite entries.",
+    "4. For integration suites, count test files in each directory. Update TestSuite.testCount with actual file count instead of 0.",
+    "5. Add finding validation: after discovery, if integration.length === 0 but test files with 'integration' in path were found, add warning finding 'Integration test files found but not grouped correctly'.",
+    "6. Update integration test discovery finding message to report actual count: 'Discovered X unit test suites, Y integration test suites, Z E2E test suites' should show integration >= 1 for this repository.",
+    "7. Update __tests__/unit/d6-tests-scanner.test.ts: add test case 'should discover integration tests from packages/project-llm-discovery/__tests__/integration/' that mocks listFiles returning ['packages/project-llm-discovery/__tests__/integration/test-d3-d6.ts', 'packages/project-llm-discovery/__tests__/integration/test-full-m1-pipeline.test.ts'] and asserts result.data.integration.length >= 1.",
+    "8. Update __tests__/integration/test-d3-d6.ts assertion on line 113: change condition from `testsResult.data.unit.length > 0` to also assert `testsResult.data.integration.length >= 5` (at least 5 integration suites expected based on 6 integration test files).",
+    "9. Run test-d3-d6.ts integration test to verify actual repository discovery now finds integration suites. Expected: integration.length >= 5, actual files: discovery-integration.test.ts, test-d1-d2.ts, test-d3-d6.ts, test-determinism.ts, test-full-m1-pipeline.test.ts, test-snapshot-builder.ts."
+  ],
+  "acceptance_criteria": [
+    "D6 scanner discovers at least 5 integration test suites when scanning packages/project-llm-discovery/__tests__/integration/",
+    "Integration suite TestSuite entries have testCount > 0 reflecting actual file count",
+    "Unit test d6-tests-scanner.test.ts includes assertion for integration discovery",
+    "Integration test test-d3-d6.ts passes with assertion testsResult.data.integration.length >= 5",
+    "Type check passes: pnpm --filter @quiz/project-llm-discovery type-check",
+    "All tests pass: pnpm --filter @quiz/project-llm-discovery test"
+  ],
+  "verification": [
+    "Run pnpm --filter @quiz/project-llm-discovery test — d6-tests-scanner.test.ts passes including new integration test assertion",
+    "Run node packages/project-llm-discovery/__tests__/integration/test-d3-d6.ts — reports integration suites >= 5 and exits 0",
+    "Run pnpm --filter @quiz/project-llm-discovery type-check — no errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
