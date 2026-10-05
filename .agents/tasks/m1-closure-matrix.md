@@ -1,6 +1,6 @@
 # M1 Closure Matrix
 
-Generated against HEAD: 94120a2af986f04af587390787b465d20d99c48e
+Generated against HEAD: 57d325c88839ebc8b1be7651e37811a1b3987385
 Status: PHASE_5_COMPLETE — V9 determinism blocker resolved
 
 ## Phase 1-4 Implementation Results
@@ -16,7 +16,7 @@ Status: PHASE_5_COMPLETE — V9 determinism blocker resolved
 | Validators | V9 determinism | ✅ PASS | Array sorting fix eliminates traversal order variance |
 | Build | TypeScript compilation | ✅ PASS | Exit code 0, no errors |
 | Tests | Test suite | ✅ PASS | 205/205 tests passed (28 files) |
-| Snapshot | Canonical hash | ✅ STABLE | 5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7 |
+| Snapshot | Canonical hash | ✅ STABLE | 4b115da6babd6e21e8fc497921c1f65dcbfff4721e332fa944d3636f034f465f |
 | Docs | Phase 5-6 closure | ✅ PASS | This document and attestation updated |
 
 ## V9 Determinism Resolution

@@ -1,40 +1,116 @@
 # M1 Phase 5 Validator Report
-HEAD: 94120a2af986f04af587390787b465d20d99c48e
-Generated: 2026-10-05T18:15:00Z
+
+**Date:** 2026-10-05T18:24:11.528Z  
+**HEAD:** `57d325c88839ebc8b1be7651e37811a1b3987385`  
+**Canonical Hash:** `4b115da6babd6e21e8fc497921c1f65dcbfff4721e332fa944d3636f034f465f`  
+**Snapshot:** `.agents/tasks/m1-snapshot-final.json`  
+
+---
 
 ## Validator Results
-- V1 (Schema): PASS - 0 errors, 0 warnings
-- V2 (Reference Integrity): PASS - 0 errors, 9 warnings
-- V3 (Evidence Paths): PASS - 0 errors, 0 warnings
-- V4 (Block Consistency): PASS - 0 errors, 0 warnings
-- V5 (Composer): PASS - 0 errors, 0 warnings
-- V6 (Dependency Graph): PASS - 0 errors, 0 warnings
-- V7 (Test References): PASS - 0 errors, 2 warnings
-- V8 (Evidence Completeness): PASS - 0 errors, 0 warnings
-- V9 (Determinism): PASS - 0 errors, 0 warnings
 
-## Warnings
+### V1: Schema
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 0
 
-### V2 Warnings (9 total)
-- API_NO_SERVICE_REFERENCE: 9 tutorial-composer API handlers do not reference known services
-  - /api/tutorial-composer/analysis
-  - /api/tutorial-composer/block-suggestions
-  - /api/tutorial-composer/import
-  - /api/tutorial-composer/presentation-ideas
-  - /api/tutorial-composer/sections
-  - /api/tutorial-composer/sections/[sectionId]/blocks
-  - /api/tutorial-composer/sections/[sectionId]/publish
-  - /api/tutorial-composer/sections/[sectionId]
-  - /api/tutorial-composer/sections/[sectionId]/suggestions/apply
+### V2: Reference Integrity
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 9
+- **Warning Details:**
+  1. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/analysis handler does not reference any known service
+  2. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/block-suggestions handler does not reference any known service
+  3. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/import handler does not reference any known service
+  4. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/presentation-ideas handler does not reference any known service
+  5. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/sections handler does not reference any known service
+  6. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/sections/[sectionId]/blocks handler does not reference any known service
+  7. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/sections/[sectionId]/publish handler does not reference any known service
+  8. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/sections/[sectionId] handler does not reference any known service
+  9. [API_NO_SERVICE_REFERENCE] API /api/tutorial-composer/sections/[sectionId]/suggestions/apply handler does not reference any known service
 
-### V7 Warnings (2 total)
-- TEST_FILE_NOT_FOUND: apps/web-app/vitest.config.ts
-- TEST_FILE_NOT_FOUND: apps/admin-app/vitest.config.ts
+### V3: Evidence Paths
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 0
 
-## Determinism Verification
-- Snapshot 1 canonical hash: 5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7
-- Snapshot 2 canonical hash: 5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7
-- **Determinism verified: PASS ✅**
+### V4: Block Consistency
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 0
 
-## Overall: PASS
-All validators passed with 11 warnings (non-blocking).
+### V5: Composer
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 0
+
+### V6: Dependency Graph
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 0
+
+### V7: Test References
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 2
+- **Warning Details:**
+  1. [TEST_FILE_NOT_FOUND] Test suite file not found: apps/web-app/vitest.config.ts (Path: apps/web-app/vitest.config.ts)
+  2. [TEST_FILE_NOT_FOUND] Test suite file not found: apps/admin-app/vitest.config.ts (Path: apps/admin-app/vitest.config.ts)
+
+### V8: Evidence Completeness
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 0
+
+### V9: Determinism
+- **Status:** ✅ PASS
+- **Errors:** 0
+- **Warnings:** 0
+
+---
+
+## Summary
+
+| Validator | Status | Errors | Warnings |
+|-----------|--------|--------|----------|
+| V1        | PASS   | 0      | 0        |
+| V2        | PASS   | 0      | 9        |
+| V3        | PASS   | 0      | 0        |
+| V4        | PASS   | 0      | 0        |
+| V5        | PASS   | 0      | 0        |
+| V6        | PASS   | 0      | 0        |
+| V7        | PASS   | 0      | 2        |
+| V8        | PASS   | 0      | 0        |
+| V9        | PASS   | 0      | 0        |
+
+**Total:** 0 errors, 11 warnings
+
+---
+
+## Fixture Reconciliation
+
+**Legacy Fixture:** `apps/skillhubcore-admin/src/lib/project-llm/projectLlmRepositoryIntelligence.ts`
+
+**Results:**
+- **Matches:** 14
+- **Discrepancies:** 3
+- **Unknown:** 0
+
+**Discrepancy Details:**
+1. **Verified implementation: I1** — I1 was verified in legacy but not found in snapshot verified list
+2. **Incomplete implementation: S1** — S1 was incomplete in legacy but not found in snapshot
+3. **Reconciliation summary** — 14 matches, 2 discrepancies. New snapshot is source of truth.
+
+**Overall fixture reconciliation:** MISMATCH (informational only — snapshot is source of truth per M1 specification)
+
+---
+
+## Conclusion
+
+✅ **ALL V1–V9 VALIDATORS PASS** with 0 errors and 11 warnings (non-blocking per M1 policy).
+
+**Determinism Status:** ✅ VERIFIED — Array sorting fix eliminates filesystem traversal order variance.
+
+**Fixture Reconciliation:** 2 informational discrepancies documented; new snapshot is source of truth.
+
+**Status:** READY_FOR_HAA_REVIEW

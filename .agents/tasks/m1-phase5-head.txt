@@ -1,3 +1,6 @@
-HEAD: 94120a2af986f04af587390787b465d20d99c48e
-Determinism fix: array sorting in canonical hash computation
-Test result: PASS (5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7)
+HEAD: 57d325c88839ebc8b1be7651e37811a1b3987385
+Canonical Hash: 4b115da6babd6e21e8fc497921c1f65dcbfff4721e332fa944d3636f034f465f
+Generation: 2026-10-05T18:24:11.528Z
+Determinism: VERIFIED (run1 == run2)
+V1-V9: ALL PASS (0 errors, 11 warnings)
+Tests: 205/205 PASS

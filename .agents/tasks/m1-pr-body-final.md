@@ -7,10 +7,10 @@
 ### Evidence Summary
 | Item | Value |
 |------|-------|
-| HEAD | 94120a2af986f04af587390787b465d20d99c48e |
+| HEAD | 57d325c88839ebc8b1be7651e37811a1b3987385 |
 | Base | 516b7bf62faa7672412d5ec543d78820116dd238 |
 | Tests | 205/205 (28 files) |
-| Snapshot canonicalHash | 5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7 |
+| Snapshot canonicalHash | 4b115da6babd6e21e8fc497921c1f65dcbfff4721e332fa944d3636f034f465f |
 | TypeScript | PASS |
 | V1-V9 validators | ALL PASS |
 | Snapshot determinism | PASS — array sorting eliminates traversal variance |

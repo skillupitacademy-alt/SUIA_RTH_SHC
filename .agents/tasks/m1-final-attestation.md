@@ -4,7 +4,7 @@
 **Milestone:** M1 Repository Discovery  
 **Package:** `@quiz/project-llm-discovery` v1.0.0  
 **Branch:** `m1-repository-discovery`  
-**HEAD:** `94120a2af986f04af587390787b465d20d99c48e`  
+**HEAD:** `57d325c88839ebc8b1be7651e37811a1b3987385`  
 **Status:** ✅ READY_FOR_HAA_REVIEW (Technical implementation complete; requires HAA approval)  
 
 ---
@@ -35,8 +35,8 @@
 ## Canonical Hash
 
 **Source:** `.agents/tasks/m1-snapshot-final.json`  
-**HEAD SHA:** `94120a2af986f04af587390787b465d20d99c48e`  
-**Canonical Hash:** `5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7`  
+**HEAD SHA:** `57d325c88839ebc8b1be7651e37811a1b3987385`  
+**Canonical Hash:** `4b115da6babd6e21e8fc497921c1f65dcbfff4721e332fa944d3636f034f465f`  
 **Format:** 64-character SHA-256 hex string  
 **Determinism Status:** ✅ PASS — V9 validator confirms deterministic snapshot generation  
 **Details:** Array sorting fix eliminates filesystem traversal order variance
@@ -79,7 +79,7 @@ cf0ceff7 feat(m1): add @quiz/project-llm-discovery package scaffold with TypeScr
 
 **Result:** ✅ PASS — Identical hashes produced
 
-**Canonical Hash:** `5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7`  
+**Canonical Hash:** `4b115da6babd6e21e8fc497921c1f65dcbfff4721e332fa944d3636f034f465f`  
 
 **Expected:** Same repository `commitSha` → same `canonicalHash`  
 **Actual:** Same repository `commitSha` → same `canonicalHash` ✅
@@ -239,7 +239,7 @@ All M1 critical constraints satisfied:
 ### Branch Status
 - **Branch:** `m1-repository-discovery`
 - **Base:** `main`
-- **HEAD:** `94120a2af986f04af587390787b465d20d99c48e`
+- **HEAD:** `57d325c88839ebc8b1be7651e37811a1b3987385`
 - **Base SHA:** `516b7bf62faa7672412d5ec543d78820116dd238`
 - **Status:** Awaiting HAA review
 
@@ -284,12 +284,12 @@ This branch has completed Phase 1-4 implementation with all P0 corrections appli
 
 ```json
 {
-  "headSha": "94120a2af986f04af587390787b465d20d99c48e",
+  "headSha": "57d325c88839ebc8b1be7651e37811a1b3987385",
   "baseSha": "516b7bf62faa7672412d5ec543d78820116dd238",
   "tests": { "files": 28, "passed": 205 },
   "snapshot": {
-    "commitSha": "94120a2af986f04af587390787b465d20d99c48e",
-    "canonicalHash": "5f51d252637594ab36291aa125335149d53041f7fdc52d65512bba3885a945e7"
+    "commitSha": "57d325c88839ebc8b1be7651e37811a1b3987385",
+    "canonicalHash": "4b115da6babd6e21e8fc497921c1f65dcbfff4721e332fa944d3636f034f465f"
   },
   "validators": {
     "V1": "PASS",
