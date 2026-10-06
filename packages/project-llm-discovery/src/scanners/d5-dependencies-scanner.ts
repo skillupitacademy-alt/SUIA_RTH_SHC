@@ -45,6 +45,7 @@ export async function scanDependencies(
       name: pkg.name,
       version: pkg.version,
       type: 'package',
+      evidenceId: pkg.evidenceId, // Reuse evidence from D1 structure scanner
     });
   }
 
@@ -58,17 +59,16 @@ export async function scanDependencies(
         const pkgContent = await adapter.readFile(pkgJsonPath);
         const contentHash = await adapter.getFileHash(pkgJsonPath);
 
-        collector.add(
-          collector.createEvidence(
-            scannerName,
-            'package',
-            pkgJsonPath,
-            contentHash,
-            'Package dependencies analyzed',
-            `file:${pkgJsonPath}`,
-            pkg.name
-          )
+        const evidence = collector.createEvidence(
+          scannerName,
+          'package',
+          pkgJsonPath,
+          contentHash,
+          'Package dependencies analyzed',
+          `file:${pkgJsonPath}`,
+          pkg.name
         );
+        collector.add(evidence);
 
         try {
           const pkgJson = JSON.parse(pkgContent) as {
@@ -86,6 +86,7 @@ export async function scanDependencies(
                   from: pkg.name,
                   to: depName,
                   kind: 'dependency',
+                  evidenceId: evidence.evidenceId,
                 });
               }
             }
@@ -100,6 +101,7 @@ export async function scanDependencies(
                   from: pkg.name,
                   to: depName,
                   kind: 'devDependency',
+                  evidenceId: evidence.evidenceId,
                 });
               }
             }
@@ -114,6 +116,7 @@ export async function scanDependencies(
                   from: pkg.name,
                   to: depName,
                   kind: 'peerDependency',
+                  evidenceId: evidence.evidenceId,
                 });
               }
             }

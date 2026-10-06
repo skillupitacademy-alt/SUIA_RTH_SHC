@@ -49,23 +49,23 @@ export async function scanComposer(
       const serviceContent = await adapter.readFile(COMPOSER_SERVICE_PATH);
       const contentHash = await adapter.getFileHash(COMPOSER_SERVICE_PATH);
 
-      collector.add(
-        collector.createEvidence(
-          scannerName,
-          'service',
-          COMPOSER_SERVICE_PATH,
-          contentHash,
-          'TutorialComposerService discovered',
-          `file:${COMPOSER_SERVICE_PATH}`,
-          'TutorialComposerService'
-        )
+      const evidence = collector.createEvidence(
+        scannerName,
+        'service',
+        COMPOSER_SERVICE_PATH,
+        contentHash,
+        'TutorialComposerService discovered',
+        `file:${COMPOSER_SERVICE_PATH}`,
+        'TutorialComposerService'
       );
+      collector.add(evidence);
 
       const serviceMethods = parseServiceMethods(serviceContent);
       services.push({
         name: 'TutorialComposerService',
         path: COMPOSER_SERVICE_PATH,
         methods: serviceMethods,
+        evidenceId: evidence.evidenceId,
       });
     }
   } catch (error) {
@@ -97,22 +97,22 @@ export async function scanComposer(
 
       for (const routeFile of routeFiles) {
         const contentHash = await adapter.getFileHash(routeFile);
-        const apiName = parseApiRoute(routeFile)?.endpoint ?? routeFile.split('/').pop()?.replace('.ts', '') ?? '';
-        
-        collector.add(
-          collector.createEvidence(
-            scannerName,
-            'api-route',
-            routeFile,
-            contentHash,
-            'Composer API route discovered',
-            `file:${routeFile}`,
-            apiName
-          )
-        );
-
         const apiInfo = parseApiRoute(routeFile);
+        const apiName = apiInfo?.endpoint ?? routeFile.split('/').pop()?.replace('.ts', '') ?? '';
+        
+        const evidence = collector.createEvidence(
+          scannerName,
+          'api-route',
+          routeFile,
+          contentHash,
+          'Composer API route discovered',
+          `file:${routeFile}`,
+          apiName
+        );
+        collector.add(evidence);
+
         if (apiInfo !== null) {
+          apiInfo.evidenceId = evidence.evidenceId;
           apis.push(apiInfo);
         }
       }
@@ -151,22 +151,22 @@ export async function scanComposer(
         }
 
         const contentHash = await adapter.getFileHash(schemaFile);
-        const schemaName = parseSchemaFile(schemaFile)?.name ?? schemaFile.split('/').pop()?.replace('.ts', '') ?? '';
-        
-        collector.add(
-          collector.createEvidence(
-            scannerName,
-            'schema',
-            schemaFile,
-            contentHash,
-            'Composer schema file discovered',
-            `file:${schemaFile}`,
-            schemaName
-          )
-        );
-
         const schemaInfo = parseSchemaFile(schemaFile);
+        const schemaName = schemaInfo?.name ?? schemaFile.split('/').pop()?.replace('.ts', '') ?? '';
+        
+        const evidence = collector.createEvidence(
+          scannerName,
+          'schema',
+          schemaFile,
+          contentHash,
+          'Composer schema file discovered',
+          `file:${schemaFile}`,
+          schemaName
+        );
+        collector.add(evidence);
+
         if (schemaInfo !== null) {
+          schemaInfo.evidenceId = evidence.evidenceId;
           schemas.push(schemaInfo);
         }
       }
@@ -203,22 +203,22 @@ export async function scanComposer(
 
       for (const uiFile of composerUIFiles) {
         const contentHash = await adapter.getFileHash(uiFile);
-        const uiName = parseUIComponent(uiFile)?.component ?? uiFile.split('/').pop()?.replace(/\.tsx?$/, '') ?? '';
-        
-        collector.add(
-          collector.createEvidence(
-            scannerName,
-            'ui-component',
-            uiFile,
-            contentHash,
-            'Composer UI component discovered',
-            `file:${uiFile}`,
-            uiName
-          )
-        );
-
         const uiInfo = parseUIComponent(uiFile);
+        const uiName = uiInfo?.component ?? uiFile.split('/').pop()?.replace(/\.tsx?$/, '') ?? '';
+        
+        const evidence = collector.createEvidence(
+          scannerName,
+          'ui-component',
+          uiFile,
+          contentHash,
+          'Composer UI component discovered',
+          `file:${uiFile}`,
+          uiName
+        );
+        collector.add(evidence);
+
         if (uiInfo !== null) {
+          uiInfo.evidenceId = evidence.evidenceId;
           ui.push(uiInfo);
         }
       }
@@ -335,6 +335,7 @@ function parseApiRoute(filePath: string): ComposerAPI | null {
     endpoint,
     method,
     handler: filePath,
+    evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
   };
 }
 
@@ -353,6 +354,7 @@ function parseSchemaFile(filePath: string): ComposerSchema | null {
     name: schemaName,
     path: filePath,
     tables: [], // Would need content parsing to extract
+    evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
   };
 }
 
@@ -369,5 +371,6 @@ function parseUIComponent(filePath: string): ComposerUI | null {
     component: componentName,
     path: filePath,
     blocksUsed: [], // Would need content parsing to extract
+    evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
   };
 }

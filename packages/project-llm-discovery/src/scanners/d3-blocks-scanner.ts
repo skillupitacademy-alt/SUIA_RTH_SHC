@@ -113,18 +113,21 @@ export async function scanBlocks(
       const typesContent = await adapter.readFile(BLOCK_TYPES_PATH);
       const contentHash = await adapter.getFileHash(BLOCK_TYPES_PATH);
 
-      collector.add(
-        collector.createEvidence(
-          scannerName,
-          'type-definition',
-          BLOCK_TYPES_PATH,
-          contentHash,
-          'Block type definitions discovered',
-          `file:${BLOCK_TYPES_PATH}`
-        )
+      const evidence = collector.createEvidence(
+        scannerName,
+        'type-definition',
+        BLOCK_TYPES_PATH,
+        contentHash,
+        'Block type definitions discovered',
+        `file:${BLOCK_TYPES_PATH}`
       );
+      collector.add(evidence);
 
       const implementedBlocks = parseBlockTypeDefinitions(typesContent);
+      // Populate evidenceId for each implementation
+      for (const impl of implementedBlocks) {
+        impl.evidenceId = evidence.evidenceId;
+      }
       implemented.push(...implementedBlocks);
     }
   } catch (error) {
@@ -162,19 +165,19 @@ export async function scanBlocks(
           // Use block type as symbol for deterministic ID
           const blockSymbol = rendererInfo?.blockType ?? tsxFile.split('/').pop()?.replace('.tsx', '') ?? '';
           
-          collector.add(
-            collector.createEvidence(
-              scannerName,
-              'component',
-              tsxFile,
-              contentHash,
-              'Block renderer component discovered',
-              `file:${tsxFile}`,
-              blockSymbol
-            )
+          const evidence = collector.createEvidence(
+            scannerName,
+            'component',
+            tsxFile,
+            contentHash,
+            'Block renderer component discovered',
+            `file:${tsxFile}`,
+            blockSymbol
           );
+          collector.add(evidence);
 
           if (rendererInfo !== null) {
+            rendererInfo.evidenceId = evidence.evidenceId;
             rendered.push(rendererInfo);
           }
         } catch (error) {
@@ -338,6 +341,7 @@ function parseBlockTypeDefinitions(content: string): BlockImplementation[] {
       version,
       path: BLOCK_TYPES_PATH,
       exported: true,
+      evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
     });
   }
 
@@ -363,6 +367,7 @@ function parseBlockTypeDefinitions(content: string): BlockImplementation[] {
       version: undefined,
       path: BLOCK_TYPES_PATH,
       exported: true,
+      evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
     });
   }
 
@@ -394,6 +399,7 @@ function parseRendererComponent(filePath: string): BlockRenderer | null {
     blockType,
     componentPath: filePath,
     registeredInRenderer: true, // Assume registered if file exists
+    evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
   };
 }
 
