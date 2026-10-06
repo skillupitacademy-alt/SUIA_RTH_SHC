@@ -214,6 +214,153 @@ class TestCertificationGates:
         assert result.status == CertificationGateStatus.PASS
         assert len(result.blockers) == 0
     
+    # Wave 6A: Comprehensive Brand Independence Tests
+    
+    def test_brand_gate_detects_hardcoded_logo(self, mock_snapshot_valid, repository_root):
+        """Brand gate detects hard-coded logo paths."""
+        test_file = repository_root / "LogoComponent.tsx"
+        test_file.write_text(
+            'import logo from "./assets/skillhub-logo.png";\nconst img = "/images/logo.svg";',
+            encoding='utf-8'
+        )
+        
+        executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
+        result = executor.execute_brand_independence_gate(['LogoComponent.tsx'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('logo' in b.lower() for b in result.blockers)
+    
+    def test_brand_gate_detects_hardcoded_url(self, mock_snapshot_valid, repository_root):
+        """Brand gate detects hard-coded brand URLs."""
+        test_file = repository_root / "LinkComponent.tsx"
+        test_file.write_text(
+            'const url = "https://skillhub.com/courses";',
+            encoding='utf-8'
+        )
+        
+        executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
+        result = executor.execute_brand_independence_gate(['LinkComponent.tsx'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('url' in b.lower() for b in result.blockers)
+    
+    def test_brand_gate_detects_hardcoded_font(self, mock_snapshot_valid, repository_root):
+        """Brand gate detects hard-coded font-family values."""
+        test_file = repository_root / "TextComponent.tsx"
+        test_file.write_text(
+            "const style = { fontFamily: 'Poppins, sans-serif' };",
+            encoding='utf-8'
+        )
+        
+        executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
+        result = executor.execute_brand_independence_gate(['TextComponent.tsx'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('font' in b.lower() for b in result.blockers)
+    
+    def test_brand_gate_detects_hardcoded_brand_id(self, mock_snapshot_valid, repository_root):
+        """Brand gate detects hard-coded brand ID in code."""
+        test_file = repository_root / "BrandComponent.tsx"
+        test_file.write_text(
+            'const config = { brandId: "skillhub" };',
+            encoding='utf-8'
+        )
+        
+        executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
+        result = executor.execute_brand_independence_gate(['BrandComponent.tsx'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('brand' in b.lower() for b in result.blockers)
+    
+    def test_brand_gate_allows_design_tokens(self, mock_snapshot_valid, repository_root):
+        """Brand gate allows CSS variables and design tokens."""
+        test_file = repository_root / "TokenComponent.tsx"
+        test_file.write_text(
+            """
+            const styles = {
+                color: 'var(--color-primary)',
+                backgroundColor: 'var(--color-secondary)',
+                fontFamily: 'var(--font-heading)'
+            };
+            const theme = theme.colors.primary;
+            """,
+            encoding='utf-8'
+        )
+        
+        # Add evidence
+        mock_snapshot_valid.setdefault('structure', {}).setdefault('evidence', []).append({
+            'evidenceId': 'ev-token-001',
+            'kind': 'component',
+            'path': 'TokenComponent.tsx',
+            'contentHash': 'test123',
+            'description': 'Token component'
+        })
+        
+        executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
+        result = executor.execute_brand_independence_gate(['TokenComponent.tsx'])
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert len(result.blockers) == 0
+        assert len(result.evidence_ids) > 0
+    
+    def test_brand_gate_detects_multiple_violations(self, mock_snapshot_valid, repository_root):
+        """Brand gate detects multiple violations in a single file."""
+        test_file = repository_root / "MultiViolation.tsx"
+        test_file.write_text(
+            """
+            const color = '#FF5733';
+            const logo = '/images/skillhub-logo.png';
+            const url = 'https://skillhub.com';
+            const font = { fontFamily: 'Poppins' };
+            const config = { brandId: 'skillhub' };
+            """,
+            encoding='utf-8'
+        )
+        
+        executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
+        result = executor.execute_brand_independence_gate(['MultiViolation.tsx'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        # Should detect multiple types of violations
+        assert len(result.blockers) >= 4  # At least color, logo, url, brand
+    
+    def test_brand_gate_provides_specific_line_numbers(self, mock_snapshot_valid, repository_root):
+        """Brand gate provides specific line numbers for findings."""
+        test_file = repository_root / "LineNumbers.tsx"
+        test_file.write_text(
+            "line 1\nline 2\nconst color = '#FF5733';\nline 4\n",
+            encoding='utf-8'
+        )
+        
+        executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
+        result = executor.execute_brand_independence_gate(['LineNumbers.tsx'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        # Should include line number in blocker message
+        assert any(':3:' in b or 'Line 3' in b or 'line 3' in b for b in result.blockers)
+    
+    def test_brand_gate_verifies_multiple_files(self, mock_snapshot_valid, repository_root):
+        """Brand gate can verify multiple files in one call."""
+        # Create clean file
+        clean_file = repository_root / "CleanComponent.tsx"
+        clean_file.write_text("const color = 'var(--color-primary)';", encoding='utf-8')
+        
+        # Create file with violation
+        dirty_file = repository_root / "DirtyComponent.tsx"
+        dirty_file.write_text("const color = '#FF5733';", encoding='utf-8')
+        
+        executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
+        result = executor.execute_brand_independence_gate(['CleanComponent.tsx', 'DirtyComponent.tsx'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('DirtyComponent.tsx' in b for b in result.blockers)
+    
     def test_registry_verification_gate_passes_with_registered_blocks(self, mock_snapshot_valid, repository_root):
         """Registry verification gate passes when blocks are registered."""
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)

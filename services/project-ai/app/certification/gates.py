@@ -167,76 +167,52 @@ class CertificationGateExecutor:
         """
         Execute brand independence verification gate.
         
+        Delegates to verification/brand.py for comprehensive brand coupling detection.
+        
         Scans candidate files for:
-        - Hard-coded colors (#xxx, rgb(), rgba(), hsl())
-        - Hard-coded brand references
-        - Hard-coded URLs
-        - Hard-coded asset paths
-        - Hard-coded brand IDs
+        - Hard-coded colors (#xxx, rgb(), rgba(), hsl()) not using CSS variables
+        - Hard-coded logos and brand assets
+        - Hard-coded brand URLs
+        - Hard-coded font-family values
+        - Hard-coded brand IDs in code
+        - Trademarked brand text in code
         
         Allows:
-        - CSS variables (var(--color-...))
-        - Theme references
+        - CSS variables (var(--color-primary))
+        - Design tokens (theme.colors.primary)
+        - Tailwind classes (bg-primary-500)
         - Props/data-driven values
         
         Returns:
-            GateExecutionResult with PASS/FAIL status
+            GateExecutionResult with PASS/FAIL status and detailed findings
         """
+        from app.verification.brand import verify_brand_independence
+        
         evidence_ids: List[str] = []
         blockers: List[str] = []
         
-        # Patterns indicating brand coupling
-        brand_coupling_patterns = [
-            (r'#[0-9A-Fa-f]{3,8}(?!["\'])', 'hard-coded hex color'),
-            (r'rgb\s*\([^)]+\)', 'hard-coded rgb color'),
-            (r'rgba\s*\([^)]+\)', 'hard-coded rgba color'),
-            (r'hsl\s*\([^)]+\)', 'hard-coded hsl color'),
-            (r'https?://[^\s"\']+\.(png|jpg|jpeg|gif|svg)', 'hard-coded image URL'),
-            (r'brandId\s*:\s*["\'][^"\']+["\']', 'hard-coded brand ID'),
-            (r'brand\s*=\s*["\'][^"\']+["\']', 'hard-coded brand reference'),
-        ]
-        
-        # For each candidate file, scan for brand coupling
+        # Verify each candidate file using dedicated brand verification module
         for candidate_file in candidate_files:
             file_path = self.repository_root / candidate_file
             
-            if not file_path.exists():
-                blockers.append(f"Candidate file not found: {candidate_file}")
-                continue
+            # Use the comprehensive brand verification module
+            result = verify_brand_independence(
+                file_path=file_path,
+                repository_root=self.repository_root,
+                snapshot=self.snapshot
+            )
             
-            try:
-                content = file_path.read_text(encoding='utf-8')
-                
-                # Check each pattern
-                import re
-                for pattern, description in brand_coupling_patterns:
-                    matches = list(re.finditer(pattern, content, re.IGNORECASE))
-                    
-                    if matches:
-                        # Get line numbers for findings
-                        lines = content[:matches[0].start()].count('\n') + 1
-                        blockers.append(
-                            f"{candidate_file}:{lines}: {description} found: {matches[0].group()[:30]}"
-                        )
-                
-                # Look for evidence that file is theme-aware (positive signal)
-                theme_patterns = [
-                    r'var\(--[^)]+\)',  # CSS variables
-                    r'theme\.',  # Theme object access
-                    r'className=',  # Tailwind/class-based styling
-                ]
-                
-                theme_aware = any(re.search(p, content) for p in theme_patterns)
-                
-                if theme_aware and not any(candidate_file in b for b in blockers):
-                    # File is theme-aware and has no blockers
-                    # Try to find evidence ID for this file
-                    evidence = self._find_evidence_by_path(candidate_file)
-                    if evidence:
-                        evidence_ids.append(evidence.get('evidenceId', ''))
-                        
-            except Exception as e:
-                blockers.append(f"Failed to scan {candidate_file}: {str(e)}")
+            # Collect evidence IDs
+            evidence_ids.extend(result.evidence_ids)
+            
+            # If file failed, add specific findings to blockers
+            if not result.passed:
+                for finding in result.findings:
+                    blockers.append(
+                        f"{finding.file_path}:{finding.line_number}: "
+                        f"{finding.description} - {finding.actual_value[:50]} "
+                        f"(Fix: {finding.recommendation})"
+                    )
         
         # Determine gate status
         if blockers:
@@ -595,90 +571,97 @@ class CertificationGateExecutor:
             blockers=[]
         )
     
-    def execute_theme_compatibility_gate(self, candidate_files: List[str]) -> GateExecutionResult:
+    def execute_theme_compatibility_gate(
+        self,
+        candidate_blocks: List[str],
+        target: str = 'skillhubcore-admin'
+    ) -> GateExecutionResult:
         """
         Execute theme compatibility gate.
         
-        Verifies that candidate files:
-        1. Use CSS variables or theme tokens for styling
-        2. Do not hard-code theme-specific values
-        3. Support light/dark mode (if applicable)
-        4. Use semantic color names
+        Verifies blocks render correctly under all supported themes:
+        1. Discover theme configurations from repository (SUIA, RTH, domain themes)
+        2. For each theme, verify block uses theme context (not hard-coded values)
+        3. Verify design token usage (CSS variables)
+        4. Detect hard-coded theme-specific colors
+        5. [Future: Browser verification under each theme]
+        
+        Theme discovery sources:
+        - packages/ui/src/theme-store.ts (EnterpriseTheme: theme-a, theme-b)
+        - apps/skillhubcore-admin/.../brandTheme.ts (BrandTutorialTheme: skillup/SUIA, rth/RTH)
+        - apps/realtutorialhub-web/src/lib/domain-themes.ts (DomainTheme: indigo, blue, teal, steel)
         
         Returns:
-            GateExecutionResult with PASS/FAIL status
+            GateExecutionResult with PASS/FAIL/BLOCKED status
         """
+        from app.verification.theme import verify_theme_compatibility
+        
         evidence_ids: List[str] = []
         blockers: List[str] = []
         
-        # Theme compatibility indicators (positive signals)
-        theme_patterns = [
-            (r'var\(--[^)]+\)', 'CSS variable'),
-            (r'theme\.\w+', 'theme object access'),
-            (r'className=', 'class-based styling'),
-            (r'tailwind', 'Tailwind CSS'),
-            (r'data-theme', 'theme data attribute'),
-        ]
+        # Get block verification data from snapshot
+        blocks_data = self.snapshot.get('blocks', {})
+        if not blocks_data:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Theme compatibility unavailable: snapshot contains no block data",
+                evidence_ids=[],
+                blockers=["Run TypeScript discovery scan to generate block verification data"]
+            )
         
-        # Anti-patterns (negative signals)
-        anti_patterns = [
-            (r'#[0-9A-Fa-f]{6}', 'hard-coded hex color'),
-            (r'rgb\(', 'hard-coded RGB color'),
-            (r'background:\s*["\']?(white|black|red|blue|green)', 'hard-coded color name'),
-        ]
-        
-        for candidate_file in candidate_files:
-            file_path = self.repository_root / candidate_file
+        # Verify theme compatibility for each candidate block
+        for candidate_block in candidate_blocks:
+            block_type = self._extract_block_type(candidate_block)
             
-            if not file_path.exists():
-                blockers.append(f"Candidate file not found: {candidate_file}")
-                continue
+            # Perform theme verification
+            results = verify_theme_compatibility(
+                block_type=block_type,
+                snapshot=self.snapshot,
+                repository_root=self.repository_root,
+                target=target
+            )
             
-            try:
-                content = file_path.read_text(encoding='utf-8')
+            # Check results for each theme
+            for result in results:
+                # Collect evidence IDs
+                evidence_ids.extend(result.evidence_ids)
                 
-                # Check for theme-aware patterns
-                import re
-                theme_score = sum(
-                    len(re.findall(pattern, content, re.IGNORECASE))
-                    for pattern, _ in theme_patterns
-                )
-                
-                # Check for anti-patterns
-                anti_pattern_matches = []
-                for pattern, description in anti_patterns:
-                    matches = re.findall(pattern, content, re.IGNORECASE)
-                    if matches:
-                        anti_pattern_matches.append((description, len(matches)))
-                
-                # If anti-patterns found, add blockers
-                if anti_pattern_matches:
-                    for description, count in anti_pattern_matches:
-                        blockers.append(f"{candidate_file}: {count} instance(s) of {description}")
-                
-                # If theme-aware and no anti-patterns, mark as compatible
-                if theme_score > 0 and not anti_pattern_matches:
-                    evidence = self._find_evidence_by_path(candidate_file)
-                    if evidence:
-                        evidence_ids.append(evidence.get('evidenceId', ''))
-                elif theme_score == 0:
-                    blockers.append(f"{candidate_file}: no theme-aware patterns detected")
-                    
-            except Exception as e:
-                blockers.append(f"Failed to scan {candidate_file}: {str(e)}")
+                # Check for failures
+                if not result.passed:
+                    if result.error_code:
+                        blockers.append(
+                            f"{candidate_block} ({result.theme_name}): "
+                            f"{result.error_code.value} - {result.error_message}"
+                        )
+                    else:
+                        blockers.append(
+                            f"{candidate_block} ({result.theme_name}): {result.error_message}"
+                        )
         
         # Determine gate status
         if blockers:
             return GateExecutionResult(
                 status=CertificationGateStatus.FAIL,
-                message=f"Theme compatibility failed: {len(blockers)} issue(s) found",
+                message=f"Theme compatibility failed: {len(blockers)} issue(s) across themes",
                 evidence_ids=evidence_ids,
                 blockers=blockers
             )
         
+        if not evidence_ids:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Theme compatibility incomplete: no evidence collected",
+                evidence_ids=[],
+                blockers=["Unable to locate evidence IDs for candidate blocks"]
+            )
+        
+        # Count unique themes verified
+        from app.verification.theme import discover_theme_configurations
+        themes = discover_theme_configurations(self.repository_root)
+        
         return GateExecutionResult(
             status=CertificationGateStatus.PASS,
-            message=f"Theme compatibility verified for {len(candidate_files)} file(s)",
+            message=f"Theme compatibility verified for {len(candidate_blocks)} block(s) across {len(themes)} theme(s)",
             evidence_ids=evidence_ids,
             blockers=[]
         )
