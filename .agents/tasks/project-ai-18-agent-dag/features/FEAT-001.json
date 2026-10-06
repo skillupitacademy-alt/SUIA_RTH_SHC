@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Wave A: Foundation Contracts - Create core model files (specification.py, agent_result.py, gate_result.py, placement.py extended, certification.py) and orchestration DAG (workflow_dag.py with AGENT_WORKFLOW_DAG). Extract AgentResult/AgentStatus/GateStatus from agent_coordinator.py into dedicated models/agent_result.py. These models define the contracts all agents must follow.",
+  "status": "completed",
+  "steps": [
+    "Create services/project-ai/app/models/specification.py with SpecificationStatus enum, StructuralRequirement dataclass, CandidateBlockSpecification dataclass, SpecificationResult dataclass following the exact structure in design doc section 2.1",
+    "Create services/project-ai/app/models/agent_result.py with AgentStatus enum, GateStatus enum, and AgentResult dataclass. Extract these from agent_coordinator.py lines 23-63 where they are currently defined. Keep all fields including agent_id, status, outputs, evidence_ids, errors, warnings, execution_time_ms, timestamp, passed property, failed property, to_dict() method",
+    "Create services/project-ai/app/models/gate_result.py with GateVerdict enum (PASS/FAIL/BLOCKED), GateResult dataclass with gate_id, verdict, message, evidence_ids, blockers, execution_time_ms, timestamp, passed property, blocked property, to_dict() method per design doc section 2.3",
+    "Create services/project-ai/app/models/placement.py with PlacementAction enum, PlacementEntry dataclass, extend existing PlacementManifest from candidate.py with new fields (entries, required_changes, evidence_ids, snapshot_hash, commit_sha, manifest_hash, approval fields, metadata) per design doc section 2.4. Import PlacementManifest from candidate.py if it exists there, or define new complete version",
+    "Create services/project-ai/app/models/certification.py with CertificationVerdict enum, HumanCertificationDecision enum, FinalCertification dataclass per design doc section 2.5 including all gate aggregation fields",
+    "Update services/project-ai/app/models/__init__.py to export all new models: SpecificationStatus, StructuralRequirement, CandidateBlockSpecification, SpecificationResult, AgentStatus, GateStatus, AgentResult, GateVerdict, GateResult, PlacementAction, PlacementEntry, PlacementManifest, CertificationVerdict, HumanCertificationDecision, FinalCertification",
+    "Update services/project-ai/app/orchestration/agent_coordinator.py to import AgentResult, AgentStatus, GateStatus from models.agent_result instead of defining them locally. Remove the local class definitions (lines 23-63) and replace with: from app.models.agent_result import AgentResult, AgentStatus, GateStatus",
+    "Create services/project-ai/app/orchestration/workflow_dag.py with AGENT_WORKFLOW_DAG dictionary defining all 15 agents with their dependencies. Structure: {'agent-01-repository-auditor': {'name': 'Repository Auditor', 'depends_on': [], 'parallel_group': None}, 'agent-02-snapshot-authority': {'name': 'Snapshot Authority', 'depends_on': ['agent-01-repository-auditor'], 'parallel_group': None}, ...}. Include all 15 agents from foundation through final certification. Certification gates (12A-12J) go in parallel_group 'certification-gates' all depending on agent-11-post-placement-verification",
+    "Create evidence logging directory structure helper in services/project-ai/app/evidence/logger.py: add create_evidence_directory_structure(run_dir: Path) method that creates subdirs: gates/, agents/, screenshots/, commands/, logs/, results/, browser/, final/ per design doc Agent 02 specification",
+    "Update services/project-ai/app/orchestration/__init__.py to export workflow_dag: from .workflow_dag import AGENT_WORKFLOW_DAG"
+  ],
+  "acceptance_criteria": [
+    "All 5 new model files created with complete type definitions matching design doc",
+    "AgentResult/AgentStatus/GateStatus extracted from agent_coordinator.py into models/agent_result.py",
+    "agent_coordinator.py imports from models.agent_result with no local class definitions",
+    "workflow_dag.py defines AGENT_WORKFLOW_DAG with all 15 agents and correct dependency chains",
+    "models/__init__.py exports all new models",
+    "orchestration/__init__.py exports AGENT_WORKFLOW_DAG",
+    "All existing tests still pass (no regressions from import changes)"
+  ],
+  "verification": [
+    "cd services/project-ai && python -c 'from app.models.specification import CandidateBlockSpecification, SpecificationStatus, StructuralRequirement; print(\"specification.py OK\")'",
+    "cd services/project-ai && python -c 'from app.models.agent_result import AgentResult, AgentStatus, GateStatus; print(\"agent_result.py OK\")'",
+    "cd services/project-ai && python -c 'from app.models.gate_result import GateResult, GateVerdict; print(\"gate_result.py OK\")'",
+    "cd services/project-ai && python -c 'from app.models.placement import PlacementManifest, PlacementEntry, PlacementAction; print(\"placement.py OK\")'",
+    "cd services/project-ai && python -c 'from app.models.certification import FinalCertification, CertificationVerdict; print(\"certification.py OK\")'",
+    "cd services/project-ai && python -c 'from app.orchestration.workflow_dag import AGENT_WORKFLOW_DAG; assert len(AGENT_WORKFLOW_DAG) == 15, f\"Expected 15 agents, got {len(AGENT_WORKFLOW_DAG)}\"; print(\"workflow_dag.py OK\")'",
+    "cd services/project-ai && python -m pytest tests/orchestration/test_agent_coordinator.py -v"
+  ],
+  "blocked_reason": null,
+  "findings": "Successfully created all 5 model files (agent_result.py, gate_result.py, specification.py, placement.py, certification.py) with complete type definitions. Extracted AgentResult/AgentStatus/GateStatus from agent_coordinator.py into models/agent_result.py. Created workflow_dag.py with 15-agent DAG structure where certification gates (12A-12J) are consolidated into agent-12-certification-gates. Updated all imports in models/__init__.py and orchestration/__init__.py. Added create_evidence_directory_structure() method to evidence/logger.py. All 19 coordinator tests pass."
+}

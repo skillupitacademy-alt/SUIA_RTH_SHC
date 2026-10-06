@@ -40,6 +40,20 @@ class EvidenceLogger:
         self.repository_root = Path(repository_root)
         self.evidence_root = self.repository_root / '.project-ai'
         self.runs_dir = self.evidence_root / 'runs'
+    
+    def create_evidence_directory_structure(self, run_dir: Path) -> None:
+        """
+        Create evidence directory structure for a run directory.
+        
+        Creates subdirectories: gates/, agents/, screenshots/, commands/, 
+        logs/, results/, browser/, final/ per Agent 02 specification.
+        
+        Args:
+            run_dir: Path to run directory
+        """
+        subdirs = ['gates', 'agents', 'screenshots', 'commands', 'logs', 'results', 'browser', 'final']
+        for subdir in subdirs:
+            (run_dir / subdir).mkdir(parents=True, exist_ok=True)
         
     def create_run_directory(
         self,

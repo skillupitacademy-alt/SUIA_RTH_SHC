@@ -8,23 +8,13 @@ capability declarations into functioning orchestrated workflows.
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, UTC
-from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 from collections import defaultdict
 
+from app.models.agent_result import AgentResult, AgentStatus, GateStatus
 from app.orchestration.agent_registry import Agent, AgentType, AgentRegistry
 from app.verification import brand, theme, composer, runtime, browser
-
-
-class AgentStatus(str, Enum):
-    """Status of an agent execution."""
-    
-    SUCCESS = "success"
-    FAILED = "failed"
-    BLOCKED = "blocked"
-    SKIPPED = "skipped"
-    RUNNING = "running"
 
 
 @dataclass
@@ -39,30 +29,6 @@ class AgentContext:
     prior_agent_outputs: Dict[str, 'AgentResult']
     repository_root: Path
     timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
-
-
-@dataclass
-class AgentResult:
-    """Result of an agent execution."""
-    
-    agent_id: str
-    status: AgentStatus
-    outputs: Dict[str, Any] = field(default_factory=dict)
-    evidence_ids: List[str] = field(default_factory=list)
-    errors: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
-    execution_time_ms: float = 0.0
-    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
-    
-    @property
-    def passed(self) -> bool:
-        """Check if agent execution was successful."""
-        return self.status == AgentStatus.SUCCESS
-    
-    @property
-    def failed(self) -> bool:
-        """Check if agent execution failed."""
-        return self.status == AgentStatus.FAILED
 
 
 class AgentCoordinator:
