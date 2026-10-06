@@ -11,6 +11,8 @@ import {
   scanDependencies,
   scanTests,
 } from '../scanners/index.js';
+import { scanBrandFacts } from '../scanners/brand-scanner.js';
+import { scanThemeFacts } from '../scanners/theme-scanner.js';
 
 /**
  * Build a complete repository snapshot by running all D1-D6 scanners
@@ -53,6 +55,16 @@ export async function buildSnapshot(
   collector.addAll(testsResult.evidence);
   allFindings.push(...testsResult.findings);
 
+  // Scan brand facts (Wave R2)
+  const brandResult = await scanBrandFacts(adapter);
+  collector.addAll(brandResult.evidence);
+  allFindings.push(...brandResult.findings);
+
+  // Scan theme facts (Wave R2)
+  const themeResult = await scanThemeFacts(adapter);
+  collector.addAll(themeResult.evidence);
+  allFindings.push(...themeResult.findings);
+
   // Normalize evidence and sort by evidenceId for deterministic ordering
   const normalizedEvidence = normalizeEvidence(collector.getAll()).sort((a, b) =>
     a.evidenceId.localeCompare(b.evidenceId)
@@ -84,6 +96,8 @@ export async function buildSnapshot(
     composer: composerResult.data,
     dependencies: dependenciesResult.data,
     tests: testsResult.data,
+    brand: brandResult.data,
+    theme: themeResult.data,
     evidence: normalizedEvidence,
     findings: allFindings,
   };

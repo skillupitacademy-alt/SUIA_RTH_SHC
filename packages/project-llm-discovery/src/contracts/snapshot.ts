@@ -193,6 +193,74 @@ export interface TestSuite {
   };
 }
 
+export interface BrandFacts {
+  hardCodedColors: Array<{
+    path: string;
+    lineNumber: number;
+    colorValue: string;
+    context: string;
+    evidenceId: string;
+  }>;
+  logoReferences: Array<{
+    path: string;
+    assetPath: string;
+    type: 'logo' | 'icon' | 'image';
+    evidenceId: string;
+  }>;
+  brandUrls: Array<{
+    path: string;
+    url: string;
+    domain: string;
+    evidenceId: string;
+  }>;
+  brandFonts: Array<{
+    path: string;
+    fontFamily: string;
+    evidenceId: string;
+  }>;
+  tenantIds: Array<{
+    path: string;
+    tenantId: string;
+    evidenceId: string;
+  }>;
+  brandCopy: Array<{
+    path: string;
+    text: string;
+    category: 'brand-name' | 'slogan' | 'tagline';
+    evidenceId: string;
+  }>;
+}
+
+export interface ThemeFacts {
+  themeConfigs: Array<{
+    path: string;
+    configType: 'tailwind' | 'css-modules' | 'styled-components' | 'theme-file';
+    evidenceId: string;
+  }>;
+  hardCodedValues: Array<{
+    path: string;
+    lineNumber: number;
+    property: string;
+    value: string;
+    context: string;
+    evidenceId: string;
+  }>;
+  cssVariables: Array<{
+    path: string;
+    variableName: string;
+    value: string;
+    scope: 'root' | 'scoped';
+    evidenceId: string;
+  }>;
+  themeTokens: Array<{
+    path: string;
+    tokenName: string;
+    tokenValue: string;
+    category: 'color' | 'spacing' | 'typography' | 'shadow' | 'other';
+    evidenceId: string;
+  }>;
+}
+
 export interface RepositorySnapshot {
   schemaVersion: '1.0.0' | '1.1.0';
   repository: {
@@ -233,6 +301,8 @@ export interface RepositorySnapshot {
     integration: TestSuite[];
     e2e: TestSuite[];
   };
+  brand?: BrandFacts;
+  theme?: ThemeFacts;
   evidence: Evidence[];
   findings: Finding[];
   canonicalHash: string;

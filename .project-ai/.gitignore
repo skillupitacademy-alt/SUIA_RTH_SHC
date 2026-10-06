@@ -1,0 +1,5 @@
+# Evidence logging - never commit sensitive data
+*.log
+*.err
+browser/
+screenshots/

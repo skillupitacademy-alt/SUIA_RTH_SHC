@@ -118,25 +118,173 @@ BRAND_FONTS = [
 ]
 
 
+def verify_brand_independence_from_snapshot(
+    file_path: str,
+    snapshot: Dict[str, Any]
+) -> BrandVerificationResult:
+    """
+    Verify that a file is brand-independent using snapshot brand facts.
+    
+    ARCHITECTURAL RULE: Python reads snapshot.brand ONLY. No file scanning.
+    
+    Args:
+        file_path: Relative path to the file (from snapshot)
+        snapshot: TypeScript discovery snapshot with brand facts
+    
+    Returns:
+        BrandVerificationResult with detailed findings from snapshot
+    """
+    brand_facts = snapshot.get('brand', {})
+    if not brand_facts:
+        return BrandVerificationResult(
+            file_path=file_path,
+            passed=False,
+            findings=[BrandFinding(
+                file_path=file_path,
+                line_number=0,
+                error_code=BrandErrorCode.BRAND_HARDCODED_COLOR,
+                description="Brand facts not available in snapshot",
+                actual_value="",
+                recommendation="Run TypeScript discovery: pnpm --filter @quiz/project-llm-discovery scan"
+            )]
+        )
+    
+    findings: List[BrandFinding] = []
+    
+    # Check hard-coded colors from snapshot
+    for color_ref in brand_facts.get('hardCodedColors', []):
+        if color_ref['path'] == file_path:
+            findings.append(BrandFinding(
+                file_path=file_path,
+                line_number=color_ref['lineNumber'],
+                error_code=BrandErrorCode.BRAND_HARDCODED_COLOR,
+                description=f"Hard-coded color {color_ref['colorValue']}",
+                actual_value=color_ref['colorValue'],
+                recommendation="Use CSS variable: var(--color-primary)",
+                context=color_ref['context']
+            ))
+    
+    # Check logo references from snapshot
+    for logo_ref in brand_facts.get('logoReferences', []):
+        if logo_ref['path'] == file_path:
+            findings.append(BrandFinding(
+                file_path=file_path,
+                line_number=0,
+                error_code=BrandErrorCode.BRAND_HARDCODED_LOGO,
+                description=f"Hard-coded {logo_ref['type']} reference",
+                actual_value=logo_ref['assetPath'],
+                recommendation="Use prop or config: logoUrl={brandConfig.logoUrl}",
+                context=""
+            ))
+    
+    # Check brand URLs from snapshot
+    for url_ref in brand_facts.get('brandUrls', []):
+        if url_ref['path'] == file_path:
+            findings.append(BrandFinding(
+                file_path=file_path,
+                line_number=0,
+                error_code=BrandErrorCode.BRAND_HARDCODED_URL,
+                description="Hard-coded brand URL",
+                actual_value=url_ref['url'],
+                recommendation="Use environment variable: baseUrl={process.env.NEXT_PUBLIC_BASE_URL}",
+                context=""
+            ))
+    
+    # Check brand fonts from snapshot
+    for font_ref in brand_facts.get('brandFonts', []):
+        if font_ref['path'] == file_path:
+            findings.append(BrandFinding(
+                file_path=file_path,
+                line_number=0,
+                error_code=BrandErrorCode.BRAND_HARDCODED_FONT,
+                description="Hard-coded font-family",
+                actual_value=font_ref['fontFamily'],
+                recommendation="Use CSS variable: font-family: var(--font-heading)",
+                context=""
+            ))
+    
+    # Check tenant IDs from snapshot
+    for tenant_ref in brand_facts.get('tenantIds', []):
+        if tenant_ref['path'] == file_path:
+            findings.append(BrandFinding(
+                file_path=file_path,
+                line_number=0,
+                error_code=BrandErrorCode.BRAND_HARDCODED_ID,
+                description="Hard-coded tenant ID",
+                actual_value=tenant_ref['tenantId'],
+                recommendation="Use prop or context: brand={currentBrand}",
+                context=""
+            ))
+    
+    # Check brand copy from snapshot
+    for copy_ref in brand_facts.get('brandCopy', []):
+        if copy_ref['path'] == file_path:
+            findings.append(BrandFinding(
+                file_path=file_path,
+                line_number=0,
+                error_code=BrandErrorCode.BRAND_TRADEMARK_TEXT,
+                description=f"Trademarked brand text ({copy_ref['category']})",
+                actual_value=copy_ref['text'],
+                recommendation="Use brand config: brandName={brandConfig.name}",
+                context=""
+            ))
+    
+    # Collect evidence IDs
+    evidence_ids: List[str] = []
+    for color_ref in brand_facts.get('hardCodedColors', []):
+        if color_ref['path'] == file_path and 'evidenceId' in color_ref:
+            evidence_ids.append(color_ref['evidenceId'])
+    for logo_ref in brand_facts.get('logoReferences', []):
+        if logo_ref['path'] == file_path and 'evidenceId' in logo_ref:
+            evidence_ids.append(logo_ref['evidenceId'])
+    for url_ref in brand_facts.get('brandUrls', []):
+        if url_ref['path'] == file_path and 'evidenceId' in url_ref:
+            evidence_ids.append(url_ref['evidenceId'])
+    for font_ref in brand_facts.get('brandFonts', []):
+        if font_ref['path'] == file_path and 'evidenceId' in font_ref:
+            evidence_ids.append(font_ref['evidenceId'])
+    for tenant_ref in brand_facts.get('tenantIds', []):
+        if tenant_ref['path'] == file_path and 'evidenceId' in tenant_ref:
+            evidence_ids.append(tenant_ref['evidenceId'])
+    for copy_ref in brand_facts.get('brandCopy', []):
+        if copy_ref['path'] == file_path and 'evidenceId' in copy_ref:
+            evidence_ids.append(copy_ref['evidenceId'])
+    
+    return BrandVerificationResult(
+        file_path=file_path,
+        passed=len(findings) == 0,
+        findings=findings,
+        is_theme_aware=False,  # Not checking theme awareness from snapshot yet
+        theme_patterns_found=[],
+        evidence_ids=evidence_ids
+    )
+
+
+# Legacy function kept for backwards compatibility but deprecated
 def verify_brand_independence(
     file_path: Path,
     repository_root: Path,
     snapshot: Optional[Dict[str, Any]] = None
 ) -> BrandVerificationResult:
     """
-    Verify that a file is brand-independent.
+    DEPRECATED: Use verify_brand_independence_from_snapshot() instead.
     
-    Scans the file for brand coupling patterns and provides specific findings
-    with line numbers, error codes, and recommendations.
+    This function violates the architectural rule: Python should NOT scan files.
+    All brand facts should come from TypeScript snapshot.brand.
     
     Args:
         file_path: Path to the file to verify
         repository_root: Root path of the repository
-        snapshot: Optional TypeScript discovery snapshot for evidence IDs
+        snapshot: TypeScript discovery snapshot
     
     Returns:
         BrandVerificationResult with detailed findings
     """
+    if snapshot:
+        relative_path = str(file_path.relative_to(repository_root) if file_path.is_absolute() else file_path)
+        return verify_brand_independence_from_snapshot(relative_path, snapshot)
+    
+    # Legacy implementation (violates architecture rule)
     relative_path = file_path.relative_to(repository_root) if file_path.is_absolute() else file_path
     
     if not file_path.exists():

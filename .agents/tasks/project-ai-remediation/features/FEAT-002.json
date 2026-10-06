@@ -1,0 +1,51 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "PHASE 2 Certification: PlacementManifest integration in all certification gates and complete agent handler infrastructure. Wave R3 updates CertificationGateExecutor in gates.py to require PlacementManifest parameter with manifest validation helper. Wave R4 creates services/project-ai/app/agents/ directory from scratch with 6 handler files (toolchain.py, dependency.py, intake.py, placement.py, governance.py, documentation.py) and wires dispatch mechanism in AgentCoordinator. Wave R5 already complete. These waves enable candidate certification with placement manifest enforcement and full agent execution.",
+  "status": "pending",
+  "steps": [
+    "1. Add _validate_manifest() helper method to CertificationGateExecutor class in services/project-ai/app/certification/gates.py that: verifies manifest hash matches content (tamper detection), checks for path inference from block name, validates all evidence IDs exist in snapshot, returns (is_valid, errors) tuple",
+    "2. Update all 6 gate methods in CertificationGateExecutor to require manifest: PlacementManifest parameter: execute_ubrc_gate(), execute_brand_independence_gate(), execute_registry_verification_gate(), execute_renderer_verification_gate(), execute_evidence_binding_gate(), execute_composer_verification_gate()",
+    "3. Each gate method must call self._validate_manifest(manifest) first and return BLOCKED status with errors if validation fails",
+    "4. Add tests to tests/certification/test_gates.py for: manifest hash verification, manifest tampering detection, path inference detection, gate execution with invalid manifest, manifest evidence validation (5 new tests)",
+    "5. Create services/project-ai/app/agents/ directory and __init__.py",
+    "6. Create services/project-ai/app/agents/toolchain.py with execute_toolchain(context: AgentContext) -> AgentResult that: extracts runtime.toolchains from snapshot, returns outputs with toolchain_count and toolchains list, collects evidence IDs from toolchain records",
+    "7. Create services/project-ai/app/agents/dependency.py with execute_dependency(context: AgentContext) -> AgentResult that: extracts dependencies.nodes and dependencies.edges from snapshot, detects cycles using graph traversal, detects version conflicts, returns outputs with node_count/edge_count/cycles/conflicts, adds warnings for cycles and conflicts",
+    "8. Create services/project-ai/app/agents/intake.py with execute_intake(context: AgentContext) -> AgentResult that: extracts candidate features using CanonicalComparator, classifies block family based on features (has_quiz_logic, has_media_embed, etc.), returns outputs with detected_family/confidence/reasoning/features",
+    "9. Create services/project-ai/app/agents/placement.py with execute_placement(context: AgentContext) -> AgentResult that: uses CanonicalComparator to compare candidate to canonical blocks, determines placement decision (ADD/UPDATE/EXTEND/REUSE/REJECT), generates PlacementManifest with manifest hash, returns outputs with manifest/similarity/existing_block",
+    "10. Create services/project-ai/app/agents/governance.py with execute_governance(context: AgentContext) -> AgentResult that: enforces self-approval prevention (submitter != approver), verifies manifest hash using PlacementExecutor, returns FAILED if self-approval detected or hash invalid, returns SUCCESS with approval_status/approver/timestamp on success",
+    "11. Create services/project-ai/app/agents/documentation.py with execute_documentation(context: AgentContext) -> AgentResult that: reads canonical backlog from .agents/tasks/m1-m2-backlog.md, generates certification run update section with date/commit/status/gate results, appends to backlog (never replaces), returns outputs with updated_file and section_added",
+    "12. Update AgentCoordinator.execute_agent() in services/project-ai/app/orchestration/agent_coordinator.py to add dispatch mechanism: if agent_id == 'toolchain' import and call execute_toolchain, elif agent_id == 'dependency' import and call execute_dependency, etc. for all 6 agents, return FAILED for unknown agent_id",
+    "13. Create tests/agents/ directory with __init__.py",
+    "14. Create tests/agents/test_toolchain.py with 4 tests: valid snapshot → SUCCESS, missing snapshot → FAILED, evidence collection, error handling",
+    "15. Create tests/agents/test_dependency.py with 4 tests: valid snapshot → SUCCESS, cycle detection, conflict detection, error handling",
+    "16. Create tests/agents/test_intake.py with 4 tests: valid candidate → SUCCESS, family classification accuracy, feature extraction, error handling",
+    "17. Create tests/agents/test_placement.py with 4 tests: valid candidate → SUCCESS with manifest, similarity computation, manifest hash generation, error handling",
+    "18. Create tests/agents/test_governance.py with 5 tests: valid approval → SUCCESS, self-approval → FAILED, manifest tampering → FAILED, submitter/approver enforcement, error handling",
+    "19. Create tests/agents/test_documentation.py with 4 tests: canonical append → SUCCESS, content grows not shrinks, existing content preserved, error handling",
+    "20. Run pytest tests/certification/test_gates.py tests/agents/ -v to verify all certification and agent tests pass"
+  ],
+  "acceptance_criteria": [
+    "CertificationGateExecutor._validate_manifest() method exists in services/project-ai/app/certification/gates.py",
+    "All 6 gate methods require manifest: PlacementManifest parameter and call _validate_manifest() before execution",
+    "tests/certification/test_gates.py includes 5 new tests for manifest validation (all passing)",
+    "services/project-ai/app/agents/ directory exists with 6 handler files: toolchain.py, dependency.py, intake.py, placement.py, governance.py, documentation.py",
+    "Each agent handler exports execute_{agent_name}(context: AgentContext) -> AgentResult function",
+    "AgentCoordinator.execute_agent() contains dispatch mechanism mapping agent_id to handler functions",
+    "tests/agents/ directory exists with 6 test files covering all agent handlers (24+ tests total)",
+    "All pytest tests in tests/certification/ and tests/agents/ pass (100% pass rate)",
+    "Self-approval prevention enforced in governance.py (submitter != approver check)",
+    "Canonical documentation append pattern implemented in documentation.py (never replaces existing content)"
+  ],
+  "verification": [
+    "cd services/project-ai && pytest tests/certification/test_gates.py tests/agents/ -v",
+    "Verify agents directory exists: ls -la services/project-ai/app/agents/",
+    "Verify all 6 agent handlers exist: ls services/project-ai/app/agents/*.py",
+    "Verify dispatch mechanism exists: grep -A 20 'def execute_agent' services/project-ai/app/orchestration/agent_coordinator.py | grep 'if agent_id'",
+    "Verify manifest validation in gates: grep '_validate_manifest' services/project-ai/app/certification/gates.py",
+    "Count agent tests: find tests/agents -name 'test_*.py' | wc -l (expect 6 files)",
+    "Verify self-approval prevention: grep 'submitter.*approver' services/project-ai/app/agents/governance.py"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -76,12 +76,45 @@ class ThemeConfiguration:
     source_file: str
 
 
+def discover_theme_configurations_from_snapshot(
+    snapshot: Dict[str, Any]
+) -> List[ThemeConfiguration]:
+    """
+    Discover theme configurations from TypeScript snapshot.
+    
+    ARCHITECTURAL RULE: Python reads snapshot.theme ONLY. No file scanning.
+    
+    Args:
+        snapshot: TypeScript discovery snapshot with theme facts
+        
+    Returns:
+        List of discovered theme configurations from snapshot
+    """
+    themes: List[ThemeConfiguration] = []
+    theme_facts = snapshot.get('theme', {})
+    
+    if not theme_facts:
+        return themes
+    
+    # Extract theme configs from snapshot
+    for theme_config in theme_facts.get('themeConfigs', []):
+        themes.append(ThemeConfiguration(
+            name=f"{theme_config['configType']} theme",
+            identifier=theme_config['configType'],
+            colors={},  # Colors would need to be parsed from snapshot if needed
+            source_file=theme_config['path']
+        ))
+    
+    return themes
+
+
+# Legacy function kept for backwards compatibility but deprecated
 def discover_theme_configurations(repository_root: Path) -> List[ThemeConfiguration]:
     """
-    Discover theme configurations from repository.
+    DEPRECATED: Use discover_theme_configurations_from_snapshot() instead.
     
-    ARCHITECTURAL RULE: Theme configurations must be discovered from
-    repository files, not hard-coded in this module.
+    This function violates the architectural rule: Python should NOT scan files.
+    All theme facts should come from TypeScript snapshot.theme.
     
     Discovery Strategy:
     1. Search for theme configuration files:
@@ -99,6 +132,7 @@ def discover_theme_configurations(repository_root: Path) -> List[ThemeConfigurat
     Returns:
         List of discovered theme configurations
     """
+    # Legacy implementation (violates architecture rule)
     themes: List[ThemeConfiguration] = []
     
     # 1. Discover EnterpriseTheme (theme-a, theme-b)
@@ -280,15 +314,13 @@ def verify_theme_compatibility(
     target: str = 'skillhubcore-admin',
 ) -> List[ThemeVerification]:
     """
-    Verify block theme compatibility across all discovered themes.
+    Verify block theme compatibility using snapshot theme facts.
     
     ARCHITECTURAL RULE:
-    1. Discover theme configurations from repository (not hard-coded)
-    2. For each theme, verify block renders correctly
-    3. Check theme context usage
-    4. Verify design token usage
-    5. Detect hard-coded theme values
-    6. Browser verification would go here (future: integrate with browser.py)
+    1. Read theme configurations from snapshot.theme (not files)
+    2. Read hard-coded theme values from snapshot.theme (not files)
+    3. Verify theme context usage from snapshot facts
+    4. Use evidence IDs from snapshot
     
     Args:
         block_type: Block type to verify (e.g., 'introduction')
@@ -301,16 +333,16 @@ def verify_theme_compatibility(
     """
     results: List[ThemeVerification] = []
     
-    # Discover themes from repository
-    themes = discover_theme_configurations(repository_root)
+    # Discover themes from snapshot (not files)
+    themes = discover_theme_configurations_from_snapshot(snapshot)
     
     if not themes:
-        # No themes discovered - blocked
+        # No themes discovered from snapshot - blocked
         results.append(ThemeVerification(
             passed=False,
             theme_name="<unavailable>",
             error_code=ThemeErrorCode.THEME_CONFIG_UNAVAILABLE,
-            error_message="No theme configurations discovered from repository",
+            error_message="No theme configurations in snapshot. Run TypeScript scan.",
             evidence_ids=[],
             theme_context_detected=False,
             design_tokens_used=[],
@@ -370,24 +402,36 @@ def verify_theme_compatibility(
             ))
         return results
     
-    block_impl_path = repository_root / implementation_path_str
+    # Check for hard-coded theme values from snapshot.theme
+    theme_facts = snapshot.get('theme', {})
+    hardcoded_values: List[str] = []
+    design_tokens: List[str] = []
     
-    # Verify theme context usage
-    uses_theme_context, hardcoded_values = verify_theme_context_usage(
-        block_impl_path,
-        repository_root
-    )
+    for hardcoded_ref in theme_facts.get('hardCodedValues', []):
+        if hardcoded_ref['path'] == implementation_path_str:
+            hardcoded_values.append(f"{hardcoded_ref['property']}: {hardcoded_ref['value']}")
     
-    # Verify design token usage
-    design_tokens = verify_design_token_usage(
-        block_impl_path,
-        repository_root
-    )
+    # Check for CSS variable (design token) usage from snapshot.theme
+    for css_var_ref in theme_facts.get('cssVariables', []):
+        if css_var_ref['path'] == implementation_path_str:
+            design_tokens.append(css_var_ref['variableName'])
+    
+    # Determine theme context usage
+    uses_theme_context = len(design_tokens) > 0
     
     # Collect evidence IDs
     evidence_ids = []
     if 'evidenceId' in block_record:
         evidence_ids.append(block_record['evidenceId'])
+    
+    # Add evidence from theme facts
+    for hardcoded_ref in theme_facts.get('hardCodedValues', []):
+        if hardcoded_ref['path'] == implementation_path_str and 'evidenceId' in hardcoded_ref:
+            evidence_ids.append(hardcoded_ref['evidenceId'])
+    
+    for css_var_ref in theme_facts.get('cssVariables', []):
+        if css_var_ref['path'] == implementation_path_str and 'evidenceId' in css_var_ref:
+            evidence_ids.append(css_var_ref['evidenceId'])
     
     # Verify compatibility for each theme
     for theme in themes:
@@ -401,7 +445,7 @@ def verify_theme_compatibility(
             passed = False
             error_code = ThemeErrorCode.THEME_HARDCODED_VALUES
             error_message = (
-                f"Block contains hard-coded theme values: {', '.join(hardcoded_values)}"
+                f"Block contains hard-coded theme values from snapshot: {', '.join(hardcoded_values)}"
             )
         
         # Check for theme context usage
@@ -409,12 +453,8 @@ def verify_theme_compatibility(
             passed = False
             error_code = ThemeErrorCode.THEME_CONTEXT_MISSING
             error_message = (
-                f"Block does not use theme context (no theme prop, theme hooks, or CSS variables)"
+                f"Block does not use design tokens (no CSS variables found in snapshot)"
             )
-        
-        # Future: Browser-based visual verification would go here
-        # This would launch browser with theme context and capture screenshot
-        # For now, we rely on static code analysis
         
         results.append(ThemeVerification(
             passed=passed,
