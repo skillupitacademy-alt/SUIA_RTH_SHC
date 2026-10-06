@@ -385,3 +385,144 @@ class TestCreationAPIWithRealGates:
             assert gate["status"] != "PASS", \
                 f"Gate {gate['gateType']} unconditionally passed without snapshot"
             assert gate["status"] == "BLOCKED"
+
+
+class TestWave3UBRCIntegration:
+    """Wave 3: UBRC Python↔TypeScript integration tests."""
+    
+    @pytest.fixture
+    def repository_root(self, tmp_path):
+        return tmp_path
+    
+    def test_ubrc_gate_reads_typescript_verification_results(self):
+        """UBRC gate reads TypeScript D3 scanner results (not reimplementing verification)."""
+        snapshot = {
+            'blocks': {
+                'verified': [
+                    {
+                        'blockType': 'introduction',
+                        'version': 'I1',
+                        'ubrcStatus': 'UBRC_VALID',
+                        'ubrcDetails': {
+                            'hasDataBlockVersion': True,
+                            'registryEntry': True,
+                            'versionMatch': True
+                        }
+                    }
+                ],
+                'rendered': [
+                    {
+                        'blockType': 'introduction',
+                        'evidenceId': 'ev-renderer-001'
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-impl-001',
+                    'kind': 'type-definition',
+                    'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                    'contentHash': 'abc',
+                    'symbol': 'introduction'
+                },
+                {
+                    'evidenceId': 'ev-renderer-001',
+                    'kind': 'component',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': 'def',
+                    'symbol': 'introduction'
+                }
+            ]
+        }
+        
+        executor = CertificationGateExecutor(snapshot, Path('.'))
+        result = executor.execute_ubrc_gate(['I1'])
+        
+        # Python reads TS results, doesn't reimplement
+        assert result.status == CertificationGateStatus.PASS
+        assert 'ev-impl-001' in result.evidence_ids or 'ev-renderer-001' in result.evidence_ids
+    
+    def test_ubrc_gate_fails_on_typescript_ubrc_attribute_missing(self):
+        """UBRC gate fails when TypeScript reports UBRC_ATTRIBUTE_MISSING."""
+        snapshot = {
+            'blocks': {
+                'verified': [
+                    {
+                        'blockType': 'quiz',
+                        'version': 'Q1',
+                        'ubrcStatus': 'UBRC_ATTRIBUTE_MISSING'
+                    }
+                ]
+            },
+            'evidence': []
+        }
+        
+        executor = CertificationGateExecutor(snapshot, Path('.'))
+        result = executor.execute_ubrc_gate(['Q1'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert any('attribute' in b.lower() for b in result.blockers)
+    
+    def test_ubrc_gate_fails_on_typescript_ubrc_renderer_missing(self):
+        """UBRC gate fails when TypeScript reports UBRC_RENDERER_MISSING."""
+        snapshot = {
+            'blocks': {
+                'verified': [
+                    {
+                        'blockType': 'assessment',
+                        'version': 'A1',
+                        'ubrcStatus': 'UBRC_RENDERER_MISSING'
+                    }
+                ]
+            },
+            'evidence': []
+        }
+        
+        executor = CertificationGateExecutor(snapshot, Path('.'))
+        result = executor.execute_ubrc_gate(['A1'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert any('renderer' in b.lower() for b in result.blockers)
+    
+    def test_ubrc_gate_collects_real_evidence_ids_from_typescript(self):
+        """UBRC gate collects real evidence IDs from TypeScript snapshot (not synthetic)."""
+        snapshot = {
+            'blocks': {
+                'verified': [
+                    {
+                        'blockType': 'code',
+                        'version': 'C1',
+                        'ubrcStatus': 'UBRC_VALID'
+                    }
+                ],
+                'rendered': []
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-code-impl-001',
+                    'kind': 'type-definition',
+                    'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                    'contentHash': 'xyz',
+                    'symbol': 'code'
+                },
+                {
+                    'evidenceId': 'ev-code-render-001',
+                    'kind': 'component',
+                    'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+                    'contentHash': 'xyz2',
+                    'symbol': 'code'
+                }
+            ]
+        }
+        
+        executor = CertificationGateExecutor(snapshot, Path('.'))
+        result = executor.execute_ubrc_gate(['C1'])
+        
+        # Evidence IDs must be from TypeScript system
+        assert result.status == CertificationGateStatus.PASS
+        assert len(result.evidence_ids) > 0
+        for eid in result.evidence_ids:
+            assert eid.startswith('ev-')
+            assert 'candidate' not in eid  # Not synthetic
+            assert 'code' in eid  # Real evidence from snapshot
+

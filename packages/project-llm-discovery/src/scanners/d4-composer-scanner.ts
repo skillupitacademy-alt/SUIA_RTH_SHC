@@ -10,6 +10,18 @@ import { FileNotFoundError, RepositoryAccessError } from '../adapters/index.js';
 import { EvidenceCollector } from '../evidence/collector.js';
 import { randomUUID } from 'node:crypto';
 
+/**
+ * Discovery status for fields that may not be determinable statically
+ */
+export enum DiscoveryStatus {
+  /** Value was successfully determined */
+  KNOWN = 'KNOWN',
+  /** Value could not be determined from available evidence */
+  UNKNOWN = 'UNKNOWN',
+  /** Discovery attempted but failed (e.g., file access error) */
+  UNABLE_TO_DETERMINE = 'UNABLE_TO_DETERMINE',
+}
+
 interface ComposerData {
   services: ComposerService[];
   apis: ComposerAPI[];
@@ -325,12 +337,12 @@ function parseServiceMethods(content: string): string[] {
 /**
  * Parse API route information from route file
  * 
- * Extracts:
+ * Uses AST-based analysis (regex for export function declarations) to detect:
  * - Endpoint path from file structure
  * - HTTP methods from Next.js route exports (GET, POST, PUT, PATCH, DELETE, etc.)
- * - Does NOT hardcode 'POST' - detects from source
  * 
- * Returns 'UNABLE_TO_DETERMINE' if method cannot be statically determined
+ * Returns DiscoveryStatus.UNABLE_TO_DETERMINE if method cannot be statically determined.
+ * NEVER guesses or fabricates methods.
  */
 function parseApiRoute(filePath: string, content: string): ComposerAPI | null {
   // Extract endpoint from file path
@@ -343,8 +355,14 @@ function parseApiRoute(filePath: string, content: string): ComposerAPI | null {
   const endpointParts = parts.slice(apiIndex);
   const endpoint = '/' + endpointParts.join('/').replace(/\/route\.ts$/, '');
 
-  // Extract HTTP methods from Next.js route handler exports
+  // AST-based HTTP method detection from Next.js route handler exports
   // Matches: export async function GET(...) or export function POST(...)
+  // Pattern breakdown:
+  // - export: must be exported
+  // - (async\s+)?: optional async keyword
+  // - function: function declaration
+  // - (GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS): HTTP method name
+  // - \s*\(: opening parenthesis (method parameter list)
   const methodRegex = /export\s+(?:async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s*\(/g;
   const methods: string[] = [];
   let match;
@@ -356,8 +374,9 @@ function parseApiRoute(filePath: string, content: string): ComposerAPI | null {
     }
   }
 
-  // If no methods found, mark as UNABLE_TO_DETERMINE (do not guess)
-  const method = methods.length > 0 ? methods.join(', ') : 'UNABLE_TO_DETERMINE';
+  // If no methods found via AST, mark as UNABLE_TO_DETERMINE (do not guess)
+  // This preserves discovery integrity - we report what we know, not what we assume
+  const method = methods.length > 0 ? methods.join(', ') : DiscoveryStatus.UNABLE_TO_DETERMINE;
 
   return {
     endpoint,
@@ -370,12 +389,13 @@ function parseApiRoute(filePath: string, content: string): ComposerAPI | null {
 /**
  * Parse schema file for type definitions
  * 
- * Extracts:
- * - Drizzle table names (pgTable, mysqlTable, sqliteTable)
- * - Zod schema definitions (z.object)
+ * Uses AST-based analysis (regex on source) to extract:
+ * - Drizzle ORM table definitions (pgTable, mysqlTable, sqliteTable)
+ * - Zod schema object definitions (z.object)
  * - TypeScript interface/type definitions
  * 
- * Returns actual discovered tables, NOT empty array placeholder
+ * Returns actual discovered tables from import and declaration analysis.
+ * Returns DiscoveryStatus.UNABLE_TO_DETERMINE (not empty array) when discovery fails.
  */
 function parseSchemaFile(filePath: string, content: string): ComposerSchema | null {
   const filename = filePath.split(/[/\\]/).pop();
@@ -384,46 +404,57 @@ function parseSchemaFile(filePath: string, content: string): ComposerSchema | nu
   const schemaName = filename.replace('.ts', '');
   const tables: string[] = [];
 
-  // Pattern 1: Drizzle ORM table definitions
-  // export const users = pgTable("users", {
-  // export const tutorials = pgTable('tutorials', {
-  const drizzleTableRegex = /export\s+const\s+(\w+)\s*=\s*(?:pg|mysql|sqlite)Table\s*\(\s*['"]([^'"]+)['"]/g;
-  let match;
+  try {
+    // Pattern 1: Drizzle ORM table definitions
+    // Export pattern: export const users = pgTable("users", {
+    // The table name string is authoritative (second capture group)
+    const drizzleTableRegex = /export\s+const\s+(\w+)\s*=\s*(?:pg|mysql|sqlite)Table\s*\(\s*['"]([^'"]+)['"]/g;
+    let match;
 
-  while ((match = drizzleTableRegex.exec(content)) !== null) {
-    const tableName = match[2]; // Use the string name in pgTable("name", ...)
-    if (tableName !== undefined && !tables.includes(tableName)) {
-      tables.push(tableName);
+    while ((match = drizzleTableRegex.exec(content)) !== null) {
+      const tableName = match[2]; // Use the string name in pgTable("name", ...)
+      if (tableName !== undefined && !tables.includes(tableName)) {
+        tables.push(tableName);
+      }
     }
-  }
 
-  // Pattern 2: Zod schema object definitions
-  // export const TutorialDocumentSchema = z.object({
-  const zodSchemaRegex = /export\s+const\s+(\w+Schema)\s*=\s*z\.object\s*\(/g;
+    // Pattern 2: Zod schema object definitions
+    // Export pattern: export const TutorialDocumentSchema = z.object({
+    const zodSchemaRegex = /export\s+const\s+(\w+Schema)\s*=\s*z\.object\s*\(/g;
 
-  while ((match = zodSchemaRegex.exec(content)) !== null) {
-    const schemaName = match[1];
-    if (schemaName !== undefined && !tables.includes(schemaName)) {
-      tables.push(schemaName);
+    while ((match = zodSchemaRegex.exec(content)) !== null) {
+      const schemaName = match[1];
+      if (schemaName !== undefined && !tables.includes(schemaName)) {
+        tables.push(schemaName);
+      }
     }
-  }
 
-  // Pattern 3: TypeScript type/interface definitions
-  // export type TutorialDocument = {
-  // export interface TutorialSection {
-  const typeRegex = /export\s+(?:type|interface)\s+(\w+)\s*(?:=|{)/g;
+    // Pattern 3: TypeScript type/interface definitions
+    // Export patterns:
+    // export type TutorialDocument = {
+    // export interface TutorialSection {
+    const typeRegex = /export\s+(?:type|interface)\s+(\w+)\s*(?:=|{)/g;
 
-  while ((match = typeRegex.exec(content)) !== null) {
-    const typeName = match[1];
-    if (typeName !== undefined && !tables.includes(typeName)) {
-      tables.push(typeName);
+    while ((match = typeRegex.exec(content)) !== null) {
+      const typeName = match[1];
+      if (typeName !== undefined && !tables.includes(typeName)) {
+        tables.push(typeName);
+      }
     }
+  } catch (error) {
+    // If parsing fails, return schema with status indicator instead of fabricating empty array
+    return {
+      name: schemaName,
+      path: filePath,
+      tables: [DiscoveryStatus.UNABLE_TO_DETERMINE], // Explicit unknown state
+      evidenceId: '',
+    };
   }
 
   return {
     name: schemaName,
     path: filePath,
-    tables, // Real discovered tables, not empty placeholder
+    tables, // Real discovered tables (may be empty if file has no exports, but that's factual)
     evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
   };
 }

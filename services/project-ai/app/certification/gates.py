@@ -57,11 +57,16 @@ class CertificationGateExecutor:
         """
         Execute UBRC (Universal Block Renderer Contract) compliance gate.
         
-        Verification chain:
+        ARCHITECTURAL RULE: Python calls TypeScript for UBRC verification.
+        The TS D3 scanner performs the actual UBRC verification chain:
         1. Block type exists in BLOCK_REGISTRY
         2. Renderer implementation exists
         3. Renderer includes data-block-version attribute (for versioned blocks)
         4. Version matches across implementation and registry
+        5. Runtime dispatch case exists in TutorialBlockRenderer.tsx
+        
+        Python reads the verification results from the snapshot and interprets them.
+        Python does NOT reimplement UBRC verification logic.
         
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
@@ -69,7 +74,7 @@ class CertificationGateExecutor:
         evidence_ids: List[str] = []
         blockers: List[str] = []
         
-        # Get UBRC verification results from D3 scanner
+        # Get UBRC verification results from D3 scanner (TypeScript authoritative source)
         blocks_data = self.snapshot.get('blocks', {})
         verified_blocks = blocks_data.get('verified', [])
         
@@ -86,7 +91,7 @@ class CertificationGateExecutor:
             # Extract block type from candidate (e.g., "I1" -> "introduction", "C1" -> "code")
             block_type = self._extract_block_type(candidate_block)
             
-            # Find verification record
+            # Find verification record from TypeScript D3 scanner
             verification = next(
                 (v for v in verified_blocks if v.get('blockType') == block_type),
                 None
@@ -96,10 +101,17 @@ class CertificationGateExecutor:
                 blockers.append(f"Block '{candidate_block}' not found in repository verification")
                 continue
             
-            # Check UBRC status
+            # Check UBRC status (determined by TypeScript D3 scanner)
             ubrc_status = verification.get('ubrcStatus')
             
             if ubrc_status == 'UBRC_VALID':
+                # Full UBRC chain verified by TypeScript:
+                # ✓ Registry entry exists
+                # ✓ Renderer implementation exists
+                # ✓ data-block-version attribute present (for versioned blocks)
+                # ✓ Version matches across implementation and registry
+                # ✓ Runtime dispatch case exists
+                
                 # Collect evidence IDs from the block's implementation
                 impl_evidence = self._find_evidence_by_block(block_type, 'type-definition')
                 renderer_evidence = self._find_evidence_by_block(block_type, 'component')
