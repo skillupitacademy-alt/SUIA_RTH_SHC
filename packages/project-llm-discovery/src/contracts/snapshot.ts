@@ -7,6 +7,7 @@ export interface ApplicationInfo {
   type: string;
   framework: string;
   entrypoint: string;
+  evidenceId: string;
 }
 
 export interface PackageInfo {
@@ -15,6 +16,7 @@ export interface PackageInfo {
   version: string;
   dependencies: string[];
   exports: string[];
+  evidenceId: string;
 }
 
 export interface ServiceInfo {
@@ -23,6 +25,7 @@ export interface ServiceInfo {
   type: string;
   port?: number;
   entrypoint: string;
+  evidenceId: string;
 }
 
 export interface FrameworkInfo {
@@ -54,12 +57,14 @@ export interface BlockImplementation {
   version?: string;
   path: string;
   exported: boolean;
+  evidenceId: string;
 }
 
 export interface BlockRenderer {
   blockType: string;
   componentPath: string;
   registeredInRenderer: boolean;
+  evidenceId: string;
 }
 
 /**
@@ -109,24 +114,28 @@ export interface ComposerService {
   name: string;
   path: string;
   methods: string[];
+  evidenceId: string;
 }
 
 export interface ComposerAPI {
   endpoint: string;
   method: string;
   handler: string;
+  evidenceId: string;
 }
 
 export interface ComposerSchema {
   name: string;
   path: string;
   tables: string[];
+  evidenceId: string;
 }
 
 export interface ComposerUI {
   component: string;
   path: string;
   blocksUsed: string[];
+  evidenceId: string;
 }
 
 export interface DependencyNode {
@@ -134,12 +143,14 @@ export interface DependencyNode {
   name: string;
   version: string;
   type: 'package' | 'app' | 'service';
+  evidenceId: string;
 }
 
 export interface DependencyEdge {
   from: string;
   to: string;
   kind: 'dependency' | 'devDependency' | 'peerDependency';
+  evidenceId: string;
 }
 
 export interface TestSuite {
