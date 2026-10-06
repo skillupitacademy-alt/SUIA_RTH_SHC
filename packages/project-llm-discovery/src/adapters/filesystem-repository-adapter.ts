@@ -181,7 +181,7 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
     return new Promise((resolve, reject) => {
       const child = spawn(commandSpec.command, commandSpec.args, {
         cwd: this.rootPath,
-        shell: true,
+        shell: false,
         timeout: TIMEOUT_MS,
       });
 
