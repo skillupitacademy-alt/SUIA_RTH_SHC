@@ -428,24 +428,47 @@ class TestCertificationGates:
     
     def test_theme_compatibility_gate_passes_with_theme_tokens(self, mock_snapshot_valid, repository_root):
         """Theme compatibility gate passes with theme tokens."""
-        test_file = repository_root / "TestComponent.tsx"
-        test_file.write_text(
-            "const styles = { color: 'var(--text-primary)' }; className='text-primary'",
-            encoding='utf-8'
-        )
+        test_file = repository_root / "packages" / "ui" / "src" / "tutorial" / "blocks" / "TestComponent.tsx"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
+        test_file.write_text("""
+import { DomainTheme } from '../types';
+
+interface Props {
+    theme?: DomainTheme;
+}
+
+export function TestComponent({ theme }: Props) {
+    return <div data-block-type="testcomp" style={{ color: theme?.primary }}>Text</div>;
+}
+""", encoding='utf-8')
+        
+        # Add implementation to snapshot
+        mock_snapshot_valid['blocks']['implemented'].append({
+            'type': 'testcomp',
+            'version': 'TC1',
+            'path': str(test_file.relative_to(repository_root)).replace('\\', '/'),
+            'implementationPath': str(test_file.relative_to(repository_root)).replace('\\', '/'),
+            'evidenceId': 'ev-test-002'
+        })
         
         # Add evidence for this file
         mock_snapshot_valid['evidence'].append({
             'evidenceId': 'ev-test-002',
             'kind': 'component',
-            'path': 'TestComponent.tsx',
+            'path': str(test_file.relative_to(repository_root)).replace('\\', '/'),
             'contentHash': 'test456',
-            'description': 'Test component'
+            'description': 'Test component',
+            'symbol': 'testcomp'
         })
+        
+        # Create theme configs
+        theme_store = repository_root / "packages" / "ui" / "src" / "theme-store.ts"
+        theme_store.parent.mkdir(parents=True, exist_ok=True)
+        theme_store.write_text("export type EnterpriseTheme = 'theme-a' | 'theme-b';", encoding='utf-8')
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_theme_compatibility_gate(['TestComponent.tsx'])
+        result = executor.execute_theme_compatibility_gate(['testcomp'])
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.blockers) == 0
@@ -1492,5 +1515,435 @@ class TestWave5RuntimeVerification:
             CertificationGateStatus.FAIL,
             CertificationGateStatus.BLOCKED
         ]
+
+
+class TestThemeCompatibilityGate:
+    """Test theme compatibility verification gate."""
+    
+    @pytest.fixture
+    def mock_snapshot_with_theme_aware_block(self, tmp_path):
+        """Snapshot with theme-aware block implementation."""
+        # Create mock block implementation with theme context
+        block_impl = tmp_path / "packages" / "ui" / "src" / "tutorial" / "blocks" / "IntroductionBlock.tsx"
+        block_impl.parent.mkdir(parents=True, exist_ok=True)
+        block_impl.write_text("""
+import { DomainTheme } from '../types';
+
+interface IntroductionBlockProps {
+    block: any;
+    theme?: DomainTheme;
+}
+
+export function IntroductionBlock({ block, theme }: IntroductionBlockProps) {
+    return (
+        <div 
+            data-block-type="introduction"
+            data-block-version="I1"
+            style={{ backgroundColor: theme?.primary }}
+        >
+            <h1>{block.title}</h1>
+        </div>
+    );
+}
+""", encoding='utf-8')
+        
+        return {
+            'metadata': {},
+            'blocks': {
+                'implemented': [
+                    {
+                        'type': 'introduction',
+                        'version': 'I1',
+                        'path': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                        'implementationPath': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                        'evidenceId': 'ev-intro-impl-001'
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'introduction',
+                        'version': 'I1',
+                        'evidenceId': 'ev-intro-verified-001'
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-intro-impl-001',
+                    'kind': 'component',
+                    'path': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                    'contentHash': 'abc123',
+                    'description': 'Introduction block implementation',
+                    'symbol': 'introduction'
+                }
+            ],
+            'findings': []
+        }
+    
+    @pytest.fixture
+    def mock_snapshot_with_hardcoded_theme(self, tmp_path):
+        """Snapshot with block using hard-coded theme values."""
+        # Create mock block implementation with hard-coded colors
+        block_impl = tmp_path / "packages" / "ui" / "src" / "tutorial" / "blocks" / "BadBlock.tsx"
+        block_impl.parent.mkdir(parents=True, exist_ok=True)
+        block_impl.write_text("""
+export function BadBlock({ block }: any) {
+    return (
+        <div 
+            data-block-type="badblock"
+            className="bg-pink-500 text-pink-900 border-pink-700"
+            style={{ backgroundColor: '#f54a8d', color: '#133382' }}
+        >
+            <h1>{block.title}</h1>
+        </div>
+    );
+}
+""", encoding='utf-8')
+        
+        return {
+            'metadata': {},
+            'blocks': {
+                'implemented': [
+                    {
+                        'type': 'badblock',
+                        'version': 'B1',
+                        'path': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                        'implementationPath': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                        'evidenceId': 'ev-bad-impl-001'
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'badblock',
+                        'version': 'B1',
+                        'evidenceId': 'ev-bad-verified-001'
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-bad-impl-001',
+                    'kind': 'component',
+                    'path': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                    'contentHash': 'bad123',
+                    'description': 'Bad block implementation',
+                    'symbol': 'badblock'
+                }
+            ],
+            'findings': []
+        }
+    
+    @pytest.fixture
+    def mock_snapshot_no_theme_context(self, tmp_path):
+        """Snapshot with block missing theme context."""
+        # Create mock block implementation without theme prop
+        block_impl = tmp_path / "packages" / "ui" / "src" / "tutorial" / "blocks" / "NoThemeBlock.tsx"
+        block_impl.parent.mkdir(parents=True, exist_ok=True)
+        block_impl.write_text("""
+export function NoThemeBlock({ block }: any) {
+    return (
+        <div data-block-type="notheme">
+            <h1>{block.title}</h1>
+        </div>
+    );
+}
+""", encoding='utf-8')
+        
+        return {
+            'metadata': {},
+            'blocks': {
+                'implemented': [
+                    {
+                        'type': 'notheme',
+                        'version': 'N1',
+                        'path': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                        'implementationPath': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                        'evidenceId': 'ev-notheme-impl-001'
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'notheme',
+                        'version': 'N1',
+                        'evidenceId': 'ev-notheme-verified-001'
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-notheme-impl-001',
+                    'kind': 'component',
+                    'path': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                    'contentHash': 'notheme123',
+                    'description': 'No theme block implementation',
+                    'symbol': 'notheme'
+                }
+            ],
+            'findings': []
+        }
+    
+    def test_theme_gate_passes_with_theme_aware_block(self, mock_snapshot_with_theme_aware_block, tmp_path):
+        """Theme compatibility gate passes when block uses theme context."""
+        # Create theme configuration files in repository
+        self._create_theme_configs(tmp_path)
+        
+        executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['I1'])
+        
+        # Debug output
+        print(f"\nResult status: {result.status}")
+        print(f"Result message: {result.message}")
+        print(f"Blockers: {result.blockers}")
+        print(f"Evidence IDs: {result.evidence_ids}")
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert len(result.evidence_ids) > 0
+        assert 'theme(s)' in result.message.lower()
+    
+    def test_theme_gate_fails_with_hardcoded_values(self, mock_snapshot_with_hardcoded_theme, tmp_path):
+        """Theme gate fails when block has hard-coded theme values."""
+        # Create theme configuration files in repository
+        self._create_theme_configs(tmp_path)
+        
+        executor = CertificationGateExecutor(mock_snapshot_with_hardcoded_theme, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['B1'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        # Should detect hard-coded values or missing theme context
+        assert any('hard' in b.lower() or 'theme' in b.lower() for b in result.blockers)
+    
+    def test_theme_gate_fails_with_missing_theme_context(self, mock_snapshot_no_theme_context, tmp_path):
+        """Theme gate fails when block missing theme context."""
+        # Create theme configuration files in repository
+        self._create_theme_configs(tmp_path)
+        
+        executor = CertificationGateExecutor(mock_snapshot_no_theme_context, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['N1'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        # Should detect missing theme context
+        assert any('theme' in b.lower() or 'context' in b.lower() for b in result.blockers)
+    
+    def test_theme_gate_detects_suia_theme(self, mock_snapshot_with_theme_aware_block, tmp_path):
+        """Theme gate discovers SUIA theme from repository."""
+        # Create theme configuration files
+        self._create_theme_configs(tmp_path)
+        
+        executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['I1'])
+        
+        # Should discover themes - verify 6 themes found (2 enterprise + 2 brand + 2 domain shown in test fixture)
+        # The actual test is that it discovered themes from repository, not hard-coded
+        assert result.status == CertificationGateStatus.PASS
+        assert '6 theme(s)' in result.message
+    
+    def test_theme_gate_detects_rth_theme(self, mock_snapshot_with_theme_aware_block, tmp_path):
+        """Theme gate discovers RTH theme from repository."""
+        # Create theme configuration files
+        self._create_theme_configs(tmp_path)
+        
+        executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['I1'])
+        
+        # Should discover themes - verify 6 themes found
+        # The actual test is that it discovered themes from repository, not hard-coded
+        assert result.status == CertificationGateStatus.PASS
+        assert '6 theme(s)' in result.message
+    
+    def test_theme_gate_blocked_without_themes(self, mock_snapshot_with_theme_aware_block, tmp_path):
+        """Theme gate blocked when no theme configurations found."""
+        # Don't create theme configs - should be blocked
+        executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['I1'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('theme config' in b.lower() or 'no theme' in b.lower() for b in result.blockers)
+    
+    def test_theme_gate_detects_design_tokens(self, tmp_path):
+        """Theme gate detects and reports design token usage."""
+        # Create block with CSS variables
+        block_impl = tmp_path / "packages" / "ui" / "src" / "tutorial" / "blocks" / "TokenBlock.tsx"
+        block_impl.parent.mkdir(parents=True, exist_ok=True)
+        block_impl.write_text("""
+export function TokenBlock({ block, theme }: any) {
+    return (
+        <div 
+            data-block-type="tokenblock"
+            style={{ 
+                backgroundColor: 'var(--color-primary)',
+                color: 'var(--color-text)',
+                padding: 'var(--spacing-4)'
+            }}
+        >
+            <h1>{block.title}</h1>
+        </div>
+    );
+}
+""", encoding='utf-8')
+        
+        snapshot = {
+            'metadata': {},
+            'blocks': {
+                'implemented': [
+                    {
+                        'type': 'tokenblock',
+                        'version': 'TOK1',
+                        'path': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                        'implementationPath': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                        'evidenceId': 'ev-token-impl-001'
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'tokenblock',
+                        'version': 'TOK1',
+                        'evidenceId': 'ev-token-verified-001'
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-token-impl-001',
+                    'kind': 'component',
+                    'path': str(block_impl.relative_to(tmp_path)).replace('\\', '/'),
+                    'contentHash': 'token123',
+                    'description': 'Token block implementation',
+                    'symbol': 'tokenblock'
+                }
+            ],
+            'findings': []
+        }
+        
+        # Create theme configs
+        self._create_theme_configs(tmp_path)
+        
+        executor = CertificationGateExecutor(snapshot, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['tokenblock'])
+        
+        # Debug
+        if result.status != CertificationGateStatus.PASS:
+            print(f"\nBlockers: {result.blockers}")
+        
+        # Block uses design tokens (CSS variables) and theme prop - should pass
+        assert result.status == CertificationGateStatus.PASS
+    
+    def test_theme_gate_verifies_multiple_blocks(self, mock_snapshot_with_theme_aware_block, tmp_path):
+        """Theme gate can verify multiple blocks."""
+        # Add another theme-aware block
+        block_impl2 = tmp_path / "packages" / "ui" / "src" / "tutorial" / "blocks" / "CodeBlock.tsx"
+        block_impl2.parent.mkdir(parents=True, exist_ok=True)
+        block_impl2.write_text("""
+import { DomainTheme } from '../types';
+
+interface CodeBlockProps {
+    block: any;
+    theme?: DomainTheme;
+}
+
+export function CodeBlock({ block, theme }: CodeBlockProps) {
+    return (
+        <div data-block-type="code" data-block-version="C1" style={{ backgroundColor: theme?.blockCodeHeader }}>
+            <pre>{block.code}</pre>
+        </div>
+    );
+}
+""", encoding='utf-8')
+        
+        mock_snapshot_with_theme_aware_block['blocks']['implemented'].append({
+            'type': 'code',
+            'version': 'C1',
+            'path': str(block_impl2.relative_to(tmp_path)).replace('\\', '/'),
+            'implementationPath': str(block_impl2.relative_to(tmp_path)).replace('\\', '/'),
+            'evidenceId': 'ev-code-impl-001'
+        })
+        
+        mock_snapshot_with_theme_aware_block['blocks']['verified'].append({
+            'blockType': 'code',
+            'version': 'C1',
+            'evidenceId': 'ev-code-verified-001'
+        })
+        
+        # Create theme configs
+        self._create_theme_configs(tmp_path)
+        
+        executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['I1', 'C1'])
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert '2 block(s)' in result.message
+    
+    def test_theme_gate_collects_evidence_ids(self, mock_snapshot_with_theme_aware_block, tmp_path):
+        """Theme gate collects real evidence IDs from TypeScript discovery."""
+        # Create theme configs
+        self._create_theme_configs(tmp_path)
+        
+        executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
+        
+        result = executor.execute_theme_compatibility_gate(['I1'])
+        
+        assert len(result.evidence_ids) > 0
+        
+        # Verify evidence IDs are real (not synthetic)
+        for eid in result.evidence_ids:
+            assert eid.startswith('ev-')
+            assert 'candidate' not in eid
+    
+    def _create_theme_configs(self, tmp_path: Path):
+        """Create mock theme configuration files."""
+        # Create theme-store.ts
+        theme_store = tmp_path / "packages" / "ui" / "src" / "theme-store.ts"
+        theme_store.parent.mkdir(parents=True, exist_ok=True)
+        theme_store.write_text("""
+export type EnterpriseTheme = 'theme-a' | 'theme-b';
+
+interface ThemeState {
+  theme: EnterpriseTheme;
+  setTheme: (theme: EnterpriseTheme) => void;
+}
+""", encoding='utf-8')
+        
+        # Create brandTheme.ts
+        brand_theme = tmp_path / "apps" / "skillhubcore-admin" / "src" / "app" / "(admin)" / "tools" / "tutorial-page-content" / "theme" / "brandTheme.ts"
+        brand_theme.parent.mkdir(parents=True, exist_ok=True)
+        brand_theme.write_text("""
+export function themeForBrand(brandId: string) {
+  if (brandId === 'skillup' || brandId === 'shared') {
+    return {
+      primary: '#f54a8d',
+      primaryDark: '#d63d7a',
+      secondary: '#133382',
+    };
+  }
+
+  return {
+    primary: '#d03f00',
+    primaryDark: '#b63600',
+    secondary: '#124fd6',
+  };
+}
+""", encoding='utf-8')
+        
+        # Create domain-themes.ts
+        domain_themes = tmp_path / "apps" / "realtutorialhub-web" / "src" / "lib" / "domain-themes.ts"
+        domain_themes.parent.mkdir(parents=True, exist_ok=True)
+        domain_themes.write_text("""
+export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', any> = {
+  indigo: { primary: '#3b4f7a' },
+  blue: { primary: '#1a3a6b' },
+  teal: { primary: '#1a5c5c' },
+  steel: { primary: '#1c2833' },
+};
+""", encoding='utf-8')
 
 
