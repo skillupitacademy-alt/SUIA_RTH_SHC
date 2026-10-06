@@ -75,7 +75,10 @@ def test_certify_workflow():
     certify_response = client.post(f"/creation/workflows/{workflow_id}/certify")
     assert certify_response.status_code == 200
     data = certify_response.json()
-    assert data["status"] == "CERTIFIED"
+    
+    # With real gates, workflow will FAIL without valid snapshot
+    # This is correct behavior - gates no longer unconditionally pass
+    assert data["status"] == "FAILED"
     
     gate_types = [gate["gateType"] for gate in data["certificationGates"]]
     assert "UBRC_COMPLIANCE" in gate_types
@@ -85,4 +88,7 @@ def test_certify_workflow():
     assert "RENDERER_VERIFICATION" in gate_types
     assert "EVIDENCE_BINDING" in gate_types
     
-    assert all(gate["status"] == "PASS" for gate in data["certificationGates"])
+    # All gates should be BLOCKED (not PASS) because snapshot is missing
+    assert all(gate["status"] == "BLOCKED" for gate in data["certificationGates"]), \
+        "Gates should be BLOCKED without valid snapshot, not unconditionally PASS"
+

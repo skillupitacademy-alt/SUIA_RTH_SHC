@@ -50,16 +50,17 @@ def test_i2_only_happy_path():
     assert certify_response.status_code == 200
     certify_data = certify_response.json()
     
-    # 4. Verify certification passed
-    assert certify_data["status"] == "CERTIFIED"
-    # certifiedAt is stored in the workflow but not in the schema model
-    # The workflow dict in the route has it, so we verify workflow status instead
+    # 4. Verify certification status with real gates
+    # Without a valid snapshot, gates will be BLOCKED (not unconditionally PASS)
+    # This is correct behavior - real verification requires real evidence
+    assert certify_data["status"] == "FAILED"
     assert "certificationGates" in certify_data
     
-    # All 6 gates should pass
+    # All 6 gates should be BLOCKED (snapshot missing)
     gates = certify_data["certificationGates"]
     assert len(gates) == 6
-    assert all(gate["status"] == "PASS" for gate in gates)
+    assert all(gate["status"] == "BLOCKED" for gate in gates), \
+        "Gates should be BLOCKED without valid snapshot"
     
     # Verify gate types are present (actual gate types from model)
     gate_types = [gate["gateType"] for gate in gates]
