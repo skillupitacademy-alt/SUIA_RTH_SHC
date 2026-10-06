@@ -9023,3 +9023,1543 @@ Human
 ```
 
 That is the remaining implementation path consistent with the attached material and the verified M2.2 repository state.
+
+Yes. Below is the **corrected Project AI Workflow-Agent Master Plan**.
+
+I am treating the attached/project material as the source of truth. The key architectural distinction is preserved: **Project LLM is the Block Engineering / Integration / Verification / Certification-Readiness Workbench**, while **Project AI is the engineering orchestration system that uses workflow agents to complete Project LLM**. The repository architecture also explicitly says multi-agent decomposition must not create autonomous authority. Pasted text(20261005-043034) Runtime Integration Status
+
+# PROJECT AI — PROJECT LLM COMPLETION
+## Master Workflow-Agent Execution Specification
+
+### 0. Fundamental hierarchy
+
+```text
+                         HUMAN
+                           │
+                           │ authority / approval
+                           ▼
+                    ┌───────────────┐
+                    │   PROJECT AI  │
+                    │ Orchestrator  │
+                    └───────┬───────┘
+                            │
+             ┌──────────────┼──────────────┐
+             │              │              │
+             ▼              ▼              ▼
+        Workflow Agent  Workflow Agent  Workflow Agent
+             │              │              │
+             ▼              ▼              ▼
+          M2.3           M2.4           M2.5
+       Toolchain       Composer/API   Dependency
+       completion       /Schema        Graph
+             │              │              │
+             └──────────────┼──────────────┘
+                            ▼
+                    Project LLM codebase
+                            │
+                            ▼
+                 Tests + Evidence + Gates
+                            │
+                            ▼
+                    Project LLM COMPLETE
+```
+
+**Do not confuse these workflow agents with the future agents that Project LLM itself may use.**
+
+The workflow agents below exist **to build Project LLM**.
+
+---
+
+# 1. Project AI master objective
+
+Project AI SHALL:
+
+> Complete the remaining implementation, verification, evidence, governance, Candidate Block workflow, and I2 workflow required to bring Project LLM from its current repository state to a human-reviewable and ultimately human-certifiable state.
+
+Project AI SHALL NOT redefine Project LLM architecture merely because an implementation is difficult.
+
+The existing architecture establishes that Project LLM owns repository discovery, creation briefs, candidate intake, candidate audit, integration planning, controlled integration, verification, evidence, workflow, governance enforcement and certification readiness. Pasted text(20261005-043034)
+
+---
+
+# 2. Current starting point
+
+Project AI MUST first establish the actual repository state.
+
+Based on the current project material, the intended sequence is:
+
+```text
+M0
+ │
+ ▼
+M1 Repository Discovery                 DONE
+ │
+ ▼
+M2.1 Evidence Lifecycle                 DONE
+ │
+ ▼
+M2.2 Strict Evidence Binding            DONE
+ │
+ ▼
+M2.3 Real Toolchain Execution           NEXT
+ │
+ ├───────────────┐
+ ▼               ▼
+M2.4            M2.5
+Composer/API    Dependency Graph
+/Schema
+ └───────────────┘
+ │
+ ▼
+M2.6 UBRC
+ │
+ ▼
+Evidence Reconciliation
+ │
+ ▼
+M2.7 Runtime/Browser
+ │
+ ▼
+M2 Deterministic Certification
+ │
+ ▼
+M2.8 Project AI / FastAPI
+ │
+ ▼
+Multi-Agent Framework
+ │
+ ▼
+Governance / Approval
+ │
+ ▼
+Candidate Block
+ │
+ ▼
+I2
+ │
+ ▼
+Final Project LLM Certification
+```
+
+**Project AI must verify this state from the repository before executing it.**
+
+It must not blindly trust the status description.
+
+---
+
+# 3. Workflow-agent architecture
+
+I recommend the following **18 Project AI workflow agents**.
+
+```text
+FOUNDATION
+PA-00
+PA-01
+PA-02
+
+REPOSITORY COMPLETION
+PA-03
+PA-04
+PA-05
+PA-06
+PA-07
+PA-08
+
+PROJECT AI IMPLEMENTATION
+PA-09
+PA-10
+PA-11
+
+PROJECT LLM WORKFLOW
+PA-12
+PA-13
+PA-14
+PA-15
+
+FINAL VALIDATION
+PA-16
+PA-17
+```
+
+---
+
+# PA-00 — Orchestrator / Master Controller
+
+### Purpose
+
+The only agent responsible for coordinating the other Project AI workflow agents.
+
+### Responsibilities
+
+- read master task
+- read canonical architecture
+- determine current repository state
+- build dependency DAG
+- launch eligible agents
+- enforce sequential dependencies
+- allow safe parallel execution
+- collect outputs
+- detect conflicts
+- require re-verification after merges
+- maintain task state
+- stop when a human decision is required
+
+### MUST NOT
+
+- invent architecture
+- bypass human gates
+- declare final certification
+- override STOP conditions
+- allow two agents to modify the same files concurrently without coordination
+
+### Output
+
+```text
+PROJECT_AI_EXECUTION_STATE
+```
+
+containing:
+
+```text
+current_gate
+active_agents
+completed_agents
+blocked_agents
+failed_agents
+evidence
+open_decisions
+human_decisions_required
+next_eligible_agents
+```
+
+---
+
+# PA-01 — Architecture & Governance Guardian
+
+### Purpose
+
+Protect the approved Project LLM architecture while all other agents work.
+
+### Reads
+
+- canonical architecture
+- architecture reconciliation
+- lifecycle architecture
+- ADRs
+- implementation contracts
+- Runtime Integration Status
+- current repository state
+
+### Responsibilities
+
+For every proposed change determine:
+
+```text
+IMPLEMENTED
+DOCUMENTED
+TESTED
+PROPOSED
+UNKNOWN
+```
+
+and detect:
+
+```text
+architecture drift
+scope expansion
+universal infrastructure impact
+security boundary violation
+governance violation
+```
+
+The project explicitly requires factual claim discipline and prohibits architecture by assumption. Runtime Integration Status
+
+### STOP if
+
+An implementation requires unexplained changes to:
+
+```text
+UBRC
+ILS
+LSNB
+RSSB
+Composer
+authentication
+authorization
+database architecture
+gateway
+deployment
+```
+
+The project architecture explicitly says such universal-infrastructure expansion requires proving the gap first. Runtime Integration Status
+
+---
+
+# PA-02 — Repository State Verifier
+
+### Purpose
+
+Establish the **real starting point** before any implementation agent works.
+
+### Tasks
+
+Verify:
+
+- current branch
+- current commit
+- working tree
+- M1 implementation
+- M2.1
+- M2.2
+- tests
+- build
+- typecheck
+- lint
+- package structure
+- existing Project LLM modules
+- existing documentation
+- existing evidence
+- existing discovery snapshots
+
+### Output
+
+```text
+REPOSITORY_BASELINE
+```
+
+with factual status:
+
+```text
+PASS
+FAIL
+MISSING
+UNKNOWN
+BLOCKED
+```
+
+No subjective percentages.
+
+---
+
+# PA-03 — M2.3 Toolchain Agent
+
+### Objective
+
+Complete **real toolchain execution**.
+
+### Tasks
+
+Verify and, where approved:
+
+- package installation
+- TypeScript compilation
+- typecheck
+- lint
+- unit tests
+- integration tests
+- relevant build
+- repository scripts
+- test discovery
+- execution result capture
+
+### Important distinction
+
+M1 repository discovery identified toolchain information.
+
+PA-03 makes the toolchain **actually executable and evidenced**.
+
+### Output
+
+```text
+M2.3_TOOLCHAIN_EVIDENCE
+```
+
+including:
+
+```text
+command
+environment
+commit
+result
+stdout/stderr summary
+test count
+failure
+evidence ID
+```
+
+---
+
+# PA-04 — M2.4 Composer/API/Schema Agent
+
+### Objective
+
+Complete the Project LLM understanding of:
+
+```text
+Composer
+API
+schemas
+block contracts
+integration boundaries
+runtime contracts
+```
+
+### Tasks
+
+- inspect actual Composer implementation
+- inspect API contracts
+- inspect block schemas
+- inspect renderer expectations
+- inspect existing I1/C1/D1 implementations
+- identify missing Project LLM integration contracts
+- implement only approved missing capability
+- create tests
+
+### Must preserve
+
+```text
+Composer authority
+existing block architecture
+existing runtime
+existing schema ownership
+```
+
+The existing architecture explicitly treats Composer, canonical schemas and renderer as belonging to the existing platform rather than allowing Project LLM to silently replace them. Pasted text(20261005-043034)
+
+---
+
+# PA-05 — M2.5 Dependency Graph Agent
+
+### Objective
+
+Build real repository dependency intelligence.
+
+### Must discover
+
+```text
+package dependencies
+workspace dependencies
+source imports
+API dependencies
+database dependencies
+runtime dependencies
+test dependencies
+Project LLM dependencies
+Composer dependencies
+```
+
+### Output
+
+```text
+DEPENDENCY_GRAPH
+```
+
+with provenance.
+
+### MUST NOT
+
+Invent dependencies that are not repository-supported.
+
+---
+
+# PA-06 — M2.6 UBRC Agent
+
+### Objective
+
+Perform the actual UBRC verification required by Project LLM.
+
+### Verify
+
+- UBRC definitions
+- applicable block requirements
+- repository implementation
+- evidence linkage
+- candidate applicability
+- compliance rules
+- existing UBRC infrastructure
+
+### Critical rule
+
+If Project LLM appears to need a new universal UBRC rule:
+
+```text
+STOP
+    ↓
+prove universal gap
+    ↓
+Human architecture decision
+```
+
+Do not modify UBRC merely to make a candidate pass.
+
+---
+
+# PA-07 — M2.7 Runtime / Browser Agent
+
+### Objective
+
+Verify Project LLM-related runtime behavior against the real application.
+
+### Verify as applicable
+
+```text
+Next.js runtime
+API runtime
+Composer integration
+Tutorial Page
+rendering
+browser behavior
+SSR/client behavior
+routing
+assets
+responsive behavior
+runtime errors
+```
+
+### Evidence
+
+```text
+runtime evidence
+browser evidence
+screenshots where appropriate
+logs
+test results
+repository revision
+```
+
+This is important because architecture documents distinguish conceptual capability from actual repository evidence.
+
+---
+
+# PA-08 — Evidence Reconciliation Agent
+
+### Objective
+
+Bring all M2.3–M2.7 evidence into one coherent evidence graph.
+
+The project's evidence architecture is explicitly:
+
+```text
+Requirement
+    ↓
+Candidate
+    ↓
+Audit
+    ↓
+Adaptation
+    ↓
+Integration
+    ↓
+Validation
+    ↓
+Runtime Evidence
+    ↓
+Certification Readiness
+    ↓
+Human Approval
+```
+
+Runtime Integration Status
+
+### Tasks
+
+- detect missing evidence
+- detect orphan evidence
+- detect duplicate evidence
+- bind evidence to repository revision
+- bind evidence to requirement
+- reconcile failures
+- identify unresolved claims
+- freeze evidence when certification-ready
+
+### Output
+
+```text
+M2_EVIDENCE_RECONCILIATION
+```
+
+---
+
+# PA-09 — M2 Deterministic Certification Agent
+
+### Objective
+
+Determine whether M2 has satisfied its deterministic engineering gates.
+
+### It may conclude
+
+```text
+M2_READY_FOR_HUMAN_REVIEW
+```
+
+or:
+
+```text
+M2_BLOCKED
+```
+
+or:
+
+```text
+M2_REQUIRES_CORRECTION
+```
+
+### It MUST NOT conclude
+
+```text
+CERTIFIED
+```
+
+The architecture explicitly distinguishes `CERTIFICATION_READY` from `CERTIFIED`; human authority produces the latter. Runtime Integration Status
+
+---
+
+# HUMAN GATE 1 — M2 Architecture/Engineering Approval
+
+At this point:
+
+```text
+PA-09
+   ↓
+M2 evidence package
+   ↓
+HUMAN
+```
+
+Human decides:
+
+```text
+APPROVE
+APPROVE WITH CONDITIONS
+CORRECT
+REJECT
+STOP
+```
+
+Project AI must wait.
+
+---
+
+# PA-10 — M2.8 Project AI / FastAPI Agent
+
+Only after M2 foundation is accepted.
+
+### Objective
+
+Implement the Project AI service layer required by the current plan.
+
+The latest project status identifies this as:
+
+```text
+services/project-ai
+Pydantic contracts
+snapshot API
+evidence API
+task API
+approval API
+workflow API
+```
+
+### Important
+
+This agent builds **Project AI infrastructure**.
+
+It is not building the final Project LLM workflow agents themselves.
+
+### Output
+
+A working Project AI service foundation.
+
+---
+
+# PA-11 — Project AI Multi-Agent Framework Agent
+
+### Objective
+
+Build the infrastructure allowing Project AI to execute the workflow agents defined here.
+
+### It needs
+
+```text
+agent registry
+task registry
+dependency resolver
+DAG execution
+parallel execution
+sequential execution
+state persistence
+agent result storage
+failure handling
+retry policy
+STOP handling
+human gate handling
+evidence collection
+audit trail
+```
+
+### Example
+
+```text
+M2.2
+  │
+  ├── PA-03
+  ├── PA-04
+  └── PA-05
+       │
+       ▼
+     PA-06
+       │
+       ▼
+     PA-07
+       │
+       ▼
+     PA-08
+```
+
+The framework must understand this dependency graph.
+
+---
+
+# PA-12 — Governance / Approval Agent
+
+### Objective
+
+Implement Project AI's ability to enforce human-controlled workflow.
+
+### It must understand
+
+```text
+approval required
+approval received
+approval rejected
+correction required
+STOP
+escalation
+rollback
+certification readiness
+```
+
+### It cannot create authority.
+
+Agents remain subordinate to governance. The project architecture explicitly warns against creating autonomous authority through multi-agent decomposition. Runtime Integration Status
+
+---
+
+# PA-13 — Candidate Block Workflow Agent
+
+This begins the actual **Project LLM operational workflow**.
+
+### Objective
+
+Create the workflow necessary for a new Candidate Block.
+
+```text
+Requirement
+   ↓
+Creation Brief
+   ↓
+External AI
+   ↓
+Candidate
+   ↓
+Audit
+   ↓
+Correction
+   ↓
+Integration
+   ↓
+Validation
+   ↓
+Evidence
+```
+
+### Must support
+
+- candidate intake
+- provenance
+- candidate package
+- GUI approval status
+- candidate version
+- architecture audit
+- correction loop
+- integration plan
+- validation
+
+The lifecycle architecture specifically defines candidate audit, adaptation and controlled integration as core Project LLM responsibilities. Runtime Integration Status
+
+---
+
+# PA-14 — External AI Handoff / Candidate Intake Agent
+
+### Objective
+
+Operationalize the boundary between Project LLM and external AI.
+
+Project architecture states that external AI is the candidate/prototype creator, while Project LLM is responsible for receiving, auditing, adapting, integrating and verifying it. Pasted text(20261005-043034)
+
+### Workflow
+
+```text
+Creation Brief
+      ↓
+External AI
+      ↓
+Prototype
+      ↓
+Human GUI approval
+      ↓
+React/TS candidate
+      ↓
+Project LLM intake
+```
+
+### Must capture
+
+```text
+provider
+request
+brief version
+candidate version
+artifact hashes
+provenance
+approval state
+repository-independent candidate state
+```
+
+---
+
+# PA-15 — Project LLM Verification / Evidence Agent
+
+### Objective
+
+Implement the actual verification pipeline.
+
+The project architecture identifies validation levels including:
+
+```text
+L0 Requirement
+L1 Static
+L2 Unit
+L3 Component
+L4 Integration
+L5 Runtime
+L6 Browser/E2E
+L7 Quality Attributes
+L8 Certification Readiness
+```
+
+Runtime Integration Status
+
+### Agent responsibilities
+
+Coordinate:
+
+```text
+static verification
+unit verification
+component verification
+integration verification
+runtime verification
+browser/E2E verification
+quality attributes
+evidence generation
+```
+
+---
+
+# PA-16 — Candidate Block Certification-Readiness Agent
+
+### Objective
+
+Take one Candidate Block through the complete certification-readiness workflow.
+
+### Must verify
+
+```text
+schema
+component
+renderer compatibility
+DOM identity
+accessibility
+responsive behavior
+security
+SSR/runtime contract
+version
+provenance
+tests
+assets
+dependencies
+UBRC
+ILS
+LSNB
+RSSB
+brand independence
+theme compatibility
+```
+
+The project's documented candidate-audit architecture explicitly identifies many of these categories, including manifest, schema, renderer compatibility, accessibility, security, SSR, runtime contract, version, provenance, tests, assets and dependencies. Runtime Integration Status
+
+### Output
+
+```text
+CERTIFICATION_READY
+```
+
+only if all blocking requirements are evidenced.
+
+---
+
+# PA-17 — I2 + Final Project LLM E2E Agent
+
+### Objective
+
+Use the first real Project AI workflow to complete the I2 vertical slice and validate the entire system.
+
+```text
+I2 requirement
+     ↓
+Creation Brief
+     ↓
+External AI prototype
+     ↓
+Human Gate 1
+     ↓
+Candidate
+     ↓
+Candidate Audit
+     ↓
+Correction
+     ↓
+Integration Plan
+     ↓
+Human implementation approval
+     ↓
+Implementation
+     ↓
+Validation
+     ↓
+Evidence
+     ↓
+CERTIFICATION_READY
+     ↓
+Human Gate 2
+     ↓
+CERTIFIED
+```
+
+### This is the final workflow-agent gate.
+
+---
+
+# 4. Parallel execution model
+
+This is critical.
+
+Project AI should **not** run all agents sequentially.
+
+## Wave 0 — Baseline
+
+```text
+PA-00
+  ↓
+PA-01
+  ↓
+PA-02
+```
+
+Sequential.
+
+---
+
+## Wave 1 — M2.3 / M2.4 / M2.5
+
+After PA-02 confirms M2.2:
+
+```text
+              PA-02
+                │
+       ┌────────┼────────┐
+       ▼        ▼        ▼
+     PA-03    PA-04    PA-05
+     M2.3     M2.4     M2.5
+```
+
+These can run **in parallel**, provided they do not concurrently modify the same files.
+
+---
+
+# 5. Wave 2
+
+After PA-03/04/05:
+
+```text
+PA-03 ─┐
+PA-04 ─┼──► PA-06
+PA-05 ─┘     UBRC
+```
+
+PA-06 must consume the completed repository intelligence.
+
+---
+
+# 6. Wave 3
+
+```text
+PA-06
+  │
+  ▼
+PA-07
+Runtime / Browser
+  │
+  ▼
+PA-08
+Evidence Reconciliation
+  │
+  ▼
+PA-09
+M2 Deterministic Readiness
+```
+
+Sequential.
+
+---
+
+# 7. Human Gate
+
+```text
+PA-09
+  ↓
+M2 evidence
+  ↓
+HUMAN
+  │
+  ├── APPROVE ───────────► continue
+  │
+  ├── CORRECT ───────────► relevant agent
+  │
+  └── STOP/REJECT ───────► halt
+```
+
+---
+
+# 8. Wave 4 — Project AI infrastructure
+
+After M2 approval:
+
+```text
+                 M2 APPROVED
+                      │
+              ┌───────┴────────┐
+              ▼                ▼
+            PA-10            PA-11
+          Project AI       Multi-Agent
+           /FastAPI         Framework
+              │                │
+              └───────┬────────┘
+                      ▼
+                    PA-12
+                  Governance
+```
+
+PA-10 and PA-11 may be partially parallel **only where their contracts are already stable**.
+
+Otherwise PA-10 establishes the API contracts first.
+
+---
+
+# 9. Wave 5 — Candidate workflow
+
+```text
+PA-12
+  │
+  ▼
+PA-13
+Candidate Workflow
+  │
+  ├───────────────┐
+  ▼               ▼
+PA-14           PA-15
+External AI     Verification
+Handoff
+```
+
+Then:
+
+```text
+PA-14
+   │
+   ▼
+Candidate
+   │
+   ▼
+PA-16
+Candidate Certification Readiness
+```
+
+---
+
+# 10. Final Wave
+
+```text
+PA-16
+   │
+   ▼
+PA-17
+I2 + Full E2E
+   │
+   ▼
+CERTIFICATION_READY
+   │
+   ▼
+HUMAN GATE 2
+   │
+   ▼
+CERTIFIED
+```
+
+Again:
+
+**Project AI may prepare `CERTIFICATION_READY`.**
+
+**Project AI must never convert that into `CERTIFIED` automatically.**
+
+---
+
+# 11. Complete dependency DAG
+
+```text
+                         PA-00
+                           │
+                           ▼
+                         PA-01
+                           │
+                           ▼
+                         PA-02
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+          ▼                ▼                ▼
+        PA-03            PA-04            PA-05
+       Toolchain        Composer          Graph
+          │                │                │
+          └────────────────┼────────────────┘
+                           ▼
+                         PA-06
+                          UBRC
+                           │
+                           ▼
+                         PA-07
+                       Runtime
+                           │
+                           ▼
+                         PA-08
+                        Evidence
+                           │
+                           ▼
+                         PA-09
+                      M2 Readiness
+                           │
+                           ▼
+                    HUMAN GATE 1
+                           │
+                           ▼
+                 ┌─────────┴─────────┐
+                 ▼                   ▼
+               PA-10               PA-11
+             Project AI          Agent Framework
+                 └─────────┬─────────┘
+                           ▼
+                         PA-12
+                       Governance
+                           │
+                           ▼
+                         PA-13
+                    Candidate Workflow
+                           │
+                  ┌────────┴────────┐
+                  ▼                 ▼
+                PA-14             PA-15
+              AI Handoff        Verification
+                  │                 │
+                  └────────┬────────┘
+                           ▼
+                         PA-16
+                  Candidate Readiness
+                           │
+                           ▼
+                         PA-17
+                       I2 + E2E
+                           │
+                           ▼
+                  CERTIFICATION_READY
+                           │
+                           ▼
+                    HUMAN GATE 2
+                           │
+                           ▼
+                       CERTIFIED
+```
+
+---
+
+# 12. File ownership rule
+
+This is important for preventing agent collisions.
+
+Each workflow agent gets:
+
+```text
+READ_SCOPE
+WRITE_SCOPE
+TEST_SCOPE
+EVIDENCE_SCOPE
+```
+
+No agent should have unrestricted write access by default.
+
+For example:
+
+```text
+PA-03
+WRITE:
+  M2.3-specific implementation/tests/docs
+
+PA-04
+WRITE:
+  Composer/API/schema Project LLM integration
+
+PA-05
+WRITE:
+  dependency intelligence
+
+PA-06
+WRITE:
+  UBRC verification implementation/evidence
+
+PA-08
+WRITE:
+  evidence reconciliation
+```
+
+If two agents require the same file:
+
+```text
+DO NOT RUN IN PARALLEL
+```
+
+unless Project AI can safely isolate and merge the changes.
+
+---
+
+# 13. Every workflow agent must follow this execution contract
+
+Every agent receives:
+
+```text
+TASK_ID
+AGENT_ID
+OBJECTIVE
+DEPENDENCIES
+READ_SCOPE
+WRITE_SCOPE
+PROHIBITED_SCOPE
+INPUT_ARTIFACTS
+EXPECTED_OUTPUTS
+SUCCESS_CRITERIA
+TEST_REQUIREMENTS
+EVIDENCE_REQUIREMENTS
+STOP_CONDITIONS
+HUMAN_APPROVAL_REQUIREMENT
+```
+
+And must return:
+
+```text
+AGENT_RESULT
+├── status
+├── task_id
+├── agent_id
+├── repository_revision
+├── files_read
+├── files_changed
+├── tests_run
+├── tests_passed
+├── tests_failed
+├── evidence_created
+├── findings
+├── unresolved_items
+├── STOP_reason
+├── human_decision_required
+└── next_recommended_tasks
+```
+
+---
+
+# 14. Universal STOP conditions
+
+**Any agent must STOP** when it discovers:
+
+### Architecture ambiguity
+
+```text
+existing architecture
+        ≠
+required implementation
+```
+
+and no approved decision resolves the difference.
+
+### Universal infrastructure impact
+
+```text
+UBRC
+ILS
+LSNB
+RSSB
+Composer
+Auth
+DB
+Gateway
+Deployment
+```
+
+would need an unexplained architectural modification.
+
+### Security uncertainty
+
+Examples:
+
+```text
+credential exposure
+unsafe generated code execution
+unknown external AI trust boundary
+production access
+dependency supply-chain risk
+prompt injection affecting authority
+```
+
+### Evidence insufficiency
+
+If an agent cannot prove its claim from repository evidence:
+
+```text
+NOT VERIFIED
+```
+
+not:
+
+```text
+probably correct
+```
+
+### Human authority required
+
+The agent must escalate.
+
+---
+
+# 15. What Project AI must NOT do
+
+Project AI must never:
+
+```text
+❌ silently redesign Project LLM
+❌ silently replace Composer
+❌ silently modify UBRC
+❌ silently modify ILS
+❌ silently modify LSNB
+❌ silently modify RSSB
+❌ silently modify authentication
+❌ silently modify authorization
+❌ silently change database architecture
+❌ silently introduce infrastructure
+❌ declare CERTIFIED
+❌ bypass Human Gate 1
+❌ bypass Human Gate 2
+❌ treat generated code as trusted
+❌ assume a provider/model/framework
+❌ report unsupported capabilities
+```
+
+These constraints are directly aligned with the architecture's requirements for claim discipline, no architecture by assumption, no hidden universal infrastructure, and human-controlled certification. Runtime Integration Status Runtime Integration Status
+
+---
+
+# 16. Most important orchestration rule
+
+Project AI should operate using:
+
+```text
+READ
+ ↓
+UNDERSTAND
+ ↓
+VERIFY CURRENT STATE
+ ↓
+PLAN
+ ↓
+SELECT ELIGIBLE AGENTS
+ ↓
+RUN SAFE PARALLEL TASKS
+ ↓
+MERGE / RECONCILE
+ ↓
+TEST
+ ↓
+GENERATE EVIDENCE
+ ↓
+CHECK GATE
+ ↓
+STOP OR CONTINUE
+```
+
+**Never:**
+
+```text
+READ
+ ↓
+spawn 18 agents
+ ↓
+let everything modify repository
+ ↓
+hope it integrates
+```
+
+---
+
+# 17. The Project AI master loop
+
+This should be the central instruction to your Project AI model:
+
+```text
+WHILE Project LLM is not complete:
+
+    1. Read canonical architecture.
+
+    2. Read current repository state.
+
+    3. Read previous agent evidence.
+
+    4. Determine the first incomplete gate.
+
+    5. Build the dependency graph for that gate.
+
+    6. Identify tasks that can safely execute in parallel.
+
+    7. Allocate workflow agents.
+
+    8. Give every agent explicit read/write/prohibited scopes.
+
+    9. Execute agents.
+
+   10. Collect their results.
+
+   11. Reconcile repository changes.
+
+   12. Run required tests.
+
+   13. Generate evidence.
+
+   14. Ask:
+          Is the gate satisfied?
+
+       YES:
+          advance.
+
+       NO:
+          create correction tasks.
+
+       UNKNOWN:
+          STOP.
+
+       HUMAN DECISION REQUIRED:
+          STOP and escalate.
+
+   15. Never skip a gate.
+
+   16. Never declare human certification.
+
+   17. Continue until:
+          CERTIFICATION_READY
+
+   18. Then wait for Human Gate 2.
+```
+
+---
+
+# 18. The first instruction to give Project AI
+
+I would actually give your Project AI **this as the first command**, before asking it to execute anything:
+
+> **Do not begin implementation immediately.**
+>
+> You are operating as the Project AI engineering orchestrator responsible for completing the Project LLM.
+>
+> The workflow agents you create and manage are **Project AI workflow agents**. They are not the future runtime agents of Project LLM.
+>
+> First inspect the repository and establish the real implementation state.
+>
+> Reconcile that state against the approved Project LLM architecture, M1 repository discovery, M2.1 evidence lifecycle, M2.2 strict evidence binding, current implementation contracts, and the current M2 backlog.
+>
+> Identify the **first incomplete gate**.
+>
+> Do not execute later gates prematurely.
+>
+> For that gate, create the minimum required workflow agents, assign explicit responsibilities, determine the dependency graph, identify tasks that can safely run in parallel, identify tasks that must run sequentially, and define the required evidence.
+>
+> Every workflow agent must have explicit:
+>
+> - objective
+> - inputs
+> - repository read scope
+> - repository write scope
+> - prohibited scope
+> - dependencies
+> - tests
+> - evidence
+> - success criteria
+> - STOP conditions
+> - human approval requirements
+> - output contract
+>
+> Do not allow workflow agents to create autonomous authority.
+>
+> Do not allow any agent to silently change UBRC, ILS, LSNB, RSSB, Composer, authentication, authorization, database architecture, gateway, deployment architecture, or other universal infrastructure.
+>
+> If such a change is required, STOP and produce an architecture-gap report for Human Architecture Authority review.
+>
+> Do not assume any provider, model, orchestration framework, database, queue, storage, cloud service, UI technology, external AI protocol, or deployment architecture without repository evidence or an explicitly approved architectural proposal.
+>
+> Do not claim that a capability exists unless repository evidence proves it.
+>
+> Distinguish:
+>
+> `IMPLEMENTED`
+>
+> `DOCUMENTED`
+>
+> `TESTED`
+>
+> `PROPOSED`
+>
+> `UNKNOWN`
+>
+> `VERIFIED`
+>
+> `NOT VERIFIED`
+>
+> Do not use subjective percentage-based completion claims.
+>
+> Project AI may prepare `CERTIFICATION_READY`.
+>
+> Project AI must never autonomously declare `CERTIFIED`.
+>
+> Human authority remains responsible for final certification.
+>
+> Execute the Project LLM completion program using controlled sequential and parallel workflow-agent execution, with evidence produced at every gate.
+>
+> **Do not start the next gate until the current gate is objectively satisfied or explicitly approved for progression.**
+
+That is the model I believe matches what you were asking for: **Project AI is the orchestrator; its workflow agents are the engineering workforce; Project LLM is the product they are building.**
+
+The existing architecture also explicitly frames Project LLM as a control plane alongside the SUIA/RTH platform, rather than merely an AI-generation service, so this separation should remain locked. Pasted text(20261005-043034) PROJECT_LLM_ARCHITECTURE_RECONC…
