@@ -78,7 +78,9 @@ export interface Evidence {
     | 'config'
     | 'test-directory'
     | 'test-file'
-    | 'type-definition';
+    | 'type-definition'
+    | 'dependency-declaration'
+    | 'dependency-resolution';
   symbol?: string; // explicit identity component used in deterministic ID
   claim: string;
   locator: string;

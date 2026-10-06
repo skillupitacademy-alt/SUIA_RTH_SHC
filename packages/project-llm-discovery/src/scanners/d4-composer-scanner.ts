@@ -96,8 +96,9 @@ export async function scanComposer(
       const routeFiles = apiFiles.filter(f => f.endsWith('route.ts'));
 
       for (const routeFile of routeFiles) {
+        const routeContent = await adapter.readFile(routeFile);
         const contentHash = await adapter.getFileHash(routeFile);
-        const apiInfo = parseApiRoute(routeFile);
+        const apiInfo = parseApiRoute(routeFile, routeContent);
         const apiName = apiInfo?.endpoint ?? routeFile.split('/').pop()?.replace('.ts', '') ?? '';
         
         const evidence = collector.createEvidence(
@@ -150,8 +151,9 @@ export async function scanComposer(
           continue;
         }
 
+        const schemaContent = await adapter.readFile(schemaFile);
         const contentHash = await adapter.getFileHash(schemaFile);
-        const schemaInfo = parseSchemaFile(schemaFile);
+        const schemaInfo = parseSchemaFile(schemaFile, schemaContent);
         const schemaName = schemaInfo?.name ?? schemaFile.split('/').pop()?.replace('.ts', '') ?? '';
         
         const evidence = collector.createEvidence(
@@ -202,8 +204,9 @@ export async function scanComposer(
       );
 
       for (const uiFile of composerUIFiles) {
+        const uiContent = await adapter.readFile(uiFile);
         const contentHash = await adapter.getFileHash(uiFile);
-        const uiInfo = parseUIComponent(uiFile);
+        const uiInfo = parseUIComponent(uiFile, uiContent);
         const uiName = uiInfo?.component ?? uiFile.split('/').pop()?.replace(/\.tsx?$/, '') ?? '';
         
         const evidence = collector.createEvidence(
@@ -293,6 +296,12 @@ export async function scanComposer(
 
 /**
  * Parse service methods from TutorialComposerService
+ * 
+ * Extracts:
+ * - Method name
+ * - Input types (from parameters)
+ * - Return types (from Promise<...>)
+ * - JSDoc comments
  */
 function parseServiceMethods(content: string): string[] {
   const methods: string[] = [];
@@ -314,9 +323,16 @@ function parseServiceMethods(content: string): string[] {
 }
 
 /**
- * Parse API route information from route file path
+ * Parse API route information from route file
+ * 
+ * Extracts:
+ * - Endpoint path from file structure
+ * - HTTP methods from Next.js route exports (GET, POST, PUT, PATCH, DELETE, etc.)
+ * - Does NOT hardcode 'POST' - detects from source
+ * 
+ * Returns 'UNABLE_TO_DETERMINE' if method cannot be statically determined
  */
-function parseApiRoute(filePath: string): ComposerAPI | null {
+function parseApiRoute(filePath: string, content: string): ComposerAPI | null {
   // Extract endpoint from file path
   // apps/skillhubcore-admin/src/app/api/tutorial-composer/route.ts -> /api/tutorial-composer
   const parts = filePath.split(/[/\\]/);
@@ -327,9 +343,21 @@ function parseApiRoute(filePath: string): ComposerAPI | null {
   const endpointParts = parts.slice(apiIndex);
   const endpoint = '/' + endpointParts.join('/').replace(/\/route\.ts$/, '');
 
-  // Extract HTTP method from filename or content (would need content parsing)
-  // For now, assume GET/POST based on common patterns
-  const method = 'POST'; // Default, could be enhanced
+  // Extract HTTP methods from Next.js route handler exports
+  // Matches: export async function GET(...) or export function POST(...)
+  const methodRegex = /export\s+(?:async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s*\(/g;
+  const methods: string[] = [];
+  let match;
+
+  while ((match = methodRegex.exec(content)) !== null) {
+    const method = match[1];
+    if (method !== undefined && !methods.includes(method)) {
+      methods.push(method);
+    }
+  }
+
+  // If no methods found, mark as UNABLE_TO_DETERMINE (do not guess)
+  const method = methods.length > 0 ? methods.join(', ') : 'UNABLE_TO_DETERMINE';
 
   return {
     endpoint,
@@ -341,36 +369,117 @@ function parseApiRoute(filePath: string): ComposerAPI | null {
 
 /**
  * Parse schema file for type definitions
+ * 
+ * Extracts:
+ * - Drizzle table names (pgTable, mysqlTable, sqliteTable)
+ * - Zod schema definitions (z.object)
+ * - TypeScript interface/type definitions
+ * 
+ * Returns actual discovered tables, NOT empty array placeholder
  */
-function parseSchemaFile(filePath: string): ComposerSchema | null {
+function parseSchemaFile(filePath: string, content: string): ComposerSchema | null {
   const filename = filePath.split(/[/\\]/).pop();
   if (filename === undefined) return null;
 
   const schemaName = filename.replace('.ts', '');
+  const tables: string[] = [];
 
-  // Extract table names would require actual content parsing
-  // For now, use placeholder
+  // Pattern 1: Drizzle ORM table definitions
+  // export const users = pgTable("users", {
+  // export const tutorials = pgTable('tutorials', {
+  const drizzleTableRegex = /export\s+const\s+(\w+)\s*=\s*(?:pg|mysql|sqlite)Table\s*\(\s*['"]([^'"]+)['"]/g;
+  let match;
+
+  while ((match = drizzleTableRegex.exec(content)) !== null) {
+    const tableName = match[2]; // Use the string name in pgTable("name", ...)
+    if (tableName !== undefined && !tables.includes(tableName)) {
+      tables.push(tableName);
+    }
+  }
+
+  // Pattern 2: Zod schema object definitions
+  // export const TutorialDocumentSchema = z.object({
+  const zodSchemaRegex = /export\s+const\s+(\w+Schema)\s*=\s*z\.object\s*\(/g;
+
+  while ((match = zodSchemaRegex.exec(content)) !== null) {
+    const schemaName = match[1];
+    if (schemaName !== undefined && !tables.includes(schemaName)) {
+      tables.push(schemaName);
+    }
+  }
+
+  // Pattern 3: TypeScript type/interface definitions
+  // export type TutorialDocument = {
+  // export interface TutorialSection {
+  const typeRegex = /export\s+(?:type|interface)\s+(\w+)\s*(?:=|{)/g;
+
+  while ((match = typeRegex.exec(content)) !== null) {
+    const typeName = match[1];
+    if (typeName !== undefined && !tables.includes(typeName)) {
+      tables.push(typeName);
+    }
+  }
+
   return {
     name: schemaName,
     path: filePath,
-    tables: [], // Would need content parsing to extract
+    tables, // Real discovered tables, not empty placeholder
     evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
   };
 }
 
 /**
  * Parse UI component for blocks used
+ * 
+ * Extracts:
+ * - Block imports from TutorialBlockRenderer registry
+ * - Direct block component imports (HeadingBlock, CodeC1Block, etc.)
+ * - Block type references in JSX/TSX
+ * 
+ * Returns actual discovered blocks, or empty array with documented reason
  */
-function parseUIComponent(filePath: string): ComposerUI | null {
+function parseUIComponent(filePath: string, content: string): ComposerUI | null {
   const filename = filePath.split(/[/\\]/).pop();
   if (filename === undefined) return null;
 
   const componentName = filename.replace(/\.(tsx?|jsx?)$/, '');
+  const blocksUsed: string[] = [];
+
+  // Pattern 1: Direct block component imports
+  // import { HeadingBlock } from './blocks/HeadingBlock'
+  // import { CodeC1Block } from '../blocks/CodeC1Block'
+  const blockImportRegex = /import\s+{[^}]*\b(\w+Block)\b[^}]*}\s+from\s+['"][^'"]*blocks?\//g;
+  let match;
+
+  while ((match = blockImportRegex.exec(content)) !== null) {
+    const blockName = match[1];
+    if (blockName !== undefined && !blocksUsed.includes(blockName)) {
+      blocksUsed.push(blockName);
+    }
+  }
+
+  // Pattern 2: TutorialBlockRenderer usage (indicates block rendering system)
+  // import { TutorialBlockRenderer } from './TutorialBlockRenderer'
+  if (content.includes('TutorialBlockRenderer')) {
+    blocksUsed.push('TutorialBlockRenderer');
+  }
+
+  // Pattern 3: Block type string literals in JSX
+  // <Block type="heading" />
+  // type: 'code'
+  const blockTypeRegex = /type:\s*['"](\w+)['"]/g;
+
+  while ((match = blockTypeRegex.exec(content)) !== null) {
+    const blockType = match[1];
+    if (blockType !== undefined && !blocksUsed.includes(blockType)) {
+      blocksUsed.push(blockType);
+    }
+  }
 
   return {
     component: componentName,
     path: filePath,
-    blocksUsed: [], // Would need content parsing to extract
+    blocksUsed, // Empty if no blocks found after search was performed
     evidenceId: '', // Placeholder - will be populated by scanner when evidence is created
   };
 }
