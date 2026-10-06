@@ -117,12 +117,12 @@ async def approve_manifest(approval_id: str, request: ApprovalDecisionRequest):
     """
     Approve a pending manifest.
     
-    CRITICAL SECURITY GATE: Verifies that the manifestHash provided at approval
-    time matches the hash bound at submission. If they differ, the manifest has
-    been mutated and approval is REJECTED with status MANIFEST_CHANGED.
+    CRITICAL SECURITY GATES:
+    1. Self-approval prevention: Approver cannot be the same as submitter
+    2. Manifest hash verification: Detects tampering since submission
     
-    This prevents time-of-check-time-of-use attacks where a manifest is approved
-    but different content is deployed.
+    This prevents time-of-check-time-of-use attacks and enforces
+    separation of duties.
     
     Args:
         approval_id: Approval to decide
@@ -134,6 +134,7 @@ async def approve_manifest(approval_id: str, request: ApprovalDecisionRequest):
     Raises:
         404: If approval not found
         400: If approval is not in PENDING state
+        403: If self-approval attempted (Wave 2)
         409: If manifest hash does not match (manifest was mutated)
     """
     if approval_id not in _approvals:
@@ -148,6 +149,37 @@ async def approve_manifest(approval_id: str, request: ApprovalDecisionRequest):
         raise HTTPException(
             status_code=400,
             detail=f"Approval is in {approval['status']} state, expected PENDING"
+        )
+    
+    # CRITICAL: Prevent self-approval (Wave 2)
+    if request.decidedBy == approval["submittedBy"]:
+        now = datetime.now(timezone.utc)
+        
+        approval["status"] = ApprovalStatus.REJECTED
+        approval["decidedBy"] = request.decidedBy
+        approval["decidedAt"] = now
+        approval["reason"] = (
+            f"Self-approval rejected. "
+            f"User '{request.decidedBy}' cannot approve their own submission. "
+            f"Separation of duties required."
+        )
+        
+        audit_entry = {
+            "action": "rejected_self_approval",
+            "by": request.decidedBy,
+            "at": now,
+            "reason": approval["reason"],
+        }
+        approval["auditTrail"].append(audit_entry)
+        
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "SELF_APPROVAL_REJECTED",
+                "message": approval["reason"],
+                "submittedBy": approval["submittedBy"],
+                "attemptedBy": request.decidedBy
+            }
         )
     
     # CRITICAL: Verify manifest hash matches submission
@@ -183,7 +215,7 @@ async def approve_manifest(approval_id: str, request: ApprovalDecisionRequest):
             }
         )
     
-    # Hash verified: approve
+    # Hash verified and not self-approved: approve
     now = datetime.now(timezone.utc)
     approval["status"] = ApprovalStatus.APPROVED
     approval["decidedBy"] = request.decidedBy

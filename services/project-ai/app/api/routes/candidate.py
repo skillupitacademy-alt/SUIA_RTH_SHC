@@ -200,8 +200,8 @@ async def compare_candidate(
     """
     Compare candidate against canonical repository blocks.
     
-    Reads authoritative TypeScript snapshot to compute similarity
-    against existing blocks.
+    Reads authoritative TypeScript snapshot to compute evidence-backed
+    similarity against existing blocks using structural analysis.
     
     Args:
         candidate_id: Unique candidate identifier
@@ -233,53 +233,27 @@ async def compare_candidate(
     # Get classification for candidate
     classification = await classify_candidate(candidate_id)
     
-    # Find existing blocks of same family in snapshot
-    # Look for blocks in applications/packages that match the family
-    existing_blocks = []
+    # Use evidence-backed comparator (Wave 2)
+    from app.placement.comparator import CanonicalComparator
     
-    # Search in applications
-    for app in snapshot.get('applications', []):
-        app_name = app.get('name', '').lower()
-        if _matches_family(app_name, classification.detectedFamily):
-            existing_blocks.append({
-                'id': app.get('name'),
-                'type': 'application',
-                'name': app.get('name')
-            })
+    comparator = CanonicalComparator(snapshot)
     
-    # Search in packages
-    for pkg in snapshot.get('packages', []):
-        pkg_name = pkg.get('name', '').lower()
-        if _matches_family(pkg_name, classification.detectedFamily):
-            existing_blocks.append({
-                'id': pkg.get('name'),
-                'type': 'package',
-                'name': pkg.get('name')
-            })
+    # Extract structural features from candidate
+    features = comparator.extract_features(package.files)
     
-    # Compute similarity
-    if not existing_blocks:
-        return CanonicalComparison(
-            candidateId=candidate_id,
-            existingBlock=None,
-            similarityScore=0.0,
-            differences=["No existing blocks found of same family"]
-        )
+    # Compare to canonical blocks
+    best_match, similarity_score, differences, evidence_ids = comparator.compare_to_canonical(
+        features,
+        classification.detectedFamily,
+        package.files
+    )
     
-    # For M3 foundation, use simple heuristic similarity
-    # TODO: Implement deeper structural comparison in M3+
-    best_match = existing_blocks[0]
-    similarity_score = 0.6  # Base similarity for family match
-    
-    differences = [
-        f"Candidate is new {classification.detectedFamily.value} block",
-        f"Most similar to existing block: {best_match['name']}",
-        "Detailed structural comparison pending M3+ enhancement"
-    ]
+    # Store evidence IDs for manifest generation
+    _candidates_store[candidate_id]._comparison_evidence_ids = evidence_ids
     
     return CanonicalComparison(
         candidateId=candidate_id,
-        existingBlock=best_match['id'],
+        existingBlock=best_match,
         similarityScore=similarity_score,
         differences=differences
     )
@@ -293,8 +267,8 @@ async def generate_manifest(
     """
     Generate placement manifest for candidate block.
     
-    Creates manifest with placement decision, target path,
-    required changes, and SHA-256 hash.
+    Creates manifest with evidence-backed placement decision, target path,
+    required changes, and SHA-256 hash for tamper detection.
     
     Args:
         candidate_id: Unique candidate identifier
@@ -316,22 +290,81 @@ async def generate_manifest(
     classification = await classify_candidate(candidate_id)
     comparison = await compare_candidate(candidate_id, client)
     
-    # Determine placement decision based on similarity
-    if comparison.similarityScore > 0.8:
-        decision = PlacementDecision.UPDATE
-        target_path = f"apps/blocks/{comparison.existingBlock}"
-        required_changes = ["Review structural differences", "Update version metadata"]
-    elif comparison.similarityScore > 0.5:
-        decision = PlacementDecision.EXTEND
-        target_path = f"apps/blocks/{classification.detectedFamily.value.lower()}/{candidate_id}"
-        required_changes = ["Create new variant", "Link to family", "Add UBRC metadata"]
-    else:
-        decision = PlacementDecision.ADD
-        target_path = f"apps/blocks/{classification.detectedFamily.value.lower()}/{candidate_id}"
-        required_changes = ["Create new block", "Add UBRC metadata", "Register in block registry"]
+    # Use evidence-backed comparator for placement decision (Wave 2)
+    from app.placement.comparator import CanonicalComparator
     
-    # Generate evidence IDs (link to discovery evidence)
-    evidence_ids = [f"candidate-{candidate_id}-classification", f"candidate-{candidate_id}-comparison"]
+    try:
+        snapshot = client.load_snapshot()
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Canonical snapshot not found. Run TypeScript discovery scan first."
+        )
+    
+    comparator = CanonicalComparator(snapshot)
+    
+    # Determine placement action based on evidence-backed similarity
+    decision = comparator.determine_placement_action(
+        comparison.similarityScore,
+        comparison.existingBlock,
+        classification.detectedFamily
+    )
+    
+    # Determine target path from evidence
+    target_path = comparator.determine_target_path(
+        decision,
+        classification.detectedFamily,
+        candidate_id,
+        comparison.existingBlock
+    )
+    
+    # Build required changes based on decision
+    if decision == PlacementDecision.UPDATE:
+        required_changes = [
+            "Review structural differences",
+            "Update version metadata",
+            "Run UBRC verification",
+            "Update tests"
+        ]
+    elif decision == PlacementDecision.EXTEND:
+        required_changes = [
+            "Create new variant in family",
+            "Link to family taxonomy",
+            "Add UBRC metadata (data-block-version)",
+            "Register in block registry",
+            "Add to TutorialBlockRenderer dispatch"
+        ]
+    elif decision == PlacementDecision.ADD:
+        required_changes = [
+            "Create new block package",
+            "Add UBRC metadata (data-block-version, data-block-type)",
+            "Register in block registry",
+            "Add to TutorialBlockRenderer dispatch",
+            "Add unit tests",
+            "Add to ILS taxonomy"
+        ]
+    elif decision == PlacementDecision.REJECT:
+        required_changes = [
+            "Candidate rejected due to low similarity",
+            "Review structural differences",
+            "Consider refactoring candidate"
+        ]
+    else:
+        required_changes = ["No changes required"]
+    
+    # Use REAL evidence IDs from comparison (Wave 2 fix)
+    # Get evidence IDs from stored comparison result
+    evidence_ids = getattr(_candidates_store[candidate_id], '_comparison_evidence_ids', [])
+    
+    if not evidence_ids:
+        # Fallback: try to find evidence from snapshot
+        evidence_ids = []
+        if comparison.existingBlock:
+            blocks = snapshot.get('blocks', {}).get('verified', [])
+            for block in blocks:
+                if block.get('blockId') == comparison.existingBlock:
+                    if 'evidenceId' in block:
+                        evidence_ids.append(block['evidenceId'])
     
     # Create manifest
     manifest_id = f"manifest-{candidate_id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
@@ -424,6 +457,101 @@ async def list_candidates():
         "count": len(candidates),
         "candidates": candidates
     }
+
+
+@router.post("/{candidate_id}/execute", response_model=Dict[str, Any])
+async def execute_placement(candidate_id: str):
+    """
+    Execute approved placement manifest for candidate block.
+    
+    SAFETY INVARIANTS:
+    - Requires approved manifest (not self-approved)
+    - Verifies manifest hash (rejects tampered manifests with 409)
+    - Only executes approved repository/toolchain operations
+    - Creates git branch and commit for approved changes
+    - Triggers discovery refresh after placement
+    
+    Args:
+        candidate_id: Unique candidate identifier
+        
+    Returns:
+        Execution result with status, branch, commit, and evidence
+        
+    Raises:
+        404: If candidate or manifest not found
+        400: If manifest not approved
+        409: If manifest has been tampered with (hash mismatch)
+    """
+    if candidate_id not in _candidates_store:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Candidate {candidate_id} not found"
+        )
+    
+    if candidate_id not in _manifests_store:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No manifest found for candidate {candidate_id}. Generate one first."
+        )
+    
+    package = _candidates_store[candidate_id]
+    manifest = _manifests_store[candidate_id]
+    
+    # Check approval status (must query governance API)
+    # For M3 foundation, we'll use a simple check
+    # Production would call governance API to verify approval
+    
+    # Import governance models and executor
+    from app.models.governance import ApprovalStatus
+    from app.placement.executor import PlacementExecutor, PlacementExecutionError
+    
+    # SAFETY: Check if manifest has been approved
+    # In production, this would query the governance API
+    # For M3, we'll simulate by checking a stored approval status
+    approval_status = getattr(manifest, '_approval_status', ApprovalStatus.PENDING)
+    
+    if approval_status != ApprovalStatus.APPROVED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot execute unapproved manifest. Status: {approval_status}. "
+                   f"Submit manifest for approval via governance API first."
+        )
+    
+    # Execute placement with safety checks
+    workspace_root = os.environ.get('WORKSPACE_ROOT', 'E:\\onlinewebsites\\quiz-platform')
+    executor = PlacementExecutor(workspace_root)
+    
+    try:
+        result = executor.execute_placement(
+            manifest,
+            approval_status,
+            package.files
+        )
+        
+        # Trigger discovery refresh to update snapshot
+        try:
+            refresh_result = executor.trigger_discovery_refresh()
+            result['discoveryRefresh'] = refresh_result
+        except PlacementExecutionError as e:
+            result['discoveryRefresh'] = {
+                'status': 'warning',
+                'message': f'Placement succeeded but discovery refresh failed: {str(e)}'
+            }
+        
+        return result
+        
+    except PlacementExecutionError as e:
+        # Check if it's a hash verification failure (409)
+        if 'hash verification failed' in str(e).lower() or 'tampered' in str(e).lower():
+            raise HTTPException(
+                status_code=409,
+                detail=str(e)
+            )
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Placement execution failed: {str(e)}"
+            )
 
 
 def _matches_family(name: str, family: BlockFamily) -> bool:
