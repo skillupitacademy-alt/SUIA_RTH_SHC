@@ -51,7 +51,7 @@ def test_get_workflow():
     assert get_response.status_code == 200
 
 def test_validate_workflow():
-    """Test workflow validation"""
+    """Test workflow validation (fails without snapshot)"""
     create_response = client.post("/creation/workflows", json={
         "mode": "I2_ONLY",
         "composition": {"base": "I2"},
@@ -61,7 +61,10 @@ def test_validate_workflow():
     
     validate_response = client.post(f"/creation/workflows/{workflow_id}/validate")
     assert validate_response.status_code == 200
-    assert validate_response.json()["status"] == "CERTIFYING"
+    
+    # Without a real snapshot, validation should FAIL (no longer placeholder)
+    # This is correct behavior - validates that real validation logic is running
+    assert validate_response.json()["status"] == "FAILED"
 
 def test_certify_workflow():
     """Test workflow certification with all 6 gates"""

@@ -54,16 +54,122 @@ async def get_workflow(workflow_id: str):
 
 @router.post("/workflows/{workflow_id}/validate", response_model=WorkflowResponse)
 async def validate_workflow(workflow_id: str):
-    """Run composition validation checks"""
+    """
+    Run composition validation checks.
+    
+    Performs I2 validation or mix-and-match compatibility checks:
+    - I2_ONLY: Verifies complete I2 structure from repository
+    - MIX_AND_MATCH: Validates component compatibility (type, version, registry, renderer, runtime)
+    
+    Returns BLOCKED status if validation fails, CERTIFYING if all checks pass.
+    """
     if workflow_id not in workflows:
         raise HTTPException(status_code=404, detail="Workflow not found")
     
     workflow = workflows[workflow_id]
     workflow["status"] = WorkflowStatus.VALIDATING
     
-    # Validation logic: check if candidate blocks exist, composition is valid, etc.
-    # For now, pass validation
-    workflow["status"] = WorkflowStatus.CERTIFYING
+    # Load discovery snapshot
+    repository_root = Path(__file__).resolve().parents[5]
+    snapshot_path = repository_root / "packages/project-llm-discovery/output/snapshot.json"
+    
+    validation_errors = []
+    
+    try:
+        from app.repository.discovery_client import DiscoveryClient
+        from app.verification.compatibility import (
+            resolve_component,
+            verify_types_compatible,
+            verify_versions_compatible,
+            verify_registry_compatible,
+            verify_renderer_compatible,
+            verify_runtime_compatible,
+            verify_i2_complete
+        )
+        
+        discovery_client = DiscoveryClient(snapshot_path)
+        snapshot = discovery_client.load_snapshot()
+        
+        composition = workflow["composition"]["composition"]
+        mode = workflow["mode"]
+        
+        # I2-only validation: verify complete I2 structure
+        if mode == CreationMode.I2_ONLY:
+            result = verify_i2_complete(snapshot)
+            
+            if not result.passed:
+                validation_errors.extend(result.conflicts)
+                workflow["status"] = WorkflowStatus.FAILED
+                
+                # Add validation errors to all gates as blockers
+                for gate in workflow["certificationGates"]:
+                    gate["status"] = CertificationGateStatus.BLOCKED
+                    gate["blockers"] = result.conflicts
+                    gate["message"] = result.error_message
+                
+                return workflow
+        
+        # Mix-and-match validation: verify component compatibility
+        else:
+            all_compatible = True
+            compatibility_errors = []
+            
+            for component_type, source in composition.items():
+                # Resolve component from source identifier
+                component = resolve_component(source, snapshot)
+                
+                if component is None:
+                    compatibility_errors.append(
+                        f"Component '{source}' not found in repository"
+                    )
+                    all_compatible = False
+                    continue
+                
+                # Verify all compatibility dimensions
+                type_result = verify_types_compatible(component, composition, snapshot)
+                version_result = verify_versions_compatible(component, composition, snapshot)
+                registry_result = verify_registry_compatible(component, composition, snapshot)
+                renderer_result = verify_renderer_compatible(component, composition, snapshot)
+                runtime_result = verify_runtime_compatible(component, composition, snapshot)
+                
+                # Collect errors
+                for result in [type_result, version_result, registry_result, renderer_result, runtime_result]:
+                    if not result.passed:
+                        all_compatible = False
+                        compatibility_errors.extend(result.conflicts)
+            
+            if not all_compatible:
+                validation_errors = compatibility_errors
+                workflow["status"] = WorkflowStatus.FAILED
+                
+                # Add validation errors to all gates as blockers
+                for gate in workflow["certificationGates"]:
+                    gate["status"] = CertificationGateStatus.BLOCKED
+                    gate["blockers"] = compatibility_errors
+                    gate["message"] = "Composition validation failed"
+                
+                return workflow
+        
+        # Validation passed - proceed to certification
+        workflow["status"] = WorkflowStatus.CERTIFYING
+        
+    except FileNotFoundError:
+        validation_errors.append("Discovery snapshot not found")
+        workflow["status"] = WorkflowStatus.FAILED
+        
+        for gate in workflow["certificationGates"]:
+            gate["status"] = CertificationGateStatus.BLOCKED
+            gate["blockers"] = validation_errors
+            gate["message"] = "Snapshot unavailable"
+    
+    except ValueError as e:
+        validation_errors.append(f"Snapshot invalid: {str(e)}")
+        workflow["status"] = WorkflowStatus.FAILED
+        
+        for gate in workflow["certificationGates"]:
+            gate["status"] = CertificationGateStatus.BLOCKED
+            gate["blockers"] = validation_errors
+            gate["message"] = "Snapshot invalid"
     
     return workflow
 
