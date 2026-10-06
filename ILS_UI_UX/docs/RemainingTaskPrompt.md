@@ -6811,3 +6811,2215 @@ The source architecture itself requires this final Candidate → Composer → tu
 
 **So the answer to your question is yes: we can implement those remaining `⏳` items from the actual GitHub repo, and the Project AI UI should look and behave as a native part of the existing SkillHubCore Dashboard/Factory/Composer experience.**
 
+Yes. Based on the attached material and the verified GitHub state, the correct next deliverable is a **remaining implementation handoff**, not another architecture discussion.
+
+The important correction from the repository check is that the existing deterministic package already has:
+
+- `packages/project-llm-discovery/src/adapters/filesystem-repository-adapter.ts`
+- `packages/project-llm-discovery/src/contracts/repository-adapter.ts`
+- `d1-structure-scanner.ts`
+- `d2-runtime-scanner.ts`
+- `d3-blocks-scanner.ts`
+- `d4-composer-scanner.ts`
+- `d5-dependencies-scanner.ts`
+- `d6-tests-scanner.ts`
+- V1–V9 validators
+
+So the Project AI must **extend those**, not create duplicate implementations.
+
+Below is the implementation handoff in the same phase-oriented format you requested.
+
+---
+
+# PROJECT LLM — REMAINING IMPLEMENTATION HANDOFF
+
+## Current baseline
+
+```text
+Repository:
+skillupitacademy-alt/SUIA_RTH_SHC
+
+Branch:
+m2-project-ai-foundation
+
+M2.2 HEAD:
+1b105b2c303155ba422facac404b2436f3b55c39
+```
+
+Current state:
+
+| Phase | Status |
+|---|---|
+| M1 deterministic discovery | ✅ Complete |
+| M2.1 evidence lifecycle | ✅ Complete |
+| M2.2 strict evidence binding | ✅ Code complete |
+| M2.3 toolchain | 🔴 Pending |
+| M2.4 Composer/API/schema | 🔴 Pending |
+| M2.5 dependency graph | 🔴 Pending |
+| M2.6 UBRC | 🔴 Pending |
+| M2.7 runtime/browser | 🔴 Pending |
+| M2.8 FastAPI Project AI | 🔴 Pending |
+| Multi-agent orchestration | 🔴 Pending |
+| Governance/approval | 🔴 Pending |
+| Candidate intake | 🔴 Pending |
+| Candidate placement | 🔴 Pending |
+| Candidate certification | 🔴 Pending |
+| Composer certification | 🔴 Pending |
+| I2 workflow | 🔴 Pending |
+| Mix-and-match | 🔴 Pending |
+| Project AI UI | 🔴 Pending |
+| End-to-end certification | 🔴 Pending |
+
+The attached material explicitly distinguishes the previous work as architecture/blueprint plus M1/M2.1/M2.2, with the remaining phases still requiring implementation. Explain I2 Creation Files
+
+---
+
+# 1. Global Project AI instruction
+
+This must be supplied to **every agent**, not only the documentation agent.
+
+```text
+PROJECT AI GLOBAL ENGINEERING POLICY
+
+The repository snapshot and evidence system are authoritative for repository facts.
+
+Before modifying or creating anything:
+
+1. Search the repository.
+2. Search the current snapshot.
+3. Search evidence.
+4. Search canonical artifacts.
+5. Identify existing implementation serving the same purpose.
+6. Prefer extending/updating the existing canonical implementation.
+7. Do not create duplicate documentation, plans, registries,
+   specifications, tests, contracts, or implementations.
+8. Create a new artifact only when:
+   a. no suitable canonical artifact exists, or
+   b. the architecture explicitly requires a distinct artifact.
+9. If creating a new artifact, record why the existing artifact
+   could not be extended.
+10. Never invent repository facts.
+11. UNKNOWN is preferable to an unsupported PASS.
+12. AI planning is not human approval.
+13. Implementation is not certification.
+14. No agent may approve its own implementation.
+15. No arbitrary shell commands.
+16. No direct main-branch mutation from an LLM.
+17. All repository mutations must pass through approved operations.
+18. Preserve deterministic serialization and evidence IDs.
+19. Agents share one authoritative snapshot/evidence context.
+20. Agents do not independently rescan the repository.
+21. Canonical Markdown must be updated/appended rather than duplicated.
+22. Gate completion requires implementation + tests + evidence + validation.
+```
+
+This directly implements the canonical-artifact principle from the supplied material: agents search, find the canonical artifact, then update/append it rather than continually generating Markdown. Explain I2 Creation Files
+
+---
+
+# 2. M2.3 — Real toolchain execution
+
+## Objective
+
+Move from:
+
+```text
+"Node is declared as 20.x"
+```
+
+to:
+
+```text
+"Node actually executed and returned version X"
+```
+
+The attached material explicitly identifies this as the next implementation phase. Explain I2 Creation Files
+
+## Existing files to modify
+
+```text
+packages/project-llm-discovery/src/contracts/repository-adapter.ts
+
+packages/project-llm-discovery/src/adapters/filesystem-repository-adapter.ts
+```
+
+Potentially add only if no equivalent exists:
+
+```text
+packages/project-llm-discovery/src/contracts/toolchain.ts
+
+packages/project-llm-discovery/src/toolchain/approved-toolchain.ts
+
+packages/project-llm-discovery/src/toolchain/toolchain-runner.ts
+```
+
+### Do NOT create
+
+```text
+repository-command-adapter.ts
+shell-adapter.ts
+command-service.ts
+ai-shell-service.ts
+```
+
+if they duplicate the existing repository adapter responsibility.
+
+---
+
+## Contract
+
+```ts
+// src/contracts/repository-adapter.ts
+
+export interface CommandResult {
+  command: string;
+  args: string[];
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
+
+export interface RepositoryAdapter {
+  exists(path: string): Promise<boolean>;
+  readFile(path: string): Promise<string>;
+  listDirectory(path: string): Promise<string[]>;
+
+  runCommand(
+    command: string,
+    args: string[],
+    options?: {
+      cwd?: string;
+      timeoutMs?: number;
+      env?: Record<string, string>;
+    },
+  ): Promise<CommandResult>;
+}
+```
+
+---
+
+## Approved tool registry
+
+```ts
+export type ApprovedTool =
+  | 'node'
+  | 'pnpm'
+  | 'turbo'
+  | 'tsc'
+  | 'vitest'
+  | 'playwright';
+
+export interface ApprovedOperation {
+  id: string;
+  tool: ApprovedTool;
+  args: string[];
+  timeoutMs: number;
+  description: string;
+}
+```
+
+Registry:
+
+```ts
+export const APPROVED_OPERATIONS: Record<string, ApprovedOperation> = {
+  node_version: {
+    id: 'node_version',
+    tool: 'node',
+    args: ['--version'],
+    timeoutMs: 10_000,
+    description: 'Verify installed Node.js version',
+  },
+
+  pnpm_version: {
+    id: 'pnpm_version',
+    tool: 'pnpm',
+    args: ['--version'],
+    timeoutMs: 10_000,
+    description: 'Verify installed pnpm version',
+  },
+
+  typescript_version: {
+    id: 'typescript_version',
+    tool: 'pnpm',
+    args: ['exec', 'tsc', '--version'],
+    timeoutMs: 10_000,
+    description: 'Verify installed TypeScript version',
+  },
+
+  vitest_version: {
+    id: 'vitest_version',
+    tool: 'pnpm',
+    args: ['exec', 'vitest', '--version'],
+    timeoutMs: 10_000,
+    description: 'Verify installed Vitest version',
+  },
+
+  playwright_version: {
+    id: 'playwright_version',
+    tool: 'pnpm',
+    args: ['exec', 'playwright', '--version'],
+    timeoutMs: 10_000,
+    description: 'Verify installed Playwright version',
+  },
+};
+```
+
+---
+
+## Critical security rule
+
+Never do:
+
+```ts
+exec(userProvidedCommand);
+```
+
+Never:
+
+```ts
+shell: true
+```
+
+Never allow:
+
+```text
+LLM → arbitrary executable
+```
+
+Correct:
+
+```text
+LLM
+ ↓
+approved operation ID
+ ↓
+registry lookup
+ ↓
+validated command
+ ↓
+RepositoryAdapter
+ ↓
+CommandResult
+```
+
+---
+
+## Toolchain evidence
+
+```ts
+export interface ToolchainEvidence {
+  tool: string;
+  declaredVersion?: string;
+  actualVersion: string;
+  command: string;
+  args: string[];
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  evidenceId: string;
+}
+```
+
+---
+
+## M2.3 tests
+
+```text
+repository-adapter.test.ts
+toolchain-runner.test.ts
+toolchain-version-verification.test.ts
+```
+
+Required cases:
+
+```text
+PASS approved command
+PASS stdout capture
+PASS stderr capture
+PASS exit code capture
+FAIL unknown operation
+FAIL unsupported tool
+FAIL timeout
+FAIL non-zero exit
+PASS deterministic operation representation
+PASS arbitrary shell rejected
+```
+
+---
+
+# 3. M2.4 — Composer/API/schema depth
+
+Existing scanner:
+
+```text
+packages/project-llm-discovery/src/scanners/d4-composer-scanner.ts
+```
+
+Modify it.
+
+Do not create:
+
+```text
+d4-tutorial-composer-scanner.ts
+composer-depth-scanner.ts
+```
+
+unless repository inspection proves a distinct scanner is architecturally necessary.
+
+---
+
+## Current problem
+
+The Composer scanner must not use shallow placeholders such as:
+
+```ts
+const method = 'POST';
+```
+
+or:
+
+```ts
+tables: []
+```
+
+or:
+
+```ts
+blocksUsed: []
+```
+
+when the information has simply not been discovered.
+
+---
+
+## Discovery result
+
+Introduce the concept:
+
+```ts
+export type DiscoveryStatus =
+  | 'KNOWN'
+  | 'UNKNOWN'
+  | 'UNABLE_TO_DETERMINE';
+
+export interface DiscoveryValue<T> {
+  status: DiscoveryStatus;
+  value: T;
+  evidenceIds: string[];
+  reason?: string;
+}
+```
+
+Example:
+
+```ts
+{
+  status: 'KNOWN',
+  value: ['GET', 'POST'],
+  evidenceIds: ['EVID-...']
+}
+```
+
+If discovery cannot establish the method:
+
+```ts
+{
+  status: 'UNABLE_TO_DETERMINE',
+  value: [],
+  evidenceIds: [],
+  reason: 'Route declaration could not be resolved statically'
+}
+```
+
+This is much safer than pretending an empty array means "none".
+
+---
+
+## API discovery
+
+Detect actual:
+
+```text
+GET
+POST
+PUT
+PATCH
+DELETE
+HEAD
+OPTIONS
+```
+
+through AST/source analysis.
+
+Preferred:
+
+```text
+ts-morph
+```
+
+Fallback:
+
+```text
+controlled textual analysis
+```
+
+---
+
+## Schema discovery
+
+Inspect actual:
+
+```text
+Drizzle definitions
+Zod schemas
+TypeScript types
+database definitions
+Composer data contracts
+```
+
+Do not invent tables.
+
+---
+
+## UI block discovery
+
+Find:
+
+```text
+imports
+component references
+registry references
+block usage
+Composer selection metadata
+```
+
+---
+
+## Tests
+
+Add/update:
+
+```text
+d4-composer-scanner.test.ts
+v5-composer-validator.test.ts
+```
+
+Required:
+
+```text
+GET detected
+POST detected
+PATCH detected
+schema detected
+block usage detected
+unknown method handled honestly
+unknown schema handled honestly
+evidenceId attached
+```
+
+---
+
+# 4. M2.5 — Dependency graph
+
+Existing:
+
+```text
+packages/project-llm-discovery/src/scanners/d5-dependencies-scanner.ts
+
+packages/project-llm-discovery/src/validation/v6-dependency-graph-validator.ts
+```
+
+Modify both.
+
+---
+
+## Contract
+
+```ts
+export interface DependencyEdge {
+  from: string;
+  to: string;
+
+  kind:
+    | 'dependency'
+    | 'devDependency'
+    | 'peerDependency';
+
+  requestedVersion?: string;
+  resolvedVersion?: string;
+
+  evidenceId: string;
+}
+```
+
+---
+
+## Required graph
+
+```text
+workspace
+   ↓
+package
+   ↓
+dependency declaration
+   ↓
+workspace resolution
+   ↓
+lockfile resolution
+   ↓
+external package
+```
+
+---
+
+## Evidence
+
+For:
+
+```json
+"@quiz/types": "workspace:*"
+```
+
+evidence must point to the actual `package.json` declaration.
+
+If lockfile resolution produces:
+
+```text
+@quiz/types → version X
+```
+
+that must have separate evidence.
+
+---
+
+## V6 failures
+
+```text
+UNKNOWN_NODE
+UNKNOWN_TARGET
+MISSING_EDGE_EVIDENCE
+VERSION_CONFLICT
+SELF_DEPENDENCY
+UNRESOLVED_WORKSPACE_DEPENDENCY
+```
+
+---
+
+# 5. M2.6 — UBRC
+
+UBRC must verify:
+
+```text
+Block Type
+ ↓
+Registry
+ ↓
+Renderer
+ ↓
+data-block-version
+ ↓
+Runtime
+```
+
+The attached material explicitly states that renderer existence alone is not enough. Explain I2 Creation Files
+
+---
+
+## Contract
+
+```ts
+export type UBRCStatus =
+  | 'UBRC_VALID'
+  | 'UBRC_MISSING'
+  | 'UBRC_VERSION_MISMATCH'
+  | 'UBRC_TYPE_MISMATCH'
+  | 'UBRC_REGISTRY_MISSING'
+  | 'UBRC_RENDERER_MISSING';
+
+export interface UBRCVerification {
+  blockType: string;
+  version: string;
+
+  registryFound: boolean;
+  rendererFound: boolean;
+  runtimeAttributeFound: boolean;
+
+  runtimeAttributeValue?: string;
+
+  status: UBRCStatus;
+
+  evidenceIds: string[];
+}
+```
+
+---
+
+## Implementation
+
+```ts
+export function verifyUBRC(input: {
+  blockType: string;
+  version: string;
+
+  registry: Map<
+    string,
+    {
+      version?: string;
+      renderer: string;
+    }
+  >;
+
+  renderers: Set<string>;
+
+  runtimeAttribute?: string;
+
+  evidenceIds: string[];
+}): UBRCVerification {
+  const registration =
+    input.registry.get(input.blockType);
+
+  if (!registration) {
+    return {
+      blockType: input.blockType,
+      version: input.version,
+      registryFound: false,
+      rendererFound: false,
+      runtimeAttributeFound: false,
+      status: 'UBRC_REGISTRY_MISSING',
+      evidenceIds: input.evidenceIds,
+    };
+  }
+
+  if (!input.renderers.has(registration.renderer)) {
+    return {
+      blockType: input.blockType,
+      version: input.version,
+      registryFound: true,
+      rendererFound: false,
+      runtimeAttributeFound: false,
+      status: 'UBRC_RENDERER_MISSING',
+      evidenceIds: input.evidenceIds,
+    };
+  }
+
+  if (
+    registration.version &&
+    registration.version !== input.version
+  ) {
+    return {
+      blockType: input.blockType,
+      version: input.version,
+      registryFound: true,
+      rendererFound: true,
+      runtimeAttributeFound: false,
+      status: 'UBRC_VERSION_MISMATCH',
+      evidenceIds: input.evidenceIds,
+    };
+  }
+
+  if (!input.runtimeAttribute) {
+    return {
+      blockType: input.blockType,
+      version: input.version,
+      registryFound: true,
+      rendererFound: true,
+      runtimeAttributeFound: false,
+      status: 'UBRC_MISSING',
+      evidenceIds: input.evidenceIds,
+    };
+  }
+
+  if (input.runtimeAttribute !== input.version) {
+    return {
+      blockType: input.blockType,
+      version: input.version,
+      registryFound: true,
+      rendererFound: true,
+      runtimeAttributeFound: true,
+      runtimeAttributeValue: input.runtimeAttribute,
+      status: 'UBRC_VERSION_MISMATCH',
+      evidenceIds: input.evidenceIds,
+    };
+  }
+
+  return {
+    blockType: input.blockType,
+    version: input.version,
+    registryFound: true,
+    rendererFound: true,
+    runtimeAttributeFound: true,
+    runtimeAttributeValue: input.runtimeAttribute,
+    status: 'UBRC_VALID',
+    evidenceIds: input.evidenceIds,
+  };
+}
+```
+
+Tests:
+
+```text
+registry missing
+renderer missing
+version mismatch
+runtime attribute missing
+runtime attribute mismatch
+valid UBRC
+```
+
+---
+
+# 6. M2.7 — Runtime/browser verification
+
+This is where static repository intelligence becomes actual runtime intelligence.
+
+The attached material explicitly requires the **real SkillHubCore application**, not a fake verification page. Explain I2 Creation Files
+
+---
+
+## Contract
+
+```ts
+export interface RuntimeVerification {
+  verificationId: string;
+
+  target: string;
+  route: string;
+
+  blockType?: string;
+
+  expected: unknown;
+  observed: unknown;
+
+  passed: boolean;
+
+  evidenceIds: string[];
+
+  consoleErrors: string[];
+  networkErrors: string[];
+}
+```
+
+---
+
+## Playwright sequence
+
+```text
+start real application
+        ↓
+health check
+        ↓
+open route
+        ↓
+find block
+        ↓
+data-block-type
+        ↓
+data-block-version
+        ↓
+content
+        ↓
+renderer
+        ↓
+console
+        ↓
+network
+        ↓
+evidence
+```
+
+Example:
+
+```ts
+const block = page.locator(
+  '[data-block-type="introduction"]'
+);
+
+await expect(block).toBeVisible();
+
+const blockType =
+  await block.getAttribute('data-block-type');
+
+const blockVersion =
+  await block.getAttribute('data-block-version');
+
+expect(blockType)
+  .toBe('introduction');
+
+expect(blockVersion)
+  .toBe(expectedVersion);
+```
+
+Capture:
+
+```text
+console.error
+pageerror
+relevant failed requests
+HTTP failures
+```
+
+---
+
+# 7. M2 final gate
+
+Only after:
+
+```text
+M2.3 PASS
+M2.4 PASS
+M2.5 PASS
+M2.6 PASS
+M2.7 PASS
+```
+
+run:
+
+```text
+V1
+V2
+V3
+V4
+V5
+V6
+V7
+V8
+V9
+
+type-check
+unit tests
+integration tests
+runtime tests
+browser tests
+```
+
+Only Agent 0 can produce:
+
+```text
+M2_VERIFIED
+```
+
+---
+
+# 8. M2.8 — FastAPI Project AI
+
+Only after M2 deterministic intelligence is certified.
+
+Create:
+
+```text
+services/project-ai/
+```
+
+**after repository inspection confirms no existing equivalent service.**
+
+---
+
+## Structure
+
+```text
+services/project-ai/
+├── pyproject.toml
+├── app/
+│   ├── main.py
+│   ├── api/
+│   │   ├── routes/
+│   │   │   ├── health.py
+│   │   │   ├── snapshot.py
+│   │   │   ├── evidence.py
+│   │   │   └── tasks.py
+│   │   └── schemas/
+│   │       ├── snapshot.py
+│   │       ├── evidence.py
+│   │       └── workflow.py
+│   ├── agents/
+│   │   ├── base.py
+│   │   ├── repository.py
+│   │   ├── evidence.py
+│   │   ├── planner.py
+│   │   ├── implementation.py
+│   │   ├── tester.py
+│   │   └── reviewer.py
+│   ├── orchestration/
+│   │   ├── workflow_engine.py
+│   │   ├── gate_controller.py
+│   │   └── agent_registry.py
+│   ├── evidence/
+│   │   ├── graph.py
+│   │   └── query.py
+│   ├── repository/
+│   │   └── discovery_client.py
+│   ├── governance/
+│   │   ├── approvals.py
+│   │   └── policies.py
+│   └── models/
+│       ├── task.py
+│       ├── snapshot.py
+│       └── evidence.py
+└── tests/
+```
+
+---
+
+# 9. FastAPI workflow
+
+```python
+from enum import Enum
+
+from pydantic import BaseModel, Field
+
+
+class TaskStatus(str, Enum):
+    CREATED = "CREATED"
+    DISCOVERY = "DISCOVERY"
+    PLANNING = "PLANNING"
+    WAITING_FOR_APPROVAL = "WAITING_FOR_APPROVAL"
+    IMPLEMENTING = "IMPLEMENTING"
+    TESTING = "TESTING"
+    VERIFYING = "VERIFYING"
+    COMPLETED = "COMPLETED"
+
+    FAILED = "FAILED"
+    BLOCKED = "BLOCKED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+
+
+class Task(BaseModel):
+    task_id: str
+    status: TaskStatus = TaskStatus.CREATED
+
+    snapshot_id: str | None = None
+    plan_hash: str | None = None
+    manifest_hash: str | None = None
+
+    errors: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+```
+
+---
+
+# 10. Workflow transition engine
+
+```python
+ALLOWED_TRANSITIONS = {
+    TaskStatus.CREATED: {
+        TaskStatus.DISCOVERY,
+        TaskStatus.CANCELLED,
+    },
+
+    TaskStatus.DISCOVERY: {
+        TaskStatus.PLANNING,
+        TaskStatus.FAILED,
+        TaskStatus.BLOCKED,
+    },
+
+    TaskStatus.PLANNING: {
+        TaskStatus.WAITING_FOR_APPROVAL,
+        TaskStatus.FAILED,
+        TaskStatus.BLOCKED,
+    },
+
+    TaskStatus.WAITING_FOR_APPROVAL: {
+        TaskStatus.IMPLEMENTING,
+        TaskStatus.REJECTED,
+        TaskStatus.CANCELLED,
+    },
+
+    TaskStatus.IMPLEMENTING: {
+        TaskStatus.TESTING,
+        TaskStatus.FAILED,
+        TaskStatus.BLOCKED,
+    },
+
+    TaskStatus.TESTING: {
+        TaskStatus.VERIFYING,
+        TaskStatus.FAILED,
+        TaskStatus.BLOCKED,
+    },
+
+    TaskStatus.VERIFYING: {
+        TaskStatus.COMPLETED,
+        TaskStatus.FAILED,
+        TaskStatus.BLOCKED,
+    },
+}
+
+
+class WorkflowEngine:
+    def transition(
+        self,
+        task: Task,
+        target: TaskStatus,
+    ) -> Task:
+
+        allowed = ALLOWED_TRANSITIONS.get(
+            task.status,
+            set(),
+        )
+
+        if target not in allowed:
+            raise ValueError(
+                f"Invalid transition "
+                f"{task.status} -> {target}"
+            )
+
+        task.status = target
+        return task
+```
+
+No agent should directly mutate workflow state.
+
+---
+
+# 11. Approval mechanism
+
+The attached material explicitly requires approval to be cryptographically bound to the placement manifest. Explain I2 Creation Files
+
+```python
+from hashlib import sha256
+
+from pydantic import BaseModel
+
+
+class Approval(BaseModel):
+    task_id: str
+    approved: bool
+    approved_by: str
+    approved_at: str
+    manifest_hash: str
+
+
+def calculate_manifest_hash(
+    manifest: str,
+) -> str:
+    return sha256(
+        manifest.encode("utf-8")
+    ).hexdigest()
+
+
+def validate_approval(
+    approval: Approval,
+    expected_task_id: str,
+    expected_manifest_hash: str,
+) -> None:
+
+    if approval.task_id != expected_task_id:
+        raise ValueError(
+            "Approval task mismatch"
+        )
+
+    if (
+        approval.manifest_hash
+        != expected_manifest_hash
+    ):
+        raise ValueError(
+            "Approval manifest mismatch"
+        )
+
+    if not approval.approved:
+        raise ValueError(
+            "Approval is not affirmative"
+        )
+```
+
+Therefore:
+
+```text
+Approve button
+      ↓
+backend creates approval
+      ↓
+manifest hash stored
+      ↓
+implementation begins
+      ↓
+current manifest hash compared
+      ↓
+mismatch = BLOCKED
+```
+
+---
+
+# 12. Multi-agent architecture
+
+The final agent set should be:
+
+```text
+Agent 0  Gate Controller
+Agent 1  Repository Contract Auditor
+Agent 2  Toolchain
+Agent 3  Composer/API/Schema
+Agent 4  Dependency Graph
+Agent 5  UBRC
+Agent 6  Candidate Intake
+Agent 7  Candidate Placement
+Agent 8  Candidate Certification
+Agent 9  Brand Independence
+Agent 10 Runtime/Browser
+Agent 11 Composer Workflow
+Agent 12 FastAPI/Workflow
+Agent 13 Governance/Approval
+Agent 14 Documentation/Evidence Reconciliation
+```
+
+All agents receive:
+
+```text
+snapshot_id
+evidence graph
+task_id
+gate context
+```
+
+They do not independently rescan.
+
+---
+
+# 13. Candidate Block intake
+
+The human uploads:
+
+```text
+HTML
+CSS
+JS
+JSON
+TS
+TSX
+assets
+tests
+configuration
+```
+
+Project AI performs:
+
+```text
+Upload
+ ↓
+inventory
+ ↓
+classification
+ ↓
+duplicate detection
+ ↓
+repository comparison
+ ↓
+canonical destination
+ ↓
+placement manifest
+```
+
+The user should **not** manually determine where every file goes.
+
+This is explicitly supported by the attached material. Explain I2 Creation Files
+
+---
+
+# 14. Candidate package model
+
+```python
+from enum import Enum
+from pydantic import BaseModel
+
+
+class CreationMode(str, Enum):
+    I2_ONLY = "I2_ONLY"
+    MIX_AND_MATCH = "MIX_AND_MATCH"
+    NEW_CANDIDATE = "NEW_CANDIDATE"
+
+
+class CandidateFile(BaseModel):
+    uploaded_path: str
+    content_hash: str
+    media_type: str
+    size_bytes: int
+
+
+class CandidatePackage(BaseModel):
+    candidate_id: str
+    family: str
+    target_version: str
+    creation_mode: CreationMode
+    files: list[CandidateFile]
+```
+
+---
+
+# 15. Placement manifest
+
+```python
+class PlacementAction(str, Enum):
+    ADD = "ADD"
+    UPDATE = "UPDATE"
+    EXTEND = "EXTEND"
+    REUSE = "REUSE"
+    REJECT = "REJECT"
+
+
+class PlacementEntry(BaseModel):
+    uploaded_path: str
+    target_path: str | None
+
+    action: PlacementAction
+
+    reason: str
+
+    canonical_artifact: str | None
+
+    requires_approval: bool = True
+
+
+class PlacementManifest(BaseModel):
+    candidate_id: str
+
+    entries: list[PlacementEntry]
+
+    duplicate_count: int
+    new_file_count: int
+    modified_file_count: int
+
+    canonical_policy_passed: bool
+```
+
+Example:
+
+```json
+{
+  "candidate_id": "introduction-i2-hero-01",
+  "entries": [
+    {
+      "uploaded_path": "Hero.tsx",
+      "target_path": "canonical/introduction/Hero.tsx",
+      "action": "ADD",
+      "reason": "Matches existing Introduction family structure",
+      "canonical_artifact": null,
+      "requires_approval": true
+    },
+    {
+      "uploaded_path": "types.ts",
+      "target_path": "canonical/types.ts",
+      "action": "EXTEND",
+      "reason": "Existing canonical type contract should be extended",
+      "canonical_artifact": "canonical/types.ts",
+      "requires_approval": true
+    },
+    {
+      "uploaded_path": "registry.ts",
+      "target_path": "existing/registry.ts",
+      "action": "UPDATE",
+      "reason": "Existing registry must be updated rather than duplicated",
+      "canonical_artifact": "existing/registry.ts",
+      "requires_approval": true
+    }
+  ]
+}
+```
+
+---
+
+# 16. Candidate certification
+
+Required gates:
+
+```text
+CONTRACT
+ILS
+LSNB
+RSSB
+UBRC
+REGISTRY
+RENDERER
+COMPOSER
+TESTS
+RUNTIME
+BROWSER
+BRAND_INDEPENDENCE
+THEME_COMPATIBILITY
+EVIDENCE
+```
+
+Model:
+
+```python
+class CandidateCertification(BaseModel):
+    candidate_id: str
+    gates: dict[str, GateResult]
+    certified: bool
+```
+
+Certification:
+
+```python
+required = [
+    "CONTRACT",
+    "ILS",
+    "LSNB",
+    "RSSB",
+    "UBRC",
+    "REGISTRY",
+    "RENDERER",
+    "COMPOSER",
+    "TESTS",
+    "RUNTIME",
+    "BROWSER",
+    "BRAND_INDEPENDENCE",
+    "THEME_COMPATIBILITY",
+    "EVIDENCE",
+]
+
+certified = all(
+    result.status == "PASSED"
+    for gate, result in certification.gates.items()
+    if gate in required
+)
+```
+
+---
+
+# 17. External AI implementation boundary
+
+The workflow must remain:
+
+```text
+Project AI
+    ↓
+Candidate Block Specification
+    ↓
+Human Approval
+    ↓
+External AI
+    ↓
+React / TypeScript / TSX
+    ↓
+Project AI verification
+```
+
+External AI does **not** get to say:
+
+```text
+CERTIFIED
+```
+
+The Project AI certification engine decides that.
+
+The attached material explicitly makes this distinction: External AI is the implementation worker, while Project LLM is the engineering verification authority. Explain I2 Creation Files
+
+---
+
+# 18. ILS / LSNB / RSSB
+
+Do not invent these standards.
+
+Project AI must locate:
+
+```text
+canonical repository contract
+```
+
+then evaluate:
+
+```python
+class CompatibilityCheck(BaseModel):
+    standard: str
+    requirement_id: str
+    description: str
+    passed: bool
+    evidence_ids: list[str]
+    errors: list[str] = []
+```
+
+So:
+
+```text
+canonical rule
+ ↓
+implementation
+ ↓
+deterministic check
+ ↓
+evidence
+ ↓
+PASS/FAIL
+```
+
+The LLM may explain the result but cannot manufacture the result.
+
+---
+
+# 19. Brand independence
+
+Check:
+
+```text
+hard-coded colors
+logos
+brand URLs
+brand assets
+brand fonts
+brand copy
+brand identifiers
+tenant values
+```
+
+But distinguish:
+
+```text
+design tokens
+```
+
+from:
+
+```text
+brand coupling
+```
+
+Conceptually acceptable:
+
+```tsx
+<IntroductionBlock
+  title={data.title}
+  description={data.description}
+  image={data.image}
+  theme={theme}
+/>
+```
+
+Not acceptable unless repository contracts explicitly require it:
+
+```tsx
+const logo = "/skillup-logo.svg";
+const brandColor = "#...";
+```
+
+---
+
+# 20. Theme compatibility
+
+This must be a **separate gate**.
+
+The same Candidate Block must be able to work with:
+
+```text
+SUIA theme
+RTH theme
+other supported learner themes
+```
+
+through the real runtime theme/design-token/context.
+
+Therefore:
+
+```text
+Brand independence
+≠
+Theme compatibility
+```
+
+Both are required.
+
+Static code inspection is not sufficient.
+
+The actual test must go:
+
+```text
+Composer
+ ↓
+tutorial JSON
+ ↓
+real runtime
+ ↓
+theme
+ ↓
+browser
+```
+
+---
+
+# 21. I2-only
+
+Input:
+
+```json
+{
+  "family": "Introduction",
+  "targetVersion": "I2",
+  "creationMode": "I2_ONLY"
+}
+```
+
+Execution:
+
+```text
+find canonical Introduction family
+ ↓
+find I2 contracts
+ ↓
+find registry
+ ↓
+find renderer
+ ↓
+find Composer
+ ↓
+Candidate Specification
+ ↓
+External AI
+ ↓
+Approval
+ ↓
+Placement
+ ↓
+Discovery refresh
+ ↓
+Certification
+ ↓
+Composer
+ ↓
+Temporary tutorial
+ ↓
+Browser
+```
+
+---
+
+# 22. Mix-and-match
+
+Example:
+
+```json
+{
+  "family": "Introduction",
+  "targetVersion": "I2-CUSTOM",
+  "creationMode": "MIX_AND_MATCH",
+  "components": {
+    "structure": "I2",
+    "hero": "candidate",
+    "media": "I1",
+    "footer": "I2"
+  }
+}
+```
+
+Before implementation:
+
+```text
+data compatibility
+type compatibility
+version compatibility
+registry compatibility
+renderer compatibility
+responsive compatibility
+Composer compatibility
+runtime compatibility
+brand independence
+theme compatibility
+```
+
+Composition:
+
+```json
+{
+  "family": "Introduction",
+  "targetVersion": "I2-CUSTOM",
+  "base": "I2",
+  "components": {
+    "structure": "I2",
+    "hero": "candidate",
+    "media": "I1",
+    "footer": "I2"
+  },
+  "requiredChecks": [
+    "ILS",
+    "LSNB",
+    "RSSB",
+    "UBRC",
+    "COMPOSER",
+    "RUNTIME",
+    "BROWSER",
+    "BRAND_INDEPENDENCE",
+    "THEME_COMPATIBILITY"
+  ]
+}
+```
+
+Critical rule:
+
+```text
+Certified I2
+    ≠
+Certified I2-CUSTOM
+```
+
+Every composition receives its own verification.
+
+---
+
+# 23. Project AI UI
+
+Implement inside:
+
+```text
+apps/skillhubcore-admin
+```
+
+Reuse:
+
+```text
+ClientShell
+LeftSidebar
+Header
+RightSidebar
+ShellContext
+existing Tailwind/UI primitives
+```
+
+Do not create a separate frontend.
+
+Existing wizard pattern:
+
+```text
+apps/skillhubcore-admin/src/components/content/BlueprintFactoryWizard.tsx
+```
+
+should be used as the visual/interaction reference.
+
+---
+
+## Navigation
+
+```text
+Project AI
+├── Overview
+├── Create Block
+├── Candidates
+├── Verification
+├── Composer Tests
+└── Evidence
+```
+
+Add it to the existing sidebar after inspecting its current implementation.
+
+---
+
+# 24. Project AI dashboard
+
+The dashboard should show:
+
+```text
+M2 Status
+──────────────
+M2.3   PASS/FAIL
+M2.4   PASS/FAIL
+M2.5   PASS/FAIL
+M2.6   PASS/FAIL
+M2.7   PASS/FAIL
+
+Candidate Blocks
+──────────────
+Pending
+Approved
+Implementing
+Certified
+Blocked
+
+Composer
+──────────────
+Registered
+Runtime verified
+Browser verified
+
+Evidence
+──────────────
+Current
+Historical
+Missing
+Warnings
+```
+
+This is an engineering control plane, not a generic chatbot.
+
+---
+
+# 25. Candidate creation wizard
+
+```text
+1. Creation Mode
+   ├── I2 ONLY
+   ├── MIX & MATCH
+   └── NEW CANDIDATE
+
+2. Upload
+
+3. Repository Analysis
+
+4. Placement Proposal
+
+5. Human Approval
+
+6. Certification
+
+7. Composer Verification
+
+8. Runtime / Browser
+
+9. Evidence
+```
+
+---
+
+# 26. Verification screen
+
+The final screen should look conceptually like:
+
+```text
+Candidate Verification
+
+Contract                    ✓ PASS
+ILS                         ✓ PASS
+LSNB                        ✓ PASS
+RSSB                        ✓ PASS
+UBRC                        ✓ PASS
+Registry                    ✓ PASS
+Renderer                    ✓ PASS
+Composer                    ✓ PASS
+Tests                       ✓ PASS
+Runtime                     ✓ PASS
+Browser                     ✓ PASS
+Brand Independence          ✓ PASS
+Theme Compatibility         ✓ PASS
+Evidence                    ✓ PASS
+
+────────────────────────────────
+CERTIFIED
+```
+
+This follows the attached certification model. Explain I2 Creation Files
+
+---
+
+# 27. Evidence panel
+
+Example:
+
+```text
+Evidence
+
+EVID-7A82...
+
+Claim:
+Introduction I2 renderer exists.
+
+Source:
+<actual repository path>
+
+Kind:
+component
+
+Hash:
+sha256:...
+
+Lifecycle:
+current
+
+Referenced by:
+✓ Contract
+✓ UBRC
+✓ Renderer
+✓ Browser
+```
+
+The UI should let the engineer inspect the actual source location.
+
+---
+
+# 28. Browser Composer journey
+
+The final browser automation is:
+
+```text
+Project AI
+   ↓
+approved application operation
+   ↓
+SkillHubCore Admin
+   ↓
+Tutorial Composer
+   ↓
+Introduction
+   ↓
+I2
+   ↓
+select Candidate Block
+   ↓
+configure
+   ↓
+save draft
+   ↓
+generate tutorial
+   ↓
+open tutorial
+   ↓
+browser verification
+```
+
+Verify:
+
+```text
+data-block-type
+data-block-version
+visible content
+renderer
+console errors
+network errors
+responsive behavior
+Composer selection
+save
+generated tutorial
+runtime rendering
+theme compatibility
+```
+
+---
+
+# 29. Final end-to-end architecture
+
+```text
+Human
+  ↓
+Project AI Browser
+  ↓
+Candidate Upload
+  ↓
+Candidate Intake
+  ↓
+File Classification
+  ↓
+Canonical Placement Analysis
+  ↓
+Placement Manifest
+  ↓
+Human Approval
+  ↓
+Repository Mutation
+  ↓
+Discovery Refresh
+  ↓
+Contract
+  ↓
+ILS
+  ↓
+LSNB
+  ↓
+RSSB
+  ↓
+UBRC
+  ↓
+Registry
+  ↓
+Renderer
+  ↓
+Composer
+  ↓
+Tests
+  ↓
+Runtime
+  ↓
+Browser
+  ↓
+Brand Independence
+  ↓
+Theme Compatibility
+  ↓
+Evidence
+  ↓
+CERTIFIED BLOCK
+  ↓
+Tutorial Composer
+  ↓
+I2 / I2-CUSTOM
+  ↓
+Temporary Verification Tutorial
+  ↓
+Browser
+  ↓
+PRODUCTION READY
+```
+
+That is the end-state described by the attached architecture material. 
+
+---
+
+# 30. Required agent waves
+
+Use this exact implementation order:
+
+```text
+WAVE 0
+Repository Contract Auditor
+        ↓
+canonical status reconciliation
+
+WAVE 1
+Toolchain Agent
+        ↓
+M2.3
+
+WAVE 2
+Composer Agent + Dependency Agent
+        ↓
+M2.4 + M2.5
+
+WAVE 3
+UBRC Agent
+        ↓
+M2.6
+
+WAVE 4
+Evidence Reconciliation
+        ↓
+M2 consistency
+
+WAVE 5
+Runtime/Browser Agent
+        ↓
+M2.7
+
+WAVE 6
+Testing / Validation Agent
+        ↓
+M2_VERIFIED
+
+WAVE 7
+FastAPI Agent
+        ↓
+M2.8
+
+WAVE 8
+Multi-agent orchestration
+
+WAVE 9
+Governance / Approval
+
+WAVE 10
+Candidate Intake / Placement
+
+WAVE 11
+Candidate Certification
+
+WAVE 12
+Composer Verification
+
+WAVE 13
+I2
+
+WAVE 14
+Mix-and-Match
+
+WAVE 15
+Project AI UI
+
+WAVE 16
+End-to-End Browser Certification
+
+FINAL
+PROJECT_LLM_CERTIFIED
+```
+
+---
+
+# 31. Commit boundaries
+
+Do **not** put everything into one giant PR.
+
+Recommended:
+
+```text
+docs(m2): reconcile M2.2 canonical status
+
+feat(m2.3): implement approved toolchain execution
+
+feat(m2.4): deepen Composer API schema discovery
+
+feat(m2.5): complete dependency graph evidence
+
+feat(m2.6): implement UBRC verification
+
+feat(m2.7): implement runtime browser verification
+
+test(m2): certify deterministic repository intelligence
+
+feat(project-ai): add FastAPI foundation
+
+feat(project-ai): add multi-agent orchestration
+
+feat(project-ai): add governance and approval
+
+feat(project-ai): add candidate intake and placement
+
+feat(project-ai): add candidate certification
+
+feat(project-ai): add Composer verification
+
+feat(project-ai): add I2 workflow
+
+feat(project-ai): add mix-and-match workflow
+
+feat(skillhubcore-admin): add Project AI control plane
+
+test(project-ai): add end-to-end certification
+```
+
+---
+
+# 32. Required gate evidence
+
+Every gate returns:
+
+```python
+class GateResult(BaseModel):
+    gate_id: str
+    status: GateStatus
+
+    required_commits: list[str] = []
+    evidence_ids: list[str] = []
+
+    test_results: list[str] = []
+    validation_results: list[str] = []
+
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    verified_at: str | None = None
+```
+
+The system must be able to answer:
+
+```text
+Why did this gate pass?
+```
+
+with:
+
+```text
+claim
+ ↓
+entity
+ ↓
+evidenceId
+ ↓
+evidence
+ ↓
+source
+```
+
+That evidence chain is one of the central purposes of M2.2 and the later evidence graph. Explain I2 Creation Files
+
+---
+
+# 33. Final Project LLM certification
+
+The final condition is:
+
+```text
+PROJECT_LLM_CERTIFIED
+```
+
+only when:
+
+```text
+M2_VERIFIED
++
+FastAPI
++
+multi-agent orchestration
++
+governance
++
+candidate intake
++
+candidate placement
++
+human approval
++
+candidate certification
++
+Composer verification
++
+runtime verification
++
+browser verification
++
+brand independence
++
+theme compatibility
++
+I2
++
+mix-and-match
++
+Project AI UI
++
+complete evidence
+```
+
+---
+
+## Most important implementation rule
+
+The Project AI execution agent must **not reinterpret this as permission to redesign the system**.
+
+For every phase it must do:
+
+```text
+SEARCH
+ ↓
+INSPECT
+ ↓
+IDENTIFY CANONICAL IMPLEMENTATION
+ ↓
+EXTEND EXISTING CODE
+ ↓
+IMPLEMENT
+ ↓
+TEST
+ ↓
+VALIDATE
+ ↓
+GENERATE EVIDENCE
+ ↓
+UPDATE CANONICAL ARTIFACT
+ ↓
+COMMIT
+ ↓
+REPORT
+```
+
+If an example above conflicts with the **actual repository contract**, the actual repository contract wins.
+
+If something cannot be proven:
+
+```text
+UNKNOWN
+```
+
+or:
+
+```text
+BLOCKED
+```
+
+—not a fabricated `PASS`.
+
+And the architectural distinction remains:
+
+```text
+External AI
+= implementation worker
+
+Project AI
+= evidence-driven engineering control plane + certification authority
+
+Human
+= approval authority
+```
+
+That is the remaining implementation path consistent with the attached material and the verified M2.2 repository state.

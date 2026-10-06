@@ -4797,3 +4797,1932 @@ And the most important point:
 **Project LLM does not merely tell the user whether the uploaded files pass. It must actually integrate the approved files into the repository, connect the necessary registry/renderer/Composer paths, assign/verify the repository-recognized block/version identity, and prove through the real Tutorial Composer → tutorial JSON → learner URL path that the block is usable.**
 
 That is the implementation target we should use going forward. Explain I2 Creation Files
+
+Yes — **with one important qualification**.
+
+Project AI does **not need to care about the creative/design details of the block**. External AI owns the actual structure, visual design, content, and implementation. Project AI's concern is whether the submitted implementation correctly identifies itself as the requested **block family + version** and satisfies the platform contracts required to become a Tutorial Composer member.
+
+For example:
+
+```text
+External AI
+    │
+    │ creates whatever UI/content it wants
+    ▼
+Introduction / I2 candidate
+    │
+    ▼
+Project AI checks
+    │
+    ├── Is this actually Introduction?
+    ├── Does it declare/implement I2 correctly?
+    ├── ILS ✓
+    ├── LSNB ✓
+    ├── RSSB ✓
+    ├── UBRC ✓
+    ├── Registry ✓
+    ├── Renderer ✓
+    ├── Composer contract ✓
+    ├── Runtime ✓
+    ├── Browser ✓
+    └── Brand independence ✓
+            │
+            ▼
+       QUALIFIED
+            │
+            ▼
+   Tutorial Composer Member
+```
+
+### What Project AI should **not** judge
+
+It should not say:
+
+> "I don't like this hero design."
+
+or:
+
+> "The External AI should have used this layout."
+
+or:
+
+> "I would design the Introduction differently."
+
+Those are External AI/design responsibilities.
+
+### What Project AI **must** judge
+
+It must establish:
+
+> **"This implementation is a valid member of the `Introduction / I2` contract and can safely participate in the Tutorial Composer."**
+
+So the distinction is:
+
+| Area | Project AI concern |
+|---|---|
+| Creative layout | ❌ No |
+| Visual design preference | ❌ No |
+| Educational copy | ❌ No |
+| Dummy content choice | ❌ No |
+| Exact visual composition | ❌ No |
+| Block family identity | ✅ Yes |
+| Version identity | ✅ Yes |
+| Required interfaces/contracts | ✅ Yes |
+| Registry | ✅ Yes |
+| Renderer | ✅ Yes |
+| Composer integration | ✅ Yes |
+| Runtime compatibility | ✅ Yes |
+| Browser verification | ✅ Yes |
+| Brand independence | ✅ Yes |
+| Evidence | ✅ Yes |
+
+One subtle point: **"match block name and version" cannot mean merely trusting a string such as `version: "I2"` in the uploaded JSON.** Project AI must verify that the implementation actually satisfies the repository's definition of that block/version. Otherwise an External AI could label any arbitrary component `Introduction I2`.
+
+So the correct rule is:
+
+> **Project AI does not care how the block is creatively structured or what content it contains; it cares that the implementation conforms to the repository-defined identity and technical/compliance contract for that block family/version.**
+
+Once those gates pass, **the block becomes an eligible Tutorial Composer member**, and the learner runtime can render it alongside the existing blocks under the applicable SUIA/RTH theme. This is consistent with the architecture's Candidate → Composer → Tutorial → Browser qualification path. Explain I2 Creation Files
+
+Yes. **That is an important additional compliance requirement.** The candidate must be brand-independent **and theme-compatible**.
+
+The distinction is:
+
+> **Brand independence** means the block must not be hard-coded to SUIA, RTH, or another specific brand.  
+> **Theme compatibility** means the block must correctly consume the active learner/tutorial theme when it is rendered.
+
+So Project AI should verify both.
+
+### Correct model
+
+```text
+External AI
+   │
+   │ creates relevant block
+   │ + content/data
+   ▼
+Candidate Block
+   │
+   ├── Correct family/version identity
+   ├── Relevant educational information
+   ├── Brand-independent implementation
+   └── Theme-compatible implementation
+             │
+             ▼
+       Project AI Audit
+             │
+      ┌──────┴────────┐
+      ▼               ▼
+ Brand Independence  Theme Compatibility
+      │               │
+      └──────┬────────┘
+             ▼
+      Tutorial Composer
+             │
+             ▼
+       Tutorial JSON
+             │
+             ▼
+       Learner Runtime
+             │
+      ┌──────┴──────┐
+      ▼             ▼
+     SUIA           RTH
+    Theme          Theme
+      │             │
+      └──────┬──────┘
+             ▼
+       Candidate Block
+       rendered correctly
+```
+
+### What "theme-compatible" means
+
+The candidate should be able to receive/use the platform's existing theme context rather than bringing its own fixed brand styling.
+
+For example, conceptually:
+
+```text
+Tutorial Runtime
+      │
+      ├── brand = SUIA
+      ├── theme tokens
+      ├── typography
+      ├── spacing
+      ├── component styling
+      └── runtime context
+              │
+              ▼
+        Candidate Block
+```
+
+Then the same candidate:
+
+```text
+Tutorial Runtime
+      │
+      ├── brand = RTH
+      ├── RTH theme tokens
+      └── RTH runtime context
+              │
+              ▼
+        Same Candidate Block
+```
+
+The candidate should adapt to the supplied platform context.
+
+### Project AI therefore needs a specific gate
+
+I would add:
+
+**`THEME_COMPATIBILITY`**
+
+alongside:
+
+- Block Family / Version
+- ILS
+- LSNB
+- RSSB
+- UBRC
+- Registry
+- Renderer
+- Tutorial Composer
+- Data Contract
+- Runtime
+- Browser
+- Brand Independence
+- Evidence
+
+And the gate should verify that the candidate can actually render in the **real learner page using the active brand theme**, not just pass a static source-code check.
+
+So the final qualification becomes:
+
+```text
+Candidate
+   ↓
+Correct Block + Version
+   ↓
+Compliance
+   ↓
+Brand Independence
+   ↓
+Theme Compatibility
+   ↓
+Tutorial Composer
+   ↓
+SUIA learner verification ✓
+   ↓
+RTH learner verification ✓
+   ↓
+CERTIFIED
+```
+
+One nuance: **Project AI should verify theme compatibility; External AI still owns the visual design.** Project AI is not judging whether the design is aesthetically good. It is verifying that the design can participate correctly in the platform's theme system.
+
+That gives you the right separation:
+
+**External AI:** what the block looks like and what relevant educational information it presents.
+
+**Project AI:** whether that block is a valid member of the requested family/version and can safely plug into the repository, Tutorial Composer, and any supported learner-brand theme without breaking the platform.
+
+This is also consistent with the existing architecture's requirement that the candidate ultimately be verified through the real Composer/tutorial/browser path rather than merely being accepted as source code. Explain I2 Creation Files
+
+Yes. I reviewed the attachment material against the implementation plan, and **the second attachment is implementing the same Project LLM architecture we designed in the first attachment/conversation**. It is not a different architecture.
+
+There is one important refinement from your latest point: **theme compatibility must be added as an explicit certification requirement alongside brand independence.**
+
+### 1. The architecture is aligned
+
+The implementation plan preserves the fundamental boundary:
+
+```text
+React / Next.js UI
+        │
+        ▼
+Project AI — Python / FastAPI
+        │
+        ├── Workflow
+        ├── Agents
+        ├── Planning
+        ├── Approval
+        ├── Evidence queries
+        └── Certification
+        │
+        ▼
+Deterministic Discovery — TypeScript / Node
+        │
+        ├── D1 Structure
+        ├── D2 Runtime
+        ├── D3 Blocks
+        ├── D4 Composer
+        ├── D5 Dependencies
+        ├── D6 Tests
+        ├── D7 Snapshot
+        └── D8 Validation
+        │
+        ▼
+Repository
+```
+
+That exact separation is intentional: **TypeScript/Node = repository facts; Python/FastAPI = reasoning/orchestration.** The implementation material explicitly preserves the existing React/Next.js/Node/Hono product architecture rather than replacing it with Python. Explain I2 Creation Files
+
+### 2. The implementation sequencing is also the same
+
+The correct order remains:
+
+```text
+M1                  COMPLETE
+  ↓
+M2.1 Evidence       COMPLETE
+  ↓
+M2.2 Binding        COMPLETE
+  ↓
+M2.3 Toolchain
+  ↓
+M2.4 Composer/API
+  +
+M2.5 Dependencies
+  ↓
+M2.6 UBRC
+  ↓
+Evidence reconciliation
+  ↓
+M2.7 Runtime/Browser
+  ↓
+Deterministic M2 certification
+  ↓
+M2.8 FastAPI
+  ↓
+Multi-agent orchestration
+  ↓
+Governance / approval
+  ↓
+Candidate Block
+  ↓
+I2
+  ↓
+Final Project LLM certification
+```
+
+This is specifically important: **we should not jump directly into I2 implementation before the deterministic foundation is complete.** The attachment explicitly makes that sequencing decision. Explain I2 Creation Files
+
+### 3. The multi-agent architecture is the same
+
+The implementation plan has agents for:
+
+- Gate Controller
+- Repository Contract Auditor
+- Toolchain
+- Composer/API/Schema
+- Dependency Graph
+- UBRC
+- Evidence/Reconciliation
+- Runtime/Browser
+- Test/Validation
+- Project AI/FastAPI
+- Governance/Approval
+- Canonical Documentation
+
+That matches the architecture we have been discussing. The important addition we subsequently identified is:
+
+**Candidate Intake & Placement Agent**
+
+This should be an explicit agent/capability because uploaded Candidate Block files must be classified and mapped to the correct existing repository locations rather than blindly copied. The attachment material explicitly recognizes this as a production-grade requirement. Explain I2 Creation Files
+
+### 4. And your canonical-document rule is absolutely part of the architecture
+
+Every Project AI agent should follow:
+
+```text
+Search repository
+      ↓
+Search snapshot
+      ↓
+Search evidence
+      ↓
+Find existing artifact
+      ↓
+Determine canonical artifact
+      ↓
+UPDATE / EXTEND / APPEND
+      ↓
+Only CREATE if genuinely necessary
+```
+
+So an agent must **not** generate:
+
+```text
+I2-plan.md
+I2-spec.md
+I2-checklist.md
+I2-agent-notes.md
+I2-verification.md
+I2-final.md
+```
+
+just because it needs somewhere to put information.
+
+Instead, it updates the existing canonical registry, backlog, specification, implementation documentation, tests, etc. This is explicitly part of the Project AI global policy in the implementation material. Explain I2 Creation Files
+
+### 5. Candidate Block architecture is also the same
+
+The intended model is **not**:
+
+```text
+Candidate Block = .tsx file
+```
+
+It is:
+
+```text
+Candidate Block
+      =
+Implementation
++
+Type/Data Contract
++
+Registry
++
+Renderer
++
+Composer Integration
++
+Tests
++
+Runtime
++
+Browser Verification
++
+Evidence
++
+Brand Independence
++
+Theme Compatibility
+```
+
+The implementation material already has essentially this model, including registry, renderer, Composer, runtime, evidence and brand independence. Explain I2 Creation Files
+
+### 6. Your new theme requirement belongs here
+
+This is the one requirement I would explicitly add to the implementation specification.
+
+Current:
+
+```text
+Brand Independence
+```
+
+should become:
+
+```text
+Brand Independence
++
+Theme Compatibility
+```
+
+The candidate must be:
+
+```text
+                Candidate Block
+                       │
+             brand-independent
+                       │
+                       ▼
+               Tutorial Runtime
+                       │
+          active learner/theme context
+                       │
+          ┌────────────┴────────────┐
+          ▼                         ▼
+      SUIA Theme                RTH Theme
+          │                         │
+          ▼                         ▼
+      Same Block                Same Block
+```
+
+So the block is **not SUIA-styled** or **RTH-styled** internally.
+
+It is a reusable educational implementation that consumes the theme/design-system context supplied by the actual learner tutorial runtime.
+
+The uploaded architecture already establishes the principle that the same certified candidate can appear in different branded tutorials while remaining brand-independent. Explain I2 Creation Files
+
+I would therefore make the final certification gates:
+
+```text
+CONTRACT
+ILS
+LSNB
+RSSB
+UBRC
+REGISTRY
+RENDERER
+COMPOSER
+TESTS
+RUNTIME
+BROWSER
+BRAND_INDEPENDENCE
+THEME_COMPATIBILITY
+EVIDENCE
+```
+
+And **all must pass**.
+
+### 7. The final learner workflow is therefore
+
+This is the architecture I believe we should lock:
+
+```text
+Human
+  │
+  ▼
+Project AI UI
+  │
+  ▼
+Choose Block Family
+  │
+  ├── Introduction
+  ├── Explanation
+  ├── Example
+  ├── Summary
+  └── ...
+  │
+  ▼
+Choose Version / Creation Mode
+  │
+  ├── Use Existing
+  ├── Create From Version
+  ├── Mix & Match
+  └── New Candidate
+  │
+  ▼
+Candidate Intake
+  │
+  ▼
+Repository + Snapshot + Evidence Analysis
+  │
+  ▼
+Placement Manifest
+  │
+  ├── ADD
+  ├── UPDATE
+  ├── EXTEND
+  ├── REUSE
+  └── REJECT
+  │
+  ▼
+Human Approval
+  │
+  ▼
+External AI Implementation
+  │
+  ▼
+Project AI Certification
+  │
+  ├── Contract
+  ├── ILS
+  ├── LSNB
+  ├── RSSB
+  ├── UBRC
+  ├── Registry
+  ├── Renderer
+  ├── Composer
+  ├── Tests
+  ├── Runtime
+  ├── Browser
+  ├── Brand Independence
+  ├── Theme Compatibility
+  └── Evidence
+  │
+  ▼
+CERTIFIED CANDIDATE BLOCK
+  │
+  ▼
+Tutorial Composer
+  │
+  ▼
+Temporary Verification Tutorial
+  │
+  ▼
+Actual Learner Runtime
+  │
+  ├── SUIA theme test
+  ├── RTH theme test
+  └── supported learner-brand themes
+  │
+  ▼
+Browser Verification
+  │
+  ▼
+PRODUCTION READY
+```
+
+### 8. Mix & Match is a separate certification object
+
+This is another important architectural point from the attachment.
+
+A certified implementation:
+
+```text
+Introduction I2
+```
+
+is one thing.
+
+A composition such as:
+
+```text
+Introduction I2
++
+Candidate Hero
++
+I1 Media
++
+I2 Footer
+```
+
+is another thing:
+
+```text
+I2-CUSTOM
+```
+
+The composition itself must pass compatibility checks before it becomes production selectable. Those checks include data/type/version/renderer/registry/Composer/runtime/brand compatibility. Explain I2 Creation Files
+
+### 9. So yes — we are implementing the architecture we designed
+
+I would lock the architecture as:
+
+> **Existing SkillHubCore product remains React/Next.js/Node/Hono.  
+> Project LLM deterministic repository intelligence remains TypeScript/Node.  
+> Project AI becomes the Python/FastAPI reasoning and orchestration control plane.  
+> External AI is the implementation worker.  
+> Human approval is the authorization boundary.  
+> Project AI is the evidence-driven verification/certification authority.**
+
+And then:
+
+> **Candidate Block → Composer → actual tutorial → actual learner theme → browser/runtime → certification**
+
+—not merely:
+
+> `.tsx file exists → certified`.
+
+That is exactly the direction established across the attachments and our discussion. The remaining work is implementation of that architecture, not redesigning it. The current material itself distinguishes the already-completed M1/M2.1/M2.2 foundation from the still-pending M2.3–M2.8, orchestration, Candidate Block and I2 implementation. Pasted text (2)
+
+**One correction I recommend we now formally lock into the specification:** `THEME_COMPATIBILITY` must be a first-class certification gate, and the final browser certification must exercise the candidate through the **real learner tutorial runtime/theme context**, not a Project AI-only preview.
+
+I checked the **complete first attachment (840 lines)** and the **complete second attachment (490 lines)**, rather than comparing only the visible snippets.
+
+The answer is:
+
+> **They are architecturally compatible, but they do NOT match line-by-line as an implementation.**
+>
+> The first attachment defines the **Python/FastAPI + Project AI service boundary and deterministic-vs-AI architecture**.
+>
+> The second attachment defines the **Candidate Block / I2 creation, specification, verification, Composer, runtime, and certification workflow**.
+>
+> They are two layers of the same system, but the second attachment does **not yet contain all of the FastAPI implementation/code required by the first attachment**.
+
+There are also **2 places where the wording should be tightened** so the final implementation does not drift.
+
+---
+
+# 1. Overall verdict
+
+| Area | Match? | Assessment |
+|---|---|---|
+| Existing React/Next/Node/Hono remains intact | ✅ | Exact architectural agreement |
+| FastAPI is separate Project AI service | ✅ | Compatible |
+| Deterministic repository facts come from TS/Node | ✅ | Strong agreement |
+| Snapshot/evidence is authoritative | ✅ | Strong agreement |
+| AI reasons over evidence | ✅ | Strong agreement |
+| External AI implements Candidate Block | ✅ | Second attachment explicitly says this |
+| Project LLM verifies/certifies | ✅ | Exact |
+| Candidate Block specification before implementation | ✅ | Exact |
+| Human approval | ⚠️ Partial | Present in overall architecture, needs explicit FastAPI implementation |
+| Candidate intake/upload | ⚠️ Partial | Second covers it conceptually; first does not |
+| Placement manifest | ⚠️ Partial | Second/other attached material covers it, first does not |
+| Multi-agent orchestration | ✅ | First defines it; second is compatible |
+| Composer verification | ✅ | Exact |
+| Runtime/browser verification | ✅ | Exact |
+| Brand independence | ✅ | Exact |
+| Theme compatibility | ⚠️ Important addition | Must explicitly be added to first/second final contract |
+| I2 | ✅ | Second attachment |
+| Mix & Match | ⚠️ | Covered in other attached material, not fully in these two files |
+| FastAPI code | ❌ | First specifies architecture; second does not implement it |
+| Candidate certification code | ❌ | Second specifies logic but does not provide complete production implementation |
+| End-to-end implementation | ❌ | Both are design/implementation guidance, not complete production code |
+
+So I would classify them:
+
+```text
+FIRST ATTACHMENT
+        =
+Project AI / FastAPI infrastructure architecture
+
+SECOND ATTACHMENT
+        =
+Candidate Block / I2 business workflow architecture
+```
+
+They should eventually connect like this:
+
+```text
+React / Next.js Project AI UI
+             │
+             ▼
+      Python / FastAPI
+      Project AI Control Plane
+             │
+      ┌──────┼────────┐
+      ▼      ▼        ▼
+ Workflow  Agents   Governance
+             │
+             ▼
+ TypeScript/Node Discovery
+             │
+             ▼
+ Snapshot + Evidence
+             │
+             ▼
+ Candidate Specification
+             │
+             ▼
+ Human Approval
+             │
+             ▼
+ External AI Implementation
+             │
+             ▼
+ Deterministic Certification
+             │
+      ┌──────┼─────────────┐
+      ▼      ▼             ▼
+    UBRC   Composer      Runtime
+      │      │             │
+      └──────┼─────────────┘
+             ▼
+       Browser Verification
+             │
+             ▼
+      Candidate Certified
+             │
+             ▼
+             I2
+```
+
+That is the architecture I would preserve.
+
+---
+
+# 2. First attachment vs second attachment — section-by-section
+
+## First attachment §1 — Existing repository stack
+
+First attachment establishes:
+
+```text
+React
+Next.js
+Node
+TypeScript
+Hono
+Cloudflare Worker
+Drizzle/database
+```
+
+and says the existing platform should remain intact.
+
+### Second attachment
+
+It assumes the existing repository/runtime is authoritative and does not propose replacing it.
+
+### Verdict
+
+**✅ MATCH**
+
+No conflict.
+
+The second attachment's Candidate Block workflow naturally operates on top of the existing React/TypeScript runtime.
+
+---
+
+# 3. First attachment §2 — Existing service boundaries
+
+First attachment says:
+
+```text
+services/api-gateway
+services/skillhubcore-service
+```
+
+and explicitly says:
+
+> Do not replace Hono with FastAPI.
+
+### Second attachment
+
+The second attachment does not propose replacing those services.
+
+It instead positions Project LLM as the engineering authority around the existing product.
+
+### Verdict
+
+**✅ MATCH**
+
+This is important.
+
+The final architecture must remain:
+
+```text
+Existing Product
+React / Next / Hono / DB
+          │
+          │
+          ▼
+Project AI
+Python / FastAPI
+```
+
+not:
+
+```text
+React
+ ↓
+FastAPI replaces everything
+```
+
+---
+
+# 4. First attachment §3 — New Project AI service
+
+First attachment proposes:
+
+```text
+services/project-ai/
+```
+
+or equivalent.
+
+### Second attachment
+
+Second attachment never explicitly defines the physical Python service directory.
+
+But it defines:
+
+```text
+Project LLM
+Candidate specification
+External AI
+Verification
+Certification
+```
+
+### Verdict
+
+**🟡 COMPATIBLE BUT NOT SPECIFIED**
+
+There is no contradiction.
+
+But the second attachment needs the following architectural dependency made explicit:
+
+```text
+Candidate workflow
+        ↓
+Project AI FastAPI service
+```
+
+Otherwise an implementation agent might try to put the Candidate workflow directly into Next.js.
+
+---
+
+# 5. First attachment §4 — FastAPI responsibility
+
+First attachment assigns Python:
+
+```text
+workflow orchestration
+agent coordination
+repository intelligence
+evidence analysis
+semantic reconciliation
+AI/LLM integration
+future ML/NLP
+```
+
+### Second attachment
+
+Second attachment requires exactly those capabilities:
+
+```text
+Project LLM
+ ↓
+inspect repository
+ ↓
+identify canonical block
+ ↓
+produce specification
+ ↓
+External AI
+ ↓
+validation
+ ↓
+certification
+```
+
+### Verdict
+
+**✅ STRONG MATCH**
+
+The Candidate Block workflow is actually a concrete use case for the FastAPI orchestration layer.
+
+---
+
+# 6. First attachment §5 — Deterministic facts vs AI
+
+This is one of the most important sections.
+
+First attachment says:
+
+```text
+Git Repository
+ ↓
+Repository Discovery
+ ↓
+Evidence
+ ↓
+Snapshot
+ ↓
+Python AI Analysis
+```
+
+and explicitly rejects:
+
+```text
+GitHub
+ ↓
+LLM
+ ↓
+"Looks like there are 21 packages"
+```
+
+### Second attachment
+
+Second attachment says:
+
+> Project LLM should first inspect the repository's authoritative snapshot/evidence.
+
+And later:
+
+> the exact checks should come from canonical repository documentation/contracts.
+
+### Verdict
+
+**✅ EXACT MATCH**
+
+This is one of the strongest matches between the two files.
+
+---
+
+# 7. First attachment §6 — FastAPI as control plane
+
+First attachment defines:
+
+```text
+Existing Platform
+        ↓
+Project AI Service
+        ↓
+Project LLM Engineering Control Plane
+```
+
+### Second attachment
+
+Second attachment defines:
+
+```text
+Candidate requirement
+ ↓
+Project LLM
+ ↓
+Candidate specification
+ ↓
+External AI
+ ↓
+Project LLM validation
+ ↓
+Certification
+```
+
+### Verdict
+
+**✅ MATCH**
+
+The second attachment is effectively one concrete workflow running inside the first attachment's control plane.
+
+---
+
+# 8. First attachment §7 — Project AI API
+
+First attachment proposes APIs such as:
+
+```text
+POST /workflow/m1/start
+GET  /workflow/m1/{run_id}
+POST /workflow/m1/{run_id}/approve
+POST /workflow/m1/{run_id}/pause
+POST /workflow/m1/{run_id}/resume
+POST /workflow/m1/{run_id}/cancel
+```
+
+### Second attachment
+
+Second attachment doesn't specify these endpoints.
+
+But its workflow clearly requires equivalent operations:
+
+```text
+create candidate
+analyze
+approve
+implement
+verify
+certify
+```
+
+### Verdict
+
+**🟡 LOGIC MATCH, API IMPLEMENTATION MISSING**
+
+This means we should not say the second attachment has implemented these endpoints.
+
+The FastAPI implementation still needs:
+
+```text
+POST /candidates
+POST /candidates/{id}/analyze
+GET  /candidates/{id}
+POST /tasks/{id}/approve
+POST /tasks/{id}/reject
+POST /tasks/{id}/cancel
+GET  /candidates/{id}/certification
+```
+
+or whatever canonical API contract is ultimately selected.
+
+---
+
+# 9. First attachment §8 — Multi-agent orchestration
+
+First attachment proposes agents around:
+
+```text
+M1 gate
+D1
+D2
+D3
+D4
+D5
+D6
+evidence
+reconciliation
+D7
+D8
+```
+
+### Second attachment
+
+Second attachment doesn't enumerate all those agents, but its workflow needs specialist responsibilities such as:
+
+```text
+repository analysis
+specification
+ILS
+LSNB
+RSSB
+Composer
+registry
+renderer
+runtime
+browser
+certification
+```
+
+### Verdict
+
+**🟡 MATCH AT ARCHITECTURE LEVEL**
+
+The second attachment should be implemented as additional specialist agents rather than one giant Candidate AI agent.
+
+Recommended:
+
+```text
+Candidate Intake Agent
+Candidate Placement Agent
+Specification Agent
+Contract Agent
+ILS Agent
+LSNB Agent
+RSSB Agent
+UBRC Agent
+Registry/Renderer Agent
+Composer Agent
+Runtime Agent
+Browser Agent
+Brand Independence Agent
+Theme Compatibility Agent
+Certification Agent
+```
+
+---
+
+# 10. First attachment §9 — Repository intelligence
+
+First attachment emphasizes:
+
+```text
+AST
+dependency graph
+evidence graph
+semantic relationships
+AI reasoning
+```
+
+### Second attachment
+
+Candidate Block verification explicitly requires:
+
+```text
+existing block/version
+registry
+renderer
+Composer
+runtime
+tests
+evidence
+```
+
+These all depend on repository intelligence.
+
+### Verdict
+
+**✅ MATCH**
+
+The second attachment is a consumer of the repository intelligence defined in the first.
+
+---
+
+# 11. First attachment §10 — Block corpus
+
+First attachment discusses:
+
+```text
+18 families
+versions
+implementations
+renderers
+routing
+tests
+documentation
+```
+
+### Second attachment
+
+Second attachment says Project LLM must identify:
+
+```text
+existing canonical block/type
+prerequisites
+block family
+version
+renderer
+registry
+Composer
+```
+
+### Verdict
+
+**✅ STRONG MATCH**
+
+This is precisely why the D3 block corpus and canonical registry must exist before Candidate Block creation.
+
+---
+
+# 12. First attachment §11 — Evidence graph
+
+First attachment proposes relationships such as:
+
+```text
+I1
+ ├── Type
+ ├── Renderer
+ └── Test
+        ↓
+     Evidence
+```
+
+### Second attachment
+
+Second attachment explicitly requires:
+
+```text
+evidenceId → implementation
+evidenceId → type/schema
+evidenceId → registry
+evidenceId → renderer
+evidenceId → Composer
+evidenceId → tests
+evidenceIds → runtime
+```
+
+### Verdict
+
+**✅ EXACT MATCH**
+
+This is extremely important.
+
+The second attachment actually demonstrates why the first attachment's evidence graph is required.
+
+---
+
+# 13. First attachment §12 — What remains TypeScript
+
+First attachment keeps:
+
+```text
+React
+Next.js
+Node
+Hono
+Tutorial Composer
+Tutorial Renderer
+database
+shared contracts
+```
+
+### Second attachment
+
+Candidate Block is explicitly implemented as:
+
+```text
+React
+TypeScript
+TSX
+existing project types
+existing renderer
+existing registry
+```
+
+### Verdict
+
+**✅ EXACT MATCH**
+
+This is correct.
+
+---
+
+# 14. First attachment §13 — Potential Python service structure
+
+First attachment proposes:
+
+```text
+services/project-ai/
+  api/
+  orchestration/
+  agents/
+  repository/
+  analysis/
+  evidence/
+  models/
+```
+
+### Second attachment
+
+Second attachment doesn't specify these physical directories.
+
+### Verdict
+
+**🟡 NOT CONFLICTING**
+
+But implementation must map the Candidate Block logic into this structure.
+
+---
+
+# 15. First attachment §14–15 — D1–D8 remain TypeScript
+
+This is the architectural decision I consider especially important.
+
+First attachment eventually concludes:
+
+```text
+D1–D8
+=
+TypeScript / Node
+```
+
+and:
+
+```text
+Project AI orchestration
+=
+Python / FastAPI
+```
+
+### Second attachment
+
+Second attachment requires:
+
+```text
+authoritative snapshot
+authoritative evidence
+deterministic validation
+```
+
+### Verdict
+
+**✅ EXACTLY COMPATIBLE**
+
+This should be locked.
+
+The final architecture should be:
+
+```text
+TypeScript
+=
+FACTS
+
+Python
+=
+REASONING + ORCHESTRATION
+
+Human
+=
+APPROVAL
+
+External AI
+=
+IMPLEMENTATION
+
+Project AI
+=
+CERTIFICATION
+```
+
+---
+
+# 16. First attachment §16 — Final architecture
+
+First attachment:
+
+```text
+User
+ ↓
+React / Next Project AI UI
+ ↓
+Python/FastAPI
+ ↓
+TypeScript/Node Project LLM Engine
+ ↓
+Repository
+ ↓
+Snapshot/Evidence
+```
+
+### Second attachment:
+
+```text
+Candidate requirement
+ ↓
+Project LLM
+ ↓
+Candidate specification
+ ↓
+External AI
+ ↓
+Project LLM validation
+ ↓
+Composer
+ ↓
+Runtime
+ ↓
+Certified
+```
+
+### Verdict
+
+**✅ MATCH**
+
+The second attachment fits directly into the first architecture after snapshot/evidence generation.
+
+---
+
+# 17. First attachment §17 — What NOT to do
+
+First attachment says don't put Python inside:
+
+```text
+apps/...
+Tutorial Composer
+```
+
+and don't replace:
+
+```text
+api-gateway
+skillhubcore-service
+```
+
+### Second attachment
+
+No contradiction.
+
+### Verdict
+
+**✅ MATCH**
+
+---
+
+# 18. First attachment §18 — Recommended final architecture
+
+First attachment ends with:
+
+```text
+D1–D8
+ ↓
+Snapshot
+ ↓
+FastAPI Project AI
+ ↓
+agents
+ ↓
+semantic analysis
+ ↓
+LLM
+```
+
+### Second attachment
+
+Second attachment starts the Candidate Block workflow at:
+
+```text
+Candidate requirement
+ ↓
+Project LLM
+```
+
+The missing link is simply:
+
+```text
+Project AI/FastAPI
+        ↓
+authoritative snapshot/evidence
+        ↓
+Candidate Block workflow
+```
+
+### Verdict
+
+**✅ MATCH, WITH ONE REQUIRED EXPLICIT CONNECTION**
+
+---
+
+# 19. Now compare the second attachment's actual Candidate workflow
+
+This is where the second attachment goes beyond the first.
+
+## Candidate specification
+
+Second attachment says:
+
+```text
+Project LLM
+ ↓
+identify canonical block
+ ↓
+determine prerequisites
+ ↓
+produce checklist
+ ↓
+acceptance criteria
+```
+
+This is **not explicitly implemented in the first attachment**.
+
+### Verdict
+
+**🟡 SECOND ATTACHMENT ADDS REQUIRED FUNCTIONALITY**
+
+This needs to become a FastAPI/agent capability.
+
+---
+
+# 20. External AI implementation
+
+Second attachment:
+
+```text
+Project LLM
+ ↓
+Specification
+ ↓
+External AI
+ ↓
+React/TSX/etc.
+```
+
+First attachment does not fully define this.
+
+### Verdict
+
+**🟡 SECOND ATTACHMENT EXTENDS FIRST**
+
+This is not a contradiction.
+
+It is a downstream implementation workflow.
+
+---
+
+# 21. ILS / LSNB / RSSB
+
+Second attachment explicitly requires:
+
+```text
+ILS
+LSNB
+RSSB
+```
+
+First attachment does not implement these.
+
+### Verdict
+
+**🟡 MISSING FROM FIRST ATTACHMENT**
+
+They must become certification agents/gates.
+
+Critically, the second attachment correctly says:
+
+> exact rules must come from canonical repository documentation/contracts.
+
+That rule should remain.
+
+---
+
+# 22. Composer
+
+Second attachment says:
+
+```text
+Candidate
+ ↓
+Registry
+ ↓
+TutorialBlockRenderer
+ ↓
+Tutorial Composer
+ ↓
+Selectable
+ ↓
+Constructable
+ ↓
+Tutorial
+ ↓
+Runtime
+```
+
+First attachment does not give this exact Candidate Block Composer journey.
+
+### Verdict
+
+**🟡 SECOND ATTACHMENT EXTENDS FIRST**
+
+This should become a concrete Composer certification gate.
+
+---
+
+# 23. Brand independence
+
+Second attachment explicitly requires:
+
+```text
+no SkillUp-specific
+no hard-coded brand colors
+no hard-coded typography
+no brand URLs
+no brand assets
+```
+
+First attachment discusses semantic analysis and Project AI but does not explicitly define this certification gate.
+
+### Verdict
+
+**🟡 SECOND ATTACHMENT ADDS A REQUIRED GATE**
+
+It should be added to the final certification model.
+
+---
+
+# 24. Theme compatibility — important finding
+
+This is the one area I would **not consider complete if we use only these two attachments**.
+
+The later project discussion establishes:
+
+```text
+Brand Independence
+≠
+Theme Compatibility
+```
+
+The same certified block must work under:
+
+```text
+SUIA theme
+RTH theme
+other supported themes
+```
+
+using the actual tutorial runtime's theme/design-token/context.
+
+Therefore the final gate must be:
+
+```text
+THEME_COMPATIBILITY
+```
+
+in addition to:
+
+```text
+BRAND_INDEPENDENCE
+```
+
+### Verdict
+
+**⚠️ MUST BE ADDED EXPLICITLY**
+
+This is important because otherwise an agent could interpret "brand-independent" as merely "doesn't contain a logo".
+
+That is insufficient.
+
+---
+
+# 25. Candidate Block definition
+
+Second attachment says:
+
+```text
+Candidate Block
+=
+implementation
++
+contract
++
+registry
++
+renderer
++
+Composer
++
+tests
++
+evidence
++
+runtime verification
+```
+
+### Verdict
+
+**✅ This should become the canonical Candidate Block definition.**
+
+This is fully consistent with the evidence architecture.
+
+---
+
+# 26. Before vs after implementation
+
+Second attachment correctly separates:
+
+### Before implementation
+
+```text
+Candidate Block Specification
+```
+
+from:
+
+### After implementation
+
+```text
+Candidate Block Verification
+```
+
+This is exactly right.
+
+The system must not confuse:
+
+```text
+PLAN
+```
+
+with:
+
+```text
+CERTIFIED
+```
+
+### Verdict
+
+**✅ EXACT MATCH WITH GOVERNANCE ARCHITECTURE**
+
+---
+
+# 27. The major thing that does NOT match
+
+Here is the most important point.
+
+The second attachment contains **logic and code fragments**, but it is **not a complete production implementation of the first attachment**.
+
+For example, the second attachment can describe:
+
+```text
+Project LLM validates
+Candidate Block
+Composer
+Runtime
+Certification
+```
+
+but it does not implement:
+
+```text
+FastAPI service
+task persistence
+agent registry
+workflow engine
+snapshot API
+evidence API
+approval API
+candidate API
+gate controller
+LLM provider abstraction
+repository operation adapter
+placement executor
+certification engine
+browser orchestration
+```
+
+Therefore:
+
+> **Do not give the second attachment to the Project AI agent and tell it "all required code is already supplied."**
+
+That would be incorrect.
+
+---
+
+# 28. What the combined implementation should look like
+
+The two attachments should be merged conceptually into this:
+
+```text
+                    HUMAN
+                      │
+                      ▼
+             Project AI Browser
+                      │
+                      ▼
+              FastAPI Service
+                      │
+          ┌───────────┼────────────┐
+          ▼           ▼            ▼
+       Workflow     Agents      Governance
+          │           │            │
+          └───────────┼────────────┘
+                      ▼
+             TypeScript Discovery
+                      │
+                D1–D8 / M2
+                      │
+                      ▼
+              Snapshot + Evidence
+                      │
+                      ▼
+          Candidate Block Specification
+                      │
+                      ▼
+                Human Approval
+                      │
+                      ▼
+                External AI
+                      │
+             React / TS / TSX
+                      │
+                      ▼
+             Discovery Refresh
+                      │
+          ┌───────────┼─────────────┐
+          ▼           ▼             ▼
+        ILS         LSNB          RSSB
+          │           │             │
+          └───────────┼─────────────┘
+                      ▼
+                    UBRC
+                      │
+                      ▼
+             Registry / Renderer
+                      │
+                      ▼
+                 Composer
+                      │
+                      ▼
+                   Tests
+                      │
+                      ▼
+             Runtime Verification
+                      │
+                      ▼
+             Browser Verification
+                      │
+          ┌───────────┴────────────┐
+          ▼                        ▼
+ Brand Independence        Theme Compatibility
+          │                        │
+          └───────────┬────────────┘
+                      ▼
+                  Evidence
+                      │
+                      ▼
+             CERTIFIED BLOCK
+                      │
+                      ▼
+                 I2 / I2-CUSTOM
+                      │
+                      ▼
+              Tutorial Composer
+                      │
+                      ▼
+              Generated Tutorial
+                      │
+                      ▼
+             Runtime + Browser
+                      │
+                      ▼
+             PRODUCTION READY
+```
+
+---
+
+# 29. Exact responsibility split I recommend locking
+
+| Responsibility | Technology |
+|---|---|
+| Filesystem inspection | TypeScript/Node |
+| Git inspection | TypeScript/Node |
+| ts-morph | TypeScript/Node |
+| D1–D8 | TypeScript/Node |
+| Snapshot | TypeScript/Node |
+| Evidence generation | TypeScript/Node |
+| Evidence validation | TypeScript/Node |
+| Approved tool execution | TypeScript/Node |
+| Playwright adapter | TypeScript/Node |
+| Project AI API | Python/FastAPI |
+| Workflow state | Python/FastAPI |
+| Agent orchestration | Python/FastAPI |
+| Planning | Python/FastAPI |
+| LLM integration | Python/FastAPI |
+| Candidate specification | Python/FastAPI |
+| Candidate intake | Python/FastAPI |
+| Placement manifest | Python/FastAPI |
+| Approval governance | Python/FastAPI |
+| Certification orchestration | Python/FastAPI |
+| Semantic reconciliation | Python/FastAPI |
+| Project AI UI | React/Next.js |
+| Tutorial Composer | Existing TypeScript |
+| Tutorial runtime | Existing TypeScript |
+| Candidate implementation | External AI |
+| Human approval | Human |
+| Final certification | Project AI |
+
+This is the cleanest reconciliation of the two attachments.
+
+---
+
+# 30. Final answer to your question
+
+### Does the task in attachment 1 match the logic in attachment 2?
+
+**Yes — architecturally.**
+
+### Does the implementation/code in attachment 2 completely implement attachment 1?
+
+**No.**
+
+### Does attachment 2 contradict attachment 1?
+
+**No major contradiction.**
+
+### Does attachment 2 add requirements that attachment 1 didn't explicitly implement?
+
+**Yes.** Specifically:
+
+```text
+Candidate Block Specification
+Candidate Intake
+External AI handoff
+ILS
+LSNB
+RSSB
+Registry verification
+Renderer verification
+Composer verification
+Brand independence
+I2
+Candidate certification
+```
+
+And from the later agreed architecture:
+
+```text
+Theme compatibility
+Mix-and-match compatibility
+Placement manifest
+Human approval
+Browser certification
+```
+
+### Is the deterministic-vs-AI boundary consistent?
+
+**Yes, very strongly.**
+
+```text
+TS/Node
+=
+authoritative repository facts
+
+FastAPI
+=
+AI orchestration/reasoning
+
+External AI
+=
+implementation
+
+Human
+=
+approval
+
+Project AI
+=
+verification/certification
+```
+
+### Is there anything I would change before implementation?
+
+**Yes: lock the following three things into the canonical implementation specification:**
+
+1. **D1–D8 remain TypeScript/Node.**
+2. **FastAPI owns Project AI orchestration, agents, governance, planning, and certification—not the existing product runtime.**
+3. **Candidate certification must include both `BRAND_INDEPENDENCE` and `THEME_COMPATIBILITY`.**
+
+The first attachment itself already strongly supports the first two points, while the second attachment supplies the Candidate Block certification workflow that consumes them. Implement GitHub Evidence Explain I2 Creation Files
+
+So the two documents should **not be treated as competing specifications**. They should be treated as **Layer A (Project AI infrastructure) + Layer B (Candidate/I2 workflow)** and consolidated into the canonical implementation plan before agents start coding.
