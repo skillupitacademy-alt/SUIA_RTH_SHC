@@ -183,6 +183,17 @@ class AgentCoordinator:
             from app.agents.post_placement_verification import execute_post_placement_verification
             return await execute_post_placement_verification(context)
         
+        # Wave F handlers (FEAT-005: Final certification agents 13-15)
+        elif agent.agentId == "final_evidence_freeze":
+            from app.agents.final_evidence_freeze import execute_final_evidence_freeze
+            return await execute_final_evidence_freeze(context)
+        elif agent.agentId == "final_gate_controller" or agent.agentId == "final-gate":
+            from app.agents.final_gate import execute_final_gate
+            return await execute_final_gate(context)
+        elif agent.agentId == "human_certification":
+            from app.agents.human_certification import execute_human_certification
+            return await execute_human_certification(context)
+        
         # Existing handlers
         elif agent.agentType == AgentType.BRAND_INDEPENDENCE:
             await self._execute_brand_agent(agent, context, result)
@@ -574,7 +585,10 @@ class AgentCoordinator:
         context: AgentContext
     ) -> Dict[str, AgentResult]:
         """
-        Execute agents in DAG order respecting dependencies.
+        Execute agents in DAG order respecting dependencies and parallel groups.
+        
+        Handles parallel execution groups (e.g., certification-gates) where
+        all agents in the same group execute concurrently.
         
         Args:
             agents: List of agents to execute
@@ -584,6 +598,8 @@ class AgentCoordinator:
         Returns:
             Dict of agent_id -> AgentResult
         """
+        from app.orchestration.workflow_dag import get_parallel_group
+        
         results: Dict[str, AgentResult] = {}
         pending = {agent.agentId for agent in agents}
         in_progress: Set[str] = set()
@@ -614,11 +630,22 @@ class AgentCoordinator:
                 })
                 break
             
-            # Execute ready agents in parallel
-            tasks = []
+            # Group ready agents by parallel_group
+            parallel_groups: Dict[Optional[str], List[str]] = defaultdict(list)
             for agent_id in ready:
-                pending.remove(agent_id)
-                in_progress.add(agent_id)
+                try:
+                    group = get_parallel_group(agent_id)
+                    parallel_groups[group].append(agent_id)
+                except ValueError:
+                    # Agent not in DAG, execute individually
+                    parallel_groups[None].append(agent_id)
+            
+            # Execute each parallel group
+            for group_name, group_agent_ids in parallel_groups.items():
+                # Remove from pending
+                for agent_id in group_agent_ids:
+                    pending.remove(agent_id)
+                    in_progress.add(agent_id)
                 
                 # Update context with prior results
                 execution_context = AgentContext(
@@ -631,13 +658,17 @@ class AgentCoordinator:
                     repository_root=context.repository_root
                 )
                 
-                tasks.append((agent_id, self.execute_agent(agent_id, execution_context)))
-            
-            # Await all parallel tasks
-            for agent_id, task in tasks:
-                result = await task
-                results[agent_id] = result
-                in_progress.remove(agent_id)
+                # Execute agents in parallel group concurrently
+                tasks = [
+                    (agent_id, self.execute_agent(agent_id, execution_context))
+                    for agent_id in group_agent_ids
+                ]
+                
+                # Await all parallel tasks
+                for agent_id, task in tasks:
+                    result = await task
+                    results[agent_id] = result
+                    in_progress.remove(agent_id)
         
         return results
     

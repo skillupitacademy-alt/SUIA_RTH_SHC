@@ -38,6 +38,9 @@ class AgentType(str, Enum):
     COMPOSER_WORKFLOW = "composer_workflow"
     GOVERNANCE = "governance"
     DOCUMENTATION = "documentation"
+    FINAL_EVIDENCE_FREEZE = "final_evidence_freeze"
+    FINAL_GATE_CONTROLLER = "final_gate_controller"
+    HUMAN_CERTIFICATION = "human_certification"
 
 
 class Agent(BaseModel):
@@ -282,6 +285,30 @@ class AgentRegistry:
                 capabilities=["update_backlog", "generate_evidence_report", "write_gate_summary"],
                 status="active",
                 description="Updates canonical backlog, generates evidence report, writes gate summary"
+            ),
+            AgentType.FINAL_EVIDENCE_FREEZE: Agent(
+                agentId="final_evidence_freeze",
+                agentType=AgentType.FINAL_EVIDENCE_FREEZE,
+                name="Final Evidence Freeze (Agent 13)",
+                capabilities=["aggregate_all_evidence", "validate_evidence_binding", "detect_duplicates", "detect_orphaned_evidence"],
+                status="active",
+                description="Agent 13: Aggregates all evidence from prior agents, validates binding to commit_sha + snapshot_hash, detects duplicates and orphaned evidence"
+            ),
+            AgentType.FINAL_GATE_CONTROLLER: Agent(
+                agentId="final_gate_controller",
+                agentType=AgentType.FINAL_GATE_CONTROLLER,
+                name="Final Gate Controller (Agent 14)",
+                capabilities=["aggregate_gate_results", "generate_final_certification", "calculate_verdict", "validate_evidence_binding"],
+                status="active",
+                description="Agent 14: Aggregates 11 gate results (MVP), generates FinalCertification with verdict (CERTIFICATION_READY/FAIL/BLOCKED)"
+            ),
+            AgentType.HUMAN_CERTIFICATION: Agent(
+                agentId="human_certification",
+                agentType=AgentType.HUMAN_CERTIFICATION,
+                name="Human Certification (Agent 15)",
+                capabilities=["database_polling", "certification_review_workflow", "timeout_management", "reviewer_tracking"],
+                status="active",
+                description="Agent 15: Implements database polling workflow for human certification review with configurable timeout"
             ),
         }
     

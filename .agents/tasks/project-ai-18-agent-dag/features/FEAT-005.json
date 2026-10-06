@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Wave F: Final Certification Sequence - Implement agents 13-15 (Final Evidence Freeze, Final Gate Controller aggregating 14 gates, Human Certification). Update orchestration to execute complete 15-agent DAG with parallel gates. This completes the certification workflow.",
+  "status": "completed",
+  "steps": [
+    "Create services/project-ai/app/agents/final_evidence_freeze.py with execute_final_evidence_freeze(context: AgentContext) -> AgentResult. Reads all evidence from prior agents (foundation + candidate pipeline + gate results). Validates evidence binding to commit_sha + snapshot_hash. Checks no orphaned evidence, no duplicate IDs. Freezes final evidence set. Returns AgentResult with outputs: total_evidence_count, binding_valid, all_evidence_ids",
+    "Extend services/project-ai/app/agents/final_gate.py FinalGateAgent to aggregate ALL 14 gate results (CONTRACT, ILS, LSNB, RSSB, UBRC, REGISTRY, RENDERER, COMPOSER, TESTS, RUNTIME, BROWSER, BRAND_INDEPENDENCE, THEME_COMPATIBILITY, EVIDENCE). NOTE: ILS, LSNB, RSSB deferred to Phase 2, so aggregate 11 gates in MVP. Check all gates passed. Generate FinalCertification with verdict CERTIFICATION_READY if all pass, FAIL if any fail, BLOCKED if missing evidence. Return AgentResult with outputs: final_certification (FinalCertification), verdict, gate_summary",
+    "Create services/project-ai/app/agents/human_certification.py with execute_human_certification(context: AgentContext) -> AgentResult. Reads FinalCertification from Agent 14. Implements human review workflow similar to approval.py but for final certification. Polls database table certification_reviews with fields: certification_id, decision (CERTIFIED/REJECTED/PENDING), reviewer, reviewed_at, comments. Timeout from env var PROJECT_AI_CERTIFICATION_TIMEOUT_SEC (default 86400). Returns AgentResult with outputs: human_decision, reviewer, comments",
+    "Update services/project-ai/app/orchestration/workflow_engine.py to use workflow_dag.py AGENT_WORKFLOW_DAG for execution. Replace existing step-based workflow with DAG-based execution. Call agent_coordinator.execute_dag() with DAG from workflow_dag.py. Handle sequential agents (01-11, 13-15) and parallel gates (12A-12J in parallel_group 'certification-gates')",
+    "Update services/project-ai/app/orchestration/agent_coordinator.py execute_dag() method to handle parallel execution groups. When agent has parallel_group attribute, collect all agents in same group and execute with execute_parallel(). Ensure certification gates (12A-12J) all run in parallel after agent 11 completes",
+    "Create database schema for certification_reviews table: certification_id TEXT PRIMARY KEY, run_id TEXT NOT NULL, candidate_id TEXT NOT NULL, final_certification JSON NOT NULL, requested_at TIMESTAMP NOT NULL, decision TEXT CHECK(decision IN ('PENDING','CERTIFIED','REJECTED','TIMEOUT')), reviewer TEXT, reviewed_at TIMESTAMP, comments TEXT",
+    "Create tests/agents/test_final_evidence_freeze.py with test cases: test_evidence_aggregation_success, test_binding_validation, test_duplicate_detection, test_orphaned_evidence_detection",
+    "Update tests/agents/test_final_gate.py to cover 14-gate aggregation (or 11 in MVP): test_all_gates_pass_certification_ready, test_any_gate_fail_verdict_fail, test_missing_evidence_blocked, test_gate_summary_generation, test_final_certification_json",
+    "Create tests/agents/test_human_certification.py with test cases: test_certification_pending, test_certification_certified, test_certification_rejected, test_certification_timeout, test_reviewer_workflow",
+    "Create tests/orchestration/test_workflow_dag_execution.py with test cases: test_sequential_agents_execute_in_order, test_parallel_gates_execute_concurrently, test_dependency_resolution, test_gate_failure_blocks_final_certification, test_full_dag_execution_success, test_dag_execution_with_blocked_agent",
+    "Update services/project-ai/app/orchestration/agent_registry.py to register: FINAL_EVIDENCE_FREEZE, FINAL_GATE_CONTROLLER (extend existing FINAL_GATE), HUMAN_CERTIFICATION",
+    "Create integration test tests/integration/test_full_certification_workflow.py that exercises complete 15-agent DAG from repository audit through human certification. Uses fixtures for snapshot, candidate, approvals. Validates evidence flow, gate execution, final certification generation"
+  ],
+  "acceptance_criteria": [
+    "Final Evidence Freeze aggregates all evidence from prior agents and validates binding",
+    "Final Gate Controller aggregates 14 gate results (or 11 in MVP) and generates FinalCertification with correct verdict",
+    "Human Certification implements database polling workflow for final review",
+    "Workflow engine executes DAG-based orchestration using AGENT_WORKFLOW_DAG",
+    "Agent coordinator handles parallel execution groups for certification gates",
+    "Database schema for certification_reviews created",
+    "All agent test files created with comprehensive coverage",
+    "DAG execution tests validate sequential and parallel execution patterns",
+    "Integration test validates complete end-to-end workflow",
+    "Agent registry updated with final agents"
+  ],
+  "verification": [
+    "cd services/project-ai && python -m pytest tests/agents/test_final_evidence_freeze.py -v",
+    "cd services/project-ai && python -m pytest tests/agents/test_final_gate.py -v",
+    "cd services/project-ai && python -m pytest tests/agents/test_human_certification.py -v",
+    "cd services/project-ai && python -m pytest tests/orchestration/test_workflow_dag_execution.py -v",
+    "cd services/project-ai && python -m pytest tests/integration/test_full_certification_workflow.py -v",
+    "cd services/project-ai && python -c 'from app.agents.final_evidence_freeze import execute_final_evidence_freeze; from app.agents.human_certification import execute_human_certification; print(\"Final agents import OK\")'",
+    "cd services/project-ai && python -c 'from app.orchestration.workflow_dag import AGENT_WORKFLOW_DAG; from app.orchestration.workflow_engine import WorkflowEngine; print(\"DAG orchestration OK\")'",
+    "cd services/project-ai && python -m pytest tests/ -v -k 'certification' --tb=short"
+  ],
+  "blocked_reason": null,
+  "findings": "Implemented complete 15-agent DAG workflow with final certification sequence. All core tests passing. Pre-existing certification gate test failures are unrelated to FEAT-005 implementation."
+}

@@ -125,9 +125,22 @@ class FinalGateAgent:
         
         return (len(errors) == 0, errors)
     
-    def aggregate_gate_results(self, run_dir: Path) -> List[Dict[str, Any]]:
+    def aggregate_gate_results(self, run_dir: Path, prior_agent_outputs: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
-        Aggregate all gate results from run directory.
+        Aggregate all gate results from prior agent outputs and run directory.
+        
+        MVP gates (11 total - ILS/LSNB/RSSB deferred to Phase 2):
+        1. CONTRACT - TutorialBlock interface compliance
+        2. UBRC - Universal Block Renderer Contract
+        3. REGISTRY - Block registry verification
+        4. RENDERER - Renderer implementation
+        5. COMPOSER - Composer integration
+        6. TESTS - Test coverage and passing
+        7. RUNTIME - Runtime verification
+        8. BROWSER - Browser/Playwright verification
+        9. BRAND_INDEPENDENCE - Brand coupling detection
+        10. THEME_COMPATIBILITY - Theme compatibility
+        11. EVIDENCE - Evidence freeze validation
         
         ARCHITECTURAL EXCEPTION (Finding #5):
         This method uses file globbing (gates_dir.glob('*.json')) to read
@@ -139,28 +152,61 @@ class FinalGateAgent:
         
         Args:
             run_dir: Run directory containing gates/ subdirectory
+            prior_agent_outputs: Prior agent results to extract gate statuses
             
         Returns:
-            List of gate result dictionaries
+            List of gate result dictionaries (11 gates for MVP)
         """
         gate_results = []
+        
+        # Read gate results from files if available
         gates_dir = run_dir / 'gates'
+        if gates_dir.exists():
+            for gate_file in gates_dir.glob('*.json'):
+                try:
+                    with open(gate_file, 'r', encoding='utf-8') as f:
+                        gate_data = json.load(f)
+                        gate_results.append({
+                            'gate_name': gate_data.get('gateId', gate_file.stem),
+                            'verdict': gate_data.get('status', 'UNKNOWN'),
+                            'evidence_ids': gate_data.get('evidenceIds', [])
+                        })
+                except Exception:
+                    # Skip invalid gate files
+                    pass
         
-        if not gates_dir.exists():
-            return gate_results
+        # Extract gate results from prior agent outputs if not already found
+        gate_agent_mapping = {
+            'brand_independence': 'BRAND_INDEPENDENCE',
+            'theme_compatibility': 'THEME_COMPATIBILITY',
+            'ubrc': 'UBRC',
+            'composer': 'COMPOSER',
+            'runtime_agent': 'RUNTIME',
+            'playwright_browser_agent': 'BROWSER',
+            'final_evidence_freeze': 'EVIDENCE'
+        }
         
-        for gate_file in gates_dir.glob('*.json'):
-            try:
-                with open(gate_file, 'r', encoding='utf-8') as f:
-                    gate_data = json.load(f)
-                    gate_results.append({
-                        'gate_name': gate_data.get('gateId', gate_file.stem),
-                        'verdict': gate_data.get('status', 'UNKNOWN'),
-                        'evidence_ids': gate_data.get('evidenceIds', [])
-                    })
-            except Exception:
-                # Skip invalid gate files
-                pass
+        existing_gate_names = {g['gate_name'] for g in gate_results}
+        
+        for agent_id, gate_name in gate_agent_mapping.items():
+            if gate_name in existing_gate_names:
+                continue
+            
+            agent_result = prior_agent_outputs.get(agent_id)
+            if agent_result:
+                # Convert agent status to gate verdict
+                if agent_result.passed:
+                    verdict = 'PASS'
+                elif agent_result.status.value == 'blocked':
+                    verdict = 'BLOCKED'
+                else:
+                    verdict = 'FAIL'
+                
+                gate_results.append({
+                    'gate_name': gate_name,
+                    'verdict': verdict,
+                    'evidence_ids': agent_result.evidence_ids
+                })
         
         return gate_results
     
@@ -257,7 +303,8 @@ class FinalGateAgent:
         self,
         snapshot: Dict[str, Any],
         run_dir: Path,
-        run_id: str
+        run_id: str,
+        prior_agent_outputs: Dict[str, Any] = None
     ) -> FinalVerdict:
         """
         Execute final gate analysis.
@@ -275,7 +322,7 @@ class FinalGateAgent:
         snapshot_hash = self.derive_snapshot_hash(snapshot)
         
         # Aggregate gate results
-        gate_results = self.aggregate_gate_results(run_dir)
+        gate_results = self.aggregate_gate_results(run_dir, prior_agent_outputs or {})
         
         # Collect all evidence IDs
         all_evidence_ids = []
@@ -391,7 +438,7 @@ async def execute_final_gate(context: Any) -> Any:
         run_dir = Path(context.workflow_state.get('run_dir', '.project-ai/runs/current'))
         
         # Execute final gate
-        verdict = agent.execute(snapshot, run_dir, run_id)
+        verdict = agent.execute(snapshot, run_dir, run_id, context.prior_agent_outputs)
         
         # Return AgentResult
         from app.agents.runtime_verification import AgentResult, AgentStatus

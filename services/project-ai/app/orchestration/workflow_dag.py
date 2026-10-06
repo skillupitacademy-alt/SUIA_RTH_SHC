@@ -8,9 +8,8 @@ Agent Sequence:
 - Classification & Governance (05-06): Classification → Governance
 - Placement Sequence (07-10): Placement Draft → Manifest → Approval → Executor
 - Post-Placement (11): Post-placement verification
-- Certification Gates (12): All certification gates executed in parallel (12A-12J)
-- Runtime & Browser (13-14): Runtime → Browser tests (sequential)
-- Final Gate (15): Final gate controller and human certification
+- Certification Gates (12A-12J): All certification gates executed in parallel
+- Final Certification (13-15): Evidence Freeze → Final Gate → Human Certification
 """
 
 from typing import Dict, List, Optional, TypedDict
@@ -90,31 +89,85 @@ AGENT_WORKFLOW_DAG: Dict[str, AgentDefinition] = {
         "parallel_group": None
     },
     
-    # ===== CERTIFICATION GATES (Parallel execution within agent) =====
-    # Gates 12A-12J are executed in parallel within this agent
-    # Individual gates: Contract, UBRC, Registry, Renderer, Composer, Brand, Theme
-    "agent-12-certification-gates": {
-        "name": "Certification Gates (Contract, UBRC, Registry, Renderer, Composer, Brand, Theme)",
+    # ===== CERTIFICATION GATES (Parallel execution) =====
+    # Gates 12A-12J are executed in parallel
+    # Individual gates: Contract, UBRC, Registry, Renderer, Composer, Tests, Brand, Theme
+    "agent-12a-contract-gate": {
+        "name": "Contract Gate",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12b-ubrc-gate": {
+        "name": "UBRC Gate",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12c-registry-gate": {
+        "name": "Registry Gate",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12d-renderer-gate": {
+        "name": "Renderer Gate",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12e-composer-gate": {
+        "name": "Composer Gate",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12f-tests-gate": {
+        "name": "Tests Gate",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12g-runtime-gate": {
+        "name": "Runtime Gate",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12h-browser-gate": {
+        "name": "Browser Gate (Playwright)",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12i-brand-independence-gate": {
+        "name": "Brand Independence Gate",
+        "depends_on": ["agent-11-post-placement-verification"],
+        "parallel_group": "certification-gates"
+    },
+    "agent-12j-theme-compatibility-gate": {
+        "name": "Theme Compatibility Gate",
         "depends_on": ["agent-11-post-placement-verification"],
         "parallel_group": "certification-gates"
     },
     
-    # ===== RUNTIME CHAIN (Sequential after gates) =====
-    "agent-13-runtime-verification": {
-        "name": "Runtime Verification",
-        "depends_on": ["agent-12-certification-gates"],
+    # ===== FINAL CERTIFICATION SEQUENCE (Sequential after gates) =====
+    "agent-13-final-evidence-freeze": {
+        "name": "Final Evidence Freeze",
+        "depends_on": [
+            "agent-12a-contract-gate",
+            "agent-12b-ubrc-gate",
+            "agent-12c-registry-gate",
+            "agent-12d-renderer-gate",
+            "agent-12e-composer-gate",
+            "agent-12f-tests-gate",
+            "agent-12g-runtime-gate",
+            "agent-12h-browser-gate",
+            "agent-12i-brand-independence-gate",
+            "agent-12j-theme-compatibility-gate"
+        ],
         "parallel_group": None
     },
-    "agent-14-browser-certification": {
-        "name": "Browser Certification (Playwright)",
-        "depends_on": ["agent-13-runtime-verification"],
+    "agent-14-final-gate-controller": {
+        "name": "Final Gate Controller",
+        "depends_on": ["agent-13-final-evidence-freeze"],
         "parallel_group": None
     },
-    
-    # ===== FINAL GATE =====
-    "agent-15-final-gate": {
-        "name": "Final Gate Controller & Human Certification",
-        "depends_on": ["agent-14-browser-certification"],
+    "agent-15-human-certification": {
+        "name": "Human Certification",
+        "depends_on": ["agent-14-final-gate-controller"],
         "parallel_group": None
     }
 }
