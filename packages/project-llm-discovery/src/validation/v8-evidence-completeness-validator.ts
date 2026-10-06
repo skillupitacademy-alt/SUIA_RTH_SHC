@@ -295,7 +295,7 @@ export async function validateEvidenceCompleteness(
       node.evidenceId,
       node.name,
       'Dependency Node',
-      ['package', 'file']
+      ['package', 'file', 'dependency-resolution'] // M2.5: External packages may use lockfile evidence
     );
   }
 
@@ -305,7 +305,7 @@ export async function validateEvidenceCompleteness(
       edge.evidenceId,
       `${edge.from} -> ${edge.to}`,
       'Dependency Edge',
-      ['import', 'export', 'file', 'package'] // Edges discovered from package.json
+      ['import', 'export', 'file', 'package', 'dependency-declaration', 'dependency-resolution'] // M2.5: Accept new evidence kinds
     );
   }
 

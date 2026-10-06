@@ -150,6 +150,8 @@ export interface DependencyEdge {
   from: string;
   to: string;
   kind: 'dependency' | 'devDependency' | 'peerDependency';
+  requestedVersion?: string;
+  resolvedVersion?: string;
   evidenceId: string;
 }
 

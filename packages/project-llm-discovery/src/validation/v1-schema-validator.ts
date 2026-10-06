@@ -127,6 +127,8 @@ const DependencyEdgeSchema = z.object({
   from: z.string(),
   to: z.string(),
   kind: z.enum(['dependency', 'devDependency', 'peerDependency']),
+  requestedVersion: z.string().optional(),
+  resolvedVersion: z.string().optional(),
   evidenceId: z.string().min(1),
 });
 
@@ -172,6 +174,8 @@ const EvidenceSchema = z.object({
     'test-directory',
     'test-file',
     'type-definition',
+    'dependency-declaration',
+    'dependency-resolution',
   ]),
   claim: z.string(),
   locator: z.string(),

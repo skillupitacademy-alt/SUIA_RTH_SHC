@@ -3228,3 +3228,3586 @@ And the central invariant throughout the entire system should be:
 > **Project AI never asks an LLM to decide what the repository contains. It asks the deterministic discovery/evidence layer what the repository proves, and then uses AI reasoning to decide what should happen next.**
 
 That is the architecture that makes the later **Candidate Block → Composer → Runtime → Certification** workflow reliable rather than simply another code-generation agent. The supplied project material explicitly supports this separation and the Candidate Block certification model. Explain I2 Creation Files Explain I2 Creation Files
+
+Yes — **that is the intended end state**. But one distinction is important:
+
+**The architecture we designed will achieve that workflow after M2.3–M2.8, multi-agent orchestration, governance, Candidate Block certification, and the I2 workflow are actually implemented. It does not mean the repository has that capability today.** The current status still has M2.3–M2.8, multi-agent orchestration, approval/gating, Candidate Block certification, and I2 workflow pending. Explain I2 Creation Files
+
+The end goal is exactly:
+
+> **External AI creates the HTML/CSS/JS/JSON concept → Project LLM analyzes it → Project LLM tells External AI exactly what TypeScript/React/Next.js files/contracts are required → External AI implements → Project LLM verifies everything → candidate becomes selectable in Tutorial Composer → runtime/browser verifies it → only then is it certified and usable.**
+
+And importantly, **Project LLM does not blindly trust External AI's implementation**. Implementation ≠ certification. Explain I2 Creation Files
+
+---
+
+# 1. What you will ultimately be able to do from the browser
+
+Imagine you open:
+
+```text
+https://your-project-ai-domain/
+```
+
+and see:
+
+```text
+┌───────────────────────────────────────────────────────┐
+│                 PROJECT AI                            │
+├───────────────────────────────────────────────────────┤
+│                                                       │
+│  Create / Manage Tutorial Block                       │
+│                                                       │
+│  Block Family:     [ Introduction        ▼ ]          │
+│  Target Version:   [ I2                   ▼ ]          │
+│                                                       │
+│  Creation Mode:                                      │
+│    ○ I2 only                                          │
+│    ○ Mix & Match existing versions                    │
+│    ○ New Candidate Block                              │
+│                                                       │
+│  [ Analyze Repository ]                               │
+│                                                       │
+└───────────────────────────────────────────────────────┘
+```
+
+You can say:
+
+> "I want Introduction I2."
+
+or:
+
+> "I want I2 using the existing I1 hero treatment, I2 content structure, and the existing reusable media behavior."
+
+Project AI then performs the repository/evidence analysis.
+
+---
+
+# 2. The first thing Project LLM does
+
+It does **not immediately generate code**.
+
+It first asks:
+
+```text
+What already exists?
+```
+
+The workflow is:
+
+```text
+Browser
+   │
+   ▼
+Project AI
+   │
+   ▼
+Current Repository Snapshot
+   │
+   ▼
+Evidence Graph
+   │
+   ├── Introduction I1
+   ├── Introduction existing versions
+   ├── Block registry
+   ├── Renderer
+   ├── Composer
+   ├── Tests
+   ├── Runtime routes
+   └── Dependencies
+```
+
+The deterministic TypeScript/Node layer remains responsible for discovering those facts, while Python/FastAPI performs orchestration and reasoning. That boundary is fundamental to the architecture. Explain I2 Creation Files
+
+---
+
+# 3. Browser screen: Repository Analysis
+
+Project AI could show:
+
+```text
+INTRODUCTION FAMILY ANALYSIS
+
+Current versions
+────────────────────────────────────
+I1          ✓ Certified
+I2          Not implemented
+I2-Candidate  Not certified
+
+Existing capabilities
+────────────────────────────────────
+✓ Introduction contract
+✓ Introduction registry
+✓ Tutorial renderer
+✓ Composer integration
+✓ Runtime route
+✓ Tests
+✓ Evidence
+
+Missing for I2
+────────────────────────────────────
+⚠ New implementation
+⚠ Version registration
+⚠ Renderer compatibility
+⚠ Composer configuration
+⚠ Runtime verification
+⚠ Browser verification
+```
+
+Now the system knows the **delta** rather than blindly asking an AI to recreate Introduction from scratch.
+
+---
+
+# 4. If you have HTML/CSS/JS/JSON from External AI
+
+This is where your proposed workflow becomes particularly powerful.
+
+You could upload/provide:
+
+```text
+introduction-i2/
+    concept.html
+    concept.css
+    concept.js
+    content.json
+```
+
+The browser might show:
+
+```text
+EXTERNAL AI CONCEPT
+
+HTML     ✓
+CSS      ✓
+JS       ✓
+JSON     ✓
+
+[ Analyze Candidate ]
+```
+
+Project AI analyzes the concept.
+
+---
+
+# 5. Project AI converts the concept into a Candidate Block specification
+
+It doesn't simply say:
+
+> "Looks good."
+
+Instead:
+
+```text
+CANDIDATE BLOCK SPECIFICATION
+────────────────────────────────────
+
+Family:
+Introduction
+
+Target:
+I2
+
+Implementation:
+React / TypeScript / TSX
+
+Required:
+✓ React component
+✓ Type definition
+✓ Data contract
+✓ Registry entry
+✓ Renderer registration
+✓ Block version
+✓ Composer compatibility
+✓ Tests
+✓ Runtime compatibility
+✓ Evidence
+✓ Brand independence
+
+Existing artifacts reusable:
+✓ Introduction contract
+✓ Base renderer
+✓ Composer infrastructure
+✓ Shared media component
+
+New artifacts required:
+• IntroductionI2.tsx
+• IntroductionI2.test.tsx
+• I2 registry/version entry
+
+Existing artifacts to extend:
+• Introduction registry
+• Introduction block contract
+• Composer configuration
+```
+
+This is exactly the purpose of the Candidate Block specification: determine the required implementation, contracts, integrations, tests, runtime requirements, evidence, and brand-independence requirements before implementation. Explain I2 Creation Files
+
+---
+
+# 6. And this is where your "don't create unnecessary MD files" rule matters
+
+Project AI should **not** respond:
+
+```text
+Created:
+
+I2-plan.md
+I2-spec.md
+I2-checklist.md
+I2-agent-notes.md
+I2-verification.md
+I2-final.md
+```
+
+Instead:
+
+```text
+Search existing artifacts
+       ↓
+Find canonical artifact
+       ↓
+Extend canonical artifact
+       ↓
+Record I2 requirements
+```
+
+That global policy applies to the Project AI agents.
+
+So the browser could show:
+
+```text
+Documentation impact
+
+Canonical artifacts to update:
+
+✓ Block Corpus Registry
+✓ M2 backlog / project task artifact
+✓ Existing Introduction documentation
+
+New documentation:
+None required
+```
+
+That is a major architectural advantage.
+
+---
+
+# 7. Then Project AI gives External AI the implementation contract
+
+This is the key interaction.
+
+Project AI generates something conceptually like:
+
+```text
+IMPLEMENTATION CONTRACT
+
+Create:
+
+1. IntroductionI2.tsx
+
+Requirements:
+- React component
+- TypeScript strict mode
+- receives IntroductionI2Data
+- no brand-specific constants
+- use canonical theme tokens
+- expose required block metadata
+
+2. IntroductionI2Data.ts
+
+Requirements:
+- conform to canonical Introduction data contract
+
+3. Registry update
+
+Requirements:
+- register Introduction/I2
+- preserve existing I1 registration
+
+4. Renderer update
+
+Requirements:
+- resolve Introduction/I2
+- preserve I1 behavior
+
+5. Composer integration
+
+Requirements:
+- I2 must appear in Introduction block selection
+
+6. Tests
+
+Requirements:
+- component test
+- contract test
+- registry test
+- Composer test
+
+7. Runtime
+
+Requirements:
+- data-block-version="I2"
+- render successfully in tutorial runtime
+```
+
+External AI now has a **repository-aware implementation specification**.
+
+---
+
+# 8. Human approval happens here
+
+This is an important control point.
+
+Browser:
+
+```text
+┌──────────────────────────────────────────┐
+│        I2 IMPLEMENTATION PLAN            │
+├──────────────────────────────────────────┤
+│                                          │
+│ Files to modify:       5                 │
+│ Files to create:      2                  │
+│ Tests required:       7                  │
+│ Composer changes:     1                  │
+│ Runtime verification: YES                │
+│ Brand independence:   YES                │
+│                                          │
+│ Evidence references:   23                │
+│                                          │
+│ [ Reject ]       [ Approve ]             │
+└──────────────────────────────────────────┘
+```
+
+You click:
+
+**Approve**
+
+Only now:
+
+```text
+WAITING_FOR_APPROVAL
+       ↓
+IMPLEMENTING
+```
+
+The workflow explicitly separates AI planning from approval and implementation from certification. Explain I2 Creation Files
+
+---
+
+# 9. External AI implements the React/TypeScript candidate
+
+External AI now creates/modifies the required files.
+
+For example:
+
+```text
+components/
+└── tutorial/
+    └── blocks/
+        └── introduction/
+            ├── IntroductionI1.tsx
+            ├── IntroductionI2.tsx
+            ├── Introduction.types.ts
+            └── IntroductionI2.test.tsx
+```
+
+But the important thing is:
+
+**Project AI does not assume this is correct merely because the files exist.**
+
+---
+
+# 10. Project AI starts certification
+
+Now the multi-agent workflow activates.
+
+```text
+                 I2 Candidate
+                     │
+                     ▼
+             ┌───────────────┐
+             │ Agent 01      │
+             │ Repository    │
+             └───────┬───────┘
+                     ▼
+             ┌───────────────┐
+             │ Agent 06      │
+             │ Evidence      │
+             └───────┬───────┘
+                     ▼
+       ┌─────────────┼─────────────┐
+       ▼             ▼             ▼
+   Contract        UBRC         Composer
+    Agent          Agent         Agent
+       │             │             │
+       └─────────────┼─────────────┘
+                     ▼
+              Runtime Agent
+                     │
+                     ▼
+               Test Agent
+                     │
+                     ▼
+            Certification Agent
+```
+
+---
+
+# 11. First check — TypeScript/React contract
+
+Project AI verifies:
+
+```text
+IntroductionI2.tsx
+        ↓
+IntroductionI2Data
+        ↓
+canonical contract
+```
+
+It checks:
+
+```text
+✓ TypeScript
+✓ Props
+✓ Data contract
+✓ Required fields
+✓ Version
+✓ No invalid assumptions
+```
+
+If it fails:
+
+```text
+❌ BLOCKED
+
+INTRODUCTION_I2_CONTRACT_MISMATCH
+```
+
+External AI gets the exact failure and can correct it.
+
+---
+
+# 12. Second check — ILS runtime
+
+The block must satisfy the repository's canonical ILS requirements.
+
+Project AI should not hallucinate what ILS means.
+
+Instead:
+
+```text
+Canonical ILS requirements
+          ↓
+Candidate I2
+          ↓
+Compatibility checks
+          ↓
+Evidence
+```
+
+Result:
+
+```text
+ILS Runtime
+
+✓ Requirement ILS-001
+✓ Requirement ILS-002
+✓ Requirement ILS-003
+✓ Runtime compatibility
+
+ILS STATUS: PASS
+```
+
+---
+
+# 13. Third check — LSNB
+
+Same model:
+
+```text
+Canonical LSNB requirements
+          ↓
+Introduction I2
+          ↓
+Validation
+```
+
+Result:
+
+```text
+LSNB
+
+✓ Structural requirements
+✓ Naming requirements
+✓ Block contract
+✓ Integration requirements
+
+LSNB STATUS: PASS
+```
+
+The important point is that the exact LSNB/RSSB rules come from canonical repository documentation/contracts rather than being invented by the LLM. Explain I2 Creation Files
+
+---
+
+# 14. Fourth check — RSSB
+
+Same:
+
+```text
+RSSB requirements
+       ↓
+Candidate
+       ↓
+Validation
+       ↓
+Evidence
+```
+
+```text
+RSSB STATUS: PASS
+```
+
+---
+
+# 15. Fifth check — UBRC
+
+This is particularly important.
+
+Project AI checks:
+
+```text
+Introduction I2
+      │
+      ▼
+Introduction block type
+      │
+      ▼
+Registry
+      │
+      ▼
+Renderer
+      │
+      ▼
+data-block-version="I2"
+      │
+      ▼
+Runtime
+```
+
+For example:
+
+```text
+UBRC
+
+✓ Block type exists
+✓ Registry entry exists
+✓ Registry points to I2
+✓ Renderer resolves I2
+✓ Version is I2
+✓ Runtime version matches
+
+UBRC: PASS
+```
+
+The architecture explicitly treats renderer existence alone as insufficient; the complete chain has to be verified. Explain I2 Creation Files
+
+---
+
+# 16. Sixth check — Tutorial Composer
+
+This is one of the most important parts of your objective.
+
+Project AI opens the actual Composer workflow.
+
+Not just:
+
+```text
+registry contains I2
+```
+
+It verifies:
+
+```text
+Registry
+   ↓
+Composer
+   ↓
+Introduction
+   ↓
+I2
+```
+
+Browser:
+
+```text
+┌────────────────────────────────────────────┐
+│              TUTORIAL COMPOSER             │
+├────────────────────────────────────────────┤
+│                                            │
+│ Block Type                                 │
+│                                            │
+│ [ Introduction ▼ ]                         │
+│                                            │
+│ Version                                    │
+│                                            │
+│ [ I1 ▼ ]                                   │
+│                                            │
+│             ┌──────────────┐               │
+│             │     I2       │ ← MUST EXIST  │
+│             └──────────────┘               │
+│                                            │
+└────────────────────────────────────────────┘
+```
+
+Project AI selects:
+
+```text
+Introduction
+→ I2
+```
+
+and verifies it can actually be used.
+
+---
+
+# 17. Then it constructs a real tutorial
+
+This is where the workflow becomes much stronger than static testing.
+
+Project AI could create a temporary verification tutorial:
+
+```text
+Tutorial
+ ├── Introduction I2
+ ├── Explanation
+ ├── Example
+ └── Summary
+```
+
+Then:
+
+```text
+Composer
+   ↓
+Save Draft
+   ↓
+Generate Tutorial
+   ↓
+Render Tutorial
+   ↓
+Browser
+```
+
+---
+
+# 18. Browser verification
+
+Playwright/browser agent opens the actual tutorial page.
+
+For example:
+
+```text
+/tutorial/verification/i2
+```
+
+It checks:
+
+```text
+✓ Page loads
+✓ Introduction I2 exists
+✓ Correct renderer used
+✓ data-block-version="I2"
+✓ Expected content visible
+✓ No runtime errors
+✓ No console errors
+✓ Required CSS loaded
+✓ Required assets loaded
+```
+
+The runtime verification model stores:
+
+```text
+expected
+observed
+passed
+evidenceIds
+```
+
+so the system can explain *why* the runtime passed. Explain I2 Creation Files
+
+---
+
+# 19. Brand independence verification
+
+Now Project AI checks whether I2 is actually reusable.
+
+It searches for things like:
+
+```text
+hard-coded brand colors
+hard-coded logo
+brand-specific URLs
+brand-specific image
+brand-specific typography
+brand-specific copy
+brand-specific IDs
+```
+
+For example:
+
+```text
+BRAND INDEPENDENCE
+
+✓ No hard-coded logo
+✓ No hard-coded brand URL
+✓ Theme tokens used
+✓ Content supplied through data
+✓ Assets configurable
+✓ Typography uses platform tokens
+
+BRAND INDEPENDENCE: PASS
+```
+
+That is a formal certification criterion, not merely an LLM opinion. Explain I2 Creation Files
+
+---
+
+# 20. Final I2 certification screen
+
+You could ultimately see:
+
+```text
+┌────────────────────────────────────────────────────┐
+│              INTRODUCTION I2                       │
+│              CERTIFICATION                         │
+├────────────────────────────────────────────────────┤
+│                                                    │
+│ Implementation              ✓ PASS                │
+│ Type Contract               ✓ PASS                │
+│ Data Contract               ✓ PASS                │
+│ ILS Runtime                 ✓ PASS                │
+│ LSNB                        ✓ PASS                │
+│ RSSB                        ✓ PASS                │
+│ UBRC                        ✓ PASS                │
+│ Registry                    ✓ PASS                │
+│ Renderer                    ✓ PASS                │
+│ Tutorial Composer           ✓ PASS                │
+│ Tests                       ✓ PASS                │
+│ Browser Runtime             ✓ PASS                │
+│ Evidence                    ✓ PASS                │
+│ Brand Independence          ✓ PASS                │
+│                                                    │
+│ ───────────────────────────────────────────────── │
+│                                                    │
+│             🟢 I2 CERTIFIED                       │
+│                                                    │
+└────────────────────────────────────────────────────┘
+```
+
+Only after this should it become a normal selectable production block.
+
+---
+
+# 21. Now the important part: I2-only vs Mix & Match
+
+These are **two different workflows**, and Project LLM should support both.
+
+---
+
+## Mode A — I2 only
+
+You say:
+
+> "Create Introduction I2."
+
+Project AI interprets:
+
+```text
+Introduction
+    │
+    └── I2
+```
+
+It analyzes the existing Introduction family and determines what I2 requires.
+
+Then:
+
+```text
+Existing Introduction architecture
+             ↓
+I2 specification
+             ↓
+External AI implementation
+             ↓
+Verification
+             ↓
+I2 certification
+```
+
+The result is:
+
+```text
+Introduction I2
+```
+
+---
+
+# 22. Mode B — Mix & Match
+
+This is more interesting.
+
+Suppose you have:
+
+```text
+I1
+ ├── layout A
+ ├── hero A
+ └── media A
+
+I2
+ ├── layout B
+ ├── hero B
+ └── media B
+
+I3
+ ├── layout C
+ ├── hero C
+ └── media C
+```
+
+You might request:
+
+> "Create an Introduction version using I2's structure, I1's media treatment, and the new HTML concept's hero."
+
+Project AI should **not simply concatenate files**.
+
+It should decompose the request into capabilities.
+
+For example:
+
+```text
+INTRODUCTION MIX & MATCH
+
+Base:
+I2
+
+Selected capabilities:
+──────────────────────────────
+Structure       → I2
+Hero            → New Candidate
+Media           → I1
+Footer          → I2
+Responsive      → Canonical
+Theme           → Canonical
+Data Contract   → Canonical
+```
+
+---
+
+# 23. Project AI determines compatibility
+
+This is where the evidence graph and dependency graph become extremely important.
+
+It asks:
+
+```text
+Can I1 media be used with I2 structure?
+```
+
+Then:
+
+```text
+I1 Media
+    ↓
+dependencies
+    ↓
+data contract
+    ↓
+renderer
+    ↓
+I2 structure
+```
+
+Possible result:
+
+```text
+✓ Compatible
+```
+
+Or:
+
+```text
+❌ Incompatible
+
+Reason:
+I1 media requires MediaDataV1
+I2 requires MediaDataV2
+
+Migration required.
+```
+
+That is precisely the kind of reasoning the completed dependency/evidence graph is intended to enable.
+
+---
+
+# 24. Mix & Match should generate a composition specification
+
+For example:
+
+```json
+{
+  "family": "Introduction",
+  "targetVersion": "I2-custom",
+  "base": "I2",
+  "components": {
+    "structure": "I2",
+    "hero": "candidate",
+    "media": "I1",
+    "footer": "I2"
+  },
+  "requiredChecks": [
+    "ILS",
+    "LSNB",
+    "RSSB",
+    "UBRC",
+    "COMPOSER",
+    "RUNTIME",
+    "BRAND_INDEPENDENCE"
+  ]
+}
+```
+
+The exact schema can evolve, but conceptually this is what you want.
+
+---
+
+# 25. Then External AI gets the mix-and-match contract
+
+Instead of:
+
+> "Build whatever looks like this."
+
+External AI gets:
+
+```text
+BASE:
+Introduction I2
+
+REUSE:
+Introduction I1 media implementation
+
+NEW:
+Hero implementation from supplied HTML/CSS/JS concept
+
+DO NOT MODIFY:
+Canonical Introduction data contract
+
+MUST UPDATE:
+Introduction registry
+Renderer compatibility
+
+MUST VERIFY:
+ILS
+LSNB
+RSSB
+UBRC
+Composer
+Runtime
+Brand independence
+```
+
+This sharply reduces AI-generated architectural drift.
+
+---
+
+# 26. The browser journey for Mix & Match
+
+From the user's perspective:
+
+```text
+PROJECT AI
+   │
+   ▼
+Create Block
+   │
+   ▼
+Introduction
+   │
+   ▼
+Creation Mode
+   │
+   ├───────────────┐
+   │               │
+   ▼               ▼
+I2 Only        Mix & Match
+                   │
+                   ▼
+             Select Base
+                   │
+                   ▼
+                  I2
+                   │
+                   ▼
+           Select Components
+                   │
+        ┌──────────┼───────────┐
+        ▼          ▼           ▼
+      Hero       Media       Layout
+       I2         I1          I2
+        │          │           │
+        └──────────┼───────────┘
+                   ▼
+             Compatibility
+                 Check
+                   │
+                   ▼
+             Specification
+                   │
+                   ▼
+             Human Approval
+                   │
+                   ▼
+             External AI
+                   │
+                   ▼
+              React/TS
+                   │
+                   ▼
+          Project AI Validation
+                   │
+                   ▼
+               Composer
+                   │
+                   ▼
+               Browser
+                   │
+                   ▼
+            Certification
+```
+
+---
+
+# 27. And then the candidate becomes available in Composer
+
+This is the final experience you specifically asked for.
+
+After certification:
+
+```text
+Tutorial Composer
+      │
+      ▼
+Introduction
+      │
+      ├── I1
+      ├── I2
+      └── I2-CUSTOM ✓
+```
+
+Then you can actually use:
+
+```text
+Introduction I2-CUSTOM
+```
+
+while constructing a tutorial.
+
+The candidate is not considered "done" simply because the component is in the repository. It must pass the complete path:
+
+```text
+Candidate
+ → Registry
+ → Renderer
+ → Composer
+ → Generated Tutorial
+ → Runtime
+ → Browser
+ → Certification
+```
+
+That is the intended Composer certification model. Explain I2 Creation Files
+
+---
+
+# 28. The whole journey in one picture
+
+The complete future system is therefore:
+
+```text
+                    YOU
+                     │
+                     ▼
+             PROJECT AI BROWSER
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+      I2 ONLY              MIX & MATCH
+          │                     │
+          └──────────┬──────────┘
+                     ▼
+             REPOSITORY ANALYSIS
+                     │
+                     ▼
+            SNAPSHOT + EVIDENCE
+                     │
+                     ▼
+          EXISTING BLOCK ANALYSIS
+                     │
+                     ▼
+          CANDIDATE SPECIFICATION
+                     │
+                     ▼
+               HUMAN APPROVAL
+                     │
+                     ▼
+                EXTERNAL AI
+                     │
+             HTML/CSS/JS/JSON
+                     │
+                     ▼
+             React/TypeScript
+                     │
+                     ▼
+        ┌────────────────────────┐
+        │ PROJECT AI VALIDATION  │
+        ├────────────────────────┤
+        │ Contract               │
+        │ ILS                    │
+        │ LSNB                   │
+        │ RSSB                   │
+        │ UBRC                   │
+        │ Registry               │
+        │ Renderer               │
+        │ Composer               │
+        │ Tests                  │
+        │ Runtime                │
+        │ Browser                │
+        │ Evidence               │
+        │ Brand Independence     │
+        └───────────┬────────────┘
+                    │
+                    ▼
+             CERTIFICATION
+                    │
+                    ▼
+          TUTORIAL COMPOSER
+                    │
+                    ▼
+             SELECT I2 / CUSTOM
+                    │
+                    ▼
+             BUILD TUTORIAL
+                    │
+                    ▼
+              RENDER PAGE
+                    │
+                    ▼
+             BROWSER VERIFY
+                    │
+                    ▼
+             PRODUCTION READY
+```
+
+---
+
+# 29. So, specifically, does this achieve your original objective?
+
+**Yes.**
+
+Your original objective can be expressed as this final contract:
+
+```text
+External AI
+    ↓
+HTML/CSS/JS/JSON concept
+    ↓
+Project LLM
+    ↓
+Repository-aware analysis
+    ↓
+"Here are the prerequisites and implementation requirements"
+    ↓
+Human approval
+    ↓
+External AI
+    ↓
+React / TypeScript / TSX implementation
+    ↓
+Project LLM
+    ↓
+ILS verification
+    ↓
+LSNB verification
+    ↓
+RSSB verification
+    ↓
+UBRC verification
+    ↓
+Registry verification
+    ↓
+Renderer verification
+    ↓
+Tutorial Composer verification
+    ↓
+Automated tutorial generation
+    ↓
+Browser/runtime verification
+    ↓
+Evidence verification
+    ↓
+Brand-independence verification
+    ↓
+CERTIFIED CANDIDATE BLOCK
+    ↓
+Visible/selectable in Tutorial Composer
+    ↓
+Available for tutorial-page implementation
+```
+
+And for **I2**, you have two legitimate modes:
+
+### I2-only
+
+```text
+Existing Introduction family
+          ↓
+       I2 design
+          ↓
+     I2 candidate
+          ↓
+       certify
+          ↓
+      Composer
+```
+
+### I2 Mix & Match
+
+```text
+I2 base
+ +
+I1/I2/I3 reusable capabilities
+ +
+new External AI concept
+          ↓
+Project AI compatibility analysis
+          ↓
+Composite specification
+          ↓
+External AI implementation
+          ↓
+full certification
+          ↓
+Custom I2 available in Composer
+```
+
+The latter is the more powerful long-term capability because **Project AI becomes the compatibility/governance layer between reusable block versions**, rather than forcing you to manually determine whether pieces from different versions can safely coexist.
+
+The current repository, however, is **not yet at that browser-driven end state**: M2.3–M2.8 and the later Candidate Block/I2 workflow still need implementation. Explain I2 Creation Files
+
+**Therefore, the correct next step is not to manually implement I2 yet.** We should first complete **M2.3 → M2.7**, certify the deterministic evidence foundation, then implement **M2.8 FastAPI + the multi-agent browser workflow**, and only then build the I2/Candidate Block experience on top of it. Explain I2 Creation Files
+
+Yes. I can give you the **complete remaining implementation specification and source-level code handoff**, divided among multiple Project AI workflow agents.
+
+However, I want to make one distinction absolutely explicit: **I cannot honestly label repository-specific code “successfully implemented” until it has actually been applied to the current GitHub branch and the repository test/validation gates have passed.** The current branch has M2.2 code, while the remaining M2.3–M2.8 and Candidate/I2 workflow are still pending. The previous architecture itself confirms those pending areas. Explain I2 Creation Files
+
+The correct implementation target is the upload → placement manifest → approval → deterministic discovery → certification → Composer → runtime/browser → I2/mix-and-match pipeline described previously. Explain I2 Creation Files
+
+# Complete remaining implementation
+
+## 1. Final multi-agent architecture
+
+I recommend **14 agents**, rather than trying to make one Project AI agent do everything.
+
+```text
+PROJECT AI CONTROL PLANE
+│
+├── Agent 0  Gate Controller / Orchestrator
+│
+├── Discovery / Repository layer
+│   ├── Agent 1  Repository Contract Auditor
+│   ├── Agent 2  Toolchain Agent
+│   ├── Agent 3  Composer/API/Schema Agent
+│   ├── Agent 4  Dependency Graph Agent
+│   └── Agent 5  UBRC Agent
+│
+├── Candidate layer
+│   ├── Agent 6  Candidate Intake Agent
+│   ├── Agent 7  Candidate Placement Agent
+│   ├── Agent 8  Candidate Certification Agent
+│   └── Agent 9  Brand Independence Agent
+│
+├── Runtime layer
+│   ├── Agent 10 Runtime/Browser Agent
+│   └── Agent 11 Composer Workflow Agent
+│
+├── AI control layer
+│   ├── Agent 12 FastAPI / Workflow Agent
+│   └── Agent 13 Governance / Approval Agent
+│
+└── Agent 14 Documentation / Evidence Reconciliation
+```
+
+The **Gate Controller is the only agent allowed to declare a phase complete**.
+
+---
+
+# 2. Global instruction given to every agent
+
+This should be part of the Project AI system prompt.
+
+```text
+You are a Project AI engineering agent operating inside SUIA_RTH_SHC.
+
+AUTHORITATIVE SOURCES
+
+1. Current repository state
+2. Current deterministic RepositorySnapshot
+3. Current Evidence records
+4. Existing canonical contracts
+5. Existing canonical documentation
+6. Existing tests
+7. Approved workflow/gate state
+
+Never invent repository facts.
+
+Before creating any file:
+
+1. Search the repository.
+2. Search the current snapshot.
+3. Search evidence.
+4. Find an existing artifact serving the same purpose.
+5. Determine its canonical owner.
+6. Extend/update the canonical artifact when possible.
+7. Create a new artifact only when:
+   - no suitable canonical artifact exists, or
+   - architecture explicitly requires a distinct artifact.
+8. When creating a new artifact, record why an existing artifact could not be extended.
+
+Never create duplicate:
+- Markdown documentation
+- plans
+- specifications
+- registries
+- contracts
+- tests
+- implementations
+- schemas
+
+Do not create Markdown files merely for agent working notes.
+
+The canonical artifact policy is mandatory for all agents.
+
+Do not:
+- invent evidence
+- invent block versions
+- invent Composer APIs
+- invent registry entries
+- bypass approval
+- execute arbitrary shell commands
+- modify main directly
+- self-approve changes
+- certify a block from static compilation alone.
+
+Prefer:
+- extending existing code
+- reusing existing components
+- updating existing tests
+- appending canonical documentation
+- deterministic evidence
+- machine-readable gate results.
+
+Every implementation must produce:
+- changed files
+- evidence IDs
+- test results
+- validation results
+- warnings
+- errors
+- gate status.
+
+An AI implementation worker may implement approved changes.
+Project AI remains the verification and certification authority.
+```
+
+This is directly aligned with the canonical-artifact policy already present in the repository. Explain I2 Creation Files
+
+---
+
+# 3. M2.3 — real toolchain execution
+
+## New contract
+
+```ts
+export interface CommandResult {
+  command: string;
+  args: string[];
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+  durationMs: number;
+}
+
+export interface RepositoryAdapter {
+  readFile(path: string): Promise<string>;
+  fileExists(path: string): Promise<boolean>;
+
+  runCommand(
+    command: string,
+    args: string[],
+    options?: {
+      cwd?: string;
+      timeoutMs?: number;
+      env?: Record<string, string>;
+    }
+  ): Promise<CommandResult>;
+}
+```
+
+The important security rule is that **the LLM never supplies arbitrary `command` values**.
+
+Instead:
+
+```ts
+export type ApprovedOperation =
+  | 'node-version'
+  | 'pnpm-version'
+  | 'turbo-version'
+  | 'typescript-version'
+  | 'vitest-version'
+  | 'playwright-version'
+  | 'type-check'
+  | 'unit-test'
+  | 'integration-test'
+  | 'e2e-test';
+```
+
+Then:
+
+```ts
+const COMMANDS: Record<
+  ApprovedOperation,
+  { command: string; args: string[] }
+> = {
+  'node-version': {
+    command: 'node',
+    args: ['--version'],
+  },
+
+  'pnpm-version': {
+    command: 'pnpm',
+    args: ['--version'],
+  },
+
+  'turbo-version': {
+    command: 'pnpm',
+    args: ['exec', 'turbo', '--version'],
+  },
+
+  'typescript-version': {
+    command: 'pnpm',
+    args: ['exec', 'tsc', '--version'],
+  },
+
+  'vitest-version': {
+    command: 'pnpm',
+    args: ['exec', 'vitest', '--version'],
+  },
+
+  'playwright-version': {
+    command: 'pnpm',
+    args: ['exec', 'playwright', '--version'],
+  },
+
+  'type-check': {
+    command: 'pnpm',
+    args: ['--filter', '@quiz/project-llm-discovery', 'type-check'],
+  },
+
+  'unit-test': {
+    command: 'pnpm',
+    args: ['--filter', '@quiz/project-llm-discovery', 'test'],
+  },
+
+  'integration-test': {
+    command: 'pnpm',
+    args: ['--filter', '@quiz/project-llm-discovery', 'test'],
+  },
+
+  'e2e-test': {
+    command: 'pnpm',
+    args: ['exec', 'playwright', 'test'],
+  },
+};
+```
+
+Execution:
+
+```ts
+export async function executeApprovedOperation(
+  operation: ApprovedOperation,
+  adapter: RepositoryAdapter,
+): Promise<CommandResult> {
+  const spec = COMMANDS[operation];
+
+  if (!spec) {
+    throw new Error(`Unsupported operation: ${operation}`);
+  }
+
+  return adapter.runCommand(
+    spec.command,
+    spec.args,
+    {
+      timeoutMs: 10 * 60 * 1000,
+    },
+  );
+}
+```
+
+This gives Project AI:
+
+```text
+AI request
+   ↓
+ApprovedOperation
+   ↓
+Tool registry
+   ↓
+RepositoryAdapter
+   ↓
+real binary
+   ↓
+CommandResult
+   ↓
+Evidence
+```
+
+---
+
+# 4. M2.4 — Composer/API/schema analysis
+
+The current D4 placeholders must be removed.
+
+The analyzer should produce:
+
+```ts
+export interface ComposerAnalysis {
+  services: ComposerService[];
+  apis: ComposerAPI[];
+  schemas: ComposerSchema[];
+  ui: ComposerUI[];
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+```
+
+HTTP detection:
+
+```ts
+const HTTP_METHODS = [
+  'GET',
+  'POST',
+  'PUT',
+  'PATCH',
+  'DELETE',
+  'HEAD',
+  'OPTIONS',
+] as const;
+```
+
+AST-first method extraction:
+
+```ts
+function extractHttpMethods(
+  source: string,
+): string[] {
+  const methods = new Set<string>();
+
+  for (const method of HTTP_METHODS) {
+    const pattern = new RegExp(
+      `\\.${method.toLowerCase()}\\s*\\(`,
+      'g',
+    );
+
+    if (pattern.test(source)) {
+      methods.add(method);
+    }
+  }
+
+  return [...methods].sort();
+}
+```
+
+The critical rule:
+
+```text
+UNKNOWN
+```
+
+must be represented as unknown rather than:
+
+```text
+[]
+```
+
+because:
+
+```text
+[] = definitely none
+
+UNKNOWN = analyzer could not determine
+```
+
+That distinction is essential to prevent false certification.
+
+---
+
+# 5. M2.5 — dependency graph
+
+Replace the shallow dependency representation with:
+
+```ts
+export interface DependencyEdge {
+  from: string;
+  to: string;
+  kind:
+    | 'dependency'
+    | 'devDependency'
+    | 'peerDependency';
+
+  requestedVersion?: string;
+  resolvedVersion?: string;
+
+  evidenceId: string;
+}
+```
+
+Graph:
+
+```ts
+export interface DependencyGraph {
+  nodes: DependencyNode[];
+  edges: DependencyEdge[];
+}
+```
+
+Algorithm:
+
+```text
+package.json
+    ↓
+workspace package discovery
+    ↓
+workspace dependency resolution
+    ↓
+external dependency extraction
+    ↓
+lockfile resolution
+    ↓
+directed graph
+    ↓
+evidence
+```
+
+Example:
+
+```json
+{
+  "from": "@quiz/tutorial-composer",
+  "to": "@quiz/ui",
+  "kind": "dependency",
+  "requestedVersion": "workspace:*",
+  "resolvedVersion": "1.0.0",
+  "evidenceId": "ev-..."
+}
+```
+
+---
+
+# 6. M2.6 — UBRC
+
+UBRC should become an actual validator.
+
+```ts
+export type UBRCStatus =
+  | 'UBRC_VALID'
+  | 'UBRC_MISSING'
+  | 'UBRC_VERSION_MISMATCH'
+  | 'UBRC_TYPE_MISMATCH'
+  | 'UBRC_REGISTRY_MISSING'
+  | 'UBRC_RENDERER_MISSING';
+```
+
+Verification:
+
+```ts
+export interface UBRCVerification {
+  blockType: string;
+  version: string;
+  registryFound: boolean;
+  rendererFound: boolean;
+  runtimeAttributeFound: boolean;
+  runtimeAttributeValue?: string;
+  status: UBRCStatus;
+  evidenceIds: string[];
+}
+```
+
+The verifier must establish:
+
+```text
+block type
+    ↓
+registry
+    ↓
+renderer
+    ↓
+data-block-version
+    ↓
+runtime
+```
+
+A renderer existing alone is **not** enough.
+
+---
+
+# 7. M2.7 — runtime/browser verification
+
+```ts
+export interface RuntimeVerification {
+  verificationId: string;
+
+  target: string;
+  route: string;
+
+  blockType?: string;
+  expected: unknown;
+  observed: unknown;
+
+  passed: boolean;
+
+  evidenceIds: string[];
+
+  consoleErrors: string[];
+  networkErrors: string[];
+}
+```
+
+The browser agent executes:
+
+```text
+start approved application
+        ↓
+health check
+        ↓
+open route
+        ↓
+locate block
+        ↓
+inspect DOM
+        ↓
+check data-block-version
+        ↓
+check expected content
+        ↓
+check renderer
+        ↓
+check console
+        ↓
+check network
+        ↓
+capture evidence
+        ↓
+shutdown
+```
+
+Certification cannot proceed if the browser verification fails.
+
+---
+
+# 8. M2.8 — FastAPI Project AI service
+
+The service should be:
+
+```text
+services/project-ai/
+```
+
+with:
+
+```text
+services/project-ai/
+├── app/
+│   ├── main.py
+│   ├── api/
+│   │   ├── routes/
+│   │   │   ├── health.py
+│   │   │   ├── snapshot.py
+│   │   │   ├── evidence.py
+│   │   │   ├── candidates.py
+│   │   │   ├── tasks.py
+│   │   │   └── approvals.py
+│   │   └── schemas/
+│   │       ├── snapshot.py
+│   │       ├── evidence.py
+│   │       ├── candidate.py
+│   │       ├── workflow.py
+│   │       └── approval.py
+│   ├── agents/
+│   │   ├── base.py
+│   │   ├── intake.py
+│   │   ├── placement.py
+│   │   ├── certification.py
+│   │   ├── composer.py
+│   │   ├── runtime.py
+│   │   └── governance.py
+│   ├── orchestration/
+│   │   ├── workflow.py
+│   │   ├── gates.py
+│   │   └── registry.py
+│   ├── repository/
+│   │   ├── adapter.py
+│   │   └── operations.py
+│   ├── evidence/
+│   │   ├── graph.py
+│   │   └── query.py
+│   └── governance/
+│       ├── approval.py
+│       └── policy.py
+├── tests/
+└── pyproject.toml
+```
+
+### `main.py`
+
+```python
+from fastapi import FastAPI
+
+from app.api.routes.health import router as health_router
+from app.api.routes.snapshot import router as snapshot_router
+from app.api.routes.evidence import router as evidence_router
+from app.api.routes.candidates import router as candidate_router
+from app.api.routes.tasks import router as task_router
+from app.api.routes.approvals import router as approval_router
+
+app = FastAPI(
+    title="Project AI",
+    version="1.0.0",
+)
+
+app.include_router(health_router)
+app.include_router(snapshot_router)
+app.include_router(evidence_router)
+app.include_router(candidate_router)
+app.include_router(task_router)
+app.include_router(approval_router)
+```
+
+### Workflow state
+
+```python
+from enum import Enum
+
+
+class TaskStatus(str, Enum):
+    CREATED = "CREATED"
+    DISCOVERY = "DISCOVERY"
+    PLANNING = "PLANNING"
+    WAITING_FOR_APPROVAL = "WAITING_FOR_APPROVAL"
+    IMPLEMENTING = "IMPLEMENTING"
+    TESTING = "TESTING"
+    VERIFYING = "VERIFYING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    BLOCKED = "BLOCKED"
+    REJECTED = "REJECTED"
+```
+
+### Gate
+
+```python
+from enum import Enum
+from pydantic import BaseModel
+
+
+class GateStatus(str, Enum):
+    BLOCKED = "BLOCKED"
+    READY = "READY"
+    RUNNING = "RUNNING"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+    WAITING_APPROVAL = "WAITING_APPROVAL"
+
+
+class GateResult(BaseModel):
+    gate_id: str
+    status: GateStatus
+
+    required_commits: list[str] = []
+    evidence_ids: list[str] = []
+
+    test_results: list[str] = []
+    validation_results: list[str] = []
+
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    verified_at: str | None = None
+```
+
+---
+
+# 9. Candidate upload
+
+This is one of the most important additions.
+
+The human uploads:
+
+```text
+candidate/
+├── *.tsx
+├── *.ts
+├── *.css
+├── *.json
+├── *.test.*
+└── optional assets
+```
+
+The Project AI API receives it.
+
+```python
+class CandidateFile(BaseModel):
+    uploaded_path: str
+    content_hash: str
+    media_type: str
+    size_bytes: int
+```
+
+Candidate:
+
+```python
+class CandidatePackage(BaseModel):
+    candidate_id: str
+    family: str
+    target_version: str
+    creation_mode: str
+
+    files: list[CandidateFile]
+```
+
+Creation modes:
+
+```python
+class CreationMode(str, Enum):
+    I2_ONLY = "I2_ONLY"
+    MIX_AND_MATCH = "MIX_AND_MATCH"
+    NEW_CANDIDATE = "NEW_CANDIDATE"
+```
+
+---
+
+# 10. Candidate Intake Agent
+
+The intake agent performs:
+
+```text
+upload
+ ↓
+hash
+ ↓
+inventory
+ ↓
+classify
+ ↓
+detect duplicate
+ ↓
+detect canonical equivalent
+ ↓
+produce intake result
+```
+
+Classification:
+
+```python
+class CandidateFileRole(str, Enum):
+    COMPONENT = "COMPONENT"
+    TYPE = "TYPE"
+    SCHEMA = "SCHEMA"
+    REGISTRY = "REGISTRY"
+    RENDERER = "RENDERER"
+    STYLE = "STYLE"
+    TEST = "TEST"
+    ASSET = "ASSET"
+    CONFIG = "CONFIG"
+    DOCUMENTATION = "DOCUMENTATION"
+    UNKNOWN = "UNKNOWN"
+```
+
+---
+
+# 11. Candidate Placement Agent
+
+This is the missing architectural piece identified previously.
+
+The placement operation:
+
+```python
+class PlacementAction(str, Enum):
+    ADD = "ADD"
+    UPDATE = "UPDATE"
+    EXTEND = "EXTEND"
+    REUSE = "REUSE"
+    REJECT = "REJECT"
+```
+
+Manifest:
+
+```python
+class PlacementEntry(BaseModel):
+    uploaded_path: str
+    target_path: str | None
+
+    action: PlacementAction
+
+    reason: str
+
+    canonical_artifact: str | None
+
+    requires_approval: bool = True
+```
+
+Manifest:
+
+```python
+class PlacementManifest(BaseModel):
+    candidate_id: str
+    entries: list[PlacementEntry]
+
+    duplicate_count: int
+    new_file_count: int
+    modified_file_count: int
+
+    canonical_policy_passed: bool
+```
+
+This is the key protection against uncontrolled file proliferation.
+
+The human uploads:
+
+```text
+registry.ts
+```
+
+but Project AI may determine:
+
+```text
+ACTION = UPDATE
+TARGET =
+existing/canonical/registry.ts
+```
+
+rather than:
+
+```text
+new/candidate/registry.ts
+```
+
+Likewise, the candidate README should normally be rejected or merged into an existing canonical documentation artifact instead of creating another documentation tree.
+
+The repository's policy explicitly requires this behavior. Explain I2 Creation Files
+
+---
+
+# 12. Human approval
+
+Nothing modifies the repository until:
+
+```text
+Placement Manifest
+      ↓
+Human Review
+      ↓
+APPROVE / REJECT
+```
+
+API:
+
+```text
+POST /tasks/{task_id}/approve
+POST /tasks/{task_id}/reject
+POST /tasks/{task_id}/cancel
+```
+
+Approval object:
+
+```python
+class Approval(BaseModel):
+    task_id: str
+    approved: bool
+    approved_by: str
+    approved_at: str
+    manifest_hash: str
+```
+
+The manifest hash is important.
+
+If:
+
+```text
+manifest A
+```
+
+was approved but Project AI later produces:
+
+```text
+manifest B
+```
+
+the original approval cannot be reused.
+
+---
+
+# 13. Candidate certification
+
+Certification is:
+
+```python
+class CertificationGate(str, Enum):
+    CONTRACT = "CONTRACT"
+    ILS = "ILS"
+    LSNB = "LSNB"
+    RSSB = "RSSB"
+    UBRC = "UBRC"
+    REGISTRY = "REGISTRY"
+    RENDERER = "RENDERER"
+    COMPOSER = "COMPOSER"
+    TESTS = "TESTS"
+    RUNTIME = "RUNTIME"
+    BROWSER = "BROWSER"
+    BRAND_INDEPENDENCE = "BRAND_INDEPENDENCE"
+    EVIDENCE = "EVIDENCE"
+```
+
+Certification:
+
+```python
+class CandidateCertification(BaseModel):
+    candidate_id: str
+
+    gates: dict[
+        CertificationGate,
+        GateResult
+    ]
+
+    certified: bool
+```
+
+Certification rule:
+
+```python
+def is_certified(
+    certification: CandidateCertification,
+) -> bool:
+    return all(
+        gate.status == GateStatus.PASSED
+        for gate in certification.gates.values()
+    )
+```
+
+There should be **no partial certification that is presented as production-ready**.
+
+---
+
+# 14. Brand-independence agent
+
+The agent examines:
+
+```text
+hard-coded colors
+logos
+brand URLs
+brand assets
+brand-specific font names
+brand-specific copy
+brand-specific IDs
+hard-coded tenant values
+```
+
+But it must distinguish legitimate design tokens from forbidden brand coupling.
+
+Example:
+
+```ts
+const findings = [
+  {
+    type: "HARDCODED_BRAND_COLOR",
+    path: "...",
+    severity: "ERROR",
+  },
+];
+```
+
+Allowed:
+
+```tsx
+style={{
+  color: theme.colors.primary,
+}}
+```
+
+Potentially forbidden:
+
+```tsx
+style={{
+  color: "#123456",
+}}
+```
+
+when that color represents an existing brand identity rather than a generic design constant.
+
+The agent therefore needs repository evidence and canonical design-token knowledge rather than a simplistic regex-only rejection.
+
+---
+
+# 15. Composer Agent
+
+The Composer Agent verifies the block **as a user would use it**.
+
+Not merely:
+
+```text
+registry entry exists
+```
+
+Instead:
+
+```text
+open Tutorial Composer
+ ↓
+select block
+ ↓
+configure block
+ ↓
+save draft
+ ↓
+generate tutorial
+ ↓
+render tutorial
+ ↓
+browser verification
+```
+
+Composer certification therefore becomes:
+
+```python
+class ComposerVerification(BaseModel):
+    block_type: str
+
+    selectable: bool
+    configurable: bool
+    saveable: bool
+    renderable: bool
+
+    tutorial_id: str | None
+
+    evidence_ids: list[str]
+
+    passed: bool
+```
+
+This is critical because a block that exists in source code but cannot actually be selected in Composer is **not certified**.
+
+---
+
+# 16. I2-only workflow
+
+The browser sends:
+
+```json
+{
+  "family": "Introduction",
+  "targetVersion": "I2",
+  "creationMode": "I2_ONLY",
+  "candidateId": "..."
+}
+```
+
+Workflow:
+
+```text
+CREATE
+ ↓
+DISCOVERY
+ ↓
+IDENTIFY INTRODUCTION FAMILY
+ ↓
+IDENTIFY I2 CONTRACT
+ ↓
+ANALYZE CANDIDATE
+ ↓
+PLACEMENT MANIFEST
+ ↓
+HUMAN APPROVAL
+ ↓
+IMPLEMENT
+ ↓
+ILS
+ ↓
+LSNB
+ ↓
+RSSB
+ ↓
+UBRC
+ ↓
+REGISTRY
+ ↓
+RENDERER
+ ↓
+COMPOSER
+ ↓
+TESTS
+ ↓
+RUNTIME
+ ↓
+BROWSER
+ ↓
+BRAND
+ ↓
+EVIDENCE
+ ↓
+CERTIFIED I2
+```
+
+---
+
+# 17. Mix-and-match workflow
+
+The user can instead specify:
+
+```json
+{
+  "family": "Introduction",
+  "targetVersion": "I2-CUSTOM",
+  "creationMode": "MIX_AND_MATCH",
+
+  "components": {
+    "structure": "I2",
+    "hero": "candidate",
+    "media": "I1",
+    "footer": "I2"
+  }
+}
+```
+
+Project AI must first calculate compatibility.
+
+```text
+I2 structure
+     +
+candidate hero
+     +
+I1 media
+     +
+I2 footer
+     ↓
+compatibility graph
+```
+
+Check:
+
+```text
+type compatibility
+data compatibility
+version compatibility
+renderer compatibility
+registry compatibility
+responsive behavior
+Composer compatibility
+runtime compatibility
+```
+
+Only then produce:
+
+```text
+Composite Candidate Specification
+```
+
+---
+
+# 18. Multi-agent workflow
+
+The actual execution graph should be:
+
+```text
+                    AGENT 0
+                 GATE CONTROLLER
+                       │
+                       ▼
+                 AGENT 1
+             Repository Auditor
+                       │
+          ┌────────────┼────────────┐
+          ▼            ▼            ▼
+       Agent 2      Agent 3      Agent 4
+      Toolchain    Composer      Graph
+          │            │            │
+          └────────────┼────────────┘
+                       ▼
+                    Agent 5
+                      UBRC
+                       │
+                       ▼
+                    Agent 6
+                Candidate Intake
+                       │
+                       ▼
+                    Agent 7
+                Candidate Placement
+                       │
+                       ▼
+                HUMAN APPROVAL
+                       │
+                       ▼
+                    Agent 8
+             Candidate Certification
+                       │
+          ┌────────────┼─────────────┐
+          ▼            ▼             ▼
+       Agent 9      Agent 10       Agent 11
+       Brand       Runtime        Composer
+          │            │             │
+          └────────────┼─────────────┘
+                       ▼
+                    Agent 12
+                 FastAPI/Workflow
+                       │
+                       ▼
+                    Agent 13
+                  Governance
+                       │
+                       ▼
+                    Agent 14
+             Evidence/Documentation
+                       │
+                       ▼
+                    AGENT 0
+              FINAL CERTIFICATION
+```
+
+Parallelism is allowed only where dependencies permit it.
+
+---
+
+# 19. Gate controller
+
+The controller should implement:
+
+```python
+GATE_ORDER = [
+    "M2.3",
+    "M2.4",
+    "M2.5",
+    "M2.6",
+    "M2.7",
+    "M2.8",
+    "CANDIDATE_INTAKE",
+    "CANDIDATE_PLACEMENT",
+    "APPROVAL",
+    "CANDIDATE_CERTIFICATION",
+    "COMPOSER",
+    "RUNTIME",
+    "BROWSER",
+    "I2",
+]
+```
+
+But it should **not require every gate sequentially when gates are independent**.
+
+For example:
+
+```text
+M2.3 ─────┐
+M2.4 ─────┼──→ M2.6
+M2.5 ─────┘
+```
+
+and:
+
+```text
+Brand ───────┐
+UBRC ────────┤
+Registry ────┼──→ Certification
+Composer ────┤
+Runtime ─────┤
+Browser ─────┘
+```
+
+---
+
+# 20. Browser UI
+
+The final browser application should expose approximately:
+
+```text
+Project AI
+─────────────────────────────
+
+Create Block
+
+Family
+[ Introduction             ]
+
+Target Version
+[ I2                      ]
+
+Mode
+
+○ I2 Only
+○ Mix & Match
+○ New Candidate
+
+Candidate Files
+
+[ Upload Candidate Files ]
+
+[ Analyze Candidate ]
+```
+
+Analysis:
+
+```text
+Candidate Analysis
+─────────────────────────────
+
+Repository
+✓ analyzed
+
+Canonical artifacts
+✓ found
+
+Candidate
+✓ valid
+
+Placement
+
+ADD       3
+UPDATE    2
+EXTEND    2
+REUSE     1
+REJECT    0
+
+Certification
+
+○ Contract
+○ ILS
+○ LSNB
+○ RSSB
+○ UBRC
+○ Registry
+○ Renderer
+○ Composer
+○ Tests
+○ Runtime
+○ Browser
+○ Brand
+
+[Review Changes]
+```
+
+Approval:
+
+```text
+Approve Repository Changes?
+
+Candidate: Introduction I2
+
+Files:
+  ADD       3
+  UPDATE    2
+  EXTEND    2
+  REUSE     1
+
+Documentation:
+  Existing canonical documentation will be updated.
+  No duplicate Markdown will be created.
+
+[ Reject ]       [ Approve ]
+```
+
+Certification:
+
+```text
+Introduction I2
+─────────────────────────────
+
+✓ Contract
+✓ ILS
+✓ LSNB
+✓ RSSB
+✓ UBRC
+✓ Registry
+✓ Renderer
+✓ Composer
+✓ Tests
+✓ Runtime
+✓ Browser
+✓ Brand Independence
+✓ Evidence
+
+STATUS
+
+CERTIFIED
+```
+
+---
+
+# 21. Final production workflow
+
+The complete journey is therefore:
+
+```text
+HUMAN
+ │
+ │ upload Candidate Block
+ ▼
+PROJECT AI
+ │
+ ├── repository snapshot
+ ├── evidence graph
+ ├── canonical artifacts
+ └── block corpus
+ │
+ ▼
+INTAKE AGENT
+ │
+ ▼
+PLACEMENT AGENT
+ │
+ ▼
+PLACEMENT MANIFEST
+ │
+ ▼
+HUMAN APPROVAL
+ │
+ ▼
+REPOSITORY CHANGE
+ │
+ ▼
+DISCOVERY
+ │
+ ▼
+CERTIFICATION AGENTS
+ │
+ ├── Contract
+ ├── ILS
+ ├── LSNB
+ ├── RSSB
+ ├── UBRC
+ ├── Registry
+ ├── Renderer
+ ├── Composer
+ ├── Tests
+ ├── Runtime
+ ├── Browser
+ ├── Brand
+ └── Evidence
+ │
+ ▼
+CERTIFIED CANDIDATE
+ │
+ ▼
+TUTORIAL COMPOSER
+ │
+ ▼
+I2 / MIX & MATCH
+ │
+ ▼
+TUTORIAL DRAFT
+ │
+ ▼
+RENDER
+ │
+ ▼
+BROWSER VERIFICATION
+ │
+ ▼
+PRODUCTION READY
+```
+
+This preserves the key requirement that the human supplies the Candidate Block files while Project AI determines where they belong and how they integrate; the earlier implementation discussion explicitly established that upload → classification → canonical destination → placement → discovery → certification sequence. Explain I2 Creation Files
+
+## One important correction to the implementation process
+
+I would **not** have all 14 agents independently create code.
+
+The workflow should instead be:
+
+```text
+Agents analyze
+     ↓
+Agents produce machine-readable findings
+     ↓
+Gate Controller reconciles
+     ↓
+One implementation worker performs approved change
+     ↓
+Verification agents independently verify
+```
+
+That prevents:
+
+```text
+Agent A creates registry.ts
+Agent B creates another registry.ts
+Agent C creates another Introduction.md
+Agent D creates another test
+```
+
+which directly violates your canonical-artifact rule. The existing policy explicitly says agents must search the repository, snapshot and evidence before creating artifacts and should extend the canonical artifact instead. Explain I2 Creation Files
+
+### What this means for “complete code”
+
+The **architecture and source-level implementation above covers every pending capability**. But I would **not claim that these snippets are already a tested drop-in implementation of your repository**. The remaining work must be applied against the exact current files and contracts, then tested and gated.
+
+In particular, the next actual engineering step should be to implement **M2.3 through M2.8 on `m2-project-ai-foundation`**, with each agent updating the existing `.agents/tasks/m1-m2-backlog.md` rather than creating another M2 plan. The backlog currently contains stale M2.2 audit wording and therefore needs reconciliation as part of that work, not a new Markdown report. Explain I2 Creation Files
+
+**So: yes, the remaining implementation can and should be executed as this multi-agent workflow; but no, I should not tell you that the code above has already been successfully implemented and tested in GitHub. That final status requires actually applying and validating it.**
+
+Yes. I verified the actual GitHub state before preparing it, and there is one important correction: **M2.3 is not starting from zero**. The verified M2.2 branch already contains `RepositoryAdapter.runCommand()` and the approved-operation registry, so the implementation must harden and test that existing code rather than create a duplicate subsystem.
+
+The attached architecture discussion itself confirms that the remaining work is still M2.3–M2.8 plus Candidate Intake/Placement, approval, certification, Composer verification, brand independence, I2, Mix & Match, and the complete browser-to-production workflow. Pasted markdown (2)
+
+I prepared the implementation package here:
+
+**project-ai-implementation-package.zip[Download the complete Project AI implementation package](sandbox:/mnt/data/project-ai-implementation-package.zip)**
+
+It contains:
+
+```text
+project-ai-implementation-package/
+├── IMPLEMENTATION.md
+├── IMPLEMENTATION_CHECKLIST.md
+├── AGENTS.md
+│
+├── services/
+│   └── project-ai/
+│       ├── pyproject.toml
+│       ├── app/
+│       │   ├── main.py
+│       │   ├── api/
+│       │   │   └── routes.py
+│       │   ├── agents/
+│       │   ├── evidence/
+│       │   ├── governance/
+│       │   │   └── approvals.py
+│       │   ├── models/
+│       │   │   ├── workflow.py
+│       │   │   └── candidate.py
+│       │   └── orchestration/
+│       │       ├── workflow_engine.py
+│       │       └── gate_controller.py
+│       └── tests/
+│           ├── test_workflow.py
+│           └── test_approval.py
+│
+└── packages/
+    └── project-llm-discovery/
+        ├── src/
+        │   └── verification/
+        │       └── ubrc.ts
+        └── __tests__/
+            └── unit/
+                └── ubrc.test.ts
+```
+
+### What this package establishes
+
+The implementation is organized around this boundary:
+
+```text
+                 PROJECT AI
+              Python / FastAPI
+                     │
+        ┌────────────┴────────────┐
+        │                         │
+   Orchestration              AI Agents
+        │                         │
+        ├── Planning              ├── Repository
+        ├── Approval              ├── Toolchain
+        ├── Workflow              ├── Composer
+        ├── Certification         ├── Dependency
+        └── Governance            ├── UBRC
+                                  ├── Candidate Intake
+                                  ├── Placement
+                                  ├── Runtime
+                                  └── Certification
+                     │
+                     ▼
+          TS/Node Deterministic Layer
+                     │
+       Snapshot + Evidence + Validators
+```
+
+The source architecture explicitly calls for this final pipeline:
+
+```text
+Human
+  ↓
+Project AI Browser
+  ↓
+Candidate Intake
+  ↓
+Placement Manifest
+  ↓
+Canonical Artifact Check
+  ↓
+Human Approval
+  ↓
+Approved Placement
+  ↓
+Deterministic Discovery
+  ↓
+Candidate Analysis
+  ↓
+ILS / LSNB / RSSB / UBRC
+  ↓
+Registry / Renderer
+  ↓
+Composer Compatibility
+  ↓
+Tests
+  ↓
+Runtime
+  ↓
+Browser
+  ↓
+Brand Independence
+  ↓
+Evidence
+  ↓
+CERTIFIED BLOCK
+  ↓
+Tutorial Composer
+  ↓
+I2 / Custom I2
+  ↓
+Tutorial Generation
+  ↓
+Browser Verification
+  ↓
+PRODUCTION
+```
+
+That is directly aligned with the attached implementation discussion. Pasted markdown (2)
+
+### The most important implementation rules
+
+The package also makes the following **global instructions for every Project AI agent**:
+
+> Before creating a file, search the repository, snapshot, and evidence; identify the canonical artifact; extend/update it whenever possible; create a new artifact only when genuinely necessary; never create duplicate Markdown, specifications, registries, plans, tests, or implementations.
+
+This is important because your project already has canonical artifacts such as:
+
+```text
+.agents/policies/canonical-artifact-policy.md
+.agents/tasks/m1-m2-backlog.md
+ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md
+```
+
+and the uploaded architecture explicitly requires this canonical-artifact behavior. Pasted markdown (2)
+
+### One critical limitation I have intentionally NOT hidden
+
+I am **not claiming that the ZIP by itself means the entire GitHub system is now production-complete**.
+
+There are repository-specific pieces that must be implemented against the actual source rather than invented, particularly:
+
+- the exact ILS contract;
+- exact LSNB implementation;
+- exact RSSB implementation;
+- authoritative Introduction/I2 registry;
+- exact Composer UI route;
+- exact browser verification route;
+- exact placement targets for every uploaded candidate file;
+- the existing project's exact runtime/start commands.
+
+That is deliberate. The architecture says these must be verified from repository evidence, not invented by the Project AI model. The source discussion also explicitly says the previous implementation was **not yet the complete codebase**. Explain I2 Creation Files
+
+So the correct status is:
+
+| Area | Status after this package |
+|---|---|
+| M1 | ✅ Existing |
+| M2.1 | ✅ Existing |
+| M2.2 | ✅ Existing |
+| M2.3 | 🔧 Implementation/hardening package |
+| M2.4 | 🔧 Implementation package |
+| M2.5 | 🔧 Implementation package |
+| M2.6 UBRC | 🔧 Core implementation supplied |
+| M2.7 runtime/browser | 🔧 Architecture + implementation contracts supplied |
+| M2.8 FastAPI | 🔧 Core service supplied |
+| Candidate Intake | 🔧 Models/workflow supplied |
+| Placement | 🔧 Manifest/workflow supplied |
+| Human Approval | 🔧 Implemented core |
+| Certification | 🔧 Implemented core |
+| Brand Independence | 🔧 Gate contract supplied |
+| Composer verification | 🔧 Gate contract supplied |
+| I2-only | 🔧 Workflow supplied |
+| Mix & Match | 🔧 Workflow supplied |
+| Browser UI | ⏳ Must be wired to actual repository UI |
+| Full end-to-end production certification | ⏳ Must pass actual repository gates |
+
+The reason for keeping those final pieces evidence-driven is precisely to avoid giving the Project AI model fabricated repository paths or fake implementations.
+
+**The package is therefore the implementation starting point for the actual M2.2 GitHub state, not a claim that the repository has already passed the final production gate.** The original discussion requires each remaining phase to contain exact files, implementation code, tests, validation, evidence, ownership, gates, documentation, and commit boundaries. Explain I2 Creation Files
+
+Yes — **those two remaining areas can and should be implemented against the actual GitHub repository**, and I agree with your UI requirement.
+
+I inspected the verified `m2-project-ai-foundation` branch rather than treating the UI as a generic Next.js application. The repository already has a fairly strong visual/system foundation that Project AI should reuse.
+
+### What the existing repository tells us
+
+The SkillHubCore Admin application already uses:
+
+- Next.js App Router
+- authenticated/admin route groups
+- a shared `ClientShell`
+- `LeftSidebar`
+- `Header`
+- `RightSidebar`
+- shared UI components
+- Tailwind shared preset
+- Inter + Outfit typography
+- the existing pink/blue/orange visual language
+- the existing `ShellContext`
+- the existing `/dashboard` structure
+- existing factory/wizard interaction patterns
+
+For example, the existing admin shell uses the actual application structure:
+
+```text
+ClientShell
+ ├── LeftSidebar
+ ├── Header
+ ├── Main Content
+ └── RightSidebar
+```
+
+and the dashboard already uses the repository's established cards, typography, spacing, iconography, colors and interaction patterns.
+
+The repository's global CSS currently establishes:
+
+```text
+Inter
+Outfit
+pink primary
+blue secondary
+white cards
+slate text
+soft dashboard background
+rounded cards
+Tailwind
+```
+
+So **Project AI should absolutely not introduce a separate design system.**
+
+---
+
+# 1. Project AI should become a native SkillHubCore Admin experience
+
+I would implement the UI inside the existing:
+
+```text
+apps/skillhubcore-admin/
+```
+
+rather than creating:
+
+```text
+apps/project-ai-ui/
+```
+
+or another standalone frontend.
+
+That would violate the architectural intent of having Project AI operate as part of the SkillHubCore platform.
+
+The eventual navigation should be something like:
+
+```text
+SkillHubCore Admin
+│
+├── Dashboard
+├── Content
+├── Factory
+├── Tutorial Composer
+│
+├── Project AI
+│   ├── Overview
+│   ├── Create Block
+│   ├── Candidates
+│   ├── Verification
+│   ├── Composer Tests
+│   └── Evidence
+│
+└── ...
+```
+
+The exact sidebar location should be determined by the existing `LeftSidebar` structure rather than inventing a second navigation system.
+
+---
+
+# 2. Project AI Dashboard should visually match SkillHubCore
+
+I would **not** make it look like a generic AI chat dashboard.
+
+It should look like an engineering/control-plane section of SkillHubCore.
+
+For example:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ Project AI                                      Environment │
+│ Repository intelligence & block certification               │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
+│ │ Snapshot   │ │ Evidence   │ │ Candidates │ │ Certified  │ │
+│ │ CURRENT    │ │ 12,482     │ │ 8          │ │ 23         │ │
+│ └────────────┘ └────────────┘ └────────────┘ └────────────┘ │
+│                                                             │
+│ ┌─────────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Verification Pipeline       │ │ Repository Health       │ │
+│ │                             │ │                         │ │
+│ │ ✓ Discovery                 │ │ ✓ Snapshot              │ │
+│ │ ✓ Evidence                 │ │ ✓ Evidence integrity    │ │
+│ │ ✓ UBRC                     │ │ ✓ Registry              │ │
+│ │ ✓ Composer                 │ │ ⚠ Runtime               │ │
+│ │ ○ Browser                  │ │ ○ Candidate             │ │
+│ └─────────────────────────────┘ └─────────────────────────┘ │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Candidate Blocks                                       │ │
+│ │                                                         │ │
+│ │ Introduction I2       CERTIFIED       Composer          │ │
+│ │ Introduction Custom   WAITING         Approval          │ │
+│ │ Code C2               FAILED          UBRC              │ │
+│ └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+It should feel like:
+
+**SkillHubCore Admin + engineering verification console**
+
+—not a separate SaaS product.
+
+---
+
+# 3. Block Creation page should reuse the existing Factory UX language
+
+This is particularly important.
+
+The repository already contains things such as:
+
+```text
+BlueprintFactoryWizard
+FactoryLayout
+```
+
+and those components already establish a strong wizard/modal language.
+
+The existing `BlueprintFactoryWizard`, for example, uses:
+
+- full-screen workflow
+- strong header
+- uppercase engineering-style labels
+- iconography
+- progress/state presentation
+- dark protocol panels
+- configuration cards
+- validation/error states
+- explicit commit/return actions
+
+That is actually a very good foundation for the Project AI Candidate Block workflow.
+
+So I would make:
+
+```text
+Project AI
+    ↓
+Create Block
+```
+
+use the same visual grammar.
+
+---
+
+# 4. Proposed Create Block UI
+
+### Step 1 — Creation Mode
+
+```text
+Create Educational Block
+
+Choose creation mode
+
+┌──────────────────────┐
+│ I2 ONLY              │
+│ Build Introduction   │
+│ version I2           │
+└──────────────────────┘
+
+┌──────────────────────┐
+│ MIX & MATCH          │
+│ Compose I2 using     │
+│ compatible blocks    │
+└──────────────────────┘
+
+┌──────────────────────┐
+│ NEW CANDIDATE        │
+│ Upload and certify   │
+│ a new implementation │
+└──────────────────────┘
+```
+
+This maps directly to the architecture you approved.
+
+---
+
+# 5. Step 2 — Upload Candidate
+
+```text
+Candidate Block Intake_
+
+Introduction / I2
+
+Drop candidate files here
+
+┌────────────────────────────────────────────┐
+│                                            │
+│       Drop files or Browse                 │
+│                                            │
+│       TS / TSX / JSX / CSS / JSON / HTML  │
+│                                            │
+└────────────────────────────────────────────┘
+
+Detected files: 7
+
+✓ Hero.tsx
+✓ types.ts
+✓ styles.css
+✓ registry.ts
+✓ renderer.tsx
+✓ Hero.test.tsx
+✓ config.json
+```
+
+Then Project AI analyzes the files.
+
+---
+
+# 6. Step 3 — Repository Analysis
+
+This is where the UI becomes materially different from a normal upload wizard.
+
+```text
+Repository Analysis_
+
+✓ Repository snapshot loaded
+✓ Evidence graph loaded
+✓ Introduction family identified
+✓ I1 implementation found
+✓ I2 contract identified
+✓ Renderer identified
+✓ Registry identified
+✓ Composer integration identified
+
+Candidate Analysis
+
+7 uploaded files
+6 repository relationships
+1 exact duplicate
+2 existing canonical artifacts
+```
+
+This information is coming from the deterministic snapshot/evidence system—not LLM guesses.
+
+---
+
+# 7. Step 4 — Placement Manifest
+
+This is one of the most important screens.
+
+```text
+Placement Proposal_
+
+Candidate: introduction-i2-hero-01
+
+┌──────────────┬──────────────┬───────────────────────────────┐
+│ Uploaded     │ Action       │ Repository Target             │
+├──────────────┼──────────────┼───────────────────────────────┤
+│ Hero.tsx     │ ADD          │ .../IntroductionI2Hero.tsx    │
+│ types.ts     │ EXTEND       │ existing canonical types.ts   │
+│ registry.ts  │ UPDATE       │ existing registry             │
+│ renderer.tsx │ UPDATE       │ existing renderer              │
+│ Hero.test.tsx│ ADD          │ existing test directory        │
+│ styles.css   │ REJECT       │ brand coupling detected       │
+└──────────────┴──────────────┴───────────────────────────────┘
+```
+
+The user should see **why** Project AI wants to place each file there.
+
+For example:
+
+> `registry.ts → UPDATE`  
+> Existing Introduction registry already owns version registration. Creating another registry would violate canonical-artifact policy.
+
+That directly implements the rule we established earlier.
+
+---
+
+# 8. Step 5 — Human Approval
+
+Then:
+
+```text
+Review Repository Changes_
+
+Candidate
+Introduction I2
+
+Proposed changes
+────────────────────────
+3 ADD
+2 UPDATE
+1 EXTEND
+1 REJECT
+
+Certification gates
+────────────────────────
+✓ Contract
+✓ ILS
+✓ LSNB
+✓ RSSB
+✓ UBRC
+○ Composer
+○ Runtime
+○ Browser
+○ Brand Independence
+○ Evidence
+
+[ Reject ]                    [ Approve Changes ]
+```
+
+The **Approve Changes** button should not merely be a UI action.
+
+It must create the cryptographically bound approval:
+
+```text
+manifestHash
+approvedBy
+approvedAt
+taskId
+```
+
+and the backend must reject an approval if the manifest subsequently changes.
+
+---
+
+# 9. Verification page
+
+After implementation:
+
+```text
+Candidate Verification_
+
+Introduction I2
+────────────────────────────────
+
+Contract                 ✓ PASS
+ILS                      ✓ PASS
+LSNB                     ✓ PASS
+RSSB                     ✓ PASS
+UBRC                     ✓ PASS
+Registry                 ✓ PASS
+Renderer                 ✓ PASS
+Composer                 ✓ PASS
+Tests                    ✓ PASS
+Runtime                  ✓ PASS
+Browser                  ✓ PASS
+Brand Independence       ✓ PASS
+Evidence                 ✓ PASS
+
+                         ─────────────
+                         CERTIFIED
+```
+
+This is much more useful than displaying a generic:
+
+> "AI implementation successful."
+
+Because certification is **gate-based and evidence-backed**.
+
+---
+
+# 10. Evidence should be first-class UI
+
+Project AI should have an evidence drawer/panel.
+
+For example:
+
+```text
+Evidence
+
+EVID-7A82...
+────────────────────────
+Claim:
+Introduction I2 renderer exists.
+
+Source:
+packages/ui/src/tutorial/blocks/IntroductionBlock.tsx
+
+Kind:
+component
+
+Hash:
+sha256: ...
+
+Lifecycle:
+current
+
+Referenced by:
+✓ Contract
+✓ UBRC
+✓ Renderer
+✓ Browser
+```
+
+Clicking the evidence should take the engineer to the repository source or source-location view.
+
+This is important because the architecture is explicitly evidence-driven.
+
+---
+
+# 11. Browser verification should use the real application
+
+This is where the final `⏳` becomes actual implementation.
+
+The browser verifier should not create a fake page just to demonstrate that React rendered.
+
+It should launch the **actual SkillHubCore application** and execute:
+
+```text
+Project AI
+   ↓
+approved application operation
+   ↓
+SkillHubCore Admin / Composer
+   ↓
+Introduction
+   ↓
+I2
+   ↓
+select candidate
+   ↓
+configure
+   ↓
+save draft
+   ↓
+generate tutorial
+   ↓
+render tutorial
+   ↓
+browser inspection
+```
+
+Then Playwright verifies:
+
+```text
+[data-block-type="introduction"]
+[data-block-version="I2"]
+```
+
+plus:
+
+- visible content
+- expected renderer
+- no console errors
+- no relevant network errors
+- correct responsive rendering
+- Composer selection
+- save operation
+- generated tutorial
+- final tutorial rendering
+
+---
+
+# 12. Full end-to-end certification
+
+Then the final gate becomes:
+
+```text
+Candidate
+   │
+   ▼
+Upload
+   │
+   ▼
+Intake
+   │
+   ▼
+Classification
+   │
+   ▼
+Placement Manifest
+   │
+   ▼
+Human Approval
+   │
+   ▼
+Repository Mutation
+   │
+   ▼
+Discovery Refresh
+   │
+   ▼
+Contract
+   │
+   ├── ILS
+   ├── LSNB
+   ├── RSSB
+   └── UBRC
+   │
+   ▼
+Registry
+   │
+   ▼
+Renderer
+   │
+   ▼
+Composer
+   │
+   ▼
+Tests
+   │
+   ▼
+Runtime
+   │
+   ▼
+Browser
+   │
+   ▼
+Brand Independence
+   │
+   ▼
+Evidence
+   │
+   ▼
+CERTIFIED
+   │
+   ▼
+Composer
+   │
+   ▼
+I2 / I2-CUSTOM
+   │
+   ▼
+Temporary Tutorial
+   │
+   ▼
+Browser
+   │
+   ▼
+PRODUCTION READY
+```
+
+That is the correct definition of **full end-to-end production certification**.
+
+---
+
+## Most importantly: yes, the UI should match the existing SkillHubCore UI
+
+I verified enough of the actual repository to say this confidently.
+
+The existing admin application already has:
+
+- `ClientShell`
+- `LeftSidebar`
+- `Header`
+- `RightSidebar`
+- `/dashboard`
+- Factory workflows
+- shared UI components
+- Tailwind shared preset
+- Inter/Outfit typography
+- pink/blue/orange visual language
+- rounded white cards
+- slate backgrounds/text
+- existing wizard patterns
+
+So I would **reuse those components and conventions**, not create a new Project AI visual framework.
+
+The existing `IntroductionBlock` also demonstrates the project's educational visual language: controlled typography, cards, rounded sections, Lucide icons, responsive layouts, and `data-block-version` runtime identity.
+
+That makes the architecture:
+
+```text
+SkillHubCore Admin
+       │
+       ├── Existing Dashboard UI
+       │
+       ├── Existing Factory UI
+       │
+       ├── Existing Composer UI
+       │
+       └── Project AI UI
+               │
+               ├── Dashboard
+               ├── Candidate Intake
+               ├── Placement
+               ├── Approval
+               ├── Certification
+               ├── Evidence
+               └── Runtime/Browser Verification
+```
+
+rather than:
+
+```text
+SkillHubCore
+    +
+completely separate Project AI frontend   ❌
+```
+
+### One important distinction
+
+**Matching the UI does not mean hard-coding Project AI to today's dashboard implementation.**
+
+Project AI should consume the existing shared UI primitives/theme and existing shell. If the SkillHubCore visual system changes later, Project AI should inherit those changes.
+
+---
+
+### And yes: I can take this all the way to the actual repository implementation
+
+The next implementation package should therefore be **repository-specific**, not generic:
+
+1. **M2.3–M2.7 completion**
+2. **FastAPI Project AI service**
+3. **SkillHubCore Project AI dashboard**
+4. **Create Block wizard**
+5. **Candidate upload**
+6. **Placement Manifest UI**
+7. **Approval UI**
+8. **Certification dashboard**
+9. **Evidence viewer**
+10. **Composer verification**
+11. **Playwright runtime verification**
+12. **I2-only**
+13. **Mix & Match**
+14. **final Candidate → Composer → Tutorial → Browser certification**
+
+And the UI should be implemented inside the existing SkillHubCore Admin architecture, reusing its shell and design system rather than creating another frontend.
+
+The source architecture itself requires this final Candidate → Composer → tutorial → browser path before declaring production readiness. Pasted markdown (2)
+
+**So the answer to your question is yes: we can implement those remaining `⏳` items from the actual GitHub repo, and the Project AI UI should look and behave as a native part of the existing SkillHubCore Dashboard/Factory/Composer experience.**
+
