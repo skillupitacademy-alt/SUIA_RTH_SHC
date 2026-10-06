@@ -23,6 +23,11 @@ class AgentType(str, Enum):
     DEPENDENCY = "dependency"
     UBRC = "ubrc"
     CANDIDATE_INTAKE = "candidate_intake"
+    CANDIDATE_CLASSIFICATION = "candidate_classification"
+    PLACEMENT_MANIFEST = "placement_manifest"
+    HUMAN_APPROVAL = "human_approval"
+    PLACEMENT_EXECUTOR = "placement_executor"
+    POST_PLACEMENT_VERIFICATION = "post_placement_verification"
     CANDIDATE_PLACEMENT = "candidate_placement"
     CANDIDATE_CERTIFICATION = "candidate_certification"
     BRAND_INDEPENDENCE = "brand_independence"
@@ -152,9 +157,49 @@ class AgentRegistry:
                 agentId="candidate_intake",
                 agentType=AgentType.CANDIDATE_INTAKE,
                 name="Candidate Intake Agent",
-                capabilities=["receive_upload", "classify_block_family", "compute_hash"],
+                capabilities=["validate_package_structure", "compute_file_hashes", "extract_metadata", "integrate_block_specification"],
                 status="active",
-                description="Receives candidate block upload, classifies block family, computes artifact hash"
+                description="Validates candidate package structure, computes file hashes, extracts metadata, integrates with block specification"
+            ),
+            AgentType.CANDIDATE_CLASSIFICATION: Agent(
+                agentId="candidate_classification",
+                agentType=AgentType.CANDIDATE_CLASSIFICATION,
+                name="Candidate Classification Agent",
+                capabilities=["classify_block_family", "confidence_scoring", "structural_analysis", "canonical_comparison"],
+                status="active",
+                description="Classifies candidate blocks into BlockFamily enum using structural features with confidence scoring"
+            ),
+            AgentType.PLACEMENT_MANIFEST: Agent(
+                agentId="placement_manifest",
+                agentType=AgentType.PLACEMENT_MANIFEST,
+                name="Placement Manifest Agent",
+                capabilities=["generate_placement_manifest", "canonical_comparison", "compute_manifest_hash", "evidence_binding"],
+                status="active",
+                description="Generates placement manifest using canonical comparator with tamper-proof SHA-256 hash"
+            ),
+            AgentType.HUMAN_APPROVAL: Agent(
+                agentId="human_approval",
+                agentType=AgentType.HUMAN_APPROVAL,
+                name="Human Approval Agent",
+                capabilities=["database_polling", "manifest_hash_verification", "timeout_management", "approval_workflow"],
+                status="active",
+                description="Implements database polling approval workflow with manifest hash verification and configurable timeout"
+            ),
+            AgentType.PLACEMENT_EXECUTOR: Agent(
+                agentId="placement_executor",
+                agentType=AgentType.PLACEMENT_EXECUTOR,
+                name="Placement Executor Agent",
+                capabilities=["execute_approved_manifest", "verify_manifest_hash", "file_placement", "git_operations"],
+                status="active",
+                description="Executes approved placement manifests with hash verification using PlacementExecutor"
+            ),
+            AgentType.POST_PLACEMENT_VERIFICATION: Agent(
+                agentId="post_placement_verification",
+                agentType=AgentType.POST_PLACEMENT_VERIFICATION,
+                name="Post-Placement Verification Agent",
+                capabilities=["git_diff_verification", "file_hash_computation", "manifest_match_validation", "placement_validation"],
+                status="active",
+                description="Verifies placement changes using git diff without regenerating snapshot"
             ),
             AgentType.CANDIDATE_PLACEMENT: Agent(
                 agentId="candidate_placement",

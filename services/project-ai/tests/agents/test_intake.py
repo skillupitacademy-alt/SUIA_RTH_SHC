@@ -128,3 +128,75 @@ async def test_execute_intake_finds_similar_blocks():
     
     assert result.status == AgentStatus.SUCCESS
     assert 'similar_blocks' in result.outputs
+
+
+@pytest.mark.asyncio
+async def test_execute_intake_extended_validation():
+    """Test intake agent with extended validation and file hashing."""
+    snapshot = create_test_snapshot_with_blocks()
+    context = AgentContext(
+        task_id="test-task",
+        workflow_state={
+            "candidate": {
+                "candidateId": "candidate-quiz-002",
+                "blockType": "quiz",
+                "uploadedAt": "2025-01-30T12:00:00Z",
+                "uploadedBy": "test_user",
+                "files": [
+                    {
+                        "filename": "Quiz.tsx",
+                        "content": "quiz content",
+                        "contentType": "text/typescript",
+                        "hash": "abc123"
+                    }
+                ]
+            }
+        },
+        repository_snapshot=snapshot,
+        evidence_graph={},
+        approved_scope=[],
+        prior_agent_outputs={},
+        repository_root=Path("/test"),
+        timestamp=datetime.now(UTC)
+    )
+    
+    result = await execute_intake(context)
+    
+    assert result.status == AgentStatus.SUCCESS
+    assert result.outputs['candidate_validation_status'] == 'VALID'
+    assert 'file_hashes' in result.outputs
+    assert 'metadata' in result.outputs
+    assert result.outputs['metadata']['file_count'] == 1
+
+
+@pytest.mark.asyncio
+async def test_execute_intake_validation_failure():
+    """Test intake agent fails with invalid candidate package."""
+    snapshot = create_test_snapshot_with_blocks()
+    context = AgentContext(
+        task_id="test-task",
+        workflow_state={
+            "candidate": {
+                # Missing candidateId
+                "blockType": "quiz",
+                "files": [
+                    {
+                        # Missing filename and content
+                        "contentType": "text/typescript"
+                    }
+                ]
+            }
+        },
+        repository_snapshot=snapshot,
+        evidence_graph={},
+        approved_scope=[],
+        prior_agent_outputs={},
+        repository_root=Path("/test"),
+        timestamp=datetime.now(UTC)
+    )
+    
+    result = await execute_intake(context)
+    
+    assert result.status == AgentStatus.FAILED
+    assert result.outputs.get('candidate_validation_status') == 'INVALID'
+    assert len(result.errors) > 0

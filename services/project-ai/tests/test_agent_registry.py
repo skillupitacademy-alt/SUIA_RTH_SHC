@@ -8,17 +8,18 @@ from app.orchestration.agent_registry import Agent, AgentRegistry, AgentType
 class TestAgentRegistry:
     """Test suite for AgentRegistry."""
     
-    def test_all_15_agents_registered(self):
-        """All 15 specialized agents are registered."""
+    def test_all_agents_registered(self):
+        """All specialized agents are registered."""
         registry = AgentRegistry()
         agents = registry.list_agents()
         
-        assert len(agents) == 15, f"Expected 15 agents, got {len(agents)}"
+        # We now have 23 agents after adding Wave C (FEAT-003) candidate pipeline agents
+        assert len(agents) == 23, f"Expected 23 agents, got {len(agents)}"
     
     def test_agent_types_enum_complete(self):
-        """AgentType enum contains all 15 agent types."""
+        """AgentType enum contains all agent types."""
         agent_types = list(AgentType)
-        assert len(agent_types) == 15, f"Expected 15 agent types, got {len(agent_types)}"
+        assert len(agent_types) == 23, f"Expected 23 agent types, got {len(agent_types)}"
     
     def test_get_agent_returns_correct_agent(self):
         """get_agent() returns the correct agent for each type."""
@@ -31,12 +32,12 @@ class TestAgentRegistry:
             assert agent.agentType == agent_type
             assert agent.agentId == agent_type.value
     
-    def test_list_agents_returns_15_entries(self):
-        """list_agents() returns exactly 15 agents."""
+    def test_list_agents_returns_all_entries(self):
+        """list_agents() returns all agents."""
         registry = AgentRegistry()
         agents = registry.list_agents()
         
-        assert len(agents) == 15
+        assert len(agents) == 23
         assert all(isinstance(agent, Agent) for agent in agents)
     
     def test_no_agent_has_stub_or_todo(self):
@@ -100,9 +101,8 @@ class TestAgentRegistry:
         
         # Repository Auditor
         repo = registry.get_agent(AgentType.REPOSITORY_AUDITOR)
-        assert "read_snapshot" in repo.capabilities
-        assert "verify_evidence" in repo.capabilities
-        assert "validate_contracts" in repo.capabilities
+        assert "validate_git_state" in repo.capabilities
+        assert "check_working_directory" in repo.capabilities
         
         # Toolchain
         toolchain = registry.get_agent(AgentType.TOOLCHAIN)
@@ -128,17 +128,36 @@ class TestAgentRegistry:
         assert "verify_data_block_version" in ubrc.capabilities
         assert "report_compliance" in ubrc.capabilities
         
+        # Wave C agents (FEAT-003)
         # Candidate Intake
         intake = registry.get_agent(AgentType.CANDIDATE_INTAKE)
-        assert "receive_upload" in intake.capabilities
-        assert "classify_block_family" in intake.capabilities
-        assert "compute_hash" in intake.capabilities
+        assert "validate_package_structure" in intake.capabilities
+        assert "compute_file_hashes" in intake.capabilities
         
-        # Candidate Placement
-        placement = registry.get_agent(AgentType.CANDIDATE_PLACEMENT)
-        assert "compare_canonical" in placement.capabilities
-        assert "generate_manifest" in placement.capabilities
-        assert "propose_placement" in placement.capabilities
+        # Classification
+        classification = registry.get_agent(AgentType.CANDIDATE_CLASSIFICATION)
+        assert "classify_block_family" in classification.capabilities
+        assert "confidence_scoring" in classification.capabilities
+        
+        # Placement Manifest
+        manifest = registry.get_agent(AgentType.PLACEMENT_MANIFEST)
+        assert "generate_placement_manifest" in manifest.capabilities
+        assert "compute_manifest_hash" in manifest.capabilities
+        
+        # Human Approval
+        approval = registry.get_agent(AgentType.HUMAN_APPROVAL)
+        assert "database_polling" in approval.capabilities
+        assert "manifest_hash_verification" in approval.capabilities
+        
+        # Placement Executor
+        executor = registry.get_agent(AgentType.PLACEMENT_EXECUTOR)
+        assert "execute_approved_manifest" in executor.capabilities
+        assert "verify_manifest_hash" in executor.capabilities
+        
+        # Post-Placement Verification
+        verification = registry.get_agent(AgentType.POST_PLACEMENT_VERIFICATION)
+        assert "git_diff_verification" in verification.capabilities
+        assert "file_hash_computation" in verification.capabilities
         
         # Candidate Certification
         certification = registry.get_agent(AgentType.CANDIDATE_CERTIFICATION)

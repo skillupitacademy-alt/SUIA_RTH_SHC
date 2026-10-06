@@ -163,6 +163,26 @@ class AgentCoordinator:
             from app.agents.final_gate import execute_final_gate
             return await execute_final_gate(context)
         
+        # Wave C handlers (FEAT-003: Candidate pipeline agents 05-11)
+        elif agent.agentId == "candidate_intake":
+            from app.agents.intake import execute_intake
+            return await execute_intake(context)
+        elif agent.agentId == "candidate_classification":
+            from app.agents.classification import execute_classification
+            return await execute_classification(context)
+        elif agent.agentId == "placement_manifest":
+            from app.agents.placement_manifest import execute_placement_manifest
+            return await execute_placement_manifest(context)
+        elif agent.agentId == "human_approval":
+            from app.agents.approval import execute_approval
+            return await execute_approval(context)
+        elif agent.agentId == "placement_executor":
+            from app.agents.placement_executor import execute_placement_executor
+            return await execute_placement_executor(context)
+        elif agent.agentId == "post_placement_verification":
+            from app.agents.post_placement_verification import execute_post_placement_verification
+            return await execute_post_placement_verification(context)
+        
         # Existing handlers
         elif agent.agentType == AgentType.BRAND_INDEPENDENCE:
             await self._execute_brand_agent(agent, context, result)
