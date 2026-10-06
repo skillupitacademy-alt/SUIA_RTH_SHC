@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.api.schemas.creation import CreateWorkflowRequest, WorkflowResponse
 from app.models.creation import CreationMode, CertificationGateType, CertificationGateStatus, WorkflowStatus, CertificationGate
+from app.models.candidate import PlacementManifest
 from app.repository.discovery_client import DiscoveryClient
 from app.certification.gates import CertificationGateExecutor
 import uuid
@@ -210,16 +211,45 @@ async def certify_workflow(workflow_id: str):
     # Initialize gate executor
     gate_executor = CertificationGateExecutor(snapshot, repository_root)
     
-    # Extract candidate blocks and files from workflow composition
+    # Extract candidate blocks from workflow composition
     candidate_blocks = workflow["composition"].get("candidateBlocks", [])
     
-    # Collect candidate files (would come from manifest in production)
-    # For now, we'll use candidate blocks to infer file paths
-    candidate_files = []
-    for block in candidate_blocks:
-        # This is a simplified extraction - production would use actual manifest
-        block_type = gate_executor._extract_block_type(block)
-        candidate_files.append(f"packages/ui/src/tutorial/blocks/{block_type.capitalize()}Block.tsx")
+    # ARCHITECTURE RULE: Certification requires approved PlacementManifest
+    # Path inference from block names violates architectural boundaries
+    placement_manifest = workflow.get("placementManifest")
+    
+    if placement_manifest is None:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "PLACEMENT_MANIFEST_REQUIRED",
+                "message": "Certification requires an approved PlacementManifest. Path inference from block names violates architecture boundaries.",
+                "required_workflow": [
+                    "1. Generate snapshot",
+                    "2. Run candidate intake",
+                    "3. Generate placement manifest",
+                    "4. Get governance approval",
+                    "5. Then run certification"
+                ]
+            }
+        )
+    
+    # Extract candidate files from PlacementManifest only
+    candidate_files = [
+        entry.get("targetPath")
+        for entry in placement_manifest.get("entries", [])
+        if entry.get("targetPath") is not None
+        and entry.get("action") in {"ADD", "UPDATE", "EXTEND"}
+    ]
+    
+    if not candidate_files:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "NO_CANDIDATE_FILES_IN_MANIFEST",
+                "message": "PlacementManifest contains no file entries with target paths"
+            }
+        )
     
     # Run each certification gate
     gate_results = {}

@@ -7,7 +7,7 @@ capability declarations into functioning orchestrated workflows.
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
@@ -38,7 +38,7 @@ class AgentContext:
     approved_scope: List[str]
     prior_agent_outputs: Dict[str, 'AgentResult']
     repository_root: Path
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 @dataclass
@@ -52,7 +52,7 @@ class AgentResult:
     errors: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
     execution_time_ms: float = 0.0
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     
     @property
     def passed(self) -> bool:
@@ -105,7 +105,7 @@ class AgentCoordinator:
         Returns:
             AgentResult with execution status and outputs
         """
-        start_time = datetime.utcnow()
+        start_time = datetime.now(UTC)
         
         try:
             # Get agent definition
@@ -116,7 +116,7 @@ class AgentCoordinator:
             result = await self._execute_agent_capabilities(agent, context)
             
             # Record execution time
-            execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            execution_time = (datetime.now(UTC) - start_time).total_seconds() * 1000
             result.execution_time_ms = execution_time
             
             # Store in history
@@ -125,7 +125,7 @@ class AgentCoordinator:
             return result
             
         except Exception as e:
-            execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            execution_time = (datetime.now(UTC) - start_time).total_seconds() * 1000
             return AgentResult(
                 agent_id=agent_id,
                 status=AgentStatus.FAILED,
@@ -161,24 +161,27 @@ class AgentCoordinator:
         
         # Map agent type to execution handlers
         # Wave R4 handlers (six new agent handlers)
-        if agent_id == "toolchain":
+        if agent.agentId == "toolchain":
             from app.agents.toolchain import execute_toolchain
             return await execute_toolchain(context)
-        elif agent_id == "dependency":
+        elif agent.agentId == "dependency":
             from app.agents.dependency import execute_dependency
             return await execute_dependency(context)
-        elif agent_id == "intake":
+        elif agent.agentId == "intake":
             from app.agents.intake import execute_intake
             return await execute_intake(context)
-        elif agent_id == "placement":
+        elif agent.agentId == "placement":
             from app.agents.placement import execute_placement
             return await execute_placement(context)
-        elif agent_id == "governance":
+        elif agent.agentId == "governance":
             from app.agents.governance import execute_governance
             return await execute_governance(context)
-        elif agent_id == "documentation":
+        elif agent.agentId == "documentation":
             from app.agents.documentation import execute_documentation
             return await execute_documentation(context)
+        elif agent.agentId == "final-gate":
+            from app.agents.final_gate import execute_final_gate
+            return await execute_final_gate(context)
         
         # Existing handlers
         elif agent.agentType == AgentType.BRAND_INDEPENDENCE:
