@@ -47,7 +47,7 @@ def get_discovery_client() -> DiscoveryClient:
     return DiscoveryClient(snapshot_path)
 
 
-@router.post("/upload", response_model=Dict[str, str])
+@router.post("/upload", response_model=Dict[str, Any])
 async def upload_candidate(package: CandidatePackage):
     """
     Upload a candidate block package for evaluation.

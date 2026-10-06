@@ -79,6 +79,7 @@ app.include_router(evidence.router)
 app.include_router(tasks.router)
 app.include_router(governance.router)
 app.include_router(agents.router)
+app.include_router(candidate.router, prefix="/candidates", tags=["candidates"])
 
 
 @app.get("/")
@@ -95,6 +96,7 @@ async def root():
             "tasks": "/tasks",
             "approvals": "/approvals",
             "agents": "/agents",
+            "candidates": "/candidates",
             "docs": "/docs",
         }
     }
