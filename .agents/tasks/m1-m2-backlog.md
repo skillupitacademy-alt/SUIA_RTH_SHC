@@ -50,26 +50,32 @@ Add a verification step that boots the app and confirms rendered block output ma
 - V3 current/historical validation: implemented
 - Tests: 212/212 passing
 
-**M2.2 Strict Evidence Binding:** ❌ NOT IMPLEMENTED
-- Entity evidenceId fields: NO - None of the entity interfaces have `evidenceId` fields
-  - ApplicationInfo: NO
-  - PackageInfo: NO
-  - ServiceInfo: NO
-  - BlockImplementation: NO
-  - BlockRenderer: NO
-  - ComposerService: NO
-  - ComposerAPI: NO
-  - ComposerSchema: NO
-  - ComposerUI: NO
-  - DependencyNode: NO
-  - DependencyEdge: NO
-- Scanner propagation: NO - Scanners create evidence records but do not assign `evidenceId` to entities
-  - d1-structure-scanner.ts: Creates evidence, NO entity.evidenceId assignment
-  - d2-runtime-scanner.ts: Creates evidence, NO entity.evidenceId assignment
-  - d3-blocks-scanner.ts: Creates evidence, NO entity.evidenceId assignment
-  - d4-composer-scanner.ts: Creates evidence, NO entity.evidenceId assignment
-  - d5-dependencies-scanner.ts: Creates evidence, NO entity.evidenceId assignment
-  - d6-tests-scanner.ts: Creates evidence, NO entity.evidenceId assignment
+**M2.2 Strict Evidence Binding:** 🔄 IN PROGRESS
+- **Phase B: Entity evidenceId fields:** ✅ COMPLETE (commit de82876b)
+  - ApplicationInfo: ✅ `evidenceId: string`
+  - PackageInfo: ✅ `evidenceId: string`
+  - ServiceInfo: ✅ `evidenceId: string`
+  - BlockImplementation: ✅ `evidenceId: string`
+  - BlockRenderer: ✅ `evidenceId: string`
+  - ComposerService: ✅ `evidenceId: string`
+  - ComposerAPI: ✅ `evidenceId: string`
+  - ComposerSchema: ✅ `evidenceId: string`
+  - ComposerUI: ✅ `evidenceId: string`
+  - DependencyNode: ✅ `evidenceId: string`
+  - DependencyEdge: ✅ `evidenceId: string`
+  - **Decision:** All 11 entity types use `evidenceId: string` (single-source pattern). None require `evidenceIds: string[]` because each entity represents one specific repository fact proven by one evidence record.
+- Scanner propagation: ❌ BLOCKED - Scanners create evidence records but do not assign `evidenceId` to entities
+  - **Downstream TypeScript errors:** 14 errors across 4 scanner files (expected, will be fixed in Phase C)
+    - d1-structure-scanner.ts: 3 errors (ApplicationInfo, PackageInfo, ServiceInfo missing evidenceId)
+    - d3-blocks-scanner.ts: 3 errors (BlockImplementation, BlockRenderer missing evidenceId)
+    - d4-composer-scanner.ts: 4 errors (ComposerService, ComposerAPI, ComposerSchema, ComposerUI missing evidenceId)
+    - d5-dependencies-scanner.ts: 4 errors (DependencyNode, DependencyEdge missing evidenceId)
+  - d1-structure-scanner.ts: ❌ BLOCKED - Creates evidence, NO entity.evidenceId assignment (Phase C)
+  - d2-runtime-scanner.ts: ⚠️ NOT IMPLEMENTED - Scanner does not exist yet
+  - d3-blocks-scanner.ts: ❌ BLOCKED - Creates evidence, NO entity.evidenceId assignment (Phase C)
+  - d4-composer-scanner.ts: ❌ BLOCKED - Creates evidence, NO entity.evidenceId assignment (Phase C)
+  - d5-dependencies-scanner.ts: ❌ BLOCKED - Creates evidence, NO entity.evidenceId assignment (Phase C)
+  - d6-tests-scanner.ts: ⚠️ NOT IMPLEMENTED - Scanner does not exist yet
 - V8 strict binding: NO - Currently uses path-prefix matching (`evidencePath.startsWith(...)`)
 - V1 schema enforcement: NO - Zod schemas do not require `evidenceId` field
 
