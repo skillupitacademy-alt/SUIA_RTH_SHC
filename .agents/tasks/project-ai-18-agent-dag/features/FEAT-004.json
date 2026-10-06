@@ -1,0 +1,46 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Wave D+E: Certification Gates and Runtime Chain - Add 9 gate methods to certification/gates.py (Contract, Dependency, and extend existing UBRC, Registry, Renderer, Brand, Theme, Composer, Evidence gates). Implement runtime agents 12K-12L (Runtime Agent, Playwright Browser Agent orchestrating Node via pnpm exec). All gates run in parallel after post-placement verification. Note: ILS, LSNB, RSSB gates deferred to Phase 2 per design review.",
+  "status": "completed",
+  "steps": [
+    "Add execute_contract_gate() method to services/project-ai/app/certification/gates.py CertificationGateExecutor class. Verifies TutorialBlock interface compliance by checking snapshot for packages/types/src/tutorial-rich-document.ts interface evidence. Returns GateExecutionResult with status PASS if block implements required interface fields (id, type, content, metadata), evidence_ids from type definition. Per design doc gate specification",
+    "Add execute_dependency_gate() method to CertificationGateExecutor. Calls verification/dependency module (if exists) or implements dependency graph validation. Checks for circular dependencies, version conflicts, unlicensed packages from snapshot.dependencies. Returns GateExecutionResult with PASS if no violations, evidence_ids from dependency evidence",
+    "Update execute_ubrc_gate() method in CertificationGateExecutor to verify data-block-version attributes from snapshot evidence. Ensure all blocks have valid UBRC versions. Add evidence_ids binding. Return GateExecutionResult per standard pattern",
+    "Update execute_registry_verification_gate() to verify block registry entries from snapshot. Check all placed blocks registered correctly. Add evidence_ids binding",
+    "Update execute_renderer_verification_gate() to verify renderer compatibility from snapshot renderer evidence. Add evidence_ids binding",
+    "Update execute_brand_independence_gate() to consume snapshot.brand data (NO Path.read_text() file scanning). Verify neutral palette, no hardcoded brand markers. Add evidence_ids binding. Calls verification/brand.py",
+    "Update execute_theme_compatibility_gate() to consume snapshot.theme data (NO Path.read_text() file scanning). Verify CSS variables, theme overrides. Add evidence_ids binding. Calls verification/theme.py",
+    "Update execute_composer_verification_gate() to verify composer integration via verification/composer.py. Add evidence_ids binding",
+    "Update execute_evidence_binding_gate() to validate all evidence from prior gates bound correctly to commit_sha + snapshot_hash. Verify no orphaned evidence",
+    "Create services/project-ai/app/agents/runtime_agent.py with execute_runtime_agent(context: AgentContext) -> AgentResult. Calls verification/runtime.py verify_runtime(). Sets up test environment, runs runtime verification, collects results. Returns AgentResult with outputs: runtime_status, test_results, evidence_ids",
+    "Create services/project-ai/app/agents/playwright_browser_agent.py with execute_playwright_browser_agent(context: AgentContext) -> AgentResult. Orchestrates Node Playwright via subprocess: subprocess.run(['pnpm', 'exec', 'playwright', 'test', '--config=playwright.project-ai.config.ts'], env=test_env, cwd=repo_root, timeout=600). Sets environment: PROJECT_AI_BASE_URL, PROJECT_AI_RUN_ID, PROJECT_AI_COMMIT_SHA, PROJECT_AI_SNAPSHOT_HASH. Parses .project-ai/runs/current/results/playwright.json for test results. Returns AgentResult with outputs: browser_status, tests_passed, tests_failed, screenshot_paths, evidence_ids. NO Python Playwright library - orchestrate Node only per design doc Agent 12L spec",
+    "Update existing verification modules (brand.py, theme.py, composer.py, runtime.py, browser.py) to accept snapshot parameter and return evidence_ids in results. Ensure NO direct file scanning - consume snapshot data only",
+    "Create tests/certification/test_gates.py (if not exists) or extend existing with test cases for all 9 gate methods: test_contract_gate_pass, test_dependency_gate_pass, test_ubrc_gate_pass, test_registry_gate_pass, test_renderer_gate_pass, test_brand_gate_pass, test_theme_gate_pass, test_composer_gate_pass, test_evidence_binding_gate_pass. Mock snapshot data",
+    "Create tests/agents/test_runtime_agent.py with test cases: test_runtime_verification_success, test_runtime_failure, test_environment_setup, test_evidence_collection",
+    "Create tests/agents/test_playwright_browser_agent.py with test cases: test_playwright_execution_success, test_environment_variables_set, test_json_results_parsing, test_screenshot_collection, test_playwright_timeout, test_no_python_playwright. Mock subprocess.run for pnpm exec",
+    "Update services/project-ai/app/orchestration/agent_registry.py to register: RUNTIME_AGENT, PLAYWRIGHT_BROWSER_AGENT. Update existing gate agent types as needed"
+  ],
+  "acceptance_criteria": [
+    "9 gate methods added/updated in certification/gates.py: Contract, Dependency, UBRC, Registry, Renderer, Brand, Theme, Composer, Evidence. All return GateExecutionResult with evidence_ids",
+    "Contract gate verifies TutorialBlock interface from snapshot type evidence",
+    "Dependency gate validates dependency graph from snapshot",
+    "Brand and Theme gates consume snapshot.brand/snapshot.theme data, NO file scanning",
+    "Runtime Agent calls verification/runtime.py and collects evidence",
+    "Playwright Browser Agent orchestrates Node Playwright via pnpm exec, parses JSON results, NO Python Playwright",
+    "All verification modules updated to accept snapshot and return evidence_ids",
+    "Gate tests cover all 9 gates with pass/fail scenarios",
+    "Runtime and Playwright agent tests created with comprehensive coverage including environment setup and result parsing",
+    "Agent registry updated with runtime agents"
+  ],
+  "verification": [
+    "cd services/project-ai && python -c 'from app.certification.gates import CertificationGateExecutor; import inspect; methods = [m for m in dir(CertificationGateExecutor) if m.startswith(\"execute_\") and \"gate\" in m]; print(f\"Found {len(methods)} gate methods: {methods}\"); assert len(methods) >= 9, f\"Expected at least 9 gates, found {len(methods)}\"'",
+    "cd services/project-ai && python -m pytest tests/certification/test_gates.py -v",
+    "cd services/project-ai && python -m pytest tests/agents/test_runtime_agent.py -v",
+    "cd services/project-ai && python -m pytest tests/agents/test_playwright_browser_agent.py -v",
+    "cd services/project-ai && python -c 'from app.agents.runtime_agent import execute_runtime_agent; from app.agents.playwright_browser_agent import execute_playwright_browser_agent; print(\"Runtime agents import OK\")'",
+    "cd services/project-ai && python -m pytest tests/verification/ -v -k \"evidence_ids\""
+  ],
+  "blocked_reason": null,
+  "findings": "✅ Successfully implemented Wave D+E: Certification Gates and Runtime Chain (FEAT-004)\n\nImplemented:\n1. Added execute_contract_gate() - verifies TutorialBlock interface compliance from snapshot type evidence\n2. Added execute_dependency_gate() - validates dependency graph (circular deps, version conflicts, unlicensed packages)\n3. Updated 7 existing gates (UBRC, Registry, Renderer, Brand, Theme, Composer, Evidence) to accept manifest parameter and return evidence_ids\n4. Created app/verification/dependency.py - dependency graph verification with DFS cycle detection\n5. Created app/agents/runtime_agent.py (Agent 12K) - runtime verification orchestration\n6. Created app/agents/playwright_browser_agent.py (Agent 12L) - Node Playwright orchestration via subprocess\n7. Updated agent_registry.py - added RUNTIME_AGENT and PLAYWRIGHT_BROWSER_AGENT types\n8. Created comprehensive tests:\n   - tests/certification/test_gates.py: 19 tests (contract gate, dependency gate, all 9 gates)\n   - tests/agents/test_runtime_agent.py: 8 tests (success, failure, environment, evidence collection)\n   - tests/agents/test_playwright_browser_agent.py: 11 tests (execution, env vars, JSON parsing, screenshots)\n\nAll verification commands passed:\n- 11 gate methods found (expected >= 9): contract, dependency, ubrc, registry, renderer, brand, theme, composer, evidence, runtime, browser\n- Runtime agents import successfully\n- All gate tests: 19 passed\n- Runtime agent tests: 8 passed\n- Playwright browser agent tests: 11 passed\n\nArchitectural compliance:\n- All gates return GateExecutionResult with evidence_ids from snapshot\n- Contract gate verifies TutorialBlock interface from snapshot type evidence\n- Brand/Theme gates consume snapshot data, NO file scanning\n- Agent 12L orchestrates Node Playwright via pnpm exec (NO Python Playwright library)\n- All verification modules accept snapshot parameter and return evidence_ids\n- Comprehensive test coverage with mocked snapshot data and subprocess calls"
+}

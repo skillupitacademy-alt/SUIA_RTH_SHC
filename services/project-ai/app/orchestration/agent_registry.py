@@ -33,6 +33,8 @@ class AgentType(str, Enum):
     BRAND_INDEPENDENCE = "brand_independence"
     THEME_COMPATIBILITY = "theme_compatibility"
     RUNTIME_BROWSER = "runtime_browser"
+    RUNTIME_AGENT = "runtime_agent"
+    PLAYWRIGHT_BROWSER_AGENT = "playwright_browser_agent"
     COMPOSER_WORKFLOW = "composer_workflow"
     GOVERNANCE = "governance"
     DOCUMENTATION = "documentation"
@@ -240,6 +242,22 @@ class AgentRegistry:
                 capabilities=["launch_browser", "render_block", "capture_screenshot", "verify_runtime_behavior"],
                 status="active",
                 description="Launches browser, renders block, captures screenshot, verifies runtime behavior"
+            ),
+            AgentType.RUNTIME_AGENT: Agent(
+                agentId="runtime_agent",
+                agentType=AgentType.RUNTIME_AGENT,
+                name="Runtime Agent (Agent 12K)",
+                capabilities=["verify_runtime", "start_application", "health_check", "collect_evidence"],
+                status="active",
+                description="Agent 12K: Verifies blocks at runtime by starting application, performing health checks, and collecting runtime verification results"
+            ),
+            AgentType.PLAYWRIGHT_BROWSER_AGENT: Agent(
+                agentId="playwright_browser_agent",
+                agentType=AgentType.PLAYWRIGHT_BROWSER_AGENT,
+                name="Playwright Browser Agent (Agent 12L)",
+                capabilities=["orchestrate_node_playwright", "set_environment_variables", "parse_json_results", "collect_screenshots"],
+                status="active",
+                description="Agent 12L: Orchestrates Node Playwright via subprocess (pnpm exec playwright test), sets environment variables, parses JSON results from .project-ai/runs/current/results/playwright.json"
             ),
             AgentType.COMPOSER_WORKFLOW: Agent(
                 agentId="composer_workflow",

@@ -58,6 +58,220 @@ class CertificationGateExecutor:
         self.snapshot = snapshot
         self.repository_root = repository_root
     
+    def execute_contract_gate(self, candidate_blocks: List[str], manifest: PlacementManifest) -> GateExecutionResult:
+        """
+        Execute Contract gate - verifies TutorialBlock interface compliance.
+        
+        Validates that candidate blocks implement the required TutorialBlock interface
+        by checking snapshot for packages/types/src/tutorial-rich-document.ts type evidence.
+        
+        Required interface fields:
+        - id: string
+        - type: BlockType
+        - content: BlockContent
+        - metadata: BlockMetadata
+        
+        Args:
+            candidate_blocks: List of block identifiers to verify
+            manifest: PlacementManifest (required for manifest validation)
+        
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        # Validate manifest
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
+        
+        evidence_ids: List[str] = []
+        blockers: List[str] = []
+        
+        # Find TutorialBlock interface definition in snapshot
+        all_evidence = self.snapshot.get('evidence', [])
+        interface_evidence = next(
+            (e for e in all_evidence 
+             if e.get('kind') == 'type-definition' 
+             and 'TutorialBlock' in e.get('symbol', '')
+             and 'tutorial-rich-document' in e.get('path', '')),
+            None
+        )
+        
+        if not interface_evidence:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="TutorialBlock interface definition not found in snapshot",
+                evidence_ids=[],
+                blockers=["Run TypeScript discovery scan to generate type evidence"]
+            )
+        
+        evidence_ids.append(interface_evidence['evidenceId'])
+        
+        # Required interface fields per TutorialBlock specification
+        required_fields = ['id', 'type', 'content', 'metadata']
+        
+        # Check each candidate block for interface compliance
+        blocks_data = self.snapshot.get('blocks', {})
+        implemented_blocks = blocks_data.get('implemented', [])
+        
+        for candidate_block in candidate_blocks:
+            block_type = self._extract_block_type(candidate_block)
+            
+            # Find block implementation
+            block_impl = next(
+                (b for b in implemented_blocks if b.get('type') == block_type),
+                None
+            )
+            
+            if not block_impl:
+                blockers.append(f"Block '{candidate_block}' not found in implemented blocks")
+                continue
+            
+            # Verify interface fields present in block structure
+            # This checks if the block's props/structure matches TutorialBlock
+            block_evidence = next(
+                (e for e in all_evidence
+                 if e.get('symbol') == block_type
+                 and e.get('kind') == 'type-definition'),
+                None
+            )
+            
+            if block_evidence:
+                evidence_ids.append(block_evidence['evidenceId'])
+                
+                # Check if block metadata indicates interface compliance
+                metadata = block_evidence.get('metadata', {})
+                implements_interface = metadata.get('implementsInterface', False)
+                
+                if not implements_interface:
+                    # Check for required fields in metadata
+                    block_fields = metadata.get('fields', [])
+                    missing_fields = [f for f in required_fields if f not in block_fields]
+                    
+                    if missing_fields:
+                        blockers.append(
+                            f"Block '{candidate_block}' missing required TutorialBlock fields: {', '.join(missing_fields)}"
+                        )
+            else:
+                blockers.append(f"Block '{candidate_block}' type definition evidence not found")
+        
+        # Determine gate status
+        if blockers:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message=f"Contract verification failed: {len(blockers)} issue(s) found",
+                evidence_ids=evidence_ids,
+                blockers=blockers
+            )
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message=f"Contract verified: {len(candidate_blocks)} block(s) implement TutorialBlock interface",
+            evidence_ids=evidence_ids,
+            blockers=[]
+        )
+    
+    def execute_dependency_gate(self, candidate_blocks: List[str], manifest: PlacementManifest) -> GateExecutionResult:
+        """
+        Execute Dependency gate - validates dependency graph.
+        
+        Checks for:
+        - Circular dependencies
+        - Version conflicts
+        - Unlicensed packages
+        
+        Reads dependency data from snapshot.dependencies.
+        
+        Args:
+            candidate_blocks: List of block identifiers to verify
+            manifest: PlacementManifest (required for manifest validation)
+        
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        from app.verification.dependency import verify_dependency_graph
+        
+        # Validate manifest
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
+        
+        evidence_ids: List[str] = []
+        blockers: List[str] = []
+        
+        # Get dependency data from snapshot
+        dependencies = self.snapshot.get('dependencies', {})
+        
+        if not dependencies:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Dependency data not available in snapshot",
+                evidence_ids=[],
+                blockers=["Run TypeScript discovery scan to generate dependency data"]
+            )
+        
+        # Verify dependency graph
+        result = verify_dependency_graph(
+            dependencies=dependencies,
+            snapshot=self.snapshot
+        )
+        
+        # Collect evidence IDs
+        evidence_ids.extend(result.get('evidence_ids', []))
+        
+        # Check for violations
+        circular_deps = result.get('circular_dependencies', [])
+        version_conflicts = result.get('version_conflicts', [])
+        unlicensed = result.get('unlicensed_packages', [])
+        
+        if circular_deps:
+            for cycle in circular_deps:
+                blockers.append(f"Circular dependency detected: {' -> '.join(cycle)}")
+        
+        if version_conflicts:
+            for conflict in version_conflicts:
+                blockers.append(
+                    f"Version conflict: {conflict['package']} requires "
+                    f"{conflict['required']} but {conflict['installed']} is installed"
+                )
+        
+        if unlicensed:
+            for pkg in unlicensed:
+                blockers.append(f"Unlicensed package: {pkg}")
+        
+        # Determine gate status
+        if blockers:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message=f"Dependency verification failed: {len(blockers)} issue(s) found",
+                evidence_ids=evidence_ids,
+                blockers=blockers
+            )
+        
+        if not evidence_ids:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Dependency verification incomplete: no evidence collected",
+                evidence_ids=[],
+                blockers=["Unable to locate dependency evidence"]
+            )
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message="Dependency verification passed: no circular dependencies, version conflicts, or unlicensed packages",
+            evidence_ids=evidence_ids,
+            blockers=[]
+        )
+    
     def _validate_manifest(self, manifest: PlacementManifest) -> Tuple[bool, List[str]]:
         """
         Validate PlacementManifest for integrity and correctness.
