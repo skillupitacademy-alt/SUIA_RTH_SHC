@@ -1,1 +1,1 @@
-"""Data models module."""
+"""Model definitions for Project AI."""

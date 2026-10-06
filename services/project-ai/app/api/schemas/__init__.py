@@ -1,1 +1,1 @@
-"""API schemas module."""
+"""Schema definitions for API requests and responses."""
