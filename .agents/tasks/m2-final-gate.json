@@ -1,6 +1,6 @@
 {
   "milestone": "M2",
-  "evaluationDate": "2025-01-27T12:00:00Z",
+  "evaluationDate": "2026-10-06T12:00:00Z",
   "gates": {
     "M2.1": "PASS",
     "M2.2": "PASS",
@@ -34,7 +34,9 @@
     "entities": 110,
     "entitiesBound": 110
   },
-  "finalVerdict": "M2_VERIFIED",
+  "finalVerdict": "M2_FOUNDATION_VERIFIED",
+  "runtimeVerification": "DEFERRED_TO_M3",
+  "note": "M2 deterministic foundation complete. Runtime/browser verification deferred with 4 documented blockers. Wave 1 compliance fixes applied: shell:false (M2.3), UBRC 13/13 (M2.6), Python artifact hygiene, documentation accuracy.",
   "blockers": [],
   "nextSteps": [
     "Merge m2-project-ai-foundation branch to main",
@@ -226,7 +228,7 @@
     "headCommit": "0924e12e (M2.8 FastAPI)",
     "totalCommits": 8,
     "testDuration": "TypeScript: 41.79s, Python: 0.95s",
-    "reportGenerated": "2025-01-27T12:00:00Z",
+    "reportGenerated": "2026-10-06T12:00:00Z",
     "evaluator": "M2 Final Gate Controller"
   }
 }

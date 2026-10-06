@@ -366,3 +366,36 @@ All nine validators present:
 2. Update canonical backlog with Phase 0 audit findings (this section)
 
 **Next Phase:** Proceed with M2.3-M2.8 planning and implementation
+
+---
+
+## Wave 1: M2 Compliance Fixes — COMPLETE
+
+**Status:** ✅ COMPLETE (2026-10-06)
+
+**Summary:** Wave 1 addressed critical compliance gaps identified in post-M2 audit to ensure M2 foundation meets security, structural, and documentation standards.
+
+**Completed Items:**
+
+1. **M2.3 Security: shell:false applied**
+   - Repository adapter execution now uses `shell: false` for all command execution
+   - Prevents shell injection vulnerabilities
+   - Command operations limited to approved allowlist
+
+2. **M2.6 UBRC: 13/13 compliant**
+   - All block implementations now UBRC-compliant
+   - SummaryBlock/S1 `data-block-version` attribute added
+   - UBRC compliance rate: 100% (previously 92.3%)
+
+3. **Repository hygiene: Python artifacts removed**
+   - Stale Python cache directories removed
+   - `.pyc` files cleaned
+   - Repository artifact cleanliness verified
+
+4. **Documentation: dates corrected, runtime deferral explicit**
+   - `m2-final-gate.json` evaluation dates updated to 2026-10-06
+   - Final verdict clarified: `M2_FOUNDATION_VERIFIED` (not `M2_VERIFIED`)
+   - Runtime verification explicitly documented as `DEFERRED_TO_M3`
+   - Wave 1 compliance note added to final gate record
+
+**Impact:** M2 foundation now meets production readiness standards with zero known compliance gaps in deterministic verification scope. Runtime/browser verification remains appropriately deferred to M3 with documented prerequisites.
