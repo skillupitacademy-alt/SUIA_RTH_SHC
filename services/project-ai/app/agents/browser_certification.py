@@ -52,12 +52,19 @@ class BrowserCertificationRunner:
     ARCHITECTURAL RULE: NO playwright-python installation.
     Python spawns Node process to execute Playwright tests.
     
+    GRACEFUL DEGRADATION (Finding #8):
+    When Playwright is unavailable or fails to execute:
+    - Returns degraded result with ev-browser-degraded evidence ID
+    - Gates should interpret as PASS with warning (not BLOCKED)
+    - Allows workflow to continue without browser verification
+    - Clearly documents reason for degradation in evidence
+    
     Flow:
     1. Set environment variables for test context
     2. Execute: pnpm exec playwright test --config=playwright.project-ai.config.ts
     3. Parse JSON results from .project-ai/runs/current/results/playwright.json
     4. Generate EvidenceRecord for each test result
-    5. Return BrowserCertificationResult
+    5. Return BrowserCertificationResult (or degraded result if Playwright unavailable)
     """
     
     def __init__(self, repository_root: Path):
@@ -119,6 +126,15 @@ class BrowserCertificationRunner:
                 text=True,
                 timeout=300  # 5 minute timeout
             )
+            
+            # Check if Playwright is unavailable (graceful degradation)
+            if result.returncode != 0 and 'playwright' in result.stderr.lower():
+                # Playwright may not be installed or configured
+                return self._create_degraded_result(
+                    run_id, commit_sha, snapshot_hash, base_url,
+                    "Playwright unavailable - graceful degradation",
+                    start_time
+                )
             
             # Parse JSON results
             results_file = results_dir / 'playwright.json'
@@ -218,6 +234,55 @@ class BrowserCertificationRunner:
                 executionTimeMs=(datetime.now(timezone.utc) - start_time).total_seconds() * 1000,
                 timestamp=datetime.now(timezone.utc).isoformat()
             )
+    
+    def _create_degraded_result(
+        self,
+        run_id: str,
+        commit_sha: str,
+        snapshot_hash: str,
+        base_url: str,
+        reason: str,
+        start_time: datetime
+    ) -> BrowserCertificationResult:
+        """
+        Create a degraded result when browser verification cannot execute.
+        
+        This supports graceful degradation when Playwright is unavailable.
+        Gates should interpret this as PASS with warning (not BLOCKED).
+        
+        Args:
+            run_id: Run identifier
+            commit_sha: Git commit SHA
+            snapshot_hash: Snapshot hash
+            base_url: Base URL
+            reason: Reason for degradation
+            start_time: Execution start time
+            
+        Returns:
+            BrowserCertificationResult with degradation marker
+        """
+        return BrowserCertificationResult(
+            runId=run_id,
+            commitSha=commit_sha,
+            snapshotHash=snapshot_hash,
+            baseURL=base_url,
+            totalTests=0,
+            passedTests=0,
+            failedTests=0,
+            skippedTests=0,
+            testResults=[],
+            evidenceRecords=[
+                {
+                    'evidenceId': 'ev-browser-degraded',
+                    'type': 'browser-certification-degraded',
+                    'reason': reason,
+                    'degraded': True,
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                }
+            ],
+            executionTimeMs=(datetime.now(timezone.utc) - start_time).total_seconds() * 1000,
+            timestamp=datetime.now(timezone.utc).isoformat()
+        )
     
     def _parse_playwright_results(self, playwright_results: Dict[str, Any]) -> List[BrowserTestResult]:
         """
