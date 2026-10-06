@@ -15,7 +15,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import agents, evidence, governance, health, snapshot, tasks
+from app.api.routes import agents, candidate, evidence, governance, health, snapshot, tasks
 
 
 @asynccontextmanager
