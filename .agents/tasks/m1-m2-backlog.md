@@ -50,7 +50,7 @@ Add a verification step that boots the app and confirms rendered block output ma
 - V3 current/historical validation: implemented
 - Tests: 212/212 passing
 
-**M2.2 Strict Evidence Binding:** 🔄 IN PROGRESS
+**M2.2 Strict Evidence Binding:** ✅ COMPLETE (2025-01-06)
 - **Phase B: Entity evidenceId fields:** ✅ COMPLETE (commit de82876b)
   - ApplicationInfo: ✅ `evidenceId: string`
   - PackageInfo: ✅ `evidenceId: string`
