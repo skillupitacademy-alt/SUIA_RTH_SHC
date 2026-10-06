@@ -16,6 +16,7 @@ from typing import Any, Dict, List
 from enum import Enum
 
 from app.models.creation import CertificationGateStatus
+from app.verification.composer import verify_composer_integration, ComposerErrorCode
 
 
 class GateExecutionResult:
@@ -506,6 +507,89 @@ class CertificationGateExecutor:
             status=CertificationGateStatus.PASS,
             message=f"Evidence binding verified: {len(unique_evidence_ids)} evidence record(s)",
             evidence_ids=list(unique_evidence_ids),
+            blockers=[]
+        )
+    
+    def execute_composer_verification_gate(self, candidate_blocks: List[str]) -> GateExecutionResult:
+        """
+        Execute Composer integration verification gate.
+        
+        Verifies the complete Composer workflow for each candidate block:
+        1. Block is registered in BLOCK_REGISTRY
+        2. Block is discoverable in Composer UI
+        3. Block schema matches expected structure
+        4. Renderer implementation matches registry entry
+        5. Block can be used in tutorial generation
+        6. Block renders correctly at runtime
+        
+        Error codes distinguish specific failure modes:
+        - COMPOSER_NOT_REGISTERED: Block not in BLOCK_REGISTRY
+        - COMPOSER_NOT_DISCOVERABLE: Block not visible in Composer UI
+        - COMPOSER_SCHEMA_MISMATCH: Block schema doesn't match expected structure
+        - COMPOSER_RENDERER_MISMATCH: Renderer doesn't match registry entry
+        - COMPOSER_GENERATION_FAILURE: Tutorial generation fails with this block
+        - COMPOSER_RUNTIME_FAILURE: Block fails to render at runtime
+        
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        evidence_ids: List[str] = []
+        blockers: List[str] = []
+        
+        # Get block verification data
+        blocks_data = self.snapshot.get('blocks', {})
+        verified_blocks = blocks_data.get('verified', [])
+        
+        if not verified_blocks:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Composer verification unavailable: snapshot contains no verified blocks",
+                evidence_ids=[],
+                blockers=["Run TypeScript discovery scan to generate block verification data"]
+            )
+        
+        # Check each candidate block
+        for candidate_block in candidate_blocks:
+            block_type = self._extract_block_type(candidate_block)
+            
+            # Perform composer verification
+            result = verify_composer_integration(
+                block_type=block_type,
+                snapshot=self.snapshot,
+                repository_root=self.repository_root
+            )
+            
+            # Collect evidence IDs
+            evidence_ids.extend(result.evidence_ids)
+            
+            # Check for failures
+            if not result.passed:
+                if result.error_code:
+                    blockers.append(f"{candidate_block}: {result.error_code.value} - {result.error_message}")
+                else:
+                    blockers.append(f"{candidate_block}: {result.error_message}")
+        
+        # Determine gate status
+        if blockers:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message=f"Composer verification failed: {len(blockers)} issue(s) found",
+                evidence_ids=evidence_ids,
+                blockers=blockers
+            )
+        
+        if not evidence_ids:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Composer verification incomplete: no evidence collected",
+                evidence_ids=[],
+                blockers=["Unable to locate evidence IDs for candidate blocks"]
+            )
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message=f"Composer verification passed for {len(candidate_blocks)} block(s)",
+            evidence_ids=evidence_ids,
             blockers=[]
         )
     

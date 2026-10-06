@@ -526,3 +526,600 @@ class TestWave3UBRCIntegration:
             assert 'candidate' not in eid  # Not synthetic
             assert 'code' in eid  # Real evidence from snapshot
 
+
+class TestWave4ComposerVerification:
+    """Test Wave 4 Composer integration verification."""
+    
+    @pytest.fixture
+    def mock_snapshot_composer_valid(self):
+        """Valid snapshot with full Composer integration."""
+        return {
+            'metadata': {
+                'timestamp': '2025-01-29T00:00:00Z',
+                'scannerVersion': '1.0.0'
+            },
+            'blocks': {
+                'documented': [
+                    {'family': 'I', 'versions': ['I1']}
+                ],
+                'implemented': [
+                    {
+                        'type': 'introduction',
+                        'version': 'I1',
+                        'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                        'evidenceId': 'ev-intro-impl-001'
+                    }
+                ],
+                'rendered': [
+                    {
+                        'blockType': 'introduction',
+                        'componentPath': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                        'evidenceId': 'ev-intro-render-001',
+                        'ubrcStatus': 'UBRC_VALID',
+                        'ubrcDetails': {
+                            'hasDataBlockVersion': True,
+                            'registryEntry': True,
+                            'versionMatch': True
+                        }
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'introduction',
+                        'version': 'I1',
+                        'documented': True,
+                        'implemented': True,
+                        'rendered': True,
+                        'registered': True,
+                        'tested': False,
+                        'verificationLevel': 'REGISTERED',
+                        'ubrcStatus': 'UBRC_VALID',
+                        'ubrcDetails': {
+                            'hasDataBlockVersion': True,
+                            'registryEntry': True,
+                            'versionMatch': True
+                        }
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-intro-impl-001',
+                    'kind': 'type-definition',
+                    'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                    'contentHash': 'abc123',
+                    'description': 'Introduction block type definition',
+                    'symbol': 'introduction'
+                },
+                {
+                    'evidenceId': 'ev-intro-render-001',
+                    'kind': 'component',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': 'def456',
+                    'description': 'Introduction block renderer',
+                    'symbol': 'introduction'
+                },
+                {
+                    'evidenceId': 'ev-registry-001',
+                    'kind': 'ubrc-verification',
+                    'path': 'packages/types/src/tutorial-rich-document/registry.ts',
+                    'contentHash': 'ghi789',
+                    'description': 'Block registry'
+                }
+            ],
+            'findings': []
+        }
+    
+    @pytest.fixture
+    def mock_snapshot_not_registered(self):
+        """Snapshot with block not registered."""
+        return {
+            'metadata': {},
+            'blocks': {
+                'documented': [],
+                'implemented': [],
+                'rendered': [],
+                'verified': [
+                    {
+                        'blockType': 'newblock',
+                        'version': 'N1',
+                        'documented': False,
+                        'implemented': True,
+                        'rendered': False,
+                        'registered': False,
+                        'tested': False,
+                        'verificationLevel': 'DISCOVERED',
+                        'ubrcStatus': 'UBRC_MISSING'
+                    }
+                ]
+            },
+            'evidence': [],
+            'findings': []
+        }
+    
+    @pytest.fixture
+    def mock_snapshot_not_discoverable(self):
+        """Snapshot with block registered but not documented."""
+        return {
+            'metadata': {},
+            'blocks': {
+                'documented': [],
+                'implemented': [
+                    {
+                        'type': 'quote',  # Changed from 'hidden'
+                        'version': 'Q1',
+                        'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                        'evidenceId': 'ev-quote-impl-001'
+                    }
+                ],
+                'rendered': [],
+                'verified': [
+                    {
+                        'blockType': 'quote',  # Changed from 'hidden'
+                        'version': 'Q1',
+                        'documented': False,
+                        'implemented': True,
+                        'rendered': False,
+                        'registered': True,
+                        'tested': False,
+                        'verificationLevel': 'IMPLEMENTED',
+                        'ubrcStatus': 'UBRC_RENDERER_MISSING',
+                        'ubrcDetails': {
+                            'registryEntry': True
+                        }
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-registry-001',
+                    'kind': 'ubrc-verification',
+                    'path': 'packages/types/src/tutorial-rich-document/registry.ts',
+                    'contentHash': 'abc',
+                    'description': 'Block registry'
+                }
+            ],
+            'findings': []
+        }
+    
+    @pytest.fixture
+    def mock_snapshot_schema_mismatch(self):
+        """Snapshot with block schema issues."""
+        return {
+            'metadata': {},
+            'blocks': {
+                'documented': [
+                    {'family': 'B', 'versions': ['B1']}
+                ],
+                'implemented': [
+                    {
+                        'type': 'badschema',
+                        'version': 'B1',
+                        'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts'
+                        # Missing evidenceId - this causes schema mismatch
+                    }
+                ],
+                'rendered': [
+                    {
+                        'blockType': 'badschema',
+                        'componentPath': 'packages/ui/src/tutorial/blocks/BadSchemaBlock.tsx',
+                        'evidenceId': 'ev-bad-render-001',
+                        'ubrcStatus': 'UBRC_VALID'
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'badschema',
+                        'version': 'B1',
+                        'documented': True,
+                        'implemented': True,
+                        'rendered': True,
+                        'registered': True,
+                        'tested': False,
+                        'verificationLevel': 'RENDERED',
+                        'ubrcStatus': 'UBRC_VALID',
+                        'ubrcDetails': {
+                            'registryEntry': True
+                        }
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-registry-001',
+                    'kind': 'ubrc-verification',
+                    'path': 'packages/types/src/tutorial-rich-document/registry.ts',
+                    'contentHash': 'abc',
+                    'description': 'Block registry'
+                },
+                {
+                    'evidenceId': 'ev-bad-render-001',
+                    'kind': 'component',
+                    'path': 'packages/ui/src/tutorial/blocks/BadSchemaBlock.tsx',
+                    'contentHash': 'def',
+                    'symbol': 'badschema'
+                }
+            ],
+            'findings': []
+        }
+    
+    @pytest.fixture
+    def mock_snapshot_renderer_mismatch(self):
+        """Snapshot with renderer UBRC issues."""
+        return {
+            'metadata': {},
+            'blocks': {
+                'documented': [
+                    {'family': 'R', 'versions': ['R1']}
+                ],
+                'implemented': [
+                    {
+                        'type': 'renderissue',
+                        'version': 'R1',
+                        'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                        'evidenceId': 'ev-render-impl-001'
+                    }
+                ],
+                'rendered': [
+                    {
+                        'blockType': 'renderissue',
+                        'componentPath': 'packages/ui/src/tutorial/blocks/RenderIssueBlock.tsx',
+                        'evidenceId': 'ev-render-render-001',
+                        'ubrcStatus': 'UBRC_VERSION_MISMATCH'  # This triggers COMPOSER_RENDERER_MISMATCH
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'renderissue',
+                        'version': 'R1',
+                        'documented': True,
+                        'implemented': True,
+                        'rendered': True,
+                        'registered': True,
+                        'tested': False,
+                        'verificationLevel': 'RENDERED',
+                        'ubrcStatus': 'UBRC_VERSION_MISMATCH',
+                        'ubrcDetails': {
+                            'registryEntry': True,
+                            'hasDataBlockVersion': True,
+                            'versionMatch': False  # Version mismatch
+                        }
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-render-impl-001',
+                    'kind': 'type-definition',
+                    'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                    'contentHash': 'abc',
+                    'symbol': 'renderissue'
+                },
+                {
+                    'evidenceId': 'ev-render-render-001',
+                    'kind': 'component',
+                    'path': 'packages/ui/src/tutorial/blocks/RenderIssueBlock.tsx',
+                    'contentHash': 'def',
+                    'symbol': 'renderissue'
+                },
+                {
+                    'evidenceId': 'ev-registry-001',
+                    'kind': 'ubrc-verification',
+                    'path': 'packages/types/src/tutorial-rich-document/registry.ts',
+                    'contentHash': 'ghi',
+                    'description': 'Block registry'
+                }
+            ],
+            'findings': []
+        }
+    
+    @pytest.fixture
+    def mock_snapshot_generation_failure(self):
+        """Snapshot with validation errors preventing generation."""
+        return {
+            'metadata': {},
+            'blocks': {
+                'documented': [
+                    {'family': 'G', 'versions': ['G1']}
+                ],
+                'implemented': [
+                    {
+                        'type': 'generror',
+                        'version': 'G1',
+                        'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                        'evidenceId': 'ev-gen-impl-001'
+                    }
+                ],
+                'rendered': [
+                    {
+                        'blockType': 'generror',
+                        'componentPath': 'packages/ui/src/tutorial/blocks/GenErrorBlock.tsx',
+                        'evidenceId': 'ev-gen-render-001',
+                        'ubrcStatus': 'UBRC_VALID'
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'generror',
+                        'version': 'G1',
+                        'documented': True,
+                        'implemented': True,
+                        'rendered': True,
+                        'registered': True,
+                        'tested': False,
+                        'verificationLevel': 'REGISTERED',
+                        'ubrcStatus': 'UBRC_VALID',
+                        'ubrcDetails': {
+                            'registryEntry': True,
+                            'hasDataBlockVersion': True,
+                            'versionMatch': True
+                        }
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-gen-impl-001',
+                    'kind': 'type-definition',
+                    'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                    'contentHash': 'abc',
+                    'symbol': 'generror'
+                },
+                {
+                    'evidenceId': 'ev-gen-render-001',
+                    'kind': 'component',
+                    'path': 'packages/ui/src/tutorial/blocks/GenErrorBlock.tsx',
+                    'contentHash': 'def',
+                    'symbol': 'generror'
+                },
+                {
+                    'evidenceId': 'ev-registry-001',
+                    'kind': 'ubrc-verification',
+                    'path': 'packages/types/src/tutorial-rich-document/registry.ts',
+                    'contentHash': 'ghi',
+                    'description': 'Block registry'
+                }
+            ],
+            'findings': [
+                {
+                    'severity': 'error',
+                    'message': 'Block generror has invalid schema structure',
+                    'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts'
+                }
+            ]
+        }
+    
+    @pytest.fixture
+    def mock_snapshot_runtime_failure(self):
+        """Snapshot with insufficient verification level."""
+        return {
+            'metadata': {},
+            'blocks': {
+                'documented': [
+                    {'family': 'U', 'versions': ['U1']}
+                ],
+                'implemented': [
+                    {
+                        'type': 'unverified',
+                        'version': 'U1',
+                        'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                        'evidenceId': 'ev-unv-impl-001'
+                    }
+                ],
+                'rendered': [
+                    {
+                        'blockType': 'unverified',
+                        'componentPath': 'packages/ui/src/tutorial/blocks/UnverifiedBlock.tsx',
+                        'evidenceId': 'ev-unv-render-001',
+                        'ubrcStatus': 'UBRC_VALID'
+                    }
+                ],
+                'verified': [
+                    {
+                        'blockType': 'unverified',
+                        'version': 'U1',
+                        'documented': True,
+                        'implemented': True,
+                        'rendered': True,
+                        'registered': True,  # Changed to True so it passes earlier checks
+                        'tested': False,
+                        'verificationLevel': 'DISCOVERED',  # Very low level - insufficient
+                        'ubrcStatus': 'UBRC_VALID',
+                        'ubrcDetails': {
+                            'registryEntry': True,
+                            'hasDataBlockVersion': True,
+                            'versionMatch': True
+                        }
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-unv-impl-001',
+                    'kind': 'type-definition',
+                    'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                    'contentHash': 'abc',
+                    'symbol': 'unverified'
+                },
+                {
+                    'evidenceId': 'ev-unv-render-001',
+                    'kind': 'component',
+                    'path': 'packages/ui/src/tutorial/blocks/UnverifiedBlock.tsx',
+                    'contentHash': 'def',
+                    'symbol': 'unverified'
+                },
+                {
+                    'evidenceId': 'ev-registry-001',
+                    'kind': 'ubrc-verification',
+                    'path': 'packages/types/src/tutorial-rich-document/registry.ts',
+                    'contentHash': 'ghi',
+                    'description': 'Block registry'
+                }
+            ],
+            'findings': []
+        }
+    
+    def test_composer_gate_passes_with_fully_integrated_block(self, mock_snapshot_composer_valid):
+        """Composer gate passes when block is fully integrated into Composer workflow."""
+        executor = CertificationGateExecutor(mock_snapshot_composer_valid, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['I1'])
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert len(result.evidence_ids) > 0
+        assert len(result.blockers) == 0
+        assert 'composer verification passed' in result.message.lower()
+    
+    def test_composer_gate_fails_with_not_registered_error(self, mock_snapshot_not_registered):
+        """Composer gate fails with COMPOSER_NOT_REGISTERED when block not in registry."""
+        executor = CertificationGateExecutor(mock_snapshot_not_registered, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['newblock'])  # Use full name
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('COMPOSER_NOT_REGISTERED' in b for b in result.blockers)
+    
+    def test_composer_gate_fails_with_not_discoverable_error(self, mock_snapshot_not_discoverable):
+        """Composer gate fails with COMPOSER_NOT_DISCOVERABLE when block not documented."""
+        executor = CertificationGateExecutor(mock_snapshot_not_discoverable, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['quote'])  # Changed from H1
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('COMPOSER_NOT_DISCOVERABLE' in b for b in result.blockers)
+    
+    def test_composer_gate_fails_with_schema_mismatch_error(self, mock_snapshot_schema_mismatch):
+        """Composer gate fails with COMPOSER_SCHEMA_MISMATCH when schema invalid."""
+        executor = CertificationGateExecutor(mock_snapshot_schema_mismatch, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['badschema'])  # Use full name
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('COMPOSER_SCHEMA_MISMATCH' in b for b in result.blockers)
+    
+    def test_composer_gate_fails_with_renderer_mismatch_error(self, mock_snapshot_renderer_mismatch):
+        """Composer gate fails with COMPOSER_RENDERER_MISMATCH when renderer UBRC invalid."""
+        executor = CertificationGateExecutor(mock_snapshot_renderer_mismatch, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['renderissue'])  # Use full name
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('COMPOSER_RENDERER_MISMATCH' in b for b in result.blockers)
+    
+    def test_composer_gate_fails_with_generation_failure_error(self, mock_snapshot_generation_failure):
+        """Composer gate fails with COMPOSER_GENERATION_FAILURE when validation errors exist."""
+        executor = CertificationGateExecutor(mock_snapshot_generation_failure, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['generror'])  # Use full name
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('COMPOSER_GENERATION_FAILURE' in b for b in result.blockers)
+    
+    def test_composer_gate_fails_with_runtime_failure_error(self, mock_snapshot_runtime_failure):
+        """Composer gate fails with COMPOSER_RUNTIME_FAILURE when verification level insufficient."""
+        executor = CertificationGateExecutor(mock_snapshot_runtime_failure, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['unverified'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+        assert any('COMPOSER_RUNTIME_FAILURE' in b for b in result.blockers)
+    
+    def test_composer_gate_blocked_with_empty_snapshot(self):
+        """Composer gate blocked when snapshot has no verified blocks."""
+        snapshot = {
+            'metadata': {},
+            'blocks': {'verified': []},
+            'evidence': [],
+            'findings': []
+        }
+        
+        executor = CertificationGateExecutor(snapshot, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['I1'])
+        
+        assert result.status == CertificationGateStatus.BLOCKED
+        assert len(result.blockers) > 0
+        assert 'unavailable' in result.message.lower() or 'no verified blocks' in result.message.lower()
+    
+    def test_composer_gate_collects_evidence_from_all_checks(self, mock_snapshot_composer_valid):
+        """Composer gate collects evidence IDs from registry, implementation, and renderer."""
+        executor = CertificationGateExecutor(mock_snapshot_composer_valid, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['I1'])
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert len(result.evidence_ids) >= 3  # Registry, implementation, renderer
+        
+        # Verify evidence IDs are real (not synthetic)
+        for eid in result.evidence_ids:
+            assert eid.startswith('ev-')
+            assert 'candidate' not in eid
+    
+    def test_composer_gate_verifies_multiple_blocks(self, mock_snapshot_composer_valid):
+        """Composer gate can verify multiple blocks in single call."""
+        # Add another block to snapshot
+        mock_snapshot_composer_valid['blocks']['verified'].append({
+            'blockType': 'code',
+            'version': 'C1',
+            'documented': True,
+            'implemented': True,
+            'rendered': True,
+            'registered': True,
+            'tested': False,
+            'verificationLevel': 'REGISTERED',
+            'ubrcStatus': 'UBRC_VALID',
+            'ubrcDetails': {
+                'hasDataBlockVersion': True,
+                'registryEntry': True,
+                'versionMatch': True
+            }
+        })
+        mock_snapshot_composer_valid['blocks']['implemented'].append({
+            'type': 'code',
+            'version': 'C1',
+            'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+            'evidenceId': 'ev-code-impl-001'
+        })
+        mock_snapshot_composer_valid['blocks']['rendered'].append({
+            'blockType': 'code',
+            'componentPath': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+            'evidenceId': 'ev-code-render-001',
+            'ubrcStatus': 'UBRC_VALID',
+            'ubrcDetails': {
+                'hasDataBlockVersion': True,
+                'registryEntry': True,
+                'versionMatch': True
+            }
+        })
+        mock_snapshot_composer_valid['evidence'].extend([
+            {
+                'evidenceId': 'ev-code-impl-001',
+                'kind': 'type-definition',
+                'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                'contentHash': 'code123',
+                'description': 'Code block type definition',
+                'symbol': 'code'
+            },
+            {
+                'evidenceId': 'ev-code-render-001',
+                'kind': 'component',
+                'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+                'contentHash': 'code456',
+                'description': 'Code block renderer',
+                'symbol': 'code'
+            }
+        ])
+        
+        executor = CertificationGateExecutor(mock_snapshot_composer_valid, Path('.'))
+        
+        result = executor.execute_composer_verification_gate(['I1', 'C1'])
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert 'passed for 2 block(s)' in result.message.lower() or 'verified for 2 block(s)' in result.message.lower()
+
