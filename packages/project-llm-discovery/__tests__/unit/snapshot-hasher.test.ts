@@ -137,6 +137,7 @@ describe('computeSnapshotHash', () => {
             type: 'application',
             framework: 'next',
             entrypoint: 'src/index.ts',
+            evidenceId: 'test-evidence-001',
           },
         ],
         packages: [
@@ -146,6 +147,7 @@ describe('computeSnapshotHash', () => {
             version: '1.0.0',
             dependencies: ['react', 'react-dom'],
             exports: ['./index'],
+            evidenceId: 'test-evidence-002',
           },
         ],
         services: [],

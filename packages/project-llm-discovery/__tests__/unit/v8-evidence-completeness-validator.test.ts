@@ -228,4 +228,133 @@ describe('V8 Evidence Completeness Validator', () => {
     expect(result.errors[0]?.code).toBe('UNKNOWN_EVIDENCE_ID');
     expect(result.errors[0]?.details?.entity).toBe('web');
   });
+
+  // New tests for Phase F strict binding validation
+
+  it('should error when evidenceId path does not match entity path', async () => {
+    const applications: ApplicationInfo[] = [
+      {
+        name: 'admin',
+        path: 'apps/admin',
+        type: 'application',
+        framework: 'next',
+        entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-005',
+      },
+    ];
+
+    const evidence: Evidence[] = [
+      {
+        evidenceId: 'evidence-005',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        path: 'apps/other-app', // Path mismatch
+        kind: 'package',
+        claim: 'Application discovered at wrong path',
+        locator: 'file:apps/other-app/package.json',
+        contentHash: 'hash005',
+        lifecycle: 'current',
+      },
+    ];
+
+    const snapshot = createMockSnapshot(applications, [], [], evidence);
+    const result = await validateEvidenceCompleteness(snapshot);
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]?.code).toBe('EVIDENCE_PATH_MISMATCH');
+    expect(result.errors[0]?.path).toBe('apps/admin');
+    expect(result.errors[0]?.details?.entityPath).toBe('apps/admin');
+    expect(result.errors[0]?.details?.evidencePath).toBe('apps/other-app');
+  });
+
+  it('should error when evidence kind is incompatible with entity domain', async () => {
+    const packages: PackageInfo[] = [
+      {
+        name: '@quiz/ui',
+        path: 'packages/ui',
+        version: '1.0.0',
+        dependencies: [],
+        exports: [],
+        evidenceId: 'evidence-006',
+      },
+    ];
+
+    const evidence: Evidence[] = [
+      {
+        evidenceId: 'evidence-006',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        path: 'packages/ui',
+        kind: 'service', // Wrong kind for a package
+        claim: 'Package discovered with wrong evidence kind',
+        locator: 'file:packages/ui/package.json',
+        contentHash: 'hash006',
+        lifecycle: 'current',
+      },
+    ];
+
+    const snapshot = createMockSnapshot([], packages, [], evidence);
+    const result = await validateEvidenceCompleteness(snapshot);
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]?.code).toBe('EVIDENCE_KIND_MISMATCH');
+    expect(result.errors[0]?.path).toBe('packages/ui');
+    expect(result.errors[0]?.details?.expectedKinds).toContain('package');
+    expect(result.errors[0]?.details?.actualKind).toBe('service');
+  });
+
+  it('should pass validation when all evidence bindings are correct', async () => {
+    const applications: ApplicationInfo[] = [
+      {
+        name: 'admin',
+        path: 'apps/admin',
+        type: 'application',
+        framework: 'next',
+        entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-007',
+      },
+    ];
+
+    const packages: PackageInfo[] = [
+      {
+        name: '@quiz/ui',
+        path: 'packages/ui',
+        version: '1.0.0',
+        dependencies: [],
+        exports: [],
+        evidenceId: 'evidence-008',
+      },
+    ];
+
+    const evidence: Evidence[] = [
+      {
+        evidenceId: 'evidence-007',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        path: 'apps/admin/package.json',
+        kind: 'package',
+        claim: 'Application package.json discovered',
+        locator: 'file:apps/admin/package.json',
+        contentHash: 'hash007',
+        lifecycle: 'current',
+      },
+      {
+        evidenceId: 'evidence-008',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        path: 'packages/ui/package.json',
+        kind: 'package',
+        claim: 'Package discovered',
+        locator: 'file:packages/ui/package.json',
+        contentHash: 'hash008',
+        lifecycle: 'current',
+      },
+    ];
+
+    const snapshot = createMockSnapshot(applications, packages, [], evidence);
+    const result = await validateEvidenceCompleteness(snapshot);
+
+    expect(result.errors).toHaveLength(0);
+    expect(result.warnings).toHaveLength(0);
+  });
 });
