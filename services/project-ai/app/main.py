@@ -15,7 +15,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import evidence, health, snapshot, tasks
+from app.api.routes import agents, evidence, governance, health, snapshot, tasks
 
 
 @asynccontextmanager
@@ -77,6 +77,8 @@ app.include_router(health.router)
 app.include_router(snapshot.router)
 app.include_router(evidence.router)
 app.include_router(tasks.router)
+app.include_router(governance.router)
+app.include_router(agents.router)
 
 
 @app.get("/")
@@ -91,6 +93,8 @@ async def root():
             "snapshot": "/snapshot",
             "evidence": "/evidence",
             "tasks": "/tasks",
+            "approvals": "/approvals",
+            "agents": "/agents",
             "docs": "/docs",
         }
     }
