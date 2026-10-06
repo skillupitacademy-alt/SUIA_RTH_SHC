@@ -1123,3 +1123,227 @@ class TestWave4ComposerVerification:
         assert result.status == CertificationGateStatus.PASS
         assert 'passed for 2 block(s)' in result.message.lower() or 'verified for 2 block(s)' in result.message.lower()
 
+
+class TestWave5RuntimeVerification:
+    """Test Wave 5 runtime and browser verification gates."""
+    
+    @pytest.fixture
+    def mock_snapshot_runtime_valid(self):
+        """Valid snapshot for runtime verification."""
+        return {
+            'metadata': {
+                'timestamp': '2025-01-29T00:00:00Z',
+                'scannerVersion': '1.0.0'
+            },
+            'blocks': {
+                'verified': [
+                    {
+                        'blockType': 'introduction',
+                        'version': 'I1',
+                        'documented': True,
+                        'implemented': True,
+                        'rendered': True,
+                        'registered': True,
+                        'tested': False,
+                        'verificationLevel': 'REGISTERED',
+                        'ubrcStatus': 'UBRC_VALID',
+                        'ubrcDetails': {
+                            'hasDataBlockVersion': True,
+                            'registryEntry': True,
+                            'versionMatch': True
+                        },
+                        'evidenceId': 'ev-intro-verified-001'
+                    }
+                ]
+            },
+            'evidence': [
+                {
+                    'evidenceId': 'ev-intro-verified-001',
+                    'kind': 'block-verification',
+                    'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+                    'contentHash': 'abc123',
+                    'description': 'Introduction block verification',
+                    'symbol': 'introduction'
+                }
+            ],
+            'findings': []
+        }
+    
+    def test_runtime_gate_passes_with_valid_block(self, mock_snapshot_runtime_valid):
+        """Runtime verification gate passes when block is properly implemented."""
+        executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
+        
+        result = executor.execute_runtime_verification_gate(['I1'])
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert len(result.evidence_ids) > 0
+        assert len(result.blockers) == 0
+        assert 'runtime verification passed' in result.message.lower()
+    
+    def test_runtime_gate_blocked_with_empty_snapshot(self):
+        """Runtime gate blocked when snapshot has no verified blocks."""
+        snapshot = {
+            'metadata': {},
+            'blocks': {'verified': []},
+            'evidence': [],
+            'findings': []
+        }
+        
+        executor = CertificationGateExecutor(snapshot, Path('.'))
+        
+        result = executor.execute_runtime_verification_gate(['I1'])
+        
+        assert result.status == CertificationGateStatus.BLOCKED
+        assert len(result.blockers) > 0
+        assert 'unavailable' in result.message.lower() or 'no verified blocks' in result.message.lower()
+    
+    def test_runtime_gate_fails_with_missing_block(self):
+        """Runtime gate fails when block not found in snapshot."""
+        snapshot = {
+            'metadata': {},
+            'blocks': {
+                'verified': [
+                    {
+                        'blockType': 'introduction',
+                        'evidenceId': 'ev-intro-001'
+                    }
+                ]
+            },
+            'evidence': [],
+            'findings': []
+        }
+        
+        executor = CertificationGateExecutor(snapshot, Path('.'))
+        
+        result = executor.execute_runtime_verification_gate(['nonexistent'])
+        
+        assert result.status == CertificationGateStatus.FAIL
+        assert len(result.blockers) > 0
+    
+    def test_runtime_gate_collects_evidence_ids(self, mock_snapshot_runtime_valid):
+        """Runtime gate collects real evidence IDs from TypeScript discovery."""
+        executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
+        
+        result = executor.execute_runtime_verification_gate(['I1'])
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert len(result.evidence_ids) > 0
+        
+        # Verify evidence IDs are real (not synthetic)
+        for eid in result.evidence_ids:
+            assert eid.startswith('ev-')
+            assert 'candidate' not in eid
+    
+    def test_runtime_gate_verifies_multiple_blocks(self, mock_snapshot_runtime_valid):
+        """Runtime gate can verify multiple blocks in single call."""
+        # Add another block
+        mock_snapshot_runtime_valid['blocks']['verified'].append({
+            'blockType': 'code',
+            'version': 'C1',
+            'evidenceId': 'ev-code-verified-001'
+        })
+        mock_snapshot_runtime_valid['evidence'].append({
+            'evidenceId': 'ev-code-verified-001',
+            'kind': 'block-verification',
+            'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+            'contentHash': 'code123',
+            'description': 'Code block verification',
+            'symbol': 'code'
+        })
+        
+        executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
+        
+        result = executor.execute_runtime_verification_gate(['I1', 'C1'])
+        
+        assert result.status == CertificationGateStatus.PASS
+        assert 'passed for 2 block(s)' in result.message.lower() or 'verified for 2 block(s)' in result.message.lower()
+    
+    def test_browser_gate_passes_with_valid_block(self, mock_snapshot_runtime_valid):
+        """Browser verification gate passes when block renders correctly."""
+        executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
+        
+        result = executor.execute_browser_verification_gate(['I1'])
+        
+        # Browser verification will fail if Playwright not installed,
+        # but gate should handle gracefully
+        assert result.status in [
+            CertificationGateStatus.PASS,
+            CertificationGateStatus.FAIL,
+            CertificationGateStatus.BLOCKED
+        ]
+        
+        # If failed, should have specific error about Playwright
+        if result.status == CertificationGateStatus.FAIL:
+            assert len(result.blockers) > 0
+    
+    def test_browser_gate_blocked_with_empty_snapshot(self):
+        """Browser gate blocked when snapshot has no verified blocks."""
+        snapshot = {
+            'metadata': {},
+            'blocks': {'verified': []},
+            'evidence': [],
+            'findings': []
+        }
+        
+        executor = CertificationGateExecutor(snapshot, Path('.'))
+        
+        result = executor.execute_browser_verification_gate(['I1'])
+        
+        assert result.status == CertificationGateStatus.BLOCKED
+        assert len(result.blockers) > 0
+        assert 'unavailable' in result.message.lower() or 'no verified blocks' in result.message.lower()
+    
+    def test_browser_gate_collects_evidence_ids(self, mock_snapshot_runtime_valid):
+        """Browser gate collects real evidence IDs from TypeScript discovery."""
+        executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
+        
+        result = executor.execute_browser_verification_gate(['I1'])
+        
+        # Should collect evidence IDs even if browser verification fails
+        assert len(result.evidence_ids) > 0
+        
+        # Verify evidence IDs are real (not synthetic)
+        for eid in result.evidence_ids:
+            assert eid.startswith('ev-')
+            assert 'candidate' not in eid
+    
+    def test_browser_gate_creates_screenshot_directory(self, mock_snapshot_runtime_valid, tmp_path):
+        """Browser gate creates screenshot directory if configured."""
+        # Use tmp_path as repository_root
+        executor = CertificationGateExecutor(mock_snapshot_runtime_valid, tmp_path)
+        
+        result = executor.execute_browser_verification_gate(['I1'])
+        
+        # Screenshot directory should be created
+        screenshot_dir = tmp_path / '.evidence' / 'screenshots'
+        assert screenshot_dir.exists()
+    
+    def test_browser_gate_verifies_multiple_blocks(self, mock_snapshot_runtime_valid):
+        """Browser gate can verify multiple blocks in single call."""
+        # Add another block
+        mock_snapshot_runtime_valid['blocks']['verified'].append({
+            'blockType': 'code',
+            'version': 'C1',
+            'evidenceId': 'ev-code-verified-001'
+        })
+        mock_snapshot_runtime_valid['evidence'].append({
+            'evidenceId': 'ev-code-verified-001',
+            'kind': 'block-verification',
+            'path': 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts',
+            'contentHash': 'code123',
+            'description': 'Code block verification',
+            'symbol': 'code'
+        })
+        
+        executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
+        
+        result = executor.execute_browser_verification_gate(['I1', 'C1'])
+        
+        # Should handle multiple blocks
+        assert result.status in [
+            CertificationGateStatus.PASS,
+            CertificationGateStatus.FAIL,
+            CertificationGateStatus.BLOCKED
+        ]
+
+

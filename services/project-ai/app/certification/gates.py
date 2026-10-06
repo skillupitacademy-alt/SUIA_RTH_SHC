@@ -17,6 +17,8 @@ from enum import Enum
 
 from app.models.creation import CertificationGateStatus
 from app.verification.composer import verify_composer_integration, ComposerErrorCode
+from app.verification.runtime import verify_runtime, RuntimeErrorCode
+from app.verification.browser import BrowserVerificationConfig, verify_block_in_browser_sync
 
 
 class GateExecutionResult:
@@ -677,6 +679,245 @@ class CertificationGateExecutor:
         return GateExecutionResult(
             status=CertificationGateStatus.PASS,
             message=f"Theme compatibility verified for {len(candidate_files)} file(s)",
+            evidence_ids=evidence_ids,
+            blockers=[]
+        )
+    
+    def execute_runtime_verification_gate(
+        self,
+        candidate_blocks: List[str],
+        target: str = 'realtutorialhub-admin',
+        route: str = '/'
+    ) -> GateExecutionResult:
+        """
+        Execute runtime verification gate.
+        
+        Verifies blocks at runtime by:
+        1. Starting the application (approved toolchain command)
+        2. Performing health check
+        3. Navigating to target route (via browser verification)
+        4. Locating block in DOM
+        5. Inspecting data-block-type and data-block-version attributes
+        6. Verifying expected content is present
+        7. Verifying renderer executed
+        8. Capturing console errors
+        9. Capturing network errors
+        10. Recording evidence with real TS evidence IDs
+        11. Stopping application process
+        
+        SAFETY INVARIANTS:
+        - No arbitrary shell execution
+        - Approved toolchain operations only (pnpm --filter <target> dev)
+        - Process cleanup on completion
+        
+        Args:
+            candidate_blocks: List of block identifiers to verify
+            target: Application to start (default: realtutorialhub-admin)
+            route: Route to navigate to (default: /)
+            
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        evidence_ids: List[str] = []
+        blockers: List[str] = []
+        
+        # Get block verification data from snapshot
+        blocks_data = self.snapshot.get('blocks', {})
+        verified_blocks = blocks_data.get('verified', [])
+        
+        if not verified_blocks:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Runtime verification unavailable: snapshot contains no verified blocks",
+                evidence_ids=[],
+                blockers=["Run TypeScript discovery scan to generate block verification data"]
+            )
+        
+        # Verify each candidate block at runtime
+        for candidate_block in candidate_blocks:
+            block_type = self._extract_block_type(candidate_block)
+            
+            # Perform runtime verification
+            result = verify_runtime(
+                block_type=block_type,
+                snapshot=self.snapshot,
+                repository_root=self.repository_root,
+                target=target,
+                route=route,
+                expected_content={'blockType': block_type}
+            )
+            
+            # Collect evidence IDs
+            evidence_ids.extend(result.evidenceIds)
+            
+            # Check for failures
+            if not result.passed:
+                if result.error_code:
+                    blockers.append(
+                        f"{candidate_block}: {result.error_code.value} - {result.error_message}"
+                    )
+                else:
+                    blockers.append(f"{candidate_block}: {result.error_message}")
+            
+            # Check for console/network errors even if passed
+            if result.consoleErrors:
+                blockers.append(
+                    f"{candidate_block}: {len(result.consoleErrors)} console error(s) detected"
+                )
+            
+            if result.networkErrors:
+                blockers.append(
+                    f"{candidate_block}: {len(result.networkErrors)} network error(s) detected"
+                )
+        
+        # Determine gate status
+        if blockers:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message=f"Runtime verification failed: {len(blockers)} issue(s) found",
+                evidence_ids=evidence_ids,
+                blockers=blockers
+            )
+        
+        if not evidence_ids:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Runtime verification incomplete: no evidence collected",
+                evidence_ids=[],
+                blockers=["Unable to locate evidence IDs for candidate blocks"]
+            )
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message=f"Runtime verification passed for {len(candidate_blocks)} block(s)",
+            evidence_ids=evidence_ids,
+            blockers=[]
+        )
+    
+    def execute_browser_verification_gate(
+        self,
+        candidate_blocks: List[str],
+        base_url: str = 'http://localhost:3000',
+        route: str = '/',
+        headless: bool = True
+    ) -> GateExecutionResult:
+        """
+        Execute browser verification gate.
+        
+        Uses Playwright to verify blocks in a real browser:
+        1. Launch browser (headless)
+        2. Navigate to target URL
+        3. Wait for block to render
+        4. Capture DOM state (data-block-type, data-block-version attributes)
+        5. Verify expected content present
+        6. Capture screenshot as evidence
+        7. Record console errors
+        8. Record network failures
+        
+        SAFETY INVARIANTS:
+        - Browser runs headless (no GUI)
+        - No credentials in evidence output
+        - No secrets in screenshot or logs
+        - Clean browser shutdown
+        
+        Args:
+            candidate_blocks: List of block identifiers to verify
+            base_url: Base URL of application (default: http://localhost:3000)
+            route: Route to navigate to (default: /)
+            headless: Run browser in headless mode (default: True)
+            
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        evidence_ids: List[str] = []
+        blockers: List[str] = []
+        
+        # Get block verification data from snapshot
+        blocks_data = self.snapshot.get('blocks', {})
+        verified_blocks = blocks_data.get('verified', [])
+        
+        if not verified_blocks:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Browser verification unavailable: snapshot contains no verified blocks",
+                evidence_ids=[],
+                blockers=["Run TypeScript discovery scan to generate block verification data"]
+            )
+        
+        # Create browser config
+        config = BrowserVerificationConfig(
+            base_url=base_url,
+            headless=headless,
+            timeout=30000,  # 30 seconds
+            screenshot_path=self.repository_root / '.evidence' / 'screenshots',
+            viewport_width=1280,
+            viewport_height=720
+        )
+        
+        # Ensure screenshot directory exists
+        if config.screenshot_path:
+            config.screenshot_path.mkdir(parents=True, exist_ok=True)
+        
+        # Verify each candidate block in browser
+        for candidate_block in candidate_blocks:
+            block_type = self._extract_block_type(candidate_block)
+            
+            # Get evidence IDs from snapshot
+            block_evidence = next(
+                (b for b in verified_blocks if b.get('blockType') == block_type),
+                None
+            )
+            
+            if block_evidence and 'evidenceId' in block_evidence:
+                evidence_ids.append(block_evidence['evidenceId'])
+            
+            # Perform browser verification
+            result = verify_block_in_browser_sync(
+                block_type=block_type,
+                route=route,
+                expected={'blockType': block_type},
+                config=config,
+                evidence_ids=evidence_ids
+            )
+            
+            # Check for failures
+            if not result.passed:
+                if result.error_code:
+                    blockers.append(
+                        f"{candidate_block}: {result.error_code.value} - {result.error_message}"
+                    )
+                else:
+                    blockers.append(f"{candidate_block}: {result.error_message}")
+            
+            # Check for console/network errors even if passed
+            if result.consoleErrors:
+                for error in result.consoleErrors[:3]:  # Limit to first 3
+                    blockers.append(f"{candidate_block}: Console error: {error}")
+            
+            if result.networkErrors:
+                for error in result.networkErrors[:3]:  # Limit to first 3
+                    blockers.append(f"{candidate_block}: Network error: {error}")
+        
+        # Determine gate status
+        if blockers:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message=f"Browser verification failed: {len(blockers)} issue(s) found",
+                evidence_ids=evidence_ids,
+                blockers=blockers
+            )
+        
+        if not evidence_ids:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Browser verification incomplete: no evidence collected",
+                evidence_ids=[],
+                blockers=["Unable to locate evidence IDs for candidate blocks"]
+            )
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message=f"Browser verification passed for {len(candidate_blocks)} block(s)",
             evidence_ids=evidence_ids,
             blockers=[]
         )
