@@ -155,7 +155,7 @@ export interface TestSuite {
 }
 
 export interface RepositorySnapshot {
-  schemaVersion: '1.0.0';
+  schemaVersion: '1.0.0' | '1.1.0';
   repository: {
     owner: string;
     name: string;

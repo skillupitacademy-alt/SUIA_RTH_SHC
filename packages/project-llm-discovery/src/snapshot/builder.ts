@@ -71,7 +71,7 @@ export async function buildSnapshot(
 
   // Construct snapshot without canonical hash
   const snapshotWithoutHash: Omit<RepositorySnapshot, 'canonicalHash'> = {
-    schemaVersion: '1.0.0',
+    schemaVersion: '1.1.0',
     repository: {
       owner,
       name: repoName,

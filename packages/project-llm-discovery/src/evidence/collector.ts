@@ -60,6 +60,7 @@ export class EvidenceCollector {
       claim,
       locator,
       contentHash,
+      lifecycle: 'current', // M2.1: Default to current lifecycle
       ...(metadata && { metadata }),
     };
   }

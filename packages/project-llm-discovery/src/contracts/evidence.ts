@@ -1,4 +1,11 @@
 /**
+ * Evidence lifecycle classification
+ * - 'current': Evidence reflecting present state at snapshot time (strict validation)
+ * - 'historical': Evidence retained for audit/lineage (lenient validation)
+ */
+export type EvidenceLifecycle = 'current' | 'historical';
+
+/**
  * Evidence record representing a discovered fact about the repository
  * 
  * Evidence provides forensic-grade traceability for all discovery claims.
@@ -76,5 +83,6 @@ export interface Evidence {
   claim: string;
   locator: string;
   contentHash: string;
+  lifecycle: EvidenceLifecycle;
   metadata?: Record<string, unknown>;
 }
