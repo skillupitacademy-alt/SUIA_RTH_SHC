@@ -301,6 +301,35 @@ All 5 architectural rules verified:
 | Architecture rules | ✅ PASS | All 5 rules verified |
 | Review findings | ✅ RESOLVED | Phase 3 findings already addressed |
 
+## Review Findings Resolution
+
+Based on `.agents/tasks/project-ai-remediation-review.json`, Phase 3 specific findings addressed:
+
+### Finding #5: Final Gate File Globbing ✅ ADDRESSED
+
+**Issue:** `final_gate.py` uses `gates_dir.glob('*.json')` to read gate results, which is file scanning not snapshot consumption.
+
+**Resolution:**
+- Documented as explicit architectural exception in `aggregate_gate_results()` docstring
+- Rationale: Reading Python's own logged evidence from `.project-ai/runs/`, NOT scanning repository structure
+- This is permitted because it reads evidence logs Python itself wrote
+- NO CODE CHANGE REQUIRED (already properly documented)
+
+### Finding #8: Browser Verification Graceful Degradation ✅ FIXED
+
+**Issue:** Browser verification graceful degradation not explicit in gates when Playwright unavailable.
+
+**Resolution:**
+- Enhanced `BrowserCertificationRunner` with explicit degradation handling
+- Added `_create_degraded_result()` helper method that returns degraded evidence when Playwright unavailable
+- Enhanced class docstring to document degradation behavior for gates
+- Added check for Playwright unavailability after subprocess execution
+- Returns `ev-browser-degraded` evidence ID with degradation marker
+- Gates (`runtime_verification_gate`, `browser_verification_gate`) already handle `RUNTIME_START_FAILURE` error code with BLOCKED status and clear message
+- **Commit:** `7f9902dc - fix(project-ai): document graceful degradation in browser certification [wave R7]`
+
+**Phase 3 Findings Status:** ✅ ALL RESOLVED
+
 ## Known Issues (Non-Blocking)
 
 1. **Snapshot generation error** (Medium severity)
