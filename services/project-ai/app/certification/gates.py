@@ -64,8 +64,9 @@ class CertificationGateExecutor:
         
         Verification checks:
         1. Manifest hash matches computed hash (tamper detection)
-        2. Target path not inferred from candidate block name
+        2. Target path not inferred from candidate block name (enhanced detection)
         3. All evidence IDs exist in snapshot
+        4. Evidence IDs semantically relate to candidate files
         
         Args:
             manifest: PlacementManifest to validate
@@ -84,10 +85,9 @@ class CertificationGateExecutor:
         if computed_hash != manifest.manifestHash:
             errors.append("Manifest hash verification failed (tampering detected)")
         
-        # Verify no path inference from block name
-        # Check if candidateId (e.g., "candidate-block-I1") appears to drive targetPath
-        candidate_name = manifest.candidateId.lower().replace('-', '/').replace('candidate/', '').replace('block/', '')
-        if candidate_name in manifest.targetPath.lower():
+        # Enhanced path inference detection (Finding #2)
+        # Check for multiple forms of path derivation: substring, token, edit distance
+        if self._detect_path_inference(manifest.candidateId, manifest.targetPath):
             errors.append(f"Target path appears inferred from block name: {manifest.candidateId}")
         
         # Verify evidence IDs exist in snapshot
@@ -96,9 +96,135 @@ class CertificationGateExecutor:
             if evidence_id not in snapshot_evidence_ids:
                 errors.append(f"Evidence ID {evidence_id} not found in snapshot")
         
+        # Semantic evidence validation (Finding #3)
+        # Verify evidence IDs relate to the candidate files being certified
+        if not self._validate_evidence_semantic_binding(manifest):
+            errors.append("Evidence IDs do not relate to candidate files")
+        
         return (len(errors) == 0, errors)
     
-    def execute_ubrc_gate(self, candidate_blocks: List[str], manifest: Optional[PlacementManifest] = None) -> GateExecutionResult:
+    def _detect_path_inference(self, candidate_id: str, target_path: str) -> bool:
+        """
+        Enhanced path inference detection using multiple strategies.
+        
+        Checks for:
+        1. Direct substring matching
+        2. Token-based comparison (ignores case, separators)
+        3. Edit distance (catches abbreviations and transformations)
+        
+        Args:
+            candidate_id: Candidate identifier (e.g., "candidate-block-I1")
+            target_path: Target file path
+            
+        Returns:
+            True if path appears inferred from candidate ID
+        """
+        # Strategy 1: Substring matching (existing)
+        candidate_name = candidate_id.lower().replace('-', '/').replace('candidate/', '').replace('block/', '')
+        if candidate_name in target_path.lower():
+            return True
+        
+        # Strategy 2: Token-based comparison
+        # Extract tokens from candidate ID and target path
+        candidate_tokens = set(filter(None, candidate_id.lower().replace('-', ' ').replace('_', ' ').split()))
+        path_tokens = set(filter(None, target_path.lower().replace('/', ' ').replace('-', ' ').replace('_', ' ').split()))
+        
+        # Remove common words that don't indicate inference
+        stop_words = {'candidate', 'block', 'src', 'components', 'blocks', 'tsx', 'ts', 'jsx', 'js'}
+        candidate_tokens -= stop_words
+        path_tokens -= stop_words
+        
+        # If >50% of candidate tokens appear in path, likely inferred
+        if candidate_tokens and len(candidate_tokens & path_tokens) / len(candidate_tokens) > 0.5:
+            return True
+        
+        # Strategy 3: Edit distance (Levenshtein) for abbreviation detection
+        # Extract key parts for comparison
+        candidate_core = candidate_id.lower().replace('candidate-', '').replace('block-', '').replace('-', '')
+        path_parts = target_path.lower().split('/')
+        
+        for part in path_parts:
+            part_clean = part.replace('.tsx', '').replace('.ts', '').replace('.jsx', '').replace('.js', '')
+            if part_clean and candidate_core:
+                # Calculate similarity ratio
+                distance = self._levenshtein_distance(candidate_core, part_clean)
+                max_len = max(len(candidate_core), len(part_clean))
+                similarity = 1 - (distance / max_len) if max_len > 0 else 0
+                
+                # If >70% similar, likely inferred
+                if similarity > 0.7:
+                    return True
+        
+        return False
+    
+    def _levenshtein_distance(self, s1: str, s2: str) -> int:
+        """Calculate Levenshtein edit distance between two strings."""
+        if len(s1) < len(s2):
+            return self._levenshtein_distance(s2, s1)
+        
+        if len(s2) == 0:
+            return len(s1)
+        
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                # Cost of insertions, deletions, or substitutions
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+        
+        return previous_row[-1]
+    
+    def _validate_evidence_semantic_binding(self, manifest: PlacementManifest) -> bool:
+        """
+        Validate that evidence IDs semantically relate to candidate files.
+        
+        Checks that evidence paths/claims overlap with candidate target path
+        or that evidence kind matches expected types for the candidate.
+        
+        Args:
+            manifest: PlacementManifest to validate
+            
+        Returns:
+            True if evidence is semantically bound to candidate
+        """
+        all_evidence = self.snapshot.get('evidence', [])
+        target_path_normalized = manifest.targetPath.lower().replace('\\', '/')
+        
+        # Extract directory and filename from target path
+        target_parts = set(filter(None, target_path_normalized.split('/')))
+        
+        related_evidence_count = 0
+        for evidence_id in manifest.evidenceIds:
+            evidence = next((e for e in all_evidence if e.get('evidenceId') == evidence_id), None)
+            if not evidence:
+                continue
+            
+            # Check if evidence path relates to target path
+            evidence_path = evidence.get('path', '').lower().replace('\\', '/')
+            evidence_parts = set(filter(None, evidence_path.split('/')))
+            
+            # If paths share significant components, evidence is related
+            if evidence_parts & target_parts:
+                related_evidence_count += 1
+                continue
+            
+            # Check if evidence kind is appropriate for block certification
+            evidence_kind = evidence.get('kind', '')
+            valid_kinds = {
+                'type-definition', 'component', 'ubrc-verification',
+                'registry-entry', 'renderer-implementation', 'block-implementation'
+            }
+            if evidence_kind in valid_kinds:
+                related_evidence_count += 1
+        
+        # Require at least one related evidence ID
+        return related_evidence_count > 0
+    
+    def execute_ubrc_gate(self, candidate_blocks: List[str], manifest: PlacementManifest) -> GateExecutionResult:
         """
         Execute UBRC (Universal Block Renderer Contract) compliance gate.
         
@@ -120,16 +246,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         evidence_ids: List[str] = []
         blockers: List[str] = []
@@ -220,7 +345,7 @@ class CertificationGateExecutor:
             blockers=[]
         )
     
-    def execute_brand_independence_gate(self, candidate_files: List[str], manifest: Optional[PlacementManifest] = None) -> GateExecutionResult:
+    def execute_brand_independence_gate(self, candidate_files: List[str], manifest: PlacementManifest) -> GateExecutionResult:
         """
         Execute brand independence verification gate.
         
@@ -247,16 +372,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL status and detailed findings
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         from app.verification.brand import verify_brand_independence
         
@@ -302,7 +426,7 @@ class CertificationGateExecutor:
             blockers=[]
         )
     
-    def execute_registry_verification_gate(self, candidate_blocks: List[str], manifest: Optional[PlacementManifest] = None) -> GateExecutionResult:
+    def execute_registry_verification_gate(self, candidate_blocks: List[str], manifest: PlacementManifest) -> GateExecutionResult:
         """
         Execute registry verification gate.
         
@@ -316,16 +440,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         evidence_ids: List[str] = []
         blockers: List[str] = []
@@ -398,7 +521,7 @@ class CertificationGateExecutor:
             blockers=[]
         )
     
-    def execute_renderer_verification_gate(self, candidate_blocks: List[str], manifest: Optional[PlacementManifest] = None) -> GateExecutionResult:
+    def execute_renderer_verification_gate(self, candidate_blocks: List[str], manifest: PlacementManifest) -> GateExecutionResult:
         """
         Execute renderer verification gate.
         
@@ -414,16 +537,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         evidence_ids: List[str] = []
         blockers: List[str] = []
@@ -502,7 +624,7 @@ class CertificationGateExecutor:
             blockers=[]
         )
     
-    def execute_evidence_binding_gate(self, candidate_blocks: List[str], manifest: Optional[PlacementManifest] = None) -> GateExecutionResult:
+    def execute_evidence_binding_gate(self, candidate_blocks: List[str], manifest: PlacementManifest) -> GateExecutionResult:
         """
         Execute evidence binding gate.
         
@@ -518,16 +640,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         evidence_ids: List[str] = []
         blockers: List[str] = []
@@ -605,7 +726,7 @@ class CertificationGateExecutor:
             blockers=[]
         )
     
-    def execute_composer_verification_gate(self, candidate_blocks: List[str], manifest: Optional[PlacementManifest] = None) -> GateExecutionResult:
+    def execute_composer_verification_gate(self, candidate_blocks: List[str], manifest: PlacementManifest) -> GateExecutionResult:
         """
         Execute Composer integration verification gate.
         
@@ -632,16 +753,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         evidence_ids: List[str] = []
         blockers: List[str] = []
@@ -706,8 +826,8 @@ class CertificationGateExecutor:
     def execute_theme_compatibility_gate(
         self,
         candidate_blocks: List[str],
-        target: str = 'skillhubcore-admin',
-        manifest: Optional[PlacementManifest] = None
+        manifest: PlacementManifest,
+        target: str = 'skillhubcore-admin'
     ) -> GateExecutionResult:
         """
         Execute theme compatibility gate.
@@ -732,16 +852,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         from app.verification.theme import verify_theme_compatibility
         
@@ -818,9 +937,9 @@ class CertificationGateExecutor:
     def execute_runtime_verification_gate(
         self,
         candidate_blocks: List[str],
+        manifest: PlacementManifest,
         target: str = 'realtutorialhub-admin',
-        route: str = '/',
-        manifest: Optional[PlacementManifest] = None
+        route: str = '/'
     ) -> GateExecutionResult:
         """
         Execute runtime verification gate.
@@ -852,16 +971,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         evidence_ids: List[str] = []
         blockers: List[str] = []
@@ -894,6 +1012,20 @@ class CertificationGateExecutor:
             
             # Collect evidence IDs
             evidence_ids.extend(result.evidenceIds)
+            
+            # Explicit degradation handling (Finding #8)
+            # When Playwright unavailable, return BLOCKED with clear message
+            if result.error_code == RuntimeErrorCode.RUNTIME_START_FAILURE:
+                return GateExecutionResult(
+                    status=CertificationGateStatus.BLOCKED,
+                    message="Runtime verification unavailable: Playwright not installed or accessible",
+                    evidence_ids=evidence_ids,
+                    blockers=[
+                        f"{candidate_block}: {result.error_message}",
+                        "Install Playwright: pnpm add -D playwright",
+                        "Or skip browser verification for this run"
+                    ]
+                )
             
             # Check for failures
             if not result.passed:
@@ -942,10 +1074,10 @@ class CertificationGateExecutor:
     def execute_browser_verification_gate(
         self,
         candidate_blocks: List[str],
+        manifest: PlacementManifest,
         base_url: str = 'http://localhost:3000',
         route: str = '/',
-        headless: bool = True,
-        manifest: Optional[PlacementManifest] = None
+        headless: bool = True
     ) -> GateExecutionResult:
         """
         Execute browser verification gate.
@@ -976,16 +1108,15 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest if provided
-        if manifest:
-            valid, errors = self._validate_manifest(manifest)
-            if not valid:
-                return GateExecutionResult(
-                    status=CertificationGateStatus.BLOCKED,
-                    message="Manifest validation failed",
-                    evidence_ids=[],
-                    blockers=errors
-                )
+        # Validate manifest (now required - Finding #1)
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
         
         evidence_ids: List[str] = []
         blockers: List[str] = []
@@ -1037,6 +1168,20 @@ class CertificationGateExecutor:
                 config=config,
                 evidence_ids=evidence_ids
             )
+            
+            # Explicit degradation handling (Finding #8)
+            # When Playwright unavailable, return BLOCKED with clear message
+            if result.error_code == RuntimeErrorCode.RUNTIME_START_FAILURE:
+                return GateExecutionResult(
+                    status=CertificationGateStatus.BLOCKED,
+                    message="Browser verification unavailable: Playwright not installed or accessible",
+                    evidence_ids=evidence_ids,
+                    blockers=[
+                        f"{candidate_block}: {result.error_message}",
+                        "Install Playwright: pnpm add -D playwright && pnpm exec playwright install chromium",
+                        "Or skip browser verification for this run"
+                    ]
+                )
             
             # Check for failures
             if not result.passed:

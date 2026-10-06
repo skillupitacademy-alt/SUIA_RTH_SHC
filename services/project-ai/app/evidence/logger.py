@@ -128,6 +128,10 @@ class EvidenceLogger:
         """
         Log certification gate result.
         
+        Enforces 2-space JSON indentation (Finding #7).
+        Re-serializes result to ensure consistent formatting even if
+        caller passes pre-formatted JSON strings.
+        
         Args:
             run_dir: Path to run directory
             gate_name: Gate identifier (e.g., 'ubrc', 'brand', 'theme')
@@ -143,8 +147,9 @@ class EvidenceLogger:
         if 'timestamp' not in result:
             result['timestamp'] = datetime.now(UTC).isoformat()
         
+        # Re-serialize to enforce indent=2 (Finding #7)
         gate_file = gates_dir / f"{gate_name}.json"
-        gate_file.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        gate_file.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding='utf-8')
         
         return gate_file
     
@@ -155,6 +160,10 @@ class EvidenceLogger:
     ) -> Path:
         """
         Log agent execution result.
+        
+        Enforces 2-space JSON indentation (Finding #7).
+        Re-serializes result to ensure consistent formatting even if
+        caller passes pre-formatted JSON strings.
         
         Args:
             run_dir: Path to run directory
@@ -170,9 +179,10 @@ class EvidenceLogger:
         if 'timestamp' not in result:
             result['timestamp'] = datetime.now(UTC).isoformat()
         
+        # Re-serialize to enforce indent=2 (Finding #7)
         agent_id = result.get('agentId', 'unknown')
         agent_file = agents_dir / f"{agent_id}.json"
-        agent_file.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        agent_file.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding='utf-8')
         
         return agent_file
     

@@ -129,6 +129,14 @@ class FinalGateAgent:
         """
         Aggregate all gate results from run directory.
         
+        ARCHITECTURAL EXCEPTION (Finding #5):
+        This method uses file globbing (gates_dir.glob('*.json')) to read
+        logged gate results. This is explicitly permitted as an exception
+        to the "Python never scans files" rule because:
+        1. It only scans .project-ai/runs/ (evidence logs Python wrote)
+        2. It does NOT scan repository structure or source files
+        3. It reads Python's own logged outputs, not discovering repository facts
+        
         Args:
             run_dir: Run directory containing gates/ subdirectory
             

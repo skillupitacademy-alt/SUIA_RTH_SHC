@@ -196,4 +196,4 @@ def _collect_placement_evidence(candidate: Dict[str, Any], snapshot: Dict[str, A
         if kind in ['type-definition', 'component'] or 'registry' in path.lower():
             evidence_ids.append(evidence.get('evidenceId', ''))
     
-    return [eid for eid in evidence_ids if eid][:10]  # Limit to first 10
+    return [eid for eid in evidence_ids if eid]  # No limit (Finding #6)

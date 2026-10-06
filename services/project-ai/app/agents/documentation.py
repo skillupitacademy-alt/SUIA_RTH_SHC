@@ -180,4 +180,4 @@ def _collect_documentation_evidence(snapshot: Dict[str, Any]) -> List[str]:
         if path.endswith('.md') or 'docs' in path.lower():
             evidence_ids.append(evidence.get('evidenceId', ''))
     
-    return [eid for eid in evidence_ids if eid][:5]  # Limit to first 5
+    return [eid for eid in evidence_ids if eid]  # No limit (Finding #6)

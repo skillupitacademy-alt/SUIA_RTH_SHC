@@ -14,6 +14,18 @@ Browser Verification Flow:
         → Collect screenshots from file system
         → Return RuntimeVerification
 
+GRACEFUL DEGRADATION (Finding #8):
+    When Playwright is unavailable, browser verification:
+    1. Returns RuntimeVerification with passed=False
+    2. Sets error_code=RUNTIME_START_FAILURE
+    3. Sets error_message describing unavailability
+    4. Allows gates to handle degradation explicitly:
+       - runtime_verification_gate: Returns BLOCKED with clear message
+       - browser_verification_gate: Returns BLOCKED with clear message
+    
+    Gates explicitly check for error_code and return appropriate status.
+    No silent failures - unavailability is always reported to user.
+
 Error Codes (from runtime.py):
     - RUNTIME_NAVIGATION_FAILURE: Cannot navigate to target route
     - RUNTIME_BLOCK_NOT_FOUND: Block not found in DOM

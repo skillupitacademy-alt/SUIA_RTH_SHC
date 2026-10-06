@@ -126,7 +126,7 @@ async def test_execute_governance_verifies_manifest_hash():
 
 @pytest.mark.asyncio
 async def test_execute_governance_warns_missing_approver():
-    """Test governance agent warns when approver missing."""
+    """Test governance agent fails when manifest hash missing (Finding #4)."""
     snapshot = create_test_snapshot()
     
     context = AgentContext(
@@ -138,13 +138,14 @@ async def test_execute_governance_warns_missing_approver():
         repository_snapshot=snapshot,
         evidence_graph={},
         approved_scope=[],
-        prior_agent_outputs={},
+        prior_agent_outputs={},  # No placement result with manifest_hash
         repository_root=Path("/test"),
         timestamp=datetime.now(UTC)
     )
     
     result = await execute_governance(context)
     
-    assert result.status == AgentStatus.SUCCESS
-    assert len(result.warnings) > 0
-    assert any("approver" in warn.lower() for warn in result.warnings)
+    # Finding #4: Governance must enforce manifest presence
+    assert result.status == AgentStatus.FAILED
+    assert len(result.errors) > 0
+    assert any("manifest hash" in err.lower() for err in result.errors)

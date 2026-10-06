@@ -12,8 +12,8 @@ from app.models.candidate import PlacementManifest, PlacementDecision, BlockFami
 
 
 def create_test_manifest(
-    candidate_id: str = "candidate-test-block",
-    target_path: str = "packages/blocks/src/custom/TestBlock.tsx",
+    candidate_id: str = "candidate-block-XYZ789",
+    target_path: str = "packages/blocks/src/custom/IntroductionBlock.tsx",
     evidence_ids: list[str] = None,
     tamper: bool = False
 ) -> PlacementManifest:
@@ -34,7 +34,8 @@ def create_test_manifest(
         createdAt=datetime.now(UTC).isoformat()
     )
     
-    # Compute hash
+    # Compute hash exactly as validation does (zero hash first, then compute)
+    manifest.manifestHash = ""
     manifest_json = manifest.model_dump_json(exclude_none=True, indent=2)
     computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
     manifest.manifestHash = computed_hash
@@ -46,7 +47,7 @@ def create_test_manifest(
     return manifest
 
 
-def create_test_snapshot(evidence_ids: list[str] = None) -> dict:
+def create_test_snapshot(evidence_ids: list[str] = None, target_path: str = "packages/blocks/src/custom/IntroductionBlock.tsx") -> dict:
     """Create a minimal test snapshot."""
     if evidence_ids is None:
         evidence_ids = ["evidence-abc123", "evidence-def456"]
@@ -64,10 +65,10 @@ def create_test_snapshot(evidence_ids: list[str] = None) -> dict:
                 "evidenceId": eid,
                 "scannerName": "d1-structure-scanner",
                 "timestamp": "2025-01-30T12:00:00Z",
-                "path": "packages/blocks/src/test/Block.tsx",
+                "path": target_path,  # Match target path for semantic validation
                 "kind": "component",
                 "claim": "Test evidence",
-                "locator": "file:packages/blocks/src/test/Block.tsx",
+                "locator": f"file:{target_path}",
                 "contentHash": "hash123",
                 "lifecycle": "current"
             }
@@ -89,6 +90,10 @@ class TestManifestValidation:
         executor = CertificationGateExecutor(snapshot, Path("/test"))
         
         valid, errors = executor._validate_manifest(manifest)
+        
+        # Debug: print errors if validation fails
+        if not valid:
+            print(f"Validation errors: {errors}")
         
         assert valid is True
         assert len(errors) == 0

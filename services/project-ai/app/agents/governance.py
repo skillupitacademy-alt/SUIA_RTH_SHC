@@ -45,13 +45,11 @@ async def execute_governance(context: AgentContext) -> AgentResult:
         if submitter and approver and submitter == approver:
             errors.append(f"Self-approval detected: submitter and approver are both '{submitter}'")
         
-        # Rule 2: Manifest hash verification
-        if manifest_hash:
-            # Verify hash format
-            if len(manifest_hash) != 64:
-                warnings.append(f"Manifest hash has unexpected length: {len(manifest_hash)}")
-        else:
-            warnings.append("No manifest hash found in placement result")
+        # Rule 2: Manifest presence and hash verification (Finding #4)
+        if not manifest_hash:
+            errors.append("Manifest hash is required but missing from placement result")
+        elif len(manifest_hash) != 64:
+            errors.append(f"Manifest hash has invalid length: {len(manifest_hash)} (expected 64)")
         
         # Rule 3: Approval workflow compliance
         if not submitter:
@@ -121,4 +119,4 @@ def _collect_governance_evidence(snapshot: Dict[str, Any]) -> List[str]:
         if 'policy' in path.lower() or 'governance' in path.lower():
             evidence_ids.append(evidence.get('evidenceId', ''))
     
-    return [eid for eid in evidence_ids if eid][:5]  # Limit to first 5
+    return [eid for eid in evidence_ids if eid]  # No limit (Finding #6)

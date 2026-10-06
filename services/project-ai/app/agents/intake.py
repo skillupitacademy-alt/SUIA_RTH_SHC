@@ -121,7 +121,7 @@ def _classify_candidate(candidate: Dict[str, Any], implementations: List[Dict[st
     
     # Find similar blocks
     similar_blocks = []
-    for impl in implementations[:5]:  # Limit to top 5
+    for impl in implementations:  # No limit (Finding #6)
         impl_type = impl.get('type', '').lower()
         if candidate_type and impl_type and candidate_type in impl_type:
             similar_blocks.append({
@@ -158,4 +158,4 @@ def _collect_block_evidence(implementations: List[Dict[str, Any]], snapshot: Dic
         if kind in ['type-definition', 'component']:
             evidence_ids.append(evidence.get('evidenceId', ''))
     
-    return [eid for eid in evidence_ids if eid][:20]  # Limit to first 20
+    return [eid for eid in evidence_ids if eid]  # No limit (Finding #6)
