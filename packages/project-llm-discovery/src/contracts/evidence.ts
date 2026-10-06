@@ -37,6 +37,9 @@ export type EvidenceLifecycle = 'current' | 'historical';
  * - `test-directory`: Directory containing tests
  * - `test-file`: Individual test file
  * - `type-definition`: TypeScript type/interface definition
+ * - `dependency-declaration`: package.json dependency declaration
+ * - `dependency-resolution`: lockfile resolution data
+ * - `ubrc-verification`: UBRC compliance verification
  * 
  * ## Critical vs Historical Evidence
  * - **Critical kinds** (missing = validation error):
@@ -80,7 +83,8 @@ export interface Evidence {
     | 'test-file'
     | 'type-definition'
     | 'dependency-declaration'
-    | 'dependency-resolution';
+    | 'dependency-resolution'
+    | 'ubrc-verification';
   symbol?: string; // explicit identity component used in deterministic ID
   claim: string;
   locator: string;

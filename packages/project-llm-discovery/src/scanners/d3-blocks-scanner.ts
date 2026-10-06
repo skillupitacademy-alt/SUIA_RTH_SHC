@@ -7,6 +7,7 @@ import type {
   BlockVerification,
   BlockDiscrepancy,
   VerificationLevel,
+  UBRCStatus,
 } from '../contracts/snapshot.js';
 import { FileNotFoundError, RepositoryAccessError } from '../contracts/errors.js';
 import { EvidenceCollector } from '../evidence/collector.js';
@@ -24,6 +25,7 @@ const BLOCK_CORPUS_DOC_PATH = 'ILS_UI_UX/docs/PROJECT_LLM_18_BLOCK_CORPUS_REGIST
 const BLOCK_TYPES_PATH = 'packages/types/src/tutorial-rich-document/blocks/content-blocks.ts';
 const BLOCK_RENDERERS_DIR = 'packages/ui/src/tutorial/blocks';
 const TUTORIAL_BLOCK_RENDERER_PATH = 'packages/ui/src/tutorial/TutorialBlockRenderer.tsx';
+const BLOCK_REGISTRY_PATH = 'packages/types/src/tutorial-rich-document/registry.ts';
 
 /**
  * D3 Blocks Scanner
@@ -214,8 +216,63 @@ export async function scanBlocks(
     }
   }
 
+  // Step 3.5: Perform UBRC (Universal Block Registry Contract) verification
+  const ubrcResults = await performUBRCVerification(
+    implemented,
+    rendered,
+    adapter,
+    collector,
+    scannerName
+  );
+  
+  // Update rendered blocks with UBRC status
+  for (const renderer of rendered) {
+    const ubrcResult = ubrcResults.get(renderer.blockType);
+    if (ubrcResult !== undefined) {
+      renderer.ubrcStatus = ubrcResult.status;
+      renderer.ubrcDetails = {
+        hasDataBlockVersion: ubrcResult.hasDataBlockVersion,
+        registryEntry: ubrcResult.hasRegistryEntry,
+        versionMatch: ubrcResult.versionMatch,
+      };
+    }
+  }
+  
+  // Add UBRC findings
+  const ubrcValid = Array.from(ubrcResults.values()).filter(r => r.status === 'UBRC_VALID').length;
+  const ubrcInvalid = ubrcResults.size - ubrcValid;
+  
+  if (ubrcInvalid > 0) {
+    findings.push({
+      findingId: randomUUID(),
+      severity: 'warning',
+      category: 'ubrc-verification',
+      message: `Found ${ubrcInvalid} blocks with UBRC compliance issues (${ubrcValid} valid)`,
+    });
+    
+    // Detail specific issues
+    for (const [blockType, result] of ubrcResults.entries()) {
+      if (result.status !== 'UBRC_VALID') {
+        findings.push({
+          findingId: randomUUID(),
+          severity: result.status === 'UBRC_MISSING' || result.status === 'UBRC_RENDERER_MISSING' ? 'error' : 'warning',
+          category: 'ubrc-verification',
+          message: `Block '${blockType}': ${result.status}`,
+          recommendation: result.recommendation,
+        });
+      }
+    }
+  } else if (ubrcValid > 0) {
+    findings.push({
+      findingId: randomUUID(),
+      severity: 'info',
+      category: 'ubrc-verification',
+      message: `All ${ubrcValid} blocks are UBRC-compliant`,
+    });
+  }
+
   // Step 4: Cross-reference for VERIFIED blocks
-  const verifiedBlocks = await crossReferenceBlocks(implemented, rendered, documented, adapter);
+  const verifiedBlocks = await crossReferenceBlocks(implemented, rendered, documented, adapter, ubrcResults);
   verified.push(...verifiedBlocks);
 
   // Step 5: Detect discrepancies
@@ -506,6 +563,187 @@ function deriveVerificationLevel(evidence: {
 }
 
 /**
+ * Perform UBRC (Universal Block Registry Contract) verification
+ * 
+ * UBRC compliance chain:
+ * 1. Block type exists in BLOCK_REGISTRY
+ * 2. Renderer implementation exists
+ * 3. Renderer includes data-block-version attribute (for versioned blocks)
+ * 4. Version matches across implementation and registry
+ * 
+ * Returns Map of blockType -> verification result
+ */
+async function performUBRCVerification(
+  implemented: BlockImplementation[],
+  rendered: BlockRenderer[],
+  adapter: RepositoryAdapter,
+  collector: EvidenceCollector,
+  scannerName: string
+): Promise<Map<string, {
+  status: UBRCStatus;
+  hasDataBlockVersion: boolean;
+  hasRegistryEntry: boolean;
+  versionMatch: boolean;
+  recommendation?: string;
+}>> {
+  const results = new Map<string, {
+    status: UBRCStatus;
+    hasDataBlockVersion: boolean;
+    hasRegistryEntry: boolean;
+    versionMatch: boolean;
+    recommendation?: string;
+  }>();
+  
+  // Load BLOCK_REGISTRY from registry.ts
+  let registryTypes: Set<string> = new Set();
+  try {
+    if (await adapter.fileExists(BLOCK_REGISTRY_PATH)) {
+      const registryContent = await adapter.readFile(BLOCK_REGISTRY_PATH);
+      const contentHash = await adapter.getFileHash(BLOCK_REGISTRY_PATH);
+      
+      collector.add(
+        collector.createEvidence(
+          scannerName,
+          'ubrc-verification',
+          BLOCK_REGISTRY_PATH,
+          contentHash,
+          'BLOCK_REGISTRY loaded for UBRC verification',
+          `file:${BLOCK_REGISTRY_PATH}`
+        )
+      );
+      
+      // Parse registry types from: heading: { type: 'heading', ...
+      const typeRegex = /(\w+):\s*\{\s*type:\s*['"](\w+)['"]/g;
+      let match;
+      while ((match = typeRegex.exec(registryContent)) !== null) {
+        const blockType = match[2];
+        if (blockType !== undefined) {
+          registryTypes.add(blockType);
+        }
+      }
+    }
+  } catch (error) {
+    // Registry not found - will mark all blocks as UBRC_REGISTRY_MISSING
+  }
+  
+  // Build map of block types to their renderer files
+  const rendererMap = new Map<string, BlockRenderer>();
+  for (const renderer of rendered) {
+    rendererMap.set(renderer.blockType, renderer);
+  }
+  
+  // Build map of implemented versions
+  const implementedMap = new Map<string, BlockImplementation[]>();
+  for (const impl of implemented) {
+    const existing = implementedMap.get(impl.type) ?? [];
+    existing.push(impl);
+    implementedMap.set(impl.type, existing);
+  }
+  
+  // Verify each implemented block
+  for (const impl of implemented) {
+    const blockType = impl.type;
+    const version = impl.version;
+    
+    // Check 1: Registry entry exists
+    const hasRegistryEntry = registryTypes.size === 0 ? false : registryTypes.has(blockType);
+    
+    // Check 2: Renderer exists
+    const renderer = rendererMap.get(blockType);
+    if (renderer === undefined) {
+      results.set(blockType, {
+        status: 'UBRC_RENDERER_MISSING',
+        hasDataBlockVersion: false,
+        hasRegistryEntry,
+        versionMatch: false,
+        recommendation: `Create renderer component for '${blockType}' in ${BLOCK_RENDERERS_DIR}`,
+      });
+      continue;
+    }
+    
+    // Check 3: data-block-version attribute (for versioned blocks)
+    let hasDataBlockVersion = false;
+    let versionMatch = true;
+    
+    try {
+      const rendererContent = await adapter.readFile(renderer.componentPath);
+      
+      // Look for data-block-version attribute in JSX (both static and dynamic)
+      // Pattern 1: data-block-version="C1" (static)
+      // Pattern 2: data-block-version={block.version} (dynamic)
+      // Pattern 3: data-block-version={...} (expression)
+      const dataVersionRegex = /data-block-version\s*=\s*(?:["'][^"']*["']|\{[^}]+\})/;
+      hasDataBlockVersion = dataVersionRegex.test(rendererContent);
+      
+      // If versioned block, verify version matches
+      if (version !== undefined) {
+        if (!hasDataBlockVersion) {
+          results.set(blockType, {
+            status: 'UBRC_ATTRIBUTE_MISSING',
+            hasDataBlockVersion: false,
+            hasRegistryEntry,
+            versionMatch: false,
+            recommendation: `Add data-block-version="${version}" attribute to renderer ${renderer.componentPath}`,
+          });
+          continue;
+        }
+        
+        // Check if the specific version is in the renderer (static or dynamic)
+        // Static: data-block-version="C1"
+        const staticVersionPattern = new RegExp(`data-block-version\\s*=\\s*["']${version}["']`);
+        // Dynamic: data-block-version={block.version} (acceptable for versioned blocks)
+        const dynamicVersionPattern = /data-block-version\s*=\s*\{[^}]*version[^}]*\}/;
+        
+        versionMatch = staticVersionPattern.test(rendererContent) || dynamicVersionPattern.test(rendererContent);
+        
+        if (!versionMatch) {
+          results.set(blockType, {
+            status: 'UBRC_VERSION_MISMATCH',
+            hasDataBlockVersion: true,
+            hasRegistryEntry,
+            versionMatch: false,
+            recommendation: `Update data-block-version in ${renderer.componentPath} to match implementation version ${version} (use static="${version}" or dynamic={block.version})`,
+          });
+          continue;
+        }
+      }
+    } catch (error) {
+      // Can't read renderer file
+      results.set(blockType, {
+        status: 'UBRC_RENDERER_MISSING',
+        hasDataBlockVersion: false,
+        hasRegistryEntry,
+        versionMatch: false,
+        recommendation: `Renderer file ${renderer.componentPath} cannot be read`,
+      });
+      continue;
+    }
+    
+    // Check 4: Registry entry (if registry was loaded)
+    if (registryTypes.size > 0 && !hasRegistryEntry) {
+      results.set(blockType, {
+        status: 'UBRC_MISSING',
+        hasDataBlockVersion,
+        hasRegistryEntry: false,
+        versionMatch,
+        recommendation: `Add '${blockType}' entry to BLOCK_REGISTRY in ${BLOCK_REGISTRY_PATH}`,
+      });
+      continue;
+    }
+    
+    // All checks passed
+    results.set(blockType, {
+      status: 'UBRC_VALID',
+      hasDataBlockVersion: version !== undefined ? hasDataBlockVersion : true, // Unversioned blocks don't need attribute
+      hasRegistryEntry,
+      versionMatch,
+    });
+  }
+  
+  return results;
+}
+
+/**
  * Cross-reference implemented and rendered blocks for verification status
  * 
  * Evidence-driven verification:
@@ -526,7 +764,14 @@ async function crossReferenceBlocks(
   implemented: BlockImplementation[],
   rendered: BlockRenderer[],
   documented: BlockFamilyDoc[],
-  adapter: RepositoryAdapter
+  adapter: RepositoryAdapter,
+  ubrcResults: Map<string, {
+    status: UBRCStatus;
+    hasDataBlockVersion: boolean;
+    hasRegistryEntry: boolean;
+    versionMatch: boolean;
+    recommendation?: string;
+  }>
 ): Promise<BlockVerification[]> {
   const verified: BlockVerification[] = [];
 
@@ -558,6 +803,10 @@ async function crossReferenceBlocks(
 
     const level = deriveVerificationLevel(evidence);
 
+    // Get UBRC status for this block
+    const ubrcResult = ubrcResults.get(impl.type);
+    const ubrcStatus = ubrcResult?.status;
+
     // Add all implemented blocks to verified list with their actual verification level
     // This allows tracking partial implementation states
     verified.push({
@@ -569,6 +818,7 @@ async function crossReferenceBlocks(
       registered: isRegistered,
       tested: isTested,
       verificationLevel: level,
+      ubrcStatus,
     });
   }
 

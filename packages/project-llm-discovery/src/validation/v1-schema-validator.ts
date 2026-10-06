@@ -176,6 +176,7 @@ const EvidenceSchema = z.object({
     'type-definition',
     'dependency-declaration',
     'dependency-resolution',
+    'ubrc-verification',
   ]),
   claim: z.string(),
   locator: z.string(),

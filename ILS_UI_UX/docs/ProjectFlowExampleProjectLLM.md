@@ -2943,3 +2943,1857 @@ Creation modes:
 But **we are not finished coding that system yet**. M1 and M2.1/M2.2 are implemented; the remaining M2 phases plus Candidate Intake/Placement, Candidate Block certification, Composer/runtime/browser verification, I2/mix-and-match orchestration, and the complete Project AI browser workflow still need to be implemented.
 
 And I would treat the **Candidate Intake & Placement Agent + placement manifest** as an explicit part of the remaining implementation rather than assuming it is already covered by the previous plan.
+
+Yes — **those two remaining areas can and should be implemented against the actual GitHub repository**, and I agree with your UI requirement.
+
+I inspected the verified `m2-project-ai-foundation` branch rather than treating the UI as a generic Next.js application. The repository already has a fairly strong visual/system foundation that Project AI should reuse.
+
+### What the existing repository tells us
+
+The SkillHubCore Admin application already uses:
+
+- Next.js App Router
+- authenticated/admin route groups
+- a shared `ClientShell`
+- `LeftSidebar`
+- `Header`
+- `RightSidebar`
+- shared UI components
+- Tailwind shared preset
+- Inter + Outfit typography
+- the existing pink/blue/orange visual language
+- the existing `ShellContext`
+- the existing `/dashboard` structure
+- existing factory/wizard interaction patterns
+
+For example, the existing admin shell uses the actual application structure:
+
+```text
+ClientShell
+ ├── LeftSidebar
+ ├── Header
+ ├── Main Content
+ └── RightSidebar
+```
+
+and the dashboard already uses the repository's established cards, typography, spacing, iconography, colors and interaction patterns.
+
+The repository's global CSS currently establishes:
+
+```text
+Inter
+Outfit
+pink primary
+blue secondary
+white cards
+slate text
+soft dashboard background
+rounded cards
+Tailwind
+```
+
+So **Project AI should absolutely not introduce a separate design system.**
+
+---
+
+# 1. Project AI should become a native SkillHubCore Admin experience
+
+I would implement the UI inside the existing:
+
+```text
+apps/skillhubcore-admin/
+```
+
+rather than creating:
+
+```text
+apps/project-ai-ui/
+```
+
+or another standalone frontend.
+
+That would violate the architectural intent of having Project AI operate as part of the SkillHubCore platform.
+
+The eventual navigation should be something like:
+
+```text
+SkillHubCore Admin
+│
+├── Dashboard
+├── Content
+├── Factory
+├── Tutorial Composer
+│
+├── Project AI
+│   ├── Overview
+│   ├── Create Block
+│   ├── Candidates
+│   ├── Verification
+│   ├── Composer Tests
+│   └── Evidence
+│
+└── ...
+```
+
+The exact sidebar location should be determined by the existing `LeftSidebar` structure rather than inventing a second navigation system.
+
+---
+
+# 2. Project AI Dashboard should visually match SkillHubCore
+
+I would **not** make it look like a generic AI chat dashboard.
+
+It should look like an engineering/control-plane section of SkillHubCore.
+
+For example:
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ Project AI                                      Environment │
+│ Repository intelligence & block certification               │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
+│ │ Snapshot   │ │ Evidence   │ │ Candidates │ │ Certified  │ │
+│ │ CURRENT    │ │ 12,482     │ │ 8          │ │ 23         │ │
+│ └────────────┘ └────────────┘ └────────────┘ └────────────┘ │
+│                                                             │
+│ ┌─────────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Verification Pipeline       │ │ Repository Health       │ │
+│ │                             │ │                         │ │
+│ │ ✓ Discovery                 │ │ ✓ Snapshot              │ │
+│ │ ✓ Evidence                 │ │ ✓ Evidence integrity    │ │
+│ │ ✓ UBRC                     │ │ ✓ Registry              │ │
+│ │ ✓ Composer                 │ │ ⚠ Runtime               │ │
+│ │ ○ Browser                  │ │ ○ Candidate             │ │
+│ └─────────────────────────────┘ └─────────────────────────┘ │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Candidate Blocks                                       │ │
+│ │                                                         │ │
+│ │ Introduction I2       CERTIFIED       Composer          │ │
+│ │ Introduction Custom   WAITING         Approval          │ │
+│ │ Code C2               FAILED          UBRC              │ │
+│ └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+It should feel like:
+
+**SkillHubCore Admin + engineering verification console**
+
+—not a separate SaaS product.
+
+---
+
+# 3. Block Creation page should reuse the existing Factory UX language
+
+This is particularly important.
+
+The repository already contains things such as:
+
+```text
+BlueprintFactoryWizard
+FactoryLayout
+```
+
+and those components already establish a strong wizard/modal language.
+
+The existing `BlueprintFactoryWizard`, for example, uses:
+
+- full-screen workflow
+- strong header
+- uppercase engineering-style labels
+- iconography
+- progress/state presentation
+- dark protocol panels
+- configuration cards
+- validation/error states
+- explicit commit/return actions
+
+That is actually a very good foundation for the Project AI Candidate Block workflow.
+
+So I would make:
+
+```text
+Project AI
+    ↓
+Create Block
+```
+
+use the same visual grammar.
+
+---
+
+# 4. Proposed Create Block UI
+
+### Step 1 — Creation Mode
+
+```text
+Create Educational Block
+
+Choose creation mode
+
+┌──────────────────────┐
+│ I2 ONLY              │
+│ Build Introduction   │
+│ version I2           │
+└──────────────────────┘
+
+┌──────────────────────┐
+│ MIX & MATCH          │
+│ Compose I2 using     │
+│ compatible blocks    │
+└──────────────────────┘
+
+┌──────────────────────┐
+│ NEW CANDIDATE        │
+│ Upload and certify   │
+│ a new implementation │
+└──────────────────────┘
+```
+
+This maps directly to the architecture you approved.
+
+---
+
+# 5. Step 2 — Upload Candidate
+
+```text
+Candidate Block Intake_
+
+Introduction / I2
+
+Drop candidate files here
+
+┌────────────────────────────────────────────┐
+│                                            │
+│       Drop files or Browse                 │
+│                                            │
+│       TS / TSX / JSX / CSS / JSON / HTML  │
+│                                            │
+└────────────────────────────────────────────┘
+
+Detected files: 7
+
+✓ Hero.tsx
+✓ types.ts
+✓ styles.css
+✓ registry.ts
+✓ renderer.tsx
+✓ Hero.test.tsx
+✓ config.json
+```
+
+Then Project AI analyzes the files.
+
+---
+
+# 6. Step 3 — Repository Analysis
+
+This is where the UI becomes materially different from a normal upload wizard.
+
+```text
+Repository Analysis_
+
+✓ Repository snapshot loaded
+✓ Evidence graph loaded
+✓ Introduction family identified
+✓ I1 implementation found
+✓ I2 contract identified
+✓ Renderer identified
+✓ Registry identified
+✓ Composer integration identified
+
+Candidate Analysis
+
+7 uploaded files
+6 repository relationships
+1 exact duplicate
+2 existing canonical artifacts
+```
+
+This information is coming from the deterministic snapshot/evidence system—not LLM guesses.
+
+---
+
+# 7. Step 4 — Placement Manifest
+
+This is one of the most important screens.
+
+```text
+Placement Proposal_
+
+Candidate: introduction-i2-hero-01
+
+┌──────────────┬──────────────┬───────────────────────────────┐
+│ Uploaded     │ Action       │ Repository Target             │
+├──────────────┼──────────────┼───────────────────────────────┤
+│ Hero.tsx     │ ADD          │ .../IntroductionI2Hero.tsx    │
+│ types.ts     │ EXTEND       │ existing canonical types.ts   │
+│ registry.ts  │ UPDATE       │ existing registry             │
+│ renderer.tsx │ UPDATE       │ existing renderer              │
+│ Hero.test.tsx│ ADD          │ existing test directory        │
+│ styles.css   │ REJECT       │ brand coupling detected       │
+└──────────────┴──────────────┴───────────────────────────────┘
+```
+
+The user should see **why** Project AI wants to place each file there.
+
+For example:
+
+> `registry.ts → UPDATE`  
+> Existing Introduction registry already owns version registration. Creating another registry would violate canonical-artifact policy.
+
+That directly implements the rule we established earlier.
+
+---
+
+# 8. Step 5 — Human Approval
+
+Then:
+
+```text
+Review Repository Changes_
+
+Candidate
+Introduction I2
+
+Proposed changes
+────────────────────────
+3 ADD
+2 UPDATE
+1 EXTEND
+1 REJECT
+
+Certification gates
+────────────────────────
+✓ Contract
+✓ ILS
+✓ LSNB
+✓ RSSB
+✓ UBRC
+○ Composer
+○ Runtime
+○ Browser
+○ Brand Independence
+○ Evidence
+
+[ Reject ]                    [ Approve Changes ]
+```
+
+The **Approve Changes** button should not merely be a UI action.
+
+It must create the cryptographically bound approval:
+
+```text
+manifestHash
+approvedBy
+approvedAt
+taskId
+```
+
+and the backend must reject an approval if the manifest subsequently changes.
+
+---
+
+# 9. Verification page
+
+After implementation:
+
+```text
+Candidate Verification_
+
+Introduction I2
+────────────────────────────────
+
+Contract                 ✓ PASS
+ILS                      ✓ PASS
+LSNB                     ✓ PASS
+RSSB                     ✓ PASS
+UBRC                     ✓ PASS
+Registry                 ✓ PASS
+Renderer                 ✓ PASS
+Composer                 ✓ PASS
+Tests                    ✓ PASS
+Runtime                  ✓ PASS
+Browser                  ✓ PASS
+Brand Independence       ✓ PASS
+Evidence                 ✓ PASS
+
+                         ─────────────
+                         CERTIFIED
+```
+
+This is much more useful than displaying a generic:
+
+> "AI implementation successful."
+
+Because certification is **gate-based and evidence-backed**.
+
+---
+
+# 10. Evidence should be first-class UI
+
+Project AI should have an evidence drawer/panel.
+
+For example:
+
+```text
+Evidence
+
+EVID-7A82...
+────────────────────────
+Claim:
+Introduction I2 renderer exists.
+
+Source:
+packages/ui/src/tutorial/blocks/IntroductionBlock.tsx
+
+Kind:
+component
+
+Hash:
+sha256: ...
+
+Lifecycle:
+current
+
+Referenced by:
+✓ Contract
+✓ UBRC
+✓ Renderer
+✓ Browser
+```
+
+Clicking the evidence should take the engineer to the repository source or source-location view.
+
+This is important because the architecture is explicitly evidence-driven.
+
+---
+
+# 11. Browser verification should use the real application
+
+This is where the final `⏳` becomes actual implementation.
+
+The browser verifier should not create a fake page just to demonstrate that React rendered.
+
+It should launch the **actual SkillHubCore application** and execute:
+
+```text
+Project AI
+   ↓
+approved application operation
+   ↓
+SkillHubCore Admin / Composer
+   ↓
+Introduction
+   ↓
+I2
+   ↓
+select candidate
+   ↓
+configure
+   ↓
+save draft
+   ↓
+generate tutorial
+   ↓
+render tutorial
+   ↓
+browser inspection
+```
+
+Then Playwright verifies:
+
+```text
+[data-block-type="introduction"]
+[data-block-version="I2"]
+```
+
+plus:
+
+- visible content
+- expected renderer
+- no console errors
+- no relevant network errors
+- correct responsive rendering
+- Composer selection
+- save operation
+- generated tutorial
+- final tutorial rendering
+
+---
+
+# 12. Full end-to-end certification
+
+Then the final gate becomes:
+
+```text
+Candidate
+   │
+   ▼
+Upload
+   │
+   ▼
+Intake
+   │
+   ▼
+Classification
+   │
+   ▼
+Placement Manifest
+   │
+   ▼
+Human Approval
+   │
+   ▼
+Repository Mutation
+   │
+   ▼
+Discovery Refresh
+   │
+   ▼
+Contract
+   │
+   ├── ILS
+   ├── LSNB
+   ├── RSSB
+   └── UBRC
+   │
+   ▼
+Registry
+   │
+   ▼
+Renderer
+   │
+   ▼
+Composer
+   │
+   ▼
+Tests
+   │
+   ▼
+Runtime
+   │
+   ▼
+Browser
+   │
+   ▼
+Brand Independence
+   │
+   ▼
+Evidence
+   │
+   ▼
+CERTIFIED
+   │
+   ▼
+Composer
+   │
+   ▼
+I2 / I2-CUSTOM
+   │
+   ▼
+Temporary Tutorial
+   │
+   ▼
+Browser
+   │
+   ▼
+PRODUCTION READY
+```
+
+That is the correct definition of **full end-to-end production certification**.
+
+---
+
+## Most importantly: yes, the UI should match the existing SkillHubCore UI
+
+I verified enough of the actual repository to say this confidently.
+
+The existing admin application already has:
+
+- `ClientShell`
+- `LeftSidebar`
+- `Header`
+- `RightSidebar`
+- `/dashboard`
+- Factory workflows
+- shared UI components
+- Tailwind shared preset
+- Inter/Outfit typography
+- pink/blue/orange visual language
+- rounded white cards
+- slate backgrounds/text
+- existing wizard patterns
+
+So I would **reuse those components and conventions**, not create a new Project AI visual framework.
+
+The existing `IntroductionBlock` also demonstrates the project's educational visual language: controlled typography, cards, rounded sections, Lucide icons, responsive layouts, and `data-block-version` runtime identity.
+
+That makes the architecture:
+
+```text
+SkillHubCore Admin
+       │
+       ├── Existing Dashboard UI
+       │
+       ├── Existing Factory UI
+       │
+       ├── Existing Composer UI
+       │
+       └── Project AI UI
+               │
+               ├── Dashboard
+               ├── Candidate Intake
+               ├── Placement
+               ├── Approval
+               ├── Certification
+               ├── Evidence
+               └── Runtime/Browser Verification
+```
+
+rather than:
+
+```text
+SkillHubCore
+    +
+completely separate Project AI frontend   ❌
+```
+
+### One important distinction
+
+**Matching the UI does not mean hard-coding Project AI to today's dashboard implementation.**
+
+Project AI should consume the existing shared UI primitives/theme and existing shell. If the SkillHubCore visual system changes later, Project AI should inherit those changes.
+
+---
+
+### And yes: I can take this all the way to the actual repository implementation
+
+The next implementation package should therefore be **repository-specific**, not generic:
+
+1. **M2.3–M2.7 completion**
+2. **FastAPI Project AI service**
+3. **SkillHubCore Project AI dashboard**
+4. **Create Block wizard**
+5. **Candidate upload**
+6. **Placement Manifest UI**
+7. **Approval UI**
+8. **Certification dashboard**
+9. **Evidence viewer**
+10. **Composer verification**
+11. **Playwright runtime verification**
+12. **I2-only**
+13. **Mix & Match**
+14. **final Candidate → Composer → Tutorial → Browser certification**
+
+And the UI should be implemented inside the existing SkillHubCore Admin architecture, reusing its shell and design system rather than creating another frontend.
+
+The source architecture itself requires this final Candidate → Composer → tutorial → browser path before declaring production readiness. Pasted markdown (2)
+
+**So the answer to your question is yes: we can implement those remaining `⏳` items from the actual GitHub repo, and the Project AI UI should look and behave as a native part of the existing SkillHubCore Dashboard/Factory/Composer experience.**
+
+Yes. The earlier UI wording is **too narrow** if the actual goal is the complete Educational Block creation system.
+
+The correct model is **not “Create I2”**. It is:
+
+> **Create Educational Block → select any of the 18 block families → select an existing version or create a compatible candidate/custom composition → Project AI applies the repository compliance contracts → generate with dummy JSON → integrate into Tutorial Composer → verify through the real learner rendering path → render under SUIA/RTH brand context.**
+
+The architecture explicitly treats the final path as Candidate → Composer → Tutorial → Browser before production readiness. Pasted markdown (2)
+
+### 1. The UI should therefore start like this
+
+```text
+CREATE EDUCATIONAL BLOCK
+
+Choose Block Family
+────────────────────────────────────────
+
+[ Introduction ]   [ Explanation ]   [ Example ]
+[ Summary      ]   [ Code        ]   [ Quiz    ]
+[ ...          ]   [ ...         ]   [ ...     ]
+
+18 Block Families
+```
+
+Then:
+
+```text
+Choose Version / Creation Mode
+
+Block Family: Introduction
+
+Available versions
+────────────────────────────────────────
+
+○ I1
+○ I2
+○ I3
+○ Custom / Candidate
+
+Creation mode
+────────────────────────────────────────
+
+○ USE EXISTING VERSION
+○ CREATE FROM VERSION
+○ MIX & MATCH
+○ NEW CANDIDATE
+```
+
+So **I2 is one possible target, not the global creation target**.
+
+---
+
+## 2. Project AI should know the contract for every block/version
+
+For every one of the 18 families and every registered version, Project AI should obtain the actual repository-backed contract.
+
+Conceptually:
+
+```text
+18 Block Families
+       │
+       ├── Version 1
+       ├── Version 2
+       ├── Version 3
+       └── Candidate / Custom
+              │
+              ▼
+       Project AI Contract
+              │
+       ├── ILS
+       ├── LSNB
+       ├── RSSB
+       ├── UBRC
+       ├── Renderer
+       ├── Registry
+       ├── Tutorial Composer
+       ├── Data Contract
+       ├── Dummy JSON Contract
+       ├── Runtime Contract
+       ├── Browser Contract
+       └── Brand Independence
+```
+
+Crucially, Project AI should **discover these from the canonical repository contracts/evidence**, rather than hard-code assumptions about what each block requires.
+
+---
+
+# 3. Dummy JSON is the right abstraction
+
+Yes, the candidate should initially be able to operate against **dummy JSON data**.
+
+The flow becomes:
+
+```text
+Candidate Block
+       │
+       ▼
+Project AI determines required data contract
+       │
+       ▼
+Generate/validate dummy JSON
+       │
+       ▼
+Candidate Renderer
+       │
+       ▼
+Tutorial Composer
+       │
+       ▼
+Tutorial Page Block JSON
+       │
+       ▼
+Actual Renderer
+```
+
+For example, conceptually:
+
+```json
+{
+  "blockType": "introduction",
+  "blockVersion": "I2",
+  "data": {
+    "...": "dummy values satisfying the real contract"
+  }
+}
+```
+
+The important distinction is that **dummy data must satisfy the real block schema**.
+
+Project AI should not invent arbitrary JSON simply because React happens to render it.
+
+---
+
+# 4. Tutorial Composer becomes the integration boundary
+
+This is especially important.
+
+The candidate is **not certified merely because its TSX component renders in isolation**.
+
+Instead:
+
+```text
+Candidate
+   ↓
+Contract validation
+   ↓
+Repository placement
+   ↓
+Registry
+   ↓
+Renderer
+   ↓
+Tutorial Composer
+   ↓
+Block JSON
+   ↓
+Tutorial page
+   ↓
+Learner URL
+   ↓
+Browser verification
+```
+
+That is much closer to the architecture you are describing.
+
+The source architecture specifically calls for Composer selection/configuration, saving, tutorial generation/rendering, and browser verification rather than stopping at static component validation. Explain I2 Creation Files
+
+---
+
+# 5. And yes — brand independence means the block should inherit the learner tutorial's brand
+
+This is the key part of your question.
+
+The candidate block should **not contain SUIA-specific or RTH-specific presentation logic**.
+
+Instead:
+
+```text
+                 Candidate Block
+                       │
+                       │ brand-independent
+                       ▼
+                Tutorial Composer
+                       │
+                       ▼
+                 Tutorial JSON
+                       │
+              ┌────────┴────────┐
+              ▼                 ▼
+          SUIA URL            RTH URL
+              │                 │
+              ▼                 ▼
+       SUIA Theme          RTH Theme
+              │                 │
+              ▼                 ▼
+       Candidate Block     Candidate Block
+       + existing blocks   + existing blocks
+```
+
+So the **same certified candidate implementation** can appear in:
+
+```text
+SUIA Tutorial
+────────────────────────
+Existing SUIA blocks
+        +
+Certified Candidate Block
+        +
+Existing SUIA blocks
+```
+
+and:
+
+```text
+RTH Tutorial
+────────────────────────
+Existing RTH blocks
+        +
+Same Certified Candidate Block
+        +
+Existing RTH blocks
+```
+
+The candidate itself should remain brand-independent while consuming the **theme/design-token/context supplied by the tutorial runtime**.
+
+That is the correct interpretation of the brand-independence requirement.
+
+---
+
+# 6. Mix & Match should work across compatible versions
+
+This is also broader than the earlier I2 example.
+
+For example:
+
+```text
+Create Educational Block
+
+Family: Introduction
+
+Base:
+    I2
+
+Composition:
+
+Structure       → I2
+Hero            → Candidate A
+Media           → I1
+Footer          → I2
+Data contract   → I2
+```
+
+Or another family:
+
+```text
+Family: Explanation
+
+Structure       → E3
+Hero            → E2
+Media           → Candidate B
+Footer          → E3
+```
+
+But Project AI should **not permit arbitrary combinations**.
+
+It first performs compatibility checking:
+
+```text
+Candidate A
+     │
+     ├── data compatibility
+     ├── type compatibility
+     ├── version compatibility
+     ├── renderer compatibility
+     ├── registry compatibility
+     ├── responsive compatibility
+     ├── Composer compatibility
+     ├── runtime compatibility
+     └── brand independence
+```
+
+Only compatible combinations become selectable.
+
+The architecture already describes this Mix & Match compatibility/composition approach. Pasted markdown (2)
+
+---
+
+# 7. The UI should therefore change from my previous proposal
+
+Instead of:
+
+```text
+I2 ONLY
+MIX & MATCH
+NEW CANDIDATE
+```
+
+I recommend:
+
+```text
+CREATE EDUCATIONAL BLOCK
+────────────────────────────────────────────
+
+1. BLOCK FAMILY
+
+   Introduction
+   Explanation
+   Example
+   Summary
+   ...
+   [18 families]
+
+
+2. TARGET VERSION
+
+   Existing:
+   I1
+   I2
+   I3
+   ...
+
+   Custom:
+   Create compatible version
+
+
+3. CREATION MODE
+
+   ┌─────────────────────────────┐
+   │ USE EXISTING               │
+   │ Use a certified version    │
+   └─────────────────────────────┘
+
+   ┌─────────────────────────────┐
+   │ CREATE FROM VERSION        │
+   │ Extend an existing version │
+   └─────────────────────────────┘
+
+   ┌─────────────────────────────┐
+   │ MIX & MATCH                │
+   │ Compose compatible blocks  │
+   └─────────────────────────────┘
+
+   ┌─────────────────────────────┐
+   │ NEW CANDIDATE              │
+   │ Upload implementation      │
+   └─────────────────────────────┘
+```
+
+Then Project AI dynamically changes the next steps according to the selected family/version.
+
+---
+
+# 8. The final system should have two different concepts
+
+This distinction is important.
+
+### Certified block implementation
+
+```text
+Introduction I2 Candidate
+        ↓
+Certified
+```
+
+This means:
+
+> This implementation satisfies the repository's contracts and can be used by Composer.
+
+### Certified composition
+
+```text
+Introduction I2
+   +
+Candidate Hero
+   +
+I1 Media
+   +
+I2 Footer
+        ↓
+I2-CUSTOM
+        ↓
+Certified Composition
+```
+
+This means:
+
+> This particular combination has also passed compatibility and runtime verification.
+
+They should **not be treated as the same object**.
+
+---
+
+# 9. The final learner path
+
+Your intended architecture can therefore be represented as:
+
+```text
+                  PROJECT AI
+                      │
+                      ▼
+             Select Block Family
+                      │
+            ┌─────────┴─────────┐
+            ▼                   ▼
+       Existing Version     Candidate
+            │                   │
+            │             Project AI
+            │             Certification
+            │                   │
+            └─────────┬─────────┘
+                      ▼
+                Compatibility
+                      │
+                      ▼
+                Dummy JSON
+                      │
+                      ▼
+              Tutorial Composer
+                      │
+                      ▼
+              Tutorial Page JSON
+                      │
+          ┌───────────┴───────────┐
+          ▼                       ▼
+       SUIA URL                 RTH URL
+          │                       │
+          ▼                       ▼
+     SUIA Theme               RTH Theme
+          │                       │
+          └───────────┬───────────┘
+                      ▼
+             Candidate Block
+             + existing blocks
+                      │
+                      ▼
+                Browser Test
+                      │
+                      ▼
+              PRODUCTION READY
+```
+
+## 10. One important architectural rule
+
+**The candidate should never decide the brand.**
+
+The tutorial/runtime environment decides:
+
+```text
+brand = SUIA
+```
+
+or:
+
+```text
+brand = RTH
+```
+
+and supplies the appropriate theme/context.
+
+The candidate consumes the platform's canonical styling/token/runtime interfaces.
+
+That is what makes one certified block reusable across both brands.
+
+---
+
+### So, in one sentence
+
+**Yes — we should build the Project AI creation system generically for all 18 educational block families and their registered versions, with I2 merely being one target; Project AI should enforce the actual UBRC/LSNB/RSSB/ILS/Composer/data/runtime contracts, generate schema-valid dummy JSON for verification, integrate the candidate through the real Tutorial Composer and tutorial-page JSON pipeline, and then allow the same brand-independent certified block to render alongside existing blocks under either the SUIA or RTH learner theme.**
+
+And this also means the UI I previously proposed should be **revised from an “I2 creation wizard” into an “18-family Educational Block Factory” with dynamic version/compatibility selection**.
+
+Yes — **with one important boundary**: External AI is responsible for creating/providing the block implementation and its content/data examples; **Project LLM is responsible for repository integration, compliance, verification, and certification**.
+
+The clean responsibility split should be:
+
+| Responsibility | External AI | Project LLM |
+|---|---:|---:|
+| Design block UI/UX | ✅ | — |
+| Generate TS/TSX/CSS/etc. | ✅ | — |
+| Decide visual composition | ✅ | — |
+| Generate dummy/sample JSON | ✅ | Validate against contract |
+| Choose images/content for visualization | ✅ | — |
+| Understand repository architecture | — | ✅ |
+| Identify correct block family/version | — | ✅ |
+| Determine correct repository destination | — | ✅ |
+| Check canonical artifacts | — | ✅ |
+| ILS | — | ✅ |
+| LSNB | — | ✅ |
+| RSSB | — | ✅ |
+| UBRC | — | ✅ |
+| Registry | — | ✅ |
+| Renderer | — | ✅ |
+| Tutorial Composer compatibility | — | ✅ |
+| Data/schema compatibility | — | ✅ |
+| Runtime compatibility | — | ✅ |
+| Browser verification | — | ✅ |
+| Brand independence | — | ✅ |
+| Evidence generation | — | ✅ |
+| Repository placement | — | ✅ |
+| Certification | — | ✅ |
+
+### The key principle
+
+**External AI creates. Project LLM qualifies, integrates, and certifies.**
+
+Project LLM should **not redesign the External AI's block just because it prefers a different implementation**. It should determine whether the supplied implementation can satisfy the repository contracts and, where necessary, tell the External AI exactly what must be changed.
+
+The overall flow should therefore be:
+
+```text
+                    EXTERNAL AI
+                         │
+                         │
+             creates block implementation
+                         │
+              TS / TSX / CSS / JSON
+                         │
+                         ▼
+              ┌───────────────────┐
+              │   PROJECT LLM     │
+              │                   │
+              │ Repository        │
+              │ intelligence      │
+              └─────────┬─────────┘
+                        │
+                        ▼
+                 Identify family
+                        │
+                        ▼
+                 Identify version
+                        │
+                        ▼
+              Determine exact contract
+                        │
+          ┌─────────────┼─────────────┐
+          ▼             ▼             ▼
+         ILS           LSNB          RSSB
+          │             │             │
+          └─────────────┼─────────────┘
+                        ▼
+                       UBRC
+                        │
+                        ▼
+                 Registry / Renderer
+                        │
+                        ▼
+                 Composer Contract
+                        │
+                        ▼
+                  Data Contract
+                        │
+                        ▼
+                 Runtime Contract
+                        │
+                        ▼
+                 Browser Contract
+                        │
+                        ▼
+              Brand Independence
+                        │
+                        ▼
+                  EVIDENCE
+                        │
+                        ▼
+                   CERTIFIED
+```
+
+## For Mix & Match, the same principle applies
+
+Suppose External AI produces:
+
+```text
+Introduction Custom
+
+Structure → I2
+Hero      → External Candidate
+Media     → I1
+Footer    → I2
+```
+
+External AI decides **what it wants to compose**.
+
+Project LLM determines whether that composition is actually legal:
+
+```text
+I2 structure
+      │
+      ├── compatible with candidate hero?       ✓
+      ├── compatible with I1 media?             ✓
+      ├── compatible with I2 footer?             ✓
+      ├── data contract compatible?             ✓
+      ├── renderer compatible?                  ✓
+      ├── registry compatible?                  ✓
+      ├── UBRC valid?                           ✓
+      ├── LSNB valid?                           ✓
+      ├── RSSB valid?                           ✓
+      ├── Composer compatible?                  ✓
+      ├── runtime compatible?                   ✓
+      └── brand independent?                    ✓
+```
+
+If something fails:
+
+```text
+Project LLM
+     │
+     ▼
+FAIL
+UBRC_VERSION_MISMATCH
+     │
+     ▼
+Give External AI exact remediation
+     │
+     ▼
+External AI changes implementation
+     │
+     ▼
+Project LLM re-verifies
+```
+
+So **Project LLM is the gatekeeper, not the creative author**.
+
+---
+
+## What about dummy JSON?
+
+Yes, your understanding is basically correct.
+
+External AI can provide something like:
+
+```json
+{
+  "title": "Welcome to JavaScript",
+  "description": "Learn the fundamentals...",
+  "image": "/example.jpg"
+}
+```
+
+Project LLM then determines:
+
+> Does this JSON satisfy the actual data contract required by this particular block/version?
+
+If yes:
+
+```text
+Dummy JSON
+    ↓
+Data contract ✓
+    ↓
+Renderer ✓
+    ↓
+Tutorial Composer ✓
+```
+
+If not:
+
+```text
+Dummy JSON
+    ↓
+Data contract ✗
+    ↓
+Project LLM
+    ↓
+"Missing field: ..."
+```
+
+It should **not silently invent a different contract** merely to make the candidate pass.
+
+---
+
+# And then comes the repository integration
+
+This is where Project LLM becomes much more than a validator.
+
+After the candidate passes the required analysis, Project LLM determines:
+
+```text
+External AI files
+        │
+        ▼
+Candidate Intake
+        │
+        ▼
+Classify files
+        │
+        ├── Component
+        ├── Type
+        ├── Schema
+        ├── Registry
+        ├── Renderer
+        ├── Style
+        ├── Test
+        └── Asset
+        │
+        ▼
+Find canonical repository locations
+        │
+        ▼
+Placement Manifest
+        │
+        ▼
+Human Approval
+        │
+        ▼
+Repository Integration
+```
+
+This is where your earlier **"don't create another MD if one already exists"** rule also applies.
+
+Project LLM should ask:
+
+> Does the repository already have the canonical artifact for this purpose?
+
+If yes:
+
+```text
+UPDATE / EXTEND / REUSE
+```
+
+rather than:
+
+```text
+CREATE DUPLICATE
+```
+
+---
+
+# Then Project LLM must rediscover the repository
+
+This is an important part of the architecture.
+
+After the approved files are embedded:
+
+```text
+Repository Mutation
+        ↓
+Discovery runs again
+        ↓
+New snapshot
+        ↓
+New evidence
+        ↓
+Re-evaluate candidate
+```
+
+Because Project LLM should **never assume that successful file placement means successful integration**.
+
+It needs to prove:
+
+```text
+Component exists
+        ↓
+Registry knows it
+        ↓
+Renderer knows it
+        ↓
+Composer can select it
+        ↓
+Composer can configure it
+        ↓
+Composer can save it
+        ↓
+Tutorial JSON contains it
+        ↓
+Tutorial renders it
+        ↓
+Browser sees it
+```
+
+---
+
+# Final certification
+
+Only then:
+
+```text
+┌─────────────────────────────────────┐
+│       CANDIDATE BLOCK               │
+│                                     │
+│ Contract                 ✓           │
+│ ILS                     ✓           │
+│ LSNB                    ✓           │
+│ RSSB                    ✓           │
+│ UBRC                    ✓           │
+│ Registry                ✓           │
+│ Renderer                ✓           │
+│ Composer                ✓           │
+│ Data Contract           ✓           │
+│ Runtime                 ✓           │
+│ Browser                 ✓           │
+│ Brand Independence      ✓           │
+│ Evidence                ✓           │
+│                                     │
+│       ★ CERTIFIED ★                 │
+└─────────────────────────────────────┘
+```
+
+Then it becomes available to the Tutorial Composer.
+
+And finally:
+
+```text
+Tutorial Composer
+       ↓
+Introduction / Explanation / etc.
+       ↓
+Select Certified Candidate
+       ↓
+Save Tutorial
+       ↓
+Generate Tutorial JSON
+       ↓
+Learner URL
+       ↓
+┌───────────────┬───────────────┐
+│ SUIA          │ RTH           │
+│               │               │
+│ SUIA theme    │ RTH theme     │
+│ Existing      │ Existing      │
+│ blocks        │ blocks        │
+│ + Candidate   │ + Candidate   │
+└───────────────┴───────────────┘
+```
+
+**Same candidate implementation. Different brand context.**
+
+That is the architecture I would lock in.
+
+The only nuance I would add is that **Project LLM should validate the External AI's dummy JSON, not necessarily own its creation**. If External AI doesn't provide usable dummy data, Project LLM can request remediation or generate a contract-derived test fixture, but the authoritative requirement remains the repository's actual data contract.
+
+Yes. That is the cleaner responsibility boundary.
+
+**External AI owns creation. Project LLM owns the platform, compliance, integration, and certification.**
+
+More precisely:
+
+```text
+                    PROJECT LLM
+                         │
+                         ▼
+              Educational Block Factory
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+     Block Family     Version       Compliance
+     selection        selection     requirements
+          │              │              │
+          └──────────────┼──────────────┘
+                         ▼
+                 EXTERNAL AI
+                         │
+             creates/provides
+                         │
+              ┌──────────┼──────────┐
+              ▼          ▼          ▼
+             UI/UX      Code     JSON/Data
+              │          │          │
+              └──────────┼──────────┘
+                         ▼
+                 Upload to Project LLM
+                         │
+                         ▼
+              PROJECT LLM AUDIT
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+      Compliance      Repository     Integration
+       validation       analysis       analysis
+          │              │              │
+          └──────────────┼──────────────┘
+                         ▼
+                  Human approval
+                         │
+                         ▼
+               Repository placement
+                         │
+                         ▼
+                  Registry update
+                         │
+                         ▼
+                   Renderer update
+                         │
+                         ▼
+                Tutorial Composer
+                         │
+                         ▼
+                Tutorial page JSON
+                         │
+                         ▼
+                 Runtime verification
+                         │
+                         ▼
+                 Browser verification
+                         │
+                         ▼
+                    CERTIFIED
+```
+
+### What Project LLM actually provides to External AI
+
+When the user selects, for example:
+
+```text
+Block Family: Introduction
+Version: I2
+Creation: New Candidate
+```
+
+Project LLM should produce an **External AI Creation Contract** containing the repository-derived requirements:
+
+```text
+INTRODUCTION / I2
+────────────────────────────
+
+Required:
+
+✓ ILS
+✓ LSNB
+✓ RSSB
+✓ UBRC
+✓ Registry integration
+✓ Renderer integration
+✓ Tutorial Composer compatibility
+✓ Required data contract
+✓ Runtime requirements
+✓ Browser requirements
+✓ Brand-independence requirements
+✓ Version identity
+✓ Required tests
+```
+
+For another selection:
+
+```text
+Block Family: Explanation
+Version: E3
+```
+
+Project LLM produces the **Explanation/E3 contract**, based on that actual repository implementation.
+
+So External AI doesn't have to guess what the platform requires.
+
+---
+
+## Then External AI creates the candidate
+
+External AI is responsible for:
+
+```text
+UI/UX
+React/TSX
+TypeScript
+CSS
+assets
+component structure
+dummy/sample JSON
+visual content
+interaction design
+```
+
+It packages those files and gives them to Project LLM.
+
+Project LLM then says:
+
+> "I received your candidate. Now I will determine whether it satisfies the repository's actual requirements and where every artifact belongs."
+
+---
+
+## Project LLM should determine where everything goes
+
+This is an important part of your requirement.
+
+External AI should **not need to know the exact repository directory structure**.
+
+For example, it may upload:
+
+```text
+candidate/
+├── Hero.tsx
+├── Hero.types.ts
+├── Hero.css
+├── Hero.test.tsx
+└── dummy-data.json
+```
+
+Project LLM determines:
+
+```text
+Hero.tsx
+    ↓
+correct canonical block implementation location
+
+Hero.types.ts
+    ↓
+existing canonical type location OR new location if genuinely required
+
+Hero.css
+    ↓
+correct styling location
+
+Hero.test.tsx
+    ↓
+existing canonical test location
+
+dummy-data.json
+    ↓
+appropriate fixture/test location
+```
+
+And for registry/renderer integration:
+
+```text
+existing registry
+       ↑
+       │ UPDATE
+
+existing renderer
+       ↑
+       │ UPDATE
+
+existing Composer metadata/config
+       ↑
+       │ UPDATE
+```
+
+It should **not create duplicate registries, renderers, contracts, or documentation merely because the candidate contains its own versions**.
+
+That follows the canonical-artifact policy we established.
+
+---
+
+# Then Project LLM makes the block visible in Tutorial Composer
+
+This is the critical end result.
+
+Suppose External AI creates:
+
+```text
+Introduction I2 Candidate
+```
+
+After Project LLM successfully integrates and certifies it, the Tutorial Composer should expose something conceptually like:
+
+```text
+Tutorial Composer
+
+Add Block
+────────────────────────────
+
+Introduction
+   ├── I1
+   ├── I2
+   └── I2-Candidate-01  ✓ Certified
+
+Explanation
+   ├── E1
+   ├── E2
+   └── E3
+
+Example
+   ├── EX1
+   └── EX2
+```
+
+The **version identifier comes from the Project LLM/repository integration**, not from the External AI merely declaring a version number.
+
+That is important for integrity.
+
+External AI might say:
+
+```text
+version = I2
+```
+
+but Project LLM determines whether the implementation is actually compliant with the repository's I2 contract.
+
+If it isn't, Project LLM should not register it as I2.
+
+---
+
+# Mix & Match works the same way
+
+Suppose the user asks for:
+
+```text
+Introduction
+Custom Composition
+
+Structure → I2
+Hero      → Candidate A
+Media     → I1
+Footer    → I2
+```
+
+Project LLM creates the composition contract:
+
+```text
+Introduction I2-CUSTOM
+────────────────────────
+
+Structure: I2
+Hero: Candidate A
+Media: I1
+Footer: I2
+
+Compatibility:
+✓ Data
+✓ Type
+✓ Renderer
+✓ Registry
+✓ UBRC
+✓ LSNB
+✓ RSSB
+✓ Composer
+✓ Runtime
+✓ Brand independence
+```
+
+External AI creates the actual custom implementation.
+
+Project LLM then integrates and certifies **that composition**.
+
+---
+
+# And the final learner experience
+
+After certification:
+
+```text
+Tutorial Composer
+        │
+        ▼
+Select:
+Introduction → I2-Candidate-01
+        │
+        ▼
+Configure block
+        │
+        ▼
+Save tutorial
+        │
+        ▼
+Tutorial JSON
+        │
+        ▼
+Learner URL
+```
+
+If the learner opens the SUIA tutorial:
+
+```text
+SUIA Learner URL
+       │
+       ▼
+SUIA tutorial theme/context
+       │
+       ▼
+Existing SUIA blocks
+       +
+Certified Candidate
+       +
+Existing SUIA blocks
+```
+
+If the same candidate is used in RTH:
+
+```text
+RTH Learner URL
+       │
+       ▼
+RTH tutorial theme/context
+       │
+       ▼
+Existing RTH blocks
+       +
+Same Certified Candidate
+       +
+Existing RTH blocks
+```
+
+The candidate **does not become a SUIA block or an RTH block**.
+
+It remains a **platform-certified, brand-independent educational block**.
+
+The learner runtime supplies the applicable brand/theme.
+
+---
+
+## Therefore I would lock the architecture to this rule
+
+> **External AI = Block Creator.**
+>
+> **Project LLM = Block Factory, Compliance Authority, Repository Integrator, Composer Integrator, and Certification Authority.**
+>
+> **Tutorial Composer = Block Selection and Tutorial Composition layer.**
+>
+> **Learner Runtime = Brand-specific rendering environment.**
+
+And the most important point:
+
+**Project LLM does not merely tell the user whether the uploaded files pass. It must actually integrate the approved files into the repository, connect the necessary registry/renderer/Composer paths, assign/verify the repository-recognized block/version identity, and prove through the real Tutorial Composer → tutorial JSON → learner URL path that the block is usable.**
+
+That is the implementation target we should use going forward. Explain I2 Creation Files

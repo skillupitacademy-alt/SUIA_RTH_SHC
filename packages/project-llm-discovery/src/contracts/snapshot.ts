@@ -65,7 +65,31 @@ export interface BlockRenderer {
   componentPath: string;
   registeredInRenderer: boolean;
   evidenceId: string;
+  ubrcStatus?: UBRCStatus;
+  ubrcDetails?: {
+    hasDataBlockVersion: boolean;
+    registryEntry?: boolean;
+    versionMatch?: boolean;
+  };
 }
+
+/**
+ * UBRC (Universal Block Registry Contract) Compliance Status
+ * 
+ * A block is UBRC-compliant when it has a complete verification chain:
+ * - Block type exists in BLOCK_REGISTRY
+ * - Renderer implementation exists
+ * - Renderer includes data-block-version attribute
+ * - Version matches across implementation and registry
+ */
+export type UBRCStatus =
+  | 'UBRC_VALID'              // Complete chain present
+  | 'UBRC_MISSING'            // Block exists but no registry entry
+  | 'UBRC_VERSION_MISMATCH'   // Registry version ≠ implementation version
+  | 'UBRC_TYPE_MISMATCH'      // Registry type ≠ expected type
+  | 'UBRC_REGISTRY_MISSING'   // No registry file found
+  | 'UBRC_RENDERER_MISSING'   // No renderer implementation
+  | 'UBRC_ATTRIBUTE_MISSING'; // No data-block-version attribute in renderer
 
 /**
  * Verification level progression for block implementations.
@@ -100,6 +124,8 @@ export interface BlockVerification {
   tested: boolean;
   /** Highest verification level achieved based on evidence */
   verificationLevel: VerificationLevel;
+  /** UBRC (Universal Block Registry Contract) compliance status */
+  ubrcStatus?: UBRCStatus;
 }
 
 export interface BlockDiscrepancy {
