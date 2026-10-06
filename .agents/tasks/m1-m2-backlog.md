@@ -399,3 +399,73 @@ All nine validators present:
    - Wave 1 compliance note added to final gate record
 
 **Impact:** M2 foundation now meets production readiness standards with zero known compliance gaps in deterministic verification scope. Runtime/browser verification remains appropriately deferred to M3 with documented prerequisites.
+
+---
+
+## Wave 9: Evidence Reconciliation & Documentation — COMPLETE
+
+**Status:** ✅ COMPLETE (2025-01-29)  
+**Branch:** `m2-project-ai-foundation`  
+**Report:** `.agents/tasks/wave9-evidence-reconciliation-report.md`
+
+**Summary:** Wave 9 implemented evidence reconciliation infrastructure to build coherent evidence graphs and update canonical documentation without duplication. All implementations use authoritative TypeScript evidence IDs (no synthetic IDs).
+
+**Completed Items:**
+
+1. **Evidence Graph Builder (`app/evidence/graph.py`)**
+   - `EvidenceGraph` class with node/edge representation
+   - Builds graph from TypeScript discovery snapshot
+   - Detects missing evidence (claims without evidence)
+   - Detects orphan evidence (evidence without consumers)
+   - Detects duplicate evidence IDs
+   - Binds evidence to git revision for certification
+   - Freezes evidence for certification-ready state
+   - Index structures for fast lookup by kind, path, scanner, claim keywords
+
+2. **Evidence Query (`app/evidence/query.py`)**
+   - `EvidenceQuery` class for high-level evidence lookup
+   - Get evidence by ID, claim, block type, kind, path pattern
+   - Verify complete evidence chains
+   - Validate evidence structure (detects synthetic IDs)
+   - Filter critical vs historical evidence
+   - NEVER accepts synthetic evidence IDs (e.g., `candidate-<id>-classification`)
+
+3. **Tests (`tests/test_evidence_graph.py`)**
+   - 17 comprehensive tests covering all graph and query operations
+   - Verification that synthetic evidence IDs are detected and rejected
+   - Tests for graph building, indexing, missing/orphan/duplicate detection
+   - Tests for evidence chain verification and structure validation
+   - Tests for binding and freezing evidence
+   - ✅ All 17 tests passing
+
+4. **Canonical Documentation Updates**
+   - Updated `.agents/tasks/m1-m2-backlog.md` with Wave 9 completion (extended, not recreated)
+   - Documented evidence reconciliation capabilities in backlog
+
+**Key Architectural Invariants:**
+
+- ✅ Evidence IDs sourced from TypeScript discovery snapshot only
+- ✅ No synthetic evidence IDs generated or accepted
+- ✅ Python reads TS snapshot, never scans repository directly
+- ✅ Evidence graph enables forensic-grade traceability
+- ✅ Canonical documentation extended, not duplicated
+
+**Evidence Reconciliation Capabilities:**
+
+- Total evidence graph statistics (nodes, edges, by kind, by scanner, by lifecycle)
+- Missing evidence detection for claims
+- Orphan evidence detection (unreferenced evidence)
+- Duplicate evidence ID detection
+- Evidence binding to git revision
+- Freezing for certification-ready state
+- Fast indexed lookup by kind, path, scanner, claim keywords
+- Evidence chain verification
+- Synthetic evidence ID detection and rejection
+
+**Test Results:**
+
+```
+======================== 17 passed ========================
+```
+
+**Impact:** Evidence reconciliation system provides foundation for certification workflows in Wave 10+ to build coherent evidence packages with forensic-grade traceability. All evidence uses authoritative TypeScript IDs, ensuring architectural boundary integrity.
