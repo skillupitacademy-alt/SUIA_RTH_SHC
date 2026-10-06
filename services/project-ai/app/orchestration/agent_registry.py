@@ -15,6 +15,9 @@ class AgentType(str, Enum):
     """Enumeration of specialized agent types."""
     GATE_CONTROLLER = "gate_controller"
     REPOSITORY_AUDITOR = "repository_auditor"
+    SNAPSHOT_AUTHORITY = "snapshot_authority"
+    EVIDENCE_FREEZE = "evidence_freeze"
+    BLOCK_SPECIFICATION = "block_specification"
     TOOLCHAIN = "toolchain"
     COMPOSER = "composer"
     DEPENDENCY = "dependency"
@@ -85,9 +88,33 @@ class AgentRegistry:
                 agentId="repository_auditor",
                 agentType=AgentType.REPOSITORY_AUDITOR,
                 name="Repository Auditor",
-                capabilities=["read_snapshot", "verify_evidence", "validate_contracts"],
+                capabilities=["validate_git_state", "check_working_directory", "verify_branch", "check_remote"],
                 status="active",
-                description="Reads TypeScript snapshot, verifies evidence integrity, validates contracts"
+                description="Validates git repository state, checks working directory cleanliness, verifies branch, checks remote reachability"
+            ),
+            AgentType.SNAPSHOT_AUTHORITY: Agent(
+                agentId="snapshot_authority",
+                agentType=AgentType.SNAPSHOT_AUTHORITY,
+                name="Snapshot Authority",
+                capabilities=["generate_snapshot", "extract_canonical_hash", "create_run_directory"],
+                status="active",
+                description="Calls TypeScript discovery to generate snapshot, extracts canonical hash, creates run directory structure"
+            ),
+            AgentType.EVIDENCE_FREEZE: Agent(
+                agentId="evidence_freeze",
+                agentType=AgentType.EVIDENCE_FREEZE,
+                name="Evidence Freeze",
+                capabilities=["validate_evidence_structure", "create_evidence_index", "verify_hashes"],
+                status="active",
+                description="Validates evidence structure from snapshot, creates evidence index, verifies hash formats without recomputation"
+            ),
+            AgentType.BLOCK_SPECIFICATION: Agent(
+                agentId="block_specification",
+                agentType=AgentType.BLOCK_SPECIFICATION,
+                name="Block Specification",
+                capabilities=["parse_candidate_structure", "compare_canonical", "generate_requirements"],
+                status="active",
+                description="Parses candidate block structure, compares to canonical blocks, generates structural requirements"
             ),
             AgentType.TOOLCHAIN: Agent(
                 agentId="toolchain",

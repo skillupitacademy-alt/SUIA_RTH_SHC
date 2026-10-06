@@ -126,8 +126,22 @@ class AgentCoordinator:
         )
         
         # Map agent type to execution handlers
+        # Wave B foundation agents (FEAT-002)
+        if agent.agentId == "repository_auditor":
+            from app.agents.repository_auditor import execute_repository_auditor
+            return await execute_repository_auditor(context)
+        elif agent.agentId == "snapshot_authority":
+            from app.agents.snapshot_authority import execute_snapshot_authority
+            return await execute_snapshot_authority(context)
+        elif agent.agentId == "evidence_freeze":
+            from app.agents.evidence_freeze import execute_evidence_freeze
+            return await execute_evidence_freeze(context)
+        elif agent.agentId == "block_specification":
+            from app.agents.block_specification import execute_block_specification
+            return await execute_block_specification(context)
+        
         # Wave R4 handlers (six new agent handlers)
-        if agent.agentId == "toolchain":
+        elif agent.agentId == "toolchain":
             from app.agents.toolchain import execute_toolchain
             return await execute_toolchain(context)
         elif agent.agentId == "dependency":

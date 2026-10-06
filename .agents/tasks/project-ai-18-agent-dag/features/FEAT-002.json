@@ -1,0 +1,36 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Wave B: Foundation Agents - Implement agents 01-04 (Repository Auditor, Snapshot Authority, Evidence Freeze, Block Specification). These establish the frozen snapshot and evidence baseline for all subsequent agents.",
+  "status": "completed",
+  "steps": [
+    "Create services/project-ai/app/agents/repository_auditor.py with execute_repository_auditor(context: AgentContext) -> AgentResult. Implements git repository validation: check .git/ exists, working directory clean via git status --porcelain, branch validation (m2-project-ai-foundation or feature/*), no merge conflicts via git ls-files -u, remote reachable via git remote -v. Return AgentResult with outputs: commit_sha (via git rev-parse HEAD), branch_name (via git branch --show-current), is_clean (boolean), remote_reachable (boolean), health_status (HEALTHY/DIRTY/CONFLICTS/CORRUPTED). Status BLOCKED if dirty or remote unreachable per design doc Agent 01 spec",
+    "Create services/project-ai/app/agents/snapshot_authority.py with execute_snapshot_authority(context: AgentContext) -> AgentResult. Calls TypeScript discovery via subprocess.run(['pnpm', 'tsx', '.agents/scripts/regenerate-m1-snapshot.mjs'], cwd=repo_root, timeout=300, capture_output=True, text=True). Reads snapshot from .agents/output/snapshot.json. Extracts snapshot.canonicalHash (TypeScript computed, Python never recomputes). Copies snapshot to .project-ai/runs/{commit-sha[:8]}-{snapshot-hash[:8]}/snapshot.json using evidence logger. Return AgentResult with outputs: snapshot_hash, snapshot_path, evidence_count. Per design doc Agent 02 spec",
+    "Create services/project-ai/app/agents/evidence_freeze.py with execute_evidence_freeze(context: AgentContext) -> AgentResult. Reads snapshot from prior agent output. Extracts all evidence records from snapshot.evidence array. Validates structure: required fields (evidenceId, scannerName, timestamp, path, kind, claim, locator, contentHash, lifecycle), contentHash format (64-char SHA-256 hex), no duplicate evidenceIds, valid lifecycle values (current/historical). Creates evidence index for fast lookup. NO file recomputation - trusts TypeScript hashes. Return AgentResult with outputs: evidence_count, binding_valid (boolean), format_valid (boolean), evidence_ids (all IDs). Per design doc Agent 03 spec",
+    "Create services/project-ai/app/agents/block_specification.py with execute_block_specification(context: AgentContext) -> AgentResult. Reads candidate package from context.workflow_state['candidate_package']. Extracts candidate files. Parses TypeScript AST for structural analysis (props, components, exports). Compares to canonical blocks from snapshot using placement/comparator.py CanonicalComparator. Generates StructuralRequirement list for matched patterns. Determines block_family and detected_type. Returns AgentResult with outputs: specification (CandidateBlockSpecification), evidence_ids (canonical block IDs used). Implementation uses AST parsing + canonical comparison per design doc Agent 04 spec",
+    "Create tests/agents/test_repository_auditor.py with test cases: test_clean_repository_success, test_dirty_repository_blocked, test_merge_conflicts_fail, test_invalid_branch_fail, test_remote_unreachable_blocked. Use pytest fixtures for mock git commands",
+    "Create tests/agents/test_snapshot_authority.py with test cases: test_snapshot_generation_success, test_snapshot_hash_extraction, test_snapshot_copy_to_run_dir, test_typescript_command_failure, test_snapshot_missing. Mock subprocess.run for pnpm tsx calls",
+    "Create tests/agents/test_evidence_freeze.py with test cases: test_evidence_validation_success, test_duplicate_evidence_ids_fail, test_invalid_content_hash_format_fail, test_missing_required_fields_fail, test_evidence_index_creation",
+    "Create tests/agents/test_block_specification.py with test cases: test_specification_generation_success, test_canonical_comparison, test_structural_requirements_extraction, test_block_family_determination, test_no_canonical_match_fail",
+    "Update services/project-ai/app/orchestration/agent_registry.py to register new agents: REPOSITORY_AUDITOR, SNAPSHOT_AUTHORITY, EVIDENCE_FREEZE, BLOCK_SPECIFICATION with correct AgentType enum values and capabilities"
+  ],
+  "acceptance_criteria": [
+    "All 4 foundation agent files created with complete async execute functions returning AgentResult",
+    "Repository Auditor validates git state, returns BLOCKED for dirty repo or unreachable remote",
+    "Snapshot Authority calls TypeScript via pnpm tsx, extracts canonicalHash from snapshot, copies to run directory",
+    "Evidence Freeze validates all evidence records structurally without recomputing hashes",
+    "Block Specification generates CandidateBlockSpecification with structural requirements from canonical comparison",
+    "All 4 agent test files created with comprehensive test coverage",
+    "Agent registry updated with new AgentType enum values and agent definitions"
+  ],
+  "verification": [
+    "cd services/project-ai && python -m pytest tests/agents/test_repository_auditor.py -v",
+    "cd services/project-ai && python -m pytest tests/agents/test_snapshot_authority.py -v",
+    "cd services/project-ai && python -m pytest tests/agents/test_evidence_freeze.py -v",
+    "cd services/project-ai && python -m pytest tests/agents/test_block_specification.py -v",
+    "cd services/project-ai && python -c 'from app.agents.repository_auditor import execute_repository_auditor; from app.agents.snapshot_authority import execute_snapshot_authority; from app.agents.evidence_freeze import execute_evidence_freeze; from app.agents.block_specification import execute_block_specification; print(\"All foundation agents import OK\")'",
+    "cd services/project-ai && python -m pytest tests/orchestration/test_agent_registry.py -v -k foundation"
+  ],
+  "blocked_reason": null,
+  "findings": "All 4 foundation agents (01-04) implemented successfully. Agent 01 (Repository Auditor) validates git state via subprocess with BLOCKED status for dirty repos. Agent 02 (Snapshot Authority) calls TypeScript discovery via pnpm tsx, extracts canonicalHash, and copies snapshot to run directory. Agent 03 (Evidence Freeze) validates evidence structure without recomputing hashes. Agent 04 (Block Specification) parses candidate files, uses CanonicalComparator for comparison, and generates CandidateBlockSpecification. All agents follow async def execute_{agent_name}(context: AgentContext) -> AgentResult pattern. Comprehensive test coverage: 36 tests across 4 test files, all passing. Agent registry updated with 4 new AgentType enum values and agent definitions. Agent coordinator updated with execution handlers for all 4 agents. All verification commands pass."
+}
