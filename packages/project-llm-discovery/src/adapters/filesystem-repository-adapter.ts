@@ -1,14 +1,30 @@
 import { readFile, access, readdir, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { execSync } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { constants } from 'node:fs';
-import type { RepositoryAdapter } from '../contracts/repository-adapter.js';
+import type { RepositoryAdapter, ApprovedOperation, CommandResult } from '../contracts/repository-adapter.js';
 import {
   RepositoryAccessError,
   FileNotFoundError,
   PermissionError,
 } from '../contracts/errors.js';
+
+/**
+ * Mapping of approved operations to their command and arguments.
+ * This is the single source of truth for permitted command execution.
+ */
+const APPROVED_COMMANDS: Record<
+  ApprovedOperation,
+  { command: string; args: string[] }
+> = {
+  node_version: { command: 'node', args: ['--version'] },
+  pnpm_version: { command: 'pnpm', args: ['--version'] },
+  turbo_version: { command: 'turbo', args: ['--version'] },
+  tsc_version: { command: 'pnpm', args: ['exec', 'tsc', '--version'] },
+  vitest_version: { command: 'pnpm', args: ['exec', 'vitest', '--version'] },
+  playwright_version: { command: 'pnpm', args: ['exec', 'playwright', '--version'] },
+};
 
 export class FilesystemRepositoryAdapter implements RepositoryAdapter {
   constructor(private readonly rootPath: string) {}
@@ -148,6 +164,71 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
         error
       );
     }
+  }
+
+  async runCommand(operation: ApprovedOperation): Promise<CommandResult> {
+    const commandSpec = APPROVED_COMMANDS[operation];
+    if (!commandSpec) {
+      throw new RepositoryAccessError(
+        `Invalid operation: ${operation}`,
+        this.rootPath,
+        new Error('Operation not in approved list')
+      );
+    }
+
+    const TIMEOUT_MS = 10000; // 10 second timeout
+
+    return new Promise((resolve, reject) => {
+      const child = spawn(commandSpec.command, commandSpec.args, {
+        cwd: this.rootPath,
+        shell: true,
+        timeout: TIMEOUT_MS,
+      });
+
+      let stdout = '';
+      let stderr = '';
+      let timedOut = false;
+
+      const timeoutId = setTimeout(() => {
+        timedOut = true;
+        child.kill('SIGTERM');
+      }, TIMEOUT_MS);
+
+      child.stdout?.on('data', (data: Buffer) => {
+        stdout += data.toString();
+      });
+
+      child.stderr?.on('data', (data: Buffer) => {
+        stderr += data.toString();
+      });
+
+      child.on('error', (error: Error) => {
+        clearTimeout(timeoutId);
+        if (timedOut) {
+          resolve({
+            stdout: '',
+            stderr: `Command timed out after ${TIMEOUT_MS}ms`,
+            exitCode: -1,
+          });
+        } else {
+          // Command not found or spawn failure - return as structured failure
+          resolve({
+            stdout: '',
+            stderr: error.message,
+            exitCode: -1,
+          });
+        }
+      });
+
+      child.on('close', (code: number | null) => {
+        clearTimeout(timeoutId);
+        resolve({
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          exitCode: code ?? -1,
+        });
+      });
+    });
   }
 
   private matchPattern(filename: string, pattern: string): boolean {

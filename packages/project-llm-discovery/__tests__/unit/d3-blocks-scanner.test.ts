@@ -25,6 +25,7 @@ describe('D3 Blocks Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -70,6 +71,7 @@ export interface HeadingBlock extends BaseBlock {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -107,6 +109,7 @@ export interface HeadingBlock extends BaseBlock {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -152,6 +155,7 @@ export interface CodeC1Block extends BaseBlock {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -210,6 +214,7 @@ export interface CodeC1Block extends BaseBlock {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -284,6 +289,7 @@ export interface CodeC1Block extends BaseBlock {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -357,6 +363,7 @@ export interface IntroductionI1Block extends BaseBlock {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -406,6 +413,7 @@ switch (block.type) {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -451,6 +459,7 @@ switch (block.type) {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -489,6 +498,7 @@ switch (block.type) {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);
@@ -513,6 +523,7 @@ switch (block.type) {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanBlocks(mockAdapter);

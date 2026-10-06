@@ -118,3 +118,95 @@ Add a verification step that boots the app and confirms rendered block output ma
 4. Update V1 Zod schemas to require `evidenceId`
 5. Expand test coverage for strict binding validation
 6. Re-run repository scan to verify 212/212 tests still pass with new binding model
+
+---
+
+## Phase 0 Audit — M2.2 Verification & M2.3-M2.8 Readiness (2025-01-06)
+
+**Audit Goal:** Verify M2.2 completion claims from GitHub inspection and assess repository readiness for M2.3-M2.8 implementation.
+
+### M2.2 Strict Evidence Binding — VERIFIED ✅
+
+**Commit Chain Verified on GitHub:**
+- Phase B (Entity contracts): `de82876b` ✅ Present
+- Phase C (Evidence propagation): `8f00ab0a` ✅ Present
+- Phase D (V1 schemas): `5842f93f` ✅ Present
+- Phase E (V8 binding): `d6b6dfb5` ✅ Present
+- Phase F (Tests): `35530ab7` ✅ Present
+- Phase G (Verification/docs): `1b105b2c` ✅ Present (current HEAD)
+
+**Entity Contract Verification (snapshot.ts):**
+All 11 entity types confirmed to contain `evidenceId: string`:
+- ✅ ApplicationInfo
+- ✅ PackageInfo
+- ✅ ServiceInfo
+- ✅ BlockImplementation
+- ✅ BlockRenderer
+- ✅ ComposerService
+- ✅ ComposerAPI
+- ✅ ComposerSchema
+- ✅ ComposerUI
+- ✅ DependencyNode
+- ✅ DependencyEdge
+
+**Scanner Infrastructure:**
+All six scanners physically exist in repository:
+- ✅ d1-structure-scanner.ts
+- ✅ d2-runtime-scanner.ts
+- ✅ d3-blocks-scanner.ts
+- ✅ d4-composer-scanner.ts
+- ✅ d5-dependencies-scanner.ts
+- ✅ d6-tests-scanner.ts
+
+**Validator Infrastructure:**
+All nine validators present:
+- ✅ v1-schema-validator.ts
+- ✅ v2-reference-integrity-validator.ts
+- ✅ v3-evidence-paths-validator.ts
+- ✅ v4-block-consistency-validator.ts
+- ✅ v5-composer-validator.ts
+- ✅ v6-dependency-graph-validator.ts
+- ✅ v7-test-references-validator.ts
+- ✅ v8-evidence-completeness-validator.ts
+- ✅ v9-determinism-validator.ts
+
+### Documentation Correction
+
+**Finding:** Phase-B documentation states "D2 and D6 scanners don't exist yet" — this is **false** in current repository state. Both files exist at HEAD `1b105b2c`.
+
+**Impact:** None on M2.2 implementation (D2/D6 do not produce the 11 entity types targeted by M2.2). Documentation should be updated for accuracy.
+
+### M2.3-M2.8 Readiness Assessment
+
+**Repository Adapter:**
+- Contract interface: `packages/project-llm-discovery/src/contracts/repository-adapter.ts`
+- Implementation: `packages/project-llm-discovery/src/adapters/filesystem-repository-adapter.ts`
+- **Finding:** No `runCommand()` method exists (required for M2.3 toolchain execution)
+- **Action:** M2.3 must add `runCommand(command: string): Promise<CommandResult>` to interface
+
+**Services Architecture:**
+- Existing services directory: `services/`
+- Current services:
+  - analytics-collector-service (Hono)
+  - api-gateway (Hono)
+  - skillhubcore-service (Hono)
+- **Finding:** No Python services exist; all use Hono/TypeScript
+- **Finding:** No `services/project-ai/` directory exists
+- **Action:** M2.8 will create new `services/project-ai/` with Python/FastAPI
+
+**Canonical Artifacts:**
+- Policy: `.agents/policies/canonical-artifact-policy.md` ✅
+- Backlog: `.agents/tasks/m1-m2-backlog.md` ✅
+- Additional M2 files: `m2-1-implementation-plan.md`, `m2-1-v3-evidence-analysis.md`, `m2.2-phase-g-verification.md`
+
+### Gate Status: PASS ✅
+
+**M2.2 Complete:** All implementation verified on GitHub branch `m2-project-ai-foundation` at HEAD `1b105b2c`
+
+**Ready for M2.3-M2.8:** Repository state is clean, all prerequisite infrastructure exists, no blockers detected
+
+**Documentation Action Items:**
+1. Correct Phase-B documentation claim about D2/D6 non-existence
+2. Update canonical backlog with Phase 0 audit findings (this section)
+
+**Next Phase:** Proceed with M2.3-M2.8 planning and implementation

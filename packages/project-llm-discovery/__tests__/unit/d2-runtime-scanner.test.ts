@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { scanRuntime } from '../../src/scanners/d2-runtime-scanner.js';
-import type { RepositoryAdapter } from '../../src/contracts/repository-adapter.js';
+import type { RepositoryAdapter, ApprovedOperation } from '../../src/contracts/repository-adapter.js';
 
 describe('D2 Runtime Scanner', () => {
   let mockAdapter: RepositoryAdapter;
@@ -13,6 +13,22 @@ describe('D2 Runtime Scanner', () => {
       getFileHash: vi.fn(),
       getGitCommit: vi.fn(),
       getGitRoot: vi.fn(),
+      runCommand: vi.fn().mockImplementation(async (operation: ApprovedOperation) => {
+        // Mock successful version detection
+        const versionMap: Record<string, string> = {
+          node_version: 'v20.11.0',
+          pnpm_version: '9.0.0',
+          turbo_version: '2.0.0',
+          tsc_version: 'Version 5.3.0',
+          vitest_version: '1.0.0',
+          playwright_version: 'Version 1.40.0',
+        };
+        return {
+          stdout: versionMap[operation] ?? '',
+          stderr: '',
+          exitCode: 0,
+        };
+      }),
     };
   });
 
@@ -102,7 +118,7 @@ describe('D2 Runtime Scanner', () => {
     expect(result.data.frameworks).toHaveLength(1);
     expect(result.data.frameworks[0]?.name).toBe('next');
     expect(result.data.frameworks[0]?.version).toBe('16.1.6');
-    expect(result.data.workspace.version).toBe('9.15.4');
+    expect(result.data.workspace.version).toBe('9.0.0'); // Detected from runCommand mock
   });
 
   it('should scan apps for framework usage', async () => {

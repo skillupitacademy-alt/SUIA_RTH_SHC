@@ -1,4 +1,26 @@
 /**
+ * Approved operations for runCommand() execution.
+ * Only these operations are permitted to prevent arbitrary shell execution.
+ */
+export enum ApprovedOperation {
+  NODE_VERSION = 'node_version',
+  PNPM_VERSION = 'pnpm_version',
+  TURBO_VERSION = 'turbo_version',
+  TSC_VERSION = 'tsc_version',
+  VITEST_VERSION = 'vitest_version',
+  PLAYWRIGHT_VERSION = 'playwright_version',
+}
+
+/**
+ * Result from executing an approved command operation
+ */
+export interface CommandResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
+
+/**
  * Repository adapter interface for filesystem/git operations
  * 
  * Error handling contract:
@@ -52,5 +74,13 @@ export interface RepositoryAdapter {
    * @throws {RepositoryAccessError} if git command fails
    */
   getGitRoot(): Promise<string>;
+
+  /**
+   * Execute an approved command operation with timeout enforcement
+   * @param operation - One of the predefined approved operations
+   * @returns Command result with stdout, stderr, and exit code
+   * @throws {RepositoryAccessError} if command times out or fails unexpectedly
+   */
+  runCommand(operation: ApprovedOperation): Promise<CommandResult>;
 }
 

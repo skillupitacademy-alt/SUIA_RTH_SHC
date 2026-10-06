@@ -68,6 +68,7 @@ describe('D5 Dependencies Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
@@ -123,6 +124,7 @@ describe('D5 Dependencies Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
@@ -171,6 +173,7 @@ describe('D5 Dependencies Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
@@ -230,6 +233,7 @@ describe('D5 Dependencies Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
@@ -266,6 +270,7 @@ describe('D5 Dependencies Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);

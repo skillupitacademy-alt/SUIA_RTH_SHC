@@ -24,6 +24,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn().mockResolvedValue('abc123'),
         getGitRoot: vi.fn().mockResolvedValue('/test/repo'),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       const result = await scanRepositoryStructure(mockAdapter);
@@ -44,6 +45,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn(),
         getGitRoot: vi.fn(),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       await expect(scanRepositoryStructure(mockAdapter)).rejects.toThrow(PermissionError);
@@ -59,6 +61,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn().mockResolvedValue('abc123'),
         getGitRoot: vi.fn().mockResolvedValue('/test/repo'),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       const result = await scanRuntime(mockAdapter);
@@ -78,6 +81,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn(),
         getGitRoot: vi.fn(),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       // Mock pnpm-workspace.yaml with apps/* pattern
@@ -96,6 +100,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn().mockResolvedValue('abc123'),
         getGitRoot: vi.fn().mockResolvedValue('/test/repo'),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       const result = await scanBlocks(mockAdapter);
@@ -115,6 +120,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn().mockResolvedValue('abc123'),
         getGitRoot: vi.fn().mockResolvedValue('/test/repo'),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       const result = await scanBlocks(mockAdapter);
@@ -143,6 +149,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn().mockResolvedValue('abc123'),
         getGitRoot: vi.fn().mockResolvedValue('/test/repo'),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       const result = await scanComposer(mockAdapter);
@@ -162,6 +169,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn(),
         getGitRoot: vi.fn(),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       await expect(scanComposer(mockAdapter)).rejects.toThrow(PermissionError);
@@ -179,6 +187,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn().mockResolvedValue('abc123'),
         getGitRoot: vi.fn().mockResolvedValue('/test/repo'),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       const structureData = {
@@ -207,6 +216,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn(),
         getGitRoot: vi.fn(),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       const structureData = {
@@ -232,6 +242,7 @@ describe('Scanner Error Handling Integration', () => {
         getFileHash: vi.fn(),
         getGitCommit: vi.fn().mockResolvedValue('abc123'),
         getGitRoot: vi.fn().mockResolvedValue('/test/repo'),
+        runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
       };
 
       const result = await scanTests(mockAdapter);
