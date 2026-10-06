@@ -160,7 +160,28 @@ class AgentCoordinator:
         )
         
         # Map agent type to execution handlers
-        if agent.agentType == AgentType.BRAND_INDEPENDENCE:
+        # Wave R4 handlers (six new agent handlers)
+        if agent_id == "toolchain":
+            from app.agents.toolchain import execute_toolchain
+            return await execute_toolchain(context)
+        elif agent_id == "dependency":
+            from app.agents.dependency import execute_dependency
+            return await execute_dependency(context)
+        elif agent_id == "intake":
+            from app.agents.intake import execute_intake
+            return await execute_intake(context)
+        elif agent_id == "placement":
+            from app.agents.placement import execute_placement
+            return await execute_placement(context)
+        elif agent_id == "governance":
+            from app.agents.governance import execute_governance
+            return await execute_governance(context)
+        elif agent_id == "documentation":
+            from app.agents.documentation import execute_documentation
+            return await execute_documentation(context)
+        
+        # Existing handlers
+        elif agent.agentType == AgentType.BRAND_INDEPENDENCE:
             await self._execute_brand_agent(agent, context, result)
         
         elif agent.agentType == AgentType.THEME_COMPATIBILITY:
