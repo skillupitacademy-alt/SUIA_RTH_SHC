@@ -4,7 +4,7 @@ import type { RepositorySnapshot } from '../../../src/contracts/snapshot.js';
 
 describe('V1 Schema Validator', () => {
   const createValidSnapshot = (): RepositorySnapshot => ({
-    schemaVersion: '1.0.0',
+    schemaVersion: '1.1.0',
     repository: {
       owner: 'test-owner',
       name: 'test-repo',
@@ -65,7 +65,7 @@ describe('V1 Schema Validator', () => {
     expect(result.errors.length).toBeGreaterThan(0);
     const versionError = result.errors.find((e) => e.code === 'INVALID_SCHEMA_VERSION');
     expect(versionError).toBeDefined();
-    expect(versionError?.message).toContain('1.0.0');
+    expect(versionError?.message).toContain('1.1.0');
   });
 
   it('should fail validation for missing required fields', async () => {
@@ -90,6 +90,7 @@ describe('V1 Schema Validator', () => {
         claim: 'test claim',
         locator: 'test:1:1',
         contentHash: 'hash123',
+        lifecycle: 'current',
       },
     ];
 
@@ -110,6 +111,7 @@ describe('V1 Schema Validator', () => {
         claim: 'test claim',
         locator: 'test:1:1',
         contentHash: 'hash123',
+        lifecycle: 'current',
       },
     ];
 

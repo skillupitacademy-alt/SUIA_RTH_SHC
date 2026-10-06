@@ -3,19 +3,31 @@ import { generateDeterministicEvidenceId } from '../utils/path-utils.js';
 
 export class EvidenceCollector {
   private evidence: Evidence[] = [];
+  private seenIds = new Set<string>();
 
   /**
    * Add a single evidence record to the collection
+   * Silently skips if evidenceId already exists (deduplication)
    */
   add(evidence: Evidence): void {
+    if (this.seenIds.has(evidence.evidenceId)) {
+      // Duplicate evidence - skip silently
+      // This is expected when multiple scanners examine the same file
+      return;
+    }
+    
+    this.seenIds.add(evidence.evidenceId);
     this.evidence.push(evidence);
   }
 
   /**
    * Add multiple evidence records to the collection
+   * Silently skips any records with duplicate evidenceIds
    */
   addAll(evidence: Evidence[]): void {
-    this.evidence.push(...evidence);
+    for (const e of evidence) {
+      this.add(e); // Use add() which handles deduplication
+    }
   }
 
   /**

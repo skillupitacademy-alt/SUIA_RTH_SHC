@@ -169,7 +169,7 @@ const EvidenceSchema = z.object({
 });
 
 const SnapshotSchema = z.object({
-  schemaVersion: z.literal('1.0.0'),
+  schemaVersion: z.literal('1.1.0'),
   repository: z.object({
     owner: z.string(),
     name: z.string(),
@@ -242,12 +242,12 @@ export async function validateSchema(
   }
 
   // Additional schema version check
-  if (snapshot.schemaVersion !== '1.0.0') {
+  if (snapshot.schemaVersion !== '1.1.0') {
     errors.push({
       validator: 'V1-schema',
       code: 'INVALID_SCHEMA_VERSION',
-      message: `Expected schema version 1.0.0, got ${snapshot.schemaVersion}`,
-      details: { expected: '1.0.0', actual: snapshot.schemaVersion },
+      message: `Expected schema version 1.1.0, got ${snapshot.schemaVersion}`,
+      details: { expected: '1.1.0', actual: snapshot.schemaVersion },
     });
   }
 
