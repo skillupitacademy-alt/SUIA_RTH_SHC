@@ -174,8 +174,19 @@ def verify_versions_compatible(
     """
     conflicts = []
     
-    # Get component version
-    component_version = component.get("version", "1.0.0")
+    # Get component version - MUST be explicit (no fallback to prevent version mismatches)
+    component_version = component.get("version")
+    
+    if component_version is None:
+        # Fail explicitly if version is missing - do not use hardcoded fallback
+        return CompatibilityResult(
+            passed=False,
+            error_code=CompatibilityErrorCode.VERSION_INCOMPATIBLE,
+            error_message=f"Component '{component.get('source', 'unknown')}' missing version field",
+            conflicts=[
+                f"Component metadata must include explicit version field (from WorkflowTarget.version)"
+            ]
+        )
     
     # Check if version is valid semver
     version_parts = component_version.split(".")
