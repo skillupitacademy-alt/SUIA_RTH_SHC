@@ -3,881 +3,733 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  ArrowRight,
-  BadgeCheck,
-  Bot,
-  BrainCircuit,
-  CheckCircle2,
-  ChevronRight,
-  ClipboardCheck,
-  Clock,
-  ExternalLink,
-  FileCheck,
-  FileInput,
-  FileText,
+  Database,
   GitBranch,
-  Layers,
-  ListChecks,
-  Play,
-  RotateCw,
-  ShieldAlert,
-  ShieldCheck,
-  Sparkles,
-  Workflow,
-  AlertTriangle,
-  Flame,
+  GitCommit,
+  CheckCircle2,
+  Copy,
   Check,
-  XCircle,
+  ArrowRight,
+  ChevronRight,
+  MoreHorizontal,
+  Box,
+  Users,
+  ShieldCheck,
+  Clock,
+  RotateCw,
+  Zap,
+  FileText,
+  Upload,
+  BookOpen,
+  Activity,
+  Layers,
+  Sparkles,
+  Target,
+  Code,
+  Image as ImageIcon,
+  Columns,
+  Play,
+  Brain,
+  AlertTriangle,
+  Award,
+  ExternalLink,
 } from 'lucide-react';
-import { PROJECT_LLM_REPOSITORY_INTELLIGENCE } from '@/lib/project-llm';
-import { CreationBriefPanel } from './components/CreationBriefPanel';
 
-interface ControlPlaneStat {
-  label: string;
-  value: string | number;
-  subtext: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  iconBg: string;
-  valueColor: string;
-  badge: string;
-  badgeColor: string;
-}
+export default function ProjectLlmDashboardPage() {
+  const [copiedCommit, setCopiedCommit] = useState(false);
 
-interface RecentWorkItem {
-  id: string;
-  title: string;
-  type: string;
-  status: string;
-  statusType: 'success' | 'warning' | 'danger' | 'info';
-  family: string;
-  version: string;
-  hash: string;
-  details: string;
-  actionText: string;
-  actionHref?: string;
-  checks: string[];
-}
-
-export default function ProjectLlmControlPlaneDashboard() {
-  const { corpus, runtime } = PROJECT_LLM_REPOSITORY_INTELLIGENCE;
-  const [activeTab, setActiveTab] = useState<'overview' | 'pipelines' | 'brief-builder'>('overview');
-  const [pipelineFilter, setPipelineFilter] = useState<'all' | 'approval' | 'active'>('all');
-
-  // Control Plane KPIs
-  const controlPlaneStats: ControlPlaneStat[] = [
-    {
-      label: 'Active Workflows',
-      value: 4,
-      subtext: '1 running • 3 queued in DAG',
-      icon: GitBranch,
-      iconBg: 'bg-indigo-50 text-indigo-600 border border-indigo-200/60',
-      valueColor: 'text-indigo-600',
-      badge: 'IN FLIGHT',
-      badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    },
-    {
-      label: 'Awaiting Approval',
-      value: 2,
-      subtext: 'Human gate blocked • Self-approval blocked',
-      icon: ShieldAlert,
-      iconBg: 'bg-amber-50 text-amber-600 border border-amber-200/60',
-      valueColor: 'text-amber-600',
-      badge: 'HUMAN GATE',
-      badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
-    },
-    {
-      label: 'Certification Blocked',
-      value: 1,
-      subtext: 'Missing evidence ID • Gate 12 blocked',
-      icon: AlertTriangle,
-      iconBg: 'bg-rose-50 text-rose-600 border border-rose-200/60',
-      valueColor: 'text-rose-600',
-      badge: 'BLOCKED',
-      badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
-    },
-    {
-      label: 'Evidence Frozen',
-      value: 7,
-      subtext: 'Deterministic SHA-256 ledgers',
-      icon: FileCheck,
-      iconBg: 'bg-emerald-50 text-emerald-600 border border-emerald-200/60',
-      valueColor: 'text-emerald-600',
-      badge: 'IMMUTABLE',
-      badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    },
-  ];
-
-  // Corpus & Runtime Stats
-  const corpusStats: ControlPlaneStat[] = [
-    {
-      label: 'Corpus Families',
-      value: corpus.status.families,
-      subtext: 'Canonical educational families',
-      icon: Layers,
-      iconBg: 'bg-indigo-50 text-indigo-600',
-      valueColor: 'text-indigo-600',
-      badge: 'REGISTRY',
-      badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    },
-    {
-      label: 'Documented Versions',
-      value: corpus.status.documentedVersions,
-      subtext: 'Intra-family versions registered',
-      icon: FileText,
-      iconBg: 'bg-purple-50 text-purple-600',
-      valueColor: 'text-purple-600',
-      badge: 'TAXONOMY',
-      badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
-    },
-    {
-      label: 'Verified Runtime',
-      value: runtime.status.verifiedImplementations,
-      subtext: 'I1, C1, D1 verified in runtime',
-      icon: BadgeCheck,
-      iconBg: 'bg-emerald-50 text-emerald-600',
-      valueColor: 'text-emerald-600',
-      badge: 'ACTIVE LIVE',
-      badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    },
-    {
-      label: 'Planned Families',
-      value: runtime.status.plannedFamilies,
-      subtext: 'Pending Phase 2 & 3 implementation',
-      icon: Clock,
-      iconBg: 'bg-orange-50 text-orange-600',
-      valueColor: 'text-orange-600',
-      badge: 'ROADMAP',
-      badgeColor: 'bg-orange-50 text-orange-700 border-orange-200',
-    },
-  ];
-
-  // Recent Work Pipeline Items
-  const recentWorkItems: RecentWorkItem[] = [
-    {
-      id: 'WF-00142',
-      title: 'Introduction I2 → Candidate Intake',
-      type: 'CANDIDATE INTAKE',
-      status: 'Candidate Reviewing',
-      statusType: 'warning',
-      family: 'Introduction (I)',
-      version: 'I2 (Problem → Need → Topic)',
-      hash: 'SHA: 7f3a9e21...89c',
-      details: 'React/TS candidate artifacts uploaded. Zero duplicate canonical artifacts detected. Extends IntroductionBlock.',
-      actionText: 'Review Candidate',
-      checks: ['UBRC Safe', 'ILS Passive', 'LSNB/RSSB Proof', 'No Duplicate Artifact'],
-    },
-    {
-      id: 'WF-00143',
-      title: 'Definition D3 → Specification Generation',
-      type: 'NEW VERSION SPEC',
-      status: 'Awaiting Human Approval',
-      statusType: 'info',
-      family: 'Definition (D)',
-      version: 'D3 (Technical Sandbox Definition)',
-      hash: 'SNAP: snap-93794f',
-      details: 'Deterministic specification package generated. Contracts attached. Awaiting human HAA Gate-1 approval.',
-      actionText: 'Inspect Spec',
-      checks: ['Contract Valid', 'Brand Independent', 'Evidence E-102 Attached'],
-    },
-    {
-      id: 'WF-00144',
-      title: 'Introduction I7 → Intra-Family Mix & Match',
-      type: 'INTRA-FAMILY DERIVATION',
-      status: 'Spec Ready',
-      statusType: 'info',
-      family: 'Introduction (I)',
-      version: 'I7 (Derived from I1 + I2 + I5)',
-      hash: 'SPEC: spec-i7-mix',
-      details: 'Selected Topic Orientation (I1) + Problem Framing (I2) + Real-world Context (I5). 100% same family.',
-      actionText: 'View Derivation',
-      checks: ['Same Family Only', 'Semantic Compatibility', 'Renderer Safe'],
-    },
-    {
-      id: 'WF-00145',
-      title: 'Runtime Verification → Playwright Evidence',
-      type: 'RUNTIME & BROWSER',
-      status: 'All 3 Browsers PASS',
-      statusType: 'success',
-      family: 'Introduction (I)',
-      version: 'I1 Reference Baseline',
-      hash: 'COMMIT: 93794f63',
-      details: 'Chromium, Firefox, and WebKit pass without console errors or layout shift. DOM verified in SkillHubCore.',
-      actionText: 'Inspect Ledger',
-      checks: ['Chromium PASS', 'Firefox PASS', 'WebKit PASS', 'Evidence E-113'],
-    },
-  ];
-
-  // 23 GUI Surfaces Navigation Architecture Map
-  const guiSurfaces = [
-    {
-      section: 'Block Library',
-      description: 'Canonical registry, version hierarchy, and relationship matrix',
-      badge: 'SURFACES 02-04',
-      items: [
-        { title: 'Block Family Registry', href: '#registry', desc: 'Canonical registry of all families & production statuses' },
-        { title: 'Family → Version Explorer', href: '#explorer', desc: 'Explore I1-I6 versions, engineering contracts, and patterns' },
-        { title: 'Composition & Relationship Matrix', href: '#matrix', desc: 'Predecessor, successor, and alternative relationship rules' },
-      ],
-    },
-    {
-      section: 'Create & Derive',
-      description: 'Operation gateway, intra-family derivation, and qualifications',
-      badge: 'SURFACES 05-09',
-      items: [
-        { title: 'Operation Selection', href: '#create', desc: 'Select Family first: New Version, Qualify, or Mix & Match' },
-        { title: 'New Version Specification', href: '#spec-builder', desc: 'Creation brief builder with contracts and acceptance criteria' },
-        { title: 'Mix & Match Builder', href: '#mix-match', desc: 'Intra-family only: derive I7 from I1+I2+I5 components' },
-        { title: 'Qualify Existing Version', href: '#qualify', desc: 'Determine if enhancement qualifies I2 or requires new version' },
-        { title: 'Specification Review & Approval', href: '#spec-review', desc: 'Human gate: AI plan ≠ human approval' },
-      ],
-    },
-    {
-      section: 'Candidate Lifecycle',
-      description: 'External AI handoff, intake, canonical check, and placement',
-      badge: 'SURFACES 10-14',
-      items: [
-        { title: 'External AI Handoff Package', href: '#handoff', desc: 'Export specification, contracts, and repository facts for AI' },
-        { title: 'Candidate Intake & Classification', href: '#candidate-intake', desc: 'Upload zip/files, calculate SHA-256, classify ADD/EXTEND' },
-        { title: 'Canonical Comparison Engine', href: '#comparison', desc: 'Compare candidate against canonical IntroductionBlock' },
-        { title: 'Placement Manifest', href: '#placement', desc: 'Strict manifest: prevent duplicate component artifacts' },
-        { title: 'Integration Snapshot', href: '#integration', desc: 'Post-placement discovery and immutable evidence freeze' },
-      ],
-    },
-    {
-      section: 'Governance & Runs',
-      description: 'Human approval authority, self-approval blocking, and DAG runs',
-      badge: 'SURFACES 15-17',
-      items: [
-        { title: 'Approval Console', href: '#approvals', desc: 'Self-approval blocked, manifest change detection, HAA authority' },
-        { title: 'Agent Runs DAG', href: '#dag', desc: 'Interactive execution graph from Audit → Spec → Intake → Cert' },
-        { title: 'Task & Workflow Detail', href: '#workflow-detail', desc: 'Machine inputs, outputs, evidence IDs, and error states' },
-      ],
-    },
-    {
-      section: 'Certification & Evidence',
-      description: '13 quality gates, evidence chain, and runtime verification',
-      badge: 'SURFACES 18-22',
-      items: [
-        { title: 'Certification Gates (1-13)', href: '#gates', desc: 'Contract, ILS, LSNB, RSSB, UBRC, Renderer, Brand, Composer' },
-        { title: 'Evidence Explorer', href: '#evidence', desc: 'Trace: claim → entity → evidenceId → evidence → source file' },
-        { title: 'Runtime & Browser Verification', href: '#browser', desc: 'Chromium, Firefox, WebKit DOM inspection & console verification' },
-        { title: 'Composer Verification', href: '#composer-verify', desc: 'Verify block constructs cleanly inside TutorialDocument' },
-        { title: 'Final Certification', href: '#final-cert', desc: 'HAA Human certification authority signoff' },
-      ],
-    },
-    {
-      section: 'Composer Handoff',
-      description: 'Downstream handoff to existing product Tutorial Composer',
-      badge: 'SURFACE 23',
-      items: [
-        { title: 'Certified Block Handoff', href: '/tools/tutorial-block-composer', desc: 'Pass certified block to TutorialDocument.blocks[] downstream' },
-      ],
-    },
-  ];
-
-  // Lifecycle Gates Array
-  const lifecycleGates = [
-    { num: 'G1', label: 'Repository Audit', status: 'PASS', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    { num: 'G2', label: 'Specification Brief', status: 'PASS', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    { num: 'G3', label: 'External AI Package', status: 'PASS', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    { num: 'G4', label: 'Candidate Placement', status: 'IN REVIEW', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-    { num: 'G5', label: 'Certification Gates', status: 'BLOCKED (1)', color: 'bg-rose-50 text-rose-700 border-rose-200' },
-    { num: 'G6', label: 'Composer Handoff', status: 'PENDING', color: 'bg-slate-100 text-slate-700 border-slate-200' },
-  ];
+  const handleCopyCommit = () => {
+    navigator.clipboard.writeText('9b7f4c2e3');
+    setCopiedCommit(true);
+    setTimeout(() => setCopiedCommit(false), 2000);
+  };
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* 1. Control Plane Master Header Card */}
-      <section className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 sm:p-8 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-3">
-            {/* Metadata Tags Bar */}
+    <div className="space-y-5 pb-16 font-sans">
+      {/* 1. Hero Card */}
+      <section className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
+        {/* Ambient Top Right Glow */}
+        <div className="pointer-events-none absolute -top-12 -right-12 h-64 w-80 bg-gradient-to-br from-pink-200/40 via-purple-200/30 to-transparent blur-2xl" />
+
+        <div className="relative flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+          {/* Left: Branding & Subtitle */}
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#e11d48] to-[#f43f5e] text-white shadow-md shadow-pink-500/20 shrink-0">
+              <Database size={28} strokeWidth={2.2} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-outfit tracking-tight">
+                  Project <span className="text-[#e11d48]">LLM</span>
+                </h1>
+              </div>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 font-outfit mt-0.5">
+                Engineering Control Plane for Educational Blocks
+              </h2>
+              <p className="text-xs text-slate-500 mt-1 max-w-xl font-medium">
+                Define requirements, verify implementations, integrate and certify blocks for Tutorial Composer.
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Telemetry Pills & Snapshot status */}
+          <div className="flex flex-col items-start xl:items-end gap-3 shrink-0">
+            {/* Top row of pills */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-pink-50 border border-pink-200 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#e11d48]">
-                <BrainCircuit size={13} />
-                PROJECT LLM
-              </span>
-              <span className="text-xs font-semibold text-slate-400">•</span>
-              <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-700 font-mono">
-                CONTROL PLANE OVERVIEW
-              </span>
-              <span className="text-xs font-semibold text-slate-400">•</span>
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700 font-mono">
-                BRANCH: m2-project-ai-foundation
-              </span>
+              {/* Repository Pill */}
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 shadow-2xs">
+                <Database size={14} className="text-slate-500" />
+                <div className="leading-tight">
+                  <span className="text-[9px] font-mono uppercase tracking-wider text-slate-400 block">Repository</span>
+                  <span className="text-xs font-bold text-slate-800 font-mono">SUIA_RTH_SHC</span>
+                </div>
+              </div>
+
+              {/* Branch Pill */}
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 shadow-2xs">
+                <GitBranch size={14} className="text-slate-500" />
+                <div className="leading-tight">
+                  <span className="text-[9px] font-mono uppercase tracking-wider text-slate-400 block">Branch</span>
+                  <span className="text-xs font-bold text-slate-800 font-mono">m2-project-ai-foundation</span>
+                </div>
+              </div>
+
+              {/* Commit Pill */}
+              <button
+                onClick={handleCopyCommit}
+                className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white px-3 py-1.5 shadow-2xs hover:border-slate-300 transition-colors text-left"
+              >
+                <GitCommit size={14} className="text-slate-500" />
+                <div className="leading-tight">
+                  <span className="text-[9px] font-mono uppercase tracking-wider text-slate-400 block">Commit</span>
+                  <span className="text-xs font-bold text-slate-800 font-mono flex items-center gap-1">
+                    9b7f4c2e3
+                    {copiedCommit ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} className="text-slate-400" />}
+                  </span>
+                </div>
+              </button>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-outfit tracking-tight">
-              Project LLM Control Plane Home
-            </h1>
-            <p className="text-sm font-medium text-slate-500 max-w-3xl leading-relaxed">
-              Engineering control plane for educational block creation, intra-family derivation, deterministic candidate intake, evidence freezing, and HAA certification authority.
-            </p>
+            {/* Bottom meta line */}
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-medium">
+              <span className="text-slate-400">Last Snapshot</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                SNAP-20261005-001
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-500 font-mono text-[11px]">2026-10-05 14:23</span>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-500 text-[11px]">482 files</span>
+              <span className="text-slate-300">|</span>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-600">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                Healthy
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Quick Action Button Bar */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+      {/* 2. 4 Metric Cards Row */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: In Progress */}
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-md shadow-pink-500/20 shrink-0">
+              <Box size={22} />
+            </div>
+            <div>
+              <p className="text-2xl font-black text-slate-900 font-outfit leading-none">3</p>
+              <h3 className="text-xs font-bold text-slate-900 font-outfit mt-1">In Progress</h3>
+              <p className="text-[11px] text-slate-400 font-medium">Candidates under validation</p>
+            </div>
+          </div>
+          <Link
+            href="/tools/project-llm/candidate-upload"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 transition-colors shadow-2xs"
+          >
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        {/* Card 2: Awaiting Approval */}
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md shadow-orange-500/20 shrink-0">
+              <Users size={22} />
+            </div>
+            <div>
+              <p className="text-2xl font-black text-slate-900 font-outfit leading-none">2</p>
+              <h3 className="text-xs font-bold text-slate-900 font-outfit mt-1">Awaiting Approval</h3>
+              <p className="text-[11px] text-slate-400 font-medium">Human approval required</p>
+            </div>
+          </div>
+          <Link
+            href="/tools/project-llm/workflow-details"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors shadow-2xs"
+          >
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        {/* Card 3: Certified */}
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20 shrink-0">
+              <CheckCircle2 size={22} />
+            </div>
+            <div>
+              <p className="text-2xl font-black text-slate-900 font-outfit leading-none">5</p>
+              <h3 className="text-xs font-bold text-slate-900 font-outfit mt-1">Certified</h3>
+              <p className="text-[11px] text-slate-400 font-medium">Available in Tutorial Composer</p>
+            </div>
+          </div>
+          <Link
+            href="/tools/project-llm/integration-certification"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors shadow-2xs"
+          >
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        {/* Card 4: Blocked */}
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md shadow-purple-500/20 shrink-0">
+              <Clock size={22} />
+            </div>
+            <div>
+              <p className="text-2xl font-black text-slate-900 font-outfit leading-none">1</p>
+              <h3 className="text-xs font-bold text-slate-900 font-outfit mt-1">Blocked</h3>
+              <p className="text-[11px] text-slate-400 font-medium">Action required</p>
+            </div>
+          </div>
+          <Link
+            href="/tools/project-llm/candidate-upload"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors shadow-2xs"
+          >
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+      </section>
+
+      {/* 3. Middle Row: 3 Action Cards */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left Card: Create Educational Block (4 cols) */}
+        <div className="lg:col-span-4 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-50 border border-pink-200 text-[#e11d48] shadow-2xs">
+                <Box size={18} />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 font-outfit">
+                Create Educational Block
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed font-medium">
+              Create a new block version by selecting a family and generating a compliance brief.
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <Link
+              href="/tools/project-llm/create"
+              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 hover:from-pink-700 hover:to-orange-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition-all active:scale-[0.98]"
+            >
+              <span>+ Create New Block</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+
+        {/* Middle Card: Continue Previous Work (5 cols) */}
+        <div className="lg:col-span-5 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 border border-blue-200 text-blue-600 shadow-2xs">
+              <RotateCw size={18} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900 font-outfit">
+                Continue Previous Work
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">
+                Pick up recently worked candidates.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {[
+              {
+                title: 'Introduction I7',
+                status: 'Validation',
+                statusColor: 'bg-blue-50 text-blue-700 border-blue-200',
+                iconColor: 'bg-pink-100 text-pink-600',
+                href: '/tools/project-llm/candidate-upload',
+              },
+              {
+                title: 'Objective O5',
+                status: 'Awaiting Approval',
+                statusColor: 'bg-amber-50 text-amber-700 border-amber-200',
+                iconColor: 'bg-orange-100 text-orange-600',
+                href: '/tools/project-llm/workflow-details',
+              },
+              {
+                title: 'Code C4',
+                status: 'Design in Progress',
+                statusColor: 'bg-purple-50 text-purple-700 border-purple-200',
+                iconColor: 'bg-blue-100 text-blue-600',
+                href: '/tools/project-llm/external-ai-handoff',
+              },
+              {
+                title: 'Summary S3',
+                status: 'External AI Implementation',
+                statusColor: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+                iconColor: 'bg-emerald-100 text-emerald-600',
+                href: '/tools/project-llm/external-ai-handoff',
+              },
+            ].map((item, idx) => (
               <Link
-                href="/tools/project-llm/create"
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:from-pink-700 hover:to-rose-700 hover:scale-[1.02] active:scale-95 transition-all"
+                key={idx}
+                href={item.href}
+                className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 group"
               >
-                <Sparkles size={15} />
-                <span>+ Create Educational Block</span>
-                <ArrowRight size={13} />
+                <div className="flex items-center gap-3">
+                  <div className={`h-7 w-7 rounded-lg ${item.iconColor} flex items-center justify-center shrink-0`}>
+                    <FileText size={14} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800 font-outfit group-hover:text-pink-600 transition-colors">
+                    {item.title}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${item.statusColor}`}>
+                    {item.status}
+                  </span>
+                  <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+                </div>
               </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Card: Quick Actions (3 cols) */}
+        <div className="lg:col-span-3 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-50 border border-pink-200 text-[#e11d48] shadow-2xs">
+              <Zap size={18} />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 font-outfit">
+              Quick Actions
+            </h3>
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { label: 'Create Block', icon: Box, iconColor: 'text-pink-600', href: '/tools/project-llm/create' },
+              { label: 'View Compliance Checklist', icon: FileText, iconColor: 'text-blue-600', href: '/tools/project-llm/compliance-brief' },
+              { label: 'Upload Candidate', icon: Upload, iconColor: 'text-purple-600', href: '/tools/project-llm/candidate-upload' },
+              { label: 'Open Tutorial Composer', icon: BookOpen, iconColor: 'text-indigo-600', href: '/tools/tutorial-block-composer' },
+            ].map((qa, i) => {
+              const Icon = qa.icon;
+              return (
+                <Link
+                  key={i}
+                  href={qa.href}
+                  className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
+                >
+                  <Icon size={16} className={`${qa.iconColor} shrink-0`} />
+                  <span className="text-xs font-bold text-slate-800 font-outfit group-hover:text-pink-600 transition-colors">
+                    {qa.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Row 3: Recent Candidate Blocks & Certification Overview */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Recent Candidate Blocks Table (8 cols) */}
+        <div className="lg:col-span-8 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-50 border border-pink-200 text-[#e11d48] shadow-2xs">
+                  <Box size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 font-outfit">
+                    Recent Candidate Blocks
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Latest activity across all candidates.
+                  </p>
+                </div>
+              </div>
 
               <Link
                 href="/tools/project-llm/candidate-upload"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
               >
-                <FileInput size={15} className="text-indigo-600" />
-                <span>Upload & Validate</span>
+                View All &gt;
               </Link>
+            </div>
 
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100 text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                    <th className="pb-3 font-semibold">Block / Version</th>
+                    <th className="pb-3 font-semibold">Purpose</th>
+                    <th className="pb-3 font-semibold">Status</th>
+                    <th className="pb-3 font-semibold">Last Updated</th>
+                    <th className="pb-3 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {[
+                    {
+                      name: 'Introduction I7',
+                      purpose: 'Enhanced topic introduction',
+                      status: 'Validation',
+                      statusBadge: 'bg-blue-50 text-blue-700 border-blue-200',
+                      updated: '2026-10-05 14:23',
+                      iconBg: 'bg-pink-100 text-pink-600',
+                    },
+                    {
+                      name: 'Objective O5',
+                      purpose: 'Interactive learning objective',
+                      status: 'Awaiting Approval',
+                      statusBadge: 'bg-amber-50 text-amber-700 border-amber-200',
+                      updated: '2026-10-05 13:50',
+                      iconBg: 'bg-orange-100 text-orange-600',
+                    },
+                    {
+                      name: 'Code C4',
+                      purpose: 'Hands-on code example',
+                      status: 'Design in Progress',
+                      statusBadge: 'bg-purple-50 text-purple-700 border-purple-200',
+                      updated: '2026-10-05 12:10',
+                      iconBg: 'bg-blue-100 text-blue-600',
+                    },
+                    {
+                      name: 'Summary S3',
+                      purpose: 'Key takeaways summary',
+                      status: 'Certified',
+                      statusBadge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                      updated: '2026-10-05 11:45',
+                      iconBg: 'bg-emerald-100 text-emerald-600',
+                    },
+                    {
+                      name: 'Quiz Q2',
+                      purpose: 'Knowledge check quiz',
+                      status: 'Certified',
+                      statusBadge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                      updated: '2026-10-04 16:30',
+                      iconBg: 'bg-teal-100 text-teal-600',
+                    },
+                    {
+                      name: 'Exercise E3',
+                      purpose: 'Hands-on exercise',
+                      status: 'Blocked',
+                      statusBadge: 'text-rose-600 font-bold',
+                      isBlocked: true,
+                      updated: '2026-10-04 10:12',
+                      iconBg: 'bg-rose-100 text-rose-600',
+                    },
+                  ].map((row, i) => (
+                    <tr key={i} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`h-6 w-6 rounded-md ${row.iconBg} flex items-center justify-center shrink-0`}>
+                            <FileText size={12} />
+                          </div>
+                          <span className="font-bold text-slate-800 font-outfit">{row.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-slate-500 max-w-[200px] truncate">{row.purpose}</td>
+                      <td className="py-3">
+                        {row.isBlocked ? (
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-rose-600">
+                            <span className="h-2 w-2 rounded-full bg-rose-500" />
+                            Blocked
+                          </span>
+                        ) : (
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${row.statusBadge}`}>
+                            {row.status}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 text-slate-400 font-mono text-[11px]">{row.updated}</td>
+                      <td className="py-3 text-right">
+                        <button className="text-slate-400 hover:text-slate-600 p-1">
+                          <MoreHorizontal size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Certification Overview Donut (4 cols) */}
+        <div className="lg:col-span-4 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 border border-orange-200 text-orange-600 shadow-2xs">
+                  <ShieldCheck size={18} />
+                </div>
+                <h3 className="text-base font-bold text-slate-900 font-outfit">
+                  Certification Overview
+                </h3>
+              </div>
               <Link
                 href="/tools/project-llm/integration-certification"
-                className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 text-xs font-bold text-emerald-800 shadow-sm hover:bg-emerald-100/70 transition-all"
+                className="px-2.5 py-1 text-xs font-bold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
               >
-                <ShieldCheck size={15} className="text-emerald-600" />
-                <span>Integrate & Certify</span>
+                View Details
               </Link>
+            </div>
 
+            {/* Donut Chart & Legend */}
+            <div className="flex items-center justify-between gap-4 py-3">
+              {/* SVG Donut */}
+              <div className="relative h-36 w-36 shrink-0 flex items-center justify-center">
+                <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
+                  {/* Background Track */}
+                  <circle cx="50" cy="50" r="38" stroke="#f1f5f9" strokeWidth="11" fill="none" />
+                  {/* Green segment (5 of 6 = ~83%) */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    stroke="#10b981"
+                    strokeWidth="11"
+                    strokeDasharray="238.76"
+                    strokeDashoffset="45"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                  {/* Blue mini segment */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    stroke="#3b82f6"
+                    strokeWidth="11"
+                    strokeDasharray="238.76"
+                    strokeDashoffset="220"
+                    fill="none"
+                  />
+                </svg>
+                {/* Center Text */}
+                <div className="absolute text-center">
+                  <p className="text-2xl font-black text-slate-900 font-outfit">5 / 6</p>
+                  <p className="text-[10px] font-bold text-slate-400 font-outfit">Blocks Certified</p>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="space-y-2.5 flex-1 pl-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-slate-600 font-medium">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    Certified
+                  </span>
+                  <span className="font-bold text-slate-900 font-mono">5</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-slate-600 font-medium">
+                    <span className="h-2 w-2 rounded-full bg-blue-500" />
+                    In Progress
+                  </span>
+                  <span className="font-bold text-slate-900 font-mono">3</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-slate-600 font-medium">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    Awaiting Approval
+                  </span>
+                  <span className="font-bold text-slate-900 font-mono">2</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-slate-600 font-medium">
+                    <span className="h-2 w-2 rounded-full bg-rose-500" />
+                    Blocked
+                  </span>
+                  <span className="font-bold text-slate-900 font-mono">1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Total Line */}
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span className="text-slate-500 font-medium">Total Candidates</span>
+            <span className="text-sm font-black text-slate-900 font-mono">11</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Row 4: Project Health, Block Families, Recent Activity */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Project Health (4 cols) */}
+        <div className="lg:col-span-4 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 shadow-2xs">
+                  <Activity size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 font-outfit">
+                    Project Health
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    System status and repository health.
+                  </p>
+                </div>
+              </div>
+              <button className="px-2.5 py-1 text-xs font-bold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                View Details
+              </button>
+            </div>
+
+            <div className="space-y-3.5">
+              {[
+                { label: 'Repository', status: 'Healthy', val: 'SUIA_RTH_SHC' },
+                { label: 'Snapshot Service', status: 'Healthy', val: 'Last: 2026-10-05 14:23' },
+                { label: 'Evidence Service', status: 'Healthy', val: 'All artifacts available' },
+                { label: 'API Services', status: 'Healthy', val: 'All agents operational' },
+              ].map((h, idx) => (
+                <div key={idx} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                    <span className="font-bold text-slate-800 font-outfit">{h.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {h.status}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-mono max-w-[120px] truncate">{h.val}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Block Families Grid (5 cols) */}
+        <div className="lg:col-span-5 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 border border-amber-200 text-amber-600 shadow-2xs">
+                  <Database size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 font-outfit">
+                    Block Families
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Available educational block families in Tutorial Composer.
+                  </p>
+                </div>
+              </div>
               <Link
-                href="/tools/tutorial-block-composer"
-                className="inline-flex items-center gap-2 rounded-xl border border-pink-200 bg-pink-50/50 px-4 py-2.5 text-xs font-bold text-pink-700 shadow-sm hover:bg-pink-100/60 transition-all"
+                href="/tools/project-llm/create"
+                className="px-2.5 py-1 text-xs font-bold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
               >
-                <Layers size={15} className="text-[#e11d48]" />
-                <span>Tutorial Composer</span>
-                <ExternalLink size={13} />
+                View All
               </Link>
             </div>
-          </div>
 
-          {/* Repo & Snapshot Telemetry Card */}
-          <div className="lg:w-[380px] shrink-0 rounded-xl border border-slate-200/80 bg-slate-50/60 backdrop-blur-sm p-4 shadow-inner space-y-2.5 font-mono text-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200/70">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Control Plane Telemetry</span>
-              <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                ONLINE
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-[11px]">Active Run</span>
-              <span className="font-bold text-slate-800">#WF-00142 (I2 Pilot)</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-[11px]">Commit SHA</span>
-              <span className="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">93794f63</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-[11px]">Snapshot Authority</span>
-              <span className="font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">#SNAP-7F3A9E</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-[11px]">Human Authority</span>
-              <span className="font-bold text-pink-700">HAA Gate-1 Enforced</span>
+            {/* 2 Rows of 5 Cards */}
+            <div className="grid grid-cols-5 gap-2 text-center">
+              {[
+                { name: 'Introduction', count: 6, icon: BookOpen, color: 'bg-pink-50 text-pink-600 border-pink-200' },
+                { name: 'Objective', count: 4, icon: Target, color: 'bg-orange-50 text-orange-600 border-orange-200' },
+                { name: 'Definition', count: 5, icon: FileText, color: 'bg-blue-50 text-blue-600 border-blue-200' },
+                { name: 'Code', count: 6, icon: Code, color: 'bg-purple-50 text-purple-600 border-purple-200' },
+                { name: 'Visual', count: 5, icon: ImageIcon, color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+                { name: 'Comparison', count: 4, icon: Columns, color: 'bg-cyan-50 text-cyan-600 border-cyan-200' },
+                { name: 'Execution', count: 4, icon: Play, color: 'bg-amber-50 text-amber-600 border-amber-200' },
+                { name: 'Memory', count: 4, icon: Brain, color: 'bg-rose-50 text-rose-600 border-rose-200' },
+                { name: 'Mistake', count: 4, icon: AlertTriangle, color: 'bg-red-50 text-red-600 border-red-200' },
+                { name: 'Best Practice', count: 4, icon: Award, color: 'bg-teal-50 text-teal-600 border-teal-200' },
+              ].map((f, i) => {
+                const Icon = f.icon;
+                return (
+                  <Link
+                    key={i}
+                    href="/tools/project-llm/create"
+                    className={`p-2 rounded-xl border ${f.color} flex flex-col items-center justify-between hover:scale-105 transition-transform group`}
+                  >
+                    <Icon size={14} className="mb-1" />
+                    <span className="text-[10px] font-bold text-slate-800 truncate w-full block">
+                      {f.name}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400 font-bold mt-0.5">
+                      {f.count}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="mt-8 pt-4 border-t border-slate-100 flex items-center gap-3">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'overview'
-                ? 'bg-slate-900 text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            Overview & 23-Surface Hub
-          </button>
-          <button
-            onClick={() => setActiveTab('pipelines')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'pipelines'
-                ? 'bg-slate-900 text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <span>Live Pipelines & Feed</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-400 text-slate-900 font-bold">4</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('brief-builder')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'brief-builder'
-                ? 'bg-slate-900 text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            Creation Brief Tool
-          </button>
+        {/* Recent Activity (3 cols) */}
+        <div className="lg:col-span-3 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 border border-purple-200 text-purple-600 shadow-2xs">
+                  <Clock size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 font-outfit">
+                    Recent Activity
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Latest system and workflow events.
+                  </p>
+                </div>
+              </div>
+              <button className="px-2.5 py-1 text-xs font-bold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                View All
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                { text: 'Candidate Introduction I7 uploaded', time: '14:23', dot: 'bg-emerald-500' },
+                { text: 'Validation completed for Objective O5', time: '13:50', dot: 'bg-blue-500' },
+                { text: 'Human approval requested for Code C4', time: '12:10', dot: 'bg-rose-500' },
+                { text: 'Block Summary S3 certified', time: '11:45', dot: 'bg-emerald-500' },
+                { text: 'Repository snapshot created', time: '10:32', dot: 'bg-blue-500' },
+                { text: 'Runtime verification completed for Quiz Q2', time: '10:12', dot: 'bg-emerald-500' },
+              ].map((ev, i) => (
+                <div key={i} className="flex items-start justify-between gap-2 text-xs">
+                  <div className="flex items-start gap-2 min-w-0">
+                    <span className={`h-2 w-2 rounded-full ${ev.dot} shrink-0 mt-1`} />
+                    <span className="text-slate-700 font-medium text-[11px] leading-tight truncate">
+                      {ev.text}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400 shrink-0">{ev.time}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
-
-      {/* 2. Autonomous 7-Page Engineering Journey Quick Launcher */}
-      <section className="rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-sm p-5 sm:p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-          <div>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-pink-600 block mb-0.5">
-              Autonomous Engineering Journey
-            </span>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 font-outfit">
-              Primary Project LLM Workspaces
-            </h2>
-          </div>
-          <span className="text-xs text-slate-400 font-medium">
-            Human-Centric Engineering Lifecycle
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            { step: '01', title: 'Create Block', desc: 'Select family & version', href: '/tools/project-llm/create', color: 'from-pink-500 to-rose-500' },
-            { step: '02', title: 'Compliance Brief', desc: '9 repository contracts', href: '/tools/project-llm/compliance-brief', color: 'from-orange-500 to-amber-500' },
-            { step: '03', title: 'External AI Handoff', desc: 'Design & TS phases', href: '/tools/project-llm/external-ai-handoff', color: 'from-purple-500 to-indigo-500' },
-            { step: '04', title: 'Upload & Validate', desc: '11 quality gates', href: '/tools/project-llm/candidate-upload', color: 'from-blue-500 to-cyan-500' },
-            { step: '05', title: 'Integrate & Certify', desc: 'Manifest & runtime', href: '/tools/project-llm/integration-certification', color: 'from-emerald-500 to-teal-500' },
-            { step: '06', title: 'Workflow Details', desc: 'Evidence & audit logs', href: '/tools/project-llm/workflow-details', color: 'from-slate-700 to-slate-900' },
-          ].map((item) => (
-            <Link
-              key={item.step}
-              href={item.href}
-              className="flex flex-col justify-between p-3.5 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-pink-300 hover:shadow-md transition-all group"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 group-hover:text-pink-600 transition-colors">
-                    Step {item.step}
-                  </span>
-                  <div className={`h-2 w-2 rounded-full bg-gradient-to-r ${item.color}`} />
-                </div>
-                <h3 className="text-xs font-bold text-slate-900 group-hover:text-pink-600 transition-colors leading-tight font-outfit">
-                  {item.title}
-                </h3>
-                <p className="text-[10px] text-slate-400 mt-1 leading-snug">
-                  {item.desc}
-                </p>
-              </div>
-              <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-500 group-hover:text-pink-600">
-                <span>Launch</span>
-                <span className="group-hover:translate-x-0.5 transition-transform">→</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. Control Plane KPI Cards (Active Workflows, Approvals, Blocked, Evidence) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-800 font-outfit">Control Plane Status</h2>
-            <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">FastAPI Telemetry</span>
-          </div>
-          <span className="text-xs font-mono text-slate-400">Refreshed 2m ago</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {controlPlaneStats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.label}
-                className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 hover:shadow-2xl transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">{stat.label}</p>
-                    </div>
-                    <p className={`mt-1 text-3xl font-black font-outfit ${stat.valueColor}`}>{stat.value}</p>
-                  </div>
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl shadow-sm ${stat.iconBg}`}>
-                    <Icon size={22} />
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-100">
-                  <span className="text-xs text-slate-500 font-medium truncate">{stat.subtext}</span>
-                  <span className={`text-[9px] font-bold font-mono px-2 py-0.5 rounded border uppercase ${stat.badgeColor}`}>
-                    {stat.badge}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3. Corpus & Runtime Intelligence Cards (18 / 133 / 3 / 14) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-800 font-outfit">Corpus & Runtime Taxonomy</h2>
-            <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">Canonical Registries</span>
-          </div>
-          <span className="text-xs font-mono font-semibold text-slate-400">18 Families • 133 Versions</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {corpusStats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.label}
-                className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 -translate-y-1 hover:-translate-y-3 hover:shadow-2xl transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">{stat.label}</p>
-                    <p className={`mt-1 text-2xl font-black font-outfit ${stat.valueColor}`}>{stat.value}</p>
-                  </div>
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.iconBg}`}>
-                    <Icon size={20} />
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <p className="text-xs text-slate-500 font-medium">{stat.subtext}</p>
-                  <span className={`text-[9px] font-bold font-mono px-1.5 py-0.5 rounded border uppercase ${stat.badgeColor}`}>
-                    {stat.badge}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 4. Sequenced Workflow Lifecycle Gates (DAG Health) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-slate-800 font-outfit">Workflow Lifecycle Gates</h2>
-            <p className="text-xs font-medium text-slate-500 mt-0.5">
-              Deterministic sequence from repository audit to downstream composer handoff.
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-lg text-[11px] font-mono text-slate-600 font-semibold">
-            <ShieldCheck size={14} className="text-emerald-600" />
-            <span>AI Plan ≠ Approval</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {lifecycleGates.map((gate, index) => (
-            <div
-              key={gate.num}
-              className="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-4 shadow-lg border-t border-white/60 -translate-y-1 hover:-translate-y-2 hover:shadow-xl transition-all duration-300"
-            >
-              <div className="flex items-center justify-between">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-black text-white bg-gradient-to-br from-slate-700 to-slate-900 shadow-sm font-mono">
-                  {gate.num}
-                </span>
-                <span className={`text-[9px] font-bold font-mono px-1.5 py-0.5 rounded border uppercase ${gate.color}`}>
-                  {gate.status}
-                </span>
-              </div>
-              <p className="mt-3 text-xs font-bold text-slate-900 font-outfit leading-tight">{gate.label}</p>
-              <div className="mt-2 flex items-center gap-1 text-[10px] text-slate-400 font-mono">
-                <span>Stage {index + 1} of 6</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 5. Conditional Tabs Content: Overview / Pipelines / Brief Builder */}
-      {activeTab === 'overview' && (
-        <div className="space-y-8">
-          {/* Recent Work Pipeline (From Wireframe) */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 font-outfit">Active Pipeline & Recent Work</h2>
-                <p className="text-xs font-medium text-slate-500 mt-0.5">
-                  Live block creation, specification review, candidate intake, and browser verification tasks.
-                </p>
-              </div>
-              <button
-                onClick={() => setActiveTab('pipelines')}
-                className="text-xs font-bold text-pink-600 hover:text-pink-700 flex items-center gap-1"
-              >
-                <span>View All In DAG</span>
-                <ChevronRight size={14} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {recentWorkItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 shadow-xl border-t border-white/60 -translate-y-1 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                          {item.id}
-                        </span>
-                        <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded uppercase">
-                          {item.type}
-                        </span>
-                      </div>
-                      <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded border uppercase ${
-                        item.statusType === 'warning'
-                          ? 'bg-amber-50 text-amber-700 border-amber-200'
-                          : item.statusType === 'success'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
-
-                    <h3 className="text-base font-bold text-slate-900 font-outfit">{item.title}</h3>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed">{item.details}</p>
-
-                    {/* Proof Checks Chips */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {item.checks.map((check) => (
-                        <span
-                          key={check}
-                          className="inline-flex items-center gap-1 rounded-md bg-slate-50 border border-slate-200/80 px-2 py-0.5 text-[10px] font-semibold text-slate-600"
-                        >
-                          <Check size={11} className="text-emerald-500" />
-                          <span>{check}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] font-mono text-slate-400">{item.hash}</span>
-                    <button className="inline-flex items-center gap-1.5 text-xs font-bold text-pink-600 hover:text-pink-700 hover:translate-x-0.5 transition-all">
-                      <span>{item.actionText}</span>
-                      <ArrowRight size={13} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 6. Complete 23 GUI Surfaces Directory (The Full Project LLM Architecture) */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 font-outfit">Project LLM Control Plane Architecture</h2>
-                <p className="text-xs font-medium text-slate-500 mt-0.5">
-                  Complete 23 GUI surfaces inventory across 6 operational zones.
-                </p>
-              </div>
-              <span className="text-xs font-mono font-bold bg-pink-50 text-[#e11d48] border border-pink-200 px-2.5 py-1 rounded-md">
-                23 SURFACES INVENTORY
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {guiSurfaces.map((zone) => (
-                <div
-                  key={zone.section}
-                  className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-5 shadow-xl border-t border-white/60 flex flex-col justify-between -translate-y-1 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                      <h3 className="text-base font-bold text-slate-900 font-outfit">{zone.section}</h3>
-                      <span className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">
-                        {zone.badge}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 font-medium">{zone.description}</p>
-
-                    <div className="space-y-2 pt-1">
-                      {zone.items.map((surf) => (
-                        <div
-                          key={surf.title}
-                          className="rounded-xl border border-slate-100 bg-slate-50/70 p-2.5 hover:bg-white hover:border-pink-200/80 hover:shadow-sm transition-all"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-slate-800 font-outfit">{surf.title}</span>
-                            <ChevronRight size={12} className="text-slate-400" />
-                          </div>
-                          <p className="mt-0.5 text-[11px] text-slate-500 leading-tight">{surf.desc}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 7. Architecture Boundary Callouts (Mix & Match vs Composer) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Intra-Family Rule Card */}
-            <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 via-white to-pink-50/50 p-6 shadow-xl border-t border-white/60 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={18} className="text-indigo-600" />
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-indigo-950 font-outfit">
-                    Intra-Family Mix & Match Boundary
-                  </h3>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                  Project LLM Mix & Match operates <strong>strictly intra-family</strong>. For example, select compatible components from <code>I1 + I2 + I5</code> to derive new version <code>I7</code>.
-                </p>
-                <div className="rounded-xl border border-indigo-200/70 bg-white p-3 font-mono text-xs space-y-1.5 shadow-sm">
-                  <div className="text-emerald-700 font-bold flex items-center gap-1.5">
-                    <Check size={13} className="text-emerald-600 shrink-0" />
-                    <span>ALLOWED: Introduction (I1 + I2 + I5) → Introduction I7</span>
-                  </div>
-                  <div className="text-rose-600 font-bold flex items-center gap-1.5">
-                    <XCircle size={13} className="text-rose-500 shrink-0" />
-                    <span>BLOCKED: Introduction I2 + Objective O2 + Code C1 (Composer Layer)</span>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-5 pt-3 border-t border-indigo-100/60 flex items-center justify-between text-xs font-semibold text-indigo-700">
-                <span>FastAPI Domain Validation Enforced</span>
-                <span className="font-mono text-[11px]">Surface 07</span>
-              </div>
-            </div>
-
-            {/* Downstream Composer Boundary Card */}
-            <div className="rounded-2xl border border-pink-100 bg-gradient-to-br from-pink-50/70 via-white to-orange-50/50 p-6 shadow-xl border-t border-white/60 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Layers size={18} className="text-[#e11d48]" />
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-pink-950 font-outfit">
-                    Downstream Product Composer Handoff
-                  </h3>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                  Project LLM certifies standalone blocks. The existing Tutorial Composer remains the product runtime surface that composes certified blocks across families into <code>TutorialDocument.blocks[]</code>.
-                </p>
-                <div className="rounded-xl border border-pink-200/70 bg-white p-3 font-mono text-xs space-y-1 shadow-sm text-slate-700">
-                  <p className="text-[11px] font-bold text-slate-900">Tutorial Document Execution Flow:</p>
-                  <p className="text-slate-600">Introduction I7 + Definition D3 + Code C2 → TutorialBlockRenderer</p>
-                </div>
-              </div>
-              <div className="mt-5 pt-3 border-t border-pink-100/60 flex items-center justify-between">
-                <span className="text-[11px] font-mono text-slate-400">/tools/tutorial-block-composer</span>
-                <Link
-                  href="/tools/tutorial-block-composer"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-4 py-2 text-xs font-bold text-white shadow-md hover:scale-105 transition-all"
-                >
-                  <span>Open Composer</span>
-                  <ArrowRight size={13} />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 6. Pipelines & Filter View */}
-      {activeTab === 'pipelines' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-slate-800 font-outfit">Workflow Pipelines Management</h2>
-              <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">4 TOTAL</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPipelineFilter('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  pipelineFilter === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                All (4)
-              </button>
-              <button
-                onClick={() => setPipelineFilter('approval')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  pipelineFilter === 'approval' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-                }`}
-              >
-                Awaiting Approval (2)
-              </button>
-              <button
-                onClick={() => setPipelineFilter('active')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  pipelineFilter === 'active' ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-                }`}
-              >
-                In Review (1)
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {recentWorkItems
-              .filter((item) => {
-                if (pipelineFilter === 'approval') return item.status.includes('Awaiting') || item.status.includes('Reviewing');
-                if (pipelineFilter === 'active') return item.statusType === 'warning';
-                return true;
-              })
-              .map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 shadow-xl border-t border-white/60 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1.5 max-w-2xl">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                        {item.id}
-                      </span>
-                      <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded uppercase">
-                        {item.type}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-400">•</span>
-                      <span className="text-xs font-mono font-bold text-slate-500">{item.family}</span>
-                    </div>
-                    <h3 className="text-base font-bold text-slate-900 font-outfit">{item.title}</h3>
-                    <p className="text-xs text-slate-500">{item.details}</p>
-                    <div className="flex flex-wrap gap-2 pt-1 font-mono text-[10px]">
-                      <span className="text-slate-400">{item.hash}</span>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-emerald-600 font-bold">{item.checks.join(' • ')}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    <button className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all">
-                      Inspect DAG
-                    </button>
-                    <button className="px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-md hover:scale-105 active:scale-95 transition-all">
-                      {item.actionText}
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-
-      {/* 7. Creation Brief Builder Panel */}
-      {activeTab === 'brief-builder' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 font-outfit">Creation Brief Generator</h2>
-              <p className="text-xs font-medium text-slate-500 mt-0.5">
-                Generate prompt package and engineering specifications for external AI authoring.
-              </p>
-            </div>
-            <button
-              onClick={() => setActiveTab('overview')}
-              className="text-xs font-bold text-slate-600 hover:text-slate-900"
-            >
-              Back to Overview
-            </button>
-          </div>
-          <CreationBriefPanel />
-        </div>
-      )}
     </div>
   );
 }
