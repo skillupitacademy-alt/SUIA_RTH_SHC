@@ -1,11 +1,15 @@
 """
 Wave 10: Full I2 Certification Workflow - Happy Path Integration Test
 
-Tests the complete certification workflow from candidate upload through
-all certification gates, verifying real verification logic (not placeholder PASS).
+M2.9 Wave 0: These tests are DEPRECATED as they test legacy /creation endpoints
+which now return 405 METHOD_NOT_ALLOWED.
 
-This test represents the "golden path" where everything is properly configured
-and all gates should pass with real evidence.
+These tests need to be rewritten to use canonical workflow endpoints:
+- POST /tasks/plan
+- POST /candidates/upload
+- POST /governance/{approval_id}/approve
+
+Use tests/e2e/test_m2_9_golden_e2e.py as reference for canonical workflow testing.
 """
 
 import hashlib
@@ -19,6 +23,7 @@ from app.main import app
 client = TestClient(app)
 
 
+@pytest.mark.skip(reason="Legacy /creation endpoints disabled in M2.9 Wave 0 - needs rewrite for canonical workflow")
 @pytest.mark.integration
 def test_i2_complete_certification_workflow(tmp_path, monkeypatch):
     """
@@ -244,6 +249,7 @@ def test_i2_complete_certification_workflow(tmp_path, monkeypatch):
             "Without snapshot, all gates should be BLOCKED"
 
 
+@pytest.mark.skip(reason="Legacy /creation endpoints disabled in M2.9 Wave 0")
 @pytest.mark.integration
 def test_i2_workflow_with_multiple_candidate_blocks(tmp_path):
     """
@@ -284,6 +290,7 @@ def test_i2_workflow_with_multiple_candidate_blocks(tmp_path):
         assert gate["message"] != ""
 
 
+@pytest.mark.skip(reason="Legacy /creation endpoints disabled in M2.9 Wave 0")
 @pytest.mark.integration  
 def test_workflow_state_persistence():
     """

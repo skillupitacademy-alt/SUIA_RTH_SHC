@@ -1,10 +1,55 @@
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
-from app.models.creation import CreationMode, BlockSource
+from app.models.creation import DesignSource, BlockSource
 
 client = TestClient(app)
 
+# M2.9 Wave 0: These tests verify that legacy /creation endpoints are DISABLED
+# They should return 405 METHOD_NOT_ALLOWED with appropriate error messages
+
+def test_create_workflow_returns_405():
+    """Test that POST /creation/workflows returns 405 (deprecated)"""
+    response = client.post("/creation/workflows", json={
+        "design_source": "REPOSITORY_CANONICAL",
+        "composition": {
+            "base": "I2",
+            "structure": "I2",
+            "hero": "I2",
+            "footer": "I2"
+        },
+        "candidateBlocks": []
+    })
+    assert response.status_code == 405
+    data = response.json()
+    assert "LEGACY_ENDPOINT_DISABLED" in data["detail"]["error"]
+    assert "canonical_workflow" in data["detail"]
+
+def test_get_workflow_returns_405():
+    """Test that GET /creation/workflows/{id} returns 405 (deprecated)"""
+    response = client.get("/creation/workflows/test-id")
+    assert response.status_code == 405
+    data = response.json()
+    assert "LEGACY_ENDPOINT_DISABLED" in data["detail"]["error"]
+
+def test_validate_workflow_returns_405():
+    """Test that POST /creation/workflows/{id}/validate returns 405 (deprecated)"""
+    response = client.post("/creation/workflows/test-id/validate")
+    assert response.status_code == 405
+    data = response.json()
+    assert "LEGACY_ENDPOINT_DISABLED" in data["detail"]["error"]
+
+def test_certify_workflow_returns_405():
+    """Test that POST /creation/workflows/{id}/certify returns 405 (deprecated)"""
+    response = client.post("/creation/workflows/test-id/certify")
+    assert response.status_code == 405
+    data = response.json()
+    assert "LEGACY_ENDPOINT_DISABLED" in data["detail"]["error"]
+
+# LEGACY TESTS BELOW - These verified old workflow bypass behavior
+# They are kept for historical reference but should not be used
+
+@pytest.mark.skip(reason="Legacy CreationMode.I2_ONLY removed in Wave 0")
 def test_create_i2_only_workflow():
     """Test I2-only workflow creation"""
     response = client.post("/creation/workflows", json={
@@ -23,6 +68,7 @@ def test_create_i2_only_workflow():
     assert data["status"] == "CREATED"
     assert len(data["certificationGates"]) == 6
 
+@pytest.mark.skip(reason="Legacy CreationMode.MIX_AND_MATCH removed in Wave 0")
 def test_create_mix_and_match_workflow():
     """Test Mix-and-Match workflow creation"""
     response = client.post("/creation/workflows", json={
@@ -38,6 +84,7 @@ def test_create_mix_and_match_workflow():
     data = response.json()
     assert data["mode"] == "MIX_AND_MATCH"
 
+@pytest.mark.skip(reason="Legacy workflow endpoints disabled in Wave 0")
 def test_get_workflow():
     """Test retrieving workflow"""
     create_response = client.post("/creation/workflows", json={
@@ -50,6 +97,7 @@ def test_get_workflow():
     get_response = client.get(f"/creation/workflows/{workflow_id}")
     assert get_response.status_code == 200
 
+@pytest.mark.skip(reason="Legacy workflow endpoints disabled in Wave 0")
 def test_validate_workflow():
     """Test workflow validation (fails without snapshot)"""
     create_response = client.post("/creation/workflows", json={
@@ -66,6 +114,7 @@ def test_validate_workflow():
     # This is correct behavior - validates that real validation logic is running
     assert validate_response.json()["status"] == "FAILED"
 
+@pytest.mark.skip(reason="Legacy workflow endpoints disabled in Wave 0")
 def test_certify_workflow():
     """Test workflow certification with all 6 gates"""
     create_response = client.post("/creation/workflows", json={
@@ -94,4 +143,5 @@ def test_certify_workflow():
     # All gates should be BLOCKED (not PASS) because snapshot is missing
     assert all(gate["status"] == "BLOCKED" for gate in data["certificationGates"]), \
         "Gates should be BLOCKED without valid snapshot, not unconditionally PASS"
+
 

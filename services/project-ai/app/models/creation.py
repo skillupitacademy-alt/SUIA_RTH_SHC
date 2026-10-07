@@ -1,21 +1,27 @@
 from enum import Enum
 from pydantic import BaseModel
 
-# DEPRECATION NOTICE (M2.9):
-# CreationMode is marked for removal in Wave 1 / Agent B13.
-# All workflows will follow CanonicalWorkflowState lifecycle regardless of mode.
-# Use DesignSource (to be added in W1-B13) to indicate content origin, not workflow bypass.
-# TODO(B13): Remove CreationMode and replace with DesignSource enum.
-class CreationMode(str, Enum):
+# M2.9 Wave 0 / Agent B13: CreationMode REMOVED
+# All workflows now follow CanonicalWorkflowState lifecycle.
+# Use DesignSource to indicate content origin without workflow bypass.
+
+class DesignSource(str, Enum):
     """
-    DEPRECATED: Use DesignSource in CanonicalWorkflowState pipeline instead.
+    M2.9: Indicates where block design originates, without bypassing canonical workflow.
     
-    This enum allowed workflow bypass (MIX_AND_MATCH, I2_ONLY) which violates
-    M2.9 architecture requirement that all candidates follow same lifecycle.
+    All design sources follow the same CanonicalWorkflowState lifecycle:
+    REQUESTED → DISCOVERY → BRIEF_READY → ... → CERTIFIED
+    
+    DesignSource controls WHAT is discovered, not HOW workflow proceeds.
     """
-    I2_ONLY = "I2_ONLY"
-    MIX_AND_MATCH = "MIX_AND_MATCH"
-    NEW_CANDIDATE = "NEW_CANDIDATE"
+    REPOSITORY_CANONICAL = "REPOSITORY_CANONICAL"
+    """Design comes from existing canonical blocks (I1-I6, C1-C5, etc.)"""
+    
+    EXTERNAL_AI_PROTOTYPE = "EXTERNAL_AI_PROTOTYPE"
+    """Design created by External AI based on user requirements + repository context"""
+    
+    USER_SPECIFICATION = "USER_SPECIFICATION"
+    """Design specified directly by user with explicit requirements"""
 
 class BlockSource(str, Enum):
     I1 = "I1"
@@ -37,7 +43,7 @@ class CertificationGateStatus(str, Enum):
     BLOCKED = "BLOCKED"
 
 class CompositionSpec(BaseModel):
-    mode: CreationMode
+    design_source: DesignSource
     composition: dict[str, BlockSource]
     candidateBlocks: list[str] = []
 
@@ -50,10 +56,11 @@ class CertificationGate(BaseModel):
 
 class WorkflowStatus(str, Enum):
     """
-    SECONDARY AUTHORITY (M2.9): Maps to CanonicalWorkflowState for API compatibility.
+    SECONDARY AUTHORITY (M2.9): Maps to CanonicalWorkflowState for legacy API compatibility.
     
-    This enum is kept for backward compatibility with existing creation endpoints,
-    but new code should use CanonicalWorkflowState from app.orchestration.canonical_workflow.
+    This enum is DEPRECATED and maintained only for backward compatibility with existing
+    /creation endpoints. New code MUST use CanonicalWorkflowState from 
+    app.orchestration.canonical_workflow.
     
     Mapping to CanonicalWorkflowState:
     - CREATED -> REQUESTED
@@ -62,7 +69,8 @@ class WorkflowStatus(str, Enum):
     - CERTIFIED -> CERTIFIED
     - FAILED -> REJECTED
     
-    For complete workflow lifecycle, use CanonicalWorkflowState (17 states).
+    ARCHITECTURAL RULE: These /creation routes will return 405 METHOD_NOT_ALLOWED in future.
+    Use canonical workflow endpoints (/tasks, /candidates, /governance) instead.
     """
     CREATED = "CREATED"
     VALIDATING = "VALIDATING"
@@ -71,8 +79,13 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
 
 class CreationWorkflow(BaseModel):
+    """
+    DEPRECATED (M2.9 Wave 0): Legacy workflow model for /creation endpoints.
+    
+    This model is marked for removal. Use CanonicalWorkflowState lifecycle instead.
+    """
     workflowId: str
-    mode: CreationMode
+    design_source: DesignSource
     composition: CompositionSpec
     certificationGates: list[CertificationGate]
     status: WorkflowStatus

@@ -1,8 +1,12 @@
 """
 End-to-end integration tests for complete Candidate Block pipeline.
 
-These tests verify the entire workflow from I2-only creation through
-candidate intake, classification, manifest generation, and governance approval.
+M2.9 Wave 0: These tests are DEPRECATED as they test legacy /creation endpoints
+which now return 405 METHOD_NOT_ALLOWED.
+
+Use canonical workflow tests instead:
+- tests/e2e/test_m2_9_golden_e2e.py
+- tests/integration/test_i2_e2e_certification.py (needs update for canonical workflow)
 """
 
 import hashlib
@@ -15,6 +19,7 @@ from datetime import datetime
 client = TestClient(app)
 
 
+@pytest.mark.skip(reason="Legacy /creation endpoints disabled in M2.9 Wave 0")
 def test_i2_only_happy_path():
     """
     End-to-end test: I2-only workflow creation → validation → certification
@@ -317,6 +322,7 @@ def test_governance_pending_list():
         pytest.skip("Snapshot unavailable - cannot test pending list")
 
 
+@pytest.mark.skip(reason="Legacy /creation endpoints disabled in M2.9 Wave 0")
 def test_workflow_retrieval():
     """
     Integration test: Verify workflow can be retrieved after creation

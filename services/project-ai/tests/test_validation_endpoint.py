@@ -1,14 +1,10 @@
 """
 Integration tests for validation endpoint.
 
-Tests:
-1. I2-only creation validated end-to-end
-2. Compatible composition validated
-3. Incompatible composition blocked with specific errors
+M2.9 Wave 0: These tests are DEPRECATED as they test legacy /creation endpoints
+which now return 405 METHOD_NOT_ALLOWED.
 
-Note: These tests currently test the failure path (snapshot not found).
-Full integration tests with mocked snapshots require more complex setup.
-Unit tests in test_i2_validation.py cover the actual validation logic.
+Use canonical workflow tests instead.
 """
 
 import pytest
@@ -161,6 +157,7 @@ def mock_incompatible_snapshot():
     }
 
 
+@pytest.mark.skip(reason="Legacy /creation endpoints disabled in M2.9 Wave 0")
 @patch("app.api.routes.creation.DiscoveryClient")
 def test_validate_snapshot_not_found(mock_discovery_client):
     """Test validation fails gracefully when snapshot not found."""
@@ -195,7 +192,8 @@ def test_validate_snapshot_not_found(mock_discovery_client):
     assert any("snapshot not found" in blocker.lower() for blocker in all_blockers)
 
 
+@pytest.mark.skip(reason="Legacy /creation endpoints disabled in M2.9 Wave 0")
 def test_validate_workflow_not_found():
-    """Test validation returns 404 for non-existent workflow."""
+    """Test validation returns 405 for non-existent workflow (endpoint disabled)."""
     validate_response = client.post("/creation/workflows/nonexistent/validate")
-    assert validate_response.status_code == 404
+    assert validate_response.status_code == 405
