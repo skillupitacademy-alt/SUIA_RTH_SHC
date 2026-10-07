@@ -37,7 +37,7 @@ async def execute_intake(context: AgentContext) -> AgentResult:
         
         if not validation_result['valid']:
             return AgentResult(
-                agent_id="intake",
+                agent_id="candidate_intake",
                 status=AgentStatus.FAILED,
                 outputs={
                     'candidate_validation_status': 'INVALID',

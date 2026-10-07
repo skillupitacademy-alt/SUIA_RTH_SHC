@@ -31,7 +31,7 @@ async def execute_classification(context: AgentContext) -> AgentResult:
         intake_result = context.prior_agent_outputs.get('intake')
         if not intake_result or not intake_result.passed:
             return AgentResult(
-                agent_id="classification",
+                agent_id="candidate_classification",
                 status=AgentStatus.BLOCKED,
                 outputs={},
                 evidence_ids=[],

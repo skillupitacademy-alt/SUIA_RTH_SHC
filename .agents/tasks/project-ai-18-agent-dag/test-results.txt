@@ -1,0 +1,247 @@
+===========================================
+Project AI 15-Agent DAG Integration Test
+Iteration 1 - Initial Verification
+===========================================
+
+Date: 2025-01-26
+Task: project-ai-18-agent-dag
+Worktree: e:\onlinewebsites\quiz-platform
+
+===========================================
+1. WORKFLOW DAG VERIFICATION
+===========================================
+
+Command: python -c "from app.orchestration.workflow_dag import AGENT_WORKFLOW_DAG; print(f'DAG has {len(AGENT_WORKFLOW_DAG)} agents')"
+Result: ✅ SUCCESS
+
+DAG has 24 agents:
+- agent-01-repository-auditor
+- agent-02-snapshot-authority
+- agent-03-evidence-freeze
+- agent-04-block-specification
+- agent-05-classification
+- agent-06-governance
+- agent-07-placement-draft
+- agent-08-placement-manifest
+- agent-09-human-approval
+- agent-10-placement-executor
+- agent-11-post-placement-verification
+- agent-12a-contract-gate (parallel group: certification-gates)
+- agent-12b-ubrc-gate (parallel group: certification-gates)
+- agent-12c-registry-gate (parallel group: certification-gates)
+- agent-12d-renderer-gate (parallel group: certification-gates)
+- agent-12e-composer-gate (parallel group: certification-gates)
+- agent-12f-tests-gate (parallel group: certification-gates)
+- agent-12g-runtime-gate (parallel group: certification-gates)
+- agent-12h-browser-gate (parallel group: certification-gates)
+- agent-12i-brand-independence-gate (parallel group: certification-gates)
+- agent-12j-theme-compatibility-gate (parallel group: certification-gates)
+- agent-13-final-evidence-freeze
+- agent-14-final-gate-controller
+- agent-15-human-certification
+
+DISCREPANCY: Task mentions "15 agents" but DAG has 24 agents
+- The 10 certification gates (12a-12j) are individual DAG nodes instead of a single agent-12
+- This is an expansion from the original 15-agent design
+
+===========================================
+2. AGENT REGISTRY VERIFICATION
+===========================================
+
+Command: python -c "from app.orchestration.agent_registry import AgentRegistry; registry = AgentRegistry(); print(f'Registry has {len(registry.list_agents())} agents')"
+Result: ✅ SUCCESS
+
+Registry has 28 agent types:
+1. gate_controller
+2. repository_auditor
+3. snapshot_authority
+4. evidence_freeze
+5. block_specification
+6. toolchain
+7. composer
+8. dependency
+9. ubrc
+10. candidate_intake
+11. candidate_classification
+12. placement_manifest
+13. human_approval
+14. placement_executor
+15. post_placement_verification
+16. candidate_placement
+17. candidate_certification
+18. brand_independence
+19. theme_compatibility
+20. runtime_browser
+21. runtime_agent (Extra agent #1)
+22. playwright_browser_agent (Extra agent #2)
+23. composer_workflow
+24. governance
+25. documentation
+26. final_evidence_freeze (Extra agent #3)
+27. final_gate_controller (Extra agent #4)
+28. human_certification (Extra agent #5)
+
+DISCREPANCY: Tests expect 23 agents but registry has 28 agents
+- 5 extra agent types beyond the expected count
+
+===========================================
+3. MODEL IMPORTS VERIFICATION
+===========================================
+
+Command: python -c "from app.models import AgentResult, AgentStatus, GateStatus, GateResult, GateVerdict; print('Core models imported successfully')"
+Result: ✅ SUCCESS
+
+All core models import successfully:
+- AgentResult, AgentStatus, GateStatus (from agent_result.py)
+- GateResult, GateVerdict (from gate_result.py)
+- SpecificationStatus, StructuralRequirement, CandidateBlockSpecification, SpecificationResult (from specification.py)
+- PlacementAction, PlacementEntry, PlacementManifest, PlacementExecutionResult (from placement.py)
+- CertificationVerdict, FinalCertification, HumanCertificationDecision (from certification.py)
+
+===========================================
+4. FULL TEST SUITE EXECUTION
+===========================================
+
+Command: python -m pytest tests/ -v
+Result: ❌ FAILED
+
+Test Results:
+- 384 PASSED
+- 69 FAILED
+- 6 SKIPPED
+- 50 WARNINGS
+- Total execution time: 34.16s
+
+===========================================
+5. FAILED TEST CATEGORIES
+===========================================
+
+A. Agent Registry Tests (4 failures):
+   - test_all_agents_registered: Expected 23, got 28 agents
+   - test_agent_types_enum_complete: Expected 23, got 28 agent types
+   - test_list_agents_returns_all_entries: Expected 23, got 28 agents
+   - test_list_agents_endpoint (API route): Returns 28 instead of expected count
+
+B. Certification Gate Tests (~40 failures):
+   - UBRC gate tests failing
+   - Brand independence gate tests failing
+   - Registry verification gate tests failing
+   - Theme compatibility gate tests failing
+   - Contract gate tests failing
+   - All gate tests appear to have structural/implementation issues
+
+C. Integration Tests (~11 failures):
+   - test_missing_evidence_blocks_certification
+   - test_wrong_block_version_fails
+   - test_missing_registry_fails
+   - test_missing_renderer_fails
+   - test_renderer_mismatch_fails
+   - test_schema_mismatch_fails
+   - test_composer_failure_blocks
+   - test_runtime_failure_blocks
+   - test_browser_failure_blocks
+   - test_brand_coupling_fails
+   - test_theme_mismatch_fails
+
+D. Workflow Engine Agent Integration Tests (~14 failures):
+   - test_planning_step_uses_agents: Expected agent names don't match
+   - test_workflow_engine_has_agent_registry: Expected 15, got 28 agents
+   - Various agent coordination and workflow tests
+
+===========================================
+6. ROOT CAUSE ANALYSIS
+===========================================
+
+Issue 1: Agent Count Mismatch
+- Design documents reference "15 agents" (FEAT-001)
+- DAG implementation has 24 agents (10 certification gates as separate nodes)
+- Agent registry has 28 agent types (additional runtime_agent, playwright_browser_agent, etc.)
+- Tests are hardcoded to expect 23 agents (pre-expansion count)
+
+Issue 2: DAG vs Registry Misalignment
+- DAG has 24 agent IDs (agent-01, agent-02, ... agent-12a-12j, agent-13, 14, 15)
+- Registry has 28 AgentType enums (different naming: gate_controller, repository_auditor, etc.)
+- No clear 1:1 mapping between DAG agent IDs and Registry agent types
+- DAG uses kebab-case IDs (agent-01-repository-auditor)
+- Registry uses snake_case enum values (repository_auditor)
+
+Issue 3: Missing Gate Implementations
+- Certification gates are defined in DAG but tests indicate implementations are incomplete
+- Gate execution logic may not be properly integrated with the agent coordinator
+
+===========================================
+7. INTEGRATION ISSUES DETECTED
+===========================================
+
+Critical Issues:
+1. ❌ Agent count inconsistency across design docs (15), DAG (24), registry (28), and tests (23)
+2. ❌ No clear mapping between DAG agent IDs and Registry AgentTypes
+3. ❌ Certification gate implementations incomplete or non-functional
+4. ❌ 69 failing tests indicate significant integration problems
+5. ❌ Workflow engine tests failing due to agent count/name mismatches
+
+Non-Critical Issues:
+1. ⚠️ 50 test warnings (need review but not blocking)
+2. ⚠️ Design documents may be outdated vs actual implementation
+
+===========================================
+8. RECOMMENDATIONS FOR NEXT ITERATION
+===========================================
+
+1. Clarify the intended agent architecture:
+   - Should it be 15 agents (consolidated gates) or 24+ agents (granular gates)?
+   - Update all design documents to reflect actual implementation
+   - Update all tests to use correct agent counts
+
+2. Create explicit mapping between DAG and Registry:
+   - Add mapping function: dag_id_to_agent_type()
+   - Document the relationship clearly
+   - Ensure 1:1 correspondence or document why divergence is needed
+
+3. Fix or implement certification gates:
+   - Review all 10 gate implementations (12a-12j)
+   - Ensure they follow GateResult contract
+   - Add integration with agent coordinator
+
+4. Update test expectations:
+   - Change all hardcoded "15" or "23" to actual count (24 or 28)
+   - Or refactor to match original 15-agent design
+   - Make tests flexible to agent count changes
+
+5. Align naming conventions:
+   - Standardize on either kebab-case or snake_case
+   - Update either DAG or Registry to match
+
+===========================================
+9. FILES REQUIRING ATTENTION
+===========================================
+
+Configuration Files:
+- services/project-ai/app/orchestration/workflow_dag.py (24 agents)
+- services/project-ai/app/orchestration/agent_registry.py (28 agents)
+
+Test Files:
+- tests/test_agent_registry.py (expects 23 agents)
+- tests/test_certification_gates.py (~40 failing tests)
+- tests/integration/test_certification_negative.py (~11 failing tests)
+- tests/test_workflow_engine_agents.py (~14 failing tests)
+
+Design Documents:
+- .agents/tasks/project-ai-18-agent-dag/features/FEAT-001.json (mentions 15 agents)
+- .agents/tasks/project-ai-dag-design.md (needs verification)
+
+===========================================
+10. NEXT STEPS
+===========================================
+
+Awaiting review.md file with specific findings to address in iteration 2.
+
+If no review file is provided, recommend:
+1. Decision on agent count (15 vs 24 vs 28)
+2. Create comprehensive alignment plan
+3. Implement fixes iteratively by test category
+4. Re-run verification after each fix category
+
+===========================================
+END OF REPORT
+===========================================

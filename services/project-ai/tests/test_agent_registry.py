@@ -13,13 +13,13 @@ class TestAgentRegistry:
         registry = AgentRegistry()
         agents = registry.list_agents()
         
-        # We now have 23 agents after adding Wave C (FEAT-003) candidate pipeline agents
-        assert len(agents) == 23, f"Expected 23 agents, got {len(agents)}"
+        # We now have 15 agents in the consolidated architecture
+        assert len(agents) == 15, f"Expected 15 agents, got {len(agents)}"
     
     def test_agent_types_enum_complete(self):
         """AgentType enum contains all agent types."""
         agent_types = list(AgentType)
-        assert len(agent_types) == 23, f"Expected 23 agent types, got {len(agent_types)}"
+        assert len(agent_types) == 15, f"Expected 15 agent types, got {len(agent_types)}"
     
     def test_get_agent_returns_correct_agent(self):
         """get_agent() returns the correct agent for each type."""
@@ -37,7 +37,7 @@ class TestAgentRegistry:
         registry = AgentRegistry()
         agents = registry.list_agents()
         
-        assert len(agents) == 23
+        assert len(agents) == 15
         assert all(isinstance(agent, Agent) for agent in agents)
     
     def test_no_agent_has_stub_or_todo(self):
@@ -93,114 +93,85 @@ class TestAgentRegistry:
         """Test specific agent definitions match requirements."""
         registry = AgentRegistry()
         
-        # Gate Controller
-        gate = registry.get_agent(AgentType.GATE_CONTROLLER)
-        assert "orchestrate_pipeline" in gate.capabilities
-        assert "enforce_gates" in gate.capabilities
-        assert "block_on_failure" in gate.capabilities
-        
-        # Repository Auditor
+        # Agent 1: Repository Auditor
         repo = registry.get_agent(AgentType.REPOSITORY_AUDITOR)
         assert "validate_git_state" in repo.capabilities
         assert "check_working_directory" in repo.capabilities
         
-        # Toolchain
-        toolchain = registry.get_agent(AgentType.TOOLCHAIN)
-        assert "detect_toolchain" in toolchain.capabilities
-        assert "run_approved_commands" in toolchain.capabilities
-        assert "report_versions" in toolchain.capabilities
+        # Agent 2: Snapshot Authority
+        snapshot = registry.get_agent(AgentType.SNAPSHOT_AUTHORITY)
+        assert "generate_snapshot" in snapshot.capabilities
+        assert "extract_canonical_hash" in snapshot.capabilities
         
-        # Composer
-        composer = registry.get_agent(AgentType.COMPOSER)
-        assert "discover_composer" in composer.capabilities
-        assert "validate_schema" in composer.capabilities
-        assert "check_api_compatibility" in composer.capabilities
+        # Agent 3: Evidence Freeze
+        evidence = registry.get_agent(AgentType.EVIDENCE_FREEZE)
+        assert "validate_evidence_structure" in evidence.capabilities
+        assert "create_evidence_index" in evidence.capabilities
         
-        # Dependency
-        dependency = registry.get_agent(AgentType.DEPENDENCY)
-        assert "build_dependency_graph" in dependency.capabilities
-        assert "detect_cycles" in dependency.capabilities
-        assert "report_violations" in dependency.capabilities
+        # Agent 4: Block Specification
+        spec = registry.get_agent(AgentType.BLOCK_SPECIFICATION)
+        assert "parse_candidate_structure" in spec.capabilities
+        assert "compare_canonical" in spec.capabilities
         
-        # UBRC
-        ubrc = registry.get_agent(AgentType.UBRC)
-        assert "scan_block_attributes" in ubrc.capabilities
-        assert "verify_data_block_version" in ubrc.capabilities
-        assert "report_compliance" in ubrc.capabilities
-        
-        # Wave C agents (FEAT-003)
-        # Candidate Intake
+        # Agent 5: Candidate Intake
         intake = registry.get_agent(AgentType.CANDIDATE_INTAKE)
         assert "validate_package_structure" in intake.capabilities
         assert "compute_file_hashes" in intake.capabilities
         
-        # Classification
+        # Agent 6: Candidate Classification
         classification = registry.get_agent(AgentType.CANDIDATE_CLASSIFICATION)
         assert "classify_block_family" in classification.capabilities
         assert "confidence_scoring" in classification.capabilities
         
-        # Placement Manifest
+        # Agent 7: Canonical Comparison
+        comparison = registry.get_agent(AgentType.CANONICAL_COMPARISON)
+        assert "compare_with_canonical" in comparison.capabilities
+        assert "generate_diff_report" in comparison.capabilities
+        
+        # Agent 8: Placement Manifest
         manifest = registry.get_agent(AgentType.PLACEMENT_MANIFEST)
         assert "generate_placement_manifest" in manifest.capabilities
         assert "compute_manifest_hash" in manifest.capabilities
         
-        # Human Approval
+        # Agent 9: Human Approval
         approval = registry.get_agent(AgentType.HUMAN_APPROVAL)
         assert "database_polling" in approval.capabilities
         assert "manifest_hash_verification" in approval.capabilities
         
-        # Placement Executor
+        # Agent 10: Placement Executor
         executor = registry.get_agent(AgentType.PLACEMENT_EXECUTOR)
         assert "execute_approved_manifest" in executor.capabilities
         assert "verify_manifest_hash" in executor.capabilities
         
-        # Post-Placement Verification
-        verification = registry.get_agent(AgentType.POST_PLACEMENT_VERIFICATION)
+        # Agent 11: Post-Placement Snapshot
+        verification = registry.get_agent(AgentType.POST_PLACEMENT_SNAPSHOT)
         assert "git_diff_verification" in verification.capabilities
         assert "file_hash_computation" in verification.capabilities
         
-        # Candidate Certification
-        certification = registry.get_agent(AgentType.CANDIDATE_CERTIFICATION)
-        assert "run_certification_gates" in certification.capabilities
-        assert "bind_evidence" in certification.capabilities
-        assert "issue_certified_verdict" in certification.capabilities
+        # Agent 12: Certification Controller (orchestrates all gates)
+        cert_controller = registry.get_agent(AgentType.CERTIFICATION_CONTROLLER)
+        assert "orchestrate_certification_gates" in cert_controller.capabilities
+        assert "execute_contract_gate" in cert_controller.capabilities
+        assert "execute_ubrc_gate" in cert_controller.capabilities
+        assert "execute_brand_gate" in cert_controller.capabilities
+        assert "execute_theme_gate" in cert_controller.capabilities
+        assert "aggregate_gate_results" in cert_controller.capabilities
         
-        # Brand Independence
-        brand = registry.get_agent(AgentType.BRAND_INDEPENDENCE)
-        assert "scan_brand_markers" in brand.capabilities
-        assert "verify_neutral_palette" in brand.capabilities
-        assert "report_brand_violations" in brand.capabilities
+        # Agent 13: Runtime Verification
+        runtime = registry.get_agent(AgentType.RUNTIME_VERIFICATION)
+        assert "verify_runtime" in runtime.capabilities
+        assert "start_application" in runtime.capabilities
+        assert "health_check" in runtime.capabilities
         
-        # Theme Compatibility
-        theme = registry.get_agent(AgentType.THEME_COMPATIBILITY)
-        assert "check_css_variables" in theme.capabilities
-        assert "verify_theme_overrides" in theme.capabilities
-        assert "test_dark_light_modes" in theme.capabilities
+        # Agent 14: Browser Verification
+        browser = registry.get_agent(AgentType.BROWSER_VERIFICATION)
+        assert "orchestrate_node_playwright" in browser.capabilities
+        assert "parse_json_results" in browser.capabilities
         
-        # Runtime/Browser
-        runtime = registry.get_agent(AgentType.RUNTIME_BROWSER)
-        assert "launch_browser" in runtime.capabilities
-        assert "render_block" in runtime.capabilities
-        assert "capture_screenshot" in runtime.capabilities
-        assert "verify_runtime_behavior" in runtime.capabilities
-        
-        # Composer Workflow
-        workflow = registry.get_agent(AgentType.COMPOSER_WORKFLOW)
-        assert "orchestrate_composition" in workflow.capabilities
-        assert "validate_i2_workflow" in workflow.capabilities
-        assert "check_mix_and_match" in workflow.capabilities
-        
-        # Governance
-        governance = registry.get_agent(AgentType.GOVERNANCE)
-        assert "submit_approval" in governance.capabilities
-        assert "verify_manifest_hash" in governance.capabilities
-        assert "record_audit_trail" in governance.capabilities
-        
-        # Documentation
-        documentation = registry.get_agent(AgentType.DOCUMENTATION)
-        assert "update_backlog" in documentation.capabilities
-        assert "generate_evidence_report" in documentation.capabilities
-        assert "write_gate_summary" in documentation.capabilities
+        # Agent 15: Final Gate Controller
+        final_gate = registry.get_agent(AgentType.FINAL_GATE_CONTROLLER)
+        assert "aggregate_gate_results" in final_gate.capabilities
+        assert "generate_final_certification" in final_gate.capabilities
     
     def test_agent_names_unique(self):
         """All agent names are unique."""

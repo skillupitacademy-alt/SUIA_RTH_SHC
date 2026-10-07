@@ -3,13 +3,24 @@ Workflow DAG Definition.
 
 Defines the 15-agent DAG structure with dependencies for Project AI certification workflow.
 
-Agent Sequence:
-- Foundation Sequence (01-04): Repository audit → Snapshot → Evidence → Specification
-- Classification & Governance (05-06): Classification → Governance
-- Placement Sequence (07-10): Placement Draft → Manifest → Approval → Executor
-- Post-Placement (11): Post-placement verification
-- Certification Gates (12A-12J): All certification gates executed in parallel
-- Final Certification (13-15): Evidence Freeze → Final Gate → Human Certification
+Agent Sequence (15 agents):
+1. Repository Auditor - Validates git repository state
+2. Snapshot Authority - Generates snapshot and creates run directory
+3. Evidence Freeze - Validates evidence structure from snapshot
+4. Block Specification - Parses candidate structure and generates requirements
+5. Candidate Intake - Validates package structure and computes hashes
+6. Candidate Classification - Classifies block family with confidence scoring
+7. Canonical Comparison - Compares with canonical artifacts
+8. Placement Manifest - Generates placement manifest with hash
+9. Human Approval - Database polling approval workflow (Governance)
+10. Placement Executor - Executes approved placement manifest
+11. Post-Placement Snapshot - Verifies placement using git diff
+12. Certification Controller - Orchestrates all certification gates (Contract, UBRC, Registry, Renderer, Composer, Tests, Runtime, Browser, Brand, Theme, Dependency)
+13. Runtime Verification - Verifies blocks at runtime by starting application
+14. Browser Verification - Orchestrates Playwright browser tests
+15. Final Gate Controller - Aggregates all gate results and issues final verdict
+
+Note: Certification gates are methods within Agent 12 (Certification Controller), not separate DAG nodes.
 """
 
 from typing import Dict, List, Optional, TypedDict
@@ -23,151 +34,88 @@ class AgentDefinition(TypedDict):
 
 
 # 15-agent DAG structure
-# Note: Certification gates (12A-12J) are executed as part of agent-12,
-# not as separate DAG nodes. They run in parallel within that agent.
+# Certification gates are executed within certification_controller, not as separate nodes
 AGENT_WORKFLOW_DAG: Dict[str, AgentDefinition] = {
-    # ===== FOUNDATION SEQUENCE (Sequential) =====
-    "agent-01-repository-auditor": {
+    # ===== FOUNDATION SEQUENCE (Agents 1-4) =====
+    "repository_auditor": {
         "name": "Repository Auditor",
         "depends_on": [],
         "parallel_group": None
     },
-    "agent-02-snapshot-authority": {
+    "snapshot_authority": {
         "name": "Snapshot Authority",
-        "depends_on": ["agent-01-repository-auditor"],
+        "depends_on": ["repository_auditor"],
         "parallel_group": None
     },
-    "agent-03-evidence-freeze": {
+    "evidence_freeze": {
         "name": "Evidence Freeze",
-        "depends_on": ["agent-02-snapshot-authority"],
+        "depends_on": ["snapshot_authority"],
         "parallel_group": None
     },
-    "agent-04-block-specification": {
+    "block_specification": {
         "name": "Block Specification",
-        "depends_on": ["agent-03-evidence-freeze"],
+        "depends_on": ["evidence_freeze"],
         "parallel_group": None
     },
     
-    # ===== CLASSIFICATION & GOVERNANCE (Sequential) =====
-    "agent-05-classification": {
+    # ===== CANDIDATE INTAKE & CLASSIFICATION (Agents 5-7) =====
+    "candidate_intake": {
+        "name": "Candidate Intake",
+        "depends_on": ["block_specification"],
+        "parallel_group": None
+    },
+    "candidate_classification": {
         "name": "Candidate Classification",
-        "depends_on": ["agent-04-block-specification"],
+        "depends_on": ["candidate_intake"],
         "parallel_group": None
     },
-    "agent-06-governance": {
-        "name": "Governance & Approval",
-        "depends_on": ["agent-05-classification"],
+    "canonical_comparison": {
+        "name": "Canonical Comparison",
+        "depends_on": ["candidate_intake"],
         "parallel_group": None
     },
     
-    # ===== PLACEMENT SEQUENCE (Sequential) =====
-    "agent-07-placement-draft": {
-        "name": "Placement Draft",
-        "depends_on": ["agent-06-governance"],
-        "parallel_group": None
-    },
-    "agent-08-placement-manifest": {
+    # ===== PLACEMENT SEQUENCE (Agents 8-11) =====
+    "placement_manifest": {
         "name": "Placement Manifest",
-        "depends_on": ["agent-07-placement-draft"],
+        "depends_on": ["candidate_classification", "canonical_comparison"],
         "parallel_group": None
     },
-    "agent-09-human-approval": {
-        "name": "Human Approval",
-        "depends_on": ["agent-08-placement-manifest"],
+    "human_approval": {
+        "name": "Human Approval (Governance)",
+        "depends_on": ["placement_manifest"],
         "parallel_group": None
     },
-    "agent-10-placement-executor": {
+    "placement_executor": {
         "name": "Placement Executor",
-        "depends_on": ["agent-09-human-approval"],
+        "depends_on": ["human_approval"],
+        "parallel_group": None
+    },
+    "post_placement_snapshot": {
+        "name": "Post-Placement Snapshot",
+        "depends_on": ["placement_executor"],
         "parallel_group": None
     },
     
-    # ===== POST-PLACEMENT VERIFICATION =====
-    "agent-11-post-placement-verification": {
-        "name": "Post-Placement Verification",
-        "depends_on": ["agent-10-placement-executor"],
+    # ===== CERTIFICATION & VERIFICATION (Agents 12-15) =====
+    "certification_controller": {
+        "name": "Certification Controller",
+        "depends_on": ["post_placement_snapshot"],
         "parallel_group": None
     },
-    
-    # ===== CERTIFICATION GATES (Parallel execution) =====
-    # Gates 12A-12J are executed in parallel
-    # Individual gates: Contract, UBRC, Registry, Renderer, Composer, Tests, Brand, Theme
-    "agent-12a-contract-gate": {
-        "name": "Contract Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12b-ubrc-gate": {
-        "name": "UBRC Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12c-registry-gate": {
-        "name": "Registry Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12d-renderer-gate": {
-        "name": "Renderer Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12e-composer-gate": {
-        "name": "Composer Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12f-tests-gate": {
-        "name": "Tests Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12g-runtime-gate": {
-        "name": "Runtime Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12h-browser-gate": {
-        "name": "Browser Gate (Playwright)",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12i-brand-independence-gate": {
-        "name": "Brand Independence Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    "agent-12j-theme-compatibility-gate": {
-        "name": "Theme Compatibility Gate",
-        "depends_on": ["agent-11-post-placement-verification"],
-        "parallel_group": "certification-gates"
-    },
-    
-    # ===== FINAL CERTIFICATION SEQUENCE (Sequential after gates) =====
-    "agent-13-final-evidence-freeze": {
-        "name": "Final Evidence Freeze",
-        "depends_on": [
-            "agent-12a-contract-gate",
-            "agent-12b-ubrc-gate",
-            "agent-12c-registry-gate",
-            "agent-12d-renderer-gate",
-            "agent-12e-composer-gate",
-            "agent-12f-tests-gate",
-            "agent-12g-runtime-gate",
-            "agent-12h-browser-gate",
-            "agent-12i-brand-independence-gate",
-            "agent-12j-theme-compatibility-gate"
-        ],
+    "runtime_verification": {
+        "name": "Runtime Verification",
+        "depends_on": ["certification_controller"],
         "parallel_group": None
     },
-    "agent-14-final-gate-controller": {
+    "browser_verification": {
+        "name": "Browser Verification (Playwright)",
+        "depends_on": ["runtime_verification"],
+        "parallel_group": None
+    },
+    "final_gate_controller": {
         "name": "Final Gate Controller",
-        "depends_on": ["agent-13-final-evidence-freeze"],
-        "parallel_group": None
-    },
-    "agent-15-human-certification": {
-        "name": "Human Certification",
-        "depends_on": ["agent-14-final-gate-controller"],
+        "depends_on": ["browser_verification"],
         "parallel_group": None
     }
 }
@@ -203,6 +151,10 @@ def validate_dag() -> bool:
     Returns:
         True if DAG is valid, raises ValueError if invalid.
     """
+    # Verify we have exactly 15 agents
+    if len(AGENT_WORKFLOW_DAG) != 15:
+        raise ValueError(f"Expected 15 agents in DAG, found {len(AGENT_WORKFLOW_DAG)}")
+    
     # Check for self-references
     for agent_id, definition in AGENT_WORKFLOW_DAG.items():
         if agent_id in definition["depends_on"]:

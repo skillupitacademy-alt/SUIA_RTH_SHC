@@ -1,0 +1,13 @@
+{
+  "task_id": "project-ai-18-agent-dag",
+  "task_description": "Implement 15-agent DAG architecture with 7 certification gates for Project AI candidate block certification workflow",
+  "status": "pending",
+  "feature_order": [
+    "FEAT-001",
+    "FEAT-002",
+    "FEAT-003",
+    "FEAT-004",
+    "FEAT-005"
+  ],
+  "blocked_reason": null
+}

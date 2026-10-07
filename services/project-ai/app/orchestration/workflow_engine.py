@@ -189,12 +189,12 @@ class WorkflowEngine:
         )
         
         if step.step_id == "discovery":
-            # Discovery: Repository Auditor → Toolchain → Composer → Dependency
+            # Discovery: Repository Auditor → Snapshot Authority → Evidence Freeze → Block Specification
             agents_to_execute = [
                 self.agent_registry.get_agent(AgentType.REPOSITORY_AUDITOR),
-                self.agent_registry.get_agent(AgentType.TOOLCHAIN),
-                self.agent_registry.get_agent(AgentType.COMPOSER),
-                self.agent_registry.get_agent(AgentType.DEPENDENCY)
+                self.agent_registry.get_agent(AgentType.SNAPSHOT_AUTHORITY),
+                self.agent_registry.get_agent(AgentType.EVIDENCE_FREEZE),
+                self.agent_registry.get_agent(AgentType.BLOCK_SPECIFICATION)
             ]
             
             # Execute sequentially (each builds on prior)
@@ -207,10 +207,11 @@ class WorkflowEngine:
             result["discovery_summary"] = self._summarize_agent_results(agent_results)
         
         elif step.step_id == "planning":
-            # Planning: Candidate Placement → Candidate Intake
+            # Planning: Candidate Intake → Classification → Canonical Comparison
             agents_to_execute = [
                 self.agent_registry.get_agent(AgentType.CANDIDATE_INTAKE),
-                self.agent_registry.get_agent(AgentType.CANDIDATE_PLACEMENT)
+                self.agent_registry.get_agent(AgentType.CANDIDATE_CLASSIFICATION),
+                self.agent_registry.get_agent(AgentType.CANONICAL_COMPARISON)
             ]
             
             agent_results = await self.agent_coordinator.execute_sequential(
@@ -222,21 +223,30 @@ class WorkflowEngine:
             result["plan"] = self._summarize_agent_results(agent_results)
         
         elif step.step_id == "implementation":
-            # Implementation: This would execute code generation agents
-            # For now, mark as completed
-            result["implementation_summary"] = "Agent-driven implementation (requires code generation agents)"
-        
-        elif step.step_id == "testing":
-            # Testing: Run verification agents in parallel where possible
-            # Brand Independence and Theme Compatibility can run in parallel
-            parallel_agents = [
-                self.agent_registry.get_agent(AgentType.BRAND_INDEPENDENCE),
-                self.agent_registry.get_agent(AgentType.THEME_COMPATIBILITY),
-                self.agent_registry.get_agent(AgentType.UBRC)
+            # Implementation: Placement Manifest → Human Approval → Placement Executor
+            agents_to_execute = [
+                self.agent_registry.get_agent(AgentType.PLACEMENT_MANIFEST),
+                self.agent_registry.get_agent(AgentType.HUMAN_APPROVAL),
+                self.agent_registry.get_agent(AgentType.PLACEMENT_EXECUTOR),
+                self.agent_registry.get_agent(AgentType.POST_PLACEMENT_SNAPSHOT)
             ]
             
-            agent_results = await self.agent_coordinator.execute_parallel(
-                parallel_agents,
+            agent_results = await self.agent_coordinator.execute_sequential(
+                agents_to_execute,
+                agent_context
+            )
+            
+            result["implementation_agents"] = [r.agent_id for r in agent_results]
+            result["implementation_summary"] = self._summarize_agent_results(agent_results)
+        
+        elif step.step_id == "testing":
+            # Testing: Certification Controller (orchestrates all gates internally)
+            agents_to_execute = [
+                self.agent_registry.get_agent(AgentType.CERTIFICATION_CONTROLLER)
+            ]
+            
+            agent_results = await self.agent_coordinator.execute_sequential(
+                agents_to_execute,
                 agent_context
             )
             
@@ -244,33 +254,20 @@ class WorkflowEngine:
             result["test_results"] = self._summarize_agent_results(agent_results)
         
         elif step.step_id == "verification":
-            # Verification: Composer → Runtime Browser → Certification → Gate Controller
+            # Verification: Runtime → Browser → Final Gate Controller
             agents_to_execute = [
-                self.agent_registry.get_agent(AgentType.COMPOSER),
-                self.agent_registry.get_agent(AgentType.COMPOSER_WORKFLOW),
-                self.agent_registry.get_agent(AgentType.RUNTIME_BROWSER),
-                self.agent_registry.get_agent(AgentType.CANDIDATE_CERTIFICATION),
-                self.agent_registry.get_agent(AgentType.GATE_CONTROLLER)
+                self.agent_registry.get_agent(AgentType.RUNTIME_VERIFICATION),
+                self.agent_registry.get_agent(AgentType.BROWSER_VERIFICATION),
+                self.agent_registry.get_agent(AgentType.FINAL_GATE_CONTROLLER)
             ]
             
-            # Build dependency graph
-            dependencies = {
-                "composer": [],
-                "composer_workflow": ["composer"],
-                "runtime_browser": ["composer"],
-                "candidate_certification": ["composer", "runtime_browser"],
-                "gate_controller": ["candidate_certification"]
-            }
-            
-            # Execute with dependencies
-            agent_results = await self.agent_coordinator.execute_dag(
+            agent_results = await self.agent_coordinator.execute_sequential(
                 agents_to_execute,
-                dependencies,
                 agent_context
             )
             
-            result["verification_agents"] = list(agent_results.keys())
-            result["verification_summary"] = self._summarize_dag_results(agent_results)
+            result["verification_agents"] = [r.agent_id for r in agent_results]
+            result["verification_summary"] = self._summarize_agent_results(agent_results)
         
         return result
     

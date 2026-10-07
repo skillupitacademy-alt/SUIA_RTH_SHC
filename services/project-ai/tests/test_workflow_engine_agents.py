@@ -69,14 +69,15 @@ class TestWorkflowEngineAgentIntegration:
         
         assert "discovery_agents" in result
         assert "discovery_summary" in result
+        # New 15-agent architecture: discovery includes foundation agents
         assert "repository_auditor" in result["discovery_agents"]
-        assert "toolchain" in result["discovery_agents"]
-        assert "composer" in result["discovery_agents"]
-        assert "dependency" in result["discovery_agents"]
+        assert "snapshot_authority" in result["discovery_agents"]
+        assert "evidence_freeze" in result["discovery_agents"]
+        assert "block_specification" in result["discovery_agents"]
     
     @pytest.mark.asyncio
     async def test_planning_step_uses_agents(self, engine, task_context, sample_snapshot):
-        """Planning step executes candidate placement agents."""
+        """Planning step executes candidate intake and classification agents."""
         step = WorkflowStep(
             step_id="planning",
             name="Planning",
@@ -89,12 +90,14 @@ class TestWorkflowEngineAgentIntegration:
         
         assert "planning_agents" in result
         assert "plan" in result
+        # New 15-agent architecture: planning includes intake, classification, canonical comparison
         assert "candidate_intake" in result["planning_agents"]
-        assert "candidate_placement" in result["planning_agents"]
+        assert "candidate_classification" in result["planning_agents"]
+        assert "canonical_comparison" in result["planning_agents"]
     
     @pytest.mark.asyncio
     async def test_testing_step_runs_parallel_agents(self, engine, task_context, sample_snapshot):
-        """Testing step runs verification agents in parallel."""
+        """Testing step runs certification controller (which orchestrates all gates)."""
         step = WorkflowStep(
             step_id="testing",
             name="Testing",
@@ -107,13 +110,12 @@ class TestWorkflowEngineAgentIntegration:
         
         assert "testing_agents" in result
         assert "test_results" in result
-        assert "brand_independence" in result["testing_agents"]
-        assert "theme_compatibility" in result["testing_agents"]
-        assert "ubrc" in result["testing_agents"]
+        # New 15-agent architecture: certification controller orchestrates all gates internally
+        assert "certification_controller" in result["testing_agents"]
     
     @pytest.mark.asyncio
     async def test_verification_step_uses_dag(self, engine, task_context, sample_snapshot):
-        """Verification step uses DAG-based execution with dependencies."""
+        """Verification step uses sequential execution for runtime and browser verification."""
         step = WorkflowStep(
             step_id="verification",
             name="Verification",
@@ -127,12 +129,10 @@ class TestWorkflowEngineAgentIntegration:
         assert "verification_agents" in result
         assert "verification_summary" in result
         
-        # Should include all verification agents
-        assert "composer" in result["verification_agents"]
-        assert "composer_workflow" in result["verification_agents"]
-        assert "runtime_browser" in result["verification_agents"]
-        assert "candidate_certification" in result["verification_agents"]
-        assert "gate_controller" in result["verification_agents"]
+        # New 15-agent architecture: verification includes runtime, browser, final gate controller
+        assert "runtime_verification" in result["verification_agents"]
+        assert "browser_verification" in result["verification_agents"]
+        assert "final_gate_controller" in result["verification_agents"]
     
     @pytest.mark.asyncio
     async def test_complete_workflow_execution(self, engine, task_context, sample_snapshot):
