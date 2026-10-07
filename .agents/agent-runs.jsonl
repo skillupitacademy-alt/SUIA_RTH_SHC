@@ -1,0 +1,1 @@
+﻿{"action":"canonical_comparison_wiring","timestamp":"2026-10-07T19:00:49.2899268+05:30","tests_run":"pytest services/project-ai/tests/unit/test_canonical_comparison.py","tests_passed":12,"files_modified":["services/project-ai/app/agents/canonical_comparison.py","services/project-ai/tests/unit/test_canonical_comparison.py"],"wave":"W3","agent":"B06","tests_failed":0}
