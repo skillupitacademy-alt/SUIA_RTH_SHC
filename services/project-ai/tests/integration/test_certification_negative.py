@@ -550,16 +550,15 @@ class TestCertificationNegativeScenarios:
             "Unapproved placement should be rejected"
     
     # ============================================================
-    # Test 14: Invalid Design Reuse Blocked
+    # Test 14: Invalid Mix and Match Blocked
     # ============================================================
     
     @pytest.mark.integration
     def test_invalid_mix_and_match_blocked(self):
         """
-        Incompatible composition should be BLOCKED or rejected during validation.
+        Incompatible composition should be BLOCKED or rejected.
         
-        MIX_AND_MATCH (design reuse) is a validation mode, not a workflow bypass.
-        This test verifies component compatibility checking during CANDIDATE_AUDIT phase.
+        Verifies that invalid block compositions are handled properly.
         """
         # Try to create workflow with incompatible blocks
         # (This is a placeholder - actual validation would check block compatibility)
@@ -574,8 +573,8 @@ class TestCertificationNegativeScenarios:
             "candidateBlocks": ["I1", "I2", "I3"]
         })
         
-        # Should succeed in creation (validation happens later during audit phase)
-        # MIX_AND_MATCH is a design source input, not a workflow state bypass
+        # Should succeed in creation (validation happens later)
+        # If mode validation rejects MIX_AND_MATCH, test that behavior
         if create_response.status_code == 422:
             # Validation rejected the request - this is acceptable
             error = create_response.json()

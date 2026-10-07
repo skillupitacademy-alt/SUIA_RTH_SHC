@@ -24,12 +24,7 @@ def test_create_i2_only_workflow():
     assert len(data["certificationGates"]) == 6
 
 def test_create_mix_and_match_workflow():
-    """
-    Test design reuse (mix-and-match) workflow creation.
-    
-    MIX_AND_MATCH is a design input classifier, not a workflow state.
-    All workflows follow CanonicalWorkflowState lifecycle.
-    """
+    """Test Mix-and-Match workflow creation"""
     response = client.post("/creation/workflows", json={
         "mode": "MIX_AND_MATCH",
         "composition": {
@@ -41,7 +36,7 @@ def test_create_mix_and_match_workflow():
     })
     assert response.status_code == 200
     data = response.json()
-    assert data["mode"] == "MIX_AND_MATCH"  # Design source preserved in API response
+    assert data["mode"] == "MIX_AND_MATCH"
 
 def test_get_workflow():
     """Test retrieving workflow"""

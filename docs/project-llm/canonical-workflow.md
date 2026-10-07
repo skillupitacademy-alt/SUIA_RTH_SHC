@@ -1,4 +1,4 @@
-# Canonical Workflow — M2.9 Project LLM
+﻿# Canonical Workflow ΓÇö M2.9 Project LLM
 
 ## Single Authority
 
@@ -57,7 +57,7 @@ enum CanonicalWorkflowState {
 ### 4. AWAITING_GATE_1
 **Entry**: System presents GUI prototype contract to user
 **Responsible Agent**: F02 (Create/Brief), F03 (External AI Handoff)
-**Gate**: **HUMAN GATE 1 — GUI Approval**
+**Gate**: **HUMAN GATE 1 ΓÇö GUI Approval**
 **Actions**:
 - Display contract to user
 - Allow download/copy for external AI
@@ -107,7 +107,7 @@ enum CanonicalWorkflowState {
 ### 10. AWAITING_IMPLEMENTATION_APPROVAL
 **Entry**: System presents placement manifest to user
 **Responsible Agent**: B12 (Governance)
-**Gate**: **HUMAN GATE 2 — Implementation Approval**
+**Gate**: **HUMAN GATE 2 ΓÇö Implementation Approval**
 **Actions**:
 - Display placement manifest
 - Display audit results

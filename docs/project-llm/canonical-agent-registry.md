@@ -1,4 +1,4 @@
-# Canonical Agent Registry — M2.9 Project LLM
+﻿# Canonical Agent Registry ΓÇö M2.9 Project LLM
 
 ## Purpose
 
@@ -10,7 +10,7 @@ This registry defines all agents in the M2.9 multi-agent pipeline, their respons
 
 | Agent ID | Name | Wave | Main Responsibility | Owner Files/Contracts | Status |
 |----------|------|------|---------------------|------------------------|--------|
-| B01 | Architecture Authority | W0 | Canonical lifecycle + authority reconciliation | `CanonicalWorkflowState`, workflow engine authority | ✅ COMPLETE |
+| B01 | Architecture Authority | W0 | Canonical lifecycle + authority reconciliation | `CanonicalWorkflowState`, workflow engine authority | Γ£à COMPLETE |
 | B02 | Engineering Contract | W2 | Pre-implementation contract generation | Engineering contract schema, generation logic | PENDING |
 | B03 | Repository Contract Intelligence | W2 | Derive I1/C1/D1/common runtime contract | Canonical reference parser, contract extractor | PENDING |
 | B04 | Target Binding | W2 | Family/version/workflow/spec binding | Target binding logic, version resolution | PENDING |
@@ -23,14 +23,14 @@ This registry defines all agents in the M2.9 multi-agent pipeline, their respons
 | B11 | Final Gate | W4 | Real FinalGateAgent | Final approval logic, certification decision | PENDING |
 | B12 | Governance | W2 | Durable/consistent approval authority | Approval state management, gate enforcement | PENDING |
 | B13 | Legacy Cleanup | W5 | Remove/reclassify Mix & Match + secondary workflows | Legacy workflow cleanup, migration scripts | PENDING |
-| B14 | Test/Evidence Harness | W1 | Machine-readable test/evidence ledger | Evidence JSONL writers, ledger schema, integration tests | 🔄 IN PROGRESS |
+| B14 | Test/Evidence Harness | W1 | Machine-readable test/evidence ledger | Evidence JSONL writers, ledger schema, integration tests | ≡ƒöä IN PROGRESS |
 
 ### Frontend Agents
 
 | Agent ID | Name | Wave | Main Responsibility | Owner Files/Contracts | Status |
 |----------|------|------|---------------------|------------------------|--------|
 | F01 | API Contract Client | W2 | Typed FastAPI client | OpenAPI client generation, type definitions | PENDING |
-| F02 | Create/Brief | W3 | Real Family + Version → backend contract | Project creation UI, brief display | PENDING |
+| F02 | Create/Brief | W3 | Real Family + Version ΓåÆ backend contract | Project creation UI, brief display | PENDING |
 | F03 | External AI Handoff | W3 | Render/download/copy backend contract | Contract display, export UI | PENDING |
 | F04 | Candidate Upload | W3 | Real upload + backend validation | Upload UI, file handling, progress display | PENDING |
 | F05 | Certification UI | W4 | Real evidence/gate results | Evidence display, gate decision UI | PENDING |
@@ -47,23 +47,23 @@ This registry defines all agents in the M2.9 multi-agent pipeline, their respons
 
 ## Wave Assignments
 
-### Wave 0 — Architecture Freeze
-- **B01** (Architecture Authority) — COMPLETE ✅
+### Wave 0 ΓÇö Architecture Freeze
+- **B01** (Architecture Authority) ΓÇö COMPLETE Γ£à
 
-### Wave 1 — Evidence Infrastructure
-- **B14** (Test/Evidence Harness) — IN PROGRESS 🔄
+### Wave 1 ΓÇö Evidence Infrastructure
+- **B14** (Test/Evidence Harness) ΓÇö IN PROGRESS ≡ƒöä
 
-### Wave 2 — Contract Generation (Backend Core)
+### Wave 2 ΓÇö Contract Generation (Backend Core)
 Sequential dependencies:
-1. **B03** (Repository Contract Intelligence) — extracts canonical references
-2. **B04** (Target Binding) — depends on B03
-3. **B02** (Engineering Contract) — depends on B03 + B04
-4. **B12** (Governance) — parallel to above, establishes approval authority
+1. **B03** (Repository Contract Intelligence) ΓÇö extracts canonical references
+2. **B04** (Target Binding) ΓÇö depends on B03
+3. **B02** (Engineering Contract) ΓÇö depends on B03 + B04
+4. **B12** (Governance) ΓÇö parallel to above, establishes approval authority
 
 Wait for API stability, then:
-5. **F01** (API Contract Client) — depends on backend API freeze
+5. **F01** (API Contract Client) ΓÇö depends on backend API freeze
 
-### Wave 3 — Intake & Validation (Candidate Pipeline)
+### Wave 3 ΓÇö Intake & Validation (Candidate Pipeline)
 Backend agents (parallel after B02 complete):
 - **B05** (Candidate Intake)
 - **B06** (Canonical Comparator)
@@ -74,7 +74,7 @@ Frontend agents (parallel after F01 complete):
 - **F03** (External AI Handoff)
 - **F04** (Candidate Upload)
 
-### Wave 4 — Certification & Verification
+### Wave 4 ΓÇö Certification & Verification
 Backend agents (parallel):
 - **B08** (Certification)
 - **B09** (Runtime)
@@ -85,10 +85,10 @@ Frontend agents (parallel):
 - **F05** (Certification UI)
 - **F06** (Workflow UI)
 
-### Wave 5 — Legacy Cleanup
-- **B13** (Legacy Cleanup) — sequential cleanup and migration
+### Wave 5 ΓÇö Legacy Cleanup
+- **B13** (Legacy Cleanup) ΓÇö sequential cleanup and migration
 
-### Wave 6 — Final Audit
+### Wave 6 ΓÇö Final Audit
 Sequential audit:
 1. **Q01** (Backend Integration Auditor)
 2. **Q02** (Frontend Integration Auditor)
@@ -105,10 +105,10 @@ Sequential audit:
 
 ## Status Legend
 
-- ✅ **COMPLETE**: Agent work finished, tests passing, committed
-- 🔄 **IN PROGRESS**: Agent currently executing
-- ⏸️ **BLOCKED**: Agent waiting on dependency completion
-- ❌ **FAILED**: Agent execution failed, requires intervention
+- Γ£à **COMPLETE**: Agent work finished, tests passing, committed
+- ≡ƒöä **IN PROGRESS**: Agent currently executing
+- ΓÅ╕∩╕Å **BLOCKED**: Agent waiting on dependency completion
+- Γ¥î **FAILED**: Agent execution failed, requires intervention
 - **PENDING**: Agent not yet started
 
 ## References

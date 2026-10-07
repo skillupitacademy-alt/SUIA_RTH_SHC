@@ -169,7 +169,7 @@ class TestAgentRegistry:
         workflow = registry.get_agent(AgentType.COMPOSER_WORKFLOW)
         assert "orchestrate_composition" in workflow.capabilities
         assert "validate_i2_workflow" in workflow.capabilities
-        assert "check_design_reuse_compatibility" in workflow.capabilities
+        assert "check_mix_and_match" in workflow.capabilities
         
         # Governance
         governance = registry.get_agent(AgentType.GOVERNANCE)

@@ -1,4 +1,4 @@
-# Canonical Implementation Status — M2.9 Project LLM
+﻿# Canonical Implementation Status ΓÇö M2.9 Project LLM
 
 ## Overview
 
@@ -12,13 +12,13 @@ This document tracks the wave-by-wave execution status of the M2.9 controlled mu
 
 | Wave | Name | Status | Agents | Started | Completed | Evidence |
 |------|------|--------|--------|---------|-----------|----------|
-| W0 | Architecture Freeze | ✅ COMPLETE | B01 | 2025-01-07 | 2025-01-07 | `agent-runs.jsonl` |
-| W1 | Evidence Infrastructure | 🔄 IN PROGRESS | B14 | 2025-01-07 | — | `agent-runs.jsonl` |
-| W2 | Contract Generation | ⏸️ BLOCKED | B02, B03, B04, B12, F01 | — | — | — |
-| W3 | Intake & Validation | ⏸️ BLOCKED | B05, B06, B07, F02, F03, F04 | — | — | — |
-| W4 | Certification & Verification | ⏸️ BLOCKED | B08, B09, B10, B11, F05, F06 | — | — | — |
-| W5 | Legacy Cleanup | ⏸️ BLOCKED | B13 | — | — | — |
-| W6 | Final Audit | ⏸️ BLOCKED | Q01, Q02, Q03, Q04 | — | — | — |
+| W0 | Architecture Freeze | Γ£à COMPLETE | B01 | 2025-01-07 | 2025-01-07 | `agent-runs.jsonl` |
+| W1 | Evidence Infrastructure | ≡ƒöä IN PROGRESS | B14 | 2025-01-07 | ΓÇö | `agent-runs.jsonl` |
+| W2 | Contract Generation | ΓÅ╕∩╕Å BLOCKED | B02, B03, B04, B12, F01 | ΓÇö | ΓÇö | ΓÇö |
+| W3 | Intake & Validation | ΓÅ╕∩╕Å BLOCKED | B05, B06, B07, F02, F03, F04 | ΓÇö | ΓÇö | ΓÇö |
+| W4 | Certification & Verification | ΓÅ╕∩╕Å BLOCKED | B08, B09, B10, B11, F05, F06 | ΓÇö | ΓÇö | ΓÇö |
+| W5 | Legacy Cleanup | ΓÅ╕∩╕Å BLOCKED | B13 | ΓÇö | ΓÇö | ΓÇö |
+| W6 | Final Audit | ΓÅ╕∩╕Å BLOCKED | Q01, Q02, Q03, Q04 | ΓÇö | ΓÇö | ΓÇö |
 
 ## Current Wave Detail: W1
 
@@ -26,17 +26,17 @@ This document tracks the wave-by-wave execution status of the M2.9 controlled mu
 Extend the evidence infrastructure with proper canonical documentation and integration tests.
 
 ### Agents
-- **B14** (Test/Evidence Harness) — 🔄 IN PROGRESS
+- **B14** (Test/Evidence Harness) ΓÇö ≡ƒöä IN PROGRESS
 
 ### Tasks
-1. ✅ Create `canonical-architecture.md`
-2. ✅ Create `canonical-workflow.md`
-3. ✅ Create `canonical-agent-registry.md`
-4. ✅ Create `canonical-implementation-status.md` (this file)
-5. 🔄 Extend `ledger.py` with new functions
-6. ⏸️ Write integration tests
-7. ⏸️ Run tests and verify
-8. ⏸️ Commit changes
+1. Γ£à Create `canonical-architecture.md`
+2. Γ£à Create `canonical-workflow.md`
+3. Γ£à Create `canonical-agent-registry.md`
+4. Γ£à Create `canonical-implementation-status.md` (this file)
+5. ≡ƒöä Extend `ledger.py` with new functions
+6. ΓÅ╕∩╕Å Write integration tests
+7. ΓÅ╕∩╕Å Run tests and verify
+8. ΓÅ╕∩╕Å Commit changes
 
 ### Blockers
 None
@@ -45,33 +45,33 @@ None
 
 ```
 W0 (B01)
-  │
-  └─→ W1 (B14)
-        │
-        └─→ W2 (B02, B03, B04, B12)
-              │
-              ├─→ F01 (after backend API stable)
-              │
-              └─→ W3 (B05, B06, B07, F02, F03, F04)
-                    │
-                    └─→ W4 (B08, B09, B10, B11, F05, F06)
-                          │
-                          └─→ W5 (B13)
-                                │
-                                └─→ W6 (Q01, Q02, Q03, Q04)
+  Γöé
+  ΓööΓöÇΓåÆ W1 (B14)
+        Γöé
+        ΓööΓöÇΓåÆ W2 (B02, B03, B04, B12)
+              Γöé
+              Γö£ΓöÇΓåÆ F01 (after backend API stable)
+              Γöé
+              ΓööΓöÇΓåÆ W3 (B05, B06, B07, F02, F03, F04)
+                    Γöé
+                    ΓööΓöÇΓåÆ W4 (B08, B09, B10, B11, F05, F06)
+                          Γöé
+                          ΓööΓöÇΓåÆ W5 (B13)
+                                Γöé
+                                ΓööΓöÇΓåÆ W6 (Q01, Q02, Q03, Q04)
 ```
 
 ## Test Status
 
-### W0 — Architecture Freeze
-- Backend tests: ✅ Passing
-- Frontend tests: ⏸️ Deferred (frontend consumes backend states)
+### W0 ΓÇö Architecture Freeze
+- Backend tests: Γ£à Passing
+- Frontend tests: ΓÅ╕∩╕Å Deferred (frontend consumes backend states)
 - Integration tests: N/A
 
-### W1 — Evidence Infrastructure
-- Backend tests: ⏸️ In progress
-- Integration tests: ⏸️ In progress
-- Evidence ledger tests: ⏸️ In progress
+### W1 ΓÇö Evidence Infrastructure
+- Backend tests: ΓÅ╕∩╕Å In progress
+- Integration tests: ΓÅ╕∩╕Å In progress
+- Evidence ledger tests: ΓÅ╕∩╕Å In progress
 
 ## Evidence Trail
 
@@ -89,17 +89,17 @@ All wave execution is logged to:
 
 ## Next Steps
 
-1. Complete W1 (B14) — extend evidence harness
+1. Complete W1 (B14) ΓÇö extend evidence harness
 2. Run integration tests and verify ledger functionality
 3. Commit W1 changes
-4. Begin W2 (B02, B03, B04, B12) — contract generation
+4. Begin W2 (B02, B03, B04, B12) ΓÇö contract generation
 
 ## Status Legend
 
-- ✅ **COMPLETE**: Wave finished, all agents committed, tests passing
-- 🔄 **IN PROGRESS**: Wave currently executing
-- ⏸️ **BLOCKED**: Wave waiting on dependency completion
-- ❌ **FAILED**: Wave execution failed, requires intervention
+- Γ£à **COMPLETE**: Wave finished, all agents committed, tests passing
+- ≡ƒöä **IN PROGRESS**: Wave currently executing
+- ΓÅ╕∩╕Å **BLOCKED**: Wave waiting on dependency completion
+- Γ¥î **FAILED**: Wave execution failed, requires intervention
 - **PENDING**: Wave not yet started
 
 ## References

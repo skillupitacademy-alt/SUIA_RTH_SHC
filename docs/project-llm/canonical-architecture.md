@@ -1,4 +1,4 @@
-# Canonical Architecture — M2.9 Project LLM
+﻿# Canonical Architecture ΓÇö M2.9 Project LLM
 
 ## Overview
 
@@ -19,85 +19,85 @@ The Project LLM must:
 
 ```
 USER
-  │
-  │ Family + Version
-  ▼
+  Γöé
+  Γöé Family + Version
+  Γû╝
 PROJECT LLM
-  │
-  ├── Repository Discovery
-  ├── Canonical Reference Analysis
-  │       ├── I1 (Instruction)
-  │       ├── C1 (Contract)
-  │       ├── D1 (Description)
-  │       └── other applicable versions
-  │
-  ├── Schema / Type Analysis
-  ├── Renderer Analysis
-  ├── Composer Analysis
-  ├── Runtime Analysis
-  ├── ILS Analysis
-  ├── LSNB Analysis
-  ├── RSSB Analysis
-  ├── Theme / Brand Analysis
-  └── Test Analysis
-  │
-  ▼
+  Γöé
+  Γö£ΓöÇΓöÇ Repository Discovery
+  Γö£ΓöÇΓöÇ Canonical Reference Analysis
+  Γöé       Γö£ΓöÇΓöÇ I1 (Instruction)
+  Γöé       Γö£ΓöÇΓöÇ C1 (Contract)
+  Γöé       Γö£ΓöÇΓöÇ D1 (Description)
+  Γöé       ΓööΓöÇΓöÇ other applicable versions
+  Γöé
+  Γö£ΓöÇΓöÇ Schema / Type Analysis
+  Γö£ΓöÇΓöÇ Renderer Analysis
+  Γö£ΓöÇΓöÇ Composer Analysis
+  Γö£ΓöÇΓöÇ Runtime Analysis
+  Γö£ΓöÇΓöÇ ILS Analysis
+  Γö£ΓöÇΓöÇ LSNB Analysis
+  Γö£ΓöÇΓöÇ RSSB Analysis
+  Γö£ΓöÇΓöÇ Theme / Brand Analysis
+  ΓööΓöÇΓöÇ Test Analysis
+  Γöé
+  Γû╝
 CANDIDATE BLOCK ENGINEERING CONTRACT
-  │
-  ▼
+  Γöé
+  Γû╝
 EXTERNAL AI
-  │
-  ├── HTML/CSS/JS/JSON prototype
-  │
-  ▼
+  Γöé
+  Γö£ΓöÇΓöÇ HTML/CSS/JS/JSON prototype
+  Γöé
+  Γû╝
 HUMAN GATE 1 (GUI Approval)
-  │
-  ▼
+  Γöé
+  Γû╝
 EXTERNAL AI
-  │
-  └── React/TS implementation
-  │
-  ▼
+  Γöé
+  ΓööΓöÇΓöÇ React/TS implementation
+  Γöé
+  Γû╝
 CANDIDATE UPLOAD
-  │
-  ▼
+  Γöé
+  Γû╝
 PROJECT LLM
-  │
-  ├── Intake
-  ├── Hash
-  ├── Classification
-  ├── Contract comparison
-  ├── Canonical comparison
-  ├── Structural validation
-  ├── Test validation
-  └── Placement manifest
-  │
-  ▼
+  Γöé
+  Γö£ΓöÇΓöÇ Intake
+  Γö£ΓöÇΓöÇ Hash
+  Γö£ΓöÇΓöÇ Classification
+  Γö£ΓöÇΓöÇ Contract comparison
+  Γö£ΓöÇΓöÇ Canonical comparison
+  Γö£ΓöÇΓöÇ Structural validation
+  Γö£ΓöÇΓöÇ Test validation
+  ΓööΓöÇΓöÇ Placement manifest
+  Γöé
+  Γû╝
 HUMAN GATE 2 (Implementation Approval)
-  │
-  ▼
+  Γöé
+  Γû╝
 APPROVED PLACEMENT
-  │
-  ▼
+  Γöé
+  Γû╝
 SNAPSHOT
-  │
-  ▼
+  Γöé
+  Γû╝
 EVIDENCE
-  │
-  ├── Composer
-  ├── Renderer
-  ├── Runtime
-  ├── Browser
-  ├── ILS
-  ├── LSNB
-  ├── RSSB
-  ├── Brand
-  └── Theme
-  │
-  ▼
+  Γöé
+  Γö£ΓöÇΓöÇ Composer
+  Γö£ΓöÇΓöÇ Renderer
+  Γö£ΓöÇΓöÇ Runtime
+  Γö£ΓöÇΓöÇ Browser
+  Γö£ΓöÇΓöÇ ILS
+  Γö£ΓöÇΓöÇ LSNB
+  Γö£ΓöÇΓöÇ RSSB
+  Γö£ΓöÇΓöÇ Brand
+  ΓööΓöÇΓöÇ Theme
+  Γöé
+  Γû╝
 FINAL GATE
-  │
-  ▼
+  Γöé
+  Γû╝
 CERTIFIED
 ```
 

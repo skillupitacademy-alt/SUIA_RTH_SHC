@@ -1,56 +1,17 @@
 from enum import Enum
 from pydantic import BaseModel
 
-# M2.9 ARCHITECTURE (Wave 1 / Agent B13):
-# CreationMode is a DESIGN INPUT CLASSIFIER, not a workflow state machine.
-# CanonicalWorkflowState (from app.orchestration.canonical_workflow) is the ONLY workflow authority.
-#
-# CreationMode determines which validation logic runs during CANDIDATE_AUDIT phase:
-# - I2_ONLY: Verify complete I2 structure exists in repository
-# - DESIGN_REUSE: Verify component compatibility across I1/I2/Candidate mix
-# - NEW_CANDIDATE: No pre-existing structure required
-#
-# CreationMode does NOT bypass workflow states. All candidates follow:
-# REQUESTED → DISCOVERY → BRIEF_READY → AWAITING_GATE_1 → ... → CERTIFIED
-#
-# DEPRECATION: CreationMode is kept for API backward compatibility.
-# New code should use DesignSource enum below.
-
-
-class DesignSource(str, Enum):
-    """
-    M2.9 canonical design source classifier.
-    
-    Indicates content origin for block engineering, separate from workflow state.
-    All candidates follow CanonicalWorkflowState lifecycle regardless of source.
-    
-    Use this enum in new code instead of CreationMode.
-    """
-    SCRATCH = "SCRATCH"
-    """New candidate with no pre-existing repository structure."""
-    
-    DESIGN_REUSE = "DESIGN_REUSE"
-    """Mix-and-match composition using I1, I2, and/or candidate blocks."""
-    
-    REPOSITORY_ONLY = "REPOSITORY_ONLY"
-    """Reuse complete I2 structure from repository."""
-
-
+# DEPRECATION NOTICE (M2.9):
+# CreationMode is marked for removal in Wave 1 / Agent B13.
+# All workflows will follow CanonicalWorkflowState lifecycle regardless of mode.
+# Use DesignSource (to be added in W1-B13) to indicate content origin, not workflow bypass.
+# TODO(B13): Remove CreationMode and replace with DesignSource enum.
 class CreationMode(str, Enum):
     """
-    DEPRECATED (M2.9): Use DesignSource instead.
+    DEPRECATED: Use DesignSource in CanonicalWorkflowState pipeline instead.
     
-    Kept for API backward compatibility with /creation endpoints.
-    This is a design input classifier, NOT a workflow state machine.
-    
-    For workflow states, use CanonicalWorkflowState (app.orchestration.canonical_workflow).
-    
-    Migration mapping:
-    - I2_ONLY → DesignSource.REPOSITORY_ONLY
-    - MIX_AND_MATCH → DesignSource.DESIGN_REUSE
-    - NEW_CANDIDATE → DesignSource.SCRATCH
-    
-    TODO(Future): Remove after frontend migrates to DesignSource.
+    This enum allowed workflow bypass (MIX_AND_MATCH, I2_ONLY) which violates
+    M2.9 architecture requirement that all candidates follow same lifecycle.
     """
     I2_ONLY = "I2_ONLY"
     MIX_AND_MATCH = "MIX_AND_MATCH"
