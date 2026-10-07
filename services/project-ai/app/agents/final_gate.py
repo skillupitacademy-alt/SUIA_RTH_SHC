@@ -8,14 +8,138 @@ Generates final certification verdict by:
 4. Aggregating all gate results
 5. Calculating verdict: CERTIFICATION_READY | BLOCKED | FAIL | PASS
 6. Appending to canonical backlog (NEVER overwrite existing content)
+
+ARCHITECTURAL INVARIANT:
+- FinalGateController.compute_verdict() NEVER returns CERTIFIED
+- CERTIFICATION_READY means all gates passed, awaiting Human Gate 2
+- CERTIFIED requires separate Human Gate 2 approval endpoint
 """
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Literal
 from pathlib import Path
 import subprocess
 import json
+from pydantic import BaseModel
+
+
+# Required evidence keys for final gate verdict
+REQUIRED_EVIDENCE_KEYS = [
+    "certification_gates",
+    "runtime_verification",
+    "canonical_comparison",
+    "placement_approval",
+]
+
+
+class FinalGateResult(BaseModel):
+    """
+    Result of final gate verdict computation.
+    
+    INVARIANT: verdict is NEVER 'CERTIFIED' from compute_verdict.
+    CERTIFIED state requires separate Human Gate 2 approval.
+    """
+    workflow_id: str
+    verdict: Literal["CERTIFIED", "CERTIFICATION_READY", "FAIL", "BLOCKED"]
+    evidence_summary: dict
+    missing_evidence: list[str]
+    failed_gates: list[str]
+    blocked_gates: list[str]
+    reason: str
+
+
+class FinalGateController:
+    """
+    Aggregates all gate results and computes the final verdict.
+    
+    INVARIANT:
+    - Missing required evidence → BLOCKED (never CERTIFIED)
+    - Any FAIL → FAIL
+    - Any BLOCKED → BLOCKED  
+    - All required PASS → CERTIFICATION_READY (not yet CERTIFIED)
+    - CERTIFIED requires Human Gate 2 approval (separate endpoint)
+    
+    This controller provides a simpler, focused interface for verdict
+    computation compared to the full FinalGateAgent metadata workflow.
+    """
+    
+    def compute_verdict(self, workflow_id: str, evidence: dict) -> FinalGateResult:
+        """
+        Compute final verdict from aggregated evidence.
+        
+        Args:
+            workflow_id: Workflow identifier
+            evidence: Dictionary of evidence records with keys like
+                     'certification_gates', 'runtime_verification', etc.
+        
+        Returns:
+            FinalGateResult with verdict and detailed breakdown
+            
+        INVARIANT: This method NEVER returns verdict='CERTIFIED'.
+        Maximum verdict is 'CERTIFICATION_READY'.
+        """
+        # Check for missing required evidence
+        missing = [
+            k for k in REQUIRED_EVIDENCE_KEYS 
+            if k not in evidence or evidence[k] is None
+        ]
+        if missing:
+            return FinalGateResult(
+                workflow_id=workflow_id,
+                verdict="BLOCKED",
+                evidence_summary=evidence,
+                missing_evidence=missing,
+                failed_gates=[],
+                blocked_gates=[],
+                reason=f"missing_required_evidence: {missing}",
+            )
+        
+        # Identify failed and blocked gates
+        failed = [
+            k for k, v in evidence.items() 
+            if isinstance(v, dict) and v.get('status') == 'FAIL'
+        ]
+        blocked = [
+            k for k, v in evidence.items() 
+            if isinstance(v, dict) and v.get('status') == 'BLOCKED'
+        ]
+        
+        # FAIL takes precedence
+        if failed:
+            return FinalGateResult(
+                workflow_id=workflow_id, 
+                verdict="FAIL",
+                evidence_summary=evidence, 
+                missing_evidence=[],
+                failed_gates=failed, 
+                blocked_gates=blocked,
+                reason=f"gates_failed: {failed}",
+            )
+        
+        # BLOCKED is next priority
+        if blocked:
+            return FinalGateResult(
+                workflow_id=workflow_id, 
+                verdict="BLOCKED",
+                evidence_summary=evidence, 
+                missing_evidence=[],
+                failed_gates=[], 
+                blocked_gates=blocked,
+                reason=f"gates_blocked: {blocked}",
+            )
+        
+        # All gates passed → CERTIFICATION_READY (NOT CERTIFIED)
+        return FinalGateResult(
+            workflow_id=workflow_id, 
+            verdict="CERTIFICATION_READY",
+            evidence_summary=evidence, 
+            missing_evidence=[],
+            failed_gates=[], 
+            blocked_gates=[],
+            reason="all_gates_passed_awaiting_human_gate_2",
+        )
+        # NOTE: CERTIFIED is only set by the Human Gate 2 approval endpoint
 
 
 @dataclass
