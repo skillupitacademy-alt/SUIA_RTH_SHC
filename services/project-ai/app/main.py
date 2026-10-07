@@ -15,7 +15,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import agents, candidate, creation, evidence, governance, health, snapshot, tasks
+from app.api.routes import agents, candidate, contract, creation, evidence, governance, health, snapshot, tasks
 
 
 @asynccontextmanager
@@ -81,6 +81,7 @@ app.include_router(governance.router)
 app.include_router(agents.router)
 app.include_router(candidate.router, prefix="/candidates", tags=["candidates"])
 app.include_router(creation.router)
+app.include_router(contract.router)
 
 
 @app.get("/")
