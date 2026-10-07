@@ -5,6 +5,7 @@ from typing import Dict
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
 from app.api.schemas.governance import (
     ApprovalDecisionRequest,
@@ -15,11 +16,15 @@ from app.api.schemas.governance import (
     AuditTrailEntry,
 )
 from app.models.governance import ApprovalStatus
+from app.orchestration.canonical_workflow import CanonicalWorkflowState, is_valid_transition
 
 router = APIRouter(prefix="/approvals", tags=["governance"])
 
 # In-memory approval storage for M3 (production persistence in M3+)
 _approvals: Dict[str, Dict] = {}
+
+# In-memory workflow state storage (should match creation.py workflows store in production)
+_workflow_states: Dict[str, Dict] = {}
 
 
 @router.post("/submit", response_model=ApprovalSubmitResponse)
@@ -232,6 +237,249 @@ async def approve_manifest(approval_id: str, request: ApprovalDecisionRequest):
     
     return ApprovalRecord(**approval)
 
+
+# ===== WAVE 4: Implementation Approval Gate =====
+# Workflow-specific approval endpoint that transitions AWAITING_IMPLEMENTATION_APPROVAL -> IMPLEMENTING
+
+
+class WorkflowApprovalPayload(BaseModel):
+    """Request to approve or reject placement manifest for a workflow."""
+    
+    workflow_id: str = Field(description="Workflow identifier", min_length=1)
+    manifest_hash: str = Field(
+        description="Manifest hash at time of review (must match stored manifest)",
+        min_length=1
+    )
+    contract_hash: str = Field(
+        description="Engineering contract hash (for verification)",
+        min_length=1
+    )
+    approved: bool = Field(description="True to approve, False to reject")
+    approved_by: str = Field(description="Identity of approver", min_length=1)
+    reason: str = Field(description="Reason for approval or rejection")
+
+
+class WorkflowApprovalResponse(BaseModel):
+    """Response after workflow placement approval decision."""
+    
+    workflow_id: str
+    previous_state: str
+    new_state: str
+    approved: bool
+    approved_by: str
+    approved_at: datetime
+    manifest_hash_verified: bool
+    contract_hash_verified: bool
+    reason: str
+
+
+@router.post("/workflows/{workflow_id}/approve-placement", response_model=WorkflowApprovalResponse)
+async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
+    """
+    Approve or reject placement manifest for a workflow.
+    
+    CRITICAL GATES:
+    1. Workflow must be in AWAITING_IMPLEMENTATION_APPROVAL state
+    2. Manifest hash must match stored manifest (no mutation since generation)
+    3. Contract hash must match stored contract (no contract drift)
+    4. If approved=True: advance to IMPLEMENTING
+    5. If approved=False: advance to REJECTED
+    
+    SECURITY:
+    - Detects manifest tampering via hash verification
+    - Enforces state machine transitions
+    - No auto-approval bypass
+    
+    Args:
+        workflow_id: Workflow to approve/reject
+        payload: Approval decision with verification hashes
+        
+    Returns:
+        WorkflowApprovalResponse with state transition details
+        
+    Raises:
+        404: If workflow not found
+        409: If workflow not in AWAITING_IMPLEMENTATION_APPROVAL state
+        409: If manifest hash mismatch (APPROVAL_INVALID)
+        409: If contract hash mismatch (CONTRACT_CHANGED)
+    """
+    # Verify workflow_id in payload matches path parameter
+    if payload.workflow_id != workflow_id:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Workflow ID mismatch: path={workflow_id}, payload={payload.workflow_id}"
+        )
+    
+    # Check if workflow exists
+    if workflow_id not in _workflow_states:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Workflow not found: {workflow_id}"
+        )
+    
+    workflow = _workflow_states[workflow_id]
+    current_state = workflow.get("state")
+    
+    # Verify workflow is in AWAITING_IMPLEMENTATION_APPROVAL state
+    if current_state != CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "WRONG_STATE",
+                "message": f"Workflow is in {current_state} state, expected AWAITING_IMPLEMENTATION_APPROVAL",
+                "currentState": current_state,
+                "expectedState": CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value
+            }
+        )
+    
+    # Verify manifest hash matches stored manifest
+    stored_manifest_hash = workflow.get("manifest_hash")
+    if not stored_manifest_hash:
+        raise HTTPException(
+            status_code=500,
+            detail="Workflow has no stored manifest hash"
+        )
+    
+    if payload.manifest_hash != stored_manifest_hash:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "APPROVAL_INVALID",
+                "reason": "manifest_changed",
+                "message": "Manifest hash mismatch: manifest was modified after generation",
+                "expectedHash": stored_manifest_hash,
+                "providedHash": payload.manifest_hash
+            }
+        )
+    
+    # Verify contract hash matches stored contract
+    stored_contract_hash = workflow.get("contract_hash")
+    if stored_contract_hash and payload.contract_hash != stored_contract_hash:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "CONTRACT_CHANGED",
+                "message": "Contract hash mismatch: engineering contract was modified",
+                "expectedHash": stored_contract_hash,
+                "providedHash": payload.contract_hash
+            }
+        )
+    
+    # All verification passed - process approval decision
+    now = datetime.now(timezone.utc)
+    
+    if payload.approved:
+        # Approve: transition to IMPLEMENTING
+        new_state = CanonicalWorkflowState.IMPLEMENTING
+        if not is_valid_transition(CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL, new_state):
+            raise HTTPException(
+                status_code=500,
+                detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
+            )
+        
+        workflow["state"] = new_state.value
+        workflow["approved_by"] = payload.approved_by
+        workflow["approved_at"] = now.isoformat()
+        workflow["approval_reason"] = payload.reason
+        
+        return WorkflowApprovalResponse(
+            workflow_id=workflow_id,
+            previous_state=current_state,
+            new_state=new_state.value,
+            approved=True,
+            approved_by=payload.approved_by,
+            approved_at=now,
+            manifest_hash_verified=True,
+            contract_hash_verified=True,
+            reason=payload.reason
+        )
+    else:
+        # Reject: transition to REJECTED
+        new_state = CanonicalWorkflowState.REJECTED
+        if not is_valid_transition(CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL, new_state):
+            raise HTTPException(
+                status_code=500,
+                detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
+            )
+        
+        workflow["state"] = new_state.value
+        workflow["rejected_by"] = payload.approved_by
+        workflow["rejected_at"] = now.isoformat()
+        workflow["rejection_reason"] = payload.reason
+        
+        return WorkflowApprovalResponse(
+            workflow_id=workflow_id,
+            previous_state=current_state,
+            new_state=new_state.value,
+            approved=False,
+            approved_by=payload.approved_by,
+            approved_at=now,
+            manifest_hash_verified=True,
+            contract_hash_verified=True,
+            reason=payload.reason
+        )
+
+
+# Helper function to register workflow in approval gate system
+def register_workflow_for_approval(
+    workflow_id: str,
+    manifest_hash: str,
+    contract_hash: str,
+    initial_state: CanonicalWorkflowState = CanonicalWorkflowState.INTEGRATION_PLANNED
+):
+    """
+    Register a workflow for implementation approval.
+    
+    Call this after PlacementManifest is generated and before transitioning
+    to AWAITING_IMPLEMENTATION_APPROVAL state.
+    
+    Args:
+        workflow_id: Unique workflow identifier
+        manifest_hash: SHA-256 hash of placement manifest
+        contract_hash: SHA-256 hash of engineering contract
+        initial_state: Starting state (default: INTEGRATION_PLANNED)
+    """
+    _workflow_states[workflow_id] = {
+        "workflow_id": workflow_id,
+        "state": initial_state.value,
+        "manifest_hash": manifest_hash,
+        "contract_hash": contract_hash,
+        "registered_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+# Helper function to transition workflow to AWAITING_IMPLEMENTATION_APPROVAL
+def transition_to_approval_gate(workflow_id: str):
+    """
+    Transition workflow from INTEGRATION_PLANNED to AWAITING_IMPLEMENTATION_APPROVAL.
+    
+    This enforces the Wave 4 requirement that workflows MUST stop and await
+    human approval before placement execution.
+    
+    Args:
+        workflow_id: Workflow to transition
+        
+    Raises:
+        ValueError: If workflow not found or not in INTEGRATION_PLANNED state
+    """
+    if workflow_id not in _workflow_states:
+        raise ValueError(f"Workflow not registered: {workflow_id}")
+    
+    workflow = _workflow_states[workflow_id]
+    current_state = workflow.get("state")
+    
+    if current_state != CanonicalWorkflowState.INTEGRATION_PLANNED.value:
+        raise ValueError(
+            f"Cannot transition to approval gate from {current_state}, "
+            f"expected {CanonicalWorkflowState.INTEGRATION_PLANNED.value}"
+        )
+    
+    new_state = CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL
+    if not is_valid_transition(CanonicalWorkflowState.INTEGRATION_PLANNED, new_state):
+        raise ValueError(f"Invalid transition: {current_state} -> {new_state.value}")
+    
+    workflow["state"] = new_state.value
+    workflow["transition_at"] = datetime.now(timezone.utc).isoformat()
 
 @router.post("/{approval_id}/reject", response_model=ApprovalRecord)
 async def reject_manifest(approval_id: str, request: ApprovalRejectRequest):
