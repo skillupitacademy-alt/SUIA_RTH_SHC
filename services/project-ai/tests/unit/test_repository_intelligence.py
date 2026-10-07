@@ -84,7 +84,9 @@ class TestRepositoryBlockContract:
         assert contract.block_type == "code_c1"
         assert isinstance(contract.runtime, RuntimeContract)
         assert isinstance(contract.required_artifacts, list)
-        assert len(contract.acceptance_criteria) > 0
+        # After Wave 2 R3: fields are derived from snapshot, not hardcoded defaults
+        # An empty contract should have empty lists, not generic placeholder values
+        assert isinstance(contract.acceptance_criteria, list)
 
 
 class TestBuildContract:

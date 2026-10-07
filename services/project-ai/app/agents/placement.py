@@ -48,9 +48,10 @@ async def execute_placement(context: AgentContext) -> AgentResult:
         # during DISCOVERY/BRIEF_READY states with proper version binding
         workflow_target_data = context.workflow_state.get('workflow_target', {})
         target_version = workflow_target_data.get('version')
-        if not target_version:
+        if not target_version or target_version == '':
             # Fallback for workflows that haven't populated target yet
-            target_version = "MISSING_TARGET_VERSION"
+            # Use clear sentinel value that will fail validation if not caught upstream
+            target_version = "UNKNOWN_VERSION"
         
         # Create manifest
         manifest = PlacementManifest(

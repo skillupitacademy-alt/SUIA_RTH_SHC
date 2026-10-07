@@ -373,9 +373,14 @@ async def generate_manifest(
     # B07 fix: Extract target version from candidate binding/workflow
     # NOTE: In full workflow integration, candidate packages should carry
     # CandidateBinding with target_version from WorkflowTarget
-    # For now, use version from package metadata or require explicit version
-    target_version = getattr(package, 'target_version', None) or \
-                     package.__dict__.get('_target_version', 'MISSING_TARGET_VERSION')
+    # The canonical attribute is 'target_version' based on CandidateBinding model
+    target_version = getattr(package, 'target_version', None)
+    
+    if not target_version or target_version == '':
+        # No valid version found - this indicates missing workflow binding
+        # Use clear sentinel value that will fail validation if not caught upstream
+        target_version = 'UNKNOWN_VERSION'
+        # TODO Wave 3: Add schema validation at intake to enforce target_version presence
     
     manifest_data = {
         "manifestId": manifest_id,

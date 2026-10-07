@@ -77,8 +77,11 @@ class TestWorkflowOwnership:
     
     def test_create_contract_with_valid_auth(self):
         """Test POST succeeds with valid authentication."""
-        # Mock build_repo_contract to avoid repository access
-        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+        # Mock snapshot loading and build_repo_contract to avoid repository access
+        mock_snapshot = {"evidence": [], "blocks": {}}
+        with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_load.return_value = mock_snapshot
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -102,7 +105,10 @@ class TestWorkflowOwnership:
     
     def test_create_contract_auto_creates_workflow_for_owner(self):
         """Test that workflow is auto-created in valid state for authenticated user."""
-        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+        mock_snapshot = {"evidence": [], "blocks": {}}
+        with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_load.return_value = mock_snapshot
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -133,7 +139,10 @@ class TestWorkflowOwnership:
     def test_get_contract_verifies_ownership(self):
         """Test GET verifies caller owns the workflow."""
         # Create contract as user1
-        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+        mock_snapshot = {"evidence": [], "blocks": {}}
+        with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_load.return_value = mock_snapshot
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -165,7 +174,10 @@ class TestWorkflowStateValidation:
     
     def test_workflow_auto_created_in_valid_state(self):
         """Test that auto-created workflows are in BRIEF_READY state."""
-        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+        mock_snapshot = {"evidence": [], "blocks": {}}
+        with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_load.return_value = mock_snapshot
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -193,7 +205,10 @@ class TestContractImmutability:
     
     def test_repeat_call_returns_same_contract(self):
         """Test that calling POST twice returns the same contract (same hash)."""
-        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+        mock_snapshot = {"evidence": [], "blocks": {}}
+        with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_load.return_value = mock_snapshot
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -233,7 +248,10 @@ class TestHashVerification:
     
     def test_get_contract_verifies_hash(self):
         """Test GET verifies contract hash and returns contract if valid."""
-        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+        mock_snapshot = {"evidence": [], "blocks": {}}
+        with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_load.return_value = mock_snapshot
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -263,7 +281,10 @@ class TestHashVerification:
     
     def test_get_contract_detects_tampering(self):
         """Test GET returns 500 if contract hash doesn't match (tampering detected)."""
-        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+        mock_snapshot = {"evidence": [], "blocks": {}}
+        with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_load.return_value = mock_snapshot
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -311,7 +332,10 @@ class TestProhibitedBehaviorsInContract:
     
     def test_contract_includes_prohibited_behaviors(self):
         """Test that generated contract includes all prohibited behaviors."""
-        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+        mock_snapshot = {"evidence": [], "blocks": {}}
+        with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_load.return_value = mock_snapshot
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},

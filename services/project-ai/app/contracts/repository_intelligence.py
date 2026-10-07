@@ -53,48 +53,27 @@ class RepositoryBlockContract(BaseModel):
     version: str = Field(..., description="Block version")
     block_type: str = Field(..., description="Block type identifier")
     references: list[CanonicalReference] = Field(default_factory=list, description="Canonical references found")
+    # All fields below are derived from snapshot evidence, not hardcoded defaults
     required_artifacts: list[str] = Field(
-        default_factory=lambda: [
-            "HTML/CSS/JS prototype",
-            "React/TypeScript implementation",
-            "Type definitions",
-            "Unit tests"
-        ],
-        description="Required deliverables"
+        default_factory=list,
+        description="Required deliverables (derived from snapshot block contract)"
     )
     runtime: RuntimeContract = Field(default_factory=RuntimeContract, description="Runtime contract")
     renderer_contract: dict = Field(
-        default_factory=lambda: {
-            "component_name": "TBD",
-            "props": ["block", "theme", "runtimeContext"],
-            "exports": ["default component function"]
-        },
-        description="Renderer contract"
+        default_factory=dict,
+        description="Renderer contract (derived from snapshot renderer evidence)"
     )
     composer_contract: dict = Field(
-        default_factory=lambda: {
-            "composability": "full",
-            "preview_mode": "live",
-            "edit_mode": "form-based"
-        },
-        description="Composer contract"
+        default_factory=dict,
+        description="Composer contract (derived from snapshot composer evidence)"
     )
     schema_contract: dict = Field(
-        default_factory=lambda: {
-            "validation": "Pydantic + TypeScript",
-            "serialization": "JSON"
-        },
-        description="Schema contract"
+        default_factory=dict,
+        description="Schema contract (derived from snapshot schema evidence)"
     )
     acceptance_criteria: list[str] = Field(
-        default_factory=lambda: [
-            "Renders correctly with theme.primary and theme.secondary",
-            "Responsive on mobile, tablet, desktop",
-            "Passes accessibility audit (WCAG 2.1 AA)",
-            "No console errors or warnings",
-            "Matches canonical design system"
-        ],
-        description="Acceptance criteria"
+        default_factory=list,
+        description="Acceptance criteria (derived from UBRC + theme + brand evidence)"
     )
 
 

@@ -10,15 +10,46 @@ from app.contracts.engineering_contract import (
     calculate_contract_hash,
     PROHIBITED_BEHAVIORS
 )
-from app.contracts.repository_intelligence import build_contract_legacy as build_repo_contract
+from app.contracts.repository_intelligence import build_contract as build_repo_contract
 from app.models.workflow_target import WorkflowTarget
 import uuid
 import os
+import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 
 router = APIRouter(prefix="/workflows", tags=["Engineering Contracts"])
+
+
+def load_repository_snapshot(workspace_root: str) -> Dict[str, Any]:
+    """
+    Load canonical TypeScript repository snapshot.
+    
+    This function is separated for test mockability.
+    In production, it loads from the TypeScript discovery output.
+    In tests, this function can be mocked to return test snapshots.
+    
+    Args:
+        workspace_root: Workspace root path
+        
+    Returns:
+        Snapshot dictionary
+        
+    Raises:
+        HTTPException 404: If snapshot file not found
+    """
+    snapshot_path = Path(workspace_root) / "packages" / "project-llm-discovery" / "output" / "snapshot.json"
+    
+    if not snapshot_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Repository snapshot not found at {snapshot_path}. "
+                   f"Run TypeScript discovery scan first to generate canonical snapshot."
+        )
+    
+    with open(snapshot_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
 # In-memory store for contracts
 # Key: workflow_id -> EngineeringContract
@@ -141,6 +172,10 @@ async def create_engineering_contract(
     - Required artifacts, tests, and acceptance criteria
     - Prohibited behaviors (architectural boundaries)
     
+    CONTRACT GENERATION REQUIRES CANONICAL TYPESCRIPT SNAPSHOT:
+    The contract must be generated from a TypeScript-produced repository snapshot.
+    Python MUST NOT scan repository files directly (architectural boundary).
+    
     CONTRACT IMMUTABILITY:
     Once generated for a workflow_id with specific data, the contract is immutable.
     Calling this endpoint again with the same workflow_id returns the SAME contract
@@ -161,7 +196,7 @@ async def create_engineering_contract(
     Raises:
         HTTPException 401: Missing or invalid authentication
         HTTPException 403: User doesn't own the workflow
-        HTTPException 404: Workflow not found
+        HTTPException 404: Workflow not found or snapshot not found
         HTTPException 400: Invalid workflow state
     """
     
@@ -186,17 +221,18 @@ async def create_engineering_contract(
         source_snapshot_id="snapshot-001"
     )
     
-    # Get repository root path from environment variable
-    # Fallback to relative path resolution only if env var not set
-    repo_root = os.environ.get("QUIZ_PLATFORM_REPO_ROOT")
-    if not repo_root:
+    # Load canonical TypeScript snapshot (architectural boundary: Python consumes, never produces)
+    workspace_root = os.environ.get("WORKSPACE_ROOT", os.environ.get("QUIZ_PLATFORM_REPO_ROOT"))
+    if not workspace_root:
         # Fallback: relative navigation from this file
-        # This is fragile but acceptable for Wave 2 development
-        repo_root = str(Path(__file__).parent.parent.parent.parent.parent.parent.absolute())
+        workspace_root = str(Path(__file__).parent.parent.parent.parent.parent.parent.absolute())
     
-    # Build repository contract (from B03 Wave 1)
+    # Load snapshot (mockable function for tests)
+    snapshot = load_repository_snapshot(workspace_root)
+    
+    # Build repository contract from snapshot (Wave 1 canonical implementation)
     repo_contract = build_repo_contract(
-        repo_root=repo_root,
+        snapshot=snapshot,
         family=target.family,
         version=target.version
     )

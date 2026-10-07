@@ -75,11 +75,11 @@ class EngineeringContract(BaseModel):
     )
     renderer_contract: dict = Field(
         default_factory=dict,
-        description="Renderer integration contract"
+        description="Renderer integration contract (derived from snapshot block evidence)"
     )
     composer_contract: dict = Field(
         default_factory=dict,
-        description="Composer integration contract"
+        description="Composer integration contract (derived from snapshot composer evidence)"
     )
     runtime_contract: RuntimeContract = Field(
         default_factory=RuntimeContract,
@@ -106,18 +106,19 @@ class EngineeringContract(BaseModel):
         description="Right-Side Status Bar contract"
     )
     
-    # Deliverables
+    # Deliverables - derived from snapshot block contracts
+    # Canonical source: RepositoryBlockContract extracted from snapshot evidence
     required_artifacts: list[str] = Field(
         default_factory=list,
-        description="Required deliverable artifacts"
+        description="Required deliverable artifacts (derived from snapshot)"
     )
     tests_required: list[str] = Field(
         default_factory=list,
-        description="Required test coverage"
+        description="Required test coverage (derived from snapshot)"
     )
     acceptance_criteria: list[str] = Field(
         default_factory=list,
-        description="Acceptance criteria for certification"
+        description="Acceptance criteria for certification (derived from snapshot)"
     )
     
     # Architectural boundaries
