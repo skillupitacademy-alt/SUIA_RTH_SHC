@@ -1,0 +1,36 @@
+{
+  "check": "2C-RepoBoundary",
+  "status": "PASS",
+  "build_contract_accepts_snapshot": true,
+  "build_contract_signature": "def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> RepositoryBlockContract",
+  "path_repo_root_production_hits": [],
+  "path_repo_root_legacy_hits": [
+    {
+      "line": 282,
+      "context": "build_contract_legacy function",
+      "marked_deprecated": true,
+      "explicit_boundary_violation_note": "DEPRECATED: Legacy build_contract that scans repository files. This function violates the architectural boundary (Python must not scan repository). It is preserved ONLY for backward compatibility with existing tests."
+    }
+  ],
+  "snapshot_evidence_consumed": true,
+  "snapshot_consumption_evidence": [
+    "Line 186: canonical_blocks = [ev for ev in snapshot.get('evidence', []) if ev.get('kind') == 'canonical_block']",
+    "Line 203-219: Searches for matching evidence in snapshot and extracts path, contentHash (sha256), evidenceId",
+    "Line 221-226: Creates RepositoryEvidence from snapshot data, not filesystem"
+  ],
+  "production_function_analysis": {
+    "function": "build_contract(snapshot, family, version)",
+    "accepts_snapshot_param": true,
+    "uses_snapshot_evidence": true,
+    "filesystem_access": false,
+    "architectural_boundary_compliant": true
+  },
+  "deprecated_function_analysis": {
+    "function": "build_contract_legacy(repo_root, family, version)",
+    "marked_deprecated": true,
+    "uses_path_repo_root": true,
+    "explicit_test_only_restriction": "preserved ONLY for backward compatibility with existing tests",
+    "architectural_note": "violates the architectural boundary (Python must not scan repository)"
+  },
+  "notes": "Production build_contract function fully compliant: accepts snapshot parameter, consumes snapshot['evidence'], no filesystem access. Single Path(repo_root) occurrence found at line 282 is within build_contract_legacy function, explicitly marked DEPRECATED with clear architectural boundary violation warning and test-only restriction. Production code path is clean."
+}

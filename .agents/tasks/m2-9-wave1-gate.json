@@ -1,0 +1,25 @@
+{
+  "gate": "wave1",
+  "status": "PASS",
+  "blockingFindings": [],
+  "timestamp": "2025-01-08T00:00:00.000Z",
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\m2-9-wave1-review.md",
+  "nonBlockingFindings": [
+    {
+      "issue": "contract.py still uses legacy path",
+      "severity": "non-blocking",
+      "description": "The contract route imports build_contract_legacy, meaning the boundary-violating code path is still reachable in production via /api/contract endpoints. Document when contract.py will be migrated, or mark it as an accepted residual risk if it's intentionally using the repo_root pattern."
+    },
+    {
+      "issue": "MISSING_TARGET_VERSION is a string, not a version",
+      "severity": "non-blocking",
+      "description": "If workflow_target isn't populated, placement.py and candidate.py emit 'MISSING_TARGET_VERSION' as the blockVersion. This string doesn't follow the version format (I7, C1, D1) and could propagate into placement manifests. Add validation to fail early if workflow_target.version is missing, or make the fallback follow the expected format."
+    },
+    {
+      "issue": "candidate.py version extraction is fragile",
+      "severity": "non-blocking",
+      "confidence": "possible",
+      "description": "The code tries getattr(package, 'target_version', None) and then package.__dict__.get('_target_version', ...), suggesting it's guessing where version might live. Verify that candidate intake actually populates one of these fields, or this path will always hit the fallback."
+    }
+  ]
+}

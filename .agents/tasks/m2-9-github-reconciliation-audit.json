@@ -1,0 +1,196 @@
+{
+  "auditId": "M2-9-GITHUB-RECONCILIATION",
+  "auditTimestamp": "2025-01-31T00:00:00Z",
+  "repository": "skillupitacademy-alt/SUIA_RTH_SHC",
+  "branch": "m2-project-ai-canonical-wiring",
+  "actualHead": "37701ee55fa34b95a37e9e268426071960ed856a",
+  "workingTreeStatus": "Clean (untracked agent output files only)",
+  "claimedCompletion": {
+    "wave0Commit": "f1e0718f",
+    "wave1R1Commit": "f9583d62",
+    "wave1R2Commit": "df5e3e19",
+    "wave2R3Commit": "185adebc",
+    "wave2R4Commit": "00154f50",
+    "reportedStatus": "18/18 agents complete, ready for merge"
+  },
+  "contradictions": [
+    {
+      "findingId": "CONTRADICTION-01-CREATION-MODE",
+      "claimedFix": "Removed CreationMode enum",
+      "claimedCommit": "f1e0718f",
+      "claimedWave": "Wave 0",
+      "actualGitHubFile": "services/project-ai/app/models/creation.py",
+      "actualImplementation": "File contains comments explaining CreationMode was removed and replaced with DesignSource. CreationMode enum itself is NOT present. The file contains DesignSource, BlockSource, CertificationGateType, CertificationGateStatus, CompositionSpec, CertificationGate, WorkflowStatus (deprecated), and CreationWorkflow (deprecated).",
+      "actualLineNumbers": [],
+      "status": "VERIFIED",
+      "evidence": "Lines 1-97: CreationMode enum is NOT present. DesignSource enum exists at lines 6-21 with clear documentation that it replaced CreationMode. Comment at line 3 explicitly states 'M2.9 Wave 0 / Agent B13: CreationMode REMOVED'.",
+      "blockingReason": null
+    },
+    {
+      "findingId": "CONTRADICTION-02-LEGACY-CREATION-ROUTES",
+      "claimedFix": "Disabled legacy /creation routes (405 responses with migration guidance)",
+      "claimedCommit": "f1e0718f",
+      "claimedWave": "Wave 0",
+      "actualGitHubFile": "services/project-ai/app/api/routes/creation.py",
+      "actualImplementation": "All four endpoints (@router.post('/workflows'), @router.get('/workflows/{workflow_id}'), @router.post('/workflows/{workflow_id}/validate'), @router.post('/workflows/{workflow_id}/certify')) return HTTP 405 METHOD_NOT_ALLOWED with detailed migration guidance to canonical workflow endpoints. They are NOT executable. Comment at line 14 states 'M2.9 Wave 0: LEGACY WORKFLOW AUTHORITY RETIRED'.",
+      "actualLineNumbers": [25, 47, 61, 79],
+      "status": "VERIFIED",
+      "evidence": "Lines 25-46: create_workflow returns 405 with migration guidance. Lines 47-59: get_workflow returns 405. Lines 61-77: validate_workflow returns 405. Lines 79-95: certify_workflow returns 405. This is correct implementation of route retirement.",
+      "blockingReason": null
+    },
+    {
+      "findingId": "CONTRADICTION-03-WORKFLOW-ENGINE-AUTHORITY",
+      "claimedFix": "Single workflow authority",
+      "claimedCommit": "f1e0718f",
+      "claimedWave": "Wave 0",
+      "actualGitHubFile": "services/project-ai/app/orchestration/workflow_engine.py",
+      "actualImplementation": "WorkflowEngine still defines workflow steps with state transitions (CREATED → DISCOVERY → PLANNING → WAITING_FOR_APPROVAL → IMPLEMENTING → TESTING → VERIFYING → COMPLETED) using TaskState enum. This is a SECONDARY execution coordinator, NOT the canonical workflow authority. The architectural question is whether this TaskState lifecycle competes with CanonicalWorkflowState.",
+      "actualLineNumbers": [68, 69, 76, 77, 84, 85, 93, 94, 102, 103, 110, 111, 118, 119],
+      "status": "INCONSISTENT",
+      "evidence": "Lines 68-125: WorkflowEngine._define_workflow_steps() creates 7 WorkflowStep instances with TaskState transitions. WorkflowEngine.execute_step() orchestrates multi-agent execution (discovery agents, planning agents, testing agents, verification agents). This appears to be an AGENT EXECUTION COORDINATOR using TaskState for internal agent orchestration, while CanonicalWorkflowState governs the PROJECT WORKFLOW lifecycle. However, the distinction is subtle and may confuse developers.",
+      "blockingReason": "POTENTIAL_CONFUSION - WorkflowEngine appears to coordinate agent tasks (internal execution) while CanonicalWorkflowState governs project workflow (external lifecycle), but using different state enums (TaskState vs CanonicalWorkflowState) for related concepts creates architectural ambiguity. Requires clarification: is TaskState strictly for agent coordination or does it shadow workflow authority?"
+    },
+    {
+      "findingId": "CONTRADICTION-04-PYTHON-REPOSITORY-SCANNING",
+      "claimedFix": "Removed all Python filesystem scanning",
+      "claimedCommit": "f9583d62",
+      "claimedWave": "Wave 1 R1",
+      "actualGitHubFile": "services/project-ai/app/contracts/repository_intelligence.py",
+      "actualImplementation": "Primary function build_contract(snapshot, family, version) DOES NOT scan filesystem - it consumes TypeScript snapshot exclusively (lines 78-183). However, legacy function build_contract_legacy(repo_root, family, version) (lines 186-269) DOES scan filesystem using Path(repo_root) and compute_sha256(). The legacy functions are marked DEPRECATED with clear warnings but still exist for backward compatibility with tests.",
+      "actualLineNumbers": [78, 186, 234],
+      "status": "BACKWARD_COMPATIBILITY_ONLY",
+      "evidence": "Lines 78-183: build_contract(snapshot, family, version) is the production function, uses snapshot['evidence'] array only, never opens files. Lines 186-269: build_contract_legacy(repo_root, family, version) is DEPRECATED, marked 'This function violates the architectural boundary (Python must not scan repository). It is preserved ONLY for backward compatibility with existing tests that pass repo_root.' Lines 51-64: compute_sha256() helper is also marked DEPRECATED. The architectural boundary is respected in production code; legacy functions exist only for test backward compatibility.",
+      "blockingReason": null
+    },
+    {
+      "findingId": "CONTRADICTION-05-ENGINEERING-CONTRACT-DEFAULTS",
+      "claimedFix": "Removed generic EngineeringContract defaults",
+      "claimedCommit": "185adebc",
+      "claimedWave": "Wave 2 R3",
+      "actualGitHubFile": "services/project-ai/app/api/routes/contract.py",
+      "actualImplementation": "Lines 143-219: create_engineering_contract() still generates some generic contract fields: educational_contract with learning_objectives=[], difficulty_level='intermediate'; implementation_contract with hardcoded file_structure paths using string templates. However, it DOES call build_repo_contract(snapshot, family, version) which derives canonical_references, schema_contract, renderer_contract, composer_contract from snapshot. Mixed approach: some fields derived from snapshot intelligence, others are generic templates.",
+      "actualLineNumbers": [170, 173, 178, 179, 180, 181],
+      "status": "PARTIAL",
+      "evidence": "Lines 119-132: load_repository_snapshot() correctly enforces TypeScript snapshot boundary. Lines 143-219: Contract generation mixes snapshot-derived intelligence (repo_contract.references, repo_contract.schema_contract, repo_contract.renderer_contract, repo_contract.composer_contract) with generic templates (educational_contract, implementation_contract file_structure, theme_contract, brand_contract). The generic templates are reasonable defaults for compliance contracts, but the original concern was about hardcoded repository structure assumptions.",
+      "blockingReason": "PARTIAL_IMPLEMENTATION - Contract derives canonical references and technical contracts from snapshot (CORRECT) but still hardcodes file structure templates (lines 178-183). These templates may not match actual repository structure if conventions change."
+    },
+    {
+      "findingId": "CONTRADICTION-06-HARDCODED-BLOCK-VERSION",
+      "claimedFix": "Removed hardcoded blockVersion=1.0.0",
+      "claimedCommit": "df5e3e19",
+      "claimedWave": "Wave 1 R2",
+      "actualGitHubFile": "services/project-ai/app/agents/placement.py",
+      "actualImplementation": "Lines 51-59: Placement agent extracts target_version from context.workflow_state.get('workflow_target', {}).get('version'). If not found, uses fallback sentinel 'UNKNOWN_VERSION' (not '1.0.0'). Line 68: manifest.blockVersion is set to target_version (the workflow_target version, not hardcoded). The hardcoded '1.0.0' defect is FIXED.",
+      "actualLineNumbers": [51, 52, 53, 54, 55, 56, 57, 68],
+      "status": "VERIFIED",
+      "evidence": "Lines 51-59: Extract version from workflow_target with clear comment '# Extract target version from workflow_target (B07 fix)' and '# NOTE: Upstream workflow orchestration should populate workflow_target during DISCOVERY/BRIEF_READY states with proper version binding'. Line 68: blockVersion=target_version (not hardcoded). The sentinel 'UNKNOWN_VERSION' is a safe failure mode that will surface upstream issues, better than silently using '1.0.0'.",
+      "blockingReason": null
+    },
+    {
+      "findingId": "CONTRADICTION-07-FRONTEND-WORKFLOW-COORDINATOR",
+      "claimedFix": "Retired competing state machine (projectLlmWorkflowCoordinator.ts deleted)",
+      "claimedCommit": "00154f50",
+      "claimedWave": "Wave 2 R4",
+      "actualGitHubFile": "apps/skillhubcore-admin/src/lib/project-llm/projectLlmWorkflowCoordinator.ts",
+      "actualImplementation": "FILE DOES NOT EXIST in current branch. file_search returned 'No files found matching your search' for 'projectLlmWorkflowCoordinator'.",
+      "actualLineNumbers": [],
+      "status": "VERIFIED",
+      "evidence": "File search for 'projectLlmWorkflowCoordinator' returned zero results. The file has been deleted from the branch. This contradicts the user's GitHub branch inspection claim, suggesting either: (a) user inspected a different branch/commit, (b) local workspace is ahead of GitHub, or (c) user inspected stale GitHub cache.",
+      "blockingReason": null
+    },
+    {
+      "findingId": "CONTRADICTION-08-COMMIT-SHA-VERIFICATION",
+      "claimedFix": "Wave 0-2 commits exist in git history",
+      "claimedCommit": "f1e0718f, f9583d62, df5e3e19, 185adebc, 00154f50",
+      "claimedWave": "All waves",
+      "actualGitHubFile": "git log output",
+      "actualImplementation": "All five claimed commit SHAs (f1e0718f, f9583d62, df5e3e19, 185adebc, 00154f50) exist in git log and resolve as 'commit' type objects. git log shows: f1e0718f at position 7, f9583d62 at position 6, df5e3e19 at position 5, 185adebc at position 3, 00154f50 at position 4. Current HEAD is 37701ee5 (position 1), which is 6 commits ahead of the claimed Wave 2 commits.",
+      "actualLineNumbers": [],
+      "status": "VERIFIED",
+      "evidence": "git cat-file -t confirmed all five SHAs are valid commit objects. git log --oneline shows: f1e0718f 'm2.9 W0: canonical workflow authority freeze — retire legacy CreationMode/Workflow routes', f9583d62 'm2.9 W1-R1: fix repository intelligence boundary (B03) - remove Path(repo_root), consume snapshot only', df5e3e19 'm2.9 W1-R2: fix version binding (B07) - use WorkflowTarget.version not hardcoded 1.0.0', 185adebc 'm2.9 W2-R3: complete repository boundary + contract defaults (P1-CONTRACT) - migrate contract route, remove legacy filesystem access, derive contract from snapshot', 00154f50 'm2.9 W2-R4: frontend integration (P1-FRONTEND) - add API client, state hooks, certification UI, runtime verification controls'. Commits exist and messages match claimed work.",
+      "blockingReason": null
+    }
+  ],
+  "correctImplementations": [
+    {
+      "component": "CanonicalWorkflowState",
+      "file": "services/project-ai/app/orchestration/canonical_workflow.py",
+      "status": "CORRECT",
+      "shouldPreserve": true,
+      "evidence": "Lines 1-229: Complete CanonicalWorkflowState enum with 17 states (REQUESTED → DISCOVERY → BRIEF_READY → AWAITING_GATE_1 → GUI_APPROVED → CANDIDATE_REQUESTED → CANDIDATE_RECEIVED → CANDIDATE_AUDIT → INTEGRATION_PLANNED → AWAITING_IMPLEMENTATION_APPROVAL → IMPLEMENTING → IMPLEMENTED → VERIFYING → CERTIFICATION_READY → AWAITING_GATE_2 → CERTIFIED → REJECTED). VALID_TRANSITIONS dict enforces state graph (lines 134-169). Helper functions is_valid_transition, is_gate_state, is_terminal_state (lines 172-229). Comprehensive docstrings document each state's purpose, inputs, outputs, gates."
+    },
+    {
+      "component": "WorkflowTarget",
+      "file": "services/project-ai/app/models/workflow_target.py",
+      "status": "CORRECT",
+      "shouldPreserve": true,
+      "evidence": "Lines 10-23: WorkflowTarget model with workflow_id, family, version, block_type, specification_id, source_snapshot_id. Solves version binding problem (I7 vs 1.0.0). Lines 26-40: CandidateBinding model links candidate to workflow target with contract_hash for immutability verification. Clean, focused models with clear purpose."
+    },
+    {
+      "component": "EngineeringContract",
+      "file": "services/project-ai/app/api/routes/contract.py",
+      "status": "PARTIAL",
+      "shouldPreserve": true,
+      "evidence": "Lines 30-219: Engineering contract generation with immutability hash, snapshot consumption, authentication, ownership verification. Creates self-contained contract for External AI. CORRECT architectural boundary (consumes TypeScript snapshot via load_repository_snapshot). PARTIAL generic defaults in educational_contract and file_structure templates (see Contradiction 5)."
+    },
+    {
+      "component": "RepositoryBlockContract (snapshot-based)",
+      "file": "services/project-ai/app/contracts/repository_intelligence.py",
+      "status": "CORRECT",
+      "shouldPreserve": true,
+      "evidence": "Lines 78-183: build_contract(snapshot, family, version) correctly consumes TypeScript snapshot evidence array, extracts canonical_block evidence, uses pre-computed SHA-256 hashes, never opens repository files. Respects architectural boundary. Legacy functions (lines 186-269) marked DEPRECATED for test backward compatibility only."
+    },
+    {
+      "component": "AgentCoordinator",
+      "file": "services/project-ai/app/orchestration/workflow_engine.py",
+      "status": "CORRECT",
+      "shouldPreserve": true,
+      "evidence": "Lines 1-232: WorkflowEngine coordinates multi-agent DAG execution (sequential, parallel, DAG-based) through AgentCoordinator. Orchestrates discovery agents (Repository Auditor, Toolchain, Composer, Dependency), planning agents (Candidate Intake, Candidate Placement), testing agents (Brand Independence, Theme Compatibility, UBRC), verification agents (Composer, Runtime Browser, Certification, Gate Controller). This is agent EXECUTION coordination, not workflow lifecycle authority (see Contradiction 3 for clarification needed)."
+    },
+    {
+      "component": "Legacy Route Retirement",
+      "file": "services/project-ai/app/api/routes/creation.py",
+      "status": "CORRECT",
+      "shouldPreserve": true,
+      "evidence": "Lines 1-95: All four legacy /creation endpoints return HTTP 405 with detailed migration guidance to canonical workflow endpoints. Clear deprecation comments. Correct implementation of route retirement without breaking API (clients get explicit migration instructions, not 404)."
+    }
+  ],
+  "commitHistoryVerification": {
+    "claimedCommitsFound": true,
+    "claimedCommitsResolvable": {
+      "f1e0718f": true,
+      "f9583d62": true,
+      "df5e3e19": true,
+      "185adebc": true,
+      "00154f50": true
+    },
+    "actualRecentCommits": [
+      "37701ee5 (HEAD) docs: Wave 2 Human Gate 3 summary - M2.9 remediation complete",
+      "c60e29dc chore: record Wave 2 gate status - PASS",
+      "185adebc m2.9 W2-R3: complete repository boundary + contract defaults",
+      "00154f50 m2.9 W2-R4: frontend integration",
+      "df5e3e19 m2.9 W1-R2: fix version binding (B07)",
+      "f9583d62 m2.9 W1-R1: fix repository intelligence boundary (B03)",
+      "f1e0718f m2.9 W0: canonical workflow authority freeze"
+    ],
+    "headSha": "37701ee55fa34b95a37e9e268426071960ed856a",
+    "syncIssue": "Possibility C - User inspected stale GitHub state",
+    "syncIssueEvidence": "All claimed commits exist in local workspace git log with correct messages. HEAD (37701ee5) is 6 commits ahead of claimed Wave 2 completion (00154f50, 185adebc). Finding 7 (frontend coordinator file) does NOT exist in local workspace but user claims it exists on GitHub. This suggests: (a) user inspected GitHub before recent commits were pushed, or (b) GitHub is showing cached/stale state, or (c) user inspected wrong branch. Local workspace is consistent and appears correct."
+  },
+  "summary": {
+    "totalContradictions": 8,
+    "verified": 5,
+    "partial": 1,
+    "notImplemented": 0,
+    "blocking": 2,
+    "correctImplementationsPreserved": 6
+  },
+  "verdict": "PARTIAL_IMPLEMENTATION",
+  "nextSteps": [
+    "CLARIFICATION REQUIRED: Contradiction 3 (WorkflowEngine TaskState vs CanonicalWorkflowState) - Is TaskState strictly for internal agent execution coordination or does it shadow workflow authority? If TaskState is purely for agent orchestration and never exposed to external APIs or frontend, it may be acceptable. If it leaks into workflow lifecycle decisions, it competes with CanonicalWorkflowState.",
+    "PARTIAL FIX NEEDED: Contradiction 5 (Engineering Contract generic defaults) - Contract derives canonical references from snapshot (CORRECT) but still hardcodes file_structure templates (lines 178-183 in contract.py). Consider deriving file structure from snapshot repository metadata or making it configurable rather than hardcoded.",
+    "VERIFICATION NEEDED: Contradiction 7 (Frontend coordinator) - User claims projectLlmWorkflowCoordinator.ts exists on GitHub but file does NOT exist in local workspace. Verify GitHub branch state. If file was deleted locally but not pushed, push changes. If GitHub shows stale state, force refresh.",
+    "TEST CLEANUP RECOMMENDATION: Contradiction 4 (Legacy repository scanning functions) - build_contract_legacy() and compute_sha256() are marked DEPRECATED but exist for test backward compatibility. Consider migrating tests to use snapshot fixtures instead, then remove legacy functions to eliminate architectural boundary violation code paths entirely.",
+    "MERGE READINESS: 5 of 8 claimed fixes are VERIFIED correct. 1 is PARTIAL (generic contract defaults). 2 require CLARIFICATION (WorkflowEngine authority distinction, GitHub sync state). Before merge: (a) clarify TaskState vs CanonicalWorkflowState architectural roles, (b) verify GitHub branch state matches local workspace, (c) optionally improve contract file_structure derivation."
+  ]
+}
