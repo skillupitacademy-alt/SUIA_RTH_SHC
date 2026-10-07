@@ -1,0 +1,1211 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\onlinewebsites\quiz-platform\services\project-ai
+configfile: pyproject.toml
+plugins: anyio-4.12.0, dash-3.3.0, asyncio-1.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 612 items
+
+tests/agents/test_browser_certification.py::TestBrowserCertificationRunner::test_runner_initialization PASSED [  0%]
+tests/agents/test_browser_certification.py::TestBrowserCertificationRunner::test_run_certification_invokes_pnpm PASSED [  0%]
+tests/agents/test_browser_certification.py::TestBrowserCertificationRunner::test_run_certification_sets_environment_variables PASSED [  0%]
+tests/agents/test_browser_certification.py::TestBrowserCertificationRunner::test_parse_playwright_results PASSED [  0%]
+tests/agents/test_browser_certification.py::TestBrowserCertificationRunner::test_generate_evidence_records PASSED [  0%]
+tests/agents/test_browser_certification.py::TestBrowserCertificationRunner::test_run_certification_timeout PASSED [  0%]
+tests/agents/test_browser_certification.py::TestBrowserCertificationRunner::test_run_certification_exception PASSED [  1%]
+tests/agents/test_browser_certification.py::TestBrowserCertificationRunner::test_run_certification_with_results_file PASSED [  1%]
+tests/agents/test_browser_certification.py::TestEvidenceMapping::test_preflight_evidence_mapping PASSED [  1%]
+tests/agents/test_browser_certification.py::TestEvidenceMapping::test_i2_composition_evidence_mapping PASSED [  1%]
+tests/agents/test_browser_certification.py::TestEvidenceMapping::test_mix_match_evidence_mapping PASSED [  1%]
+tests/agents/test_dependency.py::test_execute_dependency_success PASSED  [  1%]
+tests/agents/test_dependency.py::test_execute_dependency_detects_cycles PASSED [  2%]
+tests/agents/test_dependency.py::test_execute_dependency_detects_version_conflicts PASSED [  2%]
+tests/agents/test_documentation.py::test_execute_documentation_builds_summary PASSED [  2%]
+tests/agents/test_documentation.py::test_execute_documentation_handles_failures PASSED [  2%]
+tests/agents/test_documentation.py::test_execute_documentation_collects_evidence PASSED [  2%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_derive_commit_sha PASSED [  2%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_derive_snapshot_hash PASSED [  3%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_calculate_verdict_all_pass PASSED [  3%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_calculate_verdict_any_fail PASSED [  3%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_calculate_verdict_any_blocked PASSED [  3%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_canonical_backlog_append PASSED [  3%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_verdict_file_creation PASSED [  3%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_aggregate_gate_results PASSED [  4%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_verify_evidence_binding_valid PASSED [  4%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_verify_evidence_binding_missing_id PASSED [  4%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_verify_evidence_binding_commit_mismatch PASSED [  4%]
+tests/agents/test_final_gate.py::TestFinalGateAgent::test_execute_generates_evidence PASSED [  4%]
+tests/agents/test_final_gate.py::TestVerdictCalculation::test_empty_gate_results PASSED [  4%]
+tests/agents/test_final_gate.py::TestVerdictCalculation::test_all_pass PASSED [  5%]
+tests/agents/test_final_gate.py::TestVerdictCalculation::test_blocked_takes_precedence PASSED [  5%]
+tests/agents/test_governance.py::test_execute_governance_prevents_self_approval PASSED [  5%]
+tests/agents/test_governance.py::test_execute_governance_allows_different_approver PASSED [  5%]
+tests/agents/test_governance.py::test_execute_governance_verifies_manifest_hash PASSED [  5%]
+tests/agents/test_governance.py::test_execute_governance_warns_missing_approver PASSED [  5%]
+tests/agents/test_intake.py::test_execute_intake_introduction PASSED     [  6%]
+tests/agents/test_intake.py::test_execute_intake_assessment PASSED       [  6%]
+tests/agents/test_intake.py::test_execute_intake_finds_similar_blocks PASSED [  6%]
+tests/agents/test_placement.py::test_execute_placement_new_block PASSED  [  6%]
+tests/agents/test_placement.py::test_execute_placement_existing_block PASSED [  6%]
+tests/agents/test_placement.py::test_execute_placement_no_path_inference PASSED [  6%]
+tests/agents/test_toolchain.py::test_execute_toolchain_success PASSED    [  7%]
+tests/agents/test_toolchain.py::test_execute_toolchain_empty PASSED      [  7%]
+tests/agents/test_toolchain.py::test_execute_toolchain_collects_evidence PASSED [  7%]
+tests/certification/test_gates.py::TestManifestValidation::test_manifest_hash_verification_valid PASSED [  7%]
+tests/certification/test_gates.py::TestManifestValidation::test_manifest_tampering_detection PASSED [  7%]
+tests/certification/test_gates.py::TestManifestValidation::test_path_inference_detection PASSED [  7%]
+tests/certification/test_gates.py::TestManifestValidation::test_manifest_evidence_validation_missing_id PASSED [  8%]
+tests/certification/test_gates.py::TestManifestValidation::test_gate_execution_with_invalid_manifest PASSED [  8%]
+tests/certification/test_gates.py::TestGateManifestIntegration::test_ubrc_gate_accepts_manifest PASSED [  8%]
+tests/certification/test_gates.py::TestGateManifestIntegration::test_brand_gate_accepts_manifest PASSED [  8%]
+tests/certification/test_gates.py::TestGateManifestIntegration::test_registry_gate_accepts_manifest PASSED [  8%]
+tests/certification/test_gates.py::TestGateManifestIntegration::test_renderer_gate_accepts_manifest PASSED [  8%]
+tests/certification/test_gates.py::TestGateManifestIntegration::test_evidence_binding_gate_accepts_manifest PASSED [  8%]
+tests/certification/test_gates.py::TestGateManifestIntegration::test_composer_gate_accepts_manifest PASSED [  9%]
+tests/e2e/test_m2_9_golden_e2e.py::test_m2_9_golden_e2e PASSED           [  9%]
+tests/evidence/test_logger.py::test_run_directory_creation PASSED        [  9%]
+tests/evidence/test_logger.py::test_metadata_generation PASSED           [  9%]
+tests/evidence/test_logger.py::test_snapshot_copy PASSED                 [  9%]
+tests/evidence/test_logger.py::test_gate_result_logging PASSED           [  9%]
+tests/evidence/test_logger.py::test_agent_result_logging PASSED          [ 10%]
+tests/evidence/test_logger.py::test_current_symlink_update PASSED        [ 10%]
+tests/evidence/test_logger.py::test_current_fallback_windows PASSED      [ 10%]
+tests/evidence/test_logger.py::test_snapshot_not_found_error PASSED      [ 10%]
+tests/evidence/test_logger.py::test_evidence_record_from_snapshot PASSED [ 10%]
+tests/evidence/test_logger.py::test_evidence_record_to_dict PASSED       [ 10%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_evidence_blocks_certification FAILED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_wrong_block_version_fails PASSED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_registry_fails FAILED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_renderer_fails FAILED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_renderer_mismatch_fails FAILED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_schema_mismatch_fails FAILED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_composer_failure_blocks FAILED [ 12%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_runtime_failure_blocks FAILED [ 12%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_browser_failure_blocks FAILED [ 12%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_brand_coupling_fails FAILED [ 12%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_theme_mismatch_fails FAILED [ 12%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected SKIPPED [ 12%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked PASSED [ 13%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_invalid_mix_and_match_blocked PASSED [ 13%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected SKIPPED [ 13%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_canonical_artifact_detected FAILED [ 13%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected PASSED [ 13%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_workflow_id_returns_404 FAILED [ 13%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_candidate_id_returns_404 PASSED [ 14%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_workflow_with_empty_composition FAILED [ 14%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_workflow_with_invalid_mode PASSED [ 14%]
+tests/integration/test_i2_e2e_certification.py::test_i2_complete_certification_workflow SKIPPED [ 14%]
+tests/integration/test_i2_e2e_certification.py::test_i2_workflow_with_multiple_candidate_blocks SKIPPED [ 14%]
+tests/integration/test_i2_e2e_certification.py::test_workflow_state_persistence SKIPPED [ 14%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_agent_success PASSED [ 15%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_agent_invalid_id PASSED [ 15%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_parallel_agents PASSED [ 15%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_sequential_agents PASSED [ 15%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_dag_simple PASSED [ 15%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_dag_complex PASSED [ 15%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_dag_circular_dependency PASSED [ 16%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_dag_missing_dependency PASSED [ 16%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_brand_agent PASSED [ 16%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_theme_agent PASSED [ 16%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_composer_agent PASSED [ 16%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_gate_controller PASSED [ 16%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execute_certification_agent PASSED [ 16%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_certification_agent_rejects_on_failure PASSED [ 17%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_execution_history_tracking PASSED [ 17%]
+tests/test_agent_coordinator.py::TestAgentCoordinator::test_agent_result_properties PASSED [ 17%]
+tests/test_agent_coordinator.py::TestAgentContextCreation::test_agent_context_creation PASSED [ 17%]
+tests/test_agent_coordinator.py::TestAgentContextCreation::test_agent_result_creation PASSED [ 17%]
+tests/test_agent_registry.py::TestAgentRegistry::test_all_15_agents_registered PASSED [ 17%]
+tests/test_agent_registry.py::TestAgentRegistry::test_agent_types_enum_complete PASSED [ 18%]
+tests/test_agent_registry.py::TestAgentRegistry::test_get_agent_returns_correct_agent PASSED [ 18%]
+tests/test_agent_registry.py::TestAgentRegistry::test_list_agents_returns_15_entries PASSED [ 18%]
+tests/test_agent_registry.py::TestAgentRegistry::test_no_agent_has_stub_or_todo PASSED [ 18%]
+tests/test_agent_registry.py::TestAgentRegistry::test_all_agents_active PASSED [ 18%]
+tests/test_agent_registry.py::TestAgentRegistry::test_get_agent_invalid_type_raises_error PASSED [ 18%]
+tests/test_agent_registry.py::TestAgentRegistry::test_agent_capabilities_not_empty PASSED [ 19%]
+tests/test_agent_registry.py::TestAgentRegistry::test_specific_agent_definitions PASSED [ 19%]
+tests/test_agent_registry.py::TestAgentRegistry::test_agent_names_unique PASSED [ 19%]
+tests/test_agent_registry.py::TestAgentRegistry::test_agent_ids_unique PASSED [ 19%]
+tests/test_agent_routes.py::TestAgentRoutes::test_list_agents_endpoint PASSED [ 19%]
+tests/test_agent_routes.py::TestAgentRoutes::test_get_agent_by_type PASSED [ 19%]
+tests/test_agent_routes.py::TestAgentRoutes::test_get_all_agent_types PASSED [ 20%]
+tests/test_agent_routes.py::TestAgentRoutes::test_get_invalid_agent_type_returns_404 PASSED [ 20%]
+tests/test_agent_routes.py::TestAgentRoutes::test_agents_included_in_root_endpoints PASSED [ 20%]
+tests/test_approval_endpoint.py::test_approve_placement_success PASSED   [ 20%]
+tests/test_approval_endpoint.py::test_reject_self_approval PASSED        [ 20%]
+tests/test_approval_endpoint.py::test_manifest_hash_mismatch PASSED      [ 20%]
+tests/test_approval_endpoint.py::test_candidate_hash_mismatch PASSED     [ 21%]
+tests/test_approval_endpoint.py::test_manifest_id_mismatch PASSED        [ 21%]
+tests/test_approval_endpoint.py::test_wrong_state_rejection PASSED       [ 21%]
+tests/test_approval_endpoint.py::test_get_implementation_approval_success PASSED [ 21%]
+tests/test_approval_endpoint.py::test_get_implementation_approval_not_found PASSED [ 21%]
+tests/test_approval_endpoint.py::test_rejection_creates_rejected_approval PASSED [ 21%]
+tests/test_authorization_checker.py::test_authorization_with_valid_approval PASSED [ 22%]
+tests/test_authorization_checker.py::test_authorization_blocks_missing_approval PASSED [ 22%]
+tests/test_authorization_checker.py::test_authorization_blocks_pending_status PASSED [ 22%]
+tests/test_authorization_checker.py::test_authorization_blocks_rejected_status PASSED [ 22%]
+tests/test_authorization_checker.py::test_authorization_blocks_candidate_hash_mismatch PASSED [ 22%]
+tests/test_authorization_checker.py::test_authorization_blocks_manifest_hash_mismatch PASSED [ 22%]
+tests/test_authorization_checker.py::test_authorization_blocks_self_approval PASSED [ 23%]
+tests/test_authorization_checker.py::test_authorization_evidence_populated PASSED [ 23%]
+tests/test_authorization_checker.py::test_produce_authorization_evidence_format PASSED [ 23%]
+tests/test_authorization_checker.py::test_authorization_without_requester_id PASSED [ 23%]
+tests/test_authorization_checker.py::test_authorization_evidence_on_failure PASSED [ 23%]
+tests/test_candidate.py::TestCandidateUpload::test_upload_candidate_success PASSED [ 23%]
+tests/test_candidate.py::TestCandidateUpload::test_upload_candidate_duplicate PASSED [ 24%]
+tests/test_candidate.py::TestCandidateUpload::test_upload_candidate_validation PASSED [ 24%]
+tests/test_candidate.py::TestCandidateClassification::test_classify_tutorial_block PASSED [ 24%]
+tests/test_candidate.py::TestCandidateClassification::test_classify_introduction_block PASSED [ 24%]
+tests/test_candidate.py::TestCandidateClassification::test_classify_assessment_block PASSED [ 24%]
+tests/test_candidate.py::TestCandidateClassification::test_classify_not_found PASSED [ 24%]
+tests/test_candidate.py::TestCandidateClassification::test_classify_no_html PASSED [ 25%]
+tests/test_candidate.py::TestCandidateComparison::test_compare_candidate PASSED [ 25%]
+tests/test_candidate.py::TestCandidateComparison::test_compare_not_found PASSED [ 25%]
+tests/test_candidate.py::TestManifestGeneration::test_generate_manifest PASSED [ 25%]
+tests/test_candidate.py::TestManifestGeneration::test_generate_manifest_not_found PASSED [ 25%]
+tests/test_candidate.py::TestManifestRetrieval::test_get_manifest PASSED [ 25%]
+tests/test_candidate.py::TestManifestRetrieval::test_get_manifest_not_generated PASSED [ 25%]
+tests/test_candidate.py::TestManifestRetrieval::test_get_manifest_candidate_not_found PASSED [ 26%]
+tests/test_candidate.py::TestListCandidates::test_list_empty PASSED      [ 26%]
+tests/test_candidate.py::TestListCandidates::test_list_with_candidates PASSED [ 26%]
+tests/test_candidate.py::TestEndToEndWorkflow::test_complete_workflow PASSED [ 26%]
+tests/test_candidate_validator.py::test_validate_missing_target_version PASSED [ 26%]
+tests/test_candidate_validator.py::test_validate_missing_sha256 PASSED   [ 26%]
+tests/test_candidate_validator.py::test_validate_missing_target_family PASSED [ 27%]
+tests/test_candidate_validator.py::test_validate_sha256_mismatch PASSED  [ 27%]
+tests/test_candidate_validator.py::test_validate_candidate_not_found PASSED [ 27%]
+tests/test_candidate_validator.py::test_validate_happy_path_single_file PASSED [ 27%]
+tests/test_candidate_validator.py::test_validate_happy_path_directory PASSED [ 27%]
+tests/test_candidate_validator.py::test_validate_evidence_always_populated PASSED [ 27%]
+tests/test_candidate_validator.py::test_validate_missing_required_files PASSED [ 28%]
+tests/test_canonical_comparator.py::test_compare_candidate_not_found PASSED [ 28%]
+tests/test_canonical_comparator.py::test_compare_missing_component_file PASSED [ 28%]
+tests/test_canonical_comparator.py::test_compare_missing_exports PASSED  [ 28%]
+tests/test_canonical_comparator.py::test_compare_missing_ubrc_markers PASSED [ 28%]
+tests/test_canonical_comparator.py::test_compare_missing_theme_markers PASSED [ 28%]
+tests/test_canonical_comparator.py::test_compare_hardcoded_brand PASSED  [ 29%]
+tests/test_canonical_comparator.py::test_compare_happy_path PASSED       [ 29%]
+tests/test_canonical_comparator.py::test_compare_evidence_always_populated PASSED [ 29%]
+tests/test_canonical_comparator.py::test_compare_extra_files_informational PASSED [ 29%]
+tests/test_canonical_comparator.py::test_compare_breaking_changes_detected PASSED [ 29%]
+tests/test_certification_gates.py::TestCertificationGates::test_ubrc_gate_passes_with_valid_blocks PASSED [ 29%]
+tests/test_certification_gates.py::TestCertificationGates::test_ubrc_gate_fails_with_missing_attribute FAILED [ 30%]
+tests/test_certification_gates.py::TestCertificationGates::test_ubrc_gate_blocked_with_empty_snapshot FAILED [ 30%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_independence_gate_detects_hard_coded_colors FAILED [ 30%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_independence_gate_passes_with_css_variables FAILED [ 30%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_detects_hardcoded_logo PASSED [ 30%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_detects_hardcoded_url FAILED [ 30%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_detects_hardcoded_font FAILED [ 31%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_detects_hardcoded_brand_id PASSED [ 31%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_allows_design_tokens FAILED [ 31%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_detects_multiple_violations FAILED [ 31%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_provides_specific_line_numbers FAILED [ 31%]
+tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_verifies_multiple_files PASSED [ 31%]
+tests/test_certification_gates.py::TestCertificationGates::test_registry_verification_gate_passes_with_registered_blocks PASSED [ 32%]
+tests/test_certification_gates.py::TestCertificationGates::test_registry_verification_gate_fails_with_unregistered_blocks FAILED [ 32%]
+tests/test_certification_gates.py::TestCertificationGates::test_renderer_verification_gate_passes_with_rendered_blocks PASSED [ 32%]
+tests/test_certification_gates.py::TestCertificationGates::test_evidence_binding_gate_passes_with_valid_evidence PASSED [ 32%]
+tests/test_certification_gates.py::TestCertificationGates::test_evidence_binding_gate_blocked_with_no_evidence FAILED [ 32%]
+tests/test_certification_gates.py::TestCertificationGates::test_theme_compatibility_gate_detects_hard_coded_colors PASSED [ 32%]
+tests/test_certification_gates.py::TestCertificationGates::test_theme_compatibility_gate_passes_with_theme_tokens FAILED [ 33%]
+tests/test_certification_gates.py::TestCertificationGates::test_no_unconditional_pass FAILED [ 33%]
+tests/test_certification_gates.py::TestCertificationGates::test_block_type_extraction PASSED [ 33%]
+tests/test_certification_gates.py::TestCertificationGates::test_evidence_lookup_by_path PASSED [ 33%]
+tests/test_certification_gates.py::TestCertificationGates::test_evidence_lookup_by_block PASSED [ 33%]
+tests/test_certification_gates.py::TestCreationAPIWithRealGates::test_certify_endpoint_no_longer_unconditional_pass FAILED [ 33%]
+tests/test_certification_gates.py::TestWave3UBRCIntegration::test_ubrc_gate_reads_typescript_verification_results FAILED [ 33%]
+tests/test_certification_gates.py::TestWave3UBRCIntegration::test_ubrc_gate_fails_on_typescript_ubrc_attribute_missing FAILED [ 34%]
+tests/test_certification_gates.py::TestWave3UBRCIntegration::test_ubrc_gate_fails_on_typescript_ubrc_renderer_missing FAILED [ 34%]
+tests/test_certification_gates.py::TestWave3UBRCIntegration::test_ubrc_gate_collects_real_evidence_ids_from_typescript FAILED [ 34%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_passes_with_fully_integrated_block FAILED [ 34%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_not_registered_error FAILED [ 34%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_not_discoverable_error FAILED [ 34%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_schema_mismatch_error FAILED [ 35%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_renderer_mismatch_error FAILED [ 35%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_generation_failure_error FAILED [ 35%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_runtime_failure_error FAILED [ 35%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_blocked_with_empty_snapshot FAILED [ 35%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_collects_evidence_from_all_checks FAILED [ 35%]
+tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_verifies_multiple_blocks FAILED [ 36%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_passes_with_valid_block FAILED [ 36%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_blocked_with_empty_snapshot FAILED [ 36%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_fails_with_missing_block FAILED [ 36%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_collects_evidence_ids FAILED [ 36%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_verifies_multiple_blocks FAILED [ 36%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_browser_gate_passes_with_valid_block PASSED [ 37%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_browser_gate_blocked_with_empty_snapshot FAILED [ 37%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_browser_gate_collects_evidence_ids FAILED [ 37%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_browser_gate_creates_screenshot_directory FAILED [ 37%]
+tests/test_certification_gates.py::TestWave5RuntimeVerification::test_browser_gate_verifies_multiple_blocks PASSED [ 37%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_passes_with_theme_aware_block FAILED [ 37%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_fails_with_hardcoded_values FAILED [ 38%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_fails_with_missing_theme_context FAILED [ 38%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_detects_suia_theme FAILED [ 38%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_detects_rth_theme FAILED [ 38%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_blocked_without_themes FAILED [ 38%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_detects_design_tokens FAILED [ 38%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_verifies_multiple_blocks FAILED [ 39%]
+tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_collects_evidence_ids FAILED [ 39%]
+tests/test_creation.py::test_create_workflow_returns_405 PASSED          [ 39%]
+tests/test_creation.py::test_get_workflow_returns_405 PASSED             [ 39%]
+tests/test_creation.py::test_validate_workflow_returns_405 PASSED        [ 39%]
+tests/test_creation.py::test_certify_workflow_returns_405 PASSED         [ 39%]
+tests/test_creation.py::test_create_i2_only_workflow SKIPPED (Legacy...) [ 40%]
+tests/test_creation.py::test_create_mix_and_match_workflow SKIPPED (...) [ 40%]
+tests/test_creation.py::test_get_workflow SKIPPED (Legacy workflow e...) [ 40%]
+tests/test_creation.py::test_validate_workflow SKIPPED (Legacy workf...) [ 40%]
+tests/test_creation.py::test_certify_workflow SKIPPED (Legacy workfl...) [ 40%]
+tests/test_evidence.py::test_get_evidence_by_id_found SKIPPED (Requi...) [ 40%]
+tests/test_evidence.py::test_get_evidence_by_id_not_found PASSED         [ 41%]
+tests/test_evidence.py::test_get_all_evidence PASSED                     [ 41%]
+tests/test_evidence_graph.py::test_evidence_graph_builds_from_snapshot PASSED [ 41%]
+tests/test_evidence_graph.py::test_evidence_graph_indexes_by_kind PASSED [ 41%]
+tests/test_evidence_graph.py::test_evidence_graph_indexes_by_path PASSED [ 41%]
+tests/test_evidence_graph.py::test_detect_missing_evidence PASSED        [ 41%]
+tests/test_evidence_graph.py::test_detect_orphan_evidence PASSED         [ 41%]
+tests/test_evidence_graph.py::test_detect_duplicate_evidence PASSED      [ 42%]
+tests/test_evidence_graph.py::test_bind_to_revision PASSED               [ 42%]
+tests/test_evidence_graph.py::test_freeze_evidence PASSED                [ 42%]
+tests/test_evidence_graph.py::test_cannot_freeze_without_revision PASSED [ 42%]
+tests/test_evidence_graph.py::test_evidence_query_get_by_id PASSED       [ 42%]
+tests/test_evidence_graph.py::test_evidence_query_get_for_claim PASSED   [ 42%]
+tests/test_evidence_graph.py::test_evidence_query_get_for_block PASSED   [ 43%]
+tests/test_evidence_graph.py::test_verify_evidence_chain PASSED          [ 43%]
+tests/test_evidence_graph.py::test_validate_evidence_structure PASSED    [ 43%]
+tests/test_evidence_graph.py::test_detect_synthetic_evidence_ids PASSED  [ 43%]
+tests/test_evidence_graph.py::test_get_critical_vs_historical_evidence PASSED [ 43%]
+tests/test_evidence_graph.py::test_evidence_graph_statistics PASSED      [ 43%]
+tests/test_governance.py::test_submit_approval_request PASSED            [ 44%]
+tests/test_governance.py::test_get_approval_status PASSED                [ 44%]
+tests/test_governance.py::test_get_approval_not_found PASSED             [ 44%]
+tests/test_governance.py::test_get_pending_approvals PASSED              [ 44%]
+tests/test_governance.py::test_get_pending_excludes_decided PASSED       [ 44%]
+tests/test_governance.py::test_approve_with_correct_hash PASSED          [ 44%]
+tests/test_governance.py::test_approve_with_wrong_hash PASSED            [ 45%]
+tests/test_governance.py::test_approve_non_pending PASSED                [ 45%]
+tests/test_governance.py::test_reject_approval PASSED                    [ 45%]
+tests/test_governance.py::test_reject_non_pending PASSED                 [ 45%]
+tests/test_governance.py::test_audit_trail_captured PASSED               [ 45%]
+tests/test_governance.py::test_manifest_hash_is_security_boundary PASSED [ 45%]
+tests/test_health.py::test_health_check PASSED                           [ 46%]
+tests/test_health.py::test_health_check_response_structure PASSED        [ 46%]
+tests/test_i2_validation.py::test_resolve_i2_preset PASSED               [ 46%]
+tests/test_i2_validation.py::test_resolve_candidate_block PASSED         [ 46%]
+tests/test_i2_validation.py::test_resolve_component_not_found PASSED     [ 46%]
+tests/test_i2_validation.py::test_verify_i2_complete_success PASSED      [ 46%]
+tests/test_i2_validation.py::test_verify_i2_complete_missing_blocks PASSED [ 47%]
+tests/test_i2_validation.py::test_verify_i2_complete_invalid_ubrc PASSED [ 47%]
+tests/test_i2_validation.py::test_verify_i2_complete_no_snapshot PASSED  [ 47%]
+tests/test_i2_validation.py::test_verify_types_compatible_preset PASSED  [ 47%]
+tests/test_i2_validation.py::test_verify_types_compatible_registered PASSED [ 47%]
+tests/test_i2_validation.py::test_verify_types_compatible_not_registered PASSED [ 47%]
+tests/test_i2_validation.py::test_verify_types_compatible_not_rendered PASSED [ 48%]
+tests/test_i2_validation.py::test_verify_versions_compatible_valid PASSED [ 48%]
+tests/test_i2_validation.py::test_verify_versions_compatible_invalid_format PASSED [ 48%]
+tests/test_i2_validation.py::test_verify_versions_compatible_prerelease PASSED [ 48%]
+tests/test_i2_validation.py::test_verify_registry_compatible_valid PASSED [ 48%]
+tests/test_i2_validation.py::test_verify_registry_compatible_invalid PASSED [ 48%]
+tests/test_i2_validation.py::test_verify_renderer_compatible_valid PASSED [ 49%]
+tests/test_i2_validation.py::test_verify_renderer_compatible_invalid PASSED [ 49%]
+tests/test_i2_validation.py::test_verify_runtime_compatible_valid PASSED [ 49%]
+tests/test_i2_validation.py::test_verify_runtime_compatible_invalid PASSED [ 49%]
+tests/test_i2_validation.py::test_full_compatibility_chain PASSED        [ 49%]
+tests/test_implementation_approval.py::test_approval_model_creation PASSED [ 49%]
+tests/test_implementation_approval.py::test_hash_verification_match PASSED [ 50%]
+tests/test_implementation_approval.py::test_hash_verification_mismatch PASSED [ 50%]
+tests/test_implementation_approval.py::test_self_approval_detection PASSED [ 50%]
+tests/test_implementation_approval.py::test_not_self_approved PASSED     [ 50%]
+tests/test_implementation_approval.py::test_is_valid_for_implementation_success PASSED [ 50%]
+tests/test_implementation_approval.py::test_is_valid_for_implementation_wrong_status PASSED [ 50%]
+tests/test_implementation_approval.py::test_is_valid_for_implementation_candidate_hash_mismatch PASSED [ 50%]
+tests/test_implementation_approval.py::test_is_valid_for_implementation_manifest_hash_mismatch PASSED [ 51%]
+tests/test_implementation_approval.py::test_is_valid_for_implementation_manifest_id_mismatch PASSED [ 51%]
+tests/test_implementation_approval.py::test_is_valid_for_implementation_self_approval PASSED [ 51%]
+tests/test_implementation_approval.py::test_to_evidence_dict PASSED      [ 51%]
+tests/test_implementation_approval.py::test_approval_with_rejection PASSED [ 51%]
+tests/test_integration.py::test_i2_only_happy_path SKIPPED (Legacy /...) [ 51%]
+tests/test_integration.py::test_candidate_intake_to_approval PASSED      [ 52%]
+tests/test_integration.py::test_manifest_hash_tamper_rejection SKIPPED   [ 52%]
+tests/test_integration.py::test_governance_pending_list SKIPPED (Sna...) [ 52%]
+tests/test_integration.py::test_workflow_retrieval SKIPPED (Legacy /...) [ 52%]
+tests/test_integration.py::test_approval_rejection_workflow SKIPPED      [ 52%]
+tests/test_placement.py::TestStructuralFeatureExtraction::test_extract_data_attributes PASSED [ 52%]
+tests/test_placement.py::TestStructuralFeatureExtraction::test_extract_css_classes PASSED [ 53%]
+tests/test_placement.py::TestStructuralFeatureExtraction::test_detect_typescript_files PASSED [ 53%]
+tests/test_placement.py::TestStructuralFeatureExtraction::test_detect_quiz_logic PASSED [ 53%]
+tests/test_placement.py::TestStructuralFeatureExtraction::test_detect_media_embed PASSED [ 53%]
+tests/test_placement.py::TestStructuralFeatureExtraction::test_detect_step_navigation PASSED [ 53%]
+tests/test_placement.py::TestCanonicalComparison::test_compare_returns_real_evidence_ids PASSED [ 53%]
+tests/test_placement.py::TestCanonicalComparison::test_compare_uses_snapshot_not_hardcoded PASSED [ 54%]
+tests/test_placement.py::TestCanonicalComparison::test_compare_blocks_when_no_verified_blocks PASSED [ 54%]
+tests/test_placement.py::TestCanonicalComparison::test_high_similarity_for_matching_features PASSED [ 54%]
+tests/test_placement.py::TestPlacementDecisionLogic::test_high_similarity_triggers_update PASSED [ 54%]
+tests/test_placement.py::TestPlacementDecisionLogic::test_moderate_similarity_triggers_extend PASSED [ 54%]
+tests/test_placement.py::TestPlacementDecisionLogic::test_low_similarity_triggers_add PASSED [ 54%]
+tests/test_placement.py::TestPlacementDecisionLogic::test_very_low_similarity_triggers_reject PASSED [ 55%]
+tests/test_placement.py::TestPlacementDecisionLogic::test_no_match_triggers_add PASSED [ 55%]
+tests/test_placement.py::TestTargetPathDetermination::test_update_uses_existing_path_from_snapshot PASSED [ 55%]
+tests/test_placement.py::TestTargetPathDetermination::test_add_creates_new_path PASSED [ 55%]
+tests/test_placement.py::TestTargetPathDetermination::test_extend_creates_variant_path PASSED [ 55%]
+tests/test_placement.py::TestPlacementExecutor::test_executor_rejects_unapproved_manifest PASSED [ 55%]
+tests/test_placement.py::TestPlacementExecutor::test_executor_verifies_manifest_hash PASSED [ 56%]
+tests/test_placement.py::TestPlacementExecutor::test_executor_rejects_reject_decision PASSED [ 56%]
+tests/test_placement.py::TestGovernanceSelfApprovalPrevention::test_self_approval_prevented PASSED [ 56%]
+tests/test_placement.py::TestGovernanceSelfApprovalPrevention::test_different_approver_allowed PASSED [ 56%]
+tests/test_placement_manifest.py::test_generate_manifest_basic_fields PASSED [ 56%]
+tests/test_placement_manifest.py::test_generate_manifest_file_paths PASSED [ 56%]
+tests/test_placement_manifest.py::test_generate_manifest_rollback_plan PASSED [ 57%]
+tests/test_placement_manifest.py::test_generate_manifest_seal_integrity PASSED [ 57%]
+tests/test_placement_manifest.py::test_generate_manifest_seal_tampering_detection PASSED [ 57%]
+tests/test_placement_manifest.py::test_replacement_strategy_atomic_no_issues PASSED [ 57%]
+tests/test_placement_manifest.py::test_replacement_strategy_staged_breaking_changes PASSED [ 57%]
+tests/test_placement_manifest.py::test_replacement_strategy_staged_api_changes PASSED [ 57%]
+tests/test_placement_manifest.py::test_replacement_strategy_rollback_severe_deviations PASSED [ 58%]
+tests/test_placement_manifest.py::test_manifest_immutability PASSED      [ 58%]
+tests/test_placement_manifest.py::test_manifest_id_uniqueness PASSED     [ 58%]
+tests/test_placement_manifest.py::test_manifest_serializable PASSED      [ 58%]
+tests/test_placement_manifest.py::test_file_paths_include_types_for_large_artifacts PASSED [ 58%]
+tests/test_placement_manifest.py::test_manifest_targets_correct_paths PASSED [ 58%]
+tests/test_snapshot.py::test_get_snapshot_success PASSED                 [ 58%]
+tests/test_snapshot.py::test_get_snapshot_file_not_found PASSED          [ 59%]
+tests/test_snapshot.py::test_get_snapshot_metadata PASSED                [ 59%]
+tests/test_tasks.py::test_create_task PASSED                             [ 59%]
+tests/test_tasks.py::test_get_task_status PASSED                         [ 59%]
+tests/test_tasks.py::test_get_task_not_found PASSED                      [ 59%]
+tests/test_tasks.py::test_approve_task PASSED                            [ 59%]
+tests/test_tasks.py::test_approve_task_wrong_state PASSED                [ 60%]
+tests/test_tasks.py::test_reject_task PASSED                             [ 60%]
+tests/test_tasks.py::test_reject_task_wrong_state PASSED                 [ 60%]
+tests/test_tasks.py::test_task_not_found_for_actions PASSED              [ 60%]
+tests/test_validation_endpoint.py::test_validate_snapshot_not_found SKIPPED [ 60%]
+tests/test_validation_endpoint.py::test_validate_workflow_not_found SKIPPED [ 60%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_discovery_step_uses_agents PASSED [ 61%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_planning_step_uses_agents PASSED [ 61%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_testing_step_runs_parallel_agents PASSED [ 61%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_verification_step_uses_dag PASSED [ 61%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_complete_workflow_execution PASSED [ 61%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_workflow_engine_has_agent_registry PASSED [ 61%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_workflow_engine_has_coordinator PASSED [ 62%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_summarize_agent_results PASSED [ 62%]
+tests/test_workflow_engine_agents.py::TestWorkflowEngineAgentIntegration::test_summarize_dag_results PASSED [ 62%]
+tests/test_workflow_engine_agents.py::TestWorkflowStateTransitions::test_all_states_have_transitions PASSED [ 62%]
+tests/test_workflow_engine_agents.py::TestWorkflowStateTransitions::test_can_transition_validates_workflow PASSED [ 62%]
+tests/test_workflow_engine_agents.py::TestWorkflowStateTransitions::test_workflow_steps_sequential PASSED [ 62%]
+tests/test_workflow_transitions.py::test_transition_requires_approval PASSED [ 63%]
+tests/test_workflow_transitions.py::test_transition_blocked_without_approval PASSED [ 63%]
+tests/test_workflow_transitions.py::test_transition_blocked_on_candidate_hash_mismatch PASSED [ 63%]
+tests/test_workflow_transitions.py::test_transition_blocked_on_manifest_hash_mismatch PASSED [ 63%]
+tests/test_workflow_transitions.py::test_transition_blocked_on_manifest_id_mismatch PASSED [ 63%]
+tests/test_workflow_transitions.py::test_transition_blocked_on_self_approval PASSED [ 63%]
+tests/test_workflow_transitions.py::test_authorized_transition_succeeds PASSED [ 64%]
+tests/test_workflow_transitions.py::test_transition_without_optional_parameters PASSED [ 64%]
+tests/test_workflow_transitions.py::test_transition_blocked_on_rejected_status PASSED [ 64%]
+tests/unit/test_approval_gate.py::test_approve_with_correct_hashes FAILED [ 64%]
+tests/unit/test_approval_gate.py::test_approve_with_wrong_manifest_hash FAILED [ 64%]
+tests/unit/test_approval_gate.py::test_approve_when_not_in_awaiting_approval_state FAILED [ 64%]
+tests/unit/test_approval_gate.py::test_reject_transitions_to_rejected_state FAILED [ 65%]
+tests/unit/test_approval_gate.py::test_approve_workflow_not_found FAILED [ 65%]
+tests/unit/test_approval_gate.py::test_approve_with_wrong_contract_hash FAILED [ 65%]
+tests/unit/test_approval_gate.py::test_workflow_id_mismatch_path_vs_payload FAILED [ 65%]
+tests/unit/test_approval_gate.py::test_register_workflow_for_approval PASSED [ 65%]
+tests/unit/test_approval_gate.py::test_transition_to_approval_gate PASSED [ 65%]
+tests/unit/test_approval_gate.py::test_transition_to_approval_gate_from_wrong_state PASSED [ 66%]
+tests/unit/test_approval_gate.py::test_transition_to_approval_gate_workflow_not_registered PASSED [ 66%]
+tests/unit/test_approval_gate.py::test_full_approval_workflow FAILED     [ 66%]
+tests/unit/test_browser_verification.py::TestBrowserVerifier::test_playwright_not_available_returns_skipped PASSED [ 66%]
+tests/unit/test_browser_verification.py::TestBrowserVerifier::test_playwright_available_but_not_implemented_returns_blocked PASSED [ 66%]
+tests/unit/test_browser_verification.py::TestBrowserVerifier::test_check_playwright_returns_false_on_import_error PASSED [ 66%]
+tests/unit/test_browser_verification.py::TestBrowserVerifier::test_check_playwright_returns_true_when_available PASSED [ 66%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationReport::test_report_construction_with_skipped_status PASSED [ 67%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationReport::test_report_construction_with_pass_status PASSED [ 67%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationReport::test_report_construction_with_fail_status PASSED [ 67%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationReport::test_report_construction_with_blocked_status PASSED [ 67%]
+tests/unit/test_browser_verification.py::TestBrowserCheckResult::test_check_result_with_all_statuses PASSED [ 67%]
+tests/unit/test_browser_verification.py::TestBrowserCheckResult::test_check_result_with_screenshot PASSED [ 67%]
+tests/unit/test_browser_verification.py::TestBrowserCheckResult::test_check_result_with_error_message PASSED [ 68%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationIntegration::test_skipped_status_is_not_blocker PASSED [ 68%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationIntegration::test_blocked_vs_skipped_distinction PASSED [ 68%]
+tests/unit/test_candidate_intake.py::TestCandidateManifestModel::test_valid_manifest_construction PASSED [ 68%]
+tests/unit/test_candidate_intake.py::TestCandidateManifestModel::test_manifest_requires_workflow_id PASSED [ 68%]
+tests/unit/test_candidate_intake.py::TestCandidateManifestModel::test_manifest_requires_contract_id PASSED [ 68%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_passes_when_hash_matches PASSED [ 69%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_hash_mismatches PASSED [ 69%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_target_family_empty PASSED [ 69%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_target_version_empty PASSED [ 69%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_workflow_id_empty PASSED [ 69%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_contract_id_empty PASSED [ 69%]
+tests/unit/test_candidate_intake.py::TestSha256File::test_sha256_file_produces_valid_hash PASSED [ 70%]
+tests/unit/test_candidate_intake.py::TestSha256File::test_sha256_file_deterministic PASSED [ 70%]
+tests/unit/test_candidate_intake.py::TestSha256File::test_sha256_file_different_content_different_hash PASSED [ 70%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_wrong_version_returns_fail PASSED [ 70%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_wrong_family_returns_fail PASSED [ 70%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_missing_required_artifact_returns_fail PASSED [ 70%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_all_match_returns_pass PASSED [ 71%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_unavailable_contract_returns_blocked PASSED [ 71%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_unexpected_artifacts_do_not_fail PASSED [ 71%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_evidence_ids_extracted_from_contract PASSED [ 71%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_comparison_result_model PASSED [ 71%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_artifact_comparison_model PASSED [ 71%]
+tests/unit/test_canonical_comparison.py::TestComparisonResultProperties::test_is_approved_true_when_pass PASSED [ 72%]
+tests/unit/test_canonical_comparison.py::TestComparisonResultProperties::test_is_approved_false_when_fail PASSED [ 72%]
+tests/unit/test_canonical_comparison.py::TestComparisonResultProperties::test_is_approved_false_when_blocked PASSED [ 72%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_all_pass_returns_pass PASSED [ 72%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_one_fail_returns_fail PASSED [ 72%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_one_blocked_returns_blocked PASSED [ 72%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_empty_gates_returns_blocked PASSED [ 73%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_fail_takes_precedence_over_blocked PASSED [ 73%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_multiple_fails_returns_fail PASSED [ 73%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_multiple_blocked_returns_blocked PASSED [ 73%]
+tests/unit/test_certification_gates.py::TestGateResultModel::test_gate_result_with_pass PASSED [ 73%]
+tests/unit/test_certification_gates.py::TestGateResultModel::test_gate_result_with_fail PASSED [ 73%]
+tests/unit/test_certification_gates.py::TestGateResultModel::test_gate_result_with_blocked PASSED [ 74%]
+tests/unit/test_certification_gates.py::TestCertificationResultModel::test_certification_result_aggregates_gates PASSED [ 74%]
+tests/unit/test_certification_gates.py::TestCertificationResultModel::test_certification_result_with_failure PASSED [ 74%]
+tests/unit/test_certification_gates.py::TestMissingRequiredGate::test_missing_required_gate_returns_blocked PASSED [ 74%]
+tests/unit/test_certification_gates.py::TestMissingRequiredGate::test_can_detect_missing_gates_at_orchestration_level PASSED [ 74%]
+tests/unit/test_contract_routes.py::TestAuthenticationRequired::test_create_contract_requires_auth_header PASSED [ 74%]
+tests/unit/test_contract_routes.py::TestAuthenticationRequired::test_create_contract_rejects_invalid_auth_format PASSED [ 75%]
+tests/unit/test_contract_routes.py::TestAuthenticationRequired::test_create_contract_rejects_short_token PASSED [ 75%]
+tests/unit/test_contract_routes.py::TestAuthenticationRequired::test_get_contract_requires_auth_header PASSED [ 75%]
+tests/unit/test_contract_routes.py::TestWorkflowOwnership::test_create_contract_with_valid_auth PASSED [ 75%]
+tests/unit/test_contract_routes.py::TestWorkflowOwnership::test_create_contract_auto_creates_workflow_for_owner PASSED [ 75%]
+tests/unit/test_contract_routes.py::TestWorkflowOwnership::test_get_contract_verifies_ownership PASSED [ 75%]
+tests/unit/test_contract_routes.py::TestWorkflowStateValidation::test_workflow_auto_created_in_valid_state PASSED [ 75%]
+tests/unit/test_contract_routes.py::TestContractImmutability::test_repeat_call_returns_same_contract PASSED [ 76%]
+tests/unit/test_contract_routes.py::TestHashVerification::test_get_contract_verifies_hash PASSED [ 76%]
+tests/unit/test_contract_routes.py::TestHashVerification::test_get_contract_detects_tampering PASSED [ 76%]
+tests/unit/test_contract_routes.py::TestHashVerification::test_get_contract_404_if_not_exists PASSED [ 76%]
+tests/unit/test_contract_routes.py::TestProhibitedBehaviorsInContract::test_contract_includes_prohibited_behaviors PASSED [ 76%]
+tests/unit/test_engineering_contract.py::TestEngineeringContractConstruction::test_valid_engineering_contract PASSED [ 76%]
+tests/unit/test_engineering_contract.py::TestEngineeringContractConstruction::test_engineering_contract_with_defaults PASSED [ 77%]
+tests/unit/test_engineering_contract.py::TestEngineeringContractConstruction::test_engineering_contract_missing_required_field PASSED [ 77%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_calculate_contract_hash_produces_valid_hash PASSED [ 77%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_deterministic PASSED [ 77%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_changes_when_field_modified PASSED [ 77%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_changes_when_nested_field_modified PASSED [ 77%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_changes_when_list_modified PASSED [ 78%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_field_excluded_from_hash_calculation PASSED [ 78%]
+tests/unit/test_engineering_contract.py::TestProhibitedBehaviors::test_prohibited_behaviors_list_populated PASSED [ 78%]
+tests/unit/test_engineering_contract.py::TestProhibitedBehaviors::test_prohibited_behaviors_constant_has_expected_items PASSED [ 78%]
+tests/unit/test_engineering_contract.py::TestProhibitedBehaviors::test_prohibited_behaviors_can_be_customized PASSED [ 78%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_contract_immutability_detection PASSED [ 78%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_contract_integrity_verification PASSED [ 79%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_hash_includes_all_thirteen_gate_contracts PASSED [ 79%]
+tests/unit/test_evidence_ledger.py::TestAppendAgentRun::test_writes_to_correct_file PASSED [ 79%]
+tests/unit/test_evidence_ledger.py::TestAppendAgentRun::test_multiple_appends_produce_multiple_lines PASSED [ 79%]
+tests/unit/test_evidence_ledger.py::TestAppendAgentRun::test_existing_content_not_truncated PASSED [ 79%]
+tests/unit/test_evidence_ledger.py::TestAppendWorkflowEvent::test_writes_to_correct_file PASSED [ 79%]
+tests/unit/test_evidence_ledger.py::TestReadLastNRuns::test_returns_empty_list_when_file_missing PASSED [ 80%]
+tests/unit/test_evidence_ledger.py::TestReadLastNRuns::test_returns_correct_number_of_records PASSED [ 80%]
+tests/unit/test_evidence_ledger.py::TestReadLastNRuns::test_returns_all_records_if_n_larger_than_file PASSED [ 80%]
+tests/unit/test_evidence_ledger.py::TestReadLastNRuns::test_skips_malformed_lines PASSED [ 80%]
+tests/unit/test_evidence_ledger.py::TestOtherAppendFunctions::test_append_test_result PASSED [ 80%]
+tests/unit/test_evidence_ledger.py::TestOtherAppendFunctions::test_append_gate_result PASSED [ 80%]
+tests/unit/test_evidence_ledger.py::TestOtherAppendFunctions::test_append_certification_result PASSED [ 81%]
+tests/unit/test_evidence_ledger.py::TestEvidenceRunSchema::test_schema_accepts_all_fields PASSED [ 81%]
+tests/unit/test_evidence_ledger.py::TestEvidenceRunSchema::test_schema_accepts_minimal_fields PASSED [ 81%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_missing_evidence_returns_blocked PASSED [ 81%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_partial_evidence_returns_blocked PASSED [ 81%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_one_fail_gate_returns_fail PASSED [ 81%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_multiple_fail_gates_returns_fail PASSED [ 82%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_one_blocked_gate_returns_blocked PASSED [ 82%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_all_pass_returns_certification_ready_not_certified PASSED [ 82%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_fail_takes_precedence_over_blocked PASSED [ 82%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_missing_evidence_takes_precedence PASSED [ 82%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_none_evidence_values_treated_as_missing PASSED [ 82%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_evidence_summary_included_in_result PASSED [ 83%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_non_dict_evidence_values_not_checked_for_status PASSED [ 83%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_extra_evidence_keys_ignored PASSED [ 83%]
+tests/unit/test_final_gate.py::TestFinalGateResultModel::test_valid_result_creation PASSED [ 83%]
+tests/unit/test_final_gate.py::TestFinalGateResultModel::test_verdict_must_be_valid_literal PASSED [ 83%]
+tests/unit/test_final_gate.py::TestFinalGateResultModel::test_invalid_verdict_raises_validation_error PASSED [ 83%]
+tests/unit/test_final_gate.py::TestInvariantEnforcement::test_compute_verdict_never_returns_certified PASSED [ 83%]
+tests/unit/test_final_gate.py::TestInvariantEnforcement::test_certification_ready_is_maximum_verdict PASSED [ 84%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorApprovalValidation::test_executor_rejects_non_approved_manifest PASSED [ 84%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorApprovalValidation::test_executor_rejects_rejected_manifest PASSED [ 84%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorApprovalValidation::test_executor_rejects_mismatched_approval_hash PASSED [ 84%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorActions::test_reuse_action_does_not_call_repo_adapter PASSED [ 84%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorActions::test_add_action_calls_repo_adapter_add_file PASSED [ 84%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorActions::test_update_action_calls_repo_adapter_update_file PASSED [ 85%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorActions::test_extend_action_calls_repo_adapter_extend_file PASSED [ 85%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorResultHandling::test_successful_execution_returns_success_status PASSED [ 85%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorResultHandling::test_partial_failure_returns_partial_status PASSED [ 85%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorResultHandling::test_complete_failure_returns_failed_status PASSED [ 85%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorResultHandling::test_reject_action_in_placements_raises_error PASSED [ 85%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorEvidenceRecording::test_executor_records_evidence_id PASSED [ 86%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorEvidenceRecording::test_executor_records_all_placement_details PASSED [ 86%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_removes_version_suffix_v2 PASSED [ 86%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_removes_version_suffix_v3 PASSED [ 86%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_removes_lowercase_version_suffix PASSED [ 86%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_removes_underscore_version_suffix PASSED [ 86%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_preserves_base_name_without_version PASSED [ 87%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_handles_multiple_extensions PASSED [ 87%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_handles_different_file_types PASSED [ 87%]
+tests/unit/test_placement_manifest.py::TestFindSemanticMatch::test_matches_same_base_name PASSED [ 87%]
+tests/unit/test_placement_manifest.py::TestFindSemanticMatch::test_no_match_for_different_base_name PASSED [ 87%]
+tests/unit/test_placement_manifest.py::TestFindSemanticMatch::test_no_match_for_empty_index PASSED [ 87%]
+tests/unit/test_placement_manifest.py::TestFindSemanticMatch::test_no_match_for_missing_filename PASSED [ 88%]
+tests/unit/test_placement_manifest.py::TestArtifactsAreIdentical::test_identical_content PASSED [ 88%]
+tests/unit/test_placement_manifest.py::TestArtifactsAreIdentical::test_different_content PASSED [ 88%]
+tests/unit/test_placement_manifest.py::TestCanExtendArtifact::test_variant_indicator_dot_notation PASSED [ 88%]
+tests/unit/test_placement_manifest.py::TestCanExtendArtifact::test_variant_indicator_dash_notation PASSED [ 88%]
+tests/unit/test_placement_manifest.py::TestCanExtendArtifact::test_no_variant_indicator PASSED [ 88%]
+tests/unit/test_placement_manifest.py::TestCanUpdateArtifact::test_can_update_non_variant PASSED [ 89%]
+tests/unit/test_placement_manifest.py::TestCanUpdateArtifact::test_cannot_update_variant PASSED [ 89%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_add_new_artifact PASSED [ 89%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_update_existing_artifact_with_version_suffix PASSED [ 89%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_reuse_identical_artifact PASSED [ 89%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_extend_variant_artifact PASSED [ 89%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_reject_artifact_without_filename PASSED [ 90%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_multiple_artifacts PASSED [ 90%]
+tests/unit/test_placement_manifest.py::TestBuildRepositoryIndex::test_builds_index_from_snapshot PASSED [ 90%]
+tests/unit/test_placement_manifest.py::TestBuildRepositoryIndex::test_handles_empty_snapshot PASSED [ 90%]
+tests/unit/test_placement_manifest.py::TestBuildRepositoryIndex::test_handles_missing_evidence_key PASSED [ 90%]
+tests/unit/test_placement_manifest.py::TestBuildRepositoryIndex::test_skips_evidence_without_path PASSED [ 90%]
+tests/unit/test_repository_intelligence.py::TestRepositoryEvidence::test_repository_evidence_creation PASSED [ 91%]
+tests/unit/test_repository_intelligence.py::TestCanonicalReference::test_canonical_reference_creation PASSED [ 91%]
+tests/unit/test_repository_intelligence.py::TestRuntimeContract::test_runtime_contract_defaults PASSED [ 91%]
+tests/unit/test_repository_intelligence.py::TestRepositoryBlockContract::test_repository_block_contract_creation PASSED [ 91%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_returns_contract PASSED [ 91%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_sha256_non_empty PASSED [ 91%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_nonexistent_family_returns_empty_references PASSED [ 91%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_introduction_i1 PASSED [ 92%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_definition_d1 PASSED [ 92%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_evidence_id_deterministic PASSED [ 92%]
+tests/unit/test_repository_intelligence.py::TestHelperFunctions::test_compute_sha256 PASSED [ 92%]
+tests/unit/test_repository_intelligence.py::TestHelperFunctions::test_generate_evidence_id PASSED [ 92%]
+tests/unit/test_repository_intelligence.py::TestHelperFunctions::test_generate_evidence_id_deterministic PASSED [ 92%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_with_none_snapshot_returns_blocked PASSED [ 93%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_with_none_contract_returns_blocked PASSED [ 93%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_compute_overall_all_pass_returns_pass PASSED [ 93%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_compute_overall_one_fail_returns_fail PASSED [ 93%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_compute_overall_one_blocked_returns_blocked PASSED [ 93%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_compute_overall_fail_takes_precedence_over_blocked PASSED [ 93%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_ubrc_registered PASSED [ 94%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_ils_passive_not_direct PASSED [ 94%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_lsnb_page_level PASSED [ 94%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_rssb_page_level PASSED [ 94%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_theme_injection PASSED [ 94%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_brand_independence PASSED [ 94%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_executes_all_required_checks PASSED [ 95%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_check_ubrc_registered_with_no_blocks_returns_blocked PASSED [ 95%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_check_ubrc_registered_with_valid_blocks_returns_pass PASSED [ 95%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_check_ubrc_registered_with_failed_blocks_returns_fail PASSED [ 95%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_runtime_verification_report_blocked_constructor PASSED [ 95%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_does_not_modify_snapshot PASSED [ 95%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_does_not_modify_contract PASSED [ 96%]
+tests/unit/test_workflow_target.py::TestWorkflowTarget::test_valid_workflow_target PASSED [ 96%]
+tests/unit/test_workflow_target.py::TestWorkflowTarget::test_workflow_target_uses_version_not_semver PASSED [ 96%]
+tests/unit/test_workflow_target.py::TestWorkflowTarget::test_workflow_target_missing_required_field PASSED [ 96%]
+tests/unit/test_workflow_target.py::TestCandidateBinding::test_valid_candidate_binding PASSED [ 96%]
+tests/unit/test_workflow_target.py::TestCandidateBinding::test_candidate_binding_default_contract_hash PASSED [ 96%]
+tests/unit/test_workflow_target.py::TestCandidateBinding::test_candidate_binding_empty_family_allowed PASSED [ 97%]
+tests/unit/test_workflow_target.py::TestCandidateBinding::test_candidate_binding_missing_required_field PASSED [ 97%]
+tests/unit/test_workflow_target.py::TestWorkflowTargetIntegration::test_workflow_target_prevents_version_mismatch PASSED [ 97%]
+tests/verification/test_runtime.py::TestHealthUrl::test_get_health_url_known_target PASSED [ 97%]
+tests/verification/test_runtime.py::TestHealthUrl::test_get_health_url_unknown_target PASSED [ 97%]
+tests/verification/test_runtime.py::TestHealthCheckFallback::test_health_check_success_primary PASSED [ 97%]
+tests/verification/test_runtime.py::TestHealthCheckFallback::test_health_check_fallback_to_health PASSED [ 98%]
+tests/verification/test_runtime.py::TestHealthCheckFallback::test_health_check_fallback_to_root PASSED [ 98%]
+tests/verification/test_runtime.py::TestHealthCheckFallback::test_health_check_all_fail PASSED [ 98%]
+tests/verification/test_runtime.py::TestStartupTimeout::test_startup_timeout_enforcement PASSED [ 98%]
+tests/verification/test_runtime.py::TestStartupTimeout::test_startup_success_within_timeout PASSED [ 98%]
+tests/verification/test_runtime.py::TestStartupTimeout::test_startup_process_crashed PASSED [ 98%]
+tests/verification/test_runtime.py::TestCleanShutdown::test_clean_shutdown_success PASSED [ 99%]
+tests/verification/test_runtime.py::TestCleanShutdown::test_force_kill_on_timeout PASSED [ 99%]
+tests/verification/test_runtime.py::TestCleanShutdown::test_stop_with_no_process PASSED [ 99%]
+tests/verification/test_runtime.py::TestCleanShutdown::test_windows_shutdown_signal PASSED [ 99%]
+tests/verification/test_runtime.py::TestCleanShutdown::test_unix_shutdown_signal PASSED [ 99%]
+tests/verification/test_runtime.py::TestRuntimeVerification::test_app_startup_and_shutdown_cycle PASSED [ 99%]
+tests/verification/test_runtime.py::TestRuntimeVerification::test_is_running_check PASSED [100%]
+
+================================== FAILURES ===================================
+E   AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no evidence' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000018891532CF0>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000018891532CF0>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:86: AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no evidence' in 'manifest validation failed')
+E   AssertionError: Registry verification gate should fail when registry missing
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:150: AssertionError: Registry verification gate should fail when registry missing
+E   AssertionError: assert ('renderer' in 'manifest validation failed' or 'rendered' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000188915199A0>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000188915199A0>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:189: AssertionError: assert ('renderer' in 'manifest validation failed' or 'rendered' in 'manifest validation failed')
+E   AssertionError: UBRC gate should fail when renderer mismatches block type
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:229: AssertionError: UBRC gate should fail when renderer mismatches block type
+E   AssertionError: Composer gate should fail when schema invalid
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:268: AssertionError: Composer gate should fail when schema invalid
+E   AssertionError: Composer gate should fail when block not registered
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:302: AssertionError: Composer gate should fail when block not registered
+E   AssertionError: assert ('runtime' in 'manifest validation failed' or 'error' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000018891601300>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000018891601300>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:343: AssertionError: assert ('runtime' in 'manifest validation failed' or 'error' in 'manifest validation failed')
+E   AssertionError: Browser gate should fail when browser errors occur
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:376: AssertionError: Browser gate should fail when browser errors occur
+E   AssertionError: Brand independence gate should fail when brand values are hard-coded
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:412: AssertionError: Brand independence gate should fail when brand values are hard-coded
+E   AssertionError: Theme compatibility gate should fail with hard-coded colors
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:450: AssertionError: Theme compatibility gate should fail with hard-coded colors
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:670: assert 422 == 200
+E   assert 405 == 404
+     +  where 405 = <Response [405 Method Not Allowed]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:742: assert 405 == 404
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:766: assert 422 == 200
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:195: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert ('snapshot' in 'manifest validation failed' or 'unavailable' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000188916F2350>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000188916F2350>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:207: AssertionError: assert ('snapshot' in 'manifest validation failed' or 'unavailable' in 'manifest validation failed')
+E   assert False
+     +  where False = any(<generator object TestCertificationGates.test_brand_independence_gate_detects_hard_coded_colors.<locals>.<genexpr> at 0x00000188917217D0>)
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:221: assert False
+E   AssertionError: assert <Certificatio....FAIL: 'FAIL'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + FAIL
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:245: AssertionError: assert <Certificatio....FAIL: 'FAIL'> == <Certificatio....PASS: 'PASS'>
+E   assert False
+     +  where False = any(<generator object TestCertificationGates.test_brand_gate_detects_hardcoded_url.<locals>.<genexpr> at 0x0000018891722E90>)
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:278: assert False
+E   assert False
+     +  where False = any(<generator object TestCertificationGates.test_brand_gate_detects_hardcoded_font.<locals>.<genexpr> at 0x00000188916C1490>)
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:293: assert False
+E   AssertionError: assert <Certificatio....FAIL: 'FAIL'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + FAIL
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:337: AssertionError: assert <Certificatio....FAIL: 'FAIL'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert 1 >= 4
+     +  where 1 = len(['MultiViolation.tsx:0: Brand facts not available in snapshot -  (Fix: Run TypeScript discovery: pnpm --filter @quiz/project-llm-discovery scan)'])
+     +    where ['MultiViolation.tsx:0: Brand facts not available in snapshot -  (Fix: Run TypeScript discovery: pnpm --filter @quiz/project-llm-discovery scan)'] = <app.certification.gates.GateExecutionResult object at 0x000001889166D630>.blockers
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:360: AssertionError: assert 1 >= 4
+E   assert False
+     +  where False = any(<generator object TestCertificationGates.test_brand_gate_provides_specific_line_numbers.<locals>.<genexpr> at 0x0000018891723C60>)
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:376: assert False
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:411: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no evidence' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000188912B5BE0>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000188912B5BE0>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:446: AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no evidence' in 'manifest validation failed')
+E   AssertionError: assert <Certificatio....FAIL: 'FAIL'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + FAIL
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:504: AssertionError: assert <Certificatio....FAIL: 'FAIL'> == <Certificatio....PASS: 'PASS'>
+E   TypeError: CertificationGateExecutor.execute_ubrc_gate() missing 1 required positional argument: 'manifest'
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:520: TypeError: CertificationGateExecutor.execute_ubrc_gate() missing 1 required positional argument: 'manifest'
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:570: assert 422 == 200
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:669: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:690: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:711: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:749: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1226: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1237: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1247: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1257: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1267: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1277: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1287: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no verified blocks' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000018891704AD0>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000018891704AD0>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1306: AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no verified blocks' in 'manifest validation failed')
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1314: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1381: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1467: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no verified blocks' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x000001889166F540>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x000001889166F540>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1487: AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no verified blocks' in 'manifest validation failed')
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1509: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1518: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1547: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no verified blocks' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000018891704AD0>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000018890BE49E0>()
+     +    where <built-in method lower of str object at 0x0000018890BE49E0> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000018891704AD0>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1583: AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no verified blocks' in 'manifest validation failed')
+E   assert 0 > 0
+     +  where 0 = len([])
+     +    where [] = <app.certification.gates.GateExecutionResult object at 0x0000018891704210>.evidence_ids
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1592: assert 0 > 0
+E   AssertionError: assert False
+     +  where False = exists()
+     +    where exists = WindowsPath('C:/Users/RealTutorialHub/AppData/Local/Temp/pytest-of-RealTutorialHub/pytest-99/test_browser_gate_creates_scre0/.evidence/screenshots').exists
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1608: AssertionError: assert False
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+---------------------------- Captured stdout call -----------------------------
+
+Result status: CertificationGateStatus.BLOCKED
+Result message: Manifest validation failed
+Blockers: ['Evidence ID ev-impl-001 not found in snapshot', 'Evidence ID ev-render-001 not found in snapshot', 'Evidence ID ev-registry-001 not found in snapshot', 'Evidence IDs do not relate to candidate files']
+Evidence IDs: []
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1850: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1863: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1877: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1893: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1907: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1917: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+---------------------------- Captured stdout call -----------------------------
+
+Blockers: ['Evidence ID ev-impl-001 not found in snapshot', 'Evidence ID ev-render-001 not found in snapshot', 'Evidence ID ev-registry-001 not found in snapshot', 'Evidence IDs do not relate to candidate files']
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:1988: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+      
+      - PASS
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:2033: AssertionError: assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....PASS: 'PASS'>
+E   assert 0 > 0
+     +  where 0 = len([])
+     +    where [] = <app.certification.gates.GateExecutionResult object at 0x00000188917043D0>.evidence_ids
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_certification_gates.py:2045: assert 0 > 0
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+    candidate_sha256
+      Field required [type=missing, input_value={'workflow_id': 'test-wor..., placement looks good'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+    placement_manifest_id
+      Field required [type=missing, input_value={'workflow_id': 'test-wor..., placement looks good'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+e:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_approval_gate.py:57: pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+    candidate_sha256
+      Field required [type=missing, input_value={'workflow_id': 'test-wor...'Attempting to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+    placement_manifest_id
+      Field required [type=missing, input_value={'workflow_id': 'test-wor...'Attempting to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+e:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_approval_gate.py:91: pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+    candidate_sha256
+      Field required [type=missing, input_value={'workflow_id': 'test-wor...n': 'Trying to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+    placement_manifest_id
+      Field required [type=missing, input_value={'workflow_id': 'test-wor...n': 'Trying to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+e:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_approval_gate.py:129: pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+    candidate_sha256
+      Field required [type=missing, input_value={'workflow_id': 'test-wor...orrect, needs revision'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+    placement_manifest_id
+      Field required [type=missing, input_value={'workflow_id': 'test-wor...orrect, needs revision'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+e:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_approval_gate.py:150: pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+    candidate_sha256
+      Field required [type=missing, input_value={'workflow_id': 'nonexist...'Attempting to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+    placement_manifest_id
+      Field required [type=missing, input_value={'workflow_id': 'nonexist...'Attempting to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+e:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_approval_gate.py:182: pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+    candidate_sha256
+      Field required [type=missing, input_value={'workflow_id': 'test-wor...'Attempting to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+    placement_manifest_id
+      Field required [type=missing, input_value={'workflow_id': 'test-wor...'Attempting to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+e:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_approval_gate.py:202: pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+    candidate_sha256
+      Field required [type=missing, input_value={'workflow_id': 'workflow...'Attempting to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+    placement_manifest_id
+      Field required [type=missing, input_value={'workflow_id': 'workflow...'Attempting to approve'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+e:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_approval_gate.py:237: pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+    candidate_sha256
+      Field required [type=missing, input_value={'workflow_id': 'integrat...egration test approval'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+    placement_manifest_id
+      Field required [type=missing, input_value={'workflow_id': 'integrat...egration test approval'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.13/v/missing
+e:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_approval_gate.py:352: pydantic_core._pydantic_core.ValidationError: 2 validation errors for WorkflowApprovalPayload
+============================== warnings summary ===============================
+C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1
+  C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests\integration\test_certification_negative.py:25
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:25: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests\integration\test_certification_negative.py:460
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:460: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_certification_negative.py:522
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:522: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_certification_negative.py:556
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:556: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_certification_negative.py:599
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:599: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_certification_negative.py:654
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:654: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_certification_negative.py:692
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:692: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_certification_negative.py:732
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:732: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests\integration\test_certification_negative.py:733
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:733: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_i2_e2e_certification.py:27
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_i2_e2e_certification.py:27: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_i2_e2e_certification.py:253
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_i2_e2e_certification.py:253: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\integration\test_i2_e2e_certification.py:294
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_i2_e2e_certification.py:294: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:468: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"tamper-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:479: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:529: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"unapproved-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:540: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:606: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"self-approval-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:617: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:699: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"duplicate-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:710: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_candidate.py::TestCandidateUpload::test_upload_candidate_success
+tests/test_candidate.py::TestCandidateUpload::test_upload_candidate_duplicate
+tests/test_candidate.py::TestCandidateClassification::test_classify_tutorial_block
+tests/test_candidate.py::TestCandidateComparison::test_compare_candidate
+tests/test_candidate.py::TestManifestGeneration::test_generate_manifest
+tests/test_candidate.py::TestManifestRetrieval::test_get_manifest
+tests/test_candidate.py::TestListCandidates::test_list_with_candidates
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_candidate.py:66: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_candidate.py::TestCandidateClassification::test_classify_introduction_block
+tests/test_candidate.py::TestListCandidates::test_list_with_candidates
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_candidate.py:90: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_candidate.py::TestCandidateClassification::test_classify_assessment_block
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_candidate.py:116: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_candidate.py::TestCandidateClassification::test_classify_no_html
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_candidate.py:221: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_candidate.py::TestManifestRetrieval::test_get_manifest_not_generated
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_candidate.py:348: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_candidate.py::TestEndToEndWorkflow::test_complete_workflow
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_candidate.py:433: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_integration.py::test_candidate_intake_to_approval
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_integration.py:93: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"integration-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/test_integration.py::test_candidate_intake_to_approval
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_integration.py:105: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_integration.py::test_manifest_hash_tamper_rejection
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_integration.py:185: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"tamper-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/test_integration.py::test_manifest_hash_tamper_rejection
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_integration.py:197: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_integration.py::test_governance_pending_list
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_integration.py:277: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"pending-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/test_integration.py::test_governance_pending_list
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_integration.py:289: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/test_integration.py::test_approval_rejection_workflow
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_integration.py:365: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"reject-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/test_integration.py::test_approval_rejection_workflow
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\test_integration.py:377: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_evidence_blocks_certification
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_registry_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_renderer_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_renderer_mismatch_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_schema_mismatch_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_composer_failure_blocks
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_runtime_failure_blocks
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_browser_failure_blocks
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_brand_coupling_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_theme_mismatch_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_canonical_artifact_detected
+FAILED tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_workflow_id_returns_404
+FAILED tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_workflow_with_empty_composition
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_ubrc_gate_fails_with_missing_attribute
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_ubrc_gate_blocked_with_empty_snapshot
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_brand_independence_gate_detects_hard_coded_colors
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_brand_independence_gate_passes_with_css_variables
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_detects_hardcoded_url
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_detects_hardcoded_font
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_allows_design_tokens
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_detects_multiple_violations
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_brand_gate_provides_specific_line_numbers
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_registry_verification_gate_fails_with_unregistered_blocks
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_evidence_binding_gate_blocked_with_no_evidence
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_theme_compatibility_gate_passes_with_theme_tokens
+FAILED tests/test_certification_gates.py::TestCertificationGates::test_no_unconditional_pass
+FAILED tests/test_certification_gates.py::TestCreationAPIWithRealGates::test_certify_endpoint_no_longer_unconditional_pass
+FAILED tests/test_certification_gates.py::TestWave3UBRCIntegration::test_ubrc_gate_reads_typescript_verification_results
+FAILED tests/test_certification_gates.py::TestWave3UBRCIntegration::test_ubrc_gate_fails_on_typescript_ubrc_attribute_missing
+FAILED tests/test_certification_gates.py::TestWave3UBRCIntegration::test_ubrc_gate_fails_on_typescript_ubrc_renderer_missing
+FAILED tests/test_certification_gates.py::TestWave3UBRCIntegration::test_ubrc_gate_collects_real_evidence_ids_from_typescript
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_passes_with_fully_integrated_block
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_not_registered_error
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_not_discoverable_error
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_schema_mismatch_error
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_renderer_mismatch_error
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_generation_failure_error
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_fails_with_runtime_failure_error
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_blocked_with_empty_snapshot
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_collects_evidence_from_all_checks
+FAILED tests/test_certification_gates.py::TestWave4ComposerVerification::test_composer_gate_verifies_multiple_blocks
+FAILED tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_passes_with_valid_block
+FAILED tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_blocked_with_empty_snapshot
+FAILED tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_fails_with_missing_block
+FAILED tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_collects_evidence_ids
+FAILED tests/test_certification_gates.py::TestWave5RuntimeVerification::test_runtime_gate_verifies_multiple_blocks
+FAILED tests/test_certification_gates.py::TestWave5RuntimeVerification::test_browser_gate_blocked_with_empty_snapshot
+FAILED tests/test_certification_gates.py::TestWave5RuntimeVerification::test_browser_gate_collects_evidence_ids
+FAILED tests/test_certification_gates.py::TestWave5RuntimeVerification::test_browser_gate_creates_screenshot_directory
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_passes_with_theme_aware_block
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_fails_with_hardcoded_values
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_fails_with_missing_theme_context
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_detects_suia_theme
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_detects_rth_theme
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_blocked_without_themes
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_detects_design_tokens
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_verifies_multiple_blocks
+FAILED tests/test_certification_gates.py::TestThemeCompatibilityGate::test_theme_gate_collects_evidence_ids
+FAILED tests/unit/test_approval_gate.py::test_approve_with_correct_hashes - p...
+FAILED tests/unit/test_approval_gate.py::test_approve_with_wrong_manifest_hash
+FAILED tests/unit/test_approval_gate.py::test_approve_when_not_in_awaiting_approval_state
+FAILED tests/unit/test_approval_gate.py::test_reject_transitions_to_rejected_state
+FAILED tests/unit/test_approval_gate.py::test_approve_workflow_not_found - py...
+FAILED tests/unit/test_approval_gate.py::test_approve_with_wrong_contract_hash
+FAILED tests/unit/test_approval_gate.py::test_workflow_id_mismatch_path_vs_payload
+FAILED tests/unit/test_approval_gate.py::test_full_approval_workflow - pydant...
+=========== 66 failed, 528 passed, 18 skipped, 42 warnings in 3.10s ===========

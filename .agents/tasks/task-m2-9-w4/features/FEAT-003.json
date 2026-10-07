@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Wire approval verification into canonical workflow transition AWAITING_IMPLEMENTATION_APPROVAL -> IMPLEMENTING. Add approval guard that blocks transition when approval is missing, invalid, or verification fails. This feature depends on FEAT-001 (ImplementationApproval model) and FEAT-002 (approval storage).",
+  "status": "pending",
+  "steps": [
+    "Read services/project-ai/app/orchestration/canonical_workflow.py to understand existing transition validation (is_valid_transition function and VALID_TRANSITIONS dict)",
+    "Create new function: can_transition_to_implementing(workflow_id: str, approvals_store: Dict[str, ImplementationApproval]) -> Tuple[bool, str]",
+    "Function returns (True, '') if valid approval exists with all verifications passing",
+    "Function returns (False, 'reason') if: approval missing, status != APPROVED, workflow_id mismatch, any hash mismatch, self-approved, or expired (if expiry exists)",
+    "Approval verification checks: (1) ImplementationApproval record exists for workflow_id, (2) approval.status == APPROVED, (3) approval.workflow_id matches, (4) all hashes match (candidate_sha256, placement_manifest_sha256), (5) not self-approved",
+    "Add transition guard to existing AWAITING_IMPLEMENTATION_APPROVAL -> IMPLEMENTING transition: call can_transition_to_implementing() before allowing transition",
+    "Transition must be BLOCKED (return False + reason) if approval verification fails",
+    "Do NOT create second workflow engine or state machine - CanonicalWorkflowState remains ONLY lifecycle authority",
+    "Do NOT modify TaskState - it remains internal agent execution state only",
+    "Create services/project-ai/tests/test_workflow_transitions.py with test cases",
+    "Test cases: transition requires valid approval (success), transition blocked without approval, transition blocked with PENDING approval, transition blocked with REJECTED approval, transition blocked on candidate hash mismatch, transition blocked on manifest hash mismatch, transition blocked on self-approval",
+    "Use mock approvals_store dict with sample ImplementationApproval records for testing"
+  ],
+  "acceptance_criteria": [
+    "can_transition_to_implementing() function exists in canonical_workflow.py",
+    "Function checks: approval exists, status=APPROVED, workflow_id matches, hashes match, not self-approved",
+    "Function returns (True, '') only when all checks pass",
+    "Function returns (False, reason) with descriptive reason when any check fails",
+    "AWAITING_IMPLEMENTATION_APPROVAL -> IMPLEMENTING transition calls approval guard before allowing transition",
+    "Transition succeeds when valid approval exists",
+    "Transition is blocked when approval missing (returns False)",
+    "Transition is blocked when approval status != APPROVED",
+    "Transition is blocked when any hash mismatch",
+    "All test cases pass: pytest tests/test_workflow_transitions.py shows 100% pass rate"
+  ],
+  "verification": [
+    "pytest tests/test_workflow_transitions.py -v --tb=short",
+    "pytest tests/test_workflow_transitions.py::test_transition_requires_approval -v",
+    "pytest tests/test_workflow_transitions.py::test_transition_blocked_without_approval -v",
+    "pytest tests/test_workflow_transitions.py::test_authorized_transition_succeeds -v"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

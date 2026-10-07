@@ -1,0 +1,45 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Complete approve-placement endpoint stub in governance.py with full security gates: candidate hash verification, manifest hash verification, manifest ID verification, contract hash verification, self-approval prevention, and state enforcement. Extends existing WAVE 4 stub, does not create new route. This feature depends on FEAT-001 (ImplementationApproval model must exist first).",
+  "status": "pending",
+  "steps": [
+    "Read existing services/project-ai/app/api/routes/governance.py approve-placement stub (marked with WAVE 4 comment)",
+    "Extend WorkflowApprovalPayload Pydantic model to add: candidate_sha256 (str), placement_manifest_id (str)",
+    "Update approve_placement() endpoint implementation to create ImplementationApproval record when approval granted",
+    "Add candidate_sha256 verification: must match workflow's stored candidate hash (raise 409 CANDIDATE_HASH_MISMATCH if mismatch)",
+    "Add placement_manifest_id verification: must match workflow's stored manifest ID (raise 409 MANIFEST_ID_MISMATCH if mismatch)",
+    "Keep existing manifest_hash verification (already in stub)",
+    "Keep existing contract_hash verification (already in stub)",
+    "Keep existing self-approval prevention logic (already in stub, raises 403)",
+    "Keep existing state enforcement (workflow must be in AWAITING_IMPLEMENTATION_APPROVAL, already in stub)",
+    "Store ImplementationApproval in new _implementation_approvals: Dict[str, ImplementationApproval] in-memory dict",
+    "Populate ImplementationApproval.evidence dict with verification results: manifest_hash_verified, contract_hash_verified, candidate_hash_verified, manifest_id_verified, state_verified",
+    "Update WorkflowApprovalResponse or create new response model to include candidate_sha256_verified and manifest_id_verified fields",
+    "Add GET endpoint: GET /approvals/workflows/{workflow_id}/implementation-approval that returns ImplementationApproval record or 404",
+    "Create services/project-ai/tests/test_approval_endpoint.py with httpx.AsyncClient tests (pattern from test_tasks.py)",
+    "Test cases: approve with valid data (success), self-approval (403), manifest hash mismatch (409), candidate hash mismatch (409), manifest ID mismatch (409), wrong state (409), GET found, GET not found",
+    "All tests must use pytest-asyncio and httpx for async API testing"
+  ],
+  "acceptance_criteria": [
+    "POST /approvals/workflows/{workflow_id}/approve-placement accepts candidate_sha256 and placement_manifest_id in payload",
+    "Endpoint verifies all hashes: manifest_sha256, contract_hash, candidate_sha256",
+    "Endpoint verifies manifest ID matches workflow's stored manifest ID",
+    "Endpoint creates ImplementationApproval record with status=APPROVED on success",
+    "Endpoint raises 403 if approved_by equals workflow requester (self-approval)",
+    "Endpoint raises 409 if any hash mismatch detected",
+    "Endpoint raises 409 if manifest ID mismatch detected",
+    "Endpoint raises 409 if workflow not in AWAITING_IMPLEMENTATION_APPROVAL state",
+    "GET /approvals/workflows/{workflow_id}/implementation-approval returns approval record if exists, 404 otherwise",
+    "All test cases pass: pytest tests/test_approval_endpoint.py shows 100% pass rate"
+  ],
+  "verification": [
+    "pytest tests/test_approval_endpoint.py -v --tb=short",
+    "pytest tests/test_approval_endpoint.py::test_approve_placement_success -v",
+    "pytest tests/test_approval_endpoint.py::test_reject_self_approval -v",
+    "pytest tests/test_approval_endpoint.py::test_manifest_hash_mismatch -v",
+    "pytest tests/test_approval_endpoint.py::test_candidate_hash_mismatch -v"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

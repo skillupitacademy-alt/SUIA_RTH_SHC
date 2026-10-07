@@ -33,6 +33,8 @@ def sample_workflow():
     workflow_id = "test-workflow-001"
     manifest_hash = "abc123manifestHash"
     contract_hash = "def456contractHash"
+    candidate_sha256 = "candidate789hash"
+    placement_manifest_id = "manifest-id-123"
     
     register_workflow_for_approval(
         workflow_id=workflow_id,
@@ -41,13 +43,22 @@ def sample_workflow():
         initial_state=CanonicalWorkflowState.INTEGRATION_PLANNED
     )
     
+    # Add W4 fields to workflow state
+    _workflow_states[workflow_id]["candidate_sha256"] = candidate_sha256
+    _workflow_states[workflow_id]["placement_manifest_id"] = placement_manifest_id
+    _workflow_states[workflow_id]["target_family"] = "Introduction"
+    _workflow_states[workflow_id]["target_version"] = "I7"
+    _workflow_states[workflow_id]["requester"] = "requester@test.com"
+    
     # Transition to AWAITING_IMPLEMENTATION_APPROVAL
     transition_to_approval_gate(workflow_id)
     
     return {
         "workflow_id": workflow_id,
         "manifest_hash": manifest_hash,
-        "contract_hash": contract_hash
+        "contract_hash": contract_hash,
+        "candidate_sha256": candidate_sha256,
+        "placement_manifest_id": placement_manifest_id,
     }
 
 
@@ -58,6 +69,8 @@ async def test_approve_with_correct_hashes(sample_workflow):
         workflow_id=sample_workflow["workflow_id"],
         manifest_hash=sample_workflow["manifest_hash"],
         contract_hash=sample_workflow["contract_hash"],
+        candidate_sha256=sample_workflow["candidate_sha256"],
+        placement_manifest_id=sample_workflow["placement_manifest_id"],
         approved=True,
         approved_by="human-approver@test.com",
         reason="All gates passed, placement looks good"
@@ -76,6 +89,8 @@ async def test_approve_with_correct_hashes(sample_workflow):
     assert response.approved_by == "human-approver@test.com"
     assert response.manifest_hash_verified is True
     assert response.contract_hash_verified is True
+    assert response.candidate_sha256_verified is True
+    assert response.manifest_id_verified is True
     assert "gates passed" in response.reason
     
     # Verify workflow state changed
@@ -92,6 +107,8 @@ async def test_approve_with_wrong_manifest_hash(sample_workflow):
         workflow_id=sample_workflow["workflow_id"],
         manifest_hash="WRONG_HASH_123",  # Incorrect hash
         contract_hash=sample_workflow["contract_hash"],
+        candidate_sha256=sample_workflow["candidate_sha256"],
+        placement_manifest_id=sample_workflow["placement_manifest_id"],
         approved=True,
         approved_by="human-approver@test.com",
         reason="Attempting to approve"
@@ -126,10 +143,16 @@ async def test_approve_when_not_in_awaiting_approval_state():
         initial_state=CanonicalWorkflowState.INTEGRATION_PLANNED  # Wrong state
     )
     
+    # Add W4 fields
+    _workflow_states[workflow_id]["candidate_sha256"] = "candidate789"
+    _workflow_states[workflow_id]["placement_manifest_id"] = "manifest-id-456"
+    
     payload = WorkflowApprovalPayload(
         workflow_id=workflow_id,
         manifest_hash="hash123",
         contract_hash="contract456",
+        candidate_sha256="candidate789",
+        placement_manifest_id="manifest-id-456",
         approved=True,
         approved_by="human-approver@test.com",
         reason="Trying to approve"
@@ -151,6 +174,8 @@ async def test_reject_transitions_to_rejected_state(sample_workflow):
         workflow_id=sample_workflow["workflow_id"],
         manifest_hash=sample_workflow["manifest_hash"],
         contract_hash=sample_workflow["contract_hash"],
+        candidate_sha256=sample_workflow["candidate_sha256"],
+        placement_manifest_id=sample_workflow["placement_manifest_id"],
         approved=False,  # Rejecting
         approved_by="human-approver@test.com",
         reason="Placement path is incorrect, needs revision"
@@ -183,6 +208,8 @@ async def test_approve_workflow_not_found():
         workflow_id="nonexistent-workflow",
         manifest_hash="hash123",
         contract_hash="contract456",
+        candidate_sha256="candidate789",
+        placement_manifest_id="manifest-id-789",
         approved=True,
         approved_by="human-approver@test.com",
         reason="Attempting to approve"
@@ -203,6 +230,8 @@ async def test_approve_with_wrong_contract_hash(sample_workflow):
         workflow_id=sample_workflow["workflow_id"],
         manifest_hash=sample_workflow["manifest_hash"],
         contract_hash="WRONG_CONTRACT_HASH",  # Incorrect contract hash
+        candidate_sha256=sample_workflow["candidate_sha256"],
+        placement_manifest_id=sample_workflow["placement_manifest_id"],
         approved=True,
         approved_by="human-approver@test.com",
         reason="Attempting to approve"
@@ -232,12 +261,19 @@ async def test_workflow_id_mismatch_path_vs_payload():
         contract_hash="contract456",
         initial_state=CanonicalWorkflowState.INTEGRATION_PLANNED
     )
+    
+    # Add W4 fields
+    _workflow_states["workflow-A"]["candidate_sha256"] = "candidate789"
+    _workflow_states["workflow-A"]["placement_manifest_id"] = "manifest-id-789"
+    
     transition_to_approval_gate("workflow-A")
     
     payload = WorkflowApprovalPayload(
         workflow_id="workflow-B",  # Mismatch
         manifest_hash="hash123",
         contract_hash="contract456",
+        candidate_sha256="candidate789",
+        placement_manifest_id="manifest-id-789",
         approved=True,
         approved_by="human-approver@test.com",
         reason="Attempting to approve"
@@ -329,6 +365,8 @@ async def test_full_approval_workflow():
     workflow_id = "integration-test-001"
     manifest_hash = "full-test-manifest-hash"
     contract_hash = "full-test-contract-hash"
+    candidate_sha256 = "full-test-candidate-hash"
+    placement_manifest_id = "full-test-manifest-id"
     
     # Step 1: Register workflow
     register_workflow_for_approval(
@@ -336,6 +374,13 @@ async def test_full_approval_workflow():
         manifest_hash=manifest_hash,
         contract_hash=contract_hash
     )
+    
+    # Add W4 fields
+    _workflow_states[workflow_id]["candidate_sha256"] = candidate_sha256
+    _workflow_states[workflow_id]["placement_manifest_id"] = placement_manifest_id
+    _workflow_states[workflow_id]["target_family"] = "Introduction"
+    _workflow_states[workflow_id]["target_version"] = "I7"
+    _workflow_states[workflow_id]["requester"] = "requester@test.com"
     
     # Verify initial state
     workflow = _workflow_states[workflow_id]
@@ -353,6 +398,8 @@ async def test_full_approval_workflow():
         workflow_id=workflow_id,
         manifest_hash=manifest_hash,
         contract_hash=contract_hash,
+        candidate_sha256=candidate_sha256,
+        placement_manifest_id=placement_manifest_id,
         approved=True,
         approved_by="integration-test-approver",
         reason="Integration test approval"

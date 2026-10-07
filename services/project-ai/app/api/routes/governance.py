@@ -16,6 +16,11 @@ from app.api.schemas.governance import (
     AuditTrailEntry,
 )
 from app.models.governance import ApprovalStatus
+from app.models.implementation_approval import (
+    ImplementationApproval,
+    ImplementationApprovalStatus,
+    create_implementation_approval,
+)
 from app.orchestration.canonical_workflow import CanonicalWorkflowState, is_valid_transition
 
 router = APIRouter(prefix="/approvals", tags=["governance"])
@@ -25,6 +30,9 @@ _approvals: Dict[str, Dict] = {}
 
 # In-memory workflow state storage (should match creation.py workflows store in production)
 _workflow_states: Dict[str, Dict] = {}
+
+# In-memory implementation approval storage for W4 (production persistence in M3+)
+_implementation_approvals: Dict[str, ImplementationApproval] = {}
 
 
 @router.post("/submit", response_model=ApprovalSubmitResponse)
@@ -254,6 +262,14 @@ class WorkflowApprovalPayload(BaseModel):
         description="Engineering contract hash (for verification)",
         min_length=1
     )
+    candidate_sha256: str = Field(
+        description="Candidate hash from ValidationResult (for verification)",
+        min_length=1
+    )
+    placement_manifest_id: str = Field(
+        description="Placement manifest ID (for binding verification)",
+        min_length=1
+    )
     approved: bool = Field(description="True to approve, False to reject")
     approved_by: str = Field(description="Identity of approver", min_length=1)
     reason: str = Field(description="Reason for approval or rejection")
@@ -270,6 +286,8 @@ class WorkflowApprovalResponse(BaseModel):
     approved_at: datetime
     manifest_hash_verified: bool
     contract_hash_verified: bool
+    candidate_sha256_verified: bool
+    manifest_id_verified: bool
     reason: str
 
 
@@ -365,6 +383,57 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
             }
         )
     
+    # Verify candidate hash matches stored candidate
+    stored_candidate_hash = workflow.get("candidate_sha256")
+    if not stored_candidate_hash:
+        raise HTTPException(
+            status_code=500,
+            detail="Workflow has no stored candidate hash"
+        )
+    
+    if payload.candidate_sha256 != stored_candidate_hash:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "CANDIDATE_HASH_MISMATCH",
+                "message": "Candidate hash mismatch: candidate was modified after validation",
+                "expectedHash": stored_candidate_hash,
+                "providedHash": payload.candidate_sha256
+            }
+        )
+    
+    # Verify placement manifest ID matches stored manifest ID
+    stored_manifest_id = workflow.get("placement_manifest_id")
+    if not stored_manifest_id:
+        raise HTTPException(
+            status_code=500,
+            detail="Workflow has no stored placement manifest ID"
+        )
+    
+    if payload.placement_manifest_id != stored_manifest_id:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "MANIFEST_ID_MISMATCH",
+                "message": "Placement manifest ID mismatch: manifest ID does not match workflow",
+                "expectedId": stored_manifest_id,
+                "providedId": payload.placement_manifest_id
+            }
+        )
+    
+    # Verify not self-approval (approver != workflow requester)
+    workflow_requester = workflow.get("requester")
+    if workflow_requester and payload.approved_by == workflow_requester:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "SELF_APPROVAL_REJECTED",
+                "message": f"Self-approval rejected. User '{payload.approved_by}' cannot approve their own workflow. Separation of duties required.",
+                "workflowRequester": workflow_requester,
+                "attemptedApprover": payload.approved_by
+            }
+        )
+    
     # All verification passed - process approval decision
     now = datetime.now(timezone.utc)
     
@@ -377,10 +446,30 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
                 detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
             )
         
+        # Create ImplementationApproval record
+        target_family = workflow.get("target_family", "")
+        target_version = workflow.get("target_version", "")
+        
+        implementation_approval = create_implementation_approval(
+            workflow_id=workflow_id,
+            candidate_sha256=payload.candidate_sha256,
+            target_family=target_family,
+            target_version=target_version,
+            placement_manifest_id=payload.placement_manifest_id,
+            placement_manifest_sha256=payload.manifest_hash,
+            approved_by=payload.approved_by,
+            workflow_requester=workflow_requester,
+            status=ImplementationApprovalStatus.APPROVED,
+        )
+        
+        # Store approval record
+        _implementation_approvals[workflow_id] = implementation_approval
+        
         workflow["state"] = new_state.value
         workflow["approved_by"] = payload.approved_by
         workflow["approved_at"] = now.isoformat()
         workflow["approval_reason"] = payload.reason
+        workflow["implementation_approval_id"] = implementation_approval.approval_id
         
         return WorkflowApprovalResponse(
             workflow_id=workflow_id,
@@ -391,6 +480,8 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
             approved_at=now,
             manifest_hash_verified=True,
             contract_hash_verified=True,
+            candidate_sha256_verified=True,
+            manifest_id_verified=True,
             reason=payload.reason
         )
     else:
@@ -402,10 +493,31 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
                 detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
             )
         
+        # Create ImplementationApproval record with REJECTED status
+        target_family = workflow.get("target_family", "")
+        target_version = workflow.get("target_version", "")
+        
+        implementation_approval = create_implementation_approval(
+            workflow_id=workflow_id,
+            candidate_sha256=payload.candidate_sha256,
+            target_family=target_family,
+            target_version=target_version,
+            placement_manifest_id=payload.placement_manifest_id,
+            placement_manifest_sha256=payload.manifest_hash,
+            approved_by=payload.approved_by,
+            workflow_requester=workflow_requester,
+            status=ImplementationApprovalStatus.REJECTED,
+            rejection_reason=payload.reason,
+        )
+        
+        # Store approval record
+        _implementation_approvals[workflow_id] = implementation_approval
+        
         workflow["state"] = new_state.value
         workflow["rejected_by"] = payload.approved_by
         workflow["rejected_at"] = now.isoformat()
         workflow["rejection_reason"] = payload.reason
+        workflow["implementation_approval_id"] = implementation_approval.approval_id
         
         return WorkflowApprovalResponse(
             workflow_id=workflow_id,
@@ -416,8 +528,36 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
             approved_at=now,
             manifest_hash_verified=True,
             contract_hash_verified=True,
+            candidate_sha256_verified=True,
+            manifest_id_verified=True,
             reason=payload.reason
         )
+
+
+@router.get("/workflows/{workflow_id}/implementation-approval")
+async def get_implementation_approval(workflow_id: str):
+    """
+    Get implementation approval record for a workflow.
+    
+    Returns the ImplementationApproval record with verification evidence.
+    
+    Args:
+        workflow_id: Workflow identifier
+        
+    Returns:
+        Implementation approval evidence dictionary
+        
+    Raises:
+        404: If no approval record found for workflow
+    """
+    if workflow_id not in _implementation_approvals:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No implementation approval found for workflow: {workflow_id}"
+        )
+    
+    approval = _implementation_approvals[workflow_id]
+    return approval.to_evidence_dict()
 
 
 # Helper function to register workflow in approval gate system
