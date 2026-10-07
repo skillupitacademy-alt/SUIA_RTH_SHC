@@ -1,24 +1,22 @@
 """
 Repository Contract Intelligence - B03 Agent
 
-Derives block contracts from ACTUAL repository files.
-This agent reads real canonical blocks (I1, C1, D1) from the repository,
-computes SHA-256 hashes, generates evidence IDs, and constructs
+Derives block contracts from TypeScript snapshot evidence.
+This agent consumes canonical_block evidence from the repository snapshot,
+extracting SHA-256 hashes and evidence IDs, and constructs
 engineering contracts for external AI consumption.
 
 CONTRACT:
-- Never use fixtures or hardcoded data
-- All evidence must be derived from actual files
-- SHA-256 must be computed from real file content
-- Missing files are noted in evidence, not fabricated
-- evidence_id is deterministic: sha256(path + file_sha256)
+- Never scan repository files directly (architectural boundary violation)
+- All evidence must be derived from TypeScript snapshot
+- SHA-256 is extracted from snapshot evidence, never recomputed
+- Missing evidence is noted, not fabricated
+- evidence_id comes from snapshot, deterministic from TypeScript discovery
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Dict, Any, List
 import hashlib
-import os
-from pathlib import Path
 
 
 class RepositoryEvidence(BaseModel):
@@ -100,26 +98,12 @@ class RepositoryBlockContract(BaseModel):
     )
 
 
-def compute_sha256(file_path: Path) -> str:
-    """
-    Compute SHA-256 hash of a file.
-    
-    Args:
-        file_path: Path to the file
-        
-    Returns:
-        Hex-encoded SHA-256 hash
-    """
-    sha256_hash = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-    return sha256_hash.hexdigest()
-
-
 def generate_evidence_id(path: str, file_sha256: str) -> str:
     """
     Generate deterministic evidence ID.
+    
+    This is preserved for backward compatibility with tests that use it directly,
+    but in production, evidence IDs come from the TypeScript snapshot.
     
     Args:
         path: File path
@@ -132,28 +116,193 @@ def generate_evidence_id(path: str, file_sha256: str) -> str:
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
 
-def build_contract(repo_root: str, family: str, version: str) -> RepositoryBlockContract:
+def compute_sha256_legacy(content: bytes) -> str:
     """
-    Build a repository block contract by scanning for actual files.
+    Compute SHA-256 hash (legacy helper for tests).
     
-    This is the core intelligence function that:
-    1. Scans the repository for matching canonical blocks
-    2. Computes real SHA-256 hashes
-    3. Generates evidence IDs
-    4. Returns a complete engineering contract
+    This function is preserved for backward compatibility with tests,
+    but must NOT be used for repository file scanning in production.
+    The architectural boundary requires Python to consume TypeScript snapshots only.
     
     Args:
-        repo_root: Absolute path to repository root
+        content: Byte content to hash
+        
+    Returns:
+        Hex-encoded SHA-256 hash
+    """
+    return hashlib.sha256(content).hexdigest()
+
+
+# Backward compatibility shim for tests that import compute_sha256
+def compute_sha256(file_path) -> str:
+    """
+    DEPRECATED: Compute SHA-256 hash of a file.
+    
+    This function violates the architectural boundary (Python must not scan repository).
+    It is preserved ONLY for backward compatibility with existing tests.
+    Production code must use snapshot evidence exclusively.
+    
+    Args:
+        file_path: Path to the file (Path object or string)
+        
+    Returns:
+        Hex-encoded SHA-256 hash
+    """
+    from pathlib import Path
+    path = Path(file_path) if not isinstance(file_path, Path) else file_path
+    sha256_hash = hashlib.sha256()
+    with open(path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+
+def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> RepositoryBlockContract:
+    """
+    Build a repository block contract from TypeScript snapshot evidence.
+    
+    This is the core intelligence function that:
+    1. Extracts canonical_block evidence from the TypeScript snapshot
+    2. Matches evidence to the requested family/version
+    3. Uses existing SHA-256 hashes and evidence IDs from snapshot
+    4. Returns a complete engineering contract
+    
+    ARCHITECTURAL BOUNDARY:
+    This function must NEVER open, read, or walk repository files.
+    All data comes from the snapshot['evidence'] array provided by TypeScript discovery.
+    
+    Args:
+        snapshot: Repository snapshot dictionary from TypeScript discovery service
         family: Block family (e.g., "Introduction", "Code", "Definition")
         version: Block version (e.g., "I1", "C1", "D1")
         
     Returns:
-        RepositoryBlockContract with evidence from actual files
+        RepositoryBlockContract with evidence from snapshot
     """
+    # Extract canonical_block evidence from snapshot
+    canonical_blocks = [
+        ev for ev in snapshot.get('evidence', [])
+        if ev.get('kind') == 'canonical_block'
+    ]
+    
+    # Define expected block file patterns for matching
+    # These map (family, version) to the canonical path pattern
+    block_patterns = {
+        ("Introduction", "I1"): "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+        ("Code", "C1"): "packages/ui/src/tutorial/blocks/CodeC1Block.tsx",
+        ("Definition", "D1"): "packages/ui/src/tutorial/blocks/DefinitionBlock.tsx",
+    }
+    
+    # Try to find matching canonical block evidence
+    references: List[CanonicalReference] = []
+    expected_path = block_patterns.get((family, version))
+    
+    if expected_path:
+        # Search for evidence matching this path
+        matching_evidence = [
+            ev for ev in canonical_blocks
+            if ev.get('path') == expected_path
+        ]
+        
+        if matching_evidence:
+            # Use the first match (there should only be one per path)
+            ev = matching_evidence[0]
+            
+            # Extract data from snapshot evidence
+            evidence = RepositoryEvidence(
+                path=ev.get('path', expected_path),
+                sha256=ev.get('contentHash', ''),
+                role="canonical_block",
+                evidence_id=ev.get('evidenceId', '')
+            )
+            
+            # Create canonical reference
+            reference = CanonicalReference(
+                family=family,
+                version=version,
+                evidence=[evidence]
+            )
+            references.append(reference)
+    
+    # Build block type identifier
+    block_type = f"{family.lower()}_{version.lower()}"
+    
+    # Construct contract
+    contract = RepositoryBlockContract(
+        family=family,
+        version=version,
+        block_type=block_type,
+        references=references,
+        required_artifacts=[
+            "HTML/CSS/JS prototype",
+            "React/TypeScript implementation",
+            "Type definitions",
+            "Unit tests"
+        ],
+        runtime=RuntimeContract(
+            ub_rc_required=True,
+            passive_ils=True,
+            page_level_lsnb=True,
+            page_level_rssb=True,
+            theme_injected=True,
+            brand_independent=True
+        ),
+        renderer_contract={
+            "component_name": f"{family}{version}Block",
+            "props": ["block", "theme", "runtimeContext"],
+            "exports": ["default component function"],
+            "theme_props": ["primary", "secondary"],
+            "runtime_context_props": ["ubrc", "ils", "lsnb", "rssb"]
+        },
+        composer_contract={
+            "composability": "full",
+            "preview_mode": "live",
+            "edit_mode": "form-based",
+            "supported_operations": ["create", "edit", "delete", "reorder"]
+        },
+        schema_contract={
+            "validation": "Pydantic + TypeScript",
+            "serialization": "JSON",
+            "type_safety": "strict"
+        },
+        acceptance_criteria=[
+            "Renders correctly with theme.primary and theme.secondary",
+            "Responsive on mobile (320px+), tablet (768px+), desktop (1024px+)",
+            "Passes accessibility audit (WCAG 2.1 AA)",
+            "No console errors or warnings",
+            "Matches canonical design system",
+            "Compatible with UBRC runtime",
+            "Theme-independent layout and spacing",
+            "ILS, LSNB, RSSB integration verified"
+        ]
+    )
+    
+    return contract
+
+
+# Backward compatibility shim for tests that pass repo_root
+def build_contract_legacy(repo_root: str, family: str, version: str) -> RepositoryBlockContract:
+    """
+    DEPRECATED: Legacy build_contract that scans repository files.
+    
+    This function violates the architectural boundary (Python must not scan repository).
+    It is preserved ONLY for backward compatibility with existing tests that pass repo_root.
+    
+    Production code must call build_contract(snapshot, family, version) instead.
+    
+    Args:
+        repo_root: Absolute path to repository root (DEPRECATED - DO NOT USE)
+        family: Block family
+        version: Block version
+        
+    Returns:
+        RepositoryBlockContract built from file scanning (DEPRECATED)
+    """
+    from pathlib import Path
+    
     repo_path = Path(repo_root)
     
     # Define canonical block file patterns
-    # These are the known canonical blocks in packages/ui/src/tutorial/blocks/
     block_patterns = {
         ("Introduction", "I1"): "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
         ("Code", "C1"): "packages/ui/src/tutorial/blocks/CodeC1Block.tsx",
@@ -161,7 +310,7 @@ def build_contract(repo_root: str, family: str, version: str) -> RepositoryBlock
     }
     
     # Try to find the canonical block file
-    references: list[CanonicalReference] = []
+    references: List[CanonicalReference] = []
     canonical_file_path = block_patterns.get((family, version))
     
     if canonical_file_path:

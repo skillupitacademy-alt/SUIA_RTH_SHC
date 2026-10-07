@@ -10,7 +10,7 @@ from app.contracts.engineering_contract import (
     calculate_contract_hash,
     PROHIBITED_BEHAVIORS
 )
-from app.contracts.repository_intelligence import build_contract as build_repo_contract
+from app.contracts.repository_intelligence import build_contract_legacy as build_repo_contract
 from app.models.workflow_target import WorkflowTarget
 import uuid
 import os

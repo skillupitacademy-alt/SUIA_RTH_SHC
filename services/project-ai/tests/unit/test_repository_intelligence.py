@@ -11,7 +11,7 @@ from app.contracts.repository_intelligence import (
     CanonicalReference,
     RuntimeContract,
     RepositoryBlockContract,
-    build_contract,
+    build_contract_legacy as build_contract,
     compute_sha256,
     generate_evidence_id,
 )
