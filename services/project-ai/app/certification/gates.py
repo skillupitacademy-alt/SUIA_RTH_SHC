@@ -16,11 +16,76 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Optional
 from enum import Enum
 
+from pydantic import BaseModel
+
 from app.models.creation import CertificationGateStatus
 from app.models.candidate import PlacementManifest
 from app.verification.composer import verify_composer_integration, ComposerErrorCode
 from app.verification.runtime import verify_runtime, RuntimeErrorCode
 from app.verification.browser import BrowserVerificationConfig, verify_block_in_browser_sync
+
+
+class GateStatus(str, Enum):
+    """Gate execution status - never defaults to PASS."""
+    PASS = "PASS"
+    FAIL = "FAIL"
+    BLOCKED = "BLOCKED"
+
+
+class GateResult(BaseModel):
+    """Result of a single gate execution."""
+    gate_id: str
+    status: GateStatus
+    evidence_ids: list[str]
+    findings: list[str]
+    reason: str = ""
+
+
+class CertificationResult(BaseModel):
+    """Overall certification result for a workflow."""
+    workflow_id: str
+    overall_status: GateStatus
+    gate_results: dict[str, GateResult]
+    evidence_ids: list[str]
+
+
+def compute_overall_status(gate_results: dict[str, GateResult]) -> GateStatus:
+    """
+    Compute overall certification status from individual gate results.
+    
+    NEVER defaults to PASS. Missing evidence = BLOCKED.
+    
+    Rules:
+    - If no gates executed: BLOCKED
+    - If any gate is FAIL: FAIL
+    - If any gate is BLOCKED: BLOCKED
+    - Only if all gates are PASS: PASS
+    
+    Args:
+        gate_results: Dictionary of gate_id -> GateResult
+        
+    Returns:
+        Overall GateStatus
+    """
+    gates = list(gate_results.values())
+    
+    # No gates = BLOCKED (not PASS)
+    if not gates:
+        return GateStatus.BLOCKED
+    
+    # Any FAIL = overall FAIL
+    if any(g.status == GateStatus.FAIL for g in gates):
+        return GateStatus.FAIL
+    
+    # Any BLOCKED = overall BLOCKED
+    if any(g.status == GateStatus.BLOCKED for g in gates):
+        return GateStatus.BLOCKED
+    
+    # All must be PASS
+    if not all(g.status == GateStatus.PASS for g in gates):
+        return GateStatus.BLOCKED
+    
+    return GateStatus.PASS
 
 
 class GateExecutionResult:
