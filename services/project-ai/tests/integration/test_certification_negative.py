@@ -10,13 +10,14 @@ These tests ensure the system fails safely and provides clear error messages.
 
 import hashlib
 import pytest
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.certification.gates import CertificationGateExecutor
 from app.models.creation import CertificationGateStatus
+from app.models.candidate import PlacementManifest, PlacementDecision, BlockFamily
 
 client = TestClient(app)
 
@@ -29,12 +30,36 @@ class TestCertificationNegativeScenarios:
     def repository_root(self, tmp_path):
         """Mock repository root."""
         return tmp_path
+    @pytest.fixture
+    def test_manifest(self):
+        """Create a test PlacementManifest with valid hash."""
+        manifest = PlacementManifest(
+            manifestId="manifest-test-001",
+            candidateId="candidate-block-I1",
+            decision=PlacementDecision.ADD,
+            targetPath="packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+            blockFamily=BlockFamily.INTRODUCTION,
+            blockVersion="I1",
+            requiredChanges=["Add UBRC compliance"],
+            evidenceIds=["ev-impl-001", "ev-render-001"],
+            manifestHash="",
+            createdAt=datetime.now(UTC).isoformat()
+        )
+        
+        # Compute hash
+        manifest.manifestHash = ""
+        manifest_json = manifest.model_dump_json(exclude_none=True, indent=2)
+        computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
+        manifest.manifestHash = computed_hash
+        
+        return manifest
+
     
     # ============================================================
     # Test 1: Missing Evidence Blocks Certification
     # ============================================================
     
-    def test_missing_evidence_blocks_certification(self, repository_root):
+    def test_missing_evidence_blocks_certification(self, repository_root, test_manifest):
         """
         Gate should FAIL or BLOCKED when evidence is missing.
         
@@ -51,7 +76,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot_no_evidence, repository_root)
         
-        result = executor.execute_evidence_binding_gate(['I1'])
+        result = executor.execute_evidence_binding_gate(['I1'], test_manifest)
         
         assert result.status != CertificationGateStatus.PASS, \
             "Evidence binding gate should not pass without evidence"
@@ -64,7 +89,7 @@ class TestCertificationNegativeScenarios:
     # Test 2: Wrong Block Version Fails
     # ============================================================
     
-    def test_wrong_block_version_fails(self, repository_root):
+    def test_wrong_block_version_fails(self, repository_root, test_manifest):
         """
         Version mismatch should fail UBRC gate.
         
@@ -87,7 +112,7 @@ class TestCertificationNegativeScenarios:
         executor = CertificationGateExecutor(snapshot_wrong_version, repository_root)
         
         # Request I2 but only I1 exists in snapshot
-        result = executor.execute_ubrc_gate(['I2'])
+        result = executor.execute_ubrc_gate(['I2'], test_manifest)
         
         assert result.status != CertificationGateStatus.PASS, \
             "UBRC gate should not pass when requested version not found"
@@ -97,7 +122,7 @@ class TestCertificationNegativeScenarios:
     # Test 3: Missing Registry Fails
     # ============================================================
     
-    def test_missing_registry_fails(self, repository_root):
+    def test_missing_registry_fails(self, repository_root, test_manifest):
         """
         Missing registry should fail UBRC gate.
         
@@ -120,7 +145,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot_no_registry, repository_root)
         
-        result = executor.execute_registry_verification_gate(['C1'])
+        result = executor.execute_registry_verification_gate(['C1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Registry verification gate should fail when registry missing"
@@ -132,7 +157,7 @@ class TestCertificationNegativeScenarios:
     # Test 4: Missing Renderer Fails
     # ============================================================
     
-    def test_missing_renderer_fails(self, repository_root):
+    def test_missing_renderer_fails(self, repository_root, test_manifest):
         """
         Missing renderer should fail UBRC gate.
         
@@ -155,7 +180,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot_no_renderer, repository_root)
         
-        result = executor.execute_renderer_verification_gate(['C1'])
+        result = executor.execute_renderer_verification_gate(['C1'], test_manifest)
         
         # Renderer gate returns BLOCKED when renderer missing (not FAIL)
         assert result.status in [CertificationGateStatus.FAIL, CertificationGateStatus.BLOCKED], \
@@ -167,7 +192,7 @@ class TestCertificationNegativeScenarios:
     # Test 5: Renderer Mismatch Fails
     # ============================================================
     
-    def test_renderer_mismatch_fails(self, repository_root):
+    def test_renderer_mismatch_fails(self, repository_root, test_manifest):
         """
         Wrong renderer should fail UBRC gate.
         
@@ -199,7 +224,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot_wrong_renderer, repository_root)
         
-        result = executor.execute_ubrc_gate(['I1'])
+        result = executor.execute_ubrc_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "UBRC gate should fail when renderer mismatches block type"
@@ -211,7 +236,7 @@ class TestCertificationNegativeScenarios:
     # Test 6: Schema Mismatch Fails
     # ============================================================
     
-    def test_schema_mismatch_fails(self, repository_root):
+    def test_schema_mismatch_fails(self, repository_root, test_manifest):
         """
         Schema incompatibility should fail CONTRACT gate.
         
@@ -238,7 +263,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot_schema_mismatch, repository_root)
         
-        result = executor.execute_composer_verification_gate(['Q1'])
+        result = executor.execute_composer_verification_gate(['Q1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Composer gate should fail when schema invalid"
@@ -251,7 +276,7 @@ class TestCertificationNegativeScenarios:
     # Test 7: Composer Failure Blocks
     # ============================================================
     
-    def test_composer_failure_blocks(self, repository_root):
+    def test_composer_failure_blocks(self, repository_root, test_manifest):
         """
         Composer unavailable should fail COMPOSER gate.
         
@@ -272,7 +297,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot_composer_unavailable, repository_root)
         
-        result = executor.execute_composer_verification_gate(['A1'])
+        result = executor.execute_composer_verification_gate(['A1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Composer gate should fail when block not registered"
@@ -284,7 +309,7 @@ class TestCertificationNegativeScenarios:
     # Test 8: Runtime Failure Blocks
     # ============================================================
     
-    def test_runtime_failure_blocks(self, repository_root):
+    def test_runtime_failure_blocks(self, repository_root, test_manifest):
         """
         Runtime errors should fail RUNTIME gate.
         
@@ -309,7 +334,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot_runtime_error, repository_root)
         
-        result = executor.execute_runtime_verification_gate(['M1'])
+        result = executor.execute_runtime_verification_gate(['M1'], test_manifest)
         
         # Runtime gate returns BLOCKED when runtime not verified (not FAIL)
         assert result.status in [CertificationGateStatus.FAIL, CertificationGateStatus.BLOCKED], \
@@ -321,7 +346,7 @@ class TestCertificationNegativeScenarios:
     # Test 9: Browser Failure Blocks
     # ============================================================
     
-    def test_browser_failure_blocks(self, repository_root):
+    def test_browser_failure_blocks(self, repository_root, test_manifest):
         """
         Browser errors should fail BROWSER gate.
         
@@ -346,7 +371,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot_browser_error, repository_root)
         
-        result = executor.execute_browser_verification_gate(['V1'])
+        result = executor.execute_browser_verification_gate(['V1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Browser gate should fail when browser errors occur"
@@ -358,7 +383,7 @@ class TestCertificationNegativeScenarios:
     # Test 10: Brand Coupling Fails
     # ============================================================
     
-    def test_brand_coupling_fails(self, repository_root):
+    def test_brand_coupling_fails(self, repository_root, test_manifest):
         """
         Hard-coded brand should fail BRAND_INDEPENDENCE gate.
         
@@ -382,7 +407,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot, repository_root)
         
-        result = executor.execute_brand_independence_gate(['BrandCoupledComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['BrandCoupledComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Brand independence gate should fail when brand values are hard-coded"
@@ -395,7 +420,7 @@ class TestCertificationNegativeScenarios:
     # Test 11: Theme Mismatch Fails
     # ============================================================
     
-    def test_theme_mismatch_fails(self, repository_root):
+    def test_theme_mismatch_fails(self, repository_root, test_manifest):
         """
         Theme incompatibility should fail THEME_COMPATIBILITY gate.
         
@@ -420,7 +445,7 @@ class TestCertificationNegativeScenarios:
         
         executor = CertificationGateExecutor(snapshot, repository_root)
         
-        result = executor.execute_theme_compatibility_gate(['ThemeIncompatible.tsx'])
+        result = executor.execute_theme_compatibility_gate(['ThemeIncompatible.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Theme compatibility gate should fail with hard-coded colors"

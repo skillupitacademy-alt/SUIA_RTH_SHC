@@ -11,9 +11,12 @@ Verifies that:
 """
 
 import pytest
+import hashlib
 from pathlib import Path
+from datetime import datetime, UTC
 from app.certification.gates import CertificationGateExecutor
 from app.models.creation import CertificationGateStatus
+from app.models.candidate import PlacementManifest, PlacementDecision, BlockFamily
 
 
 class TestCertificationGates:
@@ -144,38 +147,66 @@ class TestCertificationGates:
         """Mock repository root."""
         return tmp_path
     
-    def test_ubrc_gate_passes_with_valid_blocks(self, mock_snapshot_valid, repository_root):
+    @pytest.fixture
+    def test_manifest(self, mock_snapshot_valid):
+        """Create a test PlacementManifest with valid hash."""
+        evidence_ids = [e['evidenceId'] for e in mock_snapshot_valid.get('evidence', [])]
+        if not evidence_ids:
+            evidence_ids = ["ev-impl-001", "ev-render-001"]
+        
+        manifest = PlacementManifest(
+            manifestId="manifest-test-001",
+            candidateId="candidate-block-I1",
+            decision=PlacementDecision.ADD,
+            targetPath="packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+            blockFamily=BlockFamily.INTRODUCTION,
+            blockVersion="I1",
+            requiredChanges=["Add UBRC compliance"],
+            evidenceIds=evidence_ids,
+            manifestHash="",
+            createdAt=datetime.now(UTC).isoformat()
+        )
+        
+        # Compute hash
+        manifest.manifestHash = ""
+        manifest_json = manifest.model_dump_json(exclude_none=True, indent=2)
+        computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
+        manifest.manifestHash = computed_hash
+        
+        return manifest
+    
+    def test_ubrc_gate_passes_with_valid_blocks(self, mock_snapshot_valid, repository_root, test_manifest):
         """UBRC gate passes when all blocks are UBRC-compliant."""
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_ubrc_gate(['I1'])
+        result = executor.execute_ubrc_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.evidence_ids) > 0
         assert len(result.blockers) == 0
         assert 'verified' in result.message.lower()
     
-    def test_ubrc_gate_fails_with_missing_attribute(self, mock_snapshot_missing_ubrc, repository_root):
+    def test_ubrc_gate_fails_with_missing_attribute(self, mock_snapshot_missing_ubrc, repository_root, test_manifest):
         """UBRC gate fails when block is missing data-block-version attribute."""
         executor = CertificationGateExecutor(mock_snapshot_missing_ubrc, repository_root)
         
-        result = executor.execute_ubrc_gate(['S1'])
+        result = executor.execute_ubrc_gate(['S1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('attribute' in b.lower() for b in result.blockers)
     
-    def test_ubrc_gate_blocked_with_empty_snapshot(self, mock_snapshot_empty, repository_root):
+    def test_ubrc_gate_blocked_with_empty_snapshot(self, mock_snapshot_empty, repository_root, test_manifest):
         """UBRC gate blocked when snapshot has no blocks."""
         executor = CertificationGateExecutor(mock_snapshot_empty, repository_root)
         
-        result = executor.execute_ubrc_gate(['I1'])
+        result = executor.execute_ubrc_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.BLOCKED
         assert len(result.blockers) > 0
         assert 'snapshot' in result.message.lower() or 'unavailable' in result.message.lower()
     
-    def test_brand_independence_gate_detects_hard_coded_colors(self, mock_snapshot_valid, repository_root):
+    def test_brand_independence_gate_detects_hard_coded_colors(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand independence gate detects hard-coded hex colors."""
         # Create a file with hard-coded color
         test_file = repository_root / "TestComponent.tsx"
@@ -183,13 +214,13 @@ class TestCertificationGates:
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_brand_independence_gate(['TestComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['TestComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('color' in b.lower() for b in result.blockers)
     
-    def test_brand_independence_gate_passes_with_css_variables(self, mock_snapshot_valid, repository_root):
+    def test_brand_independence_gate_passes_with_css_variables(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand independence gate passes when using CSS variables."""
         # Create a file with CSS variables
         test_file = repository_root / "TestComponent.tsx"
@@ -209,14 +240,14 @@ class TestCertificationGates:
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_brand_independence_gate(['TestComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['TestComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.blockers) == 0
     
     # Wave 6A: Comprehensive Brand Independence Tests
     
-    def test_brand_gate_detects_hardcoded_logo(self, mock_snapshot_valid, repository_root):
+    def test_brand_gate_detects_hardcoded_logo(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand gate detects hard-coded logo paths."""
         test_file = repository_root / "LogoComponent.tsx"
         test_file.write_text(
@@ -225,13 +256,13 @@ class TestCertificationGates:
         )
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
-        result = executor.execute_brand_independence_gate(['LogoComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['LogoComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('logo' in b.lower() for b in result.blockers)
     
-    def test_brand_gate_detects_hardcoded_url(self, mock_snapshot_valid, repository_root):
+    def test_brand_gate_detects_hardcoded_url(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand gate detects hard-coded brand URLs."""
         test_file = repository_root / "LinkComponent.tsx"
         test_file.write_text(
@@ -240,13 +271,13 @@ class TestCertificationGates:
         )
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
-        result = executor.execute_brand_independence_gate(['LinkComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['LinkComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('url' in b.lower() for b in result.blockers)
     
-    def test_brand_gate_detects_hardcoded_font(self, mock_snapshot_valid, repository_root):
+    def test_brand_gate_detects_hardcoded_font(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand gate detects hard-coded font-family values."""
         test_file = repository_root / "TextComponent.tsx"
         test_file.write_text(
@@ -255,13 +286,13 @@ class TestCertificationGates:
         )
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
-        result = executor.execute_brand_independence_gate(['TextComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['TextComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('font' in b.lower() for b in result.blockers)
     
-    def test_brand_gate_detects_hardcoded_brand_id(self, mock_snapshot_valid, repository_root):
+    def test_brand_gate_detects_hardcoded_brand_id(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand gate detects hard-coded brand ID in code."""
         test_file = repository_root / "BrandComponent.tsx"
         test_file.write_text(
@@ -270,13 +301,13 @@ class TestCertificationGates:
         )
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
-        result = executor.execute_brand_independence_gate(['BrandComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['BrandComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('brand' in b.lower() for b in result.blockers)
     
-    def test_brand_gate_allows_design_tokens(self, mock_snapshot_valid, repository_root):
+    def test_brand_gate_allows_design_tokens(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand gate allows CSS variables and design tokens."""
         test_file = repository_root / "TokenComponent.tsx"
         test_file.write_text(
@@ -301,13 +332,13 @@ class TestCertificationGates:
         })
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
-        result = executor.execute_brand_independence_gate(['TokenComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['TokenComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.blockers) == 0
         assert len(result.evidence_ids) > 0
     
-    def test_brand_gate_detects_multiple_violations(self, mock_snapshot_valid, repository_root):
+    def test_brand_gate_detects_multiple_violations(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand gate detects multiple violations in a single file."""
         test_file = repository_root / "MultiViolation.tsx"
         test_file.write_text(
@@ -322,13 +353,13 @@ class TestCertificationGates:
         )
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
-        result = executor.execute_brand_independence_gate(['MultiViolation.tsx'])
+        result = executor.execute_brand_independence_gate(['MultiViolation.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         # Should detect multiple types of violations
         assert len(result.blockers) >= 4  # At least color, logo, url, brand
     
-    def test_brand_gate_provides_specific_line_numbers(self, mock_snapshot_valid, repository_root):
+    def test_brand_gate_provides_specific_line_numbers(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand gate provides specific line numbers for findings."""
         test_file = repository_root / "LineNumbers.tsx"
         test_file.write_text(
@@ -337,14 +368,14 @@ class TestCertificationGates:
         )
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
-        result = executor.execute_brand_independence_gate(['LineNumbers.tsx'])
+        result = executor.execute_brand_independence_gate(['LineNumbers.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         # Should include line number in blocker message
         assert any(':3:' in b or 'Line 3' in b or 'line 3' in b for b in result.blockers)
     
-    def test_brand_gate_verifies_multiple_files(self, mock_snapshot_valid, repository_root):
+    def test_brand_gate_verifies_multiple_files(self, mock_snapshot_valid, repository_root, test_manifest):
         """Brand gate can verify multiple files in one call."""
         # Create clean file
         clean_file = repository_root / "CleanComponent.tsx"
@@ -355,47 +386,47 @@ class TestCertificationGates:
         dirty_file.write_text("const color = '#FF5733';", encoding='utf-8')
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
-        result = executor.execute_brand_independence_gate(['CleanComponent.tsx', 'DirtyComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['CleanComponent.tsx', 'DirtyComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('DirtyComponent.tsx' in b for b in result.blockers)
     
-    def test_registry_verification_gate_passes_with_registered_blocks(self, mock_snapshot_valid, repository_root):
+    def test_registry_verification_gate_passes_with_registered_blocks(self, mock_snapshot_valid, repository_root, test_manifest):
         """Registry verification gate passes when blocks are registered."""
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_registry_verification_gate(['I1'])
+        result = executor.execute_registry_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.evidence_ids) > 0
         assert len(result.blockers) == 0
     
-    def test_registry_verification_gate_fails_with_unregistered_blocks(self, mock_snapshot_missing_ubrc, repository_root):
+    def test_registry_verification_gate_fails_with_unregistered_blocks(self, mock_snapshot_missing_ubrc, repository_root, test_manifest):
         """Registry verification gate fails when blocks are not registered."""
         executor = CertificationGateExecutor(mock_snapshot_missing_ubrc, repository_root)
         
-        result = executor.execute_registry_verification_gate(['S1'])
+        result = executor.execute_registry_verification_gate(['S1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('registered' in b.lower() or 'registry' in b.lower() for b in result.blockers)
     
-    def test_renderer_verification_gate_passes_with_rendered_blocks(self, mock_snapshot_valid, repository_root):
+    def test_renderer_verification_gate_passes_with_rendered_blocks(self, mock_snapshot_valid, repository_root, test_manifest):
         """Renderer verification gate passes when blocks have renderers."""
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_renderer_verification_gate(['I1'])
+        result = executor.execute_renderer_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.evidence_ids) > 0
         assert len(result.blockers) == 0
     
-    def test_evidence_binding_gate_passes_with_valid_evidence(self, mock_snapshot_valid, repository_root):
+    def test_evidence_binding_gate_passes_with_valid_evidence(self, mock_snapshot_valid, repository_root, test_manifest):
         """Evidence binding gate passes when evidence is complete."""
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_evidence_binding_gate(['I1'])
+        result = executor.execute_evidence_binding_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.evidence_ids) > 0
@@ -405,28 +436,28 @@ class TestCertificationGates:
             assert eid.startswith('ev-')
             assert 'candidate' not in eid  # Not synthetic
     
-    def test_evidence_binding_gate_blocked_with_no_evidence(self, mock_snapshot_empty, repository_root):
+    def test_evidence_binding_gate_blocked_with_no_evidence(self, mock_snapshot_empty, repository_root, test_manifest):
         """Evidence binding gate blocked when no evidence exists."""
         executor = CertificationGateExecutor(mock_snapshot_empty, repository_root)
         
-        result = executor.execute_evidence_binding_gate(['I1'])
+        result = executor.execute_evidence_binding_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.BLOCKED
         assert 'unavailable' in result.message.lower() or 'no evidence' in result.message.lower()
     
-    def test_theme_compatibility_gate_detects_hard_coded_colors(self, mock_snapshot_valid, repository_root):
+    def test_theme_compatibility_gate_detects_hard_coded_colors(self, mock_snapshot_valid, repository_root, test_manifest):
         """Theme compatibility gate detects hard-coded colors."""
         test_file = repository_root / "TestComponent.tsx"
         test_file.write_text("background: rgb(255, 0, 0);", encoding='utf-8')
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_theme_compatibility_gate(['TestComponent.tsx'])
+        result = executor.execute_theme_compatibility_gate(['TestComponent.tsx'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
     
-    def test_theme_compatibility_gate_passes_with_theme_tokens(self, mock_snapshot_valid, repository_root):
+    def test_theme_compatibility_gate_passes_with_theme_tokens(self, mock_snapshot_valid, repository_root, test_manifest):
         """Theme compatibility gate passes with theme tokens."""
         test_file = repository_root / "packages" / "ui" / "src" / "tutorial" / "blocks" / "TestComponent.tsx"
         test_file.parent.mkdir(parents=True, exist_ok=True)
@@ -468,12 +499,12 @@ export function TestComponent({ theme }: Props) {
         
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
-        result = executor.execute_theme_compatibility_gate(['testcomp'])
+        result = executor.execute_theme_compatibility_gate(['testcomp'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.blockers) == 0
     
-    def test_no_unconditional_pass(self, mock_snapshot_empty, repository_root):
+    def test_no_unconditional_pass(self, mock_snapshot_empty, repository_root, test_manifest):
         """Verify that no gate unconditionally passes without verification."""
         executor = CertificationGateExecutor(mock_snapshot_empty, repository_root)
         
@@ -490,7 +521,7 @@ export function TestComponent({ theme }: Props) {
             assert result.status != CertificationGateStatus.PASS, \
                 f"{gate_name} gate unconditionally passed with empty snapshot"
     
-    def test_block_type_extraction(self, mock_snapshot_valid, repository_root):
+    def test_block_type_extraction(self, mock_snapshot_valid, repository_root, test_manifest):
         """Test block type extraction from shorthand."""
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
@@ -499,7 +530,7 @@ export function TestComponent({ theme }: Props) {
         assert executor._extract_block_type('D1') == 'definition'
         assert executor._extract_block_type('introduction') == 'introduction'
     
-    def test_evidence_lookup_by_path(self, mock_snapshot_valid, repository_root):
+    def test_evidence_lookup_by_path(self, mock_snapshot_valid, repository_root, test_manifest):
         """Test evidence lookup by file path."""
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
@@ -508,7 +539,7 @@ export function TestComponent({ theme }: Props) {
         assert evidence is not None
         assert evidence['evidenceId'] == 'ev-impl-001'
     
-    def test_evidence_lookup_by_block(self, mock_snapshot_valid, repository_root):
+    def test_evidence_lookup_by_block(self, mock_snapshot_valid, repository_root, test_manifest):
         """Test evidence lookup by block type and kind."""
         executor = CertificationGateExecutor(mock_snapshot_valid, repository_root)
         
@@ -563,8 +594,34 @@ class TestWave3UBRCIntegration:
     @pytest.fixture
     def repository_root(self, tmp_path):
         return tmp_path
+    @pytest.fixture
+    def test_manifest(self):
+        """Create a test PlacementManifest with valid hash."""
+        evidence_ids = ["ev-impl-001", "ev-render-001", "ev-registry-001"]
+        
+        manifest = PlacementManifest(
+            manifestId="manifest-test-001",
+            candidateId="candidate-block-I1",
+            decision=PlacementDecision.ADD,
+            targetPath="packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+            blockFamily=BlockFamily.INTRODUCTION,
+            blockVersion="I1",
+            requiredChanges=["Add UBRC compliance"],
+            evidenceIds=evidence_ids,
+            manifestHash="",
+            createdAt=datetime.now(UTC).isoformat()
+        )
+        
+        # Compute hash
+        manifest.manifestHash = ""
+        manifest_json = manifest.model_dump_json(exclude_none=True, indent=2)
+        computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
+        manifest.manifestHash = computed_hash
+        
+        return manifest
     
-    def test_ubrc_gate_reads_typescript_verification_results(self):
+    
+    def test_ubrc_gate_reads_typescript_verification_results(self, test_manifest):
         """UBRC gate reads TypeScript D3 scanner results (not reimplementing verification)."""
         snapshot = {
             'blocks': {
@@ -606,13 +663,13 @@ class TestWave3UBRCIntegration:
         }
         
         executor = CertificationGateExecutor(snapshot, Path('.'))
-        result = executor.execute_ubrc_gate(['I1'])
+        result = executor.execute_ubrc_gate(['I1'], test_manifest)
         
         # Python reads TS results, doesn't reimplement
         assert result.status == CertificationGateStatus.PASS
         assert 'ev-impl-001' in result.evidence_ids or 'ev-renderer-001' in result.evidence_ids
     
-    def test_ubrc_gate_fails_on_typescript_ubrc_attribute_missing(self):
+    def test_ubrc_gate_fails_on_typescript_ubrc_attribute_missing(self, test_manifest):
         """UBRC gate fails when TypeScript reports UBRC_ATTRIBUTE_MISSING."""
         snapshot = {
             'blocks': {
@@ -628,12 +685,12 @@ class TestWave3UBRCIntegration:
         }
         
         executor = CertificationGateExecutor(snapshot, Path('.'))
-        result = executor.execute_ubrc_gate(['Q1'])
+        result = executor.execute_ubrc_gate(['Q1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert any('attribute' in b.lower() for b in result.blockers)
     
-    def test_ubrc_gate_fails_on_typescript_ubrc_renderer_missing(self):
+    def test_ubrc_gate_fails_on_typescript_ubrc_renderer_missing(self, test_manifest):
         """UBRC gate fails when TypeScript reports UBRC_RENDERER_MISSING."""
         snapshot = {
             'blocks': {
@@ -649,12 +706,12 @@ class TestWave3UBRCIntegration:
         }
         
         executor = CertificationGateExecutor(snapshot, Path('.'))
-        result = executor.execute_ubrc_gate(['A1'])
+        result = executor.execute_ubrc_gate(['A1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert any('renderer' in b.lower() for b in result.blockers)
     
-    def test_ubrc_gate_collects_real_evidence_ids_from_typescript(self):
+    def test_ubrc_gate_collects_real_evidence_ids_from_typescript(self, test_manifest):
         """UBRC gate collects real evidence IDs from TypeScript snapshot (not synthetic)."""
         snapshot = {
             'blocks': {
@@ -686,7 +743,7 @@ class TestWave3UBRCIntegration:
         }
         
         executor = CertificationGateExecutor(snapshot, Path('.'))
-        result = executor.execute_ubrc_gate(['C1'])
+        result = executor.execute_ubrc_gate(['C1'], test_manifest)
         
         # Evidence IDs must be from TypeScript system
         assert result.status == CertificationGateStatus.PASS
@@ -699,6 +756,37 @@ class TestWave3UBRCIntegration:
 
 class TestWave4ComposerVerification:
     """Test Wave 4 Composer integration verification."""
+    
+    @pytest.fixture
+    def repository_root(self, tmp_path):
+        """Mock repository root."""
+        return tmp_path
+    @pytest.fixture
+    def test_manifest(self):
+        """Create a test PlacementManifest with valid hash."""
+        evidence_ids = ["ev-impl-001", "ev-render-001", "ev-registry-001"]
+        
+        manifest = PlacementManifest(
+            manifestId="manifest-test-001",
+            candidateId="candidate-block-I1",
+            decision=PlacementDecision.ADD,
+            targetPath="packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+            blockFamily=BlockFamily.INTRODUCTION,
+            blockVersion="I1",
+            requiredChanges=["Add UBRC compliance"],
+            evidenceIds=evidence_ids,
+            manifestHash="",
+            createdAt=datetime.now(UTC).isoformat()
+        )
+        
+        # Compute hash
+        manifest.manifestHash = ""
+        manifest_json = manifest.model_dump_json(exclude_none=True, indent=2)
+        computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
+        manifest.manifestHash = computed_hash
+        
+        return manifest
+    
     
     @pytest.fixture
     def mock_snapshot_composer_valid(self):
@@ -1129,78 +1217,78 @@ class TestWave4ComposerVerification:
             'findings': []
         }
     
-    def test_composer_gate_passes_with_fully_integrated_block(self, mock_snapshot_composer_valid):
+    def test_composer_gate_passes_with_fully_integrated_block(self, mock_snapshot_composer_valid, test_manifest):
         """Composer gate passes when block is fully integrated into Composer workflow."""
         executor = CertificationGateExecutor(mock_snapshot_composer_valid, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['I1'])
+        result = executor.execute_composer_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.evidence_ids) > 0
         assert len(result.blockers) == 0
         assert 'composer verification passed' in result.message.lower()
     
-    def test_composer_gate_fails_with_not_registered_error(self, mock_snapshot_not_registered):
+    def test_composer_gate_fails_with_not_registered_error(self, mock_snapshot_not_registered, test_manifest):
         """Composer gate fails with COMPOSER_NOT_REGISTERED when block not in registry."""
         executor = CertificationGateExecutor(mock_snapshot_not_registered, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['newblock'])  # Use full name
+        result = executor.execute_composer_verification_gate(['newblock'], test_manifest)  # Use full name
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('COMPOSER_NOT_REGISTERED' in b for b in result.blockers)
     
-    def test_composer_gate_fails_with_not_discoverable_error(self, mock_snapshot_not_discoverable):
+    def test_composer_gate_fails_with_not_discoverable_error(self, mock_snapshot_not_discoverable, test_manifest):
         """Composer gate fails with COMPOSER_NOT_DISCOVERABLE when block not documented."""
         executor = CertificationGateExecutor(mock_snapshot_not_discoverable, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['quote'])  # Changed from H1
+        result = executor.execute_composer_verification_gate(['quote'], test_manifest)  # Changed from H1
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('COMPOSER_NOT_DISCOVERABLE' in b for b in result.blockers)
     
-    def test_composer_gate_fails_with_schema_mismatch_error(self, mock_snapshot_schema_mismatch):
+    def test_composer_gate_fails_with_schema_mismatch_error(self, mock_snapshot_schema_mismatch, test_manifest):
         """Composer gate fails with COMPOSER_SCHEMA_MISMATCH when schema invalid."""
         executor = CertificationGateExecutor(mock_snapshot_schema_mismatch, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['badschema'])  # Use full name
+        result = executor.execute_composer_verification_gate(['badschema'], test_manifest)  # Use full name
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('COMPOSER_SCHEMA_MISMATCH' in b for b in result.blockers)
     
-    def test_composer_gate_fails_with_renderer_mismatch_error(self, mock_snapshot_renderer_mismatch):
+    def test_composer_gate_fails_with_renderer_mismatch_error(self, mock_snapshot_renderer_mismatch, test_manifest):
         """Composer gate fails with COMPOSER_RENDERER_MISMATCH when renderer UBRC invalid."""
         executor = CertificationGateExecutor(mock_snapshot_renderer_mismatch, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['renderissue'])  # Use full name
+        result = executor.execute_composer_verification_gate(['renderissue'], test_manifest)  # Use full name
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('COMPOSER_RENDERER_MISMATCH' in b for b in result.blockers)
     
-    def test_composer_gate_fails_with_generation_failure_error(self, mock_snapshot_generation_failure):
+    def test_composer_gate_fails_with_generation_failure_error(self, mock_snapshot_generation_failure, test_manifest):
         """Composer gate fails with COMPOSER_GENERATION_FAILURE when validation errors exist."""
         executor = CertificationGateExecutor(mock_snapshot_generation_failure, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['generror'])  # Use full name
+        result = executor.execute_composer_verification_gate(['generror'], test_manifest)  # Use full name
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('COMPOSER_GENERATION_FAILURE' in b for b in result.blockers)
     
-    def test_composer_gate_fails_with_runtime_failure_error(self, mock_snapshot_runtime_failure):
+    def test_composer_gate_fails_with_runtime_failure_error(self, mock_snapshot_runtime_failure, test_manifest):
         """Composer gate fails with COMPOSER_RUNTIME_FAILURE when verification level insufficient."""
         executor = CertificationGateExecutor(mock_snapshot_runtime_failure, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['unverified'])
+        result = executor.execute_composer_verification_gate(['unverified'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('COMPOSER_RUNTIME_FAILURE' in b for b in result.blockers)
     
-    def test_composer_gate_blocked_with_empty_snapshot(self):
+    def test_composer_gate_blocked_with_empty_snapshot(self, test_manifest):
         """Composer gate blocked when snapshot has no verified blocks."""
         snapshot = {
             'metadata': {},
@@ -1211,17 +1299,17 @@ class TestWave4ComposerVerification:
         
         executor = CertificationGateExecutor(snapshot, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['I1'])
+        result = executor.execute_composer_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.BLOCKED
         assert len(result.blockers) > 0
         assert 'unavailable' in result.message.lower() or 'no verified blocks' in result.message.lower()
     
-    def test_composer_gate_collects_evidence_from_all_checks(self, mock_snapshot_composer_valid):
+    def test_composer_gate_collects_evidence_from_all_checks(self, mock_snapshot_composer_valid, test_manifest):
         """Composer gate collects evidence IDs from registry, implementation, and renderer."""
         executor = CertificationGateExecutor(mock_snapshot_composer_valid, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['I1'])
+        result = executor.execute_composer_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.evidence_ids) >= 3  # Registry, implementation, renderer
@@ -1231,7 +1319,7 @@ class TestWave4ComposerVerification:
             assert eid.startswith('ev-')
             assert 'candidate' not in eid
     
-    def test_composer_gate_verifies_multiple_blocks(self, mock_snapshot_composer_valid):
+    def test_composer_gate_verifies_multiple_blocks(self, mock_snapshot_composer_valid, test_manifest):
         """Composer gate can verify multiple blocks in single call."""
         # Add another block to snapshot
         mock_snapshot_composer_valid['blocks']['verified'].append({
@@ -1288,7 +1376,7 @@ class TestWave4ComposerVerification:
         
         executor = CertificationGateExecutor(mock_snapshot_composer_valid, Path('.'))
         
-        result = executor.execute_composer_verification_gate(['I1', 'C1'])
+        result = executor.execute_composer_verification_gate(['I1', 'C1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert 'passed for 2 block(s)' in result.message.lower() or 'verified for 2 block(s)' in result.message.lower()
@@ -1296,6 +1384,37 @@ class TestWave4ComposerVerification:
 
 class TestWave5RuntimeVerification:
     """Test Wave 5 runtime and browser verification gates."""
+    
+    @pytest.fixture
+    def repository_root(self, tmp_path):
+        """Mock repository root."""
+        return tmp_path
+    @pytest.fixture
+    def test_manifest(self):
+        """Create a test PlacementManifest with valid hash."""
+        evidence_ids = ["ev-impl-001", "ev-render-001", "ev-registry-001"]
+        
+        manifest = PlacementManifest(
+            manifestId="manifest-test-001",
+            candidateId="candidate-block-I1",
+            decision=PlacementDecision.ADD,
+            targetPath="packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+            blockFamily=BlockFamily.INTRODUCTION,
+            blockVersion="I1",
+            requiredChanges=["Add UBRC compliance"],
+            evidenceIds=evidence_ids,
+            manifestHash="",
+            createdAt=datetime.now(UTC).isoformat()
+        )
+        
+        # Compute hash
+        manifest.manifestHash = ""
+        manifest_json = manifest.model_dump_json(exclude_none=True, indent=2)
+        computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
+        manifest.manifestHash = computed_hash
+        
+        return manifest
+    
     
     @pytest.fixture
     def mock_snapshot_runtime_valid(self):
@@ -1339,18 +1458,18 @@ class TestWave5RuntimeVerification:
             'findings': []
         }
     
-    def test_runtime_gate_passes_with_valid_block(self, mock_snapshot_runtime_valid):
+    def test_runtime_gate_passes_with_valid_block(self, mock_snapshot_runtime_valid, test_manifest):
         """Runtime verification gate passes when block is properly implemented."""
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
         
-        result = executor.execute_runtime_verification_gate(['I1'])
+        result = executor.execute_runtime_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.evidence_ids) > 0
         assert len(result.blockers) == 0
         assert 'runtime verification passed' in result.message.lower()
     
-    def test_runtime_gate_blocked_with_empty_snapshot(self):
+    def test_runtime_gate_blocked_with_empty_snapshot(self, test_manifest):
         """Runtime gate blocked when snapshot has no verified blocks."""
         snapshot = {
             'metadata': {},
@@ -1361,13 +1480,13 @@ class TestWave5RuntimeVerification:
         
         executor = CertificationGateExecutor(snapshot, Path('.'))
         
-        result = executor.execute_runtime_verification_gate(['I1'])
+        result = executor.execute_runtime_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.BLOCKED
         assert len(result.blockers) > 0
         assert 'unavailable' in result.message.lower() or 'no verified blocks' in result.message.lower()
     
-    def test_runtime_gate_fails_with_missing_block(self):
+    def test_runtime_gate_fails_with_missing_block(self, test_manifest):
         """Runtime gate fails when block not found in snapshot."""
         snapshot = {
             'metadata': {},
@@ -1385,16 +1504,16 @@ class TestWave5RuntimeVerification:
         
         executor = CertificationGateExecutor(snapshot, Path('.'))
         
-        result = executor.execute_runtime_verification_gate(['nonexistent'])
+        result = executor.execute_runtime_verification_gate(['nonexistent'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
     
-    def test_runtime_gate_collects_evidence_ids(self, mock_snapshot_runtime_valid):
+    def test_runtime_gate_collects_evidence_ids(self, mock_snapshot_runtime_valid, test_manifest):
         """Runtime gate collects real evidence IDs from TypeScript discovery."""
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
         
-        result = executor.execute_runtime_verification_gate(['I1'])
+        result = executor.execute_runtime_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert len(result.evidence_ids) > 0
@@ -1404,7 +1523,7 @@ class TestWave5RuntimeVerification:
             assert eid.startswith('ev-')
             assert 'candidate' not in eid
     
-    def test_runtime_gate_verifies_multiple_blocks(self, mock_snapshot_runtime_valid):
+    def test_runtime_gate_verifies_multiple_blocks(self, mock_snapshot_runtime_valid, test_manifest):
         """Runtime gate can verify multiple blocks in single call."""
         # Add another block
         mock_snapshot_runtime_valid['blocks']['verified'].append({
@@ -1423,16 +1542,16 @@ class TestWave5RuntimeVerification:
         
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
         
-        result = executor.execute_runtime_verification_gate(['I1', 'C1'])
+        result = executor.execute_runtime_verification_gate(['I1', 'C1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert 'passed for 2 block(s)' in result.message.lower() or 'verified for 2 block(s)' in result.message.lower()
     
-    def test_browser_gate_passes_with_valid_block(self, mock_snapshot_runtime_valid):
+    def test_browser_gate_passes_with_valid_block(self, mock_snapshot_runtime_valid, test_manifest):
         """Browser verification gate passes when block renders correctly."""
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
         
-        result = executor.execute_browser_verification_gate(['I1'])
+        result = executor.execute_browser_verification_gate(['I1'], test_manifest)
         
         # Browser verification will fail if Playwright not installed,
         # but gate should handle gracefully
@@ -1446,7 +1565,7 @@ class TestWave5RuntimeVerification:
         if result.status == CertificationGateStatus.FAIL:
             assert len(result.blockers) > 0
     
-    def test_browser_gate_blocked_with_empty_snapshot(self):
+    def test_browser_gate_blocked_with_empty_snapshot(self, test_manifest):
         """Browser gate blocked when snapshot has no verified blocks."""
         snapshot = {
             'metadata': {},
@@ -1457,17 +1576,17 @@ class TestWave5RuntimeVerification:
         
         executor = CertificationGateExecutor(snapshot, Path('.'))
         
-        result = executor.execute_browser_verification_gate(['I1'])
+        result = executor.execute_browser_verification_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.BLOCKED
         assert len(result.blockers) > 0
         assert 'unavailable' in result.message.lower() or 'no verified blocks' in result.message.lower()
     
-    def test_browser_gate_collects_evidence_ids(self, mock_snapshot_runtime_valid):
+    def test_browser_gate_collects_evidence_ids(self, mock_snapshot_runtime_valid, test_manifest):
         """Browser gate collects real evidence IDs from TypeScript discovery."""
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
         
-        result = executor.execute_browser_verification_gate(['I1'])
+        result = executor.execute_browser_verification_gate(['I1'], test_manifest)
         
         # Should collect evidence IDs even if browser verification fails
         assert len(result.evidence_ids) > 0
@@ -1477,18 +1596,18 @@ class TestWave5RuntimeVerification:
             assert eid.startswith('ev-')
             assert 'candidate' not in eid
     
-    def test_browser_gate_creates_screenshot_directory(self, mock_snapshot_runtime_valid, tmp_path):
+    def test_browser_gate_creates_screenshot_directory(self, mock_snapshot_runtime_valid, tmp_path, test_manifest):
         """Browser gate creates screenshot directory if configured."""
         # Use tmp_path as repository_root
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, tmp_path)
         
-        result = executor.execute_browser_verification_gate(['I1'])
+        result = executor.execute_browser_verification_gate(['I1'], test_manifest)
         
         # Screenshot directory should be created
         screenshot_dir = tmp_path / '.evidence' / 'screenshots'
         assert screenshot_dir.exists()
     
-    def test_browser_gate_verifies_multiple_blocks(self, mock_snapshot_runtime_valid):
+    def test_browser_gate_verifies_multiple_blocks(self, mock_snapshot_runtime_valid, test_manifest):
         """Browser gate can verify multiple blocks in single call."""
         # Add another block
         mock_snapshot_runtime_valid['blocks']['verified'].append({
@@ -1507,7 +1626,7 @@ class TestWave5RuntimeVerification:
         
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
         
-        result = executor.execute_browser_verification_gate(['I1', 'C1'])
+        result = executor.execute_browser_verification_gate(['I1', 'C1'], test_manifest)
         
         # Should handle multiple blocks
         assert result.status in [
@@ -1519,6 +1638,37 @@ class TestWave5RuntimeVerification:
 
 class TestThemeCompatibilityGate:
     """Test theme compatibility verification gate."""
+    
+    @pytest.fixture
+    def repository_root(self, tmp_path):
+        """Mock repository root."""
+        return tmp_path
+    @pytest.fixture
+    def test_manifest(self):
+        """Create a test PlacementManifest with valid hash."""
+        evidence_ids = ["ev-impl-001", "ev-render-001", "ev-registry-001"]
+        
+        manifest = PlacementManifest(
+            manifestId="manifest-test-001",
+            candidateId="candidate-block-I1",
+            decision=PlacementDecision.ADD,
+            targetPath="packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+            blockFamily=BlockFamily.INTRODUCTION,
+            blockVersion="I1",
+            requiredChanges=["Add UBRC compliance"],
+            evidenceIds=evidence_ids,
+            manifestHash="",
+            createdAt=datetime.now(UTC).isoformat()
+        )
+        
+        # Compute hash
+        manifest.manifestHash = ""
+        manifest_json = manifest.model_dump_json(exclude_none=True, indent=2)
+        computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
+        manifest.manifestHash = computed_hash
+        
+        return manifest
+    
     
     @pytest.fixture
     def mock_snapshot_with_theme_aware_block(self, tmp_path):
@@ -1682,14 +1832,14 @@ export function NoThemeBlock({ block }: any) {
             'findings': []
         }
     
-    def test_theme_gate_passes_with_theme_aware_block(self, mock_snapshot_with_theme_aware_block, tmp_path):
+    def test_theme_gate_passes_with_theme_aware_block(self, mock_snapshot_with_theme_aware_block, tmp_path, test_manifest):
         """Theme compatibility gate passes when block uses theme context."""
         # Create theme configuration files in repository
         self._create_theme_configs(tmp_path)
         
         executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['I1'])
+        result = executor.execute_theme_compatibility_gate(['I1'], test_manifest)
         
         # Debug output
         print(f"\nResult status: {result.status}")
@@ -1701,74 +1851,74 @@ export function NoThemeBlock({ block }: any) {
         assert len(result.evidence_ids) > 0
         assert 'theme(s)' in result.message.lower()
     
-    def test_theme_gate_fails_with_hardcoded_values(self, mock_snapshot_with_hardcoded_theme, tmp_path):
+    def test_theme_gate_fails_with_hardcoded_values(self, mock_snapshot_with_hardcoded_theme, tmp_path, test_manifest):
         """Theme gate fails when block has hard-coded theme values."""
         # Create theme configuration files in repository
         self._create_theme_configs(tmp_path)
         
         executor = CertificationGateExecutor(mock_snapshot_with_hardcoded_theme, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['B1'])
+        result = executor.execute_theme_compatibility_gate(['B1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         # Should detect hard-coded values or missing theme context
         assert any('hard' in b.lower() or 'theme' in b.lower() for b in result.blockers)
     
-    def test_theme_gate_fails_with_missing_theme_context(self, mock_snapshot_no_theme_context, tmp_path):
+    def test_theme_gate_fails_with_missing_theme_context(self, mock_snapshot_no_theme_context, tmp_path, test_manifest):
         """Theme gate fails when block missing theme context."""
         # Create theme configuration files in repository
         self._create_theme_configs(tmp_path)
         
         executor = CertificationGateExecutor(mock_snapshot_no_theme_context, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['N1'])
+        result = executor.execute_theme_compatibility_gate(['N1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         # Should detect missing theme context
         assert any('theme' in b.lower() or 'context' in b.lower() for b in result.blockers)
     
-    def test_theme_gate_detects_suia_theme(self, mock_snapshot_with_theme_aware_block, tmp_path):
+    def test_theme_gate_detects_suia_theme(self, mock_snapshot_with_theme_aware_block, tmp_path, test_manifest):
         """Theme gate discovers SUIA theme from repository."""
         # Create theme configuration files
         self._create_theme_configs(tmp_path)
         
         executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['I1'])
+        result = executor.execute_theme_compatibility_gate(['I1'], test_manifest)
         
         # Should discover themes - verify 6 themes found (2 enterprise + 2 brand + 2 domain shown in test fixture)
         # The actual test is that it discovered themes from repository, not hard-coded
         assert result.status == CertificationGateStatus.PASS
         assert '6 theme(s)' in result.message
     
-    def test_theme_gate_detects_rth_theme(self, mock_snapshot_with_theme_aware_block, tmp_path):
+    def test_theme_gate_detects_rth_theme(self, mock_snapshot_with_theme_aware_block, tmp_path, test_manifest):
         """Theme gate discovers RTH theme from repository."""
         # Create theme configuration files
         self._create_theme_configs(tmp_path)
         
         executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['I1'])
+        result = executor.execute_theme_compatibility_gate(['I1'], test_manifest)
         
         # Should discover themes - verify 6 themes found
         # The actual test is that it discovered themes from repository, not hard-coded
         assert result.status == CertificationGateStatus.PASS
         assert '6 theme(s)' in result.message
     
-    def test_theme_gate_blocked_without_themes(self, mock_snapshot_with_theme_aware_block, tmp_path):
+    def test_theme_gate_blocked_without_themes(self, mock_snapshot_with_theme_aware_block, tmp_path, test_manifest):
         """Theme gate blocked when no theme configurations found."""
         # Don't create theme configs - should be blocked
         executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['I1'])
+        result = executor.execute_theme_compatibility_gate(['I1'], test_manifest)
         
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
         assert any('theme config' in b.lower() or 'no theme' in b.lower() for b in result.blockers)
     
-    def test_theme_gate_detects_design_tokens(self, tmp_path):
+    def test_theme_gate_detects_design_tokens(self, tmp_path, test_manifest):
         """Theme gate detects and reports design token usage."""
         # Create block with CSS variables
         block_impl = tmp_path / "packages" / "ui" / "src" / "tutorial" / "blocks" / "TokenBlock.tsx"
@@ -1828,7 +1978,7 @@ export function TokenBlock({ block, theme }: any) {
         
         executor = CertificationGateExecutor(snapshot, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['tokenblock'])
+        result = executor.execute_theme_compatibility_gate(['tokenblock'], test_manifest)
         
         # Debug
         if result.status != CertificationGateStatus.PASS:
@@ -1837,7 +1987,7 @@ export function TokenBlock({ block, theme }: any) {
         # Block uses design tokens (CSS variables) and theme prop - should pass
         assert result.status == CertificationGateStatus.PASS
     
-    def test_theme_gate_verifies_multiple_blocks(self, mock_snapshot_with_theme_aware_block, tmp_path):
+    def test_theme_gate_verifies_multiple_blocks(self, mock_snapshot_with_theme_aware_block, tmp_path, test_manifest):
         """Theme gate can verify multiple blocks."""
         # Add another theme-aware block
         block_impl2 = tmp_path / "packages" / "ui" / "src" / "tutorial" / "blocks" / "CodeBlock.tsx"
@@ -1878,19 +2028,19 @@ export function CodeBlock({ block, theme }: CodeBlockProps) {
         
         executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['I1', 'C1'])
+        result = executor.execute_theme_compatibility_gate(['I1', 'C1'], test_manifest)
         
         assert result.status == CertificationGateStatus.PASS
         assert '2 block(s)' in result.message
     
-    def test_theme_gate_collects_evidence_ids(self, mock_snapshot_with_theme_aware_block, tmp_path):
+    def test_theme_gate_collects_evidence_ids(self, mock_snapshot_with_theme_aware_block, tmp_path, test_manifest):
         """Theme gate collects real evidence IDs from TypeScript discovery."""
         # Create theme configs
         self._create_theme_configs(tmp_path)
         
         executor = CertificationGateExecutor(mock_snapshot_with_theme_aware_block, tmp_path)
         
-        result = executor.execute_theme_compatibility_gate(['I1'])
+        result = executor.execute_theme_compatibility_gate(['I1'], test_manifest)
         
         assert len(result.evidence_ids) > 0
         
