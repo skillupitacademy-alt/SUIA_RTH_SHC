@@ -191,26 +191,74 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
           <div>
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">AI Content Workspace</h2>
             <nav className="space-y-1">
-              {[
-                { icon: Sparkles, label: 'Project LLM', href: '/tools/project-llm', color: 'text-fuchsia-400' },
-                { icon: Layers, label: 'Tutorial Block Composer', href: '/tools/tutorial-block-composer', color: 'text-rose-400' },
-                { icon: BookOpen, label: 'Tutorial Left Sidebar', href: '/tools/tutorial-left-sidebar', color: 'text-orange-400' },
-                { icon: FileText, label: 'Tutorial Page Content', href: '/tools/tutorial-page-content', color: 'text-pink-400' },
-              ].map((item, i) => (
+              <div>
                 <Link
-                  key={i}
-                  href={item.href}
+                  href="/tools/project-llm"
                   className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
-                    pathname === item.href ? 'bg-slate-800 text-white font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                    pathname === '/tools/project-llm' || pathname.startsWith('/tools/project-llm')
+                      ? 'bg-pink-950/40 text-pink-400 font-bold border border-pink-500/30'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
                   }`}
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
-                    <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color || 'text-slate-400'}`}><item.icon size={14} /></div>
-                    <span className="whitespace-nowrap truncate">{item.label}</span>
+                    <div className="p-1 rounded bg-slate-800/50 shrink-0 text-pink-400">
+                      <Sparkles size={14} />
+                    </div>
+                    <span className="whitespace-nowrap truncate">Project LLM</span>
                   </div>
-                  <ChevronRight size={14} className="text-slate-500 shrink-0" />
+                  <ChevronRight
+                    size={14}
+                    className={`text-slate-500 shrink-0 transition-transform ${
+                      pathname.startsWith('/tools/project-llm') ? 'rotate-90 text-pink-400' : ''
+                    }`}
+                  />
                 </Link>
-              ))}
+
+                {pathname.startsWith('/tools/project-llm') && (
+                  <div className="ml-4 mt-1 pl-3 border-l border-slate-700/80 space-y-1">
+                    {[
+                      { label: 'Create Block', href: '/tools/project-llm/create' },
+                      { label: 'Compliance Brief', href: '/tools/project-llm/compliance-brief' },
+                      { label: 'External AI Handoff', href: '/tools/project-llm/external-ai-handoff' },
+                      { label: 'Candidate Upload', href: '/tools/project-llm/candidate-upload' },
+                      { label: 'Integration & Certification', href: '/tools/project-llm/integration-certification' },
+                      { label: 'Workflow Details', href: '/tools/project-llm/workflow-details' },
+                    ].map((sub) => {
+                      const isSubActive = pathname === sub.href;
+                      return (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          className={`block px-2.5 py-1.5 text-xs rounded-md transition-colors ${
+                            isSubActive
+                              ? 'bg-pink-500/20 text-pink-300 font-bold border border-pink-500/40'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <Link
+                href="/tools/tutorial-block-composer"
+                className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
+                  pathname === '/tools/tutorial-block-composer'
+                    ? 'bg-slate-800 text-white font-bold'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="p-1 rounded bg-slate-800/50 shrink-0 text-rose-400">
+                    <Layers size={14} />
+                  </div>
+                  <span className="whitespace-nowrap truncate">Tutorial Block Composer</span>
+                </div>
+                <ChevronRight size={14} className="text-slate-500 shrink-0" />
+              </Link>
             </nav>
           </div>
 

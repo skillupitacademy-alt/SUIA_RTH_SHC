@@ -316,37 +316,37 @@ export default function ProjectLlmControlPlaneDashboard() {
 
             {/* Quick Action Button Bar */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                onClick={() => setActiveTab('brief-builder')}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:scale-[1.02] active:scale-95 transition-all"
+              <Link
+                href="/tools/project-llm/create"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:from-pink-700 hover:to-rose-700 hover:scale-[1.02] active:scale-95 transition-all"
               >
                 <Sparkles size={15} />
-                <span>Create Block Spec</span>
+                <span>+ Create Educational Block</span>
                 <ArrowRight size={13} />
-              </button>
+              </Link>
 
-              <button
-                onClick={() => { setActiveTab('pipelines'); setPipelineFilter('active'); }}
+              <Link
+                href="/tools/project-llm/candidate-upload"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
               >
                 <FileInput size={15} className="text-indigo-600" />
-                <span>Review Candidates (1)</span>
-              </button>
+                <span>Upload & Validate</span>
+              </Link>
 
-              <button
-                onClick={() => { setActiveTab('pipelines'); setPipelineFilter('approval'); }}
-                className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2.5 text-xs font-bold text-amber-800 shadow-sm hover:bg-amber-100/70 transition-all"
+              <Link
+                href="/tools/project-llm/integration-certification"
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 text-xs font-bold text-emerald-800 shadow-sm hover:bg-emerald-100/70 transition-all"
               >
-                <ShieldAlert size={15} className="text-amber-600" />
-                <span>Awaiting Approvals (2)</span>
-              </button>
+                <ShieldCheck size={15} className="text-emerald-600" />
+                <span>Integrate & Certify</span>
+              </Link>
 
               <Link
                 href="/tools/tutorial-block-composer"
                 className="inline-flex items-center gap-2 rounded-xl border border-pink-200 bg-pink-50/50 px-4 py-2.5 text-xs font-bold text-pink-700 shadow-sm hover:bg-pink-100/60 transition-all"
               >
                 <Layers size={15} className="text-[#e11d48]" />
-                <span>Downstream Composer</span>
+                <span>Tutorial Composer</span>
                 <ExternalLink size={13} />
               </Link>
             </div>
@@ -416,7 +416,60 @@ export default function ProjectLlmControlPlaneDashboard() {
         </div>
       </section>
 
-      {/* 2. Control Plane KPI Cards (Active Workflows, Approvals, Blocked, Evidence) */}
+      {/* 2. Autonomous 7-Page Engineering Journey Quick Launcher */}
+      <section className="rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-sm p-5 sm:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-pink-600 block mb-0.5">
+              Autonomous Engineering Journey
+            </span>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 font-outfit">
+              Primary Project LLM Workspaces
+            </h2>
+          </div>
+          <span className="text-xs text-slate-400 font-medium">
+            Human-Centric Engineering Lifecycle
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { step: '01', title: 'Create Block', desc: 'Select family & version', href: '/tools/project-llm/create', color: 'from-pink-500 to-rose-500' },
+            { step: '02', title: 'Compliance Brief', desc: '9 repository contracts', href: '/tools/project-llm/compliance-brief', color: 'from-orange-500 to-amber-500' },
+            { step: '03', title: 'External AI Handoff', desc: 'Design & TS phases', href: '/tools/project-llm/external-ai-handoff', color: 'from-purple-500 to-indigo-500' },
+            { step: '04', title: 'Upload & Validate', desc: '11 quality gates', href: '/tools/project-llm/candidate-upload', color: 'from-blue-500 to-cyan-500' },
+            { step: '05', title: 'Integrate & Certify', desc: 'Manifest & runtime', href: '/tools/project-llm/integration-certification', color: 'from-emerald-500 to-teal-500' },
+            { step: '06', title: 'Workflow Details', desc: 'Evidence & audit logs', href: '/tools/project-llm/workflow-details', color: 'from-slate-700 to-slate-900' },
+          ].map((item) => (
+            <Link
+              key={item.step}
+              href={item.href}
+              className="flex flex-col justify-between p-3.5 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-pink-300 hover:shadow-md transition-all group"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-mono font-bold text-slate-400 group-hover:text-pink-600 transition-colors">
+                    Step {item.step}
+                  </span>
+                  <div className={`h-2 w-2 rounded-full bg-gradient-to-r ${item.color}`} />
+                </div>
+                <h3 className="text-xs font-bold text-slate-900 group-hover:text-pink-600 transition-colors leading-tight font-outfit">
+                  {item.title}
+                </h3>
+                <p className="text-[10px] text-slate-400 mt-1 leading-snug">
+                  {item.desc}
+                </p>
+              </div>
+              <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-500 group-hover:text-pink-600">
+                <span>Launch</span>
+                <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. Control Plane KPI Cards (Active Workflows, Approvals, Blocked, Evidence) */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
