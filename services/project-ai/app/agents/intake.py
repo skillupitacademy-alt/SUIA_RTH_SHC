@@ -1,10 +1,30 @@
 """Candidate intake and classification agent handler."""
 
+import hashlib
 from datetime import datetime, UTC
 from typing import Any, Dict, List
+from pydantic import BaseModel, Field
 
 from app.orchestration.agent_coordinator import AgentContext, AgentResult, AgentStatus
 from app.models.candidate import BlockFamily
+
+
+class CandidateManifest(BaseModel):
+    """
+    Manifest that binds a candidate to its engineering contract.
+    
+    This ensures candidates are traceable to their source workflow and contract,
+    enabling integrity verification and preventing contract drift.
+    """
+    workflow_id: str = Field(..., description="Workflow that requested this candidate")
+    contract_id: str = Field(..., description="Engineering contract identifier")
+    contract_hash: str = Field(..., description="SHA-256 hash of the engineering contract")
+    target: dict = Field(..., description="Target specification (family, version, block_type)")
+
+
+class CandidateIntegrityError(Exception):
+    """Raised when candidate integrity verification fails."""
+    pass
 
 
 async def execute_intake(context: AgentContext) -> AgentResult:
@@ -159,3 +179,67 @@ def _collect_block_evidence(implementations: List[Dict[str, Any]], snapshot: Dic
             evidence_ids.append(evidence.get('evidenceId', ''))
     
     return [eid for eid in evidence_ids if eid]  # No limit (Finding #6)
+
+
+def sha256_file(path: str) -> str:
+    """
+    Calculate SHA-256 hash of a file.
+    
+    Args:
+        path: Path to the file
+        
+    Returns:
+        64-character hex string (SHA-256)
+    """
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(65536), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def verify_candidate_integrity(
+    manifest: CandidateManifest,
+    candidate_path: str,
+    stored_contract_hash: str
+) -> None:
+    """
+    Server-side integrity check for candidate submissions.
+    
+    This function enforces the principle: NEVER trust client-declared hashes.
+    All verification is performed server-side using stored contract data.
+    
+    Args:
+        manifest: Candidate manifest from submission
+        candidate_path: Path to candidate files (for future file hash verification)
+        stored_contract_hash: Contract hash from server-side contract store
+        
+    Raises:
+        CandidateIntegrityError: If any integrity check fails
+        
+    Note:
+        This addresses Wave 3 requirement for contract binding and tamper detection.
+    """
+    # 1. Verify contract_hash matches stored contract (not just client-declared)
+    if manifest.contract_hash != stored_contract_hash:
+        raise CandidateIntegrityError(
+            f"Contract hash mismatch: candidate declares {manifest.contract_hash!r} "
+            f"but server has {stored_contract_hash!r} for contract {manifest.contract_id!r}"
+        )
+    
+    # 2. Verify target binding is complete
+    if not manifest.target.get('family'):
+        raise CandidateIntegrityError("Manifest missing target.family")
+    
+    if not manifest.target.get('version'):
+        raise CandidateIntegrityError("Manifest missing target.version")
+    
+    # 3. Verify workflow_id and contract_id are present
+    if not manifest.workflow_id:
+        raise CandidateIntegrityError("Manifest missing workflow_id")
+    
+    if not manifest.contract_id:
+        raise CandidateIntegrityError("Manifest missing contract_id")
+    
+    # Future extension: verify file hashes within candidate_path
+    # This would involve checking each file's SHA-256 against a declared manifest
