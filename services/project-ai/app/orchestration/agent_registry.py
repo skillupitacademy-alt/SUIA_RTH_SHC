@@ -173,9 +173,9 @@ class AgentRegistry:
                 agentId="composer_workflow",
                 agentType=AgentType.COMPOSER_WORKFLOW,
                 name="Composer Workflow Agent",
-                capabilities=["orchestrate_composition", "validate_i2_workflow", "check_mix_and_match"],
+                capabilities=["orchestrate_composition", "validate_i2_workflow", "check_design_reuse_compatibility"],
                 status="active",
-                description="Orchestrates composition workflow, validates I2 workflow, checks mix-and-match compatibility"
+                description="Orchestrates composition workflow, validates I2 workflow, checks design reuse (mix-and-match) compatibility during CANDIDATE_AUDIT phase"
             ),
             AgentType.GOVERNANCE: Agent(
                 agentId="governance",

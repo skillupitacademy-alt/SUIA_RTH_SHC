@@ -10,12 +10,35 @@ from pathlib import Path
 
 router = APIRouter(prefix="/creation", tags=["Creation Workflows"])
 
+# M2.9 ARCHITECTURE (Wave 1 / Agent B13):
+# This endpoint is NOT a competing workflow state machine.
+# It creates workflows that follow CanonicalWorkflowState lifecycle.
+# CreationMode is a design input classifier that determines validation logic only.
+#
+# All workflows created here must be reconciled with CanonicalWorkflowState:
+# - WorkflowStatus.CREATED → CanonicalWorkflowState.REQUESTED
+# - WorkflowStatus.VALIDATING → CanonicalWorkflowState.CANDIDATE_AUDIT
+# - WorkflowStatus.CERTIFYING → CanonicalWorkflowState.CERTIFICATION_READY
+# - WorkflowStatus.CERTIFIED → CanonicalWorkflowState.CERTIFIED
+# - WorkflowStatus.FAILED → CanonicalWorkflowState.REJECTED
+#
+# TODO(B01): Replace WorkflowStatus with direct CanonicalWorkflowState usage.
+
 # In-memory store (production would use database)
 workflows = {}
 
 @router.post("/workflows", response_model=WorkflowResponse)
 async def create_workflow(request: CreateWorkflowRequest):
-    """Create new I2 or Mix-and-Match creation workflow"""
+    """
+    Create new block creation workflow.
+    
+    CreationMode determines validation logic during audit phase:
+    - I2_ONLY: Validates complete I2 repository structure
+    - MIX_AND_MATCH: Validates component compatibility (I1/I2/Candidate mix)
+    - NEW_CANDIDATE: No pre-existing structure validation
+    
+    All workflows follow CanonicalWorkflowState lifecycle regardless of mode.
+    """
     workflow_id = str(uuid.uuid4())
     
     # Initialize certification gates
@@ -58,9 +81,13 @@ async def validate_workflow(workflow_id: str):
     """
     Run composition validation checks.
     
-    Performs I2 validation or mix-and-match compatibility checks:
+    CreationMode determines which validation logic executes:
     - I2_ONLY: Verifies complete I2 structure from repository
     - MIX_AND_MATCH: Validates component compatibility (type, version, registry, renderer, runtime)
+    - NEW_CANDIDATE: Basic structure validation only
+    
+    This is validation logic selection, NOT workflow state bypass.
+    All workflows follow CanonicalWorkflowState lifecycle.
     
     Returns BLOCKED status if validation fails, CERTIFYING if all checks pass.
     """
