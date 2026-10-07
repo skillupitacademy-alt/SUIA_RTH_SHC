@@ -338,15 +338,38 @@ class WorkflowEngine:
         for agent_id, definition in AGENT_WORKFLOW_DAG.items():
             dependencies[agent_id] = definition['depends_on']
         
-        # Get all agents (use agent_id as placeholder agents)
-        # In a full implementation, these would map to actual Agent objects
+        # Get all agents - map agent_id to AgentType
         from app.orchestration.agent_registry import Agent, AgentType
+        
+        # Map agent_id to AgentType enum
+        agent_type_map = {
+            'repository_auditor': AgentType.REPOSITORY_AUDITOR,
+            'snapshot_authority': AgentType.SNAPSHOT_AUTHORITY,
+            'evidence_freeze': AgentType.EVIDENCE_FREEZE,
+            'block_specification': AgentType.BLOCK_SPECIFICATION,
+            'candidate_intake': AgentType.CANDIDATE_INTAKE,
+            'candidate_classification': AgentType.CANDIDATE_CLASSIFICATION,
+            'canonical_comparison': AgentType.CANONICAL_COMPARISON,
+            'placement_manifest': AgentType.PLACEMENT_MANIFEST,
+            'human_approval': AgentType.HUMAN_APPROVAL,
+            'placement_executor': AgentType.PLACEMENT_EXECUTOR,
+            'post_placement_snapshot': AgentType.POST_PLACEMENT_SNAPSHOT,
+            'certification_controller': AgentType.CERTIFICATION_CONTROLLER,
+            'runtime_verification': AgentType.RUNTIME_VERIFICATION,
+            'browser_verification': AgentType.BROWSER_VERIFICATION,
+            'final_gate_controller': AgentType.FINAL_GATE_CONTROLLER,
+        }
+        
         agents = []
         for agent_id in AGENT_WORKFLOW_DAG.keys():
-            # Create placeholder agent (coordinator will map to actual implementation)
+            # Map agent_id to correct AgentType
+            agent_type = agent_type_map.get(agent_id)
+            if agent_type is None:
+                raise ValueError(f"Unknown agent_id in DAG: {agent_id}")
+            
             agent = Agent(
                 agentId=agent_id,
-                agentType=AgentType.GATE_CONTROLLER,  # Placeholder type
+                agentType=agent_type,
                 name=AGENT_WORKFLOW_DAG[agent_id]['name'],
                 capabilities=[],
                 status='active',

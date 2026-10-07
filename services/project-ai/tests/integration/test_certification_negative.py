@@ -17,8 +17,43 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.certification.gates import CertificationGateExecutor
 from app.models.creation import CertificationGateStatus
+from app.models.candidate import PlacementManifest, PlacementDecision, BlockFamily
 
 client = TestClient(app)
+
+
+def create_mock_manifest(
+    manifest_id: str = "manifest-test-001",
+    candidate_id: str = "candidate-test-001",
+    decision: PlacementDecision = PlacementDecision.ADD,
+    target_path: str = "app/blocks/test",
+    block_family: BlockFamily = BlockFamily.INTRODUCTION,
+    block_version: str = "I1"
+) -> PlacementManifest:
+    """Create a mock PlacementManifest for testing with proper hash calculation."""
+    manifest = PlacementManifest(
+        manifestId=manifest_id,
+        candidateId=candidate_id,
+        decision=decision,
+        targetPath=target_path,
+        blockFamily=block_family,
+        blockVersion=block_version,
+        requiredChanges=[],
+        evidenceIds=[],
+        manifestHash="",  # Temporary
+        createdAt=datetime.utcnow().isoformat() + "Z"
+    )
+    
+    # Compute manifest hash correctly (excluding the manifestHash field itself)
+    manifest_copy = manifest.model_copy()
+    manifest_copy.manifestHash = ""
+    manifest_json = manifest_copy.model_dump_json(exclude_none=True, indent=2)
+    computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
+    
+    # Set the computed hash
+    manifest.manifestHash = computed_hash
+    
+    return manifest
 
 
 @pytest.mark.negative
@@ -50,8 +85,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_no_evidence, repository_root)
+        manifest = create_mock_manifest()
         
-        result = executor.execute_evidence_binding_gate(['I1'])
+        result = executor.execute_evidence_binding_gate(['I1'], manifest)
         
         assert result.status != CertificationGateStatus.PASS, \
             "Evidence binding gate should not pass without evidence"
@@ -85,9 +121,10 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_wrong_version, repository_root)
+        manifest = create_mock_manifest(block_version="I2")
         
         # Request I2 but only I1 exists in snapshot
-        result = executor.execute_ubrc_gate(['I2'])
+        result = executor.execute_ubrc_gate(['I2'], manifest)
         
         assert result.status != CertificationGateStatus.PASS, \
             "UBRC gate should not pass when requested version not found"
@@ -119,8 +156,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_no_registry, repository_root)
+        manifest = create_mock_manifest(block_version="C1")
         
-        result = executor.execute_registry_verification_gate(['C1'])
+        result = executor.execute_registry_verification_gate(['C1'], manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Registry verification gate should fail when registry missing"
@@ -154,8 +192,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_no_renderer, repository_root)
+        manifest = create_mock_manifest(block_version="C1")
         
-        result = executor.execute_renderer_verification_gate(['C1'])
+        result = executor.execute_renderer_verification_gate(['C1'], manifest)
         
         # Renderer gate returns BLOCKED when renderer missing (not FAIL)
         assert result.status in [CertificationGateStatus.FAIL, CertificationGateStatus.BLOCKED], \
@@ -198,8 +237,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_wrong_renderer, repository_root)
+        manifest = create_mock_manifest()
         
-        result = executor.execute_ubrc_gate(['I1'])
+        result = executor.execute_ubrc_gate(['I1'], manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "UBRC gate should fail when renderer mismatches block type"
@@ -237,8 +277,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_schema_mismatch, repository_root)
+        manifest = create_mock_manifest(block_version="Q1", block_family=BlockFamily.QUIZ)
         
-        result = executor.execute_composer_verification_gate(['Q1'])
+        result = executor.execute_composer_verification_gate(['Q1'], manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Composer gate should fail when schema invalid"
@@ -271,8 +312,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_composer_unavailable, repository_root)
+        manifest = create_mock_manifest(block_version="A1", block_family=BlockFamily.ASSESSMENT)
         
-        result = executor.execute_composer_verification_gate(['A1'])
+        result = executor.execute_composer_verification_gate(['A1'], manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Composer gate should fail when block not registered"
@@ -308,8 +350,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_runtime_error, repository_root)
+        manifest = create_mock_manifest(block_version="M1", block_family=BlockFamily.MEDIA)
         
-        result = executor.execute_runtime_verification_gate(['M1'])
+        result = executor.execute_runtime_verification_gate(['M1'], manifest)
         
         # Runtime gate returns BLOCKED when runtime not verified (not FAIL)
         assert result.status in [CertificationGateStatus.FAIL, CertificationGateStatus.BLOCKED], \
@@ -345,8 +388,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot_browser_error, repository_root)
+        manifest = create_mock_manifest(block_version="V1", block_family=BlockFamily.VIDEO)
         
-        result = executor.execute_browser_verification_gate(['V1'])
+        result = executor.execute_browser_verification_gate(['V1'], manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Browser gate should fail when browser errors occur"
@@ -381,8 +425,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot, repository_root)
+        manifest = create_mock_manifest()
         
-        result = executor.execute_brand_independence_gate(['BrandCoupledComponent.tsx'])
+        result = executor.execute_brand_independence_gate(['BrandCoupledComponent.tsx'], manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Brand independence gate should fail when brand values are hard-coded"
@@ -419,8 +464,9 @@ class TestCertificationNegativeScenarios:
         }
         
         executor = CertificationGateExecutor(snapshot, repository_root)
+        manifest = create_mock_manifest()
         
-        result = executor.execute_theme_compatibility_gate(['ThemeIncompatible.tsx'])
+        result = executor.execute_theme_compatibility_gate(['ThemeIncompatible.tsx'], manifest)
         
         assert result.status == CertificationGateStatus.FAIL, \
             "Theme compatibility gate should fail with hard-coded colors"
