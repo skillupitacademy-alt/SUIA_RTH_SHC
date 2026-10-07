@@ -166,6 +166,84 @@ pytest tests/
 pytest tests/ --cov=app --cov-report=html
 ```
 
+## M2.9 Wave 3: Candidate Intake + Canonical Comparison + Placement Manifest
+
+### W3 Architecture
+
+Wave 3 implements the candidate intake pipeline, connecting external AI output to the canonical workflow lifecycle.
+
+#### Three Core Components
+
+1. **CandidateValidator** (`app/intake/candidate_validator.py`)
+   - Validates uploaded candidate packages against workflow target binding
+   - Computes SHA-256 hash from actual file content (never trusts client)
+   - Enforces explicit target version (no inference allowed)
+   - Verifies artifact structure matches EngineeringContract
+   - Populates evidence dict on success and failure
+
+2. **CanonicalComparator** (`app/intake/canonical_comparator.py`)
+   - Compares candidate against canonical reference blocks
+   - Detects structural differences (missing/extra files)
+   - Identifies API changes (missing/modified exports)
+   - Scans for UBRC/ILS/Theme deviations
+   - Flags hardcoded brand markers (brand independence violations)
+   - Evidence dict always populated with file counts and checked paths
+
+3. **PlacementManifestGenerator** (`app/intake/placement_manifest.py`)
+   - Generates immutable placement manifests
+   - Sealed with SHA-256 hash for tamper detection
+   - Replacement strategy derived from comparison report:
+     * `atomic_replace`: No breaking changes, safe to deploy
+     * `staged_replace`: Breaking changes detected, staged rollout required
+     * `rollback_only`: Deviations detected, manual review required
+   - Includes target file paths, rollback plan, and evidence binding
+
+#### State Transitions (W3 Integration)
+
+The W3 pipeline integrates with CanonicalWorkflowState transitions:
+
+```
+CANDIDATE_RECEIVED 
+  → (CandidateValidator validates upload)
+  → CANDIDATE_AUDIT
+
+CANDIDATE_AUDIT 
+  → (CanonicalComparator runs compliance gates)
+  → INTEGRATION_PLANNED (if gates pass)
+  → REJECTED (if gates fail)
+
+INTEGRATION_PLANNED 
+  → (PlacementManifestGenerator creates manifest)
+  → AWAITING_IMPLEMENTATION_APPROVAL
+```
+
+#### Evidence Requirements
+
+All W3 components enforce strict evidence requirements:
+- No empty evidence dicts on success
+- All evidence fields populated with actual computed values
+- Validation/comparison timestamps in ISO 8601 format
+- File counts, hash matches, and checked paths recorded
+
+#### Architectural Boundaries
+
+1. **Version Binding Authority**: Target version comes from `WorkflowTarget.version` (never inferred)
+2. **Snapshot-Based Canonical Reference**: Canonical blocks from TypeScript snapshot (never scan repo)
+3. **Hash Verification**: Always compute SHA-256 from file content (never trust client hashes)
+4. **Immutable Manifests**: Placement manifest sealed with SHA-256 after generation
+
+### W3 Testing
+
+```bash
+# Run W3 tests
+pytest tests/test_candidate_validator.py tests/test_canonical_comparator.py tests/test_placement_manifest.py -v
+
+# All tests enforce real validation logic:
+# - No mocked PASS without evidence
+# - Happy path AND failure cases covered
+# - Evidence dict population verified
+```
+
 ## M2.8 Implementation Status
 
 ### ✅ Implemented
