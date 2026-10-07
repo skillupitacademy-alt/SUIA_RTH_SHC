@@ -13,10 +13,42 @@ CONTRACT:
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 # Relative to repository root
 EVIDENCE_ROOT = Path(__file__).parent.parent.parent.parent.parent / "docs" / "project-llm" / "evidence"
+
+
+class EvidenceRunSchema(TypedDict, total=False):
+    """
+    Schema for an agent run record.
+    
+    Required fields:
+        agent_id: Unique agent identifier (e.g., 'B01', 'F02', 'Q03')
+        wave: Wave identifier (e.g., 'W0', 'W1', 'W2')
+        timestamp: ISO 8601 timestamp
+        status: Run status ('started', 'completed', 'failed')
+    
+    Optional fields:
+        duration_ms: Execution duration in milliseconds
+        files_modified: List of modified file paths
+        tests_run: Number of tests executed
+        tests_passed: Number of tests passed
+        error: Error message if status is 'failed'
+        commit_hash: Git commit hash if changes were committed
+        evidence: Additional evidence metadata
+    """
+    agent_id: str
+    wave: str
+    timestamp: str
+    status: str
+    duration_ms: int
+    files_modified: list[str]
+    tests_run: int
+    tests_passed: int
+    error: str
+    commit_hash: str
+    evidence: dict[str, Any]
 
 
 def _append_jsonl(file_name: str, data: dict[str, Any]) -> None:
@@ -72,3 +104,48 @@ def append_certification_result(result: dict[str, Any]) -> None:
         result: Certification metadata (block_id, status, timestamp, checks, etc.)
     """
     _append_jsonl("certification-results.jsonl", result)
+
+
+def append_workflow_event(event: dict[str, Any]) -> None:
+    """
+    Append a workflow event record to workflow-events.jsonl.
+    
+    Args:
+        event: Workflow event metadata (event_type, state, timestamp, etc.)
+    """
+    _append_jsonl("workflow-events.jsonl", event)
+
+
+def read_last_n_runs(n: int) -> list[dict[str, Any]]:
+    """
+    Read the last N agent run records from agent-runs.jsonl.
+    
+    Args:
+        n: Number of records to read from the end
+    
+    Returns:
+        List of agent run dictionaries (most recent last)
+    """
+    file_path = EVIDENCE_ROOT / "agent-runs.jsonl"
+    
+    if not file_path.exists():
+        return []
+    
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    
+    # Take last N lines
+    last_n_lines = lines[-n:] if len(lines) >= n else lines
+    
+    # Parse each line as JSON
+    runs = []
+    for line in last_n_lines:
+        line = line.strip()
+        if line:
+            try:
+                runs.append(json.loads(line))
+            except json.JSONDecodeError:
+                # Skip malformed lines (per contract: never raise on parse errors)
+                continue
+    
+    return runs
