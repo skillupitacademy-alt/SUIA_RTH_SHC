@@ -1,4 +1,17 @@
-"""Task state definitions for AI orchestration workflow."""
+"""Task state definitions for AI orchestration workflow.
+
+DEPRECATION NOTICE (M2.9):
+- TaskState is a SECONDARY authority for task-level (agent-level) state tracking
+- For workflow-level state, use CanonicalWorkflowState from app.orchestration.canonical_workflow
+- TaskState is NOT a workflow state machine; it tracks individual agent execution
+- Do not confuse TaskState (agent execution) with CanonicalWorkflowState (workflow lifecycle)
+
+ARCHITECTURAL CLARIFICATION:
+- CanonicalWorkflowState = User-facing workflow lifecycle (REQUESTED -> CERTIFIED)
+- TaskState = Internal agent execution state (CREATED -> COMPLETED)
+- A single workflow (CanonicalWorkflowState) may spawn multiple tasks (TaskState)
+- Example: DISCOVERY workflow state runs multiple agents, each with TaskState
+"""
 
 from enum import Enum
 
@@ -9,6 +22,9 @@ class TaskState(str, Enum):
     
     Each state represents a distinct phase in the task execution pipeline,
     from initial creation through final completion or failure.
+    
+    NOTE: This is agent-level state, not workflow-level state.
+    For workflow state, see CanonicalWorkflowState in app.orchestration.canonical_workflow.
     """
     
     CREATED = "CREATED"

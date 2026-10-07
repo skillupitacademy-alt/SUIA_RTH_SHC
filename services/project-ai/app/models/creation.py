@@ -1,7 +1,18 @@
 from enum import Enum
 from pydantic import BaseModel
 
+# DEPRECATION NOTICE (M2.9):
+# CreationMode is marked for removal in Wave 1 / Agent B13.
+# All workflows will follow CanonicalWorkflowState lifecycle regardless of mode.
+# Use DesignSource (to be added in W1-B13) to indicate content origin, not workflow bypass.
+# TODO(B13): Remove CreationMode and replace with DesignSource enum.
 class CreationMode(str, Enum):
+    """
+    DEPRECATED: Use DesignSource in CanonicalWorkflowState pipeline instead.
+    
+    This enum allowed workflow bypass (MIX_AND_MATCH, I2_ONLY) which violates
+    M2.9 architecture requirement that all candidates follow same lifecycle.
+    """
     I2_ONLY = "I2_ONLY"
     MIX_AND_MATCH = "MIX_AND_MATCH"
     NEW_CANDIDATE = "NEW_CANDIDATE"
@@ -38,6 +49,21 @@ class CertificationGate(BaseModel):
     message: str | None = None
 
 class WorkflowStatus(str, Enum):
+    """
+    SECONDARY AUTHORITY (M2.9): Maps to CanonicalWorkflowState for API compatibility.
+    
+    This enum is kept for backward compatibility with existing creation endpoints,
+    but new code should use CanonicalWorkflowState from app.orchestration.canonical_workflow.
+    
+    Mapping to CanonicalWorkflowState:
+    - CREATED -> REQUESTED
+    - VALIDATING -> CANDIDATE_AUDIT
+    - CERTIFYING -> CERTIFICATION_READY
+    - CERTIFIED -> CERTIFIED
+    - FAILED -> REJECTED
+    
+    For complete workflow lifecycle, use CanonicalWorkflowState (17 states).
+    """
     CREATED = "CREATED"
     VALIDATING = "VALIDATING"
     CERTIFYING = "CERTIFYING"

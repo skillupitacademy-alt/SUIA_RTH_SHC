@@ -1,0 +1,51 @@
+{
+  "runId": "run-w0-b01-20261007T174745",
+  "agentId": "B01",
+  "wave": "W0",
+  "branch": "m2-project-ai-canonical-wiring",
+  "commitBefore": "0446f41c927aba98f33becb83a0c7d507393e463",
+  "commitAfter": "pending",
+  "startedAt": "2026-10-07T17:47:45.149Z",
+  "finishedAt": "pending",
+  "filesChanged": [
+    "services/project-ai/app/orchestration/canonical_workflow.py",
+    "services/project-ai/app/models/task_state.py",
+    "services/project-ai/app/models/creation.py",
+    ".agents/tasks/architecture-freeze-report.json"
+  ],
+  "canonicalWorkflowFile": "services/project-ai/app/orchestration/canonical_workflow.py",
+  "canonicalWorkflowIdentifier": "CanonicalWorkflowState",
+  "secondaryAuthorities": [
+    {
+      "name": "TaskState",
+      "file": "services/project-ai/app/models/task_state.py",
+      "status": "CLARIFIED_AS_NON_COMPETING",
+      "resolution": "TaskState is agent-level execution state, not workflow state. Added documentation clarifying it does not compete with CanonicalWorkflowState.",
+      "competing": false
+    },
+    {
+      "name": "WorkflowStatus",
+      "file": "services/project-ai/app/models/creation.py",
+      "status": "MARKED_SECONDARY",
+      "resolution": "Added deprecation notice mapping WorkflowStatus to CanonicalWorkflowState. Kept for backward compatibility with creation endpoints.",
+      "competing": true
+    },
+    {
+      "name": "CreationMode",
+      "file": "services/project-ai/app/models/creation.py",
+      "status": "MARKED_FOR_REMOVAL",
+      "resolution": "Added deprecation notice. CreationMode allows workflow bypass which violates M2.9 architecture. Scheduled for removal in Wave 1 / Agent B13.",
+      "competing": true
+    }
+  ],
+  "tests": {
+    "unit": {
+      "status": "pending",
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "status": "IN_PROGRESS",
+  "blockers": []
+}
