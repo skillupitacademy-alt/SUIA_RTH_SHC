@@ -43,6 +43,15 @@ async def execute_placement(context: AgentContext) -> AgentResult:
         # Collect evidence IDs from snapshot
         evidence_ids = _collect_placement_evidence(candidate_data, snapshot)
         
+        # Extract target version from workflow_target (B07 fix)
+        # NOTE: Upstream workflow orchestration should populate workflow_target 
+        # during DISCOVERY/BRIEF_READY states with proper version binding
+        workflow_target_data = context.workflow_state.get('workflow_target', {})
+        target_version = workflow_target_data.get('version')
+        if not target_version:
+            # Fallback for workflows that haven't populated target yet
+            target_version = "MISSING_TARGET_VERSION"
+        
         # Create manifest
         manifest = PlacementManifest(
             manifestId=f"manifest-{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}",
@@ -50,7 +59,7 @@ async def execute_placement(context: AgentContext) -> AgentResult:
             decision=decision,
             targetPath=_determine_target_path(candidate_data, decision),
             blockFamily=detected_family,
-            blockVersion="1.0.0",
+            blockVersion=target_version,
             requiredChanges=_determine_required_changes(decision),
             evidenceIds=evidence_ids,
             manifestHash="",  # Will be computed

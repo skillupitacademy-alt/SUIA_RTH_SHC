@@ -370,13 +370,20 @@ async def generate_manifest(
     manifest_id = f"manifest-{candidate_id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
     created_at = datetime.utcnow().isoformat() + "Z"
     
+    # B07 fix: Extract target version from candidate binding/workflow
+    # NOTE: In full workflow integration, candidate packages should carry
+    # CandidateBinding with target_version from WorkflowTarget
+    # For now, use version from package metadata or require explicit version
+    target_version = getattr(package, 'target_version', None) or \
+                     package.__dict__.get('_target_version', 'MISSING_TARGET_VERSION')
+    
     manifest_data = {
         "manifestId": manifest_id,
         "candidateId": candidate_id,
         "decision": decision.value,
         "targetPath": target_path,
         "blockFamily": classification.detectedFamily.value,
-        "blockVersion": "1.0.0",  # Initial version for new blocks
+        "blockVersion": target_version,
         "requiredChanges": required_changes,
         "evidenceIds": evidence_ids,
         "createdAt": created_at
@@ -392,7 +399,7 @@ async def generate_manifest(
         decision=decision,
         targetPath=target_path,
         blockFamily=classification.detectedFamily,
-        blockVersion="1.0.0",
+        blockVersion=target_version,
         requiredChanges=required_changes,
         evidenceIds=evidence_ids,
         manifestHash=manifest_hash,

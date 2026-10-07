@@ -27,7 +27,7 @@ def create_test_manifest(
         decision=PlacementDecision.ADD,
         targetPath=target_path,
         blockFamily=BlockFamily.CUSTOM,
-        blockVersion="1.0.0",
+        blockVersion="C1",  # B07 fix: use proper version format
         requiredChanges=["Add UBRC compliance", "Add brand independence"],
         evidenceIds=evidence_ids,
         manifestHash="",  # Will be computed

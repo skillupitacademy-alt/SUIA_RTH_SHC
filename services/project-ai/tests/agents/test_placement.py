@@ -66,6 +66,14 @@ async def test_execute_placement_new_block():
     context = AgentContext(
         task_id="test-task",
         workflow_state={
+            "workflow_target": {
+                "workflow_id": "test-workflow-001",
+                "family": "Custom",
+                "version": "C1",  # B07 fix: proper version, not 1.0.0
+                "block_type": "custom-block",
+                "specification_id": "spec-001",
+                "source_snapshot_id": "snapshot-abc123"
+            },
             "candidate": {
                 "candidateId": "candidate-new-001",
                 "blockType": "custom-block",
@@ -111,6 +119,14 @@ async def test_execute_placement_existing_block():
     context = AgentContext(
         task_id="test-task",
         workflow_state={
+            "workflow_target": {
+                "workflow_id": "test-workflow-002",
+                "family": "Introduction",
+                "version": "I7",  # B07 fix: proper version, not 1.0.0
+                "block_type": "introduction",
+                "specification_id": "spec-002",
+                "source_snapshot_id": "snapshot-abc123"
+            },
             "candidate": {
                 "candidateId": "candidate-intro-update",
                 "blockType": "introduction",  # Already exists
@@ -150,6 +166,14 @@ async def test_execute_placement_no_path_inference():
     context = AgentContext(
         task_id="test-task",
         workflow_state={
+            "workflow_target": {
+                "workflow_id": "test-workflow-003",
+                "family": "Custom",
+                "version": "D1",  # B07 fix: proper version, not 1.0.0
+                "block_type": "test-block",
+                "specification_id": "spec-003",
+                "source_snapshot_id": "snapshot-abc123"
+            },
             "candidate": {
                 "candidateId": "candidate-test-block",
                 "blockType": "test-block",
