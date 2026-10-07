@@ -4,7 +4,7 @@ Engineering Contract API Routes - Wave 2 B02
 Endpoints for generating and retrieving engineering contracts for External AI.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Header
 from app.contracts.engineering_contract import (
     EngineeringContract,
     calculate_contract_hash,
@@ -13,18 +13,124 @@ from app.contracts.engineering_contract import (
 from app.contracts.repository_intelligence import build_contract as build_repo_contract
 from app.models.workflow_target import WorkflowTarget
 import uuid
+import os
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 router = APIRouter(prefix="/workflows", tags=["Engineering Contracts"])
 
-# In-memory store for contracts (production would use database)
+# In-memory store for contracts
 # Key: workflow_id -> EngineeringContract
+# WARNING: This is a Wave 2 placeholder. Contracts are lost on server restart.
+# Wave 3 requirement: Replace with persistent storage (database, Redis, or file store)
+# to maintain immutability guarantees across restarts and support distributed deployment.
 contracts_store = {}
+
+# Placeholder workflow store (would be database in production)
+# Key: workflow_id -> {"state": str, "owner": str}
+workflows_store = {}
+
+
+async def verify_auth(authorization: Optional[str] = Header(None)) -> str:
+    """
+    Verify authentication token and extract user ID.
+    
+    This is a placeholder auth implementation for Wave 2.
+    Production would integrate with the actual auth service.
+    
+    Args:
+        authorization: Authorization header (Bearer token)
+        
+    Returns:
+        User ID extracted from token
+        
+    Raises:
+        HTTPException 401: Missing or invalid token
+    """
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing authorization header. Authentication required."
+        )
+    
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid authorization header format. Expected 'Bearer <token>'"
+        )
+    
+    token = authorization[7:]  # Remove "Bearer " prefix
+    
+    # Placeholder: In production, validate token with auth service
+    # For Wave 2, accept any non-empty token and extract user ID
+    if not token or len(token) < 8:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )
+    
+    # Extract user ID from token (placeholder logic)
+    user_id = f"user-{token[:8]}"
+    
+    return user_id
+
+
+async def verify_workflow_ownership(
+    workflow_id: str,
+    user_id: str = Depends(verify_auth)
+) -> dict:
+    """
+    Verify that the authenticated user owns the workflow and it's in a valid state.
+    
+    Args:
+        workflow_id: The workflow identifier
+        user_id: The authenticated user ID
+        
+    Returns:
+        Workflow data dict with state and owner
+        
+    Raises:
+        HTTPException 404: Workflow not found
+        HTTPException 403: User doesn't own the workflow
+        HTTPException 400: Workflow in invalid state
+    """
+    # Check workflow exists (placeholder: would query database)
+    if workflow_id not in workflows_store:
+        # For Wave 2, auto-create workflow in valid state
+        # Wave 3 will wire to real workflow service
+        workflows_store[workflow_id] = {
+            "state": "BRIEF_READY",
+            "owner": user_id,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+    
+    workflow = workflows_store[workflow_id]
+    
+    # Verify ownership
+    if workflow["owner"] != user_id:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Access denied. Workflow {workflow_id} is owned by another user."
+        )
+    
+    # Verify state (must be DISCOVERY complete or BRIEF_READY)
+    valid_states = ["DISCOVERY", "BRIEF_READY", "AWAITING_GATE_1"]
+    if workflow["state"] not in valid_states:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot generate contract for workflow in state '{workflow['state']}'. "
+                   f"Valid states: {', '.join(valid_states)}"
+        )
+    
+    return workflow
 
 
 @router.post("/{workflow_id}/engineering-contract", response_model=EngineeringContract)
-async def create_engineering_contract(workflow_id: str):
+async def create_engineering_contract(
+    workflow_id: str,
+    workflow: dict = Depends(verify_workflow_ownership)
+):
     """
     Generate an immutable engineering contract for a workflow.
     
@@ -40,13 +146,21 @@ async def create_engineering_contract(workflow_id: str):
     Calling this endpoint again with the same workflow_id returns the SAME contract
     (same hash), preventing contract drift during workflow lifecycle.
     
+    SECURITY:
+    - Requires authentication via Authorization header
+    - Verifies caller owns the workflow
+    - Validates workflow is in correct state (DISCOVERY, BRIEF_READY, or AWAITING_GATE_1)
+    
     Args:
         workflow_id: The workflow identifier
+        workflow: Workflow data (injected by verify_workflow_ownership)
         
     Returns:
         EngineeringContract with contract_hash for tamper detection
         
     Raises:
+        HTTPException 401: Missing or invalid authentication
+        HTTPException 403: User doesn't own the workflow
         HTTPException 404: Workflow not found
         HTTPException 400: Invalid workflow state
     """
@@ -56,11 +170,11 @@ async def create_engineering_contract(workflow_id: str):
         existing_contract = contracts_store[workflow_id]
         return existing_contract
     
-    # TODO: Get workflow target from workflow service/database
-    # For now, use a placeholder. In real implementation, this would:
+    # TODO Wave 3: Get workflow target from workflow service/database
+    # For Wave 2, use a placeholder. In real implementation, this would:
     # 1. Query the workflow database by workflow_id
     # 2. Extract the WorkflowTarget that was created in the discovery step
-    # 3. Verify workflow is in correct state (DISCOVERY complete, BRIEF_READY)
+    # workflow is already validated to be in correct state by verify_workflow_ownership
     
     # Placeholder target (Wave 3 will wire this to real workflow service)
     target = WorkflowTarget(
@@ -72,9 +186,13 @@ async def create_engineering_contract(workflow_id: str):
         source_snapshot_id="snapshot-001"
     )
     
-    # Get repository root path
-    # TODO: Make this configurable via environment variable
-    repo_root = str(Path(__file__).parent.parent.parent.parent.parent.parent.absolute())
+    # Get repository root path from environment variable
+    # Fallback to relative path resolution only if env var not set
+    repo_root = os.environ.get("QUIZ_PLATFORM_REPO_ROOT")
+    if not repo_root:
+        # Fallback: relative navigation from this file
+        # This is fragile but acceptable for Wave 2 development
+        repo_root = str(Path(__file__).parent.parent.parent.parent.parent.parent.absolute())
     
     # Build repository contract (from B03 Wave 1)
     repo_contract = build_repo_contract(
@@ -186,18 +304,30 @@ async def create_engineering_contract(workflow_id: str):
 
 
 @router.get("/{workflow_id}/engineering-contract", response_model=EngineeringContract)
-async def get_engineering_contract(workflow_id: str):
+async def get_engineering_contract(
+    workflow_id: str,
+    workflow: dict = Depends(verify_workflow_ownership)
+):
     """
-    Retrieve the engineering contract for a workflow.
+    Retrieve the engineering contract for a workflow with hash verification.
+    
+    SECURITY:
+    - Requires authentication via Authorization header
+    - Verifies caller owns the workflow
+    - Verifies contract hash integrity before returning
     
     Args:
         workflow_id: The workflow identifier
+        workflow: Workflow data (injected by verify_workflow_ownership)
         
     Returns:
-        EngineeringContract if exists
+        EngineeringContract if exists and passes integrity check
         
     Raises:
+        HTTPException 401: Missing or invalid authentication
+        HTTPException 403: User doesn't own the workflow
         HTTPException 404: Contract not found
+        HTTPException 500: Hash verification failed (contract tampered)
     """
     if workflow_id not in contracts_store:
         raise HTTPException(
@@ -205,4 +335,19 @@ async def get_engineering_contract(workflow_id: str):
             detail=f"Engineering contract not found for workflow {workflow_id}"
         )
     
-    return contracts_store[workflow_id]
+    contract = contracts_store[workflow_id]
+    
+    # Verify contract hash integrity
+    # This detects tampering if the contract was modified after creation
+    stored_hash = contract.contract_hash
+    recalculated_hash = calculate_contract_hash(contract)
+    
+    if stored_hash != recalculated_hash:
+        # Hash mismatch indicates tampering or corruption
+        raise HTTPException(
+            status_code=500,
+            detail=f"Contract integrity verification failed for workflow {workflow_id}. "
+                   f"Stored hash does not match recalculated hash. Possible tampering detected."
+        )
+    
+    return contract

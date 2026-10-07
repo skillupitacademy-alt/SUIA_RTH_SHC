@@ -304,3 +304,60 @@ class TestContractImmutability:
         
         # Should match if contract is unmodified
         assert sample_engineering_contract.contract_hash == recalculated_hash
+    
+    def test_hash_includes_all_thirteen_gate_contracts(self, sample_engineering_contract):
+        """
+        Test that modifying each of the thirteen gate contract fields changes the hash.
+        
+        This prevents future bugs where a field is accidentally excluded from hash calculation,
+        which would allow tampering that field without changing the hash.
+        
+        The thirteen gate contracts are:
+        1. educational_contract
+        2. implementation_contract
+        3. type_contract
+        4. schema_contract
+        5. ubrc_contract
+        6. renderer_contract
+        7. composer_contract
+        8. runtime_contract
+        9. theme_contract
+        10. brand_contract
+        11. ils_contract
+        12. lsnb_contract
+        13. rssb_contract
+        """
+        # Calculate original hash
+        original_hash = calculate_contract_hash(sample_engineering_contract)
+        
+        # Test each gate contract field
+        gate_contract_fields = [
+            ("educational_contract", {"new_field": "tampered"}),
+            ("implementation_contract", {"new_field": "tampered"}),
+            ("type_contract", {"new_field": "tampered"}),
+            ("schema_contract", {"new_field": "tampered"}),
+            ("ubrc_contract", {"new_field": "tampered"}),
+            ("renderer_contract", {"new_field": "tampered"}),
+            ("composer_contract", {"new_field": "tampered"}),
+            ("runtime_contract", RuntimeContract(ub_rc_required=False)),  # Change a field
+            ("theme_contract", {"new_field": "tampered"}),
+            ("brand_contract", {"new_field": "tampered"}),
+            ("ils_contract", {"new_field": "tampered"}),
+            ("lsnb_contract", {"new_field": "tampered"}),
+            ("rssb_contract", {"new_field": "tampered"}),
+        ]
+        
+        for field_name, tampered_value in gate_contract_fields:
+            # Create a fresh contract for each test
+            contract = sample_engineering_contract.model_copy(deep=True)
+            
+            # Modify this gate contract field
+            setattr(contract, field_name, tampered_value)
+            
+            # Calculate hash
+            modified_hash = calculate_contract_hash(contract)
+            
+            # Hash MUST change when any gate contract is modified
+            assert modified_hash != original_hash, \
+                f"Hash did not change when {field_name} was modified. " \
+                f"This field may be excluded from hash calculation!"

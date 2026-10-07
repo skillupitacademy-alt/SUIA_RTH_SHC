@@ -1,0 +1,345 @@
+"""
+Unit tests for Engineering Contract API Routes - Wave 2 B02
+
+Tests:
+- POST /workflows/{workflow_id}/engineering-contract requires authentication
+- POST verifies workflow ownership
+- POST validates workflow state
+- POST returns same contract on repeat calls (immutability)
+- GET /workflows/{workflow_id}/engineering-contract requires authentication
+- GET verifies contract hash integrity
+- GET detects tampering
+"""
+
+import pytest
+from fastapi.testclient import TestClient
+from unittest.mock import patch, MagicMock
+
+from app.main import app
+from app.api.routes.contract import contracts_store, workflows_store
+from app.contracts.engineering_contract import EngineeringContract, calculate_contract_hash
+from app.contracts.repository_intelligence import RuntimeContract
+from app.models.workflow_target import WorkflowTarget
+
+client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def clear_stores():
+    """Clear in-memory stores before each test."""
+    contracts_store.clear()
+    workflows_store.clear()
+    yield
+    contracts_store.clear()
+    workflows_store.clear()
+
+
+class TestAuthenticationRequired:
+    """Test that authentication is required for contract endpoints."""
+    
+    def test_create_contract_requires_auth_header(self):
+        """Test POST /workflows/{id}/engineering-contract returns 401 without auth."""
+        response = client.post("/workflows/test-workflow-001/engineering-contract")
+        
+        assert response.status_code == 401
+        assert "authorization" in response.json()["detail"].lower()
+    
+    def test_create_contract_rejects_invalid_auth_format(self):
+        """Test POST rejects authorization header without 'Bearer ' prefix."""
+        response = client.post(
+            "/workflows/test-workflow-001/engineering-contract",
+            headers={"Authorization": "InvalidToken123"}
+        )
+        
+        assert response.status_code == 401
+        assert "bearer" in response.json()["detail"].lower()
+    
+    def test_create_contract_rejects_short_token(self):
+        """Test POST rejects tokens shorter than 8 characters."""
+        response = client.post(
+            "/workflows/test-workflow-001/engineering-contract",
+            headers={"Authorization": "Bearer abc"}
+        )
+        
+        assert response.status_code == 401
+        assert "invalid token" in response.json()["detail"].lower()
+    
+    def test_get_contract_requires_auth_header(self):
+        """Test GET /workflows/{id}/engineering-contract returns 401 without auth."""
+        response = client.get("/workflows/test-workflow-001/engineering-contract")
+        
+        assert response.status_code == 401
+        assert "authorization" in response.json()["detail"].lower()
+
+
+class TestWorkflowOwnership:
+    """Test that workflow ownership is verified."""
+    
+    def test_create_contract_with_valid_auth(self):
+        """Test POST succeeds with valid authentication."""
+        # Mock build_repo_contract to avoid repository access
+        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_build.return_value = MagicMock(
+                references=[],
+                schema_contract={},
+                renderer_contract={},
+                composer_contract={},
+                runtime=RuntimeContract(),  # Must be a real instance
+                required_artifacts=["artifact1"],
+                acceptance_criteria=["criteria1"]
+            )
+            
+            response = client.post(
+                "/workflows/test-workflow-001/engineering-contract",
+                headers={"Authorization": "Bearer testtoken12345678"}
+            )
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert data["workflow_id"] == "test-workflow-001"
+            assert "contract_hash" in data
+            assert len(data["contract_hash"]) == 64  # SHA-256 hex
+    
+    def test_create_contract_auto_creates_workflow_for_owner(self):
+        """Test that workflow is auto-created in valid state for authenticated user."""
+        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_build.return_value = MagicMock(
+                references=[],
+                schema_contract={},
+                renderer_contract={},
+                composer_contract={},
+                runtime=RuntimeContract(),
+                required_artifacts=[],
+                acceptance_criteria=[]
+            )
+            
+            # First user creates workflow
+            response1 = client.post(
+                "/workflows/new-workflow/engineering-contract",
+                headers={"Authorization": "Bearer user1token12345"}
+            )
+            
+            assert response1.status_code == 200
+            
+            # Different user should not access same workflow (ownership check)
+            response2 = client.post(
+                "/workflows/new-workflow/engineering-contract",
+                headers={"Authorization": "Bearer user2token12345"}
+            )
+            
+            assert response2.status_code == 403
+            assert "owned by another user" in response2.json()["detail"].lower()
+    
+    def test_get_contract_verifies_ownership(self):
+        """Test GET verifies caller owns the workflow."""
+        # Create contract as user1
+        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_build.return_value = MagicMock(
+                references=[],
+                schema_contract={},
+                renderer_contract={},
+                composer_contract={},
+                runtime=RuntimeContract(),
+                required_artifacts=[],
+                acceptance_criteria=[]
+            )
+            
+            create_response = client.post(
+                "/workflows/ownership-test/engineering-contract",
+                headers={"Authorization": "Bearer user1token12345"}
+            )
+            assert create_response.status_code == 200
+        
+        # Try to get as user2
+        get_response = client.get(
+            "/workflows/ownership-test/engineering-contract",
+            headers={"Authorization": "Bearer user2token12345"}
+        )
+        
+        assert get_response.status_code == 403
+        assert "owned by another user" in get_response.json()["detail"].lower()
+
+
+class TestWorkflowStateValidation:
+    """Test that workflow state is validated before contract creation."""
+    
+    def test_workflow_auto_created_in_valid_state(self):
+        """Test that auto-created workflows are in BRIEF_READY state."""
+        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_build.return_value = MagicMock(
+                references=[],
+                schema_contract={},
+                renderer_contract={},
+                composer_contract={},
+                runtime=RuntimeContract(),
+                required_artifacts=[],
+                acceptance_criteria=[]
+            )
+            
+            response = client.post(
+                "/workflows/state-test/engineering-contract",
+                headers={"Authorization": "Bearer statetoken12345"}
+            )
+            
+            assert response.status_code == 200
+            
+            # Check workflow was created in valid state
+            assert "state-test" in workflows_store
+            assert workflows_store["state-test"]["state"] == "BRIEF_READY"
+
+
+class TestContractImmutability:
+    """Test contract immutability enforcement."""
+    
+    def test_repeat_call_returns_same_contract(self):
+        """Test that calling POST twice returns the same contract (same hash)."""
+        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_build.return_value = MagicMock(
+                references=[],
+                schema_contract={},
+                renderer_contract={},
+                composer_contract={},
+                runtime=RuntimeContract(),
+                required_artifacts=[],
+                acceptance_criteria=[]
+            )
+            
+            # First call
+            response1 = client.post(
+                "/workflows/immutable-test/engineering-contract",
+                headers={"Authorization": "Bearer immutabletoken123"}
+            )
+            assert response1.status_code == 200
+            contract1 = response1.json()
+            
+            # Second call (should return cached contract)
+            response2 = client.post(
+                "/workflows/immutable-test/engineering-contract",
+                headers={"Authorization": "Bearer immutabletoken123"}
+            )
+            assert response2.status_code == 200
+            contract2 = response2.json()
+            
+            # Contracts should be identical
+            assert contract1["contract_hash"] == contract2["contract_hash"]
+            assert contract1["contract_id"] == contract2["contract_id"]
+            
+            # build_repo_contract should only be called once (cached on second call)
+            assert mock_build.call_count == 1
+
+
+class TestHashVerification:
+    """Test hash verification on GET endpoint."""
+    
+    def test_get_contract_verifies_hash(self):
+        """Test GET verifies contract hash and returns contract if valid."""
+        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_build.return_value = MagicMock(
+                references=[],
+                schema_contract={},
+                renderer_contract={},
+                composer_contract={},
+                runtime=RuntimeContract(),
+                required_artifacts=[],
+                acceptance_criteria=[]
+            )
+            
+            # Create contract
+            create_response = client.post(
+                "/workflows/hash-verify-test/engineering-contract",
+                headers={"Authorization": "Bearer hashtoken12345"}
+            )
+            assert create_response.status_code == 200
+            
+            # Get contract
+            get_response = client.get(
+                "/workflows/hash-verify-test/engineering-contract",
+                headers={"Authorization": "Bearer hashtoken12345"}
+            )
+            
+            assert get_response.status_code == 200
+            contract = get_response.json()
+            assert len(contract["contract_hash"]) == 64
+    
+    def test_get_contract_detects_tampering(self):
+        """Test GET returns 500 if contract hash doesn't match (tampering detected)."""
+        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_build.return_value = MagicMock(
+                references=[],
+                schema_contract={},
+                renderer_contract={},
+                composer_contract={},
+                runtime=RuntimeContract(),
+                required_artifacts=[],
+                acceptance_criteria=[]
+            )
+            
+            # Create contract
+            create_response = client.post(
+                "/workflows/tamper-test/engineering-contract",
+                headers={"Authorization": "Bearer tampertoken12345"}
+            )
+            assert create_response.status_code == 200
+            
+            # Simulate tampering: modify contract in store
+            stored_contract = contracts_store["tamper-test"]
+            stored_contract.contract_version = "99.0"  # Tamper
+            
+            # Get contract (should detect tampering)
+            get_response = client.get(
+                "/workflows/tamper-test/engineering-contract",
+                headers={"Authorization": "Bearer tampertoken12345"}
+            )
+            
+            assert get_response.status_code == 500
+            assert "integrity verification failed" in get_response.json()["detail"].lower()
+            assert "tampering" in get_response.json()["detail"].lower()
+    
+    def test_get_contract_404_if_not_exists(self):
+        """Test GET returns 404 if contract doesn't exist."""
+        response = client.get(
+            "/workflows/nonexistent/engineering-contract",
+            headers={"Authorization": "Bearer validtoken12345"}
+        )
+        
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"].lower()
+
+
+class TestProhibitedBehaviorsInContract:
+    """Test that prohibited behaviors are included in generated contracts."""
+    
+    def test_contract_includes_prohibited_behaviors(self):
+        """Test that generated contract includes all prohibited behaviors."""
+        with patch("app.api.routes.contract.build_repo_contract") as mock_build:
+            mock_build.return_value = MagicMock(
+                references=[],
+                schema_contract={},
+                renderer_contract={},
+                composer_contract={},
+                runtime=RuntimeContract(),
+                required_artifacts=[],
+                acceptance_criteria=[]
+            )
+            
+            response = client.post(
+                "/workflows/prohibited-test/engineering-contract",
+                headers={"Authorization": "Bearer prohibitedtoken123"}
+            )
+            
+            assert response.status_code == 200
+            contract = response.json()
+            
+            # Verify all 11 prohibited behaviors are present
+            assert len(contract["prohibited_behaviors"]) == 11
+            assert "implement_duplicate_ils" in contract["prohibited_behaviors"]
+            assert "call_ils_api_directly" in contract["prohibited_behaviors"]
+            assert "implement_page_navigation" in contract["prohibited_behaviors"]
+            assert "implement_page_progress" in contract["prohibited_behaviors"]
+            assert "implement_duplicate_lsnb" in contract["prohibited_behaviors"]
+            assert "implement_duplicate_rssb" in contract["prohibited_behaviors"]
+            assert "hard_code_suia_branding" in contract["prohibited_behaviors"]
+            assert "hard_code_rth_branding" in contract["prohibited_behaviors"]
+            assert "create_duplicate_composer" in contract["prohibited_behaviors"]
+            assert "create_duplicate_renderer" in contract["prohibited_behaviors"]
+            assert "modify_unapproved_repository_paths" in contract["prohibited_behaviors"]
