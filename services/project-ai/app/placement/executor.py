@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from app.models.candidate import PlacementDecision, PlacementManifest
-from app.models.governance import ApprovalStatus
 from app.models.implementation_approval import (
     ImplementationApproval,
     ImplementationApprovalStatus
@@ -32,7 +31,7 @@ class PlacementExecutor:
     - Manifest hash verification: reject tampered manifests
     - No arbitrary shell execution: only approved git operations via RepositoryAdapter
     - Approval required: unapproved mutations are BLOCKED
-    - ImplementationApproval validation: ALL bindings verified (workflow_id, candidate_sha256, manifest_id, manifest_sha256)
+    - ImplementationApproval ONLY: ALL bindings verified (workflow_id, candidate_sha256, manifest_id, manifest_sha256, requester)
     - Path security: all writes via RepositoryAdapter (no direct filesystem bypass)
     """
     
@@ -98,9 +97,10 @@ class PlacementExecutor:
     def execute_placement(
         self,
         manifest: PlacementManifest,
-        approval: ImplementationApproval | ApprovalStatus,
+        approval: ImplementationApproval,
         candidate_files: List[Any],
-        workflow_requester: Optional[str] = None
+        workflow_requester: str,
+        candidate_sha256: str
     ) -> Dict[str, Any]:
         """
         Execute approved placement manifest in isolated worktree.
@@ -108,11 +108,14 @@ class PlacementExecutor:
         ISOLATION: All operations happen in isolated git worktree, not main tree.
         Operations only affect main tree after successful completion.
         
+        SECURITY: ALL bindings verified (workflow_id, candidate_sha256, manifest_id, manifest_sha256, requester).
+        
         Args:
             manifest: Placement manifest
-            approval: ImplementationApproval with ALL bindings verified, or legacy ApprovalStatus
+            approval: ImplementationApproval with ALL bindings verified
             candidate_files: Candidate files to place
-            workflow_requester: Workflow requester identity for self-approval check (required for ImplementationApproval)
+            workflow_requester: Workflow requester identity for self-approval check (REQUIRED)
+            candidate_sha256: Candidate SHA-256 hash for verification (REQUIRED)
             
         Returns:
             Execution result with status, branch, commit, and evidence
@@ -120,50 +123,41 @@ class PlacementExecutor:
         Raises:
             PlacementExecutionError: If placement fails or is not approved
         """
-        # Handle legacy ApprovalStatus enum for backward compatibility
-        if isinstance(approval, ApprovalStatus):
-            # Legacy path: simple status check only
-            if approval != ApprovalStatus.APPROVED:
-                raise PlacementExecutionError(
-                    f"Cannot execute unapproved manifest. "
-                    f"Status: {approval}. "
-                    f"Approval required before placement execution."
-                )
-            # Skip additional verification for legacy path
-            self.verify_manifest_hash(manifest)
-        else:
-            # New path: full ImplementationApproval validation
-            if workflow_requester is None:
-                raise PlacementExecutionError(
-                    "workflow_requester is required when using ImplementationApproval"
-                )
-            
-            # Safety: Verify ImplementationApproval status is APPROVED
-            if approval.status != ImplementationApprovalStatus.APPROVED:
-                raise PlacementExecutionError(
-                    f"Cannot execute unapproved manifest. "
-                    f"Status: {approval.status}. "
-                    f"Approval required before placement execution."
-                )
-            
-            # Safety: Verify manifest hash matches approval
-            if not approval.verify_manifest_hash(manifest.manifestHash):
-                raise PlacementExecutionError(
-                    f"Manifest hash mismatch. "
-                    f"Approval hash: {approval.placement_manifest_sha256}, "
-                    f"Manifest hash: {manifest.manifestHash}. "
-                    f"Manifest has been tampered with after approval."
-                )
-            
-            # Safety: Verify not self-approved
-            if not approval.verify_not_self_approved(workflow_requester):
-                raise PlacementExecutionError(
-                    f"Self-approval detected. "
-                    f"Approver ({approval.approved_by}) must differ from requester ({workflow_requester})."
-                )
-            
-            # Safety: Verify manifest hash internally
-            self.verify_manifest_hash(manifest)
+        # Safety: Verify ImplementationApproval status is APPROVED
+        if approval.status != ImplementationApprovalStatus.APPROVED:
+            raise PlacementExecutionError(
+                f"Cannot execute unapproved manifest. "
+                f"Status: {approval.status}. "
+                f"Approval required before placement execution."
+            )
+        
+        # Safety: Verify candidate hash matches approval
+        if not approval.verify_candidate_hash(candidate_sha256):
+            raise PlacementExecutionError(
+                f"Candidate hash mismatch. "
+                f"Approval hash: {approval.candidate_sha256}, "
+                f"Provided hash: {candidate_sha256}. "
+                f"Candidate has been tampered with after approval."
+            )
+        
+        # Safety: Verify manifest hash matches approval
+        if not approval.verify_manifest_hash(manifest.manifestHash):
+            raise PlacementExecutionError(
+                f"Manifest hash mismatch. "
+                f"Approval hash: {approval.placement_manifest_sha256}, "
+                f"Manifest hash: {manifest.manifestHash}. "
+                f"Manifest has been tampered with after approval."
+            )
+        
+        # Safety: Verify not self-approved
+        if not approval.verify_not_self_approved(workflow_requester):
+            raise PlacementExecutionError(
+                f"Self-approval detected. "
+                f"Approver ({approval.approved_by}) must differ from requester ({workflow_requester})."
+            )
+        
+        # Safety: Verify manifest hash internally
+        self.verify_manifest_hash(manifest)
         
         # Execute placement in isolated worktree (unless dry-run)
         try:

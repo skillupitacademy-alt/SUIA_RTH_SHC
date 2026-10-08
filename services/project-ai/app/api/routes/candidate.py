@@ -17,14 +17,17 @@ from app.models.candidate import (
     PlacementDecision,
     PlacementManifest,
 )
+from app.models.implementation_approval import ImplementationApproval
+from app.placement.approval_enforcer import ApprovalEnforcer
 from app.repository.discovery_client import DiscoveryClient
 
 router = APIRouter(tags=["candidates"])
 
-# In-memory storage for candidates and manifests (M3 foundation)
+# In-memory storage for candidates, manifests, and approvals (M3 foundation)
 # TODO: Replace with persistent storage in production
 _candidates_store: Dict[str, CandidatePackage] = {}
 _manifests_store: Dict[str, PlacementManifest] = {}
+_approvals_store: Dict[str, ImplementationApproval] = {}
 
 
 def get_discovery_client() -> DiscoveryClient:
@@ -477,7 +480,8 @@ async def execute_placement(candidate_id: str):
     Execute approved placement manifest for candidate block.
     
     SAFETY INVARIANTS:
-    - Requires approved manifest (not self-approved)
+    - Requires ImplementationApproval (not self-approved)
+    - Verifies ALL bindings via ApprovalEnforcer (workflow_id, candidate_sha256, manifest_id, manifest_sha256)
     - Verifies manifest hash (rejects tampered manifests with 409)
     - Only executes approved repository/toolchain operations
     - Creates git branch and commit for approved changes
@@ -491,7 +495,8 @@ async def execute_placement(candidate_id: str):
         
     Raises:
         404: If candidate or manifest not found
-        400: If manifest not approved
+        400: If manifest missing workflow binding
+        403: If implementation approval enforcement failed
         409: If manifest has been tampered with (hash mismatch)
     """
     if candidate_id not in _candidates_store:
@@ -509,25 +514,59 @@ async def execute_placement(candidate_id: str):
     package = _candidates_store[candidate_id]
     manifest = _manifests_store[candidate_id]
     
-    # Check approval status (must query governance API)
-    # For M3 foundation, we'll use a simple check
-    # Production would call governance API to verify approval
-    
-    # Import governance models and executor
-    from app.models.governance import ApprovalStatus
+    # Import executor
     from app.placement.executor import PlacementExecutor, PlacementExecutionError
     
-    # SAFETY: Check if manifest has been approved
-    # In production, this would query the governance API
-    # For M3, we'll simulate by checking a stored approval status
-    approval_status = getattr(manifest, '_approval_status', ApprovalStatus.PENDING)
+    # SECURITY: Enforce implementation approval via ApprovalEnforcer
+    # Compute candidate SHA-256 from uploaded files
+    candidate_sha256 = _compute_candidate_sha256(package.files)
     
-    if approval_status != ApprovalStatus.APPROVED:
+    # Get workflow_id from manifest metadata
+    # Note: In production, workflow_id comes from candidate binding at upload
+    # For M3 foundation, we use manifest metadata or require it at upload
+    workflow_id = getattr(manifest, '_workflow_id', None)
+    if not workflow_id:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot execute unapproved manifest. Status: {approval_status}. "
-                   f"Submit manifest for approval via governance API first."
+            detail="Manifest missing workflow_id binding. "
+                   "This indicates the candidate was not properly bound to a workflow."
         )
+    
+    # Get requester_id from manifest metadata
+    requester_id = getattr(manifest, '_requester_id', None)
+    if not requester_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Manifest missing requester_id. "
+                   "Cannot verify approval without requester identity."
+        )
+    
+    # Enforce approval via ApprovalEnforcer
+    enforcer = ApprovalEnforcer(_approvals_store)
+    enforcement_result = enforcer.enforce_approval(
+        workflow_id=workflow_id,
+        candidate_sha256=candidate_sha256,
+        manifest_id=manifest.manifestId,
+        manifest_sha256=manifest.manifestHash,
+        requester_id=requester_id
+    )
+    
+    if not enforcement_result.approved:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Implementation approval enforcement failed: {enforcement_result.reason}. "
+                   f"Bindings verified: {enforcement_result.bindings_verified}. "
+                   f"Submit for approval via governance API first."
+        )
+    
+    # Retrieve actual ImplementationApproval object for executor
+    if workflow_id not in _approvals_store:
+        raise HTTPException(
+            status_code=500,
+            detail="Internal error: approval enforcement passed but approval not found"
+        )
+    
+    approval = _approvals_store[workflow_id]
     
     # Execute placement with safety checks
     workspace_root = os.environ.get('WORKSPACE_ROOT', 'E:\\onlinewebsites\\quiz-platform')
@@ -536,8 +575,10 @@ async def execute_placement(candidate_id: str):
     try:
         result = executor.execute_placement(
             manifest,
-            approval_status,
-            package.files
+            approval,
+            package.files,
+            workflow_requester=requester_id,
+            candidate_sha256=candidate_sha256
         )
         
         # Trigger discovery refresh to update snapshot
@@ -588,3 +629,30 @@ def _matches_family(name: str, family: BlockFamily) -> bool:
     
     keywords = family_keywords.get(family, [])
     return any(keyword in name for keyword in keywords)
+
+
+def _compute_candidate_sha256(files: list[Any]) -> str:
+    """
+    Compute SHA-256 hash from candidate files.
+    
+    Matches CandidateValidator._compute_candidate_hash pattern:
+    concatenates sorted file hashes for consistency.
+    
+    Args:
+        files: List of CandidateFile objects with content attribute
+        
+    Returns:
+        Hex-encoded SHA-256 hash
+    """
+    sha256_hash = hashlib.sha256()
+    
+    # Sort files by filename for deterministic hash
+    sorted_files = sorted(files, key=lambda f: f.filename)
+    
+    for file in sorted_files:
+        # Hash each file's content
+        content_bytes = file.content.encode('utf-8') if isinstance(file.content, str) else file.content
+        file_hash = hashlib.sha256(content_bytes)
+        sha256_hash.update(file_hash.digest())
+    
+    return sha256_hash.hexdigest()
