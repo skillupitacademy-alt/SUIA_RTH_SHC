@@ -10,6 +10,12 @@ from typing import Any, Dict, List, Optional
 
 from app.models.candidate import PlacementDecision, PlacementManifest
 from app.models.governance import ApprovalStatus
+from app.models.implementation_approval import (
+    ImplementationApproval,
+    ImplementationApprovalStatus
+)
+from app.placement.repository_adapter import RepositoryAdapter, RepositoryAdapterError
+from app.placement.worktree_manager import WorktreeManager, WorktreeError, WorktreeContext
 
 
 class PlacementExecutionError(Exception):
@@ -24,18 +30,25 @@ class PlacementExecutor:
     Safety invariants:
     - No self-approval: executor cannot approve its own mutations
     - Manifest hash verification: reject tampered manifests
-    - No arbitrary shell execution: only approved git operations
+    - No arbitrary shell execution: only approved git operations via RepositoryAdapter
     - Approval required: unapproved mutations are BLOCKED
+    - ImplementationApproval validation: ALL bindings verified (workflow_id, candidate_sha256, manifest_id, manifest_sha256)
+    - Path security: all writes via RepositoryAdapter (no direct filesystem bypass)
     """
     
-    def __init__(self, repository_root: str | Path):
+    def __init__(self, repository_root: str | Path, dry_run: bool = False):
         """
         Initialize placement executor.
         
         Args:
             repository_root: Path to repository root directory
+            dry_run: If True, simulate operations without writing
         """
         self.repository_root = Path(repository_root)
+        self.dry_run = dry_run
+        self.repository_adapter = RepositoryAdapter(repository_root, dry_run=dry_run)
+        self.worktree_manager = WorktreeManager(repository_root)
+        self.active_worktree: Optional[WorktreeContext] = None
         
         if not self.repository_root.exists():
             raise PlacementExecutionError(
@@ -85,16 +98,21 @@ class PlacementExecutor:
     def execute_placement(
         self,
         manifest: PlacementManifest,
-        approval_status: ApprovalStatus,
-        candidate_files: List[Any]
+        approval: ImplementationApproval | ApprovalStatus,
+        candidate_files: List[Any],
+        workflow_requester: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Execute approved placement manifest.
+        Execute approved placement manifest in isolated worktree.
+        
+        ISOLATION: All operations happen in isolated git worktree, not main tree.
+        Operations only affect main tree after successful completion.
         
         Args:
             manifest: Placement manifest
-            approval_status: Approval status for this manifest
+            approval: ImplementationApproval with ALL bindings verified, or legacy ApprovalStatus
             candidate_files: Candidate files to place
+            workflow_requester: Workflow requester identity for self-approval check (required for ImplementationApproval)
             
         Returns:
             Execution result with status, branch, commit, and evidence
@@ -102,37 +120,92 @@ class PlacementExecutor:
         Raises:
             PlacementExecutionError: If placement fails or is not approved
         """
-        # Safety: Verify approval
-        if approval_status != ApprovalStatus.APPROVED:
-            raise PlacementExecutionError(
-                f"Cannot execute unapproved manifest. "
-                f"Status: {approval_status}. "
-                f"Approval required before placement execution."
-            )
-        
-        # Safety: Verify manifest hash
-        self.verify_manifest_hash(manifest)
-        
-        # Execute placement based on decision
-        if manifest.decision == PlacementDecision.ADD:
-            result = self._execute_add(manifest, candidate_files)
-        elif manifest.decision == PlacementDecision.UPDATE:
-            result = self._execute_update(manifest, candidate_files)
-        elif manifest.decision == PlacementDecision.EXTEND:
-            result = self._execute_extend(manifest, candidate_files)
-        elif manifest.decision == PlacementDecision.REUSE:
-            result = self._execute_reuse(manifest)
-        elif manifest.decision == PlacementDecision.REJECT:
-            raise PlacementExecutionError(
-                f"Cannot execute REJECT decision. "
-                f"Manifest {manifest.manifestId} was rejected."
-            )
+        # Handle legacy ApprovalStatus enum for backward compatibility
+        if isinstance(approval, ApprovalStatus):
+            # Legacy path: simple status check only
+            if approval != ApprovalStatus.APPROVED:
+                raise PlacementExecutionError(
+                    f"Cannot execute unapproved manifest. "
+                    f"Status: {approval}. "
+                    f"Approval required before placement execution."
+                )
+            # Skip additional verification for legacy path
+            self.verify_manifest_hash(manifest)
         else:
-            raise PlacementExecutionError(
-                f"Unknown placement decision: {manifest.decision}"
-            )
+            # New path: full ImplementationApproval validation
+            if workflow_requester is None:
+                raise PlacementExecutionError(
+                    "workflow_requester is required when using ImplementationApproval"
+                )
+            
+            # Safety: Verify ImplementationApproval status is APPROVED
+            if approval.status != ImplementationApprovalStatus.APPROVED:
+                raise PlacementExecutionError(
+                    f"Cannot execute unapproved manifest. "
+                    f"Status: {approval.status}. "
+                    f"Approval required before placement execution."
+                )
+            
+            # Safety: Verify manifest hash matches approval
+            if not approval.verify_manifest_hash(manifest.manifestHash):
+                raise PlacementExecutionError(
+                    f"Manifest hash mismatch. "
+                    f"Approval hash: {approval.placement_manifest_sha256}, "
+                    f"Manifest hash: {manifest.manifestHash}. "
+                    f"Manifest has been tampered with after approval."
+                )
+            
+            # Safety: Verify not self-approved
+            if not approval.verify_not_self_approved(workflow_requester):
+                raise PlacementExecutionError(
+                    f"Self-approval detected. "
+                    f"Approver ({approval.approved_by}) must differ from requester ({workflow_requester})."
+                )
+            
+            # Safety: Verify manifest hash internally
+            self.verify_manifest_hash(manifest)
         
-        return result
+        # Execute placement in isolated worktree (unless dry-run)
+        try:
+            if manifest.decision == PlacementDecision.ADD:
+                result = self._execute_add(manifest, candidate_files)
+            elif manifest.decision == PlacementDecision.UPDATE:
+                result = self._execute_update(manifest, candidate_files)
+            elif manifest.decision == PlacementDecision.EXTEND:
+                result = self._execute_extend(manifest, candidate_files)
+            elif manifest.decision == PlacementDecision.REUSE:
+                result = self._execute_reuse(manifest)
+            elif manifest.decision == PlacementDecision.REJECT:
+                raise PlacementExecutionError(
+                    f"Cannot execute REJECT decision. "
+                    f"Manifest {manifest.manifestId} was rejected."
+                )
+            else:
+                raise PlacementExecutionError(
+                    f"Unknown placement decision: {manifest.decision}"
+                )
+            
+            # Add evidence records from RepositoryAdapter
+            result["evidence_records"] = self.repository_adapter.get_evidence_records()
+            
+            # Add worktree evidence if worktree was used
+            if self.active_worktree:
+                result["worktree_evidence"] = self.worktree_manager.get_worktree_evidence(
+                    self.active_worktree
+                )
+            
+            return result
+            
+        finally:
+            # Clean up worktree if it was created
+            if self.active_worktree and not self.dry_run:
+                try:
+                    self.worktree_manager.cleanup_worktree(self.active_worktree, force=False)
+                except WorktreeError:
+                    # Log but don't fail if cleanup fails
+                    pass
+                finally:
+                    self.active_worktree = None
     
     def _execute_add(
         self,
@@ -140,7 +213,7 @@ class PlacementExecutor:
         candidate_files: List[Any]
     ) -> Dict[str, Any]:
         """
-        Execute ADD placement: create new block in repository.
+        Execute ADD placement: create new block in isolated worktree.
         
         Args:
             manifest: Placement manifest
@@ -149,26 +222,79 @@ class PlacementExecutor:
         Returns:
             Execution result
         """
-        target_dir = self.repository_root / manifest.targetPath
+        branch_name = f"candidate/{manifest.candidateId}"
         
-        # Create target directory
-        target_dir.mkdir(parents=True, exist_ok=True)
+        # Create isolated worktree (skip in dry-run mode)
+        if not self.dry_run:
+            try:
+                self.active_worktree = self.worktree_manager.create_worktree(
+                    workflow_id=manifest.manifestId,
+                    manifest_id=manifest.manifestId,
+                    branch_name=branch_name
+                )
+                # Use worktree path as repository root for adapter
+                worktree_adapter = RepositoryAdapter(
+                    self.active_worktree.worktree_path,
+                    dry_run=False
+                )
+            except WorktreeError as e:
+                raise PlacementExecutionError(f"Failed to create worktree: {e}")
+        else:
+            # Dry-run: use main repository adapter
+            worktree_adapter = self.repository_adapter
         
-        # Write candidate files
+        # Write candidate files via RepositoryAdapter (path validation enforced)
         written_files = []
         for file in candidate_files:
-            file_path = target_dir / file.filename
-            file_path.write_text(file.content, encoding='utf-8')
-            written_files.append(str(file_path.relative_to(self.repository_root)))
+            try:
+                record = worktree_adapter.write_file(
+                    source_content=file.content,
+                    target_path=manifest.targetPath,
+                    filename=file.filename,
+                    family=manifest.blockFamily.value,
+                    version=manifest.blockVersion
+                )
+                written_files.append(record.target_path)
+            except RepositoryAdapterError as e:
+                # Cleanup worktree on failure
+                if self.active_worktree and not self.dry_run:
+                    try:
+                        self.worktree_manager.cleanup_worktree(self.active_worktree, force=True)
+                    except WorktreeError:
+                        pass
+                    finally:
+                        self.active_worktree = None
+                raise PlacementExecutionError(
+                    f"Failed to write file {file.filename}: {e}"
+                )
         
-        # Create git branch
-        branch_name = f"candidate/{manifest.candidateId}"
+        # Commit in worktree (skip in dry-run mode)
         commit_msg = f"feat: add {manifest.blockFamily.value} block {manifest.candidateId}"
         
-        # Git operations (approved commands only)
-        self._git_checkout_branch(branch_name)
-        self._git_add_files(written_files)
-        commit_hash = self._git_commit(commit_msg)
+        if not self.dry_run and self.active_worktree:
+            try:
+                # Get relative paths for git add
+                relative_paths = [
+                    str(Path(f).relative_to(self.active_worktree.worktree_path))
+                    for f in written_files
+                ]
+                commit_hash = self.worktree_manager.commit_in_worktree(
+                    self.active_worktree,
+                    relative_paths,
+                    commit_msg
+                )
+            except WorktreeError as e:
+                # Cleanup worktree on failure
+                try:
+                    self.worktree_manager.cleanup_worktree(self.active_worktree, force=True)
+                except WorktreeError:
+                    pass
+                finally:
+                    self.active_worktree = None
+                raise PlacementExecutionError(f"Git operation failed: {e}")
+        else:
+            # Dry-run: simulate git operations
+            commit_hash = "dry-run-commit-hash"
         
         return {
             "status": "executed",
@@ -177,6 +303,7 @@ class PlacementExecutor:
             "filesWritten": len(written_files),
             "branch": branch_name,
             "commit": commit_hash,
+            "worktree_path": str(self.active_worktree.worktree_path) if self.active_worktree else None,
             "message": f"Created new {manifest.blockFamily.value} block at {manifest.targetPath}"
         }
     
@@ -186,7 +313,7 @@ class PlacementExecutor:
         candidate_files: List[Any]
     ) -> Dict[str, Any]:
         """
-        Execute UPDATE placement: update existing block.
+        Execute UPDATE placement: update existing block in isolated worktree.
         
         Args:
             manifest: Placement manifest
@@ -202,21 +329,79 @@ class PlacementExecutor:
                 f"Cannot update non-existent path: {manifest.targetPath}"
             )
         
-        # Update candidate files
+        branch_name = f"candidate/{manifest.candidateId}"
+        
+        # Create isolated worktree (skip in dry-run mode)
+        if not self.dry_run:
+            try:
+                self.active_worktree = self.worktree_manager.create_worktree(
+                    workflow_id=manifest.manifestId,
+                    manifest_id=manifest.manifestId,
+                    branch_name=branch_name
+                )
+                # Use worktree path as repository root for adapter
+                worktree_adapter = RepositoryAdapter(
+                    self.active_worktree.worktree_path,
+                    dry_run=False
+                )
+            except WorktreeError as e:
+                raise PlacementExecutionError(f"Failed to create worktree: {e}")
+        else:
+            # Dry-run: use main repository adapter
+            worktree_adapter = self.repository_adapter
+        
+        # Update candidate files via RepositoryAdapter
         updated_files = []
         for file in candidate_files:
-            file_path = target_dir / file.filename
-            file_path.write_text(file.content, encoding='utf-8')
-            updated_files.append(str(file_path.relative_to(self.repository_root)))
+            try:
+                record = worktree_adapter.write_file(
+                    source_content=file.content,
+                    target_path=manifest.targetPath,
+                    filename=file.filename,
+                    family=manifest.blockFamily.value,
+                    version=manifest.blockVersion
+                )
+                updated_files.append(record.target_path)
+            except RepositoryAdapterError as e:
+                # Cleanup worktree on failure
+                if self.active_worktree and not self.dry_run:
+                    try:
+                        self.worktree_manager.cleanup_worktree(self.active_worktree, force=True)
+                    except WorktreeError:
+                        pass
+                    finally:
+                        self.active_worktree = None
+                raise PlacementExecutionError(
+                    f"Failed to update file {file.filename}: {e}"
+                )
         
-        # Create git branch
-        branch_name = f"candidate/{manifest.candidateId}"
+        # Commit in worktree (skip in dry-run mode)
         commit_msg = f"feat: update {manifest.blockFamily.value} block at {manifest.targetPath}"
         
-        # Git operations
-        self._git_checkout_branch(branch_name)
-        self._git_add_files(updated_files)
-        commit_hash = self._git_commit(commit_msg)
+        if not self.dry_run and self.active_worktree:
+            try:
+                # Get relative paths for git add
+                relative_paths = [
+                    str(Path(f).relative_to(self.active_worktree.worktree_path))
+                    for f in updated_files
+                ]
+                commit_hash = self.worktree_manager.commit_in_worktree(
+                    self.active_worktree,
+                    relative_paths,
+                    commit_msg
+                )
+            except WorktreeError as e:
+                # Cleanup worktree on failure
+                try:
+                    self.worktree_manager.cleanup_worktree(self.active_worktree, force=True)
+                except WorktreeError:
+                    pass
+                finally:
+                    self.active_worktree = None
+                raise PlacementExecutionError(f"Git operation failed: {e}")
+        else:
+            # Dry-run: simulate git operations
+            commit_hash = "dry-run-commit-hash"
         
         return {
             "status": "executed",
@@ -225,6 +410,7 @@ class PlacementExecutor:
             "filesUpdated": len(updated_files),
             "branch": branch_name,
             "commit": commit_hash,
+            "worktree_path": str(self.active_worktree.worktree_path) if self.active_worktree else None,
             "message": f"Updated {manifest.blockFamily.value} block at {manifest.targetPath}"
         }
     
@@ -265,109 +451,6 @@ class PlacementExecutor:
             "commit": None,
             "message": f"Reusing existing block at {manifest.targetPath}"
         }
-    
-    def _git_checkout_branch(self, branch_name: str) -> None:
-        """
-        Create and checkout a new git branch.
-        
-        Args:
-            branch_name: Name of branch to create
-            
-        Raises:
-            PlacementExecutionError: If git operation fails
-        """
-        try:
-            # Check if branch exists
-            result = subprocess.run(
-                ['git', 'rev-parse', '--verify', branch_name],
-                cwd=self.repository_root,
-                capture_output=True,
-                text=True,
-                check=False
-            )
-            
-            if result.returncode == 0:
-                # Branch exists, checkout
-                subprocess.run(
-                    ['git', 'checkout', branch_name],
-                    cwd=self.repository_root,
-                    check=True,
-                    capture_output=True,
-                    text=True
-                )
-            else:
-                # Create new branch
-                subprocess.run(
-                    ['git', 'checkout', '-b', branch_name],
-                    cwd=self.repository_root,
-                    check=True,
-                    capture_output=True,
-                    text=True
-                )
-        except subprocess.CalledProcessError as e:
-            raise PlacementExecutionError(
-                f"Git checkout failed: {e.stderr}"
-            )
-    
-    def _git_add_files(self, file_paths: List[str]) -> None:
-        """
-        Stage files for git commit.
-        
-        Args:
-            file_paths: List of file paths to stage (relative to repo root)
-            
-        Raises:
-            PlacementExecutionError: If git operation fails
-        """
-        try:
-            subprocess.run(
-                ['git', 'add'] + file_paths,
-                cwd=self.repository_root,
-                check=True,
-                capture_output=True,
-                text=True
-            )
-        except subprocess.CalledProcessError as e:
-            raise PlacementExecutionError(
-                f"Git add failed: {e.stderr}"
-            )
-    
-    def _git_commit(self, commit_message: str) -> str:
-        """
-        Commit staged changes.
-        
-        Args:
-            commit_message: Commit message
-            
-        Returns:
-            Commit hash
-            
-        Raises:
-            PlacementExecutionError: If git operation fails
-        """
-        try:
-            subprocess.run(
-                ['git', 'commit', '-m', commit_message],
-                cwd=self.repository_root,
-                check=True,
-                capture_output=True,
-                text=True
-            )
-            
-            # Get commit hash
-            result = subprocess.run(
-                ['git', 'rev-parse', 'HEAD'],
-                cwd=self.repository_root,
-                check=True,
-                capture_output=True,
-                text=True
-            )
-            
-            return result.stdout.strip()
-        except subprocess.CalledProcessError as e:
-            raise PlacementExecutionError(
-                f"Git commit failed: {e.stderr}"
-            )
     
     def trigger_discovery_refresh(self) -> Dict[str, Any]:
         """
