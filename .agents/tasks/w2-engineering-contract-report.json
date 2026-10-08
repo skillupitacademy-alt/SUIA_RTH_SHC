@@ -1,0 +1,36 @@
+{
+  "agent": "W2-EngineeringContract",
+  "wave": "W2",
+  "branch": "m2-project-ai-canonical-wiring",
+  "commit_before": "304a333f",
+  "commit_after": "24e6d7b3",
+  "dependencies": ["W1A-target-binding", "W1B-repo-intelligence"],
+  "files_changed": [
+    "services/project-ai/app/api/routes/contract.py",
+    "services/project-ai/app/contracts/engineering_contract.py",
+    "services/project-ai/pyproject.toml",
+    "services/project-ai/tests/unit/test_contract_routes.py",
+    "services/project-ai/tests/integration/test_w2_contract_generation.py"
+  ],
+  "tests": {
+    "unit_passed": 46,
+    "unit_failed": 0,
+    "integration_passed": 9,
+    "integration_failed": 0
+  },
+  "contract_features": [
+    "immutable_hash",
+    "real_target_binding",
+    "repository_intelligence",
+    "prohibited_behaviors"
+  ],
+  "review_fixes": [
+    "Added get_git_head_sha() helper to populate real commit SHAs in evidence harness instead of placeholder bb5fe7a6",
+    "Added pytest-asyncio configuration to pyproject.toml with asyncio_mode=auto to support async integration tests",
+    "Documented contracts_store restart caveat in EngineeringContract docstring explaining Wave 2 immutability limitation",
+    "Added comment in contract.py explaining why filesChanged is empty for W2 (generates in-memory contract only)",
+    "Moved governance_service import to module level to enable test mocking",
+    "Added calculate_snapshot_sha256 mock to all unit tests that create contracts"
+  ],
+  "status": "PASS"
+}

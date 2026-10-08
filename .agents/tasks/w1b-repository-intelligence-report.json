@@ -1,28 +1,51 @@
 {
+  "workflow": "M2.9 Wave 1B",
+  "task": "Repository Intelligence Service - Review Fixes",
+  "status": "COMPLETED",
   "files_created": [
     "services/project-ai/app/intelligence/repository_intelligence.py",
     "services/project-ai/app/intelligence/__init__.py",
     "services/project-ai/tests/intelligence/__init__.py",
     "services/project-ai/tests/intelligence/test_repository_intelligence.py"
   ],
+  "files_modified": [
+    "services/project-ai/app/intelligence/repository_intelligence.py"
+  ],
   "test_results": {
+    "total": 13,
     "passed": 13,
     "failed": 0,
-    "total": 13
+    "skipped": 0
   },
   "blocks_discovered": [
-    "introduction",
-    "code-c1",
-    "definition"
+    "introduction (I1)",
+    "code-c1 (C1)",
+    "definition (D1)"
   ],
-  "review_findings_fixed": [
-    "Hardcoded absolute path - Replaced with configurable _REPO_ROOT derived from module location or environment variable",
-    "Regex over-matches version attributes - Improved regex patterns with better anchoring to JSX attributes and removed overly greedy patterns",
-    "Schema extraction not implemented - Documented in dataclass docstring that field is reserved for future use",
-    "RSSB page-level unconditionally True - Documented in RuntimeContract docstring as temporary heuristic for canonical blocks",
-    "Pattern detection ignores code structure - Added _remove_comments() function to filter out JavaScript/TypeScript comments before pattern matching",
-    "Version fallback returns 'unknown' - Added logging.warning() when version cannot be extracted",
-    "Family patterns don't scale - Implemented dynamic directory scanning to build family patterns from *Block.tsx files using glob and kebab-case conversion"
+  "review_findings_resolved": [
+    {
+      "finding": "Dynamic version attributes missed",
+      "resolution": "Enhanced version extraction to handle JSX expressions by tracing variable assignments. Pattern now matches data-block-version={blockVersion} and extracts from const blockVersion = ... ?? 'C1' declarations."
+    },
+    {
+      "finding": "RSSB detection bypassed",
+      "resolution": "Implemented structural analysis that detects runtimeContext prop usage to determine page-level RSSB pattern. No longer hardcoded to True."
+    },
+    {
+      "finding": "Brand independence pattern mismatch",
+      "resolution": "Search for 'CANONICAL LOCKED' pattern in original source content before comment removal, allowing detection of canonical markers in block comments."
+    },
+    {
+      "finding": "Schema extraction unimplemented",
+      "resolution": "Acknowledged as deferred work. Field remains in dataclass with clear documentation that it's reserved for future use. Current implementation correctly returns empty dict."
+    }
   ],
-  "commit_sha": "6f66b6945c9a706d3b3b3b50894dd46446034f12"
+  "commit_sha": "5182c874dcfbb7de4c2dbb5d71eff7f32dad7f21",
+  "branch": "m2-project-ai-canonical-wiring",
+  "verification": {
+    "dynamic_version_extraction": "VERIFIED - CodeC1Block version extracted as 'C1'",
+    "brand_independence_detection": "VERIFIED - IntroductionBlock marked as brand independent",
+    "rssb_structural_analysis": "VERIFIED - page_level detected via runtimeContext usage",
+    "all_tests_passing": "VERIFIED - 13/13 tests pass"
+  }
 }

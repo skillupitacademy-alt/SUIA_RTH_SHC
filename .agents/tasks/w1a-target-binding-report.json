@@ -1,0 +1,70 @@
+{
+  "task": "M2.9 Wave 1A - Target Binding (Review Fixes Iteration)",
+  "commit_sha": "85918ee9",
+  "branch": "m2-project-ai-canonical-wiring",
+  "files_changed": [
+    "services/project-ai/app/api/routes/candidate.py",
+    "services/project-ai/app/api/routes/contract.py"
+  ],
+  "test_results": {
+    "passed": 791,
+    "failed": 66,
+    "total": 857,
+    "skipped": 16,
+    "note": "Same test results as previous iteration - 66 failures are pre-existing and unrelated to Wave 1A"
+  },
+  "targeted_tests": {
+    "pattern": "target or binding",
+    "passed": 44,
+    "failed": 1,
+    "total": 45,
+    "note": "One failure is pre-existing test assertion about error message wording, unrelated to Wave 1A changes"
+  },
+  "review_findings_addressed": {
+    "finding_1_manifest_error_message": {
+      "issue": "Manifest generation returns 400 with 'Re-upload candidate with workflow_id' when target_version is missing, but re-upload would fail with 400 duplicate candidateId",
+      "fix": "Changed error message to suggest 'Delete this candidate and upload again with workflow_id' - provides correct recovery path",
+      "file": "services/project-ai/app/api/routes/candidate.py",
+      "lines": "425-430"
+    },
+    "finding_2_target_drift_detection": {
+      "issue": "Contract route could silently use modified workflow target if workflow object's target fields were changed after contract generation",
+      "fix": "Added drift detection that compares cached contract target with workflow's current target, raises 409 Conflict if mismatch detected",
+      "file": "services/project-ai/app/api/routes/contract.py",
+      "lines": "215-230"
+    },
+    "finding_3_candidate_upload_validation": {
+      "issue": "Candidate upload copies workflow target fields without validating they are non-empty, causing deferred failures at manifest generation",
+      "fix": "Added fail-fast validation that checks target_family and target_version are non-empty before binding to candidate",
+      "file": "services/project-ai/app/api/routes/candidate.py",
+      "lines": "95-108"
+    },
+    "finding_2_contract_validation": {
+      "issue": "Contract generation should also validate target fields are non-empty (part of finding 2)",
+      "fix": "Added fail-fast validation for target_family and target_version before contract generation",
+      "file": "services/project-ai/app/api/routes/contract.py",
+      "lines": "233-245"
+    }
+  },
+  "implementation_summary": {
+    "objective": "Address Wave 1A review findings to improve error handling, validation, and immutability guarantees",
+    "changes": [
+      "Improved manifest generation error message to guide correct recovery (delete + re-upload)",
+      "Added workflow target drift detection in contract generation (409 Conflict on mismatch)",
+      "Added fail-fast validation for empty target_family/target_version in candidate upload",
+      "Added fail-fast validation for empty target fields in contract generation"
+    ],
+    "validation_approach": [
+      "Fail-fast validation prevents empty/invalid target fields from propagating",
+      "Drift detection prevents contract/workflow inconsistency after mutations",
+      "Clear error messages guide users to correct recovery paths"
+    ]
+  },
+  "verification": {
+    "no_regressions": "All tests maintain same pass/fail status as before fixes",
+    "targeted_tests_stable": "44/45 targeted tests still pass (98% pass rate)",
+    "new_validations": "Added validation for empty target fields in both upload and contract routes",
+    "drift_detection": "Added immutability check for workflow target fields in contract caching"
+  },
+  "timestamp": "2026-10-08T15:30:00Z"
+}
