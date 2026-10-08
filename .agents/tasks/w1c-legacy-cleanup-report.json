@@ -1,8 +1,17 @@
 {
   "workflow": "M2.9 Wave 1C - Legacy Creation Authority Cleanup",
   "branch": "m2-project-ai-canonical-wiring",
-  "commit_sha": "c715af46",
+  "commit_sha": "56891aec",
   "timestamp": "2025-01-17T00:00:00Z",
+  "review_iteration": "2",
+  "review_fix": {
+    "finding": "Migration guide referenced non-existent DesignSource value",
+    "location": "Scenario 2 (Mix & Match Workflow)",
+    "issue": "Used 'MIX_AND_MATCH' which is not a valid DesignSource enum value",
+    "fix": "Replaced with 'USER_SPECIFICATION' (valid DesignSource value)",
+    "rationale": "USER_SPECIFICATION is appropriate when user specifies which blocks to mix",
+    "commit": "56891aec"
+  },
   "files_modified": [
     "services/project-ai/app/api/routes/creation.py",
     "services/project-ai/app/api/schemas/creation.py"
