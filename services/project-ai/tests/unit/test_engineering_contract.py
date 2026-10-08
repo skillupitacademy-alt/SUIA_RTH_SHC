@@ -272,6 +272,70 @@ class TestProhibitedBehaviors:
         assert contract.prohibited_behaviors == custom_behaviors
 
 
+class TestNoHardcodedValuesRegression:
+    """Test that no hardcoded values remain in contract.py."""
+    
+    def test_no_hardcoded_values_in_contract(self):
+        """Test that create_engineering_contract function contains no hardcoded strings."""
+        from pathlib import Path
+        import re
+        
+        # Read contract.py source
+        contract_file = Path(__file__).parent.parent.parent / "app" / "api" / "routes" / "contract.py"
+        with open(contract_file, 'r', encoding='utf-8') as f:
+            source = f.read()
+        
+        # Extract create_engineering_contract function body
+        # Find the function definition
+        func_pattern = r'async def create_engineering_contract\(.*?\):\s*""".*?"""(.*?)(?=\n(?:async )?def |@router\.|$)'
+        match = re.search(func_pattern, source, re.DOTALL)
+        
+        if not match:
+            pytest.fail("Could not find create_engineering_contract function in contract.py")
+        
+        func_body = match.group(1)
+        
+        # Check for hardcoded values that should NOT appear in the function body
+        # (excluding comments and docstrings)
+        hardcoded_values = [
+            ('"intermediate"', 'difficulty level'),
+            ("'intermediate'", 'difficulty level'),
+            ('"TypeScript"', 'language'),
+            ("'TypeScript'", 'language'),
+            ('"React"', 'framework'),
+            ("'React'", 'framework'),
+            ('"CSS Modules"', 'style'),
+            ("'CSS Modules'", 'style'),
+        ]
+        
+        # Remove comments from function body
+        lines = func_body.split('\n')
+        code_lines = []
+        for line in lines:
+            # Remove inline comments but keep string literals
+            if '#' in line:
+                # Simple heuristic: split on # but check if it's inside a string
+                # For this test, we'll just check the full line
+                code_lines.append(line)
+            else:
+                code_lines.append(line)
+        
+        func_body_no_comments = '\n'.join(code_lines)
+        
+        # Check each hardcoded value
+        for value, description in hardcoded_values:
+            if value in func_body_no_comments:
+                # Check if it's in a comment by looking at the line
+                lines_with_value = [line for line in code_lines if value in line]
+                non_comment_lines = [line for line in lines_with_value if not line.strip().startswith('#')]
+                
+                if non_comment_lines:
+                    pytest.fail(
+                        f"Found hardcoded {description} value {value} in create_engineering_contract function body. "
+                        f"This should be replaced with repo_contract field. Lines: {non_comment_lines}"
+                    )
+
+
 class TestContractImmutability:
     """Test contract immutability via hash."""
     

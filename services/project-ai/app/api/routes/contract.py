@@ -343,6 +343,29 @@ async def create_engineering_contract(
                    f"Run TypeScript discovery scan to generate canonical snapshot evidence."
         )
     
+    # Defensive checks: Ensure required evidence fields are present
+    # This enforces the architectural requirement that all contract fields must be evidence-backed
+    if not repo_contract.language or repo_contract.language.strip() == '':
+        raise HTTPException(
+            status_code=500,
+            detail="Repository snapshot missing language evidence. "
+                   "Cannot generate contract without language specification."
+        )
+    
+    if not repo_contract.framework or repo_contract.framework.strip() == '':
+        raise HTTPException(
+            status_code=500,
+            detail="Repository snapshot missing framework evidence. "
+                   "Cannot generate contract without framework specification."
+        )
+    
+    if not repo_contract.file_paths or len(repo_contract.file_paths) == 0:
+        raise HTTPException(
+            status_code=500,
+            detail="Repository snapshot missing file path evidence. "
+                   "Cannot generate contract without file structure evidence."
+        )
+    
     # Generate contract ID
     contract_id = f"contract-{workflow_id}-{uuid.uuid4().hex[:8]}"
     
@@ -356,28 +379,19 @@ async def create_engineering_contract(
         repository_snapshot_sha256=snapshot_sha256,
         canonical_references=repo_contract.references,
         
-        # Populate contracts from repository intelligence
+        # Populate contracts from repository intelligence (snapshot-derived values)
         educational_contract={
             "learning_objectives": [],
             "content_type": target.block_type,
-            "difficulty_level": "intermediate"
+            "difficulty_level": repo_contract.difficulty_level
         },
         implementation_contract={
-            "language": "TypeScript",
-            "framework": "React",
-            "style": "CSS Modules",
-            "file_structure": {
-                "component": f"packages/ui/src/tutorial/blocks/{target.family}{target.version}Block.tsx",
-                "schema": f"packages/ui/src/tutorial/schemas/{target.family}{target.version}Schema.ts",
-                "types": f"packages/ui/src/tutorial/types/{target.family}{target.version}Types.ts",
-                "tests": f"packages/ui/src/tutorial/blocks/__tests__/{target.family}{target.version}Block.test.tsx"
-            }
+            "language": repo_contract.language,
+            "framework": repo_contract.framework,
+            "style": repo_contract.style,
+            "file_structure": repo_contract.file_paths
         },
-        type_contract={
-            "strict_mode": True,
-            "no_any": True,
-            "no_implicit_any": True
-        },
+        type_contract=repo_contract.type_strictness,
         schema_contract=repo_contract.schema_contract,
         ubrc_contract={
             "required": True,
@@ -419,14 +433,7 @@ async def create_engineering_contract(
         
         # Required deliverables
         required_artifacts=repo_contract.required_artifacts,
-        tests_required=[
-            "Unit tests for component rendering",
-            "Unit tests for prop validation",
-            "Unit tests for theme integration",
-            "Unit tests for UBRC integration",
-            "Accessibility tests (WCAG 2.1 AA)",
-            "Responsive design tests (mobile, tablet, desktop)"
-        ],
+        tests_required=repo_contract.test_requirements,
         acceptance_criteria=repo_contract.acceptance_criteria,
         
         # Architectural boundaries (from M2 specification)

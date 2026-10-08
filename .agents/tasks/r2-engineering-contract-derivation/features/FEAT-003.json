@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-003",
+  "type": "fix",
+  "description": "Replace hardcoded contract construction with snapshot-derived values. Refactors create_engineering_contract() in services/project-ai/app/api/routes/contract.py to use evidence-backed values from repo_contract (populated by FEAT-002) instead of hardcoded strings. This is the core fix that eliminates all hardcoding. Depends on FEAT-002 for snapshot extraction logic",
+  "status": "completed",
+  "steps": [
+    "1. In services/project-ai/app/api/routes/contract.py, locate create_engineering_contract() function (starts line 219). Find educational_contract construction (around line 331-335). Replace hardcoded 'difficulty_level': 'intermediate' with 'difficulty_level': repo_contract.difficulty_level",
+    "2. In same function, find implementation_contract construction (around lines 337-347). Replace hardcoded 'language': 'TypeScript' with repo_contract.language, 'framework': 'React' with repo_contract.framework, 'style': 'CSS Modules' with repo_contract.style, entire 'file_structure' dict with repo_contract.file_paths",
+    "3. Find type_contract construction (around lines 349-352). Replace hardcoded dict {'strict_mode': True, 'no_any': True, 'no_implicit_any': True} with repo_contract.type_strictness",
+    "4. Find tests_required construction (around lines 399-407). Replace entire hardcoded list with repo_contract.test_requirements",
+    "5. Add defensive checks: if repo_contract.language is empty, raise HTTPException 500 with message 'Repository snapshot missing language evidence'. Add similar checks for framework, file_paths (must not be empty dict). This ensures contract generation blocks when required evidence is missing, per architecture requirement",
+    "6. Update tests/integration/test_w2_contract_generation.py: update mock_snapshot fixture (around line 52) to include 'metadata': {'language': 'TypeScript', 'framework': 'React', 'difficulty': 'intermediate'} and add test file evidence. Update test assertions in TestW2ContractGenerationWithRealW1BWiring to verify snapshot-derived values instead of expecting hardcoded 'TypeScript'/'React'. Add test_contract_generation_fails_without_evidence() that uses mock snapshot missing metadata and verifies HTTPException 500",
+    "7. Update tests/unit/test_engineering_contract.py: add test_no_hardcoded_values_in_contract() that imports contract.py source as text, searches for string literals 'intermediate', 'TypeScript', 'React', 'CSS Modules' within create_engineering_contract function body, and asserts none found (this prevents regression)",
+    "8. Run python -m pytest tests/integration/test_w2_contract_generation.py -v and python -m pytest tests/unit/test_engineering_contract.py -v, verify all tests pass"
+  ],
+  "acceptance_criteria": [
+    "create_engineering_contract() uses repo_contract.difficulty_level instead of hardcoded 'intermediate'",
+    "create_engineering_contract() uses repo_contract.language, framework, style instead of hardcoded 'TypeScript', 'React', 'CSS Modules'",
+    "create_engineering_contract() uses repo_contract.file_paths instead of hardcoded file_structure dict",
+    "create_engineering_contract() uses repo_contract.type_strictness instead of hardcoded type flags",
+    "create_engineering_contract() uses repo_contract.test_requirements instead of hardcoded tests_required list",
+    "Defensive checks raise HTTPException when required evidence missing",
+    "Integration tests verify snapshot-derived values propagate correctly",
+    "Regression test ensures no hardcoded strings remain in contract construction"
+  ],
+  "verification": [
+    "python -m pytest tests/integration/test_w2_contract_generation.py -v (expect all tests passed)",
+    "python -m pytest tests/unit/test_engineering_contract.py::test_no_hardcoded_values_in_contract -v (expect 1 passed)",
+    "grep -n 'intermediate' services/project-ai/app/api/routes/contract.py (should NOT find in create_engineering_contract function body, only in comments)",
+    "grep -n 'difficulty_level.*repo_contract' services/project-ai/app/api/routes/contract.py (should find usage of repo_contract.difficulty_level)"
+  ],
+  "blocked_reason": null,
+  "findings": "Successfully replaced all hardcoded contract values with snapshot-derived data. Replaced hardcoded 'intermediate' difficulty_level with repo_contract.difficulty_level. Replaced hardcoded 'TypeScript', 'React', 'CSS Modules' with repo_contract.language, repo_contract.framework, repo_contract.style. Replaced hardcoded file_structure dict with repo_contract.file_paths. Replaced hardcoded type_contract dict with repo_contract.type_strictness. Replaced hardcoded tests_required list with repo_contract.test_requirements. Added defensive checks that raise HTTPException 500 if language, framework, or file_paths are missing from snapshot evidence, enforcing the architectural requirement that all contract fields must be evidence-backed. Updated integration tests to provide complete mock snapshots with metadata and verify snapshot-derived values propagate correctly. Added test_contract_generation_fails_without_evidence to verify defensive checks. Updated mock_snapshot fixture to include metadata for TypeScript, React, CSS Modules, and intermediate difficulty. Created regression test test_no_hardcoded_values_in_contract that scans contract.py source code to detect any hardcoded 'intermediate', 'TypeScript', 'React', or 'CSS Modules' strings in create_engineering_contract function body, preventing future regressions. All 10 integration tests pass. All 16 unit tests pass including new regression test. Grep verification confirms zero hardcoded values remain in function body - only comments and docstrings reference TypeScript. All contract fields now derived from repo_contract populated by FEAT-002 snapshot extraction logic."
+}

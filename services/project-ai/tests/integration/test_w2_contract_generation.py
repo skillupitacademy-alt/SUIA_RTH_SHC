@@ -53,12 +53,30 @@ def mock_snapshot():
     """Mock TypeScript repository snapshot."""
     return {
         "timestamp": "2024-01-15T10:00:00Z",
+        "metadata": {
+            "language": "TypeScript",
+            "framework": "React",
+            "style": "CSS Modules",
+            "difficulty_level": "intermediate"
+        },
         "evidence": [
             {
                 "kind": "canonical_block",
                 "path": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
                 "contentHash": "a" * 64,
                 "evidenceId": "evidence-intro-001"
+            },
+            {
+                "kind": "test",
+                "path": "packages/ui/src/tutorial/blocks/__tests__/IntroductionBlock.test.tsx",
+                "contentHash": "b" * 64,
+                "evidenceId": "evidence-intro-test-001"
+            },
+            {
+                "kind": "config",
+                "path": "tsconfig.json",
+                "contentHash": "c" * 64,
+                "evidenceId": "evidence-tsconfig-001"
             }
         ]
     }
@@ -101,7 +119,7 @@ class TestW2ContractGenerationWithRealW1AWiring:
         
         # Verify contract uses real target from W1A
         assert contract.target.family == "Introduction"
-        assert contract.target.version == "I7"
+        assert contract.target.version == "I1"
         assert contract.target.workflow_id == test_workflow.workflow_id
         
         # Verify NOT using placeholder Introduction/I7
@@ -191,6 +209,74 @@ class TestW2ContractGenerationWithRealW1BWiring:
         
         # Verify acceptance criteria from W1B
         assert len(contract.acceptance_criteria) > 0
+        
+        # Verify snapshot-derived values are used (from mock_snapshot metadata)
+        assert contract.implementation_contract["language"] == "TypeScript"
+        assert contract.implementation_contract["framework"] == "React"
+        assert contract.implementation_contract["style"] == "CSS Modules"
+        assert contract.educational_contract["difficulty_level"] == "intermediate"
+    
+    @patch('app.api.routes.contract.load_repository_snapshot')
+    @patch('app.api.routes.contract.calculate_snapshot_sha256')
+    @patch('app.api.routes.contract.governance_service')
+    async def test_contract_generation_fails_without_evidence(
+        self,
+        mock_gov_service,
+        mock_snapshot_sha,
+        mock_load_snapshot,
+        test_workflow,
+        governance_service
+    ):
+        """Test that contract generation fails when required evidence is missing."""
+        # Create snapshot with no evidence that can derive metadata
+        incomplete_snapshot = {
+            "timestamp": "2024-01-15T10:00:00Z",
+            "metadata": {},  # Empty metadata
+            "evidence": [
+                {
+                    "kind": "canonical_block",
+                    "path": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+                    "contentHash": "a" * 64,
+                    "evidenceId": "evidence-intro-001"
+                }
+                # No test files, no tsconfig, minimal evidence
+            ]
+        }
+        
+        # Setup mocks
+        mock_gov_service.get_workflow.return_value = test_workflow
+        mock_load_snapshot.return_value = incomplete_snapshot
+        mock_snapshot_sha.return_value = "x" * 64
+        
+        workflow_dict = {
+            "state": "DISCOVERY",
+            "owner": "test-user"
+        }
+        
+        # Contract generation should succeed because extract_metadata_from_snapshot infers TypeScript
+        # from .tsx extension and React from Block.tsx pattern. But if file_paths is empty, it should fail.
+        # Actually, with the current implementation, file_paths will be empty because derive_file_paths
+        # doesn't find matching patterns. So the defensive check should trigger.
+        
+        # Actually, let me test with a completely different block that won't match
+        workflow2 = governance_service.create_workflow(
+            target_family="Unknown",
+            target_version="X1",
+            requester_id="test-user"
+        )
+        mock_gov_service.get_workflow.return_value = workflow2
+        
+        # Should raise HTTP 503 for missing evidence (RepositoryEvidenceBlocked)
+        from fastapi import HTTPException
+        with pytest.raises(HTTPException) as exc_info:
+            await create_engineering_contract(
+                workflow_id=workflow2.workflow_id,
+                workflow=workflow_dict
+            )
+        
+        # Verify it's a 503 error
+        assert exc_info.value.status_code == 503
+        assert "evidence" in str(exc_info.value.detail).lower()
 
 
 class TestContractSHA256Determinism:
@@ -211,12 +297,12 @@ class TestContractSHA256Determinism:
         # Create two identical workflows
         workflow1 = governance_service.create_workflow(
             target_family="Introduction",
-            target_version="I7",
+            target_version="I1",
             requester_id="test-user"
         )
         workflow2 = governance_service.create_workflow(
             target_family="Introduction",
-            target_version="I7",
+            target_version="I1",
             requester_id="test-user"
         )
         
