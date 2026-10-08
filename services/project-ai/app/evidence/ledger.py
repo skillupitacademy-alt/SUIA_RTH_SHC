@@ -82,12 +82,31 @@ def _append_jsonl(file_name: str, data: dict[str, Any]) -> None:
     (fcntl/msvcrt) to protect against concurrent writes from multiple
     threads and multiple processes.
     
+    PLATFORM-SPECIFIC BEHAVIOR:
+    - Unix/Linux: fcntl.flock locks entire file descriptor
+    - Windows: msvcrt.locking locks exactly 1MB region (1048576 bytes)
+    
+    LIMITATION: On Windows, if a single JSONL write exceeds 1MB, the lock
+    will not cover the entire write region. This is unlikely for typical
+    evidence records but theoretically possible for large payloads.
+    
     Args:
         file_name: Name of the JSONL file in EVIDENCE_ROOT
         data: Dictionary to serialize as JSON
+    
+    Raises:
+        ValueError: If serialized JSON exceeds 1MB on Windows
     """
     file_path = EVIDENCE_ROOT / file_name
     file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Serialize and validate size on Windows
+    json_line = json.dumps(data, ensure_ascii=False) + "\n"
+    if platform.system() == "Windows" and len(json_line.encode("utf-8")) > 1024 * 1024:
+        raise ValueError(
+            f"JSONL write exceeds 1MB ({len(json_line.encode('utf-8'))} bytes). "
+            "Windows file locking only covers 1MB region."
+        )
     
     # Acquire thread-level lock first
     thread_lock = _get_file_lock(file_name)
@@ -98,14 +117,14 @@ def _append_jsonl(file_name: str, data: dict[str, Any]) -> None:
                 # Windows file locking - lock 1MB region to cover variable-length JSONL appends
                 msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1024 * 1024)
                 try:
-                    f.write(json.dumps(data, ensure_ascii=False) + "\n")
+                    f.write(json_line)
                 finally:
                     msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1024 * 1024)
             else:
                 # Unix/Linux file locking
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 try:
-                    f.write(json.dumps(data, ensure_ascii=False) + "\n")
+                    f.write(json_line)
                 finally:
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 

@@ -5,7 +5,7 @@ Convenience wrappers for wave agents to easily record evidence.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from .ledger import record_agent_run
@@ -56,7 +56,7 @@ def record_wave_completion(
             tests=tests,
             evidence=[],  # Evidence artifacts can be added separately
             status=status,
-            timestamp=datetime.now()
+            timestamp=datetime.now(timezone.utc)
         )
         
         # Record to ledger
