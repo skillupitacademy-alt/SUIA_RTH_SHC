@@ -1,7 +1,0 @@
-{
-  "task_id": "task-m2-9-w4",
-  "task_description": "M2.9 Wave 4: Human Implementation Approval Gate - establish authorization boundary before repository placement",
-  "status": "pending",
-  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
-  "blocked_reason": null
-}

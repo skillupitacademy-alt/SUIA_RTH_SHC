@@ -1,1 +1,0 @@
-"""Question Duplicate Judge service."""

@@ -1,5 +1,0 @@
-> @quiz/project-llm-discovery@1.0.0 type-check E:\onlinewebsites\quiz-platform\packages\project-llm-discovery
-> tsc --noEmit -p tsconfig.json
-
-Exit Code: 0
-No TypeScript errors found.

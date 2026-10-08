@@ -1,9 +1,0 @@
-{
-  "check": "2D-VersionBinding",
-  "status": "PASS",
-  "hardcoded_version_found": false,
-  "hardcoded_version_matches": [],
-  "dynamic_version_extraction_found": true,
-  "workflow_target_model_exists": true,
-  "notes": "Version binding remediation verified. placement.py extracts blockVersion from workflow_target.get('version') at lines 66-73. No hardcoded '1.0.0' found in production code. Falls back to 'UNKNOWN_VERSION' sentinel (not hardcoded version) if workflow_target not populated. WorkflowTarget model exists at services/project-ai/app/models/workflow_target.py. Code includes explicit B07 fix comment."
-}

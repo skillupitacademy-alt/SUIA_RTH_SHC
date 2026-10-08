@@ -211,3 +211,6 @@ scripts/.tmp-*
 scripts/inspect-*.mjs
 scripts/test-*.mjs
 scripts/verify-*.mjs
+
+# Git worktrees (temporary working directories)
+.worktrees/

@@ -1,7 +1,0 @@
-{
-  "task_id": "task-m1-p0-corrections",
-  "task_description": "Fix four P0 defects in PR #23 m1-repository-discovery identified by forensic audit: D3 VERIFIED semantics, V1 schema strength, D6 integration test discovery, and repository error handling",
-  "status": "pending",
-  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
-  "blocked_reason": null
-}
