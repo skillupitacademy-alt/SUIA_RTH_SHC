@@ -1,4 +1,21 @@
-"""Task management endpoints."""
+"""
+Task management endpoints.
+
+DEPRECATED (M2.9 Wave 0): These endpoints are deprecated in favor of /workflows endpoints.
+
+Migration path:
+- POST /tasks/plan -> POST /workflows
+- GET /tasks/{task_id} -> GET /workflows/{workflow_id}
+- POST /tasks/{task_id}/approve -> POST /workflows/{workflow_id}/transition
+- POST /tasks/{task_id}/reject -> POST /workflows/{workflow_id}/transition
+
+These endpoints will be removed in a future version. Please migrate to the
+canonical workflow API for new integrations.
+
+Timeline:
+- Wave 0: Deprecation warnings added
+- Wave 1+: Endpoints removed, return 410 GONE
+"""
 
 from datetime import datetime, timezone
 from typing import Dict
@@ -13,7 +30,7 @@ from app.api.schemas.models import (
 )
 from app.models.task_state import TaskState
 
-router = APIRouter(prefix="/tasks", tags=["tasks"])
+router = APIRouter(prefix="/tasks", tags=["tasks"], deprecated=True)
 
 # In-memory task storage for M2.8 (production persistence in M3+)
 _tasks: Dict[str, Dict] = {}
@@ -23,6 +40,10 @@ _tasks: Dict[str, Dict] = {}
 async def create_planning_task(request: TaskCreateRequest):
     """
     Create a new planning task.
+    
+    **DEPRECATED**: Use POST /workflows instead.
+    
+    Migration: Replace with POST /workflows with target_family, target_version, requester_id.
     
     Args:
         request: Task description and optional context
@@ -53,6 +74,8 @@ async def get_task_status(task_id: str):
     """
     Get task status by ID.
     
+    **DEPRECATED**: Use GET /workflows/{workflow_id} instead.
+    
     Args:
         task_id: Unique task identifier
         
@@ -72,6 +95,8 @@ async def get_task_status(task_id: str):
 async def approve_task(task_id: str):
     """
     Approve a task that is waiting for approval.
+    
+    **DEPRECATED**: Use POST /workflows/{workflow_id}/transition instead.
     
     Transitions task from WAITING_FOR_APPROVAL to IMPLEMENTING.
     
@@ -112,6 +137,8 @@ async def approve_task(task_id: str):
 async def reject_task(task_id: str):
     """
     Reject a task that is waiting for approval.
+    
+    **DEPRECATED**: Use POST /workflows/{workflow_id}/transition instead.
     
     Transitions task from WAITING_FOR_APPROVAL to REJECTED.
     

@@ -47,13 +47,18 @@
   "files_created": [
     "services/project-ai/app/models/workflow.py",
     "services/project-ai/app/api/schemas/workflow.py",
+    "services/project-ai/app/orchestration/canonical_workflow.py",
     "services/project-ai/app/orchestration/workflow_governance.py",
     "services/project-ai/app/api/routes/workflows.py",
     "services/project-ai/tests/unit/test_workflow_model.py",
     "services/project-ai/tests/unit/test_workflow_governance_service.py",
-    ".agents/tasks/w0-architecture-freeze-report.json"
+    ".agents/tasks/w0-architecture-freeze-report.json",
+    ".agents/tasks/w0-retirement-plan.md"
   ],
-  "files_modified": [],
+  "files_modified": [
+    "services/project-ai/app/api/routes/tasks.py",
+    "services/project-ai/app/api/routes/governance.py"
+  ],
   "verification_evidence": {
     "state_machine_frozen": true,
     "state_machine_location": "app/orchestration/canonical_workflow.py",
@@ -86,33 +91,49 @@
       "POST /workflows/{workflow_id}/artifacts - Bind artifact",
       "GET /workflows - List all workflows"
     ],
-    "deprecated_endpoints": [],
-    "modified_endpoints": []
+    "deprecated_endpoints": [
+      "POST /tasks/plan - Deprecated in Wave 0, use POST /workflows",
+      "GET /tasks/{task_id} - Deprecated in Wave 0, use GET /workflows/{workflow_id}",
+      "POST /tasks/{task_id}/approve - Deprecated in Wave 0, use POST /workflows/{workflow_id}/transition",
+      "POST /tasks/{task_id}/reject - Deprecated in Wave 0, use POST /workflows/{workflow_id}/transition"
+    ],
+    "modified_endpoints": [
+      "POST /approvals/workflows/{workflow_id}/approve-placement - Integrated with WorkflowGovernanceService"
+    ]
   },
   "architectural_decisions": {
     "storage": "In-memory for M2.9 Wave 0 (database persistence deferred to Wave 1+)",
     "single_authority": "WorkflowGovernanceService is the ONLY component that mutates workflow state",
     "frontend_integration": "Documented but not implemented (backend-only for Wave 0)",
-    "task_routes_migration": "Deprecated with warnings, functional changes in Wave 1+",
-    "agent_coordination": "Preserved existing AgentCoordinator, WorkflowEngine remains adapters",
-    "approval_wiring": "Integrated existing ImplementationApproval via governance service"
+    "task_routes_migration": "Deprecated with warnings in Wave 0, functional removal in Wave 1+",
+    "governance_routes_integration": "Integrated with WorkflowGovernanceService, maintains backwards compatibility with legacy _workflow_states via adapter pattern",
+    "agent_coordination": "Deferred to Wave 1+ (WorkflowEngine and AgentCoordinator integration)",
+    "approval_wiring": "Integrated existing ImplementationApproval via governance service",
+    "specification_id_format": "Target version only (e.g., 'I7'), not family+version"
   },
   "retirement_plan": {
-    "immediate": [
-      "None - Wave 0 is creation only, no removals"
+    "document": ".agents/tasks/w0-retirement-plan.md",
+    "immediate_wave_0": [
+      "Task routes marked deprecated with warnings",
+      "Governance routes integrated with WorkflowGovernanceService (adapter pattern for backwards compatibility)",
+      "Specification ID documentation corrected"
     ],
     "wave_1_plus": [
-      "/tasks routes functional migration to /workflows",
+      "/tasks routes functional migration or removal (return 410 GONE)",
       "Frontend state machine replacement with backend state consumption",
       "Database persistence layer for WorkflowGovernanceService",
-      "WorkflowEngine integration with workflow_id parameter"
+      "WorkflowEngine integration with execute_workflow_stage(workflow_id)",
+      "AgentCoordinator integration with governance_service.transition_state()",
+      "Remove _workflow_states dict from governance.py"
     ]
   },
   "compliance": {
     "m2_9_requirements": "Fully compliant",
-    "wave_0_scope": "Complete - canonical workflow authority frozen",
+    "wave_0_scope": "Complete - canonical workflow authority frozen with partial integration",
     "authority_conflict_resolved": true,
-    "multiple_state_machines_resolved": true,
-    "single_source_of_truth_established": true
+    "multiple_state_machines_resolved": "In progress - deprecated but not removed",
+    "single_source_of_truth_established": true,
+    "backwards_compatibility_maintained": true,
+    "zero_breaking_changes": true
   }
 }

@@ -68,7 +68,7 @@ class ProjectLLMWorkflow:
     
     # Identity
     workflow_id: str
-    specification_id: str  # Block family + version (e.g., "I7")
+    specification_id: str  # Target version (e.g., "I7", "C3")
     
     # Target binding
     target_family: str  # e.g., "Introduction"

@@ -300,16 +300,19 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
     """
     Approve or reject placement manifest for a workflow.
     
+    **M2.9 Wave 0 Integration**: Uses WorkflowGovernanceService for canonical state management.
+    
     CRITICAL GATES:
     1. Workflow must be in AWAITING_IMPLEMENTATION_APPROVAL state
     2. Manifest hash must match stored manifest (no mutation since generation)
     3. Contract hash must match stored contract (no contract drift)
-    4. If approved=True: advance to IMPLEMENTING
-    5. If approved=False: advance to REJECTED
+    4. If approved=True: advance to IMPLEMENTING via governance service
+    5. If approved=False: advance to REJECTED via governance service
     
     SECURITY:
     - Detects manifest tampering via hash verification
-    - Enforces state machine transitions
+    - Enforces state machine transitions through governance service
+    - Self-approval prevention via ImplementationApproval model
     - No auto-approval bypass
     
     Args:
@@ -324,6 +327,7 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
         409: If workflow not in AWAITING_IMPLEMENTATION_APPROVAL state
         409: If manifest hash mismatch (APPROVAL_INVALID)
         409: If contract hash mismatch (CONTRACT_CHANGED)
+        403: If self-approval attempted
     """
     # Verify workflow_id in payload matches path parameter
     if payload.workflow_id != workflow_id:
@@ -332,30 +336,54 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
             detail=f"Workflow ID mismatch: path={workflow_id}, payload={payload.workflow_id}"
         )
     
-    # Check if workflow exists
-    if workflow_id not in _workflow_states:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Workflow not found: {workflow_id}"
-        )
-    
-    workflow = _workflow_states[workflow_id]
-    current_state = workflow.get("state")
+    # Get workflow from governance service
+    workflow = governance_service.get_workflow(workflow_id)
+    if not workflow:
+        # Fallback: check legacy _workflow_states for backwards compatibility
+        if workflow_id not in _workflow_states:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Workflow not found: {workflow_id}"
+            )
+        # Use legacy workflow state
+        legacy_workflow = _workflow_states[workflow_id]
+        current_state_str = legacy_workflow.get("state")
+    else:
+        # Use canonical workflow from governance service
+        current_state_str = workflow.current_state.value
     
     # Verify workflow is in AWAITING_IMPLEMENTATION_APPROVAL state
-    if current_state != CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value:
+    if current_state_str != CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value:
         raise HTTPException(
             status_code=409,
             detail={
                 "error": "WRONG_STATE",
-                "message": f"Workflow is in {current_state} state, expected AWAITING_IMPLEMENTATION_APPROVAL",
-                "currentState": current_state,
+                "message": f"Workflow is in {current_state_str} state, expected AWAITING_IMPLEMENTATION_APPROVAL",
+                "currentState": current_state_str,
                 "expectedState": CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value
             }
         )
     
+    # Get stored hashes from governance service workflow or legacy workflow
+    if workflow:
+        stored_manifest_hash = workflow.manifest_sha256
+        stored_contract_hash = workflow.contract_sha256
+        stored_candidate_hash = workflow.candidate_sha256
+        stored_manifest_id = workflow.manifest_id
+        workflow_requester = workflow.requester_id
+        target_family = workflow.target_family
+        target_version = workflow.target_version
+    else:
+        legacy_workflow = _workflow_states[workflow_id]
+        stored_manifest_hash = legacy_workflow.get("manifest_hash")
+        stored_contract_hash = legacy_workflow.get("contract_hash")
+        stored_candidate_hash = legacy_workflow.get("candidate_sha256")
+        stored_manifest_id = legacy_workflow.get("placement_manifest_id")
+        workflow_requester = legacy_workflow.get("requester")
+        target_family = legacy_workflow.get("target_family", "")
+        target_version = legacy_workflow.get("target_version", "")
+    
     # Verify manifest hash matches stored manifest
-    stored_manifest_hash = workflow.get("manifest_hash")
     if not stored_manifest_hash:
         raise HTTPException(
             status_code=500,
@@ -375,7 +403,6 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
         )
     
     # Verify contract hash matches stored contract
-    stored_contract_hash = workflow.get("contract_hash")
     if stored_contract_hash and payload.contract_hash != stored_contract_hash:
         raise HTTPException(
             status_code=409,
@@ -388,7 +415,6 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
         )
     
     # Verify candidate hash matches stored candidate
-    stored_candidate_hash = workflow.get("candidate_sha256")
     if not stored_candidate_hash:
         raise HTTPException(
             status_code=500,
@@ -407,7 +433,6 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
         )
     
     # Verify placement manifest ID matches stored manifest ID
-    stored_manifest_id = workflow.get("placement_manifest_id")
     if not stored_manifest_id:
         raise HTTPException(
             status_code=500,
@@ -426,7 +451,6 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
         )
     
     # Verify not self-approval (approver != workflow requester)
-    workflow_requester = workflow.get("requester")
     if workflow_requester and payload.approved_by == workflow_requester:
         raise HTTPException(
             status_code=403,
@@ -441,43 +465,61 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
     # All verification passed - process approval decision
     now = datetime.now(timezone.utc)
     
+    # Create ImplementationApproval record
+    implementation_approval = create_implementation_approval(
+        workflow_id=workflow_id,
+        candidate_sha256=payload.candidate_sha256,
+        target_family=target_family,
+        target_version=target_version,
+        placement_manifest_id=payload.placement_manifest_id,
+        placement_manifest_sha256=payload.manifest_hash,
+        approved_by=payload.approved_by,
+        workflow_requester=workflow_requester,
+        status=ImplementationApprovalStatus.APPROVED if payload.approved else ImplementationApprovalStatus.REJECTED,
+        rejection_reason=None if payload.approved else payload.reason,
+    )
+    
+    # Store approval record
+    _implementation_approvals[workflow_id] = implementation_approval
+    
     if payload.approved:
-        # Approve: transition to IMPLEMENTING
+        # Approve: transition to IMPLEMENTING via governance service
         new_state = CanonicalWorkflowState.IMPLEMENTING
-        if not is_valid_transition(CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL, new_state):
-            raise HTTPException(
-                status_code=500,
-                detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
-            )
         
-        # Create ImplementationApproval record
-        target_family = workflow.get("target_family", "")
-        target_version = workflow.get("target_version", "")
-        
-        implementation_approval = create_implementation_approval(
-            workflow_id=workflow_id,
-            candidate_sha256=payload.candidate_sha256,
-            target_family=target_family,
-            target_version=target_version,
-            placement_manifest_id=payload.placement_manifest_id,
-            placement_manifest_sha256=payload.manifest_hash,
-            approved_by=payload.approved_by,
-            workflow_requester=workflow_requester,
-            status=ImplementationApprovalStatus.APPROVED,
-        )
-        
-        # Store approval record
-        _implementation_approvals[workflow_id] = implementation_approval
-        
-        workflow["state"] = new_state.value
-        workflow["approved_by"] = payload.approved_by
-        workflow["approved_at"] = now.isoformat()
-        workflow["approval_reason"] = payload.reason
-        workflow["implementation_approval_id"] = implementation_approval.approval_id
+        if workflow:
+            # Register approval with governance service
+            governance_service.register_approval(workflow_id, implementation_approval)
+            
+            # Transition state through governance service
+            try:
+                governance_service.transition_state(
+                    workflow_id=workflow_id,
+                    to_state=new_state,
+                    triggered_by=payload.approved_by,
+                    evidence_id=implementation_approval.approval_id,
+                    reason=payload.reason
+                )
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"State transition failed: {str(e)}"
+                )
+        else:
+            # Legacy workflow: update _workflow_states dict
+            if not is_valid_transition(CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL, new_state):
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
+                )
+            legacy_workflow["state"] = new_state.value
+            legacy_workflow["approved_by"] = payload.approved_by
+            legacy_workflow["approved_at"] = now.isoformat()
+            legacy_workflow["approval_reason"] = payload.reason
+            legacy_workflow["implementation_approval_id"] = implementation_approval.approval_id
         
         return WorkflowApprovalResponse(
             workflow_id=workflow_id,
-            previous_state=current_state,
+            previous_state=current_state_str,
             new_state=new_state.value,
             approved=True,
             approved_by=payload.approved_by,
@@ -489,43 +531,43 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
             reason=payload.reason
         )
     else:
-        # Reject: transition to REJECTED
+        # Reject: transition to REJECTED via governance service
         new_state = CanonicalWorkflowState.REJECTED
-        if not is_valid_transition(CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL, new_state):
-            raise HTTPException(
-                status_code=500,
-                detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
-            )
         
-        # Create ImplementationApproval record with REJECTED status
-        target_family = workflow.get("target_family", "")
-        target_version = workflow.get("target_version", "")
-        
-        implementation_approval = create_implementation_approval(
-            workflow_id=workflow_id,
-            candidate_sha256=payload.candidate_sha256,
-            target_family=target_family,
-            target_version=target_version,
-            placement_manifest_id=payload.placement_manifest_id,
-            placement_manifest_sha256=payload.manifest_hash,
-            approved_by=payload.approved_by,
-            workflow_requester=workflow_requester,
-            status=ImplementationApprovalStatus.REJECTED,
-            rejection_reason=payload.reason,
-        )
-        
-        # Store approval record
-        _implementation_approvals[workflow_id] = implementation_approval
-        
-        workflow["state"] = new_state.value
-        workflow["rejected_by"] = payload.approved_by
-        workflow["rejected_at"] = now.isoformat()
-        workflow["rejection_reason"] = payload.reason
-        workflow["implementation_approval_id"] = implementation_approval.approval_id
+        if workflow:
+            # Register approval with governance service
+            governance_service.register_approval(workflow_id, implementation_approval)
+            
+            # Transition state through governance service
+            try:
+                governance_service.transition_state(
+                    workflow_id=workflow_id,
+                    to_state=new_state,
+                    triggered_by=payload.approved_by,
+                    evidence_id=implementation_approval.approval_id,
+                    reason=payload.reason
+                )
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"State transition failed: {str(e)}"
+                )
+        else:
+            # Legacy workflow: update _workflow_states dict
+            if not is_valid_transition(CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL, new_state):
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
+                )
+            legacy_workflow["state"] = new_state.value
+            legacy_workflow["rejected_by"] = payload.approved_by
+            legacy_workflow["rejected_at"] = now.isoformat()
+            legacy_workflow["rejection_reason"] = payload.reason
+            legacy_workflow["implementation_approval_id"] = implementation_approval.approval_id
         
         return WorkflowApprovalResponse(
             workflow_id=workflow_id,
-            previous_state=current_state,
+            previous_state=current_state_str,
             new_state=new_state.value,
             approved=False,
             approved_by=payload.approved_by,
