@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Extract repository metadata from snapshot and derive file paths. Enhances build_contract() in repository_intelligence.py to extract language, framework, style, difficulty, test patterns, and file paths from snapshot evidence instead of using assumptions. Depends on FEAT-001 for evidence tracking infrastructure",
+  "status": "completed",
+  "steps": [
+    "1. In services/project-ai/app/contracts/repository_intelligence.py, add fields to RepositoryBlockContract model: language (str, default ''), framework (str, default ''), style (str, default ''), difficulty_level (str, default ''), file_paths (dict, default_factory=dict), test_requirements (list[str], default_factory=list), type_strictness (dict, default_factory=dict). These will hold snapshot-derived values",
+    "2. Create helper function extract_metadata_from_snapshot(snapshot: dict) -> dict in repository_intelligence.py that: reads snapshot.get('metadata', {}) for language/framework keys, scans snapshot['evidence'] for file extensions to infer language if not in metadata, searches for package.json in evidence to detect React/Vue/Angular framework, detects CSS Modules vs styled-components by looking for .module.css vs .ts/.js with styled imports, returns dict with keys: language, framework, style, difficulty_level (analyze block complexity heuristics or default to 'intermediate')",
+    "3. Create helper function derive_file_paths(snapshot: dict, family: str, version: str) -> dict in repository_intelligence.py that: searches snapshot['evidence'] for canonical_block files matching family/version, extracts their directory patterns (e.g., packages/ui/src/tutorial/blocks/), generates expected paths for component, schema, types, tests following the pattern, returns dict with component, schema, types, tests keys and includes evidence_id for each found file",
+    "4. Create helper function extract_test_patterns(snapshot: dict) -> list[str] in repository_intelligence.py that: scans snapshot['evidence'] for test files (path contains '__tests__' or '.test.' or '.spec.'), analyzes test file content or names to identify test types (unit, accessibility, responsive), returns list of test requirement strings like 'Unit tests for component rendering', 'Accessibility tests (WCAG 2.1 AA)', 'Responsive design tests'",
+    "5. Update build_contract() function in repository_intelligence.py to: call extract_metadata_from_snapshot(snapshot) and store results, call derive_file_paths(snapshot, family, version) and store in contract.file_paths, call extract_test_patterns(snapshot) and store in contract.test_requirements, populate field_evidence dict with ContractFieldEvidence entries for each extracted field (from FEAT-001), populate type_strictness from metadata or infer from tsconfig.json in snapshot evidence",
+    "6. Create tests/unit/test_repository_intelligence.py (if doesn't exist) or update existing file with: test_extract_metadata_from_snapshot() that passes mock snapshot with metadata and verifies extraction, test_derive_file_paths() that passes mock snapshot with canonical_block evidence and verifies path derivation, test_extract_test_patterns() that passes mock snapshot with test files and verifies pattern extraction, test_build_contract_extracts_metadata() that calls build_contract with full mock snapshot and verifies all new fields are populated",
+    "7. Run python -m pytest tests/unit/test_repository_intelligence.py -v and verify all new tests pass (at least 4 new tests)"
+  ],
+  "acceptance_criteria": [
+    "RepositoryBlockContract model has new fields: language, framework, style, difficulty_level, file_paths, test_requirements, type_strictness",
+    "Helper functions extract_metadata_from_snapshot, derive_file_paths, extract_test_patterns exist and work correctly",
+    "build_contract() populates all new fields from snapshot evidence, not hardcoded values",
+    "field_evidence dict tracks provenance for each extracted field",
+    "tests/unit/test_repository_intelligence.py has at least 4 new passing tests for metadata extraction",
+    "Running python -m pytest tests/unit/test_repository_intelligence.py -v shows all tests pass"
+  ],
+  "verification": [
+    "python -m pytest tests/unit/test_repository_intelligence.py -v (from services/project-ai directory, expect all tests passed including 4+ new tests)",
+    "grep -n 'def extract_metadata_from_snapshot' services/project-ai/app/contracts/repository_intelligence.py (should find function definition)",
+    "grep -n 'def derive_file_paths' services/project-ai/app/contracts/repository_intelligence.py (should find function definition)",
+    "grep -n 'language:' services/project-ai/app/contracts/repository_intelligence.py (should find in RepositoryBlockContract model)"
+  ],
+  "blocked_reason": null,
+  "findings": "Successfully implemented snapshot metadata extraction and file path derivation. Added 7 new fields to RepositoryBlockContract (language, framework, style, difficulty_level, file_paths, test_requirements, type_strictness). Created three helper functions: extract_metadata_from_snapshot() infers language/framework from snapshot metadata or file patterns, derive_file_paths() extracts component/schema/types/test paths from snapshot evidence with evidence IDs, extract_test_patterns() identifies unit/accessibility/responsive test requirements. Enhanced build_contract() to call all helpers and populate field_evidence dict with ContractFieldEvidence for each extracted field, providing full traceability. Added 7 comprehensive tests validating metadata extraction, file path derivation, test pattern extraction, and field_evidence population. All 299 unit tests pass. Ready for FEAT-003 to replace hardcoded contract fields with snapshot-derived values."
+}

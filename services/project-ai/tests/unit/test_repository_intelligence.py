@@ -16,6 +16,9 @@ from app.contracts.repository_intelligence import (
     build_contract_legacy,
     compute_sha256,
     generate_evidence_id,
+    extract_metadata_from_snapshot,
+    derive_file_paths,
+    extract_test_patterns,
 )
 
 
@@ -450,3 +453,174 @@ class TestHelperFunctions:
         id2 = generate_evidence_id(path, file_sha256)
         
         assert id1 == id2
+
+
+class TestMetadataExtraction:
+    """Tests for FEAT-002: Extract metadata from snapshot."""
+    
+    def test_extract_metadata_from_snapshot(self):
+        """Test that extract_metadata_from_snapshot extracts metadata correctly."""
+        snapshot = {
+            'metadata': {
+                'language': 'TypeScript',
+                'framework': 'React',
+                'style': 'CSS Modules',
+                'difficulty_level': 'advanced'
+            },
+            'evidence': []
+        }
+        
+        metadata = extract_metadata_from_snapshot(snapshot)
+        
+        assert metadata['language'] == 'TypeScript'
+        assert metadata['framework'] == 'React'
+        assert metadata['style'] == 'CSS Modules'
+        assert metadata['difficulty_level'] == 'advanced'
+    
+    def test_extract_metadata_infers_language_from_files(self):
+        """Test that language is inferred from file extensions when not in metadata."""
+        snapshot = {
+            'metadata': {},
+            'evidence': [
+                {'path': 'src/component.tsx', 'kind': 'canonical_block'},
+                {'path': 'src/test.ts', 'kind': 'test'}
+            ]
+        }
+        
+        metadata = extract_metadata_from_snapshot(snapshot)
+        
+        assert metadata['language'] == 'TypeScript'
+    
+    def test_extract_metadata_infers_framework_from_patterns(self):
+        """Test that framework is inferred from file patterns."""
+        snapshot = {
+            'metadata': {},
+            'evidence': [
+                {'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx', 'kind': 'canonical_block'}
+            ]
+        }
+        
+        metadata = extract_metadata_from_snapshot(snapshot)
+        
+        assert metadata['framework'] == 'React'
+    
+    def test_extract_metadata_defaults_difficulty(self):
+        """Test that difficulty_level defaults to intermediate."""
+        snapshot = {
+            'metadata': {},
+            'evidence': []
+        }
+        
+        metadata = extract_metadata_from_snapshot(snapshot)
+        
+        assert metadata['difficulty_level'] == 'intermediate'
+    
+    def test_derive_file_paths(self):
+        """Test that derive_file_paths extracts paths from snapshot evidence."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+                    'evidenceId': 'abc123'
+                },
+                {
+                    'kind': 'schema',
+                    'path': 'packages/ui/src/tutorial/blocks/code-schema.ts',
+                    'evidenceId': 'def456'
+                },
+                {
+                    'kind': 'test',
+                    'path': 'packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.test.tsx',
+                    'evidenceId': 'ghi789'
+                }
+            ]
+        }
+        
+        file_paths = derive_file_paths(snapshot, "Code", "C1")
+        
+        assert 'component' in file_paths
+        assert file_paths['component']['path'] == 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx'
+        assert file_paths['component']['evidence_id'] == 'abc123'
+        assert 'schema' in file_paths
+        assert 'tests' in file_paths
+        assert len(file_paths['tests']) == 1
+    
+    def test_extract_test_patterns(self):
+        """Test that extract_test_patterns identifies test types."""
+        snapshot = {
+            'evidence': [
+                {'path': 'src/__tests__/component.test.tsx', 'kind': 'test'},
+                {'path': 'src/__tests__/accessibility.test.tsx', 'kind': 'test'},
+                {'path': 'src/__tests__/responsive.test.tsx', 'kind': 'test'}
+            ]
+        }
+        
+        test_patterns = extract_test_patterns(snapshot)
+        
+        assert 'Unit tests for component rendering' in test_patterns
+        assert 'Accessibility tests (WCAG 2.1 AA)' in test_patterns
+        assert 'Responsive design tests' in test_patterns
+    
+    def test_build_contract_extracts_metadata(self):
+        """Test that build_contract populates all new fields from snapshot."""
+        snapshot = {
+            'metadata': {
+                'language': 'TypeScript',
+                'framework': 'React',
+                'style': 'CSS Modules',
+                'difficulty_level': 'intermediate'
+            },
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+                    'contentHash': 'a' * 64,
+                    'evidenceId': 'b' * 64
+                },
+                {
+                    'kind': 'test',
+                    'path': 'src/__tests__/unit.test.tsx',
+                    'contentHash': 'c' * 64,
+                    'evidenceId': 'd' * 64
+                },
+                {
+                    'path': 'tsconfig.json',
+                    'kind': 'config',
+                    'contentHash': 'e' * 64,
+                    'evidenceId': 'f' * 64
+                }
+            ]
+        }
+        
+        contract = build_contract(snapshot, "Code", "C1")
+        
+        # Verify metadata fields are populated
+        assert contract.language == 'TypeScript'
+        assert contract.framework == 'React'
+        assert contract.style == 'CSS Modules'
+        assert contract.difficulty_level == 'intermediate'
+        
+        # Verify file_paths is populated
+        assert isinstance(contract.file_paths, dict)
+        assert 'component' in contract.file_paths
+        
+        # Verify test_requirements is populated
+        assert isinstance(contract.test_requirements, list)
+        assert len(contract.test_requirements) > 0
+        
+        # Verify type_strictness is populated
+        assert isinstance(contract.type_strictness, dict)
+        assert contract.type_strictness.get('strict') is True
+        
+        # Verify field_evidence is populated
+        assert 'language' in contract.field_evidence
+        assert contract.field_evidence['language'].field_name == 'language'
+        assert contract.field_evidence['language'].value == 'TypeScript'
+        assert 'framework' in contract.field_evidence
+        assert 'style' in contract.field_evidence
+        assert 'difficulty_level' in contract.field_evidence
+        assert 'file_paths' in contract.field_evidence
+        assert 'test_requirements' in contract.field_evidence
+        assert 'type_strictness' in contract.field_evidence
+
