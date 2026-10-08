@@ -22,6 +22,7 @@ from app.models.implementation_approval import (
     create_implementation_approval,
 )
 from app.orchestration.canonical_workflow import CanonicalWorkflowState, is_valid_transition
+from app.orchestration.workflow_governance import WorkflowGovernanceService
 
 router = APIRouter(prefix="/approvals", tags=["governance"])
 
@@ -33,6 +34,9 @@ _workflow_states: Dict[str, Dict] = {}
 
 # In-memory implementation approval storage for W4 (production persistence in M3+)
 _implementation_approvals: Dict[str, ImplementationApproval] = {}
+
+# M2.9 Wave 0: Canonical workflow governance service
+governance_service = WorkflowGovernanceService()
 
 
 @router.post("/submit", response_model=ApprovalSubmitResponse)
