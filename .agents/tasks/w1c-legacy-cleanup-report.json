@@ -1,0 +1,82 @@
+{
+  "workflow": "M2.9 Wave 1C - Legacy Creation Authority Cleanup",
+  "branch": "m2-project-ai-canonical-wiring",
+  "commit_sha": "c715af46",
+  "timestamp": "2025-01-17T00:00:00Z",
+  "files_modified": [
+    "services/project-ai/app/api/routes/creation.py",
+    "services/project-ai/app/api/schemas/creation.py"
+  ],
+  "files_created": [
+    ".agents/tasks/w1c-creation-migration-guide.md"
+  ],
+  "tests_run": {
+    "command": "pytest services/project-ai/tests/test_creation.py -v -k 'creation'",
+    "test_file": "services/project-ai/tests/test_creation.py",
+    "focus": "creation endpoint deprecation"
+  },
+  "test_results": {
+    "passed": 4,
+    "skipped": 5,
+    "failed": 0,
+    "tests": [
+      "test_create_workflow_returns_405",
+      "test_get_workflow_returns_405",
+      "test_validate_workflow_returns_405",
+      "test_certify_workflow_returns_405"
+    ],
+    "verification": "All active creation tests verify 405 responses with LEGACY_ENDPOINT_DISABLED error and canonical endpoint mappings"
+  },
+  "changes_summary": {
+    "deprecation_markers": {
+      "description": "Added deprecated=True to all /creation route decorators",
+      "routes_marked": [
+        "POST /creation/workflows",
+        "GET /creation/workflows/{workflow_id}",
+        "POST /creation/workflows/{workflow_id}/validate",
+        "POST /creation/workflows/{workflow_id}/certify"
+      ],
+      "impact": "OpenAPI schema now shows routes as deprecated"
+    },
+    "documentation_updates": {
+      "description": "Enhanced CreateWorkflowRequest docstring to clarify DesignSource as input not state",
+      "file": "services/project-ai/app/api/schemas/creation.py",
+      "key_message": "DesignSource indicates where block design originates WITHOUT bypassing canonical workflow"
+    },
+    "migration_guide": {
+      "description": "Comprehensive migration guide for legacy /creation to canonical workflow",
+      "file": ".agents/tasks/w1c-creation-migration-guide.md",
+      "sections": [
+        "Endpoint mapping (legacy → canonical)",
+        "State mapping (WorkflowStatus → CanonicalWorkflowState)",
+        "CreationMode vs DesignSource explanation",
+        "Complete before/after code examples",
+        "Common migration scenarios (I2-only, Mix & Match, Candidate-only)",
+        "Architectural benefits"
+      ]
+    }
+  },
+  "architectural_context": {
+    "creation_mode_status": "Already removed in Wave 0 - no code changes needed",
+    "design_source_classification": "Documented as INPUT (content origin) not STATE (workflow control)",
+    "canonical_authority": "CanonicalWorkflowState (17 states) is single source of truth",
+    "no_workflow_bypass": "All workflows follow same lifecycle regardless of design source"
+  },
+  "verification_evidence": {
+    "test_output": "4 passed, 5 skipped, 1 warning in 0.75s",
+    "error_responses_verified": "All 405 responses include canonical_workflow mapping object",
+    "deprecation_warnings_visible": "deprecated=True markers added to all route decorators",
+    "migration_path_clear": "Migration guide provides complete endpoint mappings and code examples"
+  },
+  "compliance": {
+    "wave_0_foundation": "Built on W0 canonical workflow authority (commit 5acbd7b3)",
+    "no_behavioral_changes": "No runtime behavior changed - routes already returned 405",
+    "backward_compatibility": "Error messages enhanced with more detailed canonical endpoint mappings",
+    "testing_coverage": "All active creation tests passing with deprecation verification"
+  },
+  "next_steps": {
+    "m2_10_planned": "Complete legacy code removal after all clients migrated",
+    "client_migration": "Clients should follow migration guide to transition to canonical endpoints",
+    "monitoring": "Track usage of /creation endpoints to confirm zero traffic before removal"
+  }
+}
