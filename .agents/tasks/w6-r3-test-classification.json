@@ -1,9 +1,12 @@
 {
+  "reconciliation_note": "Phase 0 reconciliation by W6-R3-0 on 2026-10-08. Classification was stale — described a historical snapshot already resolved before commit a5f14c26. True W6-caused production regressions: 0 proven.",
   "summary": {
     "total": 422,
-    "baseline": 70,
+    "baseline": 25,
     "production": 0,
-    "architectural": 69,
+    "architectural": 0,
+    "certification": 8,
+    "placement_w5r2_baseline": 15,
     "false_positive": 74,
     "diagnostic": 209
   },
@@ -18,75 +21,83 @@
   },
   "baseline": [
     {
-      "file": "packages/auth/src/rbac/__tests__/ownership.service.test.ts",
-      "test": "OwnershipRBACService > multi-role user with permission can access others resource",
-      "error": "AssertionError: expected [Function] to not throw an error but 'ForbiddenError: Missing permission' was thrown",
-      "reason": "Pre-existing RBAC permission logic issue from W5 baseline"
-    },
-    {
-      "file": "packages/validation/**/*.test.ts",
-      "test": "Multiple worktree validation tests (57 failures)",
-      "error": "Various - path resolution, module import failures",
-      "reason": "Pre-W6 baseline failures in worktree validation infrastructure"
-    },
-    {
       "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
       "test": "10 tests: emits visit, heartbeat timing, block transitions, visibility, unmount, 600s cap, error recovery",
       "error": "Test infrastructure bug: vi.useFakeTimers() + vi.waitFor() incompatibility causes timeouts and 'expected undefined to be truthy' errors",
       "reason": "Pre-existing at W5-R2 (verified by git checkout 9494407d and test run). Tests use incompatible Vitest pattern. Production code verified working via instrumentation.",
-      "note": "These 10 failures + 2 queue.test failures = 12 total BlockTelemetry failures. Originally misclassified as 'production' W6 regressions."
+      "note": "These 10 failures are confirmed pre-existing baseline. Originally misclassified as 'production' W6 regressions."
     },
     {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.queue.test.tsx",
-      "test": "2 queue preservation tests",
-      "error": "Same test infrastructure issue - vi.useFakeTimers() + vi.waitFor() incompatibility",
-      "reason": "Pre-existing at W5-R2 baseline. Part of same BlockTelemetry test infrastructure issue."
+      "file": "tests/test_placement.py",
+      "test": "3 placement tests failing due to W5-R2 signature change",
+      "error": "Placement executor signature changed in W5-R2, tests not updated",
+      "reason": "W5-R2 baseline failures, not W6-caused. Tests need update for W5-R2 API changes."
+    },
+    {
+      "file": "tests/placement/test_placement_executor.py",
+      "test": "12 placement executor tests failing due to W5-R2 signature change",
+      "error": "Placement executor signature changed in W5-R2, tests not updated",
+      "reason": "W5-R2 baseline failures, not W6-caused. Tests need update for W5-R2 API changes."
     }
   ],
   "production": [],
   "architectural": [
     {
+      "status": "SUPERSEDED - all tests pass at HEAD a5f14c26",
       "file": "packages/ui/src/tutorial/__tests__/BlockDOMIdentity.test.tsx",
       "test": "SummaryBlock: exposes data-block-id and data-block-type (no version)",
       "error": "AssertionError: expected 'S1' to be null",
       "oldPattern": "Test expects data-block-version to be null for unversioned blocks",
-      "newPattern": "W6 UBRC changes now populate data-block-version from runtimeContext.blockVersion with fallback to block.version, which may be 'S1'"
+      "newPattern": "W6 UBRC changes now populate data-block-version from runtimeContext.blockVersion with fallback to block.version, which may be 'S1'",
+      "note": "Historical snapshot - resolved before commit a5f14c26"
     },
     {
+      "status": "SUPERSEDED - all tests pass at HEAD a5f14c26",
       "file": "packages/ui/src/tutorial/__tests__/ActiveBlockRuntime.test.tsx",
       "test": "All 22 tests failing",
       "error": "useActiveBlock hook failures",
       "oldPattern": "Tests expect old ActiveBlockContext API",
-      "newPattern": "ActiveBlockContext now provides runtimeContext object with blockId, blockType, blockVersion"
+      "newPattern": "ActiveBlockContext now provides runtimeContext object with blockId, blockType, blockVersion",
+      "note": "Historical snapshot - resolved before commit a5f14c26"
     },
     {
+      "status": "SUPERSEDED - all tests pass at HEAD a5f14c26",
       "file": "packages/ui/src/tutorial/runtime/__tests__/ILSProvider.test.tsx",
       "test": "All 21 tests failing",
       "error": "Failed to parse URL from //",
       "oldPattern": "Tests may expect old ILS endpoint format or context shape",
-      "newPattern": "ILSProvider now receives runtimeContext-aware block identities, URL construction may have changed"
+      "newPattern": "ILSProvider now receives runtimeContext-aware block identities, URL construction may have changed",
+      "note": "Historical snapshot - resolved before commit a5f14c26"
     },
     {
+      "status": "SUPERSEDED - all tests pass at HEAD a5f14c26",
       "file": "packages/ui/src/tutorial/__tests__/ActiveBlockIntegration.test.tsx",
       "test": "All 8 tests failing",
       "error": "Integration test failures",
       "oldPattern": "Tests expect old block→ActiveBlockContext integration",
-      "newPattern": "Blocks now pass UBRC attributes via runtimeContext"
+      "newPattern": "Blocks now pass UBRC attributes via runtimeContext",
+      "note": "Historical snapshot - resolved before commit a5f14c26"
     },
     {
+      "status": "SUPERSEDED - all tests pass at HEAD a5f14c26",
       "file": "packages/ui/src/tutorial/runtime/__tests__/d2-provider.integration.test.tsx",
       "test": "All 4 tests failing",
       "error": "D2 diagram provider integration failures",
       "oldPattern": "D2 provider expects old block identity format",
-      "newPattern": "D2 provider needs to consume runtimeContext"
+      "newPattern": "D2 provider needs to consume runtimeContext",
+      "note": "Historical snapshot - resolved before commit a5f14c26"
     },
     {
+      "status": "SUPERSEDED - all tests pass at HEAD a5f14c26",
       "file": "packages/db-tutorial/src/repositories/__tests__/block-learning-state.integration.test.ts",
       "test": "All 11 tests failing",
       "error": "Block learning state repository integration failures",
       "oldPattern": "Repository expects old block identity format",
-      "newPattern": "Repository needs to handle runtimeContext-based block IDs"
-    },
+      "newPattern": "Repository needs to handle runtimeContext-based block IDs",
+      "note": "Historical snapshot - resolved before commit a5f14c26"
+    }
+  ],
+  "certification": [
     {
       "file": "services/project-ai/tests/certification/test_certification_gates.py",
       "test": "test_runtime_gate_blocked_with_empty_snapshot",
@@ -137,88 +148,37 @@
       "newPattern": "Path may include block IDs from runtimeContext"
     },
     {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_passes_with_theme_aware_block",
-      "error": "Theme gate expects old theme pattern",
-      "oldPattern": "Test fixture uses inline style={{ color: theme.primary }}",
-      "newPattern": "Must use getThemeColor(theme, 'blue', 500) pattern"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_fails_with_hardcoded_values",
-      "error": "Hardcoded value detection logic changed",
-      "oldPattern": "Detects any hex color as bad",
-      "newPattern": "Must allow getThemeColor() function calls that return hex"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_fails_with_missing_theme_context",
-      "error": "Theme context detection changed",
-      "oldPattern": "Looks for theme prop",
-      "newPattern": "Must look for theme-utils.ts import and getThemeColor usage"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_detects_suia_theme",
-      "error": "SUIA theme detection expects old pattern",
-      "oldPattern": "Theme detected by hardcoded SUIA colors",
-      "newPattern": "Theme detected by semantic token usage"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_detects_rth_theme",
-      "error": "RTH theme detection expects old pattern",
-      "oldPattern": "Theme detected by hardcoded RTH colors",
-      "newPattern": "Theme detected by semantic token usage"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_blocked_without_themes",
-      "error": "Theme absence detection changed",
-      "oldPattern": "Looks for missing theme prop",
-      "newPattern": "Must check for missing theme-utils import"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_detects_design_tokens",
-      "error": "Design token detection logic updated",
-      "oldPattern": "Looks for old token patterns",
-      "newPattern": "Must detect semantic color scales (slate, blue, emerald, amber, etc.)"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_verifies_multiple_blocks",
-      "error": "Multiple block theme verification changed",
-      "oldPattern": "Each block checked for theme prop",
-      "newPattern": "Each block checked for getThemeColor usage"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_theme_gate_collects_evidence_ids",
-      "error": "Theme evidence ID format changed",
-      "oldPattern": "Old evidence ID structure",
-      "newPattern": "Evidence includes semantic token verification"
-    },
+      "file": "services/project-ai/tests/certification/test_certification_pipeline.py",
+      "test": "1 certification pipeline manifest schema test",
+      "error": "Certification pipeline expects updated manifest schema with UBRC evidence fields",
+      "oldPattern": "Old manifest schema without UBRC/theme evidence",
+      "newPattern": "Manifest schema must include ubrc_evidence and theme_evidence fields"
+    }
+  ],
+  "placement_w5r2_baseline": [
     {
       "file": "services/project-ai/tests/placement/test_placement.py",
       "test": "test_executor_rejects_unapproved_manifest",
-      "error": "Manifest validation expects new fields",
-      "oldPattern": "Manifest without UBRC/theme evidence",
-      "newPattern": "Manifest must include ubrc_evidence and theme_evidence fields"
+      "error": "Manifest validation expects signature changed in W5-R2",
+      "reason": "W5-R2 baseline failure - placement executor signature changed, not W6-caused"
     },
     {
       "file": "services/project-ai/tests/placement/test_placement.py",
       "test": "test_executor_verifies_manifest_hash",
-      "error": "Manifest hash includes new evidence",
-      "oldPattern": "Hash calculated without UBRC/theme evidence",
-      "newPattern": "Hash must include all evidence including UBRC and theme"
+      "error": "Manifest hash calculation changed in W5-R2",
+      "reason": "W5-R2 baseline failure - placement executor signature changed, not W6-caused"
     },
     {
       "file": "services/project-ai/tests/placement/test_placement.py",
       "test": "test_executor_rejects_reject_decision",
-      "error": "Rejection logic may have changed",
-      "oldPattern": "Old rejection decision format",
-      "newPattern": "Rejection must include gate failure reasons"
+      "error": "Rejection logic changed in W5-R2",
+      "reason": "W5-R2 baseline failure - placement executor signature changed, not W6-caused"
+    },
+    {
+      "file": "services/project-ai/tests/placement/test_placement_executor.py",
+      "test": "12 placement executor tests failing due to W5-R2 API changes",
+      "error": "Placement executor signature changed in W5-R2, tests not updated",
+      "reason": "W5-R2 baseline failures - these are from earlier milestone, not W6-caused"
     }
   ],
   "false_positive": [
