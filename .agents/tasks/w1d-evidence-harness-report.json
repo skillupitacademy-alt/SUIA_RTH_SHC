@@ -1,69 +1,42 @@
 {
   "wave": "W1D",
   "status": "completed",
-  "commit": "c715af4659e6b1e1285300781db5451aaa9d84c9",
-  "filesCreated": [
-    ".agents/evidence/test-results.jsonl",
-    ".agents/evidence/evidence.jsonl",
-    ".agents/evidence/gate-results.jsonl",
+  "commit": "87ae0bd48a2b9d6d78bd1010988dfd107b07dee6",
+  "filesCreated": [],
+  "filesModified": [
     "services/project-ai/app/evidence/schemas.py",
+    "services/project-ai/app/evidence/ledger.py",
     "services/project-ai/app/evidence/integration.py",
     "services/project-ai/tests/evidence/test_schemas.py",
-    "services/project-ai/tests/evidence/test_ledger.py",
-    "services/project-ai/tests/evidence/test_integration.py"
-  ],
-  "filesModified": [
-    "services/project-ai/app/evidence/ledger.py",
-    "services/project-ai/app/evidence/__init__.py",
-    "services/project-ai/tests/evidence/__init__.py"
+    "services/project-ai/tests/evidence/test_ledger.py"
   ],
   "testResults": {
-    "passed": 29,
+    "passed": 39,
     "failed": 0,
     "skipped": 0,
-    "duration": 0.33,
-    "details": "All evidence harness tests passing: 11 schema tests, 13 ledger tests, 5 integration tests"
+    "duration": 0.87
   },
-  "description": "Evidence harness implementation for M2.9 multi-agent workflow",
-  "components": [
+  "reviewFindings": [
     {
-      "name": "Pydantic Schemas",
-      "file": "services/project-ai/app/evidence/schemas.py",
-      "models": ["AgentRun", "TestResult", "EvidenceRecord"],
-      "validation": "Pydantic v2 with Field() descriptors"
+      "finding": "AgentRun missing timestamp field",
+      "resolution": "Added timestamp: datetime field to AgentRun schema"
     },
     {
-      "name": "Evidence Ledger",
-      "file": "services/project-ai/app/evidence/ledger.py",
-      "features": [
-        "JSONL append-only operations",
-        "Thread-safe file locking using threading.Lock",
-        "Schema validation wrappers (record_agent_run, record_test_results, record_evidence)",
-        "Updated EVIDENCE_ROOT to .agents/evidence/"
-      ]
+      "finding": "Integration helper exception handling mismatch",
+      "resolution": "Fixed docstring from 'logged but not suppressed' to 'Raises: Exception if recording fails'"
     },
     {
-      "name": "Integration Helpers",
-      "file": "services/project-ai/app/evidence/integration.py",
-      "functions": ["record_wave_completion"],
-      "purpose": "Convenience wrapper for wave agents to record completion with auto-generated run IDs"
+      "finding": "Test status field unbounded",
+      "resolution": "Updated status field description to document expected values: 'completed', 'failed', 'in-progress'"
     },
     {
-      "name": "Test Suite",
-      "coverage": [
-        "Schema validation (required fields, optional fields, serialization)",
-        "JSONL append operations (file creation, valid JSON lines, multiple writes)",
-        "Concurrent writes (10 threads × 5 writes, no corruption)",
-        "Evidence retrieval (read last N runs, skip malformed JSON)",
-        "Integration helper (wave completion with/without tests, multiple calls)"
-      ]
+      "finding": "Multi-process concurrency gap",
+      "resolution": "Added file-level locking using fcntl (Unix) and msvcrt (Windows) to protect against multi-process concurrent writes"
+    },
+    {
+      "finding": "Commit message mismatch",
+      "resolution": "Created new commit with proper message 'fix(project-llm): evidence harness review findings (W1D)'"
     }
   ],
-  "verification": {
-    "testsRun": "pytest services/project-ai/tests/evidence/ -v",
-    "result": "39 tests passed (29 W1D tests + 10 existing evidence tests)",
-    "concurrency": "Verified with 10 concurrent threads writing simultaneously",
-    "imports": "All exports available via: from app.evidence import AgentRun, TestResult, EvidenceRecord, record_wave_completion"
-  },
-  "timestamp": "2026-10-08T19:40:22+05:30"
+  "timestamp": "2025-06-10T00:00:00Z"
 }
