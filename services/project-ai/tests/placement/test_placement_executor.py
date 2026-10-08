@@ -136,7 +136,8 @@ class TestAuthorizationChecks:
                 manifest=valid_placement_manifest,
                 approval=pending_approval,
                 candidate_files=valid_candidate_files,
-                workflow_requester="requester-bob"
+                workflow_requester="requester-bob",
+                candidate_sha256="candidate-hash-abc123"
             )
         
         assert "not approved" in str(exc_info.value).lower() or "pending" in str(exc_info.value).lower()
@@ -167,7 +168,8 @@ class TestAuthorizationChecks:
             manifest=valid_placement_manifest,
             approval=wrong_approval,
             candidate_files=valid_candidate_files,
-            workflow_requester="requester-bob"
+            workflow_requester="requester-bob",
+            candidate_sha256="candidate-hash-abc123"
         )
         
         # Should succeed if manifest hash is valid (workflow_id mismatch caught upstream)
@@ -198,7 +200,8 @@ class TestAuthorizationChecks:
             manifest=valid_placement_manifest,
             approval=wrong_hash_approval,
             candidate_files=valid_candidate_files,
-            workflow_requester="requester-bob"
+            workflow_requester="requester-bob",
+            candidate_sha256="WRONG-HASH"
         )
         
         # Manifest hash is correct, so execution proceeds
@@ -231,7 +234,8 @@ class TestAuthorizationChecks:
                 manifest=valid_placement_manifest,
                 approval=wrong_manifest_approval,
                 candidate_files=valid_candidate_files,
-                workflow_requester="requester-bob"
+                workflow_requester="requester-bob",
+                candidate_sha256="candidate-hash-abc123"
             )
             # If it succeeds, that's because this check happens at approval enforcer level
             assert result is not None
@@ -263,7 +267,8 @@ class TestAuthorizationChecks:
                 manifest=valid_placement_manifest,
                 approval=wrong_sha_approval,
                 candidate_files=valid_candidate_files,
-                workflow_requester="requester-bob"
+                workflow_requester="requester-bob",
+                candidate_sha256="candidate-hash-abc123"
             )
         
         assert "hash" in str(exc_info.value).lower() or "manifest" in str(exc_info.value).lower()
@@ -292,7 +297,8 @@ class TestAuthorizationChecks:
                 manifest=valid_placement_manifest,
                 approval=self_approval,
                 candidate_files=valid_candidate_files,
-                workflow_requester="same-person"
+                workflow_requester="same-person",
+                candidate_sha256="candidate-hash-abc123"
             )
         
         assert "self" in str(exc_info.value).lower() or "same" in str(exc_info.value).lower()
@@ -320,7 +326,8 @@ class TestAuthorizationChecks:
                 manifest=valid_placement_manifest,
                 approval=pending_approval,
                 candidate_files=valid_candidate_files,
-                workflow_requester="requester-bob"
+                workflow_requester="requester-bob",
+                candidate_sha256="candidate-hash-abc123"
             )
         
         assert "pending" in str(exc_info.value).lower() or "not approved" in str(exc_info.value).lower()
@@ -345,7 +352,8 @@ class TestDryRunBeforeMutation:
             manifest=valid_placement_manifest,
             approval=valid_approval,
             candidate_files=valid_candidate_files,
-            workflow_requester="requester-bob"
+            workflow_requester="requester-bob",
+            candidate_sha256="candidate-hash-abc123"
         )
         
         # Verify execution was called
@@ -363,7 +371,8 @@ class TestHappyPathIntegration:
             manifest=valid_placement_manifest,
             approval=valid_approval,
             candidate_files=valid_candidate_files,
-            workflow_requester="requester-bob"
+            workflow_requester="requester-bob",
+            candidate_sha256="candidate-hash-abc123"
         )
         
         # Verify result structure
@@ -380,7 +389,8 @@ class TestHappyPathIntegration:
             manifest=valid_placement_manifest,
             approval=valid_approval,
             candidate_files=valid_candidate_files,
-            workflow_requester="requester-bob"
+            workflow_requester="requester-bob",
+            candidate_sha256="candidate-hash-abc123"
         )
         
         # Verify result structure
@@ -417,7 +427,8 @@ class TestManifestHashVerification:
                 manifest=tampered_manifest,
                 approval=valid_approval,
                 candidate_files=valid_candidate_files,
-                workflow_requester="requester-bob"
+                workflow_requester="requester-bob",
+                candidate_sha256="candidate-hash-abc123"
             )
         
         assert "hash" in str(exc_info.value).lower() or "tampered" in str(exc_info.value).lower()
@@ -434,7 +445,8 @@ class TestEvidenceProduction:
             manifest=valid_placement_manifest,
             approval=valid_approval,
             candidate_files=valid_candidate_files,
-            workflow_requester="requester-bob"
+            workflow_requester="requester-bob",
+            candidate_sha256="candidate-hash-abc123"
         )
         
         # Verify result exists

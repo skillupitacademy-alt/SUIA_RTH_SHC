@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -14,6 +15,10 @@ from app.models.candidate import (
     PlacementManifest,
 )
 from app.models.governance import ApprovalStatus
+from app.models.implementation_approval import (
+    ImplementationApproval,
+    ImplementationApprovalStatus,
+)
 from app.placement.comparator import CanonicalComparator, StructuralFeatures
 from app.placement.executor import PlacementExecutor, PlacementExecutionError
 
@@ -450,11 +455,28 @@ class TestPlacementExecutor:
         """Test that executor rejects unapproved manifests."""
         executor = PlacementExecutor(temp_repository)
         
+        # Create PENDING approval (should be rejected)
+        pending_approval = ImplementationApproval(
+            approval_id="approval-pending-test",
+            workflow_id="wf-test-123",
+            candidate_sha256="test-candidate-hash-123",
+            target_family="Introduction",
+            target_version="1.0.0",
+            placement_manifest_id=sample_manifest.manifestId,
+            placement_manifest_sha256=sample_manifest.manifestHash,
+            approved_by="test-approver@example.com",
+            approval_timestamp=datetime.now(timezone.utc).isoformat(),
+            status=ImplementationApprovalStatus.PENDING,
+            workflow_requester="test-requester@example.com"
+        )
+        
         with pytest.raises(PlacementExecutionError) as exc_info:
             executor.execute_placement(
-                sample_manifest,
-                ApprovalStatus.PENDING,
-                sample_candidate_files
+                manifest=sample_manifest,
+                approval=pending_approval,
+                candidate_files=sample_candidate_files,
+                workflow_requester="test-requester@example.com",
+                candidate_sha256="test-candidate-hash-123"
             )
         
         assert "unapproved" in str(exc_info.value).lower()
@@ -482,14 +504,31 @@ class TestPlacementExecutor:
             createdAt=sample_manifest.createdAt
         )
         
+        # Create approval with WRONG manifest hash (to trigger tamper detection)
+        approval_with_wrong_hash = ImplementationApproval(
+            approval_id="approval-hash-test",
+            workflow_id="wf-test-456",
+            candidate_sha256="test-candidate-hash-456",
+            target_family="Introduction",
+            target_version="1.0.0",
+            placement_manifest_id=sample_manifest.manifestId,
+            placement_manifest_sha256="WRONG-HASH-12345",  # Intentionally wrong
+            approved_by="test-approver@example.com",
+            approval_timestamp=datetime.now(timezone.utc).isoformat(),
+            status=ImplementationApprovalStatus.APPROVED,
+            workflow_requester="test-requester@example.com"
+        )
+        
         with pytest.raises(PlacementExecutionError) as exc_info:
             executor.execute_placement(
-                tampered_manifest,
-                ApprovalStatus.APPROVED,
-                sample_candidate_files
+                manifest=tampered_manifest,
+                approval=approval_with_wrong_hash,
+                candidate_files=sample_candidate_files,
+                workflow_requester="test-requester@example.com",
+                candidate_sha256="test-candidate-hash-456"
             )
         
-        assert "hash verification failed" in str(exc_info.value).lower()
+        assert "hash" in str(exc_info.value).lower() and "mismatch" in str(exc_info.value).lower()
     
     def test_executor_rejects_reject_decision(
         self,
@@ -526,13 +565,30 @@ class TestPlacementExecutor:
             createdAt="2025-01-29T00:00:00Z"
         )
         
+        # Create APPROVED approval for REJECT manifest (to test rejection logic)
+        reject_approval = ImplementationApproval(
+            approval_id="approval-reject-test",
+            workflow_id="wf-test-789",
+            candidate_sha256="test-candidate-hash-789",
+            target_family="Custom",
+            target_version="1.0.0",
+            placement_manifest_id=reject_manifest.manifestId,
+            placement_manifest_sha256=reject_manifest.manifestHash,
+            approved_by="test-approver@example.com",
+            approval_timestamp=datetime.now(timezone.utc).isoformat(),
+            status=ImplementationApprovalStatus.APPROVED,
+            workflow_requester="test-requester@example.com"
+        )
+        
         executor = PlacementExecutor(temp_repository)
         
         with pytest.raises(PlacementExecutionError) as exc_info:
             executor.execute_placement(
-                reject_manifest,
-                ApprovalStatus.APPROVED,
-                sample_candidate_files
+                manifest=reject_manifest,
+                approval=reject_approval,
+                candidate_files=sample_candidate_files,
+                workflow_requester="test-requester@example.com",
+                candidate_sha256="test-candidate-hash-789"
             )
         
         assert "REJECT" in str(exc_info.value)
