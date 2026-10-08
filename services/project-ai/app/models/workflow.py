@@ -1,46 +1,54 @@
 """
-Project LLM Workflow Model - M2.9 Wave 0
+ProjectLLM Workflow Model - M2.9 Wave 0
 
-Canonical workflow data model with hash-bound artifact tracking and state history.
+Canonical workflow data model for Project LLM lifecycle management.
 
-This module provides the authoritative workflow representation for Project LLM M2.9,
-establishing ProjectLLMWorkflow as the single source of truth for workflow state,
-artifact bindings, approval tracking, and evidence accumulation.
+This module defines the authoritative workflow representation that binds:
+- Canonical state machine (CanonicalWorkflowState)
+- Hash-bound artifacts (contract, candidate, manifest, snapshot)
+- Approval tracking (ImplementationApproval)
+- State transition history
+- Evidence accumulation
 
-ARCHITECTURAL ROLE:
-- ProjectLLMWorkflow is the domain model for workflow lifecycle
-- WorkflowGovernanceService manages state transitions using this model
-- All workflow state queries must go through WorkflowGovernanceService
-- Artifact bindings are hash-bound for security (candidate, manifest, snapshot)
-
-SECURITY PROPERTIES:
-- Immutable workflow_id and specification_id
-- Hash-bound artifacts prevent tampering
-- State history provides complete audit trail
-- Terminal state detection prevents post-completion mutations
+ARCHITECTURAL RULE:
+- ProjectLLMWorkflow is the single source of truth for workflow state
+- All workflow mutations must flow through WorkflowGovernanceService
+- Frontend must consume workflow state from backend API, not create its own
 """
 
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional, Any
+
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
 
 
 @dataclass
 class StateTransition:
     """
-    Record of a single workflow state transition.
+    Record of a single state transition with evidence.
     
-    Captures who initiated the transition, when it occurred, and what evidence
-    supports the transition. Forms part of the workflow audit trail.
+    Provides complete audit trail of workflow progression, including who/what
+    triggered each transition and why.
     """
     
-    from_state: Optional[CanonicalWorkflowState]  # None for initial transition
+    from_state: Optional[CanonicalWorkflowState]
     to_state: CanonicalWorkflowState
     timestamp: datetime
-    triggered_by: str  # User ID or system component (e.g., "system", "user_123")
-    evidence_id: Optional[str] = None  # Reference to evidence artifact
-    reason: Optional[str] = None  # Human-readable reason for transition
+    triggered_by: str  # User ID or system component
+    evidence_id: Optional[str] = None
+    reason: Optional[str] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return {
+            "from_state": self.from_state.value if self.from_state else None,
+            "to_state": self.to_state.value,
+            "timestamp": self.timestamp.isoformat(),
+            "triggered_by": self.triggered_by,
+            "evidence_id": self.evidence_id,
+            "reason": self.reason
+        }
 
 
 @dataclass
@@ -49,22 +57,13 @@ class ProjectLLMWorkflow:
     Canonical workflow model for Project LLM M2.9.
     
     Single source of truth for workflow lifecycle state, approval gates,
-    and artifact bindings. All workflow operations must go through
-    WorkflowGovernanceService, which manages instances of this model.
+    and artifact bindings.
     
-    LIFECYCLE:
-    - Created in REQUESTED state via WorkflowGovernanceService.create_workflow()
-    - Transitions through 17 canonical states
-    - Reaches terminal state (CERTIFIED or REJECTED)
-    - No mutations allowed after terminal state reached
-    
-    ARTIFACT BINDINGS:
-    - contract: Engineering contract for External AI
-    - candidate: User-uploaded implementation package
-    - manifest: Placement manifest for file operations
-    - snapshot: Final repository snapshot after implementation
-    
-    All artifacts are hash-bound (SHA-256) for tamper detection.
+    SECURITY BOUNDARIES:
+    - All artifacts are hash-bound (SHA-256) to detect tampering
+    - Approval tracking prevents self-approval and enforces gates
+    - Terminal states are immutable (no transitions after CERTIFIED/REJECTED)
+    - State history provides complete audit trail
     """
     
     # Identity
@@ -79,11 +78,11 @@ class ProjectLLMWorkflow:
     # Lifecycle state
     current_state: CanonicalWorkflowState
     
-    # Metadata (required fields)
+    # Metadata (required fields without defaults)
     created_at: datetime
     updated_at: datetime
     
-    # Lifecycle state (with defaults)
+    # State history
     state_history: List[StateTransition] = field(default_factory=list)
     
     # Artifact bindings (hash-bound for security)
@@ -114,7 +113,7 @@ class ProjectLLMWorkflow:
         Check if workflow is in terminal state.
         
         Returns:
-            True if workflow is in CERTIFIED or REJECTED state
+            True if current state is CERTIFIED or REJECTED, False otherwise
         """
         from app.orchestration.canonical_workflow import is_terminal_state
         return is_terminal_state(self.current_state)
@@ -124,15 +123,15 @@ class ProjectLLMWorkflow:
         Check if current state requires human approval.
         
         Returns:
-            True if workflow is in a gate state (AWAITING_GATE_1,
-            AWAITING_IMPLEMENTATION_APPROVAL, or AWAITING_GATE_2)
+            True if current state is a gate state (AWAITING_GATE_1,
+            AWAITING_IMPLEMENTATION_APPROVAL, AWAITING_GATE_2), False otherwise
         """
         from app.orchestration.canonical_workflow import is_gate_state
         return is_gate_state(self.current_state)
     
     def to_dict(self) -> Dict[str, Any]:
         """
-        Convert workflow to dictionary for serialization.
+        Convert to dictionary for serialization.
         
         Returns:
             Dictionary representation with all workflow fields
@@ -159,6 +158,7 @@ class ProjectLLMWorkflow:
             "approval_id": self.approval_id,
             "gate_results": self.gate_results,
             "evidence_ids": self.evidence_ids,
+            "state_history": [t.to_dict() for t in self.state_history],
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "final_status": self.final_status

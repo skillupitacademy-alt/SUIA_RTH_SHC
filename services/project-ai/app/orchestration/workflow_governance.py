@@ -1,31 +1,20 @@
 """
 Workflow Governance Service - M2.9 Wave 0
 
-Single point of authority for Project LLM workflow state management.
+Single point of authority for canonical workflow state management.
 
-This service enforces canonical workflow state transitions, authorization gates,
-and terminal state boundaries. All workflow state mutations must flow through
-this service.
+This service is the ONLY component authorized to mutate workflow state.
+All state transitions must flow through this service to ensure:
+- State transition validation
+- Terminal state enforcement
+- Authorization gate verification
+- Audit trail completeness
 
-RESPONSIBILITIES:
-- Create workflows in REQUESTED state
-- Validate and execute state transitions
-- Enforce authorization gates (especially IMPLEMENTING transition)
-- Prevent mutation of terminal states
-- Track complete state history for audit trail
-- Bind artifacts with hash verification
-
-SECURITY BOUNDARIES:
-- No transitions allowed after terminal state reached (CERTIFIED or REJECTED)
-- IMPLEMENTING transition requires full authorization verification
-- Self-approval prevention enforced via ImplementationApproval
-- Hash verification for candidate and manifest binding
-
-ARCHITECTURAL CONSTRAINTS:
-- Single source of truth for workflow state
-- All state transitions must use validate_transition() → transition_state()
-- Terminal state enforcement is absolute (no exceptions)
-- Authorization gates block until approval granted
+ARCHITECTURAL RULE:
+- No component may modify workflow state except through this service
+- All state transitions must be validated before execution
+- Terminal states (CERTIFIED, REJECTED) are immutable
+- IMPLEMENTING transition requires full authorization checks
 """
 
 from datetime import datetime, timezone
@@ -63,11 +52,12 @@ class WorkflowGovernanceService:
     
     def __init__(self):
         """
-        Initialize workflow governance service.
+        Initialize governance service.
         
-        In-memory storage for M2.9 Wave 0 (persistence deferred to Wave 1+).
+        Uses in-memory storage for M2.9 Wave 0.
+        Future waves will add database persistence.
         """
-        # In-memory storage for M2.9 (Wave 1+ will add persistence)
+        # In-memory storage for M2.9 Wave 0 (Wave 1+ will add persistence)
         self._workflows: Dict[str, ProjectLLMWorkflow] = {}
         self._approvals: Dict[str, ImplementationApproval] = {}
     
@@ -91,7 +81,8 @@ class WorkflowGovernanceService:
             New workflow in REQUESTED state
         """
         workflow_id = str(uuid4())
-        specification_id = f"{target_family[0]}{target_version}"  # e.g., "I7"
+        # Specification ID is the target version (e.g., "I7", "C3")
+        specification_id = target_version
         now = datetime.now(timezone.utc)
         
         initial_transition = StateTransition(
@@ -128,7 +119,7 @@ class WorkflowGovernanceService:
             workflow_id: Workflow identifier
             
         Returns:
-            ProjectLLMWorkflow instance or None if not found
+            Workflow if found, None otherwise
         """
         return self._workflows.get(workflow_id)
     
@@ -140,12 +131,19 @@ class WorkflowGovernanceService:
         """
         Validate if a state transition is allowed.
         
+        Checks:
+        1. Workflow exists
+        2. Workflow is not in terminal state
+        3. Transition is valid per state machine
+        
         Args:
             workflow_id: Workflow to transition
             to_state: Target state
             
         Returns:
             Tuple of (is_valid, reason)
+            - (True, "") if transition is valid
+            - (False, reason) if transition is invalid
         """
         workflow = self.get_workflow(workflow_id)
         if not workflow:
@@ -153,11 +151,17 @@ class WorkflowGovernanceService:
         
         # Check if terminal state reached
         if workflow.is_terminal():
-            return (False, f"Workflow is in terminal state {workflow.current_state.value}")
+            return (
+                False,
+                f"Workflow is in terminal state {workflow.current_state.value}, no transitions allowed"
+            )
         
         # Check if transition is valid per state machine
         if not is_valid_transition(workflow.current_state, to_state):
-            return (False, f"Invalid transition: {workflow.current_state.value} -> {to_state.value}")
+            return (
+                False,
+                f"Invalid transition: {workflow.current_state.value} -> {to_state.value}"
+            )
         
         return (True, "")
     
@@ -237,12 +241,17 @@ class WorkflowGovernanceService:
         Args:
             workflow_id: Workflow ID
             approval: ImplementationApproval record
+            
+        Raises:
+            ValueError: If workflow not found
         """
-        self._approvals[workflow_id] = approval
-        
         workflow = self._workflows.get(workflow_id)
-        if workflow:
-            workflow.approval_id = approval.approval_id
+        if not workflow:
+            raise ValueError(f"Workflow not found: {workflow_id}")
+        
+        self._approvals[workflow_id] = approval
+        workflow.approval_id = approval.approval_id
+        workflow.updated_at = datetime.now(timezone.utc)
     
     def bind_artifact(
         self,
@@ -280,6 +289,18 @@ class WorkflowGovernanceService:
             workflow.snapshot_id = artifact_id
             workflow.snapshot_sha256 = artifact_sha256
         else:
-            raise ValueError(f"Invalid artifact type: {artifact_type}")
+            raise ValueError(
+                f"Invalid artifact type: {artifact_type}. "
+                f"Must be one of: contract, candidate, manifest, snapshot"
+            )
         
         workflow.updated_at = datetime.now(timezone.utc)
+    
+    def list_workflows(self) -> list[ProjectLLMWorkflow]:
+        """
+        List all workflows.
+        
+        Returns:
+            List of all workflows in storage
+        """
+        return list(self._workflows.values())

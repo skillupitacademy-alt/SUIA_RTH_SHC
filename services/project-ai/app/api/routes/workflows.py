@@ -1,39 +1,25 @@
 """
-Workflow API Routes - M2.9 Wave 0
+Workflow Management API Routes - M2.9 Wave 0
 
-REST API endpoints for canonical workflow management.
+REST API endpoints for canonical workflow lifecycle management.
 
-These endpoints replace the task-based routes for workflow-level operations,
-providing direct access to the canonical workflow state machine via
-WorkflowGovernanceService.
-
-ENDPOINTS:
-- POST /workflows: Create new workflow (REQUESTED state)
-- GET /workflows/{workflow_id}: Get workflow state
-- POST /workflows/{workflow_id}/transition: Transition state (internal use)
-- GET /workflows/{workflow_id}/history: Get state transition history
-- POST /workflows/{workflow_id}/artifacts: Bind artifact to workflow
-
-ARCHITECTURAL CONSTRAINTS:
-- All state mutations go through WorkflowGovernanceService
-- No direct workflow model manipulation
-- Terminal state enforcement absolute
-- Authorization gates enforced by governance service
+These endpoints replace /tasks routes for workflow-level operations and provide
+the single source of truth for workflow state.
 """
 
 from fastapi import APIRouter, HTTPException
 from typing import List
 
 from app.api.schemas.workflow import (
-    CreateWorkflowRequest,
     WorkflowResponse,
-    WorkflowTarget,
-    WorkflowStateInfo,
-    WorkflowArtifacts,
-    WorkflowArtifact,
+    CreateWorkflowRequest,
     TransitionRequest,
     BindArtifactRequest,
-    StateTransitionResponse
+    WorkflowArtifact,
+    WorkflowStateInfo,
+    WorkflowTarget,
+    WorkflowArtifacts,
+    StateTransitionInfo
 )
 from app.orchestration.workflow_governance import WorkflowGovernanceService
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
@@ -41,46 +27,66 @@ from app.orchestration.canonical_workflow import CanonicalWorkflowState
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
 
-# Instantiate governance service at module level (in-memory for Wave 0)
+# Instantiate governance service (in-memory for Wave 0)
 governance_service = WorkflowGovernanceService()
 
 
+def _workflow_to_response(workflow) -> WorkflowResponse:
+    """Convert ProjectLLMWorkflow to WorkflowResponse schema."""
+    workflow_dict = workflow.to_dict()
+    
+    return WorkflowResponse(
+        workflow_id=workflow_dict["workflow_id"],
+        specification_id=workflow_dict["specification_id"],
+        target=WorkflowTarget(**workflow_dict["target"]),
+        requester_id=workflow_dict["requester_id"],
+        state=WorkflowStateInfo(**workflow_dict["state"]),
+        artifacts=WorkflowArtifacts(
+            contract=WorkflowArtifact(**workflow_dict["artifacts"]["contract"]),
+            candidate=WorkflowArtifact(**workflow_dict["artifacts"]["candidate"]),
+            manifest=WorkflowArtifact(**workflow_dict["artifacts"]["manifest"]),
+            snapshot=WorkflowArtifact(**workflow_dict["artifacts"]["snapshot"])
+        ),
+        approval_id=workflow_dict["approval_id"],
+        gate_results=workflow_dict["gate_results"],
+        evidence_ids=workflow_dict["evidence_ids"],
+        state_history=[StateTransitionInfo(**t) for t in workflow_dict["state_history"]],
+        created_at=workflow_dict["created_at"],
+        updated_at=workflow_dict["updated_at"],
+        final_status=workflow_dict["final_status"]
+    )
+
+
 @router.post("", response_model=WorkflowResponse, status_code=201)
-async def create_workflow(request: CreateWorkflowRequest):
+async def create_workflow(request: CreateWorkflowRequest) -> WorkflowResponse:
     """
     Create a new workflow in REQUESTED state.
     
-    This endpoint initializes a new Project LLM workflow with target family
-    and version binding. The workflow starts in REQUESTED state and proceeds
-    through discovery phase.
+    Initiates the Project LLM workflow lifecycle with target binding and
+    requester identity for self-approval prevention.
     
     Args:
-        request: Workflow creation parameters
+        request: Workflow creation request
         
     Returns:
-        Newly created workflow in REQUESTED state
+        New workflow in REQUESTED state
     """
-    try:
-        workflow = governance_service.create_workflow(
-            target_family=request.target_family,
-            target_version=request.target_version,
-            requester_id=request.requester_id,
-            purpose=request.purpose
-        )
-        
-        return _workflow_to_response(workflow)
+    workflow = governance_service.create_workflow(
+        target_family=request.target_family,
+        target_version=request.target_version,
+        requester_id=request.requester_id,
+        purpose=request.purpose
+    )
     
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to create workflow: {str(e)}")
+    return _workflow_to_response(workflow)
 
 
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
-async def get_workflow(workflow_id: str):
+async def get_workflow(workflow_id: str) -> WorkflowResponse:
     """
     Get workflow state by ID.
     
-    Returns complete workflow representation including current state,
-    artifact bindings, approval status, and evidence references.
+    Returns current workflow state, artifacts, approvals, and history.
     
     Args:
         workflow_id: Workflow identifier
@@ -89,10 +95,9 @@ async def get_workflow(workflow_id: str):
         Complete workflow state
         
     Raises:
-        404: Workflow not found
+        HTTPException: 404 if workflow not found
     """
     workflow = governance_service.get_workflow(workflow_id)
-    
     if not workflow:
         raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
     
@@ -100,28 +105,34 @@ async def get_workflow(workflow_id: str):
 
 
 @router.post("/{workflow_id}/transition", response_model=WorkflowResponse)
-async def transition_state(workflow_id: str, request: TransitionRequest):
+async def transition_workflow(workflow_id: str, request: TransitionRequest) -> WorkflowResponse:
     """
     Transition workflow to new state (internal use).
     
-    This endpoint is for internal workflow execution. Most state transitions
-    should happen automatically through agent execution or approval endpoints.
+    Validates transition according to canonical state machine rules and
+    enforces authorization gates for IMPLEMENTING transition.
     
     Args:
         workflow_id: Workflow identifier
-        request: Transition parameters
+        request: Transition request
         
     Returns:
-        Updated workflow state
+        Updated workflow
         
     Raises:
-        400: Invalid transition
-        404: Workflow not found
+        HTTPException: 400 if transition invalid, 404 if workflow not found
     """
+    # Parse target state
     try:
-        # Parse state
         to_state = CanonicalWorkflowState(request.to_state)
-        
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid state: {request.to_state}"
+        )
+    
+    # Attempt transition
+    try:
         workflow = governance_service.transition_state(
             workflow_id=workflow_id,
             to_state=to_state,
@@ -129,22 +140,18 @@ async def transition_state(workflow_id: str, request: TransitionRequest):
             evidence_id=request.evidence_id,
             reason=request.reason
         )
-        
-        return _workflow_to_response(workflow)
-    
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except KeyError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid state: {request.to_state}")
+    
+    return _workflow_to_response(workflow)
 
 
-@router.get("/{workflow_id}/history", response_model=List[StateTransitionResponse])
-async def get_workflow_history(workflow_id: str):
+@router.get("/{workflow_id}/history", response_model=List[StateTransitionInfo])
+async def get_workflow_history(workflow_id: str) -> List[StateTransitionInfo]:
     """
     Get workflow state transition history.
     
-    Returns complete audit trail of all state transitions for workflow,
-    including timestamps, triggering entities, and evidence references.
+    Returns complete audit trail of all state transitions.
     
     Args:
         workflow_id: Workflow identifier
@@ -153,15 +160,14 @@ async def get_workflow_history(workflow_id: str):
         List of state transitions in chronological order
         
     Raises:
-        404: Workflow not found
+        HTTPException: 404 if workflow not found
     """
     workflow = governance_service.get_workflow(workflow_id)
-    
     if not workflow:
         raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
     
     return [
-        StateTransitionResponse(
+        StateTransitionInfo(
             from_state=t.from_state.value if t.from_state else None,
             to_state=t.to_state.value,
             timestamp=t.timestamp.isoformat(),
@@ -174,24 +180,32 @@ async def get_workflow_history(workflow_id: str):
 
 
 @router.post("/{workflow_id}/artifacts", response_model=WorkflowResponse)
-async def bind_artifact(workflow_id: str, request: BindArtifactRequest):
+async def bind_artifact(workflow_id: str, request: BindArtifactRequest) -> WorkflowResponse:
     """
-    Bind artifact to workflow with hash verification.
+    Bind artifact to workflow with hash.
     
-    Attaches artifact ID and SHA-256 hash to workflow for audit trail and
-    authorization gates. Artifact types: contract, candidate, manifest, snapshot.
+    Associates an artifact (contract, candidate, manifest, snapshot) with the
+    workflow and records its SHA-256 hash for integrity verification.
     
     Args:
         workflow_id: Workflow identifier
-        request: Artifact binding parameters
+        request: Artifact binding request
         
     Returns:
-        Updated workflow with artifact binding
+        Updated workflow
         
     Raises:
-        400: Invalid artifact type
-        404: Workflow not found
+        HTTPException: 400 if artifact type invalid, 404 if workflow not found
     """
+    # Validate artifact type
+    valid_types = ["contract", "candidate", "manifest", "snapshot"]
+    if request.artifact_type not in valid_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid artifact type: {request.artifact_type}. Must be one of: {', '.join(valid_types)}"
+        )
+    
+    # Bind artifact
     try:
         governance_service.bind_artifact(
             workflow_id=workflow_id,
@@ -199,62 +213,20 @@ async def bind_artifact(workflow_id: str, request: BindArtifactRequest):
             artifact_id=request.artifact_id,
             artifact_sha256=request.artifact_sha256
         )
-        
-        workflow = governance_service.get_workflow(workflow_id)
-        return _workflow_to_response(workflow)
-    
     except ValueError as e:
-        if "not found" in str(e):
-            raise HTTPException(status_code=404, detail=str(e))
-        else:
-            raise HTTPException(status_code=400, detail=str(e))
-
-
-def _workflow_to_response(workflow) -> WorkflowResponse:
-    """
-    Convert ProjectLLMWorkflow domain model to API response schema.
+        raise HTTPException(status_code=404, detail=str(e))
     
-    Args:
-        workflow: ProjectLLMWorkflow instance
-        
-    Returns:
-        WorkflowResponse with all fields populated
+    workflow = governance_service.get_workflow(workflow_id)
+    return _workflow_to_response(workflow)
+
+
+@router.get("", response_model=List[WorkflowResponse])
+async def list_workflows() -> List[WorkflowResponse]:
     """
-    return WorkflowResponse(
-        workflow_id=workflow.workflow_id,
-        specification_id=workflow.specification_id,
-        target=WorkflowTarget(
-            family=workflow.target_family,
-            version=workflow.target_version
-        ),
-        requester_id=workflow.requester_id,
-        state=WorkflowStateInfo(
-            current=workflow.current_state.value,
-            is_terminal=workflow.is_terminal(),
-            requires_approval=workflow.requires_approval()
-        ),
-        artifacts=WorkflowArtifacts(
-            contract=WorkflowArtifact(
-                id=workflow.contract_id,
-                sha256=workflow.contract_sha256
-            ),
-            candidate=WorkflowArtifact(
-                id=workflow.candidate_id,
-                sha256=workflow.candidate_sha256
-            ),
-            manifest=WorkflowArtifact(
-                id=workflow.manifest_id,
-                sha256=workflow.manifest_sha256
-            ),
-            snapshot=WorkflowArtifact(
-                id=workflow.snapshot_id,
-                sha256=workflow.snapshot_sha256
-            )
-        ),
-        approval_id=workflow.approval_id,
-        gate_results=workflow.gate_results,
-        evidence_ids=workflow.evidence_ids,
-        created_at=workflow.created_at.isoformat(),
-        updated_at=workflow.updated_at.isoformat(),
-        final_status=workflow.final_status
-    )
+    List all workflows.
+    
+    Returns:
+        List of all workflows
+    """
+    workflows = governance_service.list_workflows()
+    return [_workflow_to_response(w) for w in workflows]
