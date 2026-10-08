@@ -31,6 +31,11 @@ from .brand import (
     verify_brand_independence,
     format_findings_report,
 )
+from .browser_verifier import (
+    BrowserVerifier,
+    BrowserVerificationEvidence,
+    verify_browser_rendering,
+)
 
 __all__ = [
     # Composer verification
@@ -45,6 +50,10 @@ __all__ = [
     'BrowserVerificationConfig',
     'verify_in_browser',
     'verify_block_in_browser_sync',
+    # Browser verifier (W6)
+    'BrowserVerifier',
+    'BrowserVerificationEvidence',
+    'verify_browser_rendering',
     # Theme verification
     'ThemeVerification',
     'ThemeErrorCode',
