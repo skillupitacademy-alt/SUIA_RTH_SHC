@@ -1,121 +1,163 @@
-# Canonical Workflow Authority Implementation
+# Wave 0 Canonical Workflow Authority Implementation
 
-M2.9 Wave 0 implementation establishes CanonicalWorkflowState as the single source of truth for Project LLM workflow lifecycle, resolving the multiple-authority conflict through WorkflowGovernanceService. The implementation wires existing authorization logic into state transitions and creates comprehensive validation for the 17-state canonical workflow.
+**Branch:** m2-project-ai-canonical-wiring  
+**Commit:** f438718809e37af1bcb80c9e4493c04fad2d539d  
+**Design:** `.agents/tasks/w0-design-doc.md`  
+**Plan:** `.agents/tasks/w0-implementation-plan.md`  
+**Evidence:** `.agents/tasks/w0-architecture-freeze-report.json`
 
-**Watch for:** Self-approval verification incomplete (likely), agent coordinator lacks workflow integration confirmed, state history tracking preserves None in from_state field without documentation, WorkflowEngine integration is stub-heavy.
+---
 
-**Verdict**: NEEDS_CHANGES
+## Summary
+
+Wave 0 creates the canonical workflow authority infrastructure by introducing `CanonicalWorkflowState` (17 states), `ProjectLLMWorkflow` model, `WorkflowGovernanceService`, and REST API endpoints. The implementation establishes a single source of truth for workflow lifecycle management, resolving the multiple-authority conflict identified in the audit. The governance service enforces state transition rules, terminal state immutability, and hash-bound authorization gates with self-approval prevention.
+
+All core components are present: the state machine defines valid transitions, the governance service validates and executes transitions, the workflow model tracks artifacts and history, and the API exposes workflow operations. The test suite adds 36 new unit tests covering model serialization, state transitions, authorization gates, and artifact binding.
+
+**Watch for:** This is a creation-only implementation with zero integration into existing execution paths. `WorkflowEngine`, `AgentCoordinator`, governance routes, and task routes remain untouched — the canonical workflow authority exists but nothing uses it yet.
+
+**Verdict**: CHANGES_REQUESTED
+
+---
 
 ## High-level view
 
-The canonical workflow model defines all 17 required states with complete documentation and a valid state transition map. WorkflowGovernanceService enforces transitions with terminal state immutability and authorization gates at the IMPLEMENTING transition. The workflow model includes all required fields with hash-bound artifact tracking. WorkflowEngine accepts governance_service and calls transition_state() after agent execution in at least three mapped states (REQUESTED→DISCOVERY, DISCOVERY→BRIEF_READY, CANDIDATE_RECEIVED→CANDIDATE_AUDIT). Test suite covers 94 tests with 81 passing, including dedicated test files for terminal states (20 tests), governance service (18 tests), and workflow model (6 tests).
+The 17-state `CanonicalWorkflowState` enum was created fresh in this commit, complete with docstrings, transition rules in `VALID_TRANSITIONS`, and helper functions for gate/terminal detection. The state machine maps the full lifecycle from REQUESTED through DISCOVERY, gate approvals, candidate audit, placement, verification, and terminal states (CERTIFIED, REJECTED).
+
+`WorkflowGovernanceService` implements the single authority for state mutations: `create_workflow()` initializes workflows in REQUESTED state, `transition_state()` validates transitions and enforces authorization for the IMPLEMENTING transition, and `bind_artifact()` attaches hash-bound artifacts. The service uses in-memory storage for Wave 0 with explicit plans for database persistence in Wave 1.
+
+`ProjectLLMWorkflow` model tracks workflow identity, current state, artifact hashes, approval bindings, and complete state transition history. The model's `is_terminal()` and `requires_approval()` methods delegate to `canonical_workflow.py` helper functions, ensuring consistency.
+
+Authorization for the IMPLEMENTING transition enforces six checks: approval record exists, status is APPROVED, candidate hash matches, manifest ID matches, manifest hash matches, and approver is not the requester. Hash verification uses exact SHA-256 comparison.
+
+REST API provides five endpoints: POST /workflows creates workflows, GET /workflows/{id} retrieves state, POST /workflows/{id}/transition executes transitions (internal use), GET /workflows/{id}/history returns audit trail, POST /workflows/{id}/artifacts binds artifacts with hashes. The API converts workflow models to Pydantic response schemas.
+
+Tests cover workflow model construction, serialization, terminal state detection, gate state detection, artifact binding, state history tracking, governance service transitions, authorization gate enforcement, and terminal state immutability. All 36 new tests pass.
+
+The implementation deliberately excludes integration: `WorkflowEngine` still uses its own execution logic, `AgentCoordinator` doesn't call `transition_state()`, governance routes don't use `WorkflowGovernanceService`, and task routes carry no deprecation warnings. This is a pure infrastructure commit with no behavioral changes to the running system.
+
+---
 
 <details>
-<summary>Issues (5)</summary>
+<summary>Issues (8)</summary>
 
-1. **Self-approval verification gap** — The `can_transition_to_implementing()` function calls `approval.verify_not_self_approved(requester_id)` but there's no evidence this method exists on ImplementationApproval. The function returns False if the verification returns False, but if the method is missing or incorrectly implemented, self-approval could pass through. Trace through ImplementationApproval model to confirm verify_not_self_approved() exists and correctly checks `approved_by != workflow_requester`.
+1. **CanonicalWorkflowState created in Wave 0, not pre-existing** — The design document describes `CanonicalWorkflowState` as if it already exists in the repository, but the diff shows `canonical_workflow.py` is a new file created in this commit. The design references "wiring existing canonical states" and "the existing canonical workflow file (canonical_workflow.py) appears in the commit stat summary but shows zero actual changes" — both statements are false. The 17-state enum, docstrings, transition map, and helper functions were all authored in this Wave 0 commit. Update the design document and evidence report to accurately reflect that this was greenfield state machine design, not integration of pre-existing authority. (confirmed)
 
-2. **Agent coordinator independent state tracking** — The design plan states "agent_coordinator.py removes independent state tracking" and "agent_coordinator.py calls transition_state() after agent completions", but agent_coordinator.py was created new (not modified) and contains no imports or calls to WorkflowGovernanceService. The integration exists only in WorkflowEngine. If agents execute via AgentCoordinator directly (bypassing WorkflowEngine), workflow state won't update. Either verify all agent execution goes through WorkflowEngine.execute_workflow_stage(), or wire governance into AgentCoordinator.
+2. **Zero integration into existing execution paths** — The plan calls for updating `WorkflowEngine.execute_workflow_stage()` (step 6), governance routes (step 5), and deprecating task routes (step 7), but the evidence report lists `files_modified: []`. None of the existing execution components (`WorkflowEngine`, `AgentCoordinator`, governance routes, task routes) call the new governance service or reference canonical states. The canonical workflow authority exists as dormant infrastructure. This contradicts the plan's stated goal of "wiring workflow execution to canonical state transitions." Either complete the integration per the plan or document that Wave 0 scope was intentionally reduced to infrastructure-only. (confirmed)
 
-3. **State history from_state None semantics** — StateTransition.from_state is Optional[CanonicalWorkflowState] with None documented as "No prior state" for initial transition. This is correct for workflow creation, but the field lacks a docstring explaining when None is valid (only initial transition) vs when it indicates a bug. Add a field docstring or validation to StateTransition.__post_init__ that confirms from_state=None only appears in state_history[0].
+3. **Evidence report claims files modified that weren't** — The evidence JSON lists `files_modified: []` but the plan specifies modifying `governance.py` (step 5), `workflow_engine.py` (step 6), `tasks.py` (step 7), and `test_workflow_transitions.py` (step 12). Cross-check the evidence report against the git diff to confirm whether modifications were skipped intentionally or the report is inaccurate. If modifications were skipped, explain why and update the scope documentation. (confirmed)
 
-4. **WorkflowEngine canonical mapping incomplete** — WorkflowEngine.execute_workflow_stage() maps only 3 of 17 canonical states (REQUESTED, DISCOVERY, CANDIDATE_RECEIVED), with the rest documented as "stub for now". The evidence report defers this to later waves, but the design doc states "Map canonical state to agent execution" for the full lifecycle. This creates execution gaps: workflows reaching CANDIDATE_AUDIT or IMPLEMENTING states will have no agent execution path. Document which states have real execution vs stubs in the workflow_engine.py docstring or add NotImplementedError for unmapped states.
+4. **Frontend integration documented but not implemented** — The design includes a detailed frontend migration section (5.4) showing how `ProjectLlmContext` should consume backend state, but the evidence report correctly notes "frontend_integration: Documented but not implemented (backend-only for Wave 0)." The design document should move frontend integration to a future wave section or clearly mark it as out-of-scope, not include it in the technical design as if it were part of Wave 0. (confirmed)
 
-5. **Test failures not investigated** — Evidence reports "2 failures in integration tests for deprecated endpoints (test_certification_negative.py) - not blocking for Wave 0", but test failures in certification logic could indicate real workflow state issues. The review requirements state "do NOT re-run tests", but the review should assess whether ignoring these failures is appropriate. If test_certification_negative.py tests terminal state rejection paths or gate validation, failures could expose workflow governance bugs. Confirm failed tests are truly about deprecated endpoints, not canonical workflow behavior.
+5. **Test count mismatch in evidence** — The evidence report shows "total_selected: 154, passed: 139, failed: 4, skipped: 11" but also claims "new_unit_tests: 36, all_passed: true." The 4 failures are described as "pre-existing tests unrelated to new workflow governance" but this should be verified. Re-run only the new tests (`tests/unit/test_workflow_model.py`, `tests/unit/test_workflow_governance_service.py`) to confirm they pass in isolation, and document which 4 tests failed with clear evidence they were broken before Wave 0 started. (likely)
+
+6. **Specification ID generation inconsistency** — `WorkflowGovernanceService.create_workflow()` sets `specification_id = target_version` (e.g., "I7"), but the design document and docstrings describe it as "Block family + version (e.g., 'I7')". The comment in the code says "Specification ID is the target version" which matches the implementation but contradicts the design. Verify which convention is correct: is the spec ID just the version ("I7") or family+version ("Introduction-I7")? The model docstring, design doc, and implementation should all agree. (confirmed)
+
+7. **Missing list_workflows implementation** — `WorkflowGovernanceService.list_workflows()` method signature appears at line 300+ of the governance file but the implementation is truncated. The design document doesn't specify this method but the API might need it. Either complete the implementation or remove the signature. If it's intentionally stubbed for future use, add a docstring explaining that. (confirmed)
+
+8. **Retirement plan deferred but not gated** — The evidence report's "retirement_plan.wave_1_plus" lists task routes migration, frontend replacement, database persistence, and WorkflowEngine integration as future work, but none of these deferrals are explained in the context of the current commit. The plan says "establish CanonicalWorkflowState as single source of truth" but without integration, the old authorities (`TaskState`, `/tasks` routes) remain the actual source of truth. Document why the scope was reduced and what prevents shipping the integration now. (confirmed)
 
 </details>
+
+---
 
 <details>
 <summary>Details</summary>
 
-## CanonicalWorkflowState enum and transition map
+## Canonical workflow state machine
 
-VALID_TRANSITIONS dict provides the complete transition map. All 17 states appear as keys, terminal states map to empty lists, and gate transitions offer both approval and rejection paths (AWAITING_GATE_1 → [GUI_APPROVED, REJECTED]). The transition validation prevents skipping states: REQUESTED cannot jump to IMPLEMENTING without passing through intervening states.
+The state machine defines 17 states covering the full block engineering lifecycle. Each state has clear documentation: purpose, activities, next states, and gate requirements. The progression is sequential with explicit branching at gates (AWAITING_GATE_1, AWAITING_IMPLEMENTATION_APPROVAL, AWAITING_GATE_2) where rejection transitions to REJECTED.
 
-## Authorization gates for IMPLEMENTING transition
+REQUESTED initiates the flow, DISCOVERY gathers evidence, BRIEF_READY generates the contract, and AWAITING_GATE_1 blocks until the user approves the GUI prototype. After GUI_APPROVED, the workflow enters CANDIDATE_REQUESTED → CANDIDATE_RECEIVED → CANDIDATE_AUDIT. If audit gates pass, INTEGRATION_PLANNED generates the placement manifest and transitions to AWAITING_IMPLEMENTATION_APPROVAL for the second human gate.
 
-`can_transition_to_implementing()` enforces six authorization checks before allowing file placement. The function signature requires all four hash/ID parameters (requester_id, candidate_sha256, manifest_id, manifest_sha256) and validates they are non-empty before proceeding with comparisons. This prevents accidental approval through missing data.
+After implementation approval, IMPLEMENTING writes files, IMPLEMENTED captures the commit, and VERIFYING runs runtime and browser checks. CERTIFICATION_READY waits for HAA review at AWAITING_GATE_2. Final states are CERTIFIED (success terminal) and REJECTED (failure terminal).
 
-The function checks approval existence, approval status (must be APPROVED), and then performs four hash/ID verifications using methods on the ImplementationApproval model: `verify_candidate_hash()`, direct manifest_id comparison, `verify_manifest_hash()`, and `verify_not_self_approved()`. Each failed check returns a tuple with False and a specific reason string.
+The `VALID_TRANSITIONS` dictionary enforces the state machine: each state lists valid next states. Terminal states (CERTIFIED, REJECTED) have empty transition lists. Helper functions `is_valid_transition()`, `is_gate_state()`, and `is_terminal_state()` provide the API for validation.
 
-The self-approval check calls `approval.verify_not_self_approved(requester_id)`, but the ImplementationApproval model implementation is not visible in this diff. If that method is missing or has bugs, self-approval could slip through. The error message "Self-approval detected or workflow requester missing: approver '{approval.approved_by}'" suggests the method might be checking multiple conditions, but without seeing the implementation, confidence is limited.
+The state machine was designed and implemented in this commit, not wired from pre-existing code. Every state, docstring, and transition rule is new. The design document's narrative about "preserving existing canonical workflow file" is inaccurate.
 
-## ProjectLLMWorkflow model with all required fields
+## Authorization gates
 
-The workflow model includes all 17 required fields: workflow_id, specification_id, target_family, target_version, requester_id, current_state, state_history, contract_id/sha256, candidate_id/sha256, manifest_id/sha256, snapshot_id/sha256, approval_id, gate_results, evidence_ids, created_at, updated_at, final_status. All artifact bindings are hash-paired.
+Authorization for transitioning to IMPLEMENTING is enforced by `can_transition_to_implementing()`, which checks six conditions: approval record exists, status is APPROVED (not PENDING or REJECTED), candidate hash matches the approval, manifest ID matches, manifest hash matches, and the approver is not the requester.
 
-StateTransition uses Optional[CanonicalWorkflowState] for from_state to represent initial creation, where there is no prior state. This field lacks a docstring explaining when None is valid (only at creation) vs when it indicates a bug.
+Each check returns `(False, reason)` on failure with a descriptive error message. Hash verification uses exact string comparison of SHA-256 hashes (64 hex characters). The function requires four parameters: `requester_id`, `candidate_sha256`, `manifest_id`, `manifest_sha256`. Missing parameters cause the check to fail with "Missing required parameter" errors.
 
-## WorkflowGovernanceService state transition enforcement
+Self-approval prevention calls `approval.verify_not_self_approved(requester_id)`, which compares `approval.approved_by` to the requester. The approval model (pre-existing from earlier work) provides the verification methods: `verify_candidate_hash()`, `verify_manifest_hash()`, and `verify_not_self_approved()`.
 
-`validate_transition()` checks three conditions: workflow exists, workflow is not in terminal state, transition is valid per VALID_TRANSITIONS. Terminal state check comes before transition validation, preventing state machine rules from overriding terminal immutability.
+The authorization logic is comprehensive and correctly enforces hash integrity and separation of duties. Tests cover all six checks individually: missing approval, wrong status, hash mismatches for candidate and manifest, manifest ID mismatch, and self-approval rejection.
 
-`transition_state()` calls validate_transition() first, then special-cases the IMPLEMENTING transition to call `can_transition_to_implementing()` with full authorization checks. If authorization fails, the transition is blocked. The function creates a StateTransition record, updates current_state, appends to state_history, and sets final_status for terminal states.
+## Workflow model and artifact binding
 
-`bind_artifact()` validates artifact_type against a whitelist (contract, candidate, manifest, snapshot) before setting fields, preventing typos from creating phantom fields.
+`ProjectLLMWorkflow` dataclass tracks identity (workflow_id, specification_id, target_family, target_version, requester_id), lifecycle (current_state, state_history), artifacts (contract_id/sha256, candidate_id/sha256, manifest_id/sha256, snapshot_id/sha256), approval (approval_id, gate_results), evidence (evidence_ids), and metadata (created_at, updated_at, final_status).
 
-## WorkflowEngine integration with canonical states
+The model uses `field(default_factory=list)` and `field(default_factory=dict)` for mutable defaults, preventing shared-state bugs. `is_terminal()` and `requires_approval()` delegate to `canonical_workflow.py` helper functions rather than duplicating logic.
 
-WorkflowEngine.__init__() accepts an optional governance_service parameter. `execute_workflow_stage()` reads the workflow from governance_service, maps current_state to agent execution, and calls `governance_service.transition_state()` after agent completion. For REQUESTED state, it executes four discovery agents sequentially and transitions to DISCOVERY if all pass. DISCOVERY and CANDIDATE_RECEIVED have stubs that immediately transition to the next state.
+Artifact binding is handled by `WorkflowGovernanceService.bind_artifact()`, which accepts artifact_type (contract/candidate/manifest/snapshot), artifact_id, and artifact_sha256. The method sets the corresponding ID and hash fields on the workflow and updates `updated_at`. Invalid artifact types raise `ValueError` with a clear message listing valid options.
 
-Only 3 of 17 canonical states are mapped. Workflows reaching unmapped states (CANDIDATE_AUDIT, IMPLEMENTING, etc.) have no execution path. The stubs acknowledge this with "stub for now" comments.
+`StateTransition` dataclass records from_state, to_state, timestamp, triggered_by, evidence_id, and reason. The initial transition (workflow creation) uses `from_state=None` to indicate no prior state. Both `StateTransition` and `ProjectLLMWorkflow` provide `to_dict()` methods for serialization, converting enum values to strings and datetimes to ISO 8601.
 
-## Agent coordinator and workflow independence
+## Governance service and state transitions
 
-agent_coordinator.py defines AgentCoordinator but contains no imports of WorkflowGovernanceService and no calls to transition_state(). The coordinator handles agent execution mechanics (DAG resolution, result propagation) without workflow state awareness. WorkflowEngine calls transition_state() after calling agent_coordinator.
+`WorkflowGovernanceService` is the single authority for workflow state mutations. In-memory storage uses two dicts: `_workflows` (keyed by workflow_id) and `_approvals` (keyed by workflow_id). The service is instantiated at module level in `workflows.py` for Wave 0; database persistence is planned for Wave 1.
 
-The design plan states "agent_coordinator.py calls transition_state() after agent completions", but the implementation puts this responsibility in WorkflowEngine. If code outside WorkflowEngine uses AgentCoordinator directly, workflow state won't update.
+`create_workflow()` generates a UUID workflow_id, creates an initial StateTransition to REQUESTED, and stores the workflow. If a purpose is provided, it's stored in `gate_results["purpose"]`. The specification_id is set to the target_version directly (e.g., "I7"), not family+version.
 
-## Terminal state enforcement
+`validate_transition()` checks three conditions: workflow exists, workflow is not in a terminal state, and the transition is valid per `VALID_TRANSITIONS`. It returns `(bool, reason)` tuples. Terminal state checks use `workflow.is_terminal()`, which calls `is_terminal_state()` from `canonical_workflow.py`.
 
-test_terminal_states.py has 10 test functions covering terminal state detection, immutability from CERTIFIED and REJECTED, ValueError on illegal transitions, final_status setting, evidence binding, and gate state detection. The immutability tests force a workflow to a terminal state then attempt various illegal transitions, verifying `validate_transition()` returns False with "terminal state" in the reason.
+`transition_state()` calls `validate_transition()` first, raises `ValueError` if validation fails, then performs special authorization for IMPLEMENTING transitions by calling `can_transition_to_implementing()`. After validation and authorization pass, it creates a StateTransition record, updates current_state, appends to state_history, sets updated_at, and sets final_status for terminal states.
 
-The evidence binding test confirms workflow.evidence_ids is a mutable list that can accumulate IDs, but doesn't verify evidence_ids is used in state transitions.
+`register_approval()` stores an `ImplementationApproval` in the approvals dict and sets `workflow.approval_id`. This wires the pre-existing approval model into the governance flow.
 
-## Workflow governance service tests
+## REST API endpoints
 
-test_workflow_governance.py includes 18 test functions covering workflow creation, retrieval, transition validation (valid, invalid, terminal), state transition execution, authorization for IMPLEMENTING, approval registration, artifact binding, and error cases.
+Five REST endpoints expose workflow operations. POST /workflows creates a workflow by calling `governance_service.create_workflow()` and returns a 201 with `WorkflowResponse`. GET /workflows/{workflow_id} retrieves workflow state, returning 404 if not found.
 
-The workflow creation test verifies the workflow starts in REQUESTED state with a valid UUID workflow_id. The specification_id test expects "II7" for input "Introduction" + "I7", which concatenates the first letter twice—this may be a bug in either the test or the implementation.
+POST /workflows/{workflow_id}/transition parses the target state from the request, calls `governance_service.transition_state()`, and returns 400 on validation errors. This endpoint is marked for internal use, suggesting it's not intended for direct frontend calls.
 
-State transition execution test verifies transition_state() updates current_state, appends to state_history with correct from_state/to_state/triggered_by/evidence_id, and updates the timestamp.
+GET /workflows/{workflow_id}/history returns the state_history list as an array of `StateTransitionInfo` objects. POST /workflows/{workflow_id}/artifacts calls `governance_service.bind_artifact()` to attach artifact hashes.
 
-## Test results and evidence quality
+The API uses Pydantic schemas for request validation and response serialization. `_workflow_to_response()` converts `ProjectLLMWorkflow.to_dict()` output to `WorkflowResponse`, unpacking nested dicts into schema objects. All endpoints raise `HTTPException` with appropriate status codes (400, 404) on errors.
 
-The architecture-freeze-report.json records 94 total tests, 81 passed, 2 failed, 11 skipped. Three new test files were created: test_workflow_model.py (6 tests), test_workflow_governance.py (18 tests), test_terminal_states.py (20 tests), totaling 44 new tests.
+The API does not include a list workflows endpoint in the reviewed code, though `WorkflowGovernanceService.list_workflows()` signature appears truncated in the governance service file.
 
-The report notes 2 failures in test_certification_negative.py for deprecated endpoints, marked as "not blocking for Wave 0". Without seeing the failure output, it's unclear whether these failures expose canonical workflow issues or are genuinely about deprecated endpoint behavior. If the tests verify rejection paths, failures could indicate broken rejection logic.
+## Test coverage
 
-The commit SHA in the report (cb45462d) differs from the current HEAD (185925bf), suggesting the report was updated after the main commit.
+36 new unit tests cover workflow model and governance service. `test_workflow_model.py` (13 tests) verifies StateTransition creation, serialization, workflow creation, terminal state detection, gate state detection, artifact binding, state history tracking, and final_status setting for terminal states. Tests use parameterized checks for all gate states and non-terminal states.
 
-## Code quality and documentation
+`test_workflow_governance_service.py` (23 tests) covers workflow creation with and without purpose, workflow retrieval, validation of valid and invalid transitions, terminal state boundary enforcement, state transition execution, final_status setting, authorization gate enforcement, approval registration, and artifact binding for all four artifact types. 
 
-The canonical_workflow.py file has extensive module-level documentation explaining the architectural rule, gate enforcement, and M2.9 references. Each state has a detailed docstring. workflow_governance.py has a detailed module docstring and comprehensive method docstrings with parameter descriptions. Error messages include context (current state, target state, workflow ID).
+Authorization tests verify all six checks: missing approval fails, wrong status fails, candidate hash mismatch fails, manifest ID mismatch fails, manifest hash mismatch fails, and self-approval fails. A successful authorization test confirms that when all checks pass, the transition to IMPLEMENTING succeeds.
 
-Test files follow pytest conventions with clear function names and docstrings. Type hints are present on public functions.
+Test fixtures provide a governance service, sample workflow, and sample approval for reuse across tests. All tests use pytest with descriptive names and clear assertions. The evidence report claims all 36 new tests pass, though the overall test run shows 139/154 passing with 4 failures described as pre-existing.
+
+## Missing integration
+
+`WorkflowEngine`, `AgentCoordinator`, governance routes, and task routes do not reference the new governance service or canonical states. The implementation plan specifies modifying these components (steps 5, 6, 7, 12) but the evidence report shows `files_modified: []`.
+
+`WorkflowEngine` continues to use its own execution logic without calling `governance_service.transition_state()`. `AgentCoordinator` doesn't integrate with canonical states. Governance routes don't use `WorkflowGovernanceService.register_approval()` or `transition_state()`. Task routes carry no deprecation warnings.
+
+The canonical workflow authority exists as infrastructure but has zero behavioral impact on the running system. No code path creates workflows via `create_workflow()`, no agent completion triggers `transition_state()`, and no approval flow integrates with the governance service. The design goal of "wiring workflow execution to canonical state transitions" was not achieved.
 
 </details>
+
+---
 
 <details>
 <summary>File map</summary>
 
 **Created:**
-- `app/orchestration/canonical_workflow.py` — 17-state enum, transition map, validation functions, authorization gate logic
-- `app/orchestration/workflow_governance.py` — State transition enforcement, terminal state immutability, authorization gates
-- `app/models/workflow.py` — ProjectLLMWorkflow and StateTransition dataclasses with hash-bound artifacts
-- `app/api/schemas/workflow.py` — Pydantic schemas for workflow API (not reviewed in detail)
-- `app/api/routes/workflows.py` — Workflow management endpoints (not reviewed in detail)
-- `app/orchestration/workflow_engine.py` — Agent execution mapped to canonical states, calls governance_service
-- `app/orchestration/agent_coordinator.py` — Agent orchestration primitives (no workflow awareness)
-- `tests/unit/test_terminal_states.py` — 20 tests for terminal state enforcement
-- `tests/unit/test_workflow_governance.py` — 18 tests for governance service
-- `tests/unit/test_workflow_model.py` — 6 tests for workflow model
-- `.agents/tasks/w0-architecture-freeze-report.json` — Evidence report with test results
+- `services/project-ai/app/models/workflow.py` — ProjectLLMWorkflow and StateTransition dataclasses (166 lines)
+- `services/project-ai/app/api/schemas/workflow.py` — Pydantic schemas for workflow API
+- `services/project-ai/app/orchestration/canonical_workflow.py` — 17-state enum, transition rules, authorization gates (466 lines)
+- `services/project-ai/app/orchestration/workflow_governance.py` — WorkflowGovernanceService (300+ lines)
+- `services/project-ai/app/api/routes/workflows.py` — Five REST endpoints for workflow operations (200+ lines)
+- `services/project-ai/tests/unit/test_workflow_model.py` — 13 tests for workflow model (400+ lines)
+- `services/project-ai/tests/unit/test_workflow_governance_service.py` — 23 tests for governance service (400+ lines)
+- `.agents/tasks/w0-architecture-freeze-report.json` — Evidence report with test results and commit metadata
 
 **Modified:**
-- `app/api/routes/governance.py` — Wired to WorkflowGovernanceService (not reviewed in detail)
-- `app/api/routes/tasks.py` — Deprecation warnings added (not reviewed in detail)
+- None (evidence report lists `files_modified: []`)
 
-**Full diff:** 484 files changed, 236,398 insertions, 4,246 deletions (Wave 0 implementation plus substantial other work on the branch)
+**Full diff:** `git diff 185925bf2a0ec671c6863e7f3f323ad9e98116aa..f438718809e37af1bcb80c9e4493c04fad2d539d`
 
 </details>
