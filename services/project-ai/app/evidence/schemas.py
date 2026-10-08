@@ -48,4 +48,5 @@ class AgentRun(BaseModel):
         default_factory=list,
         description="Evidence artifacts collected during this run"
     )
-    status: str = Field(description="Run status (e.g., 'completed', 'failed', 'in-progress')")
+    status: str = Field(description="Run status. Expected values: 'completed', 'failed', 'in-progress'")
+    timestamp: datetime = Field(description="Timestamp when the run was recorded")

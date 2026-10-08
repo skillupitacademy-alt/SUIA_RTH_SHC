@@ -66,6 +66,7 @@ class TestSchemaValidation:
     def test_record_agent_run_valid(self, temp_evidence_root):
         """Test recording valid AgentRun."""
         tests = TestResult(passed=5, failed=0, skipped=0, duration=1.5)
+        now = datetime.now()
         run = AgentRun(
             runId="test-run",
             agentId="test-agent",
@@ -75,7 +76,8 @@ class TestSchemaValidation:
             filesChanged=["file.py"],
             tests=tests,
             evidence=[],
-            status="completed"
+            status="completed",
+            timestamp=now
         )
         
         ledger.record_agent_run(run)
@@ -90,6 +92,7 @@ class TestSchemaValidation:
         assert data["runId"] == "test-run"
         assert data["agentId"] == "test-agent"
         assert data["tests"]["passed"] == 5
+        assert isinstance(data["timestamp"], str)  # ISO format
     
     def test_record_test_results_valid(self, temp_evidence_root):
         """Test recording valid TestResult."""
@@ -176,6 +179,7 @@ class TestConcurrentWrites:
         
         def record_run(agent_id: int):
             tests = TestResult(passed=agent_id, failed=0, skipped=0, duration=1.0)
+            now = datetime.now()
             run = AgentRun(
                 runId=f"run-{agent_id}",
                 agentId=f"agent-{agent_id}",
@@ -185,7 +189,8 @@ class TestConcurrentWrites:
                 filesChanged=["file.py"],
                 tests=tests,
                 evidence=[],
-                status="completed"
+                status="completed",
+                timestamp=now
             )
             ledger.record_agent_run(run)
         
@@ -211,6 +216,7 @@ class TestConcurrentWrites:
             assert "runId" in data
             assert "agentId" in data
             assert "tests" in data
+            assert "timestamp" in data
 
 
 class TestEvidenceRetrieval:

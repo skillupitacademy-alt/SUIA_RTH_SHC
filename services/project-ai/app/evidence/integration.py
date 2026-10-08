@@ -39,7 +39,7 @@ def record_wave_completion(
         The created AgentRun record
     
     Raises:
-        Exception: If evidence recording fails (logged but not suppressed)
+        Exception: If recording fails
     """
     try:
         # Generate unique run ID
@@ -55,7 +55,8 @@ def record_wave_completion(
             filesChanged=files,
             tests=tests,
             evidence=[],  # Evidence artifacts can be added separately
-            status=status
+            status=status,
+            timestamp=datetime.now()
         )
         
         # Record to ledger

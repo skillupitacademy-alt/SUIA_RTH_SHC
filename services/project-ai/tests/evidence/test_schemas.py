@@ -87,6 +87,7 @@ class TestAgentRun:
     def test_valid_agent_run_with_tests(self):
         """Test valid AgentRun creation with test results."""
         tests = TestResult(passed=10, failed=0, skipped=0, duration=3.2)
+        now = datetime.now()
         run = AgentRun(
             runId="W1-W1A-abc123",
             agentId="W1A",
@@ -96,7 +97,8 @@ class TestAgentRun:
             filesChanged=["file1.py", "file2.py"],
             tests=tests,
             evidence=[],
-            status="completed"
+            status="completed",
+            timestamp=now
         )
         assert run.runId == "W1-W1A-abc123"
         assert run.agentId == "W1A"
@@ -104,9 +106,11 @@ class TestAgentRun:
         assert run.tests.passed == 10
         assert len(run.filesChanged) == 2
         assert run.status == "completed"
+        assert run.timestamp == now
     
     def test_valid_agent_run_without_tests(self):
         """Test valid AgentRun creation without test results."""
+        now = datetime.now()
         run = AgentRun(
             runId="W0-setup-xyz",
             agentId="setup",
@@ -116,10 +120,12 @@ class TestAgentRun:
             filesChanged=["config.yml"],
             tests=None,
             evidence=[],
-            status="completed"
+            status="completed",
+            timestamp=now
         )
         assert run.tests is None
         assert run.status == "completed"
+        assert run.timestamp == now
     
     def test_agent_run_with_evidence(self):
         """Test AgentRun with evidence records."""
@@ -141,10 +147,12 @@ class TestAgentRun:
             filesChanged=["main.py"],
             tests=None,
             evidence=[evidence_record],
-            status="completed"
+            status="completed",
+            timestamp=now
         )
         assert len(run.evidence) == 1
         assert run.evidence[0].id == "ev-001"
+        assert run.timestamp == now
     
     def test_agent_run_missing_fields(self):
         """Test AgentRun validation with missing required fields."""
@@ -154,6 +162,7 @@ class TestAgentRun:
     def test_agent_run_serialization(self):
         """Test AgentRun JSON serialization."""
         tests = TestResult(passed=5, failed=1, skipped=0, duration=2.1)
+        now = datetime.now()
         run = AgentRun(
             runId="test-run",
             agentId="test-agent",
@@ -163,10 +172,12 @@ class TestAgentRun:
             filesChanged=["test.py"],
             tests=tests,
             evidence=[],
-            status="completed"
+            status="completed",
+            timestamp=now
         )
         data = run.model_dump(mode="json")
         assert data["runId"] == "test-run"
         assert data["tests"]["passed"] == 5
         assert data["tests"]["duration"] == 2.1
         assert data["filesChanged"] == ["test.py"]
+        assert isinstance(data["timestamp"], str)  # ISO format

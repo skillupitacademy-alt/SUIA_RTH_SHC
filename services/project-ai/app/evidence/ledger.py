@@ -9,6 +9,7 @@ CONTRACT:
 - Never raise on JSONL parse errors in existing content
 - All ledgers are machine-readable and intended for auditing
 - Ledgers live in docs/project-llm/evidence/ at repo root
+- File-level locking protects against multi-process concurrent writes
 """
 
 import json
@@ -25,6 +26,12 @@ EVIDENCE_ROOT = Path(__file__).parent.parent.parent.parent.parent / ".agents" / 
 # Module-level file locks for concurrency safety
 _file_locks: dict[str, threading.Lock] = {}
 _locks_lock = threading.Lock()
+
+# Import platform-specific file locking
+if platform.system() == "Windows":
+    import msvcrt
+else:
+    import fcntl
 
 
 def _get_file_lock(file_name: str) -> threading.Lock:
@@ -71,6 +78,10 @@ def _append_jsonl(file_name: str, data: dict[str, Any]) -> None:
     """
     Append a JSON line to the specified ledger file with concurrency safety.
     
+    Uses both thread-level locks (threading.Lock) and file-level locks
+    (fcntl/msvcrt) to protect against concurrent writes from multiple
+    threads and multiple processes.
+    
     Args:
         file_name: Name of the JSONL file in EVIDENCE_ROOT
         data: Dictionary to serialize as JSON
@@ -78,11 +89,25 @@ def _append_jsonl(file_name: str, data: dict[str, Any]) -> None:
     file_path = EVIDENCE_ROOT / file_name
     file_path.parent.mkdir(parents=True, exist_ok=True)
     
-    # Acquire file-specific lock for atomic append
-    lock = _get_file_lock(file_name)
-    with lock:
+    # Acquire thread-level lock first
+    thread_lock = _get_file_lock(file_name)
+    with thread_lock:
+        # Open file and acquire file-level lock for multi-process safety
         with open(file_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(data, ensure_ascii=False) + "\n")
+            if platform.system() == "Windows":
+                # Windows file locking
+                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+                try:
+                    f.write(json.dumps(data, ensure_ascii=False) + "\n")
+                finally:
+                    msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                # Unix/Linux file locking
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                try:
+                    f.write(json.dumps(data, ensure_ascii=False) + "\n")
+                finally:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
 
 def append_agent_run(run: dict[str, Any]) -> None:
