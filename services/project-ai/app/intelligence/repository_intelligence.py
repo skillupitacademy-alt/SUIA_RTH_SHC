@@ -9,26 +9,45 @@ This service discovers Introduction (I1), Code (C1), and Definition (D1)
 blocks and builds engineering contracts for external AI consumption.
 """
 
+import logging
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+logger = logging.getLogger(__name__)
+
+# Repository root - configurable via environment or derived from module location
+_REPO_ROOT = os.environ.get('QUIZ_PLATFORM_ROOT') or Path(__file__).resolve().parents[4]
+
 
 @dataclass
 class CanonicalReference:
-    """Reference to a canonical block version in the repository."""
+    """
+    Reference to a canonical block version in the repository.
+    
+    Note: The 'schema' field is reserved for future use. Currently returns
+    an empty dict as schema extraction (parsing TypeScript interfaces or
+    JSON schema files) is not yet implemented.
+    """
     family: str
     version: str
     source_files: list[str] = field(default_factory=list)
-    schema: dict = field(default_factory=dict)
+    schema: dict = field(default_factory=dict)  # Reserved for future schema extraction
     renderer: Optional[str] = None
     registry: Optional[str] = None
 
 
 @dataclass
 class RuntimeContract:
-    """Runtime requirements extracted from block implementation."""
+    """
+    Runtime requirements extracted from block implementation.
+    
+    Note: RSSB 'page_level' is currently set as a heuristic (True for all blocks)
+    based on the canonical I1/C1/D1 architecture. Future waves may implement
+    structural analysis to detect block-level RSSB patterns if needed.
+    """
     ubrc: dict = field(default_factory=dict)
     ils: dict = field(default_factory=dict)
     lsnb: dict = field(default_factory=dict)
@@ -46,53 +65,101 @@ class RepositoryBlockContract:
     acceptance_criteria: list[str] = field(default_factory=list)
 
 
-def discover_canonical_blocks(family: str) -> list[CanonicalReference]:
+def _remove_comments(content: str) -> str:
+    """
+    Remove JavaScript/TypeScript comments from source content.
+    
+    This prevents pattern matching from detecting attributes in comments.
+    Simple implementation handles // and /* */ style comments.
+    """
+    # Remove single-line comments
+    content = re.sub(r'//.*?$', '', content, flags=re.MULTILINE)
+    # Remove multi-line comments
+    content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+    return content
+
+
+def discover_canonical_blocks(family: str, repo_root: Optional[Path] = None) -> list[CanonicalReference]:
     """
     Discover canonical blocks for a given family by scanning UI blocks directory.
     
-    Scans packages/ui/src/tutorial/blocks/ for TSX files matching the family name
-    (e.g., 'introduction' → IntroductionBlock.tsx, 'code-c1' → CodeC1Block.tsx).
+    Scans packages/ui/src/tutorial/blocks/ for TSX files matching the family name.
+    Dynamically discovers block files by scanning the directory for *Block.tsx files.
     
     Args:
         family: Block family name (e.g., 'introduction', 'code-c1', 'definition')
+        repo_root: Repository root path (defaults to _REPO_ROOT module constant)
         
     Returns:
         List of CanonicalReference objects with extracted metadata
     """
-    blocks_dir = Path("e:/onlinewebsites/quiz-platform/packages/ui/src/tutorial/blocks")
+    if repo_root is None:
+        repo_root = Path(_REPO_ROOT)
+    
+    blocks_dir = repo_root / "packages/ui/src/tutorial/blocks"
     
     if not blocks_dir.exists():
+        logger.warning(f"Blocks directory not found: {blocks_dir}")
         return []
     
-    # Map family names to file patterns
-    family_patterns = {
-        'introduction': 'IntroductionBlock.tsx',
-        'code-c1': 'CodeC1Block.tsx',
-        'definition': 'DefinitionBlock.tsx',
-        'code': 'CodeC1Block.tsx',  # Allow 'code' to match CodeC1
-    }
+    # Dynamically build family patterns by scanning the directory
+    family_patterns = {}
+    for tsx_file in blocks_dir.glob("*Block.tsx"):
+        filename = tsx_file.name
+        # Derive family name from filename
+        # IntroductionBlock.tsx → introduction
+        # CodeC1Block.tsx → code-c1
+        # DefinitionBlock.tsx → definition
+        base_name = filename.replace('Block.tsx', '')
+        
+        # Convert CamelCase to kebab-case
+        # Insert hyphen before uppercase letters that follow lowercase
+        kebab_name = re.sub(r'([a-z0-9])([A-Z])', r'\1-\2', base_name).lower()
+        
+        family_patterns[kebab_name] = filename
+        
+        # Also support variations (e.g., 'code' for 'code-c1')
+        if kebab_name.startswith('code-'):
+            family_patterns['code'] = filename
     
     pattern = family_patterns.get(family.lower())
     if not pattern:
+        logger.debug(f"No block file found for family: {family}")
         return []
     
     target_file = blocks_dir / pattern
     if not target_file.exists():
+        logger.warning(f"Block file not found: {target_file}")
         return []
     
     # Read the file and extract metadata
-    content = target_file.read_text(encoding='utf-8')
+    try:
+        content = target_file.read_text(encoding='utf-8')
+    except Exception as e:
+        logger.error(f"Failed to read {target_file}: {e}")
+        return []
     
-    # Extract version from data-block-version or version routing
-    version_match = re.search(r"data-block-version[\"']?[=:]?\s*[\"']?([A-Z]\d+)[\"']?", content)
-    if not version_match:
-        # Try finding version in switch/case statements
-        version_match = re.search(r"case\s+[\"']([A-Z]\d+)[\"']:", content)
-    if not version_match:
-        # Try finding version in blockVersion assignment (e.g., ?? 'C1')
-        version_match = re.search(r"blockVersion.*?[\"']([A-Z]\d+)[\"']", content)
+    # Remove comments before pattern matching
+    content_no_comments = _remove_comments(content)
     
-    version = version_match.group(1) if version_match else 'unknown'
+    # Extract version from JSX attributes or switch/case statements
+    # Priority 1: Literal JSX attribute (data-block-version="I1")
+    version_match = re.search(r'data-block-version\s*=\s*["\']([A-Z]\d+)["\']', content_no_comments)
+    
+    if not version_match:
+        # Priority 2: Switch statement with version cases
+        version_match = re.search(r"case\s+[\"']([A-Z]\d+)[\"']:", content_no_comments)
+    
+    if not version_match:
+        # Priority 3: Version string in blockVersion variable (look for version pattern)
+        # Match patterns like: const blockVersion = ... ?? 'C1'
+        version_match = re.search(r"blockVersion\s*=.*?[\"']([A-Z]\d+)[\"']", content_no_comments)
+    
+    if version_match:
+        version = version_match.group(1)
+    else:
+        version = 'unknown'
+        logger.warning(f"Could not extract version from {target_file}. Setting to 'unknown'.")
     
     # Determine family from filename
     if 'Introduction' in pattern:
@@ -102,13 +169,14 @@ def discover_canonical_blocks(family: str) -> list[CanonicalReference]:
     elif 'Definition' in pattern:
         detected_family = 'definition'
     else:
+        # Use the matched family pattern
         detected_family = family
     
     ref = CanonicalReference(
         family=detected_family,
         version=version,
-        source_files=[str(target_file.relative_to(Path("e:/onlinewebsites/quiz-platform")))],
-        schema={},  # Schema extraction would go here
+        source_files=[str(target_file.relative_to(repo_root))],
+        schema={},  # Reserved for future schema extraction
         renderer=pattern,
         registry=None
     )
@@ -116,7 +184,7 @@ def discover_canonical_blocks(family: str) -> list[CanonicalReference]:
     return [ref]
 
 
-def analyze_block_patterns(version: str) -> RuntimeContract:
+def analyze_block_patterns(version: str, repo_root: Optional[Path] = None) -> RuntimeContract:
     """
     Analyze block patterns for a specific version to extract runtime contracts.
     
@@ -126,13 +194,20 @@ def analyze_block_patterns(version: str) -> RuntimeContract:
     - Theme token references
     - Brand independence markers
     
+    Pattern detection filters out comments to avoid false positives from
+    commented-out code or documentation.
+    
     Args:
         version: Block version (e.g., 'I1', 'C1', 'D1')
+        repo_root: Repository root path (defaults to _REPO_ROOT module constant)
         
     Returns:
         RuntimeContract with extracted patterns
     """
-    blocks_dir = Path("e:/onlinewebsites/quiz-platform/packages/ui/src/tutorial/blocks")
+    if repo_root is None:
+        repo_root = Path(_REPO_ROOT)
+    
+    blocks_dir = repo_root / "packages/ui/src/tutorial/blocks"
     
     # Map versions to files
     version_files = {
@@ -143,60 +218,71 @@ def analyze_block_patterns(version: str) -> RuntimeContract:
     
     filename = version_files.get(version)
     if not filename:
+        logger.warning(f"Unknown version: {version}")
         return RuntimeContract()
     
     target_file = blocks_dir / filename
     if not target_file.exists():
+        logger.warning(f"Block file not found: {target_file}")
         return RuntimeContract()
     
-    content = target_file.read_text(encoding='utf-8')
+    try:
+        content = target_file.read_text(encoding='utf-8')
+    except Exception as e:
+        logger.error(f"Failed to read {target_file}: {e}")
+        return RuntimeContract()
     
-    # Extract UBRC patterns
+    # Remove comments before pattern matching
+    content_no_comments = _remove_comments(content)
+    
+    # Extract UBRC patterns (only from active code)
     ubrc = {}
-    if re.search(r'data-block-id', content):
+    if re.search(r'data-block-id', content_no_comments):
         ubrc['has_block_id'] = True
-    if re.search(r'data-block-type', content):
+    if re.search(r'data-block-type', content_no_comments):
         ubrc['has_block_type'] = True
-    if re.search(r'data-block-version', content):
+    if re.search(r'data-block-version', content_no_comments):
         ubrc['has_block_version'] = True
-    if re.search(r'runtimeContext', content):
+    if re.search(r'runtimeContext', content_no_comments):
         ubrc['uses_runtime_context'] = True
     
     # Extract ILS patterns (ActiveBlockContext)
     ils = {}
-    if re.search(r'runtimeContext', content):
+    if re.search(r'runtimeContext', content_no_comments):
         ils['passive_mode'] = True
         ils['uses_context'] = True
     
     # Extract LSNB patterns
     lsnb = {}
-    if re.search(r'navigation', content, re.IGNORECASE):
+    if re.search(r'navigation', content_no_comments, re.IGNORECASE):
         lsnb['page_level'] = True
     
     # Extract RSSB patterns
+    # Note: This is a heuristic assumption based on canonical I1/C1/D1 architecture.
+    # All canonical blocks use page-level RSSB. Future blocks may require
+    # structural analysis to detect block-level patterns.
     rssb = {}
-    # RSSB is typically page-level for all blocks
     rssb['page_level'] = True
     
-    # Extract theme patterns
+    # Extract theme patterns (only from active code)
     theme = {}
-    if re.search(r'theme\.primary', content):
+    if re.search(r'theme\.primary', content_no_comments):
         theme['uses_primary'] = True
-    if re.search(r'theme\.secondary', content):
+    if re.search(r'theme\.secondary', content_no_comments):
         theme['uses_secondary'] = True
-    if re.search(r'theme\.primaryDark', content):
+    if re.search(r'theme\.primaryDark', content_no_comments):
         theme['uses_primary_dark'] = True
-    if re.search(r'getThemeColor', content):
+    if re.search(r'getThemeColor', content_no_comments):
         theme['uses_theme_utils'] = True
-    if re.search(r'DomainTheme', content):
+    if re.search(r'DomainTheme', content_no_comments):
         theme['requires_theme_prop'] = True
     
     # Extract brand patterns
     brand = {}
-    if re.search(r'brand.independent', content, re.IGNORECASE) or \
-       re.search(r'CANONICAL LOCKED', content):
+    if re.search(r'brand.independent', content_no_comments, re.IGNORECASE) or \
+       re.search(r'CANONICAL LOCKED', content_no_comments):
         brand['independent'] = True
-    if re.search(r'theme.primary', content) and re.search(r'theme.secondary', content):
+    if re.search(r'theme.primary', content_no_comments) and re.search(r'theme.secondary', content_no_comments):
         brand['theme_driven'] = True
     
     return RuntimeContract(
@@ -209,7 +295,7 @@ def analyze_block_patterns(version: str) -> RuntimeContract:
     )
 
 
-def build_repository_contract(family: str, version: str) -> RepositoryBlockContract:
+def build_repository_contract(family: str, version: str, repo_root: Optional[Path] = None) -> RepositoryBlockContract:
     """
     Build a complete repository block contract.
     
@@ -219,15 +305,19 @@ def build_repository_contract(family: str, version: str) -> RepositoryBlockContr
     Args:
         family: Block family (e.g., 'introduction', 'code-c1', 'definition')
         version: Block version (e.g., 'I1', 'C1', 'D1')
+        repo_root: Repository root path (defaults to _REPO_ROOT module constant)
         
     Returns:
         RepositoryBlockContract with complete metadata
     """
+    if repo_root is None:
+        repo_root = Path(_REPO_ROOT)
+    
     # Discover canonical blocks
-    refs = discover_canonical_blocks(family)
+    refs = discover_canonical_blocks(family, repo_root)
     
     # Analyze runtime patterns
-    runtime = analyze_block_patterns(version)
+    runtime = analyze_block_patterns(version, repo_root)
     
     # Build acceptance criteria based on findings
     criteria = []
