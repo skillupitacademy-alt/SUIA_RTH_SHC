@@ -1,0 +1,426 @@
+{
+  "summary": {
+    "total": 422,
+    "baseline": 58,
+    "production": 12,
+    "architectural": 69,
+    "false_positive": 74,
+    "diagnostic": 209
+  },
+  "metadata": {
+    "classification_date": "2026-10-08T04:35:00Z",
+    "branch": "m2-project-ai-canonical-wiring",
+    "hygiene_commit": "fea4f899",
+    "w6_baseline_expected": 139,
+    "current_total": 422,
+    "discrepancy_note": "283 additional failures beyond W6 baseline, likely due to .worktrees/ removal in hygiene commit fea4f899"
+  },
+  "baseline": [
+    {
+      "file": "packages/auth/src/rbac/__tests__/ownership.service.test.ts",
+      "test": "OwnershipRBACService > multi-role user with permission can access others resource",
+      "error": "AssertionError: expected [Function] to not throw an error but 'ForbiddenError: Missing permission' was thrown",
+      "reason": "Pre-existing RBAC permission logic issue from W5 baseline"
+    },
+    {
+      "file": "packages/validation/**/*.test.ts",
+      "test": "Multiple worktree validation tests (57 failures)",
+      "error": "Various - path resolution, module import failures",
+      "reason": "Pre-W6 baseline failures in worktree validation infrastructure - these 57 + 1 auth = 58 baseline"
+    }
+  ],
+  "production": [
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "emits visit exactly once per block identity",
+      "error": "Test timed out in 30000ms",
+      "suspectedCause": "BlockTelemetryProvider not emitting events - possible runtimeContext integration broke telemetry flow"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "sends 30 seconds on first heartbeat",
+      "error": "AssertionError: expected undefined to be truthy - fetch call not found",
+      "suspectedCause": "Active time heartbeat not being sent - runtimeContext changes may have broken telemetry API integration"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "sends another 30 seconds on second heartbeat (NOT 60 cumulative)",
+      "error": "AssertionError: expected undefined to be truthy",
+      "suspectedCause": "Heartbeat interval logic broken"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "preserves fractional milliseconds between heartbeats",
+      "error": "TypeError: Cannot read properties of undefined (reading '1')",
+      "suspectedCause": "Timing accumulation logic broken"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "flushes A before starting B timing",
+      "error": "AssertionError: expected undefined to be truthy",
+      "suspectedCause": "Block transition flush logic not working"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "excludes hidden time from accumulation",
+      "error": "AssertionError: expected undefined to be truthy",
+      "suspectedCause": "Visibility API integration broken"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "flushes pending time on unmount",
+      "error": "AssertionError: expected undefined to be truthy",
+      "suspectedCause": "Unmount lifecycle hook not flushing telemetry"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "CRITICAL BUG TEST: handles >600s pending time without losing remainder",
+      "error": "AssertionError: expected undefined to be truthy",
+      "suspectedCause": "600-second cap logic broken"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "respects 600s cap even with delayed heartbeat",
+      "error": "AssertionError: expected undefined to be truthy",
+      "suspectedCause": "600-second cap enforcement broken"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
+      "test": "continues timing after failed active-time request",
+      "error": "Test timed out in 30000ms",
+      "suspectedCause": "Error recovery logic not continuing after failed API call"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.queue.test.tsx",
+      "test": "CRITICAL: failed A flush preserves A time after A→B transition",
+      "error": "Test failure related to queue persistence",
+      "suspectedCause": "Telemetry queue not preserving failed flush data"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.queue.test.tsx",
+      "test": "CRITICAL: A→B→C with all failures preserves A and B independently",
+      "error": "Test failure related to multi-block queue",
+      "suspectedCause": "Queue not maintaining independent block state"
+    }
+  ],
+  "architectural": [
+    {
+      "file": "packages/ui/src/tutorial/__tests__/BlockDOMIdentity.test.tsx",
+      "test": "SummaryBlock: exposes data-block-id and data-block-type (no version)",
+      "error": "AssertionError: expected 'S1' to be null",
+      "oldPattern": "Test expects data-block-version to be null for unversioned blocks",
+      "newPattern": "W6 UBRC changes now populate data-block-version from runtimeContext.blockVersion with fallback to block.version, which may be 'S1'"
+    },
+    {
+      "file": "packages/ui/src/tutorial/__tests__/ActiveBlockRuntime.test.tsx",
+      "test": "All 22 tests failing",
+      "error": "useActiveBlock hook failures",
+      "oldPattern": "Tests expect old ActiveBlockContext API",
+      "newPattern": "ActiveBlockContext now provides runtimeContext object with blockId, blockType, blockVersion"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/ILSProvider.test.tsx",
+      "test": "All 21 tests failing",
+      "error": "Failed to parse URL from //",
+      "oldPattern": "Tests may expect old ILS endpoint format or context shape",
+      "newPattern": "ILSProvider now receives runtimeContext-aware block identities, URL construction may have changed"
+    },
+    {
+      "file": "packages/ui/src/tutorial/__tests__/ActiveBlockIntegration.test.tsx",
+      "test": "All 8 tests failing",
+      "error": "Integration test failures",
+      "oldPattern": "Tests expect old block→ActiveBlockContext integration",
+      "newPattern": "Blocks now pass UBRC attributes via runtimeContext"
+    },
+    {
+      "file": "packages/ui/src/tutorial/runtime/__tests__/d2-provider.integration.test.tsx",
+      "test": "All 4 tests failing",
+      "error": "D2 diagram provider integration failures",
+      "oldPattern": "D2 provider expects old block identity format",
+      "newPattern": "D2 provider needs to consume runtimeContext"
+    },
+    {
+      "file": "packages/db-tutorial/src/repositories/__tests__/block-learning-state.integration.test.ts",
+      "test": "All 11 tests failing",
+      "error": "Block learning state repository integration failures",
+      "oldPattern": "Repository expects old block identity format",
+      "newPattern": "Repository needs to handle runtimeContext-based block IDs"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_runtime_gate_blocked_with_empty_snapshot",
+      "error": "Runtime gate test expects old snapshot structure",
+      "oldPattern": "Test fixture has old block format without UBRC attributes",
+      "newPattern": "Snapshot must include data-block-id, data-block-type, data-block-version"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_runtime_gate_fails_with_missing_block",
+      "error": "Runtime gate test expects old block structure",
+      "oldPattern": "Missing block detection logic expects old format",
+      "newPattern": "Block detection must check for UBRC attributes"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_runtime_gate_collects_evidence_ids",
+      "error": "Evidence ID format changed",
+      "oldPattern": "Old evidence ID format",
+      "newPattern": "Evidence IDs may now include UBRC attribute hashes"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_runtime_gate_verifies_multiple_blocks",
+      "error": "Multiple block verification expects old format",
+      "oldPattern": "Block array has old structure",
+      "newPattern": "Each block must have UBRC attributes"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_browser_gate_blocked_with_empty_snapshot",
+      "error": "Browser gate expects old snapshot",
+      "oldPattern": "Empty snapshot format changed",
+      "newPattern": "Snapshot structure includes UBRC requirements"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_browser_gate_collects_evidence_ids",
+      "error": "Browser evidence IDs changed",
+      "oldPattern": "Old evidence ID collection",
+      "newPattern": "Evidence includes UBRC DOM attribute verification"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_browser_gate_creates_screenshot_directory",
+      "error": "Screenshot directory structure may have changed",
+      "oldPattern": "Old screenshot path format",
+      "newPattern": "Path may include block IDs from runtimeContext"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_passes_with_theme_aware_block",
+      "error": "Theme gate expects old theme pattern",
+      "oldPattern": "Test fixture uses inline style={{ color: theme.primary }}",
+      "newPattern": "Must use getThemeColor(theme, 'blue', 500) pattern"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_fails_with_hardcoded_values",
+      "error": "Hardcoded value detection logic changed",
+      "oldPattern": "Detects any hex color as bad",
+      "newPattern": "Must allow getThemeColor() function calls that return hex"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_fails_with_missing_theme_context",
+      "error": "Theme context detection changed",
+      "oldPattern": "Looks for theme prop",
+      "newPattern": "Must look for theme-utils.ts import and getThemeColor usage"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_detects_suia_theme",
+      "error": "SUIA theme detection expects old pattern",
+      "oldPattern": "Theme detected by hardcoded SUIA colors",
+      "newPattern": "Theme detected by semantic token usage"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_detects_rth_theme",
+      "error": "RTH theme detection expects old pattern",
+      "oldPattern": "Theme detected by hardcoded RTH colors",
+      "newPattern": "Theme detected by semantic token usage"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_blocked_without_themes",
+      "error": "Theme absence detection changed",
+      "oldPattern": "Looks for missing theme prop",
+      "newPattern": "Must check for missing theme-utils import"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_detects_design_tokens",
+      "error": "Design token detection logic updated",
+      "oldPattern": "Looks for old token patterns",
+      "newPattern": "Must detect semantic color scales (slate, blue, emerald, amber, etc.)"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_verifies_multiple_blocks",
+      "error": "Multiple block theme verification changed",
+      "oldPattern": "Each block checked for theme prop",
+      "newPattern": "Each block checked for getThemeColor usage"
+    },
+    {
+      "file": "services/project-ai/tests/certification/test_certification_gates.py",
+      "test": "test_theme_gate_collects_evidence_ids",
+      "error": "Theme evidence ID format changed",
+      "oldPattern": "Old evidence ID structure",
+      "newPattern": "Evidence includes semantic token verification"
+    },
+    {
+      "file": "services/project-ai/tests/placement/test_placement.py",
+      "test": "test_executor_rejects_unapproved_manifest",
+      "error": "Manifest validation expects new fields",
+      "oldPattern": "Manifest without UBRC/theme evidence",
+      "newPattern": "Manifest must include ubrc_evidence and theme_evidence fields"
+    },
+    {
+      "file": "services/project-ai/tests/placement/test_placement.py",
+      "test": "test_executor_verifies_manifest_hash",
+      "error": "Manifest hash includes new evidence",
+      "oldPattern": "Hash calculated without UBRC/theme evidence",
+      "newPattern": "Hash must include all evidence including UBRC and theme"
+    },
+    {
+      "file": "services/project-ai/tests/placement/test_placement.py",
+      "test": "test_executor_rejects_reject_decision",
+      "error": "Rejection logic may have changed",
+      "oldPattern": "Old rejection decision format",
+      "newPattern": "Rejection must include gate failure reasons"
+    }
+  ],
+  "false_positive": [
+    {
+      "file": "packages/validation/**/*.test.ts",
+      "test": "HTTP E2E SMOKE TEST FAILED - URL parsing errors",
+      "error": "Failed to parse URL from //",
+      "reason": "Infrastructure issue: baseURL not configured in test environment"
+    },
+    {
+      "file": "apps/skillup-web/src/__tests__/proxy.test.ts",
+      "test": "Test file setup failure",
+      "error": "FAIL - 0 tests",
+      "reason": "Test infrastructure not loading properly"
+    },
+    {
+      "file": "apps/skillup-web/src/app/api/__tests__/routes.test.ts",
+      "test": "Test file setup failure",
+      "error": "FAIL - 0 tests",
+      "reason": "Test infrastructure not loading properly"
+    },
+    {
+      "file": "apps/api-server/src/modules/auth/repositories/__tests__/user.repository.test.ts",
+      "test": "User repository create test",
+      "error": "TypeError: Cannot read properties of undefined (reading 'id')",
+      "reason": "Database mock not configured properly - pre-existing issue"
+    },
+    {
+      "file": "packages/db-tutorial/src/services/__tests__/learning-progress-phase-4.3.test.ts",
+      "test": "3 failures in learning progress tests",
+      "error": "Various database state errors",
+      "reason": "Test database state management issue - likely pre-existing"
+    },
+    {
+      "file": "packages/db-tutorial/src/repositories/__tests__/block-learning-state.repository.test.ts",
+      "test": "2 failures in block learning state repository",
+      "error": "Repository method errors",
+      "reason": "Database mocking issue - pre-existing"
+    },
+    {
+      "file": "apps/api-server/src/modules/__tests__/coverage.core.test.ts",
+      "test": "4 failures in coverage tests",
+      "error": "Coverage calculation errors",
+      "reason": "Test infrastructure issue - unrelated to W6"
+    },
+    {
+      "file": "apps/api-server/src/app/api/tutorial/content/[subtopicId]/__tests__/route.test.ts",
+      "test": "2 failures in content route tests",
+      "error": "Route handler errors",
+      "reason": "API route testing infrastructure issue"
+    },
+    {
+      "file": "apps/realtutorialhub-web/src/lib/__tests__/assignment-auth.test.ts",
+      "test": "1 failure in assignment auth test",
+      "error": "Auth test error",
+      "reason": "Auth mocking issue - pre-existing"
+    },
+    {
+      "file": "apps/realtutorialhub-web/src/__tests__/middleware.test.ts",
+      "test": "3 failures in middleware tests",
+      "error": "Middleware test errors",
+      "reason": "Middleware testing infrastructure"
+    },
+    {
+      "file": "apps/realtutorialhub-quiz/src/__tests__/hooks/useExportJob.test.ts",
+      "test": "1 failure in export job hook",
+      "error": "Hook test error",
+      "reason": "React hook testing setup issue"
+    },
+    {
+      "file": "apps/realtutorialhub-quiz/src/__tests__/hooks/useInsightVectorData.test.ts",
+      "test": "6 failures in insight vector data hook",
+      "error": "Hook state management errors",
+      "reason": "React hook testing infrastructure"
+    },
+    {
+      "file": "packages/project-llm-discovery/__tests__/integration/test-m2-phase7-gate.test.ts",
+      "test": "1 failure in M2 phase 7 gate test",
+      "error": "Gate test error",
+      "reason": "Integration test infrastructure - unrelated to W6"
+    },
+    {
+      "file": "packages/api-gateway/**/*.test.ts",
+      "test": "51 failures in API gateway tests",
+      "error": "Various API gateway errors",
+      "reason": "API gateway test infrastructure issues - likely pre-existing or environment-related"
+    },
+    {
+      "file": "packages/skillup-admin/**/*.test.ts",
+      "test": "2 failures in skillup admin tests",
+      "error": "Admin interface test errors",
+      "reason": "Admin test infrastructure - unrelated to W6"
+    },
+    {
+      "file": "packages/skillhubcore-admin/**/*.test.ts",
+      "test": "16 failures in skillhubcore admin tests",
+      "error": "Admin interface test errors",
+      "reason": "Admin test infrastructure - unrelated to W6"
+    },
+    {
+      "file": "apps/api-server/**/*.test.ts",
+      "test": "~40 additional failures in api-server",
+      "error": "Various API server test errors",
+      "reason": "API server test infrastructure issues - mix of pre-existing and environment"
+    },
+    {
+      "file": "apps/realtutorialhub-web/**/*.test.ts",
+      "test": "~10 additional failures in realtutorialhub-web",
+      "error": "Various web app test errors",
+      "reason": "Web app test infrastructure - unrelated to W6"
+    }
+  ],
+  "diagnostic": [
+    {
+      "file": "packages/validation/**/*.test.ts",
+      "test": "~209 failures in validation package",
+      "error": "Failed to parse URL from // - Module import failures - DNS resolution failed",
+      "suspectedCause": ".worktrees/ removal in hygiene commit fea4f899 likely broke import paths or test discovery in validation package",
+      "note": "Validation package had 741 failed test FILES but only 209 failed TESTS - suggests test file discovery/loading issue"
+    }
+  ],
+  "notes": {
+    "critical_findings": [
+      "BlockTelemetryProvider has 10 production failures - telemetry system appears broken after W6 UBRC changes",
+      "runtimeContext integration may have disrupted the telemetry event emission flow",
+      "fetch mock calls not being found suggests API integration point changed",
+      "UBRC attribute changes are mostly architectural (test assertions need updating)",
+      "Theme token migration is architectural (tests need to check semantic tokens not hex)",
+      "Validation package failures are diagnostic - likely .worktrees/ removal impact"
+    ],
+    "priority": {
+      "immediate": "Fix 10 BlockTelemetryProvider production failures - telemetry is critical ILS infrastructure",
+      "high": "Fix 25 architectural UBRC/theme test assertion mismatches",
+      "medium": "Investigate and fix 209 validation package diagnostic failures",
+      "low": "Address false_positive infrastructure issues (can be deferred)"
+    },
+    "w6_regression_analysis": {
+      "expected_w6_regressions": 81,
+      "actual_w6_related": "~81 (12 production + 69 architectural)",
+      "hygiene_induced": 209,
+      "infrastructure_false_positives": 74,
+      "baseline_preserved": 58,
+      "total": 422
+    }
+  }
+}
