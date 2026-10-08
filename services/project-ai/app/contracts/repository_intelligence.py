@@ -16,7 +16,19 @@ CONTRACT:
 
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
+from datetime import datetime
 import hashlib
+
+
+class RepositoryEvidenceBlocked(Exception):
+    """
+    Raised when repository evidence is missing, incomplete, or invalid.
+    
+    This exception signals that the system cannot generate a contract
+    because the required evidence is not available in the snapshot.
+    The caller should trigger a TypeScript discovery scan and retry.
+    """
+    pass
 
 
 class RepositoryEvidence(BaseModel):
@@ -141,10 +153,18 @@ def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> Repos
     Build a repository block contract from TypeScript snapshot evidence.
     
     This is the core intelligence function that:
-    1. Extracts canonical_block evidence from the TypeScript snapshot
-    2. Matches evidence to the requested family/version
-    3. Uses existing SHA-256 hashes and evidence IDs from snapshot
-    4. Returns a complete engineering contract
+    1. Validates snapshot structure and requested version
+    2. Extracts canonical_block evidence from the TypeScript snapshot
+    3. Matches evidence to the requested family/version
+    4. Uses existing SHA-256 hashes and evidence IDs from snapshot
+    5. Returns a complete engineering contract
+    
+    FAIL-CLOSED BEHAVIOR:
+    This function raises RepositoryEvidenceBlocked when:
+    - Unknown block version requested (not I1, C1, or D1)
+    - No evidence found in snapshot for the requested family/version
+    - Snapshot missing or has no evidence array
+    - Evidence missing required fields (contentHash, evidenceId)
     
     ARCHITECTURAL BOUNDARY:
     This function must NEVER open, read, or walk repository files.
@@ -157,7 +177,27 @@ def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> Repos
         
     Returns:
         RepositoryBlockContract with evidence from snapshot
+        
+    Raises:
+        RepositoryEvidenceBlocked: When evidence is missing or invalid
     """
+    # Validate version is known
+    known_versions = {"I1", "C1", "D1"}
+    if version not in known_versions:
+        raise RepositoryEvidenceBlocked(
+            f"Unknown block version '{version}'. Known versions: {sorted(known_versions)}"
+        )
+    
+    # Validate snapshot structure
+    if not snapshot:
+        raise RepositoryEvidenceBlocked("Snapshot is missing or empty")
+    
+    if 'evidence' not in snapshot:
+        raise RepositoryEvidenceBlocked("Snapshot missing 'evidence' array")
+    
+    if not isinstance(snapshot['evidence'], list):
+        raise RepositoryEvidenceBlocked("Snapshot 'evidence' must be a list")
+    
     # Extract canonical_block evidence from snapshot
     canonical_blocks = [
         ev for ev in snapshot.get('evidence', [])
@@ -176,32 +216,56 @@ def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> Repos
     references: List[CanonicalReference] = []
     expected_path = block_patterns.get((family, version))
     
-    if expected_path:
-        # Search for evidence matching this path
-        matching_evidence = [
-            ev for ev in canonical_blocks
-            if ev.get('path') == expected_path
-        ]
-        
-        if matching_evidence:
-            # Use the first match (there should only be one per path)
-            ev = matching_evidence[0]
-            
-            # Extract data from snapshot evidence
-            evidence = RepositoryEvidence(
-                path=ev.get('path', expected_path),
-                sha256=ev.get('contentHash', ''),
-                role="canonical_block",
-                evidence_id=ev.get('evidenceId', '')
-            )
-            
-            # Create canonical reference
-            reference = CanonicalReference(
-                family=family,
-                version=version,
-                evidence=[evidence]
-            )
-            references.append(reference)
+    if not expected_path:
+        raise RepositoryEvidenceBlocked(
+            f"No canonical path defined for {family}/{version}"
+        )
+    
+    # Search for evidence matching this path
+    matching_evidence = [
+        ev for ev in canonical_blocks
+        if ev.get('path') == expected_path
+    ]
+    
+    if not matching_evidence:
+        raise RepositoryEvidenceBlocked(
+            f"No canonical evidence for {family}/{version}. "
+            f"Expected path: {expected_path}. "
+            f"Run TypeScript discovery scan to generate evidence."
+        )
+    
+    # Use the first match (there should only be one per path)
+    ev = matching_evidence[0]
+    
+    # Validate required fields in evidence
+    content_hash = ev.get('contentHash', '').strip()
+    evidence_id = ev.get('evidenceId', '').strip()
+    
+    if not content_hash:
+        raise RepositoryEvidenceBlocked(
+            f"Evidence for {family}/{version} missing 'contentHash' field"
+        )
+    
+    if not evidence_id:
+        raise RepositoryEvidenceBlocked(
+            f"Evidence for {family}/{version} missing 'evidenceId' field"
+        )
+    
+    # Extract data from snapshot evidence
+    evidence = RepositoryEvidence(
+        path=ev.get('path', expected_path),
+        sha256=content_hash,
+        role="canonical_block",
+        evidence_id=evidence_id
+    )
+    
+    # Create canonical reference
+    reference = CanonicalReference(
+        family=family,
+        version=version,
+        evidence=[evidence]
+    )
+    references.append(reference)
     
     # Build block type identifier
     block_type = f"{family.lower()}_{version.lower()}"

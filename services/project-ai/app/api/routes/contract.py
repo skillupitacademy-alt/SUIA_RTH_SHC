@@ -10,7 +10,10 @@ from app.contracts.engineering_contract import (
     calculate_contract_hash,
     PROHIBITED_BEHAVIORS
 )
-from app.contracts.repository_intelligence import build_contract as build_repo_contract
+from app.contracts.repository_intelligence import (
+    build_contract as build_repo_contract,
+    RepositoryEvidenceBlocked
+)
 from app.models.workflow_target import WorkflowTarget
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.evidence.ledger import record_agent_run
@@ -324,11 +327,21 @@ async def create_engineering_contract(
     snapshot_sha256 = calculate_snapshot_sha256(workspace_root)
     
     # Build repository contract from snapshot (Wave 1 canonical implementation)
-    repo_contract = build_repo_contract(
-        snapshot=snapshot,
-        family=target.family,
-        version=target.version
-    )
+    # Fail-closed: raises RepositoryEvidenceBlocked if evidence missing/invalid
+    try:
+        repo_contract = build_repo_contract(
+            snapshot=snapshot,
+            family=target.family,
+            version=target.version
+        )
+    except RepositoryEvidenceBlocked as e:
+        # Repository evidence missing or incomplete
+        # Return HTTP 503 (Service Unavailable) to indicate TypeScript discovery scan needed
+        raise HTTPException(
+            status_code=503,
+            detail=f"Repository evidence missing or incomplete: {str(e)}. "
+                   f"Run TypeScript discovery scan to generate canonical snapshot evidence."
+        )
     
     # Generate contract ID
     contract_id = f"contract-{workflow_id}-{uuid.uuid4().hex[:8]}"

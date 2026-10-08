@@ -41,7 +41,7 @@ def test_workflow(governance_service):
     """Create a test workflow."""
     workflow = governance_service.create_workflow(
         target_family="Introduction",
-        target_version="I7",
+        target_version="I1",
         requester_id="test-user",
         purpose="Test W2 contract generation"
     )
