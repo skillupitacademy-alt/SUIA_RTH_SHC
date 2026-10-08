@@ -98,8 +98,10 @@ class TestWorkflowOwnership:
         # Mock snapshot loading and build_repo_contract to avoid repository access
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.calculate_snapshot_sha256") as mock_sha256, \
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
+            mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -125,8 +127,10 @@ class TestWorkflowOwnership:
         """Test that workflow lookup succeeds for authenticated user."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.calculate_snapshot_sha256") as mock_sha256, \
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
+            mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -159,8 +163,10 @@ class TestWorkflowOwnership:
         # Create contract
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.calculate_snapshot_sha256") as mock_sha256, \
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
+            mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -194,8 +200,10 @@ class TestWorkflowStateValidation:
         """Test that contracts can be generated for workflows."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.calculate_snapshot_sha256") as mock_sha256, \
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
+            mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -223,8 +231,10 @@ class TestContractImmutability:
         """Test that calling POST twice returns the same contract (same hash)."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.calculate_snapshot_sha256") as mock_sha256, \
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
+            mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -266,8 +276,10 @@ class TestHashVerification:
         """Test GET verifies contract hash and returns contract if valid."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.calculate_snapshot_sha256") as mock_sha256, \
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
+            mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -299,8 +311,10 @@ class TestHashVerification:
         """Test GET returns 500 if contract hash doesn't match (tampering detected)."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.calculate_snapshot_sha256") as mock_sha256, \
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
+            mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},
@@ -350,8 +364,10 @@ class TestProhibitedBehaviorsInContract:
         """Test that generated contract includes all prohibited behaviors."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
+             patch("app.api.routes.contract.calculate_snapshot_sha256") as mock_sha256, \
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
+            mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
             mock_build.return_value = MagicMock(
                 references=[],
                 schema_contract={},

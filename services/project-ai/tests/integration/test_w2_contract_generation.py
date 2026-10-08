@@ -257,6 +257,9 @@ class TestContractSHA256Determinism:
         contract2_copy = contract2.model_copy(deep=True)
         contract2_copy.contract_id = contract1.contract_id
         contract2_copy.workflow_id = contract1.workflow_id
+        # Also update target to match (includes source_snapshot_id)
+        contract2_copy.target = contract1.target.model_copy(deep=True)
+        contract2_copy.repository_snapshot_id = contract1.repository_snapshot_id
         
         hash1 = calculate_contract_hash(contract1)
         hash2 = calculate_contract_hash(contract2_copy)

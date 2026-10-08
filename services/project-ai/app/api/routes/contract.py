@@ -15,15 +15,37 @@ from app.models.workflow_target import WorkflowTarget
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.evidence.ledger import record_agent_run
 from app.evidence.schemas import AgentRun
+from app.api.routes.workflows import governance_service
 import uuid
 import os
 import json
 import hashlib
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any
 
 router = APIRouter(prefix="/workflows", tags=["Engineering Contracts"])
+
+
+def get_git_head_sha() -> str:
+    """
+    Get the current git HEAD commit SHA.
+    
+    Returns:
+        40-character commit SHA, or "unknown" if git command fails
+    """
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5
+        )
+        return result.stdout.strip()
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+        return "unknown"
 
 
 def load_repository_snapshot(workspace_root: str) -> Dict[str, Any]:
@@ -237,9 +259,6 @@ async def create_engineering_contract(
     """
     
     # Wave 1A: Get workflow target from governance service
-    # Import governance service from workflows module
-    from app.api.routes.workflows import governance_service
-    
     # Retrieve workflow to get actual target binding
     workflow_obj = governance_service.get_workflow(workflow_id)
     if not workflow_obj:
@@ -433,13 +452,18 @@ async def create_engineering_contract(
         pass
     
     # Record evidence via W1D harness
+    # Note: filesChanged is empty because W2 generates an in-memory contract JSON
+    # and binds metadata via governance_service, but writes nothing to disk.
+    # The contract exists only in contracts_store (Wave 2 placeholder) and
+    # workflow metadata (contract_id, contract_sha256 via bind_artifact).
+    current_commit = get_git_head_sha()
     agent_run = AgentRun(
         runId=f"w2-engineering-contract-{workflow_id}",
         agentId="W2",
         wave="W2",
-        commitBefore="bb5fe7a6",  # Current commit before W2 work
-        commitAfter="bb5fe7a6",  # No git changes yet
-        filesChanged=[],  # W2 doesn't modify repository files
+        commitBefore=current_commit,
+        commitAfter=current_commit,  # W2 doesn't commit changes
+        filesChanged=[],  # W2 generates in-memory contract, no disk writes
         status="completed",
         timestamp=datetime.now(timezone.utc)
     )

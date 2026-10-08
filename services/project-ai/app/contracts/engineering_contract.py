@@ -37,6 +37,18 @@ class EngineeringContract(BaseModel):
     - Acceptance criteria
     - Prohibited behaviors (architectural boundaries)
     - Contract hash for immutability verification
+    
+    IMMUTABILITY GUARANTEE (Wave 2 Limitation):
+    Once generated for a workflow_id, the contract is immutable within the server's
+    lifetime. However, Wave 2 uses in-memory contracts_store which resets on server
+    restart. After restart, the same workflow_id may receive a new contract with a
+    different hash if repository snapshot or build logic changed. This violates the
+    immutability guarantee that later gates depend on (candidate_binding.contract_hash
+    must match workflow.contract_sha256).
+    
+    Wave 3 requirement: Replace in-memory store with persistent storage (database,
+    Redis, or file store) to maintain immutability across restarts and support
+    distributed deployment.
     """
     
     contract_id: str = Field(..., description="Unique contract identifier")
