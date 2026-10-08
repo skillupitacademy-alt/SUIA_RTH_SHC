@@ -1,0 +1,69 @@
+{
+  "wave": "W1D",
+  "status": "completed",
+  "commit": "c715af4659e6b1e1285300781db5451aaa9d84c9",
+  "filesCreated": [
+    ".agents/evidence/test-results.jsonl",
+    ".agents/evidence/evidence.jsonl",
+    ".agents/evidence/gate-results.jsonl",
+    "services/project-ai/app/evidence/schemas.py",
+    "services/project-ai/app/evidence/integration.py",
+    "services/project-ai/tests/evidence/test_schemas.py",
+    "services/project-ai/tests/evidence/test_ledger.py",
+    "services/project-ai/tests/evidence/test_integration.py"
+  ],
+  "filesModified": [
+    "services/project-ai/app/evidence/ledger.py",
+    "services/project-ai/app/evidence/__init__.py",
+    "services/project-ai/tests/evidence/__init__.py"
+  ],
+  "testResults": {
+    "passed": 29,
+    "failed": 0,
+    "skipped": 0,
+    "duration": 0.33,
+    "details": "All evidence harness tests passing: 11 schema tests, 13 ledger tests, 5 integration tests"
+  },
+  "description": "Evidence harness implementation for M2.9 multi-agent workflow",
+  "components": [
+    {
+      "name": "Pydantic Schemas",
+      "file": "services/project-ai/app/evidence/schemas.py",
+      "models": ["AgentRun", "TestResult", "EvidenceRecord"],
+      "validation": "Pydantic v2 with Field() descriptors"
+    },
+    {
+      "name": "Evidence Ledger",
+      "file": "services/project-ai/app/evidence/ledger.py",
+      "features": [
+        "JSONL append-only operations",
+        "Thread-safe file locking using threading.Lock",
+        "Schema validation wrappers (record_agent_run, record_test_results, record_evidence)",
+        "Updated EVIDENCE_ROOT to .agents/evidence/"
+      ]
+    },
+    {
+      "name": "Integration Helpers",
+      "file": "services/project-ai/app/evidence/integration.py",
+      "functions": ["record_wave_completion"],
+      "purpose": "Convenience wrapper for wave agents to record completion with auto-generated run IDs"
+    },
+    {
+      "name": "Test Suite",
+      "coverage": [
+        "Schema validation (required fields, optional fields, serialization)",
+        "JSONL append operations (file creation, valid JSON lines, multiple writes)",
+        "Concurrent writes (10 threads × 5 writes, no corruption)",
+        "Evidence retrieval (read last N runs, skip malformed JSON)",
+        "Integration helper (wave completion with/without tests, multiple calls)"
+      ]
+    }
+  ],
+  "verification": {
+    "testsRun": "pytest services/project-ai/tests/evidence/ -v",
+    "result": "39 tests passed (29 W1D tests + 10 existing evidence tests)",
+    "concurrency": "Verified with 10 concurrent threads writing simultaneously",
+    "imports": "All exports available via: from app.evidence import AgentRun, TestResult, EvidenceRecord, record_wave_completion"
+  },
+  "timestamp": "2026-10-08T19:40:22+05:30"
+}
