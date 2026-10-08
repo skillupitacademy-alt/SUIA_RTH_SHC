@@ -331,7 +331,7 @@ POST /tasks/plan
 {
   "requirements": "Landing page with custom hero",
   "design_hints": {
-    "design_source": "MIX_AND_MATCH",  # Hint only
+    "design_source": "USER_SPECIFICATION",  # User specifying mix of canonical + candidate
     "base_blocks": ["I2"],
     "candidate_blocks": ["hero"]
   }
