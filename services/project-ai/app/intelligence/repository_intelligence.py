@@ -44,9 +44,8 @@ class RuntimeContract:
     """
     Runtime requirements extracted from block implementation.
     
-    Note: RSSB 'page_level' is currently set as a heuristic (True for all blocks)
-    based on the canonical I1/C1/D1 architecture. Future waves may implement
-    structural analysis to detect block-level RSSB patterns if needed.
+    RSSB 'page_level' is detected by checking for runtimeContext prop usage,
+    which indicates the block receives page-level state injection.
     """
     ubrc: dict = field(default_factory=dict)
     ils: dict = field(default_factory=dict)
@@ -147,11 +146,22 @@ def discover_canonical_blocks(family: str, repo_root: Optional[Path] = None) -> 
     version_match = re.search(r'data-block-version\s*=\s*["\']([A-Z]\d+)["\']', content_no_comments)
     
     if not version_match:
-        # Priority 2: Switch statement with version cases
+        # Priority 2: Dynamic JSX expression (data-block-version={blockVersion})
+        # Extract from the variable assignment instead
+        jsx_dynamic = re.search(r'data-block-version\s*=\s*\{([^}]+)\}', content_no_comments)
+        if jsx_dynamic:
+            var_name = jsx_dynamic.group(1).strip()
+            # Look for the variable declaration with version pattern
+            # Match: const blockVersion = runtimeContext?.blockVersion ?? 'C1'
+            var_pattern = rf'{re.escape(var_name)}\s*=.*?["\']([A-Z]\d+)["\']'
+            version_match = re.search(var_pattern, content_no_comments)
+    
+    if not version_match:
+        # Priority 3: Switch statement with version cases
         version_match = re.search(r"case\s+[\"']([A-Z]\d+)[\"']:", content_no_comments)
     
     if not version_match:
-        # Priority 3: Version string in blockVersion variable (look for version pattern)
+        # Priority 4: Version string in blockVersion variable (look for version pattern)
         # Match patterns like: const blockVersion = ... ?? 'C1'
         version_match = re.search(r"blockVersion\s*=.*?[\"']([A-Z]\d+)[\"']", content_no_comments)
     
@@ -232,7 +242,11 @@ def analyze_block_patterns(version: str, repo_root: Optional[Path] = None) -> Ru
         logger.error(f"Failed to read {target_file}: {e}")
         return RuntimeContract()
     
-    # Remove comments before pattern matching
+    # Check for brand independence markers BEFORE stripping comments
+    # (CANONICAL LOCKED UI appears in block comments)
+    brand_locked_in_comments = bool(re.search(r'CANONICAL\s+LOCKED', content, re.IGNORECASE))
+    
+    # Remove comments before pattern matching other patterns
     content_no_comments = _remove_comments(content)
     
     # Extract UBRC patterns (only from active code)
@@ -258,11 +272,15 @@ def analyze_block_patterns(version: str, repo_root: Optional[Path] = None) -> Ru
         lsnb['page_level'] = True
     
     # Extract RSSB patterns
-    # Note: This is a heuristic assumption based on canonical I1/C1/D1 architecture.
-    # All canonical blocks use page-level RSSB. Future blocks may require
-    # structural analysis to detect block-level patterns.
+    # Detect page-level RSSB by checking for runtimeContext prop usage
+    # (blocks receive page-level state through runtimeContext from the page renderer)
     rssb = {}
-    rssb['page_level'] = True
+    if re.search(r'runtimeContext', content_no_comments):
+        # Block accepts runtimeContext, indicating page-level state injection (RSSB pattern)
+        rssb['page_level'] = True
+    else:
+        # No runtimeContext usage detected - may be block-level or no RSSB
+        logger.debug(f"No runtimeContext usage found in {version} - RSSB pattern unclear")
     
     # Extract theme patterns (only from active code)
     theme = {}
@@ -279,10 +297,9 @@ def analyze_block_patterns(version: str, repo_root: Optional[Path] = None) -> Ru
     
     # Extract brand patterns
     brand = {}
-    if re.search(r'brand.independent', content_no_comments, re.IGNORECASE) or \
-       re.search(r'CANONICAL LOCKED', content_no_comments):
+    if re.search(r'brand\.independent', content_no_comments, re.IGNORECASE) or brand_locked_in_comments:
         brand['independent'] = True
-    if re.search(r'theme.primary', content_no_comments) and re.search(r'theme.secondary', content_no_comments):
+    if re.search(r'theme\.primary', content_no_comments) and re.search(r'theme\.secondary', content_no_comments):
         brand['theme_driven'] = True
     
     return RuntimeContract(
