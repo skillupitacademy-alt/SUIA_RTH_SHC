@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Implement ContractFieldEvidence model and evidence-tracing infrastructure. Creates audit trail showing which snapshot evidence backs each contract field, enabling debugging and verification that no fields are hardcoded. This is foundational infrastructure used by all subsequent features",
+  "status": "completed",
+  "steps": [
+    "1. Create comprehensive audit document r2-contract-audit.md listing every hardcoded vs snapshot-derived field in create_engineering_contract() at services/project-ai/app/api/routes/contract.py lines 327-407. Document: difficulty_level='intermediate' (hardcoded line 335), language='TypeScript' (hardcoded line 338), framework='React' (hardcoded line 339), file_structure paths (hardcoded lines 341-346), type strictness (hardcoded lines 349-351), tests_required (hardcoded lines 399-406). Also list currently snapshot-derived: canonical_references from repo_contract, schema_contract, renderer_contract, composer_contract, runtime_contract, acceptance_criteria",
+    "2. Add ContractFieldEvidence Pydantic model to services/project-ai/app/contracts/repository_intelligence.py with fields: field_name (str), value (Any), evidence_source (str describing snapshot path or metadata key), evidence_id (str from snapshot), derived_at (datetime). Add to imports at top of file",
+    "3. Add optional field_evidence: dict[str, ContractFieldEvidence] = Field(default_factory=dict) to RepositoryBlockContract model in repository_intelligence.py. This tracks evidence for fields in the repository contract that feeds engineering contract construction",
+    "4. Create tests/unit/test_contract_evidence.py with test_contract_field_evidence_model() that constructs ContractFieldEvidence with sample data and validates all fields are populated correctly",
+    "5. Add test_evidence_provenance_tracking() to test_contract_evidence.py that creates a ContractFieldEvidence entry, stores it in a dict keyed by field name, retrieves it, and verifies chain is intact",
+    "6. Run python -m pytest tests/unit/test_contract_evidence.py -v from services/project-ai directory and verify both new tests pass"
+  ],
+  "acceptance_criteria": [
+    "File .agents/tasks/r2-contract-audit.md exists and documents all hardcoded fields with line numbers",
+    "ContractFieldEvidence model defined in repository_intelligence.py with all required fields and proper Pydantic validation",
+    "RepositoryBlockContract has field_evidence dict for tracking evidence provenance",
+    "tests/unit/test_contract_evidence.py contains 2 passing tests validating the evidence model",
+    "Running python -m pytest tests/unit/test_contract_evidence.py -v shows 2 passed tests with no errors"
+  ],
+  "verification": [
+    "python -m pytest tests/unit/test_contract_evidence.py -v (from services/project-ai directory, expect 2 passed)",
+    "grep -n 'class ContractFieldEvidence' services/project-ai/app/contracts/repository_intelligence.py (should find class definition)",
+    "cat .agents/tasks/r2-contract-audit.md (should show audit with hardcoded fields documented)"
+  ],
+  "blocked_reason": null,
+  "findings": "ContractFieldEvidence model successfully implemented with all required fields (field_name, value, evidence_source, evidence_id, derived_at). Added field_evidence tracking dict to RepositoryBlockContract. Audit document r2-contract-audit.md created documenting 11 hardcoded field groups vs 7 snapshot-derived groups (39% evidence coverage baseline). All 292 unit tests pass including 2 new evidence tracking tests. Infrastructure is ready for subsequent features to populate field_evidence during contract construction."
+}

@@ -31,6 +31,23 @@ class RepositoryEvidenceBlocked(Exception):
     pass
 
 
+class ContractFieldEvidence(BaseModel):
+    """
+    Evidence tracking for a single contract field.
+    
+    Records the provenance of each contract field value, enabling:
+    - Audit trail showing which snapshot evidence backs each field
+    - Debugging when fields appear incorrect
+    - Verification that no fields are hardcoded
+    - Traceability from contract field back to source evidence
+    """
+    field_name: str = Field(..., description="Name of the contract field (e.g., 'language', 'framework')")
+    value: Any = Field(..., description="The actual value assigned to the field")
+    evidence_source: str = Field(..., description="Description of snapshot path or metadata key (e.g., 'snapshot.evidence[3].contentHash')")
+    evidence_id: str = Field(..., description="Unique evidence ID from snapshot for traceability")
+    derived_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp when evidence was captured")
+
+
 class RepositoryEvidence(BaseModel):
     """Evidence of a canonical file in the repository."""
     path: str = Field(..., description="Relative path from repository root")
@@ -65,6 +82,11 @@ class RepositoryBlockContract(BaseModel):
     version: str = Field(..., description="Block version")
     block_type: str = Field(..., description="Block type identifier")
     references: list[CanonicalReference] = Field(default_factory=list, description="Canonical references found")
+    # Evidence tracking for contract field provenance
+    field_evidence: dict[str, ContractFieldEvidence] = Field(
+        default_factory=dict,
+        description="Tracks evidence provenance for each contract field"
+    )
     # All fields below are derived from snapshot evidence, not hardcoded defaults
     required_artifacts: list[str] = Field(
         default_factory=list,
