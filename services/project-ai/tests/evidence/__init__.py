@@ -1,1 +1,1 @@
-"""Evidence module tests"""
+"""Evidence harness tests."""

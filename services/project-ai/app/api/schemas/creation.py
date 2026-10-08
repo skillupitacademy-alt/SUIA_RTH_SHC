@@ -5,7 +5,15 @@ from app.models.creation import DesignSource, BlockSource, CertificationGate, Wo
 # They are kept only for backward compatibility with disabled /creation endpoints
 
 class CreateWorkflowRequest(BaseModel):
-    """DEPRECATED: Use canonical workflow endpoints instead"""
+    """
+    DEPRECATED (M2.9 Wave 1C): Use canonical workflow endpoints instead.
+    
+    The design_source field indicates where block design originates (REPOSITORY_CANONICAL,
+    EXTERNAL_AI_PROTOTYPE, USER_SPECIFICATION) but does NOT control workflow state.
+    
+    All workflows follow CanonicalWorkflowState lifecycle regardless of design source.
+    Migration: Use POST /tasks/plan with design hints in request body.
+    """
     design_source: DesignSource
     composition: dict[str, BlockSource]
     candidateBlocks: list[str] = []

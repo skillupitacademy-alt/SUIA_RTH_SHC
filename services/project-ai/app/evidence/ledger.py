@@ -12,11 +12,27 @@ CONTRACT:
 """
 
 import json
+import platform
+import threading
 from pathlib import Path
 from typing import Any, TypedDict
 
-# Relative to repository root
-EVIDENCE_ROOT = Path(__file__).parent.parent.parent.parent.parent / "docs" / "project-llm" / "evidence"
+from .schemas import AgentRun, TestResult, EvidenceRecord
+
+# Relative to repository root - now using .agents/evidence/
+EVIDENCE_ROOT = Path(__file__).parent.parent.parent.parent.parent / ".agents" / "evidence"
+
+# Module-level file locks for concurrency safety
+_file_locks: dict[str, threading.Lock] = {}
+_locks_lock = threading.Lock()
+
+
+def _get_file_lock(file_name: str) -> threading.Lock:
+    """Get or create a lock for a specific file."""
+    with _locks_lock:
+        if file_name not in _file_locks:
+            _file_locks[file_name] = threading.Lock()
+        return _file_locks[file_name]
 
 
 class EvidenceRunSchema(TypedDict, total=False):
@@ -53,7 +69,7 @@ class EvidenceRunSchema(TypedDict, total=False):
 
 def _append_jsonl(file_name: str, data: dict[str, Any]) -> None:
     """
-    Append a JSON line to the specified ledger file.
+    Append a JSON line to the specified ledger file with concurrency safety.
     
     Args:
         file_name: Name of the JSONL file in EVIDENCE_ROOT
@@ -62,8 +78,11 @@ def _append_jsonl(file_name: str, data: dict[str, Any]) -> None:
     file_path = EVIDENCE_ROOT / file_name
     file_path.parent.mkdir(parents=True, exist_ok=True)
     
-    with open(file_path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(data, ensure_ascii=False) + "\n")
+    # Acquire file-specific lock for atomic append
+    lock = _get_file_lock(file_name)
+    with lock:
+        with open(file_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(data, ensure_ascii=False) + "\n")
 
 
 def append_agent_run(run: dict[str, Any]) -> None:
@@ -149,3 +168,34 @@ def read_last_n_runs(n: int) -> list[dict[str, Any]]:
                 continue
     
     return runs
+
+
+def record_agent_run(run: AgentRun) -> None:
+    """
+    Record a validated agent run to agent-runs.jsonl.
+    
+    Args:
+        run: AgentRun schema instance with validated fields
+    """
+    _append_jsonl("agent-runs.jsonl", run.model_dump(mode="json"))
+
+
+def record_test_results(results: TestResult) -> None:
+    """
+    Record validated test results to test-results.jsonl.
+    
+    Args:
+        results: TestResult schema instance with validated fields
+    """
+    _append_jsonl("test-results.jsonl", results.model_dump(mode="json"))
+
+
+def record_evidence(evidence: EvidenceRecord) -> None:
+    """
+    Record a validated evidence artifact to evidence.jsonl.
+    
+    Args:
+        evidence: EvidenceRecord schema instance with validated fields
+    """
+    _append_jsonl("evidence.jsonl", evidence.model_dump(mode="json"))
+

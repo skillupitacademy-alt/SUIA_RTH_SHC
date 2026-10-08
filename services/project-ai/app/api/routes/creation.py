@@ -21,7 +21,7 @@ router = APIRouter(prefix="/creation", tags=["Creation Workflows (DEPRECATED)"])
 # In-memory store (production would use database)
 workflows = {}
 
-@router.post("/workflows", response_model=WorkflowResponse, status_code=405)
+@router.post("/workflows", response_model=WorkflowResponse, status_code=405, deprecated=True)
 async def create_workflow(request: CreateWorkflowRequest):
     """
     DEPRECATED (M2.9 Wave 0): Legacy workflow creation endpoint.
@@ -55,7 +55,7 @@ async def create_workflow(request: CreateWorkflowRequest):
         }
     )
 
-@router.get("/workflows/{workflow_id}", response_model=WorkflowResponse, status_code=405)
+@router.get("/workflows/{workflow_id}", response_model=WorkflowResponse, status_code=405, deprecated=True)
 async def get_workflow(workflow_id: str):
     """
     DEPRECATED (M2.9 Wave 0): Legacy workflow status endpoint.
@@ -70,7 +70,7 @@ async def get_workflow(workflow_id: str):
         }
     )
 
-@router.post("/workflows/{workflow_id}/validate", response_model=WorkflowResponse, status_code=405)
+@router.post("/workflows/{workflow_id}/validate", response_model=WorkflowResponse, status_code=405, deprecated=True)
 async def validate_workflow(workflow_id: str):
     """
     DEPRECATED (M2.9 Wave 0): Legacy validation endpoint.
@@ -91,7 +91,7 @@ async def validate_workflow(workflow_id: str):
         }
     )
 
-@router.post("/workflows/{workflow_id}/certify", response_model=WorkflowResponse, status_code=405)
+@router.post("/workflows/{workflow_id}/certify", response_model=WorkflowResponse, status_code=405, deprecated=True)
 async def certify_workflow(workflow_id: str):
     """
     DEPRECATED (M2.9 Wave 0): Legacy certification endpoint.
