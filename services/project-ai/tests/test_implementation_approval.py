@@ -53,6 +53,7 @@ def test_hash_verification_match():
         placement_manifest_id="manifest-456",
         placement_manifest_sha256="def456",
         approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
     )
     
     # Test manifest hash verification (match)
@@ -72,6 +73,7 @@ def test_hash_verification_mismatch():
         placement_manifest_id="manifest-456",
         placement_manifest_sha256="def456",
         approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
     )
     
     # Test manifest hash verification (mismatch)
@@ -150,6 +152,7 @@ def test_is_valid_for_implementation_wrong_status():
         placement_manifest_id="manifest-456",
         placement_manifest_sha256="def456",
         approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.PENDING,  # Not APPROVED
     )
     
@@ -322,3 +325,52 @@ def test_approval_with_rejection():
     )
     
     assert is_valid is False
+
+
+def test_missing_workflow_requester_rejected():
+    """Test verify_not_self_approved returns False when workflow_requester is None."""
+    approval = ImplementationApproval(
+        approval_id="test-id",
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        approval_timestamp=datetime.now(timezone.utc).isoformat(),
+        status=ImplementationApprovalStatus.APPROVED,
+        workflow_requester=None,  # Missing
+        evidence={}
+    )
+    
+    # Should fail-closed when workflow_requester is missing
+    assert approval.verify_not_self_approved("any@example.com") is False
+
+
+def test_is_valid_for_implementation_fails_missing_requester():
+    """Test is_valid_for_implementation returns False when workflow_requester is None."""
+    approval = ImplementationApproval(
+        approval_id="test-id",
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        approval_timestamp=datetime.now(timezone.utc).isoformat(),
+        status=ImplementationApprovalStatus.APPROVED,
+        workflow_requester=None,  # Missing
+        evidence={}
+    )
+    
+    is_valid = approval.is_valid_for_implementation(
+        requester_id="requester@example.com",
+        candidate_sha256="abc123",
+        manifest_id="manifest-456",
+        manifest_sha256="def456",
+    )
+    
+    assert is_valid is False
+

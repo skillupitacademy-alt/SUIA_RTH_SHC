@@ -13,7 +13,6 @@ AUTHORIZATION GATES:
 - Candidate hash must match
 - Manifest hash must match
 - Must not be self-approved
-- Must not be expired (if expiry exists in approval model)
 
 NO GRACEFUL DEGRADATION:
 Missing or invalid approval MUST return authorized=False, NOT warning-then-True.
@@ -49,7 +48,7 @@ def check_implementation_approval(
     candidate_sha256: str,
     manifest_sha256: str,
     approvals_store: Dict[str, ImplementationApproval],
-    requester_id: str = ""
+    requester_id: str
 ) -> AuthorizationResult:
     """
     Check if implementation is authorized for a workflow.
@@ -62,21 +61,64 @@ def check_implementation_approval(
     AUTHORIZATION CHECKS:
     1. Approval record exists for workflow_id
     2. Approval status is APPROVED
-    3. Candidate hash matches approval record
-    4. Manifest hash matches approval record
-    5. Not self-approved (if requester_id provided)
+    3. Candidate hash matches approval record (REQUIRED)
+    4. Manifest hash matches approval record (REQUIRED)
+    5. Not self-approved (REQUIRED - requester_id must be provided)
     
     Args:
         workflow_id: Workflow identifier
-        candidate_sha256: Candidate hash to verify
-        manifest_sha256: Placement manifest hash to verify
+        candidate_sha256: Candidate hash to verify (REQUIRED)
+        manifest_sha256: Placement manifest hash to verify (REQUIRED)
         approvals_store: Dictionary of ImplementationApproval records
-        requester_id: Workflow requester identity (optional, for self-approval check)
+        requester_id: Workflow requester identity (REQUIRED for self-approval check)
         
     Returns:
         AuthorizationResult with authorization decision and evidence
     """
     checked_at = datetime.now(timezone.utc).isoformat()
+    
+    # Validate required parameters
+    if not candidate_sha256:
+        return AuthorizationResult(
+            authorized=False,
+            approval_id=None,
+            checked_at=checked_at,
+            failure_reason="Missing required parameter: candidate_sha256",
+            evidence={
+                "workflow_id": workflow_id,
+                "parameter_validation": "FAIL",
+                "missing_parameter": "candidate_sha256",
+                "checked_at": checked_at,
+            }
+        )
+    
+    if not manifest_sha256:
+        return AuthorizationResult(
+            authorized=False,
+            approval_id=None,
+            checked_at=checked_at,
+            failure_reason="Missing required parameter: manifest_sha256",
+            evidence={
+                "workflow_id": workflow_id,
+                "parameter_validation": "FAIL",
+                "missing_parameter": "manifest_sha256",
+                "checked_at": checked_at,
+            }
+        )
+    
+    if not requester_id:
+        return AuthorizationResult(
+            authorized=False,
+            approval_id=None,
+            checked_at=checked_at,
+            failure_reason="Missing required parameter: requester_id",
+            evidence={
+                "workflow_id": workflow_id,
+                "parameter_validation": "FAIL",
+                "missing_parameter": "requester_id",
+                "checked_at": checked_at,
+            }
+        )
     
     # Check if approval exists
     if workflow_id not in approvals_store:
@@ -155,15 +197,14 @@ def check_implementation_approval(
             }
         )
     
-    # Verify not self-approved (if requester_id provided)
-    if requester_id and not approval.verify_not_self_approved(requester_id):
+    # Verify not self-approved (REQUIRED - no longer optional)
+    if not approval.verify_not_self_approved(requester_id):
         return AuthorizationResult(
             authorized=False,
             approval_id=approval.approval_id,
             checked_at=checked_at,
             failure_reason=(
-                f"Self-approval detected: "
-                f"approver '{approval.approved_by}' is the workflow requester"
+                f"Self-approval detected or workflow requester missing"
             ),
             evidence={
                 "workflow_id": workflow_id,
@@ -172,7 +213,7 @@ def check_implementation_approval(
                 "status": approval.status.value,
                 "self_approval_check": "FAIL",
                 "approved_by": approval.approved_by,
-                "workflow_requester": requester_id,
+                "workflow_requester": approval.workflow_requester,
                 "checked_at": checked_at,
             }
         )
@@ -191,10 +232,11 @@ def check_implementation_approval(
             "status_check": "PASS",
             "candidate_hash_check": "PASS",
             "manifest_hash_check": "PASS",
-            "self_approval_check": "PASS" if requester_id else "SKIPPED",
+            "self_approval_check": "PASS",
             "candidate_sha256": approval.candidate_sha256,
             "manifest_sha256": approval.placement_manifest_sha256,
             "approved_by": approval.approved_by,
+            "workflow_requester": approval.workflow_requester,
             "approval_timestamp": approval.approval_timestamp,
             "checked_at": checked_at,
         }

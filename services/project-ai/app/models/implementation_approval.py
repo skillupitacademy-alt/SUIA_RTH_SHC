@@ -91,19 +91,19 @@ class ImplementationApproval:
         Verify approval is not self-approval.
         
         Enforces separation of duties: approver must differ from workflow requester.
+        Fail-closed: missing workflow_requester causes verification failure.
         
         Args:
-            requester_id: Workflow requester identity to check
+            requester_id: Workflow requester identity (for evidence only)
             
         Returns:
-            True if not self-approved, False if self-approved
+            True if not self-approved, False if self-approved or requester missing
         """
-        # If workflow_requester was stored, use it; otherwise compare with requester_id
-        if self.workflow_requester:
-            return self.approved_by != self.workflow_requester
+        # Fail-closed: missing workflow_requester means we cannot verify separation of duties
+        if not self.workflow_requester:
+            return False
         
-        # Fallback: compare with provided requester_id
-        return self.approved_by != requester_id
+        return self.approved_by != self.workflow_requester
     
     def is_valid_for_implementation(
         self,
@@ -188,7 +188,7 @@ def create_implementation_approval(
     placement_manifest_id: str,
     placement_manifest_sha256: str,
     approved_by: str,
-    workflow_requester: Optional[str] = None,
+    workflow_requester: str,
     status: ImplementationApprovalStatus = ImplementationApprovalStatus.PENDING,
     rejection_reason: Optional[str] = None
 ) -> ImplementationApproval:
@@ -203,7 +203,7 @@ def create_implementation_approval(
         placement_manifest_id: PlacementManifest.manifest_id
         placement_manifest_sha256: PlacementManifest.manifest_sha256
         approved_by: Approver identity
-        workflow_requester: Workflow requester identity (for self-approval check)
+        workflow_requester: Workflow requester identity (REQUIRED for self-approval check)
         status: Approval status (default: PENDING)
         rejection_reason: Reason for rejection (if status=REJECTED)
         

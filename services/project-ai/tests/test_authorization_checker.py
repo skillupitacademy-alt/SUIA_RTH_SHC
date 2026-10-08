@@ -67,6 +67,7 @@ def test_authorization_blocks_missing_approval():
         candidate_sha256="abc123",
         manifest_sha256="def456",
         approvals_store=approvals_store,
+        requester_id="user@example.com",
     )
     
     assert result.authorized is False
@@ -88,6 +89,7 @@ def test_authorization_blocks_pending_status():
         placement_manifest_id="manifest-456",
         placement_manifest_sha256="def456",
         approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.PENDING,
     )
     
@@ -98,6 +100,7 @@ def test_authorization_blocks_pending_status():
         candidate_sha256="abc123",
         manifest_sha256="def456",
         approvals_store=approvals_store,
+        requester_id="requester@example.com",
     )
     
     assert result.authorized is False
@@ -119,6 +122,7 @@ def test_authorization_blocks_rejected_status():
         placement_manifest_id="manifest-456",
         placement_manifest_sha256="def456",
         approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.REJECTED,
     )
     
@@ -129,6 +133,7 @@ def test_authorization_blocks_rejected_status():
         candidate_sha256="abc123",
         manifest_sha256="def456",
         approvals_store=approvals_store,
+        requester_id="requester@example.com",
     )
     
     assert result.authorized is False
@@ -145,6 +150,7 @@ def test_authorization_blocks_candidate_hash_mismatch():
         placement_manifest_id="manifest-456",
         placement_manifest_sha256="def456",
         approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.APPROVED,
     )
     
@@ -155,6 +161,7 @@ def test_authorization_blocks_candidate_hash_mismatch():
         candidate_sha256="wrong-hash",  # Mismatch
         manifest_sha256="def456",
         approvals_store=approvals_store,
+        requester_id="requester@example.com",
     )
     
     assert result.authorized is False
@@ -176,6 +183,7 @@ def test_authorization_blocks_manifest_hash_mismatch():
         placement_manifest_id="manifest-456",
         placement_manifest_sha256="def456",
         approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.APPROVED,
     )
     
@@ -186,6 +194,7 @@ def test_authorization_blocks_manifest_hash_mismatch():
         candidate_sha256="abc123",
         manifest_sha256="wrong-hash",  # Mismatch
         approvals_store=approvals_store,
+        requester_id="requester@example.com",
     )
     
     assert result.authorized is False
@@ -282,6 +291,7 @@ def test_produce_authorization_evidence_format():
         placement_manifest_id="manifest-456",
         placement_manifest_sha256="def456",
         approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.APPROVED,
     )
     
@@ -292,6 +302,7 @@ def test_produce_authorization_evidence_format():
         candidate_sha256="abc123",
         manifest_sha256="def456",
         approvals_store=approvals_store,
+        requester_id="requester@example.com",
     )
     
     evidence = produce_authorization_evidence(result, "wf-123")
@@ -307,34 +318,6 @@ def test_produce_authorization_evidence_format():
     assert "timestamp" in evidence
 
 
-def test_authorization_without_requester_id():
-    """Test authorization check works without requester_id (skips self-approval check)."""
-    approval = create_implementation_approval(
-        workflow_id="wf-123",
-        candidate_sha256="abc123",
-        target_family="Introduction",
-        target_version="I7",
-        placement_manifest_id="manifest-456",
-        placement_manifest_sha256="def456",
-        approved_by="reviewer@example.com",
-        status=ImplementationApprovalStatus.APPROVED,
-    )
-    
-    approvals_store = {"wf-123": approval}
-    
-    # Call without requester_id
-    result = check_implementation_approval(
-        workflow_id="wf-123",
-        candidate_sha256="abc123",
-        manifest_sha256="def456",
-        approvals_store=approvals_store,
-    )
-    
-    assert result.authorized is True
-    # Self-approval check should be skipped
-    assert result.evidence["self_approval_check"] == "SKIPPED"
-
-
 def test_authorization_evidence_on_failure():
     """Test authorization evidence populated even on failure."""
     approvals_store = {}
@@ -344,6 +327,7 @@ def test_authorization_evidence_on_failure():
         candidate_sha256="abc123",
         manifest_sha256="def456",
         approvals_store=approvals_store,
+        requester_id="user@example.com",
     )
     
     assert result.authorized is False
@@ -351,3 +335,91 @@ def test_authorization_evidence_on_failure():
     assert len(result.evidence) > 0
     assert result.evidence["workflow_id"] == "wf-missing"
     assert result.evidence["approval_found"] is False
+
+
+def test_authorization_blocks_missing_candidate_hash():
+    """Test authorization fails when candidate_sha256 is missing."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
+        status=ImplementationApprovalStatus.APPROVED,
+    )
+    
+    approvals_store = {"wf-123": approval}
+    
+    result = check_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="",  # Empty/missing
+        manifest_sha256="def456",
+        approvals_store=approvals_store,
+        requester_id="requester@example.com",
+    )
+    
+    assert result.authorized is False
+    assert "Missing required parameter: candidate_sha256" in result.failure_reason
+    assert result.evidence["parameter_validation"] == "FAIL"
+
+
+def test_authorization_blocks_missing_manifest_hash():
+    """Test authorization fails when manifest_sha256 is missing."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
+        status=ImplementationApprovalStatus.APPROVED,
+    )
+    
+    approvals_store = {"wf-123": approval}
+    
+    result = check_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        manifest_sha256="",  # Empty/missing
+        approvals_store=approvals_store,
+        requester_id="requester@example.com",
+    )
+    
+    assert result.authorized is False
+    assert "Missing required parameter: manifest_sha256" in result.failure_reason
+    assert result.evidence["parameter_validation"] == "FAIL"
+
+
+def test_authorization_blocks_missing_requester_id():
+    """Test authorization fails when requester_id is missing."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
+        status=ImplementationApprovalStatus.APPROVED,
+    )
+    
+    approvals_store = {"wf-123": approval}
+    
+    result = check_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        manifest_sha256="def456",
+        approvals_store=approvals_store,
+        requester_id="",  # Empty/missing
+    )
+    
+    assert result.authorized is False
+    assert "Missing required parameter: requester_id" in result.failure_reason
+    assert result.evidence["parameter_validation"] == "FAIL"
+

@@ -205,33 +205,6 @@ def test_authorized_transition_succeeds():
     assert reason == ""
 
 
-def test_transition_without_optional_parameters():
-    """Test transition check works without optional verification parameters."""
-    approval = create_implementation_approval(
-        workflow_id="wf-123",
-        candidate_sha256="abc123",
-        target_family="Introduction",
-        target_version="I7",
-        placement_manifest_id="manifest-456",
-        placement_manifest_sha256="def456",
-        approved_by="reviewer@example.com",
-        workflow_requester="requester@example.com",
-        status=ImplementationApprovalStatus.APPROVED,
-    )
-    
-    approvals_store = {"wf-123": approval}
-    
-    # Call without optional parameters
-    can_transition, reason = can_transition_to_implementing(
-        workflow_id="wf-123",
-        approvals_store=approvals_store,
-    )
-    
-    # Should pass because no hash/ID verification requested
-    assert can_transition is True
-    assert reason == ""
-
-
 def test_transition_blocked_on_rejected_status():
     """Test transition blocked when approval status is REJECTED."""
     approval = create_implementation_approval(
@@ -259,3 +232,120 @@ def test_transition_blocked_on_rejected_status():
     
     assert can_transition is False
     assert "REJECTED" in reason
+
+
+def test_transition_blocked_missing_requester_id():
+    """Test transition blocked when requester_id is missing."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
+        status=ImplementationApprovalStatus.APPROVED,
+    )
+    
+    approvals_store = {"wf-123": approval}
+    
+    can_transition, reason = can_transition_to_implementing(
+        workflow_id="wf-123",
+        approvals_store=approvals_store,
+        requester_id="",  # Empty/missing
+        candidate_sha256="abc123",
+        manifest_id="manifest-456",
+        manifest_sha256="def456",
+    )
+    
+    assert can_transition is False
+    assert "Missing required parameter: requester_id" in reason
+
+
+def test_transition_blocked_missing_candidate_sha256():
+    """Test transition blocked when candidate_sha256 is missing."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
+        status=ImplementationApprovalStatus.APPROVED,
+    )
+    
+    approvals_store = {"wf-123": approval}
+    
+    can_transition, reason = can_transition_to_implementing(
+        workflow_id="wf-123",
+        approvals_store=approvals_store,
+        requester_id="requester@example.com",
+        candidate_sha256="",  # Empty/missing
+        manifest_id="manifest-456",
+        manifest_sha256="def456",
+    )
+    
+    assert can_transition is False
+    assert "Missing required parameter: candidate_sha256" in reason
+
+
+def test_transition_blocked_missing_manifest_id():
+    """Test transition blocked when manifest_id is missing."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
+        status=ImplementationApprovalStatus.APPROVED,
+    )
+    
+    approvals_store = {"wf-123": approval}
+    
+    can_transition, reason = can_transition_to_implementing(
+        workflow_id="wf-123",
+        approvals_store=approvals_store,
+        requester_id="requester@example.com",
+        candidate_sha256="abc123",
+        manifest_id="",  # Empty/missing
+        manifest_sha256="def456",
+    )
+    
+    assert can_transition is False
+    assert "Missing required parameter: manifest_id" in reason
+
+
+def test_transition_blocked_missing_manifest_sha256():
+    """Test transition blocked when manifest_sha256 is missing."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="reviewer@example.com",
+        workflow_requester="requester@example.com",
+        status=ImplementationApprovalStatus.APPROVED,
+    )
+    
+    approvals_store = {"wf-123": approval}
+    
+    can_transition, reason = can_transition_to_implementing(
+        workflow_id="wf-123",
+        approvals_store=approvals_store,
+        requester_id="requester@example.com",
+        candidate_sha256="abc123",
+        manifest_id="manifest-456",
+        manifest_sha256="",  # Empty/missing
+    )
+    
+    assert can_transition is False
+    assert "Missing required parameter: manifest_sha256" in reason
+

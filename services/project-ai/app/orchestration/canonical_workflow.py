@@ -377,10 +377,10 @@ def is_terminal_state(state: CanonicalWorkflowState) -> bool:
 def can_transition_to_implementing(
     workflow_id: str,
     approvals_store: dict,
-    requester_id: str = "",
-    candidate_sha256: str = "",
-    manifest_id: str = "",
-    manifest_sha256: str = ""
+    requester_id: str,
+    candidate_sha256: str,
+    manifest_id: str,
+    manifest_sha256: str
 ) -> tuple[bool, str]:
     """
     Check if workflow can transition to IMPLEMENTING state.
@@ -388,18 +388,18 @@ def can_transition_to_implementing(
     AUTHORIZATION GATES:
     - ImplementationApproval must exist for workflow_id
     - Approval status must be APPROVED
-    - Candidate hash must match approval record
-    - Manifest ID must match approval record
-    - Manifest hash must match approval record
-    - Must not be self-approved
+    - Candidate hash must match approval record (REQUIRED)
+    - Manifest ID must match approval record (REQUIRED)
+    - Manifest hash must match approval record (REQUIRED)
+    - Must not be self-approved (REQUIRED)
     
     Args:
         workflow_id: Workflow identifier
         approvals_store: Dictionary of ImplementationApproval records (keyed by workflow_id)
-        requester_id: Workflow requester identity (for self-approval check)
-        candidate_sha256: Candidate hash to verify
-        manifest_id: Placement manifest ID to verify
-        manifest_sha256: Placement manifest hash to verify
+        requester_id: Workflow requester identity (REQUIRED for self-approval check)
+        candidate_sha256: Candidate hash to verify (REQUIRED)
+        manifest_id: Placement manifest ID to verify (REQUIRED)
+        manifest_sha256: Placement manifest hash to verify (REQUIRED)
         
     Returns:
         Tuple of (can_transition: bool, reason: str)
@@ -417,32 +417,48 @@ def can_transition_to_implementing(
     if approval.status != ImplementationApprovalStatus.APPROVED:
         return (False, f"Approval status is {approval.status.value}, expected APPROVED")
     
-    # Verify candidate hash if provided
-    if candidate_sha256 and not approval.verify_candidate_hash(candidate_sha256):
+    # REQUIRED: Verify requester_id provided
+    if not requester_id:
+        return (False, "Missing required parameter: requester_id")
+    
+    # REQUIRED: Verify candidate hash provided
+    if not candidate_sha256:
+        return (False, "Missing required parameter: candidate_sha256")
+    
+    # REQUIRED: Verify manifest ID provided
+    if not manifest_id:
+        return (False, "Missing required parameter: manifest_id")
+    
+    # REQUIRED: Verify manifest hash provided
+    if not manifest_sha256:
+        return (False, "Missing required parameter: manifest_sha256")
+    
+    # Verify candidate hash matches
+    if not approval.verify_candidate_hash(candidate_sha256):
         return (
             False,
             f"Candidate hash mismatch: expected {approval.candidate_sha256}, got {candidate_sha256}"
         )
     
-    # Verify manifest ID if provided
-    if manifest_id and approval.placement_manifest_id != manifest_id:
+    # Verify manifest ID matches
+    if approval.placement_manifest_id != manifest_id:
         return (
             False,
             f"Manifest ID mismatch: expected {approval.placement_manifest_id}, got {manifest_id}"
         )
     
-    # Verify manifest hash if provided
-    if manifest_sha256 and not approval.verify_manifest_hash(manifest_sha256):
+    # Verify manifest hash matches
+    if not approval.verify_manifest_hash(manifest_sha256):
         return (
             False,
             f"Manifest hash mismatch: expected {approval.placement_manifest_sha256}, got {manifest_sha256}"
         )
     
-    # Verify not self-approved if requester_id provided
-    if requester_id and not approval.verify_not_self_approved(requester_id):
+    # Verify not self-approved
+    if not approval.verify_not_self_approved(requester_id):
         return (
             False,
-            f"Self-approval detected: approver '{approval.approved_by}' is the workflow requester"
+            f"Self-approval detected or workflow requester missing: approver '{approval.approved_by}'"
         )
     
     # All checks passed
