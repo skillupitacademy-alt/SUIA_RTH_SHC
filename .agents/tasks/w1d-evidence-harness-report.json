@@ -1,42 +1,29 @@
 {
   "wave": "W1D",
   "status": "completed",
-  "commit": "87ae0bd48a2b9d6d78bd1010988dfd107b07dee6",
-  "filesCreated": [],
+  "commit": "850d5f92a86688bb6d193e2d34614e9afcf4bb07",
+  "reviewFindings": [
+    {
+      "issue": "Windows file locking insufficient",
+      "fix": "Changed msvcrt.locking byte count from 1 to 1024*1024 to lock entire write region",
+      "file": "services/project-ai/app/evidence/ledger.py"
+    },
+    {
+      "issue": "Missing multi-process concurrency test",
+      "fix": "Added test_multiprocess_writes_no_corruption using multiprocessing.Process",
+      "file": "services/project-ai/tests/evidence/test_ledger.py"
+    }
+  ],
   "filesModified": [
-    "services/project-ai/app/evidence/schemas.py",
     "services/project-ai/app/evidence/ledger.py",
-    "services/project-ai/app/evidence/integration.py",
-    "services/project-ai/tests/evidence/test_schemas.py",
     "services/project-ai/tests/evidence/test_ledger.py"
   ],
   "testResults": {
-    "passed": 39,
+    "passed": 14,
     "failed": 0,
     "skipped": 0,
-    "duration": 0.87
+    "total": 14
   },
-  "reviewFindings": [
-    {
-      "finding": "AgentRun missing timestamp field",
-      "resolution": "Added timestamp: datetime field to AgentRun schema"
-    },
-    {
-      "finding": "Integration helper exception handling mismatch",
-      "resolution": "Fixed docstring from 'logged but not suppressed' to 'Raises: Exception if recording fails'"
-    },
-    {
-      "finding": "Test status field unbounded",
-      "resolution": "Updated status field description to document expected values: 'completed', 'failed', 'in-progress'"
-    },
-    {
-      "finding": "Multi-process concurrency gap",
-      "resolution": "Added file-level locking using fcntl (Unix) and msvcrt (Windows) to protect against multi-process concurrent writes"
-    },
-    {
-      "finding": "Commit message mismatch",
-      "resolution": "Created new commit with proper message 'fix(project-llm): evidence harness review findings (W1D)'"
-    }
-  ],
-  "timestamp": "2025-06-10T00:00:00Z"
+  "timestamp": "2025-01-26T12:00:00Z",
+  "notes": "Fixed Windows file locking to lock 1MB region instead of 1 byte. Added multiprocessing test to verify file-level locking prevents corruption across process boundaries. All 14 tests pass including new multiprocess concurrency test."
 }
