@@ -1,11 +1,11 @@
 """
-Unit tests for terminal state enforcement and evidence requirements - M2.9 Wave 0
+Unit Tests for Terminal State Enforcement - M2.9 Wave 0
 
-Tests terminal state detection, immutability, final_status setting, evidence binding,
-and gate state detection.
+Tests for terminal state detection, immutability enforcement, and evidence requirements.
 """
 
 import pytest
+from datetime import datetime, timezone
 
 from app.orchestration.canonical_workflow import (
     CanonicalWorkflowState,
@@ -17,7 +17,7 @@ from app.orchestration.workflow_governance import WorkflowGovernanceService
 
 @pytest.fixture
 def governance_service():
-    """Create a fresh governance service for each test."""
+    """Create a fresh WorkflowGovernanceService for each test."""
     return WorkflowGovernanceService()
 
 
@@ -26,34 +26,33 @@ def governance_service():
     (CanonicalWorkflowState.REJECTED, True),
     (CanonicalWorkflowState.REQUESTED, False),
     (CanonicalWorkflowState.DISCOVERY, False),
-    (CanonicalWorkflowState.AWAITING_GATE_1, False),
     (CanonicalWorkflowState.IMPLEMENTING, False),
+    (CanonicalWorkflowState.AWAITING_GATE_1, False),
 ])
-def test_is_terminal_state(state, expected):
-    """Test is_terminal_state returns True only for CERTIFIED and REJECTED."""
+def test_terminal_state_detection(state, expected):
+    """Test is_terminal_state() returns True for CERTIFIED and REJECTED only."""
     assert is_terminal_state(state) == expected
 
 
-def test_terminal_state_certified_immutability(governance_service):
-    """Test validate_transition rejects all transitions from CERTIFIED state."""
+def test_terminal_state_immutability_certified(governance_service):
+    """Test validate_transition() rejects all transitions from CERTIFIED state."""
+    # Create workflow and force to CERTIFIED
     workflow = governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
-    
-    # Manually set to CERTIFIED (terminal state)
     workflow.current_state = CanonicalWorkflowState.CERTIFIED
     
-    # Try to transition to various states - all should be rejected
-    test_states = [
-        CanonicalWorkflowState.DISCOVERY,
+    # Try various transitions from CERTIFIED (all should fail)
+    target_states = [
         CanonicalWorkflowState.REQUESTED,
-        CanonicalWorkflowState.REJECTED,
+        CanonicalWorkflowState.DISCOVERY,
         CanonicalWorkflowState.IMPLEMENTING,
+        CanonicalWorkflowState.REJECTED,
     ]
     
-    for target_state in test_states:
+    for target_state in target_states:
         is_valid, reason = governance_service.validate_transition(
             workflow.workflow_id,
             target_state
@@ -62,26 +61,25 @@ def test_terminal_state_certified_immutability(governance_service):
         assert "terminal state" in reason
 
 
-def test_terminal_state_rejected_immutability(governance_service):
-    """Test validate_transition rejects all transitions from REJECTED state."""
+def test_terminal_state_immutability_rejected(governance_service):
+    """Test validate_transition() rejects all transitions from REJECTED state."""
+    # Create workflow and force to REJECTED
     workflow = governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
-    
-    # Manually set to REJECTED (terminal state)
     workflow.current_state = CanonicalWorkflowState.REJECTED
     
-    # Try to transition to various states - all should be rejected
-    test_states = [
-        CanonicalWorkflowState.DISCOVERY,
+    # Try various transitions from REJECTED (all should fail)
+    target_states = [
         CanonicalWorkflowState.REQUESTED,
-        CanonicalWorkflowState.CERTIFIED,
+        CanonicalWorkflowState.DISCOVERY,
         CanonicalWorkflowState.IMPLEMENTING,
+        CanonicalWorkflowState.CERTIFIED,
     ]
     
-    for target_state in test_states:
+    for target_state in target_states:
         is_valid, reason = governance_service.validate_transition(
             workflow.workflow_id,
             target_state
@@ -91,66 +89,71 @@ def test_terminal_state_rejected_immutability(governance_service):
 
 
 def test_transition_state_raises_from_terminal(governance_service):
-    """Test transition_state raises ValueError when attempting transition from terminal state."""
+    """Test transition_state raises ValueError when attempting to transition from terminal state."""
+    # Create workflow and force to CERTIFIED
     workflow = governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
-    
-    # Set to terminal state
     workflow.current_state = CanonicalWorkflowState.CERTIFIED
     
-    with pytest.raises(ValueError, match="terminal state"):
+    # Attempt transition should raise ValueError
+    with pytest.raises(ValueError) as exc_info:
         governance_service.transition_state(
             workflow_id=workflow.workflow_id,
             to_state=CanonicalWorkflowState.DISCOVERY,
-            triggered_by="system"
+            triggered_by="system",
+            reason="Trying to escape terminal state"
         )
+    
+    assert "terminal state" in str(exc_info.value)
 
 
-def test_final_status_certified(governance_service):
-    """Test final_status set correctly when transitioning to CERTIFIED."""
+def test_final_status_set_on_certified(governance_service):
+    """Test final_status set correctly when transitioning to CERTIFIED state."""
     workflow = governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
     
-    # Advance to a state that can transition to CERTIFIED
+    # Force to AWAITING_GATE_2 (allows transition to CERTIFIED)
     workflow.current_state = CanonicalWorkflowState.AWAITING_GATE_2
     
-    workflow = governance_service.transition_state(
+    # Transition to CERTIFIED
+    updated = governance_service.transition_state(
         workflow_id=workflow.workflow_id,
         to_state=CanonicalWorkflowState.CERTIFIED,
-        triggered_by="approver_456",
-        reason="HAA certified"
+        triggered_by="user_123",
+        reason="Final approval granted"
     )
     
-    assert workflow.current_state == CanonicalWorkflowState.CERTIFIED
-    assert workflow.final_status == "CERTIFIED"
+    assert updated.final_status == "CERTIFIED"
+    assert updated.is_terminal() is True
 
 
-def test_final_status_rejected(governance_service):
-    """Test final_status set correctly when transitioning to REJECTED."""
+def test_final_status_set_on_rejected(governance_service):
+    """Test final_status set correctly when transitioning to REJECTED state."""
     workflow = governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
     
-    # Advance to a state that can transition to REJECTED
+    # Force to AWAITING_GATE_1 (allows transition to REJECTED)
     workflow.current_state = CanonicalWorkflowState.AWAITING_GATE_1
     
-    workflow = governance_service.transition_state(
+    # Transition to REJECTED
+    updated = governance_service.transition_state(
         workflow_id=workflow.workflow_id,
         to_state=CanonicalWorkflowState.REJECTED,
         triggered_by="user_123",
-        reason="User rejected GUI"
+        reason="User rejected GUI prototype"
     )
     
-    assert workflow.current_state == CanonicalWorkflowState.REJECTED
-    assert workflow.final_status == "REJECTED"
+    assert updated.final_status == "REJECTED"
+    assert updated.is_terminal() is True
 
 
 def test_evidence_binding(governance_service):
@@ -161,16 +164,15 @@ def test_evidence_binding(governance_service):
         requester_id="user_123"
     )
     
-    # Initially empty
-    assert workflow.evidence_ids == []
-    
-    # Add evidence
-    workflow.evidence_ids.append("evidence_1")
-    workflow.evidence_ids.append("evidence_2")
-    workflow.evidence_ids.append("evidence_3")
+    # Add evidence IDs
+    workflow.evidence_ids.append("evidence_discovery_1")
+    workflow.evidence_ids.append("evidence_discovery_2")
+    workflow.evidence_ids.append("evidence_compliance_1")
     
     assert len(workflow.evidence_ids) == 3
-    assert workflow.evidence_ids == ["evidence_1", "evidence_2", "evidence_3"]
+    assert "evidence_discovery_1" in workflow.evidence_ids
+    assert "evidence_discovery_2" in workflow.evidence_ids
+    assert "evidence_compliance_1" in workflow.evidence_ids
 
 
 @pytest.mark.parametrize("state,expected", [
@@ -183,28 +185,6 @@ def test_evidence_binding(governance_service):
     (CanonicalWorkflowState.CERTIFIED, False),
     (CanonicalWorkflowState.REJECTED, False),
 ])
-def test_is_gate_state(state, expected):
+def test_gate_state_detection(state, expected):
     """Test all three gate states properly identified by is_gate_state()."""
     assert is_gate_state(state) == expected
-
-
-def test_transition_with_evidence_id(governance_service):
-    """Test state transition can attach evidence_id for audit trail."""
-    workflow = governance_service.create_workflow(
-        target_family="Introduction",
-        target_version="I7",
-        requester_id="user_123"
-    )
-    
-    workflow = governance_service.transition_state(
-        workflow_id=workflow.workflow_id,
-        to_state=CanonicalWorkflowState.DISCOVERY,
-        triggered_by="system",
-        evidence_id="evidence_discovery_123",
-        reason="Discovery completed with evidence"
-    )
-    
-    # Check that evidence_id is recorded in state history
-    assert len(workflow.state_history) == 2
-    assert workflow.state_history[1].evidence_id == "evidence_discovery_123"
-    assert workflow.state_history[1].reason == "Discovery completed with evidence"

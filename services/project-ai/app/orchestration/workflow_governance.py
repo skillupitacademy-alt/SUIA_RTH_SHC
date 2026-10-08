@@ -1,44 +1,31 @@
 """
 Workflow Governance Service - M2.9 Wave 0
 
-Single point of authority for workflow state management.
+Single point of authority for Project LLM workflow state management.
 
-This service is the ONLY component allowed to mutate workflow state. All state
-transitions, artifact bindings, and approval registrations must flow through
+This service enforces canonical workflow state transitions, authorization gates,
+and terminal state boundaries. All workflow state mutations must flow through
 this service.
 
-ARCHITECTURAL RESPONSIBILITIES:
+RESPONSIBILITIES:
 - Create workflows in REQUESTED state
-- Validate state transitions against canonical state machine
-- Execute state transitions with audit trail
+- Validate and execute state transitions
 - Enforce authorization gates (especially IMPLEMENTING transition)
-- Prevent mutations after terminal state reached
-- Track complete state history
+- Prevent mutation of terminal states
+- Track complete state history for audit trail
+- Bind artifacts with hash verification
 
 SECURITY BOUNDARIES:
-- No transitions from terminal states (CERTIFIED, REJECTED)
-- IMPLEMENTING transition requires full authorization checks
-- Hash verification for IMPLEMENTING transition
-- Self-approval prevention
-- Evidence required for gate transitions (recommended)
+- No transitions allowed after terminal state reached (CERTIFIED or REJECTED)
+- IMPLEMENTING transition requires full authorization verification
+- Self-approval prevention enforced via ImplementationApproval
+- Hash verification for candidate and manifest binding
 
-USAGE:
-    governance_service = WorkflowGovernanceService()
-    
-    # Create workflow
-    workflow = governance_service.create_workflow(
-        target_family="Introduction",
-        target_version="I7",
-        requester_id="user_123"
-    )
-    
-    # Transition state
-    workflow = governance_service.transition_state(
-        workflow_id=workflow.workflow_id,
-        to_state=CanonicalWorkflowState.DISCOVERY,
-        triggered_by="system",
-        reason="Discovery agents completed"
-    )
+ARCHITECTURAL CONSTRAINTS:
+- Single source of truth for workflow state
+- All state transitions must use validate_transition() → transition_state()
+- Terminal state enforcement is absolute (no exceptions)
+- Authorization gates block until approval granted
 """
 
 from datetime import datetime, timezone
@@ -60,22 +47,27 @@ class WorkflowGovernanceService:
     """
     Governance service for canonical workflow state management.
     
-    This service enforces workflow state machine rules, authorization gates,
-    and terminal state boundaries. It provides the ONLY interface for workflow
-    state mutations.
+    RESPONSIBILITIES:
+    - Create workflows in REQUESTED state
+    - Validate and execute state transitions
+    - Enforce authorization gates
+    - Prevent mutation of terminal states
+    - Track state history
     
-    IMPLEMENTATION NOTE:
-    Wave 0 uses in-memory storage. Future waves will add database persistence.
+    SECURITY BOUNDARIES:
+    - No transitions after terminal state reached
+    - Hash verification for IMPLEMENTING transition
+    - Self-approval prevention
+    - Evidence required for gate transitions
     """
     
     def __init__(self):
         """
-        Initialize governance service with in-memory storage.
+        Initialize workflow governance service.
         
-        In Wave 0, workflows and approvals are stored in memory dictionaries.
-        Wave 1+ will replace this with database-backed storage.
+        In-memory storage for M2.9 Wave 0 (persistence deferred to Wave 1+).
         """
-        # In-memory storage for M2.9 Wave 0
+        # In-memory storage for M2.9 (Wave 1+ will add persistence)
         self._workflows: Dict[str, ProjectLLMWorkflow] = {}
         self._approvals: Dict[str, ImplementationApproval] = {}
     
@@ -96,10 +88,10 @@ class WorkflowGovernanceService:
             purpose: Optional purpose description
             
         Returns:
-            New workflow in REQUESTED state with unique workflow_id
+            New workflow in REQUESTED state
         """
         workflow_id = str(uuid4())
-        specification_id = target_version  # e.g., "I7"
+        specification_id = f"{target_family[0]}{target_version}"  # e.g., "I7"
         now = datetime.now(timezone.utc)
         
         initial_transition = StateTransition(
@@ -136,7 +128,7 @@ class WorkflowGovernanceService:
             workflow_id: Workflow identifier
             
         Returns:
-            Workflow if found, None otherwise
+            ProjectLLMWorkflow instance or None if not found
         """
         return self._workflows.get(workflow_id)
     
@@ -148,19 +140,12 @@ class WorkflowGovernanceService:
         """
         Validate if a state transition is allowed.
         
-        Checks:
-        1. Workflow exists
-        2. Workflow is not in terminal state
-        3. Transition is valid per canonical state machine
-        
         Args:
             workflow_id: Workflow to transition
             to_state: Target state
             
         Returns:
             Tuple of (is_valid, reason)
-            - (True, "") if transition is valid
-            - (False, reason) if transition is invalid
         """
         workflow = self.get_workflow(workflow_id)
         if not workflow:
@@ -187,22 +172,15 @@ class WorkflowGovernanceService:
         """
         Execute a state transition with validation.
         
-        This method:
-        1. Validates the transition is allowed
-        2. For IMPLEMENTING transition, checks all authorization gates
-        3. Creates StateTransition record
-        4. Updates workflow state and history
-        5. Sets final_status for terminal states
-        
         Args:
             workflow_id: Workflow to transition
             to_state: Target state
-            triggered_by: User or system component (e.g., "system", "user_123")
+            triggered_by: User or system component
             evidence_id: Optional evidence ID for audit trail
             reason: Optional reason for transition
             
         Returns:
-            Updated workflow with new state
+            Updated workflow
             
         Raises:
             ValueError: If transition is invalid or unauthorized
@@ -256,21 +234,15 @@ class WorkflowGovernanceService:
         """
         Register an implementation approval for workflow.
         
-        Binds ImplementationApproval to workflow for authorization checks.
-        
         Args:
             workflow_id: Workflow ID
             approval: ImplementationApproval record
-            
-        Raises:
-            ValueError: If workflow not found
         """
-        workflow = self._workflows.get(workflow_id)
-        if not workflow:
-            raise ValueError(f"Workflow not found: {workflow_id}")
-        
         self._approvals[workflow_id] = approval
-        workflow.approval_id = approval.approval_id
+        
+        workflow = self._workflows.get(workflow_id)
+        if workflow:
+            workflow.approval_id = approval.approval_id
     
     def bind_artifact(
         self,
@@ -281,12 +253,6 @@ class WorkflowGovernanceService:
     ) -> None:
         """
         Bind an artifact to workflow with hash.
-        
-        Artifacts are hash-bound for tamper detection. Valid artifact types:
-        - contract: Engineering contract for External AI
-        - candidate: User-uploaded implementation package
-        - manifest: Placement manifest for file operations
-        - snapshot: Final repository snapshot after implementation
         
         Args:
             workflow_id: Workflow ID
