@@ -1,21 +1,24 @@
 {
-  "reconciliation_note": "Phase 0 reconciliation by W6-R3-0 on 2026-10-08. Classification was stale — described a historical snapshot already resolved before commit a5f14c26. True W6-caused production regressions: 0 proven.",
+  "reconciliation_note": "Phase 2 reconciliation by Agent F on 2026-10-08 at HEAD b8b3f29d. E1 fixed 8 certification failures. E2 fixed 15 placement failures. All targeted test suites now passing. True W6-caused production regressions: 0 proven.",
   "summary": {
     "total": 422,
     "baseline": 25,
     "production": 0,
     "architectural": 0,
-    "certification": 8,
-    "placement_w5r2_baseline": 15,
+    "certification": 0,
+    "placement_w5r2_baseline": 0,
     "false_positive": 74,
     "diagnostic": 209
   },
   "metadata": {
     "classification_date": "2026-10-08T04:35:00Z",
+    "reconciliation_date": "2026-10-08T12:45:00Z",
     "branch": "m2-project-ai-canonical-wiring",
+    "current_head": "b8b3f29d",
     "hygiene_commit": "fea4f899",
     "w6_baseline_expected": 139,
     "current_total": 422,
+    "phase_2_result": "E1 fixed 8 certification failures, E2 fixed 15 placement failures. All targeted test suites (certification, placement, verification, security) now passing.",
     "discrepancy_note": "283 additional failures beyond W6 baseline, likely due to .worktrees/ removal in hygiene commit fea4f899",
     "correction_note": "Phase 2 investigation revealed 12 BlockTelemetryProvider failures were pre-existing at W5-R2 (commit 9494407d). Updated baseline from 58 to 70. W6 introduced 69 architectural failures, not 81 total."
   },
@@ -99,86 +102,22 @@
   ],
   "certification": [
     {
+      "status": "FIXED by E1 at HEAD b8b3f29d",
       "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_runtime_gate_blocked_with_empty_snapshot",
-      "error": "Runtime gate test expects old snapshot structure",
-      "oldPattern": "Test fixture has old block format without UBRC attributes",
-      "newPattern": "Snapshot must include data-block-id, data-block-type, data-block-version"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_runtime_gate_fails_with_missing_block",
-      "error": "Runtime gate test expects old block structure",
-      "oldPattern": "Missing block detection logic expects old format",
-      "newPattern": "Block detection must check for UBRC attributes"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_runtime_gate_collects_evidence_ids",
-      "error": "Evidence ID format changed",
-      "oldPattern": "Old evidence ID format",
-      "newPattern": "Evidence IDs may now include UBRC attribute hashes"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_runtime_gate_verifies_multiple_blocks",
-      "error": "Multiple block verification expects old format",
-      "oldPattern": "Block array has old structure",
-      "newPattern": "Each block must have UBRC attributes"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_browser_gate_blocked_with_empty_snapshot",
-      "error": "Browser gate expects old snapshot",
-      "oldPattern": "Empty snapshot format changed",
-      "newPattern": "Snapshot structure includes UBRC requirements"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_browser_gate_collects_evidence_ids",
-      "error": "Browser evidence IDs changed",
-      "oldPattern": "Old evidence ID collection",
-      "newPattern": "Evidence includes UBRC DOM attribute verification"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_gates.py",
-      "test": "test_browser_gate_creates_screenshot_directory",
-      "error": "Screenshot directory structure may have changed",
-      "oldPattern": "Old screenshot path format",
-      "newPattern": "Path may include block IDs from runtimeContext"
-    },
-    {
-      "file": "services/project-ai/tests/certification/test_certification_pipeline.py",
-      "test": "1 certification pipeline manifest schema test",
-      "error": "Certification pipeline expects updated manifest schema with UBRC evidence fields",
-      "oldPattern": "Old manifest schema without UBRC/theme evidence",
-      "newPattern": "Manifest schema must include ubrc_evidence and theme_evidence fields"
+      "test": "8 certification gate tests (runtime_gate and browser_gate variants)",
+      "error": "Test fixtures had stale snapshot structures",
+      "resolution": "E1 updated test fixtures to match current snapshot requirements with UBRC attributes",
+      "tests_passing": "38/38 certification tests now passing"
     }
   ],
   "placement_w5r2_baseline": [
     {
-      "file": "services/project-ai/tests/placement/test_placement.py",
-      "test": "test_executor_rejects_unapproved_manifest",
-      "error": "Manifest validation expects signature changed in W5-R2",
-      "reason": "W5-R2 baseline failure - placement executor signature changed, not W6-caused"
-    },
-    {
-      "file": "services/project-ai/tests/placement/test_placement.py",
-      "test": "test_executor_verifies_manifest_hash",
-      "error": "Manifest hash calculation changed in W5-R2",
-      "reason": "W5-R2 baseline failure - placement executor signature changed, not W6-caused"
-    },
-    {
-      "file": "services/project-ai/tests/placement/test_placement.py",
-      "test": "test_executor_rejects_reject_decision",
-      "error": "Rejection logic changed in W5-R2",
-      "reason": "W5-R2 baseline failure - placement executor signature changed, not W6-caused"
-    },
-    {
-      "file": "services/project-ai/tests/placement/test_placement_executor.py",
-      "test": "12 placement executor tests failing due to W5-R2 API changes",
-      "error": "Placement executor signature changed in W5-R2, tests not updated",
-      "reason": "W5-R2 baseline failures - these are from earlier milestone, not W6-caused"
+      "status": "FIXED by E2 at HEAD b8b3f29d",
+      "file": "services/project-ai/tests/placement/test_placement_executor.py and tests/test_placement.py",
+      "test": "15 placement executor tests failing due to W5-R2 signature change",
+      "error": "Missing candidate_sha256 parameter in test calls to placement executor",
+      "resolution": "E2 added candidate_sha256 parameter to all executor test calls",
+      "tests_passing": "96/99 placement tests now passing (3 skipped by design)"
     }
   ],
   "false_positive": [
@@ -327,11 +266,21 @@
       "gate_success_criteria": "70 failures (true baseline restoration)"
     },
     "phase_2_outcome": {
+      "certification_regressions_fixed": 8,
+      "placement_regressions_fixed": 15,
       "production_regressions_fixed": 0,
       "reason": "No W6-caused production regressions existed - 12 BlockTelemetry failures were pre-existing baseline",
-      "verification_method": "git checkout W5-R2 (9494407d) + test run showed identical failures",
-      "instrumentation_proof": "Added logging to BlockTelemetryProvider proved fetch calls work correctly",
-      "classification_correction": "Moved 12 BlockTelemetry failures from 'production' to 'baseline' category"
+      "verification_method": "git checkout W5-R2 (9494407d) + test run showed identical failures (E1 investigation)",
+      "instrumentation_proof": "Added logging to BlockTelemetryProvider proved fetch calls work correctly (E1 investigation)",
+      "classification_correction": "Moved 12 BlockTelemetry failures from 'production' to 'baseline' category",
+      "final_state": {
+        "certification_tests": "38 passed / 38 total",
+        "placement_tests": "96 passed / 99 total (3 skipped by design)",
+        "verification_tests": "44 passed / 44 total",
+        "security_tests": "146 passed / 149 total (3 skipped by design)",
+        "w5_r2_authorization": "INTACT - verified by security regression check",
+        "self_approval_prevention": "VERIFIED in both certification and placement pipelines"
+      }
     }
   }
 }
