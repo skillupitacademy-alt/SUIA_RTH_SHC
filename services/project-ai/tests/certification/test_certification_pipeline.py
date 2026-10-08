@@ -76,6 +76,7 @@ def complete_snapshot():
                 'evidenceId': 'ev-test-001',
                 'kind': 'test-result',
                 'path': 'packages/ui/src/tutorial/blocks/__tests__/IntroductionBlock.test.tsx',
+                'contentHash': 'test789',
                 'description': 'Introduction block tests',
                 'status': 'passed'
             },
@@ -92,12 +93,13 @@ def complete_snapshot():
 
 @pytest.fixture
 def complete_manifest():
-    """Create a complete placement manifest."""
+    """Create a complete placement manifest with non-inferrable candidate ID."""
     from app.models.candidate import PlacementDecision, BlockFamily
     
+    # Use non-inferrable candidate ID to avoid path inference detection
     manifest = PlacementManifest(
         manifestId="test-manifest-complete",
-        candidateId="introduction-i7",
+        candidateId="candidate-20250129-pipeline-001",  # Non-inferrable ID
         decision=PlacementDecision.ADD,
         targetPath="packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
         blockFamily=BlockFamily.INTRODUCTION,
@@ -107,7 +109,7 @@ def complete_manifest():
         manifestHash="",
         createdAt="2025-01-29T10:00:00Z"
     )
-    # Compute hash
+    # Compute hash using exact algorithm from gates.py
     manifest_copy = manifest.model_copy()
     manifest_copy.manifestHash = ""
     manifest_json = manifest_copy.model_dump_json(exclude_none=True, indent=2)
