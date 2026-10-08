@@ -1,24 +1,23 @@
 """
 Intelligence Module - Repository and Block Analysis
 
-Provides services for analyzing repository structure and extracting
-canonical block contracts.
+DEPRECATED: This module previously provided filesystem-based repository intelligence.
+The implementation has been migrated to app.contracts.repository_intelligence with
+snapshot-based intelligence that respects the architectural boundary.
+
+Production code should import from app.contracts.repository_intelligence instead:
+    from app.contracts.repository_intelligence import (
+        RepositoryBlockContract,
+        RepositoryEvidenceBlocked,
+        build_contract,
+    )
+
+The old filesystem-scanning implementation has been archived to:
+    app/intelligence/repository_intelligence.py.archived
 """
 
-from .repository_intelligence import (
-    CanonicalReference,
-    RuntimeContract,
-    RepositoryBlockContract,
-    discover_canonical_blocks,
-    analyze_block_patterns,
-    build_repository_contract,
-)
+# This module no longer exports anything.
+# All imports from app.intelligence.repository_intelligence will fail.
+# Update your code to import from app.contracts.repository_intelligence instead.
 
-__all__ = [
-    'CanonicalReference',
-    'RuntimeContract',
-    'RepositoryBlockContract',
-    'discover_canonical_blocks',
-    'analyze_block_patterns',
-    'build_repository_contract',
-]
+__all__ = []
