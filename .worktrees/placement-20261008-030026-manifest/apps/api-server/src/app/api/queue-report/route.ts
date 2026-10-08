@@ -1,0 +1,319 @@
+import { db, exams, reports } from "@quiz/db";
+import { METRICS } from "@quiz/observability";
+import { Client } from "@upstash/workflow";
+import { eq } from "drizzle-orm";
+import { after, NextRequest } from "next/server";
+
+export const dynamic = 'force-dynamic';
+
+import { validateBrandOrThrow } from '@quiz/auth';
+
+import { badRequest, forbidden, unauthorized } from "@/lib/api-error";
+import { ApiResponse } from "@/lib/api-response";
+import { logger } from "@/lib/logger";
+import { recordCounter, recordTimer } from "@/lib/metrics";
+import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from "@/lib/sanitize";
+import { uploadReport } from "@/lib/storage/upload-report";
+import { withLogging } from "@/lib/withLogging";
+import { TokenService } from "@/modules/auth/token.service";
+import { cacheService } from "@/modules/core/cache.service";
+import { container } from '@/modules/core/container';
+import { ReportPdfService } from "@/modules/report-engine/report-pdf.service";
+import { ReportRepository } from "@/modules/report-engine/report-repository";
+
+export const runtime = "nodejs";
+
+function buildReportDownloadUrl(attemptId: string) {
+  const rawBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+  if (rawBase.trim() === "") {
+    return `/api/reports/download?attemptId=${encodeURIComponent(attemptId)}`;
+  }
+  const base = rawBase.replace(/\/api\/?$/, "").replace(/\/+$/, "");
+  return `${base}/api/reports/download?attemptId=${encodeURIComponent(attemptId)}`;
+}
+
+async function postHandler(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    
+    // Ingest and sanitize JSON body
+    let raw;
+    try {
+      raw = await req.json();
+      validateJsonSize(raw);
+      validateJsonDepth(raw);
+    } catch {
+      raw = {};
+    }
+    const body = sanitizeJsonField(raw) as Record<string, unknown>;
+
+    const attemptFromBody = typeof body.attemptId === "string" ? body.attemptId : "";
+    const attemptFromParams = searchParams.get("id") ?? searchParams.get("attemptId") ?? "";
+    const attemptId = (attemptFromBody || attemptFromParams).trim();
+    const force = body.force === true || searchParams.get("force") === "true";
+    const theme = typeof body.theme === "string" ? body.theme : (searchParams.get("theme") ?? "dark");
+
+    if (attemptId === "") {
+      throw badRequest("Missing attemptId");
+    }
+
+    // 1. Auth Validation (User Token or Internal Key)
+    const internalKeyHeader = req.headers.get("x-internal-key") ?? "";
+    const internalSecret = process.env.INTERNAL_API_KEY;
+    
+    if (typeof internalSecret !== "string" || internalSecret.length === 0) {
+      logger.error("[QueueReport] INTERNAL_API_KEY is not configured in environment");
+      return ApiResponse.error(new Error("System configuration error"), 500);
+    }
+
+    const isInternal = internalKeyHeader === internalSecret;
+    
+    let userId: string;
+
+    if (isInternal) {
+      const examMatch = await db.query.exams.findFirst({
+        where: eq(exams.id, attemptId),
+        columns: { userId: true, status: true, exportUrls: true }
+      });
+      if (examMatch === null || examMatch === undefined) throw badRequest("Exam not found");
+      userId = examMatch.userId;
+    } else {
+      const token = container.get(TokenService).getAccessToken(req, { scope: "user" });
+      if (token === null || token === undefined || token === "") throw unauthorized("Unauthorized");
+      
+      const payload = await container.get(TokenService).verifyUserAccessToken(token);
+      if (payload === null || payload === undefined || payload.userId === null || payload.userId === undefined) {
+        throw unauthorized("Unauthorized");
+      }
+      
+      // 🔥 SECURITY FIX: Validate brand context (defense in depth)
+      try {
+        validateBrandOrThrow({ brand: payload?.brand, userId: payload?.userId }, req);
+      } catch (brandError) {
+        console.error('[Queue Report] Brand validation failed:', brandError);
+        return ApiResponse.error({
+          code: 'BRAND_MISMATCH',
+          message: brandError instanceof Error ? brandError.message : 'Brand validation failed',
+        }, 403);
+      }
+      
+      userId = payload.userId;
+
+      const exam = await db.query.exams.findFirst({
+        where: eq(exams.id, attemptId),
+        columns: { userId: true, status: true, exportUrls: true }
+      });
+
+      if (exam === null || exam === undefined) {
+        throw badRequest("Exam not found");
+      }
+
+      if (exam.userId !== userId) {
+        throw forbidden("Exam does not belong to this user");
+      }
+
+      if (exam.status !== "completed") {
+        throw badRequest("Exam is not completed");
+      }
+    }
+
+    // 2. Idempotency: if a ready PDF already exists, return immediately
+    const existingReport = await ReportRepository.getReportByAttempt(attemptId);
+    if (existingReport?.status === "ready" && typeof existingReport.fileRef === "string" && existingReport.fileRef.trim() !== "") {
+      // Validate storage existence; if blob was deleted, regenerate instead of returning stale refs.
+      const { storage } = await import("@/lib/storage");
+      const exists = await storage.exists(existingReport.fileRef);
+      if (exists) {
+        logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via report record");
+        return ApiResponse.success({ status: "ready", attemptId, downloadUrl: buildReportDownloadUrl(attemptId) });
+      }
+      logger.warn({ attemptId }, "[QueueReport] Stale report.fileRef detected (missing in storage) - regenerating");
+
+      // Reset the stale "ready" state so /api/report-status can report pending/generating instead of not_found.
+      // Also clear the stale fileRef so future existence checks don't keep failing.
+      await db
+        .update(reports)
+        .set({
+          status: "pending",
+          fileRef: null,
+          errorStage: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(reports.attemptId, attemptId))
+        .catch(() => {});
+    }
+
+    const examExport = await db.query.exams.findFirst({
+      where: eq(exams.id, attemptId),
+      columns: { exportUrls: true }
+    });
+    const existingPdfUrl = (examExport?.exportUrls as { analytics_pdf?: string } | null)?.analytics_pdf;
+    if (typeof existingPdfUrl === "string" && existingPdfUrl.trim() !== "") {
+      const { storage } = await import("@/lib/storage");
+      const exists = await storage.exists(existingPdfUrl);
+      if (exists) {
+        logger.info({ attemptId }, "[QueueReport] PDF idempotency hit via exams.export_urls");
+        return ApiResponse.success({ status: "ready", attemptId, downloadUrl: buildReportDownloadUrl(attemptId) });
+      }
+      logger.warn({ attemptId }, "[QueueReport] Stale exams.export_urls.analytics_pdf detected (missing in storage) - regenerating");
+
+      // Clear the stale pointer so UI ticks and status don't keep claiming a missing artifact exists.
+      const nextUrls = { ...((examExport?.exportUrls as Record<string, unknown> | null) ?? {}) };
+      delete (nextUrls as Record<string, unknown>).analytics_pdf;
+      await db
+        .update(exams)
+        .set({ exportUrls: nextUrls })
+        .where(eq(exams.id, attemptId))
+        .catch(() => {});
+    }
+
+    // 3. Proactive Rate Limit check (3 per min)
+    const { count, ttlRem } = await cacheService.increment(`ratelimit:pdf:${userId}`, 60000);
+    if (count > 3) {
+      return ApiResponse.error(new Error("Rate limit exceeded"), 429, undefined, {
+        'Retry-After': ttlRem.toString(),
+        'X-Error-Message': `Limit reached. Next report available in ${ttlRem} seconds.`
+      });
+    }
+
+    // 4. Concurrency Guard with Stale-Job Recovery
+    if (existingReport !== null && existingReport !== undefined && (existingReport.status === "pending" || existingReport.status === "generating")) {
+      const updatedAt = existingReport.updatedAt instanceof Date
+        ? existingReport.updatedAt.getTime()
+        : new Date(existingReport.updatedAt ?? 0).getTime();
+      const staleDuration = Date.now() - updatedAt;
+      const STALE_THRESHOLD_MS = 30 * 1000; // 30 seconds
+
+      if (staleDuration < STALE_THRESHOLD_MS && !force) {
+        // Genuinely in-flight — don't duplicate
+        logger.info({ attemptId, status: existingReport.status, staleDuration }, "[QueueReport] Duplicate job ignored");
+        return ApiResponse.success({ status: "queued", attemptId, message: "Generation already in progress" });
+      }
+
+      // Stale job detected — reset and allow re-trigger below
+      logger.warn({ attemptId, status: existingReport.status, staleDuration }, "[QueueReport] Stale job detected, resetting to pending");
+      await ReportRepository.updateReportStatus(attemptId, "pending", undefined);
+    }
+
+    // 5. State Machine Init
+    await ReportRepository.createReportIfNotExists({ attemptId, userId, status: "pending" });
+
+    // 6. Prefer Upstash Workflow when enabled; fall back to local serverless generation
+    const queuesEnabled = process.env.QUEUE_ENABLED === "true";
+    const qstashToken = typeof process.env.QSTASH_TOKEN === "string" ? process.env.QSTASH_TOKEN : "";
+    const qstashUrl = typeof process.env.QSTASH_URL === "string" && process.env.QSTASH_URL.trim() !== ""
+      ? process.env.QSTASH_URL
+      : "https://qstash.upstash.io";
+
+    if (queuesEnabled && qstashToken.trim() !== "") {
+      const workflowClient = new Client({
+        baseUrl: qstashUrl,
+        token: qstashToken,
+      });
+      // Robust construction: ensure exactly one /api prefix and no double slashes
+      const apiBase = (
+        typeof process.env.NEXT_PUBLIC_API_URL === "string" && process.env.NEXT_PUBLIC_API_URL.trim() !== ""
+          ? process.env.NEXT_PUBLIC_API_URL
+          : "https://api.realtutorialhub.com"
+      ).replace(/\/api\/?$/, "");
+      const workflowUrl = `${apiBase}/api/workflows/pdf-report`;
+
+      try {
+        logger.info({ attemptId, workflowUrl, apiBase }, "[QueueReport] Triggering PDF workflow");
+        await workflowClient.trigger({
+          url: workflowUrl,
+          body: { attemptId, userId, theme },
+          retries: 3
+        });
+        logger.info({ attemptId, workflowUrl }, "[QueueReport] Triggered PDF workflow");
+        return ApiResponse.success({ status: "queued", attemptId });
+      } catch (err) {
+        logger.error({ err, attemptId, workflowUrl }, "[QueueReport] Workflow trigger failed; falling back to local generation");
+      }
+    }
+
+    // Local inline generation inside after() ? preserves current PDF UX
+    after(async () => {
+      try {
+        const startTime = Date.now();
+        logger.info({ attemptId }, "[QueueReport] Starting direct PDF generation");
+        
+        // Stage 1: Rendering
+        await ReportRepository.updateReportStatus(attemptId, "generating", "rendering");
+        const { buffer, generationTimeMs, fileSizeKb, pageCount } = 
+          await ReportPdfService.generate(attemptId, undefined, undefined, undefined, undefined, { theme });
+        
+        const renderDuration = Date.now() - startTime;
+        recordTimer("reports.api.render.duration", renderDuration, { route: "/api/queue-report", outcome: "success" });
+
+        // Stage 2: Uploading
+        await ReportRepository.updateReportStatus(attemptId, "generating", "uploading");
+        const uploadStart = Date.now();
+        const fileRef = await uploadReport(buffer, userId, attemptId, {
+          fileBasename: `${attemptId}-student-infograph-report`,
+        });
+        const uploadDuration = Date.now() - uploadStart;
+        recordTimer("reports.api.upload.duration", uploadDuration, { route: "/api/queue-report", outcome: "success" });
+
+        await ReportRepository.updateReportSuccess(attemptId, {
+          fileRef,
+          generationTimeMs,
+          fileSizeKb,
+          pageCount
+        });
+
+        const examRow = await db.query.exams.findFirst({
+          where: eq(exams.id, attemptId),
+          columns: { exportUrls: true }
+        });
+        const nextExportUrls = {
+          ...(examRow?.exportUrls ?? {}),
+          analytics_pdf: fileRef
+        };
+        await db.update(exams).set({ exportUrls: nextExportUrls }).where(eq(exams.id, attemptId));
+        logger.info({ attemptId, fileRef }, "[QueueReport] Stored analytics_pdf in exams.export_urls");
+
+        const totalDuration = Date.now() - startTime;
+        recordTimer("reports.api.total.duration", totalDuration, { route: "/api/queue-report", outcome: "success", fileSizeKb });
+        recordCounter("reports.api.queue.count", 1, { route: "/api/queue-report", outcome: "success" });
+
+        logger.info({ 
+          attemptId, 
+          fileSizeKb, 
+          generationTimeMs, 
+          renderDuration, 
+          uploadDuration,
+          totalDuration 
+        }, "[QueueReport] PDF generation successful");
+      } catch (err) {
+        logger.error({ err, attemptId }, "[QueueReport] Background generation failed");
+        recordCounter("reports.api.queue.count", 1, { route: "/api/queue-report", outcome: "failure" });
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        const safeMsg = sanitizeReportError(msg);
+        await ReportRepository.updateReportStatus(attemptId, "failed", safeMsg).catch(() => {});
+      }
+    });
+
+    return ApiResponse.success({ status: "queued", attemptId });
+
+  } catch (error: unknown) {
+    logger.error({ err: error }, "[QueueReport] API Error");
+    recordCounter(METRICS.REPORTS.FAILURES, 1, { reason: 'internal_error' });
+    return ApiResponse.error(error);
+  }
+}
+
+export const POST = withLogging(postHandler, { component: 'reports', operation: 'queue_report' });
+
+function sanitizeReportError(message: string): string {
+  const lowered = message.toLowerCase();
+  if (
+    lowered.includes("upstash workflow") ||
+    lowered.includes("workflowabort") ||
+    lowered.includes("disabled-qstash") ||
+    lowered.includes("failed to authenticate workflow request")
+  ) {
+    return "PDF generation failed. Please retry.";
+  }
+  return message;
+}

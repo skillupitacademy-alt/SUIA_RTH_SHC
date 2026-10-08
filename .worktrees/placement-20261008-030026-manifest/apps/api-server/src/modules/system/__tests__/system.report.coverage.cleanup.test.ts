@@ -1,0 +1,115 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { db } from '@quiz/db';
+import { ReportMaterializer } from '../../../services/reports/ReportMaterializer';
+import { JobsService } from '@/modules/system/jobs.service';
+import { JobOrchestrator } from '@/modules/system/job-orchestrator';
+import { UsageService } from '@/modules/system/usage.service';
+import { resilienceManager } from '@/modules/core/resilience.manager';
+
+vi.mock('@quiz/db', () => ({
+  STANDARD_QUERY_TIMEOUT: 15000,
+  QUICK_QUERY_TIMEOUT: 5000,
+  REPORT_QUERY_TIMEOUT: 30000,
+  MIGRATION_TIMEOUT: 120000,
+  withTimeout: vi.fn(async (promise: Promise<any>) => promise),
+    db: {
+        query: {
+            exams: { findFirst: vi.fn() },
+            subtopics: { findMany: vi.fn() }
+        },
+        select: vi.fn(),
+        update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) })
+    },
+    exams: { id: 'id' },
+    users: { id: 'id' },
+    examQuestions: { id: 'id' },
+    questions: { id: 'id' },
+    topics: { id: 'id' },
+    subjects: { id: 'id' },
+    domains: { id: 'id' },
+    subtopics: { id: 'id' }
+}));
+
+vi.mock('@/modules/system/jobs.service');
+vi.mock('@/modules/core/resilience.manager');
+
+const makeSelect = (rows: any[] = []) => ({
+    from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    groupBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    then: (resolve: (value: unknown) => void) => resolve(rows),
+});
+
+describe('System and Report cleanup coverage', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        // Reset process.env for resilience tests
+        delete process.env.SAFE_MODE;
+    });
+
+    it('ReportMaterializer.materialize hits "Core Focus" fallback (Line 149)', async () => {
+        const examRow: any = { id: 'e1', userId: 'u1', user: null };
+        const questionRows = [
+            {
+                examQuestion: { id: 'eq1', userAnswer: 'A', isCorrect: true, responseMetadata: { timeSpentSeconds: 10 } },
+                question: {
+                    questionText: 'Q1',
+                    correctAnswer: 'A',
+                    difficulty: 'simple',
+                    topicId: 't1',
+                    subtopicId: null,
+                },
+                topic: { id: 't1', name: 'T1', subjectId: 's1' },
+                subject: { id: 's1', name: 'S1', domainId: 'd1' },
+                domain: { id: 'd1', name: 'D1' },
+            },
+        ];
+
+        vi.mocked(db.select)
+            .mockReturnValueOnce(makeSelect([{ exam: examRow, user: null }]))
+            .mockReturnValueOnce(makeSelect(questionRows));
+
+        vi.mocked(db.query.exams.findFirst).mockResolvedValue({
+            id: 'e1', userId: 'u1',
+            examQuestions: [{
+                id: 'eq1',
+                userAnswer: 'A', isCorrect: true, responseMetadata: { timeSpentSeconds: 10 },
+                question: {
+                    questionText: 'Q1', correctAnswer: 'A', difficulty: 'simple', topicId: 't1', type: 'mcq',
+                    topic: { id: 't1', name: 'T1', subjectId: 's1', subject: { id: 's1', name: 'S1', domainId: 'd1', domain: { id: 'd1', name: 'D1' } } }
+                }
+            }]
+        } as any);
+        // Mock empty subtopics to trigger "Core Focus" fallback
+        vi.mocked(db.query.subtopics.findMany).mockResolvedValue([]);
+
+        const report = await ReportMaterializer.materialize('e1');
+        const topicData: any = Object.values(report.datasets.topics)[0];
+        expect(topicData.subtopics[0].name).toBe('Core Focus');
+    });
+
+    it('JobOrchestrator returns early if job not found (Line 26-28)', async () => {
+        vi.mocked(JobsService.getJob).mockResolvedValue(undefined);
+        await expect(JobOrchestrator.runJob('none', 'u1')).resolves.not.toThrow();
+    });
+
+    it('UsageService.cloudflare handles response.ok === false (Line 235-237)', async () => {
+        process.env.CLOUDFLARE_API_TOKEN = 'token';
+        process.env.CLOUDFLARE_ZONE_ID = 'zone';
+        
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: false,
+            statusText: 'Forbidden'
+        });
+
+        const usage = await (UsageService as any).getCloudflareStats();
+        expect(usage.status).toBe('_error');
+        expect(usage._error.message).toContain('Forbidden');
+    });
+});
+
+

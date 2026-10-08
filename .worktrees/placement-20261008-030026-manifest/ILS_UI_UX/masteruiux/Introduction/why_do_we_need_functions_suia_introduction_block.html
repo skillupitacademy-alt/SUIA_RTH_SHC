@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUIA - Why Do We Need Functions?</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Plus Jakarta Sans, Fira Code & Caveat -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#F54A8D',
+                            'pink-dark': '#E03375',
+                            'pink-light': '#FFF0F5',
+                            'pink-soft': '#FDF2F8',
+                            navy: '#0F172A',
+                            'navy-blue': '#133382',
+                            'blue-soft': '#EEF2FF',
+                            'blue-light': '#E0F2FE',
+                            mint: '#ECFDF5',
+                            'mint-dark': '#059669',
+                            muted: '#64748B',
+                            bg: '#FAFAFC'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        code: ['Fira Code', 'monospace'],
+                        hand: ['Caveat', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FFFFFF;
+            color: #0F172A;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Handwritten annotation typography */
+        .handwritten-text {
+            font-family: 'Caveat', cursive;
+        }
+
+        .curved-underline {
+            position: relative;
+        }
+        .curved-underline::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath d='M0 15 Q 50 0, 100 15' stroke='%23F54A8D' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center center;
+            background-size: 100% 100%;
+        }
+
+        /* Smooth floating animation */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-float {
+            animation: floatSlow 3.5s ease-in-out infinite;
+        }
+
+        /* Speech Bubble Arrow */
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #FFF0F5 transparent;
+            display: block;
+            width: 0;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen pb-12">
+
+    <div id="app" class="max-w-[1140px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+
+        <!-- TOP HEADER NAVBAR -->
+        <header class="flex flex-col sm:flex-row items-center justify-between py-4 border-b border-slate-100 gap-4">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-pink flex items-center justify-center text-white text-xl shadow-md shadow-brand-pink/20">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <div class="font-extrabold text-2xl tracking-tight text-brand-pink leading-none flex items-center gap-1">
+                        SUIA
+                    </div>
+                    <div class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Skill Up IT Academy</div>
+                </div>
+            </div>
+
+            <!-- Search Bar & User Actions -->
+            <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
+                <div class="relative w-full sm:w-80">
+                    <input type="text" placeholder="Search anything..." class="w-full bg-slate-50 border-none rounded-full py-2.5 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-pink/30 transition-all placeholder:text-slate-400">
+                    <button class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-pink transition-colors">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Bell Notification -->
+                <button class="relative w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-brand-pink transition-colors flex-shrink-0">
+                    <i class="fa-regular fa-bell text-base"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-pink"></span>
+                </button>
+
+                <!-- Profile Avatar -->
+                <div class="w-10 h-10 rounded-full bg-brand-pink text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-pink/20">
+                    S
+                </div>
+            </div>
+        </header>
+
+        <!-- BREADCRUMBS -->
+        <nav class="flex items-center gap-2 text-xs font-medium text-slate-500 py-4 overflow-x-auto whitespace-nowrap">
+            <a href="#" class="hover:text-brand-pink transition-colors"><i class="fa-solid fa-house"></i></a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-category">Full Stack Development</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-module">Frontend Development (FE)</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <a href="#" class="hover:text-brand-pink transition-colors" id="bc-topic">JavaScript</a>
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
+            <span class="font-bold text-brand-pink" id="bc-lesson">Introduction: Why Do We Need Functions?</span>
+        </nav>
+
+        <!-- HERO SECTION -->
+        <section class="mt-2 mb-8 relative">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <!-- Left Title Content -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-pink-light text-brand-pink font-bold text-xs">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span id="hero-badge">Introduction Block – I2</span>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-navy-blue tracking-tight leading-tight" id="hero-title">
+                        Why Do We Need Functions?
+                    </h1>
+
+                    <p class="text-slate-600 text-base sm:text-lg leading-relaxed max-w-2xl" id="hero-subtitle">
+                        Let's start with a common problem, understand the need for a solution, and then see how functions in JavaScript help us solve it.
+                    </p>
+                </div>
+
+                <!-- Right Visual Illustration -->
+                <div class="lg:col-span-5 relative flex flex-col items-center justify-center">
+                    
+                    <!-- Top Handwritten Motivation -->
+                    <div class="self-end mb-2 mr-6 text-right">
+                        <div class="handwritten-text text-brand-navy-blue font-extrabold text-xl leading-none">
+                            Learn<br>Apply<br><span class="curved-underline text-brand-pink">Grow</span>
+                        </div>
+                    </div>
+
+                    <!-- Illustration Container -->
+                    <div class="relative w-full max-w-[340px] h-[200px] flex items-center justify-center">
+                        
+                        <!-- Pink Speech Bubble -->
+                        <div class="absolute -top-2 right-4 bg-brand-pink-light text-brand-navy-blue p-3.5 rounded-2xl max-w-[210px] text-xs font-semibold shadow-sm z-20 speech-bubble animate-float">
+                            <span class="handwritten-text text-base text-brand-navy font-bold leading-tight block">
+                                Can we write the same code again and again?
+                            </span>
+                        </div>
+
+                        <!-- Question Mark Graphic -->
+                        <div class="absolute top-0 right-28 text-brand-pink font-extrabold text-4xl animate-bounce">
+                            ?
+                        </div>
+
+                        <!-- Thinking Person SVG Graphic -->
+                        <div class="w-48 h-48 relative flex items-end justify-center">
+                            <svg viewBox="0 0 200 200" class="w-full h-full">
+                                <!-- Background Ambient Blob -->
+                                <path d="M40 100 C 40 40, 160 40, 160 100 C 160 160, 40 160, 40 100 Z" fill="#FFF0F5" opacity="0.6"/>
+                                <!-- Body / Shirt -->
+                                <path d="M60 190 Q 100 130 140 190 Z" fill="#F54A8D" />
+                                <!-- Neck -->
+                                <rect x="92" y="115" width="16" height="25" fill="#FDBA74" rx="4"/>
+                                <!-- Head -->
+                                <circle cx="100" cy="90" r="30" fill="#FED7AA"/>
+                                <!-- Hair -->
+                                <path d="M72 85 C 72 60, 128 60, 128 85 C 120 70, 80 70, 72 85 Z" fill="#1E293B"/>
+                                <path d="M70 85 C 65 95, 75 105, 75 105" stroke="#1E293B" stroke-width="4" fill="none"/>
+                                <!-- Eyebrows & Eyes -->
+                                <ellipse cx="92" cy="88" rx="2" ry="3" fill="#0F172A"/>
+                                <ellipse cx="108" cy="88" rx="2" ry="3" fill="#0F172A"/>
+                                <!-- Thoughtful Expression Smile -->
+                                <path d="M94 102 Q 100 106 106 102" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                <!-- Arm Thinking Position -->
+                                <path d="M125 180 Q 110 145 102 118" stroke="#F54A8D" stroke-width="14" stroke-linecap="round" fill="none"/>
+                                <!-- Hand at chin -->
+                                <circle cx="100" cy="112" r="8" fill="#FED7AA"/>
+                            </svg>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEARNING GOAL CARD -->
+        <section class="mb-10">
+            <div class="bg-brand-pink-light rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                <!-- Target Icon Circle -->
+                <div class="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center text-brand-pink text-2xl flex-shrink-0">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <!-- Text Content -->
+                <div class="space-y-1">
+                    <h3 class="text-brand-pink font-bold text-lg sm:text-xl">Learning Goal</h3>
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="learning-goal-text">
+                        Understand why functions are needed in JavaScript by looking at a real problem and how functions provide a clean and reusable solution.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 1: THE PROBLEM -->
+        <section class="mb-12 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    1
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">The Problem</h2>
+            </div>
+
+            <p class="text-slate-700 text-sm sm:text-base leading-relaxed pl-11">
+                Imagine you are building a simple calculator. You need to add two numbers many times in your program.
+            </p>
+
+            <!-- Problem Details Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+                
+                <!-- Left: Code Box Without Function -->
+                <div class="lg:col-span-6 bg-slate-50/80 rounded-2xl p-5 sm:p-6 font-code space-y-4">
+                    <div class="text-slate-700 font-bold text-sm border-b border-slate-200/60 pb-2">
+                        Without a Function
+                    </div>
+                    
+                    <div class="space-y-2 text-xs sm:text-sm">
+                        <div class="flex items-center justify-between text-slate-800">
+                            <div><span class="text-brand-pink font-semibold">let</span> result1 = <span class="text-blue-600 font-semibold">5 + 3</span>;</div>
+                            <span class="text-slate-400">// 8</span>
+                        </div>
+                        <div class="flex items-center justify-between text-slate-800">
+                            <div><span class="text-brand-pink font-semibold">let</span> result2 = <span class="text-blue-600 font-semibold">10 + 4</span>;</div>
+                            <span class="text-slate-400">// 14</span>
+                        </div>
+                        <div class="flex items-center justify-between text-slate-800">
+                            <div><span class="text-brand-pink font-semibold">let</span> result3 = <span class="text-blue-600 font-semibold">25 + 7</span>;</div>
+                            <span class="text-slate-400">// 32</span>
+                        </div>
+                        <div class="flex items-center justify-between text-slate-800">
+                            <div><span class="text-brand-pink font-semibold">let</span> result4 = <span class="text-blue-600 font-semibold">100 + 50</span>;</div>
+                            <span class="text-slate-400">// 150</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Callout Pink Box -->
+                <div class="lg:col-span-6 bg-brand-pink-light rounded-2xl p-5 sm:p-6 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center font-extrabold text-sm flex-shrink-0">
+                            !
+                        </div>
+                        <h4 class="font-bold text-brand-pink text-base sm:text-lg">What's the problem?</h4>
+                    </div>
+
+                    <ul class="space-y-3 text-slate-700 text-xs sm:text-sm">
+                        <li class="flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-check text-brand-pink text-base mt-0.5 flex-shrink-0"></i>
+                            <span>We are writing the same code again and again.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-check text-brand-pink text-base mt-0.5 flex-shrink-0"></i>
+                            <span>It makes the program longer.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-check text-brand-pink text-base mt-0.5 flex-shrink-0"></i>
+                            <span>It is harder to maintain.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-check text-brand-pink text-base mt-0.5 flex-shrink-0"></i>
+                            <span>If we need to change the logic, we must update every place where it appears.</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: THE NEED -->
+        <section class="mb-12 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    2
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">The Need</h2>
+            </div>
+
+            <p class="text-slate-700 text-sm sm:text-base leading-relaxed pl-11">
+                We need a reusable way to perform the same task multiple times.
+            </p>
+
+            <!-- Soft Tinted 4-Column Box -->
+            <div class="bg-brand-blue-soft/80 rounded-2xl p-6 sm:p-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-200/60" id="the-need-grid">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: THE SOLUTION: FUNCTIONS -->
+        <section class="mb-12 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-brand-pink text-white font-extrabold flex items-center justify-center text-sm shadow-md shadow-brand-pink/20 flex-shrink-0">
+                    3
+                </span>
+                <h2 class="text-xl sm:text-2xl font-bold text-brand-navy-blue">The Solution: Functions</h2>
+            </div>
+
+            <p class="text-slate-700 text-sm sm:text-base leading-relaxed pl-11">
+                A function allows us to group a set of statements together, give it a name, and use it whenever needed.
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+                
+                <!-- Left: Dark Syntax Highlighted Code Sandbox Box -->
+                <div class="lg:col-span-6 bg-brand-navy rounded-2xl p-5 sm:p-6 text-white font-code shadow-xl overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <!-- Title & Copy Header -->
+                        <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800 text-xs">
+                            <span class="text-slate-300 font-bold tracking-wider">Using a Function</span>
+                            <button onclick="copyCode()" id="copy-btn" class="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
+                                <i class="fa-regular fa-copy"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+
+                        <!-- Code Content with Line Numbers -->
+                        <div class="text-xs sm:text-sm space-y-1.5 leading-relaxed">
+                            <div class="flex gap-4">
+                                <span class="text-slate-600 select-none w-4 text-right">1</span>
+                                <div><span class="text-pink-400 font-bold">function</span> <span class="text-blue-300 font-bold">add</span>(<span class="text-amber-300">a</span>, <span class="text-amber-300">b</span>) {</div>
+                            </div>
+                            <div class="flex gap-4">
+                                <span class="text-slate-600 select-none w-4 text-right">2</span>
+                                <div class="pl-4"><span class="text-pink-400 font-bold">return</span> a + b;</div>
+                            </div>
+                            <div class="flex gap-4">
+                                <span class="text-slate-600 select-none w-4 text-right">3</span>
+                                <div>}</div>
+                            </div>
+                            <div class="flex gap-4">
+                                <span class="text-slate-600 select-none w-4 text-right">4</span>
+                                <div>&nbsp;</div>
+                            </div>
+                            <div class="flex gap-4">
+                                <span class="text-slate-600 select-none w-4 text-right">5</span>
+                                <div><span class="text-sky-300">console</span>.<span class="text-yellow-300">log</span>(<span class="text-blue-300">add</span>(<span class="text-emerald-300">5</span>, <span class="text-emerald-300">3</span>)); <span class="text-slate-500">// 8</span></div>
+                            </div>
+                            <div class="flex gap-4">
+                                <span class="text-slate-600 select-none w-4 text-right">6</span>
+                                <div><span class="text-sky-300">console</span>.<span class="text-yellow-300">log</span>(<span class="text-blue-300">add</span>(<span class="text-emerald-300">10</span>, <span class="text-emerald-300">4</span>)); <span class="text-slate-500">// 14</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: How It Works Step Box -->
+                <div class="lg:col-span-6 bg-brand-pink-soft rounded-2xl p-5 sm:p-6 space-y-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-pink-100 text-brand-pink flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="fa-regular fa-lightbulb"></i>
+                        </div>
+                        <h4 class="font-bold text-brand-pink text-base sm:text-lg">How It Works</h4>
+                    </div>
+
+                    <div class="space-y-4 text-xs sm:text-sm">
+                        <!-- Step 1 -->
+                        <div class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-brand-pink text-white font-extrabold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                                1
+                            </span>
+                            <div>
+                                <div class="font-bold text-slate-800">Define the function</div>
+                                <div class="text-slate-600 text-xs sm:text-sm">We write the logic once inside a function.</div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-brand-pink text-white font-extrabold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                                2
+                            </span>
+                            <div>
+                                <div class="font-bold text-slate-800">Provide input (arguments)</div>
+                                <div class="text-slate-600 text-xs sm:text-sm">We pass values when we call the function.</div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-brand-pink text-white font-extrabold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                                3
+                            </span>
+                            <div>
+                                <div class="font-bold text-slate-800">Get the output (return value)</div>
+                                <div class="text-slate-600 text-xs sm:text-sm">The function performs the task and returns a result.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- KEY TAKEAWAY CARD -->
+        <section class="mb-10">
+            <div class="bg-brand-mint rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                <!-- Star Circle -->
+                <div class="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center text-2xl flex-shrink-0 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <!-- Content -->
+                <div class="space-y-1">
+                    <h3 class="text-brand-mint-dark font-bold text-lg sm:text-xl">Key Takeaway</h3>
+                    <p class="text-slate-700 text-sm sm:text-base leading-relaxed" id="key-takeaway-text">
+                        Functions help us avoid repeating the same code. They make our JavaScript programs cleaner, more organized, and easier to maintain.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER NAVIGATION -->
+        <footer class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
+            <button class="w-full sm:w-auto px-6 py-3 rounded-xl border border-brand-pink text-brand-pink font-bold text-sm hover:bg-brand-pink-light transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Previous Lesson
+            </button>
+            <button class="w-full sm:w-auto px-8 py-3 rounded-xl bg-brand-pink text-white font-bold text-sm shadow-lg shadow-brand-pink/20 hover:bg-brand-pink-dark transition-all flex items-center justify-center gap-2">
+                Next Lesson <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </footer>
+
+    </div>
+
+    <!-- EMBEDDED JSON DATA & SCRIPT -->
+    <script>
+        // Lesson JSON Data Model
+        const lessonData = {
+            meta: {
+                category: "Full Stack Development",
+                module: "Frontend Development (FE)",
+                topic: "JavaScript",
+                lessonTitle: "Introduction: Why Do We Need Functions?",
+                blockBadge: "Introduction Block – I2"
+            },
+            hero: {
+                title: "Why Do We Need Functions?",
+                subtitle: "Let's start with a common problem, understand the need for a solution, and then see how functions in JavaScript help us solve it."
+            },
+            learningGoal: "Understand why functions are needed in JavaScript by looking at a real problem and how functions provide a clean and reusable solution.",
+            theNeed: [
+                {
+                    title: "Reusability",
+                    description: "Write the code once and use it many times.",
+                    icon: "fa-solid fa-gear",
+                    iconColor: "text-blue-600"
+                },
+                {
+                    title: "Cleaner Code",
+                    description: "Keep the program organized.",
+                    icon: "fa-solid fa-code",
+                    iconColor: "text-blue-600"
+                },
+                {
+                    title: "Faster Development",
+                    description: "Save time and reduce repetition.",
+                    icon: "fa-regular fa-clock",
+                    iconColor: "text-blue-600"
+                },
+                {
+                    title: "Easier Maintenance",
+                    description: "Update the logic in one place only.",
+                    icon: "fa-solid fa-wrench",
+                    iconColor: "text-blue-600"
+                }
+            ],
+            keyTakeaway: "Functions help us avoid repeating the same code. They make our JavaScript programs cleaner, more organized, and easier to maintain."
+        };
+
+        // Render lesson content dynamically from JSON
+        function initLesson() {
+            // Meta Breadcrumbs
+            document.getElementById('bc-category').innerText = lessonData.meta.category;
+            document.getElementById('bc-module').innerText = lessonData.meta.module;
+            document.getElementById('bc-topic').innerText = lessonData.meta.topic;
+            document.getElementById('bc-lesson').innerText = lessonData.meta.lessonTitle;
+            document.getElementById('hero-badge').innerText = lessonData.meta.blockBadge;
+
+            // Hero
+            document.getElementById('hero-title').innerText = lessonData.hero.title;
+            document.getElementById('hero-subtitle').innerText = lessonData.hero.subtitle;
+
+            // Learning Goal
+            document.getElementById('learning-goal-text').innerText = lessonData.learningGoal;
+
+            // Render The Need 4-Column Grid
+            const needGrid = document.getElementById('the-need-grid');
+            needGrid.innerHTML = lessonData.theNeed.map((item, idx) => `
+                <div class="px-2 pt-4 sm:pt-0 ${idx > 0 ? 'sm:pl-4' : ''}">
+                    <div class="w-12 h-12 rounded-full bg-blue-100/70 text-blue-600 flex items-center justify-center text-xl mx-auto mb-3">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800 text-base mb-1">${item.title}</h4>
+                    <p class="text-xs sm:text-sm text-slate-600 leading-snug">${item.description}</p>
+                </div>
+            `).join('');
+
+            // Key Takeaway
+            document.getElementById('key-takeaway-text').innerText = lessonData.keyTakeaway;
+        }
+
+        // Copy Code Functionality
+        function copyCode() {
+            const codeText = `function add(a, b) {\n    return a + b;\n}\n\nconsole.log(add(5, 3));   // 8\nconsole.log(add(10, 4));  // 14`;
+            
+            // Clipboard copy with fallback
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(codeText);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = codeText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+
+            // Button Feedback State
+            const btn = document.getElementById('copy-btn');
+            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> <span class="text-emerald-400">Copied!</span>`;
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fa-regular fa-copy"></i> <span>Copy</span>`;
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', initLesson);
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "agent": "runtime",
+  "status": "BLOCKED",
+  "startup_time_ms": null,
+  "route_status": null,
+  "block_rendered": false,
+  "errors": [
+    "Application startup failed - pnpm command not available in verification environment"
+  ],
+  "runtime_log": [
+    "Attempted to start application with command: pnpm dev",
+    "Environment check: pnpm not found in PATH",
+    "Runtime verification requires application to be manually started or run in CI environment with proper toolchain"
+  ],
+  "blocker_reason": "application_start_failure"
+}

@@ -1,0 +1,98 @@
+{
+  "agent": "ubrc_brand",
+  "status": "FAIL",
+  "ubrc_compliance": false,
+  "theme_compliance": false,
+  "ils_integration": false,
+  "brand_independence": true,
+  "theme_compatibility": false,
+  "hardcoded_colors_found": [
+    "CodeC1Block.tsx: #3b82f6, #1e40af, #0b1b3d, #079447, #effaf4, #bfe8d1, #a56b00, #fff9e9, #f4dba1, #1554c7, #eef4ff, #c9d9ff, #172b52, #07142f, #0d1d40, #f8fafc, #ff5f57, #febc2e, #28c840, #d7e2f5, #dce5f8, #f6f8ff, #fffaf0, #f0d9a2, #f59e0b, #d97706, #d9e0ea, #f7f9fc",
+    "DefinitionBlock.tsx: #f6f8ff, #d2dcf0, #e0dce6, #fffaf0, #ead8a8, #f59e0b, #d97706",
+    "IntroductionBlock.tsx: #e5e7eb, #f9fafb, #6b7280, #0B132B"
+  ],
+  "hardcoded_branding_found": [],
+  "violations": [
+    {
+      "type": "ubrc_violation",
+      "severity": "critical",
+      "description": "runtimeContext prop accepted but NOT consumed in block logic",
+      "files": [
+        "CodeC1Block.tsx",
+        "DefinitionBlock.tsx",
+        "HeadingBlock.tsx",
+        "ParagraphBlock.tsx",
+        "CalloutBlock.tsx",
+        "ListBlock.tsx",
+        "CodeBlock.tsx",
+        "CardGridBlock.tsx",
+        "ThreeColumnBlock.tsx",
+        "TimelineBlock.tsx",
+        "TwoColumnBlock.tsx"
+      ],
+      "impact": "Blocks cannot participate in ILS tracking/progress boundary - UBRC contract not fulfilled"
+    },
+    {
+      "type": "theme_violation",
+      "severity": "critical",
+      "description": "No CSS variable (var(--*)) usage - extensive hardcoded hex colors",
+      "files": [
+        "CodeC1Block.tsx: 28 hardcoded colors",
+        "DefinitionBlock.tsx: 7 hardcoded colors",
+        "IntroductionBlock.tsx: 4 hardcoded colors"
+      ],
+      "impact": "Theme system bypassed - colors cannot be changed at runtime via CSS variables"
+    },
+    {
+      "type": "theme_violation",
+      "severity": "high",
+      "description": "Mixed approach: some blocks use theme.primary/secondary via inline styles, others use hardcoded Tailwind classes",
+      "files": [
+        "CodeC1Block.tsx: inline style={{ color: theme.primary }}",
+        "DefinitionBlock.tsx: inline style={{ color: primary }}",
+        "HeadingBlock.tsx: className='text-slate-900 dark:text-white'",
+        "CalloutBlock.tsx: className='text-blue-900 dark:text-blue-200'"
+      ],
+      "impact": "Inconsistent theming strategy - no unified theme token system"
+    },
+    {
+      "type": "ils_violation",
+      "severity": "critical",
+      "description": "No ILS integration imports or hooks found",
+      "files": "all blocks",
+      "impact": "Blocks cannot emit learner interaction events - no analytics/tracking"
+    },
+    {
+      "type": "theme_compatibility_violation",
+      "severity": "medium",
+      "description": "Some blocks have dark mode support (Tailwind dark: prefix), others do not",
+      "files": [
+        "HeadingBlock.tsx: ✓ has dark mode",
+        "ParagraphBlock.tsx: ✓ has dark mode",
+        "CalloutBlock.tsx: ✓ has dark mode",
+        "CodeC1Block.tsx: ✗ no dark mode (hardcoded light bg)",
+        "DefinitionBlock.tsx: ✗ no dark mode"
+      ],
+      "impact": "Inconsistent dark mode experience across block types"
+    }
+  ],
+  "details": {
+    "blocks_scanned": 19,
+    "blocks_with_runtimeContext_prop": 11,
+    "blocks_consuming_runtimeContext": 0,
+    "blocks_with_theme_prop": 8,
+    "blocks_using_css_variables": 0,
+    "blocks_with_hardcoded_colors": 3,
+    "blocks_with_ils_imports": 0,
+    "blocks_with_brand_strings": 0
+  },
+  "recommendations": [
+    "Implement runtimeContext consumption in all blocks for ILS boundary integration",
+    "Replace all hardcoded hex colors with CSS variable tokens (var(--color-*))",
+    "Establish unified theme system: either CSS variables OR theme prop injection, not both",
+    "Add @quiz/ils integration for learner interaction tracking",
+    "Add consistent dark mode support across all block types",
+    "Remove inline style={{ color: ... }} in favor of CSS variable-based classes"
+  ],
+  "gate_assessment": "FAIL - Critical UBRC and theme violations prevent W6 gate passage"
+}

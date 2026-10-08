@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Package scaffold for @quiz/project-llm-discovery with TypeScript contracts, repository adapter interface, and base evidence/snapshot models. This feature creates the foundational package structure, type definitions, and build/test configuration. Independent of other features.",
+  "status": "completed",
+  "steps": [
+    "Create packages/project-llm-discovery/ directory with subdirectories: src/contracts/, src/adapters/, src/scanners/, src/evidence/, src/snapshot/, src/validation/, __tests__/unit/, __tests__/integration/, __tests__/determinism/",
+    "Create packages/project-llm-discovery/package.json with name '@quiz/project-llm-discovery', version '0.1.0', dependencies: typescript, zod, @quiz/types, devDependencies: vitest, @vitest/coverage-v8. Set type: 'module', main: './src/index.ts', scripts: { test: 'vitest run', 'test:watch': 'vitest', 'test:coverage': 'vitest run --coverage' }",
+    "Create packages/project-llm-discovery/tsconfig.json extending root tsconfig, with compilerOptions: { outDir: './dist', rootDir: './src', paths: { '@quiz/types': ['../../types/src'] } }",
+    "Create src/contracts/repository-adapter.ts: export interface RepositoryAdapter { readFile(path: string): Promise<string>; fileExists(path: string): Promise<boolean>; listFiles(directory: string, pattern?: string): Promise<string[]>; getFileHash(path: string): Promise<string>; getGitCommit(): Promise<string>; getGitRoot(): Promise<string>; }",
+    "Create src/contracts/evidence.ts: export interface Evidence { evidenceId: string; scannerName: string; timestamp: string; path: string; kind: 'file' | 'directory' | 'package' | 'import' | 'export' | 'test'; claim: string; locator: string; contentHash: string; metadata?: Record<string, unknown>; }",
+    "Create src/contracts/scanner.ts: export interface ScannerResult<T = unknown> { scannerName: string; timestamp: string; evidence: Evidence[]; findings: Finding[]; data: T; } and export interface Finding { findingId: string; severity: 'info' | 'warning' | 'error'; category: string; message: string; path?: string; recommendation?: string; }",
+    "Create src/contracts/snapshot.ts: export interface RepositorySnapshot { schemaVersion: '1.0.0'; repository: { owner: string; name: string; commitSha: string; scanTimestamp: string; }; structure: { applications: ApplicationInfo[]; packages: PackageInfo[]; services: ServiceInfo[]; }; runtime: { frameworks: FrameworkInfo[]; workspace: WorkspaceInfo; buildSystem: BuildSystemInfo; }; blocks: { documented: BlockFamilyDoc[]; implemented: BlockImplementation[]; rendered: BlockRenderer[]; verified: BlockVerification[]; discrepancies: BlockDiscrepancy[]; }; composer: { services: ComposerService[]; apis: ComposerAPI[]; schemas: ComposerSchema[]; ui: ComposerUI[]; }; dependencies: { nodes: DependencyNode[]; edges: DependencyEdge[]; }; tests: { unit: TestSuite[]; integration: TestSuite[]; e2e: TestSuite[]; }; evidence: Evidence[]; findings: Finding[]; canonicalHash: string; }. Add supporting interfaces for all nested types.",
+    "Create src/contracts/index.ts exporting all contract types",
+    "Create src/index.ts exporting from ./contracts/",
+    "Add packages/project-llm-discovery to pnpm-workspace.yaml packages list",
+    "Add packages/project-llm-discovery to root tsconfig.json paths: '@quiz/project-llm-discovery': ['./packages/project-llm-discovery/src/index.ts'], '@quiz/project-llm-discovery/*': ['./packages/project-llm-discovery/src/*']",
+    "Create vitest.config.ts in packages/project-llm-discovery/ following pattern from packages/api-client/vitest.config.ts with test environment 'node', coverage enabled",
+    "Add 'packages/project-llm-discovery/vitest.config.ts' to vitest.workspace.ts array"
+  ],
+  "acceptance_criteria": [
+    "Package directory exists with complete subdirectory structure",
+    "package.json has correct name, dependencies, and test scripts",
+    "tsconfig.json compiles without errors",
+    "All contract interfaces are exported from src/index.ts",
+    "pnpm install resolves @quiz/project-llm-discovery successfully",
+    "TypeScript compiler resolves @quiz/project-llm-discovery imports",
+    "vitest.config.ts exists and test command runs (no tests yet is acceptable)"
+  ],
+  "verification": [
+    "Run pnpm install from repository root and confirm no errors",
+    "Run pnpm --filter @quiz/project-llm-discovery test and confirm vitest runs (may report no tests found)",
+    "Run pnpm typecheck:all and confirm packages/project-llm-discovery compiles",
+    "From any package, add import type { RepositoryAdapter } from '@quiz/project-llm-discovery' to a test file and confirm TypeScript resolves it"
+  ],
+  "blocked_reason": null,
+  "findings": "FEAT-001 completed successfully. All contract interfaces created and exported. Package structure follows project conventions. Added vitest.config.ts with passWithNoTests:true to allow test command to succeed with no test files. Created basic unit tests to verify contract type definitions compile correctly. All verification steps passed: pnpm install succeeded, tests run successfully (5 tests passing), TypeScript compilation passes with no errors, package integrates properly with workspace. Committed to branch m1-repository-discovery with commit cf0ceff7."
+}

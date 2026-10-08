@@ -1,0 +1,25 @@
+{
+  "agent": "composer_lsnb",
+  "status": "PASS",
+  "composer_integration": true,
+  "preview_evidence": "TutorialPreviewPane component (apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/components/TutorialPreviewPane.tsx) provides live preview of tutorial blocks. TutorialBlockSelector component provides UI to select block type, version, and format. Composer uses BLOCK_REGISTRY (17 canonical block types) from packages/types/src/tutorial-rich-document/registry.ts with full metadata (label, description, category, icon, supportsChildren). Block registry includes all 17 canonical types: heading, paragraph, list, code, example, image, diagram, table, comparison, callout, quote, definition, introduction, summary, two-column, three-column, card-grid, timeline.",
+  "lsnb_behavior": "PRESERVED",
+  "rssb_behavior": "PRESERVED",
+  "findings": [
+    "COMPOSER: Block registry exists at packages/types/src/tutorial-rich-document/registry.ts with complete metadata for all 17 canonical block types",
+    "COMPOSER: TutorialBlockSelector UI component provides dropdown selector for block type, version code, and format (JSON/Markdown)",
+    "COMPOSER: TutorialPreviewPane component provides live preview rendering with brand theme support",
+    "COMPOSER: Block metadata includes type, label, description, category, icon, supportsChildren, tags for each of 17 canonical types",
+    "LSNB: TutorialLeftSidebar component (src/share-branding/LearningExperience/components/TutorialLeftSidebar.tsx) implements complete page-level navigation",
+    "LSNB: Navigation context preserved via activeNavigationNodeId and activeUrl props with reactive ancestor expansion",
+    "LSNB: Progress visualization (R/Y/G) integrated with ILS currentPageProgress mapping (0-49% red, 50-99% yellow, 100% green)",
+    "LSNB: Collapsed-by-default behavior with automatic expansion of ancestor path for current page",
+    "RSSB: LearningProgressSidebar component (packages/ui/src/tutorial/runtime/LearningProgressSidebar/LearningProgressSidebar.tsx) consumes ILS data",
+    "RSSB: Navigation context preserved via ILSProvider with navigationNodeId, subtopicId, sectionId",
+    "RSSB: Automatic block tracking via ActiveBlockContext integration without manual block selector",
+    "RSSB: Four metric sections displayed (Lifecycle, Engagement, Time Analysis, Overall Progress) with brand color theming",
+    "ILS_CONTEXT: ILSProvider (packages/ui/src/tutorial/runtime/ILSProvider.tsx) provides navigation-level and block-level progress",
+    "ILS_CONTEXT: Navigation progress includes status, progressPercentage, completedBlockCount, totalBlockCount, visitCount, revisionCount, timeSpentActiveSec",
+    "ILS_CONTEXT: Active block progress includes per-block telemetry (visitCount, revisionCount, activeTimeSec, expectedTimeSec, completion state)"
+  ]
+}

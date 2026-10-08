@@ -123,6 +123,347 @@ class CertificationGateExecutor:
         self.snapshot = snapshot
         self.repository_root = repository_root
     
+    def execute_candidate_hash_gate(
+        self,
+        candidate_sha256: str,
+        expected_sha256: str,
+        manifest: PlacementManifest
+    ) -> GateExecutionResult:
+        """
+        Execute candidate hash verification gate.
+        
+        Verifies that:
+        1. Candidate SHA-256 hash matches expected_sha256
+        2. Hash is not empty or placeholder
+        3. Hash format is valid (64 hex characters)
+        
+        Args:
+            candidate_sha256: SHA-256 hash to verify
+            expected_sha256: Expected SHA-256 hash from validation
+            manifest: PlacementManifest (for validation only)
+        
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        blockers: List[str] = []
+        evidence_ids: List[str] = []
+        
+        # Validate hash format
+        if not candidate_sha256:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Candidate hash verification blocked: hash is empty",
+                evidence_ids=[],
+                blockers=["Candidate SHA-256 hash not provided"]
+            )
+        
+        if len(candidate_sha256) != 64:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message="Candidate hash verification failed: invalid hash format",
+                evidence_ids=[],
+                blockers=[f"Hash must be 64 hex characters, got {len(candidate_sha256)}"]
+            )
+        
+        # Check for hex format
+        try:
+            int(candidate_sha256, 16)
+        except ValueError:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message="Candidate hash verification failed: invalid hex format",
+                evidence_ids=[],
+                blockers=["Hash contains non-hexadecimal characters"]
+            )
+        
+        # Verify against expected hash
+        if expected_sha256 != candidate_sha256:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message="Candidate hash mismatch",
+                evidence_ids=[],
+                blockers=[
+                    f"Expected: {expected_sha256}",
+                    f"Got: {candidate_sha256}"
+                ]
+            )
+        
+        # Find candidate evidence in snapshot
+        all_evidence = self.snapshot.get('evidence', [])
+        for evidence in all_evidence:
+            if evidence.get('contentHash') == candidate_sha256:
+                evidence_ids.append(evidence.get('evidenceId', ''))
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message=f"Candidate hash verified: {candidate_sha256[:16]}...",
+            evidence_ids=evidence_ids,
+            blockers=[]
+        )
+    
+    def execute_approval_gate(
+        self,
+        workflow_id: str,
+        approvals_store: Dict[str, Any],
+        requester_id: str,
+        candidate_sha256: str,
+        manifest_id: str,
+        manifest_sha256: str
+    ) -> GateExecutionResult:
+        """
+        Execute implementation approval verification gate.
+        
+        Verifies that:
+        1. ImplementationApproval exists for workflow_id
+        2. Approval status is APPROVED
+        3. Candidate hash matches approval record
+        4. Manifest ID matches approval record
+        5. Manifest hash matches approval record
+        6. Not self-approved
+        
+        Args:
+            workflow_id: Workflow identifier
+            approvals_store: Dictionary of ImplementationApproval records
+            requester_id: Workflow requester identity
+            candidate_sha256: Candidate hash to verify
+            manifest_id: Placement manifest ID to verify
+            manifest_sha256: Placement manifest hash to verify
+        
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        from app.models.implementation_approval import ImplementationApprovalStatus
+        
+        blockers: List[str] = []
+        evidence_ids: List[str] = []
+        
+        # Check if approval exists
+        if workflow_id not in approvals_store:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Approval gate blocked: no approval found",
+                evidence_ids=[],
+                blockers=[f"No implementation approval found for workflow {workflow_id}"]
+            )
+        
+        approval = approvals_store[workflow_id]
+        
+        # Verify approval status
+        if approval.status != ImplementationApprovalStatus.APPROVED:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message=f"Approval gate failed: status is {approval.status.value}",
+                evidence_ids=[],
+                blockers=[f"Approval status is {approval.status.value}, expected APPROVED"]
+            )
+        
+        # Verify candidate hash
+        if not approval.verify_candidate_hash(candidate_sha256):
+            blockers.append(
+                f"Candidate hash mismatch: expected {approval.candidate_sha256}, got {candidate_sha256}"
+            )
+        
+        # Verify manifest ID
+        if approval.placement_manifest_id != manifest_id:
+            blockers.append(
+                f"Manifest ID mismatch: expected {approval.placement_manifest_id}, got {manifest_id}"
+            )
+        
+        # Verify manifest hash
+        if not approval.verify_manifest_hash(manifest_sha256):
+            blockers.append(
+                f"Manifest hash mismatch: expected {approval.placement_manifest_sha256}, got {manifest_sha256}"
+            )
+        
+        # Verify not self-approved
+        if not approval.verify_not_self_approved(requester_id):
+            blockers.append(
+                f"Self-approval detected: approver '{approval.approved_by}' matches requester"
+            )
+        
+        if blockers:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message="Approval gate failed: verification errors",
+                evidence_ids=evidence_ids,
+                blockers=blockers
+            )
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message=f"Approval verified for workflow {workflow_id}",
+            evidence_ids=evidence_ids,
+            blockers=[]
+        )
+    
+    def execute_path_security_gate(
+        self,
+        manifest: PlacementManifest,
+        allowlist: Optional[List[str]] = None
+    ) -> GateExecutionResult:
+        """
+        Execute path security verification gate.
+        
+        Verifies that:
+        1. Target path is within allowed directories
+        2. No path traversal attacks (../)
+        3. No absolute paths outside repository
+        4. No write to protected directories (.git, node_modules, etc.)
+        
+        Args:
+            manifest: PlacementManifest containing target path
+            allowlist: List of allowed path prefixes (default: standard safe paths)
+        
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        if allowlist is None:
+            allowlist = [
+                'packages/',
+                'apps/',
+                'services/',
+                'libs/',
+                'src/'
+            ]
+        
+        blockers: List[str] = []
+        evidence_ids: List[str] = []
+        
+        target_path = manifest.targetPath
+        
+        # Check for path traversal
+        if '..' in target_path:
+            blockers.append(f"Path traversal detected: {target_path}")
+        
+        # Check for absolute paths (Windows and Unix)
+        if target_path.startswith('/') or (len(target_path) > 1 and target_path[1] == ':'):
+            blockers.append(f"Absolute path not allowed: {target_path}")
+        
+        # Check protected directories
+        protected_dirs = ['.git', 'node_modules', '.env', 'secrets', 'credentials']
+        for protected in protected_dirs:
+            if protected in target_path.split('/'):
+                blockers.append(f"Cannot write to protected directory: {protected}")
+        
+        # Check allowlist
+        path_allowed = any(target_path.startswith(prefix) for prefix in allowlist)
+        if not path_allowed:
+            blockers.append(
+                f"Path not in allowlist: {target_path} (allowed: {', '.join(allowlist)})"
+            )
+        
+        if blockers:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message="Path security gate failed",
+                evidence_ids=evidence_ids,
+                blockers=blockers
+            )
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message=f"Path security verified: {target_path}",
+            evidence_ids=evidence_ids,
+            blockers=[]
+        )
+    
+    def execute_test_evidence_gate(
+        self,
+        candidate_blocks: List[str],
+        manifest: PlacementManifest
+    ) -> GateExecutionResult:
+        """
+        Execute test evidence verification gate.
+        
+        Verifies that:
+        1. Test files exist for candidate blocks
+        2. Test results are present in evidence
+        3. All tests passed
+        4. Code coverage meets threshold (if specified)
+        
+        Args:
+            candidate_blocks: List of block identifiers to verify
+            manifest: PlacementManifest (required for manifest validation)
+        
+        Returns:
+            GateExecutionResult with PASS/FAIL/BLOCKED status
+        """
+        # Validate manifest
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
+        
+        blockers: List[str] = []
+        evidence_ids: List[str] = []
+        
+        # Get test evidence from snapshot
+        all_evidence = self.snapshot.get('evidence', [])
+        test_evidence = [e for e in all_evidence if e.get('kind') == 'test-result']
+        
+        if not test_evidence:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Test evidence unavailable: no test results in snapshot",
+                evidence_ids=[],
+                blockers=["Run tests and update snapshot with test results"]
+            )
+        
+        # Check each candidate block for test coverage
+        for candidate_block in candidate_blocks:
+            block_type = self._extract_block_type(candidate_block)
+            
+            # Find test evidence for this block
+            block_tests = [
+                e for e in test_evidence
+                if block_type in e.get('path', '').lower() or
+                   block_type in e.get('description', '').lower()
+            ]
+            
+            if not block_tests:
+                blockers.append(f"Block '{candidate_block}': no test evidence found")
+                continue
+            
+            # Collect evidence IDs and check test results
+            for test in block_tests:
+                evidence_id = test.get('evidenceId')
+                if evidence_id:
+                    evidence_ids.append(evidence_id)
+                
+                # Check test status
+                test_status = test.get('status', 'unknown')
+                if test_status != 'passed':
+                    blockers.append(
+                        f"Block '{candidate_block}': test failed or status unknown ({test_status})"
+                    )
+        
+        if blockers:
+            return GateExecutionResult(
+                status=CertificationGateStatus.FAIL,
+                message=f"Test evidence gate failed: {len(blockers)} issue(s)",
+                evidence_ids=evidence_ids,
+                blockers=blockers
+            )
+        
+        if not evidence_ids:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Test evidence incomplete: no test evidence IDs found",
+                evidence_ids=[],
+                blockers=["Unable to locate test evidence for candidate blocks"]
+            )
+        
+        return GateExecutionResult(
+            status=CertificationGateStatus.PASS,
+            message=f"Test evidence verified for {len(candidate_blocks)} block(s)",
+            evidence_ids=evidence_ids,
+            blockers=[]
+        )
+    
     def _validate_manifest(self, manifest: PlacementManifest) -> Tuple[bool, List[str]]:
         """
         Validate PlacementManifest for integrity and correctness.

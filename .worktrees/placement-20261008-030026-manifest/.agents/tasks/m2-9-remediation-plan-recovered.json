@@ -1,0 +1,671 @@
+{
+  "planId": "m2-9-remediation",
+  "recoveryTimestamp": "2025-01-30T19:30:00Z",
+  "sourceStatus": "RECOVERED",
+  "sourceFiles": [
+    ".agents/tasks/m2-9-plan.md",
+    ".agents/tasks/m2-9-wave0-review.json",
+    ".agents/tasks/m2-9-wave2-review.json",
+    ".agents/tasks/m2-9-wave3-review.json",
+    ".agents/tasks/CURRENT_STATE_AUDIT.json",
+    ".agents/tasks/2025-01-29-final-gate-review.md"
+  ],
+  "currentHead": "39716a78",
+  "currentBranch": "m2-project-ai-canonical-wiring",
+  "totalTests": 533,
+  "agents": [
+    {
+      "agentId": "B01",
+      "name": "Architecture Authority Agent",
+      "purpose": "Freeze canonical workflow lifecycle, establish single authority, remove competing enums",
+      "wave": "W0",
+      "dependencies": [],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/orchestration/canonical_workflow.py",
+        "services/project-ai/app/orchestration/state_mapper.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "CanonicalWorkflowState enum with 17 states exists",
+        "State mapper utilities for TaskState/WorkflowStatus compatibility",
+        "WorkflowEngine uses CanonicalWorkflowState"
+      ],
+      "testsRequired": [
+        "test_canonical_workflow_state.py",
+        "test_state_mapper.py"
+      ],
+      "evidenceRequired": [
+        "CanonicalWorkflowState enum definition",
+        "State transition validation logic",
+        "WorkflowEngine integration"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B02",
+      "name": "Engineering Contract Agent",
+      "purpose": "Generate EngineeringContract for External AI backed by repository evidence",
+      "wave": "W2",
+      "dependencies": ["B03", "B04"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/contracts/engineering_contract.py",
+        "services/project-ai/app/api/routes/contract.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "EngineeringContract model exists with 13 gate contracts",
+        "Contract generator uses RepositoryContract and WorkflowTarget",
+        "POST /contract/generate and GET /contract/{id}/download endpoints work"
+      ],
+      "testsRequired": [
+        "test_contract_generator.py",
+        "test_contract_routes.py"
+      ],
+      "evidenceRequired": [
+        "Contract generated with real evidence IDs",
+        "Prompt includes canonical examples",
+        "Markdown download works"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B03",
+      "name": "Repository Contract Intelligence Agent",
+      "purpose": "Derive repository contract from TypeScript snapshot (canonical blocks, schemas, composer wiring)",
+      "wave": "W1",
+      "dependencies": ["B01"],
+      "parallelizable": true,
+      "filesExpected": [
+        "services/project-ai/app/contracts/repository_intelligence.py"
+      ],
+      "currentStatus": "PARTIAL",
+      "acceptanceCriteria": [
+        "RepositoryContract model exists",
+        "Contract extractor reads from snapshot only",
+        "Never opens repository files directly"
+      ],
+      "testsRequired": [
+        "test_repository_contract.py"
+      ],
+      "evidenceRequired": [
+        "Contract extraction from snapshot produces valid RepositoryContract"
+      ],
+      "source": "EXISTING_PLAN",
+      "notes": "DEFECT P0-B03: Line 153 of repository_intelligence.py uses Path(repo_root) to scan files directly. Must be removed and replaced with snapshot-only consumption."
+    },
+    {
+      "agentId": "B04",
+      "name": "Target Binding Agent",
+      "purpose": "Create WorkflowTarget and CandidateBinding models to bind candidate to family/version",
+      "wave": "W1",
+      "dependencies": ["B01"],
+      "parallelizable": true,
+      "filesExpected": [
+        "services/project-ai/app/models/workflow_target.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "WorkflowTarget model exists with blockFamily, targetVersion, repositorySnapshotId",
+        "CandidateBinding model exists",
+        "Discovery step creates WorkflowTarget"
+      ],
+      "testsRequired": [
+        "test_workflow_target.py"
+      ],
+      "evidenceRequired": [
+        "WorkflowTarget created during discovery",
+        "CandidateBinding attaches to uploaded candidate"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B05",
+      "name": "Candidate Intake Enhancement Agent",
+      "purpose": "Accept real file uploads, compute server-side hashes, enforce target binding",
+      "wave": "W3",
+      "dependencies": ["B02"],
+      "parallelizable": true,
+      "filesExpected": [
+        "services/project-ai/app/api/routes/candidate.py",
+        "services/project-ai/app/agents/intake.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "Real file upload works (multipart/form-data)",
+        "SHA-256 hashes computed server-side",
+        "Candidate bound to target on upload"
+      ],
+      "testsRequired": [
+        "test_candidate_upload.py"
+      ],
+      "evidenceRequired": [
+        "File upload endpoint accepts ZIP or individual files",
+        "Server computes hashes, never trusts client"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B06",
+      "name": "Canonical Comparison Enhancement Agent",
+      "purpose": "Enhance canonical comparison to use RepositoryContract",
+      "wave": "W3",
+      "dependencies": ["B03"],
+      "parallelizable": true,
+      "filesExpected": [
+        "services/project-ai/app/agents/canonical_comparison.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "Comparison uses RepositoryContract.canonicalBlocks",
+        "Compares candidate against target family's existing versions",
+        "Generates similarity scores based on structural similarity"
+      ],
+      "testsRequired": [
+        "test_canonical_comparison.py"
+      ],
+      "evidenceRequired": [
+        "Comparison uses repository evidence",
+        "Placement decisions based on real canonical blocks"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B07",
+      "name": "Placement Manifest Enhancement Agent",
+      "purpose": "Use correct version (I7 not 1.0.0), enforce REQUIRES_HUMAN_APPROVAL paths",
+      "wave": "W3",
+      "dependencies": ["B04"],
+      "parallelizable": true,
+      "filesExpected": [
+        "services/project-ai/app/agents/placement.py"
+      ],
+      "currentStatus": "INCORRECT",
+      "acceptanceCriteria": [
+        "Manifest uses WorkflowTarget.targetVersion (e.g., 'I7')",
+        "Never infers path from candidateId or block name",
+        "Enforces REQUIRES_HUMAN_APPROVAL for all paths unless explicit"
+      ],
+      "testsRequired": [
+        "test_placement.py::test_version_from_target",
+        "test_placement.py::test_requires_path_approval"
+      ],
+      "evidenceRequired": [
+        "Manifest uses 'I7' not '1.0.0'",
+        "Paths require human approval unless explicit"
+      ],
+      "source": "EXISTING_PLAN",
+      "notes": "DEFECT P0-BINDING: Line 54 of placement.py hardcodes blockVersion='1.0.0'. Must use target.targetVersion from WorkflowTarget. Same issue in candidate.py lines 379 and 395."
+    },
+    {
+      "agentId": "B08",
+      "name": "Certification Gate Implementation Agent",
+      "purpose": "Replace placeholder certification gates with real verification logic",
+      "wave": "W6",
+      "dependencies": ["B03"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/certification/gates.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "All 6 gates execute real verification from snapshot evidence",
+        "No unconditional PASS results",
+        "Gates return PASS/FAIL/BLOCKED based on actual evidence"
+      ],
+      "testsRequired": [
+        "test_certification_gates.py"
+      ],
+      "evidenceRequired": [
+        "UBRC, brand, theme, registry, renderer, evidence gates all implemented",
+        "No placeholder logic remains"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B09",
+      "name": "Runtime Verification Agent",
+      "purpose": "Implement runtime verification with health checks and process management",
+      "wave": "W6",
+      "dependencies": ["B08"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/verification/runtime.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "ApplicationProcess starts dev server with timeout",
+        "Health check fallback strategy implemented",
+        "Clean shutdown with SIGTERM then SIGKILL"
+      ],
+      "testsRequired": [
+        "test_runtime.py"
+      ],
+      "evidenceRequired": [
+        "Health check works with fallback",
+        "Timeout enforcement in start() method",
+        "Graceful shutdown implemented"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B10",
+      "name": "Browser Verification Agent",
+      "purpose": "Implement browser verification orchestrating Node/Playwright via subprocess",
+      "wave": "W7",
+      "dependencies": ["B09"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/verification/browser.py",
+        "services/project-ai/app/certification/browser_verification.py"
+      ],
+      "currentStatus": "PARTIAL",
+      "acceptanceCriteria": [
+        "BrowserCertificationRunner orchestrates Node/Playwright via subprocess",
+        "No playwright-python import",
+        "Returns SKIPPED when Playwright unavailable (not BLOCKED)",
+        "Collects screenshot evidence when available"
+      ],
+      "testsRequired": [
+        "test_browser_verification.py",
+        "test_browser_certification.py"
+      ],
+      "evidenceRequired": [
+        "Subprocess orchestration pattern implemented",
+        "Graceful degradation when Playwright not installed"
+      ],
+      "source": "EXISTING_PLAN",
+      "notes": "DEFECT P0-BROWSER: Current implementation gracefully degrades (SKIPPED status) when Playwright unavailable. This is CORRECT behavior per architectural decision. No fabrication of PASS. Status: PARTIAL because data-block-version attributes missing in 13 block renderers."
+    },
+    {
+      "agentId": "B11",
+      "name": "Final Gate Controller Agent",
+      "purpose": "Generate final gate verdict and enforce CERTIFICATION_READY != CERTIFIED invariant",
+      "wave": "W7",
+      "dependencies": ["B08", "B09", "B10"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/orchestration/final_gate_controller.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "FinalGateController aggregates all gate results",
+        "CERTIFICATION_READY state requires all gates PASS",
+        "CERTIFIED state requires human approval after CERTIFICATION_READY",
+        "Final verdict written to canonical documentation"
+      ],
+      "testsRequired": [
+        "test_final_gate_controller.py"
+      ],
+      "evidenceRequired": [
+        "All gates PASS → CERTIFICATION_READY",
+        "Human approval required → CERTIFIED",
+        "Verdict appended to canonical backlog"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B12",
+      "name": "Human Implementation Approval Gate Agent",
+      "purpose": "Enforce AWAITING_IMPLEMENTATION_APPROVAL state and create approval API",
+      "wave": "W4",
+      "dependencies": ["B07"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/api/routes/governance.py",
+        "services/project-ai/app/models/approval.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "ImplementationApproval model exists",
+        "POST /approval/implementation endpoint works",
+        "Workflow blocks at AWAITING_IMPLEMENTATION_APPROVAL until approval",
+        "Self-approval rejected"
+      ],
+      "testsRequired": [
+        "test_approval_routes.py",
+        "test_approval_gate.py"
+      ],
+      "evidenceRequired": [
+        "Approval endpoint enforces manifest hash verification",
+        "Executor checks approval before placement",
+        "Self-approval prevention works"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B13",
+      "name": "Legacy Cleanup Agent",
+      "purpose": "Remove CreationMode enum, reclassify Mix & Match workflow",
+      "wave": "W1",
+      "dependencies": ["B01"],
+      "parallelizable": true,
+      "filesExpected": [
+        "services/project-ai/app/models/creation.py"
+      ],
+      "currentStatus": "MISSING",
+      "acceptanceCriteria": [
+        "CreationMode enum removed",
+        "DesignSource enum added (REPOSITORY_CANONICAL, EXTERNAL_AI_PROTOTYPE, USER_SPECIFICATION)",
+        "All workflows follow canonical lifecycle regardless of design source"
+      ],
+      "testsRequired": [
+        "test_creation.py"
+      ],
+      "evidenceRequired": [
+        "No CreationMode references remain",
+        "DesignSource used instead",
+        "All tests pass with new enum"
+      ],
+      "source": "EXISTING_PLAN",
+      "notes": "DEFECT P0-LEGACY: CreationMode still exists in creation.py with DEPRECATION notice. Needs removal as per B13 specification. Tests still use I2_ONLY and MIX_AND_MATCH."
+    },
+    {
+      "agentId": "B14",
+      "name": "Test/Evidence Harness Agent",
+      "purpose": "Create machine-readable evidence directory structure and helper module",
+      "wave": "W1",
+      "dependencies": ["B01"],
+      "parallelizable": true,
+      "filesExpected": [
+        "services/project-ai/app/evidence/run_logger.py",
+        ".agents/evidence/README.md"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        ".agents/evidence/runs/ directory structure exists",
+        "Evidence logger creates run directories with metadata.json",
+        "Gate results logged as JSON",
+        "Agent results logged as JSON"
+      ],
+      "testsRequired": [
+        "test_run_logger.py"
+      ],
+      "evidenceRequired": [
+        "Run directories created with proper structure",
+        "Evidence files use 2-space JSON indentation"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B15",
+      "name": "Placement Executor Agent",
+      "purpose": "Safe file writing with isolated worktree, path allowlist, dry-run",
+      "wave": "W5",
+      "dependencies": ["B12"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/placement/executor.py",
+        "services/project-ai/app/placement/repository_adapter.py",
+        "services/project-ai/app/placement/path_policy.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "RepositoryAdapter interface with create_worktree, write_file, git_commit methods",
+        "Path allowlist enforces approved directories only",
+        "Executor checks approval before executing",
+        "All git operations use worktree (never main)"
+      ],
+      "testsRequired": [
+        "test_placement_executor.py",
+        "test_repository_adapter.py",
+        "test_path_policy.py"
+      ],
+      "evidenceRequired": [
+        "Isolated worktree creation works",
+        "Path allowlist rejects unapproved paths",
+        "Git commits only in feature branch"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B16",
+      "name": "Snapshot Generation Integration Agent",
+      "purpose": "Automate TypeScript discovery snapshot generation in workflow",
+      "wave": "W8",
+      "dependencies": ["B03"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/agents/snapshot_generator.py"
+      ],
+      "currentStatus": "CORRECT",
+      "acceptanceCriteria": [
+        "Snapshot generation calls pnpm --filter @quiz/project-llm-discovery scan",
+        "Fresh snapshot generated after implementation placement",
+        "Snapshot hash computed and stored",
+        "Evidence bound to commit SHA + snapshot hash"
+      ],
+      "testsRequired": [
+        "test_snapshot_generator.py"
+      ],
+      "evidenceRequired": [
+        "Snapshot generated via approved command only",
+        "No Python repository scanning"
+      ],
+      "source": "EXISTING_PLAN"
+    },
+    {
+      "agentId": "B17",
+      "name": "Frontend Integration Agent",
+      "purpose": "Connect frontend to backend canonical workflow",
+      "wave": "W9",
+      "dependencies": ["B01", "B02"],
+      "parallelizable": false,
+      "filesExpected": [
+        "packages/ui/src/project-llm/hooks/useWorkflowState.ts",
+        "packages/ui/src/project-llm/api/projectLlmClient.ts"
+      ],
+      "currentStatus": "MISSING",
+      "acceptanceCriteria": [
+        "Frontend consumes CanonicalWorkflowState from backend",
+        "No duplicate TypeScript state machine",
+        "Real fetch/axios calls to backend API",
+        "Candidate upload uses real file input"
+      ],
+      "testsRequired": [
+        "test_workflow_integration.tsx"
+      ],
+      "evidenceRequired": [
+        "Frontend state synchronized with backend",
+        "No hardcoded fixture data",
+        "API calls verified"
+      ],
+      "source": "EXISTING_PLAN",
+      "notes": "DEFECT P1-FRONTEND: Frontend disconnected per audit. Needs real API integration and removal of duplicate projectLlmWorkflowCoordinator state machine."
+    },
+    {
+      "agentId": "B18",
+      "name": "Engineering Contract Default Remediation Agent",
+      "purpose": "Replace generic defaults in EngineeringContract with repository-derived data",
+      "wave": "W10",
+      "dependencies": ["B02", "B03"],
+      "parallelizable": false,
+      "filesExpected": [
+        "services/project-ai/app/contracts/engineering_contract.py"
+      ],
+      "currentStatus": "PARTIAL",
+      "acceptanceCriteria": [
+        "EngineeringContract uses real canonical references from snapshot",
+        "No generic defaults for file structure or requirements",
+        "Contract data derived from repository evidence only"
+      ],
+      "testsRequired": [
+        "test_engineering_contract.py"
+      ],
+      "evidenceRequired": [
+        "Contract generated with real canonical data",
+        "No hardcoded defaults remain"
+      ],
+      "source": "EXISTING_PLAN",
+      "notes": "DEFECT P1-CONTRACT: EngineeringContract model uses generic defaults per audit. Needs real repository-derived data."
+    }
+  ],
+  "waves": [
+    {
+      "waveId": "W0",
+      "name": "Architecture Authority",
+      "agents": ["B01"],
+      "sequential": true,
+      "dependencies": [],
+      "status": "COMPLETE"
+    },
+    {
+      "waveId": "W1",
+      "name": "Foundation Layer",
+      "agents": ["B03", "B04", "B13", "B14"],
+      "sequential": false,
+      "dependencies": ["W0"],
+      "status": "PARTIAL",
+      "notes": "B03 has P0-B03 defect, B13 is MISSING, B04 and B14 are CORRECT"
+    },
+    {
+      "waveId": "W2",
+      "name": "Engineering Contract",
+      "agents": ["B02"],
+      "sequential": true,
+      "dependencies": ["W1"],
+      "status": "COMPLETE"
+    },
+    {
+      "waveId": "W3",
+      "name": "Candidate Pipeline",
+      "agents": ["B05", "B06", "B07"],
+      "sequential": false,
+      "dependencies": ["W2"],
+      "status": "PARTIAL",
+      "notes": "B05 and B06 are CORRECT, B07 has P0-BINDING defect"
+    },
+    {
+      "waveId": "W4",
+      "name": "Human Gate",
+      "agents": ["B12"],
+      "sequential": true,
+      "dependencies": ["W3"],
+      "status": "COMPLETE"
+    },
+    {
+      "waveId": "W5",
+      "name": "Placement Executor",
+      "agents": ["B15"],
+      "sequential": true,
+      "dependencies": ["W4"],
+      "status": "COMPLETE"
+    },
+    {
+      "waveId": "W6",
+      "name": "Certification Gates & Runtime Verification",
+      "agents": ["B08", "B09"],
+      "sequential": true,
+      "dependencies": ["W5"],
+      "status": "COMPLETE"
+    },
+    {
+      "waveId": "W7",
+      "name": "Browser Verification & Final Gate",
+      "agents": ["B10", "B11"],
+      "sequential": true,
+      "dependencies": ["W6"],
+      "status": "PARTIAL",
+      "notes": "B10 is PARTIAL (data-block-version attributes missing), B11 is CORRECT"
+    },
+    {
+      "waveId": "W8",
+      "name": "Snapshot Integration",
+      "agents": ["B16"],
+      "sequential": true,
+      "dependencies": ["W7"],
+      "status": "COMPLETE"
+    },
+    {
+      "waveId": "W9",
+      "name": "Frontend Integration",
+      "agents": ["B17"],
+      "sequential": true,
+      "dependencies": ["W2"],
+      "status": "MISSING",
+      "notes": "Frontend disconnected, needs real API integration"
+    },
+    {
+      "waveId": "W10",
+      "name": "Final Integration & Contract Defaults",
+      "agents": ["B18"],
+      "sequential": true,
+      "dependencies": ["W2", "W3"],
+      "status": "PARTIAL",
+      "notes": "Contract uses generic defaults, needs repository-derived data"
+    }
+  ],
+  "existingCorrectImplementation": [
+    "CanonicalWorkflowState enum with 17 states (services/project-ai/app/orchestration/canonical_workflow.py)",
+    "WorkflowTarget and CandidateBinding models (services/project-ai/app/models/workflow_target.py)",
+    "EngineeringContract structure framework (services/project-ai/app/contracts/engineering_contract.py)",
+    "Real CertificationGateExecutor with 6 gates (services/project-ai/app/certification/gates.py)",
+    "PlacementManifest generation with hash (services/project-ai/app/agents/placement.py)",
+    "Human approval gate with hash validation (services/project-ai/app/api/routes/governance.py)",
+    "Evidence ledger infrastructure (.agents/evidence/)",
+    "Real canonical comparison logic (services/project-ai/app/agents/canonical_comparison.py)",
+    "Runtime verification with health checks (services/project-ai/app/verification/runtime.py)",
+    "Browser verification with graceful degradation (services/project-ai/app/certification/browser_verification.py)",
+    "FinalGateController with CERTIFICATION_READY invariant (services/project-ai/app/orchestration/final_gate_controller.py)",
+    "Placement executor with approval checks (services/project-ai/app/placement/executor.py)",
+    "533 tests collected (passing status to be verified)"
+  ],
+  "knownDefects": [
+    {
+      "defectId": "P0-B03",
+      "severity": "P0",
+      "description": "Python directly scans repository using Path(repo_root) instead of consuming TypeScript snapshot only",
+      "agentId": "B03",
+      "currentFile": "services/project-ai/app/contracts/repository_intelligence.py",
+      "line": 153,
+      "requiredFix": "Remove Path(repo_root) usage and all file scanning. Extract canonical block evidence from snapshot['evidence'] array only. Never open repository files."
+    },
+    {
+      "defectId": "P0-BINDING",
+      "severity": "P0",
+      "description": "blockVersion='1.0.0' hardcoded instead of using exact family/version from WorkflowTarget (e.g., 'I7')",
+      "agentId": "B07",
+      "currentFile": "services/project-ai/app/agents/placement.py",
+      "line": 54,
+      "requiredFix": "Replace blockVersion='1.0.0' with blockVersion=context.workflow_state['workflow_target'].version. Also fix candidate.py lines 379 and 395."
+    },
+    {
+      "defectId": "P0-LEGACY",
+      "severity": "P0",
+      "description": "Legacy CreationMode enum not removed; MIX_AND_MATCH and I2_ONLY still executable, allowing workflow bypass",
+      "agentId": "B13",
+      "currentFile": "services/project-ai/app/models/creation.py",
+      "line": 9,
+      "requiredFix": "Remove CreationMode enum completely. Add DesignSource enum (REPOSITORY_CANONICAL, EXTERNAL_AI_PROTOTYPE, USER_SPECIFICATION). Update all tests to use DesignSource. Ensure all workflows follow canonical lifecycle regardless of design source."
+    },
+    {
+      "defectId": "P0-BROWSER-CLARIFICATION",
+      "severity": "P0",
+      "description": "Browser verification status CLARIFIED: graceful degradation is CORRECT. Returns SKIPPED when Playwright unavailable, never fabricates PASS. No defect found.",
+      "agentId": "B10",
+      "currentFile": "services/project-ai/app/certification/browser_verification.py",
+      "line": null,
+      "requiredFix": "No fix required. Current implementation is correct per architectural decision. PARTIAL status due to missing data-block-version attributes in 13 block renderers (TypeScript side, not Python)."
+    },
+    {
+      "defectId": "P1-CONTRACT",
+      "severity": "P1",
+      "description": "EngineeringContract uses generic defaults instead of repository-derived data",
+      "agentId": "B18",
+      "currentFile": "services/project-ai/app/contracts/engineering_contract.py",
+      "line": null,
+      "requiredFix": "Replace default_factory lambdas with real data extraction from RepositoryContract. Use snapshot evidence for required_artifacts, renderer_contract, composer_contract, schema_contract, acceptance_criteria."
+    },
+    {
+      "defectId": "P1-FRONTEND",
+      "severity": "P1",
+      "description": "Frontend disconnected: no fetch/axios calls, hardcoded fixture data, TypeScript projectLlmWorkflowCoordinator creates duplicate state machine",
+      "agentId": "B17",
+      "currentFile": "packages/ui/src/project-llm/",
+      "line": null,
+      "requiredFix": "Create useWorkflowState hook consuming CanonicalWorkflowState from backend. Remove duplicate TypeScript state machine. Add real API calls via projectLlmClient.ts. Connect candidate upload to real multipart/form-data endpoint."
+    }
+  ],
+  "unknowns": []
+}

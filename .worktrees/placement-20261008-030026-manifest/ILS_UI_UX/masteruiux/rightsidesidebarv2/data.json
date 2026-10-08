@@ -1,0 +1,89 @@
+{
+  "navigationNodeId": "java-basics",
+  "sectionId": "section-uuid",
+  "subtopicId": "subtopic-uuid",
+  "status": "in_progress",
+  "progressPercentage": 66.67,
+  "completedBlockCount": 2,
+  "totalBlockCount": 3,
+  "blocks": [
+    {
+      "blockId": "d1-block-uuid",
+      "blockVersion": "D1",
+      "status": "completed",
+      "visitCount": 3,
+      "revisionCount": 2,
+      "activeTimeSec": 185,
+      "expectedTimeSec": 120,
+      "timeComparison": {
+        "differenceSec": 65,
+        "percentageOfExpected": 154.17,
+        "belowExpected": false
+      },
+      "interactionHistory": [
+        {
+          "type": "view",
+          "occurredAt": "2026-08-31T10:25:00.000Z"
+        },
+        {
+          "type": "expand",
+          "occurredAt": "2026-08-31T10:26:10.000Z"
+        }
+      ],
+      "attempts": 1,
+      "score": null,
+      "firstViewedAt": "2026-08-31T10:25:00.000Z",
+      "lastViewedAt": "2026-08-31T10:30:00.000Z",
+      "completedAt": "2026-08-31T10:30:00.000Z"
+    },
+    {
+      "blockId": "c1-block-uuid",
+      "blockVersion": "C1",
+      "status": "completed",
+      "visitCount": 2,
+      "revisionCount": 0,
+      "activeTimeSec": 240,
+      "expectedTimeSec": 180,
+      "timeComparison": {
+        "differenceSec": 60,
+        "percentageOfExpected": 133.33,
+        "belowExpected": false
+      },
+      "interactionHistory": [
+        {
+          "type": "view",
+          "occurredAt": "2026-08-31T10:31:00.000Z"
+        },
+        {
+          "type": "copy",
+          "occurredAt": "2026-08-31T10:33:00.000Z"
+        }
+      ],
+      "attempts": 2,
+      "score": 90,
+      "firstViewedAt": "2026-08-31T10:31:00.000Z",
+      "lastViewedAt": "2026-08-31T10:35:00.000Z",
+      "completedAt": "2026-08-31T10:35:00.000Z"
+    },
+    {
+      "blockId": "s1-block-uuid",
+      "blockVersion": "S1",
+      "status": "not_completed",
+      "visitCount": 1,
+      "revisionCount": 0,
+      "activeTimeSec": 45,
+      "expectedTimeSec": 90,
+      "timeComparison": {
+        "differenceSec": -45,
+        "percentageOfExpected": 50,
+        "belowExpected": true
+      },
+      "interactionHistory": [],
+      "attempts": 0,
+      "score": null,
+      "firstViewedAt": "2026-08-31T10:36:00.000Z",
+      "lastViewedAt": "2026-08-31T10:36:45.000Z",
+      "completedAt": null
+    }
+  ]
+}

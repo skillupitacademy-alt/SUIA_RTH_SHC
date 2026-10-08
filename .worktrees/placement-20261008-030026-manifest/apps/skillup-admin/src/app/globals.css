@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-outfit: 'Outfit', system-ui, sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-inter);
+  background: #f4f8fc;
+  color: #0f172a;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-outfit);
+}
+
+* {
+  box-sizing: border-box;
+}

@@ -1,0 +1,28 @@
+{
+  "wave": "W6",
+  "timestamp": "2025-01-29T14:45:00Z",
+  "actual_head": "2df35074",
+  "w5_gate_status": "PASS",
+  "playwright_available": true,
+  "playwright_version": "1.59.1",
+  "application_start_command": "pnpm dev",
+  "existing_verification_files": [
+    "services/project-ai/app/verification/browser_verification.py",
+    "services/project-ai/app/verification/gates.py",
+    "services/project-ai/app/verification/runtime_verification.py",
+    "services/project-ai/app/verification/__init__.py"
+  ],
+  "existing_certification_files": [
+    "services/project-ai/app/certification/brand.py",
+    "services/project-ai/app/certification/browser.py",
+    "services/project-ai/app/certification/compatibility.py",
+    "services/project-ai/app/certification/composer.py",
+    "services/project-ai/app/certification/runtime.py",
+    "services/project-ai/app/certification/theme.py",
+    "services/project-ai/app/certification/__init__.py"
+  ],
+  "existing_w6_artifacts": [],
+  "baseline_failing_tests": [],
+  "preflight_status": "READY",
+  "blockers": []
+}

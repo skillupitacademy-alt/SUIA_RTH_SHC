@@ -1,0 +1,64 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "/__placeholder__/login",
+        "/__placeholder__/dashboard"
+      ],
+      "numberOfRuns": 2,
+      "settings": {
+        "preset": "desktop",
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices",
+          "seo"
+        ]
+      }
+    },
+    "assert": {
+      "preset": "lighthouse:no-pwa",
+      "assertions": {
+        "categories:performance": [
+          "error",
+          { "minScore": 0.7 }
+        ],
+        "categories:accessibility": [
+          "error",
+          { "minScore": 0.8 }
+        ],
+        "categories:best-practices": [
+          "error",
+          { "minScore": 0.8 }
+        ],
+        "categories:seo": [
+          "error",
+          { "minScore": 0.8 }
+        ],
+        "first-contentful-paint": [
+          "warn",
+          { "maxNumericValue": 3000 }
+        ],
+        "largest-contentful-paint": [
+          "error",
+          { "maxNumericValue": 4000 }
+        ],
+        "total-blocking-time": [
+          "warn",
+          { "maxNumericValue": 500 }
+        ],
+        "cumulative-layout-shift": [
+          "error",
+          { "maxNumericValue": 0.15 }
+        ],
+        "interactive": [
+          "warn",
+          { "maxNumericValue": 5000 }
+        ]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

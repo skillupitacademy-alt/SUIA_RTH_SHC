@@ -1,6 +1,7 @@
 import React from 'react';
 import { BookOpen, FileText, Code2, Star, Sparkles } from 'lucide-react';
 import type { IDefinitionBlock, BlockComponentProps, DomainTheme } from '../types';
+import { getThemeColor, withAlpha } from '../theme-utils';
 
 /**
  * Definition Block - Version Router
@@ -69,18 +70,18 @@ function DefinitionD1View({
   const primary = theme.primary;
   const secondary = theme.secondary;
 
-  // Helper to create color with alpha
-  function withAlpha(hex: string, alphaHex: string) {
-    return `${hex}${alphaHex}`;
-  }
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'definition';
+  const blockVersion = runtimeContext?.blockVersion ?? block.version;
 
   return (
     <article 
-      className={`w-full bg-white px-[5%] py-10 ${className}`} 
+      className={`w-full bg-white dark:bg-slate-900 px-[5%] py-10 ${className}`} 
       style={{ color: secondary }}
-      data-block-id={block.id}
-      data-block-type="definition"
-      data-block-version={block.version}
+      data-block-id={blockId}
+      data-block-type={blockType}
+      data-block-version={blockVersion}
     >
       <header className="mb-[26px]">
         <div className="mb-[14px] flex items-center gap-2.5 text-base font-extrabold leading-snug" style={{ color: primary }}>
@@ -122,7 +123,7 @@ function DefinitionD1View({
       )}
 
       {page.example && (
-        <section className="my-[26px] rounded-[10px] border px-[26px] pb-[23px] pt-5" style={{ backgroundColor: '#f6f8ff', borderColor: '#d2dcf0' }}>
+        <section className="my-[26px] rounded-[10px] border px-[26px] pb-[23px] pt-5" style={{ backgroundColor: getThemeColor(theme, 'blue', 50), borderColor: getThemeColor(theme, 'blue', 200) }}>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-base font-extrabold leading-snug" style={{ color: secondary }}>Example</h2>
             <Code2 className="h-[17px] w-[17px]" style={{ color: primary }} />
@@ -143,8 +144,8 @@ function DefinitionD1View({
             {characteristics.map((item, index) => (
               <div 
                 key={item.title || index} 
-                className="flex flex-col rounded-xl border bg-white p-5 text-center transition hover:-translate-y-0.5 hover:shadow-md" 
-                style={{ borderColor: '#e0dce6' }}
+                className="flex flex-col rounded-xl border bg-white dark:bg-slate-800 p-5 text-center transition hover:-translate-y-0.5 hover:shadow-md" 
+                style={{ borderColor: getThemeColor(theme, 'gray', 200) }}
               >
                 <div 
                   className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border text-xl font-bold shrink-0" 
@@ -165,15 +166,15 @@ function DefinitionD1View({
       )}
 
       {page.takeaway && (
-        <section className="relative mt-8 overflow-hidden rounded-[10px] border py-[23px] pl-6 pr-[100px]" style={{ backgroundColor: '#fffaf0', borderColor: '#ead8a8' }}>
+        <section className="relative mt-8 overflow-hidden rounded-[10px] border py-[23px] pl-6 pr-[100px]" style={{ backgroundColor: getThemeColor(theme, 'amber', 50), borderColor: getThemeColor(theme, 'amber', 200) }}>
           <div className="mb-3 flex items-center gap-[11px]">
-            <span className="inline-flex h-[29px] w-[29px] shrink-0 items-center justify-center rounded-full bg-[#f59e0b] text-white">
+            <span className="inline-flex h-[29px] w-[29px] shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: getThemeColor(theme, 'amber', 500), color: 'white' }}>
               <Star className="h-[15px] w-[15px] fill-current" />
             </span>
-            <h2 className="text-[19px] font-extrabold leading-snug text-[#d97706]">Key Takeaway</h2>
+            <h2 className="text-[19px] font-extrabold leading-snug" style={{ color: getThemeColor(theme, 'amber', 600) }}>Key Takeaway</h2>
           </div>
           <p className="text-base font-medium leading-[1.7]" style={{ color: secondary }}>{page.takeaway}</p>
-          <Sparkles className="absolute bottom-[15px] right-[22px] h-12 w-12 text-[#f59e0b]" />
+          <Sparkles className="absolute bottom-[15px] right-[22px] h-12 w-12" style={{ color: getThemeColor(theme, 'amber', 500) }} />
         </section>
       )}
     </article>

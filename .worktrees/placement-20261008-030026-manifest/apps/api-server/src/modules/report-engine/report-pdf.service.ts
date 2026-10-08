@@ -1,0 +1,361 @@
+import { db, exams } from "@quiz/db";
+import chromium from "@sparticuz/chromium";
+import { eq } from "drizzle-orm";
+import puppeteer, { type Browser, type PDFOptions } from "puppeteer-core";
+
+import { logger } from "@/lib/logger";
+import { PremiumReport, ReportEngine } from "@/modules/report-engine/report.engine";
+import { ReportRepository } from "@/modules/report-engine/report-repository";
+
+export interface GeneratePdfOptions {
+  customPath?: string;
+  customData?: unknown;
+  theme?: string;
+}
+
+export class ReportPdfService {
+  private static instance: ReportPdfService;
+  private log = logger.child({ module: "report-pdf-service" });
+
+  constructor(
+    private readonly dbInstance: typeof db = db,
+    private readonly reportEngine?: ReportEngine,
+    private readonly reportRepository?: ReportRepository
+  ) {}
+
+  static getInstance(): ReportPdfService {
+    if (ReportPdfService.instance === null || ReportPdfService.instance === undefined) {
+      ReportPdfService.instance = new ReportPdfService();
+    }
+    return ReportPdfService.instance;
+  }
+
+  /**
+   * Generates a PDF via Browserless or local Chromium
+   */
+  async generate(
+    attemptId: string,
+    nodeId?: string,
+    nodeType?: string,
+    pageOffset?: number,
+    totalPages?: number,
+    options?: GeneratePdfOptions
+  ): Promise<{ buffer: Buffer; generationTimeMs: number; fileSizeKb: number; pageCount: number }> {
+    const start = Date.now();
+    const isWindows = process.platform === "win32";
+    const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL ?? "https://user.realtutorialhub.com";
+    const internalKey = process.env.INTERNAL_API_KEY ?? "dev-internal-key";
+    
+    // Remote browserless (Production) vs Local Chromium (Dev)
+    const browserlessUrl = process.env.BROWSERLESS_URL;
+    const hasBrowserlessUrl = typeof browserlessUrl === 'string' && browserlessUrl.trim() !== '';
+
+    let browser: Browser;
+
+    if (hasBrowserlessUrl) {
+      this.log.info({ attemptId }, "[ReportPdfService] Connecting to remote browserless instance");
+      browser = await puppeteer.connect({
+        browserWSEndpoint: browserlessUrl as string,
+        defaultViewport: {
+          width: 1920,
+          height: 1080,
+          deviceScaleFactor: 2,
+          isMobile: false,
+          hasTouch: false,
+          isLandscape: true,
+        },
+      });
+    } else {
+      let executablePath: string;
+      if (isWindows) {
+        const paths = [
+          "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+          "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+          process.env.CHROME_PATH
+        ].filter((p): p is string => p !== undefined && p !== null && p !== "") as string[];
+        
+        const fs = await import("fs");
+        const executableCandidate = paths.find((p) => fs.existsSync(p)) ?? paths[0];
+
+        if (executableCandidate !== undefined && fs.existsSync(executableCandidate)) {
+          executablePath = executableCandidate;
+        } else {
+          this.log.warn({ executableCandidate, attemptId }, "[ReportPdfService] Target Chrome binary not found at primary path");
+          executablePath = await (await import("@sparticuz/chromium")).default.executablePath();
+        }
+      } else {
+        executablePath = await (await import("@sparticuz/chromium")).default.executablePath();
+      }
+
+      this.log.info({ attemptId, isWindows, executablePath }, "[ReportPdfService] Launching local browser instance");
+      browser = await puppeteer.launch({
+        args: isWindows ? ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"] : ((chromium as unknown as { args: string[] }).args),
+        defaultViewport: {
+          width: 1920,
+          height: 1080,
+          deviceScaleFactor: 2,
+          isMobile: false,
+          hasTouch: false,
+          isLandscape: true,
+        },
+        executablePath,
+        headless: (isWindows ? true : (chromium as unknown as { headless: boolean | 'shell' }).headless) as boolean | 'shell',
+      });
+    }
+
+    try {
+      const page = await browser.newPage();
+
+      // Lightweight diagnostics for "ready signal never appeared" failures.
+      // This is intentionally bounded to avoid log spam in production.
+      const consoleMessages: Array<{ type: string; text: string }> = [];
+      const pageErrors: string[] = [];
+      const requestFailures: Array<{ url: string; resourceType: string; errorText: string }> = [];
+      const responseErrors: Array<{ url: string; status: number }> = [];
+
+      page.on("console", (msg) => {
+        if (consoleMessages.length >= 25) return;
+        consoleMessages.push({ type: msg.type(), text: msg.text() });
+      });
+      page.on("pageerror", (err) => {
+        if (pageErrors.length >= 10) return;
+        pageErrors.push(err instanceof Error ? err.message : String(err));
+      });
+      page.on("requestfailed", (req) => {
+        if (requestFailures.length >= 25) return;
+        requestFailures.push({
+          url: req.url(),
+          resourceType: req.resourceType(),
+          errorText: req.failure()?.errorText ?? "unknown",
+        });
+      });
+      page.on("response", (res) => {
+        const status = res.status();
+        if (status < 400) return;
+        if (responseErrors.length >= 25) return;
+        responseErrors.push({ url: res.url(), status });
+      });
+      
+      // Keep a consistent rendering baseline (A4 landscape) across reports.
+      // Student Insight pages control their own fixed canvas sizing via CSS.
+      await page.setViewport({
+        width: 1920,
+        height: 1080,
+        deviceScaleFactor: 2,
+        isLandscape: true
+      });
+
+      let url = options?.customPath !== undefined && options?.customPath !== null && options?.customPath !== ""
+        ? `${webAppUrl}${options.customPath}`
+        : `${webAppUrl}/report/print/${attemptId}`;
+      
+      if (!url.includes('?')) url += '?';
+      else url += '&';
+      // Web report route expects this query param (used to forward x-internal-key on client fetches)
+      url += `internalKey=${encodeURIComponent(internalKey)}`;
+
+      if (nodeId !== undefined && nodeId !== null && nodeId !== "") {
+        url += `&nodeId=${encodeURIComponent(nodeId)}`;
+      }
+      if (nodeType !== undefined && nodeType !== null && nodeType !== "") {
+        url += `&nodeType=${encodeURIComponent(nodeType)}`;
+      }
+
+      if (pageOffset !== undefined) {
+        url += `&pageOffset=${pageOffset}`;
+      }
+      if (totalPages !== undefined) {
+        url += `&totalPages=${totalPages}`;
+      }
+
+      // 1. Emulate High-Quality Agent
+      await page.setUserAgent(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+      );
+
+      // 2. Set Extra Headers so the INITIAL page load bypasses the WAF Rule
+      await page.setExtraHTTPHeaders({
+        "x-internal-key": internalKey,
+      });
+
+      // 3. Fetch data locally for injection
+      const examRows = await this.dbInstance.select({
+        reportMaterialized: exams.reportMaterialized
+      })
+      .from(exams)
+      .where(eq(exams.id, attemptId))
+      .limit(1);
+      const exam = examRows[0];
+
+      const engine = this.reportEngine ?? (await import('../core/container')).container.get(ReportEngine);
+      const reportData: PremiumReport & { reportMaterialized?: unknown } = await engine.getPremiumExamReport(attemptId);
+
+      if (exam?.reportMaterialized !== undefined && exam?.reportMaterialized !== null) {
+        reportData.reportMaterialized = exam.reportMaterialized;
+      }
+
+      // 4. Data Injection: Push data into browser memory BEFORE navigation
+      this.log.info({ attemptId }, "[ReportPdfService] Injecting report data into browser memory");
+      const dataToInject = options?.customData ?? reportData;
+      const themeToInject = options?.theme ?? "dark";
+      
+      await page.evaluateOnNewDocument((data: unknown, theme: string) => {
+        (globalThis as { __REPORT_DATA__?: unknown }).__REPORT_DATA__ = data;
+        (globalThis as { __REPORT_THEME__?: string }).__REPORT_THEME__ = theme;
+      }, dataToInject, themeToInject);
+
+      // 5. Navigate and Wait
+      this.log.info({ attemptId, url }, "[ReportPdfService] Navigating to print view");
+      try {
+        await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
+      } catch (gotoErr) {
+        this.log.error({ attemptId, url, err: gotoErr }, "[ReportPdfService] Navigation failed or timed out");
+        throw new Error(`Navigation Fault: Check if ${webAppUrl} is accessible.`);
+      }
+
+      this.log.info({ attemptId }, "[ReportPdfService] Waiting for Neural Signal [data-pdf-ready=\"true\"]");
+      try {
+        // Wait for either:
+        // - success signal: [data-pdf-ready="true"]
+        // - explicit error signal: #pdf-error-signal OR [data-pdf-ready="false"]
+        await page.waitForFunction(
+          () => {
+            const ok = document.querySelector('[data-pdf-ready="true"]');
+            const err =
+              document.querySelector("#pdf-error-signal") ?? document.querySelector('[data-pdf-ready="false"]');
+            return ok !== null || err !== null;
+          },
+          { timeout: 30000 }
+        );
+
+        const isReady = (await page.$('[data-pdf-ready="true"]')) !== null;
+        if (!isReady) {
+          const errText = await page
+            .evaluate(() => (document.body?.innerText ?? "").slice(0, 500))
+            .catch(() => "");
+          throw new Error(`Render Error Signal Detected: ${errText}`.trim());
+        }
+      } catch (selectorErr) {
+        const debug = await (async () => {
+          const title = await page.title().catch(() => null);
+          const currentUrl = page.url();
+          const html = await page.content().catch(() => null);
+          return {
+            title,
+            currentUrl,
+            htmlSnippet: typeof html === "string" ? html.slice(0, 2000) : null,
+            consoleMessages,
+            pageErrors,
+            requestFailures,
+            responseErrors,
+          };
+        })();
+
+        this.log.error(
+          { attemptId, err: selectorErr, debug },
+          "[ReportPdfService] Signal timeout - page did not reach ready state"
+        );
+        throw new Error("Synthesis Timeout: The report engine failed to emit a ready signal within 30s.");
+      }
+
+      await page.emulateMediaType("print");
+      await page.evaluateHandle("document.fonts.ready");
+
+      const pdfOptions: PDFOptions = {
+        printBackground: true,
+        preferCSSPageSize: true,
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      };
+
+      // Student Insight and Visual Report both print as A4 landscape.
+      // Any fixed pixel sizing is handled in the page layout CSS.
+      pdfOptions.format = 'A4';
+      pdfOptions.landscape = true;
+
+      const pdfBuffer = await page.pdf(pdfOptions);
+
+      return {
+        buffer: pdfBuffer as Buffer,
+        generationTimeMs: Date.now() - start,
+        fileSizeKb: Math.round(pdfBuffer.length / 1024),
+        pageCount: totalPages ?? 1,
+      };
+    } finally {
+      await browser.close();
+    }
+  }
+
+  /**
+   * Helper specifically for rendering a hierarchical segment
+   */
+  async renderSegment(
+    attemptId: string,
+    nodeId: string,
+    nodeType: string,
+    pageOffset?: number,
+    totalPages?: number
+  ): Promise<{ buffer: Buffer }> {
+    const { buffer } = await this.generate(attemptId, nodeId, nodeType, pageOffset, totalPages);
+    return { buffer };
+  }
+
+  /**
+   * Complete generation + upload + DB sync flow
+   */
+  async generateAndUpload(attemptId: string): Promise<string> {
+    const examRows = await this.dbInstance.select({
+      userId: exams.userId
+    })
+    .from(exams)
+    .where(eq(exams.id, attemptId))
+    .limit(1);
+    const exam = examRows[0];
+
+    if (exam === null || exam === undefined) throw new Error(`Exam not found: ${attemptId}`);
+
+    const { buffer, fileSizeKb, generationTimeMs, pageCount } = await this.generate(attemptId);
+
+    const { uploadReport } = await import("@/lib/storage/upload-report");
+    const storageUrl = await uploadReport(buffer, exam.userId, attemptId, {
+      fileBasename: `${attemptId}-student-infograph-report`,
+    });
+
+    const repository = this.reportRepository ?? (await import('../core/container')).container.get(ReportRepository);
+    await repository.updateReportSuccess(attemptId, {
+      fileRef: storageUrl,
+      generationTimeMs,
+      fileSizeKb,
+      pageCount,
+    });
+
+    return storageUrl;
+  }
+
+  // Static wrappers for backward compatibility
+  private static readonly defaultService = new ReportPdfService();
+
+  static generate(
+    attemptId: string,
+    nodeId?: string,
+    nodeType?: string,
+    pageOffset?: number,
+    totalPages?: number,
+    options?: GeneratePdfOptions
+  ) {
+    return this.defaultService.generate(attemptId, nodeId, nodeType, pageOffset, totalPages, options);
+  }
+
+  static renderSegment(
+    attemptId: string,
+    nodeId: string,
+    nodeType: string,
+    pageOffset?: number,
+    totalPages?: number
+  ) {
+    return this.defaultService.renderSegment(attemptId, nodeId, nodeType, pageOffset, totalPages);
+  }
+
+  static generateAndUpload(attemptId: string) {
+    return this.defaultService.generateAndUpload(attemptId);
+  }
+}

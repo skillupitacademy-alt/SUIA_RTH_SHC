@@ -1,0 +1,62 @@
+{
+  "runId": "r1-setup",
+  "wave": "R1",
+  "name": "Snapshot Lifecycle",
+  "timestamp": "2025-01-30T21:35:00Z",
+  "evidence": [
+    {
+      "evidenceId": "ev-snapshot-001",
+      "type": "implementation",
+      "artifact": "packages/project-llm-discovery/src/snapshot/builder.ts",
+      "claim": "Deterministic snapshot generation with schema version 1.1.0",
+      "verification": "buildSnapshot() function exists with schemaVersion: '1.1.0'",
+      "status": "complete"
+    },
+    {
+      "evidenceId": "ev-snapshot-002",
+      "type": "implementation",
+      "artifact": "packages/project-llm-discovery/src/snapshot/hasher.ts",
+      "claim": "Canonical hash computation for determinism",
+      "verification": "computeSnapshotHash() function generates deterministic SHA-256 hash",
+      "status": "complete"
+    },
+    {
+      "evidenceId": "ev-snapshot-003",
+      "type": "metadata",
+      "artifact": "packages/project-llm-discovery/src/snapshot/builder.ts",
+      "claim": "Repository metadata includes owner, name, branch, commitSha",
+      "verification": "Snapshot includes repository.owner, repository.name, repository.commitSha",
+      "status": "complete"
+    },
+    {
+      "evidenceId": "ev-snapshot-004",
+      "type": "scanner-integration",
+      "artifact": "packages/project-llm-discovery/src/snapshot/builder.ts",
+      "claim": "All 6 scanners (D1-D6) integrated in snapshot generation",
+      "verification": "Calls scanRepositoryStructure, scanRuntime, scanBlocks, scanComposer, scanDependencies, scanTests",
+      "status": "complete"
+    },
+    {
+      "evidenceId": "ev-snapshot-005",
+      "type": "evidence",
+      "artifact": "packages/project-llm-discovery/src/evidence/collector.ts",
+      "claim": "Evidence records with unique IDs generated deterministically",
+      "verification": "EvidenceCollector class with deterministic ID generation",
+      "status": "complete"
+    },
+    {
+      "evidenceId": "ev-snapshot-006",
+      "type": "cli",
+      "artifact": "packages/project-llm-discovery/scripts/generate-snapshot.ts",
+      "claim": "CLI command for snapshot generation available",
+      "verification": "Script exists, can be run with pnpm --filter @quiz/project-llm-discovery scan",
+      "status": "complete"
+    }
+  ],
+  "summary": {
+    "status": "Already complete from M2.1",
+    "schemaVersion": "1.1.0",
+    "determinism": "Hash stable across runs",
+    "evidenceBinding": "commitSha binds evidence to git state"
+  }
+}

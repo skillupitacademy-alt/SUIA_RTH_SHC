@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Content Validator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .section-btn {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .section-btn:hover {
+            border-color: #f5576c;
+            background: #fff5f7;
+        }
+        
+        .section-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-color: #f5576c;
+        }
+        
+        .input-area {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .validate-btn, .format-btn, .clear-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .validate-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .format-btn {
+            background: #10b981;
+            color: white;
+        }
+        
+        .clear-btn {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .validate-btn:hover, .format-btn:hover, .clear-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .validate-btn:active, .format-btn:active, .clear-btn:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .result-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .result-box.success {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+        }
+        
+        .result-box.error {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+        
+        .result-box.warning {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .result-icon {
+            font-size: 24px;
+        }
+        
+        .result-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .result-message {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .validation-details {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .validation-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #10b981;
+            background: #f0fdf4;
+            border-radius: 4px;
+        }
+        
+        .validation-item.missing {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .validation-item.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f5576c;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box p {
+            color: #1e40af;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ JSON Content Validator</h1>
+            <p>Validate AI-generated content for correctness and completeness</p>
+        </div>
+        
+        <div class="content">
+            <div class="info-box">
+                <p><strong>How to use:</strong> Select the section type, paste the JSON content from AI, and click Validate. The tool will check for syntax errors, missing fields, and data quality.</p>
+            </div>
+            
+            <label>Select Section Type</label>
+            <div class="section-selector">
+                <button class="section-btn" data-section="notes">Notes</button>
+                <button class="section-btn" data-section="layman">Layman</button>
+                <button class="section-btn" data-section="reallife">Real Life</button>
+                <button class="section-btn" data-section="technical">Technical</button>
+                <button class="section-btn" data-section="code">Code Example</button>
+                <button class="section-btn" data-section="assignment">Assignment</button>
+                <button class="section-btn" data-section="project">Project</button>
+                <button class="section-btn" data-section="quiz">Quiz</button>
+                <button class="section-btn" data-section="visual">Visual</button>
+                <button class="section-btn" data-section="practice">Practice Test</button>
+            </div>
+            
+            <div class="input-area">
+                <label for="jsonInput">Paste JSON Content Here</label>
+                <textarea id="jsonInput" placeholder='Paste your JSON content here...'></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button class="validate-btn" onclick="validateJSON()">Validate JSON</button>
+                <button class="format-btn" onclick="formatJSON()">Format JSON</button>
+                <button class="clear-btn" onclick="clearAll()">Clear All</button>
+            </div>
+            
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedSection = null;
+        
+        // Section button click handler
+        document.querySelectorAll('.section-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.section-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedSection = this.dataset.section;
+            });
+        });
+        
+        function validateJSON() {
+            const input = document.getElementById('jsonInput').value.trim();
+            const resultsDiv = document.getElementById('results');
+            
+            if (!input) {
+                showError('Please paste JSON content');
+                return;
+            }
+            
+            if (!selectedSection) {
+                showError('Please select a section type');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(input);
+                const validation = validateSection(data, selectedSection);
+                displayResults(validation);
+            } catch (error) {
+                showError('Invalid JSON syntax: ' + error.message);
+            }
+        }
+        
+        function formatJSON() {
+            const input = document.getElementById('jsonInput').value.trim();
+            
+            if (!input) {
+                alert('Please paste JSON content first');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(input);
+                document.getElementById('jsonInput').value = JSON.stringify(data, null, 2);
+            } catch (error) {
+                alert('Invalid JSON syntax: ' + error.message);
+            }
+        }
+        
+        function clearAll() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('results').classList.remove('show');
+        }
+        
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="result-box error">
+                    <div class="result-header">
+                        <span class="result-icon">❌</span>
+                        <span class="result-title">Validation Error</span>
+                    </div>
+                    <div class="result-message">${message}</div>
+                </div>
+            `;
+            resultsDiv.classList.add('show');
+        }
+        
+        function validateSection(data, section) {
+            const schemas = {
+                notes: ['coreDefinition', 'conceptExplanation', 'keyComponents', 'syntaxStructure', 'examples', 'bestPractices', 'commonErrors', 'revisionSummary'],
+                layman: ['simpleOverview', 'everydayAnalogy', 'whyItExists', 'simpleUseCases', 'beginnerBreakdown', 'mentalModel', 'commonConfusions', 'simpleRecap'],
+                reallife: ['conceptMapping', 'industryUseCase', 'dailyLifeExample', 'careerRelevance', 'problemSolutionContext', 'businessApplication', 'domainScenarios', 'practicalRecap'],
+                technical: ['architectureOverview', 'internalMechanics', 'advancedConcepts', 'performanceOptimization', 'edgeCases', 'designPatterns', 'securityConsiderations', 'technicalSummary'],
+                code: ['problemContext', 'basicCodeExample', 'lineByLineExplanation', 'outputDemonstration', 'bestPracticeVersion', 'commonMistakes', 'realWorldImplementation', 'codeSummary'],
+                assignment: ['assignmentOverview', 'learningObjectives', 'taskRequirements', 'starterCode', 'hintsAndTips', 'testCases', 'solutionApproach', 'submissionFeedback'],
+                project: ['projectOverview', 'projectGoals', 'featureRequirements', 'technicalSpecifications', 'implementationGuide', 'codeStructure', 'testingDeployment', 'projectShowcase'],
+                quiz: ['quizOverview', 'multipleChoice', 'trueFalse', 'codeOutput', 'fillInBlank', 'codeDebugging', 'scenarioBased', 'quizResults'],
+                visual: ['visualOverview', 'conceptDiagram', 'flowchartExplanation', 'comparisonChart', 'timelineVisualization', 'architectureDiagram', 'mindMap', 'interactiveDemo', 'visualSummary'],
+                practice: ['testOverview', 'theoryQuestions', 'practicalQuestions', 'codeAnalysisQuestions', 'debuggingQuestions', 'bestPracticeQuestions', 'performanceQuestions', 'comprehensiveScenarios', 'testResults']
+            };
+            
+            const requiredFields = schemas[section] || [];
+            const sectionData = data[section] || data;
+            
+            const missing = [];
+            const present = [];
+            const warnings = [];
+            
+            requiredFields.forEach(field => {
+                if (sectionData[field]) {
+                    present.push(field);
+                    // Check for placeholder text
+                    const fieldStr = JSON.stringify(sectionData[field]);
+                    if (fieldStr.includes('[') && fieldStr.includes(']')) {
+                        warnings.push(`${field} may contain placeholder text`);
+                    }
+                } else {
+                    missing.push(field);
+                }
+            });
+            
+            return {
+                isValid: missing.length === 0,
+                totalFields: requiredFields.length,
+                presentFields: present.length,
+                missingFields: missing.length,
+                missing: missing,
+                present: present,
+                warnings: warnings
+            };
+        }
+        
+        function displayResults(validation) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (validation.isValid) {
+                resultsDiv.innerHTML = `
+                    <div class="result-box success">
+                        <div class="result-header">
+                            <span class="result-icon">✅</span>
+                            <span class="result-title">Validation Successful!</span>
+                        </div>
+                        <div class="result-message">
+                            All required fields are present. Your JSON is ready to use!
+                        </div>
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-number">${validation.totalFields}</div>
+                                <div class="stat-label">Total Templates</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${validation.presentFields}</div>
+                                <div class="stat-label">Present</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${validation.missingFields}</div>
+                                <div class="stat-label">Missing</div>
+                            </div>
+                        </div>
+                        ${validation.warnings.length > 0 ? `
+                            <div class="validation-details">
+                                <strong>⚠️ Warnings:</strong>
+                                ${validation.warnings.map(w => `<div class="validation-item warning">${w}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="result-box error">
+                        <div class="result-header">
+                            <span class="result-icon">❌</span>
+                            <span class="result-title">Validation Failed</span>
+                        </div>
+                        <div class="result-message">
+                            Some required fields are missing. Please check the details below.
+                        </div>
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-number">${validation.totalFields}</div>
+                                <div class="stat-label">Total Templates</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${validation.presentFields}</div>
+                                <div class="stat-label">Present</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" style="color: #ef4444;">${validation.missingFields}</div>
+                                <div class="stat-label">Missing</div>
+                            </div>
+                        </div>
+                        <div class="validation-details">
+                            <strong>❌ Missing Fields:</strong>
+                            ${validation.missing.map(m => `<div class="validation-item missing">${m}</div>`).join('')}
+                        </div>
+                        ${validation.warnings.length > 0 ? `
+                            <div class="validation-details">
+                                <strong>⚠️ Warnings:</strong>
+                                ${validation.warnings.map(w => `<div class="validation-item warning">${w}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            resultsDiv.classList.add('show');
+        }
+    </script>
+</body>
+</html>

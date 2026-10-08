@@ -1,0 +1,27 @@
+{
+  "project_type": "TypeScript monorepo (pnpm workspaces) with discovery package @quiz/project-llm-discovery",
+  "language": "TypeScript 5.7.2 with strict type checking",
+  "build_system": "pnpm workspaces with turbo. Vitest for unit tests in @quiz/project-llm-discovery package",
+  "test_framework": "vitest ^4.0.18 with node environment, globals enabled. Integration tests under __tests__/integration/, unit tests under __tests__/unit/",
+  "build_command": "pnpm --filter @quiz/project-llm-discovery type-check",
+  "test_command": "pnpm --filter @quiz/project-llm-discovery test",
+  "verification_instructions": "After each change: (1) run pnpm --filter @quiz/project-llm-discovery type-check to ensure no type errors, (2) run pnpm --filter @quiz/project-llm-discovery test to run all unit tests, (3) verify specific test assertions pass for the changed module",
+  "snapshot_or_generated_files": "None. Tests and source files are committed. No build artifacts checked in.",
+  "environment_constraints": "Local worktree on Windows (e:\\onlinewebsites\\quiz-platform). Branch m1-repository-discovery already exists with 10 commits. FilesystemRepositoryAdapter uses Windows paths with backslashes internally but normalizes to forward slashes for evidence.",
+  "contribution_requirements": "From CONTRIBUTING.md: No 'any' types (@typescript-eslint/no-explicit-any is error). Strict boolean checks required. Use type imports (import type). No floating promises. No console logs. Complexity limit 20. Max lines 500 warning. Define DTOs and narrow unknown errors. Fire-and-forget must use void fn().catch().",
+  "key_patterns": "Scanners return ScannerResult<T> with { scannerName, timestamp, evidence, findings, data }. Validators return { errors: ValidationError[], warnings: ValidationWarning[] }. Evidence array contains Evidence objects with evidenceId, scannerName, timestamp, path, kind, claim, locator, contentHash. RepositoryAdapter interface has 6 methods: readFile, fileExists, listFiles, getFileHash, getGitCommit, getGitRoot. FilesystemRepositoryAdapter implements this interface with try/catch blocks that currently return empty strings/arrays on error.",
+  "relevant_files": [
+    "packages/project-llm-discovery/src/scanners/d3-blocks-scanner.ts",
+    "packages/project-llm-discovery/src/scanners/d6-tests-scanner.ts",
+    "packages/project-llm-discovery/src/validation/v1-schema-validator.ts",
+    "packages/project-llm-discovery/src/validation/v8-evidence-completeness-validator.ts",
+    "packages/project-llm-discovery/src/adapters/filesystem-repository-adapter.ts",
+    "packages/project-llm-discovery/src/contracts/repository-adapter.ts",
+    "packages/project-llm-discovery/src/contracts/snapshot.ts",
+    "packages/project-llm-discovery/src/contracts/evidence.ts",
+    "packages/project-llm-discovery/__tests__/unit/d3-blocks-scanner.test.ts",
+    "packages/project-llm-discovery/__tests__/unit/d6-tests-scanner.test.ts",
+    "packages/project-llm-discovery/__tests__/integration/test-d3-d6.ts"
+  ],
+  "directory_structure": "packages/project-llm-discovery/ contains src/ (scanners/, validation/, adapters/, contracts/, snapshot/), __tests__/ (unit/, integration/, determinism/), package.json, vitest.config.ts. Main entry point src/index.ts. Scanners named d1-d6 for discovery phases. Validators v1-v9 for validation phases."
+}

@@ -1,0 +1,213 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test results
+test-results/
+*.test.json
+
+# Environment variables
+.env
+.env.production
+.env.local
+.env.*.local
+
+# Local SSH keys and host access material
+suia_rth
+suia_rth.pub
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build and IDE artifacts
+.next/
+out/
+apps/*/out/
+.playwright-mcp/
+dist/
+.turbo/
+tmp/
+*.tsbuildinfo
+apps/*/public/sw.js
+apps/*/public/sw.js.map
+apps/*/public/swe-worker-*.js
+apps/*/public/swe-worker-*.js.map
+
+# Helper scripts and documentation (keep locally, don't commit)
+scripts/test-*.js
+!scripts/test-phase1-fallback.js
+!scripts/test-auth-resilience.js
+!scripts/test-rbac-live.js
+scripts/audit-*.js
+scripts/audit-*.ts
+scripts/compare-*.js
+scripts/debug-*.js
+scripts/verify-*.js
+scripts/validate-*.js
+scripts/check-*.js
+scripts/e2e-*.js
+test-*.js
+!scripts/test-phase1-fallback.js
+!scripts/test-auth-resilience.js
+!scripts/test-rbac-live.js
+test-*.ps1
+*.backup
+temp-*.ts
+tokens.json
+*-logs.json
+rbac-test-config.json
+get-tokens.ps1
+*.md.backup
+
+# Audit directory scripts and investigation artifacts
+scripts/audit/audit-*.ts
+scripts/audit/audit-*.js
+scripts/audit/c1-*.ts
+scripts/audit/c1-*.mjs
+scripts/audit/forensic-*.ts
+scripts/audit/tutorial-v2-*.ts
+scripts/audit/*-RESULTS.ts
+scripts/audit/C1-*.md
+scripts/audit/C1-*.txt
+scripts/audit/README-*.md
+scripts/audit/FORENSIC_*.ts
+scripts/run-tutorial-*.ts
+
+# Keep only production audit scripts
+!scripts/audit/c1-018-implementation-tests.mjs
+
+# Documentation files (keep locally, don't commit)
+CANONICAL-*.md
+COMPREHENSIVE-*.md
+COOKIE-*.md
+DB-*.md
+DEPLOY-*.md
+DEPLOYMENT-*.md
+FAANG-*.md
+FINAL-*.md
+GATEWAY-*.md
+HOW-TO-*.md
+PHASE-*.md
+PRE-*.md
+QUICK-*.md
+RBAC-*.md
+REAL-*.md
+RECONNECTION-*.md
+SHARED-*.md
+SHARED-*.txt
+SKILLUP-*.md
+STRICT-*.md
+TEST-*.md
+
+# Phase 2B documentation and reports (keep locally)
+LAYMAN_*.md
+PHASE_*.md
+PHASE_*.txt
+WHAT_*.md
+*_COMPLETE*.md
+*_SUMMARY*.md
+*_AUDIT*.md
+*_JOURNEY*.md
+*_CHECKLIST*.md
+*_DOCUMENTATION*.md
+*_QUICK_START*.md
+*_RESULTS*.txt
+*_STATUS*.md
+*_ANALYSIS*.md
+*_IMPLEMENTATION*.md
+!ILS_UI_UX/docs/PROJECT_LLM_MVP_IMPLEMENTATION_CONTRACT.md
+!ILS_UI_UX/docs/PROJECT_LLM_IMPLEMENTATION_ALIGNMENT_MATRIX_2026-10-07.md
+*_VISUAL*.md
+scripts/PHASE*.md
+
+# Backup and report directories
+backups/
+docs/completeproject/
+docs/report/
+infra/hostinger/cloudflare/state-exports/
+
+# Validation and audit outputs
+validation-report.json
+db-audit-output.txt
+*-audit-output.txt
+
+# Kiro specs (AI assistant workspace)
+.kiro/specs/
+
+# Analysis artifacts (refactoring documentation)
+.analysis/
+
+# Tutorial composer E2E test scripts
+scripts/test-tutorial-composer-c1-e2e.mjs
+scripts/check-subtopic-sync.mjs
+scripts/diagnose-tutorial-404-clean.mjs
+scripts/find-all-published-tutorials.mjs
+scripts/test-delivery-service-fix.mjs
+scripts/test-tutorial-delivery-e2e.mjs
+scripts/test-tutorial-delivery-simple.mjs
+
+# Next.js TypeScript declarations (auto-generated)
+**/next-env.d.ts
+
+# Migration and transformation reports
+scripts/deployment/*.txt
+scripts/transformation/*.txt
+packages/db-tutorial/src/migrations/p1-p0-foundation/*.txt
+scripts/validate-phase2b/README.md
+
+# Large archive files
+*.zip
+SUIA_RTH_SHC.zip
+
+# Video and media files
+*.mp4
+*.mov
+*.avi
+
+# Marketing materials
+digitalmarketing/download/
+digitalmarketing/*.mp4
+digitalmarketing/*.zip
+
+# Playwright reports
+playwright-report/
+
+# Test scripts
+scripts/.tmp-*
+scripts/inspect-*.mjs
+scripts/test-*.mjs
+scripts/verify-*.mjs

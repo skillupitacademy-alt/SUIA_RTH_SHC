@@ -8,8 +8,13 @@ export function ThreeColumnBlock({
   theme,
   className = '',
   renderChild,
+  runtimeContext,
 }: BlockComponentProps<IThreeColumnBlock>) {
   const columns = Array.isArray(block.content?.columns) ? block.content.columns : [];
+
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'three-column';
 
   const renderBlockItem = (childBlock: TutorialBlock, cIdx: number, bIdx: number) => {
     // Phase 2.5: Always use renderChild (provided by parent renderer with runtimeContext)
@@ -25,9 +30,9 @@ export function ThreeColumnBlock({
 
   return (
     <div
-      id={block.id}
-      data-block-id={block.id}
-      data-block-type="three-column"
+      id={blockId}
+      data-block-id={blockId}
+      data-block-type={blockType}
       className={`my-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-start ${className}`}
     >
       {columns.map((col, cIdx) => {

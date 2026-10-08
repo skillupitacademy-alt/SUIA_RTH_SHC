@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { IIntroductionBlock, BlockComponentProps, DomainTheme } from '../types';
 import type { IntroductionIconKey } from '@quiz/types';
+import { getThemeColor, withAlpha } from '../theme-utils';
 
 /**
  * Introduction Block - Version Router
@@ -29,11 +30,12 @@ export function IntroductionBlock({
   block,
   className = '',
   theme,
+  runtimeContext,
 }: BlockComponentProps<IIntroductionBlock>) {
   // Router guarantees version is 'I1' - simplified routing
   switch (block.version) {
     case 'I1':
-      return <IntroductionI1View block={block} theme={theme!} className={className} />;
+      return <IntroductionI1View block={block} theme={theme!} className={className} runtimeContext={runtimeContext} />;
     default:
       // TypeScript exhaustiveness check (should never execute due to router validation)
       const _exhaustive: never = block.version;
@@ -89,10 +91,12 @@ function IntroductionI1View({
   block,
   theme,
   className = '',
+  runtimeContext,
 }: {
   block: IIntroductionBlock;
   theme: DomainTheme; // Router guarantees theme is present
   className?: string;
+  runtimeContext?: BlockComponentProps<IIntroductionBlock>['runtimeContext'];
 }) {
   const page = block.content.page;
 
@@ -100,18 +104,18 @@ function IntroductionI1View({
   const primary = theme.primary;
   const secondary = theme.secondary;
 
-  // Helper to create color with alpha
-  function withAlpha(hex: string, alphaHex: string) {
-    return `${hex}${alphaHex}`;
-  }
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'introduction';
+  const blockVersion = runtimeContext?.blockVersion ?? block.version;
 
   return (
     <article
-      className={`w-full bg-white px-[5%] py-10 ${className}`}
+      className={`w-full bg-white dark:bg-slate-900 px-[5%] py-10 ${className}`}
       style={{ color: secondary }}
-      data-block-id={block.id}
-      data-block-type="introduction"
-      data-block-version={block.version}
+      data-block-id={blockId}
+      data-block-type={blockType}
+      data-block-version={blockVersion}
     >
       {/* HERO SECTION */}
       <header className="mb-10">
@@ -245,7 +249,7 @@ function IntroductionI1View({
                   style={
                     card.highlight
                       ? { borderColor: primary, backgroundColor: 'white' }
-                      : { borderColor: '#e5e7eb', backgroundColor: '#f9fafb' }
+                      : { borderColor: getThemeColor(theme, 'gray', 200), backgroundColor: getThemeColor(theme, 'gray', 50) }
                   }
                 >
                   <div className="h-10 flex items-center justify-center">
@@ -253,7 +257,7 @@ function IntroductionI1View({
                       className={`w-9 h-9 rounded-full flex items-center justify-center ${
                         card.highlight ? '' : 'bg-opacity-80'
                       }`}
-                      style={{ backgroundColor: card.highlight ? withAlpha(primary, '14') : '#e5e7eb', color: card.highlight ? primary : '#6b7280' }}
+                      style={{ backgroundColor: card.highlight ? withAlpha(primary, '14') : getThemeColor(theme, 'gray', 200), color: card.highlight ? primary : getThemeColor(theme, 'gray', 500) }}
                     >
                       <IconComponent className="h-5 w-5" />
                     </div>
@@ -264,7 +268,7 @@ function IntroductionI1View({
                   >
                     {card.title}
                   </h4>
-                  <p className="text-xs leading-tight" style={{ color: '#6b7280' }}>
+                  <p className="text-xs leading-tight" style={{ color: getThemeColor(theme, 'gray', 500) }}>
                     {card.subtitle}
                   </p>
                 </div>
@@ -301,7 +305,7 @@ function IntroductionI1View({
 
         {/* Code Editor Box */}
         <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-800">
-          <div className="bg-slate-900/90 px-5 py-3 flex items-center justify-between border-b border-slate-800">
+          <div className="bg-slate-900/90 px-5 py-3 flex items-center justify-between border-b border-slate-800 dark:bg-slate-950">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-rose-500" />
               <span className="w-3 h-3 rounded-full bg-amber-500" />
@@ -309,7 +313,7 @@ function IntroductionI1View({
               <span className="text-slate-300 font-bold text-xs ml-2">{page.solution.code.language}</span>
             </div>
           </div>
-          <div className="bg-[#0B132B] p-5 overflow-x-auto">
+          <div className="bg-[#0B132B] dark:bg-slate-950 p-5 overflow-x-auto">
             <pre className="font-mono text-sm leading-relaxed text-slate-200">
               <code>{page.solution.code.code}</code>
             </pre>
@@ -345,7 +349,7 @@ function IntroductionI1View({
                 style={
                   useCase.highlight
                     ? { backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '33') }
-                    : { backgroundColor: 'white', borderColor: '#e5e7eb' }
+                    : { backgroundColor: 'white', borderColor: getThemeColor(theme, 'gray', 200) }
                 }
               >
                 <div
@@ -357,7 +361,7 @@ function IntroductionI1View({
                 <h4 className="font-bold text-lg" style={{ color: secondary }}>
                   {useCase.title}
                 </h4>
-                <p className="text-sm" style={{ color: '#6b7280' }}>
+                <p className="text-sm" style={{ color: getThemeColor(theme, 'gray', 500) }}>
                   {useCase.description}
                 </p>
               </div>
@@ -387,7 +391,7 @@ function IntroductionI1View({
         <div className="flex flex-col lg:flex-row items-center gap-2 overflow-x-auto">
           {page.roadmap.steps.map((step, index: number) => (
             <React.Fragment key={index}>
-              <div className="flex-1 w-full bg-slate-50/80 border border-slate-100 rounded-2xl p-4 text-center space-y-2">
+              <div className="flex-1 w-full bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-center space-y-2">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-white font-extrabold text-xs shadow-sm mx-auto"
                   style={{ backgroundColor: primary }}
@@ -397,7 +401,7 @@ function IntroductionI1View({
                 <h4 className="font-bold text-xs sm:text-sm leading-snug" style={{ color: secondary }}>
                   {step.title}
                 </h4>
-                <p className="text-[11px] leading-tight" style={{ color: '#6b7280' }}>
+                <p className="text-[11px] leading-tight" style={{ color: getThemeColor(theme, 'gray', 500) }}>
                   {step.subtitle}
                 </p>
               </div>
@@ -436,7 +440,7 @@ function IntroductionI1View({
               <div
                 key={index}
                 className="rounded-xl border p-5 text-center space-y-3 shadow-sm hover:-translate-y-0.5 transition"
-                style={{ backgroundColor: 'white', borderColor: '#e5e7eb' }}
+                style={{ backgroundColor: 'white', borderColor: getThemeColor(theme, 'gray', 200) }}
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center mx-auto"
@@ -447,7 +451,7 @@ function IntroductionI1View({
                 <h4 className="font-bold text-base leading-snug" style={{ color: secondary }}>
                   {benefit.title}
                 </h4>
-                <p className="text-sm" style={{ color: '#6b7280' }}>
+                <p className="text-sm" style={{ color: getThemeColor(theme, 'gray', 500) }}>
                   {benefit.subtitle}
                 </p>
               </div>

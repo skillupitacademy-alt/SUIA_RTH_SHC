@@ -1,0 +1,25 @@
+{
+  "project_type": "FastAPI service (Python 3.11+) for AI-driven development orchestration",
+  "language": "Python",
+  "build_system": "pip/setuptools with pyproject.toml - no build step required for Python service",
+  "test_framework": "pytest with pytest-asyncio for async tests, httpx for API endpoint tests",
+  "build_command": "N/A - Python service has no compile step",
+  "test_command": "pytest tests/ -v --tb=short",
+  "verification_instructions": "Run pytest for the specific module being changed, then run full test suite. W3 established baseline: 467 tests pass, 13 pre-existing failures in certification_gates and integration tests. W4 must not introduce new failures. Run: (1) pytest tests/test_<module>.py -v for unit tests, (2) pytest tests/ -v for full suite, (3) compare failure count to W3 baseline.",
+  "snapshot_or_generated_files": "None - no build artifacts to check in. Test evidence JSON files in .agents/tasks/ are created manually and checked in.",
+  "environment_constraints": "Service runs on localhost:8000 in dev mode. No database (uses in-memory storage for M2.9). flake8 and mypy not installed (W3 evidence reports 'not available'). Tests use pytest only.",
+  "contribution_requirements": "M2.9 W4 scope: Human Implementation Approval Gate ONLY. Do NOT implement W5 (repository placement), W6 (runtime verification), or W7 (final gate). W4 establishes authorization boundary; W5 implements repository mutation behind it. All approval decisions must produce machine-readable evidence. No graceful degradation: missing/invalid approval must error, not PASS. Self-approval must be rejected. Hash binding must be verified (candidate_sha256, placement_manifest_sha256). CanonicalWorkflowState is ONLY workflow lifecycle authority - do not create second state machine. Follow W3 evidence pattern: JSON files in .agents/tasks/ with status, commit, test_results, examples, architectural_compliance.",
+  "key_patterns": "W3 established patterns: (1) Dataclasses with evidence dicts (app/intake/*.py), (2) FastAPI routes with in-memory storage (app/api/routes/*.py), (3) Pydantic models for request/response (app/api/schemas/*.py), (4) Real validation logic with pytest.raises for error cases (tests/*.py), (5) Evidence JSON with populated fields, no empty dicts. governance.py already has approve-placement stub with WAVE 4 marker and correct verification gates (manifest hash, contract hash, state enforcement, self-approval prevention). Extend stub, do not create new route.",
+  "relevant_files": [
+    "services/project-ai/app/orchestration/canonical_workflow.py - CanonicalWorkflowState enum and VALID_TRANSITIONS dict, AWAITING_IMPLEMENTATION_APPROVAL -> IMPLEMENTING transition",
+    "services/project-ai/app/api/routes/governance.py - approve-placement endpoint stub with WAVE 4 marker, WorkflowApprovalPayload model, helper functions",
+    "services/project-ai/app/intake/placement_manifest.py - PlacementManifest dataclass with manifest_sha256 seal",
+    "services/project-ai/app/intake/candidate_validator.py - ValidationResult dataclass with sha256 hash",
+    "services/project-ai/app/models/evidence.py - EvidenceRecord pattern for machine-readable evidence",
+    "services/project-ai/app/models/governance.py - ApprovalStatus enum and approval models",
+    "services/project-ai/tests/test_placement_manifest.py - W3 test pattern with pytest fixtures and real assertions",
+    ".agents/tasks/m2-9-w3-evidence.json - W3 evidence format to follow",
+    ".agents/tasks/m2-9-w3-gate.json - W3 gate checks format to follow"
+  ],
+  "directory_structure": "services/project-ai/ contains: app/ (main code), tests/ (pytest tests), pyproject.toml (dependencies). app/ contains: api/ (routes + schemas), models/ (data models), orchestration/ (workflow engine), intake/ (W3 validation/comparison/manifest), repository/ (discovery client). app/authorization/ does not exist yet (W4 must create). tests/ contains one file per module being tested. .agents/tasks/ contains wave evidence and gate files."
+}

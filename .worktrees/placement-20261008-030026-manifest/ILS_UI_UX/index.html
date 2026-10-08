@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Dashboard Sidebar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <button id="sidebar-toggle-btn" class="toggle-btn" aria-label="Open Telemetry Sidebar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  </button>
+
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <aside id="metrics-sidebar" class="metrics-sidebar">
+    <div class="sidebar-header">
+      <h3 class="sidebar-title">◎ Your Progress</h3>
+      <button id="close-sidebar-btn" class="close-btn" aria-label="Close Sidebar">&times;</button>
+    </div>
+
+    <div class="sidebar-scroll-content">
+
+      <section class="selector-section">
+        <label class="group-title" for="block-select">☷ Block Selector</label>
+        <div class="select-wrapper">
+          <select id="block-select" class="block-dropdown"></select>
+        </div>
+      </section>
+
+      <section class="group-section">
+        <h4 class="group-title">Lifecycle & Overview</h4>
+        <table class="metrics-table table-pink">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>First Viewed</td>
+              <td id="ts-first">—</td>
+            </tr>
+            <tr>
+              <td>Last Viewed</td>
+              <td id="ts-last">—</td>
+            </tr>
+            <tr>
+              <td>Completed At</td>
+              <td id="ts-complete">—</td>
+            </tr>
+            <tr>
+              <td>Status</td>
+              <td id="block-status" class="text-green">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="group-section">
+        <h4 class="group-title">Engagement Metrics</h4>
+        <div class="metrics-2x2-grid">
+          <div class="grid-card card-orange">
+            <span class="card-label">Visit Count</span>
+            <span class="card-value" id="visit-count">0</span>
+          </div>
+          <div class="grid-card card-orange">
+            <span class="card-label">Revision Count</span>
+            <span class="card-value" id="revision-count">0</span>
+          </div>
+          <div class="grid-card card-orange">
+            <span class="card-label">Attempts</span>
+            <span class="card-value" id="attempts-count">0</span>
+          </div>
+          <div class="grid-card card-orange">
+            <span class="card-label">Score</span>
+            <span class="card-value" id="score-val">—</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="group-section">
+        <h4 class="group-title">◷ Time Analysis</h4>
+        <div class="metrics-2x2-grid">
+          <div class="grid-card card-blue">
+            <span class="card-label">Active Time</span>
+            <span class="card-value" id="active-time">0m 00s</span>
+          </div>
+          <div class="grid-card card-blue">
+            <span class="card-label">Expected Time</span>
+            <span class="card-value" id="target-time">0m 00s</span>
+          </div>
+          <div class="grid-card card-blue">
+            <span class="card-label">Difference</span>
+            <span class="card-value" id="time-diff">0s</span>
+          </div>
+          <div class="grid-card card-blue">
+            <span class="card-label">vs Expected</span>
+            <span class="card-value" id="perf-pct">0%</span>
+          </div>
+        </div>
+      </section>
+
+      
+
+      <section class="overall-progress-card">
+        <div class="overall-top">
+          <span class="status-badge" id="overall-state">In Progress</span>
+          <h2 class="overall-pct" id="overall-pct">0%</h2>
+          <span class="overall-subtext" id="overall-blocks-text">0 of 0 blocks completed</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="overall-bar-fill" style="width: 0%;"></div>
+        </div>
+
+        <div class="summary-bar-grid">
+          <div class="summary-item">
+            <span class="summary-label">Completed</span>
+            <span class="summary-val" id="summary-completed">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Total</span>
+            <span class="summary-val" id="summary-total">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Required</span>
+            <span class="summary-val" id="summary-required">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Active</span>
+            <span class="summary-val" id="summary-active">0m 00s</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </aside>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

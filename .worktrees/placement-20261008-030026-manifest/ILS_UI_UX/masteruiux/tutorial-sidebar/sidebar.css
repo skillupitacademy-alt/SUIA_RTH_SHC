@@ -1,0 +1,940 @@
+/* ============================================================
+   TUTORIAL ENGINE — SIDEBAR
+   ============================================================ */
+
+
+/* ============================================================
+   1. ROOT VARIABLES
+   ============================================================ */
+
+:root {
+
+  --primary: #d03f00;
+  --primary-dark: #b63600;
+
+  --secondary: #124fd6;
+
+  --text-primary: #071f63;
+  --text-secondary: #45658f;
+
+  --border: #d9e0ea;
+  --border-light: #e5eaf1;
+
+  --background: #ffffff;
+  --surface: #f5f8fc;
+
+  --active-background: #eef3fa;
+
+  --completed: #08a64a;
+
+  --sidebar-width: 404px;
+
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 14px;
+
+  --transition: 160ms ease;
+
+  font-family: "Inter", sans-serif;
+}
+
+
+/* ============================================================
+   2. GLOBAL RESET
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  width: 100%;
+  height: 100%;
+
+  font-family: "Inter", sans-serif;
+
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+
+/* ============================================================
+   3. BODY
+   ============================================================ */
+
+body {
+
+  min-height: 100vh;
+
+  overflow: hidden;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ============================================================
+   4. SIDEBAR
+   ============================================================ */
+
+.sidebar {
+
+  width: var(--sidebar-width);
+
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+
+  border-right: 1px solid var(--border-light);
+
+  overflow: hidden;
+
+  position: relative;
+}
+
+
+/* ============================================================
+   5. BRAND
+   ============================================================ */
+
+.brand-header {
+
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+
+  padding: 32px 24px 20px;
+
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   BRAND LOGO
+   ============================================================ */
+
+.brand-logo {
+
+  width: 68px;
+  height: 68px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: var(--primary);
+
+  color: #ffffff;
+
+  font-size: 22px;
+  font-weight: 800;
+
+  overflow: hidden;
+}
+
+
+.brand-logo img {
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+
+/* ============================================================
+   BRAND INFORMATION
+   ============================================================ */
+
+.brand-info {
+
+  min-width: 0;
+}
+
+
+.brand-info h1 {
+
+  margin: 0;
+
+  color: #071f63;
+
+  font-size: 24px;
+  line-height: 1.15;
+
+  font-weight: 800;
+
+  letter-spacing: -0.4px;
+}
+
+
+.brand-info p {
+
+  margin: 7px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+  line-height: 1.4;
+
+  font-weight: 400;
+}
+
+
+/* ============================================================
+   6. CURRENT SUBJECT
+   ============================================================ */
+
+.subject-section {
+
+  padding: 4px 24px 20px;
+
+  flex-shrink: 0;
+}
+
+
+.subject-tag {
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  min-height: 48px;
+}
+
+
+.subject-icon {
+
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  background: var(--secondary);
+
+  color: #ffffff;
+
+  font-size: 20px;
+}
+
+
+.subject-title {
+
+  min-width: 0;
+
+  color: #071f63;
+
+  font-size: 21px;
+  line-height: 1.25;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ============================================================
+   7. PROGRESS
+   ============================================================ */
+
+.progress-section {
+
+  padding: 0 24px 22px;
+
+  flex-shrink: 0;
+}
+
+
+.progress-header {
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 9px;
+}
+
+
+.progress-title {
+
+  color: #071f63;
+
+  font-size: 15px;
+  line-height: 1.3;
+
+  font-weight: 500;
+}
+
+
+.progress-percentage {
+
+  color: var(--primary);
+
+  font-size: 15px;
+  line-height: 1.3;
+
+  font-weight: 700;
+}
+
+
+.progress-bar-bg {
+
+  width: 100%;
+  height: 10px;
+
+  background: #e4e8ed;
+
+  border-radius: 999px;
+
+  overflow: hidden;
+}
+
+
+.progress-bar-fill {
+
+  width: 0%;
+  height: 100%;
+
+  background: var(--primary);
+
+  border-radius: inherit;
+
+  transition: width 250ms ease;
+}
+
+
+/* ============================================================
+   8. CURRICULUM NAVIGATION
+   ============================================================ */
+
+.curriculum-navigation {
+
+  flex: 1 1 auto;
+
+  min-height: 0;
+
+  padding: 0 14px 20px;
+
+  overflow: hidden;
+}
+
+
+/* ============================================================
+   9. INVISIBLE SCROLL AREA
+   ============================================================ */
+
+.curriculum-scroll-area {
+
+  width: 100%;
+  height: 100%;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: none;
+
+  -ms-overflow-style: none;
+
+  overscroll-behavior: contain;
+}
+
+
+.curriculum-scroll-area::-webkit-scrollbar {
+
+  width: 0;
+  height: 0;
+
+  display: none;
+}
+
+
+/* ============================================================
+   10. CURRICULUM TREE
+   ============================================================ */
+
+.curriculum-tree {
+
+  width: 100%;
+
+  padding: 4px 0 32px;
+
+  min-width: 0;
+}
+
+
+/* ============================================================
+   11. TREE LEVEL
+   ============================================================ */
+
+.tree-level {
+
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+
+  min-width: 0;
+}
+
+
+/*
+   IMPORTANT:
+
+   We intentionally do NOT keep increasing the left padding
+   indefinitely.
+
+   This prevents:
+
+       Level 1 → 16px
+       Level 2 → 32px
+       Level 3 → 48px
+       Level 4 → 64px
+       Level 5 → 80px
+       Level 6 → 96px
+       ...
+
+   from eventually pushing content out of the sidebar.
+
+   The JavaScript renderer will visually compress deep levels.
+*/
+
+
+/* ============================================================
+   12. TREE NODE
+   ============================================================ */
+
+.tree-node {
+
+  width: 100%;
+
+  min-width: 0;
+
+  margin: 2px 0;
+}
+
+
+/* ============================================================
+   13. NODE ROW
+   ============================================================ */
+
+.tree-node-row {
+
+  width: 100%;
+  min-height: 48px;
+
+  display: grid;
+
+  grid-template-columns:
+    32px
+    34px
+    minmax(0, 1fr)
+    28px;
+
+  align-items: center;
+
+  column-gap: 6px;
+
+  padding: 5px 8px;
+
+  border-radius: 11px;
+
+  color: var(--text-primary);
+
+  cursor: pointer;
+
+  transition:
+    background var(--transition),
+    color var(--transition);
+}
+
+
+/* ============================================================
+   14. NODE HOVER
+   ============================================================ */
+
+.tree-node-row:hover {
+
+  background: #f5f7fa;
+}
+
+
+/* ============================================================
+   15. ACTIVE NODE
+   ============================================================ */
+
+.tree-node-row.is-active {
+
+  background: var(--active-background);
+
+  color: var(--secondary);
+}
+
+
+.tree-node-row.is-active .node-label {
+
+  color: var(--secondary);
+
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   16. EXPAND / COLLAPSE BUTTON
+   ============================================================ */
+
+.node-expand {
+
+  width: 32px;
+  height: 32px;
+
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #071f63;
+
+  cursor: pointer;
+
+  font-size: 17px;
+
+  border-radius: 7px;
+
+  transition:
+    background var(--transition),
+    transform var(--transition);
+}
+
+
+.node-expand:hover {
+
+  background: #edf2f8;
+}
+
+
+.node-expand i {
+
+  transition: transform 160ms ease;
+}
+
+
+/* Expanded state */
+
+.tree-node.is-expanded > .tree-node-row .node-expand i {
+
+  transform: rotate(90deg);
+}
+
+
+/* ============================================================
+   17. EMPTY EXPAND SPACE
+   ============================================================ */
+
+.node-expand-placeholder {
+
+  width: 32px;
+  height: 32px;
+}
+
+
+/* ============================================================
+   18. NODE ICON
+   ============================================================ */
+
+.node-icon {
+
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #52729b;
+
+  font-size: 16px;
+
+  flex-shrink: 0;
+}
+
+
+.tree-node-row.is-active .node-icon {
+
+  color: var(--secondary);
+}
+
+
+/* ============================================================
+   19. NODE LABEL
+   ============================================================ */
+
+.node-label {
+
+  min-width: 0;
+
+  color: #071f63;
+
+  font-size: 15px;
+  line-height: 1.3;
+
+  font-weight: 600;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+
+/* ============================================================
+   20. STATUS AREA
+   ============================================================ */
+
+.node-status {
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   21. NOT-STARTED STATUS
+   ============================================================ */
+
+.status-circle {
+
+  width: 18px;
+  height: 18px;
+
+  border: 2px solid #7890ad;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+
+/* ============================================================
+   22. COMPLETED STATUS
+   ============================================================ */
+
+.status-completed {
+
+  width: 18px;
+  height: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--completed);
+
+  color: #ffffff;
+
+  font-size: 10px;
+}
+
+
+.status-completed i {
+
+  font-size: 10px;
+}
+
+
+/* ============================================================
+   23. IN-PROGRESS STATUS
+   ============================================================ */
+
+.status-in-progress {
+
+  width: 18px;
+  height: 18px;
+
+  border: 4px solid var(--secondary);
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+
+/* ============================================================
+   24. CHILDREN CONTAINER
+   ============================================================ */
+
+.tree-children {
+
+  width: 100%;
+
+  min-width: 0;
+
+  margin: 0;
+
+  padding: 0 0 2px;
+
+  list-style: none;
+
+  position: relative;
+}
+
+
+/* ============================================================
+   25. TREE GUIDE LINE
+   ============================================================ */
+
+.tree-children::before {
+
+  content: "";
+
+  position: absolute;
+
+  left: 18px;
+
+  top: 0;
+  bottom: 0;
+
+  width: 1px;
+
+  background: #d5dfeb;
+}
+
+
+/* ============================================================
+   26. CHILD NODE VISUAL INDENTATION
+   ============================================================ */
+
+.tree-children > .tree-node {
+
+  padding-left: 22px;
+
+  position: relative;
+}
+
+
+/* ============================================================
+   27. CHILD CONNECTOR
+   ============================================================ */
+
+.tree-children > .tree-node::before {
+
+  content: "";
+
+  position: absolute;
+
+  left: 18px;
+
+  top: 25px;
+
+  width: 10px;
+  height: 1px;
+
+  background: #d5dfeb;
+}
+
+
+/* ============================================================
+   28. DEEP NESTING
+
+   Levels 1–3 retain clear hierarchy.
+
+   From deeper levels onward we reduce indentation so that
+   the sidebar remains usable even for very deep curriculum
+   structures.
+   ============================================================ */
+
+.tree-children .tree-children {
+
+  padding-left: 8px;
+}
+
+
+.tree-children .tree-children::before {
+
+  left: 18px;
+}
+
+
+.tree-children .tree-children > .tree-node {
+
+  padding-left: 18px;
+}
+
+
+/* Level 3+ */
+
+.tree-children
+.tree-children
+.tree-children
+.tree-node {
+
+  padding-left: 14px;
+}
+
+
+/* Level 4+ */
+
+.tree-children
+.tree-children
+.tree-children
+.tree-children
+.tree-node {
+
+  padding-left: 12px;
+}
+
+
+/* Level 5+ */
+
+.tree-children
+.tree-children
+.tree-children
+.tree-children
+.tree-children
+.tree-node {
+
+  padding-left: 10px;
+}
+
+
+/* ============================================================
+   29. DEEP LEVEL LABEL
+   ============================================================ */
+
+.tree-children
+.tree-children
+.tree-children
+.tree-children
+.node-label {
+
+  font-size: 16px;
+}
+
+
+.tree-children
+.tree-children
+.tree-children
+.tree-children
+.tree-children
+.node-label {
+
+  font-size: 15px;
+}
+
+
+/* ============================================================
+   30. MOBILE / NARROW SIDEBAR
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+  :root {
+    --sidebar-width: 100%;
+  }
+
+
+  .sidebar {
+
+    width: 100%;
+
+    border-right: 0;
+  }
+
+
+  .brand-header {
+
+    padding: 26px 20px 18px;
+  }
+
+
+  .subject-section {
+
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+
+  .progress-section {
+
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+
+  .curriculum-navigation {
+
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+
+  .brand-info h1 {
+
+    font-size: 22px;
+  }
+
+
+  .subject-title {
+
+    font-size: 19px;
+  }
+
+
+  .node-label {
+
+    font-size: 17px;
+  }
+}
+
+
+/* ============================================================
+   31. REDUCE MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+
+    scroll-behavior: auto !important;
+
+    transition: none !important;
+  }
+}

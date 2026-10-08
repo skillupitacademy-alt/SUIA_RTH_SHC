@@ -1,0 +1,79 @@
+import { type NextRequest } from 'next/server';
+
+import { badRequest } from '@/lib/api-error';
+import { ApiResponse } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
+import { recordCounter, recordTimer } from '@/lib/metrics';
+import { withLogging } from '@/lib/withLogging';
+
+/**
+ * SECURITY SINK: CSP Reporting Endpoint
+ * Handles standard JSON reports from browsers regarding Content Security Policy violations.
+ * Currently in AUDIT MODE: Logs to local file system for review.
+ */
+
+export const dynamic = 'force-dynamic';
+
+interface CSPReport {
+    'csp-report': {
+        'document-uri': string;
+        'referrer'?: string;
+        'violated-directive': string;
+        'effective-directive'?: string;
+        'original-policy': string;
+        'disposition'?: string;
+        'blocked-uri': string;
+        'status-code'?: number;
+        'script-sample'?: string;
+    };
+}
+
+const MAX_BODY_SIZE = 100 * 1024; // 100KB
+
+async function postHandler(req: NextRequest) {
+    const start = Date.now();
+    try {
+        // 1. Content-Type Validation (Airlock Pillar 2)
+        const contentType = req.headers.get('content-type') ?? '';
+        if (!contentType.includes('application/csp-report') && !contentType.includes('application/json')) {
+            throw badRequest("Invalid Content-Type");
+        }
+
+        // 2. Size Clamping (Airlock Pillar 2)
+        const contentLength = parseInt(req.headers.get('content-length') ?? '0');
+        if (contentLength > MAX_BODY_SIZE) {
+            throw badRequest("Payload too large");
+        }
+
+        const body = await req.json().catch(() => null) as CSPReport | null;
+        if (body === null || body['csp-report'] === undefined) {
+            throw badRequest("Invalid CSP report format");
+        }
+
+        const report = body['csp-report'];
+        
+        // Basic validation of fields to prevent injection or junk
+        if (report['document-uri'] === undefined || report['violated-directive'] === undefined) {
+            throw badRequest("Malformed report content");
+        }
+
+        logger.warn({
+            route: '/api/security/report',
+            method: req.method,
+            ip: req.headers.get('x-forwarded-for') ?? 'unknown',
+            userAgent: req.headers.get('user-agent') ?? 'unknown',
+            report: report, // Include full details in the cloud log
+        }, '[CSP-AUDIT] Violation');
+
+        recordCounter('security.csp_report.count', 1, { outcome: 'success' });
+        recordTimer('security.csp_report.duration', Date.now() - start, { outcome: 'success' });
+        
+        return ApiResponse.noContent(); 
+    } catch (err: unknown) {
+        recordCounter('security.csp_report.count', 1, { outcome: 'failure' });
+        logger.error({ err, route: '/api/security/report', method: 'POST' }, '[CSP-AUDIT] Error processing report');
+        return ApiResponse.error(err);
+    }
+}
+
+export const POST = withLogging(postHandler, { component: 'security', operation: 'csp_report' });

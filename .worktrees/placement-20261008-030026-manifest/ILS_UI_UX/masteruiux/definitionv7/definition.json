@@ -1,0 +1,147 @@
+{
+  "page": {
+    "category": "PYTHON FUNDAMENTALS",
+
+    "title": "What Is a Variable in Python?",
+
+    "introduction": "A Python variable is best understood through the relationship between a name and an object. This technical breakdown examines the terminology, execution model, and important rules behind Python variable assignment.",
+
+    "definition": "A variable in Python is a name that refers to an object. Assignment binds that name to an object rather than placing a value directly inside a variable container.",
+
+    "explanation": [
+      {
+        "type": "paragraph",
+        "content": "Consider the statement <code>x = 10</code>. Python evaluates the expression <code>10</code>, obtains an integer object representing that value, and then binds the name <code>x</code> to that object."
+      },
+
+      {
+        "type": "paragraph",
+        "content": "This distinction between <strong>names</strong>, <strong>objects</strong>, and <strong>references</strong> is fundamental to understanding Python's object model."
+      },
+
+      {
+        "type": "paragraph",
+        "content": "The same model also explains reassignment, object identity, mutability, aliasing, and how arguments are passed to functions."
+      }
+    ],
+
+    "technical": {
+
+      "terminology": [
+        {
+          "term": "Name",
+          "description": "An identifier used by Python code to refer to an object."
+        },
+
+        {
+          "term": "Object",
+          "description": "A runtime entity in Python that has identity, type, and value."
+        },
+
+        {
+          "term": "Reference",
+          "description": "The relationship through which a name provides access to an object."
+        },
+
+        {
+          "term": "Binding",
+          "description": "The association of a name with an object."
+        },
+
+        {
+          "term": "Assignment",
+          "description": "An operation that binds a target name to the result of evaluating an expression."
+        },
+
+        {
+          "term": "Object Identity",
+          "description": "The identity that distinguishes one object from another during its lifetime."
+        }
+      ],
+
+
+      "explanation": [
+        {
+          "type": "paragraph",
+          "content": "Python uses a name-binding model. A statement such as <code>x = 10</code> does not mean that the integer value <code>10</code> is physically stored inside a box called <code>x</code>."
+        },
+
+        {
+          "type": "paragraph",
+          "content": "Instead, Python evaluates the right-hand side, obtains an object, and establishes a binding between the name <code>x</code> and that object."
+        },
+
+        {
+          "type": "heading",
+          "content": "Assignment Flow"
+        },
+
+        {
+          "type": "code",
+          "content": "x = 10"
+        },
+
+        {
+          "type": "paragraph",
+          "content": "Conceptually, the execution can be understood as: evaluate <code>10</code> → obtain the integer object → bind the name <code>x</code> to that object."
+        },
+
+        {
+          "type": "heading",
+          "content": "Reassignment"
+        },
+
+        {
+          "type": "code",
+          "content": "x = 10\nx = 20"
+        },
+
+        {
+          "type": "paragraph",
+          "content": "After the second assignment, the name <code>x</code> is bound to the object representing <code>20</code>. The name has been rebound; Python has not changed the integer object representing <code>10</code> into <code>20</code>."
+        }
+      ],
+
+
+      "points": [
+        {
+          "icon": "fa-solid fa-link",
+          "title": "Name binding",
+          "content": "Assignment creates or changes the association between a name and an object."
+        },
+
+        {
+          "icon": "fa-solid fa-cube",
+          "title": "Everything is an object",
+          "content": "Integers, strings, lists, functions, classes, and many other runtime entities are represented as Python objects."
+        },
+
+        {
+          "icon": "fa-solid fa-fingerprint",
+          "title": "Identity matters",
+          "content": "Every object has an identity that distinguishes it from other objects during its lifetime."
+        },
+
+        {
+          "icon": "fa-solid fa-arrows-rotate",
+          "title": "Reassignment",
+          "content": "A name can be rebound to another object without changing the original object."
+        },
+
+        {
+          "icon": "fa-solid fa-share-nodes",
+          "title": "Multiple names",
+          "content": "Multiple names can refer to the same object, which is especially important when working with mutable objects."
+        },
+
+        {
+          "icon": "fa-solid fa-code",
+          "title": "Execution model",
+          "content": "Understanding name binding makes assignment, function arguments, aliasing, and mutability easier to reason about."
+        }
+      ]
+    },
+
+    "takeaway": "At the technical level, a Python variable is a name bound to an object. Understanding this name–object–binding model is essential for reasoning about assignment, identity, mutability, aliasing, and function argument behavior."
+  }
+}

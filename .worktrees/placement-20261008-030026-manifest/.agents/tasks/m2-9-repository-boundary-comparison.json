@@ -1,0 +1,350 @@
+{
+  "investigationMetadata": {
+    "timestamp": "2025-01-24T00:00:00Z",
+    "phase": "3B",
+    "focus": "Python/TypeScript Repository Boundary Compliance",
+    "localBranch": "backup/local-m2-9-remediation",
+    "githubBranch": "backup/github-m2-9",
+    "architecturalBoundary": "TypeScript Discovery → Snapshot → Evidence → FastAPI",
+    "defectPattern": "FastAPI → Path(repo_root) → direct filesystem access"
+  },
+  "executiveSummary": {
+    "status": "CRITICAL_DIVERGENCE_FOUND",
+    "primaryFinding": "Local branch implements correct snapshot-based architecture. GitHub branch violates architectural boundary with direct filesystem scanning.",
+    "architecturalCompliance": {
+      "local": "COMPLIANT - implements TypeScript snapshot consumption",
+      "github": "VIOLATES - implements direct repository filesystem scanning"
+    },
+    "recommendation": "KEEP_LOCAL_IMPLEMENTATION",
+    "riskLevel": "HIGH",
+    "rationale": "GitHub implementation represents the exact M2.9 defect that was identified and remediated. Local implementation is the corrected architecture."
+  },
+  "areas": [
+    {
+      "area": "RepositoryIntelligence.build_contract",
+      "localImplementation": "def build_contract(snapshot: Dict[str, Any], family: str, version: str)",
+      "githubImplementation": "def build_contract(repo_root: str, family: str, version: str)",
+      "status": "CONFLICTING",
+      "architectureBoundaryCompliant": {
+        "local": true,
+        "github": false
+      },
+      "details": {
+        "local": {
+          "signature": "build_contract(snapshot: Dict[str, Any], family: str, version: str)",
+          "behavior": "Extracts canonical_block evidence from TypeScript snapshot dictionary",
+          "dataSource": "snapshot['evidence'] array from TypeScript discovery",
+          "sha256Handling": "Extracts from snapshot.contentHash (never recomputes)",
+          "evidenceIdHandling": "Uses snapshot.evidenceId (from TypeScript)",
+          "filesystemAccess": "NONE - architectural boundary respected",
+          "documentation": "CONTRACT: Never scan repository files directly (architectural boundary violation)"
+        },
+        "github": {
+          "signature": "build_contract(repo_root: str, family: str, version: str)",
+          "behavior": "Scans repository filesystem for canonical block files",
+          "dataSource": "Direct filesystem access via Path(repo_root)",
+          "sha256Handling": "Computes via compute_sha256(full_path) reading file blocks",
+          "evidenceIdHandling": "Generates via generate_evidence_id(path, sha256)",
+          "filesystemAccess": "DIRECT - reads repository files via pathlib.Path",
+          "documentation": "CONTRACT: Derives block contracts from ACTUAL repository files"
+        }
+      },
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: 'snapshot: Dict[str, Any]' parameter accepts TypeScript snapshot",
+        "GITHUB: 'repo_root: str' parameter enables filesystem scanning",
+        "LOCAL: 'snapshot.get(\"evidence\", [])' - consumes snapshot evidence",
+        "GITHUB: 'repo_path = Path(repo_root)' - constructs filesystem path",
+        "LOCAL: 'ev.get(\"contentHash\")' - extracts SHA from snapshot",
+        "GITHUB: 'file_sha256 = compute_sha256(full_path)' - computes SHA from file"
+      ]
+    },
+    {
+      "area": "RepositoryIntelligence.compute_sha256",
+      "localImplementation": "compute_sha256_legacy() and deprecated compute_sha256() shim for backward compatibility only",
+      "githubImplementation": "compute_sha256(file_path: Path) as production function",
+      "status": "CONFLICTING",
+      "architectureBoundaryCompliant": {
+        "local": true,
+        "github": false
+      },
+      "details": {
+        "local": {
+          "purpose": "Backward compatibility shim for existing tests ONLY",
+          "status": "DEPRECATED",
+          "documentation": "DEPRECATED: This function violates the architectural boundary. Production code must use snapshot evidence exclusively.",
+          "usage": "Only referenced in legacy tests and compatibility layer"
+        },
+        "github": {
+          "purpose": "Production function for computing file SHA-256 hashes",
+          "status": "ACTIVE",
+          "documentation": "Compute SHA-256 hash of a file. Args: file_path: Path to the file",
+          "usage": "Called by build_contract() for every canonical block file"
+        }
+      },
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: Function marked DEPRECATED with boundary violation warning",
+        "GITHUB: Function used in production build_contract() implementation",
+        "LOCAL: 'compute_sha256_legacy(content: bytes)' separate from file scanning",
+        "GITHUB: 'compute_sha256(file_path: Path)' directly reads files"
+      ]
+    },
+    {
+      "area": "APIRoute.contract.create_engineering_contract",
+      "localImplementation": "Loads TypeScript snapshot, calls build_contract(snapshot, ...)",
+      "githubImplementation": "Resolves repo_root path, calls build_contract(repo_root, ...)",
+      "status": "CONFLICTING",
+      "architectureBoundaryCompliant": {
+        "local": true,
+        "github": false
+      },
+      "details": {
+        "local": {
+          "step1": "workspace_root = os.environ.get('QUIZ_PLATFORM_REPO_ROOT')",
+          "step2": "snapshot = load_repository_snapshot(workspace_root)",
+          "step3": "build_repo_contract(snapshot=snapshot, family=..., version=...)",
+          "snapshotPath": "packages/project-llm-discovery/output/snapshot.json",
+          "errorHandling": "HTTPException 404 if snapshot not found with guidance to run TypeScript discovery"
+        },
+        "github": {
+          "step1": "repo_root = os.environ.get('QUIZ_PLATFORM_REPO_ROOT')",
+          "step2": "if not repo_root: repo_root = str(Path(__file__).parent... .absolute())",
+          "step3": "build_repo_contract(repo_root=repo_root, family=..., version=...)",
+          "snapshotPath": "N/A - does not load snapshot",
+          "errorHandling": "No snapshot validation - directly scans filesystem"
+        }
+      },
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: load_repository_snapshot() function exists and is called",
+        "GITHUB: No load_repository_snapshot() function exists",
+        "LOCAL: 'snapshot = load_repository_snapshot(workspace_root)'",
+        "GITHUB: 'repo_root=repo_root' passed to build_contract",
+        "LOCAL: HTTPException 404 with 'Run TypeScript discovery scan first' message",
+        "GITHUB: No snapshot validation - assumes filesystem is canonical source"
+      ]
+    },
+    {
+      "area": "RepositoryIntelligence.build_contract_legacy",
+      "localImplementation": "Exists as backward compatibility shim for tests",
+      "githubImplementation": "Does not exist",
+      "status": "LOCAL_ONLY",
+      "architectureBoundaryCompliant": {
+        "local": true,
+        "github": false
+      },
+      "details": {
+        "local": {
+          "signature": "def build_contract_legacy(repo_root: str, family: str, version: str)",
+          "purpose": "Backward compatibility ONLY for tests that pass repo_root",
+          "documentation": "DEPRECATED: This is the OLD implementation that violates architectural boundary. It is preserved ONLY for backward compatibility with existing tests that pass repo_root. Production code must call build_contract(snapshot, family, version) instead.",
+          "behavior": "Wraps old repo_root scanning logic, marked as deprecated"
+        },
+        "github": {
+          "exists": false,
+          "reason": "GitHub implementation has repo_root scanning as the primary (only) implementation"
+        }
+      },
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "MEDIUM",
+      "evidence": [
+        "LOCAL: build_contract_legacy() function exists with deprecation warnings",
+        "LOCAL: Explicitly documented as compatibility layer for tests only",
+        "LOCAL: Main build_contract() uses snapshot parameter (new architecture)",
+        "GITHUB: Only one build_contract() exists, uses repo_root (old architecture)"
+      ]
+    },
+    {
+      "area": "DocumentationAndContracts",
+      "localImplementation": "Explicit architectural boundary documentation in docstrings",
+      "githubImplementation": "Documentation describes filesystem scanning as correct behavior",
+      "status": "CONFLICTING",
+      "architectureBoundaryCompliant": {
+        "local": true,
+        "github": false
+      },
+      "details": {
+        "local": {
+          "moduleDocstring": "Derives block contracts from TypeScript snapshot evidence. This agent consumes canonical_block evidence from the repository snapshot",
+          "contract1": "Never scan repository files directly (architectural boundary violation)",
+          "contract2": "All evidence must be derived from TypeScript snapshot",
+          "contract3": "SHA-256 is extracted from snapshot evidence, never recomputed",
+          "contract4": "evidence_id comes from snapshot, deterministic from TypeScript discovery",
+          "buildContractDoc": "ARCHITECTURAL BOUNDARY: This function must NEVER open, read, or walk repository files. All data comes from the snapshot['evidence'] array provided by TypeScript discovery."
+        },
+        "github": {
+          "moduleDocstring": "Derives block contracts from ACTUAL repository files. This agent reads real canonical blocks from the repository",
+          "contract1": "Never use fixtures or hardcoded data",
+          "contract2": "All evidence must be derived from actual files",
+          "contract3": "SHA-256 must be computed from real file content",
+          "contract4": "evidence_id is deterministic: sha256(path + file_sha256)",
+          "buildContractDoc": "Build a repository block contract by scanning for actual files. This is the core intelligence function that: 1. Scans the repository for matching canonical blocks"
+        }
+      },
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: 'Never scan repository files directly (architectural boundary violation)'",
+        "GITHUB: 'reads real canonical blocks from the repository'",
+        "LOCAL: 'All data comes from the snapshot[\"evidence\"] array'",
+        "GITHUB: 'Scans the repository for matching canonical blocks'",
+        "LOCAL: Module header explicitly states TypeScript snapshot consumption",
+        "GITHUB: Module header explicitly states direct file access"
+      ]
+    }
+  ],
+  "rawCommandOutputs": {
+    "localRepoRootUsage": {
+      "command": "git grep -n 'repo_root' backup/local-m2-9-remediation -- services/project-ai",
+      "summary": "repo_root appears ONLY in: (1) build_contract_legacy() deprecated function, (2) test files, (3) deprecation warnings",
+      "occurrences": {
+        "repository_intelligence.py": "Lines 262-282 in build_contract_legacy() with DEPRECATED warnings",
+        "tests": "Multiple test files using repo_root for test fixture setup (acceptable)"
+      },
+      "productionUsage": "NONE - deprecated compatibility layer only"
+    },
+    "githubRepoRootUsage": {
+      "command": "git grep -n 'repo_root' backup/github-m2-9 -- services/project-ai",
+      "summary": "repo_root appears in PRODUCTION code: (1) contract.py route resolver, (2) build_contract() primary function, (3) test files",
+      "occurrences": {
+        "contract.py": "Lines 191-195, 199 - resolves repo_root and passes to build_contract",
+        "repository_intelligence.py": "Lines 135-153 - build_contract(repo_root, ...) as primary signature"
+      },
+      "productionUsage": "ACTIVE - primary production implementation"
+    },
+    "localComputeSha256": {
+      "command": "git grep -n 'compute_sha256' backup/local-m2-9-remediation",
+      "summary": "compute_sha256_legacy() and deprecated compute_sha256() for tests only",
+      "usage": "Backward compatibility shim, not used by production build_contract()"
+    },
+    "githubComputeSha256": {
+      "command": "git grep -n 'compute_sha256' backup/github-m2-9",
+      "summary": "compute_sha256() as production function",
+      "usage": "Called by build_contract() line 171: 'file_sha256 = compute_sha256(full_path)'"
+    },
+    "localBuildContractSignature": {
+      "command": "git grep -n 'def build_contract' backup/local-m2-9-remediation",
+      "results": [
+        "Line 139: def build_contract(snapshot: Dict[str, Any], family: str, version: str)",
+        "Line 263: def build_contract_legacy(repo_root: str, family: str, version: str)"
+      ]
+    },
+    "githubBuildContractSignature": {
+      "command": "git grep -n 'def build_contract' backup/github-m2-9",
+      "results": [
+        "Line 135: def build_contract(repo_root: str, family: str, version: str)"
+      ]
+    },
+    "localPathRepoRoot": {
+      "command": "git grep -n 'Path(repo_root)' backup/local-m2-9-remediation -- services/project-ai",
+      "results": [
+        "Line 282: repo_path = Path(repo_root) in build_contract_legacy() ONLY"
+      ]
+    },
+    "githubPathRepoRoot": {
+      "command": "git grep -n 'Path(repo_root)' backup/github-m2-9 -- services/project-ai",
+      "results": [
+        "Line 153: repo_path = Path(repo_root) in build_contract() PRIMARY FUNCTION"
+      ]
+    }
+  },
+  "architecturalAnalysis": {
+    "correctArchitecture": {
+      "description": "TypeScript Discovery → Snapshot → Evidence → FastAPI",
+      "flow": [
+        "TypeScript project-llm-discovery scans repository filesystem",
+        "Generates canonical snapshot.json with evidence array",
+        "Each evidence item contains: path, contentHash, evidenceId, kind",
+        "FastAPI loads snapshot.json from disk",
+        "FastAPI extracts evidence from snapshot dictionary",
+        "FastAPI builds contracts from snapshot data only",
+        "NO Python filesystem scanning of repository files"
+      ],
+      "implementedBy": "LOCAL (backup/local-m2-9-remediation)",
+      "keyFiles": [
+        "services/project-ai/app/api/routes/contract.py - load_repository_snapshot()",
+        "services/project-ai/app/contracts/repository_intelligence.py - build_contract(snapshot, ...)"
+      ]
+    },
+    "defectArchitecture": {
+      "description": "FastAPI → Path(repo_root) → direct filesystem scanning",
+      "flow": [
+        "FastAPI receives repo_root path (environment variable or relative)",
+        "FastAPI constructs Path(repo_root)",
+        "FastAPI walks repository filesystem directly",
+        "FastAPI opens and reads canonical block files",
+        "FastAPI computes SHA-256 hashes from file content",
+        "FastAPI generates evidence IDs",
+        "DUPLICATE responsibility - TypeScript discovery is bypassed"
+      ],
+      "implementedBy": "GITHUB (backup/github-m2-9)",
+      "keyFiles": [
+        "services/project-ai/app/api/routes/contract.py - resolves repo_root, no snapshot loading",
+        "services/project-ai/app/contracts/repository_intelligence.py - build_contract(repo_root, ...), compute_sha256()"
+      ],
+      "defectRationale": [
+        "Violates separation of concerns - two services scanning same files",
+        "Duplicates TypeScript discovery responsibility in Python",
+        "Creates potential for evidence drift if TypeScript and Python disagree",
+        "Python becomes dependent on repository filesystem structure",
+        "Breaks architectural boundary defined in M2.9 specification"
+      ]
+    }
+  },
+  "reconciliationPlan": {
+    "decision": "KEEP_LOCAL_DISCARD_GITHUB",
+    "rationale": [
+      "Local implementation is the M2.9 REMEDIATION that fixes the identified defect",
+      "GitHub implementation contains the ORIGINAL DEFECT (direct filesystem scanning)",
+      "This is not a case of divergent valid work - this is remediated vs. unmediated",
+      "Local branch represents the correct architectural boundary",
+      "GitHub branch represents the violation that M2.9 was created to fix"
+    ],
+    "technicalJustification": {
+      "localAdvantages": [
+        "Respects TypeScript/Python architectural boundary",
+        "Single source of truth for repository evidence (TypeScript)",
+        "Eliminates duplicate scanning logic",
+        "Provides clear separation of concerns",
+        "Enables TypeScript discovery to evolve independently",
+        "FastAPI becomes pure evidence consumer (correct role)",
+        "Explicit deprecation of old patterns prevents regression"
+      ],
+      "githubDisadvantages": [
+        "Violates architectural boundary specification",
+        "Duplicates TypeScript discovery responsibility",
+        "Creates maintenance burden (two scanning implementations)",
+        "Risk of evidence inconsistency between TypeScript and Python",
+        "Couples Python to repository filesystem structure",
+        "Represents the exact M2.9 defect pattern"
+      ]
+    },
+    "action": "Cherry-pick or merge local implementation into reconciliation branch",
+    "testingRequired": [
+      "Verify build_contract(snapshot, ...) works with real TypeScript snapshot",
+      "Verify load_repository_snapshot() correctly loads snapshot.json",
+      "Verify HTTPException 404 when snapshot missing",
+      "Verify backward compatibility: build_contract_legacy() still works for existing tests",
+      "Verify no production code calls build_contract_legacy() or compute_sha256()",
+      "Run full test suite to ensure tests adapted to new signature"
+    ]
+  },
+  "conclusion": {
+    "status": "CLEAR_ARCHITECTURAL_WINNER",
+    "winner": "LOCAL (backup/local-m2-9-remediation)",
+    "confidence": "VERY_HIGH",
+    "summary": "Local branch implements the correct TypeScript-snapshot-based architecture. GitHub branch contains the original architectural defect (direct filesystem scanning) that M2.9 was created to remediate. There is no ambiguity here - this is remediated vs. unmediated code.",
+    "nextSteps": [
+      "Phase 4: Compare other M2.9 areas (CreationMode, workflow authority, hard-coded versions)",
+      "Phase 5: Build complete reconciliation plan across all areas",
+      "Phase 6: Create integration branch with all correct implementations",
+      "Phase 7: Run test suite on integration branch",
+      "Phase 8: Push integration branch to GitHub",
+      "Phase 9: Independent GitHub repository audit to verify final state"
+    ]
+  }
+}
