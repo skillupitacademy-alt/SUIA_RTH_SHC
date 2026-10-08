@@ -92,6 +92,21 @@ async def upload_candidate(package: CandidatePackage):
         )
     
     # Bind candidate to workflow target
+    # Wave 1A: Validate that workflow has non-empty target binding (fail fast)
+    if not workflow.target_family or workflow.target_family.strip() == '':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Workflow {package.workflow_id} has empty target_family. "
+                   "Cannot bind candidate to workflow without valid target identity."
+        )
+    
+    if not workflow.target_version or workflow.target_version.strip() == '':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Workflow {package.workflow_id} has empty target_version. "
+                   "Cannot bind candidate to workflow without valid target identity."
+        )
+    
     package.target_family = workflow.target_family
     package.target_version = workflow.target_version
     
@@ -410,7 +425,8 @@ async def generate_manifest(
         raise HTTPException(
             status_code=400,
             detail=f"Candidate {candidate_id} missing target_version binding. "
-                   "Re-upload candidate with workflow_id to bind target identity."
+                   "This candidate was uploaded before workflow binding was implemented. "
+                   "Delete this candidate and upload again with workflow_id to bind target identity."
         )
     
     manifest_data = {

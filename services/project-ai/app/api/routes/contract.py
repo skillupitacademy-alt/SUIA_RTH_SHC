@@ -200,11 +200,6 @@ async def create_engineering_contract(
         HTTPException 400: Invalid workflow state
     """
     
-    # Check if contract already exists (immutability enforcement)
-    if workflow_id in contracts_store:
-        existing_contract = contracts_store[workflow_id]
-        return existing_contract
-    
     # Wave 1A: Get workflow target from governance service
     # Import governance service from workflows module
     from app.api.routes.workflows import governance_service
@@ -215,6 +210,40 @@ async def create_engineering_contract(
         raise HTTPException(
             status_code=404,
             detail=f"Workflow not found: {workflow_id}"
+        )
+    
+    # Check if contract already exists (immutability enforcement)
+    if workflow_id in contracts_store:
+        existing_contract = contracts_store[workflow_id]
+        
+        # Wave 1A: Verify workflow target hasn't drifted from contract target
+        # This protects against workflow mutation bugs or admin endpoints
+        if (existing_contract.target.family != workflow_obj.target_family or
+            existing_contract.target.version != workflow_obj.target_version):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Workflow target drift detected: contract has "
+                       f"{existing_contract.target.family}/{existing_contract.target.version}, "
+                       f"but workflow now has {workflow_obj.target_family}/{workflow_obj.target_version}. "
+                       f"Target fields must remain immutable after contract generation."
+            )
+        
+        return existing_contract
+    
+    # Wave 1A: Validate workflow target immutability
+    # Check that target fields are non-empty (fail fast)
+    if not workflow_obj.target_family or workflow_obj.target_family.strip() == '':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Workflow {workflow_id} has empty target_family. "
+                   "Cannot generate contract without valid target identity."
+        )
+    
+    if not workflow_obj.target_version or workflow_obj.target_version.strip() == '':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Workflow {workflow_id} has empty target_version. "
+                   "Cannot generate contract without valid target identity."
         )
     
     # Extract target from workflow's bound identity
