@@ -1,6 +1,7 @@
 """Tests for evidence ledger operations."""
 
 import json
+import multiprocessing
 import threading
 from datetime import datetime
 from pathlib import Path
@@ -9,6 +10,17 @@ import pytest
 
 from app.evidence.schemas import AgentRun, TestResult, EvidenceRecord
 from app.evidence import ledger
+
+
+def _multiprocess_write_worker(evidence_root: Path, process_id: int, writes_per_process: int):
+    """Worker function for multiprocessing test - must be at module level for pickling."""
+    # Re-apply the monkeypatch in child process
+    from app.evidence import ledger
+    ledger.EVIDENCE_ROOT = evidence_root
+    
+    for i in range(writes_per_process):
+        data = {"process": process_id, "write": i}
+        ledger._append_jsonl("multiprocess.jsonl", data)
 
 
 @pytest.fixture
@@ -217,6 +229,36 @@ class TestConcurrentWrites:
             assert "agentId" in data
             assert "tests" in data
             assert "timestamp" in data
+    
+    def test_multiprocess_writes_no_corruption(self, temp_evidence_root):
+        """Test that concurrent writes from multiple processes don't corrupt JSONL file."""
+        num_processes = 5
+        writes_per_process = 3
+        
+        processes = []
+        for process_id in range(num_processes):
+            process = multiprocessing.Process(
+                target=_multiprocess_write_worker,
+                args=(temp_evidence_root, process_id, writes_per_process)
+            )
+            processes.append(process)
+            process.start()
+        
+        for process in processes:
+            process.join()
+        
+        # Verify all lines are valid JSON and no corruption occurred
+        file_path = temp_evidence_root / "multiprocess.jsonl"
+        with open(file_path, "r") as f:
+            lines = f.readlines()
+        
+        assert len(lines) == num_processes * writes_per_process
+        
+        # Each line should be valid JSON (no interleaved writes)
+        for line in lines:
+            data = json.loads(line.strip())
+            assert "process" in data
+            assert "write" in data
 
 
 class TestEvidenceRetrieval:

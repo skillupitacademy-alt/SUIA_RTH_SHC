@@ -95,12 +95,12 @@ def _append_jsonl(file_name: str, data: dict[str, Any]) -> None:
         # Open file and acquire file-level lock for multi-process safety
         with open(file_path, "a", encoding="utf-8") as f:
             if platform.system() == "Windows":
-                # Windows file locking
-                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+                # Windows file locking - lock 1MB region to cover variable-length JSONL appends
+                msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1024 * 1024)
                 try:
                     f.write(json.dumps(data, ensure_ascii=False) + "\n")
                 finally:
-                    msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+                    msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1024 * 1024)
             else:
                 # Unix/Linux file locking
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
