@@ -1,29 +1,51 @@
 {
   "wave": "W1D",
   "status": "completed",
-  "commit": "850d5f92a86688bb6d193e2d34614e9afcf4bb07",
+  "commit": "7af488f99df028a1716c1f637a91f566bcd3dd6a",
   "reviewFindings": [
     {
       "issue": "Windows file locking insufficient",
       "fix": "Changed msvcrt.locking byte count from 1 to 1024*1024 to lock entire write region",
-      "file": "services/project-ai/app/evidence/ledger.py"
+      "file": "services/project-ai/app/evidence/ledger.py",
+      "commitRef": "850d5f92"
     },
     {
       "issue": "Missing multi-process concurrency test",
       "fix": "Added test_multiprocess_writes_no_corruption using multiprocessing.Process",
-      "file": "services/project-ai/tests/evidence/test_ledger.py"
+      "file": "services/project-ai/tests/evidence/test_ledger.py",
+      "commitRef": "850d5f92"
+    },
+    {
+      "issue": "__init__.py scope creep - EvidenceGraph and EvidenceQuery exported but don't exist in W1D",
+      "fix": "Removed EvidenceGraph, EvidenceNode, EvidenceEdge, and EvidenceQuery from __init__.py exports (they're from later waves)",
+      "file": "services/project-ai/app/evidence/__init__.py",
+      "commitRef": "7af488f9"
+    },
+    {
+      "issue": "Timestamp timezone inconsistency - datetime.now() without timezone",
+      "fix": "Changed to datetime.now(timezone.utc) to create timezone-aware timestamps",
+      "file": "services/project-ai/app/evidence/integration.py",
+      "commitRef": "7af488f9"
+    },
+    {
+      "issue": "Windows locking region asymmetry - Unix locks entire file but Windows locks only 1MB",
+      "fix": "Added documentation of 1MB limitation and size check that raises ValueError if write exceeds 1MB on Windows",
+      "file": "services/project-ai/app/evidence/ledger.py",
+      "commitRef": "7af488f9"
     }
   ],
   "filesModified": [
     "services/project-ai/app/evidence/ledger.py",
+    "services/project-ai/app/evidence/integration.py",
+    "services/project-ai/app/evidence/__init__.py",
     "services/project-ai/tests/evidence/test_ledger.py"
   ],
   "testResults": {
-    "passed": 14,
+    "passed": 40,
     "failed": 0,
     "skipped": 0,
-    "total": 14
+    "total": 40
   },
-  "timestamp": "2025-01-26T12:00:00Z",
-  "notes": "Fixed Windows file locking to lock 1MB region instead of 1 byte. Added multiprocessing test to verify file-level locking prevents corruption across process boundaries. All 14 tests pass including new multiprocess concurrency test."
+  "timestamp": "2025-01-29T21:30:00Z",
+  "notes": "All review findings addressed: (1) Removed non-W1D imports from __init__.py to match wave scope. (2) Added UTC timezone to integration.py timestamps for consistency. (3) Documented Windows 1MB locking limitation and added size check to prevent unsafe writes. (4) Previous commits fixed Windows locking byte count and added multiprocess test. All 40 tests pass."
 }
