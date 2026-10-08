@@ -19,6 +19,20 @@ client = TestClient(app)
 
 
 @pytest.fixture
+def sample_workflow():
+    """Create a sample workflow for testing candidate binding."""
+    from app.api.routes.workflows import governance_service
+    
+    workflow = governance_service.create_workflow(
+        target_family="Tutorial",
+        target_version="T5",
+        requester_id="test-user",
+        purpose="Test workflow for candidate"
+    )
+    return workflow
+
+
+@pytest.fixture
 def sample_html_content():
     """Sample HTML content for testing classification."""
     return """
@@ -43,12 +57,13 @@ def sample_html_content():
 
 
 @pytest.fixture
-def sample_candidate_package(sample_html_content):
+def sample_candidate_package(sample_html_content, sample_workflow):
     """Sample candidate package for testing."""
     html_hash = hashlib.sha256(sample_html_content.encode('utf-8')).hexdigest()
     
     return {
         "candidateId": "test-candidate-001",
+        "workflow_id": sample_workflow.workflow_id,
         "files": [
             {
                 "filename": "index.html",
@@ -69,7 +84,7 @@ def sample_candidate_package(sample_html_content):
 
 
 @pytest.fixture
-def introduction_candidate():
+def introduction_candidate(sample_workflow):
     """Introduction block candidate for testing."""
     html_content = """
     <div class="intro-block" data-block-type="introduction">
@@ -79,6 +94,7 @@ def introduction_candidate():
     """
     return {
         "candidateId": "test-intro-001",
+        "workflow_id": sample_workflow.workflow_id,
         "files": [
             {
                 "filename": "intro.html",
@@ -93,7 +109,7 @@ def introduction_candidate():
 
 
 @pytest.fixture
-def assessment_candidate():
+def assessment_candidate(sample_workflow):
     """Assessment block candidate for testing."""
     html_content = """
     <div class="quiz-container" data-block-type="assessment">
@@ -105,6 +121,7 @@ def assessment_candidate():
     """
     return {
         "candidateId": "test-assessment-001",
+        "workflow_id": sample_workflow.workflow_id,
         "files": [
             {
                 "filename": "quiz.html",
@@ -130,6 +147,9 @@ class TestCandidateUpload:
         
         assert data["status"] == "uploaded"
         assert data["candidateId"] == "test-candidate-001"
+        assert data["workflow_id"] is not None
+        assert data["target_family"] == "Tutorial"
+        assert data["target_version"] == "T5"
         assert data["filesCount"] == 2
         assert "uploadedAt" in data
     
@@ -206,10 +226,11 @@ class TestCandidateClassification:
         assert response.status_code == 404
         assert "not found" in response.json()["detail"]
     
-    def test_classify_no_html(self):
+    def test_classify_no_html(self, sample_workflow):
         """Test classifying candidate with no HTML files."""
         package = {
             "candidateId": "test-no-html",
+            "workflow_id": sample_workflow.workflow_id,
             "files": [
                 {
                     "filename": "data.json",
@@ -333,10 +354,11 @@ class TestManifestRetrieval:
             assert data["candidateId"] == generated["candidateId"]
             assert data["manifestHash"] == generated["manifestHash"]
     
-    def test_get_manifest_not_generated(self):
+    def test_get_manifest_not_generated(self, sample_workflow):
         """Test retrieving manifest that hasn't been generated."""
         package = {
             "candidateId": "test-no-manifest",
+            "workflow_id": sample_workflow.workflow_id,
             "files": [
                 {
                     "filename": "test.html",
@@ -405,7 +427,7 @@ class TestListCandidates:
 class TestEndToEndWorkflow:
     """Test complete candidate workflow."""
     
-    def test_complete_workflow(self):
+    def test_complete_workflow(self, sample_workflow):
         """Test full candidate intake workflow."""
         # Use unique candidate ID to avoid conflicts with other tests
         html_content = """
@@ -422,6 +444,7 @@ class TestEndToEndWorkflow:
         
         package = {
             "candidateId": "test-e2e-workflow",
+            "workflow_id": sample_workflow.workflow_id,
             "files": [
                 {
                     "filename": "e2e.html",

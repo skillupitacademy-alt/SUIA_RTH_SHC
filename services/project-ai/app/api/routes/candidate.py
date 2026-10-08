@@ -55,14 +55,17 @@ async def upload_candidate(package: CandidatePackage):
     """
     Upload a candidate block package for evaluation.
     
+    Wave 1A: Binds candidate to workflow and retrieves target identity.
+    
     Args:
-        package: Complete candidate package with files
+        package: Complete candidate package with files and workflow_id
         
     Returns:
-        Confirmation with candidate ID
+        Confirmation with candidate ID and workflow target binding
         
     Raises:
-        400: If candidate ID already exists
+        400: If candidate ID already exists or workflow_id missing
+        404: If workflow not found
     """
     if package.candidateId in _candidates_store:
         raise HTTPException(
@@ -70,11 +73,36 @@ async def upload_candidate(package: CandidatePackage):
             detail=f"Candidate {package.candidateId} already exists"
         )
     
+    # Wave 1A: Enforce workflow binding at upload
+    if not package.workflow_id:
+        raise HTTPException(
+            status_code=400,
+            detail="workflow_id is required for candidate upload. "
+                   "Candidates must be bound to a workflow for target identity."
+        )
+    
+    # Retrieve workflow to get target binding
+    from app.api.routes.workflows import governance_service
+    
+    workflow = governance_service.get_workflow(package.workflow_id)
+    if not workflow:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Workflow not found: {package.workflow_id}"
+        )
+    
+    # Bind candidate to workflow target
+    package.target_family = workflow.target_family
+    package.target_version = workflow.target_version
+    
     _candidates_store[package.candidateId] = package
     
     return {
         "status": "uploaded",
         "candidateId": package.candidateId,
+        "workflow_id": package.workflow_id,
+        "target_family": package.target_family,
+        "target_version": package.target_version,
         "filesCount": len(package.files),
         "uploadedAt": package.uploadedAt
     }
@@ -373,17 +401,17 @@ async def generate_manifest(
     manifest_id = f"manifest-{candidate_id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
     created_at = datetime.utcnow().isoformat() + "Z"
     
-    # B07 fix: Extract target version from candidate binding/workflow
-    # NOTE: In full workflow integration, candidate packages should carry
-    # CandidateBinding with target_version from WorkflowTarget
-    # The canonical attribute is 'target_version' based on CandidateBinding model
-    target_version = getattr(package, 'target_version', None)
+    # B07 fix: Extract target version from workflow binding (Wave 1A)
+    # Candidate packages now carry target_version from workflow at upload
+    target_version = package.target_version
     
     if not target_version or target_version == '':
-        # No valid version found - this indicates missing workflow binding
-        # Use clear sentinel value that will fail validation if not caught upstream
-        target_version = 'UNKNOWN_VERSION'
-        # TODO Wave 3: Add schema validation at intake to enforce target_version presence
+        # Missing version indicates upload occurred before Wave 1A workflow binding
+        raise HTTPException(
+            status_code=400,
+            detail=f"Candidate {candidate_id} missing target_version binding. "
+                   "Re-upload candidate with workflow_id to bind target identity."
+        )
     
     manifest_data = {
         "manifestId": manifest_id,

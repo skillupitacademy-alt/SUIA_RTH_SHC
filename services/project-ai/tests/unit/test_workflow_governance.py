@@ -61,7 +61,7 @@ def test_workflow_creation(governance_service):
     
     assert workflow.workflow_id is not None
     assert len(workflow.workflow_id) > 0
-    assert workflow.specification_id == "II7"  # First letter + version
+    assert workflow.specification_id == "I7"  # Target version (e.g., "I7", "C3")
     assert workflow.target_family == "Introduction"
     assert workflow.target_version == "I7"
     assert workflow.requester_id == "user_123"

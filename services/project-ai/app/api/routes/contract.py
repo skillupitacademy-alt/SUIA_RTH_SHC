@@ -205,20 +205,26 @@ async def create_engineering_contract(
         existing_contract = contracts_store[workflow_id]
         return existing_contract
     
-    # TODO Wave 3: Get workflow target from workflow service/database
-    # For Wave 2, use a placeholder. In real implementation, this would:
-    # 1. Query the workflow database by workflow_id
-    # 2. Extract the WorkflowTarget that was created in the discovery step
-    # workflow is already validated to be in correct state by verify_workflow_ownership
+    # Wave 1A: Get workflow target from governance service
+    # Import governance service from workflows module
+    from app.api.routes.workflows import governance_service
     
-    # Placeholder target (Wave 3 will wire this to real workflow service)
+    # Retrieve workflow to get actual target binding
+    workflow_obj = governance_service.get_workflow(workflow_id)
+    if not workflow_obj:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Workflow not found: {workflow_id}"
+        )
+    
+    # Extract target from workflow's bound identity
     target = WorkflowTarget(
         workflow_id=workflow_id,
-        family="Introduction",
-        version="I7",
-        block_type="introduction",
-        specification_id="user-spec-001",
-        source_snapshot_id="snapshot-001"
+        family=workflow_obj.target_family,
+        version=workflow_obj.target_version,
+        block_type=workflow_obj.target_family.lower(),  # e.g., "Introduction" -> "introduction"
+        specification_id=workflow_obj.specification_id,
+        source_snapshot_id=workflow_obj.snapshot_id or "snapshot-pending"
     )
     
     # Load canonical TypeScript snapshot (architectural boundary: Python consumes, never produces)

@@ -52,6 +52,11 @@ class CandidatePackage(BaseModel):
     files: list[CandidateFile] = Field(..., description="List of files in the package")
     uploadedAt: str = Field(..., description="ISO 8601 timestamp of upload")
     uploadedBy: str = Field(..., description="User or system that uploaded the candidate")
+    
+    # Wave 1A: Workflow target binding
+    workflow_id: Optional[str] = Field(None, description="Workflow this candidate belongs to")
+    target_family: Optional[str] = Field(None, description="Target block family from workflow")
+    target_version: Optional[str] = Field(None, description="Target block version from workflow")
 
 
 class ClassificationResult(BaseModel):
