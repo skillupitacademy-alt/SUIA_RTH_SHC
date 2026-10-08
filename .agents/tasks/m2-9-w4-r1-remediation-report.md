@@ -289,7 +289,7 @@ python -m pytest tests/ -v
 
 **Independent Review Verdict:** APPROVED  
 **Review Artifact:** `.agents/tasks/m2-9-w4-r1-review.json`  
-**Final Commit:** `00ce3fbd00b4a1a1d7aab29f2aacf7f8c81f2ca5`  
+**Final Commit:** `e945eab3`  
 
 All three original security findings resolved with confirmed fail-closed enforcement:
 - ✅ Finding A (self-approval bypass) — RESOLVED
