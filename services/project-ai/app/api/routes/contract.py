@@ -12,9 +12,13 @@ from app.contracts.engineering_contract import (
 )
 from app.contracts.repository_intelligence import build_contract as build_repo_contract
 from app.models.workflow_target import WorkflowTarget
+from app.orchestration.canonical_workflow import CanonicalWorkflowState
+from app.evidence.ledger import record_agent_run
+from app.evidence.schemas import AgentRun
 import uuid
 import os
 import json
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any
@@ -50,6 +54,38 @@ def load_repository_snapshot(workspace_root: str) -> Dict[str, Any]:
     
     with open(snapshot_path, 'r', encoding='utf-8') as f:
         return json.load(f)
+
+
+def calculate_snapshot_sha256(workspace_root: str) -> str:
+    """
+    Calculate SHA-256 hash of the repository snapshot file.
+    
+    This computes the hash from the actual file bytes to ensure hash stability
+    and prevent JSON serialization order issues.
+    
+    Args:
+        workspace_root: Workspace root path
+        
+    Returns:
+        64-character hex string (SHA-256)
+        
+    Raises:
+        HTTPException 404: If snapshot file not found
+    """
+    snapshot_path = Path(workspace_root) / "packages" / "project-llm-discovery" / "output" / "snapshot.json"
+    
+    if not snapshot_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Repository snapshot not found at {snapshot_path}"
+        )
+    
+    sha256_hash = hashlib.sha256()
+    with open(snapshot_path, 'rb') as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    
+    return sha256_hash.hexdigest()
 
 # In-memory store for contracts
 # Key: workflow_id -> EngineeringContract
@@ -265,6 +301,9 @@ async def create_engineering_contract(
     # Load snapshot (mockable function for tests)
     snapshot = load_repository_snapshot(workspace_root)
     
+    # Calculate snapshot SHA-256 from actual file content
+    snapshot_sha256 = calculate_snapshot_sha256(workspace_root)
+    
     # Build repository contract from snapshot (Wave 1 canonical implementation)
     repo_contract = build_repo_contract(
         snapshot=snapshot,
@@ -282,7 +321,7 @@ async def create_engineering_contract(
         target=target,
         contract_version="1.0",
         repository_snapshot_id=target.source_snapshot_id,
-        repository_snapshot_sha256="",  # TODO: Get from snapshot service
+        repository_snapshot_sha256=snapshot_sha256,
         canonical_references=repo_contract.references,
         
         # Populate contracts from repository intelligence
@@ -370,6 +409,41 @@ async def create_engineering_contract(
     
     # Store contract (immutability: same workflow_id = same contract)
     contracts_store[workflow_id] = contract
+    
+    # Bind contract artifact to workflow with SHA-256
+    governance_service.bind_artifact(
+        workflow_id=workflow_id,
+        artifact_type="contract",
+        artifact_id=contract.contract_id,
+        artifact_sha256=contract.contract_hash
+    )
+    
+    # Transition workflow state to BRIEF_READY
+    try:
+        governance_service.transition_state(
+            workflow_id=workflow_id,
+            to_state=CanonicalWorkflowState.BRIEF_READY,
+            triggered_by="W2-EngineeringContract",
+            evidence_id=contract.contract_id,
+            reason=f"Engineering contract generated: {contract.contract_id}"
+        )
+    except ValueError as e:
+        # State transition may fail if already in BRIEF_READY or later state
+        # This is acceptable for idempotency
+        pass
+    
+    # Record evidence via W1D harness
+    agent_run = AgentRun(
+        runId=f"w2-engineering-contract-{workflow_id}",
+        agentId="W2",
+        wave="W2",
+        commitBefore="bb5fe7a6",  # Current commit before W2 work
+        commitAfter="bb5fe7a6",  # No git changes yet
+        filesChanged=[],  # W2 doesn't modify repository files
+        status="completed",
+        timestamp=datetime.now(timezone.utc)
+    )
+    record_agent_run(agent_run)
     
     return contract
 

@@ -168,12 +168,18 @@ def calculate_contract_hash(contract: EngineeringContract) -> str:
         The hash is deterministic: same contract data = same hash.
         This enables contract identity verification and immutability enforcement.
     """
-    # Serialize contract to canonical JSON, excluding the hash field
-    canonical = contract.model_dump_json(
+    import json
+    
+    # Serialize contract to dictionary, excluding the hash field
+    contract_dict = contract.model_dump(
         exclude_none=True,
         by_alias=True,
         exclude={"contract_hash"},
+        mode="json"
     )
+    
+    # Convert to JSON with sorted keys for deterministic serialization
+    canonical = json.dumps(contract_dict, sort_keys=True, ensure_ascii=False)
     
     # Compute SHA-256
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
