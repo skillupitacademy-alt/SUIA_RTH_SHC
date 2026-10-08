@@ -4,8 +4,9 @@
   "wave": "M2.9-W0",
   "agent": "B01-Architecture-Authority",
   "timestamp": "2026-01-08T21:30:00Z",
-  "commit_before": "185925bf2a0ec671c6863e7f3f323ad9e98116aa",
-  "commit_after": "f438718809e37af1bcb80c9e4493c04fad2d539d",
+  "commit_before": "9dc47b46",
+  "commit_after": "0d7e782ab1a2e393ca39294eac6c1a8ca071b185",
+  "commit_review_fixes": "0d7e782ab1a2e393ca39294eac6c1a8ca071b185",
   "authority_reconciliation": {
     "canonical_authority": "CanonicalWorkflowState (17 states)",
     "governance_service": "WorkflowGovernanceService",
