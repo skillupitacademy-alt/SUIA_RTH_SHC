@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { TutorialComposerHeader } from './TutorialComposerHeader';
 import { TutorialHierarchySelector } from './TutorialHierarchySelector';
 import { TutorialNavigationNodeSelector } from './TutorialNavigationNodeSelector'; // Phase 1
@@ -17,6 +17,14 @@ import { useTutorialSave } from '../hooks/useTutorialSave'; // Phase 2B.15 Step 
 import { useTutorialBlockEditor } from '../hooks/useTutorialBlockEditor'; // Phase 2B.15 Step 4
 
 export function TutorialPageContentBuilderClient() {
+  // Local message state for error handling
+  const [message, setMessage] = useState('');
+  
+  // Stable error handler to prevent infinite useEffect loop in useTutorialComposerForm
+  const handleError = useCallback((msg: string) => {
+    setMessage(msg);
+  }, []); // setMessage is stable from useState
+  
   // Phase 2B.15 Step 2: Hierarchy/form state managed by hook
   const {
     hierarchy,
@@ -35,7 +43,7 @@ export function TutorialPageContentBuilderClient() {
     availableVersions,
     selectedVersion,
   } = useTutorialComposerForm({
-    onError: (message) => setMessage(message),
+    onError: handleError, // Stable reference prevents infinite loop
   });
   
   // Phase 1: Navigation nodes for selected subtopic
@@ -54,8 +62,8 @@ export function TutorialPageContentBuilderClient() {
     hasUnsavedLocalChangesRef,
     loadExistingTutorial,
     invalidateHydration,
-    message,
-    setMessage,
+    message: hydrationMessage,
+    setMessage: setHydrationMessage,
   } = useTutorialHydration({ brandId: form.brandId });
   
   const [previewMode, setPreviewMode] = useState<'document' | 'active-block'>('document');
@@ -70,7 +78,7 @@ export function TutorialPageContentBuilderClient() {
     isLoadingDocument,
     hasUnsavedLocalChangesRef,
     setLoadedSectionId,
-    setMessage,
+    setMessage: setHydrationMessage, // Use hydration's setMessage
   });
 
   // Phase 2B.15 Step 4: Block editor hook
@@ -93,7 +101,7 @@ export function TutorialPageContentBuilderClient() {
       documentBlocks,
       setDocumentBlocks,
       hasUnsavedLocalChangesRef,
-      setMessage,
+      setMessage: setHydrationMessage, // Use hydration's setMessage
     },
     {
       blockType: form.blockType,
@@ -107,6 +115,13 @@ export function TutorialPageContentBuilderClient() {
     const example = getDefaultPayload(form.blockType, form.versionId);
     updatePreviewFromPayload(example);
   }, [form.blockType, form.versionId, updatePreviewFromPayload]);
+
+  // Sync hydration messages to main message state
+  useEffect(() => {
+    if (hydrationMessage) {
+      setMessage(hydrationMessage);
+    }
+  }, [hydrationMessage]);
 
   // Phase 1: Hydrate existing tutorial when navigation context changes
   // Phase 2: Hook manages AbortController and request sequence internally
