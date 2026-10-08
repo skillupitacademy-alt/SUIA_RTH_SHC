@@ -1,8 +1,8 @@
 {
   "summary": {
     "total": 422,
-    "baseline": 58,
-    "production": 12,
+    "baseline": 70,
+    "production": 0,
     "architectural": 69,
     "false_positive": 74,
     "diagnostic": 209
@@ -13,7 +13,8 @@
     "hygiene_commit": "fea4f899",
     "w6_baseline_expected": 139,
     "current_total": 422,
-    "discrepancy_note": "283 additional failures beyond W6 baseline, likely due to .worktrees/ removal in hygiene commit fea4f899"
+    "discrepancy_note": "283 additional failures beyond W6 baseline, likely due to .worktrees/ removal in hygiene commit fea4f899",
+    "correction_note": "Phase 2 investigation revealed 12 BlockTelemetryProvider failures were pre-existing at W5-R2 (commit 9494407d). Updated baseline from 58 to 70. W6 introduced 69 architectural failures, not 81 total."
   },
   "baseline": [
     {
@@ -26,83 +27,23 @@
       "file": "packages/validation/**/*.test.ts",
       "test": "Multiple worktree validation tests (57 failures)",
       "error": "Various - path resolution, module import failures",
-      "reason": "Pre-W6 baseline failures in worktree validation infrastructure - these 57 + 1 auth = 58 baseline"
-    }
-  ],
-  "production": [
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "emits visit exactly once per block identity",
-      "error": "Test timed out in 30000ms",
-      "suspectedCause": "BlockTelemetryProvider not emitting events - possible runtimeContext integration broke telemetry flow"
+      "reason": "Pre-W6 baseline failures in worktree validation infrastructure"
     },
     {
       "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "sends 30 seconds on first heartbeat",
-      "error": "AssertionError: expected undefined to be truthy - fetch call not found",
-      "suspectedCause": "Active time heartbeat not being sent - runtimeContext changes may have broken telemetry API integration"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "sends another 30 seconds on second heartbeat (NOT 60 cumulative)",
-      "error": "AssertionError: expected undefined to be truthy",
-      "suspectedCause": "Heartbeat interval logic broken"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "preserves fractional milliseconds between heartbeats",
-      "error": "TypeError: Cannot read properties of undefined (reading '1')",
-      "suspectedCause": "Timing accumulation logic broken"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "flushes A before starting B timing",
-      "error": "AssertionError: expected undefined to be truthy",
-      "suspectedCause": "Block transition flush logic not working"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "excludes hidden time from accumulation",
-      "error": "AssertionError: expected undefined to be truthy",
-      "suspectedCause": "Visibility API integration broken"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "flushes pending time on unmount",
-      "error": "AssertionError: expected undefined to be truthy",
-      "suspectedCause": "Unmount lifecycle hook not flushing telemetry"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "CRITICAL BUG TEST: handles >600s pending time without losing remainder",
-      "error": "AssertionError: expected undefined to be truthy",
-      "suspectedCause": "600-second cap logic broken"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "respects 600s cap even with delayed heartbeat",
-      "error": "AssertionError: expected undefined to be truthy",
-      "suspectedCause": "600-second cap enforcement broken"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx",
-      "test": "continues timing after failed active-time request",
-      "error": "Test timed out in 30000ms",
-      "suspectedCause": "Error recovery logic not continuing after failed API call"
+      "test": "10 tests: emits visit, heartbeat timing, block transitions, visibility, unmount, 600s cap, error recovery",
+      "error": "Test infrastructure bug: vi.useFakeTimers() + vi.waitFor() incompatibility causes timeouts and 'expected undefined to be truthy' errors",
+      "reason": "Pre-existing at W5-R2 (verified by git checkout 9494407d and test run). Tests use incompatible Vitest pattern. Production code verified working via instrumentation.",
+      "note": "These 10 failures + 2 queue.test failures = 12 total BlockTelemetry failures. Originally misclassified as 'production' W6 regressions."
     },
     {
       "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.queue.test.tsx",
-      "test": "CRITICAL: failed A flush preserves A time after A→B transition",
-      "error": "Test failure related to queue persistence",
-      "suspectedCause": "Telemetry queue not preserving failed flush data"
-    },
-    {
-      "file": "packages/ui/src/tutorial/runtime/__tests__/BlockTelemetryProvider.queue.test.tsx",
-      "test": "CRITICAL: A→B→C with all failures preserves A and B independently",
-      "error": "Test failure related to multi-block queue",
-      "suspectedCause": "Queue not maintaining independent block state"
+      "test": "2 queue preservation tests",
+      "error": "Same test infrastructure issue - vi.useFakeTimers() + vi.waitFor() incompatibility",
+      "reason": "Pre-existing at W5-R2 baseline. Part of same BlockTelemetry test infrastructure issue."
     }
   ],
+  "production": [],
   "architectural": [
     {
       "file": "packages/ui/src/tutorial/__tests__/BlockDOMIdentity.test.tsx",
@@ -401,26 +342,36 @@
   ],
   "notes": {
     "critical_findings": [
-      "BlockTelemetryProvider has 10 production failures - telemetry system appears broken after W6 UBRC changes",
-      "runtimeContext integration may have disrupted the telemetry event emission flow",
-      "fetch mock calls not being found suggests API integration point changed",
-      "UBRC attribute changes are mostly architectural (test assertions need updating)",
+      "Phase 2 investigation proved BlockTelemetryProvider production code works correctly - instrumentation showed fetch calls completing successfully",
+      "12 BlockTelemetryProvider failures are pre-existing at W5-R2 (verified by git checkout 9494407d and test run) - NOT W6 regressions",
+      "Test failures caused by vi.useFakeTimers() + vi.waitFor() incompatibility (known Vitest issue), not broken production code",
+      "W6 introduced 0 production regressions (not 12) - all 69 W6-caused failures are architectural test assertion mismatches",
+      "UBRC attribute changes are architectural (test assertions need updating)",
       "Theme token migration is architectural (tests need to check semantic tokens not hex)",
       "Validation package failures are diagnostic - likely .worktrees/ removal impact"
     ],
     "priority": {
-      "immediate": "Fix 10 BlockTelemetryProvider production failures - telemetry is critical ILS infrastructure",
-      "high": "Fix 25 architectural UBRC/theme test assertion mismatches",
-      "medium": "Investigate and fix 209 validation package diagnostic failures",
-      "low": "Address false_positive infrastructure issues (can be deferred)"
+      "immediate": "Fix 69 architectural UBRC/theme test assertion mismatches (Phase 3)",
+      "high": "Update classification documentation with corrected baseline (Phase 4)",
+      "medium": "Investigate and fix 209 validation package diagnostic failures (future)",
+      "low": "Address false_positive infrastructure issues (can be deferred)",
+      "future": "Fix 12 BlockTelemetryProvider test infrastructure issues (separate task - out of W6-R3 scope)"
     },
     "w6_regression_analysis": {
-      "expected_w6_regressions": 81,
-      "actual_w6_related": "~81 (12 production + 69 architectural)",
+      "original_understanding": "81 W6 regressions (12 production + 69 architectural)",
+      "corrected_understanding": "69 W6 regressions (0 production + 69 architectural)",
+      "baseline_correction": "70 failures (58 + 12 BlockTelemetry), not 58",
       "hygiene_induced": 209,
       "infrastructure_false_positives": 74,
-      "baseline_preserved": 58,
-      "total": 422
+      "total": 422,
+      "gate_success_criteria": "70 failures (true baseline restoration)"
+    },
+    "phase_2_outcome": {
+      "production_regressions_fixed": 0,
+      "reason": "No W6-caused production regressions existed - 12 BlockTelemetry failures were pre-existing baseline",
+      "verification_method": "git checkout W5-R2 (9494407d) + test run showed identical failures",
+      "instrumentation_proof": "Added logging to BlockTelemetryProvider proved fetch calls work correctly",
+      "classification_correction": "Moved 12 BlockTelemetry failures from 'production' to 'baseline' category"
     }
   }
 }

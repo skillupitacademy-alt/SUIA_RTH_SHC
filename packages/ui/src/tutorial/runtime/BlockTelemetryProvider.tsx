@@ -228,19 +228,7 @@ export function BlockTelemetryProvider({
     blockId: string,
     blockVersion: string
   ): Promise<void> => {
-    // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit called', {
-    //   blockId,
-    //   blockVersion,
-    //   enabled,
-    //   hasSessionId: !!sessionIdRef.current,
-    //   sessionId: sessionIdRef.current,
-    //   navigationNodeId,
-    //   subtopicId,
-    //   timestamp: new Date().toISOString()
-    // });
-    
     if (!enabled || !sessionIdRef.current) {
-      // console.warn('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit SKIPPED - disabled or no sessionId');
       return;
     }
     
@@ -249,7 +237,6 @@ export function BlockTelemetryProvider({
       lastVisitIdentityRef.current?.blockId === blockId &&
       lastVisitIdentityRef.current?.blockVersion === blockVersion
     ) {
-      // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] emitVisit SKIPPED - duplicate');
       return;
     }
     
@@ -264,13 +251,6 @@ export function BlockTelemetryProvider({
       sectionId,
     };
     
-    // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] POST /api/tutorial/ils/block-visit', {
-    //   url: '/api/tutorial/ils/block-visit',
-    //   method: 'POST',
-    //   hasSessionIdHeader: !!sessionIdRef.current,
-    //   payload: requestPayload
-    // });
-    
     try {
       const response = await fetch('/api/tutorial/ils/block-visit', {
         method: 'POST',
@@ -282,25 +262,12 @@ export function BlockTelemetryProvider({
         body: JSON.stringify(requestPayload),
       });
       
-      // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider] POST /api/tutorial/ils/block-visit response', {
-      //   status: response.status,
-      //   statusText: response.statusText,
-      //   ok: response.ok
-      // });
-      
       if (!response.ok) {
         const responseText = await response.text();
-        // console.warn('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][WARN] Visit failed', {
-        //   status: response.status,
-        //   responseBody: responseText
-        // });
-      } else {
-        const responseData = await response.json();
-        // console.log('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][SUCCESS] Visit succeeded', responseData);
+        // Silent failure - telemetry must not break UX
       }
     } catch (error) {
       // Silent failure - telemetry must not break UX
-      // console.error('[ILS-DEBUG][BROWSER][BlockTelemetryProvider][ERROR] Visit error:', error);
     }
   }, [enabled, navigationNodeId, subtopicId, sectionId]);
   
@@ -524,7 +491,11 @@ export function BlockTelemetryProvider({
       startTiming(activeBlock.blockId, blockVersion);
     };
     
-    void transitionToNewBlock();
+    // Execute transition and handle errors gracefully
+    // Note: Error handling ensures telemetry failures don't break UX
+    transitionToNewBlock().catch((error) => {
+      console.error('[BlockTelemetry] Transition failed:', error);
+    });
   }, [activeBlock, enabled, flushAllPending, emitVisit, startTiming, stopTiming]);
   
   /**

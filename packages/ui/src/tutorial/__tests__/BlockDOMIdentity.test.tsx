@@ -151,7 +151,7 @@ describe('Phase 2 - DOM Block Identity', () => {
       expect(element?.getAttribute('data-block-type')).toBe('quote');
     });
 
-    it('SummaryBlock: exposes data-block-id and data-block-type (no version)', () => {
+    it('SummaryBlock: exposes data-block-id and data-block-type (with version)', () => {
       const { container } = render(
         <SummaryBlock
           block={{
@@ -167,7 +167,7 @@ describe('Phase 2 - DOM Block Identity', () => {
       const element = container.querySelector('[data-block-id="summary-006"]');
       expect(element).toBeTruthy();
       expect(element?.getAttribute('data-block-type')).toBe('summary');
-      expect(element?.getAttribute('data-block-version')).toBeNull(); // Unversioned
+      expect(element?.getAttribute('data-block-version')).toBe('S1'); // Now versioned as S1
     });
 
     it('DiagramBlock: exposes data-block-id and data-block-type', () => {
