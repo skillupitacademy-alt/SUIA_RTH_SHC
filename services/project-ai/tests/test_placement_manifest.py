@@ -294,3 +294,184 @@ def test_manifest_targets_correct_paths(generator, valid_validation, clean_compa
         None
     )
     assert "packages/ui/src/tutorial/schemas/" in schema_path["target"]
+
+
+def test_manifest_validation_pass(generator, valid_validation, clean_comparison, target_binding):
+    """Test that valid manifest passes validation."""
+    manifest = generator.generate(valid_validation, clean_comparison, target_binding)
+    
+    is_valid, errors = generator.validate_manifest(manifest, target_binding)
+    
+    assert is_valid is True
+    assert len(errors) == 0
+
+
+def test_manifest_validation_family_mismatch(generator, clean_comparison):
+    """Test that validation detects family mismatch."""
+    # Create validation with one family
+    validation_intro = MockValidationResult(
+        valid=True,
+        sha256="abc123def456",
+        target_family="Introduction",
+        target_version="I7",
+        errors=[],
+        evidence={"artifact_count": 2}
+    )
+    
+    # Create binding with different family
+    binding_wrong_family = {
+        "workflow_id": "test-workflow-123",
+        "target_family": "Assessment",  # Different from validation (Introduction)
+        "target_version": "I7",
+    }
+    
+    # Generate manifest - it will use binding's family
+    manifest = generator.generate(validation_intro, clean_comparison, binding_wrong_family)
+    
+    # Now validate against a different binding that expects Introduction
+    expected_binding = {
+        "target_family": "Introduction",
+        "target_version": "I7"
+    }
+    
+    is_valid, errors = generator.validate_manifest(manifest, expected_binding)
+    
+    assert is_valid is False
+    assert any("family mismatch" in error.lower() for error in errors)
+
+
+def test_manifest_validation_version_mismatch(generator, clean_comparison):
+    """Test that validation detects version mismatch."""
+    # Create validation with one version
+    validation_i7 = MockValidationResult(
+        valid=True,
+        sha256="abc123def456",
+        target_family="Introduction",
+        target_version="I7",
+        errors=[],
+        evidence={"artifact_count": 2}
+    )
+    
+    # Create binding with different version
+    binding_wrong_version = {
+        "workflow_id": "test-workflow-123",
+        "target_family": "Introduction",
+        "target_version": "I8",  # Different from validation (I7)
+    }
+    
+    # Generate manifest - it will use binding's version
+    manifest = generator.generate(validation_i7, clean_comparison, binding_wrong_version)
+    
+    # Now validate against a different binding that expects I7
+    expected_binding = {
+        "target_family": "Introduction",
+        "target_version": "I7"
+    }
+    
+    is_valid, errors = generator.validate_manifest(manifest, expected_binding)
+    
+    assert is_valid is False
+    assert any("version mismatch" in error.lower() for error in errors)
+
+
+def test_manifest_validation_detects_path_traversal(generator):
+    """Test that validation detects path traversal attempts."""
+    # Create manifest with unsafe path
+    manifest = PlacementManifest(
+        manifest_id="test-id",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        file_paths=[
+            {
+                "source": "BadBlock.tsx",
+                "target": "../../../etc/passwd",  # Path traversal attempt
+                "type": "component",
+                "action": "write"
+            }
+        ]
+    )
+    
+    target_binding = {
+        "target_family": "Introduction",
+        "target_version": "I7"
+    }
+    
+    is_valid, errors = generator.validate_manifest(manifest, target_binding)
+    
+    assert is_valid is False
+    assert any("traversal" in error.lower() for error in errors)
+
+
+def test_manifest_validation_detects_absolute_path(generator):
+    """Test that validation detects absolute paths."""
+    manifest = PlacementManifest(
+        manifest_id="test-id",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        file_paths=[
+            {
+                "source": "Block.tsx",
+                "target": "/absolute/path/to/file.tsx",  # Absolute path
+                "type": "component",
+                "action": "write"
+            }
+        ]
+    )
+    
+    target_binding = {
+        "target_family": "Introduction",
+        "target_version": "I7"
+    }
+    
+    is_valid, errors = generator.validate_manifest(manifest, target_binding)
+    
+    assert is_valid is False
+    assert any("absolute" in error.lower() for error in errors)
+
+
+def test_manifest_validation_allowed_directories(generator):
+    """Test that validation enforces allowed directory prefixes."""
+    manifest = PlacementManifest(
+        manifest_id="test-id",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        file_paths=[
+            {
+                "source": "Block.tsx",
+                "target": "packages/malicious/src/bad.tsx",  # Not in allowed list
+                "type": "component",
+                "action": "write"
+            }
+        ]
+    )
+    
+    target_binding = {
+        "target_family": "Introduction",
+        "target_version": "I7"
+    }
+    
+    is_valid, errors = generator.validate_manifest(manifest, target_binding)
+    
+    assert is_valid is False
+    assert any("allowed" in error.lower() for error in errors)
+
+
+def test_manifest_validation_hash_binding(generator, valid_validation, clean_comparison, target_binding):
+    """Test that manifest hash is bound and stable."""
+    manifest1 = generator.generate(valid_validation, clean_comparison, target_binding)
+    manifest2 = generator.generate(valid_validation, clean_comparison, target_binding)
+    
+    # Both should have hashes
+    assert manifest1.manifest_sha256 != ""
+    assert manifest2.manifest_sha256 != ""
+    
+    # Hashes should be different (different manifest IDs)
+    assert manifest1.manifest_sha256 != manifest2.manifest_sha256
+    
+    # But each hash should be stable
+    recomputed_hash1 = generator._compute_manifest_seal(manifest1)
+    assert recomputed_hash1 == manifest1.manifest_sha256
+

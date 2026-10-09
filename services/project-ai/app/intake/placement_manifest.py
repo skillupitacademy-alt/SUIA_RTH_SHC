@@ -16,13 +16,22 @@ ARCHITECTURAL BOUNDARIES:
 - Consumes ValidationResult and ComparisonReport (never computes independently)
 - Uses target_binding for version/family authority (from WorkflowTarget)
 - Manifest hash seals all fields (tamper detection)
+- Wave 3C: Integrates artifact_policy for canonical placement decisions
 """
 
 import hashlib
 import json
 import uuid
 from dataclasses import dataclass, field, asdict
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Tuple
+
+from app.placement import artifact_policy
+from app.models.candidate import PlacementDecision
+
+
+class PlacementValidationError(Exception):
+    """Manifest validation failure."""
+    pass
 
 
 @dataclass
@@ -48,11 +57,18 @@ class PlacementManifestGenerator:
     Generates placement manifests for validated candidates.
     
     Manifest is immutable once generated and sealed with SHA-256 hash.
+    Wave 3C: Integrates artifact_policy for canonical placement decisions.
     """
     
-    def __init__(self):
-        """Initialize placement manifest generator."""
-        pass
+    def __init__(self, snapshot_path: Optional[str] = None):
+        """
+        Initialize placement manifest generator.
+        
+        Args:
+            snapshot_path: Path to discovery snapshot (optional, for artifact policy integration)
+        """
+        self.snapshot_path = snapshot_path
+        self._repository_index: Optional[List[artifact_policy.RepositoryArtifact]] = None
     
     def generate(
         self,
@@ -121,6 +137,12 @@ class PlacementManifestGenerator:
         # Compute manifest seal (hash of all other fields)
         manifest_sha256 = self._compute_manifest_seal(manifest)
         manifest.manifest_sha256 = manifest_sha256
+        
+        # Validate manifest before returning
+        is_valid, validation_errors = self.validate_manifest(manifest, target_binding)
+        if not is_valid:
+            error_msg = "Manifest validation failed:\n  - " + "\n  - ".join(validation_errors)
+            raise PlacementValidationError(error_msg)
         
         return manifest
     
@@ -292,6 +314,104 @@ class PlacementManifestGenerator:
         expected_seal = manifest.manifest_sha256
         actual_seal = self._compute_manifest_seal(manifest)
         return expected_seal == actual_seal
+    
+    def _load_repository_index(self) -> List[artifact_policy.RepositoryArtifact]:
+        """
+        Load repository index from discovery snapshot.
+        
+        Returns:
+            List of repository artifacts
+        """
+        if self._repository_index is not None:
+            return self._repository_index
+        
+        # If no snapshot path provided, return empty index
+        if self.snapshot_path is None:
+            return []
+        
+        # Load snapshot
+        try:
+            with open(self.snapshot_path, 'r', encoding='utf-8') as f:
+                snapshot = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            # If snapshot not found or invalid, return empty index
+            return []
+        
+        # Build repository index
+        self._repository_index = artifact_policy.build_repository_index(snapshot)
+        return self._repository_index
+    
+    def validate_manifest(
+        self,
+        manifest: PlacementManifest,
+        target_binding: Dict[str, Any]
+    ) -> Tuple[bool, List[str]]:
+        """
+        Validate manifest for safety and correctness.
+        
+        Validation rules:
+        - All artifacts must have actions
+        - No REJECT actions in approved manifests
+        - All target paths must be safe (no traversal, relative paths only)
+        - Target paths must start with allowed prefixes
+        - Manifest version/family must match target_binding
+        
+        Args:
+            manifest: PlacementManifest to validate
+            target_binding: Target binding dictionary
+            
+        Returns:
+            Tuple of (is_valid, error_list)
+        """
+        errors: List[str] = []
+        
+        # Check all file_paths have action field
+        for file_path in manifest.file_paths:
+            if "action" not in file_path or not file_path["action"]:
+                errors.append(f"Missing action for file: {file_path.get('source', 'unknown')}")
+            
+            # Check for REJECT actions
+            action_str = file_path.get("action", "").upper()
+            if action_str == "REJECT":
+                errors.append(f"REJECT action found for file: {file_path.get('source', 'unknown')}")
+            
+            # Check target path safety
+            target = file_path.get("target", "")
+            if not target:
+                errors.append(f"Empty target path for file: {file_path.get('source', 'unknown')}")
+                continue
+            
+            # Check for path traversal
+            if "../" in target or target.startswith("/"):
+                errors.append(f"Unsafe path (traversal or absolute): {target}")
+            
+            # Check for allowed prefix
+            allowed_prefixes = [
+                "packages/ui/src/tutorial/blocks/",
+                "packages/ui/src/tutorial/schemas/",
+                "packages/ui/src/tutorial/types/",
+                "packages/ui/src/tutorial/utils/",
+                "packages/shared/src/tutorial/",
+            ]
+            
+            if not any(target.startswith(prefix) for prefix in allowed_prefixes):
+                errors.append(f"Target path not in allowed directories: {target}")
+        
+        # Check manifest version/family match target_binding
+        expected_family = target_binding.get("target_family")
+        expected_version = target_binding.get("target_version")
+        
+        if expected_family and manifest.target_family != expected_family:
+            errors.append(
+                f"Manifest family mismatch: expected {expected_family}, got {manifest.target_family}"
+            )
+        
+        if expected_version and manifest.target_version != expected_version:
+            errors.append(
+                f"Manifest version mismatch: expected {expected_version}, got {manifest.target_version}"
+            )
+        
+        return (len(errors) == 0, errors)
     
     def _get_timestamp(self) -> str:
         """

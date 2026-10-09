@@ -8,18 +8,6 @@ from app.placement.repository_adapter import (
     PathValidationError,
     OperationRecord
 )
-
-__all__ = [
-    "CanonicalComparator",
-    "StructuralFeatures",
-    "PlacementExecutor",
-    "PlacementExecutionError",
-    "RepositoryAdapter",
-    "RepositoryAdapterError",
-    "PathValidationError",
-    "OperationRecord",
-]
-
 from app.placement.approval_enforcer import (
     ApprovalEnforcer,
     ApprovalEnforcementResult,
@@ -31,10 +19,17 @@ from app.placement.worktree_manager import (
     WorktreeError,
     create_worktree_manager,
 )
-from app.placement.executor import PlacementExecutor, PlacementExecutionError
-from app.placement.comparator import CanonicalComparator
+from app.placement import artifact_policy
 
 __all__ = [
+    "CanonicalComparator",
+    "StructuralFeatures",
+    "PlacementExecutor",
+    "PlacementExecutionError",
+    "RepositoryAdapter",
+    "RepositoryAdapterError",
+    "PathValidationError",
+    "OperationRecord",
     "ApprovalEnforcer",
     "ApprovalEnforcementResult",
     "create_approval_enforcer",
@@ -42,7 +37,5 @@ __all__ = [
     "WorktreeContext",
     "WorktreeError",
     "create_worktree_manager",
-    "PlacementExecutor",
-    "PlacementExecutionError",
-    "CanonicalComparator",
+    "artifact_policy",
 ]
