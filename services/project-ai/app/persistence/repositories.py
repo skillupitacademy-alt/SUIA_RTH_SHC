@@ -240,6 +240,10 @@ class ManifestRepository(Protocol):
         """List manifests for candidate."""
         ...
     
+    async def list_by_workflow(self, workflow_id: str) -> List[ManifestModel]:
+        """List manifests for workflow."""
+        ...
+    
     async def upsert(self, manifest: ManifestModel) -> ManifestModel:
         """
         Insert or update manifest (idempotent by manifest_hash).

@@ -137,8 +137,23 @@ class CanonicalWorkflowState(str, Enum):
     - Schema validation
     - Composer wiring verification
     
-    Next states: INTEGRATION_PLANNED (if all gates pass), REJECTED (if gates fail)
+    Next states: PLACEMENT (if all gates pass), REJECTED (if gates fail)
     Gate: Automated certification gates
+    """
+    
+    PLACEMENT = "PLACEMENT"
+    """
+    Placement engine matching candidates to manifests.
+    
+    Activities:
+    - Match candidate to available manifests
+    - Score matches based on structural similarity, family/version, availability
+    - Create placement decision with evidence
+    - Handle placement conflicts
+    - Support manual placement override
+    
+    Next states: INTEGRATION_PLANNED (if placement succeeds), REJECTED (if placement fails)
+    Gate: None (automated)
     """
     
     INTEGRATION_PLANNED = "INTEGRATION_PLANNED"
@@ -288,6 +303,10 @@ VALID_TRANSITIONS: dict[CanonicalWorkflowState, list[CanonicalWorkflowState]] = 
         CanonicalWorkflowState.CANDIDATE_AUDIT,
     ],
     CanonicalWorkflowState.CANDIDATE_AUDIT: [
+        CanonicalWorkflowState.PLACEMENT,
+        CanonicalWorkflowState.REJECTED,
+    ],
+    CanonicalWorkflowState.PLACEMENT: [
         CanonicalWorkflowState.INTEGRATION_PLANNED,
         CanonicalWorkflowState.REJECTED,
     ],

@@ -21,6 +21,20 @@ from app.placement.worktree_manager import (
 )
 from app.placement import artifact_policy
 
+# Wave 5: Placement Engine
+from app.placement.placement_engine import (
+    PlacementEngine,
+    PlacementEngineResult,
+)
+from app.placement.matcher import (
+    CandidateManifestMatcher,
+    MatchResult,
+)
+from app.placement.scorer import (
+    PlacementScorer,
+    PlacementScore,
+)
+
 __all__ = [
     "CanonicalComparator",
     "StructuralFeatures",
@@ -38,4 +52,11 @@ __all__ = [
     "WorktreeError",
     "create_worktree_manager",
     "artifact_policy",
+    # Wave 5: Placement Engine
+    "PlacementEngine",
+    "PlacementEngineResult",
+    "CandidateManifestMatcher",
+    "MatchResult",
+    "PlacementScorer",
+    "PlacementScore",
 ]
