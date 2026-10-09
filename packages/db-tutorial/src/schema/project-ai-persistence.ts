@@ -9,7 +9,7 @@
  * - Schema changes ONLY through Drizzle migrations
  */
 
-import { pgTable, uuid, text, timestamp, integer, jsonb, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, varchar, timestamp, integer, jsonb, index, uniqueIndex } from 'drizzle-orm/pg-core';
 
 /**
  * Project AI Workflows
@@ -17,49 +17,49 @@ import { pgTable, uuid, text, timestamp, integer, jsonb, index, uniqueIndex } fr
  */
 export const projectAiWorkflows = pgTable('project_ai_workflows', {
   // Primary Key
-  workflowId: text('workflow_id').primaryKey(),
+  workflowId: varchar('workflow_id', { length: 255 }).primaryKey(),
   
   // Target Specification
-  specificationId: text('specification_id').notNull(),
-  targetFamily: text('target_family').notNull(),
-  targetVersion: text('target_version').notNull(),
-  requesterId: text('requester_id').notNull(),
+  specificationId: varchar('specification_id', { length: 255 }).notNull(),
+  targetFamily: varchar('target_family', { length: 100 }).notNull(),
+  targetVersion: varchar('target_version', { length: 100 }).notNull(),
+  requesterId: varchar('requester_id', { length: 255 }).notNull(),
   
   // Lifecycle State
-  currentState: text('current_state').notNull(),
+  currentState: varchar('current_state', { length: 100 }).notNull(),
   
   // Timestamps
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
   
   // Artifact Bindings (hash-bound for security)
-  contractId: text('contract_id'),
-  contractSha256: text('contract_sha256'),
+  contractId: varchar('contract_id', { length: 255 }),
+  contractSha256: varchar('contract_sha256', { length: 64 }),
   
-  candidateId: text('candidate_id'),
-  candidateSha256: text('candidate_sha256'),
+  candidateId: varchar('candidate_id', { length: 255 }),
+  candidateSha256: varchar('candidate_sha256', { length: 64 }),
   
-  manifestId: text('manifest_id'),
-  manifestSha256: text('manifest_sha256'),
+  manifestId: varchar('manifest_id', { length: 255 }),
+  manifestSha256: varchar('manifest_sha256', { length: 64 }),
   
-  snapshotId: text('snapshot_id'),
-  snapshotSha256: text('snapshot_sha256'),
+  snapshotId: varchar('snapshot_id', { length: 255 }),
+  snapshotSha256: varchar('snapshot_sha256', { length: 64 }),
   
   // Approval Tracking
-  approvalId: text('approval_id'),
+  approvalId: varchar('approval_id', { length: 255 }),
   gateResults: jsonb('gate_results').$type<Record<string, any>>().notNull().default({}),
   
   // Evidence
   evidenceIds: jsonb('evidence_ids').$type<string[]>().notNull().default([]),
   
   // Terminal Status
-  finalStatus: text('final_status'),
+  finalStatus: varchar('final_status', { length: 50 }),
   
   // Optimistic Locking
   version: integer('version').notNull().default(1),
   
   // Idempotency Support
-  idempotencyKey: text('idempotency_key'),
+  idempotencyKey: varchar('idempotency_key', { length: 255 }),
 }, (table) => ({
   // Indexes for common queries
   idxWorkflowState: index('idx_workflow_state').on(table.currentState),
@@ -83,18 +83,22 @@ export const projectAiStateTransitions = pgTable('project_ai_state_transitions',
   id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
   
   // Foreign Key to Workflow
-  workflowId: text('workflow_id')
+  workflowId: varchar('workflow_id', { length: 255 })
     .notNull()
-    .references(() => projectAiWorkflows.workflowId, { onDelete: 'cascade' }),
+    .references(() => projectAiWorkflows.workflowId, { 
+      onDelete: 'cascade',
+      // Explicit constraint name to match SQLAlchemy convention
+      name: 'fk_state_transitions_workflow_id'
+    }),
   
   // Transition Details
-  fromState: text('from_state'),
-  toState: text('to_state').notNull(),
+  fromState: varchar('from_state', { length: 100 }),
+  toState: varchar('to_state', { length: 100 }).notNull(),
   timestamp: timestamp('timestamp', { mode: 'date' }).notNull().defaultNow(),
-  triggeredBy: text('triggered_by').notNull(),
+  triggeredBy: varchar('triggered_by', { length: 255 }).notNull(),
   
   // Evidence
-  evidenceId: text('evidence_id'),
+  evidenceId: varchar('evidence_id', { length: 255 }),
   reason: text('reason'),
 }, (table) => ({
   // Indexes for audit queries
@@ -108,22 +112,25 @@ export const projectAiStateTransitions = pgTable('project_ai_state_transitions',
  */
 export const projectAiContracts = pgTable('project_ai_contracts', {
   // Primary Key
-  contractId: text('contract_id').primaryKey(),
+  contractId: varchar('contract_id', { length: 255 }).primaryKey(),
   
   // Foreign Key to Workflow (1:1)
-  workflowId: text('workflow_id')
+  workflowId: varchar('workflow_id', { length: 255 })
     .notNull()
-    .references(() => projectAiWorkflows.workflowId, { onDelete: 'cascade' }),
+    .references(() => projectAiWorkflows.workflowId, { 
+      onDelete: 'cascade',
+      name: 'fk_contracts_workflow_id'
+    }),
   
   // Immutability Verification
-  contractHash: text('contract_hash').notNull(),
+  contractHash: varchar('contract_hash', { length: 64 }).notNull(),
   
   // Contract Data (JSONB for flexibility)
   contractData: jsonb('contract_data').$type<Record<string, any>>().notNull(),
   
   // Metadata
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
-  contractVersion: text('contract_version').notNull().default('1.0'),
+  contractVersion: varchar('contract_version', { length: 50 }).notNull().default('1.0'),
 }, (table) => ({
   // Indexes for contract queries
   idxContractWorkflow: index('idx_contract_workflow').on(table.workflowId),
@@ -140,11 +147,14 @@ export const projectAiContracts = pgTable('project_ai_contracts', {
  */
 export const projectAiCandidates = pgTable('project_ai_candidates', {
   // Primary Key
-  candidateId: text('candidate_id').primaryKey(),
+  candidateId: varchar('candidate_id', { length: 255 }).primaryKey(),
   
   // Foreign Key to Workflow (optional - candidate may exist before workflow binding)
-  workflowId: text('workflow_id')
-    .references(() => projectAiWorkflows.workflowId, { onDelete: 'set null' }),
+  workflowId: varchar('workflow_id', { length: 255 })
+    .references(() => projectAiWorkflows.workflowId, { 
+      onDelete: 'set null',
+      name: 'fk_candidates_workflow_id'
+    }),
   
   // Files (JSONB array of CandidateFile objects)
   files: jsonb('files').$type<Array<{
@@ -155,14 +165,14 @@ export const projectAiCandidates = pgTable('project_ai_candidates', {
   
   // Metadata
   uploadedAt: timestamp('uploaded_at', { mode: 'date' }).notNull().defaultNow(),
-  uploadedBy: text('uploaded_by').notNull(),
+  uploadedBy: varchar('uploaded_by', { length: 255 }).notNull(),
   
   // Workflow Target Binding
-  targetFamily: text('target_family'),
-  targetVersion: text('target_version'),
+  targetFamily: varchar('target_family', { length: 100 }),
+  targetVersion: varchar('target_version', { length: 100 }),
   
   // Candidate Hash (computed from files)
-  candidateSha256: text('candidate_sha256'),
+  candidateSha256: varchar('candidate_sha256', { length: 64 }),
 }, (table) => ({
   // Indexes for candidate queries
   idxCandidateWorkflow: index('idx_candidate_workflow').on(table.workflowId),
@@ -176,21 +186,24 @@ export const projectAiCandidates = pgTable('project_ai_candidates', {
  */
 export const projectAiManifests = pgTable('project_ai_manifests', {
   // Primary Key
-  manifestId: text('manifest_id').primaryKey(),
+  manifestId: varchar('manifest_id', { length: 255 }).primaryKey(),
   
   // Foreign Key to Candidate
-  candidateId: text('candidate_id')
+  candidateId: varchar('candidate_id', { length: 255 })
     .notNull()
-    .references(() => projectAiCandidates.candidateId, { onDelete: 'cascade' }),
+    .references(() => projectAiCandidates.candidateId, { 
+      onDelete: 'cascade',
+      name: 'fk_manifests_candidate_id'
+    }),
   
   // Immutability Verification
-  manifestHash: text('manifest_hash').notNull(),
+  manifestHash: varchar('manifest_hash', { length: 64 }).notNull(),
   
   // Placement Decision
-  decision: text('decision').notNull(),
-  targetPath: text('target_path').notNull(),
-  blockFamily: text('block_family').notNull(),
-  blockVersion: text('block_version').notNull(),
+  decision: varchar('decision', { length: 50 }).notNull(),
+  targetPath: varchar('target_path', { length: 500 }).notNull(),
+  blockFamily: varchar('block_family', { length: 100 }).notNull(),
+  blockVersion: varchar('block_version', { length: 100 }).notNull(),
   
   // Required Changes and Evidence
   requiredChanges: jsonb('required_changes').$type<Array<any>>().notNull().default([]),
@@ -214,29 +227,32 @@ export const projectAiManifests = pgTable('project_ai_manifests', {
  */
 export const projectAiApprovals = pgTable('project_ai_approvals', {
   // Primary Key
-  approvalId: text('approval_id').primaryKey(),
+  approvalId: varchar('approval_id', { length: 255 }).primaryKey(),
   
   // Foreign Key to Workflow (1:1)
-  workflowId: text('workflow_id')
+  workflowId: varchar('workflow_id', { length: 255 })
     .notNull()
-    .references(() => projectAiWorkflows.workflowId, { onDelete: 'cascade' }),
+    .references(() => projectAiWorkflows.workflowId, { 
+      onDelete: 'cascade',
+      name: 'fk_approvals_workflow_id'
+    }),
   
   // Hash Bindings
-  candidateSha256: text('candidate_sha256').notNull(),
-  placementManifestId: text('placement_manifest_id').notNull(),
-  placementManifestSha256: text('placement_manifest_sha256').notNull(),
+  candidateSha256: varchar('candidate_sha256', { length: 64 }).notNull(),
+  placementManifestId: varchar('placement_manifest_id', { length: 255 }).notNull(),
+  placementManifestSha256: varchar('placement_manifest_sha256', { length: 64 }).notNull(),
   
   // Target Specification
-  targetFamily: text('target_family').notNull(),
-  targetVersion: text('target_version').notNull(),
+  targetFamily: varchar('target_family', { length: 100 }).notNull(),
+  targetVersion: varchar('target_version', { length: 100 }).notNull(),
   
   // Approval Tracking
-  approvedBy: text('approved_by').notNull(),
+  approvedBy: varchar('approved_by', { length: 255 }).notNull(),
   approvalTimestamp: timestamp('approval_timestamp', { mode: 'date' }).notNull().defaultNow(),
-  status: text('status').notNull(),
+  status: varchar('status', { length: 50 }).notNull(),
   
   // Self-Approval Prevention
-  workflowRequester: text('workflow_requester'),
+  workflowRequester: varchar('workflow_requester', { length: 255 }),
   
   // Evidence and Rejection Reason
   evidence: jsonb('evidence').$type<Record<string, any>>().notNull().default({}),
