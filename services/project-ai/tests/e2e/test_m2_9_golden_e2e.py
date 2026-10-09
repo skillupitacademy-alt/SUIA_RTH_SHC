@@ -28,7 +28,7 @@ from enum import Enum
 
 from app.orchestration.canonical_workflow import CanonicalWorkflowState, is_valid_transition
 from app.models.workflow_target import WorkflowTarget
-from app.contracts.engineering_contract import EngineeringContract, calculate_contract_hash
+from app.contracts.engineering_contract import EngineeringContract, seal_contract
 from app.orchestration.agent_registry import AgentRegistry, AgentType
 from app.orchestration.agent_coordinator import AgentCoordinator, AgentContext
 
@@ -335,11 +335,11 @@ class M29GoldenE2ETest:
             contract = self.workflow_context["contract"]
             
             # Calculate contract hash (Wave 2 B02 implementation)
-            contract_hash = calculate_contract_hash(contract)
+            contract_hash = seal_contract(contract)
             contract.contract_hash = contract_hash
             
             # Verify hash is deterministic
-            verify_hash = calculate_contract_hash(contract)
+            verify_hash = seal_contract(contract)
             if contract_hash != verify_hash:
                 raise ValueError("Contract hash is not deterministic")
             

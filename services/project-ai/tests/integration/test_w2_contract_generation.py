@@ -22,7 +22,7 @@ from app.api.routes.contract import (
     load_repository_snapshot
 )
 from app.contracts.engineering_contract import (
-    calculate_contract_hash,
+    seal_contract,
     PROHIBITED_BEHAVIORS
 )
 from app.orchestration.workflow_governance import WorkflowGovernanceService
@@ -347,8 +347,8 @@ class TestContractSHA256Determinism:
         contract2_copy.target = contract1.target.model_copy(deep=True)
         contract2_copy.repository_snapshot_id = contract1.repository_snapshot_id
         
-        hash1 = calculate_contract_hash(contract1)
-        hash2 = calculate_contract_hash(contract2_copy)
+        hash1 = seal_contract(contract1)
+        hash2 = seal_contract(contract2_copy)
         
         assert hash1 == hash2
     
@@ -375,12 +375,12 @@ class TestContractSHA256Determinism:
             prohibited_behaviors=PROHIBITED_BEHAVIORS
         )
         
-        original_hash = calculate_contract_hash(contract)
+        original_hash = seal_contract(contract)
         
         # Modify a field
         contract.contract_version = "2.0"
         
-        modified_hash = calculate_contract_hash(contract)
+        modified_hash = seal_contract(contract)
         
         assert original_hash != modified_hash
 

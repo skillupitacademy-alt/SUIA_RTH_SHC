@@ -17,7 +17,7 @@ from unittest.mock import patch, MagicMock
 
 from app.main import app
 from app.api.routes.contract import contracts_store, workflows_store
-from app.contracts.engineering_contract import EngineeringContract, calculate_contract_hash
+from app.contracts.engineering_contract import EngineeringContract, seal_contract
 from app.contracts.repository_intelligence import RuntimeContract
 from app.models.workflow_target import WorkflowTarget
 

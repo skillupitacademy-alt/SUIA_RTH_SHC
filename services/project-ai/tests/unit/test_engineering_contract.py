@@ -12,7 +12,7 @@ Tests:
 import pytest
 from app.contracts.engineering_contract import (
     EngineeringContract,
-    calculate_contract_hash,
+    seal_contract,
     PROHIBITED_BEHAVIORS
 )
 from app.contracts.repository_intelligence import (
@@ -135,9 +135,9 @@ class TestEngineeringContractConstruction:
 class TestContractHash:
     """Test contract hash calculation."""
     
-    def test_calculate_contract_hash_produces_valid_hash(self, sample_engineering_contract):
-        """Test that calculate_contract_hash produces a 64-character hex string."""
-        contract_hash = calculate_contract_hash(sample_engineering_contract)
+    def test_seal_contract_produces_valid_hash(self, sample_engineering_contract):
+        """Test that seal_contract produces a 64-character hex string."""
+        contract_hash = seal_contract(sample_engineering_contract)
         
         # SHA-256 produces 64-character hex string
         assert isinstance(contract_hash, str)
@@ -148,41 +148,41 @@ class TestContractHash:
     
     def test_contract_hash_deterministic(self, sample_engineering_contract):
         """Test that the same contract produces the same hash."""
-        hash1 = calculate_contract_hash(sample_engineering_contract)
-        hash2 = calculate_contract_hash(sample_engineering_contract)
+        hash1 = seal_contract(sample_engineering_contract)
+        hash2 = seal_contract(sample_engineering_contract)
         
         assert hash1 == hash2
     
     def test_contract_hash_changes_when_field_modified(self, sample_engineering_contract):
         """Test that modifying any field changes the hash."""
-        original_hash = calculate_contract_hash(sample_engineering_contract)
+        original_hash = seal_contract(sample_engineering_contract)
         
         # Modify a field
         sample_engineering_contract.contract_version = "2.0"
         
-        modified_hash = calculate_contract_hash(sample_engineering_contract)
+        modified_hash = seal_contract(sample_engineering_contract)
         
         assert original_hash != modified_hash
     
     def test_contract_hash_changes_when_nested_field_modified(self, sample_engineering_contract):
         """Test that modifying a nested field changes the hash."""
-        original_hash = calculate_contract_hash(sample_engineering_contract)
+        original_hash = seal_contract(sample_engineering_contract)
         
         # Modify a nested field
         sample_engineering_contract.educational_contract["difficulty"] = "advanced"
         
-        modified_hash = calculate_contract_hash(sample_engineering_contract)
+        modified_hash = seal_contract(sample_engineering_contract)
         
         assert original_hash != modified_hash
     
     def test_contract_hash_changes_when_list_modified(self, sample_engineering_contract):
         """Test that modifying a list field changes the hash."""
-        original_hash = calculate_contract_hash(sample_engineering_contract)
+        original_hash = seal_contract(sample_engineering_contract)
         
         # Modify a list
         sample_engineering_contract.required_artifacts.append("Documentation")
         
-        modified_hash = calculate_contract_hash(sample_engineering_contract)
+        modified_hash = seal_contract(sample_engineering_contract)
         
         assert original_hash != modified_hash
     
@@ -217,8 +217,8 @@ class TestContractHash:
         )
         
         # Both should produce the same hash because contract_hash is excluded
-        hash1 = calculate_contract_hash(contract1)
-        hash2 = calculate_contract_hash(contract2)
+        hash1 = seal_contract(contract1)
+        hash2 = seal_contract(contract2)
         
         assert hash1 == hash2
 
@@ -342,7 +342,7 @@ class TestContractImmutability:
     def test_contract_immutability_detection(self, sample_engineering_contract):
         """Test that hash can detect contract tampering."""
         # Calculate original hash
-        original_hash = calculate_contract_hash(sample_engineering_contract)
+        original_hash = seal_contract(sample_engineering_contract)
         sample_engineering_contract.contract_hash = original_hash
         
         # Store the hash for verification
@@ -352,7 +352,7 @@ class TestContractImmutability:
         sample_engineering_contract.contract_version = "99.0"
         
         # Recalculate hash
-        current_hash = calculate_contract_hash(sample_engineering_contract)
+        current_hash = seal_contract(sample_engineering_contract)
         
         # Hash mismatch indicates tampering
         assert stored_hash != current_hash
@@ -360,14 +360,147 @@ class TestContractImmutability:
     def test_contract_integrity_verification(self, sample_engineering_contract):
         """Test that integrity can be verified by recalculating hash."""
         # Set the hash
-        contract_hash = calculate_contract_hash(sample_engineering_contract)
+        contract_hash = seal_contract(sample_engineering_contract)
         sample_engineering_contract.contract_hash = contract_hash
         
         # Verify integrity by recalculating
-        recalculated_hash = calculate_contract_hash(sample_engineering_contract)
+        recalculated_hash = seal_contract(sample_engineering_contract)
         
         # Should match if contract is unmodified
         assert sample_engineering_contract.contract_hash == recalculated_hash
+    
+    def test_seal_contract_excludes_contract_id(self):
+        """Test that seal_contract excludes contract_id from hash calculation."""
+        # Create two contracts with same content but different contract_id
+        target = WorkflowTarget(
+            workflow_id="test-workflow-seal",
+            family="Introduction",
+            version="I7",
+            block_type="introduction",
+            specification_id="spec-001",
+            source_snapshot_id="snapshot-001"
+        )
+        
+        contract1 = EngineeringContract(
+            contract_id="contract-001",  # Different ID
+            workflow_id="test-workflow-seal",
+            target=target,
+            repository_snapshot_id="snapshot-001",
+            repository_snapshot_sha256="abc" * 21,
+            educational_contract={"difficulty": "intermediate"},
+            prohibited_behaviors=PROHIBITED_BEHAVIORS
+        )
+        
+        contract2 = EngineeringContract(
+            contract_id="contract-002",  # Different ID
+            workflow_id="test-workflow-seal",
+            target=target,
+            repository_snapshot_id="snapshot-001",
+            repository_snapshot_sha256="abc" * 21,
+            educational_contract={"difficulty": "intermediate"},
+            prohibited_behaviors=PROHIBITED_BEHAVIORS
+        )
+        
+        # Both should produce the same hash because contract_id is excluded
+        hash1 = seal_contract(contract1)
+        hash2 = seal_contract(contract2)
+        
+        assert hash1 == hash2, "Hashes should be identical when only contract_id differs"
+    
+    def test_same_snapshot_produces_same_hash(self, sample_canonical_reference):
+        """Test that building contracts from identical snapshots produces same hash."""
+        # Simulate building contract from same snapshot twice
+        target = WorkflowTarget(
+            workflow_id="test-workflow-same",
+            family="Introduction",
+            version="I7",
+            block_type="introduction",
+            specification_id="spec-001",
+            source_snapshot_id="snapshot-identical"
+        )
+        
+        # Create two contracts from "identical snapshot data"
+        contract1 = EngineeringContract(
+            contract_id="contract-A",  # Different IDs
+            workflow_id="test-workflow-same",
+            target=target,
+            repository_snapshot_id="snapshot-identical",
+            repository_snapshot_sha256="fedcba98" * 8,
+            canonical_references=[sample_canonical_reference],
+            educational_contract={"difficulty": "intermediate"},
+            implementation_contract={"language": "TypeScript"},
+            prohibited_behaviors=PROHIBITED_BEHAVIORS
+        )
+        
+        contract2 = EngineeringContract(
+            contract_id="contract-B",  # Different IDs
+            workflow_id="test-workflow-same",
+            target=target,
+            repository_snapshot_id="snapshot-identical",
+            repository_snapshot_sha256="fedcba98" * 8,
+            canonical_references=[sample_canonical_reference],
+            educational_contract={"difficulty": "intermediate"},
+            implementation_contract={"language": "TypeScript"},
+            prohibited_behaviors=PROHIBITED_BEHAVIORS
+        )
+        
+        # Seal both contracts
+        hash1 = seal_contract(contract1)
+        hash2 = seal_contract(contract2)
+        
+        assert hash1 == hash2, "Same snapshot data should produce same hash"
+    
+    def test_modified_snapshot_produces_different_hash(self, sample_canonical_reference):
+        """Test that modified snapshot data produces different hash."""
+        target = WorkflowTarget(
+            workflow_id="test-workflow-diff",
+            family="Introduction",
+            version="I7",
+            block_type="introduction",
+            specification_id="spec-001",
+            source_snapshot_id="snapshot-001"
+        )
+        
+        # Create contract with original snapshot
+        contract1 = EngineeringContract(
+            contract_id="contract-same",  # Same ID to isolate snapshot change
+            workflow_id="test-workflow-diff",
+            target=target,
+            repository_snapshot_id="snapshot-001",
+            repository_snapshot_sha256="original" + "a" * 56,  # Original hash
+            canonical_references=[sample_canonical_reference],
+            prohibited_behaviors=PROHIBITED_BEHAVIORS
+        )
+        
+        # Create contract with modified snapshot (different contentHash)
+        from app.contracts.repository_intelligence import RepositoryEvidence
+        modified_evidence = RepositoryEvidence(
+            path="packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+            sha256="modified" + "1234" * 14,  # Different contentHash
+            role="canonical_block",
+            evidence_id="evidence-001"
+        )
+        modified_reference = CanonicalReference(
+            family="Introduction",
+            version="I1",
+            evidence=[modified_evidence]
+        )
+        
+        contract2 = EngineeringContract(
+            contract_id="contract-same",  # Same ID
+            workflow_id="test-workflow-diff",
+            target=target,
+            repository_snapshot_id="snapshot-001",
+            repository_snapshot_sha256="modified" + "b" * 56,  # Modified hash
+            canonical_references=[modified_reference],
+            prohibited_behaviors=PROHIBITED_BEHAVIORS
+        )
+        
+        # Seal both contracts
+        hash1 = seal_contract(contract1)
+        hash2 = seal_contract(contract2)
+        
+        assert hash1 != hash2, "Modified snapshot should produce different hash"
     
     def test_hash_includes_all_thirteen_gate_contracts(self, sample_engineering_contract):
         """
@@ -392,7 +525,7 @@ class TestContractImmutability:
         13. rssb_contract
         """
         # Calculate original hash
-        original_hash = calculate_contract_hash(sample_engineering_contract)
+        original_hash = seal_contract(sample_engineering_contract)
         
         # Test each gate contract field
         gate_contract_fields = [
@@ -419,7 +552,7 @@ class TestContractImmutability:
             setattr(contract, field_name, tampered_value)
             
             # Calculate hash
-            modified_hash = calculate_contract_hash(contract)
+            modified_hash = seal_contract(contract)
             
             # Hash MUST change when any gate contract is modified
             assert modified_hash != original_hash, \

@@ -7,7 +7,7 @@ Endpoints for generating and retrieving engineering contracts for External AI.
 from fastapi import APIRouter, HTTPException, Depends, Header
 from app.contracts.engineering_contract import (
     EngineeringContract,
-    calculate_contract_hash,
+    seal_contract,
     PROHIBITED_BEHAVIORS
 )
 from app.contracts.repository_intelligence import (
@@ -444,7 +444,7 @@ async def create_engineering_contract(
     )
     
     # Calculate and set immutable hash
-    contract.contract_hash = calculate_contract_hash(contract)
+    contract.contract_hash = seal_contract(contract)
     
     # Store contract (immutability: same workflow_id = same contract)
     contracts_store[workflow_id] = contract
@@ -529,7 +529,7 @@ async def get_engineering_contract(
     # Verify contract hash integrity
     # This detects tampering if the contract was modified after creation
     stored_hash = contract.contract_hash
-    recalculated_hash = calculate_contract_hash(contract)
+    recalculated_hash = seal_contract(contract)
     
     if stored_hash != recalculated_hash:
         # Hash mismatch indicates tampering or corruption

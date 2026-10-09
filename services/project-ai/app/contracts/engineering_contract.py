@@ -163,12 +163,12 @@ PROHIBITED_BEHAVIORS = [
 ]
 
 
-def calculate_contract_hash(contract: EngineeringContract) -> str:
+def seal_contract(contract: EngineeringContract) -> str:
     """
-    Calculate SHA-256 hash of contract for immutability verification.
+    Seal contract with deterministic SHA-256 hash excluding contract_id and contract_hash.
     
-    The hash is calculated from the canonical JSON representation of the contract,
-    excluding the contract_hash field itself to avoid circular dependency.
+    The hash is calculated from canonical JSON representation, ensuring same contract 
+    data always produces same hash.
     
     Args:
         contract: The engineering contract
@@ -182,15 +182,15 @@ def calculate_contract_hash(contract: EngineeringContract) -> str:
     """
     import json
     
-    # Serialize contract to dictionary, excluding the hash field
+    # Exclude contract_id (unique identifier) and contract_hash (prevents circular dependency)
     contract_dict = contract.model_dump(
         exclude_none=True,
         by_alias=True,
-        exclude={"contract_hash"},
+        exclude={"contract_id", "contract_hash"},
         mode="json"
     )
     
-    # Convert to JSON with sorted keys for deterministic serialization
+    # sort_keys=True ensures deterministic key ordering across runs
     canonical = json.dumps(contract_dict, sort_keys=True, ensure_ascii=False)
     
     # Compute SHA-256
