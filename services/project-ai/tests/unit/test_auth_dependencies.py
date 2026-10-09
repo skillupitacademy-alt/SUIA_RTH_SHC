@@ -30,7 +30,15 @@ def set_jwt_env():
 
 def test_get_current_user_valid():
     """Test extracting user from valid Bearer token."""
-    data = {"sub": "user123", "roles": ["contract_viewer"]}
+    data = {
+        "sub": "user123",
+        "aud": "user",
+        "tokenType": "user",
+        "userId": "user123",
+        "originalUserId": "user123",
+        "shadowUserId": "user123",
+        "roles": ["contract_viewer"]
+    }
     token = create_access_token(data)
     authorization = f"Bearer {token}"
     
@@ -62,7 +70,12 @@ def test_get_current_user_invalid_token():
 
 def test_require_contract_admin_success():
     """Test require_contract_admin with valid admin role."""
-    user = {"user_id": "admin1", "roles": ["contract_admin"]}
+    user = {
+        "user_id": "admin1",
+        "roles": ["contract_admin"],
+        "original_user_id": "admin1",
+        "shadow_user_id": "admin1"
+    }
     
     result = require_contract_admin(user)
     
@@ -71,7 +84,12 @@ def test_require_contract_admin_success():
 
 def test_require_contract_admin_missing_role():
     """Test require_contract_admin without admin role raises HTTPException 403."""
-    user = {"user_id": "viewer1", "roles": ["contract_viewer"]}
+    user = {
+        "user_id": "viewer1",
+        "roles": ["contract_viewer"],
+        "original_user_id": "viewer1",
+        "shadow_user_id": "viewer1"
+    }
     
     with pytest.raises(HTTPException) as exc_info:
         require_contract_admin(user)
@@ -83,19 +101,39 @@ def test_require_contract_admin_missing_role():
 def test_require_contract_viewer_accepts_any_role():
     """Test require_contract_viewer accepts viewer, reviewer, or admin roles."""
     # Test with viewer role
-    viewer = {"user_id": "viewer1", "roles": ["contract_viewer"]}
+    viewer = {
+        "user_id": "viewer1",
+        "roles": ["contract_viewer"],
+        "original_user_id": "viewer1",
+        "shadow_user_id": "viewer1"
+    }
     assert require_contract_viewer(viewer) == viewer
     
     # Test with reviewer role
-    reviewer = {"user_id": "reviewer1", "roles": ["contract_reviewer"]}
+    reviewer = {
+        "user_id": "reviewer1",
+        "roles": ["contract_reviewer"],
+        "original_user_id": "reviewer1",
+        "shadow_user_id": "reviewer1"
+    }
     assert require_contract_viewer(reviewer) == reviewer
     
     # Test with admin role
-    admin = {"user_id": "admin1", "roles": ["contract_admin"]}
+    admin = {
+        "user_id": "admin1",
+        "roles": ["contract_admin"],
+        "original_user_id": "admin1",
+        "shadow_user_id": "admin1"
+    }
     assert require_contract_viewer(admin) == admin
     
     # Test with no contract role - should fail
-    no_role = {"user_id": "user1", "roles": ["some_other_role"]}
+    no_role = {
+        "user_id": "user1",
+        "roles": ["some_other_role"],
+        "original_user_id": "user1",
+        "shadow_user_id": "user1"
+    }
     with pytest.raises(HTTPException) as exc_info:
         require_contract_viewer(no_role)
     
@@ -106,15 +144,30 @@ def test_require_contract_viewer_accepts_any_role():
 def test_require_contract_reviewer_accepts_admin():
     """Test require_contract_reviewer accepts both reviewer and admin roles."""
     # Test with reviewer role
-    reviewer = {"user_id": "reviewer1", "roles": ["contract_reviewer"]}
+    reviewer = {
+        "user_id": "reviewer1",
+        "roles": ["contract_reviewer"],
+        "original_user_id": "reviewer1",
+        "shadow_user_id": "reviewer1"
+    }
     assert require_contract_reviewer(reviewer) == reviewer
     
     # Test with admin role (hierarchy: admin can do reviewer tasks)
-    admin = {"user_id": "admin1", "roles": ["contract_admin"]}
+    admin = {
+        "user_id": "admin1",
+        "roles": ["contract_admin"],
+        "original_user_id": "admin1",
+        "shadow_user_id": "admin1"
+    }
     assert require_contract_reviewer(admin) == admin
     
     # Test with only viewer role - should fail
-    viewer = {"user_id": "viewer1", "roles": ["contract_viewer"]}
+    viewer = {
+        "user_id": "viewer1",
+        "roles": ["contract_viewer"],
+        "original_user_id": "viewer1",
+        "shadow_user_id": "viewer1"
+    }
     with pytest.raises(HTTPException) as exc_info:
         require_contract_reviewer(viewer)
     
@@ -143,7 +196,12 @@ def test_require_functions_with_none_user():
     """Test that all require functions work with empty roles."""
     # With Depends() chain, these functions now expect a valid user dict
     # Test with user that has no contract roles
-    user_no_roles = {"user_id": "user1", "roles": []}
+    user_no_roles = {
+        "user_id": "user1",
+        "roles": [],
+        "original_user_id": "user1",
+        "shadow_user_id": "user1"
+    }
     
     with pytest.raises(HTTPException) as exc_info:
         require_contract_admin(user_no_roles)
