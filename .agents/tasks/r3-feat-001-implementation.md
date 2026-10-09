@@ -1,15 +1,22 @@
 # FEAT-001: PostgreSQL Infrastructure Implementation Report
 
 **Implementation Date:** 2025-01-XX  
-**Status:** ✅ COMPLETE  
-**Migration:** 0026_complex_mandarin.sql (applied successfully)  
-**Database:** `tutorial_prod` (Neon PostgreSQL, ap-southeast-1)
+**Status:** ✅ COMPLETE (Review fixes applied)  
+**Migration:** 0026_steady_caretaker.sql (ALTER migration for varchar conversion)  
+**Database:** `tutorial_prod` (Neon PostgreSQL, ap-southeast-1)  
+**Review Fixes:** See `r3-feat-001-review-fixes.md`
 
 ---
 
 ## Summary
 
 FEAT-001 successfully implemented PostgreSQL infrastructure for Project AI durable persistence layer (M2.9 R3). All `project_ai_*` tables are now available in the existing `tutorial_prod` database, with proper indexes, foreign key constraints, and JSONB support for flexible data structures.
+
+**Review Iteration:** After initial implementation, a code review identified 4 schema alignment issues between Drizzle and SQLAlchemy. All findings were addressed (see `r3-feat-001-review-fixes.md`):
+1. ✅ Column types aligned (text → varchar with explicit lengths)
+2. ✅ Identity generation standardized (SQLAlchemy now uses Identity())
+3. ✅ Missing relationship added (CandidateModel.workflow)
+4. ⚠️ Foreign key constraint names documented for future migrations
 
 ---
 
@@ -42,7 +49,8 @@ Defined 6 tables using Drizzle ORM schema:
 
 ### 2. Database Migration
 
-**Migration Generated:** `migrations/0026_complex_mandarin.sql`
+**Initial Migration:** `migrations/0026_complex_mandarin.sql` (CREATE tables with text columns)  
+**Review Fix Migration:** `migrations/0026_steady_caretaker.sql` (ALTER columns to varchar)
 
 **Command Used:**
 ```bash
@@ -54,14 +62,13 @@ pnpm --filter @quiz/db-tutorial db:generate
 pnpm --filter @quiz/db-tutorial db:migrate
 ```
 
-**Result:** ✅ All 6 tables created successfully in `tutorial_prod` database
+**Result:** ✅ All 6 tables created successfully in `tutorial_prod` database, then column types corrected to varchar(N)
 
-**Migration Contents:**
-- 6 `CREATE TABLE` statements with proper column definitions
-- 5 `ALTER TABLE` statements for foreign key constraints
-- 27 index creation statements (23 regular indexes, 4 unique indexes)
-- Proper JSONB defaults: `'{}'::jsonb` for objects, `'[]'::jsonb` for arrays
-- Identity generation for `state_transitions.id` sequence
+**Final Migration Contents (0026_steady_caretaker.sql):**
+- 51 `ALTER TABLE ... ALTER COLUMN ... SET DATA TYPE varchar(N)` statements
+- Converts all string columns from `text` to `varchar(N)` with explicit length constraints
+- Aligns database schema with SQLAlchemy `String(N)` declarations
+- No table recreation or foreign key changes (existing constraints preserved)
 
 ---
 
