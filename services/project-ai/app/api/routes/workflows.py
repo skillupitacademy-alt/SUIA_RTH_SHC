@@ -26,7 +26,9 @@ from app.api.schemas.workflow import (
     WorkflowStateInfo,
     WorkflowTarget,
     WorkflowArtifacts,
-    StateTransitionInfo
+    StateTransitionInfo,
+    FinalApprovalRequest,
+    FinalApprovalResponse
 )
 from app.orchestration.workflow_governance import WorkflowGovernanceService
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
@@ -293,3 +295,93 @@ async def list_workflows(
     """
     workflows = await governance_service.list_workflows()
     return [_workflow_to_response(w) for w in workflows]
+
+
+@router.post("/{workflow_id}/approve-final", response_model=FinalApprovalResponse)
+async def approve_final_certification(
+    workflow_id: str,
+    request: FinalApprovalRequest,
+    user: dict = Depends(get_current_user),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    session: AsyncSession = Depends(get_db_session)
+) -> FinalApprovalResponse:
+    """
+    Approve or reject final certification (Human Gate 2/Gate 3).
+    
+    GATE ENFORCEMENT:
+    - Workflow must be in AWAITING_GATE_2 state
+    - Approved: transition to CERTIFIED
+    - Rejected: transition to REJECTED with reason
+    
+    EVIDENCE VERIFICATION:
+    - All gates (UBRC, Brand, Theme, Runtime, Browser) must be PASS
+    - Evidence bundle must be complete
+    - No missing evidence IDs
+    
+    Args:
+        workflow_id: Workflow to approve/reject
+        request: Approval decision with reason
+        
+    Returns:
+        Approval result with state transition
+        
+    Raises:
+        HTTPException: 400 if invalid state, 404 if workflow not found
+    """
+    from datetime import datetime, timezone
+    from app.agents.final_gate import FinalGateController
+    
+    # Get workflow
+    workflow = await governance_service.get_workflow(workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
+    
+    # Validate state
+    if workflow.state.current != CanonicalWorkflowState.AWAITING_GATE_2:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid state for approval: {workflow.state.current.value}. Must be AWAITING_GATE_2"
+        )
+    
+    # Verify evidence using FinalGateController
+    final_gate = FinalGateController()
+    evidence = workflow.gate_results or {}
+    verdict_result = final_gate.compute_verdict(workflow_id, evidence)
+    
+    # Evidence is verified if verdict is CERTIFICATION_READY
+    evidence_verified = (verdict_result.verdict == "CERTIFICATION_READY")
+    
+    # Determine target state
+    if request.approved:
+        target_state = CanonicalWorkflowState.CERTIFIED
+    else:
+        target_state = CanonicalWorkflowState.REJECTED
+    
+    # Perform transition
+    previous_state = workflow.state.current.value
+    
+    try:
+        workflow = await governance_service.transition_state(
+            workflow_id=workflow_id,
+            to_state=target_state,
+            triggered_by=request.approved_by,
+            evidence_id=None,
+            reason=request.reason
+        )
+        await session.commit()
+    except ValueError as e:
+        await session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    # Return response
+    return FinalApprovalResponse(
+        workflow_id=workflow_id,
+        previous_state=previous_state,
+        new_state=workflow.state.current.value,
+        approved=request.approved,
+        approved_by=request.approved_by,
+        approved_at=datetime.now(timezone.utc).isoformat(),
+        reason=request.reason,
+        evidence_verified=evidence_verified,
+        gate_results=verdict_result.evidence_summary
+    )

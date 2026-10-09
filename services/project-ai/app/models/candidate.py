@@ -57,6 +57,15 @@ class CandidatePackage(BaseModel):
     workflow_id: Optional[str] = Field(None, description="Workflow this candidate belongs to")
     target_family: Optional[str] = Field(None, description="Target block family from workflow")
     target_version: Optional[str] = Field(None, description="Target block version from workflow")
+    
+    # Wave 3A: Server-computed contract hash
+    contract_sha256: Optional[str] = Field(
+        None,
+        description="SHA-256 hash of candidate files (64-char hex, server-computed)",
+        min_length=64,
+        max_length=64,
+        pattern="^[a-f0-9]{64}$"
+    )
 
 
 class ClassificationResult(BaseModel):

@@ -136,3 +136,35 @@ class BindArtifactRequest(BaseModel):
     )
     artifact_id: str = Field(min_length=1, description="Artifact identifier")
     artifact_sha256: str = Field(min_length=64, max_length=64, description="SHA-256 hash (hex)")
+
+
+class FinalApprovalRequest(BaseModel):
+    """
+    Request to approve or reject final certification (Human Gate 2/Gate 3).
+    
+    Represents HAA decision on workflow certification after all automated
+    gates have passed. Includes audit trail information.
+    """
+    
+    approved: bool = Field(description="True to approve, False to reject")
+    approved_by: str = Field(min_length=1, description="Identity of approver (HAA)")
+    reason: str = Field(description="Reason for approval or rejection")
+
+
+class FinalApprovalResponse(BaseModel):
+    """
+    Response from final approval endpoint.
+    
+    Documents approval decision and resulting state transition with evidence
+    verification status.
+    """
+    
+    workflow_id: str
+    previous_state: str
+    new_state: str
+    approved: bool
+    approved_by: str
+    approved_at: str  # ISO 8601
+    reason: str
+    evidence_verified: bool
+    gate_results: Dict[str, Any]

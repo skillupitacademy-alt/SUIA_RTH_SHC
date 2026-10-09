@@ -199,6 +199,7 @@ async def upload_candidate(
     Upload a candidate block package for evaluation.
     
     Wave 1A: Binds candidate to workflow and retrieves target identity.
+    Wave 3A: Verifies workflow state, computes SHA-256, validates package, transitions state.
     M2.9 R3: Persists candidate to PostgreSQL via CandidateRepository.
     
     Args:
@@ -208,8 +209,10 @@ async def upload_candidate(
         Confirmation with candidate ID and workflow target binding
         
     Raises:
-        400: If candidate ID already exists or workflow_id missing
+        400: If candidate ID already exists, workflow_id missing, or package validation fails
         404: If workflow not found
+        409: If workflow not in CANDIDATE_REQUESTED state
+        422: If target family/version mismatch
     """
     # Check if candidate already exists
     existing = await candidate_repo.get(package.candidateId)
@@ -229,6 +232,7 @@ async def upload_candidate(
     
     # Retrieve workflow to get target binding
     from app.api.routes.workflows import get_governance_service
+    from app.orchestration.canonical_workflow import CanonicalWorkflowState
     
     governance_service = await get_governance_service(session)
     workflow = await governance_service.get_workflow(package.workflow_id)
@@ -236,6 +240,14 @@ async def upload_candidate(
         raise HTTPException(
             status_code=404,
             detail=f"Workflow not found: {package.workflow_id}"
+        )
+    
+    # Wave 3A: Verify workflow state is CANDIDATE_REQUESTED
+    if workflow.current_state != CanonicalWorkflowState.CANDIDATE_REQUESTED:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Workflow state must be CANDIDATE_REQUESTED for upload. "
+                   f"Current state: {workflow.current_state.value}"
         )
     
     # Bind candidate to workflow target
@@ -254,13 +266,60 @@ async def upload_candidate(
                    "Cannot bind candidate to workflow without valid target identity."
         )
     
+    # Wave 3A: Validate target match if package specifies target
+    if package.target_family and package.target_family != workflow.target_family:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Target family mismatch: package specifies '{package.target_family}', "
+                   f"but workflow requires '{workflow.target_family}'"
+        )
+    
+    if package.target_version and package.target_version != workflow.target_version:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Target version mismatch: package specifies '{package.target_version}', "
+                   f"but workflow requires '{workflow.target_version}'"
+        )
+    
     package.target_family = workflow.target_family
     package.target_version = workflow.target_version
+    
+    # Wave 3A: Package validation - must happen before state transition
+    validation_errors = _validate_package(package)
+    if validation_errors:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Package validation failed: {'; '.join(validation_errors)}"
+        )
+    
+    # Wave 3A: Calculate SHA-256 server-side (never trust client)
+    candidate_sha256 = _compute_candidate_sha256(package.files)
+    package.contract_sha256 = candidate_sha256
     
     # Persist to PostgreSQL
     try:
         candidate_model = candidate_to_model(package)
+        # Ensure SHA-256 is stored in model
+        candidate_model.candidate_sha256 = candidate_sha256
         await candidate_repo.upsert(candidate_model)
+        
+        # Wave 3A: Bind candidate artifact to workflow
+        await governance_service.bind_artifact(
+            workflow_id=package.workflow_id,
+            artifact_type="candidate",
+            artifact_id=package.candidateId,
+            artifact_sha256=candidate_sha256
+        )
+        
+        # Wave 3A: Transition workflow state to CANDIDATE_RECEIVED
+        await governance_service.transition_state(
+            workflow_id=package.workflow_id,
+            to_state=CanonicalWorkflowState.CANDIDATE_RECEIVED,
+            triggered_by=user.get("user_id", "unknown"),
+            evidence_id=f"upload-{package.candidateId}",
+            reason=f"Candidate package uploaded: {len(package.files)} files, SHA-256: {candidate_sha256[:8]}..."
+        )
+        
         await session.commit()
     except Exception as e:
         await session.rollback()
@@ -275,6 +334,7 @@ async def upload_candidate(
         "workflow_id": package.workflow_id,
         "target_family": package.target_family,
         "target_version": package.target_version,
+        "contract_sha256": candidate_sha256,
         "filesCount": len(package.files),
         "uploadedAt": package.uploadedAt
     }
@@ -881,6 +941,73 @@ def _matches_family(name: str, family: BlockFamily) -> bool:
     
     keywords = family_keywords.get(family, [])
     return any(keyword in name for keyword in keywords)
+
+
+def _validate_package(package: CandidatePackage) -> list[str]:
+    """
+    Validate candidate package structure and content.
+    
+    Wave 3A validation rules:
+    - Reject unsafe paths (path traversal: '..' or absolute paths)
+    - Reject empty packages (zero files or all files empty)
+    - Reject packages missing manifest (no component or schema file matching target)
+    
+    Args:
+        package: Candidate package to validate
+        
+    Returns:
+        List of validation error messages (empty if valid)
+    """
+    errors = []
+    
+    # Check for empty package
+    if not package.files or len(package.files) == 0:
+        errors.append("Package contains zero files")
+        return errors
+    
+    # Check if all files are empty
+    all_empty = all(
+        not f.content or (isinstance(f.content, str) and f.content.strip() == "")
+        for f in package.files
+    )
+    if all_empty:
+        errors.append("Package contains only empty files")
+    
+    # Check for unsafe paths
+    for file in package.files:
+        filename = file.filename
+        
+        # Check for path traversal with '..'
+        if '..' in filename:
+            errors.append(f"Unsafe path detected (path traversal): {filename}")
+        
+        # Check for absolute paths (Windows: C:\, Unix: /)
+        if filename.startswith('/') or (len(filename) > 1 and filename[1] == ':'):
+            errors.append(f"Unsafe path detected (absolute path): {filename}")
+    
+    # Check for manifest file (component or schema matching target)
+    if package.target_family and package.target_version:
+        component_pattern = f"{package.target_family}{package.target_version}Block.tsx"
+        schema_pattern = f"{package.target_family}{package.target_version}Schema.ts"
+        
+        filenames = [f.filename for f in package.files]
+        
+        # Check if either component or schema file exists
+        has_component = any(
+            component_pattern in fname or fname.endswith(component_pattern)
+            for fname in filenames
+        )
+        has_schema = any(
+            schema_pattern in fname or fname.endswith(schema_pattern)
+            for fname in filenames
+        )
+        
+        if not has_component and not has_schema:
+            errors.append(
+                f"Missing required manifest file: expected {component_pattern} or {schema_pattern}"
+            )
+    
+    return errors
 
 
 def _compute_candidate_sha256(files: list[Any]) -> str:

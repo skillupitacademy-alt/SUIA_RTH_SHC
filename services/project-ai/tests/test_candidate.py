@@ -21,15 +21,59 @@ client = TestClient(app)
 @pytest.fixture
 def sample_workflow():
     """Create a sample workflow for testing candidate binding."""
-    from app.api.routes.workflows import governance_service
+    from app.api.routes.workflows import get_governance_service
+    from app.orchestration.canonical_workflow import CanonicalWorkflowState
+    from app.persistence import get_db_session
+    import asyncio
     
-    workflow = governance_service.create_workflow(
-        target_family="Tutorial",
-        target_version="T5",
-        requester_id="test-user",
-        purpose="Test workflow for candidate"
-    )
-    return workflow
+    async def create_workflow():
+        async for session in get_db_session():
+            governance_service = await get_governance_service(session)
+            
+            # Create workflow in REQUESTED state
+            workflow = await governance_service.create_workflow(
+                target_family="Tutorial",
+                target_version="T5",
+                requester_id="test-user",
+                purpose="Test workflow for candidate"
+            )
+            
+            # Transition through states to CANDIDATE_REQUESTED
+            await governance_service.transition_state(
+                workflow_id=workflow.workflow_id,
+                to_state=CanonicalWorkflowState.DISCOVERY,
+                triggered_by="test-system",
+                reason="Test: moving to discovery"
+            )
+            await governance_service.transition_state(
+                workflow_id=workflow.workflow_id,
+                to_state=CanonicalWorkflowState.BRIEF_READY,
+                triggered_by="test-system",
+                reason="Test: brief ready"
+            )
+            await governance_service.transition_state(
+                workflow_id=workflow.workflow_id,
+                to_state=CanonicalWorkflowState.AWAITING_GATE_1,
+                triggered_by="test-system",
+                reason="Test: awaiting gate 1"
+            )
+            await governance_service.transition_state(
+                workflow_id=workflow.workflow_id,
+                to_state=CanonicalWorkflowState.GUI_APPROVED,
+                triggered_by="test-user",
+                reason="Test: GUI approved"
+            )
+            await governance_service.transition_state(
+                workflow_id=workflow.workflow_id,
+                to_state=CanonicalWorkflowState.CANDIDATE_REQUESTED,
+                triggered_by="test-system",
+                reason="Test: candidate requested"
+            )
+            
+            await session.commit()
+            return workflow
+    
+    return asyncio.run(create_workflow())
 
 
 @pytest.fixture
@@ -173,6 +217,227 @@ class TestCandidateUpload:
         
         response = client.post("/candidates/upload", json=invalid_package)
         assert response.status_code == 422  # Validation error
+    
+    def test_upload_candidate_wrong_state(self, sample_html_content):
+        """Test upload fails when workflow not in CANDIDATE_REQUESTED state."""
+        from app.api.routes.workflows import get_governance_service
+        from app.persistence import get_db_session
+        import asyncio
+        
+        async def create_wrong_state_workflow():
+            async for session in get_db_session():
+                governance_service = await get_governance_service(session)
+                
+                # Create workflow but leave it in REQUESTED state
+                workflow = await governance_service.create_workflow(
+                    target_family="Tutorial",
+                    target_version="T6",
+                    requester_id="test-user",
+                    purpose="Test wrong state"
+                )
+                
+                await session.commit()
+                return workflow
+        
+        workflow = asyncio.run(create_wrong_state_workflow())
+        
+        html_hash = hashlib.sha256(sample_html_content.encode('utf-8')).hexdigest()
+        
+        package = {
+            "candidateId": "test-wrong-state",
+            "workflow_id": workflow.workflow_id,
+            "files": [
+                {
+                    "filename": "index.html",
+                    "content": sample_html_content,
+                    "contentType": "text/html",
+                    "hash": html_hash
+                }
+            ],
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "uploadedBy": "test-user"
+        }
+        
+        response = client.post("/candidates/upload", json=package)
+        
+        assert response.status_code == 409
+        assert "CANDIDATE_REQUESTED" in response.json()["detail"]
+    
+    def test_upload_unsafe_paths(self, sample_workflow, sample_html_content):
+        """Test upload rejects packages with unsafe paths."""
+        html_hash = hashlib.sha256(sample_html_content.encode('utf-8')).hexdigest()
+        
+        # Test path traversal
+        package_traversal = {
+            "candidateId": "test-unsafe-traversal",
+            "workflow_id": sample_workflow.workflow_id,
+            "files": [
+                {
+                    "filename": "../../../etc/passwd",
+                    "content": sample_html_content,
+                    "contentType": "text/html",
+                    "hash": html_hash
+                }
+            ],
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "uploadedBy": "test-user"
+        }
+        
+        response = client.post("/candidates/upload", json=package_traversal)
+        assert response.status_code == 400
+        assert "path traversal" in response.json()["detail"].lower()
+        
+        # Test absolute path
+        package_absolute = {
+            "candidateId": "test-unsafe-absolute",
+            "workflow_id": sample_workflow.workflow_id,
+            "files": [
+                {
+                    "filename": "/etc/passwd",
+                    "content": sample_html_content,
+                    "contentType": "text/html",
+                    "hash": html_hash
+                }
+            ],
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "uploadedBy": "test-user"
+        }
+        
+        response = client.post("/candidates/upload", json=package_absolute)
+        assert response.status_code == 400
+        assert "absolute path" in response.json()["detail"].lower()
+    
+    def test_upload_empty_package(self, sample_workflow):
+        """Test upload rejects empty packages."""
+        # Zero files
+        package_empty = {
+            "candidateId": "test-empty-files",
+            "workflow_id": sample_workflow.workflow_id,
+            "files": [],
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "uploadedBy": "test-user"
+        }
+        
+        response = client.post("/candidates/upload", json=package_empty)
+        assert response.status_code == 400
+        assert "zero files" in response.json()["detail"].lower()
+        
+        # All files empty
+        package_all_empty = {
+            "candidateId": "test-all-empty",
+            "workflow_id": sample_workflow.workflow_id,
+            "files": [
+                {
+                    "filename": "empty.html",
+                    "content": "",
+                    "contentType": "text/html",
+                    "hash": hashlib.sha256(b"").hexdigest()
+                }
+            ],
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "uploadedBy": "test-user"
+        }
+        
+        response = client.post("/candidates/upload", json=package_all_empty)
+        assert response.status_code == 400
+        assert "empty files" in response.json()["detail"].lower()
+    
+    def test_upload_missing_manifest(self, sample_workflow):
+        """Test upload rejects packages missing required manifest files."""
+        content = "<div>Test content</div>"
+        
+        package = {
+            "candidateId": "test-no-manifest",
+            "workflow_id": sample_workflow.workflow_id,
+            "files": [
+                {
+                    "filename": "random.txt",
+                    "content": content,
+                    "contentType": "text/plain",
+                    "hash": hashlib.sha256(content.encode('utf-8')).hexdigest()
+                }
+            ],
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "uploadedBy": "test-user"
+        }
+        
+        response = client.post("/candidates/upload", json=package)
+        assert response.status_code == 400
+        assert "manifest file" in response.json()["detail"].lower()
+    
+    def test_upload_computes_server_hash(self, sample_candidate_package):
+        """Test upload computes SHA-256 server-side."""
+        response = client.post("/candidates/upload", json=sample_candidate_package)
+        
+        assert response.status_code == 200
+        data = response.json()
+        
+        # Server must return computed hash
+        assert "contract_sha256" in data
+        assert len(data["contract_sha256"]) == 64
+        assert all(c in "0123456789abcdef" for c in data["contract_sha256"])
+    
+    def test_upload_target_mismatch(self, sample_workflow, sample_html_content):
+        """Test upload rejects target family/version mismatch."""
+        html_hash = hashlib.sha256(sample_html_content.encode('utf-8')).hexdigest()
+        
+        # Package claims different target family
+        package = {
+            "candidateId": "test-target-mismatch",
+            "workflow_id": sample_workflow.workflow_id,
+            "target_family": "Introduction",  # Workflow expects Tutorial
+            "files": [
+                {
+                    "filename": "TutorialT5Block.tsx",
+                    "content": sample_html_content,
+                    "contentType": "text/html",
+                    "hash": html_hash
+                }
+            ],
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "uploadedBy": "test-user"
+        }
+        
+        response = client.post("/candidates/upload", json=package)
+        assert response.status_code == 422
+        assert "mismatch" in response.json()["detail"].lower()
+    
+    def test_upload_transitions_workflow_state(self, sample_workflow, sample_html_content):
+        """Test upload transitions workflow from CANDIDATE_REQUESTED to CANDIDATE_RECEIVED."""
+        html_hash = hashlib.sha256(sample_html_content.encode('utf-8')).hexdigest()
+        
+        package = {
+            "candidateId": "test-state-transition",
+            "workflow_id": sample_workflow.workflow_id,
+            "files": [
+                {
+                    "filename": "TutorialT5Block.tsx",
+                    "content": sample_html_content,
+                    "contentType": "text/html",
+                    "hash": html_hash
+                }
+            ],
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "uploadedBy": "test-user"
+        }
+        
+        response = client.post("/candidates/upload", json=package)
+        assert response.status_code == 200
+        
+        # Verify workflow state changed
+        from app.api.routes.workflows import get_governance_service
+        from app.orchestration.canonical_workflow import CanonicalWorkflowState
+        from app.persistence import get_db_session
+        import asyncio
+        
+        async def check_workflow_state():
+            async for session in get_db_session():
+                governance_service = await get_governance_service(session)
+                workflow = await governance_service.get_workflow(sample_workflow.workflow_id)
+                return workflow.current_state
+        
+        current_state = asyncio.run(check_workflow_state())
+        assert current_state == CanonicalWorkflowState.CANDIDATE_RECEIVED
 
 
 class TestCandidateClassification:
