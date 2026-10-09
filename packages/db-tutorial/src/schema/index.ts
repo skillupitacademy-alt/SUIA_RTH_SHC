@@ -1,6 +1,9 @@
 /* istanbul ignore file */
 export * from './enums';
 
+// ===== PROJECT AI PERSISTENCE (M2.9 R3) =====
+export * from './project-ai-persistence';
+
 // ===== PHASE 1 P0: MODULAR TUTORIAL SYSTEM =====
 export * from './enums-modular';
 export * from './tutorial-sections';
@@ -59,6 +62,9 @@ export * from './student-streaks';
 
 import * as enums from './enums';
 
+// Project AI Persistence Imports
+import * as projectAiPersistenceModule from './project-ai-persistence';
+
 // Phase 1 P0: Modular System Imports
 import * as enumsModular from './enums-modular';
 import * as tutorialSectionsModule from './tutorial-sections';
@@ -114,6 +120,9 @@ import * as studentStreaksModule from './student-streaks';
 
 export const schema = {
   ...enums,
+  
+  // Project AI Persistence
+  ...projectAiPersistenceModule,
   
   // Phase 1 P0: Modular Tutorial System
   ...enumsModular,

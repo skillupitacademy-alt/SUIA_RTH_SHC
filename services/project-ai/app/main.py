@@ -45,9 +45,20 @@ async def lifespan(app: FastAPI):
     else:
         print(f"✓ Snapshot file found")
     
+    # Startup: Validate database connectivity
+    try:
+        from app.persistence import validate_database_connectivity
+        await validate_database_connectivity()
+        print("✓ Database connectivity validated")
+    except Exception as e:
+        print(f"ERROR: Database validation failed: {e}")
+        raise
+    
     yield
     
-    # Shutdown
+    # Shutdown: Close database connections
+    from app.persistence import close_db
+    await close_db()
     print("Project AI shutting down...")
 
 
