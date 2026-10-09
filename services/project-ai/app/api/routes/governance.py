@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_user
 from app.api.schemas.governance import (
     ApprovalDecisionRequest,
     ApprovalRecord,
@@ -43,7 +44,10 @@ _approvals: Dict[str, Dict] = {}  # Legacy manifest approvals (Wave 2)
 
 
 @router.post("/submit", response_model=ApprovalSubmitResponse)
-async def submit_for_approval(request: ApprovalSubmitRequest):
+async def submit_for_approval(
+    request: ApprovalSubmitRequest,
+    user: dict = Depends(get_current_user)
+):
     """
     Submit a placement manifest for human approval.
     
@@ -91,7 +95,7 @@ async def submit_for_approval(request: ApprovalSubmitRequest):
 
 
 @router.get("/pending", response_model=list[ApprovalRecord])
-async def get_pending_approvals():
+async def get_pending_approvals(user: dict = Depends(get_current_user)):
     """
     Get all pending approval records.
     
@@ -110,7 +114,10 @@ async def get_pending_approvals():
 
 
 @router.get("/{approval_id}", response_model=ApprovalRecord)
-async def get_approval_status(approval_id: str):
+async def get_approval_status(
+    approval_id: str,
+    user: dict = Depends(get_current_user)
+):
     """
     Get approval record by ID.
     
@@ -133,7 +140,11 @@ async def get_approval_status(approval_id: str):
 
 
 @router.post("/{approval_id}/approve", response_model=ApprovalRecord)
-async def approve_manifest(approval_id: str, request: ApprovalDecisionRequest):
+async def approve_manifest(
+    approval_id: str,
+    request: ApprovalDecisionRequest,
+    user: dict = Depends(get_current_user)
+):
     """
     Approve a pending manifest.
     
@@ -302,6 +313,7 @@ class WorkflowApprovalResponse(BaseModel):
 async def approve_placement(
     workflow_id: str,
     payload: WorkflowApprovalPayload,
+    user: dict = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     approval_repo: ApprovalRepository = Depends(get_approval_repository),
     session: AsyncSession = Depends(get_db_session)
@@ -556,6 +568,7 @@ async def approve_placement(
 @router.get("/workflows/{workflow_id}/implementation-approval")
 async def get_implementation_approval(
     workflow_id: str,
+    user: dict = Depends(get_current_user),
     approval_repo: ApprovalRepository = Depends(get_approval_repository)
 ):
     """
@@ -582,7 +595,11 @@ async def get_implementation_approval(
     # Return evidence dictionary (stored in evidence JSON field)
     return approval_model.evidence
 @router.post("/{approval_id}/reject", response_model=ApprovalRecord)
-async def reject_manifest(approval_id: str, request: ApprovalRejectRequest):
+async def reject_manifest(
+    approval_id: str,
+    request: ApprovalRejectRequest,
+    user: dict = Depends(get_current_user)
+):
     """
     Reject a pending manifest.
     

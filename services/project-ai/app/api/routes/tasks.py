@@ -21,8 +21,9 @@ from datetime import datetime, timezone
 from typing import Dict
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
+from app.auth.dependencies import get_current_user
 from app.api.schemas.models import (
     TaskActionResponse,
     TaskCreateRequest,
@@ -37,7 +38,10 @@ _tasks: Dict[str, Dict] = {}
 
 
 @router.post("/plan", response_model=TaskResponse)
-async def create_planning_task(request: TaskCreateRequest):
+async def create_planning_task(
+    request: TaskCreateRequest,
+    user: dict = Depends(get_current_user)
+):
     """
     Create a new planning task.
     
@@ -70,7 +74,10 @@ async def create_planning_task(request: TaskCreateRequest):
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
-async def get_task_status(task_id: str):
+async def get_task_status(
+    task_id: str,
+    user: dict = Depends(get_current_user)
+):
     """
     Get task status by ID.
     
@@ -92,7 +99,10 @@ async def get_task_status(task_id: str):
 
 
 @router.post("/{task_id}/approve", response_model=TaskActionResponse)
-async def approve_task(task_id: str):
+async def approve_task(
+    task_id: str,
+    user: dict = Depends(get_current_user)
+):
     """
     Approve a task that is waiting for approval.
     
@@ -134,7 +144,10 @@ async def approve_task(task_id: str):
 
 
 @router.post("/{task_id}/reject", response_model=TaskActionResponse)
-async def reject_task(task_id: str):
+async def reject_task(
+    task_id: str,
+    user: dict = Depends(get_current_user)
+):
     """
     Reject a task that is waiting for approval.
     

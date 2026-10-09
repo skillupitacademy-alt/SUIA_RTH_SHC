@@ -16,6 +16,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_user
 from app.api.schemas.workflow import (
     WorkflowResponse,
     CreateWorkflowRequest,
@@ -89,6 +90,7 @@ def _workflow_to_response(workflow) -> WorkflowResponse:
 @router.post("", response_model=WorkflowResponse, status_code=201)
 async def create_workflow(
     request: CreateWorkflowRequest,
+    user: dict = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> WorkflowResponse:
@@ -118,6 +120,7 @@ async def create_workflow(
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
 async def get_workflow(
     workflow_id: str,
+    user: dict = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service)
 ) -> WorkflowResponse:
     """
@@ -145,6 +148,7 @@ async def get_workflow(
 async def transition_workflow(
     workflow_id: str,
     request: TransitionRequest,
+    user: dict = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> WorkflowResponse:
@@ -193,6 +197,7 @@ async def transition_workflow(
 @router.get("/{workflow_id}/history", response_model=List[StateTransitionInfo])
 async def get_workflow_history(
     workflow_id: str,
+    user: dict = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service)
 ) -> List[StateTransitionInfo]:
     """
@@ -230,6 +235,7 @@ async def get_workflow_history(
 async def bind_artifact(
     workflow_id: str,
     request: BindArtifactRequest,
+    user: dict = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> WorkflowResponse:
@@ -276,6 +282,7 @@ async def bind_artifact(
 
 @router.get("", response_model=List[WorkflowResponse])
 async def list_workflows(
+    user: dict = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service)
 ) -> List[WorkflowResponse]:
     """

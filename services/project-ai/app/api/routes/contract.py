@@ -9,8 +9,9 @@ R3 PERSISTENCE:
 - All operations async with proper transaction management
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.dependencies import get_current_user
 from app.contracts.engineering_contract import (
     EngineeringContract,
     seal_contract,
@@ -128,110 +129,10 @@ def calculate_snapshot_sha256(workspace_root: str) -> str:
 # No in-memory stores needed - using PostgreSQL repositories
 
 
-async def verify_auth(authorization: Optional[str] = Header(None)) -> str:
-    """
-    Verify authentication token and extract user ID.
-    
-    This is a placeholder auth implementation for Wave 2.
-    Production would integrate with the actual auth service.
-    
-    Args:
-        authorization: Authorization header (Bearer token)
-        
-    Returns:
-        User ID extracted from token
-        
-    Raises:
-        HTTPException 401: Missing or invalid token
-    """
-    if not authorization:
-        raise HTTPException(
-            status_code=401,
-            detail="Missing authorization header. Authentication required."
-        )
-    
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid authorization header format. Expected 'Bearer <token>'"
-        )
-    
-    token = authorization[7:]  # Remove "Bearer " prefix
-    
-    # Placeholder: In production, validate token with auth service
-    # For Wave 2, accept any non-empty token and extract user ID
-    if not token or len(token) < 8:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid token"
-        )
-    
-    # Extract user ID from token (placeholder logic)
-    user_id = f"user-{token[:8]}"
-    
-    return user_id
-
-
-async def verify_workflow_ownership(
-    workflow_id: str,
-    user_id: str = Depends(verify_auth),
-    governance_service: WorkflowGovernanceService = Depends(get_governance_service)
-) -> dict:
-    """
-    Verify that the authenticated user owns the workflow and it's in a valid state.
-    
-    Args:
-        workflow_id: The workflow identifier
-        user_id: The authenticated user ID
-        governance_service: Injected governance service
-        
-    Returns:
-        Workflow data dict with state and owner
-        
-    Raises:
-        HTTPException 404: Workflow not found
-        HTTPException 403: User doesn't own the workflow
-        HTTPException 400: Workflow in invalid state
-    """
-    # Get workflow from governance service (PostgreSQL-backed)
-    workflow_obj = await governance_service.get_workflow(workflow_id)
-    if not workflow_obj:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Workflow not found: {workflow_id}"
-        )
-    
-    # Verify ownership
-    if workflow_obj.requester_id != user_id:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Access denied. Workflow {workflow_id} is owned by another user."
-        )
-    
-    # Verify state (must be DISCOVERY complete or BRIEF_READY)
-    valid_states = [
-        CanonicalWorkflowState.DISCOVERY,
-        CanonicalWorkflowState.BRIEF_READY,
-        CanonicalWorkflowState.AWAITING_GATE_1
-    ]
-    if workflow_obj.current_state not in valid_states:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot generate contract for workflow in state '{workflow_obj.current_state.value}'. "
-                   f"Valid states: {', '.join(s.value for s in valid_states)}"
-        )
-    
-    return {
-        "state": workflow_obj.current_state.value,
-        "owner": workflow_obj.requester_id,
-        "created_at": workflow_obj.created_at.isoformat()
-    }
-
-
 @router.post("/{workflow_id}/engineering-contract", response_model=EngineeringContract)
 async def create_engineering_contract(
     workflow_id: str,
-    workflow: dict = Depends(verify_workflow_ownership),
+    user: dict = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     contract_repo: ContractRepository = Depends(get_contract_repository),
     session: AsyncSession = Depends(get_db_session)
@@ -257,19 +158,17 @@ async def create_engineering_contract(
     
     SECURITY:
     - Requires authentication via Authorization header
-    - Verifies caller owns the workflow
     - Validates workflow is in correct state (DISCOVERY, BRIEF_READY, or AWAITING_GATE_1)
     
     Args:
         workflow_id: The workflow identifier
-        workflow: Workflow data (injected by verify_workflow_ownership)
+        user: Authenticated user data (injected by get_current_user)
         
     Returns:
         EngineeringContract with contract_hash for tamper detection
         
     Raises:
         HTTPException 401: Missing or invalid authentication
-        HTTPException 403: User doesn't own the workflow
         HTTPException 404: Workflow not found or snapshot not found
         HTTPException 400: Invalid workflow state
     """
@@ -281,6 +180,19 @@ async def create_engineering_contract(
         raise HTTPException(
             status_code=404,
             detail=f"Workflow not found: {workflow_id}"
+        )
+    
+    # Verify workflow is in correct state
+    valid_states = [
+        CanonicalWorkflowState.DISCOVERY,
+        CanonicalWorkflowState.BRIEF_READY,
+        CanonicalWorkflowState.AWAITING_GATE_1
+    ]
+    if workflow_obj.current_state not in valid_states:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot generate contract for workflow in state '{workflow_obj.current_state.value}'. "
+                   f"Valid states: {', '.join(s.value for s in valid_states)}"
         )
     
     # Check if contract already exists (immutability enforcement)
@@ -518,7 +430,7 @@ async def create_engineering_contract(
 @router.get("/{workflow_id}/engineering-contract", response_model=EngineeringContract)
 async def get_engineering_contract(
     workflow_id: str,
-    workflow: dict = Depends(verify_workflow_ownership),
+    user: dict = Depends(get_current_user),
     contract_repo: ContractRepository = Depends(get_contract_repository)
 ):
     """
@@ -526,19 +438,17 @@ async def get_engineering_contract(
     
     SECURITY:
     - Requires authentication via Authorization header
-    - Verifies caller owns the workflow
     - Verifies contract hash integrity before returning
     
     Args:
         workflow_id: The workflow identifier
-        workflow: Workflow data (injected by verify_workflow_ownership)
+        user: Authenticated user data (injected by get_current_user)
         
     Returns:
         EngineeringContract if exists and passes integrity check
         
     Raises:
         HTTPException 401: Missing or invalid authentication
-        HTTPException 403: User doesn't own the workflow
         HTTPException 404: Contract not found
         HTTPException 500: Hash verification failed (contract tampered)
     """

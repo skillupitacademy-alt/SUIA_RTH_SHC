@@ -1,0 +1,36 @@
+{
+  "id": "FEAT-002",
+  "type": "fix",
+  "description": "Secure all unauthenticated API endpoints by adding Depends(get_current_user) to route handlers. The R4 audit found 35/37 endpoints lack authentication. Apply same-pattern changes across all route files: import get_current_user, add user: dict = Depends(get_current_user) parameter to each endpoint function. Exempt: /health and root / endpoints remain public.",
+  "status": "completed",
+  "steps": [
+    "Import get_current_user in e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/workflows.py and add 'user: dict = Depends(get_current_user)' to all 6 endpoints: create_workflow, get_workflow, transition_workflow, get_workflow_history, bind_artifact, list_workflows",
+    "Import get_current_user in e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/contract.py and add 'user: dict = Depends(get_current_user)' to both endpoints: create_engineering_contract, get_engineering_contract (note: contract.py has custom verify_auth and verify_workflow_ownership - replace those with standard get_current_user pattern)",
+    "Import get_current_user in e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/candidate.py and add 'user: dict = Depends(get_current_user)' to all 8 endpoints: upload_candidate, classify_candidate, compare_candidate, generate_manifest, get_manifest, list_candidates, execute_placement, plus the helper _compute_candidate_sha256 if it's an endpoint",
+    "Import get_current_user in e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/governance.py and add 'user: dict = Depends(get_current_user)' to all 7 endpoints: submit_for_approval, get_pending_approvals, get_approval_status, approve_manifest, approve_placement, get_implementation_approval, reject_manifest",
+    "Import get_current_user in e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/tasks.py and add 'user: dict = Depends(get_current_user)' to all 4 endpoints: create_planning_task, get_task_status, approve_task, reject_task (these are deprecated but still functional)",
+    "Import get_current_user in e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/agents.py and add 'user: dict = Depends(get_current_user)' to both endpoints: list_agents, get_agent",
+    "Import get_current_user in e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/evidence.py and add 'user: dict = Depends(get_current_user)' to both endpoints: get_evidence_by_id, get_all_evidence",
+    "Import get_current_user in e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/snapshot.py and add 'user: dict = Depends(get_current_user)' to both endpoints: get_snapshot, get_snapshot_metadata",
+    "Skip e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/health.py - /health endpoint remains public for monitoring",
+    "Skip e:/onlinewebsites/quiz-platform/services/project-ai/app/api/routes/creation.py - all endpoints return 405 (disabled), no auth needed",
+    "Update e:/onlinewebsites/quiz-platform/services/project-ai/app/main.py root endpoint to add 'user: dict = Depends(get_current_user)' to @app.get('/') async def root()",
+    "For contract.py specifically: remove custom verify_auth and verify_workflow_ownership functions, replace all Depends(verify_auth) and Depends(verify_workflow_ownership) with Depends(get_current_user), update endpoint logic to use user['user_id'] instead of the custom auth return values"
+  ],
+  "acceptance_criteria": [
+    "All 35 unauthenticated endpoints now have Depends(get_current_user) parameter",
+    "/health endpoint remains public (no auth)",
+    "Root / endpoint is authenticated",
+    "contract.py uses standard get_current_user instead of custom verify_auth",
+    "All route files import get_current_user from app.auth.dependencies"
+  ],
+  "verification": [
+    "Run: python -m pytest tests/unit/test_auth_dependencies.py -v to confirm auth dependency functions still work",
+    "Grep each route file to confirm 'from app.auth.dependencies import get_current_user' present",
+    "Grep each route file to confirm 'user: dict = Depends(get_current_user)' added to endpoint signatures",
+    "Read contract.py and confirm custom verify_auth and verify_workflow_ownership removed",
+    "Read health.py and confirm /health has no Depends(get_current_user)"
+  ],
+  "blocked_reason": null,
+  "findings": "Successfully secured 35 unauthenticated API endpoints by adding Depends(get_current_user) to all route handlers. Removed custom verify_auth and verify_workflow_ownership functions from contract.py and replaced with standard get_current_user pattern. All 304 unit tests pass. Health endpoint (/health) and creation endpoints remain public as specified. Root endpoint (/) is now authenticated."
+}

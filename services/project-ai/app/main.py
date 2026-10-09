@@ -12,9 +12,10 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth.dependencies import get_current_user
 from app.api.routes import agents, candidate, contract, creation, evidence, governance, health, snapshot, tasks
 
 
@@ -105,7 +106,7 @@ app.include_router(contract.router)
 
 
 @app.get("/")
-async def root():
+async def root(user: dict = Depends(get_current_user)):
     """Root endpoint with service information."""
     return {
         "service": "Project AI",
