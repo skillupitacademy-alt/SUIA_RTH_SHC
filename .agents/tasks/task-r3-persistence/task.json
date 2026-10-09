@@ -1,0 +1,15 @@
+{
+  "task_id": "task-r3-persistence",
+  "task_description": "Implement durable PostgreSQL persistence layer for services/project-ai using existing tutorial_prod database to replace in-memory stores and enforce contract immutability across restarts. MANDATORY: Use existing PostgreSQL database (NOT SQLite, NOT new database).",
+  "status": "pending",
+  "feature_order": ["FEAT-000", "FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005"],
+  "blocked_reason": null,
+  "architectural_constraints": {
+    "database": "existing tutorial_prod PostgreSQL database on Neon",
+    "new_database": "PROHIBITED - must reuse existing infrastructure",
+    "sqlite": "PROHIBITED - production and tests must use PostgreSQL",
+    "tables": "project_ai_* namespace within tutorial_prod",
+    "migration_coordination": "must coordinate with existing Drizzle migrations per FEAT-000 findings",
+    "test_database": "must use PostgreSQL test database, NOT :memory: SQLite"
+  }
+}

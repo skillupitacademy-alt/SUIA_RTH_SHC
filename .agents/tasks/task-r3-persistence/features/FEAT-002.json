@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "SQLAlchemy ORM Models and Repository Layer: Define PostgreSQL-compatible SQLAlchemy ORM models for Project AI entities (Workflow, StateTransition, Contract, Candidate, Manifest, Approval) using project_ai_ table prefix, implement repository Protocol interfaces, and create PostgreSQL-specific repository implementations with ON CONFLICT, optimistic locking, and hash verification. All tables use PostgreSQL JSONB for complex data. Entity set determined by R3 persistence requirements (not arbitrary expansion).",
+  "status": "pending",
+  "steps": [
+    "Create services/project-ai/app/database/models.py with SQLAlchemy ORM models: WorkflowModel (__tablename__='project_ai_workflows', columns: workflow_id PK, specification_id, target_family, target_version, requester_id, current_state, contract_id, contract_sha256, candidate_id, candidate_sha256, manifest_id, manifest_sha256, snapshot_id, snapshot_sha256, approval_id, gate_results JSONB, evidence_ids JSONB, final_status, idempotency_key unique, version integer default 1, created_at, updated_at, relationships to other models), StateTransitionModel (project_ai_state_transitions with FK to workflows), ContractModel (project_ai_contracts with UNIQUE(workflow_id), contract_hash unique), CandidateModel (project_ai_candidates with FK to workflows), ManifestModel (project_ai_manifests with FK to candidates, manifest_hash unique), ApprovalModel (project_ai_approvals with UNIQUE(workflow_id)). Use PostgreSQL-specific types: JSONB for structured data, DateTime(timezone=True) for timestamps, proper indexes on FKs and hash fields",
+    "Create services/project-ai/app/database/exceptions.py with custom exceptions: ContractDriftError (raised when stored contract_hash != recalculated hash), DuplicateWorkflowError (idempotency key collision), OptimisticLockError (version mismatch on concurrent update), ManifestTamperedError (manifest hash mismatch). All inherit from Exception with descriptive __init__ messages",
+    "Create services/project-ai/app/database/repositories.py with Protocol interfaces: WorkflowRepository (methods: async create with idempotency_key optional, async get_by_id, async get_by_idempotency_key, async list_all, async update_state with expected_version for optimistic locking, async bind_artifact, async set_approval), ContractRepository (async create, async get_by_workflow_id, async get_by_contract_id, async verify_hash), CandidateRepository (async create, async get_by_id, async list_all, async bind_workflow), ManifestRepository (async create, async get_by_candidate_id, async get_by_manifest_id, async verify_hash), ApprovalRepository (async create, async get_by_workflow_id, async get_by_approval_id, async update_status). All methods have proper type hints with domain model types (ProjectLLMWorkflow, EngineeringContract, etc.)",
+    "Create services/project-ai/app/database/repositories_impl.py with SQLAlchemy implementations: SQLAlchemyWorkflowRepository (create uses INSERT with idempotency_key check, update_state uses UPDATE WHERE version = expected_version and increments version, raises OptimisticLockError if rowcount=0, converts WorkflowModel ↔ ProjectLLMWorkflow dataclass), SQLAlchemyContractRepository (create uses INSERT ... ON CONFLICT (workflow_id) DO NOTHING for immutability, returns existing on conflict, get_by_workflow_id verifies hash and raises ContractDriftError on mismatch, converts ContractModel ↔ EngineeringContract Pydantic), SQLAlchemyCandidateRepository (straightforward CRUD, converts CandidateModel ↔ CandidatePackage Pydantic), SQLAlchemyManifestRepository (verify_hash raises ManifestTamperedError on mismatch, converts ManifestModel ↔ PlacementManifest Pydantic), SQLAlchemyApprovalRepository (converts ApprovalModel ↔ ImplementationApproval dataclass). All use AsyncSession passed to constructor, all methods in async with session.begin() for transaction management",
+    "Create services/project-ai/app/database/dependencies.py with FastAPI dependency injection functions: get_workflow_repo(session: AsyncSession = Depends(get_db_session)) returns SQLAlchemyWorkflowRepository(session), similarly for get_contract_repo, get_candidate_repo, get_manifest_repo, get_approval_repo. These provide dependency injection for route handlers",
+    "Verify models and repositories: python -c 'from app.database.models import WorkflowModel, ContractModel; print(\"Models loaded\")', python -c 'from app.database.repositories import WorkflowRepository; print(\"Protocols loaded\")', python -c 'from app.database.repositories_impl import SQLAlchemyWorkflowRepository; print(\"Implementations loaded\")', python -c 'from app.database.exceptions import ContractDriftError, OptimisticLockError; print(\"Exceptions loaded\")'"
+  ],
+  "acceptance_criteria": [
+    "All ORM models use project_ai_ table prefix (NOT tutorial_ or other existing prefixes)",
+    "All models use PostgreSQL-specific types (JSONB, DateTime(timezone=True))",
+    "Contract immutability enforced via UNIQUE(workflow_id) constraint",
+    "Optimistic locking implemented via version column in WorkflowModel",
+    "Repository implementations use PostgreSQL ON CONFLICT syntax (NOT SQLite INSERT OR IGNORE)",
+    "All hash fields (contract_sha256, manifest_sha256, etc.) are indexed",
+    "All repository methods convert between ORM models and domain models (dataclass/Pydantic)",
+    "No SQLite-specific SQL in any repository implementation"
+  ],
+  "verification": [
+    "grep 'project_ai_' services/project-ai/app/database/models.py (all tables namespaced)",
+    "grep 'JSONB' services/project-ai/app/database/models.py (PostgreSQL types used)",
+    "grep 'ON CONFLICT' services/project-ai/app/database/repositories_impl.py (PostgreSQL syntax)",
+    "grep -v 'INSERT OR IGNORE' services/project-ai/app/database/ (no SQLite syntax)",
+    "python -c 'from app.database.models import Base; print([t.name for t in Base.metadata.tables.values()])' (shows project_ai_* tables)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

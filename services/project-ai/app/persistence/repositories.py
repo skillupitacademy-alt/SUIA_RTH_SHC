@@ -5,20 +5,26 @@ ARCHITECTURAL PATTERNS:
 - Repository interfaces defined via Protocol (structural typing)
 - All operations are async
 - Upsert uses ON CONFLICT DO UPDATE for idempotency
-- Optimistic locking on workflows (version column)
-- Hash verification for contracts, manifests, approvals
+- Optimistic locking on workflows (atomic version check in WHERE clause)
+- Hash verification automatically performed on reads
 - Dependency injection compatible with FastAPI Depends()
 
 SECURITY BOUNDARIES:
 - Hash-bound artifacts prevent tampering
 - Optimistic locking prevents concurrent update conflicts
-- All writes are transactional (commit or rollback)
+- All writes are transactional (caller must commit or rollback)
+
+TRANSACTION MANAGEMENT:
+- Repositories flush but do NOT commit
+- Callers must call await session.commit() to persist changes
+- Use transaction context managers for automatic commit/rollback
 """
 
 import hashlib
 import json
+import uuid
 from datetime import datetime
-from typing import List, Optional, Protocol, Dict, Any
+from typing import List, Optional, Protocol, Dict, Any, Union
 
 from sqlalchemy import select, update, delete
 from sqlalchemy.dialects.postgresql import insert
@@ -69,13 +75,13 @@ class HashMismatchError(Exception):
 class WorkflowRepository(Protocol):
     """Repository interface for ProjectLLMWorkflow persistence."""
     
-    async def get(self, workflow_id: str) -> Optional[WorkflowModel]:
+    async def get(self, workflow_id: Union[str, uuid.UUID]) -> Optional[WorkflowModel]:
         """Get workflow by ID."""
         ...
     
     async def upsert(self, workflow: WorkflowModel, expected_version: Optional[int] = None) -> WorkflowModel:
         """
-        Insert or update workflow.
+        Insert or update workflow with atomic optimistic locking.
         
         Args:
             workflow: Workflow to persist
@@ -86,6 +92,10 @@ class WorkflowRepository(Protocol):
             
         Raises:
             OptimisticLockError: If expected_version doesn't match current version
+            
+        Note:
+            This method flushes but does NOT commit. Caller must call session.commit()
+            to persist changes, or session.rollback() to discard.
         """
         ...
     
@@ -97,7 +107,7 @@ class WorkflowRepository(Protocol):
         """List workflows by requester."""
         ...
     
-    async def delete(self, workflow_id: str) -> bool:
+    async def delete(self, workflow_id: Union[str, uuid.UUID]) -> bool:
         """
         Delete workflow and cascade to related records.
         
@@ -110,12 +120,24 @@ class WorkflowRepository(Protocol):
 class ContractRepository(Protocol):
     """Repository interface for EngineeringContract persistence."""
     
-    async def get(self, contract_id: str) -> Optional[ContractModel]:
-        """Get contract by ID."""
+    async def get(self, contract_id: Union[str, uuid.UUID], verify_hash: bool = True) -> Optional[ContractModel]:
+        """
+        Get contract by ID with automatic hash verification.
+        
+        Args:
+            contract_id: Contract ID
+            verify_hash: If True, verify contract data hash before returning
+        
+        Returns:
+            Contract model if found, None otherwise
+            
+        Raises:
+            HashMismatchError: If verify_hash=True and hash verification fails
+        """
         ...
     
-    async def get_by_workflow(self, workflow_id: str) -> Optional[ContractModel]:
-        """Get contract by workflow ID (1:1 relationship)."""
+    async def get_by_workflow(self, workflow_id: Union[str, uuid.UUID], verify_hash: bool = True) -> Optional[ContractModel]:
+        """Get contract by workflow ID (1:1 relationship) with hash verification."""
         ...
     
     async def get_by_hash(self, contract_hash: str) -> Optional[ContractModel]:
@@ -126,21 +148,11 @@ class ContractRepository(Protocol):
         """
         Insert or update contract (idempotent by contract_hash).
         
+        Note:
+            Flushes but does NOT commit. Caller must call session.commit().
+        
         Returns:
             Persisted contract
-        """
-        ...
-    
-    async def verify_hash(self, contract_id: str, data: Dict[str, Any]) -> bool:
-        """
-        Verify contract data matches stored hash.
-        
-        Args:
-            contract_id: Contract ID
-            data: Contract data dict to verify
-            
-        Returns:
-            True if hash matches, False otherwise
         """
         ...
 

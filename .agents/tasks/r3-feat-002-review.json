@@ -1,0 +1,46 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "issue": "String PKs instead of UUID columns",
+      "detail": "Change all primary key columns from String(255) to UUID with server_default=text(\"gen_random_uuid()\"). Update repositories to handle UUID types instead of strings.",
+      "confidence": "confirmed"
+    },
+    {
+      "issue": "Optimistic lock race window",
+      "detail": "Rewrite workflow upsert to use ON CONFLICT with a WHERE version = expected_version clause, not read-then-check-then-write. Current pattern allows concurrent updates between the read and write.",
+      "confidence": "confirmed"
+    },
+    {
+      "issue": "Hash verification never called",
+      "detail": "Either make verify_hash automatic in repository.get(), or provide a verified_get() method that raises on mismatch. Leaving verification to the caller means it will be forgotten.",
+      "confidence": "confirmed"
+    },
+    {
+      "issue": "Workflow artifact hashes not verified on read",
+      "detail": "WorkflowModel has contract_sha256, candidate_sha256, manifest_sha256 columns but no verify_artifact_hashes() method. After restart, tampered artifact bindings go undetected.",
+      "confidence": "confirmed"
+    },
+    {
+      "issue": "Factory pattern breaks Depends()",
+      "detail": "Repository factories raise ValueError if session is None, preventing FastAPI dependency injection. Either use default=Depends(get_db_session) in the signature or restructure as a class with __call__.",
+      "confidence": "confirmed"
+    },
+    {
+      "issue": "No domain model mappers",
+      "detail": "Add to_domain() methods on ORM models and from_domain() factory functions on repositories. FEAT-003 will need these to convert between WorkflowModel and ProjectLLMWorkflow.",
+      "confidence": "confirmed"
+    },
+    {
+      "issue": "StateTransitionModel.id uses Identity(always=True)",
+      "detail": "PostgreSQL IDENTITY ALWAYS prevents manual ID insertion, breaking any test fixtures or migrations that need deterministic IDs. Use Identity(start=1, increment=1) or SERIAL instead.",
+      "confidence": "likely"
+    },
+    {
+      "issue": "Missing transaction boundary documentation",
+      "detail": "Repositories flush but don't commit. Callers must remember await session.commit() or changes are lost. Add a docstring section on transaction management or provide a @transactional decorator.",
+      "confidence": "confirmed"
+    }
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\r3-feat-002-review.md"
+}

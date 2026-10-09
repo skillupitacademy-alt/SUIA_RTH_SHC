@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-004",
+  "type": "test",
+  "description": "PostgreSQL Test Infrastructure: Create pytest fixtures using actual PostgreSQL test database (NOT SQLite), write comprehensive repository unit tests with 80%+ coverage, write integration tests for restart safety, idempotency, optimistic locking, contract drift detection, and update all existing tests to use PostgreSQL fixtures. All tests must run against real PostgreSQL.",
+  "status": "pending",
+  "steps": [
+    "BLOCKING: Read .agents/tasks/task-r3-persistence/r3-database-discovery.md to determine existing test database strategy (dedicated tutorial_test database, test schema in tutorial_prod, or Docker PostgreSQL container)",
+    "Create services/project-ai/tests/conftest.py with pytest fixtures based on FEAT-000 findings: db_engine fixture (scope=session) loads TEST_DATABASE_URL_TUTORIAL from environment (REQUIRED - fail with clear error if not set, NO implicit localhost fallback), creates AsyncEngine from test URL, runs Base.metadata.create_all on startup (test schema creation allowed), drops all tables on teardown. db_session fixture (scope=function) creates AsyncSession from db_engine, begins transaction, yields session, rolls back transaction for isolation, closes session. test_client fixture overrides app dependency get_db_session to return db_session fixture. sample_workflow, sample_contract, sample_candidate fixtures create test data using db_session. CRITICAL: Tests must fail with configuration error if TEST_DATABASE_URL_TUTORIAL not set, never silently connect to unintended database",
+    "Create services/project-ai/tests/test_repositories.py with unit tests for all repository methods: WorkflowRepository tests (test_create_workflow_success, test_create_with_idempotency_key_returns_same_on_duplicate, test_get_by_id_found, test_get_by_id_not_found, test_update_state_increments_version, test_update_state_optimistic_lock_failure_on_version_mismatch, test_bind_artifact_updates_fields, test_list_all_workflows), ContractRepository tests (test_create_contract_success, test_create_duplicate_workflow_returns_existing_contract, test_get_by_workflow_id_verifies_hash, test_get_raises_ContractDriftError_on_hash_mismatch, test_verify_hash_success, test_verify_hash_failure), CandidateRepository tests (test_create_candidate, test_bind_workflow_updates_fields, test_get_by_id, test_list_all), ManifestRepository tests (test_create_manifest, test_get_by_candidate_id, test_verify_hash_raises_ManifestTamperedError_on_mismatch), ApprovalRepository tests (test_create_approval, test_get_by_workflow_id, test_update_status_to_approved, test_update_status_to_rejected_with_reason). All tests use db_session fixture, assert on domain model fields, verify PostgreSQL-specific behavior",
+    "Create services/project-ai/tests/test_persistence_integration.py with end-to-end PostgreSQL integration tests: test_workflow_survives_restart (create workflow in session1, dispose engine, create new engine, retrieve workflow in session2, verify all fields including contract_sha256 preserved), test_contract_immutability (create contract twice for same workflow_id via HTTP POST, verify second request returns same contract with identical contract_hash), test_idempotency_key (POST /workflows twice with same idempotency_key, verify same workflow_id returned), test_optimistic_locking_concurrent_updates (create workflow, use asyncio.gather to attempt two concurrent state transitions with same expected_version, verify one succeeds and one raises OptimisticLockError, verify final version=2), test_contract_drift_detection (create contract, manually UPDATE contract_hash in database using raw SQL, attempt GET /workflows/{id}/engineering-contract, verify returns 500 with integrity message), test_manifest_hash_verification (create manifest, manually corrupt manifest_hash in database, call manifest_repo.verify_hash, verify raises ManifestTamperedError)",
+    "Update all existing test files to use PostgreSQL fixtures: services/project-ai/tests/test_candidate.py (replace manual TestClient(app) with test_client fixture, replace manual workflow creation with sample_workflow fixture, remove any manual store cleanup since transaction rollback handles isolation), services/project-ai/tests/test_workflow_transitions.py (use db_session and sample_workflow fixtures, add test that verifies state transitions persist when session is closed and reopened), services/project-ai/tests/test_authorization_checker.py (use sample_approval fixture from conftest), update all other test files that reference in-memory stores to use fixtures, verify no tests use SQLite or in-memory databases"
+  ],
+  "acceptance_criteria": [
+    "tests/conftest.py exists with PostgreSQL fixtures (NOT :memory: SQLite)",
+    "All fixtures require explicit TEST_DATABASE_URL_TUTORIAL (NO implicit localhost fallback)",
+    "Tests fail with clear error if TEST_DATABASE_URL_TUTORIAL not configured",
+    "pytest --collect-only shows all fixtures discovered without errors",
+    "tests/test_repositories.py achieves 80%+ coverage of app/database/repositories_impl.py",
+    "tests/test_persistence_integration.py covers restart safety, idempotency, optimistic locking, drift detection",
+    "All existing tests updated to use PostgreSQL fixtures and pass",
+    "No tests use sqlite, :memory:, or aiosqlite anywhere",
+    "pytest -v runs all tests in isolation (transaction rollback prevents cross-test contamination)"
+  ],
+  "verification": [
+    "grep 'postgresql' services/project-ai/tests/conftest.py (PostgreSQL fixtures)",
+    "grep -v 'sqlite' services/project-ai/tests/ (no SQLite in tests)",
+    "cd services/project-ai && pytest tests/test_repositories.py -v --cov=app/database/repositories_impl --cov-report=term (all pass, coverage ≥80%)",
+    "cd services/project-ai && pytest tests/test_persistence_integration.py -v (all integration tests pass)",
+    "cd services/project-ai && pytest tests/ -v (all tests pass including existing tests)",
+    "cd services/project-ai && pytest tests/ --count=3 (tests pass 3 times verifying isolation)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
