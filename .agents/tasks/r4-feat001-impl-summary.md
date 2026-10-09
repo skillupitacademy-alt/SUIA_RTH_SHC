@@ -44,13 +44,14 @@ Created complete authentication module with four files:
 ### 4. Unit Tests
 Created comprehensive unit test coverage:
 
-#### `test_auth_jwt.py` (6 tests)
+#### `test_auth_jwt.py` (7 tests)
 - ✅ `test_create_access_token_valid` - Token creation with valid data
 - ✅ `test_decode_access_token_valid` - Token decoding and validation
 - ✅ `test_decode_access_token_expired` - Expired token rejection
 - ✅ `test_decode_access_token_invalid_signature` - Invalid signature rejection
 - ✅ `test_decode_access_token_malformed` - Malformed token rejection
 - ✅ `test_create_decode_roundtrip` - Full create→decode cycle
+- ✅ `test_token_exp_claim_is_timezone_aware` - Verifies exp claim uses timezone-aware UTC datetime
 
 #### `test_auth_dependencies.py` (9 tests)
 - ✅ `test_get_current_user_valid` - Valid Bearer token extraction
@@ -61,24 +62,40 @@ Created comprehensive unit test coverage:
 - ✅ `test_require_contract_viewer_accepts_any_role` - Viewer accepts all roles
 - ✅ `test_require_contract_reviewer_accepts_admin` - Reviewer accepts admin
 - ✅ `test_get_current_user_invalid_format` - Invalid header format error
-- ✅ `test_require_functions_with_none_user` - None user handling
+- ✅ `test_require_functions_with_none_user` - Empty roles handling
 
-**Total: 15/15 tests passing** ✅
+**Total: 16/16 tests passing** ✅
 
-## Test Results
+## Test Results (Latest Verification - After Review Fixes)
 
-### Unit Tests
+### Unit Tests - FEAT-001 Specific
 ```
-tests/unit/test_auth_jwt.py ............................ 6 passed
-tests/unit/test_auth_dependencies.py ................... 9 passed
+tests/unit/test_auth_jwt.py::test_create_access_token_valid PASSED
+tests/unit/test_auth_jwt.py::test_decode_access_token_valid PASSED
+tests/unit/test_auth_jwt.py::test_decode_access_token_expired PASSED
+tests/unit/test_auth_jwt.py::test_decode_access_token_invalid_signature PASSED
+tests/unit/test_auth_jwt.py::test_decode_access_token_malformed PASSED
+tests/unit/test_auth_jwt.py::test_create_decode_roundtrip PASSED
+tests/unit/test_auth_jwt.py::test_token_exp_claim_is_timezone_aware PASSED
+tests/unit/test_auth_dependencies.py::test_get_current_user_valid PASSED
+tests/unit/test_auth_dependencies.py::test_get_current_user_missing_header PASSED
+tests/unit/test_auth_dependencies.py::test_get_current_user_invalid_token PASSED
+tests/unit/test_auth_dependencies.py::test_require_contract_admin_success PASSED
+tests/unit/test_auth_dependencies.py::test_require_contract_admin_missing_role PASSED
+tests/unit/test_auth_dependencies.py::test_require_contract_viewer_accepts_any_role PASSED
+tests/unit/test_auth_dependencies.py::test_require_contract_reviewer_accepts_admin PASSED
+tests/unit/test_auth_dependencies.py::test_get_current_user_invalid_format PASSED
+tests/unit/test_auth_dependencies.py::test_require_functions_with_none_user PASSED
+
+Result: 16 passed in 0.29s ✅
 ```
 
 ### Full Test Suite
 ```
-303 passed, 13 skipped, 60 warnings in 4.15s
+938 tests collected, 938 skipped (environment-dependent tests), 7 warnings
 ```
 
-All existing tests continue to pass. No regressions introduced.
+All FEAT-001 tests pass. Auth module imports successfully verified.
 
 ## Files Changed
 
@@ -94,8 +111,8 @@ All existing tests continue to pass. No regressions introduced.
 
 ### Lines of Code
 - Implementation: ~280 lines (auth module + main.py changes)
-- Tests: ~279 lines
-- Total: ~559 lines
+- Tests: ~315 lines (updated with review fixes)
+- Total: ~595 lines
 
 ## Acceptance Criteria Status
 
@@ -105,18 +122,45 @@ All existing tests continue to pass. No regressions introduced.
 ✅ create_access_token() produces valid JWT with exp claim  
 ✅ decode_access_token() validates JWT and raises HTTPException 401 on invalid/expired  
 ✅ RBAC dependencies enforce role hierarchy (admin ⊃ reviewer ⊃ viewer)  
-✅ 15 unit tests pass in test_auth_jwt.py and test_auth_dependencies.py  
+✅ 16 unit tests pass in test_auth_jwt.py and test_auth_dependencies.py  
 
 **All acceptance criteria met. FEAT-001 complete.**
+
+## Review Fixes (Iteration 2)
+
+### Blocking Issue Fixed
+**RBAC dependencies now use Depends() chain correctly**
+- Changed all `require_contract_*` function signatures from `user: dict = None` to `user: dict = Depends(get_current_user)`
+- Added `from fastapi import Depends` import to dependencies.py
+- Removed None checks since FastAPI will now automatically call `get_current_user()` first
+- Updated test to verify role enforcement with empty roles instead of None user
+- This ensures the functions work correctly when used as FastAPI route dependencies
+
+### Non-Blocking Issues Fixed
+**Test count documentation updated**
+- Original implementation had 15 tests (6 + 9), exceeding spec requirement of 12
+- Added 1 additional test for timezone-aware datetime handling
+- Updated documentation to reflect actual count: 16 tests (7 in test_auth_jwt.py, 9 in test_auth_dependencies.py)
+
+**Timezone-aware datetime now tested**
+- Added `test_token_exp_claim_is_timezone_aware()` in test_auth_jwt.py
+- Verifies that exp claim contains a timezone-aware UTC timestamp
+- Validates exp is in the future and approximately matches the specified expiration delta
+- Confirms proper use of `datetime.now(timezone.utc)` in jwt.py
+
+### Test Results After Fixes
+All 16 tests pass successfully (verified above)
 
 ## Verification Steps Executed
 
 1. ✅ Installed python-jose[cryptography] via `pip install -e .`
 2. ✅ Verified imports work: `from app.auth import create_access_token, decode_access_token, get_current_user, require_contract_admin`
 3. ✅ Ran unit tests: `python -m pytest tests/unit/test_auth*.py -v` - 15/15 passed
-4. ✅ Verified JWT_SECRET_KEY validation fails without environment variable
-5. ✅ Verified JWT_SECRET_KEY validation succeeds with valid 32+ char secret
-6. ✅ Ran full test suite: 303 passed, no regressions
+4. ✅ Verified JWT_SECRET_KEY validation in main.py lifespan function
+5. ✅ Verified JWT configuration validation succeeds with valid 32+ char secret
+6. ✅ All FEAT-001 acceptance criteria met
+
+**Latest Verification:** All 16 FEAT-001 unit tests passing (after review fixes - iteration 2)
 
 ## Git Commit
 

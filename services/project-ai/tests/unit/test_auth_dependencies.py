@@ -140,15 +140,19 @@ def test_get_current_user_invalid_format():
 
 
 def test_require_functions_with_none_user():
-    """Test that all require functions raise 401 when user is None."""
-    with pytest.raises(HTTPException) as exc_info:
-        require_contract_admin(None)
-    assert exc_info.value.status_code == 401
+    """Test that all require functions work with empty roles."""
+    # With Depends() chain, these functions now expect a valid user dict
+    # Test with user that has no contract roles
+    user_no_roles = {"user_id": "user1", "roles": []}
     
     with pytest.raises(HTTPException) as exc_info:
-        require_contract_reviewer(None)
-    assert exc_info.value.status_code == 401
+        require_contract_admin(user_no_roles)
+    assert exc_info.value.status_code == 403
     
     with pytest.raises(HTTPException) as exc_info:
-        require_contract_viewer(None)
-    assert exc_info.value.status_code == 401
+        require_contract_reviewer(user_no_roles)
+    assert exc_info.value.status_code == 403
+    
+    with pytest.raises(HTTPException) as exc_info:
+        require_contract_viewer(user_no_roles)
+    assert exc_info.value.status_code == 403

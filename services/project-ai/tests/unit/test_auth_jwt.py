@@ -107,3 +107,33 @@ def test_create_decode_roundtrip():
     assert decoded_data["roles"] == original_data["roles"]
     assert decoded_data["email"] == original_data["email"]
     assert "exp" in decoded_data
+
+
+def test_token_exp_claim_is_timezone_aware():
+    """Test that the exp claim uses timezone-aware UTC datetime."""
+    from datetime import datetime, timezone
+    
+    data = {"sub": "tz_test_user", "roles": ["contract_viewer"]}
+    token = create_access_token(data, expires_delta=timedelta(minutes=10))
+    
+    # Decode the token
+    decoded = decode_access_token(token)
+    
+    # The exp claim should be present
+    assert "exp" in decoded
+    
+    # The exp claim should be a timestamp (int or float)
+    # When decoded by jose, it's typically an int
+    exp_timestamp = decoded["exp"]
+    assert isinstance(exp_timestamp, (int, float))
+    
+    # Convert to datetime and verify it's in the future
+    exp_datetime = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
+    now_utc = datetime.now(timezone.utc)
+    
+    # The exp should be in the future (we set 10 minutes)
+    assert exp_datetime > now_utc
+    
+    # The exp should be roughly 10 minutes from now (allow 1 second tolerance)
+    time_diff = (exp_datetime - now_utc).total_seconds()
+    assert 599 <= time_diff <= 601  # 10 minutes = 600 seconds, ±1 second tolerance

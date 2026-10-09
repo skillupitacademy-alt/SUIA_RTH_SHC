@@ -4,7 +4,7 @@ RBAC (Role-Based Access Control) dependency injection module.
 Provides FastAPI dependencies for authentication and authorization.
 """
 
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
 
 from .jwt import decode_access_token
 
@@ -47,14 +47,14 @@ def get_current_user(authorization: str = Header(...)) -> dict:
     }
 
 
-def require_contract_admin(user: dict = None) -> dict:
+def require_contract_admin(user: dict = Depends(get_current_user)) -> dict:
     """
     Require contract_admin role.
     
-    This is a dependency that should be called with user=Depends(get_current_user).
+    This is a FastAPI dependency that automatically extracts and validates the user.
     
     Args:
-        user: User dictionary from get_current_user
+        user: User dictionary from get_current_user dependency
     
     Returns:
         User dictionary if authorized
@@ -62,12 +62,6 @@ def require_contract_admin(user: dict = None) -> dict:
     Raises:
         HTTPException: 403 if user doesn't have contract_admin role
     """
-    if user is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Authentication required"
-        )
-    
     if "contract_admin" not in user.get("roles", []):
         raise HTTPException(
             status_code=403,
@@ -77,14 +71,14 @@ def require_contract_admin(user: dict = None) -> dict:
     return user
 
 
-def require_contract_reviewer(user: dict = None) -> dict:
+def require_contract_reviewer(user: dict = Depends(get_current_user)) -> dict:
     """
     Require contract_reviewer or contract_admin role.
     
     Role hierarchy: admin can do reviewer tasks.
     
     Args:
-        user: User dictionary from get_current_user
+        user: User dictionary from get_current_user dependency
     
     Returns:
         User dictionary if authorized
@@ -92,12 +86,6 @@ def require_contract_reviewer(user: dict = None) -> dict:
     Raises:
         HTTPException: 403 if user doesn't have contract_reviewer or contract_admin role
     """
-    if user is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Authentication required"
-        )
-    
     roles = user.get("roles", [])
     if "contract_reviewer" not in roles and "contract_admin" not in roles:
         raise HTTPException(
@@ -108,14 +96,14 @@ def require_contract_reviewer(user: dict = None) -> dict:
     return user
 
 
-def require_contract_viewer(user: dict = None) -> dict:
+def require_contract_viewer(user: dict = Depends(get_current_user)) -> dict:
     """
     Require contract_viewer, contract_reviewer, or contract_admin role.
     
     Role hierarchy: admin ⊃ reviewer ⊃ viewer.
     
     Args:
-        user: User dictionary from get_current_user
+        user: User dictionary from get_current_user dependency
     
     Returns:
         User dictionary if authorized
@@ -123,12 +111,6 @@ def require_contract_viewer(user: dict = None) -> dict:
     Raises:
         HTTPException: 403 if user doesn't have any contract role
     """
-    if user is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Authentication required"
-        )
-    
     roles = user.get("roles", [])
     if not any(role in roles for role in ["contract_viewer", "contract_reviewer", "contract_admin"]):
         raise HTTPException(
