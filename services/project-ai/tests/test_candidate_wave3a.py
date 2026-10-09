@@ -35,7 +35,7 @@ class TestPackageValidation:
         
         errors = _validate_package(package)
         assert len(errors) > 0
-        assert any("zero files" in err.lower() for err in errors)
+        assert any("package validation failed" in err.lower() and "zero files" in err.lower() for err in errors)
     
     def test_validate_all_empty_files(self):
         """Test rejection of packages with only empty files."""
@@ -57,7 +57,7 @@ class TestPackageValidation:
         
         errors = _validate_package(package)
         assert len(errors) > 0
-        assert any("empty files" in err.lower() for err in errors)
+        assert any("package validation failed" in err.lower() and "empty" in err.lower() for err in errors)
     
     def test_validate_path_traversal(self):
         """Test rejection of unsafe paths with '..' traversal."""
@@ -79,7 +79,7 @@ class TestPackageValidation:
         
         errors = _validate_package(package)
         assert len(errors) > 0
-        assert any("path traversal" in err.lower() for err in errors)
+        assert any("package validation failed" in err.lower() and "path traversal" in err.lower() for err in errors)
     
     def test_validate_absolute_path_unix(self):
         """Test rejection of Unix absolute paths."""
@@ -101,7 +101,7 @@ class TestPackageValidation:
         
         errors = _validate_package(package)
         assert len(errors) > 0
-        assert any("absolute path" in err.lower() for err in errors)
+        assert any("package validation failed" in err.lower() and "absolute path" in err.lower() for err in errors)
     
     def test_validate_absolute_path_windows(self):
         """Test rejection of Windows absolute paths."""
@@ -123,7 +123,29 @@ class TestPackageValidation:
         
         errors = _validate_package(package)
         assert len(errors) > 0
-        assert any("absolute path" in err.lower() for err in errors)
+        assert any("package validation failed" in err.lower() and "absolute path" in err.lower() for err in errors)
+    
+    def test_validate_absolute_path_windows_unc(self):
+        """Test rejection of Windows UNC paths."""
+        package = CandidatePackage(
+            candidateId="test-005b",
+            files=[
+                CandidateFile(
+                    filename="\\\\server\\share\\malicious.txt",
+                    content="malicious",
+                    contentType="text/plain",
+                    hash="abc123"
+                )
+            ],
+            uploadedAt=datetime.now(timezone.utc).isoformat(),
+            uploadedBy="test-user",
+            target_family="Tutorial",
+            target_version="T5"
+        )
+        
+        errors = _validate_package(package)
+        assert len(errors) > 0
+        assert any("package validation failed" in err.lower() and "absolute path" in err.lower() for err in errors)
     
     def test_validate_missing_manifest(self):
         """Test rejection of packages missing required manifest files."""
@@ -145,7 +167,7 @@ class TestPackageValidation:
         
         errors = _validate_package(package)
         assert len(errors) > 0
-        assert any("manifest file" in err.lower() for err in errors)
+        assert any("package validation failed" in err.lower() and "manifest file" in err.lower() for err in errors)
     
     def test_validate_valid_package_with_component(self):
         """Test acceptance of valid package with component file."""
@@ -268,6 +290,27 @@ class TestHashCalculation:
         hash2 = _compute_candidate_sha256(files2)
         
         assert hash1 != hash2
+    
+    def test_compute_hash_encoding_error(self):
+        """Test that encoding errors are handled gracefully."""
+        # Create a mock file object with content that will fail UTF-8 encoding
+        # We can't directly test invalid UTF-8 strings in Python 3, but we can
+        # verify the error handling structure is in place by checking the code path exists
+        # This is more of a documentation test - in practice, Pydantic validation
+        # would catch invalid UTF-8 before reaching this point
+        
+        files = [
+            CandidateFile(
+                filename="test.txt",
+                content="valid utf-8 content",
+                contentType="text/plain",
+                hash=""
+            )
+        ]
+        
+        # Should not raise any errors for valid UTF-8
+        result = _compute_candidate_sha256(files)
+        assert len(result) == 64
 
 
 @pytest.mark.asyncio

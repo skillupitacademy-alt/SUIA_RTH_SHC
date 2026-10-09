@@ -252,14 +252,14 @@ async def upload_candidate(
     
     # Bind candidate to workflow target
     # Wave 1A: Validate that workflow has non-empty target binding (fail fast)
-    if not workflow.target_family or workflow.target_family.strip() == '':
+    if workflow.target_family is None or not workflow.target_family or workflow.target_family.strip() == '':
         raise HTTPException(
             status_code=400,
             detail=f"Workflow {package.workflow_id} has empty target_family. "
                    "Cannot bind candidate to workflow without valid target identity."
         )
     
-    if not workflow.target_version or workflow.target_version.strip() == '':
+    if workflow.target_version is None or not workflow.target_version or workflow.target_version.strip() == '':
         raise HTTPException(
             status_code=400,
             detail=f"Workflow {package.workflow_id} has empty target_version. "
@@ -293,7 +293,13 @@ async def upload_candidate(
         )
     
     # Wave 3A: Calculate SHA-256 server-side (never trust client)
-    candidate_sha256 = _compute_candidate_sha256(package.files)
+    try:
+        candidate_sha256 = _compute_candidate_sha256(package.files)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Package validation failed: {str(e)}"
+        )
     package.contract_sha256 = candidate_sha256
     
     # Persist to PostgreSQL
@@ -303,24 +309,36 @@ async def upload_candidate(
         candidate_model.candidate_sha256 = candidate_sha256
         await candidate_repo.upsert(candidate_model)
         
-        # Wave 3A: Bind candidate artifact to workflow
-        await governance_service.bind_artifact(
-            workflow_id=package.workflow_id,
-            artifact_type="candidate",
-            artifact_id=package.candidateId,
-            artifact_sha256=candidate_sha256
-        )
-        
-        # Wave 3A: Transition workflow state to CANDIDATE_RECEIVED
-        await governance_service.transition_state(
-            workflow_id=package.workflow_id,
-            to_state=CanonicalWorkflowState.CANDIDATE_RECEIVED,
-            triggered_by=user.get("user_id", "unknown"),
-            evidence_id=f"upload-{package.candidateId}",
-            reason=f"Candidate package uploaded: {len(package.files)} files, SHA-256: {candidate_sha256[:8]}..."
-        )
+        # Wave 3A: Bind candidate artifact to workflow and transition state atomically
+        # If transition fails, bind_artifact should be rolled back via session.rollback()
+        try:
+            await governance_service.bind_artifact(
+                workflow_id=package.workflow_id,
+                artifact_type="candidate",
+                artifact_id=package.candidateId,
+                artifact_sha256=candidate_sha256
+            )
+            
+            # Wave 3A: Transition workflow state to CANDIDATE_RECEIVED
+            await governance_service.transition_state(
+                workflow_id=package.workflow_id,
+                to_state=CanonicalWorkflowState.CANDIDATE_RECEIVED,
+                triggered_by=user.get("user_id", "unknown"),
+                evidence_id=f"upload-{package.candidateId}",
+                reason=f"Candidate package uploaded: {len(package.files)} files, SHA-256: {candidate_sha256[:16]}..."
+            )
+        except Exception as transition_error:
+            # Rollback the entire transaction including bind_artifact
+            await session.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to bind artifact or transition workflow state: {str(transition_error)}"
+            )
         
         await session.commit()
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
         await session.rollback()
         raise HTTPException(
@@ -962,7 +980,7 @@ def _validate_package(package: CandidatePackage) -> list[str]:
     
     # Check for empty package
     if not package.files or len(package.files) == 0:
-        errors.append("Package contains zero files")
+        errors.append("Package validation failed: package contains zero files")
         return errors
     
     # Check if all files are empty
@@ -971,7 +989,7 @@ def _validate_package(package: CandidatePackage) -> list[str]:
         for f in package.files
     )
     if all_empty:
-        errors.append("Package contains only empty files")
+        errors.append("Package validation failed: all files in package are empty")
     
     # Check for unsafe paths
     for file in package.files:
@@ -979,11 +997,11 @@ def _validate_package(package: CandidatePackage) -> list[str]:
         
         # Check for path traversal with '..'
         if '..' in filename:
-            errors.append(f"Unsafe path detected (path traversal): {filename}")
+            errors.append(f"Package validation failed: path traversal attempt detected in '{filename}'")
         
-        # Check for absolute paths (Windows: C:\, Unix: /)
-        if filename.startswith('/') or (len(filename) > 1 and filename[1] == ':'):
-            errors.append(f"Unsafe path detected (absolute path): {filename}")
+        # Check for absolute paths (Windows: C:\ or UNC \\, Unix: /)
+        if filename.startswith('/') or (len(filename) > 1 and filename[1] == ':') or filename.startswith('\\\\'):
+            errors.append(f"Package validation failed: absolute path not allowed in '{filename}'")
     
     # Check for manifest file (component or schema matching target)
     if package.target_family and package.target_version:
@@ -1004,7 +1022,7 @@ def _validate_package(package: CandidatePackage) -> list[str]:
         
         if not has_component and not has_schema:
             errors.append(
-                f"Missing required manifest file: expected {component_pattern} or {schema_pattern}"
+                f"Package validation failed: missing required manifest file (expected {component_pattern} or {schema_pattern})"
             )
     
     return errors
@@ -1022,6 +1040,9 @@ def _compute_candidate_sha256(files: list[Any]) -> str:
         
     Returns:
         Hex-encoded SHA-256 hash
+        
+    Raises:
+        ValueError: If file content encoding fails
     """
     sha256_hash = hashlib.sha256()
     
@@ -1030,7 +1051,11 @@ def _compute_candidate_sha256(files: list[Any]) -> str:
     
     for file in sorted_files:
         # Hash each file's content
-        content_bytes = file.content.encode('utf-8') if isinstance(file.content, str) else file.content
+        try:
+            content_bytes = file.content.encode('utf-8') if isinstance(file.content, str) else file.content
+        except UnicodeEncodeError as e:
+            raise ValueError(f"Failed to encode file '{file.filename}': {str(e)}. Files must be valid UTF-8.")
+        
         file_hash = hashlib.sha256(content_bytes)
         sha256_hash.update(file_hash.digest())
     
