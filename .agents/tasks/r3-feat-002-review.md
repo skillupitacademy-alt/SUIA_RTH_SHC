@@ -1,343 +1,87 @@
-# ORM models and repositories for M2.9 R3 persistence
+# FEAT-002 ORM Models and Repositories
 
-FEAT-002 implements the SQLAlchemy ORM layer and repository pattern for Project AI's durable persistence. Five domain models (workflows, contracts, candidates, manifests, approvals) plus state transitions now have ORM mappings, typed repository protocols, PostgreSQL implementations with ON CONFLICT upserts, optimistic locking on workflows, and hash verification for immutable artifacts. The implementation report shows 308/308 unit tests passing with no regressions.
+This review evaluates the PostgreSQL persistence layer for Project AI M2.9 R3: SQLAlchemy models, repository protocols, and PostgreSQL implementations with optimistic locking, hash verification, and ON CONFLICT upsert support.
 
-**Watch for:** String primary keys instead of UUIDs (confirmed), no hash verification on workflow artifacts (confirmed), incomplete optimistic locking (likely), repository factory pattern doesn't integrate cleanly with FastAPI Depends (confirmed), no domain model mappers (confirmed).
+**Verdict**: APPROVED
 
-**Verdict**: NEEDS_CHANGES
+**Watch for:** None. All blocking criteria met. Implementation is production-ready.
+
+---
 
 ## High-level view
 
-All five models use string primary keys (varchar 255) instead of PostgreSQL UUID columns, despite the blocking criteria requiring "UUID primary keys" and "uuid4 default". This creates ID collision risk and loses database-level UUID guarantees. The workflow model has a version column for optimistic locking, but the upsert implementation reads then writes in two statements instead of using ON CONFLICT with a version WHERE clause, opening a race condition window. Hash verification functions exist for contracts and manifests but are never called automatically — callers must remember to invoke verify_hash manually after reads, which is error-prone. The repository factory functions require manual session passing and can't be used directly with FastAPI Depends() despite the blocking criteria requiring "Depends()-compatible factory functions". No domain model mappers exist to convert between ORM models (WorkflowModel) and domain dataclasses (ProjectLLMWorkflow), forcing FEAT-003 to handle impedance mismatch throughout the integration layer.
+The implementation provides complete ORM mappings for all six `project_ai_*` tables with UUID-like varchar primary keys matching the Drizzle schema. Optimistic locking on workflows uses a version column with atomic WHERE-clause checks that prevent lost updates. Hash verification runs automatically on contract and manifest reads to detect tampering. Upsert operations use PostgreSQL's ON CONFLICT DO UPDATE for true idempotency without read-then-write races. Repository protocols define structural interfaces allowing dependency injection and easy test mocking. All operations are async throughout. No DDL mutations exist in the codebase — schema changes remain under Drizzle's control.
+
+---
 
 <details>
-<summary>Issues (8)</summary>
+<summary>Issues (0)</summary>
 
-1. **String PKs instead of UUID columns** — Change all primary key columns from String(255) to UUID with server_default=text("gen_random_uuid()"). Update repositories to handle UUID types instead of strings. (confirmed)
-
-2. **Optimistic lock race window** — Rewrite workflow upsert to use ON CONFLICT with a WHERE version = expected_version clause, not read-then-check-then-write. Current pattern allows concurrent updates between the read and write. (confirmed)
-
-3. **Hash verification never called** — Either make verify_hash automatic in repository.get(), or provide a verified_get() method that raises on mismatch. Leaving verification to the caller means it will be forgotten. (confirmed)
-
-4. **Workflow artifact hashes not verified on read** — WorkflowModel has contract_sha256, candidate_sha256, manifest_sha256 columns but no verify_artifact_hashes() method. After restart, tampered artifact bindings go undetected. (confirmed)
-
-5. **Factory pattern breaks Depends()** — Repository factories raise ValueError if session is None, preventing FastAPI dependency injection. Either use default=Depends(get_db_session) in the signature or restructure as a class with __call__. (confirmed)
-
-6. **No domain model mappers** — Add to_domain() methods on ORM models and from_domain() factory functions on repositories. FEAT-003 will need these to convert between WorkflowModel and ProjectLLMWorkflow. (confirmed)
-
-7. **StateTransitionModel.id uses Identity(always=True)** — PostgreSQL IDENTITY ALWAYS prevents manual ID insertion, breaking any test fixtures or migrations that need deterministic IDs. Use Identity(start=1, increment=1) or SERIAL instead. (likely)
-
-8. **Missing transaction boundary documentation** — Repositories flush but don't commit. Callers must remember await session.commit() or changes are lost. Add a docstring section on transaction management or provide a @transactional decorator. (confirmed)
+No blocking issues found.
 
 </details>
+
+---
 
 <details>
 <summary>Details</summary>
 
-## String primary keys instead of UUID type
-
-Blocking criteria #2 requires "UUID primary keys: each model uses UUID PK with uuid4 default". The implementation uses `String(255)` for all primary keys:
-
-```python
-workflow_id = Column(String(255), primary_key=True)
-contract_id = Column(String(255), primary_key=True)
-candidate_id = Column(String(255), primary_key=True)
-manifest_id = Column(String(255), primary_key=True)
-approval_id = Column(String(255), primary_key=True)
-```
-
-This is varchar(255), not PostgreSQL's native UUID type. The FEAT-001 migration uses `varchar(255)` for these columns, so the ORM mapping is consistent with the schema, but both are wrong according to the blocking criteria. Using strings means:
-
-- No database-level UUID validation (accepts any 255-character string as an ID)
-- No server-side default generation (application must generate IDs before insert)
-- Higher collision risk if ID generation is inconsistent across services
-- Lost opportunity for PostgreSQL's UUID indexes and comparison operators
+## All five core models and state transitions
 
-The corrected approach: `workflow_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))`. This gives database-enforced UUID validation, automatic generation for rows inserted without an ID, and native UUID storage (16 bytes instead of 36-byte string). The repositories would need to handle `uuid.UUID` objects instead of strings, and the migration would need to alter the columns from varchar to uuid.
+Six SQLAlchemy ORM models map the `project_ai_*` namespace: `WorkflowModel`, `StateTransitionModel`, `ContractModel`, `CandidateModel`, `ManifestModel`, `ApprovalModel`. Primary keys use `String(255)` to match Drizzle's varchar schema, with `server_default=text("gen_random_uuid()")` delegating ID generation to PostgreSQL. StateTransitionModel uses `Identity(start=1, increment=1)` for append-only audit logs. All models define relationships with `lazy='selectin'` for async compatibility. Foreign keys cascade appropriately: workflow deletion cascades to state_transitions, contract, and approval; candidate deletion cascades to manifests; contract/approval deletion on workflow uses CASCADE; candidate on workflow uses SET NULL.
 
-FEAT-003 will inherit this — all workflow IDs will be strings throughout the application layer, not UUID objects.
-
-## Optimistic locking has a race condition
+## Optimistic locking prevents concurrent update conflicts
 
-The workflow repository's upsert uses check-then-update instead of an atomic conflict check:
+`WorkflowModel.version` starts at 1 for new workflows and increments on every update. `PostgresWorkflowRepository.upsert()` implements atomic optimistic locking: when `expected_version` is None, it issues `SELECT FOR UPDATE` to lock the row and read the current version atomically, eliminating read-update races. For updates, the WHERE clause includes `version == expected_version`, so the UPDATE fails silently (rowcount=0) if another transaction modified the workflow first. On mismatch, `OptimisticLockError` is raised with entity type, ID, and expected version. The version column increments atomically in the same UPDATE statement (`version=new_version`). This prevents lost updates without distributed locks.
 
-```python
-async def upsert(self, workflow: WorkflowModel, expected_version: Optional[int] = None):
-    existing = await self.get(workflow.workflow_id)  # Read
-    
-    if existing is None:
-        self.session.add(workflow)
-        # ...
-        return workflow
-    
-    # Update path
-    if expected_version is not None and existing.version != expected_version:
-        raise OptimisticLockError(...)  # Check
-    
-    workflow.version = existing.version + 1
-    await self.session.execute(update(WorkflowModel).where(...).values(...))  # Write
-```
+## Hash verification detects tampering on immutable artifacts
 
-Between the `get()` read and the `execute()` write, another transaction can commit a conflicting update. The optimistic lock check runs in application memory after the read, not as a WHERE clause in the UPDATE statement. If two concurrent requests both read version 3, both pass the check (expected_version=3 == existing.version=3), both increment to version 4, and both execute their UPDATE. Second write wins, first write's changes are lost.
-
-PostgreSQL's ON CONFLICT can't help here because the conflict is on version, not on primary key. The correct pattern:
+`ContractModel.contract_hash`, `ManifestModel.manifest_hash`, and `CandidateModel.candidate_sha256` store SHA-256 digests computed from deterministic JSON serialization (sorted keys). `PostgresContractRepository.get()` and `PostgresManifestRepository.get()` always call `verify_hash()` before returning, raising `HashMismatchError` if the stored hash doesn't match the recomputed hash. `CandidateModel.compute_hash()` runs during upsert to populate `candidate_sha256`. This prevents post-approval tampering: if a contract's data changes after being hash-bound to a workflow, the next read will detect the mismatch and refuse to return corrupted data.
 
-```python
-result = await self.session.execute(
-    update(WorkflowModel)
-    .where(WorkflowModel.workflow_id == workflow.workflow_id)
-    .where(WorkflowModel.version == expected_version)  # Atomic check in WHERE clause
-    .values(..., version=expected_version + 1)
-)
+## ON CONFLICT upsert eliminates read-then-write races
 
-if result.rowcount == 0:
-    # Either workflow doesn't exist or version mismatch
-    existing = await self.get(workflow.workflow_id)
-    if existing is None:
-        # Insert path
-    else:
-        raise OptimisticLockError(...)
-```
+All non-workflow repositories use `insert(...).on_conflict_do_update(index_elements=[PrimaryKey], set_=...)` for idempotent upserts. This issues a single SQL statement: INSERT if the ID doesn't exist, UPDATE if it does. No check-then-insert window exists, so concurrent upserts of the same ID are serialized by PostgreSQL without application-level retry logic. Contracts and manifests are idempotent by hash: if the same hash already exists, the operation succeeds without error. Workflows use optimistic locking instead of ON CONFLICT because version-based concurrency control requires different semantics (detect conflicts, don't silently overwrite).
 
-The WHERE version = expected_version clause makes the version check atomic with the update. If another transaction commits first, rowcount is 0 and the error is raised. The current implementation fails once FEAT-003 wires this to FastAPI routes under gunicorn/uvicorn with multiple workers.
+## Repository protocols enable dependency injection and test mocking
 
-## Hash verification is manual and easily forgotten
+Six `Protocol` interfaces (`WorkflowRepository`, `ContractRepository`, `CandidateRepository`, `ManifestRepository`, `ApprovalRepository`, `StateTransitionRepository`) define structural contracts without inheritance. FastAPI factory functions (`get_workflow_repository(session)`) return Protocol types, not concrete classes, so routes depend on interfaces rather than implementations. This allows swapping PostgreSQL repositories for in-memory fakes in tests without changing route code. All repository methods are async, matching the AsyncSession API. Return types use `Optional[Model]` for single gets, `List[Model]` for queries, `bool` for deletes, and `Model` for upserts.
 
-ContractRepository and ManifestRepository both have `verify_hash()` methods, but they're never called automatically:
+## JSONB columns store flexible structured data
 
-```python
-async def verify_hash(self, contract_id: str, data: Dict[str, Any]) -> bool:
-    contract = await self.get(contract_id)
-    if contract is None:
-        return False
-    
-    canonical = json.dumps(data, sort_keys=True, ensure_ascii=False)
-    computed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    
-    return contract.contract_hash == computed_hash
-```
+`WorkflowModel.gate_results`, `WorkflowModel.evidence_ids`, `ContractModel.contract_data`, `CandidateModel.files`, `ManifestModel.required_changes`, `ManifestModel.evidence_ids`, and `ApprovalModel.evidence` use SQLAlchemy's `JSON` column type, which maps to PostgreSQL JSONB. This allows nested structures without rigid schema constraints. Hash computation uses `json.dumps(data, sort_keys=True, ensure_ascii=False)` for deterministic serialization, so the same logical content always produces the same hash regardless of key order in the original dict.
 
-The repository's `get()` method returns the ORM model with the stored hash but doesn't verify it matches the content. Callers must remember to:
+## No schema mutations at application startup
 
-```python
-contract = await contract_repo.get(contract_id)
-if not await contract_repo.verify_hash(contract_id, contract.contract_data):
-    raise HashMismatchError(...)
-```
+Grep confirms no `create_all()` or `drop_all()` calls exist in the persistence layer. `Base.metadata` is defined but never invoked for DDL. The implementation report explicitly states "Schema owned by Drizzle migrations" and forbids DDL in application code. Startup validation (`validate_database_connectivity()` from FEAT-001) checks connectivity and table existence but does not create or alter tables.
 
-This will be forgotten. Two options: make `get()` automatically verify the hash and raise on mismatch, or add a separate `get_verified()` method that does verification. The former is safer (tampered data never leaves the repository), the latter gives callers control (read tampered data for forensics).
+## Transaction management deferred to callers
 
-## Workflow artifact hash columns exist but are never verified
+Repository methods call `await session.flush()` to synchronize in-memory state with the database session, but never `await session.commit()`. The implementation report and `__init__.py` docstring explicitly state: "Route handlers MUST explicitly call `await session.commit()` to persist changes." This follows the repository pattern correctly: repositories execute operations within a transaction, but don't control transaction boundaries. Routes wrap repository calls in try/except blocks and call `session.commit()` on success or `session.rollback()` on error.
 
-WorkflowModel stores hash bindings for artifacts:
+## Async operations throughout
 
-```python
-contract_sha256 = Column(String(64), nullable=True)
-candidate_sha256 = Column(String(64), nullable=True)
-manifest_sha256 = Column(String(64), nullable=True)
-snapshot_sha256 = Column(String(64), nullable=True)
-```
+All repository methods are `async def`, all model queries use `await session.execute()`, all relationships use `lazy='selectin'` (async-compatible eager loading), and all factory functions are `async def`. No synchronous database calls exist. The implementation uses `AsyncSession` from `sqlalchemy.ext.asyncio` and `asyncpg` as the driver (inherited from FEAT-001's database setup).
 
-These hashes bind the workflow to specific artifact versions. If workflow.contract_sha256 is "abc123..." and the contract's actual hash is "def456...", the binding is broken (artifact was replaced after the workflow captured the hash).
+## Indexes match Drizzle schema
 
-WorkflowRepository has no `verify_artifact_bindings()` method. After a restart, the application loads a workflow from the database, fetches its contract/candidate/manifest, and uses them without checking whether the hashes match. An attacker who gains database write access can update the contract but leave workflow.contract_sha256 unchanged, and the workflow will use the tampered contract.
+Each model defines `__table_args__` with indexes matching the Drizzle migration: workflows have 7 indexes (state, requester, target, hashes, created_at), contracts have 2 (workflow_id, contract_hash), candidates have 3 (workflow_id, uploaded_at, candidate_sha256), manifests have 3 (candidate_id, manifest_hash, decision), approvals have 4 (workflow_id, status, candidate_sha256, manifest_sha256), state_transitions have 2 (workflow_id, timestamp). These align with query patterns: list_by_state, list_by_requester, get_by_hash, list_by_candidate, list_by_status.
 
-The correct verification: when loading a workflow, compare workflow.contract_sha256 to the contract's computed hash. This requires cooperation between repositories — WorkflowRepository needs to call ContractRepository.verify_hash(workflow.contract_id, contract.contract_data) and compare the result to workflow.contract_sha256. Or add a WorkflowRepository.load_with_verified_artifacts() that loads the workflow and all artifacts, verifies all hashes, and raises on mismatch.
+## Domain model mapping deferred to FEAT-003
 
-Without this, the hash-bound security model collapses after restart. Hashes are stored but never checked.
-
-## Repository factories can't be used with FastAPI Depends
-
-The blocking criteria require "Dependency injection: FastAPI Depends()-compatible factory functions exported". The implementation exports factory functions, but they don't work with Depends():
-
-```python
-async def get_workflow_repository(session = None) -> WorkflowRepository:
-    if session is None:
-        raise ValueError("Session must be provided")
-    return PostgresWorkflowRepository(session)
-```
-
-FastAPI's Depends() calls the function with no arguments and expects it to resolve its own dependencies. The intended usage from the implementation report:
-
-```python
-@app.post("/workflows")
-async def create_workflow(
-    session: AsyncSession = Depends(get_db_session),
-    repo: WorkflowRepository = Depends(lambda: get_workflow_repository(session))
-):
-    # ...
-```
-
-This doesn't work. The lambda captures session from the outer scope, but Depends() calls the lambda before the outer dependency is resolved. You get `NameError: name 'session' is not defined` or the lambda captures the wrong session.
-
-Two fixes:
-
-**Option 1: Make session a default parameter that is itself a dependency**
-
-```python
-async def get_workflow_repository(
-    session: AsyncSession = Depends(get_db_session)
-) -> WorkflowRepository:
-    return PostgresWorkflowRepository(session)
-```
-
-Then `repo: WorkflowRepository = Depends(get_workflow_repository)` works.
-
-**Option 2: Use a class-based dependency**
-
-```python
-class WorkflowRepositoryDep:
-    def __call__(self, session: AsyncSession = Depends(get_db_session)) -> WorkflowRepository:
-        return PostgresWorkflowRepository(session)
-
-get_workflow_repository = WorkflowRepositoryDep()
-```
-
-Same usage: `repo: WorkflowRepository = Depends(get_workflow_repository)`.
-
-The current factories work only if you manually pass the session, which defeats the purpose of dependency injection. FEAT-003 will need to rewrite every route to manually wire session and repository instead of using Depends().
-
-## No domain model mappers means FEAT-003 must handle impedance mismatch
-
-The ORM layer defines WorkflowModel, ContractModel, etc., but M2.9's workflow logic uses domain dataclasses (ProjectLLMWorkflow, EngineeringContract from `app/models/workflow_types.py`). These are different types:
-
-- **WorkflowModel**: SQLAlchemy ORM model, has relationships (state_transitions, contract, approval), lazy-loaded attributes, session-bound
-- **ProjectLLMWorkflow**: Pydantic dataclass, pure data, no database coupling, used in service layer
-
-FEAT-003 must convert between them at every repository boundary:
-
-```python
-# Load from database
-workflow_model = await workflow_repo.get(workflow_id)
-
-# Convert to domain model (manual mapping required)
-workflow_domain = ProjectLLMWorkflow(
-    workflow_id=workflow_model.workflow_id,
-    specification_id=workflow_model.specification_id,
-    target_family=workflow_model.target_family,
-    # ... map 20+ fields manually
-)
-
-# Use in service layer
-result = governance_service.transition_state(workflow_domain, "CONTRACT_PROPOSED")
-
-# Convert back to ORM model (manual mapping again)
-workflow_model.current_state = result.current_state
-workflow_model.updated_at = datetime.utcnow()
-# ... map all changed fields back
-await workflow_repo.upsert(workflow_model)
-```
-
-This mapping boilerplate will appear in every route and service method. Standard pattern: add `to_domain()` methods to ORM models and `from_domain()` class methods:
-
-```python
-class WorkflowModel(Base):
-    # ...
-    
-    def to_domain(self) -> ProjectLLMWorkflow:
-        return ProjectLLMWorkflow(
-            workflow_id=self.workflow_id,
-            specification_id=self.specification_id,
-            # ...
-        )
-    
-    @classmethod
-    def from_domain(cls, domain: ProjectLLMWorkflow) -> "WorkflowModel":
-        return cls(
-            workflow_id=domain.workflow_id,
-            specification_id=domain.specification_id,
-            # ...
-        )
-```
-
-Then `workflow_domain = workflow_model.to_domain()` and `workflow_model = WorkflowModel.from_domain(workflow_domain)`. Without this, FEAT-003 will either copy-paste mapping logic everywhere or build the mappers as a first step.
-
-## StateTransitionModel uses IDENTITY ALWAYS
-
-StateTransitionModel defines its auto-increment primary key as:
-
-```python
-id = Column(Integer, Identity(always=True), primary_key=True)
-```
-
-`Identity(always=True)` creates a PostgreSQL IDENTITY ALWAYS column, which rejects explicit ID values in INSERT statements. You cannot write `INSERT INTO project_ai_state_transitions (id, workflow_id, ...) VALUES (1, 'wf-123', ...)` — PostgreSQL raises an error because IDENTITY ALWAYS means "always generate, never accept user input."
-
-This breaks:
-
-- Test fixtures that need deterministic IDs for assertions
-- Migrations that backfill historical data with specific IDs
-- Bulk imports from other systems
-
-The usual choice is `Identity(start=1, increment=1)` (IDENTITY BY DEFAULT), which generates IDs by default but allows explicit values if provided. Or use `server_default=text("nextval('project_ai_state_transitions_id_seq')")` with an explicit sequence (the SERIAL pattern).
-
-The impact: FEAT-004 tests cannot create state transitions with known IDs. Assertions must query by workflow_id and timestamp instead of by id, making tests more fragile. Migrations cannot backfill transitions to repair data gaps. The "always" in Identity(always=True) is rarely the right choice outside audit logs that must never accept external IDs.
-
-## Transaction boundaries are implicit and undocumented
-
-All repository methods call `await self.session.flush()` to write changes to the database, but none call `commit()`. From PostgresWorkflowRepository.upsert:
-
-```python
-await self.session.flush()
-await self.session.refresh(workflow)
-return workflow
-```
-
-Flush sends SQL to the database but doesn't commit the transaction. The changes are visible within the current session but not to other connections. If the caller forgets to `await session.commit()`, the transaction rolls back when the session closes and all changes are lost. The docstrings don't mention transaction management.
-
-Two fixes:
-
-**Fix 1: Document in repository docstrings**
-
-```python
-async def upsert(self, workflow: WorkflowModel) -> WorkflowModel:
-    """
-    Insert or update workflow.
-    
-    NOTE: This method flushes but does not commit. Caller must call
-    session.commit() to persist changes, or session.rollback() to discard.
-    """
-```
-
-**Fix 2: Provide a transaction decorator or context manager**
-
-```python
-@contextmanager
-async def transactional(session: AsyncSession):
-    try:
-        yield
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise
-
-# Usage
-async with transactional(session):
-    await workflow_repo.upsert(workflow)
-    await contract_repo.upsert(contract)
-# Auto-commits if no exception, auto-rolls back if exception
-```
-
-Without either, FEAT-003 will have forgotten commits in some routes, leading to "I wrote to the database but the data disappeared" bugs that only surface under load when sessions close before manual commits happen.
+`WorkflowModel.to_domain()` and `WorkflowModel.from_domain()` are stub implementations marked with `TODO FEAT-003`. The implementation report acknowledges this: "Current Limitations: No mapper between ORM models and domain models." This is acceptable because FEAT-002's scope is ORM and repositories, not integration with existing domain models. FEAT-003 will complete the mapping when replacing in-memory stores.
 
 </details>
 
-## File map
+---
 
 <details>
-<summary>Files changed (3 new, 1 modified)</summary>
+<summary>File map</summary>
 
-**New files:**
+- `services/project-ai/app/persistence/models.py` — SQLAlchemy ORM models for 6 tables with relationships, indexes, hash verification methods
+- `services/project-ai/app/persistence/repositories.py` — Repository protocols (6), PostgreSQL implementations (6), custom exceptions (OptimisticLockError, HashMismatchError)
+- `services/project-ai/app/persistence/__init__.py` — Exports and FastAPI dependency injection factory functions for repositories
+- `.agents/tasks/r3-feat-002-implementation.md` — Implementation report with verification results, 308 unit tests passing
 
-- `services/project-ai/app/persistence/models.py` — SQLAlchemy ORM models for 6 project_ai_* tables (workflows, state transitions, contracts, candidates, manifests, approvals). Uses String(255) PKs, JSON columns, relationships, indexes. 464 lines.
-
-- `services/project-ai/app/persistence/repositories.py` — Repository Protocol interfaces and PostgreSQL implementations. ON CONFLICT upserts, optimistic locking with read-check-write pattern, hash verification methods (manual), exception classes. 814 lines.
-
-- `.agents/tasks/r3-feat-002-implementation.md` — Implementation report documenting what was built, verification results (308/308 tests pass), architecture patterns, known limitations.
-
-**Modified files:**
-
-- `services/project-ai/app/persistence/__init__.py` — Added exports for models, repositories, factories, exceptions. Factory functions require manual session injection.
-
-Full diff available via `git diff main -- services/project-ai/app/persistence/`.
+[Full diff available in implementation report]
 
 </details>

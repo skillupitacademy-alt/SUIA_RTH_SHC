@@ -35,7 +35,7 @@ from app.orchestration.canonical_workflow import (
     is_valid_transition,
     is_terminal_state,
     is_gate_state,
-    can_transition_to_implementing
+    can_transition_to_implementing_async
 )
 from app.models.implementation_approval import ImplementationApproval
 from app.persistence import (
@@ -370,15 +370,10 @@ class WorkflowGovernanceService:
         
         # Special authorization for IMPLEMENTING transition
         if to_state == CanonicalWorkflowState.IMPLEMENTING:
-            # Load approval from database
-            approval_model = await self.approval_repo.get_by_workflow(workflow_id)
-            approvals_store = {}
-            if approval_model:
-                approvals_store[workflow_id] = _approval_model_to_domain(approval_model)
-            
-            can_implement, auth_reason = can_transition_to_implementing(
+            # Use async repository-based authorization check (no temporary dict)
+            can_implement, auth_reason = await can_transition_to_implementing_async(
                 workflow_id=workflow_id,
-                approvals_store=approvals_store,
+                approval_repo=self.approval_repo,
                 requester_id=workflow.requester_id,
                 candidate_sha256=workflow.candidate_sha256 or "",
                 manifest_id=workflow.manifest_id or "",
@@ -509,22 +504,50 @@ class WorkflowGovernanceService:
         workflow_model.updated_at = datetime.now(timezone.utc)
         await self.workflow_repo.upsert(workflow_model, expected_version=workflow_model.version)
     
-    async def list_workflows(self) -> list[ProjectLLMWorkflow]:
+    async def list_workflows(
+        self,
+        state: Optional[str] = None,
+        requester_id: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0
+    ) -> list[ProjectLLMWorkflow]:
         """
-        List all workflows by requester.
+        List workflows with optional filtering and pagination.
+        
+        Args:
+            state: Optional state filter (e.g., "REQUESTED", "BRIEF_READY")
+            requester_id: Optional requester filter
+            limit: Maximum number of workflows to return (default 100)
+            offset: Number of workflows to skip for pagination (default 0)
         
         Returns:
-            List of all workflows in storage
+            List of workflows matching filters
             
-        Note: This is a simplified implementation. In production, add pagination.
+        Note:
+            In production, ensure database queries are indexed on state and requester_id.
+            Consider adding created_at range filters for time-based queries.
         """
-        # For now, return workflows by REQUESTED state as a simple query
-        # In production, this should be paginated or filtered by requester
-        workflows_in_requested = await self.workflow_repo.list_by_state("REQUESTED")
+        # Apply filters based on provided parameters
+        if requester_id:
+            workflow_models = await self.workflow_repo.list_by_requester(requester_id)
+            if state:
+                workflow_models = [wf for wf in workflow_models if wf.current_state == state]
+        elif state:
+            workflow_models = await self.workflow_repo.list_by_state(state)
+        else:
+            # No filters: return workflows by REQUESTED state as default
+            # (listing all workflows would be inefficient in production)
+            workflow_models = await self.workflow_repo.list_by_state("REQUESTED")
+        
+        # Apply pagination
+        paginated_models = workflow_models[offset:offset + limit]
+        
+        # Load state transitions and convert to domain models
         result = []
-        for wf_model in workflows_in_requested:
+        for wf_model in paginated_models:
             transitions = await self.state_transition_repo.list_by_workflow(wf_model.workflow_id)
             wf_model.state_transitions = transitions
             result.append(_workflow_model_to_domain(wf_model))
+        
         return result
 

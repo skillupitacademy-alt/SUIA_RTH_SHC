@@ -374,6 +374,118 @@ def is_terminal_state(state: CanonicalWorkflowState) -> bool:
     }
 
 
+async def can_transition_to_implementing_async(
+    workflow_id: str,
+    approval_repo,  # ApprovalRepository protocol
+    requester_id: str,
+    candidate_sha256: str,
+    manifest_id: str,
+    manifest_sha256: str
+) -> tuple[bool, str]:
+    """
+    Check if workflow can transition to IMPLEMENTING state (async, repository-based).
+    
+    AUTHORIZATION GATES:
+    - ImplementationApproval must exist for workflow_id
+    - Approval status must be APPROVED
+    - Candidate hash must match approval record (REQUIRED)
+    - Manifest ID must match approval record (REQUIRED)
+    - Manifest hash must match approval record (REQUIRED)
+    - Must not be self-approved (REQUIRED)
+    
+    Args:
+        workflow_id: Workflow identifier
+        approval_repo: ApprovalRepository instance for database queries
+        requester_id: Workflow requester identity (REQUIRED for self-approval check)
+        candidate_sha256: Candidate hash to verify (REQUIRED)
+        manifest_id: Placement manifest ID to verify (REQUIRED)
+        manifest_sha256: Placement manifest hash to verify (REQUIRED)
+        
+    Returns:
+        Tuple of (can_transition: bool, reason: str)
+        - (True, "") if transition authorized
+        - (False, reason) if transition blocked
+    """
+    # Load approval from database
+    from app.persistence import ApprovalModel
+    
+    approval_model = await approval_repo.get_by_workflow(workflow_id)
+    
+    # Check if approval exists
+    if approval_model is None:
+        return (False, f"No implementation approval found for workflow {workflow_id}")
+    
+    # Convert ORM model to domain model for verification methods
+    from app.models.implementation_approval import ImplementationApproval, ImplementationApprovalStatus
+    
+    approval = ImplementationApproval(
+        approval_id=approval_model.approval_id,
+        workflow_id=approval_model.workflow_id,
+        candidate_sha256=approval_model.candidate_sha256,
+        placement_manifest_id=approval_model.placement_manifest_id,
+        placement_manifest_sha256=approval_model.placement_manifest_sha256,
+        target_family=approval_model.target_family,
+        target_version=approval_model.target_version,
+        approved_by=approval_model.approved_by,
+        approval_timestamp=approval_model.approval_timestamp,
+        status=ImplementationApprovalStatus(approval_model.status),
+        workflow_requester=approval_model.workflow_requester,
+        evidence=approval_model.evidence or {},
+        rejection_reason=approval_model.rejection_reason
+    )
+    
+    # Check if approval status is APPROVED
+    if approval.status != ImplementationApprovalStatus.APPROVED:
+        return (False, f"Approval status is {approval.status.value}, expected APPROVED")
+    
+    # REQUIRED: Verify requester_id provided
+    if not requester_id:
+        return (False, "Missing required parameter: requester_id")
+    
+    # REQUIRED: Verify candidate hash provided
+    if not candidate_sha256:
+        return (False, "Missing required parameter: candidate_sha256")
+    
+    # REQUIRED: Verify manifest ID provided
+    if not manifest_id:
+        return (False, "Missing required parameter: manifest_id")
+    
+    # REQUIRED: Verify manifest hash provided
+    if not manifest_sha256:
+        return (False, "Missing required parameter: manifest_sha256")
+    
+    # Verify candidate hash matches
+    if not approval.verify_candidate_hash(candidate_sha256):
+        return (
+            False,
+            f"Candidate hash mismatch: expected {approval.candidate_sha256}, got {candidate_sha256}"
+        )
+    
+    # Verify manifest ID matches
+    if approval.placement_manifest_id != manifest_id:
+        return (
+            False,
+            f"Manifest ID mismatch: expected {approval.placement_manifest_id}, got {manifest_id}"
+        )
+    
+    # Verify manifest hash matches
+    if not approval.verify_manifest_hash(manifest_sha256):
+        return (
+            False,
+            f"Manifest hash mismatch: expected {approval.placement_manifest_sha256}, got {manifest_sha256}"
+        )
+    
+    # Verify not self-approved
+    if not approval.verify_not_self_approved(requester_id):
+        return (
+            False,
+            f"Self-approval detected or workflow requester missing: approver '{approval.approved_by}'"
+        )
+    
+    # All checks passed
+    return (True, "")
+
+
 def can_transition_to_implementing(
     workflow_id: str,
     approvals_store: dict,
@@ -383,7 +495,10 @@ def can_transition_to_implementing(
     manifest_sha256: str
 ) -> tuple[bool, str]:
     """
-    Check if workflow can transition to IMPLEMENTING state.
+    Check if workflow can transition to IMPLEMENTING state (legacy dict-based version).
+    
+    DEPRECATED: Use can_transition_to_implementing_async() with ApprovalRepository instead.
+    This function is kept for backward compatibility with existing tests.
     
     AUTHORIZATION GATES:
     - ImplementationApproval must exist for workflow_id
