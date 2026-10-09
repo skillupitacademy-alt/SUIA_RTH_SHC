@@ -244,6 +244,266 @@ pytest tests/test_candidate_validator.py tests/test_canonical_comparator.py test
 # - Evidence dict population verified
 ```
 
+## M2.9 R3: Durable Persistence Layer
+
+### Architecture
+
+**Database:** Existing `tutorial_prod` (Neon PostgreSQL, ap-southeast-1)  
+**Migration Authority:** Drizzle (TypeScript schema → SQL migrations)  
+**Python Role:** Read-only ORM mapping via SQLAlchemy + asyncpg
+
+### R3 Persistence Tables
+
+All Project AI workflow state is persisted to PostgreSQL using the `project_ai_*` namespace:
+
+1. **`project_ai_workflows`** — Workflow lifecycle state, artifact bindings, approval tracking
+2. **`project_ai_state_transitions`** — Audit trail for state changes
+3. **`project_ai_contracts`** — Immutable engineering contracts (1:1 with workflows)
+4. **`project_ai_candidates`** — Candidate block packages for evaluation
+5. **`project_ai_manifests`** — Placement decisions and integration instructions
+6. **`project_ai_approvals`** — Hash-bound implementation approval records (1:1 with workflows)
+
+### Database Configuration
+
+**Required Environment Variables:**
+
+```bash
+# Production database (pooled connection)
+DATABASE_URL_TUTORIAL=postgresql://user:pass@host/tutorial_prod?sslmode=require
+
+# Test database (separate database for integration tests)
+TEST_DATABASE_URL_TUTORIAL=postgresql+asyncpg://user:pass@host/tutorial_test?sslmode=require
+```
+
+**Connection Details:**
+- Driver: `asyncpg` (async PostgreSQL driver for Python)
+- Pooling: pool_size=5, max_overflow=10
+- Auto-converts `postgresql://` to `postgresql+asyncpg://` for SQLAlchemy
+
+### Migration Workflow
+
+**IMPORTANT:** Schema changes are ONLY performed through Drizzle migrations. The Python application NEVER mutates the database schema.
+
+#### Adding New Tables or Columns
+
+1. **Update Drizzle schema:**
+   ```bash
+   # Edit: packages/db-tutorial/src/schema/project-ai-persistence.ts
+   ```
+
+2. **Generate migration:**
+   ```bash
+   cd packages/db-tutorial
+   pnpm db:generate
+   ```
+
+3. **Review migration SQL:**
+   ```bash
+   # Check: packages/db-tutorial/migrations/NNNN_<name>.sql
+   ```
+
+4. **Apply migration:**
+   ```bash
+   pnpm db:migrate
+   ```
+
+5. **Update SQLAlchemy ORM models:**
+   ```bash
+   # Edit: services/project-ai/app/persistence/models.py
+   # Ensure column types/names match Drizzle schema
+   ```
+
+#### Startup Validation
+
+The FastAPI application validates database connectivity and table existence at startup:
+
+```python
+# app/main.py lifespan
+await validate_database_connectivity()
+```
+
+**What it does:**
+- ✅ Tests connectivity with `SELECT version()`
+- ✅ Logs PostgreSQL version
+- ✅ Verifies all 6 `project_ai_*` tables exist
+- ❌ NEVER calls `create_all()` or mutates schema
+
+**If tables missing:**
+```
+DatabaseError: Table 'project_ai_workflows' not found.
+Run Drizzle migration: pnpm --filter @quiz/db-tutorial db:migrate
+```
+
+### Repository Layer
+
+All database operations use the repository pattern:
+
+```python
+from app.persistence import (
+    get_db_session,
+    get_workflow_repository,
+    WorkflowRepository,
+    WorkflowModel,
+)
+
+@app.post("/workflows")
+async def create_workflow(
+    session: AsyncSession = Depends(get_db_session),
+):
+    repo = await get_workflow_repository(session)
+    workflow = WorkflowModel(
+        workflow_id="wf_001",
+        specification_id="spec_001",
+        target_family="tutorial",
+        target_version="v1",
+        requester_id="user_123",
+        current_state="REQUESTED",
+        version=1,
+    )
+    result = await repo.upsert(workflow)
+    await session.commit()
+    return result
+```
+
+**Available Repositories:**
+- `WorkflowRepository` — CRUD, list by state/requester, optimistic locking
+- `ContractRepository` — CRUD, hash verification, get by workflow/hash
+- `CandidateRepository` — CRUD, list by workflow
+- `ManifestRepository` — CRUD, hash verification, list by candidate
+- `ApprovalRepository` — CRUD, list by status, get by workflow
+- `StateTransitionRepository` — Create (append-only audit log), list by workflow
+
+### Key Features
+
+#### 1. Optimistic Locking (Workflows)
+
+Prevents lost updates from concurrent modifications:
+
+```python
+# Get current workflow
+workflow = await repo.get("wf_001")
+expected_version = workflow.version  # e.g., 3
+
+# Update with version check
+workflow.current_state = "IMPLEMENTING"
+await repo.upsert(workflow, expected_version=expected_version)
+# Succeeds: version → 4
+
+# Concurrent update with stale version
+try:
+    await repo.upsert(workflow, expected_version=3)  # Stale!
+except OptimisticLockError as e:
+    # Handle conflict: refetch and retry
+    pass
+```
+
+#### 2. Hash Verification (Contracts, Manifests)
+
+Detects tampering or corruption:
+
+```python
+# Store contract with hash
+contract = ContractModel(
+    contract_id="contract_001",
+    contract_hash="sha256...",  # SHA-256 of contract_data
+    contract_data={"key": "value"},
+)
+await repo.upsert(contract)
+
+# Verify hash on retrieval
+contract = await repo.get("contract_001")
+if not contract.verify_hash():
+    raise HashMismatchError("Contract was tampered with")
+```
+
+#### 3. Idempotent Upserts (ON CONFLICT)
+
+Safe to retry operations:
+
+```python
+# Insert new or update existing (atomic)
+workflow = WorkflowModel(workflow_id="wf_001", ...)
+await repo.upsert(workflow)  # INSERT or UPDATE in single statement
+
+# Safe to retry (same result)
+await repo.upsert(workflow)  # Idempotent
+```
+
+#### 4. Append-Only Audit Log (State Transitions)
+
+Immutable history for compliance:
+
+```python
+# Record state transition
+transition = StateTransitionModel(
+    workflow_id="wf_001",
+    from_state="BRIEF_READY",
+    to_state="IMPLEMENTING",
+    timestamp=datetime.now(UTC),
+    triggered_by="user_123",
+    reason="Approved by technical lead",
+)
+await state_transition_repo.create(transition)
+
+# Retrieve full history
+history = await state_transition_repo.list_by_workflow("wf_001")
+# Returns all transitions in chronological order
+```
+
+### Testing
+
+#### Unit Tests (Fast, No Database)
+
+```bash
+pytest tests/unit/ -v
+```
+
+**Current:** 288 tests passing (workflow, contracts, manifests, approvals)
+
+#### Integration Tests (Requires PostgreSQL)
+
+```bash
+pytest tests/integration/ -v
+```
+
+**Setup:**
+1. Create test database: `tutorial_test`
+2. Run migrations: `pnpm --filter @quiz/db-tutorial db:migrate` (with TEST_DATABASE_URL_TUTORIAL set)
+3. Set `TEST_DATABASE_URL_TUTORIAL` environment variable
+4. Run tests
+
+**Test Isolation:**
+- Each test runs in isolated transaction
+- Automatic rollback after test completion
+- No manual cleanup required
+
+**Current:** 26 integration tests (4 conftest tests + 17 repository tests + 5 restart tests)  
+**Status:** All tests skip gracefully when `TEST_DATABASE_URL_TUTORIAL` not configured
+
+### Deployment Checklist
+
+1. **Pre-deployment:**
+   - ✅ Ensure `DATABASE_URL_TUTORIAL` is configured
+   - ✅ Run Drizzle migrations against production: `pnpm --filter @quiz/db-tutorial db:migrate`
+   - ✅ Verify all `project_ai_*` tables exist
+
+2. **Deployment:**
+   - ✅ Deploy FastAPI service
+   - ✅ Service startup validates connectivity (fails fast if tables missing)
+
+3. **Post-deployment:**
+   - ✅ Monitor logs for database errors
+   - ✅ Verify workflow creation/retrieval works
+
+### Migration History
+
+- **0026:** CREATE project_ai_* tables (initial schema)
+- **0026 (review fix):** ALTER columns to varchar(N) for SQLAlchemy alignment
+
+See `packages/db-tutorial/migrations/` for full migration history.
+
+---
+
 ## M2.8 Implementation Status
 
 ### ✅ Implemented
@@ -259,13 +519,16 @@ pytest tests/test_candidate_validator.py tests/test_canonical_comparator.py test
 - [x] Gate controller (M2 gate definitions)
 - [x] Agent registry (agent role definitions)
 - [x] Comprehensive test suite
+- [x] **R3 Durable Persistence Layer** (PostgreSQL via Drizzle + SQLAlchemy)
+- [x] **Repository pattern for all database operations**
+- [x] **Optimistic locking and hash verification**
+- [x] **Integration test suite for PostgreSQL**
 
 ### 🚧 Stub/Future Work (M3+)
 
 - [ ] LLM integration (OpenAI, Anthropic, etc.)
 - [ ] Actual workflow execution with LLM calls
 - [ ] Agent prompt templates
-- [ ] Persistent task storage (database)
 - [ ] Real-time task progress streaming
 - [ ] Gate evaluation with snapshot analysis
 - [ ] Production configuration management
