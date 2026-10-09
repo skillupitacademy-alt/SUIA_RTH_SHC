@@ -31,16 +31,15 @@ from app.models.implementation_approval import (
 from app.orchestration.canonical_workflow import CanonicalWorkflowState, is_valid_transition
 from app.orchestration.workflow_governance import WorkflowGovernanceService
 from app.api.routes.workflows import get_governance_service
-from app.persistence import get_db_session
+from app.persistence import get_db_session, get_approval_repository, ApprovalRepository
 
 router = APIRouter(prefix="/approvals", tags=["governance"])
 
-# In-memory approval storage for M3 (production persistence in M3+)
-# NOTE: These legacy stores are kept for backward compatibility with existing tests
-# R3 uses PostgreSQL repositories for production persistence
-_approvals: Dict[str, Dict] = {}
-_workflow_states: Dict[str, Dict] = {}
-_implementation_approvals: Dict[str, ImplementationApproval] = {}
+# Legacy in-memory approval storage for M2.9 transition period
+# These dicts remain for backward compatibility with existing tests that haven't been migrated
+# Production code paths use PostgreSQL repositories exclusively
+_approvals: Dict[str, Dict] = {}  # Legacy manifest approvals (Wave 2)
+# Note: _workflow_states and _implementation_approvals removed - use WorkflowGovernanceService and ApprovalRepository
 
 
 @router.post("/submit", response_model=ApprovalSubmitResponse)
@@ -304,12 +303,13 @@ async def approve_placement(
     workflow_id: str,
     payload: WorkflowApprovalPayload,
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    approval_repo: ApprovalRepository = Depends(get_approval_repository),
     session: AsyncSession = Depends(get_db_session)
 ):
     """
     Approve or reject placement manifest for a workflow.
     
-    **M2.9 R3 Integration**: Uses WorkflowGovernanceService with PostgreSQL backing.
+    **M2.9 R3 Integration**: Uses WorkflowGovernanceService and ApprovalRepository with PostgreSQL backing.
     
     CRITICAL GATES:
     1. Workflow must be in AWAITING_IMPLEMENTATION_APPROVAL state
@@ -348,18 +348,12 @@ async def approve_placement(
     # Get workflow from governance service (PostgreSQL-backed)
     workflow = await governance_service.get_workflow(workflow_id)
     if not workflow:
-        # Fallback: check legacy _workflow_states for backwards compatibility
-        if workflow_id not in _workflow_states:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Workflow not found: {workflow_id}"
-            )
-        # Use legacy workflow state
-        legacy_workflow = _workflow_states[workflow_id]
-        current_state_str = legacy_workflow.get("state")
-    else:
-        # Use canonical workflow from governance service
-        current_state_str = workflow.current_state.value
+        raise HTTPException(
+            status_code=404,
+            detail=f"Workflow not found: {workflow_id}"
+        )
+    
+    current_state_str = workflow.current_state.value
     
     # Verify workflow is in AWAITING_IMPLEMENTATION_APPROVAL state
     if current_state_str != CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value:
@@ -373,24 +367,14 @@ async def approve_placement(
             }
         )
     
-    # Get stored hashes from governance service workflow or legacy workflow
-    if workflow:
-        stored_manifest_hash = workflow.manifest_sha256
-        stored_contract_hash = workflow.contract_sha256
-        stored_candidate_hash = workflow.candidate_sha256
-        stored_manifest_id = workflow.manifest_id
-        workflow_requester = workflow.requester_id
-        target_family = workflow.target_family
-        target_version = workflow.target_version
-    else:
-        legacy_workflow = _workflow_states[workflow_id]
-        stored_manifest_hash = legacy_workflow.get("manifest_hash")
-        stored_contract_hash = legacy_workflow.get("contract_hash")
-        stored_candidate_hash = legacy_workflow.get("candidate_sha256")
-        stored_manifest_id = legacy_workflow.get("placement_manifest_id")
-        workflow_requester = legacy_workflow.get("requester")
-        target_family = legacy_workflow.get("target_family", "")
-        target_version = legacy_workflow.get("target_version", "")
+    # Get stored hashes from workflow
+    stored_manifest_hash = workflow.manifest_sha256
+    stored_contract_hash = workflow.contract_sha256
+    stored_candidate_hash = workflow.candidate_sha256
+    stored_manifest_id = workflow.manifest_id
+    workflow_requester = workflow.requester_id
+    target_family = workflow.target_family
+    target_version = workflow.target_version
     
     # Verify manifest hash matches stored manifest
     if not stored_manifest_hash:
@@ -488,45 +472,34 @@ async def approve_placement(
         rejection_reason=None if payload.approved else payload.reason,
     )
     
-    # Store approval record
-    _implementation_approvals[workflow_id] = implementation_approval
+    # Persist approval to PostgreSQL
+    from app.api.routes.candidate import approval_to_model
+    approval_model = approval_to_model(implementation_approval)
+    await approval_repo.upsert(approval_model)
     
     if payload.approved:
         # Approve: transition to IMPLEMENTING via governance service
         new_state = CanonicalWorkflowState.IMPLEMENTING
         
-        if workflow:
-            # Register approval with governance service
-            await governance_service.register_approval(workflow_id, implementation_approval)
-            
-            # Transition state through governance service
-            try:
-                await governance_service.transition_state(
-                    workflow_id=workflow_id,
-                    to_state=new_state,
-                    triggered_by=payload.approved_by,
-                    evidence_id=implementation_approval.approval_id,
-                    reason=payload.reason
-                )
-                await session.commit()
-            except ValueError as e:
-                await session.rollback()
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"State transition failed: {str(e)}"
-                )
-        else:
-            # Legacy workflow: update _workflow_states dict
-            if not is_valid_transition(CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL, new_state):
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
-                )
-            legacy_workflow["state"] = new_state.value
-            legacy_workflow["approved_by"] = payload.approved_by
-            legacy_workflow["approved_at"] = now.isoformat()
-            legacy_workflow["approval_reason"] = payload.reason
-            legacy_workflow["implementation_approval_id"] = implementation_approval.approval_id
+        # Register approval with governance service
+        await governance_service.register_approval(workflow_id, implementation_approval)
+        
+        # Transition state through governance service
+        try:
+            await governance_service.transition_state(
+                workflow_id=workflow_id,
+                to_state=new_state,
+                triggered_by=payload.approved_by,
+                evidence_id=implementation_approval.approval_id,
+                reason=payload.reason
+            )
+            await session.commit()
+        except ValueError as e:
+            await session.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=f"State transition failed: {str(e)}"
+            )
         
         return WorkflowApprovalResponse(
             workflow_id=workflow_id,
@@ -545,38 +518,25 @@ async def approve_placement(
         # Reject: transition to REJECTED via governance service
         new_state = CanonicalWorkflowState.REJECTED
         
-        if workflow:
-            # Register approval with governance service
-            await governance_service.register_approval(workflow_id, implementation_approval)
-            
-            # Transition state through governance service
-            try:
-                await governance_service.transition_state(
-                    workflow_id=workflow_id,
-                    to_state=new_state,
-                    triggered_by=payload.approved_by,
-                    evidence_id=implementation_approval.approval_id,
-                    reason=payload.reason
-                )
-                await session.commit()
-            except ValueError as e:
-                await session.rollback()
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"State transition failed: {str(e)}"
-                )
-        else:
-            # Legacy workflow: update _workflow_states dict
-            if not is_valid_transition(CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL, new_state):
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Invalid transition: AWAITING_IMPLEMENTATION_APPROVAL -> {new_state.value}"
-                )
-            legacy_workflow["state"] = new_state.value
-            legacy_workflow["rejected_by"] = payload.approved_by
-            legacy_workflow["rejected_at"] = now.isoformat()
-            legacy_workflow["rejection_reason"] = payload.reason
-            legacy_workflow["implementation_approval_id"] = implementation_approval.approval_id
+        # Register approval with governance service
+        await governance_service.register_approval(workflow_id, implementation_approval)
+        
+        # Transition state through governance service
+        try:
+            await governance_service.transition_state(
+                workflow_id=workflow_id,
+                to_state=new_state,
+                triggered_by=payload.approved_by,
+                evidence_id=implementation_approval.approval_id,
+                reason=payload.reason
+            )
+            await session.commit()
+        except ValueError as e:
+            await session.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=f"State transition failed: {str(e)}"
+            )
         
         return WorkflowApprovalResponse(
             workflow_id=workflow_id,
@@ -594,11 +554,14 @@ async def approve_placement(
 
 
 @router.get("/workflows/{workflow_id}/implementation-approval")
-async def get_implementation_approval(workflow_id: str):
+async def get_implementation_approval(
+    workflow_id: str,
+    approval_repo: ApprovalRepository = Depends(get_approval_repository)
+):
     """
     Get implementation approval record for a workflow.
     
-    Returns the ImplementationApproval record with verification evidence.
+    Returns the ImplementationApproval record with verification evidence from PostgreSQL.
     
     Args:
         workflow_id: Workflow identifier
@@ -609,77 +572,15 @@ async def get_implementation_approval(workflow_id: str):
     Raises:
         404: If no approval record found for workflow
     """
-    if workflow_id not in _implementation_approvals:
+    approval_model = await approval_repo.get_by_workflow(workflow_id)
+    if not approval_model:
         raise HTTPException(
             status_code=404,
             detail=f"No implementation approval found for workflow: {workflow_id}"
         )
     
-    approval = _implementation_approvals[workflow_id]
-    return approval.to_evidence_dict()
-
-
-# Helper function to register workflow in approval gate system
-def register_workflow_for_approval(
-    workflow_id: str,
-    manifest_hash: str,
-    contract_hash: str,
-    initial_state: CanonicalWorkflowState = CanonicalWorkflowState.INTEGRATION_PLANNED
-):
-    """
-    Register a workflow for implementation approval.
-    
-    Call this after PlacementManifest is generated and before transitioning
-    to AWAITING_IMPLEMENTATION_APPROVAL state.
-    
-    Args:
-        workflow_id: Unique workflow identifier
-        manifest_hash: SHA-256 hash of placement manifest
-        contract_hash: SHA-256 hash of engineering contract
-        initial_state: Starting state (default: INTEGRATION_PLANNED)
-    """
-    _workflow_states[workflow_id] = {
-        "workflow_id": workflow_id,
-        "state": initial_state.value,
-        "manifest_hash": manifest_hash,
-        "contract_hash": contract_hash,
-        "registered_at": datetime.now(timezone.utc).isoformat()
-    }
-
-
-# Helper function to transition workflow to AWAITING_IMPLEMENTATION_APPROVAL
-def transition_to_approval_gate(workflow_id: str):
-    """
-    Transition workflow from INTEGRATION_PLANNED to AWAITING_IMPLEMENTATION_APPROVAL.
-    
-    This enforces the Wave 4 requirement that workflows MUST stop and await
-    human approval before placement execution.
-    
-    Args:
-        workflow_id: Workflow to transition
-        
-    Raises:
-        ValueError: If workflow not found or not in INTEGRATION_PLANNED state
-    """
-    if workflow_id not in _workflow_states:
-        raise ValueError(f"Workflow not registered: {workflow_id}")
-    
-    workflow = _workflow_states[workflow_id]
-    current_state = workflow.get("state")
-    
-    if current_state != CanonicalWorkflowState.INTEGRATION_PLANNED.value:
-        raise ValueError(
-            f"Cannot transition to approval gate from {current_state}, "
-            f"expected {CanonicalWorkflowState.INTEGRATION_PLANNED.value}"
-        )
-    
-    new_state = CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL
-    if not is_valid_transition(CanonicalWorkflowState.INTEGRATION_PLANNED, new_state):
-        raise ValueError(f"Invalid transition: {current_state} -> {new_state.value}")
-    
-    workflow["state"] = new_state.value
-    workflow["transition_at"] = datetime.now(timezone.utc).isoformat()
-
+    # Return evidence dictionary (stored in evidence JSON field)
+    return approval_model.evidence
 @router.post("/{approval_id}/reject", response_model=ApprovalRecord)
 async def reject_manifest(approval_id: str, request: ApprovalRejectRequest):
     """
