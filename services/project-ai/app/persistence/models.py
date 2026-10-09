@@ -13,13 +13,18 @@ ARCHITECTURAL RULES:
 - Hash fields (SHA-256) for tamper detection
 - Optimistic locking via version column on workflows
 - Schema changes ONLY through Drizzle migrations (no create_all())
+
+DOMAIN MODEL MAPPING:
+- to_domain() methods convert ORM models to domain dataclasses
+- from_domain() factory methods convert domain models to ORM models
+- FEAT-003 must complete domain model mapping for ProjectLLMWorkflow integration
 """
 
 import hashlib
 import json
 import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, TYPE_CHECKING
 
 from sqlalchemy import (
     Column, String, Integer, DateTime, ForeignKey, Index, JSON, Text, UniqueConstraint, Identity
@@ -27,6 +32,10 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import text
+
+# Avoid circular imports during type checking
+if TYPE_CHECKING:
+    from app.models.workflow import ProjectLLMWorkflow
 
 
 # Declarative base for ORM models
@@ -148,6 +157,81 @@ class WorkflowModel(Base):
                 return False
         
         return True
+    
+    def to_domain(self) -> "ProjectLLMWorkflow":
+        """
+        Convert ORM model to domain model (ProjectLLMWorkflow).
+        
+        NOTE: This is a stub implementation. FEAT-003 must complete the full mapping
+        including state_history conversion, proper enum handling, and all nested structures.
+        
+        Returns:
+            ProjectLLMWorkflow domain model
+        """
+        # Import here to avoid circular dependency
+        from app.models.workflow import ProjectLLMWorkflow
+        from app.orchestration.canonical_workflow import CanonicalWorkflowState
+        
+        return ProjectLLMWorkflow(
+            workflow_id=str(self.workflow_id),
+            specification_id=str(self.specification_id),
+            target_family=self.target_family,
+            target_version=self.target_version,
+            requester_id=self.requester_id,
+            current_state=CanonicalWorkflowState(self.current_state),
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+            state_history=[],  # TODO FEAT-003: Map state_transitions relationship
+            contract_id=str(self.contract_id) if self.contract_id else None,
+            contract_sha256=self.contract_sha256,
+            candidate_id=str(self.candidate_id) if self.candidate_id else None,
+            candidate_sha256=self.candidate_sha256,
+            manifest_id=str(self.manifest_id) if self.manifest_id else None,
+            manifest_sha256=self.manifest_sha256,
+            snapshot_id=str(self.snapshot_id) if self.snapshot_id else None,
+            snapshot_sha256=self.snapshot_sha256,
+            approval_id=str(self.approval_id) if self.approval_id else None,
+            gate_results=self.gate_results,
+            evidence_ids=self.evidence_ids,
+            final_status=self.final_status,
+        )
+    
+    @classmethod
+    def from_domain(cls, domain: "ProjectLLMWorkflow") -> "WorkflowModel":
+        """
+        Create ORM model from domain model (ProjectLLMWorkflow).
+        
+        NOTE: This is a stub implementation. FEAT-003 must complete the full mapping.
+        
+        Args:
+            domain: ProjectLLMWorkflow domain model
+            
+        Returns:
+            WorkflowModel ORM instance
+        """
+        return cls(
+            workflow_id=uuid.UUID(domain.workflow_id) if isinstance(domain.workflow_id, str) else domain.workflow_id,
+            specification_id=uuid.UUID(domain.specification_id) if isinstance(domain.specification_id, str) else domain.specification_id,
+            target_family=domain.target_family,
+            target_version=domain.target_version,
+            requester_id=domain.requester_id,
+            current_state=domain.current_state.value,
+            created_at=domain.created_at,
+            updated_at=domain.updated_at,
+            contract_id=uuid.UUID(domain.contract_id) if domain.contract_id else None,
+            contract_sha256=domain.contract_sha256,
+            candidate_id=uuid.UUID(domain.candidate_id) if domain.candidate_id else None,
+            candidate_sha256=domain.candidate_sha256,
+            manifest_id=uuid.UUID(domain.manifest_id) if domain.manifest_id else None,
+            manifest_sha256=domain.manifest_sha256,
+            snapshot_id=uuid.UUID(domain.snapshot_id) if domain.snapshot_id else None,
+            snapshot_sha256=domain.snapshot_sha256,
+            approval_id=uuid.UUID(domain.approval_id) if domain.approval_id else None,
+            gate_results=domain.gate_results,
+            evidence_ids=domain.evidence_ids,
+            final_status=domain.final_status,
+            version=1,  # New workflows start at version 1
+        )
 
 
 class StateTransitionModel(Base):

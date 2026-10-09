@@ -9,6 +9,9 @@ Architecture Rules:
 - Startup validates connectivity and table existence, does not create tables
 """
 
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from .database import (
     get_db_session,
     validate_database_connectivity,
@@ -49,15 +52,20 @@ from .repositories import (
 # ============================================================================
 
 
-async def get_workflow_repository(session = None) -> WorkflowRepository:
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+async def get_workflow_repository(
+    session: AsyncSession = Depends(get_db_session)
+) -> WorkflowRepository:
     """
-    Factory for WorkflowRepository.
+    Factory for WorkflowRepository compatible with FastAPI dependency injection.
     
     Usage:
         @app.post("/workflows")
         async def create_workflow(
-            repo: WorkflowRepository = Depends(get_workflow_repository),
-            session: AsyncSession = Depends(get_db_session)
+            repo: WorkflowRepository = Depends(get_workflow_repository)
         ):
             workflow = WorkflowModel(...)
             return await repo.upsert(workflow)
@@ -65,69 +73,66 @@ async def get_workflow_repository(session = None) -> WorkflowRepository:
     Returns:
         PostgresWorkflowRepository instance
     """
-    if session is None:
-        # When used as dependency, FastAPI will inject session from get_db_session
-        raise ValueError("Session must be provided")
     return PostgresWorkflowRepository(session)
 
 
-async def get_contract_repository(session = None) -> ContractRepository:
+async def get_contract_repository(
+    session: AsyncSession = Depends(get_db_session)
+) -> ContractRepository:
     """
-    Factory for ContractRepository.
+    Factory for ContractRepository compatible with FastAPI dependency injection.
     
     Returns:
         PostgresContractRepository instance
     """
-    if session is None:
-        raise ValueError("Session must be provided")
     return PostgresContractRepository(session)
 
 
-async def get_candidate_repository(session = None) -> CandidateRepository:
+async def get_candidate_repository(
+    session: AsyncSession = Depends(get_db_session)
+) -> CandidateRepository:
     """
-    Factory for CandidateRepository.
+    Factory for CandidateRepository compatible with FastAPI dependency injection.
     
     Returns:
         PostgresCandidateRepository instance
     """
-    if session is None:
-        raise ValueError("Session must be provided")
     return PostgresCandidateRepository(session)
 
 
-async def get_manifest_repository(session = None) -> ManifestRepository:
+async def get_manifest_repository(
+    session: AsyncSession = Depends(get_db_session)
+) -> ManifestRepository:
     """
-    Factory for ManifestRepository.
+    Factory for ManifestRepository compatible with FastAPI dependency injection.
     
     Returns:
         PostgresManifestRepository instance
     """
-    if session is None:
-        raise ValueError("Session must be provided")
     return PostgresManifestRepository(session)
 
 
-async def get_approval_repository(session = None) -> ApprovalRepository:
+async def get_approval_repository(
+    session: AsyncSession = Depends(get_db_session)
+) -> ApprovalRepository:
     """
-    Factory for ApprovalRepository.
+    Factory for ApprovalRepository compatible with FastAPI dependency injection.
     
     Returns:
         PostgresApprovalRepository instance
     """
-    if session is None:
-        raise ValueError("Session must be provided")
     return PostgresApprovalRepository(session)
 
 
-async def get_state_transition_repository(session = None) -> StateTransitionRepository:
+async def get_state_transition_repository(
+    session: AsyncSession = Depends(get_db_session)
+) -> StateTransitionRepository:
     """
-    Factory for StateTransitionRepository.
+    Factory for StateTransitionRepository compatible with FastAPI dependency injection.
     
     Returns:
         PostgresStateTransitionRepository instance
     """
-    if session is None:
-        raise ValueError("Session must be provided")
     return PostgresStateTransitionRepository(session)
 
 
