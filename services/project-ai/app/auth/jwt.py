@@ -37,7 +37,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     
     to_encode.update({
         "exp": expire,
-        "iat": now
+        "iat": now,
+        "iss": "skillhubcore.in"
     })
     
     encoded_jwt = jwt.encode(
@@ -55,9 +56,15 @@ def decode_access_token(token: str) -> dict:
     
     Validates:
     - Token signature and expiration
-    - Audience must be "user"
-    - tokenType must be "user"
+    - Issuer must be "skillhubcore.in"
+    - Audience must be "user" or "admin"
+    - tokenType must be "user" or "admin"
     - Required identity claims: userId, originalUserId, shadowUserId
+    
+    Implements dual-secret verification matching SHC TokenService.verifyAccessToken():
+    - Try user_secret first
+    - Fall back to admin_secret on JWTError
+    - Raise 401 if both fail
     
     Args:
         token: JWT token string to decode
@@ -69,53 +76,74 @@ def decode_access_token(token: str) -> dict:
         HTTPException: 401 if token is invalid, expired, or missing required claims
     """
     config = get_jwt_config()
+    last_error = None
     
-    try:
-        # Decode without audience validation - we'll validate manually
-        payload = jwt.decode(
-            token,
-            config["user_secret"],
-            algorithms=[config["algorithm"]],
-            options={
-                "verify_aud": False,  # Disable automatic audience validation
-                "require": ["exp", "iat"]
-            }
-        )
-    except ExpiredSignatureError:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid or expired token"
-        )
-    except (JWTError, JWTClaimsError) as e:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid or expired token"
-        )
-    
-    # Validate audience claim exists and equals "user"
-    audience = payload.get("aud")
-    if audience != "user":
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid token audience"
-        )
-    
-    # Validate tokenType
-    token_type = payload.get("tokenType")
-    if token_type != "user":
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid token type"
-        )
-    
-    # Validate required identity claims
-    required_claims = ["userId", "originalUserId", "shadowUserId"]
-    for claim in required_claims:
-        claim_value = payload.get(claim)
-        if not isinstance(claim_value, str) or not claim_value.strip():
+    # Try user secret first, then admin secret (matching SHC verifyAccessToken pattern)
+    for secret in [config["user_secret"], config["admin_secret"]]:
+        try:
+            # Decode with issuer validation
+            payload = jwt.decode(
+                token,
+                secret,
+                algorithms=[config["algorithm"]],
+                options={
+                    "verify_aud": False,  # Disable automatic audience validation
+                    "require": ["exp", "iat", "iss"]
+                }
+            )
+            
+            # Validate issuer
+            issuer = payload.get("iss")
+            if issuer != "skillhubcore.in":
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid token issuer"
+                )
+            
+            # Validate audience claim exists and equals "user" or "admin"
+            audience = payload.get("aud")
+            if audience not in ["user", "admin"]:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid token audience"
+                )
+            
+            # Validate tokenType
+            token_type = payload.get("tokenType")
+            if token_type not in ["user", "admin"]:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid token type"
+                )
+            
+            # Validate required identity claims
+            required_claims = ["userId", "originalUserId", "shadowUserId"]
+            for claim in required_claims:
+                claim_value = payload.get(claim)
+                if not isinstance(claim_value, str) or not claim_value.strip():
+                    raise HTTPException(
+                        status_code=401,
+                        detail=f"Missing or invalid {claim} claim"
+                    )
+            
+            # Token is valid with this secret
+            return payload
+            
+        except HTTPException:
+            # Re-raise validation errors (issuer, audience, claims)
+            raise
+        except ExpiredSignatureError:
             raise HTTPException(
                 status_code=401,
-                detail=f"Missing or invalid {claim} claim"
+                detail="Invalid or expired token"
             )
+        except (JWTError, JWTClaimsError) as e:
+            # Save error and try next secret
+            last_error = e
+            continue
     
-    return payload
+    # Both secrets failed
+    raise HTTPException(
+        status_code=401,
+        detail="Invalid or expired token"
+    )

@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Add issuer validation and admin token support to jwt.py. Update decode_access_token() to validate iss='skillhubcore.in' and accept both user and admin tokens. Try user secret first, fall back to admin secret on signature failure (matching SHC TokenService.verifyAccessToken pattern from token.service.ts lines 415-442). This fixes rejection of admin tokens and adds missing issuer validation.",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Read services/project-ai/app/auth/jwt.py lines 46-122 to understand current validation logic",
     "Read packages/auth/src/token.service.ts lines 415-442 for SHC verifyAccessToken pattern (try user secret, fall back to admin)",
@@ -31,5 +31,5 @@
     "Run full test suite: pytest tests/ -v"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Successfully implemented issuer validation and admin token support in jwt.py. Updated decode_access_token() to validate iss='skillhubcore.in' and accept both user and admin tokens (tokenType and aud can be 'user' or 'admin'). Implemented dual-secret verification pattern matching SHC TokenService.verifyAccessToken: tries user_secret first, falls back to admin_secret on JWTError. Updated create_access_token() to set iss='skillhubcore.in' and use config['user_secret']. All JWT unit tests passing (7/7). Full unit test suite passing (324 passed, 13 skipped). Identity claims validation unchanged (userId, originalUserId, shadowUserId all required non-empty strings). Integration tests skipped pending FEAT-003 aligned test implementation."
 }
