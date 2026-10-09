@@ -1,0 +1,14 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "Windows UNC path bypass — Path validation checks for '/' and drive letters but not UNC paths (\\\\server\\share). Add check for filenames starting with '\\\\\\\\'.",
+    "Bind/transition atomicity gap — bind_artifact and transition_state are called sequentially without rollback linkage. If transition fails, the workflow has a bound candidate_sha256 but remains in CANDIDATE_REQUESTED state. Wrap both calls in try/except and roll back artifact binding on transition failure, or move both updates into a single governance service method.",
+    "Empty string vs None for workflow target — Validation rejects empty strings for target_family and target_version but doesn't check for None. Add explicit None checks alongside strip() checks.",
+    "State transition reason truncates hash — The transition reason includes only the first 8 characters of the SHA-256 hash. Store the full hash in evidence or increase the truncation to 16 characters for better traceability.",
+    "No transaction rollback test — Tests cover successful uploads and state mismatch, but don't verify that database rollback occurs when transition_state fails after bind_artifact succeeds. Add a test that mocks transition_state to raise an exception and verifies candidate is not persisted.",
+    "Validation error message inconsistency — Some validation errors return detailed explanations, others return terse messages. The manifest check says 'Missing required manifest file: expected X or Y' while empty package says 'Package contains zero files'. Standardize format: 'Package validation failed: [specific issue]'.",
+    "Missing manifest validation too strict — The manifest check requires either component or schema file matching exact pattern {Family}{Version}Block.tsx or {Family}{Version}Schema.ts. If a package contains only supporting files (types.ts, tests), it's rejected even if those are valid artifacts. Clarify whether this is intentional or relax the check to allow at least one non-empty file with a recognized extension.",
+    "Hash computation encoding assumption — _compute_candidate_sha256 encodes file content as UTF-8 if it's a string, but doesn't handle encoding errors. If file content contains invalid UTF-8 or binary data represented as strings, the hash computation will fail. Add error handling or document that files must be valid UTF-8."
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\w3a-review.md"
+}
