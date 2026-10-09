@@ -182,6 +182,9 @@ class AgentCoordinator:
         elif agent.agentId == "final-gate":
             from app.agents.final_gate import execute_final_gate
             return await execute_final_gate(context)
+        elif agent.agentId == "canonical_comparison":
+            from app.agents.canonical_comparison import execute_canonical_comparison
+            return await execute_canonical_comparison(context)
         
         # Existing handlers
         elif agent.agentType == AgentType.BRAND_INDEPENDENCE:
