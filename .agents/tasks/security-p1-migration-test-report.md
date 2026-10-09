@@ -188,23 +188,23 @@ Add to `.pre-commit-config.yaml`:
 **Branch:** `m2-project-ai-canonical-wiring`
 
 ```
-Enumerating objects: 21, done.
-Counting objects: 100% (21/21), done.
-Delta compression using up to 16 threads
-Compressing objects: 100% (12/12), done.
-Writing objects: 100% (14/14), 8.23 KiB | 1.18 MiB/s, done.
-Total 14 (delta 8), reused 0 (delta 0), pack-reused 0
-remote: Resolving deltas: 100% (8/8), completed with 7 local objects.
-To github.com:user/quiz-platform.git
-   a1b2c3d..e4f5g6h  m2-project-ai-canonical-wiring -> m2-project-ai-canonical-wiring
+Enumerating objects: 86, done.
+Counting objects: 100% (86/86), done.
+Delta compression using up to 24 threads
+Compressing objects: 100% (69/69), done.
+Writing objects: 100% (70/70), 45.53 KiB | 3.50 MiB/s, done.
+Total 70 (delta 41), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (41/41), completed with 16 local objects.
+To https://github.com/skillupitacademy-alt/SUIA_RTH_SHC.git
+   42603779..a5ccd188  m2-project-ai-canonical-wiring -> m2-project-ai-canonical-wiring
 ```
 
-**Commit SHA:** (see Git Operations section below)
+**Commit SHA:** a5ccd188
 
 **Remote Verification:**
 ```bash
 git log origin/m2-project-ai-canonical-wiring -1 --oneline
-# Output: e4f5g6h fix: remove Alembic, establish Drizzle-only migration authority
+# Output: a5ccd188 fix: remove Alembic, establish Drizzle-only migration authority
 ```
 
 ---

@@ -1,0 +1,374 @@
+{
+  "wave": "W6",
+  "timestamp": "2026-10-09T17:48:30.834831Z",
+  "branch": "m2-project-ai-canonical-wiring",
+  "overall_status": "PARTIAL_PASS",
+  "summary": {
+    "total_verifications": 5,
+    "passed": 1,
+    "failed": 4,
+    "pass_rate": 0.2
+  },
+  "domains": {
+    "v1_api_contract": {
+      "domain": "api-contract",
+      "status": "FAIL",
+      "endpoints_found": 320,
+      "auth_covered": 47,
+      "auth_coverage_pct": 14.7,
+      "issues": [
+        "Missing authentication: POST /user-registered",
+        "Missing authentication: POST /payment-received",
+        "Missing authentication: GET /content/:brandId",
+        "Missing authentication: GET /control-plane/:brandId",
+        "Missing authentication: GET /bootstrap/:brandId",
+        "Missing authentication: GET /courses",
+        "Missing authentication: GET /courses/:slug",
+        "Missing authentication: GET /api/faculty",
+        "Missing authentication: POST /api/onboarding",
+        "Missing authentication: GET /api/profile",
+        "Not in spec: POST /register",
+        "Not in spec: POST /login",
+        "Not in spec: POST /admin/login",
+        "Not in spec: POST /refresh",
+        "Not in spec: POST /callback/validate",
+        "Not in spec: POST /logout",
+        "Not in spec: GET /me",
+        "Not in spec: GET /sessions",
+        "Not in spec: DELETE /sessions/:id",
+        "Not in spec: DELETE /sessions"
+      ],
+      "timestamp": "2026-10-09T15:42:56.552658",
+      "critical_issues": [
+        "10 endpoints missing authentication",
+        "10 endpoints not documented in specification"
+      ]
+    },
+    "v2_database_schema": {
+      "domain": "database-schema",
+      "status": "PASS",
+      "tables_expected": 6,
+      "tables_found": 6,
+      "tables_verified": [
+        "project_ai_workflows",
+        "project_ai_state_transitions",
+        "project_ai_contracts",
+        "project_ai_candidates",
+        "project_ai_manifests",
+        "project_ai_approvals"
+      ],
+      "indexes_ok": true,
+      "indexes_defined_in_schema": 27,
+      "indexes_breakdown": {
+        "project_ai_workflows": 8,
+        "project_ai_state_transitions": 2,
+        "project_ai_contracts": 4,
+        "project_ai_candidates": 3,
+        "project_ai_manifests": 4,
+        "project_ai_approvals": 5,
+        "unique_indexes": 4
+      },
+      "foreign_keys_count": 5,
+      "foreign_keys_verified": [
+        "fk_state_transitions_workflow_id",
+        "fk_contracts_workflow_id",
+        "fk_candidates_workflow_id",
+        "fk_manifests_candidate_id",
+        "fk_approvals_workflow_id"
+      ],
+      "issues": [],
+      "timestamp": "2026-10-09T12:03:35.055183+00:00",
+      "migration_dir": "E:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\migrations",
+      "schema_file_exists": true,
+      "schema_file_path": "packages/db-tutorial/src/schema/project-ai-persistence.ts",
+      "migration_authority": "Drizzle ORM",
+      "migrations_verified": [
+        "0026_steady_caretaker.sql",
+        "0027_public_multiple_man.sql"
+      ],
+      "verification_notes": "All 6 M2.9 canonical tables exist with proper foreign keys and comprehensive indexes defined in Drizzle schema. Indexes are created inline during table creation via Drizzle push/migration, not as separate CREATE INDEX statements."
+    },
+    "v3_workflow_states": {
+      "domain": "workflow-states",
+      "status": "FAIL",
+      "states_found": 15,
+      "states_expected": 17,
+      "coverage_pct": 88.2,
+      "missing_states": [
+        "ESCALATED",
+        "RESUBMITTED"
+      ],
+      "orphaned_states": [
+        "ACTIVE",
+        "AI_REVIEWING",
+        "CHANGES_REQUESTED",
+        "DEPLOYING",
+        "DRAFT",
+        "FAILED",
+        "GENERATING",
+        "GRADED",
+        "IN_PROGRESS",
+        "IN_REVIEW",
+        "NEEDS_REVIEW",
+        "PENDING_REVIEW",
+        "RETRYING",
+        "REVISION_NEEDED",
+        "REVISION_REQUESTED",
+        "RUNNING",
+        "SUBMITTED",
+        "VALIDATING"
+      ],
+      "terminal_violations": [],
+      "issues": [
+        "Missing 2 canonical states: ESCALATED, RESUBMITTED",
+        "18 potentially orphaned states detected"
+      ],
+      "state_mapping": {
+        "AI_REVIEWING": "UNDER_REVIEW",
+        "APPROVED": "APPROVED",
+        "ARCHIVED": "ARCHIVED",
+        "CANCELLED": "CANCELLED",
+        "CANDIDATE_AUDIT": "COMPARING",
+        "CANDIDATE_RECEIVED": "COMPARISON_COMPLETE",
+        "CHANGES_REQUESTED": "REVISION_REQUESTED",
+        "CLOSED": "CLOSED",
+        "COMPARING": "COMPARING",
+        "COMPARISON_COMPLETE": "COMPARISON_COMPLETE",
+        "COMPLETED": "CLOSED",
+        "DELETED": "ARCHIVED",
+        "DEPLOYED": "CLOSED",
+        "DRAFT": "DRAFT",
+        "ERROR": "ERROR",
+        "ESCALATED": "ESCALATED",
+        "FAILED": "ERROR",
+        "GUI_APPROVED": "APPROVED",
+        "IN_PROGRESS": "PROCESSING",
+        "IN_REVIEW": "UNDER_REVIEW",
+        "NEEDS_REVIEW": "UNDER_REVIEW",
+        "PENDING": "PENDING",
+        "PENDING_REVIEW": "PENDING",
+        "PROCESSING": "PROCESSING",
+        "QUEUED": "QUEUED",
+        "REJECTED": "REJECTED",
+        "REQUESTED": "QUEUED",
+        "RESUBMITTED": "RESUBMITTED",
+        "REVISION_NEEDED": "REVISION_REQUESTED",
+        "REVISION_REQUESTED": "REVISION_REQUESTED",
+        "RUNNING": "PROCESSING",
+        "SUBMITTED": "SUBMITTED",
+        "UNDER_REVIEW": "UNDER_REVIEW",
+        "VALIDATING": "PROCESSING"
+      },
+      "states_by_type": {
+        "canonical_workflow": [
+          "AWAITING_GATE_1",
+          "AWAITING_GATE_2",
+          "AWAITING_IMPLEMENTATION_APPROVAL",
+          "BRIEF_READY",
+          "CANDIDATE_AUDIT",
+          "CANDIDATE_RECEIVED",
+          "CANDIDATE_REQUESTED",
+          "CERTIFICATION_READY",
+          "CERTIFIED",
+          "DISCOVERY",
+          "GUI_APPROVED",
+          "IMPLEMENTED",
+          "IMPLEMENTING",
+          "INTEGRATION_PLANNED",
+          "REJECTED",
+          "REQUESTED",
+          "VERIFYING"
+        ],
+        "entity_status": [
+          "ACTIVE",
+          "ARCHIVED",
+          "DELETED",
+          "DRAFT"
+        ],
+        "job_status": [
+          "COMPLETED",
+          "FAILED",
+          "PENDING",
+          "RETRYING",
+          "RUNNING",
+          "VALIDATING"
+        ],
+        "orchestration_status": [
+          "CANCELLED",
+          "COMPLETED",
+          "FAILED",
+          "IN_PROGRESS",
+          "PENDING"
+        ],
+        "review_status": [
+          "APPROVED",
+          "CHANGES_REQUESTED",
+          "IN_REVIEW",
+          "PENDING_REVIEW",
+          "REJECTED"
+        ],
+        "section_status": [
+          "APPROVED",
+          "ARCHIVED",
+          "CHANGES_REQUESTED",
+          "DEPLOYED",
+          "DEPLOYING",
+          "DRAFT",
+          "GENERATING",
+          "IN_REVIEW",
+          "PENDING_REVIEW",
+          "VALIDATING"
+        ],
+        "submission_status": [
+          "AI_REVIEWING",
+          "APPROVED",
+          "GRADED",
+          "NEEDS_REVIEW",
+          "PENDING",
+          "REVISION_NEEDED",
+          "REVISION_REQUESTED",
+          "SUBMITTED"
+        ]
+      },
+      "timestamp": "2026-10-09T17:48:30.834831",
+      "critical_issues": [
+        "2 canonical states not implemented: ESCALATED, RESUBMITTED"
+      ]
+    },
+    "v4_test_coverage": {
+      "domain": "test-coverage",
+      "status": "FAIL",
+      "coverage_pct": 25.404768913747425,
+      "threshold": 80.0,
+      "gap": -54.595231086252575,
+      "critical_skips": [
+        "services\\project-ai\\tests\\test_integration.py",
+        "services\\project-ai\\tests\\test_integration.py",
+        "services\\project-ai\\tests\\integration\\test_certification_negative.py",
+        "services\\project-ai\\tests\\integration\\test_i2_e2e_certification.py"
+      ],
+      "issues": [
+        "Coverage 25.40% below threshold 80.0%"
+      ],
+      "has_integration_tests": true,
+      "timestamp": "2026-10-09T15:46:54.340297",
+      "critical_issues": [
+        "Coverage at 25.4% blocks production (need 80%)",
+        "4 critical integration tests being skipped"
+      ]
+    },
+    "v5_security": {
+      "domain": "security",
+      "status": "FAIL",
+      "timestamp": "2026-10-09T11:51:48.223586Z",
+      "jwt_endpoints_covered": 24,
+      "placeholder_auth_remaining": 0,
+      "cors_ok": false,
+      "secrets_validated": true,
+      "issues": [
+        "candidate.py: Endpoint 'get_discovery_client' lacks auth dependency",
+        "contract.py: Endpoint 'calculate_snapshot_sha256' lacks auth dependency",
+        "creation.py: Endpoint 'create_workflow' lacks auth dependency",
+        "creation.py: Endpoint 'get_workflow' lacks auth dependency",
+        "creation.py: Endpoint 'validate_workflow' lacks auth dependency",
+        "evidence.py: Endpoint 'get_discovery_client' lacks auth dependency",
+        "snapshot.py: Endpoint 'get_discovery_client' lacks auth dependency",
+        "workflows.py: Endpoint '_workflow_to_response' lacks auth dependency",
+        "CORS allows wildcard origins (*) - unsafe for production",
+        "CORS has TODO comment about production restriction"
+      ],
+      "critical_failures": [
+        "CORS uses wildcard origins (*)"
+      ],
+      "warnings": [
+        "12 unprotected endpoints (excluding health)"
+      ],
+      "details": {
+        "jwt": {
+          "protected": 24,
+          "unprotected": 12,
+          "placeholder": 0,
+          "issues": [
+            "candidate.py: Endpoint 'get_discovery_client' lacks auth dependency",
+            "contract.py: Endpoint 'calculate_snapshot_sha256' lacks auth dependency",
+            "creation.py: Endpoint 'create_workflow' lacks auth dependency",
+            "creation.py: Endpoint 'get_workflow' lacks auth dependency",
+            "creation.py: Endpoint 'validate_workflow' lacks auth dependency",
+            "evidence.py: Endpoint 'get_discovery_client' lacks auth dependency",
+            "snapshot.py: Endpoint 'get_discovery_client' lacks auth dependency",
+            "workflows.py: Endpoint '_workflow_to_response' lacks auth dependency"
+          ]
+        },
+        "cors": {
+          "configured": true,
+          "wildcard_origins": true,
+          "issues": [
+            "CORS allows wildcard origins (*) - unsafe for production",
+            "CORS has TODO comment about production restriction"
+          ]
+        },
+        "secrets": {
+          "jwt_validated": true,
+          "db_validated": true,
+          "startup_validates": true,
+          "issues": []
+        }
+      },
+      "critical_issues": [
+        "CORS wildcard origins - production security vulnerability",
+        "8 unprotected project-ai endpoints including create_workflow and get_workflow"
+      ]
+    }
+  },
+  "critical_blockers": [
+    "CORS wildcard origins (*) - security vulnerability",
+    "Test coverage at 25.4% (need 80%)",
+    "12 unprotected endpoints requiring authentication",
+    "2 missing canonical states (ESCALATED, RESUBMITTED)"
+  ],
+  "remediation_priorities": [
+    {
+      "priority": "P0",
+      "phase": "Immediate",
+      "items": [
+        "Fix CORS wildcard configuration",
+        "Protect 8 project-ai endpoints with authentication"
+      ]
+    },
+    {
+      "priority": "P1",
+      "phase": "Pre-launch",
+      "items": [
+        "Increase test coverage to 80%+",
+        "Investigate and fix skipped integration tests"
+      ]
+    },
+    {
+      "priority": "P2",
+      "phase": "Pre-launch",
+      "items": [
+        "Implement or document ESCALATED/RESUBMITTED states",
+        "Document all API endpoints"
+      ]
+    }
+  ],
+  "artifacts": {
+    "reports": [
+      ".agents/tasks/w6-v1-report.md",
+      ".agents/tasks/w6-v2-report.md",
+      ".agents/tasks/w6-v3-report.md",
+      ".agents/tasks/w6-v4-report.md",
+      ".agents/tasks/w6-v5-report.md"
+    ],
+    "evidence": [
+      ".agents/tasks/w6-v1-evidence.json",
+      ".agents/tasks/w6-v2-evidence.json",
+      ".agents/tasks/w6-v3-evidence.json",
+      ".agents/tasks/w6-v4-evidence.json",
+      ".agents/tasks/w6-v5-evidence.json"
+    ],
+    "master_report": ".agents/tasks/w6-verification-report.md",
+    "test_execution_report": ".agents/tasks/w6-test-execution-report.md",
+    "consolidated_evidence": ".agents/evidence/w6-verification-suite.json"
+  }
+}

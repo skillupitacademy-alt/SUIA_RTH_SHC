@@ -1,0 +1,44 @@
+{
+  "domain": "database-schema",
+  "status": "PASS",
+  "tables_expected": 6,
+  "tables_found": 6,
+  "tables_verified": [
+    "project_ai_workflows",
+    "project_ai_state_transitions",
+    "project_ai_contracts",
+    "project_ai_candidates",
+    "project_ai_manifests",
+    "project_ai_approvals"
+  ],
+  "indexes_ok": true,
+  "indexes_defined_in_schema": 27,
+  "indexes_breakdown": {
+    "project_ai_workflows": 8,
+    "project_ai_state_transitions": 2,
+    "project_ai_contracts": 4,
+    "project_ai_candidates": 3,
+    "project_ai_manifests": 4,
+    "project_ai_approvals": 5,
+    "unique_indexes": 4
+  },
+  "foreign_keys_count": 5,
+  "foreign_keys_verified": [
+    "fk_state_transitions_workflow_id",
+    "fk_contracts_workflow_id",
+    "fk_candidates_workflow_id",
+    "fk_manifests_candidate_id",
+    "fk_approvals_workflow_id"
+  ],
+  "issues": [],
+  "timestamp": "2026-10-09T12:03:35.055183+00:00",
+  "migration_dir": "E:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\migrations",
+  "schema_file_exists": true,
+  "schema_file_path": "packages/db-tutorial/src/schema/project-ai-persistence.ts",
+  "migration_authority": "Drizzle ORM",
+  "migrations_verified": [
+    "0026_steady_caretaker.sql",
+    "0027_public_multiple_man.sql"
+  ],
+  "verification_notes": "All 6 M2.9 canonical tables exist with proper foreign keys and comprehensive indexes defined in Drizzle schema. Indexes are created inline during table creation via Drizzle push/migration, not as separate CREATE INDEX statements."
+}

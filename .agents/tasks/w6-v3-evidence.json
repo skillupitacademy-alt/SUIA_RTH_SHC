@@ -1,0 +1,143 @@
+{
+  "domain": "workflow-states",
+  "status": "FAIL",
+  "states_found": 15,
+  "states_expected": 17,
+  "missing_states": [
+    "ESCALATED",
+    "RESUBMITTED"
+  ],
+  "orphaned_states": [
+    "ACTIVE",
+    "AI_REVIEWING",
+    "CHANGES_REQUESTED",
+    "DEPLOYING",
+    "DRAFT",
+    "FAILED",
+    "GENERATING",
+    "GRADED",
+    "IN_PROGRESS",
+    "IN_REVIEW",
+    "NEEDS_REVIEW",
+    "PENDING_REVIEW",
+    "RETRYING",
+    "REVISION_NEEDED",
+    "REVISION_REQUESTED",
+    "RUNNING",
+    "SUBMITTED",
+    "VALIDATING"
+  ],
+  "terminal_violations": [],
+  "issues": [
+    "Missing 2 canonical states: ESCALATED, RESUBMITTED",
+    "18 potentially orphaned states detected"
+  ],
+  "state_mapping": {
+    "AI_REVIEWING": "UNDER_REVIEW",
+    "APPROVED": "APPROVED",
+    "ARCHIVED": "ARCHIVED",
+    "CANCELLED": "CANCELLED",
+    "CANDIDATE_AUDIT": "COMPARING",
+    "CANDIDATE_RECEIVED": "COMPARISON_COMPLETE",
+    "CHANGES_REQUESTED": "REVISION_REQUESTED",
+    "CLOSED": "CLOSED",
+    "COMPARING": "COMPARING",
+    "COMPARISON_COMPLETE": "COMPARISON_COMPLETE",
+    "COMPLETED": "CLOSED",
+    "DELETED": "ARCHIVED",
+    "DEPLOYED": "CLOSED",
+    "DRAFT": "DRAFT",
+    "ERROR": "ERROR",
+    "ESCALATED": "ESCALATED",
+    "FAILED": "ERROR",
+    "GUI_APPROVED": "APPROVED",
+    "IN_PROGRESS": "PROCESSING",
+    "IN_REVIEW": "UNDER_REVIEW",
+    "NEEDS_REVIEW": "UNDER_REVIEW",
+    "PENDING": "PENDING",
+    "PENDING_REVIEW": "PENDING",
+    "PROCESSING": "PROCESSING",
+    "QUEUED": "QUEUED",
+    "REJECTED": "REJECTED",
+    "REQUESTED": "QUEUED",
+    "RESUBMITTED": "RESUBMITTED",
+    "REVISION_NEEDED": "REVISION_REQUESTED",
+    "REVISION_REQUESTED": "REVISION_REQUESTED",
+    "RUNNING": "PROCESSING",
+    "SUBMITTED": "SUBMITTED",
+    "UNDER_REVIEW": "UNDER_REVIEW",
+    "VALIDATING": "PROCESSING"
+  },
+  "states_by_type": {
+    "canonical_workflow": [
+      "AWAITING_GATE_1",
+      "AWAITING_GATE_2",
+      "AWAITING_IMPLEMENTATION_APPROVAL",
+      "BRIEF_READY",
+      "CANDIDATE_AUDIT",
+      "CANDIDATE_RECEIVED",
+      "CANDIDATE_REQUESTED",
+      "CERTIFICATION_READY",
+      "CERTIFIED",
+      "DISCOVERY",
+      "GUI_APPROVED",
+      "IMPLEMENTED",
+      "IMPLEMENTING",
+      "INTEGRATION_PLANNED",
+      "REJECTED",
+      "REQUESTED",
+      "VERIFYING"
+    ],
+    "entity_status": [
+      "ACTIVE",
+      "ARCHIVED",
+      "DELETED",
+      "DRAFT"
+    ],
+    "job_status": [
+      "COMPLETED",
+      "FAILED",
+      "PENDING",
+      "RETRYING",
+      "RUNNING",
+      "VALIDATING"
+    ],
+    "orchestration_status": [
+      "CANCELLED",
+      "COMPLETED",
+      "FAILED",
+      "IN_PROGRESS",
+      "PENDING"
+    ],
+    "review_status": [
+      "APPROVED",
+      "CHANGES_REQUESTED",
+      "IN_REVIEW",
+      "PENDING_REVIEW",
+      "REJECTED"
+    ],
+    "section_status": [
+      "APPROVED",
+      "ARCHIVED",
+      "CHANGES_REQUESTED",
+      "DEPLOYED",
+      "DEPLOYING",
+      "DRAFT",
+      "GENERATING",
+      "IN_REVIEW",
+      "PENDING_REVIEW",
+      "VALIDATING"
+    ],
+    "submission_status": [
+      "AI_REVIEWING",
+      "APPROVED",
+      "GRADED",
+      "NEEDS_REVIEW",
+      "PENDING",
+      "REVISION_NEEDED",
+      "REVISION_REQUESTED",
+      "SUBMITTED"
+    ]
+  },
+  "timestamp": "2026-10-09T17:48:30.834831"
+}

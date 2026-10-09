@@ -1,0 +1,10 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "Manifest generator doesn't call artifact_policy — _generate_file_paths hardcodes action: \"write\" instead of calling determine_action per artifact. Duplicate prevention is bypassed. Wire artifact_policy into _generate_file_paths: build repository index, call find_semantic_match and determine_action for each file, and populate action field with ADD/UPDATE/EXTEND/REUSE/REJECT.",
+    "Validation detects REJECT but generation never produces it — validate_manifest correctly flags REJECT actions, but _generate_file_paths can't generate them because it doesn't call determine_action. Once wired, this check will catch genuine rejects. No action needed beyond wiring.",
+    "No test coverage for artifact_policy integration in manifest generation — test_placement_manifest.py tests manifest structure, validation, and sealing, but never exercises artifact_policy integration (no test passes a snapshot, no test verifies duplicate prevention affected manifest actions). Add integration test: pass snapshot with existing ObjectiveBlock.tsx, generate manifest for ObjectiveBlockV2.tsx candidate, assert action is UPDATE and target is ObjectiveBlock.tsx.",
+    "_load_repository_index returns empty list when snapshot missing — silently returns [] if snapshot_path is None or file not found. This means duplicate prevention degrades to always-ADD in production if snapshot isn't provided. Either require snapshot_path in __init__ (fail fast) or log warning when snapshot is missing so operators know duplicate prevention is disabled."
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\w3c-review.md"
+}
