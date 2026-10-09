@@ -108,9 +108,29 @@ class AgentCoordinator:
         start_time = datetime.now(UTC)
         
         try:
-            # Get agent definition
-            agent_type = AgentType(agent_id)
-            agent = self.registry.get_agent(agent_type)
+            # R4 agents (intake, placement, governance, documentation, toolchain, dependency, 
+            # final-gate, canonical_comparison) use agentId string matching and bypass registry
+            r4_agents = [
+                "toolchain", "dependency", "intake", "placement", "governance", 
+                "documentation", "final-gate", "canonical_comparison"
+            ]
+            
+            if agent_id in r4_agents:
+                # Create a minimal Agent object for R4 agents
+                from app.orchestration.agent_registry import Agent
+                # Use a placeholder AgentType (these agents don't have real AgentTypes)
+                agent = Agent(
+                    agentId=agent_id,
+                    agentType=AgentType.GATE_CONTROLLER,  # Placeholder, not used
+                    name=agent_id.replace("_", " ").title(),
+                    capabilities=[],
+                    status="active",
+                    description=f"R4 agent: {agent_id}"
+                )
+            else:
+                # Get agent definition from registry
+                agent_type = AgentType(agent_id)
+                agent = self.registry.get_agent(agent_type)
             
             # Execute agent capabilities
             result = await self._execute_agent_capabilities(agent, context)

@@ -373,6 +373,166 @@ class TestAgentCoordinator:
         assert result.outputs["certification_passed"] is False
         assert result.outputs["verdict"] == "REJECTED"
     
+    @pytest.mark.asyncio
+    async def test_execute_canonical_comparison_agent(self, coordinator, sample_context):
+        """Canonical comparison agent executes through coordinator dispatch."""
+        # Set up workflow state with candidate, target, and contract data
+        sample_context.workflow_state = {
+            "candidate": {
+                "files": [
+                    {"name": "prototype.html", "sha256": "hash1"},
+                    {"name": "implementation.tsx", "sha256": "hash2"},
+                    {"name": "types.ts", "sha256": "hash3"},
+                    {"name": "test.spec.ts", "sha256": "hash4"},
+                ]
+            },
+            "target": {
+                "family": "Introduction",
+                "version": "I7"
+            },
+            "contract": {
+                "family": "Introduction",
+                "version": "I7",
+                "block_type": "introduction_i7",
+                "references": [
+                    {
+                        "family": "Introduction",
+                        "version": "I7",
+                        "evidence": [
+                            {
+                                "path": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+                                "sha256": "abc123def456",
+                                "role": "canonical_block",
+                                "evidence_id": "evidence_intro_i7"
+                            }
+                        ]
+                    }
+                ],
+                "required_artifacts": [
+                    "HTML/CSS/JS prototype",
+                    "React/TypeScript implementation",
+                    "Type definitions",
+                    "Unit tests"
+                ],
+                "runtime": {
+                    "entry_point": "IntroductionBlock",
+                    "dependencies": []
+                }
+            }
+        }
+        
+        # Execute canonical_comparison agent
+        result = await coordinator.execute_agent(
+            "canonical_comparison",
+            sample_context
+        )
+        
+        # Verify agent executed (not stub, not fallthrough)
+        assert result.agent_id == "canonical_comparison"
+        assert result.status in [AgentStatus.SUCCESS, AgentStatus.FAILED, AgentStatus.BLOCKED]
+        
+        # Verify comparison_result is in outputs (not stub execution)
+        assert "comparison_result" in result.outputs
+        assert "status" not in result.outputs or result.outputs.get("status") != "stub_execution"
+        
+        # Verify comparison result structure
+        comparison = result.outputs["comparison_result"]
+        assert "status" in comparison
+        assert comparison["status"] in ["PASS", "FAIL", "BLOCKED"]
+        assert "target_match" in comparison
+        assert "artifacts" in comparison
+        assert "evidence_ids" in comparison
+        
+        # Verify evidence IDs are populated
+        assert len(result.evidence_ids) > 0 or len(comparison["evidence_ids"]) > 0
+    
+    @pytest.mark.asyncio
+    async def test_canonical_comparison_returns_blocked_without_contract(self, coordinator, sample_context):
+        """Canonical comparison returns BLOCKED when contract is unavailable."""
+        # Set up workflow state without contract
+        sample_context.workflow_state = {
+            "candidate": {
+                "files": [
+                    {"name": "prototype.html", "sha256": "hash1"}
+                ]
+            },
+            "target": {
+                "family": "Introduction",
+                "version": "I7"
+            }
+            # No contract
+        }
+        
+        result = await coordinator.execute_agent(
+            "canonical_comparison",
+            sample_context
+        )
+        
+        assert result.agent_id == "canonical_comparison"
+        # Agent may return FAILED or BLOCKED depending on implementation
+        assert result.status in [AgentStatus.FAILED, AgentStatus.BLOCKED]
+        
+        # Should have comparison_result with BLOCKED status
+        if "comparison_result" in result.outputs:
+            comparison = result.outputs["comparison_result"]
+            assert comparison["status"] == "BLOCKED"
+    
+    @pytest.mark.asyncio
+    async def test_canonical_comparison_returns_fail_on_version_mismatch(self, coordinator, sample_context):
+        """Canonical comparison returns FAIL when version mismatches."""
+        # Set up workflow state with version mismatch
+        sample_context.workflow_state = {
+            "candidate": {
+                "files": [
+                    {"name": "prototype.html", "sha256": "hash1"},
+                    {"name": "implementation.tsx", "sha256": "hash2"},
+                ]
+            },
+            "target": {
+                "family": "Introduction",
+                "version": "I8"  # Requesting I8
+            },
+            "contract": {
+                "family": "Introduction",
+                "version": "I7",  # But contract is I7
+                "block_type": "introduction_i7",
+                "references": [
+                    {
+                        "family": "Introduction",
+                        "version": "I7",
+                        "evidence": [
+                            {
+                                "path": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+                                "sha256": "abc123",
+                                "role": "canonical_block",
+                                "evidence_id": "eid_intro"
+                            }
+                        ]
+                    }
+                ],
+                "required_artifacts": ["HTML/CSS/JS prototype"],
+                "runtime": {
+                    "entry_point": "IntroductionBlock",
+                    "dependencies": []
+                }
+            }
+        }
+        
+        result = await coordinator.execute_agent(
+            "canonical_comparison",
+            sample_context
+        )
+        
+        assert result.agent_id == "canonical_comparison"
+        assert result.status == AgentStatus.FAILED
+        
+        # Verify comparison_result shows FAIL
+        comparison = result.outputs["comparison_result"]
+        assert comparison["status"] == "FAIL"
+        assert comparison["target_match"] is False
+        assert len(comparison["conflicts"]) > 0
+        assert any("mismatch" in conflict.lower() for conflict in comparison["conflicts"])
+    
     def test_execution_history_tracking(self, coordinator, sample_context):
         """Coordinator tracks execution history."""
         initial_history = coordinator.get_execution_history()
