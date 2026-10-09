@@ -1,0 +1,154 @@
+"""
+Unit tests for RBAC dependency injection module.
+
+Tests get_current_user and role requirement functions.
+"""
+
+import os
+from datetime import timedelta
+
+import pytest
+from fastapi import HTTPException
+
+from app.auth.dependencies import (
+    get_current_user,
+    require_contract_admin,
+    require_contract_reviewer,
+    require_contract_viewer,
+)
+from app.auth.jwt import create_access_token
+
+
+@pytest.fixture(autouse=True)
+def set_jwt_env():
+    """Set JWT_SECRET_KEY for all tests in this module."""
+    os.environ["JWT_SECRET_KEY"] = "test_secret_key_at_least_32_characters_long_for_testing"
+    yield
+    if "JWT_SECRET_KEY" in os.environ:
+        del os.environ["JWT_SECRET_KEY"]
+
+
+def test_get_current_user_valid():
+    """Test extracting user from valid Bearer token."""
+    data = {"sub": "user123", "roles": ["contract_viewer"]}
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    user = get_current_user(authorization)
+    
+    assert user["user_id"] == "user123"
+    assert user["roles"] == ["contract_viewer"]
+
+
+def test_get_current_user_missing_header():
+    """Test that missing authorization header raises HTTPException 401."""
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user("")
+    
+    assert exc_info.value.status_code == 401
+    assert "Missing authorization header" in exc_info.value.detail
+
+
+def test_get_current_user_invalid_token():
+    """Test that invalid token raises HTTPException 401."""
+    authorization = "Bearer invalid.token.here"
+    
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(authorization)
+    
+    assert exc_info.value.status_code == 401
+    assert "Invalid or expired token" in exc_info.value.detail
+
+
+def test_require_contract_admin_success():
+    """Test require_contract_admin with valid admin role."""
+    user = {"user_id": "admin1", "roles": ["contract_admin"]}
+    
+    result = require_contract_admin(user)
+    
+    assert result == user
+
+
+def test_require_contract_admin_missing_role():
+    """Test require_contract_admin without admin role raises HTTPException 403."""
+    user = {"user_id": "viewer1", "roles": ["contract_viewer"]}
+    
+    with pytest.raises(HTTPException) as exc_info:
+        require_contract_admin(user)
+    
+    assert exc_info.value.status_code == 403
+    assert "Requires contract_admin role" in exc_info.value.detail
+
+
+def test_require_contract_viewer_accepts_any_role():
+    """Test require_contract_viewer accepts viewer, reviewer, or admin roles."""
+    # Test with viewer role
+    viewer = {"user_id": "viewer1", "roles": ["contract_viewer"]}
+    assert require_contract_viewer(viewer) == viewer
+    
+    # Test with reviewer role
+    reviewer = {"user_id": "reviewer1", "roles": ["contract_reviewer"]}
+    assert require_contract_viewer(reviewer) == reviewer
+    
+    # Test with admin role
+    admin = {"user_id": "admin1", "roles": ["contract_admin"]}
+    assert require_contract_viewer(admin) == admin
+    
+    # Test with no contract role - should fail
+    no_role = {"user_id": "user1", "roles": ["some_other_role"]}
+    with pytest.raises(HTTPException) as exc_info:
+        require_contract_viewer(no_role)
+    
+    assert exc_info.value.status_code == 403
+    assert "Requires contract_viewer, contract_reviewer, or contract_admin role" in exc_info.value.detail
+
+
+def test_require_contract_reviewer_accepts_admin():
+    """Test require_contract_reviewer accepts both reviewer and admin roles."""
+    # Test with reviewer role
+    reviewer = {"user_id": "reviewer1", "roles": ["contract_reviewer"]}
+    assert require_contract_reviewer(reviewer) == reviewer
+    
+    # Test with admin role (hierarchy: admin can do reviewer tasks)
+    admin = {"user_id": "admin1", "roles": ["contract_admin"]}
+    assert require_contract_reviewer(admin) == admin
+    
+    # Test with only viewer role - should fail
+    viewer = {"user_id": "viewer1", "roles": ["contract_viewer"]}
+    with pytest.raises(HTTPException) as exc_info:
+        require_contract_reviewer(viewer)
+    
+    assert exc_info.value.status_code == 403
+    assert "Requires contract_reviewer or contract_admin role" in exc_info.value.detail
+
+
+def test_get_current_user_invalid_format():
+    """Test that invalid authorization header format raises HTTPException 401."""
+    # Missing "Bearer" prefix
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user("InvalidFormat token")
+    
+    assert exc_info.value.status_code == 401
+    assert "Invalid authorization header format" in exc_info.value.detail
+    
+    # Only token without Bearer
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user("justtoken")
+    
+    assert exc_info.value.status_code == 401
+    assert "Invalid authorization header format" in exc_info.value.detail
+
+
+def test_require_functions_with_none_user():
+    """Test that all require functions raise 401 when user is None."""
+    with pytest.raises(HTTPException) as exc_info:
+        require_contract_admin(None)
+    assert exc_info.value.status_code == 401
+    
+    with pytest.raises(HTTPException) as exc_info:
+        require_contract_reviewer(None)
+    assert exc_info.value.status_code == 401
+    
+    with pytest.raises(HTTPException) as exc_info:
+        require_contract_viewer(None)
+    assert exc_info.value.status_code == 401

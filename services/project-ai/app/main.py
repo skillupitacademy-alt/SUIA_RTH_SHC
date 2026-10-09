@@ -54,6 +54,15 @@ async def lifespan(app: FastAPI):
         print(f"ERROR: Database validation failed: {e}")
         raise
     
+    # Startup: Validate JWT configuration
+    try:
+        from app.auth import get_jwt_config
+        jwt_config = get_jwt_config()
+        print(f"✓ JWT configuration validated (algorithm: {jwt_config['algorithm']}, token expiry: {jwt_config['access_token_expire_minutes']} minutes)")
+    except Exception as e:
+        print(f"ERROR: JWT configuration validation failed: {e}")
+        raise
+    
     yield
     
     # Shutdown: Close database connections
