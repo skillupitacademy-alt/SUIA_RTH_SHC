@@ -475,3 +475,179 @@ def test_manifest_validation_hash_binding(generator, valid_validation, clean_com
     recomputed_hash1 = generator._compute_manifest_seal(manifest1)
     assert recomputed_hash1 == manifest1.manifest_sha256
 
+
+def test_artifact_policy_integration_duplicate_prevention():
+    """
+    Test that artifact_policy is integrated into manifest generation.
+    
+    This test verifies duplicate prevention: when ObjectiveBlock.tsx exists in repository,
+    ObjectiveBlockV2.tsx candidate should get UPDATE action pointing to ObjectiveBlock.tsx,
+    not ADD action creating a new file.
+    
+    This is finding #3 from W3C review: integration test for artifact_policy.
+    """
+    import tempfile
+    import json
+    import os
+    
+    # Create mock snapshot with existing IntroductionI7 artifacts
+    snapshot = {
+        "evidence": [
+            {
+                "type": "component",
+                "path": "packages/ui/src/tutorial/blocks/IntroductionI7Block.tsx",
+                "contentHash": "existing_component_hash_123",
+                "hash": "existing_component_hash_123"
+            },
+            {
+                "type": "schema",
+                "path": "packages/ui/src/tutorial/schemas/IntroductionI7Schema.ts",
+                "contentHash": "existing_schema_hash_456",
+                "hash": "existing_schema_hash_456"
+            }
+        ]
+    }
+    
+    # Write snapshot to temporary file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump(snapshot, f)
+        snapshot_path = f.name
+    
+    try:
+        # Create generator with snapshot
+        generator = PlacementManifestGenerator(snapshot_path=snapshot_path)
+        
+        # Create validation for IntroductionI7 candidate (versioned duplicate)
+        validation = MockValidationResult(
+            valid=True,
+            sha256="new_candidate_hash_789",
+            target_family="Introduction",
+            target_version="I7",
+            errors=[],
+            evidence={
+                "artifact_count": 2
+            }
+        )
+        
+        # Create clean comparison (no issues)
+        comparison = MockComparisonReport(
+            has_breaking_changes=False,
+            deviations=[],
+            evidence={}
+        )
+        
+        # Create target binding
+        target_binding = {
+            "workflow_id": "test-workflow-duplicate-prevention",
+            "target_family": "Introduction",
+            "target_version": "I7",
+            "specification_id": "spec-duplicate-test",
+        }
+        
+        # Generate manifest
+        manifest = generator.generate(validation, comparison, target_binding)
+        
+        # VERIFY: artifact_policy was called and determined UPDATE actions
+        # (not ADD, because semantic matches exist in repository)
+        component_path = next(
+            (fp for fp in manifest.file_paths if fp["type"] == "component"),
+            None
+        )
+        assert component_path is not None
+        
+        # Action should be UPDATE (duplicate prevention in action)
+        assert component_path["action"] == "UPDATE"
+        
+        # Target path should point to existing file (not create new versioned file)
+        assert component_path["target"] == "packages/ui/src/tutorial/blocks/IntroductionI7Block.tsx"
+        
+        # Same for schema
+        schema_path = next(
+            (fp for fp in manifest.file_paths if fp["type"] == "schema"),
+            None
+        )
+        assert schema_path is not None
+        assert schema_path["action"] == "UPDATE"
+        assert schema_path["target"] == "packages/ui/src/tutorial/schemas/IntroductionI7Schema.ts"
+        
+    finally:
+        # Clean up temporary file
+        os.unlink(snapshot_path)
+
+
+def test_artifact_policy_integration_new_artifact():
+    """
+    Test that artifact_policy correctly identifies new artifacts (ADD action).
+    
+    When no semantic match exists in repository, action should be ADD.
+    """
+    import tempfile
+    import json
+    import os
+    
+    # Create mock snapshot with NO AssessmentA1 artifacts
+    snapshot = {
+        "evidence": [
+            {
+                "type": "component",
+                "path": "packages/ui/src/tutorial/blocks/IntroductionI7Block.tsx",
+                "contentHash": "existing_hash_123",
+                "hash": "existing_hash_123"
+            }
+        ]
+    }
+    
+    # Write snapshot to temporary file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump(snapshot, f)
+        snapshot_path = f.name
+    
+    try:
+        # Create generator with snapshot
+        generator = PlacementManifestGenerator(snapshot_path=snapshot_path)
+        
+        # Create validation for AssessmentA1 candidate (NEW artifact)
+        validation = MockValidationResult(
+            valid=True,
+            sha256="new_candidate_hash_999",
+            target_family="Assessment",
+            target_version="A1",
+            errors=[],
+            evidence={
+                "artifact_count": 2
+            }
+        )
+        
+        # Create clean comparison
+        comparison = MockComparisonReport(
+            has_breaking_changes=False,
+            deviations=[],
+            evidence={}
+        )
+        
+        # Create target binding
+        target_binding = {
+            "workflow_id": "test-workflow-new-artifact",
+            "target_family": "Assessment",
+            "target_version": "A1",
+            "specification_id": "spec-new-test",
+        }
+        
+        # Generate manifest
+        manifest = generator.generate(validation, comparison, target_binding)
+        
+        # VERIFY: Action should be ADD (no semantic match in repository)
+        component_path = next(
+            (fp for fp in manifest.file_paths if fp["type"] == "component"),
+            None
+        )
+        assert component_path is not None
+        assert component_path["action"] == "ADD"
+        
+        # Target path should be new path (not reused)
+        assert "AssessmentA1Block.tsx" in component_path["target"]
+        
+    finally:
+        # Clean up temporary file
+        os.unlink(snapshot_path)
+

@@ -191,13 +191,21 @@ class PlacementManifestGenerator:
         """
         Generate target file paths for candidate placement.
         
+        Wave 3C: Integrates artifact_policy for canonical placement decisions.
+        Each file gets an action determined by repository semantic matching:
+        - ADD: New artifact with no semantic match
+        - UPDATE: Semantic match with different content (duplicate prevention)
+        - EXTEND: Semantic match with variant indicator
+        - REUSE: Semantic match with identical content
+        - REJECT: Quality/compatibility issue (will fail validation)
+        
         Args:
             validation: ValidationResult from candidate validation
             target_family: Target block family
             target_version: Target block version
             
         Returns:
-            List of file path mappings
+            List of file path mappings with actions determined by artifact_policy
         """
         file_paths: List[Dict[str, Any]] = []
         
@@ -205,15 +213,33 @@ class PlacementManifestGenerator:
         blocks_base = "packages/ui/src/tutorial/blocks"
         schemas_base = "packages/ui/src/tutorial/schemas"
         
+        # Load repository index for semantic matching
+        repository_index = self._load_repository_index()
+        
         # Component file
         component_file = f"{target_family}{target_version}Block.tsx"
         component_target = f"{blocks_base}/{component_file}"
         
+        # Determine action via artifact_policy
+        component_match = artifact_policy.find_semantic_match(component_file, repository_index)
+        component_action = artifact_policy.determine_action(
+            candidate_content="",  # Content not available at this stage (hash-based matching)
+            candidate_filename=component_file,
+            repository_match=component_match
+        )
+        
+        # Get canonical target path (respects duplicate prevention)
+        component_final_target = artifact_policy.get_target_path(
+            action=component_action,
+            candidate_path=component_target,
+            repository_match=component_match
+        )
+        
         file_paths.append({
             "source": component_file,
-            "target": component_target,
+            "target": component_final_target if component_final_target else component_target,
             "type": "component",
-            "action": "write",
+            "action": component_action.value,  # PlacementDecision enum value
             "backup_required": True
         })
         
@@ -221,11 +247,26 @@ class PlacementManifestGenerator:
         schema_file = f"{target_family}{target_version}Schema.ts"
         schema_target = f"{schemas_base}/{schema_file}"
         
+        # Determine action via artifact_policy
+        schema_match = artifact_policy.find_semantic_match(schema_file, repository_index)
+        schema_action = artifact_policy.determine_action(
+            candidate_content="",
+            candidate_filename=schema_file,
+            repository_match=schema_match
+        )
+        
+        # Get canonical target path
+        schema_final_target = artifact_policy.get_target_path(
+            action=schema_action,
+            candidate_path=schema_target,
+            repository_match=schema_match
+        )
+        
         file_paths.append({
             "source": schema_file,
-            "target": schema_target,
+            "target": schema_final_target if schema_final_target else schema_target,
             "type": "schema",
-            "action": "write",
+            "action": schema_action.value,
             "backup_required": True
         })
         
@@ -235,11 +276,29 @@ class PlacementManifestGenerator:
         artifact_count = candidate_evidence.get("artifact_count", 0)
         
         if artifact_count > 2:  # More than just component and schema
+            types_file = "types.ts"
+            types_target = f"{blocks_base}/{types_file}"
+            
+            # Determine action via artifact_policy
+            types_match = artifact_policy.find_semantic_match(types_file, repository_index)
+            types_action = artifact_policy.determine_action(
+                candidate_content="",
+                candidate_filename=types_file,
+                repository_match=types_match
+            )
+            
+            # Get canonical target path
+            types_final_target = artifact_policy.get_target_path(
+                action=types_action,
+                candidate_path=types_target,
+                repository_match=types_match
+            )
+            
             file_paths.append({
-                "source": "types.ts",
-                "target": f"{blocks_base}/types.ts",
+                "source": types_file,
+                "target": types_final_target if types_final_target else types_target,
                 "type": "types",
-                "action": "write",
+                "action": types_action.value,
                 "backup_required": False
             })
         
@@ -325,16 +384,25 @@ class PlacementManifestGenerator:
         if self._repository_index is not None:
             return self._repository_index
         
-        # If no snapshot path provided, return empty index
+        # If no snapshot path provided, warn and return empty index
         if self.snapshot_path is None:
+            import logging
+            logging.warning(
+                "PlacementManifestGenerator: snapshot_path not provided. "
+                "Duplicate prevention disabled - all artifacts will use ADD action."
+            )
             return []
         
         # Load snapshot
         try:
             with open(self.snapshot_path, 'r', encoding='utf-8') as f:
                 snapshot = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            # If snapshot not found or invalid, return empty index
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            import logging
+            logging.warning(
+                f"PlacementManifestGenerator: Failed to load snapshot from {self.snapshot_path}: {e}. "
+                "Duplicate prevention disabled - all artifacts will use ADD action."
+            )
             return []
         
         # Build repository index
