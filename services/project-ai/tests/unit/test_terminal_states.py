@@ -1,11 +1,17 @@
 """
-Unit Tests for Terminal State Enforcement - M2.9 Wave 0
+Unit Tests for Terminal State Enforcement - M2.9 R3
 
 Tests for terminal state detection, immutability enforcement, and evidence requirements.
+
+R3 Updates:
+- Service now requires repository dependencies
+- All operations async
+- Mocked repositories for unit testing
 """
 
 import pytest
 from datetime import datetime, timezone
+from unittest.mock import AsyncMock
 
 from app.orchestration.canonical_workflow import (
     CanonicalWorkflowState,
@@ -13,12 +19,54 @@ from app.orchestration.canonical_workflow import (
     is_gate_state
 )
 from app.orchestration.workflow_governance import WorkflowGovernanceService
+from app.persistence import WorkflowModel
 
 
 @pytest.fixture
-def governance_service():
-    """Create a fresh WorkflowGovernanceService for each test."""
-    return WorkflowGovernanceService()
+def mock_session():
+    """Create a mock async session."""
+    session = AsyncMock()
+    session.commit = AsyncMock()
+    session.rollback = AsyncMock()
+    return session
+
+
+@pytest.fixture
+def mock_workflow_repo():
+    """Create a mock WorkflowRepository."""
+    repo = AsyncMock()
+    repo.get = AsyncMock(return_value=None)
+    repo.upsert = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def mock_approval_repo():
+    """Create a mock ApprovalRepository."""
+    repo = AsyncMock()
+    repo.get_by_workflow = AsyncMock(return_value=None)
+    repo.upsert = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def mock_state_transition_repo():
+    """Create a mock StateTransitionRepository."""
+    repo = AsyncMock()
+    repo.list_by_workflow = AsyncMock(return_value=[])
+    repo.create = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def governance_service(mock_workflow_repo, mock_approval_repo, mock_state_transition_repo, mock_session):
+    """Create a fresh WorkflowGovernanceService with mocked dependencies."""
+    return WorkflowGovernanceService(
+        workflow_repo=mock_workflow_repo,
+        approval_repo=mock_approval_repo,
+        state_transition_repo=mock_state_transition_repo,
+        session=mock_session
+    )
 
 
 @pytest.mark.parametrize("state,expected", [
@@ -34,15 +82,30 @@ def test_terminal_state_detection(state, expected):
     assert is_terminal_state(state) == expected
 
 
-def test_terminal_state_immutability_certified(governance_service):
+@pytest.mark.asyncio
+async def test_terminal_state_immutability_certified(governance_service, mock_workflow_repo):
     """Test validate_transition() rejects all transitions from CERTIFIED state."""
     # Create workflow and force to CERTIFIED
-    workflow = governance_service.create_workflow(
+    workflow = await governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
-    workflow.current_state = CanonicalWorkflowState.CERTIFIED
+    
+    # Mock repository to return workflow in CERTIFIED state
+    workflow_model = WorkflowModel(
+        workflow_id=workflow.workflow_id,
+        specification_id=workflow.specification_id,
+        target_family=workflow.target_family,
+        target_version=workflow.target_version,
+        requester_id=workflow.requester_id,
+        current_state=CanonicalWorkflowState.CERTIFIED.value,
+        final_status="CERTIFIED",
+        created_at=workflow.created_at,
+        updated_at=workflow.updated_at
+    )
+    workflow_model.state_transitions = []
+    mock_workflow_repo.get.return_value = workflow_model
     
     # Try various transitions from CERTIFIED (all should fail)
     target_states = [
@@ -53,7 +116,7 @@ def test_terminal_state_immutability_certified(governance_service):
     ]
     
     for target_state in target_states:
-        is_valid, reason = governance_service.validate_transition(
+        is_valid, reason = await governance_service.validate_transition(
             workflow.workflow_id,
             target_state
         )
@@ -61,15 +124,30 @@ def test_terminal_state_immutability_certified(governance_service):
         assert "terminal state" in reason
 
 
-def test_terminal_state_immutability_rejected(governance_service):
+@pytest.mark.asyncio
+async def test_terminal_state_immutability_rejected(governance_service, mock_workflow_repo):
     """Test validate_transition() rejects all transitions from REJECTED state."""
     # Create workflow and force to REJECTED
-    workflow = governance_service.create_workflow(
+    workflow = await governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
-    workflow.current_state = CanonicalWorkflowState.REJECTED
+    
+    # Mock repository to return workflow in REJECTED state
+    workflow_model = WorkflowModel(
+        workflow_id=workflow.workflow_id,
+        specification_id=workflow.specification_id,
+        target_family=workflow.target_family,
+        target_version=workflow.target_version,
+        requester_id=workflow.requester_id,
+        current_state=CanonicalWorkflowState.REJECTED.value,
+        final_status="REJECTED",
+        created_at=workflow.created_at,
+        updated_at=workflow.updated_at
+    )
+    workflow_model.state_transitions = []
+    mock_workflow_repo.get.return_value = workflow_model
     
     # Try various transitions from REJECTED (all should fail)
     target_states = [
@@ -80,7 +158,7 @@ def test_terminal_state_immutability_rejected(governance_service):
     ]
     
     for target_state in target_states:
-        is_valid, reason = governance_service.validate_transition(
+        is_valid, reason = await governance_service.validate_transition(
             workflow.workflow_id,
             target_state
         )
@@ -88,19 +166,35 @@ def test_terminal_state_immutability_rejected(governance_service):
         assert "terminal state" in reason
 
 
-def test_transition_state_raises_from_terminal(governance_service):
+@pytest.mark.asyncio
+async def test_transition_state_raises_from_terminal(governance_service, mock_workflow_repo):
     """Test transition_state raises ValueError when attempting to transition from terminal state."""
     # Create workflow and force to CERTIFIED
-    workflow = governance_service.create_workflow(
+    workflow = await governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
-    workflow.current_state = CanonicalWorkflowState.CERTIFIED
+    
+    # Mock repository to return workflow in CERTIFIED state
+    workflow_model = WorkflowModel(
+        workflow_id=workflow.workflow_id,
+        specification_id=workflow.specification_id,
+        target_family=workflow.target_family,
+        target_version=workflow.target_version,
+        requester_id=workflow.requester_id,
+        current_state=CanonicalWorkflowState.CERTIFIED.value,
+        final_status="CERTIFIED",
+        created_at=workflow.created_at,
+        updated_at=workflow.updated_at,
+        version=1
+    )
+    workflow_model.state_transitions = []
+    mock_workflow_repo.get.return_value = workflow_model
     
     # Attempt transition should raise ValueError
     with pytest.raises(ValueError) as exc_info:
-        governance_service.transition_state(
+        await governance_service.transition_state(
             workflow_id=workflow.workflow_id,
             to_state=CanonicalWorkflowState.DISCOVERY,
             triggered_by="system",
@@ -110,19 +204,32 @@ def test_transition_state_raises_from_terminal(governance_service):
     assert "terminal state" in str(exc_info.value)
 
 
-def test_final_status_set_on_certified(governance_service):
+@pytest.mark.asyncio
+async def test_final_status_set_on_certified(governance_service, mock_workflow_repo):
     """Test final_status set correctly when transitioning to CERTIFIED state."""
-    workflow = governance_service.create_workflow(
+    workflow = await governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
     
-    # Force to AWAITING_GATE_2 (allows transition to CERTIFIED)
-    workflow.current_state = CanonicalWorkflowState.AWAITING_GATE_2
+    # Mock repository to return workflow in AWAITING_GATE_2 state
+    workflow_model = WorkflowModel(
+        workflow_id=workflow.workflow_id,
+        specification_id=workflow.specification_id,
+        target_family=workflow.target_family,
+        target_version=workflow.target_version,
+        requester_id=workflow.requester_id,
+        current_state=CanonicalWorkflowState.AWAITING_GATE_2.value,
+        created_at=workflow.created_at,
+        updated_at=workflow.updated_at,
+        version=1
+    )
+    workflow_model.state_transitions = []
+    mock_workflow_repo.get.return_value = workflow_model
     
     # Transition to CERTIFIED
-    updated = governance_service.transition_state(
+    updated = await governance_service.transition_state(
         workflow_id=workflow.workflow_id,
         to_state=CanonicalWorkflowState.CERTIFIED,
         triggered_by="user_123",
@@ -133,19 +240,32 @@ def test_final_status_set_on_certified(governance_service):
     assert updated.is_terminal() is True
 
 
-def test_final_status_set_on_rejected(governance_service):
+@pytest.mark.asyncio
+async def test_final_status_set_on_rejected(governance_service, mock_workflow_repo):
     """Test final_status set correctly when transitioning to REJECTED state."""
-    workflow = governance_service.create_workflow(
+    workflow = await governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
     )
     
-    # Force to AWAITING_GATE_1 (allows transition to REJECTED)
-    workflow.current_state = CanonicalWorkflowState.AWAITING_GATE_1
+    # Mock repository to return workflow in AWAITING_GATE_1 state
+    workflow_model = WorkflowModel(
+        workflow_id=workflow.workflow_id,
+        specification_id=workflow.specification_id,
+        target_family=workflow.target_family,
+        target_version=workflow.target_version,
+        requester_id=workflow.requester_id,
+        current_state=CanonicalWorkflowState.AWAITING_GATE_1.value,
+        created_at=workflow.created_at,
+        updated_at=workflow.updated_at,
+        version=1
+    )
+    workflow_model.state_transitions = []
+    mock_workflow_repo.get.return_value = workflow_model
     
     # Transition to REJECTED
-    updated = governance_service.transition_state(
+    updated = await governance_service.transition_state(
         workflow_id=workflow.workflow_id,
         to_state=CanonicalWorkflowState.REJECTED,
         triggered_by="user_123",
@@ -156,9 +276,10 @@ def test_final_status_set_on_rejected(governance_service):
     assert updated.is_terminal() is True
 
 
-def test_evidence_binding(governance_service):
+@pytest.mark.asyncio
+async def test_evidence_binding(governance_service):
     """Test workflows can accumulate evidence_ids list."""
-    workflow = governance_service.create_workflow(
+    workflow = await governance_service.create_workflow(
         target_family="Introduction",
         target_version="I7",
         requester_id="user_123"
