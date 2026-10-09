@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
 from jose import JWTError, jwt
-from jose.exceptions import ExpiredSignatureError
+from jose.exceptions import ExpiredSignatureError, JWTClaimsError
 
 from .config import get_jwt_config
 
@@ -27,14 +27,18 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     config = get_jwt_config()
     to_encode = data.copy()
     
+    now = datetime.now(timezone.utc)
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = now + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = now + timedelta(
             minutes=config["access_token_expire_minutes"]
         )
     
-    to_encode.update({"exp": expire})
+    to_encode.update({
+        "exp": expire,
+        "iat": now
+    })
     
     encoded_jwt = jwt.encode(
         to_encode,
@@ -49,6 +53,12 @@ def decode_access_token(token: str) -> dict:
     """
     Decode and validate a JWT access token.
     
+    Validates:
+    - Token signature and expiration
+    - Audience must be "user"
+    - tokenType must be "user"
+    - Required identity claims: userId, originalUserId, shadowUserId
+    
     Args:
         token: JWT token string to decode
     
@@ -56,24 +66,56 @@ def decode_access_token(token: str) -> dict:
         Dictionary payload from the token
     
     Raises:
-        HTTPException: 401 if token is invalid or expired
+        HTTPException: 401 if token is invalid, expired, or missing required claims
     """
     config = get_jwt_config()
     
     try:
+        # Decode without audience validation - we'll validate manually
         payload = jwt.decode(
             token,
             config["secret_key"],
-            algorithms=[config["algorithm"]]
+            algorithms=[config["algorithm"]],
+            options={
+                "verify_aud": False,  # Disable automatic audience validation
+                "require": ["exp", "iat"]
+            }
         )
-        return payload
     except ExpiredSignatureError:
         raise HTTPException(
             status_code=401,
             detail="Invalid or expired token"
         )
-    except JWTError:
+    except (JWTError, JWTClaimsError) as e:
         raise HTTPException(
             status_code=401,
             detail="Invalid or expired token"
         )
+    
+    # Validate audience claim exists and equals "user"
+    audience = payload.get("aud")
+    if audience != "user":
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token audience"
+        )
+    
+    # Validate tokenType
+    token_type = payload.get("tokenType")
+    if token_type != "user":
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token type"
+        )
+    
+    # Validate required identity claims
+    required_claims = ["userId", "originalUserId", "shadowUserId"]
+    for claim in required_claims:
+        claim_value = payload.get(claim)
+        if not isinstance(claim_value, str) or not claim_value.strip():
+            raise HTTPException(
+                status_code=401,
+                detail=f"Missing or invalid {claim} claim"
+            )
+    
+    return payload

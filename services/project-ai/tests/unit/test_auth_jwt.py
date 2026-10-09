@@ -44,7 +44,15 @@ def test_create_access_token_valid():
 
 def test_decode_access_token_valid():
     """Test decoding a valid JWT access token."""
-    data = {"sub": "user456", "roles": ["contract_admin"]}
+    data = {
+        "sub": "user456",
+        "aud": "user",
+        "tokenType": "user",
+        "userId": "usr_456",
+        "originalUserId": "usr_456",
+        "shadowUserId": "usr_456",
+        "roles": ["contract_admin"]
+    }
     token = create_access_token(data)
     
     decoded = decode_access_token(token)
@@ -96,6 +104,11 @@ def test_create_decode_roundtrip():
     """Test full roundtrip: create token, decode it, verify data integrity."""
     original_data = {
         "sub": "roundtrip_user",
+        "aud": "user",
+        "tokenType": "user",
+        "userId": "usr_roundtrip",
+        "originalUserId": "usr_roundtrip",
+        "shadowUserId": "usr_roundtrip",
         "roles": ["contract_admin", "contract_reviewer", "contract_viewer"],
         "email": "test@example.com"
     }
@@ -113,7 +126,15 @@ def test_token_exp_claim_is_timezone_aware():
     """Test that the exp claim uses timezone-aware UTC datetime."""
     from datetime import datetime, timezone
     
-    data = {"sub": "tz_test_user", "roles": ["contract_viewer"]}
+    data = {
+        "sub": "tz_test_user",
+        "aud": "user",
+        "tokenType": "user",
+        "userId": "usr_tz_test",
+        "originalUserId": "usr_tz_test",
+        "shadowUserId": "usr_tz_test",
+        "roles": ["contract_viewer"]
+    }
     token = create_access_token(data, expires_delta=timedelta(minutes=10))
     
     # Decode the token
