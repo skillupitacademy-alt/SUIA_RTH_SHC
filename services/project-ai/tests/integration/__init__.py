@@ -1,6 +1,1 @@
-"""
-Wave 10: Integration and Negative Testing Package
-
-Contains comprehensive end-to-end integration tests and negative tests
-for the I2 certification workflow.
-"""
+"""PostgreSQL integration tests for M2.9 R3 persistence layer."""
