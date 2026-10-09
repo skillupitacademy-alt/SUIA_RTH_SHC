@@ -3,6 +3,7 @@
   "component": "placement-engine",
   "status": "implemented",
   "timestamp": "2026-10-09T16:30:00Z",
+  "commit_sha": "f0c22ea6",
   "branch": "m2-project-ai-canonical-wiring",
   "files_created": [
     "services/project-ai/app/placement/scorer.py",
