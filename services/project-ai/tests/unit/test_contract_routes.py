@@ -52,6 +52,41 @@ def sample_workflow():
     return workflow
 
 
+@pytest.fixture
+def mock_repo_contract():
+    """Create a complete mock RepositoryBlockContract with all required fields from FEAT-002."""
+    return MagicMock(
+        references=[],
+        schema_contract={},
+        renderer_contract={},
+        composer_contract={},
+        runtime=RuntimeContract(),  # Must be a real instance
+        required_artifacts=["artifact1"],
+        acceptance_criteria=["criteria1"],
+        # FEAT-002 fields: snapshot-derived metadata
+        language="TypeScript",
+        framework="React",
+        style="CSS Modules",
+        difficulty_level="intermediate",
+        file_paths={
+            "component": "packages/ui/src/tutorial/blocks/Introduction/I7/Introduction.tsx",
+            "schema": "packages/ui/src/tutorial/blocks/Introduction/I7/schema.ts",
+            "types": "packages/ui/src/tutorial/blocks/Introduction/I7/types.ts",
+            "tests": "packages/ui/src/tutorial/blocks/Introduction/I7/__tests__/Introduction.test.tsx"
+        },
+        test_requirements=[
+            "Unit tests for component rendering",
+            "Accessibility tests (WCAG 2.1 AA)",
+            "Responsive design tests"
+        ],
+        type_strictness={
+            "strict_mode": True,
+            "no_any": True,
+            "no_implicit_any": True
+        }
+    )
+
+
 class TestAuthenticationRequired:
     """Test that authentication is required for contract endpoints."""
     
@@ -93,7 +128,7 @@ class TestAuthenticationRequired:
 class TestWorkflowOwnership:
     """Test that workflow ownership is verified."""
     
-    def test_create_contract_with_valid_auth(self, sample_workflow):
+    def test_create_contract_with_valid_auth(self, sample_workflow, mock_repo_contract):
         """Test POST succeeds with valid authentication."""
         # Mock snapshot loading and build_repo_contract to avoid repository access
         mock_snapshot = {"evidence": [], "blocks": {}}
@@ -102,15 +137,7 @@ class TestWorkflowOwnership:
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
             mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
-            mock_build.return_value = MagicMock(
-                references=[],
-                schema_contract={},
-                renderer_contract={},
-                composer_contract={},
-                runtime=RuntimeContract(),  # Must be a real instance
-                required_artifacts=["artifact1"],
-                acceptance_criteria=["criteria1"]
-            )
+            mock_build.return_value = mock_repo_contract
             
             response = client.post(
                 f"/workflows/{sample_workflow.workflow_id}/engineering-contract",
@@ -123,7 +150,7 @@ class TestWorkflowOwnership:
             assert "contract_hash" in data
             assert len(data["contract_hash"]) == 64  # SHA-256 hex
     
-    def test_create_contract_auto_creates_workflow_for_owner(self, sample_workflow):
+    def test_create_contract_auto_creates_workflow_for_owner(self, sample_workflow, mock_repo_contract):
         """Test that workflow lookup succeeds for authenticated user."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
@@ -131,15 +158,7 @@ class TestWorkflowOwnership:
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
             mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
-            mock_build.return_value = MagicMock(
-                references=[],
-                schema_contract={},
-                renderer_contract={},
-                composer_contract={},
-                runtime=RuntimeContract(),
-                required_artifacts=[],
-                acceptance_criteria=[]
-            )
+            mock_build.return_value = mock_repo_contract
             
             # User can access their own workflow
             response1 = client.post(
@@ -158,7 +177,7 @@ class TestWorkflowOwnership:
             assert response2.status_code == 404
             assert "workflow not found" in response2.json()["detail"].lower()
     
-    def test_get_contract_verifies_ownership(self, sample_workflow):
+    def test_get_contract_verifies_ownership(self, sample_workflow, mock_repo_contract):
         """Test GET returns contract for valid workflow."""
         # Create contract
         mock_snapshot = {"evidence": [], "blocks": {}}
@@ -167,15 +186,7 @@ class TestWorkflowOwnership:
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
             mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
-            mock_build.return_value = MagicMock(
-                references=[],
-                schema_contract={},
-                renderer_contract={},
-                composer_contract={},
-                runtime=RuntimeContract(),
-                required_artifacts=[],
-                acceptance_criteria=[]
-            )
+            mock_build.return_value = mock_repo_contract
             
             create_response = client.post(
                 f"/workflows/{sample_workflow.workflow_id}/engineering-contract",
@@ -196,7 +207,7 @@ class TestWorkflowOwnership:
 class TestWorkflowStateValidation:
     """Test that workflow state is validated before contract creation."""
     
-    def test_workflow_auto_created_in_valid_state(self, sample_workflow):
+    def test_workflow_auto_created_in_valid_state(self, sample_workflow, mock_repo_contract):
         """Test that contracts can be generated for workflows."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
@@ -204,15 +215,7 @@ class TestWorkflowStateValidation:
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
             mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
-            mock_build.return_value = MagicMock(
-                references=[],
-                schema_contract={},
-                renderer_contract={},
-                composer_contract={},
-                runtime=RuntimeContract(),
-                required_artifacts=[],
-                acceptance_criteria=[]
-            )
+            mock_build.return_value = mock_repo_contract
             
             response = client.post(
                 f"/workflows/{sample_workflow.workflow_id}/engineering-contract",
@@ -227,7 +230,7 @@ class TestWorkflowStateValidation:
 class TestContractImmutability:
     """Test contract immutability enforcement."""
     
-    def test_repeat_call_returns_same_contract(self, sample_workflow):
+    def test_repeat_call_returns_same_contract(self, sample_workflow, mock_repo_contract):
         """Test that calling POST twice returns the same contract (same hash)."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
@@ -235,15 +238,7 @@ class TestContractImmutability:
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
             mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
-            mock_build.return_value = MagicMock(
-                references=[],
-                schema_contract={},
-                renderer_contract={},
-                composer_contract={},
-                runtime=RuntimeContract(),
-                required_artifacts=[],
-                acceptance_criteria=[]
-            )
+            mock_build.return_value = mock_repo_contract
             
             # First call
             response1 = client.post(
@@ -272,7 +267,7 @@ class TestContractImmutability:
 class TestHashVerification:
     """Test hash verification on GET endpoint."""
     
-    def test_get_contract_verifies_hash(self, sample_workflow):
+    def test_get_contract_verifies_hash(self, sample_workflow, mock_repo_contract):
         """Test GET verifies contract hash and returns contract if valid."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
@@ -280,15 +275,7 @@ class TestHashVerification:
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
             mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
-            mock_build.return_value = MagicMock(
-                references=[],
-                schema_contract={},
-                renderer_contract={},
-                composer_contract={},
-                runtime=RuntimeContract(),
-                required_artifacts=[],
-                acceptance_criteria=[]
-            )
+            mock_build.return_value = mock_repo_contract
             
             # Create contract
             create_response = client.post(
@@ -307,7 +294,7 @@ class TestHashVerification:
             contract = get_response.json()
             assert len(contract["contract_hash"]) == 64
     
-    def test_get_contract_detects_tampering(self, sample_workflow):
+    def test_get_contract_detects_tampering(self, sample_workflow, mock_repo_contract):
         """Test GET returns 500 if contract hash doesn't match (tampering detected)."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
@@ -315,15 +302,7 @@ class TestHashVerification:
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
             mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
-            mock_build.return_value = MagicMock(
-                references=[],
-                schema_contract={},
-                renderer_contract={},
-                composer_contract={},
-                runtime=RuntimeContract(),
-                required_artifacts=[],
-                acceptance_criteria=[]
-            )
+            mock_build.return_value = mock_repo_contract
             
             # Create contract
             create_response = client.post(
@@ -360,7 +339,7 @@ class TestHashVerification:
 class TestProhibitedBehaviorsInContract:
     """Test that prohibited behaviors are included in generated contracts."""
     
-    def test_contract_includes_prohibited_behaviors(self, sample_workflow):
+    def test_contract_includes_prohibited_behaviors(self, sample_workflow, mock_repo_contract):
         """Test that generated contract includes all prohibited behaviors."""
         mock_snapshot = {"evidence": [], "blocks": {}}
         with patch("app.api.routes.contract.load_repository_snapshot") as mock_load, \
@@ -368,15 +347,7 @@ class TestProhibitedBehaviorsInContract:
              patch("app.api.routes.contract.build_repo_contract") as mock_build:
             mock_load.return_value = mock_snapshot
             mock_sha256.return_value = "a" * 64  # Mock SHA-256 hash
-            mock_build.return_value = MagicMock(
-                references=[],
-                schema_contract={},
-                renderer_contract={},
-                composer_contract={},
-                runtime=RuntimeContract(),
-                required_artifacts=[],
-                acceptance_criteria=[]
-            )
+            mock_build.return_value = mock_repo_contract
             
             response = client.post(
                 f"/workflows/{sample_workflow.workflow_id}/engineering-contract",
