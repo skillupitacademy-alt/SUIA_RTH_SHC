@@ -296,6 +296,7 @@ export class TokenService {
 
     return new SignJWT({ ...payload, originalUserId, shadowUserId, tokenType, brand })
       .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer('skillhubcore.in')
       .setAudience(audience)
       .setIssuedAt()
       .setExpirationTime(expiration)

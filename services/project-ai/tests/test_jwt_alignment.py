@@ -221,31 +221,52 @@ def test_user_token_signed_with_external_secret_fails():
     assert "Invalid or expired token" in exc_info.value.detail
 
 
-def test_admin_token_signed_with_user_secret_accepted_by_dual_verification(jwt_secret, admin_jwt_secret):
+def test_admin_token_signed_with_user_secret_rejected(jwt_secret, admin_jwt_secret):
     """
-    Wave 1A Requirement: Dual-secret verification accepts tokens signed with either secret.
+    Wave 1A Requirement: Strict secret-to-tokenType binding enforcement.
     
-    Tests the dual-secret verification pattern matching SHC TokenService.verifyAccessToken:
-    tokens are tried with user_secret first, then admin_secret. This means an admin token
-    signed with JWT_SECRET will be accepted (when trying user_secret), which is expected
-    behavior matching the SHC fallback pattern.
+    Tests that admin tokens MUST be signed with ADMIN_JWT_SECRET. An admin token
+    signed with JWT_SECRET is rejected with 401, preventing privilege escalation
+    where an attacker with user secret could forge admin tokens.
     
-    This test verifies that the dual-secret implementation works correctly by accepting
-    tokens signed with either secret, not just the "intended" one.
+    This enforces the security principle that tokenType='admin' tokens must verify
+    with admin_secret only, not user_secret.
     """
-    # Create admin token signed with user secret
+    # Create admin token signed with user secret (security violation)
     token = create_test_token(
         secret=jwt_secret,  # Using user secret for admin token
         token_type="admin",
         user_id="admin_999"
     )
     
-    # Should be accepted via dual-secret verification
-    payload = decode_access_token(token)
+    # Should be rejected due to secret-type mismatch
+    with pytest.raises(HTTPException) as exc_info:
+        decode_access_token(token)
     
-    assert payload["tokenType"] == "admin"
-    assert payload["aud"] == "admin"
-    assert payload["userId"] == "admin_999"
+    assert exc_info.value.status_code == 401
+    assert "Admin token must be signed with admin secret" in exc_info.value.detail
+
+
+def test_user_token_signed_with_admin_secret_rejected(jwt_secret, admin_jwt_secret):
+    """
+    Wave 1A Requirement: Strict secret-to-tokenType binding is bidirectional.
+    
+    Tests that user tokens MUST be signed with JWT_SECRET. A user token
+    signed with ADMIN_JWT_SECRET is rejected with 401.
+    """
+    # Create user token signed with admin secret
+    token = create_test_token(
+        secret=admin_jwt_secret,  # Using admin secret for user token
+        token_type="user",
+        user_id="user_888"
+    )
+    
+    # Should be rejected due to secret-type mismatch
+    with pytest.raises(HTTPException) as exc_info:
+        decode_access_token(token)
+    
+    assert exc_info.value.status_code == 401
+    assert "User token must be signed with user secret" in exc_info.value.detail
 
 
 def test_token_with_missing_identity_claims_fails(jwt_secret):
@@ -287,3 +308,34 @@ def test_expired_token_fails(jwt_secret):
     
     assert exc_info.value.status_code == 401
     assert "Invalid or expired token" in exc_info.value.detail
+
+
+def test_admin_privilege_enforcement_rejects_user_token(jwt_secret):
+    """
+    Wave 1A Requirement: Admin-only routes must reject valid user tokens with 403.
+    
+    Tests that an endpoint requiring contract_admin role correctly rejects
+    a valid user token that doesn't have the admin role. This ensures that
+    admin privilege flags are properly exposed and enforced by RBAC dependencies.
+    """
+    from app.auth.dependencies import get_current_user, require_contract_admin
+    
+    # Create a valid user token without contract_admin role
+    token = create_test_token(
+        secret=jwt_secret,
+        token_type="user",
+        user_id="regular_user_999"
+    )
+    authorization = f"Bearer {token}"
+    
+    # Extract user from token (should succeed - token is valid)
+    user = get_current_user(authorization)
+    assert user["user_id"] == "regular_user_999"
+    assert user["token_type"] == "user"
+    
+    # Try to access admin-only resource (should fail with 403)
+    with pytest.raises(HTTPException) as exc_info:
+        require_contract_admin(user)
+    
+    assert exc_info.value.status_code == 403
+    assert "Requires contract_admin role" in exc_info.value.detail

@@ -18,8 +18,10 @@ def get_current_user(authorization: str = Header(...)) -> dict:
     
     Returns:
         dict with keys:
-            - user_id: User identifier from 'sub' claim
+            - user_id: User identifier from 'userId' claim (fallback to 'sub')
             - roles: List of role strings from 'roles' claim
+            - token_type: Token type ('user' or 'admin')
+            - is_admin: Boolean admin flag from 'isAdmin' claim
     
     Raises:
         HTTPException: 401 if authorization header is missing or token is invalid
@@ -41,9 +43,16 @@ def get_current_user(authorization: str = Header(...)) -> dict:
     token = parts[1]
     payload = decode_access_token(token)
     
+    # Extract user_id from userId claim (SHC standard), fallback to sub for backward compatibility
+    user_id = payload.get("userId")
+    if not user_id:
+        user_id = payload.get("sub")
+    
     return {
-        "user_id": payload.get("sub"),
-        "roles": payload.get("roles", [])
+        "user_id": user_id,
+        "roles": payload.get("roles", []),
+        "token_type": payload.get("tokenType"),
+        "is_admin": payload.get("isAdmin", False)
     }
 
 

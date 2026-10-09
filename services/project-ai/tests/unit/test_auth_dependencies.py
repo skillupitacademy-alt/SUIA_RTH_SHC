@@ -46,6 +46,33 @@ def test_get_current_user_valid():
     
     assert user["user_id"] == "user123"
     assert user["roles"] == ["contract_viewer"]
+    assert user["token_type"] == "user"
+    assert user["is_admin"] is False
+
+
+def test_get_current_user_with_userid_only():
+    """Test extracting user from token with userId claim only (no sub).
+    
+    Real SHC tokens use 'userId' as the primary identifier, not 'sub'.
+    This test ensures tokens with only userId (without sub) work correctly.
+    """
+    data = {
+        "aud": "user",
+        "tokenType": "user",
+        "userId": "user456",
+        "originalUserId": "user456",
+        "shadowUserId": "user456",
+        "roles": ["contract_admin"]
+    }
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    user = get_current_user(authorization)
+    
+    assert user["user_id"] == "user456"
+    assert user["roles"] == ["contract_admin"]
+    assert user["token_type"] == "user"
+    assert user["is_admin"] is False
 
 
 def test_get_current_user_missing_header():

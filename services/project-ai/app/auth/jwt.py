@@ -60,11 +60,9 @@ def decode_access_token(token: str) -> dict:
     - Audience must be "user" or "admin"
     - tokenType must be "user" or "admin"
     - Required identity claims: userId, originalUserId, shadowUserId
-    
-    Implements dual-secret verification matching SHC TokenService.verifyAccessToken():
-    - Try user_secret first
-    - Fall back to admin_secret on JWTError
-    - Raise 401 if both fail
+    - Strict secret-to-tokenType binding: 
+      * tokenType='user' must verify with user_secret
+      * tokenType='admin' must verify with admin_secret
     
     Args:
         token: JWT token string to decode
@@ -76,13 +74,15 @@ def decode_access_token(token: str) -> dict:
         HTTPException: 401 if token is invalid, expired, or missing required claims
     """
     config = get_jwt_config()
-    last_error = None
     
-    # Try user secret first, then admin secret (matching SHC verifyAccessToken pattern)
-    for secret in [config["user_secret"], config["admin_secret"]]:
+    # Try decoding with both secrets to extract tokenType, then enforce strict binding
+    payload = None
+    verified_with_secret = None
+    
+    for secret_type, secret in [("user", config["user_secret"]), ("admin", config["admin_secret"])]:
         try:
             # Decode with issuer validation
-            payload = jwt.decode(
+            decoded = jwt.decode(
                 token,
                 secret,
                 algorithms=[config["algorithm"]],
@@ -91,59 +91,68 @@ def decode_access_token(token: str) -> dict:
                     "require": ["exp", "iat", "iss"]
                 }
             )
-            
-            # Validate issuer
-            issuer = payload.get("iss")
-            if issuer != "skillhubcore.in":
-                raise HTTPException(
-                    status_code=401,
-                    detail="Invalid token issuer"
-                )
-            
-            # Validate audience claim exists and equals "user" or "admin"
-            audience = payload.get("aud")
-            if audience not in ["user", "admin"]:
-                raise HTTPException(
-                    status_code=401,
-                    detail="Invalid token audience"
-                )
-            
-            # Validate tokenType
-            token_type = payload.get("tokenType")
-            if token_type not in ["user", "admin"]:
-                raise HTTPException(
-                    status_code=401,
-                    detail="Invalid token type"
-                )
-            
-            # Validate required identity claims
-            required_claims = ["userId", "originalUserId", "shadowUserId"]
-            for claim in required_claims:
-                claim_value = payload.get(claim)
-                if not isinstance(claim_value, str) or not claim_value.strip():
-                    raise HTTPException(
-                        status_code=401,
-                        detail=f"Missing or invalid {claim} claim"
-                    )
-            
-            # Token is valid with this secret
-            return payload
-            
-        except HTTPException:
-            # Re-raise validation errors (issuer, audience, claims)
-            raise
+            payload = decoded
+            verified_with_secret = secret_type
+            break
         except ExpiredSignatureError:
             raise HTTPException(
                 status_code=401,
                 detail="Invalid or expired token"
             )
-        except (JWTError, JWTClaimsError) as e:
-            # Save error and try next secret
-            last_error = e
+        except (JWTError, JWTClaimsError):
+            # Try next secret
             continue
     
-    # Both secrets failed
-    raise HTTPException(
-        status_code=401,
-        detail="Invalid or expired token"
-    )
+    if payload is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired token"
+        )
+    
+    # Validate issuer
+    issuer = payload.get("iss")
+    if issuer != "skillhubcore.in":
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token issuer"
+        )
+    
+    # Validate audience claim exists and equals "user" or "admin"
+    audience = payload.get("aud")
+    if audience not in ["user", "admin"]:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token audience"
+        )
+    
+    # Validate tokenType
+    token_type = payload.get("tokenType")
+    if token_type not in ["user", "admin"]:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token type"
+        )
+    
+    # STRICT SECRET BINDING: Enforce that tokenType matches the secret used
+    if token_type == "admin" and verified_with_secret != "admin":
+        raise HTTPException(
+            status_code=401,
+            detail="Admin token must be signed with admin secret"
+        )
+    if token_type == "user" and verified_with_secret != "user":
+        raise HTTPException(
+            status_code=401,
+            detail="User token must be signed with user secret"
+        )
+    
+    # Validate required identity claims
+    required_claims = ["userId", "originalUserId", "shadowUserId"]
+    for claim in required_claims:
+        claim_value = payload.get(claim)
+        if not isinstance(claim_value, str) or not claim_value.strip():
+            raise HTTPException(
+                status_code=401,
+                detail=f"Missing or invalid {claim} claim"
+            )
+    
+    return payload
