@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
+from app.auth.types import AuthenticatedPrincipal
 from app.models.candidate import (
     BlockFamily,
     CandidatePackage,
@@ -191,7 +192,7 @@ def get_discovery_client() -> DiscoveryClient:
 @router.post("/upload", response_model=Dict[str, Any])
 async def upload_candidate(
     package: CandidatePackage,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     session: AsyncSession = Depends(get_db_session)
 ):
@@ -361,7 +362,7 @@ async def upload_candidate(
 @router.post("/{candidate_id}/classify", response_model=ClassificationResult)
 async def classify_candidate(
     candidate_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository)
 ):
     """
@@ -481,7 +482,7 @@ async def classify_candidate(
 @router.post("/{candidate_id}/compare", response_model=CanonicalComparison)
 async def compare_candidate(
     candidate_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     session: AsyncSession = Depends(get_db_session),
     client: DiscoveryClient = Depends(get_discovery_client)
@@ -555,7 +556,7 @@ async def compare_candidate(
 @router.post("/{candidate_id}/manifest", response_model=PlacementManifest)
 async def generate_manifest(
     candidate_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     manifest_repo: ManifestRepository = Depends(get_manifest_repository),
     session: AsyncSession = Depends(get_db_session),
@@ -731,7 +732,7 @@ async def generate_manifest(
 @router.get("/{candidate_id}/manifest", response_model=PlacementManifest)
 async def get_manifest(
     candidate_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     manifest_repo: ManifestRepository = Depends(get_manifest_repository)
 ):
@@ -768,7 +769,7 @@ async def get_manifest(
 
 @router.get("", response_model=Dict[str, Any])
 async def list_candidates(
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     manifest_repo: ManifestRepository = Depends(get_manifest_repository)
 ):
@@ -794,7 +795,7 @@ async def list_candidates(
 @router.post("/{candidate_id}/execute", response_model=Dict[str, Any])
 async def execute_placement(
     candidate_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     manifest_repo: ManifestRepository = Depends(get_manifest_repository),
     approval_repo: ApprovalRepository = Depends(get_approval_repository)

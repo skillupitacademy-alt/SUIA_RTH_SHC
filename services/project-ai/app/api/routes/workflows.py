@@ -17,6 +17,7 @@ from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
+from app.auth.types import AuthenticatedPrincipal
 from app.api.schemas.workflow import (
     WorkflowResponse,
     CreateWorkflowRequest,
@@ -127,7 +128,7 @@ def _workflow_to_response(workflow) -> WorkflowResponse:
 @router.post("", response_model=WorkflowResponse, status_code=201)
 async def create_workflow(
     request: CreateWorkflowRequest,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> WorkflowResponse:
@@ -157,7 +158,7 @@ async def create_workflow(
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
 async def get_workflow(
     workflow_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service)
 ) -> WorkflowResponse:
     """
@@ -185,7 +186,7 @@ async def get_workflow(
 async def transition_workflow(
     workflow_id: str,
     request: TransitionRequest,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> WorkflowResponse:
@@ -234,7 +235,7 @@ async def transition_workflow(
 @router.get("/{workflow_id}/history", response_model=List[StateTransitionInfo])
 async def get_workflow_history(
     workflow_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service)
 ) -> List[StateTransitionInfo]:
     """
@@ -272,7 +273,7 @@ async def get_workflow_history(
 async def bind_artifact(
     workflow_id: str,
     request: BindArtifactRequest,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> WorkflowResponse:
@@ -319,7 +320,7 @@ async def bind_artifact(
 
 @router.get("", response_model=List[WorkflowResponse])
 async def list_workflows(
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service)
 ) -> List[WorkflowResponse]:
     """
@@ -336,7 +337,7 @@ async def list_workflows(
 async def create_placement(
     workflow_id: str,
     request: CreatePlacementRequest,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     placement_engine: PlacementEngine = Depends(get_placement_engine),
     session: AsyncSession = Depends(get_db_session)
 ) -> PlacementEngineResponse:
@@ -390,7 +391,7 @@ async def override_placement(
     workflow_id: str,
     candidate_id: str,
     request: PlacementOverrideRequest,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     placement_engine: PlacementEngine = Depends(get_placement_engine),
     session: AsyncSession = Depends(get_db_session)
 ) -> PlacementEngineResponse:
@@ -441,7 +442,7 @@ async def override_placement(
 @router.get("/{workflow_id}/placement/conflicts", response_model=List[PlacementConflictResponse])
 async def list_placement_conflicts(
     workflow_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     placement_engine: PlacementEngine = Depends(get_placement_engine),
     session: AsyncSession = Depends(get_db_session)
 ) -> List[PlacementConflictResponse]:
@@ -497,7 +498,7 @@ async def list_placement_conflicts(
 async def approve_final_certification(
     workflow_id: str,
     request: FinalApprovalRequest,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> FinalApprovalResponse:

@@ -5,6 +5,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, Depends
 
 from app.auth.dependencies import get_current_user
+from app.auth.types import AuthenticatedPrincipal
 from app.orchestration.agent_registry import Agent, AgentRegistry, AgentType
 
 router = APIRouter(prefix="/agents", tags=["agents"])
@@ -14,7 +15,7 @@ _registry = AgentRegistry()
 
 
 @router.get("", response_model=List[Agent])
-async def list_agents(user: dict = Depends(get_current_user)):
+async def list_agents(user: AuthenticatedPrincipal = Depends(get_current_user)):
     """
     List all registered agents.
     
@@ -25,7 +26,7 @@ async def list_agents(user: dict = Depends(get_current_user)):
 
 
 @router.get("/{agent_type}", response_model=Agent)
-async def get_agent(agent_type: str, user: dict = Depends(get_current_user)):
+async def get_agent(agent_type: str, user: AuthenticatedPrincipal = Depends(get_current_user)):
     """
     Get agent definition by type.
     

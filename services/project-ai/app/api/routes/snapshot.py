@@ -5,6 +5,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.dependencies import get_current_user
+from app.auth.types import AuthenticatedPrincipal
 from app.repository.discovery_client import DiscoveryClient
 
 router = APIRouter(prefix="/snapshot", tags=["snapshot"])
@@ -36,7 +37,7 @@ def get_discovery_client() -> DiscoveryClient:
 
 @router.get("", response_model=Dict[str, Any])
 async def get_snapshot(
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     client: DiscoveryClient = Depends(get_discovery_client)
 ):
     """
@@ -66,7 +67,7 @@ async def get_snapshot(
 
 @router.get("/metadata", response_model=Dict[str, Any])
 async def get_snapshot_metadata(
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     client: DiscoveryClient = Depends(get_discovery_client)
 ):
     """

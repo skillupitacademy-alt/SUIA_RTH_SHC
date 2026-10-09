@@ -7,21 +7,24 @@ Provides FastAPI dependencies for authentication and authorization.
 from fastapi import Depends, Header, HTTPException
 
 from .jwt import decode_access_token
+from .types import AuthenticatedPrincipal
 
 
-def get_current_user(authorization: str = Header(...)) -> dict:
+def get_current_user(authorization: str = Header(...)) -> AuthenticatedPrincipal:
     """
     Extract and validate user from JWT Bearer token.
+    
+    Extracts complete identity context from verified SHC JWT tokens including:
+    - Core identity (user_id, original_user_id, shadow_user_id)
+    - Tenant boundary (brand)
+    - Authorization context (roles, portal_identity, token_type, is_admin)
+    - Additional context (email, platforms, subscriptions)
     
     Args:
         authorization: Authorization header value (expected: "Bearer <token>")
     
     Returns:
-        dict with keys:
-            - user_id: User identifier from 'userId' claim (fallback to 'sub')
-            - roles: List of role strings from 'roles' claim
-            - token_type: Token type ('user' or 'admin')
-            - is_admin: Boolean admin flag from 'isAdmin' claim
+        AuthenticatedPrincipal with all extracted claims
     
     Raises:
         HTTPException: 401 if authorization header is missing or token is invalid
@@ -50,23 +53,30 @@ def get_current_user(authorization: str = Header(...)) -> dict:
     
     return {
         "user_id": user_id,
+        "original_user_id": payload.get("originalUserId"),
+        "shadow_user_id": payload.get("shadowUserId"),
+        "brand": payload.get("brand"),
         "roles": payload.get("roles", []),
+        "portal_identity": payload.get("portalIdentity"),
         "token_type": payload.get("tokenType"),
-        "is_admin": payload.get("isAdmin", False)
+        "is_admin": payload.get("isAdmin", False),
+        "email": payload.get("email"),
+        "platforms": payload.get("platforms", []),
+        "subscriptions": payload.get("subscriptions", [])
     }
 
 
-def require_contract_admin(user: dict = Depends(get_current_user)) -> dict:
+def require_contract_admin(user: AuthenticatedPrincipal = Depends(get_current_user)) -> AuthenticatedPrincipal:
     """
     Require contract_admin role.
     
     This is a FastAPI dependency that automatically extracts and validates the user.
     
     Args:
-        user: User dictionary from get_current_user dependency
+        user: User identity from get_current_user dependency
     
     Returns:
-        User dictionary if authorized
+        User identity if authorized
     
     Raises:
         HTTPException: 403 if user doesn't have contract_admin role
@@ -80,17 +90,17 @@ def require_contract_admin(user: dict = Depends(get_current_user)) -> dict:
     return user
 
 
-def require_contract_reviewer(user: dict = Depends(get_current_user)) -> dict:
+def require_contract_reviewer(user: AuthenticatedPrincipal = Depends(get_current_user)) -> AuthenticatedPrincipal:
     """
     Require contract_reviewer or contract_admin role.
     
     Role hierarchy: admin can do reviewer tasks.
     
     Args:
-        user: User dictionary from get_current_user dependency
+        user: User identity from get_current_user dependency
     
     Returns:
-        User dictionary if authorized
+        User identity if authorized
     
     Raises:
         HTTPException: 403 if user doesn't have contract_reviewer or contract_admin role
@@ -105,17 +115,17 @@ def require_contract_reviewer(user: dict = Depends(get_current_user)) -> dict:
     return user
 
 
-def require_contract_viewer(user: dict = Depends(get_current_user)) -> dict:
+def require_contract_viewer(user: AuthenticatedPrincipal = Depends(get_current_user)) -> AuthenticatedPrincipal:
     """
     Require contract_viewer, contract_reviewer, or contract_admin role.
     
     Role hierarchy: admin ⊃ reviewer ⊃ viewer.
     
     Args:
-        user: User dictionary from get_current_user dependency
+        user: User identity from get_current_user dependency
     
     Returns:
-        User dictionary if authorized
+        User identity if authorized
     
     Raises:
         HTTPException: 403 if user doesn't have any contract role

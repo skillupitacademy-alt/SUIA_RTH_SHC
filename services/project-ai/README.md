@@ -221,6 +221,62 @@ Admin tokens have elevated privileges and must:
 - Be signed with `ADMIN_JWT_SECRET` (or `JWT_SECRET` in fallback mode)
 - Include the same identity claims as user tokens
 
+### Identity Claims
+
+Wave 1B extracts complete identity context from verified SHC JWT tokens. The `get_current_user()` dependency returns an `AuthenticatedPrincipal` TypedDict with all 11 identity claims:
+
+#### Core Identity (Required)
+- **user_id** (`str`): Primary user identifier from `userId` claim (fallback to `sub` for backward compatibility)
+- **original_user_id** (`Optional[str]`): Original user ID before any impersonation/shadowing
+- **shadow_user_id** (`Optional[str]`): Shadow user ID when admin impersonates another user
+
+#### Tenant Boundary (Critical for Brand Isolation)
+- **brand** (`Optional[str]`): Brand/tenant identifier for multi-tenant isolation (Wave 1C dependency)
+
+#### Authorization Context
+- **roles** (`list[str]`): List of role identifiers (e.g., `['contract_admin', 'contract_viewer']`)
+- **portal_identity** (`Optional[Literal]`): Portal identity type - one of: `'admin'`, `'user'`, `'faculty'`, `'super_admin'`, `'infrastructure'`
+- **token_type** (`Optional[Literal]`): Token type - `'user'` or `'admin'`
+- **is_admin** (`bool`): Boolean admin flag (defaults to `False` if not present)
+
+#### Additional Context
+- **email** (`Optional[str]`): User email address
+- **platforms** (`list[str]`): List of platforms user has access to (e.g., `['web', 'mobile']`)
+- **subscriptions** (`list[str]`): List of active subscription identifiers
+
+#### Example Usage
+
+```python
+from fastapi import Depends
+from app.auth.dependencies import get_current_user
+from app.auth.types import AuthenticatedPrincipal
+
+@router.get("/protected")
+async def protected_route(user: AuthenticatedPrincipal = Depends(get_current_user)):
+    # Access identity claims
+    user_id = user["user_id"]
+    brand = user["brand"]
+    roles = user["roles"]
+    
+    # Check admin privilege
+    if user["is_admin"]:
+        # Admin-only logic
+        pass
+    
+    # Check specific role
+    if "contract_admin" in roles:
+        # Role-specific logic
+        pass
+    
+    return {"user_id": user_id, "brand": brand}
+```
+
+#### Backward Compatibility
+
+All route handlers receiving `user: dict` continue to work unchanged. The new `AuthenticatedPrincipal` type is a TypedDict (not a Pydantic model), so it behaves like a regular dict at runtime with IDE type hints.
+
+Missing optional claims default to `None` (for Optional fields) or `[]` (for list fields), ensuring safe access without None checks.
+
 ### Security Notes
 
 - **Never commit secrets**: Use environment variables or secure secret management

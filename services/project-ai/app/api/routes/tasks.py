@@ -24,6 +24,7 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Depends
 
 from app.auth.dependencies import get_current_user
+from app.auth.types import AuthenticatedPrincipal
 from app.api.schemas.models import (
     TaskActionResponse,
     TaskCreateRequest,
@@ -40,7 +41,7 @@ _tasks: Dict[str, Dict] = {}
 @router.post("/plan", response_model=TaskResponse)
 async def create_planning_task(
     request: TaskCreateRequest,
-    user: dict = Depends(get_current_user)
+    user: AuthenticatedPrincipal = Depends(get_current_user)
 ):
     """
     Create a new planning task.
@@ -76,7 +77,7 @@ async def create_planning_task(
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task_status(
     task_id: str,
-    user: dict = Depends(get_current_user)
+    user: AuthenticatedPrincipal = Depends(get_current_user)
 ):
     """
     Get task status by ID.

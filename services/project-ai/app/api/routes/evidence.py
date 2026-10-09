@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.dependencies import get_current_user
+from app.auth.types import AuthenticatedPrincipal
 from app.repository.discovery_client import DiscoveryClient
 
 router = APIRouter(prefix="/evidence", tags=["evidence"])
@@ -30,7 +31,7 @@ def get_discovery_client() -> DiscoveryClient:
 @router.get("/{evidence_id}", response_model=Dict[str, Any])
 async def get_evidence_by_id(
     evidence_id: str,
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     client: DiscoveryClient = Depends(get_discovery_client)
 ):
     """
@@ -66,7 +67,7 @@ async def get_evidence_by_id(
 
 @router.get("", response_model=List[Dict[str, Any]])
 async def get_all_evidence(
-    user: dict = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
     client: DiscoveryClient = Depends(get_discovery_client)
 ):
     """
