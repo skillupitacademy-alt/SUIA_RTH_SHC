@@ -1,0 +1,7 @@
+{
+  "task_id": "r2-engineering-contract-derivation",
+  "task_description": "Make engineering contract fully repository-derived instead of using hardcoded values",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}
