@@ -7,6 +7,27 @@ Architecture Rules:
 - NO schema mutations in application code (no create_all())
 - Schema changes ONLY through Drizzle migrations
 - Startup validates connectivity and table existence, does not create tables
+
+Transaction Management:
+- Sessions are created with autocommit=False
+- Repository methods flush() but do NOT commit()
+- Route handlers MUST explicitly call await session.commit() to persist changes
+- Use try/except with session.rollback() for error handling
+
+Example usage:
+    @app.post("/workflows")
+    async def create_workflow(
+        repo: WorkflowRepository = Depends(get_workflow_repository),
+        session: AsyncSession = Depends(get_db_session)
+    ):
+        try:
+            workflow = WorkflowModel(...)
+            result = await repo.upsert(workflow)
+            await session.commit()  # REQUIRED: Persist changes
+            return result
+        except Exception as e:
+            await session.rollback()  # Rollback on error
+            raise
 """
 
 from fastapi import Depends

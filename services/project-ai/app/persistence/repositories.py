@@ -22,9 +22,8 @@ TRANSACTION MANAGEMENT:
 
 import hashlib
 import json
-import uuid
 from datetime import datetime
-from typing import List, Optional, Protocol, Dict, Any, Union
+from typing import List, Optional, Protocol, Dict, Any
 
 from sqlalchemy import select, update, delete
 from sqlalchemy.dialects.postgresql import insert
@@ -75,8 +74,20 @@ class HashMismatchError(Exception):
 class WorkflowRepository(Protocol):
     """Repository interface for ProjectLLMWorkflow persistence."""
     
-    async def get(self, workflow_id: Union[str, uuid.UUID]) -> Optional[WorkflowModel]:
-        """Get workflow by ID."""
+    async def get(self, workflow_id: str, verify_bindings: bool = True) -> Optional[WorkflowModel]:
+        """
+        Get workflow by ID with automatic artifact binding verification.
+        
+        Args:
+            workflow_id: Workflow ID
+            verify_bindings: If True, verify artifact hash bindings match bound artifacts
+        
+        Returns:
+            Workflow model if found, None otherwise
+            
+        Raises:
+            HashMismatchError: If verify_bindings=True and artifact binding verification fails
+        """
         ...
     
     async def upsert(self, workflow: WorkflowModel, expected_version: Optional[int] = None) -> WorkflowModel:
@@ -85,7 +96,9 @@ class WorkflowRepository(Protocol):
         
         Args:
             workflow: Workflow to persist
-            expected_version: For updates, the expected current version (optimistic locking)
+            expected_version: For updates, the expected current version (optimistic locking).
+                             If None, the repository will read the current version atomically
+                             using SELECT FOR UPDATE to avoid race conditions.
         
         Returns:
             Persisted workflow with updated version
@@ -107,7 +120,7 @@ class WorkflowRepository(Protocol):
         """List workflows by requester."""
         ...
     
-    async def delete(self, workflow_id: Union[str, uuid.UUID]) -> bool:
+    async def delete(self, workflow_id: str) -> bool:
         """
         Delete workflow and cascade to related records.
         
@@ -120,24 +133,36 @@ class WorkflowRepository(Protocol):
 class ContractRepository(Protocol):
     """Repository interface for EngineeringContract persistence."""
     
-    async def get(self, contract_id: Union[str, uuid.UUID], verify_hash: bool = True) -> Optional[ContractModel]:
+    async def get(self, contract_id: str) -> Optional[ContractModel]:
         """
         Get contract by ID with automatic hash verification.
         
+        Hash verification is always performed to ensure contract integrity.
+        
         Args:
             contract_id: Contract ID
-            verify_hash: If True, verify contract data hash before returning
         
         Returns:
             Contract model if found, None otherwise
             
         Raises:
-            HashMismatchError: If verify_hash=True and hash verification fails
+            HashMismatchError: If hash verification fails (contract tampered/corrupted)
         """
         ...
     
-    async def get_by_workflow(self, workflow_id: Union[str, uuid.UUID], verify_hash: bool = True) -> Optional[ContractModel]:
-        """Get contract by workflow ID (1:1 relationship) with hash verification."""
+    async def get_by_workflow(self, workflow_id: str) -> Optional[ContractModel]:
+        """
+        Get contract by workflow ID (1:1 relationship) with automatic hash verification.
+        
+        Args:
+            workflow_id: Workflow ID
+        
+        Returns:
+            Contract model if found, None otherwise
+            
+        Raises:
+            HashMismatchError: If hash verification fails
+        """
         ...
     
     async def get_by_hash(self, contract_hash: str) -> Optional[ContractModel]:
@@ -190,19 +215,20 @@ class CandidateRepository(Protocol):
 class ManifestRepository(Protocol):
     """Repository interface for PlacementManifest persistence."""
     
-    async def get(self, manifest_id: str, verify_hash: bool = True) -> Optional[ManifestModel]:
+    async def get(self, manifest_id: str) -> Optional[ManifestModel]:
         """
         Get manifest by ID with automatic hash verification.
         
+        Hash verification is always performed to ensure manifest integrity.
+        
         Args:
             manifest_id: Manifest ID
-            verify_hash: If True, verify manifest data hash before returning
         
         Returns:
             Manifest model if found, None otherwise
             
         Raises:
-            HashMismatchError: If verify_hash=True and hash verification fails
+            HashMismatchError: If hash verification fails (manifest tampered/corrupted)
         """
         ...
     
@@ -294,34 +320,67 @@ class PostgresWorkflowRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
     
-    async def get(self, workflow_id: str) -> Optional[WorkflowModel]:
-        """Get workflow by ID."""
+    async def get(self, workflow_id: str, verify_bindings: bool = True) -> Optional[WorkflowModel]:
+        """
+        Get workflow by ID with automatic artifact binding verification.
+        
+        Args:
+            workflow_id: Workflow ID
+            verify_bindings: If True, verify artifact hash bindings match bound artifacts
+        
+        Returns:
+            Workflow model if found, None otherwise
+            
+        Raises:
+            HashMismatchError: If verify_bindings=True and artifact binding verification fails
+        """
         result = await self.session.execute(
             select(WorkflowModel).where(WorkflowModel.workflow_id == workflow_id)
         )
-        return result.scalar_one_or_none()
+        workflow = result.scalar_one_or_none()
+        
+        if workflow is not None and verify_bindings:
+            # Verify artifact bindings when relationships are loaded
+            if not workflow.verify_artifact_bindings(
+                contract=workflow.contract if hasattr(workflow, 'contract') else None,
+                # Note: candidate and manifest are not direct relationships on workflow,
+                # so they must be loaded explicitly by the caller if needed for verification
+            ):
+                raise HashMismatchError(
+                    "Workflow",
+                    workflow_id,
+                    "artifact_binding_hash",
+                    "computed_hash_mismatch"
+                )
+        
+        return workflow
     
     async def upsert(self, workflow: WorkflowModel, expected_version: Optional[int] = None) -> WorkflowModel:
         """
         Insert or update workflow with atomic optimistic locking.
         
-        Uses ON CONFLICT for inserts and WHERE version = expected_version for atomic updates.
-        The version check is performed atomically in the UPDATE's WHERE clause to prevent
-        race conditions between read and write.
+        Uses SELECT FOR UPDATE to read current version atomically when expected_version is None,
+        eliminating race conditions between read and update operations.
         """
+        # If no expected version provided, we need to check if workflow exists
         if expected_version is None:
-            # First time upsert or no version check requested - try insert first
-            existing = await self.get(workflow.workflow_id)
+            # Use SELECT FOR UPDATE to lock the row and read version atomically
+            result = await self.session.execute(
+                select(WorkflowModel.version)
+                .where(WorkflowModel.workflow_id == workflow.workflow_id)
+                .with_for_update()
+            )
+            existing_version = result.scalar_one_or_none()
             
-            if existing is None:
+            if existing_version is None:
                 # Insert new workflow
                 self.session.add(workflow)
                 await self.session.flush()
                 await self.session.refresh(workflow)
                 return workflow
             else:
-                # Existing found, use its version for update
-                expected_version = existing.version
+                # Use the locked version for update
+                expected_version = existing_version
         
         # Atomic update with version check in WHERE clause
         workflow.updated_at = datetime.utcnow()
@@ -357,17 +416,8 @@ class PostgresWorkflowRepository:
         
         # Check if update succeeded
         if result.rowcount == 0:
-            # Either workflow doesn't exist or version mismatch
-            existing = await self.get(workflow.workflow_id)
-            if existing is None:
-                # Workflow was deleted between check and update - try insert
-                self.session.add(workflow)
-                await self.session.flush()
-                await self.session.refresh(workflow)
-                return workflow
-            else:
-                # Version mismatch - concurrent update detected
-                raise OptimisticLockError("Workflow", str(workflow.workflow_id), expected_version)
+            # Version mismatch - concurrent update detected
+            raise OptimisticLockError("Workflow", workflow.workflow_id, expected_version)
         
         # Update succeeded - refresh to get new state
         await self.session.flush()
@@ -406,61 +456,62 @@ class PostgresContractRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
     
-    async def get(self, contract_id: str, verify_hash: bool = True) -> Optional[ContractModel]:
+    async def get(self, contract_id: str) -> Optional[ContractModel]:
         """
         Get contract by ID with automatic hash verification.
         
+        Hash verification is always performed to ensure contract integrity.
+        
         Args:
             contract_id: Contract ID
-            verify_hash: If True, verify contract data hash before returning
         
         Returns:
             Contract model if found, None otherwise
             
         Raises:
-            HashMismatchError: If verify_hash=True and hash verification fails
+            HashMismatchError: If hash verification fails
         """
         result = await self.session.execute(
             select(ContractModel).where(ContractModel.contract_id == contract_id)
         )
         contract = result.scalar_one_or_none()
         
-        if contract is not None and verify_hash:
-            # Automatically verify hash
+        if contract is not None:
+            # Always verify hash for contract integrity
             if not contract.verify_hash():
                 raise HashMismatchError(
                     "Contract",
-                    str(contract_id),
+                    contract_id,
                     contract.contract_hash,
                     "computed_hash_mismatch"
                 )
         
         return contract
     
-    async def get_by_workflow(self, workflow_id: str, verify_hash: bool = True) -> Optional[ContractModel]:
+    async def get_by_workflow(self, workflow_id: str) -> Optional[ContractModel]:
         """
         Get contract by workflow ID (1:1 relationship) with automatic hash verification.
         
         Args:
             workflow_id: Workflow ID
-            verify_hash: If True, verify contract data hash before returning
         
         Returns:
             Contract model if found, None otherwise
             
         Raises:
-            HashMismatchError: If verify_hash=True and hash verification fails
+            HashMismatchError: If hash verification fails
         """
         result = await self.session.execute(
             select(ContractModel).where(ContractModel.workflow_id == workflow_id)
         )
         contract = result.scalar_one_or_none()
         
-        if contract is not None and verify_hash:
+        if contract is not None:
+            # Always verify hash
             if not contract.verify_hash():
                 raise HashMismatchError(
                     "Contract",
-                    str(contract.contract_id),
+                    contract.contract_id,
                     contract.contract_hash,
                     "computed_hash_mismatch"
                 )
@@ -537,7 +588,14 @@ class PostgresCandidateRepository:
         return list(result.scalars().all())
     
     async def upsert(self, candidate: CandidateModel) -> CandidateModel:
-        """Insert or update candidate using ON CONFLICT."""
+        """
+        Insert or update candidate using ON CONFLICT.
+        
+        Automatically computes candidate_sha256 from files before storage.
+        """
+        # Compute hash from files for tamper detection
+        candidate.candidate_sha256 = candidate.compute_hash()
+        
         stmt = insert(CandidateModel).values(
             candidate_id=candidate.candidate_id,
             workflow_id=candidate.workflow_id,
@@ -576,26 +634,28 @@ class PostgresManifestRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
     
-    async def get(self, manifest_id: str, verify_hash: bool = True) -> Optional[ManifestModel]:
+    async def get(self, manifest_id: str) -> Optional[ManifestModel]:
         """
         Get manifest by ID with automatic hash verification.
         
+        Hash verification is always performed to ensure manifest integrity.
+        
         Args:
             manifest_id: Manifest ID
-            verify_hash: If True, verify manifest data hash before returning
         
         Returns:
             Manifest model if found, None otherwise
             
         Raises:
-            HashMismatchError: If verify_hash=True and hash verification fails
+            HashMismatchError: If hash verification fails
         """
         result = await self.session.execute(
             select(ManifestModel).where(ManifestModel.manifest_id == manifest_id)
         )
         manifest = result.scalar_one_or_none()
         
-        if manifest is not None and verify_hash:
+        if manifest is not None:
+            # Always verify hash for manifest integrity
             # Compute hash from manifest data for verification
             manifest_data = {
                 "decision": manifest.decision,
@@ -610,7 +670,7 @@ class PostgresManifestRepository:
                 computed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
                 raise HashMismatchError(
                     "Manifest",
-                    str(manifest_id),
+                    manifest_id,
                     manifest.manifest_hash,
                     computed_hash
                 )

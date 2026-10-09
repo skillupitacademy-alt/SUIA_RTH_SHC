@@ -22,14 +22,12 @@ DOMAIN MODEL MAPPING:
 
 import hashlib
 import json
-import uuid
 from datetime import datetime
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
 from sqlalchemy import (
     Column, String, Integer, DateTime, ForeignKey, Index, JSON, Text, UniqueConstraint, Identity
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import text
 
@@ -51,11 +49,11 @@ class WorkflowModel(Base):
     
     __tablename__ = "project_ai_workflows"
     
-    # Primary key
-    workflow_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (varchar to match Drizzle schema)
+    workflow_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
     
     # Target specification
-    specification_id = Column(UUID(as_uuid=True), nullable=False)
+    specification_id = Column(String(255), nullable=False)
     target_family = Column(String(100), nullable=False)
     target_version = Column(String(100), nullable=False)
     requester_id = Column(String(255), nullable=False)
@@ -68,20 +66,20 @@ class WorkflowModel(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Artifact bindings (hash-bound for security)
-    contract_id = Column(UUID(as_uuid=True), nullable=True)
+    contract_id = Column(String(255), nullable=True)
     contract_sha256 = Column(String(64), nullable=True)
     
-    candidate_id = Column(UUID(as_uuid=True), nullable=True)
+    candidate_id = Column(String(255), nullable=True)
     candidate_sha256 = Column(String(64), nullable=True)
     
-    manifest_id = Column(UUID(as_uuid=True), nullable=True)
+    manifest_id = Column(String(255), nullable=True)
     manifest_sha256 = Column(String(64), nullable=True)
     
-    snapshot_id = Column(UUID(as_uuid=True), nullable=True)
+    snapshot_id = Column(String(255), nullable=True)
     snapshot_sha256 = Column(String(64), nullable=True)
     
     # Approval tracking
-    approval_id = Column(UUID(as_uuid=True), nullable=True)
+    approval_id = Column(String(255), nullable=True)
     gate_results = Column(JSON, nullable=False, default=dict)
     
     # Evidence
@@ -173,8 +171,8 @@ class WorkflowModel(Base):
         from app.orchestration.canonical_workflow import CanonicalWorkflowState
         
         return ProjectLLMWorkflow(
-            workflow_id=str(self.workflow_id),
-            specification_id=str(self.specification_id),
+            workflow_id=self.workflow_id,
+            specification_id=self.specification_id,
             target_family=self.target_family,
             target_version=self.target_version,
             requester_id=self.requester_id,
@@ -182,15 +180,15 @@ class WorkflowModel(Base):
             created_at=self.created_at,
             updated_at=self.updated_at,
             state_history=[],  # TODO FEAT-003: Map state_transitions relationship
-            contract_id=str(self.contract_id) if self.contract_id else None,
+            contract_id=self.contract_id,
             contract_sha256=self.contract_sha256,
-            candidate_id=str(self.candidate_id) if self.candidate_id else None,
+            candidate_id=self.candidate_id,
             candidate_sha256=self.candidate_sha256,
-            manifest_id=str(self.manifest_id) if self.manifest_id else None,
+            manifest_id=self.manifest_id,
             manifest_sha256=self.manifest_sha256,
-            snapshot_id=str(self.snapshot_id) if self.snapshot_id else None,
+            snapshot_id=self.snapshot_id,
             snapshot_sha256=self.snapshot_sha256,
-            approval_id=str(self.approval_id) if self.approval_id else None,
+            approval_id=self.approval_id,
             gate_results=self.gate_results,
             evidence_ids=self.evidence_ids,
             final_status=self.final_status,
@@ -210,23 +208,23 @@ class WorkflowModel(Base):
             WorkflowModel ORM instance
         """
         return cls(
-            workflow_id=uuid.UUID(domain.workflow_id) if isinstance(domain.workflow_id, str) else domain.workflow_id,
-            specification_id=uuid.UUID(domain.specification_id) if isinstance(domain.specification_id, str) else domain.specification_id,
+            workflow_id=domain.workflow_id,
+            specification_id=domain.specification_id,
             target_family=domain.target_family,
             target_version=domain.target_version,
             requester_id=domain.requester_id,
             current_state=domain.current_state.value,
             created_at=domain.created_at,
             updated_at=domain.updated_at,
-            contract_id=uuid.UUID(domain.contract_id) if domain.contract_id else None,
+            contract_id=domain.contract_id,
             contract_sha256=domain.contract_sha256,
-            candidate_id=uuid.UUID(domain.candidate_id) if domain.candidate_id else None,
+            candidate_id=domain.candidate_id,
             candidate_sha256=domain.candidate_sha256,
-            manifest_id=uuid.UUID(domain.manifest_id) if domain.manifest_id else None,
+            manifest_id=domain.manifest_id,
             manifest_sha256=domain.manifest_sha256,
-            snapshot_id=uuid.UUID(domain.snapshot_id) if domain.snapshot_id else None,
+            snapshot_id=domain.snapshot_id,
             snapshot_sha256=domain.snapshot_sha256,
-            approval_id=uuid.UUID(domain.approval_id) if domain.approval_id else None,
+            approval_id=domain.approval_id,
             gate_results=domain.gate_results,
             evidence_ids=domain.evidence_ids,
             final_status=domain.final_status,
@@ -243,11 +241,13 @@ class StateTransitionModel(Base):
     
     __tablename__ = "project_ai_state_transitions"
     
-    # Primary key (GENERATED BY DEFAULT allows test fixtures to set explicit IDs)
+    # Primary key: Integer auto-increment (different from other entities which use UUID strings)
+    # This is intentional: state transitions are append-only audit logs that don't need
+    # globally unique string IDs, and sequential integers provide natural ordering.
     id = Column(Integer, Identity(start=1, increment=1), primary_key=True)
     
-    # Foreign key to workflow
-    workflow_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False)
+    # Foreign key to workflow (varchar to match Drizzle schema)
+    workflow_id = Column(String(255), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False)
     
     # Transition details
     from_state = Column(String(100), nullable=True)
@@ -256,7 +256,7 @@ class StateTransitionModel(Base):
     triggered_by = Column(String(255), nullable=False)
     
     # Evidence
-    evidence_id = Column(UUID(as_uuid=True), nullable=True)
+    evidence_id = Column(String(255), nullable=True)
     reason = Column(Text, nullable=True)
     
     # Relationship
@@ -278,11 +278,11 @@ class ContractModel(Base):
     
     __tablename__ = "project_ai_contracts"
     
-    # Primary key
-    contract_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (varchar to match Drizzle schema)
+    contract_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
     
-    # Foreign key to workflow (1:1 relationship)
-    workflow_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False, unique=True)
+    # Foreign key to workflow (1:1 relationship, varchar to match Drizzle schema)
+    workflow_id = Column(String(255), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False, unique=True)
     
     # Immutability verification
     contract_hash = Column(String(64), nullable=False, unique=True)
@@ -319,11 +319,11 @@ class CandidateModel(Base):
     
     __tablename__ = "project_ai_candidates"
     
-    # Primary key
-    candidate_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (varchar to match Drizzle schema)
+    candidate_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
     
-    # Foreign key to workflow (optional - candidate may exist before workflow binding)
-    workflow_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_workflows.workflow_id", ondelete="SET NULL"), nullable=True)
+    # Foreign key to workflow (optional, varchar to match Drizzle schema)
+    workflow_id = Column(String(255), ForeignKey("project_ai_workflows.workflow_id", ondelete="SET NULL"), nullable=True)
     
     # Files (stored as JSON array of CandidateFile objects)
     files = Column(JSON, nullable=False)
@@ -336,7 +336,7 @@ class CandidateModel(Base):
     target_family = Column(String(100), nullable=True)
     target_version = Column(String(100), nullable=True)
     
-    # Candidate hash (computed from files)
+    # Candidate hash (computed from files for tamper detection)
     candidate_sha256 = Column(String(64), nullable=True)
     
     # Relationships
@@ -358,6 +358,30 @@ class CandidateModel(Base):
         Index("idx_candidate_uploaded_at", "uploaded_at"),
         Index("idx_candidate_sha256", "candidate_sha256"),
     )
+    
+    def compute_hash(self) -> str:
+        """
+        Compute SHA-256 hash of candidate files for tamper detection.
+        
+        Uses deterministic JSON serialization (sorted keys) to ensure consistent hashing.
+        
+        Returns:
+            SHA-256 hex digest of files JSON
+        """
+        canonical = json.dumps(self.files, sort_keys=True, ensure_ascii=False)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    
+    def verify_hash(self) -> bool:
+        """
+        Verify stored candidate_sha256 matches computed hash from files.
+        
+        Returns:
+            True if hash matches, False otherwise
+        """
+        if self.candidate_sha256 is None:
+            return False
+        computed_hash = self.compute_hash()
+        return self.candidate_sha256 == computed_hash
 
 
 class ManifestModel(Base):
@@ -369,11 +393,11 @@ class ManifestModel(Base):
     
     __tablename__ = "project_ai_manifests"
     
-    # Primary key
-    manifest_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (varchar to match Drizzle schema)
+    manifest_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
     
-    # Foreign key to candidate
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_candidates.candidate_id", ondelete="CASCADE"), nullable=False)
+    # Foreign key to candidate (varchar to match Drizzle schema)
+    candidate_id = Column(String(255), ForeignKey("project_ai_candidates.candidate_id", ondelete="CASCADE"), nullable=False)
     
     # Immutability verification
     manifest_hash = Column(String(64), nullable=False, unique=True)
@@ -417,15 +441,15 @@ class ApprovalModel(Base):
     
     __tablename__ = "project_ai_approvals"
     
-    # Primary key
-    approval_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (varchar to match Drizzle schema)
+    approval_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
     
-    # Foreign key to workflow (1:1 relationship)
-    workflow_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False, unique=True)
+    # Foreign key to workflow (1:1 relationship, varchar to match Drizzle schema)
+    workflow_id = Column(String(255), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False, unique=True)
     
     # Hash bindings
     candidate_sha256 = Column(String(64), nullable=False)
-    placement_manifest_id = Column(UUID(as_uuid=True), nullable=False)
+    placement_manifest_id = Column(String(255), nullable=False)
     placement_manifest_sha256 = Column(String(64), nullable=False)
     
     # Target specification
