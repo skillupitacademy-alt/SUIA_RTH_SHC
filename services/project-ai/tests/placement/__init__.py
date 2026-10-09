@@ -1,1 +1,1 @@
-"""W5 Placement Security Tests"""
+# Placement module tests

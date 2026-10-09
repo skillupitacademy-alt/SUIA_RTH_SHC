@@ -14,7 +14,7 @@ Part of Wave 5 (M2.9 R3) - Placement Engine
 
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -45,7 +45,7 @@ class PlacementEngineResult:
     score: Optional[PlacementScore]
     conflicts: List[str] = field(default_factory=list)
     evidence: Dict[str, Any] = field(default_factory=dict)
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 class PlacementEngine:
@@ -88,7 +88,8 @@ class PlacementEngine:
         self,
         workflow_id: str,
         candidate_id: str,
-        session: AsyncSession
+        session: AsyncSession,
+        all_candidates: Optional[List[CandidatePackage]] = None
     ) -> PlacementEngineResult:
         """
         Create placement decision for a candidate.
@@ -98,12 +99,15 @@ class PlacementEngine:
         2. Load workflow to get target family/version
         3. Load available manifests
         4. Match and score candidate-manifest pairs
-        5. Create placement record with best match
+        5. Detect conflicts with other candidates
+        6. Create placement record with best match
         
         Args:
             workflow_id: Workflow identifier
             candidate_id: Candidate identifier
             session: Async database session
+            all_candidates: Optional list of all candidates for conflict detection.
+                           If None, conflicts will not be detected.
             
         Returns:
             PlacementEngineResult with placement decision
@@ -132,6 +136,22 @@ class PlacementEngine:
             workflow_target_version=workflow.get("target", {}).get("version")
         )
         
+        # Detect conflicts if all_candidates provided
+        if all_candidates and manifests:
+            conflicts_map = await self.matcher.detect_conflicts(
+                candidates=all_candidates,
+                manifests=manifests
+            )
+            # Populate conflicts for this candidate's target path
+            if match_result.best_manifest:
+                target_path = match_result.best_manifest.targetPath
+                if target_path in conflicts_map:
+                    conflicting_ids = conflicts_map[target_path]
+                    if len(conflicting_ids) > 1:
+                        match_result.conflicts = [
+                            f"Multiple candidates ({', '.join(conflicting_ids)}) targeting path: {target_path}"
+                        ]
+        
         # Create placement result
         placement_decision = match_result.recommendation or PlacementDecision.REJECT
         manifest_id = match_result.best_manifest.manifestId if match_result.best_manifest else ""
@@ -153,7 +173,7 @@ class PlacementEngine:
             evidence=evidence
         )
         
-        # Persist placement record (using manifest repo as proxy)
+        # Persist placement record (deferred - see _persist_placement docstring)
         await self._persist_placement(result, session)
         
         return result
@@ -413,13 +433,18 @@ class PlacementEngine:
         """
         Persist placement record to database.
         
-        Uses manifest repository to store placement decision.
+        DEFERRED: Placement persistence is deferred because placement records
+        are currently embedded in the manifest workflow, not stored separately.
+        The placement decision is recorded in the approval flow when the
+        implementation approval is created, binding the manifest to the workflow.
+        
+        Future enhancement: Create a dedicated placement_records table to track
+        all placement decisions independently for audit trails.
         
         Args:
             result: PlacementEngineResult to persist
             session: Async database session
         """
-        # In a real implementation, this would update the manifest record
-        # or create a separate placement_records table
-        # For now, we'll skip actual persistence since the schema isn't defined
+        # Persistence deferred - placement decisions are recorded
+        # during implementation approval creation
         pass

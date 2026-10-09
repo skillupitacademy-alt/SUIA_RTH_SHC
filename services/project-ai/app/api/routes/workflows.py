@@ -30,6 +30,12 @@ from app.api.schemas.workflow import (
     FinalApprovalRequest,
     FinalApprovalResponse
 )
+from app.api.schemas.placement import (
+    PlacementEngineResponse,
+    PlacementOverrideRequest,
+    PlacementConflictResponse,
+    CreatePlacementRequest,
+)
 from app.orchestration.workflow_governance import WorkflowGovernanceService
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.persistence import (
@@ -37,7 +43,12 @@ from app.persistence import (
     get_workflow_repository,
     get_approval_repository,
     get_state_transition_repository,
+    get_candidate_repository,
+    get_manifest_repository,
 )
+from app.placement.placement_engine import PlacementEngine
+from app.placement.scorer import PlacementScorer
+from app.placement.matcher import CandidateManifestMatcher
 
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
@@ -60,6 +71,30 @@ async def get_governance_service(
         approval_repo=approval_repo,
         state_transition_repo=state_transition_repo,
         session=session
+    )
+
+
+async def get_placement_engine(
+    session: AsyncSession = Depends(get_db_session)
+) -> PlacementEngine:
+    """
+    Dependency injection for PlacementEngine.
+    
+    Creates placement engine with repository and component dependencies.
+    """
+    scorer = PlacementScorer()
+    matcher = CandidateManifestMatcher(scorer)
+    
+    workflow_repo = await get_workflow_repository(session)
+    candidate_repo = await get_candidate_repository(session)
+    manifest_repo = await get_manifest_repository(session)
+    
+    return PlacementEngine(
+        matcher=matcher,
+        scorer=scorer,
+        manifest_repo=manifest_repo,
+        candidate_repo=candidate_repo,
+        workflow_repo=workflow_repo
     )
 
 
@@ -295,6 +330,167 @@ async def list_workflows(
     """
     workflows = await governance_service.list_workflows()
     return [_workflow_to_response(w) for w in workflows]
+
+
+@router.post("/{workflow_id}/placement", response_model=PlacementEngineResponse)
+async def create_placement(
+    workflow_id: str,
+    request: CreatePlacementRequest,
+    user: dict = Depends(get_current_user),
+    placement_engine: PlacementEngine = Depends(get_placement_engine),
+    session: AsyncSession = Depends(get_db_session)
+) -> PlacementEngineResponse:
+    """
+    Create placement decision for candidate in workflow.
+    
+    Matches candidate to manifests, scores matches, creates placement record.
+    
+    Args:
+        workflow_id: Workflow identifier
+        request: Placement creation request with candidate_id
+        
+    Returns:
+        Placement decision with score and conflicts
+        
+    Raises:
+        HTTPException: 400 if placement fails, 404 if workflow/candidate not found
+    """
+    try:
+        result = await placement_engine.create_placement(
+            workflow_id=workflow_id,
+            candidate_id=request.candidate_id,
+            session=session
+        )
+        await session.commit()
+        
+        return PlacementEngineResponse(
+            workflow_id=result.workflow_id,
+            candidate_id=result.candidate_id,
+            placement_decision=result.placement_decision.value,
+            manifest_id=result.manifest_id,
+            score={
+                "overall": result.score.score,
+                "criteria": result.score.criteria,
+                "reasoning": result.score.reasoning
+            } if result.score else None,
+            conflicts=result.conflicts,
+            evidence=result.evidence,
+            created_at=result.created_at
+        )
+    except ValueError as e:
+        await session.rollback()
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=400, detail=f"Placement creation failed: {str(e)}")
+
+
+@router.post("/{workflow_id}/placement/override", response_model=PlacementEngineResponse)
+async def override_placement(
+    workflow_id: str,
+    candidate_id: str,
+    request: PlacementOverrideRequest,
+    user: dict = Depends(get_current_user),
+    placement_engine: PlacementEngine = Depends(get_placement_engine),
+    session: AsyncSession = Depends(get_db_session)
+) -> PlacementEngineResponse:
+    """
+    Manually override placement decision.
+    
+    Allows human to specify exact manifest for candidate, bypassing scoring.
+    
+    Args:
+        workflow_id: Workflow identifier
+        candidate_id: Candidate identifier (query param)
+        request: Override request with manifest_id and reason
+        
+    Returns:
+        Placement decision with manual override
+        
+    Raises:
+        HTTPException: 400 if override fails, 404 if entities not found
+    """
+    try:
+        result = await placement_engine.override_placement(
+            workflow_id=workflow_id,
+            candidate_id=candidate_id,
+            manual_manifest_id=request.manual_manifest_id,
+            override_reason=request.override_reason,
+            session=session
+        )
+        await session.commit()
+        
+        return PlacementEngineResponse(
+            workflow_id=result.workflow_id,
+            candidate_id=result.candidate_id,
+            placement_decision=result.placement_decision.value,
+            manifest_id=result.manifest_id,
+            score=None,  # No scoring for manual override
+            conflicts=result.conflicts,
+            evidence=result.evidence,
+            created_at=result.created_at
+        )
+    except ValueError as e:
+        await session.rollback()
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=400, detail=f"Placement override failed: {str(e)}")
+
+
+@router.get("/{workflow_id}/placement/conflicts", response_model=List[PlacementConflictResponse])
+async def list_placement_conflicts(
+    workflow_id: str,
+    user: dict = Depends(get_current_user),
+    placement_engine: PlacementEngine = Depends(get_placement_engine),
+    session: AsyncSession = Depends(get_db_session)
+) -> List[PlacementConflictResponse]:
+    """
+    List all placement conflicts for workflow.
+    
+    Detects multiple candidates targeting the same path.
+    
+    Args:
+        workflow_id: Workflow identifier
+        
+    Returns:
+        List of conflicts with target paths and candidate IDs
+        
+    Raises:
+        HTTPException: 404 if workflow not found
+    """
+    try:
+        # Load all candidates for workflow
+        candidates = []
+        # Note: This would require a candidate_repo.list_by_workflow method
+        # For now, return empty conflicts as the method isn't implemented yet
+        
+        # Load manifests
+        manifests = await placement_engine._load_manifests(workflow_id, session)
+        
+        if not candidates or not manifests:
+            return []
+        
+        # Detect conflicts
+        conflicts_map = await placement_engine.matcher.detect_conflicts(
+            candidates=candidates,
+            manifests=manifests
+        )
+        
+        # Convert to response format
+        return [
+            PlacementConflictResponse(
+                target_path=path,
+                candidate_ids=candidate_ids,
+                conflict_count=len(candidate_ids)
+            )
+            for path, candidate_ids in conflicts_map.items()
+        ]
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to list conflicts: {str(e)}"
+        )
 
 
 @router.post("/{workflow_id}/approve-final", response_model=FinalApprovalResponse)

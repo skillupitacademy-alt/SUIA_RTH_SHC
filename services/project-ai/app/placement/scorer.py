@@ -57,6 +57,9 @@ class PlacementScorer:
         Args:
             weights: Criterion weights (must sum to 1.0). If None, uses equal weights.
             conflict_penalty: Score penalty per conflict (default 0.3)
+            
+        Raises:
+            ValueError: If custom weights do not sum to 1.0
         """
         self.weights = weights or {
             "structural_similarity": 0.25,
@@ -64,6 +67,15 @@ class PlacementScorer:
             "availability": 0.25,
             "conflict_penalty": 0.25,
         }
+        
+        # Validate weights sum to 1.0
+        weight_sum = sum(self.weights.values())
+        if not (0.99 <= weight_sum <= 1.01):  # Allow small floating point errors
+            raise ValueError(
+                f"Weights must sum to 1.0, got {weight_sum}. "
+                f"Provided weights: {self.weights}"
+            )
+        
         self.conflict_penalty = conflict_penalty
     
     def score_match(
@@ -89,7 +101,9 @@ class PlacementScorer:
         reasoning_parts = []
         
         # 1. Structural similarity
-        struct_score = structural_similarity if structural_similarity is not None else 0.5
+        # Default to 0.0 when structural comparison data is unavailable
+        # This avoids biasing scores with an arbitrary midpoint
+        struct_score = structural_similarity if structural_similarity is not None else 0.0
         criteria["structural_similarity"] = struct_score
         reasoning_parts.append(f"structural similarity: {struct_score:.2f}")
         
@@ -185,11 +199,10 @@ class PlacementScorer:
         if not candidate.target_family or not candidate.target_version:
             return 0.0
         
-        # Check family match
-        candidate_family = BlockFamily(candidate.target_family) if isinstance(candidate.target_family, str) else candidate.target_family
-        manifest_family = manifest.blockFamily
+        # Compare family strings directly (both are strings in the domain model)
+        manifest_family_str = manifest.blockFamily.value if hasattr(manifest.blockFamily, 'value') else str(manifest.blockFamily)
         
-        if candidate_family != manifest_family:
+        if candidate.target_family != manifest_family_str:
             return 0.0
         
         # Family matches, check version
