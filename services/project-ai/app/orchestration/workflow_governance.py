@@ -516,6 +516,8 @@ class WorkflowGovernanceService:
         
         Args:
             state: Optional state filter (e.g., "REQUESTED", "BRIEF_READY")
+                   If both state and requester_id are None, defaults to "REQUESTED" state
+                   to prevent inefficient full-table scans in production.
             requester_id: Optional requester filter
             limit: Maximum number of workflows to return (default 100)
             offset: Number of workflows to skip for pagination (default 0)
@@ -524,6 +526,8 @@ class WorkflowGovernanceService:
             List of workflows matching filters
             
         Note:
+            Default behavior when no filters provided: returns workflows in REQUESTED state only.
+            To list all workflows regardless of state, iterate through each state explicitly.
             In production, ensure database queries are indexed on state and requester_id.
             Consider adding created_at range filters for time-based queries.
         """
