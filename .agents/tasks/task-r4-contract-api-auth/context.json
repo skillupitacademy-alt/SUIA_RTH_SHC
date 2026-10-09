@@ -1,0 +1,28 @@
+{
+  "project_type": "FastAPI Python service with PostgreSQL persistence",
+  "language": "Python 3.11+",
+  "build_system": "pip with pyproject.toml, editable install with pip install -e .",
+  "test_framework": "pytest with pytest-asyncio for async tests, httpx for API testing",
+  "build_command": "pip install -e . (in services/project-ai/)",
+  "test_command": "cd services/project-ai && python -m pytest tests/ -v",
+  "verification_instructions": "Run pytest with -v flag. All tests must pass. Integration tests use test_db_session fixture with SQLite (fast) or TEST_DATABASE_URL_TUTORIAL (real PostgreSQL). Service must start with valid JWT_SECRET_KEY environment variable.",
+  "snapshot_or_generated_files": "None. All code is source code, no generated files to commit.",
+  "environment_constraints": "Requires DATABASE_URL_TUTORIAL for PostgreSQL connection (uses asyncpg driver). JWT_SECRET_KEY required at startup (≥32 chars). Never use create_all() for schema changes — only Drizzle migrations.",
+  "contribution_requirements": "R4 builds on R1-R3: R1 (repository intelligence), R2 (seal_contract + ContractFieldEvidence), R3 (PostgreSQL ContractRepository with hash verification). Must use existing repository pattern with Depends() injection. Must call session.commit() after repository writes. Must verify hash integrity on contract reads.",
+  "key_patterns": "Repository pattern: async def endpoint(repo: ContractRepository = Depends(get_contract_repository), session: AsyncSession = Depends(get_db_session)). Auth pattern: user: dict = Depends(require_contract_admin). Test pattern: @pytest_asyncio.fixture for async fixtures, test_db_session from conftest.py for integration tests. Error handling: raise HTTPException(status_code=..., detail=...). JWT: python-jose library, HS256 algorithm, Bearer token in Authorization header.",
+  "relevant_files": [
+    "services/project-ai/pyproject.toml",
+    "services/project-ai/app/main.py",
+    "services/project-ai/app/api/routes/contract.py",
+    "services/project-ai/app/contracts/engineering_contract.py",
+    "services/project-ai/app/contracts/repository_intelligence.py",
+    "services/project-ai/app/persistence/__init__.py",
+    "services/project-ai/app/persistence/repositories.py",
+    "services/project-ai/app/persistence/models.py",
+    "services/project-ai/tests/conftest.py",
+    "services/project-ai/tests/unit/test_contract_routes.py",
+    "services/project-ai/tests/integration/conftest.py",
+    "services/project-ai/tests/integration/test_restart_persistence.py"
+  ],
+  "directory_structure": "services/project-ai/app/ contains main.py (FastAPI app), api/routes/ (route modules), contracts/ (R2 contract logic), persistence/ (R3 repositories + models), auth/ (will create for R4). tests/ contains conftest.py (shared fixtures), unit/ (mocked tests), integration/ (real DB tests). No middleware/ directory yet — R4 adds rate limiting to main.py directly."
+}

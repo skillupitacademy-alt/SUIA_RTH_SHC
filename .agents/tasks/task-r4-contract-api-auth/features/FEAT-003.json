@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-003",
+  "type": "test",
+  "description": "Comprehensive test suite for R4 Contract API + Auth. Depends on FEAT-001 and FEAT-002 (auth + API implemented). Creates unit tests (20+ tests with mocked repo), integration tests (8+ tests with real PostgreSQL), auth flow tests (6+ tests), and rate limiting tests. Total 40+ tests ensuring full coverage of CRUD operations, RBAC enforcement, JWT validation, hash verification, and rate limiting.",
+  "status": "pending",
+  "steps": [
+    "Create services/project-ai/tests/unit/test_contract_api.py with 20 unit tests: For each of 8 endpoints (create, get, list, update, delete, seal, evidence, existing engineering-contract), test: (1) success case with mocked repo and valid user, (2) auth failure (401 missing token), (3) RBAC failure (403 wrong role), (4) validation failure (400 or 404). Use mock_db_session and AsyncMock for ContractRepository from conftest.py. Mock seal_contract() from R2.",
+    "Create services/project-ai/tests/integration/test_contract_api_integration.py with 8 integration tests using test_db_session fixture: (1) test_create_and_retrieve_contract, (2) test_list_contracts_pagination, (3) test_update_unsealed_contract, (4) test_update_sealed_contract_fails, (5) test_seal_contract_idempotent, (6) test_delete_contract, (7) test_get_evidence_returns_field_evidence, (8) test_hash_verification_on_retrieve (tamper contract_data in DB, verify get raises HashMismatchError). Follow pattern from tests/integration/test_restart_persistence.py.",
+    "Create services/project-ai/tests/integration/test_auth_flow.py with 6 integration tests: (1) test_protected_endpoint_without_token_returns_401, (2) test_protected_endpoint_with_valid_token_succeeds, (3) test_admin_role_can_create_contract, (4) test_viewer_role_cannot_create_contract, (5) test_reviewer_role_can_seal_contract, (6) test_expired_token_returns_401. Generate JWT tokens using create_access_token() from FEAT-001.",
+    "Add slowapi>=0.1.9 to pyproject.toml dependencies array after python-jose",
+    "Run pip install -e . in services/project-ai/ to install slowapi",
+    "Modify services/project-ai/app/main.py: Add imports from slowapi import Limiter, _rate_limit_exceeded_handler; from slowapi.util import get_remote_address; from slowapi.errors import RateLimitExceeded. After app = FastAPI(...), add limiter = Limiter(key_func=get_remote_address, default_limits=['1000/hour']). Add app.state.limiter = limiter. Add app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler).",
+    "Modify services/project-ai/app/api/routes/contract.py: Add import from slowapi import Limiter; from fastapi import Request. For each of the 9 endpoints, add @limiter.limit('100/minute') decorator above @router.post/get/put/delete, and add request: Request parameter to function signature (slowapi requires it).",
+    "Create services/project-ai/tests/integration/test_rate_limiting.py with 2 tests: (1) test_rate_limit_enforced: make 101 requests to GET /api/v1/contracts/ endpoint in loop, verify 101st returns 429 status with Retry-After header. (2) test_rate_limit_per_ip: make requests from different IPs (mock request.client.host), verify each IP gets separate limit. Use httpx.AsyncClient with app for testing.",
+    "Run cd services/project-ai && python -m pytest tests/unit/test_contract_api.py -v and verify 20+ tests pass",
+    "Run cd services/project-ai && python -m pytest tests/integration/test_contract_api_integration.py tests/integration/test_auth_flow.py tests/integration/test_rate_limiting.py -v and verify 16+ tests pass",
+    "Run cd services/project-ai && python -m pytest tests/ -v and verify all tests pass (unit + integration, total 40+ new tests plus existing tests)"
+  ],
+  "acceptance_criteria": [
+    "20+ unit tests in test_contract_api.py covering all endpoints with mocked dependencies",
+    "8+ integration tests in test_contract_api_integration.py with real PostgreSQL (test_db_session)",
+    "6+ auth flow tests in test_auth_flow.py validating JWT and RBAC end-to-end",
+    "2+ rate limiting tests in test_rate_limiting.py confirming 100/minute limit enforced",
+    "slowapi added to pyproject.toml and integrated in main.py",
+    "All contract endpoints have @limiter.limit('100/minute') decorator",
+    "Rate limit exceeded returns 429 with Retry-After header",
+    "Hash verification test confirms tampered contracts are rejected",
+    "Sealed contract update test confirms 409 error",
+    "All 40+ new tests pass with python -m pytest tests/ -v"
+  ],
+  "verification": [
+    "cd services/project-ai && python -m pytest tests/unit/test_contract_api.py -v --tb=short",
+    "cd services/project-ai && python -m pytest tests/integration/test_contract_api_integration.py tests/integration/test_auth_flow.py tests/integration/test_rate_limiting.py -v --tb=short",
+    "cd services/project-ai && python -m pytest tests/ -v -k 'not browser' (exclude browser tests if any) to run full test suite",
+    "Start app, make 101 requests to GET /api/v1/contracts/ with valid JWT, verify 101st returns 429",
+    "Check /docs at http://localhost:8000/docs shows rate limit documentation in endpoint descriptions"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

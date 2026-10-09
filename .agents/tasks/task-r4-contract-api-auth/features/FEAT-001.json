@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "JWT authentication infrastructure with python-jose. Independent of FEAT-002 (can implement auth before using it in routes). Creates app/auth/ module with jwt.py (token encode/decode), dependencies.py (RBAC with Depends()), and config.py (env var management). Adds JWT_SECRET_KEY validation in main.py lifespan. Updates pyproject.toml with python-jose[cryptography]>=3.3.0.",
+  "status": "pending",
+  "steps": [
+    "Add python-jose[cryptography]>=3.3.0 to dependencies array in services/project-ai/pyproject.toml after existing fastapi, uvicorn, pydantic, httpx, sqlalchemy, alembic, asyncpg, psycopg2-binary entries",
+    "Run pip install -e . in services/project-ai/ to install python-jose and verify import jose.jwt works",
+    "Create services/project-ai/app/auth/__init__.py with exports: from .jwt import create_access_token, decode_access_token; from .dependencies import get_current_user, require_contract_admin, require_contract_reviewer, require_contract_viewer; from .config import get_jwt_config",
+    "Create services/project-ai/app/auth/config.py: implement get_jwt_config() returning {secret_key: str, algorithm: str (default HS256), access_token_expire_minutes: int (default 30)} from environment vars JWT_SECRET_KEY (required), JWT_ALGORITHM (optional), JWT_ACCESS_TOKEN_EXPIRE_MINUTES (optional). Raise ValueError if JWT_SECRET_KEY missing or <32 chars.",
+    "Create services/project-ai/app/auth/jwt.py: implement create_access_token(data: dict, expires_delta: timedelta | None = None) -> str using jose.jwt.encode with secret_key and algorithm from get_jwt_config(), add exp claim with datetime.utcnow() + expires_delta. Implement decode_access_token(token: str) -> dict using jose.jwt.decode, catch ExpiredSignatureError and JWTError, raise HTTPException(401, detail='Invalid or expired token') on error.",
+    "Create services/project-ai/app/auth/dependencies.py: implement get_current_user(authorization: str = Header(...)) -> dict extracting Bearer token, calling decode_access_token(token), returning {user_id: payload['sub'], roles: payload.get('roles', [])}. Raise HTTPException(401, detail='Missing authorization header') if no header. Implement require_contract_admin(user: dict = Depends(get_current_user)) -> dict checking 'contract_admin' in user['roles'], raise HTTPException(403, detail='Requires contract_admin role') if missing. Implement require_contract_reviewer similarly (checks 'contract_reviewer' or 'contract_admin'). Implement require_contract_viewer (checks any of viewer/reviewer/admin).",
+    "Modify services/project-ai/app/main.py lifespan function: after database validation block, add JWT config validation block calling get_jwt_config() to ensure JWT_SECRET_KEY is set, print success message",
+    "Create services/project-ai/tests/unit/test_auth_jwt.py with 6 tests: test_create_access_token_valid, test_decode_access_token_valid, test_decode_access_token_expired (mock datetime), test_decode_access_token_invalid_signature, test_decode_access_token_malformed, test_create_decode_roundtrip",
+    "Create services/project-ai/tests/unit/test_auth_dependencies.py with 6 tests: test_get_current_user_valid, test_get_current_user_missing_header, test_get_current_user_invalid_token, test_require_contract_admin_success, test_require_contract_admin_missing_role, test_require_contract_viewer_accepts_any_role",
+    "Run python -m pytest services/project-ai/tests/unit/test_auth*.py -v and verify all 12 tests pass"
+  ],
+  "acceptance_criteria": [
+    "python-jose[cryptography] added to pyproject.toml dependencies",
+    "app/auth/ module created with jwt.py, dependencies.py, config.py, __init__.py",
+    "JWT_SECRET_KEY validation in main.py lifespan fails startup if missing or weak",
+    "create_access_token() produces valid JWT with exp claim",
+    "decode_access_token() validates JWT and raises HTTPException 401 on invalid/expired",
+    "RBAC dependencies (require_contract_admin, require_contract_reviewer, require_contract_viewer) enforce role hierarchy",
+    "12 unit tests pass in test_auth_jwt.py and test_auth_dependencies.py"
+  ],
+  "verification": [
+    "cd services/project-ai && python -m pytest tests/unit/test_auth_jwt.py tests/unit/test_auth_dependencies.py -v",
+    "cd services/project-ai && python -c 'from app.auth import create_access_token, decode_access_token, get_current_user, require_contract_admin; print(\"Auth module imports successfully\")'",
+    "Set JWT_SECRET_KEY=test_secret_key_at_least_32_characters_long and start app, verify startup succeeds with JWT config validation message",
+    "Unset JWT_SECRET_KEY and start app, verify startup fails with ValueError about missing JWT_SECRET_KEY"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

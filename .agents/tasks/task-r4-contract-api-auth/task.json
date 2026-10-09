@@ -1,0 +1,7 @@
+{
+  "task_id": "task-r4-contract-api-auth",
+  "task_description": "Add RESTful Contract API with JWT authentication and RBAC for M2.9 R4",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
