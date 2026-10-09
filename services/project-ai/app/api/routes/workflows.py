@@ -1,14 +1,20 @@
 """
-Workflow Management API Routes - M2.9 Wave 0
+Workflow Management API Routes - M2.9 R3
 
 REST API endpoints for canonical workflow lifecycle management.
 
 These endpoints replace /tasks routes for workflow-level operations and provide
 the single source of truth for workflow state.
+
+R3 PERSISTENCE:
+- All operations async with PostgreSQL backing
+- Uses repository pattern for data access
+- Transaction management via session.commit()
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas.workflow import (
     WorkflowResponse,
@@ -23,12 +29,35 @@ from app.api.schemas.workflow import (
 )
 from app.orchestration.workflow_governance import WorkflowGovernanceService
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
+from app.persistence import (
+    get_db_session,
+    get_workflow_repository,
+    get_approval_repository,
+    get_state_transition_repository,
+)
 
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
 
-# Instantiate governance service (in-memory for Wave 0)
-governance_service = WorkflowGovernanceService()
+
+async def get_governance_service(
+    session: AsyncSession = Depends(get_db_session)
+) -> WorkflowGovernanceService:
+    """
+    Dependency injection for WorkflowGovernanceService.
+    
+    Creates service with repository dependencies injected.
+    """
+    workflow_repo = await get_workflow_repository(session)
+    approval_repo = await get_approval_repository(session)
+    state_transition_repo = await get_state_transition_repository(session)
+    
+    return WorkflowGovernanceService(
+        workflow_repo=workflow_repo,
+        approval_repo=approval_repo,
+        state_transition_repo=state_transition_repo,
+        session=session
+    )
 
 
 def _workflow_to_response(workflow) -> WorkflowResponse:
@@ -58,7 +87,11 @@ def _workflow_to_response(workflow) -> WorkflowResponse:
 
 
 @router.post("", response_model=WorkflowResponse, status_code=201)
-async def create_workflow(request: CreateWorkflowRequest) -> WorkflowResponse:
+async def create_workflow(
+    request: CreateWorkflowRequest,
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    session: AsyncSession = Depends(get_db_session)
+) -> WorkflowResponse:
     """
     Create a new workflow in REQUESTED state.
     
@@ -71,18 +104,22 @@ async def create_workflow(request: CreateWorkflowRequest) -> WorkflowResponse:
     Returns:
         New workflow in REQUESTED state
     """
-    workflow = governance_service.create_workflow(
+    workflow = await governance_service.create_workflow(
         target_family=request.target_family,
         target_version=request.target_version,
         requester_id=request.requester_id,
         purpose=request.purpose
     )
+    await session.commit()
     
     return _workflow_to_response(workflow)
 
 
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
-async def get_workflow(workflow_id: str) -> WorkflowResponse:
+async def get_workflow(
+    workflow_id: str,
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service)
+) -> WorkflowResponse:
     """
     Get workflow state by ID.
     
@@ -97,7 +134,7 @@ async def get_workflow(workflow_id: str) -> WorkflowResponse:
     Raises:
         HTTPException: 404 if workflow not found
     """
-    workflow = governance_service.get_workflow(workflow_id)
+    workflow = await governance_service.get_workflow(workflow_id)
     if not workflow:
         raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
     
@@ -105,7 +142,12 @@ async def get_workflow(workflow_id: str) -> WorkflowResponse:
 
 
 @router.post("/{workflow_id}/transition", response_model=WorkflowResponse)
-async def transition_workflow(workflow_id: str, request: TransitionRequest) -> WorkflowResponse:
+async def transition_workflow(
+    workflow_id: str,
+    request: TransitionRequest,
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    session: AsyncSession = Depends(get_db_session)
+) -> WorkflowResponse:
     """
     Transition workflow to new state (internal use).
     
@@ -133,21 +175,26 @@ async def transition_workflow(workflow_id: str, request: TransitionRequest) -> W
     
     # Attempt transition
     try:
-        workflow = governance_service.transition_state(
+        workflow = await governance_service.transition_state(
             workflow_id=workflow_id,
             to_state=to_state,
             triggered_by=request.triggered_by,
             evidence_id=request.evidence_id,
             reason=request.reason
         )
+        await session.commit()
     except ValueError as e:
+        await session.rollback()
         raise HTTPException(status_code=400, detail=str(e))
     
     return _workflow_to_response(workflow)
 
 
 @router.get("/{workflow_id}/history", response_model=List[StateTransitionInfo])
-async def get_workflow_history(workflow_id: str) -> List[StateTransitionInfo]:
+async def get_workflow_history(
+    workflow_id: str,
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service)
+) -> List[StateTransitionInfo]:
     """
     Get workflow state transition history.
     
@@ -162,7 +209,7 @@ async def get_workflow_history(workflow_id: str) -> List[StateTransitionInfo]:
     Raises:
         HTTPException: 404 if workflow not found
     """
-    workflow = governance_service.get_workflow(workflow_id)
+    workflow = await governance_service.get_workflow(workflow_id)
     if not workflow:
         raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
     
@@ -180,7 +227,12 @@ async def get_workflow_history(workflow_id: str) -> List[StateTransitionInfo]:
 
 
 @router.post("/{workflow_id}/artifacts", response_model=WorkflowResponse)
-async def bind_artifact(workflow_id: str, request: BindArtifactRequest) -> WorkflowResponse:
+async def bind_artifact(
+    workflow_id: str,
+    request: BindArtifactRequest,
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    session: AsyncSession = Depends(get_db_session)
+) -> WorkflowResponse:
     """
     Bind artifact to workflow with hash.
     
@@ -207,26 +259,30 @@ async def bind_artifact(workflow_id: str, request: BindArtifactRequest) -> Workf
     
     # Bind artifact
     try:
-        governance_service.bind_artifact(
+        await governance_service.bind_artifact(
             workflow_id=workflow_id,
             artifact_type=request.artifact_type,
             artifact_id=request.artifact_id,
             artifact_sha256=request.artifact_sha256
         )
+        await session.commit()
     except ValueError as e:
+        await session.rollback()
         raise HTTPException(status_code=404, detail=str(e))
     
-    workflow = governance_service.get_workflow(workflow_id)
+    workflow = await governance_service.get_workflow(workflow_id)
     return _workflow_to_response(workflow)
 
 
 @router.get("", response_model=List[WorkflowResponse])
-async def list_workflows() -> List[WorkflowResponse]:
+async def list_workflows(
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service)
+) -> List[WorkflowResponse]:
     """
     List all workflows.
     
     Returns:
         List of all workflows
     """
-    workflows = governance_service.list_workflows()
+    workflows = await governance_service.list_workflows()
     return [_workflow_to_response(w) for w in workflows]

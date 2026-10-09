@@ -1,10 +1,16 @@
 """
-Engineering Contract API Routes - Wave 2 B02
+Engineering Contract API Routes - Wave 2 B02 / M2.9 R3
 
 Endpoints for generating and retrieving engineering contracts for External AI.
+
+R3 PERSISTENCE:
+- Contracts persisted to PostgreSQL via ContractRepository
+- Workflows managed via WorkflowGovernanceService with PostgreSQL backing
+- All operations async with proper transaction management
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Header
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.contracts.engineering_contract import (
     EngineeringContract,
     seal_contract,
@@ -18,7 +24,14 @@ from app.models.workflow_target import WorkflowTarget
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.evidence.ledger import record_agent_run
 from app.evidence.schemas import AgentRun
-from app.api.routes.workflows import governance_service
+from app.api.routes.workflows import get_governance_service
+from app.orchestration.workflow_governance import WorkflowGovernanceService
+from app.persistence import (
+    get_db_session,
+    get_contract_repository,
+    ContractRepository,
+    ContractModel,
+)
 import uuid
 import os
 import json
@@ -112,16 +125,7 @@ def calculate_snapshot_sha256(workspace_root: str) -> str:
     
     return sha256_hash.hexdigest()
 
-# In-memory store for contracts
-# Key: workflow_id -> EngineeringContract
-# WARNING: This is a Wave 2 placeholder. Contracts are lost on server restart.
-# Wave 3 requirement: Replace with persistent storage (database, Redis, or file store)
-# to maintain immutability guarantees across restarts and support distributed deployment.
-contracts_store = {}
-
-# Placeholder workflow store (would be database in production)
-# Key: workflow_id -> {"state": str, "owner": str}
-workflows_store = {}
+# No in-memory stores needed - using PostgreSQL repositories
 
 
 async def verify_auth(authorization: Optional[str] = Header(None)) -> str:
@@ -170,7 +174,8 @@ async def verify_auth(authorization: Optional[str] = Header(None)) -> str:
 
 async def verify_workflow_ownership(
     workflow_id: str,
-    user_id: str = Depends(verify_auth)
+    user_id: str = Depends(verify_auth),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service)
 ) -> dict:
     """
     Verify that the authenticated user owns the workflow and it's in a valid state.
@@ -178,6 +183,7 @@ async def verify_workflow_ownership(
     Args:
         workflow_id: The workflow identifier
         user_id: The authenticated user ID
+        governance_service: Injected governance service
         
     Returns:
         Workflow data dict with state and owner
@@ -187,41 +193,48 @@ async def verify_workflow_ownership(
         HTTPException 403: User doesn't own the workflow
         HTTPException 400: Workflow in invalid state
     """
-    # Check workflow exists (placeholder: would query database)
-    if workflow_id not in workflows_store:
-        # For Wave 2, auto-create workflow in valid state
-        # Wave 3 will wire to real workflow service
-        workflows_store[workflow_id] = {
-            "state": "BRIEF_READY",
-            "owner": user_id,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-    
-    workflow = workflows_store[workflow_id]
+    # Get workflow from governance service (PostgreSQL-backed)
+    workflow_obj = await governance_service.get_workflow(workflow_id)
+    if not workflow_obj:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Workflow not found: {workflow_id}"
+        )
     
     # Verify ownership
-    if workflow["owner"] != user_id:
+    if workflow_obj.requester_id != user_id:
         raise HTTPException(
             status_code=403,
             detail=f"Access denied. Workflow {workflow_id} is owned by another user."
         )
     
     # Verify state (must be DISCOVERY complete or BRIEF_READY)
-    valid_states = ["DISCOVERY", "BRIEF_READY", "AWAITING_GATE_1"]
-    if workflow["state"] not in valid_states:
+    valid_states = [
+        CanonicalWorkflowState.DISCOVERY,
+        CanonicalWorkflowState.BRIEF_READY,
+        CanonicalWorkflowState.AWAITING_GATE_1
+    ]
+    if workflow_obj.current_state not in valid_states:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot generate contract for workflow in state '{workflow['state']}'. "
-                   f"Valid states: {', '.join(valid_states)}"
+            detail=f"Cannot generate contract for workflow in state '{workflow_obj.current_state.value}'. "
+                   f"Valid states: {', '.join(s.value for s in valid_states)}"
         )
     
-    return workflow
+    return {
+        "state": workflow_obj.current_state.value,
+        "owner": workflow_obj.requester_id,
+        "created_at": workflow_obj.created_at.isoformat()
+    }
 
 
 @router.post("/{workflow_id}/engineering-contract", response_model=EngineeringContract)
 async def create_engineering_contract(
     workflow_id: str,
-    workflow: dict = Depends(verify_workflow_ownership)
+    workflow: dict = Depends(verify_workflow_ownership),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    contract_repo: ContractRepository = Depends(get_contract_repository),
+    session: AsyncSession = Depends(get_db_session)
 ):
     """
     Generate an immutable engineering contract for a workflow.
@@ -263,7 +276,7 @@ async def create_engineering_contract(
     
     # Wave 1A: Get workflow target from governance service
     # Retrieve workflow to get actual target binding
-    workflow_obj = governance_service.get_workflow(workflow_id)
+    workflow_obj = await governance_service.get_workflow(workflow_id)
     if not workflow_obj:
         raise HTTPException(
             status_code=404,
@@ -271,22 +284,23 @@ async def create_engineering_contract(
         )
     
     # Check if contract already exists (immutability enforcement)
-    if workflow_id in contracts_store:
-        existing_contract = contracts_store[workflow_id]
-        
-        # Wave 1A: Verify workflow target hasn't drifted from contract target
-        # This protects against workflow mutation bugs or admin endpoints
-        if (existing_contract.target.family != workflow_obj.target_family or
-            existing_contract.target.version != workflow_obj.target_version):
+    existing_contract_model = await contract_repo.get_by_workflow(workflow_id)
+    if existing_contract_model:
+        # Contract already exists - return it (idempotency)
+        # Verify workflow target hasn't drifted from contract target
+        contract_data = existing_contract_model.contract_data
+        if (contract_data["target"]["family"] != workflow_obj.target_family or
+            contract_data["target"]["version"] != workflow_obj.target_version):
             raise HTTPException(
                 status_code=409,
                 detail=f"Workflow target drift detected: contract has "
-                       f"{existing_contract.target.family}/{existing_contract.target.version}, "
+                       f"{contract_data['target']['family']}/{contract_data['target']['version']}, "
                        f"but workflow now has {workflow_obj.target_family}/{workflow_obj.target_version}. "
                        f"Target fields must remain immutable after contract generation."
             )
         
-        return existing_contract
+        # Return existing contract
+        return EngineeringContract(**contract_data)
     
     # Wave 1A: Validate workflow target immutability
     # Check that target fields are non-empty (fail fast)
@@ -446,11 +460,19 @@ async def create_engineering_contract(
     # Calculate and set immutable hash
     contract.contract_hash = seal_contract(contract)
     
-    # Store contract (immutability: same workflow_id = same contract)
-    contracts_store[workflow_id] = contract
+    # Store contract in PostgreSQL
+    contract_model = ContractModel(
+        contract_id=contract.contract_id,
+        workflow_id=workflow_id,
+        contract_hash=contract.contract_hash,
+        contract_data=contract.dict(),
+        created_at=datetime.now(timezone.utc),
+        contract_version=contract.contract_version
+    )
+    await contract_repo.upsert(contract_model)
     
     # Bind contract artifact to workflow with SHA-256
-    governance_service.bind_artifact(
+    await governance_service.bind_artifact(
         workflow_id=workflow_id,
         artifact_type="contract",
         artifact_id=contract.contract_id,
@@ -459,7 +481,7 @@ async def create_engineering_contract(
     
     # Transition workflow state to BRIEF_READY
     try:
-        governance_service.transition_state(
+        await governance_service.transition_state(
             workflow_id=workflow_id,
             to_state=CanonicalWorkflowState.BRIEF_READY,
             triggered_by="W2-EngineeringContract",
@@ -471,11 +493,12 @@ async def create_engineering_contract(
         # This is acceptable for idempotency
         pass
     
+    # Commit transaction
+    await session.commit()
+    
     # Record evidence via W1D harness
     # Note: filesChanged is empty because W2 generates an in-memory contract JSON
     # and binds metadata via governance_service, but writes nothing to disk.
-    # The contract exists only in contracts_store (Wave 2 placeholder) and
-    # workflow metadata (contract_id, contract_sha256 via bind_artifact).
     current_commit = get_git_head_sha()
     agent_run = AgentRun(
         runId=f"w2-engineering-contract-{workflow_id}",
@@ -495,7 +518,8 @@ async def create_engineering_contract(
 @router.get("/{workflow_id}/engineering-contract", response_model=EngineeringContract)
 async def get_engineering_contract(
     workflow_id: str,
-    workflow: dict = Depends(verify_workflow_ownership)
+    workflow: dict = Depends(verify_workflow_ownership),
+    contract_repo: ContractRepository = Depends(get_contract_repository)
 ):
     """
     Retrieve the engineering contract for a workflow with hash verification.
@@ -518,25 +542,15 @@ async def get_engineering_contract(
         HTTPException 404: Contract not found
         HTTPException 500: Hash verification failed (contract tampered)
     """
-    if workflow_id not in contracts_store:
+    contract_model = await contract_repo.get_by_workflow(workflow_id)
+    if contract_model is None:
         raise HTTPException(
             status_code=404,
             detail=f"Engineering contract not found for workflow {workflow_id}"
         )
     
-    contract = contracts_store[workflow_id]
+    # Contract hash verification is automatic in repository.get_by_workflow()
+    # If we reach here, hash verification passed
     
-    # Verify contract hash integrity
-    # This detects tampering if the contract was modified after creation
-    stored_hash = contract.contract_hash
-    recalculated_hash = seal_contract(contract)
-    
-    if stored_hash != recalculated_hash:
-        # Hash mismatch indicates tampering or corruption
-        raise HTTPException(
-            status_code=500,
-            detail=f"Contract integrity verification failed for workflow {workflow_id}. "
-                   f"Stored hash does not match recalculated hash. Possible tampering detected."
-        )
-    
-    return contract
+    # Return contract from stored data
+    return EngineeringContract(**contract_model.contract_data)
