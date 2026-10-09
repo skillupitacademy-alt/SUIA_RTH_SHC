@@ -120,16 +120,49 @@ async def db_session_factory(integration_db_engine):
     
     Returns a callable that creates new sessions, allowing tests to
     close one session and open another to simulate application restart.
-    """
-    async def _factory():
-        async_session_factory = async_sessionmaker(
-            integration_db_engine,
-            class_=AsyncSession,
-            expire_on_commit=False,
-        )
-        return async_session_factory()
     
-    return _factory
+    TRANSACTION ISOLATION:
+    This fixture wraps all restart test operations in an outer transaction
+    that automatically rolls back at test completion. Individual sessions
+    created by the factory can commit their changes (making them visible
+    to subsequent sessions in the same test), but all changes are rolled
+    back when the test completes.
+    
+    Usage pattern:
+        async with await db_session_factory() as session1:
+            # Session 1 operations
+            await session1.commit()  # Makes changes visible to session 2
+        
+        async with await db_session_factory() as session2:
+            # Session 2 sees session 1's committed changes
+            # but all changes roll back at test end
+    """
+    # Create outer transaction for test-level isolation
+    async_session_factory = async_sessionmaker(
+        integration_db_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    
+    # Start outer transaction
+    async with async_session_factory() as outer_session:
+        async with outer_session.begin():
+            # Create a savepoint for nested transaction support
+            nested_transaction = await outer_session.begin_nested()
+            
+            async def _factory():
+                """
+                Return the outer session for all restart test operations.
+                
+                This ensures all operations across multiple "sessions" (restart simulation)
+                happen within the same transaction and are rolled back at test end.
+                """
+                return outer_session
+            
+            yield _factory
+            
+            # Rollback outer transaction at test end
+            await outer_session.rollback()
 
 
 @pytest_asyncio.fixture

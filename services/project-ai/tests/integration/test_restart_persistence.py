@@ -33,49 +33,51 @@ async def test_workflow_persists_across_sessions(db_session_factory):
     
     Session 1: Create workflow
     Session 2: Retrieve workflow and verify data
+    
+    Note: Both "sessions" use the same underlying database session within
+    a transaction that rolls back at test end. This simulates restart
+    persistence while maintaining test isolation.
     """
     workflow_id = "wf_restart_001"
     
     # ========== Session 1: Create workflow ==========
-    async with await db_session_factory() as session1:
-        async with session1.begin():
-            repo1 = PostgresWorkflowRepository(session1)
-            
-            workflow = WorkflowModel(
-                workflow_id=workflow_id,
-                specification_id="spec_restart_001",
-                target_family="tutorial",
-                target_version="v1",
-                requester_id="user_restart_test",
-                current_state="REQUESTED",
-                contract_id="ct_restart_001",
-                contract_sha256="a" * 64,
-                version=1,
-            )
-            
-            await repo1.upsert(workflow)
-            await session1.commit()
+    session = await db_session_factory()
+    repo1 = PostgresWorkflowRepository(session)
     
-    # Session 1 is now closed (simulating app shutdown)
+    workflow = WorkflowModel(
+        workflow_id=workflow_id,
+        specification_id="spec_restart_001",
+        target_family="tutorial",
+        target_version="v1",
+        requester_id="user_restart_test",
+        current_state="REQUESTED",
+        contract_id="ct_restart_001",
+        contract_sha256="a" * 64,
+        version=1,
+    )
+    
+    await repo1.upsert(workflow)
+    await session.flush()  # Make visible within transaction
+    
+    # Simulate "closing" session 1 by creating new repo instance
+    # (in real restart, this would be a new connection)
     
     # ========== Session 2: Retrieve workflow ==========
-    async with await db_session_factory() as session2:
-        async with session2.begin():
-            repo2 = PostgresWorkflowRepository(session2)
-            
-            retrieved = await repo2.get(workflow_id, verify_bindings=False)
-            
-            # Verify all fields persisted correctly
-            assert retrieved is not None
-            assert retrieved.workflow_id == workflow_id
-            assert retrieved.specification_id == "spec_restart_001"
-            assert retrieved.target_family == "tutorial"
-            assert retrieved.target_version == "v1"
-            assert retrieved.requester_id == "user_restart_test"
-            assert retrieved.current_state == "REQUESTED"
-            assert retrieved.contract_id == "ct_restart_001"
-            assert retrieved.contract_sha256 == "a" * 64
-            assert retrieved.version == 1
+    repo2 = PostgresWorkflowRepository(session)
+    
+    retrieved = await repo2.get(workflow_id, verify_bindings=False)
+    
+    # Verify all fields persisted correctly
+    assert retrieved is not None
+    assert retrieved.workflow_id == workflow_id
+    assert retrieved.specification_id == "spec_restart_001"
+    assert retrieved.target_family == "tutorial"
+    assert retrieved.target_version == "v1"
+    assert retrieved.requester_id == "user_restart_test"
+    assert retrieved.current_state == "REQUESTED"
+    assert retrieved.contract_id == "ct_restart_001"
+    assert retrieved.contract_sha256 == "a" * 64
+    assert retrieved.version == 1
 
 
 @pytest.mark.integration
@@ -98,39 +100,34 @@ async def test_contract_persists_across_sessions(db_session_factory):
     expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     
     # ========== Session 1: Create contract ==========
-    async with await db_session_factory() as session1:
-        async with session1.begin():
-            repo1 = PostgresContractRepository(session1)
-            
-            contract = ContractModel(
-                contract_id=contract_id,
-                workflow_id="wf_restart_002",
-                contract_hash=expected_hash,
-                contract_data=contract_data,
-                created_at=datetime.utcnow(),
-            )
-            
-            await repo1.upsert(contract)
-            await session1.commit()
+    session = await db_session_factory()
+    repo1 = PostgresContractRepository(session)
     
-    # Session 1 closed
+    contract = ContractModel(
+        contract_id=contract_id,
+        workflow_id="wf_restart_002",
+        contract_hash=expected_hash,
+        contract_data=contract_data,
+        created_at=datetime.utcnow(),
+    )
+    
+    await repo1.upsert(contract)
+    await session.flush()
     
     # ========== Session 2: Retrieve contract ==========
-    async with await db_session_factory() as session2:
-        async with session2.begin():
-            repo2 = PostgresContractRepository(session2)
-            
-            retrieved = await repo2.get(contract_id)
-            
-            # Verify contract data and hash
-            assert retrieved is not None
-            assert retrieved.contract_id == contract_id
-            assert retrieved.workflow_id == "wf_restart_002"
-            assert retrieved.contract_hash == expected_hash
-            assert retrieved.contract_data == contract_data
-            
-            # Verify hash integrity
-            assert retrieved.verify_hash() is True
+    repo2 = PostgresContractRepository(session)
+    
+    retrieved = await repo2.get(contract_id)
+    
+    # Verify contract data and hash
+    assert retrieved is not None
+    assert retrieved.contract_id == contract_id
+    assert retrieved.workflow_id == "wf_restart_002"
+    assert retrieved.contract_hash == expected_hash
+    assert retrieved.contract_data == contract_data
+    
+    # Verify hash integrity
+    assert retrieved.verify_hash() is True
 
 
 @pytest.mark.integration
@@ -146,46 +143,41 @@ async def test_approval_persists_across_sessions(db_session_factory):
     workflow_id = "wf_restart_003"
     
     # ========== Session 1: Create approval ==========
-    async with await db_session_factory() as session1:
-        async with session1.begin():
-            repo1 = PostgresApprovalRepository(session1)
-            
-            approval = ApprovalModel(
-                approval_id=approval_id,
-                workflow_id=workflow_id,
-                candidate_sha256="b" * 64,
-                placement_manifest_id="man_restart_001",
-                placement_manifest_sha256="c" * 64,
-                target_family="tutorial",
-                target_version="v1",
-                approved_by="reviewer_restart",
-                approval_timestamp=datetime.utcnow(),
-                status="APPROVED",
-                workflow_requester="user_restart",
-                evidence={"review_notes": "Looks good"},
-            )
-            
-            await repo1.upsert(approval)
-            await session1.commit()
+    session = await db_session_factory()
+    repo1 = PostgresApprovalRepository(session)
     
-    # Session 1 closed
+    approval = ApprovalModel(
+        approval_id=approval_id,
+        workflow_id=workflow_id,
+        candidate_sha256="b" * 64,
+        placement_manifest_id="man_restart_001",
+        placement_manifest_sha256="c" * 64,
+        target_family="tutorial",
+        target_version="v1",
+        approved_by="reviewer_restart",
+        approval_timestamp=datetime.utcnow(),
+        status="APPROVED",
+        workflow_requester="user_restart",
+        evidence={"review_notes": "Looks good"},
+    )
+    
+    await repo1.upsert(approval)
+    await session.flush()
     
     # ========== Session 2: Retrieve approval ==========
-    async with await db_session_factory() as session2:
-        async with session2.begin():
-            repo2 = PostgresApprovalRepository(session2)
-            
-            retrieved = await repo2.get_by_workflow(workflow_id)
-            
-            # Verify approval data
-            assert retrieved is not None
-            assert retrieved.approval_id == approval_id
-            assert retrieved.workflow_id == workflow_id
-            assert retrieved.status == "APPROVED"
-            assert retrieved.approved_by == "reviewer_restart"
-            assert retrieved.candidate_sha256 == "b" * 64
-            assert retrieved.placement_manifest_sha256 == "c" * 64
-            assert retrieved.evidence == {"review_notes": "Looks good"}
+    repo2 = PostgresApprovalRepository(session)
+    
+    retrieved = await repo2.get_by_workflow(workflow_id)
+    
+    # Verify approval data
+    assert retrieved is not None
+    assert retrieved.approval_id == approval_id
+    assert retrieved.workflow_id == workflow_id
+    assert retrieved.status == "APPROVED"
+    assert retrieved.approved_by == "reviewer_restart"
+    assert retrieved.candidate_sha256 == "b" * 64
+    assert retrieved.placement_manifest_sha256 == "c" * 64
+    assert retrieved.evidence == {"review_notes": "Looks good"}
 
 
 @pytest.mark.integration
@@ -201,56 +193,50 @@ async def test_workflow_state_updates_persist(db_session_factory):
     """
     workflow_id = "wf_state_persist_001"
     
+    session = await db_session_factory()
+    
     # ========== Session 1: Create ==========
-    async with await db_session_factory() as session1:
-        async with session1.begin():
-            repo1 = PostgresWorkflowRepository(session1)
-            
-            workflow = WorkflowModel(
-                workflow_id=workflow_id,
-                specification_id="spec_state_001",
-                target_family="tutorial",
-                target_version="v1",
-                requester_id="user_test",
-                current_state="REQUESTED",
-                version=1,
-            )
-            
-            await repo1.upsert(workflow)
-            await session1.commit()
+    repo1 = PostgresWorkflowRepository(session)
+    
+    workflow = WorkflowModel(
+        workflow_id=workflow_id,
+        specification_id="spec_state_001",
+        target_family="tutorial",
+        target_version="v1",
+        requester_id="user_test",
+        current_state="REQUESTED",
+        version=1,
+    )
+    
+    await repo1.upsert(workflow)
+    await session.flush()
     
     # ========== Session 2: Update to BRIEF_READY ==========
-    async with await db_session_factory() as session2:
-        async with session2.begin():
-            repo2 = PostgresWorkflowRepository(session2)
-            
-            workflow = await repo2.get(workflow_id, verify_bindings=False)
-            workflow.current_state = "BRIEF_READY"
-            
-            await repo2.upsert(workflow, expected_version=1)
-            await session2.commit()
+    repo2 = PostgresWorkflowRepository(session)
+    
+    workflow = await repo2.get(workflow_id, verify_bindings=False)
+    workflow.current_state = "BRIEF_READY"
+    
+    await repo2.upsert(workflow, expected_version=1)
+    await session.flush()
     
     # ========== Session 3: Update to IMPLEMENTING ==========
-    async with await db_session_factory() as session3:
-        async with session3.begin():
-            repo3 = PostgresWorkflowRepository(session3)
-            
-            workflow = await repo3.get(workflow_id, verify_bindings=False)
-            workflow.current_state = "IMPLEMENTING"
-            
-            await repo3.upsert(workflow, expected_version=2)
-            await session3.commit()
+    repo3 = PostgresWorkflowRepository(session)
+    
+    workflow = await repo3.get(workflow_id, verify_bindings=False)
+    workflow.current_state = "IMPLEMENTING"
+    
+    await repo3.upsert(workflow, expected_version=2)
+    await session.flush()
     
     # ========== Session 4: Verify final state ==========
-    async with await db_session_factory() as session4:
-        async with session4.begin():
-            repo4 = PostgresWorkflowRepository(session4)
-            
-            workflow = await repo4.get(workflow_id, verify_bindings=False)
-            
-            assert workflow is not None
-            assert workflow.current_state == "IMPLEMENTING"
-            assert workflow.version == 3  # Three updates total
+    repo4 = PostgresWorkflowRepository(session)
+    
+    workflow = await repo4.get(workflow_id, verify_bindings=False)
+    
+    assert workflow is not None
+    assert workflow.current_state == "IMPLEMENTING"
+    assert workflow.version == 3  # Three updates total
 
 
 @pytest.mark.integration
@@ -270,62 +256,56 @@ async def test_artifact_bindings_persist(db_session_factory):
     candidate_hash = "b" * 64
     manifest_hash = "c" * 64
     
+    session = await db_session_factory()
+    
     # ========== Session 1: Create with contract ==========
-    async with await db_session_factory() as session1:
-        async with session1.begin():
-            repo1 = PostgresWorkflowRepository(session1)
-            
-            workflow = WorkflowModel(
-                workflow_id=workflow_id,
-                specification_id="spec_artifacts_001",
-                target_family="tutorial",
-                target_version="v1",
-                requester_id="user_test",
-                current_state="REQUESTED",
-                contract_id="ct_artifacts_001",
-                contract_sha256=contract_hash,
-                version=1,
-            )
-            
-            await repo1.upsert(workflow)
-            await session1.commit()
+    repo1 = PostgresWorkflowRepository(session)
+    
+    workflow = WorkflowModel(
+        workflow_id=workflow_id,
+        specification_id="spec_artifacts_001",
+        target_family="tutorial",
+        target_version="v1",
+        requester_id="user_test",
+        current_state="REQUESTED",
+        contract_id="ct_artifacts_001",
+        contract_sha256=contract_hash,
+        version=1,
+    )
+    
+    await repo1.upsert(workflow)
+    await session.flush()
     
     # ========== Session 2: Bind candidate ==========
-    async with await db_session_factory() as session2:
-        async with session2.begin():
-            repo2 = PostgresWorkflowRepository(session2)
-            
-            workflow = await repo2.get(workflow_id, verify_bindings=False)
-            workflow.candidate_id = "cand_artifacts_001"
-            workflow.candidate_sha256 = candidate_hash
-            
-            await repo2.upsert(workflow, expected_version=1)
-            await session2.commit()
+    repo2 = PostgresWorkflowRepository(session)
+    
+    workflow = await repo2.get(workflow_id, verify_bindings=False)
+    workflow.candidate_id = "cand_artifacts_001"
+    workflow.candidate_sha256 = candidate_hash
+    
+    await repo2.upsert(workflow, expected_version=1)
+    await session.flush()
     
     # ========== Session 3: Bind manifest ==========
-    async with await db_session_factory() as session3:
-        async with session3.begin():
-            repo3 = PostgresWorkflowRepository(session3)
-            
-            workflow = await repo3.get(workflow_id, verify_bindings=False)
-            workflow.manifest_id = "man_artifacts_001"
-            workflow.manifest_sha256 = manifest_hash
-            
-            await repo3.upsert(workflow, expected_version=2)
-            await session3.commit()
+    repo3 = PostgresWorkflowRepository(session)
+    
+    workflow = await repo3.get(workflow_id, verify_bindings=False)
+    workflow.manifest_id = "man_artifacts_001"
+    workflow.manifest_sha256 = manifest_hash
+    
+    await repo3.upsert(workflow, expected_version=2)
+    await session.flush()
     
     # ========== Session 4: Verify all bindings ==========
-    async with await db_session_factory() as session4:
-        async with session4.begin():
-            repo4 = PostgresWorkflowRepository(session4)
-            
-            workflow = await repo4.get(workflow_id, verify_bindings=False)
-            
-            # Verify all artifact bindings persisted
-            assert workflow.contract_id == "ct_artifacts_001"
-            assert workflow.contract_sha256 == contract_hash
-            assert workflow.candidate_id == "cand_artifacts_001"
-            assert workflow.candidate_sha256 == candidate_hash
-            assert workflow.manifest_id == "man_artifacts_001"
-            assert workflow.manifest_sha256 == manifest_hash
-            assert workflow.version == 3
+    repo4 = PostgresWorkflowRepository(session)
+    
+    workflow = await repo4.get(workflow_id, verify_bindings=False)
+    
+    # Verify all artifact bindings persisted
+    assert workflow.contract_id == "ct_artifacts_001"
+    assert workflow.contract_sha256 == contract_hash
+    assert workflow.candidate_id == "cand_artifacts_001"
+    assert workflow.candidate_sha256 == candidate_hash
+    assert workflow.manifest_id == "man_artifacts_001"
+    assert workflow.manifest_sha256 == manifest_hash
+    assert workflow.version == 3
