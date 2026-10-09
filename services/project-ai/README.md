@@ -152,12 +152,99 @@ Tasks flow through the following states:
 10. **BLOCKED** - Blocked by external dependency
 11. **REJECTED** - Plan rejected by reviewer
 
+## JWT Authentication
+
+The Project AI service uses JWT (JSON Web Token) authentication aligned with the SHC (SkillHubCore) platform.
+
+### Environment Variables
+
+Configure JWT authentication using these environment variables:
+
+```bash
+# Required: User token signing secret (minimum 32 characters)
+JWT_SECRET=your_secure_random_string_at_least_32_chars_long
+
+# Optional: Admin token signing secret (defaults to JWT_SECRET if not set)
+ADMIN_JWT_SECRET=your_admin_secret_at_least_32_chars_long
+
+# Optional: JWT algorithm (default: HS256)
+JWT_ALGORITHM=HS256
+
+# Optional: Token expiration in minutes (default: 30)
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+### SHC Alignment (Wave 1A)
+
+The JWT implementation is aligned with SHC TokenService to ensure interoperability:
+
+1. **Issuer Validation**: All tokens must have `iss='skillhubcore.in'`
+2. **Dual-Secret Verification**: Accepts both user tokens (signed with `JWT_SECRET`) and admin tokens (signed with `ADMIN_JWT_SECRET`)
+3. **Token Types**: Supports `tokenType='user'` and `tokenType='admin'`
+4. **Audience Validation**: Accepts `aud='user'` and `aud='admin'`
+5. **Identity Claims**: Requires `userId`, `originalUserId`, and `shadowUserId` claims
+
+### Token Structure
+
+Tokens must contain these claims:
+
+```json
+{
+  "iss": "skillhubcore.in",
+  "aud": "user",
+  "tokenType": "user",
+  "userId": "user_123",
+  "originalUserId": "user_123",
+  "shadowUserId": "user_123",
+  "exp": 1234567890,
+  "iat": 1234567800
+}
+```
+
+### Dual-Secret Verification
+
+The service implements dual-secret verification matching SHC's `TokenService.verifyAccessToken()` pattern:
+
+1. First attempt: Verify token with `JWT_SECRET` (user secret)
+2. On signature failure: Retry with `ADMIN_JWT_SECRET` (admin secret)
+3. If both fail: Reject with 401 Unauthorized
+
+This allows the service to accept both:
+- User tokens issued by SHC with `JWT_SECRET`
+- Admin tokens issued by SHC with `ADMIN_JWT_SECRET`
+
+### Admin Token Support
+
+Admin tokens have elevated privileges and must:
+- Set `tokenType='admin'`
+- Set `aud='admin'`
+- Be signed with `ADMIN_JWT_SECRET` (or `JWT_SECRET` in fallback mode)
+- Include the same identity claims as user tokens
+
+### Security Notes
+
+- **Never commit secrets**: Use environment variables or secure secret management
+- **Minimum secret length**: 32 characters enforced
+- **Token expiration**: Expired tokens are rejected (validates `exp` claim)
+- **Issuer enforcement**: Only tokens from `skillhubcore.in` are accepted
+- **Signature validation**: Tokens signed with unknown secrets are rejected
+
 ## Testing
 
 ### Run Tests
 
 ```bash
 pytest tests/
+```
+
+### Run JWT Alignment Tests
+
+```bash
+# Run Wave 1A JWT alignment test suite
+pytest tests/test_jwt_alignment.py -v
+
+# Run all auth tests with coverage
+pytest tests/unit/test_auth_*.py tests/test_jwt_alignment.py --cov=app/auth --cov-report=term
 ```
 
 ### Run Tests with Coverage
