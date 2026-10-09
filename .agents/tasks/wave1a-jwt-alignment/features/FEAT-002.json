@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Add issuer validation and admin token support to jwt.py. Update decode_access_token() to validate iss='skillhubcore.in' and accept both user and admin tokens. Try user secret first, fall back to admin secret on signature failure (matching SHC TokenService.verifyAccessToken pattern from token.service.ts lines 415-442). This fixes rejection of admin tokens and adds missing issuer validation.",
+  "status": "pending",
+  "steps": [
+    "Read services/project-ai/app/auth/jwt.py lines 46-122 to understand current validation logic",
+    "Read packages/auth/src/token.service.ts lines 415-442 for SHC verifyAccessToken pattern (try user secret, fall back to admin)",
+    "Update decode_access_token() signature to accept optional is_admin parameter",
+    "Add issuer validation: payload.get('iss') must equal 'skillhubcore.in' (matching SHC token.service.ts line 357)",
+    "Update audience validation to accept both 'user' and 'admin' values",
+    "Update tokenType validation to accept both 'user' and 'admin' values",
+    "Implement dual-secret verification: try config['user_secret'] first, on JWTError try config['admin_secret'], raise 401 if both fail",
+    "Ensure required identity claims validation remains: userId, originalUserId, shadowUserId (all non-empty strings)",
+    "Update create_access_token() to use user_secret from config (no admin token creation needed in Wave 1A)"
+  ],
+  "acceptance_criteria": [
+    "decode_access_token() validates iss='skillhubcore.in' (raises 401 if missing or wrong)",
+    "User tokens (tokenType='user', aud='user') signed with JWT_SECRET are accepted",
+    "Admin tokens (tokenType='admin', aud='admin') signed with ADMIN_JWT_SECRET are accepted",
+    "Tokens with wrong issuer are rejected with 401",
+    "Tokens signed with wrong secret are rejected with 401",
+    "Identity claims validation unchanged (userId, originalUserId, shadowUserId required)"
+  ],
+  "verification": [
+    "Run pytest tests/test_jwt_alignment.py -v",
+    "Test passes for user token with JWT_SECRET",
+    "Test passes for admin token with ADMIN_JWT_SECRET",
+    "Test fails for token with wrong issuer",
+    "Test fails for token signed with external secret",
+    "Run full test suite: pytest tests/ -v"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

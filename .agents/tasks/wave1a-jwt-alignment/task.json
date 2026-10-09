@@ -1,0 +1,7 @@
+{
+  "task_id": "wave1a-jwt-alignment",
+  "task_description": "Align Python JWT verification with SHC token issuance secrets and contracts",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

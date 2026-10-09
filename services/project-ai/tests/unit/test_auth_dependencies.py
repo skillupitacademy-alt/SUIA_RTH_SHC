@@ -21,11 +21,11 @@ from app.auth.jwt import create_access_token
 
 @pytest.fixture(autouse=True)
 def set_jwt_env():
-    """Set JWT_SECRET_KEY for all tests in this module."""
-    os.environ["JWT_SECRET_KEY"] = "test_secret_key_at_least_32_characters_long_for_testing"
+    """Set JWT_SECRET for all tests in this module."""
+    os.environ["JWT_SECRET"] = "test_secret_key_at_least_32_characters_long_for_testing"
     yield
-    if "JWT_SECRET_KEY" in os.environ:
-        del os.environ["JWT_SECRET_KEY"]
+    if "JWT_SECRET" in os.environ:
+        del os.environ["JWT_SECRET"]
 
 
 def test_get_current_user_valid():

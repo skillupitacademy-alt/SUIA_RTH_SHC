@@ -42,7 +42,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     
     encoded_jwt = jwt.encode(
         to_encode,
-        config["secret_key"],
+        config["user_secret"],
         algorithm=config["algorithm"]
     )
     
@@ -74,7 +74,7 @@ def decode_access_token(token: str) -> dict:
         # Decode without audience validation - we'll validate manually
         payload = jwt.decode(
             token,
-            config["secret_key"],
+            config["user_secret"],
             algorithms=[config["algorithm"]],
             options={
                 "verify_aud": False,  # Disable automatic audience validation

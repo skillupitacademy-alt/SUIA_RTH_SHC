@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-003",
+  "type": "test",
+  "description": "Add comprehensive JWT alignment tests in tests/test_jwt_alignment.py covering all Wave 1A requirements: issuer validation, dual-secret verification, user and admin token acceptance. Tests must generate actual JWT tokens using python-jose SignJWT equivalent to match SHC issuance patterns.",
+  "status": "pending",
+  "steps": [
+    "Create tests/test_jwt_alignment.py following pytest patterns from tests/conftest.py",
+    "Add helper function to create test tokens using jose.jwt.encode with HS256, matching SHC token structure (iss, aud, tokenType, userId, originalUserId, shadowUserId, exp, iat)",
+    "Test 1: User token signed with JWT_SECRET, tokenType='user', aud='user', iss='skillhubcore.in' - must PASS",
+    "Test 2: Admin token signed with ADMIN_JWT_SECRET, tokenType='admin', aud='admin', iss='skillhubcore.in' - must PASS",
+    "Test 3: Token with missing issuer - must FAIL with 401",
+    "Test 4: Token with wrong issuer (iss='attacker.com') - must FAIL with 401",
+    "Test 5: User token signed with external secret - must FAIL with 401",
+    "Test 6: Admin token signed with JWT_SECRET instead of ADMIN_JWT_SECRET - must FAIL with 401",
+    "Test 7: Token with missing identity claims (no userId) - must FAIL with 401",
+    "Test 8: Expired token - must FAIL with 401",
+    "Add docstrings explaining Wave 1A alignment objective for each test",
+    "Update services/project-ai/README.md section on JWT authentication to document SHC alignment (issuer, dual secrets, admin token support)"
+  ],
+  "acceptance_criteria": [
+    "All 8 JWT alignment tests pass",
+    "Tests use actual jose.jwt.encode to generate tokens (no mocks)",
+    "Test coverage includes: issuer validation, dual-secret verification, user/admin token types, identity claims, expiration",
+    "README.md documents JWT_SECRET, ADMIN_JWT_SECRET, issuer validation, and admin token support"
+  ],
+  "verification": [
+    "Run pytest tests/test_jwt_alignment.py -v",
+    "All 8 tests pass",
+    "Run pytest tests/ --cov=app/auth --cov-report=term",
+    "JWT validation coverage >= 90%",
+    "README.md has clear JWT authentication section"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

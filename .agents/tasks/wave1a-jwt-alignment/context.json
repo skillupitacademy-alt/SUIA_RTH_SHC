@@ -1,0 +1,21 @@
+{
+  "project_type": "Monorepo with Python FastAPI service (project-ai) consuming tokens from TypeScript SHC platform",
+  "language": "Python 3.11+ (project-ai service), TypeScript (SHC token issuance)",
+  "build_system": "pip/setuptools for Python, pnpm workspace + turbo for TypeScript. Python service uses pyproject.toml.",
+  "test_framework": "pytest with pytest-asyncio (asyncio_mode=auto in pyproject.toml)",
+  "build_command": "pip install -e '.[dev]' for dependencies",
+  "test_command": "pytest tests/ -v (from services/project-ai directory)",
+  "verification_instructions": "1. Install Python dependencies: pip install -e '.[dev]' from services/project-ai. 2. Run pytest tests/ -v. 3. Verify all JWT alignment tests pass, including admin token acceptance and issuer validation.",
+  "snapshot_or_generated_files": "None for this JWT alignment task",
+  "environment_constraints": "Python service requires JWT_SECRET and ADMIN_JWT_SECRET environment variables (same as SHC). Test tokens must be signed with these secrets using HS256 algorithm.",
+  "contribution_requirements": "No CONTRIBUTING.md or AGENTS.md found. Standard pattern: make targeted changes, add tests, verify with pytest.",
+  "key_patterns": "SHC TokenService (packages/auth/src/token.service.ts) uses jose library to sign tokens with JWT_SECRET (user) or ADMIN_JWT_SECRET (admin), sets iss='skillhubcore.in', tokenType='user'|'admin', aud='user'|'admin'. Python uses python-jose with HS256, validates in jwt.py decode_access_token() function. Config loaded from environment in config.py get_jwt_config(). Dependencies in dependencies.py extract user from Authorization header. Tests use conftest.py fixtures with AsyncMock and test_db_session.",
+  "relevant_files": [
+    "services/project-ai/app/auth/config.py",
+    "services/project-ai/app/auth/jwt.py",
+    "services/project-ai/app/auth/dependencies.py",
+    "services/project-ai/pyproject.toml",
+    "packages/auth/src/token.service.ts (lines 82-94, 330, 357, 485 for issuer and secret references)"
+  ],
+  "directory_structure": "services/project-ai/ contains app/ (source) and tests/ (pytest tests). app/auth/ has config.py (env loading), jwt.py (token operations), dependencies.py (FastAPI deps). No .env.example exists yet. Tests use conftest.py for fixtures."
+}

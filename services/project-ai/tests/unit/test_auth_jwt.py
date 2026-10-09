@@ -17,12 +17,12 @@ from app.auth.jwt import create_access_token, decode_access_token
 
 @pytest.fixture(autouse=True)
 def set_jwt_env():
-    """Set JWT_SECRET_KEY for all tests in this module."""
-    os.environ["JWT_SECRET_KEY"] = "test_secret_key_at_least_32_characters_long_for_testing"
+    """Set JWT_SECRET for all tests in this module."""
+    os.environ["JWT_SECRET"] = "test_secret_key_at_least_32_characters_long_for_testing"
     yield
     # Clean up after tests
-    if "JWT_SECRET_KEY" in os.environ:
-        del os.environ["JWT_SECRET_KEY"]
+    if "JWT_SECRET" in os.environ:
+        del os.environ["JWT_SECRET"]
 
 
 def test_create_access_token_valid():
@@ -34,7 +34,7 @@ def test_create_access_token_valid():
     assert len(token) > 0
     
     # Decode to verify structure
-    config = {"secret_key": os.environ["JWT_SECRET_KEY"], "algorithm": "HS256"}
+    config = {"secret_key": os.environ["JWT_SECRET"], "algorithm": "HS256"}
     payload = jwt.decode(token, config["secret_key"], algorithms=[config["algorithm"]])
     
     assert payload["sub"] == "user123"

@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Replace JWT_SECRET_KEY with JWT_SECRET and ADMIN_JWT_SECRET in config.py. Python must read the same environment variables as SHC (JWT_SECRET for user tokens, ADMIN_JWT_SECRET for admin tokens). Update get_jwt_config() to return both secrets. This fixes the parallel authentication system where Python and SHC used different secrets.",
+  "status": "completed",
+  "steps": [
+    "Read services/project-ai/app/auth/config.py lines 10-39 to understand current structure",
+    "Replace JWT_SECRET_KEY environment variable with JWT_SECRET",
+    "Add ADMIN_JWT_SECRET environment variable (with JWT_SECRET fallback matching SHC pattern from packages/auth/src/token.service.ts lines 90-94)",
+    "Update get_jwt_config() to return dict with user_secret (from JWT_SECRET) and admin_secret (from ADMIN_JWT_SECRET with fallback)",
+    "Keep existing validation: both secrets must be >= 32 characters",
+    "Update error messages to reference JWT_SECRET instead of JWT_SECRET_KEY",
+    "Create services/project-ai/.env.example with JWT_SECRET, ADMIN_JWT_SECRET, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRE_MINUTES (document SHC alignment)"
+  ],
+  "acceptance_criteria": [
+    "get_jwt_config() returns dict with user_secret and admin_secret keys",
+    "JWT_SECRET environment variable is required (raises ValueError if missing or <32 chars)",
+    "ADMIN_JWT_SECRET falls back to JWT_SECRET if not set (matching SHC TokenService pattern)",
+    "Both secrets validated to be >= 32 characters",
+    ".env.example created with all JWT environment variables documented"
+  ],
+  "verification": [
+    "Run pytest tests/ -v from services/project-ai",
+    "All existing tests pass with new config structure",
+    "New test in tests/test_auth_config.py validates dual-secret config loading"
+  ],
+  "blocked_reason": null,
+  "findings": "Successfully replaced JWT_SECRET_KEY with JWT_SECRET and added ADMIN_JWT_SECRET. Updated get_jwt_config() to return user_secret and admin_secret keys with fallback pattern matching SHC TokenService (ADMIN_JWT_SECRET defaults to JWT_SECRET). Updated jwt.py to use user_secret for token operations. All existing tests updated and passing. Created comprehensive test_auth_config.py covering dual-secret loading, validation, and fallback behavior. Created .env.example documenting all JWT environment variables."
+}

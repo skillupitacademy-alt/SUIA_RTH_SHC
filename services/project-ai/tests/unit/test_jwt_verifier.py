@@ -18,12 +18,12 @@ from app.auth.jwt import create_access_token, decode_access_token
 
 @pytest.fixture(autouse=True)
 def set_jwt_env_for_verifier():
-    """Set JWT_SECRET_KEY for all tests in this module."""
-    os.environ["JWT_SECRET_KEY"] = "test_secret_key_at_least_32_characters_long_for_testing"
+    """Set JWT_SECRET for all tests in this module."""
+    os.environ["JWT_SECRET"] = "test_secret_key_at_least_32_characters_long_for_testing"
     yield
     # Clean up after tests
-    if "JWT_SECRET_KEY" in os.environ:
-        del os.environ["JWT_SECRET_KEY"]
+    if "JWT_SECRET" in os.environ:
+        del os.environ["JWT_SECRET"]
 
 
 def test_verify_valid_token_with_all_claims():
@@ -64,7 +64,7 @@ def test_verify_token_missing_audience():
     now = datetime.now(timezone.utc)
     data["exp"] = now + timedelta(minutes=5)
     # Explicitly omit 'aud' and 'iat' to test required claims
-    config = {"secret_key": os.environ["JWT_SECRET_KEY"], "algorithm": "HS256"}
+    config = {"secret_key": os.environ["JWT_SECRET"], "algorithm": "HS256"}
     token = jwt.encode(data, config["secret_key"], algorithm=config["algorithm"])
     
     with pytest.raises(HTTPException) as exc_info:
@@ -86,7 +86,7 @@ def test_verify_token_wrong_audience():
         "shadowUserId": "usr_789"
     }
     # Create token with wrong audience
-    config = {"secret_key": os.environ["JWT_SECRET_KEY"], "algorithm": "HS256"}
+    config = {"secret_key": os.environ["JWT_SECRET"], "algorithm": "HS256"}
     token = jwt.encode(data, config["secret_key"], algorithm=config["algorithm"])
     
     with pytest.raises(HTTPException) as exc_info:
