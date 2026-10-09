@@ -22,7 +22,16 @@
   "verification": [
     "Run pytest tests/ -v from services/project-ai",
     "All existing tests pass with new config structure",
-    "New test in tests/test_auth_config.py validates dual-secret config loading"
+    "New test in tests/test_auth_config.py validates dual-secret config loading",
+    "ITERATION 1 VERIFICATION (2025-01-XX):",
+    "✓ Build: pip install -e '.[dev]' completed successfully",
+    "✓ Config tests: pytest tests/unit/test_auth_config.py -v → 8 passed",
+    "✓ All auth tests: 32 passed (8 config + 9 dependencies + 7 jwt + 8 alignment)",
+    "✓ Coverage: app/auth/config.py → 100% (13 statements, 0 missed)",
+    "✓ Config returns user_secret and admin_secret keys",
+    "✓ ADMIN_JWT_SECRET fallback to JWT_SECRET working correctly",
+    "✓ Both secrets validated >= 32 characters",
+    "✓ .env.example exists with all JWT variables documented"
   ],
   "blocked_reason": null,
   "findings": "Successfully replaced JWT_SECRET_KEY with JWT_SECRET and added ADMIN_JWT_SECRET. Updated get_jwt_config() to return user_secret and admin_secret keys with fallback pattern matching SHC TokenService (ADMIN_JWT_SECRET defaults to JWT_SECRET). Updated jwt.py to use user_secret for token operations. All existing tests updated and passing. Created comprehensive test_auth_config.py covering dual-secret loading, validation, and fallback behavior. Created .env.example documenting all JWT environment variables."
