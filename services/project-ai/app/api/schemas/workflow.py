@@ -143,11 +143,11 @@ class FinalApprovalRequest(BaseModel):
     Request to approve or reject final certification (Human Gate 2/Gate 3).
     
     Represents HAA decision on workflow certification after all automated
-    gates have passed. Includes audit trail information.
+    gates have passed. Approver identity is extracted from authenticated
+    user token to prevent spoofing.
     """
     
     approved: bool = Field(description="True to approve, False to reject")
-    approved_by: str = Field(min_length=1, description="Identity of approver (HAA)")
     reason: str = Field(description="Reason for approval or rejection")
 
 

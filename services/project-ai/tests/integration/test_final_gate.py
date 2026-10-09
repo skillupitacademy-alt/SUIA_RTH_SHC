@@ -338,14 +338,15 @@ async def test_gate_passes_when_all_checks_pass(db_session, workflow_repo):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_final_approval_idempotent(db_session, workflow_repo, approval_repo, state_transition_repo):
+async def test_terminal_state_prevents_transitions(db_session, workflow_repo, approval_repo, state_transition_repo):
     """
-    Test 9 (Bonus): Final approval idempotent - already CERTIFIED workflow returns current state.
+    Test 9 (Bonus): Terminal state prevents new transitions through governance service.
     
     Verifies:
     - Workflow already in CERTIFIED state
-    - Attempting to transition to CERTIFIED again raises error
+    - Attempting to transition to CERTIFIED again via governance service raises error
     - State remains CERTIFIED
+    - Tests non-idempotence of underlying state machine
     """
     workflow_id = "wf_final_idempotent_001"
     
@@ -443,3 +444,190 @@ async def test_gate_returns_detailed_check_results(db_session, workflow_repo):
     assert verdict_result.evidence_summary["certification_gates"]["tests_passing"] == 38
     assert verdict_result.evidence_summary["runtime_verification"]["duration_ms"] == 2341
     assert verdict_result.evidence_summary["canonical_comparison"]["similarity"] == 0.95
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_endpoint_blocks_approval_when_evidence_fails(db_session, workflow_repo, approval_repo, state_transition_repo):
+    """
+    Test 11: Endpoint blocks approval when evidence verification fails.
+    
+    Verifies:
+    - Workflow in AWAITING_GATE_2 state with failed gates
+    - Endpoint rejects approval with 400 error
+    - Error message indicates evidence verification failure
+    - State remains AWAITING_GATE_2
+    
+    This test verifies that the endpoint enforces evidence verification,
+    not just reports it informationaly.
+    """
+    from app.api.routes.workflows import approve_final_certification
+    from app.api.schemas.workflow import FinalApprovalRequest
+    from fastapi import HTTPException
+    from unittest.mock import MagicMock
+    
+    workflow_id = "wf_endpoint_block_001"
+    
+    # Gate results: runtime_verification FAIL
+    failed_gate_results = {
+        "certification_gates": {"status": "PASS"},
+        "runtime_verification": {"status": "FAIL", "error": "HTTP health check failed"},
+        "canonical_comparison": {"status": "PASS"},
+        "placement_approval": {"status": "PASS"}
+    }
+    
+    # Create workflow in AWAITING_GATE_2 state with failed gates
+    workflow = WorkflowModel(
+        workflow_id=workflow_id,
+        specification_id="spec_endpoint_block_001",
+        target_family="Introduction",
+        target_version="I7",
+        requester_id="requester@example.com",
+        current_state=CanonicalWorkflowState.AWAITING_GATE_2.value,
+        contract_id="ct_endpoint_block_001",
+        contract_sha256="x" * 64,
+        candidate_sha256="y" * 64,
+        manifest_sha256="z" * 64,
+        manifest_id="manifest_endpoint_block_001",
+        gate_results=failed_gate_results,
+        version=1,
+    )
+    
+    await workflow_repo.upsert(workflow)
+    await db_session.flush()
+    
+    # Create governance service
+    governance_service = WorkflowGovernanceService(
+        workflow_repo=workflow_repo,
+        approval_repo=approval_repo,
+        state_transition_repo=state_transition_repo,
+        session=db_session
+    )
+    
+    # Create mock user
+    mock_user = {"email": "haa@example.com", "sub": "haa-001"}
+    
+    # Attempt to approve despite failed evidence
+    approval_request = FinalApprovalRequest(
+        approved=True,
+        reason="Attempting approval despite failed gates"
+    )
+    
+    with pytest.raises(HTTPException) as exc_info:
+        await approve_final_certification(
+            workflow_id=workflow_id,
+            request=approval_request,
+            user=mock_user,
+            governance_service=governance_service,
+            session=db_session
+        )
+    
+    assert exc_info.value.status_code == 400
+    assert "evidence verification failed" in exc_info.value.detail.lower()
+    assert "FAIL" in exc_info.value.detail or "fail" in exc_info.value.detail
+    
+    # Verify state remains AWAITING_GATE_2
+    unchanged_workflow = await workflow_repo.get(workflow_id, verify_bindings=False)
+    assert unchanged_workflow.current_state == CanonicalWorkflowState.AWAITING_GATE_2.value
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_endpoint_idempotent_for_repeated_approval(db_session, workflow_repo, approval_repo, state_transition_repo):
+    """
+    Test 12: Endpoint is truly idempotent for repeated identical requests.
+    
+    Verifies:
+    - First approval succeeds and transitions to CERTIFIED
+    - Second identical approval returns 200 with existing state
+    - No error raised for idempotent request
+    - State remains CERTIFIED
+    
+    This is true idempotence: multiple identical requests produce the same
+    result without error, allowing safe retries.
+    """
+    from app.api.routes.workflows import approve_final_certification
+    from app.api.schemas.workflow import FinalApprovalRequest
+    
+    workflow_id = "wf_endpoint_idempotent_001"
+    
+    # Gate results: all PASS
+    all_pass_gate_results = {
+        "certification_gates": {"status": "PASS", "tests_passing": 38, "tests_total": 38},
+        "runtime_verification": {"status": "PASS"},
+        "canonical_comparison": {"status": "PASS"},
+        "placement_approval": {"status": "PASS"}
+    }
+    
+    # Create workflow in AWAITING_GATE_2 state
+    workflow = WorkflowModel(
+        workflow_id=workflow_id,
+        specification_id="spec_endpoint_idempotent_001",
+        target_family="Introduction",
+        target_version="I7",
+        requester_id="requester@example.com",
+        current_state=CanonicalWorkflowState.AWAITING_GATE_2.value,
+        contract_id="ct_endpoint_idempotent_001",
+        contract_sha256="p" * 64,
+        candidate_sha256="q" * 64,
+        manifest_sha256="r" * 64,
+        manifest_id="manifest_endpoint_idempotent_001",
+        gate_results=all_pass_gate_results,
+        version=1,
+    )
+    
+    await workflow_repo.upsert(workflow)
+    await db_session.flush()
+    
+    # Create governance service
+    governance_service = WorkflowGovernanceService(
+        workflow_repo=workflow_repo,
+        approval_repo=approval_repo,
+        state_transition_repo=state_transition_repo,
+        session=db_session
+    )
+    
+    # Create mock user
+    mock_user = {"email": "haa@example.com", "sub": "haa-001"}
+    
+    # First approval - should succeed
+    approval_request = FinalApprovalRequest(
+        approved=True,
+        reason="All gates passed, certifying workflow"
+    )
+    
+    response1 = await approve_final_certification(
+        workflow_id=workflow_id,
+        request=approval_request,
+        user=mock_user,
+        governance_service=governance_service,
+        session=db_session
+    )
+    
+    assert response1.approved == True
+    assert response1.new_state == CanonicalWorkflowState.CERTIFIED.value
+    assert response1.evidence_verified == True
+    
+    await db_session.commit()
+    
+    # Refresh workflow to simulate second request
+    workflow_after_first = await workflow_repo.get(workflow_id, verify_bindings=False)
+    assert workflow_after_first.current_state == CanonicalWorkflowState.CERTIFIED.value
+    
+    # Second identical approval - should return 200 with existing state (idempotent)
+    response2 = await approve_final_certification(
+        workflow_id=workflow_id,
+        request=approval_request,
+        user=mock_user,
+        governance_service=governance_service,
+        session=db_session
+    )
+    
+    # Should return successful response without error
+    assert response2.approved == True
+    assert response2.new_state == CanonicalWorkflowState.CERTIFIED.value
+    
+    # Verify state still CERTIFIED
+    workflow_after_second = await workflow_repo.get(workflow_id, verify_bindings=False)
+    assert workflow_after_second.current_state == CanonicalWorkflowState.CERTIFIED.value
+

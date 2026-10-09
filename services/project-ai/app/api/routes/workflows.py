@@ -336,7 +336,47 @@ async def approve_final_certification(
     if not workflow:
         raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
     
-    # Validate state
+    # Handle idempotent requests - if already in terminal state with same decision, return existing result
+    if workflow.state.current == CanonicalWorkflowState.CERTIFIED:
+        if request.approved:
+            # Already approved, return existing approval
+            return FinalApprovalResponse(
+                workflow_id=workflow_id,
+                previous_state=CanonicalWorkflowState.AWAITING_GATE_2.value,
+                new_state=CanonicalWorkflowState.CERTIFIED.value,
+                approved=True,
+                approved_by=user.get("email") or user.get("sub") or user.get("id") or "unknown",
+                approved_at=workflow.updated_at.isoformat() if workflow.updated_at else datetime.now(timezone.utc).isoformat(),
+                reason=request.reason,
+                evidence_verified=True,
+                gate_results=workflow.gate_results or {}
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Workflow already CERTIFIED, cannot reject"
+            )
+    elif workflow.state.current == CanonicalWorkflowState.REJECTED:
+        if not request.approved:
+            # Already rejected, return existing rejection
+            return FinalApprovalResponse(
+                workflow_id=workflow_id,
+                previous_state=CanonicalWorkflowState.AWAITING_GATE_2.value,
+                new_state=CanonicalWorkflowState.REJECTED.value,
+                approved=False,
+                approved_by=user.get("email") or user.get("sub") or user.get("id") or "unknown",
+                approved_at=workflow.updated_at.isoformat() if workflow.updated_at else datetime.now(timezone.utc).isoformat(),
+                reason=request.reason,
+                evidence_verified=False,
+                gate_results=workflow.gate_results or {}
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Workflow already REJECTED, cannot approve"
+            )
+    
+    # Validate state - must be AWAITING_GATE_2 for new approval/rejection
     if workflow.state.current != CanonicalWorkflowState.AWAITING_GATE_2:
         raise HTTPException(
             status_code=400,
@@ -351,6 +391,16 @@ async def approve_final_certification(
     # Evidence is verified if verdict is CERTIFICATION_READY
     evidence_verified = (verdict_result.verdict == "CERTIFICATION_READY")
     
+    # ENFORCE evidence verification - block approval if gates failed
+    if not evidence_verified:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot approve: evidence verification failed. Verdict: {verdict_result.verdict}, Reason: {verdict_result.reason}"
+        )
+    
+    # Extract approver identity from authenticated user token (prevent identity spoofing)
+    approved_by = user.get("email") or user.get("sub") or user.get("id") or "unknown"
+    
     # Determine target state
     if request.approved:
         target_state = CanonicalWorkflowState.CERTIFIED
@@ -364,7 +414,7 @@ async def approve_final_certification(
         workflow = await governance_service.transition_state(
             workflow_id=workflow_id,
             to_state=target_state,
-            triggered_by=request.approved_by,
+            triggered_by=approved_by,
             evidence_id=None,
             reason=request.reason
         )
@@ -379,7 +429,7 @@ async def approve_final_certification(
         previous_state=previous_state,
         new_state=workflow.state.current.value,
         approved=request.approved,
-        approved_by=request.approved_by,
+        approved_by=approved_by,
         approved_at=datetime.now(timezone.utc).isoformat(),
         reason=request.reason,
         evidence_verified=evidence_verified,
