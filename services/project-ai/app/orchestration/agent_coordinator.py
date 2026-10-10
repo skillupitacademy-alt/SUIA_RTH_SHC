@@ -235,9 +235,11 @@ class AgentCoordinator:
             await self._execute_certification_agent(agent, context, result)
         
         else:
-            # For agents without implemented handlers yet, mark as success with stub
-            result.warnings.append(f"Agent {agent.agentId} has no execution handler yet (stub)")
-            result.outputs["status"] = "stub_execution"
+            # Unimplemented handlers are not successful executions. Fail closed so
+            # a stub cannot satisfy a mandatory dependency or certification gate.
+            result.status = AgentStatus.BLOCKED
+            result.warnings.append(f"Agent {agent.agentId} has no execution handler (stub; not executed)")
+            result.outputs["status"] = "not_implemented"
         
         return result
     
@@ -441,10 +443,14 @@ class AgentCoordinator:
         result: AgentResult
     ) -> None:
         """Execute composer workflow orchestration capabilities."""
-        # This agent orchestrates the I2 workflow
-        result.outputs["workflow_status"] = "validated"
+        # The former handler asserted validation without invoking the intake,
+        # certification, or placement workflows. Do not manufacture that state.
+        result.status = AgentStatus.BLOCKED
+        result.outputs["workflow_status"] = "not_executed"
         result.outputs["i2_flow"] = "intake → certification → placement"
-        result.warnings.append("Composer workflow agent using simplified validation")
+        result.errors.append(
+            "Composer workflow orchestration is not wired to the authoritative lifecycle; validation was not asserted."
+        )
     
     async def _execute_runtime_browser_agent(
         self,
@@ -457,11 +463,15 @@ class AgentCoordinator:
             # Get blocks to verify
             block_types = context.workflow_state.get('block_types', [])
             
-            # Browser verification requires actual browser launch
-            # For now, verify browser module availability
-            result.outputs["browser_available"] = True
+            # Merely importing the browser module does not verify a running app.
+            # Require an explicit browser execution result before this agent can pass.
+            result.status = AgentStatus.BLOCKED
+            result.outputs["browser_available"] = None
             result.outputs["blocks_to_verify"] = block_types
-            result.warnings.append("Browser verification requires runtime environment (stub)")
+            result.outputs["verification_status"] = "NOT_RUN"
+            result.errors.append(
+                "Browser verification was not executed by this handler; runtime evidence is required."
+            )
         
         except Exception as e:
             result.status = AgentStatus.FAILED
@@ -583,7 +593,9 @@ class AgentCoordinator:
         
         result.outputs["certification_passed"] = certification_passed
         result.outputs["required_gates"] = required_agents
-        result.outputs["verdict"] = "CERTIFIED" if certification_passed else "REJECTED"
+        # Automated checks can establish readiness only. Final certification
+        # requires the separate, authenticated Human Gate 2 approval workflow.
+        result.outputs["verdict"] = "CERTIFICATION_READY" if certification_passed else "REJECTED"
         
         if not certification_passed:
             result.status = AgentStatus.FAILED
