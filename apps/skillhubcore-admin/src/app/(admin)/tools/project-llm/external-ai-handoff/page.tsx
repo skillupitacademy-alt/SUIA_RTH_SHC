@@ -54,7 +54,7 @@ export default function ExternalAiHandoffPage() {
     setContractError(null);
     setEngineeringContract(null);
     try {
-      const apiBase = (process.env.NEXT_PUBLIC_PROJECT_AI_API_URL || 'http://localhost:8000').replace(/\\/$/, '');
+      const apiBase = (process.env.NEXT_PUBLIC_PROJECT_AI_API_URL || 'http://localhost:8000').replace(/\/$/, '');
       const response = await fetch(
         `${apiBase}/workflows/${encodeURIComponent(id)}/engineering-contract`,
         { method: 'GET', credentials: 'include', headers: { Accept: 'application/json' } }
