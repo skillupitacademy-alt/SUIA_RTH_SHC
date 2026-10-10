@@ -336,6 +336,10 @@ class CandidateModel(Base):
     target_family = Column(String(100), nullable=True)
     target_version = Column(String(100), nullable=True)
     
+    # Wave 1C: Tenant ownership tracking
+    # Candidates are tenant-scoped resources - track which brand uploaded them
+    brand = Column(String(100), nullable=True)
+    
     # Candidate hash (computed from files for tamper detection)
     candidate_sha256 = Column(String(64), nullable=True)
     

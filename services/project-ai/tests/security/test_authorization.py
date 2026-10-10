@@ -168,56 +168,47 @@ class TestBrandEnforcementInRoutes:
     """
     Tests for brand enforcement in route handlers.
     
-    Note: These tests verify brand isolation for workflow operations.
-    They require integration with actual route handlers and database.
-    
-    Tests to implement:
-    - test_workflow_brand_enforcement: GET /workflows/{id}
-    - test_final_approval_brand_enforcement: POST /workflows/{id}/approve-final
-    - test_candidate_upload_brand_enforcement: POST /candidates/upload
-    - test_placement_execution_brand_enforcement: POST /candidates/{id}/execute
-    
-    These tests are marked as pending since they require full application
-    context and database setup. They will be implemented once workflow model
-    includes brand field (currently missing).
+    Wave 1C focuses on tenant-scoped candidate resources.
+    Workflows are platform-scoped and do not require brand enforcement.
     """
     
-    @pytest.mark.skip(reason="Workflow model lacks brand field - blocked until model updated")
-    def test_workflow_brand_enforcement(self):
+    @pytest.mark.skip(reason="Requires integration test setup with TestClient and database")
+    def test_candidate_upload_captures_brand(self):
         """
-        Verify cross-brand workflow access is rejected.
+        Verify candidate upload captures uploader's brand.
         
-        Tests that GET /workflows/{id} endpoint enforces brand boundary:
-        - User with brand=skillhub cannot access workflow with brand=techskills
-        - User with brand=None (infrastructure) can access any workflow
+        Tests that POST /candidates/upload stores the authenticated user's
+        brand with the candidate for future enforcement.
         """
         pass
     
-    @pytest.mark.skip(reason="Workflow model lacks brand field - blocked until model updated")
-    def test_final_approval_brand_enforcement(self):
+    @pytest.mark.skip(reason="Requires integration test setup with TestClient and database")
+    def test_candidate_execute_same_brand_succeeds(self):
         """
-        Verify cross-brand final approval is rejected.
+        Verify same-brand candidate execution succeeds.
         
-        Tests that POST /workflows/{id}/approve-final endpoint enforces brand boundary.
+        Tests that POST /candidates/{id}/execute succeeds when executor's
+        brand matches the uploader's brand.
         """
         pass
     
-    @pytest.mark.skip(reason="Workflow model lacks brand field - blocked until model updated")
-    def test_candidate_upload_brand_enforcement(self):
+    @pytest.mark.skip(reason="Requires integration test setup with TestClient and database")
+    def test_candidate_execute_cross_brand_denied(self):
         """
-        Verify cross-brand candidate upload is rejected.
+        Verify cross-brand candidate execution is rejected.
         
-        Tests that POST /candidates/upload endpoint enforces brand boundary
-        by checking workflow's brand against uploader's brand.
+        Tests that POST /candidates/{id}/execute returns 403 when executor's
+        brand differs from uploader's brand.
         """
         pass
     
-    @pytest.mark.skip(reason="Workflow model lacks brand field - blocked until model updated")
-    def test_placement_execution_brand_enforcement(self):
+    @pytest.mark.skip(reason="Requires integration test setup with TestClient and database")
+    def test_candidate_execute_infrastructure_bypass(self):
         """
-        Verify cross-brand placement execution is rejected.
+        Verify infrastructure user can execute any candidate.
         
-        Tests that POST /candidates/{id}/execute endpoint enforces brand boundary.
+        Tests that user with brand=None (infrastructure) can execute
+        candidates regardless of uploader's brand.
         """
         pass
 

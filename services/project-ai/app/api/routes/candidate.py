@@ -65,6 +65,7 @@ def candidate_to_model(package: CandidatePackage) -> CandidateModel:
         uploaded_by=package.uploadedBy,
         target_family=package.target_family or "",
         target_version=package.target_version or "",
+        brand=package.brand,  # Wave 1C: tenant ownership
         candidate_sha256=""  # Computed by repository
     )
 
@@ -90,7 +91,8 @@ def model_to_candidate(model: CandidateModel) -> CandidatePackage:
         uploadedBy=model.uploaded_by,
         workflow_id=model.workflow_id,
         target_family=model.target_family,
-        target_version=model.target_version
+        target_version=model.target_version,
+        brand=model.brand  # Wave 1C: tenant ownership
     )
 
 
@@ -234,6 +236,7 @@ async def upload_candidate(
     # Retrieve workflow to get target binding
     from app.api.routes.workflows import get_governance_service
     from app.orchestration.canonical_workflow import CanonicalWorkflowState
+    from app.auth.authorization import verify_brand_access
     
     governance_service = await get_governance_service(session)
     workflow = await governance_service.get_workflow(package.workflow_id)
@@ -284,6 +287,12 @@ async def upload_candidate(
     
     package.target_family = workflow.target_family
     package.target_version = workflow.target_version
+    
+    # Wave 1C: Capture uploader's brand for tenant-scoped resource ownership
+    # Candidates are tenant data (RTH/SUIA artifacts), even though workflows
+    # are platform-scoped. Store the uploader's brand to enforce tenant
+    # boundaries on execute/access operations.
+    package.brand = user.get("brand")
     
     # Wave 3A: Package validation - must happen before state transition
     validation_errors = _validate_package(package)
@@ -833,6 +842,13 @@ async def execute_placement(
         )
     
     package = model_to_candidate(candidate_model)
+    
+    # Wave 1C: Enforce brand boundary for tenant-scoped candidate execution
+    # Candidates are tenant-owned resources. Only users from the same brand
+    # (tenant) that uploaded the candidate can execute placement.
+    # Infrastructure users (brand=None) can execute any candidate.
+    from app.auth.authorization import verify_brand_access
+    verify_brand_access(user, package.brand)
     
     manifests = await manifest_repo.list_by_candidate(candidate_id)
     if not manifests:
