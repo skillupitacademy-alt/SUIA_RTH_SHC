@@ -1,0 +1,52 @@
+﻿=== Git State Capture ===
+Captured at: 2026-10-10T10:29:09.0908965+05:30
+
+=== HEAD SHA ===
+59f1542460f1ac2f49c0924f8a95a6bfe0019011
+
+=== Current Branch ===
+m2-project-ai-canonical-wiring
+
+=== Working Tree Status ===
+ M ILS_UI_UX/docs/ProjectFlowExampleProjectLLM.md
+ M ILS_UI_UX/docs/RemainingTask.md
+ M services/project-ai/tests/test_candidate.py
+?? .agents/evidence/wave1c-verification-findings.json
+?? .agents/tasks/2026-10-10-084223-wave1d-review-doc.md
+?? .agents/tasks/wave1c-independent-verification-report.md
+?? .agents/tasks/wave1c-remediation/2026-10-10-080037-review.md
+?? .agents/tasks/wave1c-remediation/2026-10-10-081450-review.md
+?? .agents/tasks/wave1c-remediation/context.json
+?? .agents/tasks/wave1c-remediation/task.json
+?? .agents/tasks/wave1d-governance-fix-plan.md
+?? .agents/tasks/wave1d-governance-fix-report.md
+?? .agents/tasks/wave1d-governance-fix-review.json
+?? .agents/tasks/wave1d-governance-fix-review.md
+?? .agents/tasks/wave1d-plan.md
+?? .agents/tasks/wave1d-review.json
+?? diff-w3a.txt
+?? feat-003-test-execution-report.txt
+
+=== Diff Statistics (Working Tree) ===
+ ILS_UI_UX/docs/ProjectFlowExampleProjectLLM.md | 1167 +++-
+ ILS_UI_UX/docs/RemainingTask.md                | 8287 +++++++++++++++++++++++-
+ services/project-ai/tests/test_candidate.py    |   83 +-
+ 3 files changed, 9471 insertions(+), 66 deletions(-)
+
+=== Diff Statistics (Staged) ===
+
+=== HEAD Commit Details ===
+commit 59f1542460f1ac2f49c0924f8a95a6bfe0019011
+Author:     Ajay Shah(Personal) <realtutorialh@gmail.com>
+AuthorDate: Sat Oct 10 09:58:10 2026 +0530
+Commit:     Ajay Shah(Personal) <realtutorialh@gmail.com>
+CommitDate: Sat Oct 10 09:58:10 2026 +0530
+
+    docs(wave1): add comprehensive Wave 1 security completion summary
+
+=== Recent Commits ===
+59f15424 docs(wave1): add comprehensive Wave 1 security completion summary
+325163ed chore(wave1d): add governance identity fix certification evidence
+54cf7b32 fix(wave1d): extract governance identities from JWT, remove client-supplied identity fields
+4c1f6434 docs: add Wave 1D RBAC certification evidence
+2c2e30e6 feat(wave1d): implement RBAC enforcement on privileged routes

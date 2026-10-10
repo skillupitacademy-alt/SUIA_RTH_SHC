@@ -1,0 +1,96 @@
+{
+  "capturedAt": "2025-01-10T10:31:00Z",
+  "totalRoutes": 39,
+  "protectedRoutes": 35,
+  "publicRoutes": 4,
+  "mutatingRoutes": 22,
+  "readOnlyRoutes": 17,
+  "authDependencies": {
+    "get_current_user": 31,
+    "require_contract_admin": 4,
+    "none": 4
+  },
+  "routerFiles": [
+    "app/main.py",
+    "app/api/routes/health.py",
+    "app/api/routes/snapshot.py",
+    "app/api/routes/evidence.py",
+    "app/api/routes/tasks.py",
+    "app/api/routes/governance.py",
+    "app/api/routes/workflows.py",
+    "app/api/routes/agents.py",
+    "app/api/routes/candidate.py",
+    "app/api/routes/creation.py",
+    "app/api/routes/contract.py"
+  ],
+  "privilegedOperations": [
+    {
+      "route": "POST /workflows",
+      "handler": "create_workflow",
+      "auth": "require_contract_admin",
+      "description": "Create new workflow (requires contract_admin role)"
+    },
+    {
+      "route": "POST /approvals/workflows/{workflow_id}/approve-placement",
+      "handler": "approve_placement",
+      "auth": "require_contract_admin",
+      "description": "Approve placement manifest with verification gates"
+    },
+    {
+      "route": "POST /workflows/{workflow_id}/approve-final",
+      "handler": "approve_final_certification",
+      "auth": "require_contract_admin",
+      "description": "Final certification approval (Gate 2/Gate 3)"
+    }
+  ],
+  "criticalSecurityControls": {
+    "selfApprovalPrevention": [
+      "POST /approvals/{approval_id}/approve",
+      "POST /approvals/workflows/{workflow_id}/approve-placement",
+      "POST /workflows/{workflow_id}/approve-final"
+    ],
+    "hashVerification": [
+      "POST /approvals/{approval_id}/approve (manifest hash)",
+      "POST /approvals/workflows/{workflow_id}/approve-placement (manifest + contract + candidate SHA-256)",
+      "POST /candidates/upload (SHA-256 server-side computation)",
+      "POST /candidates/{candidate_id}/manifest (manifest hash computation)"
+    ],
+    "stateMachineEnforcement": [
+      "POST /workflows/{workflow_id}/transition",
+      "POST /approvals/workflows/{workflow_id}/approve-placement",
+      "POST /workflows/{workflow_id}/approve-final",
+      "POST /candidates/upload"
+    ]
+  },
+  "deprecatedEndpoints": [
+    "POST /creation/workflows",
+    "GET /creation/workflows/{workflow_id}",
+    "POST /creation/workflows/{workflow_id}/validate",
+    "POST /creation/workflows/{workflow_id}/certify"
+  ],
+  "routesByModule": {
+    "main": 1,
+    "health": 1,
+    "snapshot": 2,
+    "evidence": 2,
+    "tasks": 4,
+    "governance": 7,
+    "workflows": 10,
+    "agents": 2,
+    "candidate": 5,
+    "creation": 4,
+    "contract": 2
+  },
+  "mutatingOperationsByType": {
+    "workflowCreation": 1,
+    "workflowTransition": 1,
+    "artifactBinding": 1,
+    "approvals": 4,
+    "candidateOperations": 4,
+    "placementOperations": 2,
+    "taskOperations": 3,
+    "deprecated": 4,
+    "contractGeneration": 1,
+    "certificationApproval": 1
+  }
+}
