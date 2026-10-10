@@ -85,8 +85,8 @@ def test_governance_submit_uses_jwt_identity():
 
 def test_governance_approve_prevents_jwt_self_approval():
     """Test that approve endpoint prevents self-approval using JWT identities."""
-    # Alice submits
-    alice_token = create_test_token("alice@example.com")
+    # Alice submits (with reviewer role to pass authorization check)
+    alice_token = create_test_token("alice@example.com", roles=["contract_reviewer"])
     
     submit_response = client.post(
         "/approvals/submit",
@@ -170,8 +170,8 @@ def test_governance_reject_uses_jwt_identity():
     
     approval_id = submit_response.json()["approvalId"]
     
-    # Bob rejects (different JWT)
-    bob_token = create_test_token("bob@example.com")
+    # Bob rejects (different JWT) - grant contract_reviewer role required by reject endpoint
+    bob_token = create_test_token("bob@example.com", roles=["contract_reviewer"])
     
     reject_response = client.post(
         f"/approvals/{approval_id}/reject",

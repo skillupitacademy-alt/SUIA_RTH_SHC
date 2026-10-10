@@ -59,9 +59,40 @@ async def test_db_session(test_db_engine):
     )
     
     async with async_session() as session:
-        async with session.begin():
-            yield session
-            # Rollback happens automatically when context exits
+        # Don't use 'async with session.begin()' - let tests manage transactions
+        yield session
+        # Rollback any uncommitted changes
+        await session.rollback()
+
+
+@pytest_asyncio.fixture
+async def db_session(test_db_session):
+    """
+    Alias for test_db_session for backward compatibility.
+    
+    Integration tests marked with @pytest.mark.integration reference
+    'db_session' fixture. This alias delegates to test_db_session
+    to maintain compatibility without renaming all test function signatures.
+    """
+    return test_db_session
+
+
+@pytest_asyncio.fixture
+async def workflow_repo(test_workflow_repo) -> WorkflowRepository:
+    """Alias for test_workflow_repo for backward compatibility."""
+    return test_workflow_repo
+
+
+@pytest_asyncio.fixture
+async def approval_repo(test_approval_repo) -> ApprovalRepository:
+    """Alias for test_approval_repo for backward compatibility."""
+    return test_approval_repo
+
+
+@pytest_asyncio.fixture
+async def candidate_repo(test_candidate_repo) -> CandidateRepository:
+    """Alias for test_candidate_repo for backward compatibility."""
+    return test_candidate_repo
 
 
 @pytest.fixture
