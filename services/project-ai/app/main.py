@@ -27,9 +27,12 @@ async def lifespan(app: FastAPI):
     Validates configuration on startup, cleans up on shutdown.
     """
     # Startup: Validate snapshot path configuration
+    # Resolve the workspace from this service's repository location unless
+    # deployment explicitly configures WORKSPACE_ROOT. Never assume a developer's
+    # machine-specific absolute path.
     workspace_root = os.environ.get(
-        'WORKSPACE_ROOT',
-        'E:\\onlinewebsites\\quiz-platform'
+        "WORKSPACE_ROOT",
+        str(Path(__file__).resolve().parents[3]),
     )
     snapshot_path = Path(workspace_root) / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json'
     
@@ -84,13 +87,32 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
+# CORS middleware. Credentialed requests must use explicit origins.
+# Configure comma-separated deployment origins with PROJECT_AI_CORS_ORIGINS.
+_default_cors_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3009",
+]
+_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get(
+        "PROJECT_AI_CORS_ORIGINS",
+        ",".join(_default_cors_origins),
+    ).split(",")
+    if origin.strip()
+]
+if "*" in _cors_origins:
+    raise RuntimeError(
+        "PROJECT_AI_CORS_ORIGINS must not contain '*' when credentialed requests are enabled."
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # Mount route modules
