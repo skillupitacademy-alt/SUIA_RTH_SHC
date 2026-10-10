@@ -803,6 +803,795 @@ env:
 
 ---
 
+## Integration Test Specifications
+
+### Overview
+
+Integration tests verify that PostgreSQL repository implementations correctly interact with the database, enforce business rules, and maintain data integrity. All tests use transaction rollback for isolation and run against the canonical Drizzle schema.
+
+**Test Organization:**
+- Location: `services/project-ai/tests/integration/`
+- Framework: pytest + pytest-asyncio
+- Database: PostgreSQL 17 (via Docker or local)
+- Schema: Canonical Drizzle migrations from `@quiz/db-tutorial`
+
+### BLOCKED: TEST_DATABASE_URL_TUTORIAL Not Set
+
+**Current Status:** Integration tests are **BLOCKED** because `TEST_DATABASE_URL_TUTORIAL` is not configured in the environment.
+
+**Unblocking Steps:**
+
+1. **Start test database:**
+   ```bash
+   docker-compose -f services/project-ai/docker-compose.test.yml up -d
+   ```
+
+2. **Set environment variable:**
+   ```bash
+   # Add to services/project-ai/.env.test
+   TEST_DATABASE_URL_TUTORIAL=postgresql+asyncpg://project_ai_test:test_password_123@127.0.0.1:55432/project_ai_test
+   ```
+
+3. **Apply migrations:**
+   ```bash
+   pnpm --filter @quiz/db-tutorial db:migrate
+   ```
+
+4. **Run tests:**
+   ```bash
+   cd services/project-ai
+   pytest tests/integration/ -v
+   ```
+
+**Current Behavior:** Tests skip gracefully with message: `"TEST_DATABASE_URL_TUTORIAL not configured — cannot run PostgreSQL integration tests"`
+
+### Test Suite Categories
+
+#### TS-1: CRUD Operations Tests
+
+**Purpose:** Verify basic Create, Read, Update, Delete operations for all repository implementations.
+
+**Test Cases:**
+
+**TC-1.1: Workflow CRUD**
+```python
+async def test_workflow_create_and_retrieve(workflow_repo):
+    """Create a workflow and retrieve it by ID."""
+    workflow = await workflow_repo.create(
+        workflow_id="wf-test-001",
+        workflow_type="tutorial_gen",
+        user_id="test-user-123",
+        status="draft",
+        config={"model": "gpt-4"}
+    )
+    
+    retrieved = await workflow_repo.get_by_id("wf-test-001")
+    assert retrieved.workflow_id == "wf-test-001"
+    assert retrieved.status == "draft"
+    assert retrieved.config["model"] == "gpt-4"
+```
+
+**TC-1.2: Contract CRUD**
+```python
+async def test_contract_create_and_update(contract_repo):
+    """Create a contract and update its status."""
+    contract = await contract_repo.create(
+        contract_id="contract-test-001",
+        workflow_id="wf-test-001",
+        contract_type="tutorial_generation",
+        specification={"topics": ["Python", "FastAPI"]},
+        status="pending"
+    )
+    
+    updated = await contract_repo.update_status(
+        contract_id="contract-test-001",
+        status="active"
+    )
+    
+    assert updated.status == "active"
+    assert updated.contract_id == "contract-test-001"
+```
+
+**TC-1.3: Candidate CRUD**
+```python
+async def test_candidate_create_and_list(candidate_repo):
+    """Create multiple candidates and list them by contract."""
+    for i in range(3):
+        await candidate_repo.create(
+            candidate_id=f"candidate-test-{i:03d}",
+            contract_id="contract-test-001",
+            agent_id="agent-001",
+            artifact={"content": f"Candidate {i}"},
+            quality_score=0.75 + (i * 0.05)
+        )
+    
+    candidates = await candidate_repo.list_by_contract("contract-test-001")
+    assert len(candidates) == 3
+    assert candidates[0].quality_score >= candidates[1].quality_score
+```
+
+**TC-1.4: Manifest CRUD**
+```python
+async def test_manifest_create_and_retrieve(manifest_repo):
+    """Create a manifest and verify its structure."""
+    manifest = await manifest_repo.create(
+        manifest_id="manifest-test-001",
+        workflow_id="wf-test-001",
+        manifest_data={
+            "deliverables": ["artifact1.md", "artifact2.md"],
+            "metrics": {"quality": 0.92}
+        }
+    )
+    
+    retrieved = await manifest_repo.get_by_id("manifest-test-001")
+    assert retrieved.manifest_data["metrics"]["quality"] == 0.92
+    assert len(retrieved.manifest_data["deliverables"]) == 2
+```
+
+**TC-1.5: Approval CRUD**
+```python
+async def test_approval_create_and_query(approval_repo):
+    """Create approval records and query by workflow."""
+    await approval_repo.create(
+        approval_id="approval-test-001",
+        workflow_id="wf-test-001",
+        approver_id="approver-001",
+        decision="approved",
+        rationale="Meets quality standards"
+    )
+    
+    approvals = await approval_repo.list_by_workflow("wf-test-001")
+    assert len(approvals) == 1
+    assert approvals[0].decision == "approved"
+```
+
+**TC-1.6: State Transition CRUD**
+```python
+async def test_state_transition_create_and_audit(state_transition_repo):
+    """Create state transitions and retrieve audit log."""
+    await state_transition_repo.create(
+        transition_id="transition-test-001",
+        workflow_id="wf-test-001",
+        from_state="draft",
+        to_state="active",
+        triggered_by="user-123",
+        reason="Manual activation"
+    )
+    
+    transitions = await state_transition_repo.get_audit_log("wf-test-001")
+    assert len(transitions) == 1
+    assert transitions[0].from_state == "draft"
+    assert transitions[0].to_state == "active"
+```
+
+#### TS-2: RBAC Enforcement Tests
+
+**Purpose:** Verify that database-level access controls prevent unauthorized operations.
+
+**Note:** Full RBAC implementation depends on PostgreSQL Row-Level Security (RLS) policies. Initial Gate B tests verify repository-level enforcement; database-level RLS is Gate C work.
+
+**TC-2.1: User Isolation**
+```python
+async def test_user_cannot_access_other_user_workflows(workflow_repo):
+    """Verify users can only access their own workflows."""
+    # Create workflow for user A
+    await workflow_repo.create(
+        workflow_id="wf-user-a-001",
+        workflow_type="tutorial_gen",
+        user_id="user-a",
+        status="draft"
+    )
+    
+    # Create workflow for user B
+    await workflow_repo.create(
+        workflow_id="wf-user-b-001",
+        workflow_type="tutorial_gen",
+        user_id="user-b",
+        status="draft"
+    )
+    
+    # Query as user A (repository should filter by user_id)
+    user_a_workflows = await workflow_repo.list_by_user("user-a")
+    assert len(user_a_workflows) == 1
+    assert user_a_workflows[0].workflow_id == "wf-user-a-001"
+```
+
+**TC-2.2: Admin Override**
+```python
+async def test_admin_can_access_all_workflows(workflow_repo):
+    """Verify admin role can access all workflows."""
+    # Create workflows for different users
+    for user_id in ["user-a", "user-b", "user-c"]:
+        await workflow_repo.create(
+            workflow_id=f"wf-{user_id}-001",
+            workflow_type="tutorial_gen",
+            user_id=user_id,
+            status="draft"
+        )
+    
+    # Admin query (no user_id filter)
+    all_workflows = await workflow_repo.list_all(admin_role=True)
+    assert len(all_workflows) >= 3
+```
+
+**TC-2.3: Status-Based Access Control**
+```python
+async def test_cannot_modify_locked_workflow(workflow_repo):
+    """Verify locked workflows cannot be modified."""
+    workflow = await workflow_repo.create(
+        workflow_id="wf-locked-001",
+        workflow_type="tutorial_gen",
+        user_id="user-123",
+        status="locked"
+    )
+    
+    with pytest.raises(ValueError, match="Cannot modify locked workflow"):
+        await workflow_repo.update_config(
+            workflow_id="wf-locked-001",
+            config={"new_key": "new_value"}
+        )
+```
+
+#### TS-3: Transaction Rollback Tests
+
+**Purpose:** Verify that failed operations do not leave partial state in the database.
+
+**TC-3.1: Contract Creation Rollback**
+```python
+async def test_contract_creation_rollback_on_error(contract_repo, db_session):
+    """Verify contract creation rolls back on failure."""
+    try:
+        async with db_session.begin_nested():
+            # Create contract
+            await contract_repo.create(
+                contract_id="contract-rollback-001",
+                workflow_id="wf-test-001",
+                contract_type="tutorial_generation",
+                specification={"topics": []},
+                status="pending"
+            )
+            
+            # Simulate error
+            raise ValueError("Simulated error")
+    except ValueError:
+        pass
+    
+    # Verify contract was not persisted
+    retrieved = await contract_repo.get_by_id("contract-rollback-001")
+    assert retrieved is None
+```
+
+**TC-3.2: Cascade Rollback**
+```python
+async def test_cascade_rollback_on_constraint_violation(
+    workflow_repo, contract_repo, db_session
+):
+    """Verify cascading operations roll back together on error."""
+    try:
+        async with db_session.begin_nested():
+            # Create workflow
+            workflow = await workflow_repo.create(
+                workflow_id="wf-cascade-001",
+                workflow_type="tutorial_gen",
+                user_id="user-123",
+                status="draft"
+            )
+            
+            # Create contracts (should succeed)
+            await contract_repo.create(
+                contract_id="contract-cascade-001",
+                workflow_id="wf-cascade-001",
+                contract_type="tutorial_generation",
+                specification={},
+                status="pending"
+            )
+            
+            # Violate constraint (duplicate primary key)
+            await contract_repo.create(
+                contract_id="contract-cascade-001",  # Duplicate!
+                workflow_id="wf-cascade-001",
+                contract_type="tutorial_generation",
+                specification={},
+                status="pending"
+            )
+    except Exception:
+        pass
+    
+    # Verify both workflow and contract rolled back
+    assert await workflow_repo.get_by_id("wf-cascade-001") is None
+    assert await contract_repo.get_by_id("contract-cascade-001") is None
+```
+
+#### TS-4: Restart Simulation Tests
+
+**Purpose:** Verify that workflows can be resumed after application restart (session close/reopen).
+
+**TC-4.1: Workflow Resume After Restart**
+```python
+async def test_workflow_resume_after_restart(db_session_factory, workflow_repo):
+    """Simulate application restart and resume workflow."""
+    # Session 1: Create workflow
+    session1 = await db_session_factory()
+    repo1 = PostgresWorkflowRepository(session1)
+    
+    workflow = await repo1.create(
+        workflow_id="wf-restart-001",
+        workflow_type="tutorial_gen",
+        user_id="user-123",
+        status="draft"
+    )
+    await session1.commit()
+    await session1.close()
+    
+    # Session 2: Resume workflow (simulate restart)
+    session2 = await db_session_factory()
+    repo2 = PostgresWorkflowRepository(session2)
+    
+    retrieved = await repo2.get_by_id("wf-restart-001")
+    assert retrieved.workflow_id == "wf-restart-001"
+    assert retrieved.status == "draft"
+    
+    # Update status
+    await repo2.update_status("wf-restart-001", "active")
+    await session2.commit()
+    await session2.close()
+    
+    # Session 3: Verify update persisted
+    session3 = await db_session_factory()
+    repo3 = PostgresWorkflowRepository(session3)
+    
+    final = await repo3.get_by_id("wf-restart-001")
+    assert final.status == "active"
+```
+
+#### TS-5: Complex Query Tests
+
+**Purpose:** Verify that repository query methods return correct results for complex filters.
+
+**TC-5.1: Workflow Status Filtering**
+```python
+async def test_list_workflows_by_status(workflow_repo):
+    """Query workflows by status."""
+    statuses = ["draft", "active", "completed", "failed"]
+    
+    for i, status in enumerate(statuses):
+        await workflow_repo.create(
+            workflow_id=f"wf-status-{i:03d}",
+            workflow_type="tutorial_gen",
+            user_id="user-123",
+            status=status
+        )
+    
+    active_workflows = await workflow_repo.list_by_status("active")
+    assert len(active_workflows) == 1
+    assert active_workflows[0].status == "active"
+```
+
+**TC-5.2: Candidate Ranking**
+```python
+async def test_list_candidates_ranked_by_quality(candidate_repo):
+    """Retrieve candidates ranked by quality score."""
+    scores = [0.65, 0.92, 0.78, 0.84]
+    
+    for i, score in enumerate(scores):
+        await candidate_repo.create(
+            candidate_id=f"candidate-rank-{i:03d}",
+            contract_id="contract-test-001",
+            agent_id="agent-001",
+            artifact={"content": f"Candidate {i}"},
+            quality_score=score
+        )
+    
+    ranked = await candidate_repo.list_by_contract_ranked("contract-test-001")
+    assert len(ranked) == 4
+    assert ranked[0].quality_score == 0.92  # Highest first
+    assert ranked[-1].quality_score == 0.65  # Lowest last
+```
+
+**TC-5.3: Time-Range Queries**
+```python
+async def test_list_workflows_by_date_range(workflow_repo):
+    """Query workflows created within a date range."""
+    from datetime import datetime, timedelta, timezone
+    
+    now = datetime.now(timezone.utc)
+    
+    # Create workflows with different timestamps
+    for i in range(5):
+        await workflow_repo.create(
+            workflow_id=f"wf-date-{i:03d}",
+            workflow_type="tutorial_gen",
+            user_id="user-123",
+            status="draft",
+            created_at=now - timedelta(days=i)
+        )
+    
+    # Query last 3 days
+    start_date = now - timedelta(days=3)
+    recent = await workflow_repo.list_by_date_range(start_date, now)
+    assert len(recent) == 4  # Days 0, 1, 2, 3
+```
+
+#### TS-6: Data Integrity Tests
+
+**Purpose:** Verify that database constraints and business rules are enforced.
+
+**TC-6.1: Foreign Key Constraints**
+```python
+async def test_cannot_create_contract_for_nonexistent_workflow(contract_repo):
+    """Verify foreign key constraint prevents orphaned contracts."""
+    with pytest.raises(Exception):  # ForeignKeyViolation
+        await contract_repo.create(
+            contract_id="contract-orphan-001",
+            workflow_id="wf-nonexistent",  # Does not exist
+            contract_type="tutorial_generation",
+            specification={},
+            status="pending"
+        )
+```
+
+**TC-6.2: Unique Constraints**
+```python
+async def test_cannot_create_duplicate_workflow_id(workflow_repo):
+    """Verify unique constraint on workflow_id."""
+    await workflow_repo.create(
+        workflow_id="wf-unique-001",
+        workflow_type="tutorial_gen",
+        user_id="user-123",
+        status="draft"
+    )
+    
+    with pytest.raises(Exception):  # UniqueViolation
+        await workflow_repo.create(
+            workflow_id="wf-unique-001",  # Duplicate!
+            workflow_type="tutorial_gen",
+            user_id="user-456",
+            status="draft"
+        )
+```
+
+**TC-6.3: NOT NULL Constraints**
+```python
+async def test_workflow_requires_user_id(workflow_repo):
+    """Verify NOT NULL constraint on user_id."""
+    with pytest.raises(Exception):  # NotNullViolation
+        await workflow_repo.create(
+            workflow_id="wf-null-user-001",
+            workflow_type="tutorial_gen",
+            user_id=None,  # NOT NULL violation
+            status="draft"
+        )
+```
+
+### Integration Test Acceptance Criteria
+
+**AC-INT-1:** All CRUD operation tests (TC-1.1 through TC-1.6) pass  
+**AC-INT-2:** RBAC enforcement tests (TC-2.1 through TC-2.3) pass  
+**AC-INT-3:** Transaction rollback tests (TC-3.1, TC-3.2) pass  
+**AC-INT-4:** Restart simulation test (TC-4.1) passes  
+**AC-INT-5:** Complex query tests (TC-5.1 through TC-5.3) pass  
+**AC-INT-6:** Data integrity tests (TC-6.1 through TC-6.3) pass  
+**AC-INT-7:** Test execution time < 60 seconds for full suite  
+**AC-INT-8:** Zero test pollution (tests can run in any order)
+
+---
+
+## Rollback Test Specifications
+
+### Overview
+
+Rollback tests verify that Drizzle migrations can be safely reversed without data loss or corruption. These tests are critical for production incident recovery.
+
+**Current Status:** Gate B focuses on forward migrations. Rollback testing is a Gate C/D priority.
+
+### RT-1: Single Migration Rollback
+
+**Purpose:** Verify that the most recent migration can be rolled back cleanly.
+
+**Procedure:**
+```bash
+# Apply latest migration
+pnpm --filter @quiz/db-tutorial db:migrate
+
+# Record schema state
+psql -U project_ai_test -d project_ai_test \
+  -c "\d project_ai_workflows" > schema_before.txt
+
+# Insert test data
+psql -U project_ai_test -d project_ai_test \
+  -c "INSERT INTO project_ai_workflows (...) VALUES (...);"
+
+# Rollback one migration
+pnpm --filter @quiz/db-tutorial db:migrate:rollback
+
+# Verify schema reverted
+psql -U project_ai_test -d project_ai_test \
+  -c "\d project_ai_workflows" > schema_after.txt
+
+diff schema_before.txt schema_after.txt
+```
+
+**Expected Result:** Schema state matches pre-migration snapshot. Test data is lost (expected for rollback).
+
+### RT-2: Column Addition Rollback
+
+**Specification:** If a migration adds a column (e.g., `workflow_priority`), rolling back should remove the column without affecting other columns.
+
+**Verification:**
+- Column count decreases by 1
+- Existing columns retain data
+- Indexes on other columns remain intact
+
+### RT-3: Table Creation Rollback
+
+**Specification:** If a migration creates a new table (e.g., `project_ai_notifications`), rolling back should drop the table cleanly.
+
+**Verification:**
+- Table no longer exists in `information_schema.tables`
+- Foreign key references (if any) are also removed
+- No orphaned sequences or indexes
+
+### RT-4: Data Migration Rollback
+
+**Specification:** If a migration performs data transformation (e.g., splitting a column into two), rolling back should restore original data format.
+
+**Challenge:** Reversible data migrations require careful planning. Drizzle does not automatically generate data rollback logic.
+
+**Gate B Scope:** Document rollback patterns. Implementation in Gate C/D.
+
+### Rollback Test Acceptance Criteria
+
+**AC-RB-1:** Single migration rollback procedure documented  
+**AC-RB-2:** Rollback verification queries defined  
+**AC-RB-3:** Known risks of rollback documented (data loss scenarios)  
+**AC-RB-4:** Rollback testing is **NOT BLOCKING** for Gate C (forward migrations are sufficient)
+
+---
+
+## Performance Test Specifications
+
+### Overview
+
+Performance tests verify that repository operations meet latency and throughput requirements under realistic load.
+
+**Gate B Scope:** Baseline performance measurement. Load testing is Gate D/E work.
+
+### PT-1: Query Performance Benchmarks
+
+**Purpose:** Establish baseline query performance for common operations.
+
+**Test Queries:**
+
+**PT-1.1: Single Row Retrieval**
+```sql
+-- Target: < 5ms
+SELECT * FROM project_ai_workflows WHERE workflow_id = 'wf-test-001';
+```
+
+**PT-1.2: User Workflow List**
+```sql
+-- Target: < 20ms for up to 100 workflows
+SELECT * FROM project_ai_workflows 
+WHERE user_id = 'user-123' 
+ORDER BY created_at DESC 
+LIMIT 50;
+```
+
+**PT-1.3: Contract Lookup with Join**
+```sql
+-- Target: < 30ms
+SELECT 
+    c.contract_id, c.status, w.workflow_id, w.user_id
+FROM project_ai_contracts c
+JOIN project_ai_workflows w ON c.workflow_id = w.workflow_id
+WHERE c.contract_id = 'contract-test-001';
+```
+
+**PT-1.4: Candidate Ranking**
+```sql
+-- Target: < 50ms for up to 20 candidates
+SELECT * FROM project_ai_candidates
+WHERE contract_id = 'contract-test-001'
+ORDER BY quality_score DESC
+LIMIT 10;
+```
+
+**Measurement Tool:**
+```python
+import time
+
+async def benchmark_query(repo, query_func, *args, iterations=100):
+    """Benchmark a repository query."""
+    start = time.perf_counter()
+    for _ in range(iterations):
+        await query_func(*args)
+    end = time.perf_counter()
+    
+    avg_duration = (end - start) / iterations
+    return avg_duration
+```
+
+### PT-2: Index Usage Verification
+
+**Purpose:** Verify that queries use indexes correctly (no table scans for indexed columns).
+
+**Verification Method:**
+```sql
+EXPLAIN ANALYZE 
+SELECT * FROM project_ai_workflows WHERE workflow_id = 'wf-test-001';
+```
+
+**Expected Output:**
+```
+Index Scan using project_ai_workflows_pkey on project_ai_workflows  
+  (cost=0.15..8.17 rows=1 width=...)
+```
+
+**Red Flags:**
+- `Seq Scan` (sequential scan) on large tables
+- Missing index usage on foreign key columns
+- High `cost` estimates (> 1000 for single-row queries)
+
+### PT-3: Connection Pool Behavior
+
+**Purpose:** Verify that connection pool correctly handles concurrent requests.
+
+**Test Scenario:**
+```python
+async def test_connection_pool_concurrency():
+    """Verify connection pool handles 20 concurrent queries."""
+    import asyncio
+    
+    async def query_workflow(workflow_id):
+        return await workflow_repo.get_by_id(workflow_id)
+    
+    # Create 20 concurrent queries
+    tasks = [query_workflow(f"wf-test-{i:03d}") for i in range(20)]
+    results = await asyncio.gather(*tasks)
+    
+    assert len(results) == 20
+```
+
+**Configuration Validation:**
+- `pool_size=5` (SQLAlchemy default)
+- `max_overflow=10` (allows up to 15 total connections)
+- `pool_pre_ping=True` (validates connections before use)
+
+**Metrics:**
+- No connection timeout errors
+- Connections reused across requests
+- Pool checkout time < 10ms
+
+### PT-4: Large Result Set Handling
+
+**Purpose:** Verify that queries returning many rows do not cause memory issues.
+
+**Test Scenario:**
+```python
+async def test_large_result_set():
+    """Query 1000 workflows and verify memory efficiency."""
+    import tracemalloc
+    
+    tracemalloc.start()
+    
+    # Insert 1000 workflows
+    for i in range(1000):
+        await workflow_repo.create(
+            workflow_id=f"wf-bulk-{i:04d}",
+            workflow_type="tutorial_gen",
+            user_id="user-123",
+            status="draft"
+        )
+    
+    # Query all (should use streaming/batching)
+    snapshot_before = tracemalloc.take_snapshot()
+    workflows = await workflow_repo.list_by_user("user-123", limit=1000)
+    snapshot_after = tracemalloc.take_snapshot()
+    
+    memory_used = sum(
+        stat.size_diff 
+        for stat in snapshot_after.compare_to(snapshot_before, 'lineno')
+    )
+    
+    # Verify memory usage is reasonable (< 50MB for 1000 rows)
+    assert memory_used < 50 * 1024 * 1024
+```
+
+### Performance Test Acceptance Criteria
+
+**AC-PERF-1:** Query benchmarks documented for all major operations  
+**AC-PERF-2:** Index usage verified via EXPLAIN ANALYZE  
+**AC-PERF-3:** Connection pool handles 20 concurrent queries without errors  
+**AC-PERF-4:** Large result sets (1000+ rows) do not cause memory issues  
+**AC-PERF-5:** Performance baselines recorded for future regression testing  
+**AC-PERF-6:** Load testing (1000+ concurrent users) is **OUT OF SCOPE** for Gate B
+
+---
+
+## Known Blockers
+
+### P0 Blockers (Must Resolve Before Gate C)
+
+None currently.
+
+### P1 Blockers (Must Resolve for Full Test Coverage)
+
+**BLOCKER-1: TEST_DATABASE_URL_TUTORIAL Not Set**
+
+**Impact:** Integration tests cannot run. Currently skipping with message.
+
+**Resolution Steps:**
+1. Start test database: `docker-compose -f services/project-ai/docker-compose.test.yml up -d`
+2. Create `.env.test` file: `cp .env.test.example .env.test`
+3. Set variable: `TEST_DATABASE_URL_TUTORIAL=postgresql+asyncpg://project_ai_test:test_password_123@127.0.0.1:55432/project_ai_test`
+4. Apply migrations: `pnpm --filter @quiz/db-tutorial db:migrate`
+5. Run tests: `pytest tests/integration/ -v`
+
+**Required Value Format:**
+```
+TEST_DATABASE_URL_TUTORIAL=postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DATABASE
+```
+
+**Example:**
+```
+TEST_DATABASE_URL_TUTORIAL=postgresql+asyncpg://project_ai_test:test_password_123@127.0.0.1:55432/project_ai_test
+```
+
+**Current Workaround:** Tests skip gracefully. No false failures.
+
+**Target Resolution:** Before first integration test run.
+
+### P2 Blockers (Nice to Have)
+
+**BLOCKER-2: CI GitHub Actions Workflow Not Created**
+
+**Impact:** Integration tests not running in CI pipeline.
+
+**Resolution:** Create `.github/workflows/project-ai-tests.yml` (template provided in this spec).
+
+**Target Resolution:** Gate C (not blocking local development).
+
+---
+
+## Final Acceptance Criteria Summary
+
+Before Gate C implementation begins, the following MUST be true:
+
+### Setup Requirements
+- ✅ Docker Compose configuration exists (`docker-compose.test.yml`)
+- ✅ Environment variable template exists (`.env.test.example`)
+- ✅ Migration application procedure documented
+- ⚠️  **TEST_DATABASE_URL_TUTORIAL configured** (P1 blocker — manual setup required)
+
+### Integration Tests
+- ⚠️  All CRUD operation tests implemented and passing (blocked by TEST_DATABASE_URL_TUTORIAL)
+- ⚠️  RBAC enforcement tests implemented (blocked by TEST_DATABASE_URL_TUTORIAL)
+- ⚠️  Transaction rollback tests implemented (blocked by TEST_DATABASE_URL_TUTORIAL)
+- ⚠️  Restart simulation tests implemented (blocked by TEST_DATABASE_URL_TUTORIAL)
+- ✅ Safety assertions implemented in `conftest.py`
+
+### Rollback Tests
+- ✅ Rollback procedure documented
+- ✅ Verification queries defined
+- ✅ Known risks documented
+- ✅ Acknowledged as non-blocking for Gate C
+
+### Performance Tests
+- ✅ Query benchmarks documented
+- ✅ Index usage verification method defined
+- ✅ Connection pool test specified
+- ✅ Load testing deferred to Gate D/E
+
+### Documentation
+- ✅ README section exists with setup instructions
+- ✅ CI configuration example provided
+- ✅ Production prevention measures documented
+- ✅ All acceptance criteria clearly defined
+
+**Gate C Readiness:** 🟡 **80% Complete** — Integration tests are specified but blocked by TEST_DATABASE_URL_TUTORIAL not being set. All other requirements are met.
+
+---
+
 ## Out of Scope
 
 1. **SQLite Testing:** This specification is PostgreSQL-only. No SQLite fallback or compatibility layer.
@@ -836,4 +1625,5 @@ env:
 | Date | Version | Changes |
 |------|---------|---------|
 | 2025-01-XX | 1.0 | Initial specification for Gate B-3 |
+| 2025-01-29 | 2.0 | Completed all sections: Integration Tests, Rollback Tests, Performance Tests, Known Blockers, Final Acceptance Criteria |
 
