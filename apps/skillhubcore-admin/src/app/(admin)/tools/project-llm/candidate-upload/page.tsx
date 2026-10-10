@@ -30,14 +30,14 @@ interface CheckItem {
   name: string;
   category: string;
   duration: string;
-  status: 'passed' | 'pending' | 'running';
+  status: 'pending' | 'pending' | 'running';
   details: string;
 }
 
 export default function CandidateUploadPage() {
   const { state } = useProjectLlm();
   const [isValidating, setIsValidating] = useState(false);
-  const [progress, setProgress] = useState(100);
+  const [progress, setProgress] = useState(0);
 
   const checks: CheckItem[] = [
     {
@@ -45,88 +45,88 @@ export default function CandidateUploadPage() {
       name: 'File Structure & Placement Integrity',
       category: 'Placement Manifest',
       duration: '42ms',
-      status: 'passed',
-      details: 'All 8 required files present in candidate package root',
+      status: 'pending',
+      details: 'Not verified — waiting for backend candidate inspection',
     },
     {
       id: 'c2',
       name: 'ILS Instructional Learning Structure',
       category: 'Pedagogy',
       duration: '85ms',
-      status: 'passed',
-      details: 'Instructional sequencing adheres to Hook → Motivation → Roadmap',
+      status: 'pending',
+      details: 'Not verified — requires backend evidence',
     },
     {
       id: 'c3',
       name: 'LSNB Learning Structure & Navigation',
       category: 'Schema',
       duration: '63ms',
-      status: 'passed',
-      details: `Unique UID and step metadata anchor configured for ${state.targetVersion}`,
+      status: 'pending',
+      details: `Not verified — requires backend evidence for ${state.targetVersion}`,
     },
     {
       id: 'c4',
       name: 'RSSB Rendering Structure & Style',
       category: 'Style & UI',
       duration: '110ms',
-      status: 'passed',
-      details: 'Strict Tailwind token usage; 0 inline styles; 100% responsive',
+      status: 'pending',
+      details: 'Not verified — requires backend evidence',
     },
     {
       id: 'c5',
       name: 'Tutorial Composer Integration Contract',
       category: 'Authoring',
       duration: '94ms',
-      status: 'passed',
-      details: 'Block registry decorator verified; inspector controls valid',
+      status: 'pending',
+      details: 'Not verified — requires Composer integration evidence',
     },
     {
       id: 'c6',
       name: 'Runtime Compatibility & Next.js SSR',
       category: 'Runtime',
       duration: '150ms',
-      status: 'passed',
-      details: 'Zero hydration mismatch; error boundary wrapper active',
+      status: 'pending',
+      details: 'Not verified — requires runtime test evidence',
     },
     {
       id: 'c7',
       name: 'Brand Independence Neutrality',
       category: 'Neutrality',
       duration: '38ms',
-      status: 'passed',
-      details: 'Zero hardcoded SUIA logos or vendor strings',
+      status: 'pending',
+      details: 'Not verified — requires brand-neutrality evidence',
     },
     {
       id: 'c8',
       name: 'Theme Compatibility (Light / Dark)',
       category: 'Tokens',
       duration: '72ms',
-      status: 'passed',
-      details: 'High contrast WCAG 2.1 AA certified across both themes',
+      status: 'pending',
+      details: 'Not verified — requires theme/accessibility evidence',
     },
     {
       id: 'c9',
       name: 'Dependency Safety & Isolation Scan',
       category: 'Security',
       duration: '130ms',
-      status: 'passed',
-      details: '0 external npm dependencies added; 0 vulnerabilities found',
+      status: 'pending',
+      details: 'Not verified — requires dependency/security scan evidence',
     },
     {
       id: 'c10',
       name: 'Automated Test Suite Execution',
       category: 'Unit Testing',
       duration: '420ms',
-      status: 'passed',
-      details: '14 of 14 unit tests passed with 100% branch coverage',
+      status: 'pending',
+      details: 'Not verified — requires actual test-run output',
     },
     {
       id: 'c11',
       name: 'Evidence Graph Manifest Cryptographic Signature',
       category: 'Audit & Gate',
       duration: '55ms',
-      status: 'passed',
-      details: 'SHA-256 hash snapshot sealed into project evidence graph',
+      status: 'pending',
+      details: 'Not verified — requires persisted evidence manifest',
     },
   ];
 
@@ -159,7 +159,7 @@ export default function CandidateUploadPage() {
             </h1>
             <p className="text-sm text-slate-500 mt-1 max-w-2xl font-medium">
               Inspect candidate package for{' '}
-              <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span>. All 11 autonomous quality gates must pass before proceeding to repository integration.
+              <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span>. Validation results are unavailable until the backend runs the repository-defined gates. This screen must not infer passing results from local UI state.
             </p>
           </div>
 
