@@ -23,6 +23,7 @@ from app.verification.runtime import (
     get_health_url,
     APP_PORTS
 )
+from app.verification.browser import BrowserVerificationConfig, verify_in_browser
 
 
 class TestHealthUrl:
@@ -81,6 +82,26 @@ class TestHealthCheckFallback:
         # This test verifies the error handling exists in the implementation
         # Actual HTTP mocking is complex with dynamic imports
         pass
+
+
+class TestBrowserVerificationFailClosed:
+    """Browser helpers must not claim success without executing a browser."""
+
+    @pytest.mark.asyncio
+    async def test_unexecuted_browser_helper_is_not_a_pass(self):
+        config = BrowserVerificationConfig(base_url="http://localhost:3000")
+        result = await verify_in_browser(
+            block_type="introduction",
+            route="/tutorial",
+            expected={"version": "I7"},
+            config=config,
+            evidence_ids=["caller-supplied-evidence"],
+        )
+
+        assert result.passed is False
+        assert result.evidenceIds == []
+        assert result.error_code == RuntimeErrorCode.RUNTIME_START_FAILURE
+        assert "not executed" in (result.error_message or "").lower()
 
 
 class TestStartupTimeout:
