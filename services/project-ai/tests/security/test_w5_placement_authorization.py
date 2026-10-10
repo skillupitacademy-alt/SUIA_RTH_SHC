@@ -364,7 +364,8 @@ async def test_list_conflicts_allows_authenticated(
     """Test that GET /placement/conflicts allows authenticated users."""
     from app.api.routes.workflows import list_placement_conflicts
     
-    # Ensure list_conflicts is properly mocked as async
+    # Ensure list_conflicts and _load_manifests are properly mocked as async
+    mock_placement_engine._load_manifests = AsyncMock(return_value=[])
     mock_placement_engine.list_conflicts = AsyncMock(return_value=[])
     
     # Should not raise - authenticated users can view conflicts
@@ -764,8 +765,41 @@ async def test_artifact_binding_enforces_brand_boundary(
     
     # Mock workflow with Brand B
     mock_workflow = MagicMock()
+    mock_workflow.workflow_id = "workflow-001"
     mock_workflow.brand = "BRAND_B"
+    mock_workflow.to_dict = MagicMock(return_value={
+        "workflow_id": "workflow-001",
+        "specification_id": "spec-001",
+        "target": {
+            "workflow_id": "workflow-001",
+            "family": "tutorial",
+            "version": "1.0.0",
+            "block_type": "tutorial",
+            "specification_id": "spec-001",
+            "source_snapshot_id": "snapshot-001"
+        },
+        "requester_id": "requester-001",
+        "state": {
+            "current": "REQUESTED",
+            "is_terminal": False,
+            "requires_approval": False
+        },
+        "artifacts": {
+            "contract": {"artifact_id": "contract-001", "sha256": "a" * 64},
+            "candidate": {"artifact_id": None, "sha256": None},
+            "manifest": {"artifact_id": None, "sha256": None},
+            "snapshot": {"artifact_id": None, "sha256": None}
+        },
+        "approval_id": None,
+        "gate_results": {},
+        "evidence_ids": [],
+        "state_history": [],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "final_status": None
+    })
     mock_governance_service.get_workflow = AsyncMock(return_value=mock_workflow)
+    mock_governance_service.bind_artifact = AsyncMock(return_value=mock_workflow)
     
     request = BindArtifactRequest(
         artifact_type="contract",
@@ -823,6 +857,37 @@ async def test_workflow_creation_sets_brand_from_token(
     mock_workflow = MagicMock()
     mock_workflow.workflow_id = "workflow-001"
     mock_workflow.brand = "RTH"
+    mock_workflow.to_dict = MagicMock(return_value={
+        "workflow_id": "workflow-001",
+        "specification_id": "spec-001",
+        "target": {
+            "workflow_id": "workflow-001",
+            "family": "tutorial",
+            "version": "1.0.0",
+            "block_type": "tutorial",
+            "specification_id": "spec-001",
+            "source_snapshot_id": "snapshot-001"
+        },
+        "requester_id": "admin-user-001",
+        "state": {
+            "current": "REQUESTED",
+            "is_terminal": False,
+            "requires_approval": False
+        },
+        "artifacts": {
+            "contract": {"artifact_id": None, "sha256": None},
+            "candidate": {"artifact_id": None, "sha256": None},
+            "manifest": {"artifact_id": None, "sha256": None},
+            "snapshot": {"artifact_id": None, "sha256": None}
+        },
+        "approval_id": None,
+        "gate_results": {},
+        "evidence_ids": [],
+        "state_history": [],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "final_status": None
+    })
     mock_governance_service.create_workflow = AsyncMock(return_value=mock_workflow)
     
     request = CreateWorkflowRequest(
