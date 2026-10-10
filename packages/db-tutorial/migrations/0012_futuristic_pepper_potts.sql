@@ -8,19 +8,6 @@ CREATE TYPE "public"."review_status" AS ENUM('pending_review', 'in_review', 'app
 CREATE TYPE "public"."section_status" AS ENUM('draft', 'generating', 'validating', 'pending_review', 'in_review', 'changes_requested', 'approved', 'deploying', 'deployed', 'archived');--> statement-breakpoint
 CREATE TYPE "public"."section_type" AS ENUM('notes', 'layman', 'visual', 'real_life', 'technical', 'code', 'practice', 'assignment', 'project', 'quiz', 'summary', 'interview');--> statement-breakpoint
 CREATE TYPE "public"."subsection_type" AS ENUM('definition', 'concept', 'syntax', 'analogy', 'example', 'visual', 'diagram', 'animation', 'pitfall', 'antipattern', 'gotcha', 'code', 'exercise', 'challenge', 'sandbox', 'checklist', 'cheatsheet', 'faq', 'glossary', 'interview_question', 'quiz_question', 'project_step', 'project_milestone', 'project_deliverable');--> statement-breakpoint
-CREATE TYPE "public"."live_session_request_status" AS ENUM('pending', 'accepted', 'scheduled', 'completed', 'cancelled');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_content_audit_action" AS ENUM('created', 'updated', 'published', 'unpublished', 'restored');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_content_job_status" AS ENUM('pending', 'processing', 'completed', 'failed');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_deliverable_type" AS ENUM('code', 'repo', 'live_demo', 'document');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_difficulty" AS ENUM('simple', 'mixed', 'intermediate', 'expert');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_evaluation_type" AS ENUM('auto', 'ai_review', 'peer_review', 'admin_review');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_progress_status" AS ENUM('not_started', 'in_progress', 'completed');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_project_level" AS ENUM('simple', 'intermediate', 'expert');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_project_scope" AS ENUM('topic', 'subject', 'domain');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_project_submission_status" AS ENUM('pending', 'submitted', 'ai_reviewing', 'needs_review', 'approved', 'revision_needed', 'graded', 'revision-requested');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_question_type" AS ENUM('mcq', 'short_answer', 'code', 'drag_drop', 'fill_blank');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_trigger_status" AS ENUM('pending', 'accepted', 'dismissed', 'completed', 'failed');--> statement-breakpoint
-CREATE TYPE "public"."tutorial_video_provider" AS ENUM('youtube', 'vimeo', 'custom', 'loom');--> statement-breakpoint
 CREATE TYPE "public"."layman_audit_action" AS ENUM('prompt_generated', 'prompt_exported', 'prompt_copied', 'prompt_modified', 'content_ingested', 'content_parsed', 'content_validated', 'content_revised', 'content_sanitized', 'section_created', 'section_updated', 'section_submitted_review', 'section_approved', 'section_rejected', 'section_published', 'section_archived', 'section_restored', 'validation_passed', 'validation_failed', 'quality_score_calculated', 'hallucination_detected', 'tamper_detected', 'sanitization_applied', 'rollback_executed');--> statement-breakpoint
 CREATE TABLE "ai_generation_metrics" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

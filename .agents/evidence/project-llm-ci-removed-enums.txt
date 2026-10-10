@@ -1,0 +1,8 @@
+Removed Enum CREATE TYPE Statements from Migration 0012
+======================================================================
+
+tutorial_content_audit_action
+  Originally defined in: 0007_tiny_bill_hollister.sql
+  Removed from: 0012_futuristic_pepper_potts.sql
+  Line: CREATE TYPE "public"."tutorial_content_audit_action" AS ENUM('created', 'updated', 'published', 'unpublished', 'restored');--> statement-breakpoint
+
