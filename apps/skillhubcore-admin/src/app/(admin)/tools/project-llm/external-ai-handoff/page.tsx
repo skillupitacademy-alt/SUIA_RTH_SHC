@@ -86,7 +86,7 @@ Deliver the output as a structured package adhering to all repository standards.
 Block: ${state.familyName} ${state.targetVersion}
 Target: ${state.purpose}
 Existing Family: ${state.existingVersions.join(', ')}
-All 9 Repository Compliance Gates must be satisfied before candidate integration.`;
+All repository-defined compliance gates must be satisfied before candidate integration; the canonical backend contract is authoritative.`;
     navigator.clipboard.writeText(brief);
     setCopiedBrief(true);
     setTimeout(() => setCopiedBrief(false), 2000);
@@ -500,7 +500,7 @@ Generated autonomously by Project LLM Control Plane.`;
             </h4>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
               After the External AI finishes implementing the component package for{' '}
-              <span className="font-bold text-slate-900">{state.familyName} {state.targetVersion}</span>, proceed to Candidate Upload & Validation where all 11 autonomous quality gates will verify compliance.
+              <span className="font-bold text-slate-900">{state.familyName} {state.targetVersion}</span>, proceed to Candidate Upload & Validation where the backend-defined quality gates will verify compliance.
             </p>
           </div>
         </div>
