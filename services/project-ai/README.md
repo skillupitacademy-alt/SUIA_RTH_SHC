@@ -746,6 +746,47 @@ See `packages/db-tutorial/migrations/` for full migration history.
 
 ---
 
+## W7 Final Gate Evidence Enforcement
+
+### Mandatory Evidence Types
+The following evidence types must be present before final certification is granted:
+- `security_scan`
+- `ubrc_verification`
+- `brand_certification`
+- `theme_certification`
+- `runtime_verification`
+
+### Accepted Verdict Values
+Evidence items are accepted only if their verdict is one of:
+- `PASS`
+- `APPROVED`
+- `CERTIFICATION_READY`
+
+### Freshness Policy
+Evidence must not be older than 24 hours (86400 seconds). Evidence timestamps
+must be timezone-aware UTC and may not be in the future.
+
+### Fail-Closed Behavior
+The `validate_final_gate_evidence()` function returns an empty list on success
+and a list of structured error strings on failure. A non-empty list causes the
+`POST /workflows/{workflow_id}/approve-final` endpoint to return HTTP 409:
+```json
+{
+  "code": "FINAL_GATE_EVIDENCE_REJECTED",
+  "errors": ["missing_required_evidence:security_scan"],
+  "workflow_id": "<id>"
+}
+```
+
+### How to Add New Evidence Types
+1. Add the type string to `FINAL_GATE_POLICY.required_types` in
+   `services/project-ai/app/governance/evidence_policy.py`.
+2. Ensure the evidence is populated in `workflow.gate_results` before
+   calling the approve-final endpoint.
+3. Add a test in `tests/security/test_w7_evidence_enforcement.py`.
+
+---
+
 ## M2.8 Implementation Status
 
 ### ✅ Implemented

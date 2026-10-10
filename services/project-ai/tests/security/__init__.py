@@ -1,1 +1,1 @@
-"""Security tests for authentication and authorization."""
+# Security tests for W7 evidence enforcement

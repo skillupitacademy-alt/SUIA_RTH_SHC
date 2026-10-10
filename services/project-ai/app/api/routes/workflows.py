@@ -521,6 +521,7 @@ async def approve_final_certification(
     - All gates (UBRC, Brand, Theme, Runtime, Browser) must be PASS
     - Evidence bundle must be complete
     - No missing evidence IDs
+    - W7 evidence policy enforced: artifact binding, staleness, workflow isolation
     
     Args:
         workflow_id: Workflow to approve/reject
@@ -530,10 +531,15 @@ async def approve_final_certification(
         Approval result with state transition
         
     Raises:
-        HTTPException: 400 if invalid state, 404 if workflow not found
+        HTTPException: 400 if invalid state, 404 if workflow not found, 409 if evidence policy violated
     """
     from datetime import datetime, timezone
     from app.agents.final_gate import FinalGateController
+    from app.governance.evidence_policy import (
+        EvidenceResult,
+        validate_final_gate_evidence,
+        FINAL_GATE_POLICY
+    )
     
     # Get workflow
     workflow = await governance_service.get_workflow(workflow_id)
@@ -585,6 +591,48 @@ async def approve_final_certification(
         raise HTTPException(
             status_code=400,
             detail=f"Invalid state for approval: {workflow.state.current.value}. Must be AWAITING_GATE_2"
+        )
+    
+    # W7 Evidence Policy Enforcement - validate evidence before FinalGateController
+    gate_results = workflow.gate_results or {}
+    evidence_list = []
+    for etype, edata in gate_results.items():
+        if isinstance(edata, dict):
+            # Parse created_at - handle string or datetime
+            raw_ts = edata.get("created_at") or edata.get("timestamp")
+            if isinstance(raw_ts, str):
+                try:
+                    created_at = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
+                except (ValueError, AttributeError):
+                    created_at = datetime.now(timezone.utc)
+            elif isinstance(raw_ts, datetime):
+                created_at = raw_ts if raw_ts.tzinfo else raw_ts.replace(tzinfo=timezone.utc)
+            else:
+                created_at = datetime.now(timezone.utc)
+            
+            evidence_list.append(EvidenceResult(
+                evidence_type=etype,
+                verdict=edata.get("status") or edata.get("verdict") or "",
+                workflow_id=edata.get("workflow_id") or workflow_id,
+                artifact_sha256=edata.get("artifact_sha256") or workflow.artifacts.contract.sha256 or "",
+                created_at=created_at,
+                evidence_id=edata.get("evidence_id") or f"{workflow_id}-{etype}",
+            ))
+    
+    evidence_errors = validate_final_gate_evidence(
+        workflow_id=workflow_id,
+        artifact_sha256=workflow.artifacts.contract.sha256 or "",
+        evidence=evidence_list,
+        policy=FINAL_GATE_POLICY,
+    )
+    if evidence_errors:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "FINAL_GATE_EVIDENCE_REJECTED",
+                "errors": evidence_errors,
+                "workflow_id": workflow_id,
+            },
         )
     
     # Verify evidence using FinalGateController
