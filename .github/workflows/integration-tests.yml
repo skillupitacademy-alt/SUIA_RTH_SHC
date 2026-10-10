@@ -62,7 +62,7 @@ jobs:
       
       - name: Run Drizzle migrations
         env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/tutorial_test
+          DATABASE_URL_TUTORIAL: postgresql://test_user:test_password@localhost:5432/tutorial_test
         run: |
           cd packages/db-tutorial
           pnpm db:migrate
