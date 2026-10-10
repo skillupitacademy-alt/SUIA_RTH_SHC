@@ -110,43 +110,52 @@ Implement only against this contract. Preserve family/version bindings and repor
   };
 
   const handleCopyBrief = () => {
-    const brief = `PROJECT LLM COMPLIANCE BRIEF FOR EXTERNAL AI
-Block: ${state.familyName} ${state.targetVersion}
-Target: ${state.purpose}
-Existing Family: ${state.existingVersions.join(', ')}
-All repository-defined compliance gates must be satisfied before candidate integration; the canonical backend contract is authoritative.`;
-    navigator.clipboard.writeText(brief);
-    setCopiedBrief(true);
-    setTimeout(() => setCopiedBrief(false), 2000);
+    if (!engineeringContract) {
+      setContractError('Load the backend-generated engineering contract before copying a compliance brief.');
+      return;
+    }
+    const brief = `PROJECT LLM CANONICAL ENGINEERING CONTRACT
+Workflow ID: ${workflowId.trim()}
+Contract SHA-256: ${String(engineeringContract.contract_hash)}
+
+${JSON.stringify(engineeringContract, null, 2)}
+
+The persisted backend contract is authoritative. Do not invent requirements or claim a gate passed without attached verification evidence.`;
+    void navigator.clipboard.writeText(brief).then(() => {
+      setCopiedBrief(true);
+      setTimeout(() => setCopiedBrief(false), 2000);
+    }).catch(() => setContractError('Clipboard access failed. Copy the loaded contract JSON directly instead.'));
   };
 
   const handleDownloadMarkdown = () => {
-    const md = `# External AI Handoff Brief: ${state.familyName} ${state.targetVersion}
+    if (!engineeringContract) {
+      setContractError('Load the backend-generated engineering contract before downloading the handoff.');
+      return;
+    }
+    const md = `# Canonical External AI Handoff Contract
 
-## 1. Specifications
-- **Family**: ${state.familyName} (${state.familyId})
-- **Version**: ${state.targetVersion}
-- **Purpose**: ${state.purpose}
-- **Baseline Versions**: ${state.existingVersions.join(', ')}
+- **Workflow ID:** ${workflowId.trim()}
+- **Contract SHA-256:** ${String(engineeringContract.contract_hash)}
+- **Family:** ${String(engineeringContract.target_family ?? state.familyName)}
+- **Version:** ${String(engineeringContract.target_version ?? state.targetVersion)}
 
-## 2. Requirements
-1. Instructional Learning Structure (ILS)
-2. Learning Structure & Navigation (LSNB)
-3. Rendering Structure & Style (RSSB)
-4. Tutorial Composer Integration
-5. Runtime Compatibility
-6. Test Verification Suite
-7. Brand Independence
-8. Theme Compatibility
-9. Evidence Graph Artifacts
+## Immutable Backend Contract
 
-Generated autonomously by Project LLM Control Plane.`;
+\`\`\`json
+${JSON.stringify(engineeringContract, null, 2)}
+\`\`\`
 
+## Implementation rules
+
+- Treat the persisted backend contract as the sole source of requirements.
+- Preserve workflow ID, target family/version, snapshot hash, and evidence bindings.
+- Do not claim PASS without real, persisted verification evidence.
+- Report missing requirements or unavailable integrations as BLOCKED.`;
     const blob = new Blob([md], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `compliance_brief_${state.familyName.toLowerCase()}_${state.targetVersion.toLowerCase()}.md`;
+    a.download = `canonical_contract_${workflowId.trim().replace(/[^a-zA-Z0-9_-]/g, '_')}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
