@@ -9,6 +9,7 @@ M2.9 R3 PERSISTENCE:
 
 import hashlib
 import json
+import logging
 import os
 from datetime import datetime, timezone
 from pathlib import Path
@@ -45,6 +46,7 @@ from app.persistence import (
 )
 
 router = APIRouter(tags=["candidates"])
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -849,6 +851,20 @@ async def execute_placement(
     # Infrastructure users (brand=None) can execute any candidate.
     from app.auth.authorization import verify_brand_access
     verify_brand_access(user, package.brand)
+    
+    # SECURITY: Prevent access to unbranded (brand=None) candidates by regular users
+    # NULL brand candidates must be accessed only by privileged infrastructure users
+    if package.brand is None:
+        user_roles = user.get("roles", [])
+        if "super_admin" not in user_roles and "infrastructure" not in user_roles:
+            logger.warning(
+                f"Access to NULL brand candidate denied: user_id={user.get('user_id')}, "
+                f"candidate_id={candidate_id}"
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Access to unbranded candidates requires super_admin or infrastructure role"
+            )
     
     manifests = await manifest_repo.list_by_candidate(candidate_id)
     if not manifests:

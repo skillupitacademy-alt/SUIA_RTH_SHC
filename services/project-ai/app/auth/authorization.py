@@ -40,7 +40,17 @@ def verify_brand_access(
     user_brand = principal.get("brand")
     
     # Rule 1: Infrastructure users (brand=None) bypass brand restrictions
+    # SECURITY: Require explicit privileged role to prevent bypass abuse
     if user_brand is None:
+        roles = principal.get("roles", [])
+        if "super_admin" not in roles and "infrastructure" not in roles:
+            logger.warning(
+                f"Infrastructure bypass denied: user_id={principal.get('user_id')} lacks privileged role"
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Infrastructure access requires super_admin or infrastructure role"
+            )
         logger.debug("Infrastructure user bypassing brand check (user brand=None)")
         return
     

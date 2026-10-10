@@ -113,6 +113,34 @@ class TestVerifyBrandAccess:
         
         # Should not raise
         verify_brand_access(principal, None)
+    
+    def test_infrastructure_bypass_requires_privileged_role(self):
+        """
+        Infrastructure bypass (brand=None) requires super_admin or infrastructure role.
+        
+        SECURITY FIX (FEAT-001): Prevents unprivileged users from setting brand=None
+        to bypass tenant isolation checks. Infrastructure access must be explicitly
+        granted through super_admin or infrastructure role.
+        """
+        principal: AuthenticatedPrincipal = {
+            "user_id": "user123",
+            "original_user_id": None,
+            "shadow_user_id": None,
+            "brand": None,  # Attempting infrastructure bypass
+            "roles": [],  # No privileged role
+            "portal_identity": None,
+            "token_type": None,
+            "is_admin": False,
+            "email": None,
+            "platforms": [],
+            "subscriptions": []
+        }
+        
+        with pytest.raises(HTTPException) as exc_info:
+            verify_brand_access(principal, "skillhub")
+        
+        assert exc_info.value.status_code == 403
+        assert "Infrastructure access requires" in exc_info.value.detail
 
 
 class TestIdentityExtractionFromJWT:
@@ -209,6 +237,20 @@ class TestBrandEnforcementInRoutes:
         
         Tests that user with brand=None (infrastructure) can execute
         candidates regardless of uploader's brand.
+        """
+        pass
+    
+    @pytest.mark.skip(reason="Requires integration test setup with TestClient and database")
+    def test_null_brand_candidate_requires_privileged_role(self):
+        """
+        Verify NULL brand candidates cannot be executed by regular users.
+        
+        SECURITY FIX (FEAT-001): Tests that POST /candidates/{id}/execute
+        with candidate.brand=None and non-privileged user returns 403.
+        
+        Prevents regular tenant users from accessing legacy or unclassified
+        candidates that lack proper brand assignment. Only super_admin or
+        infrastructure roles may access NULL brand candidates.
         """
         pass
 
