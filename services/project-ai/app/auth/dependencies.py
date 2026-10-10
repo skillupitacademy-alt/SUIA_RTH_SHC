@@ -8,6 +8,7 @@ from fastapi import Depends, Header, HTTPException
 
 from .jwt import decode_access_token
 from .types import AuthenticatedPrincipal
+from .authorization import is_super_admin
 
 
 def get_current_user(authorization: str = Header(...)) -> AuthenticatedPrincipal:
@@ -149,6 +150,10 @@ def require_contract_admin(user: AuthenticatedPrincipal = Depends(get_current_us
     Raises:
         HTTPException: 403 if user doesn't have contract_admin role
     """
+    # Super admin bypass
+    if is_super_admin(user):
+        return user
+    
     if "contract_admin" not in user.get("roles", []):
         raise HTTPException(
             status_code=403,

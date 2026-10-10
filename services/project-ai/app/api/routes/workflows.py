@@ -16,7 +16,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, require_contract_admin
 from app.auth.types import AuthenticatedPrincipal
 from app.api.schemas.workflow import (
     WorkflowResponse,
@@ -128,7 +128,7 @@ def _workflow_to_response(workflow) -> WorkflowResponse:
 @router.post("", response_model=WorkflowResponse, status_code=201)
 async def create_workflow(
     request: CreateWorkflowRequest,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> WorkflowResponse:
@@ -505,7 +505,7 @@ async def list_placement_conflicts(
 async def approve_final_certification(
     workflow_id: str,
     request: FinalApprovalRequest,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> FinalApprovalResponse:

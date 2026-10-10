@@ -14,7 +14,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, require_contract_admin
 from app.auth.types import AuthenticatedPrincipal
 from app.api.schemas.governance import (
     ApprovalDecisionRequest,
@@ -313,7 +313,7 @@ class WorkflowApprovalResponse(BaseModel):
 async def approve_placement(
     workflow_id: str,
     payload: WorkflowApprovalPayload,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     approval_repo: ApprovalRepository = Depends(get_approval_repository),
     session: AsyncSession = Depends(get_db_session)

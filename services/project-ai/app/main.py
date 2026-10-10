@@ -16,7 +16,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth.dependencies import get_current_user
-from app.api.routes import agents, candidate, contract, creation, evidence, governance, health, snapshot, tasks
+from app.api.routes import agents, candidate, contract, creation, evidence, governance, health, snapshot, tasks, workflows
 
 
 @asynccontextmanager
@@ -99,6 +99,7 @@ app.include_router(snapshot.router)
 app.include_router(evidence.router)
 app.include_router(tasks.router)
 app.include_router(governance.router)
+app.include_router(workflows.router)
 app.include_router(agents.router)
 app.include_router(candidate.router, prefix="/candidates", tags=["candidates"])
 app.include_router(creation.router)

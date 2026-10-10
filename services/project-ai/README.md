@@ -281,6 +281,101 @@ All route handlers receiving `user: dict` continue to work unchanged. The new `A
 
 Missing optional claims default to `None` (for Optional fields) or `[]` (for list fields), ensuring safe access without None checks.
 
+### Role-Based Access Control (Wave 1D)
+
+Wave 1D implements role-based access control (RBAC) for privileged operations. Route-level enforcement prevents unauthorized users from performing actions like workflow approval, certification, and placement execution.
+
+#### Roles
+
+The system defines four roles in order of privilege:
+
+1. **`super_admin`** — Infrastructure-level access, bypasses all role checks
+2. **`contract_admin`** — Can approve workflows, certify implementations, and execute placements
+3. **`contract_reviewer`** — Can review but not approve workflows
+4. **`contract_viewer`** — Can view workflows and candidates (read-only)
+
+**Role Hierarchy:** `super_admin > contract_admin > contract_reviewer > contract_viewer`
+
+#### Privileged Operations
+
+These operations require `contract_admin` role:
+
+| Operation | Endpoint | Required Role |
+|-----------|----------|---------------|
+| Workflow creation | `POST /workflows` | `contract_admin` |
+| Final certification approval | `POST /workflows/{id}/approve-final` | `contract_admin` |
+| Placement approval | `POST /approvals/workflows/{id}/approve-placement` | `contract_admin` |
+| Candidate execution | `POST /candidates/{id}/execute` | `contract_admin` |
+
+#### Route-Level Enforcement
+
+RBAC is enforced at the FastAPI dependency level. Use `require_contract_admin` instead of `get_current_user` for privileged routes:
+
+```python
+from fastapi import Depends
+from app.auth.dependencies import require_contract_admin
+from app.auth.types import AuthenticatedPrincipal
+
+@router.post("/workflows")
+async def create_workflow(
+    request: CreateWorkflowRequest,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),  # RBAC enforcement here
+    session: AsyncSession = Depends(get_db_session)
+):
+    """
+    Create new workflow (requires contract_admin role).
+    
+    RBAC: Only contract_admin users can create workflows.
+    Identity: Requester extracted from JWT token to prevent spoofing.
+    """
+    requester_id = user["user_id"]
+    # ... rest of handler
+```
+
+#### RBAC Helper Functions
+
+For business logic requiring role checks, use these helper functions from `app.auth.authorization`:
+
+**`require_role(principal, required_role)`**
+- Checks if user has exact role (case-insensitive)
+- Raises `HTTPException(403)` if denied
+- super_admin bypasses check
+
+**`require_any_role(principal, required_roles)`**
+- Checks if user has at least one of the roles (case-insensitive)
+- Raises `HTTPException(403)` if denied
+- super_admin bypasses check
+
+**`is_super_admin(principal)`**
+- Returns `True` if user has super_admin privileges
+- Checks for: `super_admin` role, `portal_identity='super_admin'`, or `portal_identity='infrastructure'`
+
+```python
+from app.auth.authorization import require_role, is_super_admin
+
+def process_sensitive_operation(user: AuthenticatedPrincipal):
+    # Check for specific role
+    require_role(user, "contract_admin")
+    
+    # Or check for super_admin privilege
+    if is_super_admin(user):
+        # Infrastructure bypass logic
+        pass
+```
+
+#### Super Admin Bypass
+
+Users with `super_admin` role, `portal_identity='super_admin'`, or `portal_identity='infrastructure'` bypass all role checks. This allows platform administrators unrestricted access for operational needs.
+
+**Important:** Super admin bypass applies only to role checks, not identity extraction or brand isolation.
+
+#### Security Notes
+
+- **Authenticated ≠ Authorized**: Having a valid JWT token does not grant access to privileged operations
+- **Role checks are case-insensitive**: `"Contract_Admin"` matches `"contract_admin"`
+- **Empty roles deny access**: Users with `roles=[]` are denied all privileged operations
+- **RBAC denials are logged**: All denials logged at WARNING level with user ID and required roles for security audit trail
+
 ### Security Notes
 
 - **Never commit secrets**: Use environment variables or secure secret management
