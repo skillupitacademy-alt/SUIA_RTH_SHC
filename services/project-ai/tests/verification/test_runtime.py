@@ -42,14 +42,27 @@ class TestHealthUrl:
 class TestHealthCheckFallback:
     """Test health check fallback strategy."""
     
-    def test_health_check_success_primary(self):
-        """Health check succeeds on /api/health."""
+    def test_missing_requests_dependency_fails_closed(self):
+        """A missing HTTP client must not be treated as a healthy runtime."""
         app_process = ApplicationProcess(Path('/test'), 'test-target')
-        
+
         with patch('builtins.__import__', side_effect=ImportError):
-            # requests not available - should return True (graceful degradation)
             result = app_process.verify_health('http://localhost:3000/api/health')
-            assert result is True
+
+        assert result is False
+
+    def test_health_check_success_primary(self):
+        """A real HTTP 200 from the primary health endpoint passes."""
+        app_process = ApplicationProcess(Path('/test'), 'test-target')
+        response = Mock(status_code=200)
+        fake_requests = Mock()
+        fake_requests.get.return_value = response
+
+        with patch.dict('sys.modules', {'requests': fake_requests}):
+            result = app_process.verify_health('http://localhost:3000/api/health')
+
+        assert result is True
+        fake_requests.get.assert_called_once_with('http://localhost:3000/api/health', timeout=10)
     
     def test_health_check_fallback_to_health(self):
         """Health check falls back to /health when /api/health fails."""
