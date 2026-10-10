@@ -1,0 +1,503 @@
+{
+  "migration_0012_file": "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\migrations\\0012_futuristic_pepper_potts.sql",
+  "analysis_date": "2025-01-25",
+  "total_statements_in_0012": 192,
+  "create_type_count": 10,
+  "create_table_count": 49,
+  "create_index_count": 133,
+  
+  "duplicates": [
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "layman_audit_action",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE TYPE layman_audit_action AS ENUM ('prompt_generated', 'prompt_exported', ...27 values)",
+      "duplicate_sql_excerpt": "CREATE TYPE \"public\".\"layman_audit_action\" AS ENUM (...)",
+      "notes": "0012 version uses quoted identifiers; 0011 used unquoted. Same enum values."
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "layman_audit_logs",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE TABLE layman_audit_logs (id UUID PRIMARY KEY, section_id UUID, prompt_id UUID, action layman_audit_action NOT NULL, ...)",
+      "duplicate_sql_excerpt": "CREATE TABLE \"layman_audit_logs\" (columns match exactly)",
+      "notes": "16 columns, 6 indexes"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "layman_prompt_history",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE TABLE layman_prompt_history (id UUID PRIMARY KEY, section_id UUID, subtopic_id UUID NOT NULL, ...)",
+      "duplicate_sql_excerpt": "CREATE TABLE \"layman_prompt_history\" (columns match exactly)",
+      "notes": "23 columns, 5 indexes"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "layman_content_revisions",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE TABLE layman_content_revisions (id UUID PRIMARY KEY, section_id UUID NOT NULL, revision_number INTEGER NOT NULL, ...)",
+      "duplicate_sql_excerpt": "CREATE TABLE \"layman_content_revisions\" (columns match exactly)",
+      "notes": "19 columns, 6 indexes"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_audit_section_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_audit_section_id ON layman_audit_logs(section_id);",
+      "duplicate_sql_excerpt": "CREATE INDEX \"idx_layman_audit_section_id\" ON \"layman_audit_logs\" USING btree (\"section_id\");"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_audit_prompt_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_audit_prompt_id ON layman_audit_logs(prompt_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_audit_user_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_audit_user_id ON layman_audit_logs(user_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_audit_action",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_audit_action ON layman_audit_logs(action);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_audit_brand_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_audit_brand_id ON layman_audit_logs(brand_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_audit_created_at",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_audit_created_at ON layman_audit_logs(created_at);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_prompt_history_section_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_prompt_history_section_id ON layman_prompt_history(section_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_prompt_history_subtopic_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_prompt_history_subtopic_id ON layman_prompt_history(subtopic_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_prompt_history_hash",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_prompt_history_hash ON layman_prompt_history(prompt_hash);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_prompt_history_brand_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_prompt_history_brand_id ON layman_prompt_history(brand_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_prompt_history_created_at",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_prompt_history_created_at ON layman_prompt_history(created_at);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_content_revisions_section_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_content_revisions_section_id ON layman_content_revisions(section_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_content_revisions_revision_number",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_content_revisions_revision_number ON layman_content_revisions(section_id, revision_number);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_content_revisions_parent_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_content_revisions_parent_id ON layman_content_revisions(parent_revision_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_content_revisions_prompt_id",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_content_revisions_prompt_id ON layman_content_revisions(source_prompt_id);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_content_revisions_current",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_content_revisions_current ON layman_content_revisions(section_id, is_current_version);"
+    },
+    {
+      "statement_type": "CREATE INDEX",
+      "object_name": "idx_layman_content_revisions_created_at",
+      "first_introduced_in": "0011_add_layman_hardening_tables",
+      "sql_excerpt": "CREATE INDEX idx_layman_content_revisions_created_at ON layman_content_revisions(created_at);"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "assignment_help_request_status",
+      "first_introduced_in": "0003_flawless_surge",
+      "sql_excerpt": "CREATE TYPE \"public\".\"assignment_help_request_status\" AS ENUM('open', 'in_progress', 'resolved');",
+      "notes": "Already exists from migration 0003"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "assignment_progress_status",
+      "first_introduced_in": "0003_flawless_surge",
+      "sql_excerpt": "CREATE TYPE \"public\".\"assignment_progress_status\" AS ENUM('not_started', 'in_progress', 'self_completed');",
+      "notes": "Already exists from migration 0003"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "assignment_question_type",
+      "first_introduced_in": "0003_flawless_surge",
+      "sql_excerpt": "CREATE TYPE \"public\".\"assignment_question_type\" AS ENUM('mcq', 'short_answer', 'code', 'open_ended');",
+      "notes": "Already exists from migration 0003"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "tutorial_content_audit_action",
+      "first_introduced_in": "0007_tiny_bill_hollister",
+      "sql_excerpt": "CREATE TYPE \"public\".\"tutorial_content_audit_action\" AS ENUM('created', 'updated', 'published', 'unpublished', 'restored');",
+      "notes": "Already exists from migration 0007"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "assignment_help_requests",
+      "first_introduced_in": "0003_flawless_surge",
+      "sql_excerpt": "CREATE TABLE \"assignment_help_requests\" (...)",
+      "notes": "Includes unique index uq_assignment_help_request_user_assignment"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "assignment_progress",
+      "first_introduced_in": "0003_flawless_surge",
+      "sql_excerpt": "CREATE TABLE \"assignment_progress\" (...)",
+      "notes": "Includes unique index uq_assignment_progress_user_subtopic_difficulty"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "badges",
+      "first_introduced_in": "0004_neat_greymalkin",
+      "sql_excerpt": "CREATE TABLE \"badges\" (...)",
+      "notes": "Includes index idx_badges_scope"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "certificates",
+      "first_introduced_in": "0002_easy_namorita",
+      "sql_excerpt": "CREATE TABLE \"certificates\" (...)",
+      "notes": "Includes indexes idx_certificates_user, idx_certificates_verify"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "content_generation_jobs",
+      "first_introduced_in": "0010_looping_demo_foundation",
+      "sql_excerpt": "CREATE TABLE \"content_generation_jobs\" (...)",
+      "notes": "Includes index idx_content_generation_jobs_subtopic"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "domain_content_config",
+      "first_introduced_in": "0010_looping_demo_foundation",
+      "sql_excerpt": "CREATE TABLE \"domain_content_config\" (...)",
+      "notes": "Includes unique index uq_domain_content_config_domain"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_content",
+      "first_introduced_in": "0000_t1_foundation",
+      "sql_excerpt": "CREATE TABLE \"tutorial_content\" (...)",
+      "notes": "Core table from foundation migration"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_domains",
+      "first_introduced_in": "0008_opposite_wiccan",
+      "sql_excerpt": "CREATE TABLE \"tutorial_domains\" (...)",
+      "notes": "Includes unique indexes on external_id and slug"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_content_versions",
+      "first_introduced_in": "0007_tiny_bill_hollister",
+      "sql_excerpt": "CREATE TABLE \"tutorial_content_versions\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_content_audit",
+      "first_introduced_in": "0007_tiny_bill_hollister",
+      "sql_excerpt": "CREATE TABLE \"tutorial_content_audit\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_assignments",
+      "first_introduced_in": "0003_flawless_surge",
+      "sql_excerpt": "CREATE TABLE \"tutorial_assignments\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "live_session_requests",
+      "first_introduced_in": "0005_nebulous_jane_foster",
+      "sql_excerpt": "CREATE TABLE \"live_session_requests\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_subjects",
+      "first_introduced_in": "0008_opposite_wiccan",
+      "sql_excerpt": "CREATE TABLE \"tutorial_subjects\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_topics",
+      "first_introduced_in": "0008_opposite_wiccan",
+      "sql_excerpt": "CREATE TABLE \"tutorial_topics\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_subtopics",
+      "first_introduced_in": "0008_opposite_wiccan",
+      "sql_excerpt": "CREATE TABLE \"tutorial_subtopics\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_projects",
+      "first_introduced_in": "0000_t1_foundation",
+      "sql_excerpt": "CREATE TABLE \"tutorial_projects\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_project_submissions",
+      "first_introduced_in": "0000_t1_foundation",
+      "sql_excerpt": "CREATE TABLE \"tutorial_project_submissions\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "student_badges",
+      "first_introduced_in": "0004_neat_greymalkin",
+      "sql_excerpt": "CREATE TABLE \"student_badges\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_progress",
+      "first_introduced_in": "0000_t1_foundation",
+      "sql_excerpt": "CREATE TABLE \"tutorial_progress\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_video_links",
+      "first_introduced_in": "0010_looping_demo_foundation",
+      "sql_excerpt": "CREATE TABLE \"tutorial_video_links\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "remediation_triggers",
+      "first_introduced_in": "0006_heavy_sally_floyd",
+      "sql_excerpt": "CREATE TABLE \"remediation_triggers\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "subtopic_flow_progress",
+      "first_introduced_in": "0010_looping_demo_foundation",
+      "sql_excerpt": "CREATE TABLE \"subtopic_flow_progress\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "student_streaks",
+      "first_introduced_in": "0002_easy_namorita",
+      "sql_excerpt": "CREATE TABLE \"student_streaks\" (...)"
+    }
+  ],
+  
+  "new_objects": [
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "brand",
+      "sql_excerpt": "CREATE TYPE \"public\".\"brand\" AS ENUM('realtutorialhub', 'skillup', 'shared');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "brand_visibility",
+      "sql_excerpt": "CREATE TYPE \"public\".\"brand_visibility\" AS ENUM('brand_exclusive', 'shared_visible', 'white_label');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "deployment_type",
+      "sql_excerpt": "CREATE TYPE \"public\".\"deployment_type\" AS ENUM('full', 'staged', 'canary', 'ab_test', 'dark_launch');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "job_status",
+      "sql_excerpt": "CREATE TYPE \"public\".\"job_status\" AS ENUM('pending', 'running', 'validating', 'completed', 'failed', 'retrying');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "orchestration_status",
+      "sql_excerpt": "CREATE TYPE \"public\".\"orchestration_status\" AS ENUM('pending', 'in_progress', 'completed', 'failed', 'cancelled');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "priority_level",
+      "sql_excerpt": "CREATE TYPE \"public\".\"priority_level\" AS ENUM('low', 'normal', 'high', 'urgent');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "review_status",
+      "sql_excerpt": "CREATE TYPE \"public\".\"review_status\" AS ENUM('pending_review', 'in_review', 'approved', 'rejected', 'changes_requested');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "section_status",
+      "sql_excerpt": "CREATE TYPE \"public\".\"section_status\" AS ENUM('draft', 'generating', 'validating', 'pending_review', 'in_review', 'changes_requested', 'approved', 'deploying', 'deployed', 'archived');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "section_type",
+      "sql_excerpt": "CREATE TYPE \"public\".\"section_type\" AS ENUM('notes', 'layman', 'visual', 'real_life', 'technical', 'code', 'practice', 'assignment', 'project', 'quiz', 'summary', 'interview');"
+    },
+    {
+      "statement_type": "CREATE TYPE",
+      "object_name": "subsection_type",
+      "sql_excerpt": "CREATE TYPE \"public\".\"subsection_type\" AS ENUM('definition', 'concept', 'syntax', 'analogy', 'example', 'visual', 'diagram', 'animation', 'pitfall', 'antipattern', 'gotcha', 'code', 'exercise', 'challenge', 'sandbox', 'checklist', 'cheatsheet', 'faq', 'glossary', 'interview_question', 'quiz_question', 'project_step', 'project_milestone', 'project_deliverable');"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "ai_generation_metrics",
+      "sql_excerpt": "CREATE TABLE \"ai_generation_metrics\" (id uuid PRIMARY KEY, date timestamp NOT NULL, ...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "ai_generation_orchestration",
+      "sql_excerpt": "CREATE TABLE \"ai_generation_orchestration\" (id uuid PRIMARY KEY, subtopic_id uuid NOT NULL, ...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "ai_section_generation_jobs",
+      "sql_excerpt": "CREATE TABLE \"ai_section_generation_jobs\" (id uuid PRIMARY KEY, orchestration_id uuid NOT NULL, ...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "educational_architecture_performance",
+      "sql_excerpt": "CREATE TABLE \"educational_architecture_performance\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "prompt_template_performance",
+      "sql_excerpt": "CREATE TABLE \"prompt_template_performance\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "ui_architecture_performance",
+      "sql_excerpt": "CREATE TABLE \"ui_architecture_performance\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "brand_performance_metrics",
+      "sql_excerpt": "CREATE TABLE \"brand_performance_metrics\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "deployment_cohort_metrics",
+      "sql_excerpt": "CREATE TABLE \"deployment_cohort_metrics\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "revenue_attribution_metrics",
+      "sql_excerpt": "CREATE TABLE \"revenue_attribution_metrics\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "subsection_engagement_metrics",
+      "sql_excerpt": "CREATE TABLE \"subsection_engagement_metrics\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_learning_metrics",
+      "sql_excerpt": "CREATE TABLE \"tutorial_learning_metrics\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "content_deployments",
+      "sql_excerpt": "CREATE TABLE \"content_deployments\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "content_review_queue",
+      "sql_excerpt": "CREATE TABLE \"content_review_queue\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "educational_architectures",
+      "sql_excerpt": "CREATE TABLE \"educational_architectures\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_sections",
+      "sql_excerpt": "CREATE TABLE \"tutorial_sections\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "tutorial_subsections",
+      "sql_excerpt": "CREATE TABLE \"tutorial_subsections\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "code_interactions",
+      "sql_excerpt": "CREATE TABLE \"code_interactions\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "practice_test_answers",
+      "sql_excerpt": "CREATE TABLE \"practice_test_answers\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "quiz_answers",
+      "sql_excerpt": "CREATE TABLE \"quiz_answers\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "section_completions",
+      "sql_excerpt": "CREATE TABLE \"section_completions\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "visual_interactions",
+      "sql_excerpt": "CREATE TABLE \"visual_interactions\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "ui_architectures",
+      "sql_excerpt": "CREATE TABLE \"ui_architectures\" (...)"
+    },
+    {
+      "statement_type": "CREATE TABLE",
+      "object_name": "prompt_templates",
+      "sql_excerpt": "CREATE TABLE \"prompt_templates\" (...)"
+    }
+  ],
+  
+  "summary": {
+    "total_statements_in_0012": 192,
+    "duplicates_count": 46,
+    "new_count": 33,
+    "duplicates_from_0011": 21,
+    "duplicates_from_0000_to_0010": 25,
+    "duplicate_enums": 5,
+    "duplicate_tables": 26,
+    "duplicate_indexes": 15,
+    "new_enums": 10,
+    "new_tables": 23,
+    "percentage_duplicates": 24.0,
+    "percentage_new": 17.2
+  }
+}
