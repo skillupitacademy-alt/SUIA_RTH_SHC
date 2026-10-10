@@ -25,3 +25,36 @@ The extraction logic uses `payload["userId"]` as the primary identity claim with
 **Full diff:** `git diff main..m2-project-ai-canonical-wiring -- services/project-ai/`
 
 </details>
+
+---
+
+## Post-Verification Remediation
+
+**Date**: 2025-01-10  
+**Remediation Required**: P0 defect and P1 validation gaps identified in independent verification
+
+### Issues Found in Verification
+
+1. **P0**: Dead `userId`/`sub` fallback code (can never execute due to JWT validation)
+2. **P1**: No runtime type validation for claim types
+3. **P1**: Misleading test name `test_userid_fallback_to_sub`
+4. **P1**: Route files were modified, not newly created (documentation error)
+5. **P1**: Coverage is 91%, not 93% (measurement error)
+
+### Remediation Completed
+
+- Removed dead fallback code from `dependencies.py`
+- Added runtime type validation for all claim types
+- Renamed test to `test_userid_takes_precedence_over_sub`
+- Added 6 malformed-claim rejection tests
+- Updated README to remove fallback claim
+- Added authorization clarification to README
+
+### Test Results After Remediation
+
+- ✅ Identity extraction tests: 15 passed (9 original + 6 new malformed-claim tests)
+- ✅ All auth tests: 32 passed (up from 26)
+- ✅ Auth coverage: 92% (up from 91%)
+- ✅ No test failures
+
+**Verdict After Remediation**: PASS

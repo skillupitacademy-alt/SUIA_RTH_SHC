@@ -46,23 +46,86 @@ def get_current_user(authorization: str = Header(...)) -> AuthenticatedPrincipal
     token = parts[1]
     payload = decode_access_token(token)
     
-    # Extract user_id from userId claim (SHC standard), fallback to sub for backward compatibility
-    user_id = payload.get("userId")
-    if not user_id:
-        user_id = payload.get("sub")
+    # Runtime type validation for claim types
+    # Validate roles claim
+    roles = payload.get("roles", [])
+    if not isinstance(roles, list):
+        raise HTTPException(
+            status_code=401,
+            detail="roles claim must be a list of strings"
+        )
+    for role in roles:
+        if not isinstance(role, str):
+            raise HTTPException(
+                status_code=401,
+                detail="all roles must be strings"
+            )
+    
+    # Validate platforms claim
+    platforms = payload.get("platforms", [])
+    if not isinstance(platforms, list):
+        raise HTTPException(
+            status_code=401,
+            detail="platforms claim must be a list"
+        )
+    
+    # Validate subscriptions claim
+    subscriptions = payload.get("subscriptions", [])
+    if not isinstance(subscriptions, list):
+        raise HTTPException(
+            status_code=401,
+            detail="subscriptions claim must be a list"
+        )
+    
+    # Validate isAdmin claim
+    is_admin = payload.get("isAdmin", False)
+    if not isinstance(is_admin, bool):
+        raise HTTPException(
+            status_code=401,
+            detail="isAdmin claim must be a boolean"
+        )
+    
+    # Validate brand claim (if present)
+    brand = payload.get("brand")
+    if brand is not None and not isinstance(brand, str):
+        raise HTTPException(
+            status_code=401,
+            detail="brand claim must be a string"
+        )
+    
+    # Validate email claim (if present)
+    email = payload.get("email")
+    if email is not None and not isinstance(email, str):
+        raise HTTPException(
+            status_code=401,
+            detail="email claim must be a string"
+        )
+    
+    # Validate portalIdentity claim (if present)
+    portal_identity = payload.get("portalIdentity")
+    if portal_identity is not None:
+        allowed_portal_identities = {"admin", "user", "faculty", "super_admin", "infrastructure"}
+        if portal_identity not in allowed_portal_identities:
+            raise HTTPException(
+                status_code=401,
+                detail=f"Invalid portalIdentity: {portal_identity}. Must be one of: {', '.join(sorted(allowed_portal_identities))}"
+            )
+    
+    # Extract user_id from userId claim (required by JWT validation)
+    user_id = payload["userId"]  # Direct access - jwt.py already validated non-empty
     
     return {
         "user_id": user_id,
         "original_user_id": payload.get("originalUserId"),
         "shadow_user_id": payload.get("shadowUserId"),
-        "brand": payload.get("brand"),
-        "roles": payload.get("roles", []),
-        "portal_identity": payload.get("portalIdentity"),
+        "brand": brand,
+        "roles": roles,
+        "portal_identity": portal_identity,
         "token_type": payload.get("tokenType"),
-        "is_admin": payload.get("isAdmin", False),
-        "email": payload.get("email"),
-        "platforms": payload.get("platforms", []),
-        "subscriptions": payload.get("subscriptions", [])
+        "is_admin": is_admin,
+        "email": email,
+        "platforms": platforms,
+        "subscriptions": subscriptions
     }
 
 

@@ -251,8 +251,12 @@ def test_handles_optional_claims_missing():
     assert user["subscriptions"] == []  # Empty list, not None
 
 
-def test_userid_fallback_to_sub():
-    """Test backward compatibility: user_id falls back to 'sub' when 'userId' missing."""
+def test_userid_takes_precedence_over_sub():
+    """
+    Test that userId claim takes precedence over sub when both are present.
+    Note: JWT validation requires userId, so tokens with only sub are rejected 
+    before this extraction logic executes.
+    """
     # Token with both sub and userId (userId takes precedence)
     data_with_both = {
         "sub": "fallback_user",
@@ -299,3 +303,128 @@ def test_empty_lists_for_missing_arrays():
         pass  # Should not raise
     for subscription in user["subscriptions"]:
         pass  # Should not raise
+
+
+def test_rejects_roles_as_string():
+    """Test that roles claim must be a list, not a string."""
+    data = {
+        "userId": "test_user",
+        "originalUserId": "test_user",
+        "shadowUserId": "test_user",
+        "aud": "user",
+        "tokenType": "user",
+        "roles": "admin"  # String instead of list
+    }
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(authorization)
+    
+    assert exc_info.value.status_code == 401
+    assert "roles claim must be a list" in exc_info.value.detail
+
+
+def test_rejects_invalid_portal_identity():
+    """Test that portalIdentity claim must be one of the allowed values."""
+    data = {
+        "userId": "test_user",
+        "originalUserId": "test_user",
+        "shadowUserId": "test_user",
+        "aud": "user",
+        "tokenType": "user",
+        "roles": ["contract_viewer"],
+        "portalIdentity": "hacker"  # Invalid value
+    }
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(authorization)
+    
+    assert exc_info.value.status_code == 401
+    assert "Invalid portalIdentity" in exc_info.value.detail
+
+
+def test_rejects_platforms_as_string():
+    """Test that platforms claim must be a list, not a string."""
+    data = {
+        "userId": "test_user",
+        "originalUserId": "test_user",
+        "shadowUserId": "test_user",
+        "aud": "user",
+        "tokenType": "user",
+        "roles": ["contract_viewer"],
+        "platforms": "web"  # String instead of list
+    }
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(authorization)
+    
+    assert exc_info.value.status_code == 401
+    assert "platforms claim must be a list" in exc_info.value.detail
+
+
+def test_rejects_subscriptions_as_string():
+    """Test that subscriptions claim must be a list, not a string."""
+    data = {
+        "userId": "test_user",
+        "originalUserId": "test_user",
+        "shadowUserId": "test_user",
+        "aud": "user",
+        "tokenType": "user",
+        "roles": ["contract_viewer"],
+        "subscriptions": "premium"  # String instead of list
+    }
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(authorization)
+    
+    assert exc_info.value.status_code == 401
+    assert "subscriptions claim must be a list" in exc_info.value.detail
+
+
+def test_rejects_is_admin_as_string():
+    """Test that isAdmin claim must be a boolean, not a string."""
+    data = {
+        "userId": "test_user",
+        "originalUserId": "test_user",
+        "shadowUserId": "test_user",
+        "aud": "user",
+        "tokenType": "user",
+        "roles": ["contract_viewer"],
+        "isAdmin": "true"  # String instead of boolean
+    }
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(authorization)
+    
+    assert exc_info.value.status_code == 401
+    assert "isAdmin claim must be a boolean" in exc_info.value.detail
+
+
+def test_rejects_brand_as_number():
+    """Test that brand claim must be a string, not a number."""
+    data = {
+        "userId": "test_user",
+        "originalUserId": "test_user",
+        "shadowUserId": "test_user",
+        "aud": "user",
+        "tokenType": "user",
+        "roles": ["contract_viewer"],
+        "brand": 123  # Number instead of string
+    }
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(authorization)
+    
+    assert exc_info.value.status_code == 401
+    assert "brand claim must be a string" in exc_info.value.detail

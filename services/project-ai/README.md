@@ -226,7 +226,7 @@ Admin tokens have elevated privileges and must:
 Wave 1B extracts complete identity context from verified SHC JWT tokens. The `get_current_user()` dependency returns an `AuthenticatedPrincipal` TypedDict with all 11 identity claims:
 
 #### Core Identity (Required)
-- **user_id** (`str`): Primary user identifier from `userId` claim (fallback to `sub` for backward compatibility)
+- **user_id** (`str`): Canonical user identifier (required by JWT validation)
 - **original_user_id** (`Optional[str]`): Original user ID before any impersonation/shadowing
 - **shadow_user_id** (`Optional[str]`): Shadow user ID when admin impersonates another user
 
@@ -238,6 +238,10 @@ Wave 1B extracts complete identity context from verified SHC JWT tokens. The `ge
 - **portal_identity** (`Optional[Literal]`): Portal identity type - one of: `'admin'`, `'user'`, `'faculty'`, `'super_admin'`, `'infrastructure'`
 - **token_type** (`Optional[Literal]`): Token type - `'user'` or `'admin'`
 - **is_admin** (`bool`): Boolean admin flag (defaults to `False` if not present)
+
+**Important**: The presence of `isAdmin=True` or `tokenType='admin'` does NOT automatically 
+grant access to all routes. Route-level authorization checks (Wave 1D) must explicitly verify 
+permissions using RBAC dependencies like `require_contract_admin`.
 
 #### Additional Context
 - **email** (`Optional[str]`): User email address
