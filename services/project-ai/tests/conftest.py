@@ -129,6 +129,25 @@ async def test_governance_service(
 
 
 @pytest.fixture(autouse=True)
+def mock_jwt_config(monkeypatch):
+    """
+    Automatically mock JWT configuration for all tests.
+    
+    Provides test secrets for JWT encoding/decoding without requiring
+    environment variables to be set.
+    """
+    test_config = {
+        "user_secret": "test_user_secret_at_least_32_characters_long_12345678",
+        "admin_secret": "test_admin_secret_at_least_32_characters_long_12345678",
+        "algorithm": "HS256",
+        "access_token_expire_minutes": 30
+    }
+    
+    from app.auth import config
+    monkeypatch.setattr(config, "get_jwt_config", lambda: test_config)
+
+
+@pytest.fixture(autouse=True)
 def mock_database_dependencies(monkeypatch, mock_db_session):
     """
     Automatically mock database dependencies for all tests.
