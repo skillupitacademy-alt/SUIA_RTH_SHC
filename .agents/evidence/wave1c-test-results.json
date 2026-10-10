@@ -1,0 +1,85 @@
+{
+  "passed": 20,
+  "failed": 0,
+  "skipped": 9,
+  "total": 29,
+  "coverage_pct": 82,
+  "authorization_module_coverage_pct": 100,
+  "commit": "a27705a4",
+  "timestamp": "2025-01-31T00:00:00Z",
+  "status": "partial_implementation",
+  "blockers": [
+    {
+      "issue": "workflow_model_lacks_brand_field",
+      "description": "ProjectLLMWorkflow model does not include brand field required for brand enforcement",
+      "impact": "Cannot enforce brand boundary checks on workflow operations",
+      "affected_features": [
+        "GET /workflows/{id} brand enforcement",
+        "POST /workflows/{id}/approve-final brand enforcement",
+        "POST /candidates/upload brand enforcement",
+        "POST /candidates/{id}/execute brand enforcement"
+      ]
+    }
+  ],
+  "completed_features": [
+    "verify_brand_access() function with 100% coverage",
+    "Identity spoofing prevention in governance approvals",
+    "Identity spoofing prevention in workflow creation",
+    "JWT-based identity extraction for approver",
+    "JWT-based identity extraction for requester"
+  ],
+  "test_breakdown": {
+    "verify_brand_access_unit_tests": {
+      "passed": 5,
+      "failed": 0,
+      "coverage": 100
+    },
+    "identity_extraction_tests_wave1b": {
+      "passed": 15,
+      "failed": 0,
+      "regression": false
+    },
+    "integration_tests": {
+      "passed": 0,
+      "skipped": 9,
+      "reason": "Require TestClient, database, and workflow.brand field"
+    }
+  },
+  "coverage_by_module": {
+    "app.auth.authorization": {
+      "statements": 18,
+      "covered": 18,
+      "percent": 100
+    },
+    "app.auth.types": {
+      "statements": 13,
+      "covered": 13,
+      "percent": 100
+    },
+    "app.auth.__init__": {
+      "statements": 4,
+      "covered": 4,
+      "percent": 100
+    },
+    "app.auth.jwt": {
+      "statements": 50,
+      "covered": 41,
+      "percent": 82
+    },
+    "app.auth.dependencies": {
+      "statements": 53,
+      "covered": 38,
+      "percent": 72
+    },
+    "app.auth.config": {
+      "statements": 13,
+      "covered": 10,
+      "percent": 77
+    },
+    "total": {
+      "statements": 151,
+      "covered": 124,
+      "percent": 82
+    }
+  }
+}

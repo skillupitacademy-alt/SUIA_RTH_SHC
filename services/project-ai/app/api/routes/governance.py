@@ -290,7 +290,6 @@ class WorkflowApprovalPayload(BaseModel):
         min_length=1
     )
     approved: bool = Field(description="True to approve, False to reject")
-    approved_by: str = Field(description="Identity of approver", min_length=1)
     reason: str = Field(description="Reason for approval or rejection")
 
 
@@ -456,15 +455,18 @@ async def approve_placement(
             }
         )
     
+    # Extract approver identity from JWT token (prevent identity spoofing)
+    approved_by = user.get("user_id") or user.get("email") or "unknown"
+    
     # Verify not self-approval (approver != workflow requester)
-    if workflow_requester and payload.approved_by == workflow_requester:
+    if workflow_requester and approved_by == workflow_requester:
         raise HTTPException(
             status_code=403,
             detail={
                 "error": "SELF_APPROVAL_REJECTED",
-                "message": f"Self-approval rejected. User '{payload.approved_by}' cannot approve their own workflow. Separation of duties required.",
+                "message": f"Self-approval rejected. User '{approved_by}' cannot approve their own workflow. Separation of duties required.",
                 "workflowRequester": workflow_requester,
-                "attemptedApprover": payload.approved_by
+                "attemptedApprover": approved_by
             }
         )
     
@@ -479,7 +481,7 @@ async def approve_placement(
         target_version=target_version,
         placement_manifest_id=payload.placement_manifest_id,
         placement_manifest_sha256=payload.manifest_hash,
-        approved_by=payload.approved_by,
+        approved_by=approved_by,
         workflow_requester=workflow_requester,
         status=ImplementationApprovalStatus.APPROVED if payload.approved else ImplementationApprovalStatus.REJECTED,
         rejection_reason=None if payload.approved else payload.reason,
@@ -502,7 +504,7 @@ async def approve_placement(
             await governance_service.transition_state(
                 workflow_id=workflow_id,
                 to_state=new_state,
-                triggered_by=payload.approved_by,
+                triggered_by=approved_by,
                 evidence_id=implementation_approval.approval_id,
                 reason=payload.reason
             )
@@ -519,7 +521,7 @@ async def approve_placement(
             previous_state=current_state_str,
             new_state=new_state.value,
             approved=True,
-            approved_by=payload.approved_by,
+            approved_by=approved_by,
             approved_at=now,
             manifest_hash_verified=True,
             contract_hash_verified=True,
@@ -539,7 +541,7 @@ async def approve_placement(
             await governance_service.transition_state(
                 workflow_id=workflow_id,
                 to_state=new_state,
-                triggered_by=payload.approved_by,
+                triggered_by=approved_by,
                 evidence_id=implementation_approval.approval_id,
                 reason=payload.reason
             )
@@ -556,7 +558,7 @@ async def approve_placement(
             previous_state=current_state_str,
             new_state=new_state.value,
             approved=False,
-            approved_by=payload.approved_by,
+            approved_by=approved_by,
             approved_at=now,
             manifest_hash_verified=True,
             contract_hash_verified=True,

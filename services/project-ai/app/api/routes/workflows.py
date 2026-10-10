@@ -138,16 +138,21 @@ async def create_workflow(
     Initiates the Project LLM workflow lifecycle with target binding and
     requester identity for self-approval prevention.
     
+    Requester identity is extracted from JWT token to prevent spoofing.
+    
     Args:
         request: Workflow creation request
         
     Returns:
         New workflow in REQUESTED state
     """
+    # Extract requester identity from JWT token (prevent identity spoofing)
+    requester_id = user["user_id"]
+    
     workflow = await governance_service.create_workflow(
         target_family=request.target_family,
         target_version=request.target_version,
-        requester_id=request.requester_id,
+        requester_id=requester_id,
         purpose=request.purpose
     )
     await session.commit()

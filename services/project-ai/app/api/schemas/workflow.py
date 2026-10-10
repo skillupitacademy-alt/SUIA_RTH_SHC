@@ -102,11 +102,11 @@ class CreateWorkflowRequest(BaseModel):
     Request to create a new workflow.
     
     Initiates workflow in REQUESTED state with target binding and requester identity.
+    Requester identity is extracted from JWT token, not from request body.
     """
     
     target_family: str = Field(min_length=1, description="Block family (e.g., 'Introduction')")
     target_version: str = Field(min_length=1, description="Target version (e.g., 'I7')")
-    requester_id: str = Field(min_length=1, description="Workflow requester identity")
     purpose: Optional[str] = Field(default=None, description="Optional purpose description")
 
 
