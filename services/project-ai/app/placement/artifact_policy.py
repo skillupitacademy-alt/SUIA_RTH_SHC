@@ -355,6 +355,12 @@ def detect_version_conflicts(repository_index: List[RepositoryArtifact]) -> List
     Groups artifacts by normalized base_name and identifies conflicts where 2+ artifacts
     with same base name have different content hashes.
     
+    NOTE: This function is designed for batch remediation and reporting, not runtime enforcement.
+    The determine_action() function enforces canonical placement at runtime by directing
+    versioned artifacts (ObjectiveBlockV2) to UPDATE existing artifacts (ObjectiveBlock).
+    Use detect_version_conflicts() in migration scripts and audits to identify existing conflicts.
+    (Finding 5: documented batch remediation vs runtime enforcement)
+    
     Args:
         repository_index: List of repository artifacts to scan
         
@@ -432,7 +438,9 @@ def select_canonical_artifact(artifacts: List[RepositoryArtifact]) -> Repository
         raise ValueError("Cannot select canonical artifact from empty list")
     
     def sort_key(artifact: RepositoryArtifact) -> Tuple[str, int, str]:
-        # Primary: earliest timestamp (use empty string as fallback to sort to end)
+        # Primary: earliest timestamp (use far-future string as fallback to sort artifacts without timestamps to end)
+        # Note: last_modified_at is a graceful fallback for snapshot sources that don't provide created_at
+        # If neither timestamp exists, artifact sorts to end (Finding 3: documented fallback behavior)
         timestamp = artifact.created_at or artifact.last_modified_at or "9999-99-99T99:99:99Z"
         # Secondary: shortest path (fewer slashes = more central)
         path_depth = artifact.path.count('/')
@@ -460,6 +468,12 @@ def resolve_version_conflict(conflict: VersionConflict) -> VersionConflict:
     - Set resolution based on content analysis
     - Log resolution decision at WARNING level for audit trail
     
+    NOTE: This function is designed for batch remediation workflows and audit reports.
+    Runtime placement enforcement happens in determine_action() which prevents version
+    proliferation by directing ObjectiveBlockV2 → UPDATE ObjectiveBlock.
+    Use resolve_version_conflict() in migration scripts to remediate existing conflicts.
+    (Finding 5: documented batch remediation vs runtime enforcement)
+    
     Args:
         conflict: VersionConflict to resolve
         
@@ -476,6 +490,12 @@ def resolve_version_conflict(conflict: VersionConflict) -> VersionConflict:
         >>> resolved.resolution
         'CANONICAL_SELECTED'
     """
+    # Guard against empty artifact list (Finding 1: Empty conflict list guard)
+    if not conflict.artifacts:
+        logger.warning(f"Cannot resolve version conflict for {conflict.base_name}: empty artifact list")
+        conflict.resolution = "ESCALATE_TO_HUMAN"
+        return conflict
+    
     # Select canonical artifact
     canonical = select_canonical_artifact(conflict.artifacts)
     
@@ -715,12 +735,26 @@ def should_create_new_artifact(
         paths = [a.path for a in content_duplicate]
         return False, f"Content duplicate detected: identical to {', '.join(paths)}"
     
-    # Check 3: Canonical registry match (basic check - could be enhanced with purpose extraction)
-    # For now, just check if filename suggests a known canonical artifact type
+    # Check 3: Canonical registry match
+    # Finding 4 Fix: Check both filename in path AND repository artifacts against registry purposes
     base_name = normalize_artifact_name(candidate_filename).lower()
+    
+    # Check if candidate filename matches canonical path
     for entry in registry:
-        if base_name in entry.canonical_path.lower():
+        canonical_filename = entry.canonical_path.split('/')[-1].lower()
+        canonical_base = normalize_artifact_name(canonical_filename).lower()
+        if base_name == canonical_base:
             return False, f"Canonical artifact exists: {entry.canonical_path}"
+    
+    # Check if any repository artifact with matching purpose/type exists in registry
+    for entry in registry:
+        # Match repository artifacts to registry by comparing paths or artifact types
+        for artifact in repository_index:
+            if artifact.path.lower() == entry.canonical_path.lower():
+                # Repository artifact matches registry entry - check if candidate matches this purpose
+                artifact_base = artifact.base_name.lower()
+                if base_name == artifact_base:
+                    return False, f"Canonical artifact exists for this purpose: {entry.canonical_path} (purpose: {entry.purpose})"
     
     # All checks pass - OK to create
     return True, ""
@@ -882,9 +916,10 @@ def determine_action(
             duplicate_paths = [a.path for a in content_duplicates]
             
             # Check if duplicate has different base name (true duplicate vs semantic match)
+            # Finding 2 Fix: Compare base names, not path to candidate base
             candidate_base = normalize_artifact_name(candidate_filename)
             is_semantic_match = any(
-                normalize_artifact_name(a.path.split('/')[-1]) == candidate_base
+                a.base_name == candidate_base
                 for a in content_duplicates
             )
             

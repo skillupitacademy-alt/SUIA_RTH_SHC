@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-002",
+  "type": "refactor",
+  "description": "Consolidate duplicate CanonicalComparator implementations. Found 3 distinct implementations: app/placement/comparator.py (evidence-backed, uses snapshot for block comparison), app/intake/canonical_comparator.py (compares candidate against canonical reference from TypeScript snapshot), and app/agents/canonical_comparison.py (agent handler with RepositoryBlockContract). After analysis, keep app/intake/canonical_comparator.py as canonical (most complete with structural/API/deviation checks). Mark the other two for removal or refactoring to use the canonical version.",
+  "status": "pending",
+  "steps": [
+    "1. Read all three implementations fully to document their unique features: app/placement/comparator.py (lines 1-end), app/intake/canonical_comparator.py (lines 1-end), app/agents/canonical_comparison.py (lines 1-end)",
+    "2. Search for all imports of CanonicalComparator across the codebase: grep -r 'from.*comparator import CanonicalComparator' services/project-ai/ and grep -r 'from.*canonical_comparison import CanonicalComparator' services/project-ai/",
+    "3. Identify which implementation is most used and has the most complete feature set (preliminary analysis suggests app/intake/canonical_comparator.py is most complete)",
+    "4. Create a single canonical implementation in app/placement/canonical_comparator.py (new file) that incorporates all necessary features from the three implementations",
+    "5. Update all imports to reference the single canonical implementation",
+    "6. Add deprecation comments to the old implementations with pointers to the new canonical location",
+    "7. Verify no functionality is lost by running all tests that reference CanonicalComparator"
+  ],
+  "acceptance_criteria": [
+    "Single CanonicalComparator implementation exists in app/placement/canonical_comparator.py",
+    "All imports across the codebase reference the canonical implementation",
+    "Old implementations have deprecation notices or are removed",
+    "All existing tests pass without modification or are updated to use new import path",
+    "ComparisonReport or ComparisonResult dataclasses are unified if duplicated"
+  ],
+  "verification": [
+    "Run grep 'class CanonicalComparator' services/project-ai/app/ to confirm only one active implementation",
+    "Run pytest services/project-ai/tests/ -k 'canonical or comparator' -v to verify comparison-related tests pass",
+    "Run full test suite: pytest services/project-ai/tests/ --tb=short to check for regressions"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,42 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "description": "RBAC matrix mismatch: governance routes implemented with require_contract_admin but RBAC matrix rows 12, 14, 15 specify contract_reviewer role. Reviewers without admin privileges cannot access the approval workflow. Either implement require_contract_reviewer dependency OR update RBAC matrix to reflect admin-only policy.",
+      "file": "services/project-ai/app/api/routes/governance.py",
+      "line": "102, 147, 609"
+    },
+    {
+      "severity": "HIGH",
+      "description": "Brand boundary enforcement missing: RBAC matrix specifies brand_check: Yes for approval routes, but implementation returns all pending approvals regardless of brand. Admin from Brand A can see Brand B approvals. Add brand filtering in get_pending_approvals, approve_manifest, and reject_manifest.",
+      "file": "services/project-ai/app/api/routes/governance.py",
+      "line": "102"
+    },
+    {
+      "severity": "MEDIUM",
+      "description": "Identity fallback to 'unknown' creates self-approval bypass: approve_manifest and reject_manifest fall back to decided_by='unknown' if user_id is absent in JWT. Two requests without user_id would pass self-approval check. Reject requests without user_id with 401 instead.",
+      "file": "services/project-ai/app/api/routes/governance.py",
+      "line": "184, 622"
+    },
+    {
+      "severity": "MEDIUM",
+      "description": "Legacy in-memory storage creates data loss and scaling risks: _approvals dict stores manifest approvals in memory despite comment claiming PostgreSQL is used exclusively. Service restart loses approval state. Migrate approval routes to ApprovalRepository.",
+      "file": "services/project-ai/app/api/routes/governance.py",
+      "line": "43"
+    },
+    {
+      "severity": "MEDIUM",
+      "description": "Test mock failures obscure coverage gaps: 13 of 28 authorization tests fail due to Pydantic validation and mock configuration issues. Failing tests include test_create_placement_requires_contract_admin and test_override_placement_requires_contract_admin, preventing verification of full authorization flow. Fix mocks to validate placement engine integration.",
+      "file": "services/project-ai/tests/security/test_w5_placement_authorization.py",
+      "line": "multiple"
+    },
+    {
+      "severity": "LOW",
+      "description": "Self-approval check may not account for multi-role users: if implementation switches to contract_reviewer role, verify that users with both submitter and reviewer roles cannot self-approve. Add test scenario for multi-role bypass.",
+      "file": "services/project-ai/app/api/routes/governance.py",
+      "line": "191"
+    }
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\gate-e2-review.md"
+}

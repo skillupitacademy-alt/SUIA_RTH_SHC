@@ -1,0 +1,27 @@
+{
+  "project_type": "Python FastAPI service with PostgreSQL persistence via SQLAlchemy + asyncpg",
+  "language": "Python 3.11+",
+  "build_system": "pip with pyproject.toml, no package.json or npm",
+  "test_framework": "pytest with pytest-asyncio for async tests",
+  "build_command": "pip install -e .",
+  "test_command": "pytest tests/ -v",
+  "verification_instructions": "Run pytest tests/integration/ -v to verify integration tests pass. Tests require TEST_DATABASE_URL_TUTORIAL environment variable pointing to PostgreSQL test database. Docker Compose test database must be running: docker-compose -f services/project-ai/docker-compose.test-db.yml up -d. Verify docker-compose health: docker-compose -f services/project-ai/docker-compose.test-db.yml ps shows postgres:17 healthy on port 55432.",
+  "snapshot_or_generated_files": "None that need to be checked in. Database schema comes from Drizzle migrations managed by TypeScript packages, not Python application.",
+  "environment_constraints": "Integration tests require real PostgreSQL database (not SQLite). Test database must have project_ai_* tables created via Drizzle migrations. Never fall back to localhost guesses or create test database from application code. Docker Compose test database uses tmpfs for speed and ephemeral data.",
+  "contribution_requirements": "Tests must use pytest.mark.integration marker. Integration tests in tests/integration/ directory. Use async/await with pytest-asyncio. Database fixtures in tests/integration/conftest.py skip gracefully when TEST_DATABASE_URL_TUTORIAL not configured. Security tests verify RBAC enforcement, brand isolation, and identity extraction from JWT tokens.",
+  "key_patterns": "Existing integration test pattern: tests/integration/test_repositories_integration.py uses @pytest.mark.integration and @pytest.mark.asyncio decorators. Fixtures: db_session (transaction rollback), workflow_repo, approval_repo, etc. Security authorization helpers in app/auth/authorization.py: require_role(), verify_brand_access(), is_super_admin(). AuthenticatedPrincipal TypedDict in app/auth/types.py with 11 identity claims.",
+  "relevant_files": [
+    "services/project-ai/tests/integration/conftest.py",
+    "services/project-ai/tests/integration/test_repositories_integration.py",
+    "services/project-ai/tests/security/test_authorization.py",
+    "services/project-ai/app/auth/authorization.py",
+    "services/project-ai/app/auth/types.py",
+    "services/project-ai/app/auth/dependencies.py",
+    "services/project-ai/app/persistence/database.py",
+    "services/project-ai/app/persistence/models.py",
+    "services/project-ai/pyproject.toml",
+    "services/project-ai/.env.example",
+    "services/project-ai/README.md"
+  ],
+  "directory_structure": "services/project-ai/ root with app/ source code, tests/ directory with subdirectories: integration/, security/, unit/, placement/, certification/, e2e/. Persistence layer in app/persistence/ with database.py, models.py, repositories.py. Auth layer in app/auth/ with authorization.py, dependencies.py, jwt.py, types.py. README.md documents JWT auth, RBAC, R3 persistence, and testing."
+}

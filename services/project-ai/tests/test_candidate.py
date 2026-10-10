@@ -7,7 +7,6 @@ from datetime import datetime
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.models.candidate import (
     BlockFamily,
     CandidateFile,
@@ -15,65 +14,21 @@ from app.models.candidate import (
     PlacementDecision,
 )
 
+from app.main import app
+
 client = TestClient(app)
 
 
 @pytest.fixture
-def sample_workflow():
-    """Create a sample workflow for testing candidate binding."""
-    from app.api.routes.workflows import get_governance_service
-    from app.orchestration.canonical_workflow import CanonicalWorkflowState
-    from app.persistence import get_db_session
-    import asyncio
-    
-    async def create_workflow():
-        async for session in get_db_session():
-            governance_service = await get_governance_service(session)
-            
-            # Create workflow in REQUESTED state
-            workflow = await governance_service.create_workflow(
-                target_family="Tutorial",
-                target_version="T5",
-                requester_id="test-user",
-                purpose="Test workflow for candidate"
-            )
-            
-            # Transition through states to CANDIDATE_REQUESTED
-            await governance_service.transition_state(
-                workflow_id=workflow.workflow_id,
-                to_state=CanonicalWorkflowState.DISCOVERY,
-                triggered_by="test-system",
-                reason="Test: moving to discovery"
-            )
-            await governance_service.transition_state(
-                workflow_id=workflow.workflow_id,
-                to_state=CanonicalWorkflowState.BRIEF_READY,
-                triggered_by="test-system",
-                reason="Test: brief ready"
-            )
-            await governance_service.transition_state(
-                workflow_id=workflow.workflow_id,
-                to_state=CanonicalWorkflowState.AWAITING_GATE_1,
-                triggered_by="test-system",
-                reason="Test: awaiting gate 1"
-            )
-            await governance_service.transition_state(
-                workflow_id=workflow.workflow_id,
-                to_state=CanonicalWorkflowState.GUI_APPROVED,
-                triggered_by="test-user",
-                reason="Test: GUI approved"
-            )
-            await governance_service.transition_state(
-                workflow_id=workflow.workflow_id,
-                to_state=CanonicalWorkflowState.CANDIDATE_REQUESTED,
-                triggered_by="test-system",
-                reason="Test: candidate requested"
-            )
-            
-            await session.commit()
-            return workflow
-    
-    return asyncio.run(create_workflow())
+def sample_workflow_dict():
+    """Return workflow data for testing - mock version."""
+    return {
+        "workflow_id": "test-workflow-001",
+        "target_family": "Tutorial",
+        "target_version": "T5",
+        "current_state": "CANDIDATE_REQUESTED",
+        "requester_id": "test-user"
+    }
 
 
 @pytest.fixture
@@ -101,18 +56,18 @@ def sample_html_content():
 
 
 @pytest.fixture
-def sample_candidate_package(sample_html_content, sample_workflow):
+def sample_candidate_package(sample_html_content, sample_workflow_dict):
     """Sample candidate package for testing."""
     html_hash = hashlib.sha256(sample_html_content.encode('utf-8')).hexdigest()
     
     return {
         "candidateId": "test-candidate-001",
-        "workflow_id": sample_workflow.workflow_id,
+        "workflow_id": sample_workflow_dict["workflow_id"],
         "files": [
             {
-                "filename": "index.html",
+                "filename": "TutorialT5Block.tsx",
                 "content": sample_html_content,
-                "contentType": "text/html",
+                "contentType": "text/tsx",
                 "hash": html_hash
             },
             {
@@ -128,7 +83,7 @@ def sample_candidate_package(sample_html_content, sample_workflow):
 
 
 @pytest.fixture
-def introduction_candidate(sample_workflow):
+def introduction_candidate(sample_workflow_dict):
     """Introduction block candidate for testing."""
     html_content = """
     <div class="intro-block" data-block-type="introduction">
@@ -138,7 +93,7 @@ def introduction_candidate(sample_workflow):
     """
     return {
         "candidateId": "test-intro-001",
-        "workflow_id": sample_workflow.workflow_id,
+        "workflow_id": sample_workflow_dict["workflow_id"],
         "files": [
             {
                 "filename": "intro.html",
@@ -153,7 +108,7 @@ def introduction_candidate(sample_workflow):
 
 
 @pytest.fixture
-def assessment_candidate(sample_workflow):
+def assessment_candidate(sample_workflow_dict):
     """Assessment block candidate for testing."""
     html_content = """
     <div class="quiz-container" data-block-type="assessment">
@@ -165,7 +120,7 @@ def assessment_candidate(sample_workflow):
     """
     return {
         "candidateId": "test-assessment-001",
-        "workflow_id": sample_workflow.workflow_id,
+        "workflow_id": sample_workflow_dict["workflow_id"],
         "files": [
             {
                 "filename": "quiz.html",

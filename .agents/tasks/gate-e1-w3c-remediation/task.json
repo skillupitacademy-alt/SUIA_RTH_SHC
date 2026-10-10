@@ -1,0 +1,7 @@
+{
+  "task_id": "gate-e1-w3c-remediation",
+  "task_description": "W3C Artifact Policy Remediation: Replace silent ADD-all fallback with fail-closed behavior, consolidate duplicate CanonicalComparator implementations, strengthen manifest validation",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

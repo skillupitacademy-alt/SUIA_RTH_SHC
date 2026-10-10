@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Replace silent ADD-all fallback with fail-closed behavior. Currently, when snapshot is unavailable in placement_manifest.py lines 387-413, the system returns an empty repository index and logs a warning, causing all candidates to receive ADD action (duplicate prevention disabled). Change this to raise RepositoryEvidenceBlocked exception when snapshot is unavailable or unloadable, forcing explicit handling rather than silent degradation.",
+  "status": "pending",
+  "steps": [
+    "1. Read services/project-ai/app/intake/placement_manifest.py lines 380-415 to confirm the current fallback behavior (_build_repository_index method)",
+    "2. Import RepositoryEvidenceBlocked from app.contracts.repository_intelligence (already used elsewhere in codebase per grep results)",
+    "3. Replace the two warning-and-return-empty-list blocks (lines 387-395 for missing snapshot_path, lines 396-413 for failed load) with raise RepositoryEvidenceBlocked with descriptive messages: 'Snapshot path not provided - cannot perform duplicate prevention' and 'Failed to load snapshot from {path}: {error} - cannot perform duplicate prevention'",
+    "4. Update any calling code that expects empty list to handle the exception (check generate_manifest method in same file for try-except wrapping)"
+  ],
+  "acceptance_criteria": [
+    "When snapshot_path is None, _build_repository_index raises RepositoryEvidenceBlocked",
+    "When snapshot file is missing or unloadable, _build_repository_index raises RepositoryEvidenceBlocked with the underlying error details",
+    "Exception messages clearly state the fail-closed policy reason",
+    "No code paths silently return empty repository index on snapshot errors"
+  ],
+  "verification": [
+    "Run pytest services/project-ai/tests/unit/test_artifact_policy.py -v to confirm existing tests still pass",
+    "Run pytest services/project-ai/tests/unit/test_placement_manifest.py -v if it exists to check for regressions",
+    "Manually verify no other callers of _build_repository_index exist: grep -r '_build_repository_index' services/project-ai/app/"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -4643,3 +4643,1168 @@ The important conceptual boundary is:
 **Project LLM supplies the project-specific engineering knowledge that External AI does not have, verifies the resulting candidate against that knowledge, integrates it into the canonical repository, and certifies that it has actually become a first-class Tutorial Engine block.**
 
 And **I1, C1, D1 are not instructions to External AI**. They are **repository evidence from which Project LLM learns the common implementation architecture and then produces explicit instructions that External AI can actually understand and execute.**
+
+Yes. The missing piece is the **handoff protocol**.
+
+The External AI should **not be expected to know I1/C1/D1, Tutorial Composer, ILS, LSNB, RSSB, UBRC, renderer routing, or our repository architecture beforehand**.
+
+Project LLM must convert all of that repository knowledge into a **self-contained Engineering Contract / External AI Implementation Brief**.
+
+The External AI should be able to receive that one package and understand:
+
+> **“Here is the Visual V1 that the human designed. Here is exactly what you are allowed to design yourself, and here is the platform contract you must implement so that your block behaves like the existing I1/C1/D1 blocks.”**
+
+That distinction is fundamental.
+
+---
+
+# 1. There are actually TWO different responsibilities
+
+For a new Visual V1, there are two layers:
+
+```text
+┌─────────────────────────────────────────────┐
+│ HUMAN + EXTERNAL AI                         │
+│                                             │
+│ Visual design / UX / educational presentation│
+│                                             │
+│ "What should Visual V1 look and feel like?" │
+└──────────────────────┬──────────────────────┘
+                       │
+                       │ candidate design
+                       ▼
+┌─────────────────────────────────────────────┐
+│ PROJECT LLM                                 │
+│                                             │
+│ "How must this design be implemented so     │
+│  that it becomes a valid tutorial block?"   │
+│                                             │
+│ I1/C1/D1 common platform contract            │
+│ Composer                                    │
+│ Renderer                                    │
+│ Schema                                      │
+│ UBRC                                        │
+│ ILS                                         │
+│ LSNB/RSSB                                   │
+│ Theme                                       │
+│ Brand independence                          │
+│ Tests                                       │
+└─────────────────────────────────────────────┘
+```
+
+So Project LLM **does not design the Visual V1 UI for the External AI**.
+
+Instead, it supplies the **implementation constraints that surround the design**.
+
+---
+
+# 2. The External AI receives a "Project LLM Implementation Contract"
+
+This is what I mean by the Engineering Contract.
+
+It should not be a vague prompt like:
+
+> Create a React block similar to I1/C1/D1.
+
+That would be insufficient.
+
+The External AI has no reason to know what those things mean.
+
+Instead, Project LLM generates a **self-contained implementation package**.
+
+Conceptually:
+
+```text
+PROJECT LLM
+EXTERNAL AI IMPLEMENTATION PACKAGE
+────────────────────────────────────────
+
+Target
+  Block Family: Visual
+  Version: V1
+  Workflow ID: VL-V1-001
+
+Human Design
+  [Visual prototype / screenshots / approved HTML/CSS/JS/JSON]
+
+Platform Contract
+  [all required implementation rules]
+
+Canonical Reference Pattern
+  [I1 evidence]
+  [C1 evidence]
+  [D1 evidence]
+
+Required Artifacts
+  [component]
+  [schema]
+  [renderer integration]
+  [Composer integration]
+  [tests]
+
+Runtime Contract
+  [UBRC]
+  [passive ILS]
+  [LSNB/RSSB boundaries]
+  [theme]
+
+Brand Contract
+  [brand-independent implementation]
+
+Acceptance Criteria
+  [machine-checkable requirements]
+
+Prohibited Behaviors
+  [things External AI must not implement]
+
+Repository Placement Guidance
+  [canonical destinations discovered by Project LLM]
+
+Delivery Format
+  [exact candidate package requirements]
+```
+
+This is the **handover contract**.
+
+---
+
+# 3. Why we need this separation
+
+Suppose the user tells an External AI:
+
+> "I want a beautiful interactive Visual block showing a concept with an illustration, labels, animation and explanation."
+
+The External AI can produce a fantastic UI.
+
+But it could accidentally produce:
+
+```text
+VisualV1.tsx
+```
+
+that:
+
+- directly calls ILS
+- creates its own progress indicator
+- contains SUIA colors
+- contains RTH colors
+- doesn't have a version
+- doesn't have the required DOM identity
+- can't be rendered by `TutorialBlockRenderer`
+- isn't selectable in Tutorial Composer
+- has no authoring schema
+- uses a completely different data model
+- puts navigation inside the block
+- assumes a particular brand
+- doesn't work with the tutorial runtime
+
+From the External AI's perspective, its job is complete.
+
+From **Project LLM's perspective, the candidate is invalid**.
+
+Therefore Project LLM must communicate the platform contract **before implementation**, not discover all of these problems after the fact.
+
+---
+
+# 4. What Project LLM does BEFORE talking to External AI
+
+This is where W1 and W2 become very important.
+
+Suppose the user selects:
+
+```text
+Visual
+V1
+```
+
+Project LLM first creates:
+
+```text
+WorkflowTarget
+```
+
+Then TypeScript/Node repository intelligence produces a repository snapshot.
+
+Python/FastAPI Project AI consumes that snapshot.
+
+It discovers the actual implementation pattern used by the repository.
+
+It should not merely say:
+
+> I1 has X files, C1 has Y files, D1 has Z files.
+
+It needs to derive the **common platform contract**.
+
+---
+
+# 5. The common contract is extracted from I1/C1/D1
+
+For example, Project LLM may establish:
+
+### Common responsibility 1 — block implementation
+
+Each reference has a canonical React block implementation.
+
+Therefore:
+
+```text
+Visual V1
+MUST have
+a canonical React block implementation.
+```
+
+---
+
+### Common responsibility 2 — version identity
+
+The renderer and/or component enforce supported versions.
+
+Therefore:
+
+```text
+Visual V1
+MUST explicitly identify itself as:
+
+type = visual
+version = V1
+```
+
+It cannot be an unversioned:
+
+```text
+type = visual
+```
+
+component.
+
+---
+
+### Common responsibility 3 — UBRC identity
+
+The common pattern exposes:
+
+```html
+data-block-id
+data-block-type
+data-block-version
+```
+
+Therefore Visual V1 must expose the same runtime identity.
+
+For example:
+
+```html
+<article
+  data-block-id="..."
+  data-block-type="visual"
+  data-block-version="V1"
+>
+```
+
+The External AI doesn't have to understand the entire telemetry architecture.
+
+It only has to implement the contract.
+
+---
+
+# 6. Project LLM explains ILS differently
+
+This is an important distinction.
+
+We should **not tell External AI**:
+
+> "Implement ILS."
+
+That could cause it to import ILS APIs and create its own telemetry.
+
+Instead the contract says:
+
+```text
+ILS CONTRACT
+
+Visual V1 participates in ILS passively.
+
+The block MUST:
+  - expose the required block identity
+  - remain compatible with the tutorial runtime
+  - NOT import ILS providers
+  - NOT call ILS APIs
+  - NOT persist learning state
+  - NOT implement telemetry transport
+  - NOT calculate lesson progress
+
+The platform runtime is responsible for ILS.
+```
+
+Then provide the conceptual runtime relationship:
+
+```text
+Visual V1
+    │
+    │ DOM identity
+    ▼
+ActiveBlockContext
+    │
+    ▼
+ILSProvider
+    │
+    ▼
+ILS infrastructure
+```
+
+That is much clearer to an External AI that knows nothing about our project.
+
+---
+
+# 7. Same principle for LSNB
+
+We don't tell External AI:
+
+> "Make Visual V1 support LSNB."
+
+That is ambiguous.
+
+Instead:
+
+```text
+LSNB CONTRACT
+
+Visual V1 MUST NOT implement lesson navigation.
+
+Do NOT create:
+  - Next button
+  - Previous button
+  - lesson navigation
+  - sidebar navigation
+  - lesson progress navigation
+
+LSNB is owned by the page-level tutorial shell.
+
+Visual V1 is only a content block.
+```
+
+Conceptually:
+
+```text
+TutorialPageShell
+ ├── LSNB
+ ├── RSSB
+ └── Tutorial content
+       └── Visual V1
+```
+
+Now there is no ambiguity.
+
+---
+
+# 8. RSSB is communicated the same way
+
+The contract says:
+
+```text
+RSSB CONTRACT
+
+Visual V1 MUST NOT implement:
+  - reading progress
+  - lesson progress
+  - completion percentage
+  - page-level progress UI
+
+RSSB belongs to the tutorial page/runtime layer.
+
+Visual V1 only exposes its block identity and content.
+```
+
+Again, the External AI doesn't need to know the entire RSSB architecture.
+
+It needs to know its **boundary**.
+
+---
+
+# 9. Tutorial Composer is a critical part of the handoff
+
+This is one of the most important parts that the External AI must understand.
+
+We don't want:
+
+```text
+VisualV1Block.tsx
+```
+
+to be a standalone React component that happens to work in a demo.
+
+It must become an **authorable Tutorial Composer block**.
+
+So the Engineering Contract explicitly says:
+
+```text
+COMPOSER CONTRACT
+
+Visual V1 must be:
+
+1. discoverable by Tutorial Composer
+2. selectable as a Visual block
+3. authorable through the canonical schema
+4. serializable into TutorialDocument data
+5. renderable by TutorialBlockRenderer
+6. compatible with Composer Preview
+7. compatible with learner runtime rendering
+```
+
+And Project LLM provides the **actual repository references** discovered from I1/C1/D1.
+
+For example:
+
+```text
+REFERENCE:
+
+C1 Composer integration
+  packages/...
+  [actual discovered file]
+  [relevant symbol]
+  [evidence]
+
+D1 Composer integration
+  packages/...
+  [actual discovered file]
+  [relevant symbol]
+  [evidence]
+```
+
+Then:
+
+```text
+IMPLEMENTATION REQUIREMENT:
+
+Create the equivalent Visual V1 Composer integration
+using the repository's canonical registry pattern.
+```
+
+This is far better than telling the External AI:
+
+> "Add Visual V1 to Composer."
+
+---
+
+# 10. The External AI also needs the Renderer contract
+
+It needs to know the rendering chain:
+
+```text
+TutorialDocument
+      ↓
+TutorialBlockRenderer
+      ↓
+block.type
+      ↓
+block.version
+      ↓
+VisualV1Block
+```
+
+So the contract says:
+
+```text
+RENDERER CONTRACT
+
+Visual V1 must be routable through the canonical
+TutorialBlockRenderer.
+
+Expected resolution:
+
+type = "visual"
+version = "V1"
+
+        ↓
+
+VisualV1Block
+```
+
+And:
+
+```text
+Unsupported versions MUST NOT silently render
+as Visual V1.
+```
+
+For example:
+
+```text
+visual + V2
+```
+
+must not accidentally invoke:
+
+```text
+VisualV1Block
+```
+
+unless the repository's explicit version policy says otherwise.
+
+---
+
+# 11. The Schema contract
+
+The External AI needs another explicit boundary.
+
+The UI can be creatively designed, but its authoring data must be structured.
+
+Project LLM tells it:
+
+```text
+SCHEMA CONTRACT
+
+Visual V1 must have a canonical authoring schema.
+
+The schema must:
+
+- define the authorable content
+- validate required fields
+- be compatible with TutorialDocument
+- be consumable by Tutorial Composer
+- not embed runtime-only state
+- not embed brand-specific configuration
+- not embed ILS state
+- not embed navigation state
+```
+
+Then Project LLM gives the External AI the actual discovered reference schemas.
+
+For example:
+
+```text
+I1 schema
+C1 schema
+D1 schema
+
+Common characteristics:
+...
+```
+
+Then:
+
+```text
+Create equivalent Visual V1 authoring schema.
+```
+
+---
+
+# 12. Theme is another explicit contract
+
+This is especially important for your SUIA/RTH requirement.
+
+The External AI must understand:
+
+> **The human is designing the visual appearance, but the implementation cannot hard-code the platform brand.**
+
+So Project LLM should give a very explicit rule:
+
+```text
+THEME CONTRACT
+
+Visual V1 must receive visual theme values
+through the canonical tutorial runtime/theme mechanism.
+
+Do NOT hard-code:
+
+SUIA brand colors
+RTH brand colors
+SUIA logos
+RTH logos
+brand-specific navigation
+brand-specific typography assumptions
+```
+
+Instead:
+
+```text
+Visual V1
+    ↑
+    │ theme
+    │
+Tutorial Runtime
+```
+
+Then the same block can render under:
+
+```text
+SUIA Theme
+```
+
+or:
+
+```text
+RTH Theme
+```
+
+without changing the block implementation.
+
+---
+
+# 13. But what about the user's creative design?
+
+This is where the contract must clearly separate **creative freedom** from **platform constraints**.
+
+Suppose you and External AI agree on this Visual V1:
+
+```text
+┌──────────────────────────────────────┐
+│        HOW HTTP REQUEST WORKS        │
+│                                      │
+│  Browser → Request → Server          │
+│                    ↓                 │
+│                  Response            │
+│                                      │
+│   [interactive animation]            │
+│                                      │
+│   Explanation text                   │
+└──────────────────────────────────────┘
+```
+
+Project LLM should **not redesign it**.
+
+Instead:
+
+```text
+USER / EXTERNAL AI OWNS
+
+✓ layout
+✓ illustration
+✓ animation
+✓ spacing
+✓ interaction concept
+✓ educational presentation
+✓ visual hierarchy
+✓ component aesthetics
+```
+
+while:
+
+```text
+PROJECT LLM OWNS
+
+✓ version contract
+✓ schema compatibility
+✓ renderer integration
+✓ Composer integration
+✓ UBRC
+✓ runtime boundaries
+✓ ILS boundary
+✓ LSNB boundary
+✓ RSSB boundary
+✓ theme/brand boundary
+✓ repository placement
+✓ verification
+✓ certification
+```
+
+That is the clean division.
+
+---
+
+# 14. So the External AI gets TWO inputs
+
+This is the model I recommend.
+
+```text
+                  EXTERNAL AI
+                       ▲
+             ┌─────────┴─────────┐
+             │                   │
+       HUMAN DESIGN         PROJECT LLM CONTRACT
+             │                   │
+             │                   │
+       "Make it look       "Make it work
+        like this"          like this"
+             │                   │
+             └─────────┬─────────┘
+                       │
+                       ▼
+                 Visual V1
+                 Candidate
+```
+
+### Input A — Human
+
+The human provides:
+
+```text
+Visual concept
+UX
+UI
+educational intent
+prototype
+screenshots
+interaction requirements
+```
+
+### Input B — Project LLM
+
+Project LLM provides:
+
+```text
+platform implementation contract
+repository evidence
+reference implementations
+schema rules
+renderer rules
+Composer rules
+runtime rules
+theme rules
+ILS rules
+LSNB rules
+RSSB rules
+brand rules
+testing rules
+delivery rules
+```
+
+The External AI combines both.
+
+---
+
+# 15. The handoff should actually contain examples
+
+This is important.
+
+We should not give External AI only prose.
+
+For example:
+
+```text
+REFERENCE IMPLEMENTATION PATTERN
+
+I1:
+  component: [actual discovered path]
+  schema: [actual discovered path]
+  renderer: [actual discovered path]
+  composer: [actual discovered path]
+
+C1:
+  component: [actual discovered path]
+  schema: [actual discovered path]
+  renderer: [actual discovered path]
+  composer: [actual discovered path]
+
+D1:
+  component: [actual discovered path]
+  schema: [actual discovered path]
+  renderer: [actual discovered path]
+  composer: [actual discovered path]
+```
+
+Then:
+
+```text
+COMMON PATTERN DERIVED
+
+All three demonstrate:
+
+1. version-aware block identity
+2. schema-driven authoring
+3. renderer dispatch
+4. Composer discoverability
+5. UBRC
+6. passive runtime participation
+7. theme-driven visual treatment
+8. page-level navigation/progress separation
+```
+
+And then:
+
+```text
+VISUAL V1 MUST IMPLEMENT THE SAME
+PLATFORM CONTRACT.
+```
+
+This is the part Project LLM is uniquely responsible for.
+
+---
+
+# 16. The External AI should receive a checklist
+
+For example:
+
+```text
+VISUAL V1 IMPLEMENTATION CHECKLIST
+
+[ ] VisualV1Block created
+[ ] Visual V1 version identity implemented
+[ ] data-block-id implemented
+[ ] data-block-type="visual"
+[ ] data-block-version="V1"
+
+[ ] Visual V1 authoring schema created
+[ ] TutorialDocument compatible
+
+[ ] TutorialBlockRenderer routing added
+[ ] unsupported version rejected
+
+[ ] Tutorial Composer registry integration added
+[ ] Composer can discover Visual V1
+[ ] Composer can author Visual V1
+[ ] Composer preview renders Visual V1
+
+[ ] no direct ILS dependency
+[ ] no direct telemetry API
+[ ] no learning-state persistence
+
+[ ] no LSNB implementation
+[ ] no RSSB implementation
+
+[ ] theme received through runtime contract
+[ ] no SUIA hard-coding
+[ ] no RTH hard-coding
+
+[ ] learner runtime rendering works
+
+[ ] tests added
+```
+
+Now the External AI has a concrete target.
+
+---
+
+# 17. And the contract must explicitly tell External AI what NOT to do
+
+This is just as important.
+
+For example:
+
+```text
+PROHIBITED
+
+DO NOT:
+
+1. modify ILS architecture
+2. create an ILS provider
+3. call ILS APIs directly
+4. create LSNB
+5. create RSSB
+6. create tutorial navigation
+7. create a second renderer
+8. create a second Composer
+9. create another workflow
+10. create brand-specific implementations
+11. hard-code SUIA branding
+12. hard-code RTH branding
+13. bypass TutorialBlockRenderer
+14. bypass Tutorial Composer
+15. invent repository destinations
+16. modify unrelated canonical blocks
+17. claim certification
+```
+
+This dramatically reduces External AI hallucination.
+
+---
+
+# 18. Then the External AI's output is also structured
+
+We shouldn't simply say:
+
+> "Send us your code."
+
+The contract should specify:
+
+```text
+DELIVERY PACKAGE
+
+VisualV1/
+├── implementation/
+├── schema/
+├── composer/
+├── renderer/
+├── tests/
+├── preview/
+└── manifest.json
+```
+
+with a machine-readable manifest:
+
+```json
+{
+  "family": "visual",
+  "version": "V1",
+  "contractHash": "abc123",
+  "artifacts": [
+    "...",
+    "...",
+    "..."
+  ]
+}
+```
+
+The exact structure can be finalized by B02/B05 based on the repository, but the principle is important:
+
+**the candidate identifies which contract it claims to implement.**
+
+---
+
+# 19. Project LLM then verifies — it does NOT trust External AI
+
+This is the second half of the architecture.
+
+External AI says:
+
+```text
+"I implemented Visual V1."
+```
+
+Project LLM responds:
+
+```text
+Let's verify that.
+```
+
+It performs:
+
+```text
+Candidate
+   ↓
+Target Binding
+   ↓
+Artifact Inspection
+   ↓
+Canonical Comparison
+   ↓
+Schema Validation
+   ↓
+Renderer Validation
+   ↓
+Composer Validation
+   ↓
+UBRC Validation
+   ↓
+Runtime Validation
+   ↓
+Theme Validation
+   ↓
+Brand Validation
+   ↓
+ILS Boundary Validation
+   ↓
+LSNB/RSSB Boundary Validation
+   ↓
+Tests
+```
+
+So External AI's declaration is **never evidence of correctness**.
+
+---
+
+# 20. This also explains why the W-series is necessary
+
+Now you can see what each backend wave is really doing for this handoff.
+
+### W1
+
+Answers:
+
+> What exactly is Visual V1 and what repository evidence defines its target?
+
+### W2
+
+Answers:
+
+> What must we tell the External AI before it writes code?
+
+This produces the **Engineering Contract**.
+
+### W3
+
+Answers:
+
+> Does the External AI's candidate actually implement that contract?
+
+### W4/W5
+
+Answers:
+
+> Is the human approving this exact candidate, and can it be safely integrated?
+
+### W6
+
+Answers:
+
+> Does the resulting implementation actually work across Composer/runtime/browser/theme/brand?
+
+### W7
+
+Answers:
+
+> Do we have enough evidence to call this implementation certification-ready?
+
+Then F-series makes all of this usable through the browser.
+
+---
+
+# 21. The final handoff should therefore look like this
+
+When you reach External AI, the UI should effectively show:
+
+```text
+┌──────────────────────────────────────────────────┐
+│ PROJECT LLM — EXTERNAL AI HANDOFF                │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│ Target                                           │
+│   Visual V1                                      │
+│                                                  │
+│ Human Design                                     │
+│   ✓ Approved prototype                           │
+│                                                  │
+│ Engineering Contract                             │
+│   EC-VISUAL-V1-001                               │
+│   SHA-256: abc123...                             │
+│                                                  │
+│ Canonical Reference Pattern                      │
+│   I1 ✓                                           │
+│   C1 ✓                                           │
+│   D1 ✓                                           │
+│                                                  │
+│ Required                                         │
+│   ✓ React implementation                         │
+│   ✓ Schema                                        │
+│   ✓ Renderer routing                             │
+│   ✓ Composer registration                        │
+│   ✓ UBRC                                          │
+│   ✓ Runtime compatibility                        │
+│   ✓ Theme compatibility                          │
+│   ✓ Tests                                         │
+│                                                  │
+│ Runtime boundaries                               │
+│   ✓ Passive ILS                                  │
+│   ✓ Page-level LSNB                              │
+│   ✓ Page-level RSSB                              │
+│                                                  │
+│ Brand                                             │
+│   ✓ Brand independent                            │
+│                                                  │
+│ Prohibited                                       │
+│   ✗ Direct ILS                                   │
+│   ✗ Navigation inside block                     │
+│   ✗ Progress inside block                       │
+│   ✗ SUIA hard-coding                             │
+│   ✗ RTH hard-coding                              │
+│   ✗ Independent renderer                         │
+│                                                  │
+│ Contract                                          │
+│   [ DOWNLOAD / COPY HANDOFF ]                    │
+│                                                  │
+└──────────────────────────────────────────────────┘
+```
+
+The External AI then receives the **same machine-readable contract**, not merely the visual screen.
+
+---
+
+# 22. One subtle but very important correction
+
+I would **not** hard-code in the Engineering Contract that:
+
+> "Visual V1 must use exactly these five files."
+
+That would make Project LLM brittle.
+
+Instead:
+
+```text
+WRONG
+
+Visual V1 MUST create:
+A.tsx
+B.ts
+C.ts
+D.ts
+E.ts
+```
+
+Prefer:
+
+```text
+CORRECT
+
+Visual V1 MUST provide these capabilities:
+
+1. canonical block implementation
+2. canonical authoring schema
+3. renderer discoverability/routing
+4. Composer discoverability/authoring
+5. runtime identity
+6. tests
+
+Repository Intelligence provides the
+canonical locations and implementation pattern
+for these capabilities.
+```
+
+Then the actual repository snapshot tells Project LLM where I1/C1/D1 implement those capabilities.
+
+This is why we have **Repository Contract Intelligence** in W1.
+
+---
+
+# 23. So the complete conceptual contract is
+
+```text
+                    USER
+                     │
+                     │ UI/UX + educational intent
+                     ▼
+               EXTERNAL AI
+                     ▲
+                     │
+        ┌────────────┴─────────────┐
+        │ PROJECT LLM HANDOFF      │
+        │                          │
+        │ Target: Visual V1        │
+        │                          │
+        │ Common platform contract │
+        │ derived from I1/C1/D1    │
+        │                          │
+        │ Schema                   │
+        │ Renderer                 │
+        │ Composer                 │
+        │ UBRC                     │
+        │ Runtime                  │
+        │ ILS boundary             │
+        │ LSNB boundary            │
+        │ RSSB boundary            │
+        │ Theme                    │
+        │ Brand                    │
+        │ Tests                    │
+        │ Repository evidence      │
+        └────────────┬─────────────┘
+                     │
+                     ▼
+              VISUAL V1 CANDIDATE
+                     │
+                     ▼
+               PROJECT LLM
+                  VERIFY
+                     │
+        ┌────────────┼────────────┐
+        ▼            ▼            ▼
+     Composer     Runtime       Browser
+     Schema       ILS           Theme
+     Renderer     UBRC          Brand
+        │            │            │
+        └────────────┼────────────┘
+                     ▼
+                  EVIDENCE
+                     ▼
+             CERTIFICATION READY
+                     ▼
+                HUMAN GATE 2
+                     ▼
+                 CERTIFIED
+```
+
+**That is the logic I intend the W2 Engineering Contract to implement.**
+
+The key idea is: **the External AI doesn't need to know our architecture because Project LLM temporarily turns our architecture into an explicit, self-contained contract that the External AI can understand and implement against. Then Project LLM independently verifies the result.**
+
+That is also why I would treat the **Engineering Contract as one of the most important deliverables of W2**. If that contract is weak, everything downstream becomes guesswork. If it is precise, the External AI can be completely ignorant of our repository and still produce a candidate that follows the same architectural rules as I1, C1 and D1.
+
+so yes provide detailed implementation with code for all above discussion implementation to be successfully implemented how this implementation and code will be diviided between multiple workflow agent of project AI model which all to be run sequentially and which all to be run parallely please guide and log all testing result output so that once uploaded on github you can cross check and get more understanding on it correct?
