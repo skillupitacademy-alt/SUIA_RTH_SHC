@@ -131,13 +131,9 @@ export default function CandidateUploadPage() {
   ];
 
   const handleRerun = () => {
-    setIsValidating(true);
-    setProgress(20);
-    setTimeout(() => setProgress(60), 400);
-    setTimeout(() => {
-      setProgress(100);
-      setIsValidating(false);
-    }, 900);
+    // Validation is not wired to the backend yet. Never simulate a successful run.
+    setProgress(0);
+    setIsValidating(false);
   };
 
   return (
