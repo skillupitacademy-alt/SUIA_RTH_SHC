@@ -339,7 +339,7 @@ class TestAgentCoordinator:
         assert result.agent_id == "candidate_certification"
         assert result.status == AgentStatus.SUCCESS
         assert result.outputs["certification_passed"] is True
-        assert result.outputs["verdict"] == "CERTIFIED"
+        assert result.outputs["verdict"] == "CERTIFICATION_READY"
     
     @pytest.mark.asyncio
     async def test_certification_agent_rejects_on_failure(self, coordinator, sample_context):
