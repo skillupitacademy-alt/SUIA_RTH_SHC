@@ -99,7 +99,7 @@ async def submit_for_approval(
 
 
 @router.get("/pending", response_model=list[ApprovalRecord])
-async def get_pending_approvals(user: AuthenticatedPrincipal = Depends(get_current_user)):
+async def get_pending_approvals(user: AuthenticatedPrincipal = Depends(require_contract_admin)):
     """
     Get all pending approval records.
     
@@ -147,7 +147,7 @@ async def get_approval_status(
 async def approve_manifest(
     approval_id: str,
     request: ApprovalDecisionRequest,
-    user: AuthenticatedPrincipal = Depends(get_current_user)
+    user: AuthenticatedPrincipal = Depends(require_contract_admin)
 ):
     """
     Approve a pending manifest.
@@ -609,7 +609,7 @@ async def get_implementation_approval(
 async def reject_manifest(
     approval_id: str,
     request: ApprovalRejectRequest,
-    user: AuthenticatedPrincipal = Depends(get_current_user)
+    user: AuthenticatedPrincipal = Depends(require_contract_admin)
 ):
     """
     Reject a pending manifest.

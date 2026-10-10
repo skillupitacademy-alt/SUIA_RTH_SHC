@@ -280,7 +280,7 @@ async def get_workflow_history(
 async def bind_artifact(
     workflow_id: str,
     request: BindArtifactRequest,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     session: AsyncSession = Depends(get_db_session)
 ) -> WorkflowResponse:
@@ -344,7 +344,7 @@ async def list_workflows(
 async def create_placement(
     workflow_id: str,
     request: CreatePlacementRequest,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     placement_engine: PlacementEngine = Depends(get_placement_engine),
     session: AsyncSession = Depends(get_db_session)
 ) -> PlacementEngineResponse:
@@ -398,7 +398,7 @@ async def override_placement(
     workflow_id: str,
     candidate_id: str,
     request: PlacementOverrideRequest,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     placement_engine: PlacementEngine = Depends(get_placement_engine),
     session: AsyncSession = Depends(get_db_session)
 ) -> PlacementEngineResponse:

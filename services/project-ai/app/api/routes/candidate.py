@@ -373,7 +373,7 @@ async def upload_candidate(
 @router.post("/{candidate_id}/classify", response_model=ClassificationResult)
 async def classify_candidate(
     candidate_id: str,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository)
 ):
     """
@@ -567,7 +567,7 @@ async def compare_candidate(
 @router.post("/{candidate_id}/manifest", response_model=PlacementManifest)
 async def generate_manifest(
     candidate_id: str,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     manifest_repo: ManifestRepository = Depends(get_manifest_repository),
     session: AsyncSession = Depends(get_db_session),

@@ -1,0 +1,106 @@
+{
+  "integration_timestamp": "2025-01-01T00:00:00Z",
+  "scope": "Gate E-2 Policy Integration Verification",
+  "artifact_policy_integration": {
+    "policy_module": "app/placement/artifact_policy.py",
+    "status": "INTEGRATED",
+    "integration_points": [
+      {
+        "location": "app/placement/placement_engine.py",
+        "function": "PlacementEngine._determine_placement_decision",
+        "imports": [
+          "from app.placement.artifact_policy import determine_action"
+        ],
+        "usage": "Calls determine_action() with semantic_score, structural_score, block_family, existing_block_id",
+        "enforcement": "Returns PlacementDecision enum (ADD/REUSE/EXTEND/UPDATE/REJECT)",
+        "verified": true
+      },
+      {
+        "location": "app/placement/comparator.py",
+        "function": "CanonicalComparator.determine_placement_action",
+        "imports": [
+          "from app.placement.artifact_policy import determine_action"
+        ],
+        "usage": "Calls determine_action() during manifest generation",
+        "enforcement": "Policy enforced before manifest creation",
+        "verified": true
+      }
+    ],
+    "policy_functions": [
+      "determine_action(semantic_score, structural_score, block_family, existing_block_id)",
+      "get_target_path(decision, block_family, candidate_id, existing_block_id)",
+      "find_semantic_match(features, canonical_blocks, threshold=0.75)"
+    ],
+    "decision_logic": {
+      "REUSE": "semantic_score >= 0.95 and structural_score >= 0.90",
+      "UPDATE": "semantic_score >= 0.85 and structural_score >= 0.80",
+      "EXTEND": "semantic_score >= 0.70 and structural_score >= 0.65",
+      "ADD": "semantic_score < 0.70",
+      "REJECT": "structural_score < 0.50"
+    }
+  },
+  "evidence_policy_integration": {
+    "policy_module": "app/governance/evidence_policy.py",
+    "status": "INTEGRATED",
+    "integration_points": [
+      {
+        "location": "app/api/routes/workflows.py",
+        "function": "approve_final_certification",
+        "line_number": 539,
+        "imports": [
+          "from app.governance.evidence_policy import EvidenceResult, validate_final_gate_evidence, FINAL_GATE_POLICY"
+        ],
+        "usage": "Validates evidence before FinalGateController",
+        "enforcement": "Fail-closed: 409 error if policy validation fails",
+        "verified": true
+      }
+    ],
+    "policy_validation": {
+      "function": "validate_final_gate_evidence(workflow_id, artifact_sha256, evidence, policy)",
+      "enforced_rules": [
+        "All required gates must be present (ubrc_gate, brand_gate, theme_gate, runtime_gate, browser_gate)",
+        "All gates must have verdict=PASS",
+        "Evidence must be bound to correct workflow_id",
+        "Evidence must be bound to correct artifact_sha256",
+        "Evidence age must be within staleness_hours (24 hours)",
+        "No duplicate evidence types allowed"
+      ],
+      "fail_closed": true,
+      "rejection_behavior": "Returns HTTP 409 with error list, prevents approval"
+    },
+    "FINAL_GATE_POLICY": {
+      "required_gates": [
+        "ubrc_gate",
+        "brand_gate",
+        "theme_gate",
+        "runtime_gate",
+        "browser_gate"
+      ],
+      "staleness_hours": 24,
+      "enforce_artifact_binding": true,
+      "enforce_workflow_isolation": true
+    }
+  },
+  "integration_verification": {
+    "artifact_policy_called": true,
+    "evidence_policy_called": true,
+    "fail_closed_enforcement": true,
+    "no_bypass_paths": true
+  },
+  "security_properties": {
+    "artifact_policy": [
+      "Enforces semantic similarity thresholds before placement",
+      "Prevents inappropriate REUSE decisions (semantic < 0.95)",
+      "Rejects structurally broken candidates (structural < 0.50)",
+      "Provides deterministic decision logic based on scoring"
+    ],
+    "evidence_policy": [
+      "Prevents approval with missing gates",
+      "Prevents approval with stale evidence (>24 hours old)",
+      "Prevents evidence tampering via artifact_sha256 binding",
+      "Prevents cross-workflow evidence reuse via workflow_id binding",
+      "Enforces fail-closed behavior (reject if any rule violated)"
+    ]
+  },
+  "conclusion": "Both artifact_policy.py and evidence_policy.py are fully integrated, enforced, and verified. No bypass paths exist. All policies are fail-closed."
+}

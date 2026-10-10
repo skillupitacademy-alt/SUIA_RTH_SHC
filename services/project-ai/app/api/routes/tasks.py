@@ -23,7 +23,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Depends
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, require_contract_admin
 from app.auth.types import AuthenticatedPrincipal
 from app.api.schemas.models import (
     TaskActionResponse,
@@ -102,7 +102,7 @@ async def get_task_status(
 @router.post("/{task_id}/approve", response_model=TaskActionResponse)
 async def approve_task(
     task_id: str,
-    user: dict = Depends(get_current_user)
+    user: dict = Depends(require_contract_admin)
 ):
     """
     Approve a task that is waiting for approval.
@@ -147,7 +147,7 @@ async def approve_task(
 @router.post("/{task_id}/reject", response_model=TaskActionResponse)
 async def reject_task(
     task_id: str,
-    user: dict = Depends(get_current_user)
+    user: dict = Depends(require_contract_admin)
 ):
     """
     Reject a task that is waiting for approval.

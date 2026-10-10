@@ -133,7 +133,7 @@ def calculate_snapshot_sha256(workspace_root: str) -> str:
 @router.post("/{workflow_id}/engineering-contract", response_model=EngineeringContract)
 async def create_engineering_contract(
     workflow_id: str,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     contract_repo: ContractRepository = Depends(get_contract_repository),
     session: AsyncSession = Depends(get_db_session)
