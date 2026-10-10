@@ -90,34 +90,23 @@ export default function ExternalAiHandoffPage() {
   ];
 
   const handleCopyPrompt = () => {
-    const prompt = `You are an expert Frontend & Educational Technology Engineer.
-Your task is to implement Block Family: ${state.familyName} (${state.familyId}), Version: ${state.targetVersion}.
+    if (!engineeringContract) {
+      setContractError('Load the backend-generated engineering contract before copying an implementation prompt.');
+      return;
+    }
+    const prompt = `Use the following immutable, backend-generated Project LLM engineering contract as the sole implementation authority. Do not invent missing requirements. If the contract conflicts with generic guidance, the contract wins.
 
-PURPOSE:
-${state.purpose}
+WORKFLOW ID: ${workflowId.trim()}
+CONTRACT HASH: ${String(engineeringContract.contract_hash)}
 
-EXISTING VERSIONS IN FAMILY:
-${state.existingVersions.join(', ')}
+ENGINEERING CONTRACT JSON:
+${JSON.stringify(engineeringContract, null, 2)}
 
-PHASE 1: DESIGN PROTOTYPE
-1. Semantic HTML5 layout with clean markup
-2. Responsive CSS design matching modern card aesthetic
-3. Interactive vanilla JavaScript logic
-4. Sample content JSON schema
-
-PHASE 2: REACT / TYPESCRIPT IMPLEMENTATION
-1. Component: ${state.familyName}${state.targetVersion}.tsx
-2. Type Definitions: types.ts
-3. JSON Schema: schema.json
-4. Registry Entry: Block family registration UID
-5. Composer Renderer: Composer preview & property controls
-6. Unit Tests: __tests__/${state.familyName}${state.targetVersion}.test.tsx
-
-Deliver the output as a structured package adhering to all repository standards.`;
-
-    navigator.clipboard.writeText(prompt);
-    setCopiedPrompt(true);
-    setTimeout(() => setCopiedPrompt(false), 2000);
+Implement only against this contract. Preserve family/version bindings and report unmet acceptance criteria as BLOCKED, never PASS.`;
+    void navigator.clipboard.writeText(prompt).then(() => {
+      setCopiedPrompt(true);
+      setTimeout(() => setCopiedPrompt(false), 2000);
+    }).catch(() => setContractError('Clipboard access failed. Copy the loaded contract JSON directly instead.'));
   };
 
   const handleCopyBrief = () => {
@@ -191,6 +180,50 @@ Generated autonomously by Project LLM Control Plane.`;
 
       {/* Context Banner */}
       <ProjectLlmContextBanner />
+
+      {/* Canonical backend contract: generic client-side briefs are not authoritative. */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <h2 className="text-base font-bold text-slate-900">Canonical Engineering Contract</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Enter an existing persisted workflow ID to retrieve its immutable contract from Project AI. The returned workflow ID and contract hash are checked before the contract can be used in the external-AI prompt.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            aria-label="Persisted workflow ID"
+            value={workflowId}
+            onChange={(event) => { setWorkflowId(event.target.value); setEngineeringContract(null); setContractError(null); }}
+            placeholder="Persisted workflow ID"
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900"
+          />
+          <button
+            type="button"
+            onClick={loadEngineeringContract}
+            disabled={contractLoading || !workflowId.trim()}
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {contractLoading ? 'Loading contract…' : 'Load backend contract'}
+          </button>
+        </div>
+        {contractError && <p role="alert" className="text-sm text-rose-700">{contractError}</p>}
+        {engineeringContract && (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              Contract retrieved and identity-bound. Workflow: <strong>{String(engineeringContract.workflow_id)}</strong>
+              <div className="mt-1 break-all font-mono text-xs">SHA-256: {String(engineeringContract.contract_hash)}</div>
+            </div>
+            <pre className="max-h-72 overflow-auto rounded-lg bg-slate-950 p-3 text-xs text-slate-100">{JSON.stringify(engineeringContract, null, 2)}</pre>
+            <button
+              type="button"
+              onClick={handleCopyPrompt}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              Copy prompt from canonical contract
+            </button>
+          </div>
+        )}
+      </section>
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
