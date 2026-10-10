@@ -27,9 +27,10 @@ const defaultState: ProjectLlmWorkflowState = {
   existingVersions: ['I1', 'I2', 'I3', 'I4', 'I5', 'I6'],
   isNewVersion: true,
   prototypeUploaded: false,
-  candidateUploaded: true,
-  validationStarted: true,
-  validationCompleted: true,
+  // UI defaults are presentation only; the backend must confirm each lifecycle state.
+  candidateUploaded: false,
+  validationStarted: false,
+  validationCompleted: false,
   certificationCompleted: false,
 };
 
