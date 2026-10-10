@@ -1,0 +1,17 @@
+{
+  "wave": "1D",
+  "description": "RBAC enforcement on privileged routes",
+  "status": "CERTIFIED",
+  "commit": "2c2e30e63b118dba89566f0a8c5b5708fbc6d853",
+  "privilegedRoutesCovered": [
+    "POST /workflows",
+    "POST /workflows/{id}/approve-final",
+    "POST /approvals/workflows/{id}/approve-placement",
+    "POST /candidates/{id}/execute"
+  ],
+  "testsAdded": 14,
+  "totalSecurityTests": 40,
+  "authCoveragePercent": 87,
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\2026-10-10-084223-wave1d-review-doc.md",
+  "certifiedAt": "2026-01-10T08:45:00Z"
+}
