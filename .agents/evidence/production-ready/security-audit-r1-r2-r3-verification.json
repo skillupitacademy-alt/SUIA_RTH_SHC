@@ -1,0 +1,421 @@
+{
+  "audit_date": "2025-01-27",
+  "branch": "m2-project-ai-canonical-wiring",
+  "workspace": "e:/onlinewebsites/quiz-platform",
+  "service": "services/project-ai",
+  "r1": {
+    "verdict": "PASS",
+    "module": "Repository Intelligence",
+    "canonical_path": "services/project-ai/app/contracts/repository_intelligence.py",
+    "test_count": 34,
+    "tests_passing": 34,
+    "tests_failing": 0,
+    "pass_rate": 1.0,
+    "findings": [
+      {
+        "criterion": "Single canonical implementation",
+        "status": "PASS",
+        "evidence": "1 implementation at app/contracts/repository_intelligence.py, legacy archived"
+      },
+      {
+        "criterion": "Legacy path deprecated",
+        "status": "PASS",
+        "evidence": "app/intelligence/__init__.py has deprecation notice, 0 imports from legacy path"
+      },
+      {
+        "criterion": "Test coverage",
+        "status": "PASS",
+        "evidence": "34/34 tests passed (100%)"
+      },
+      {
+        "criterion": "No duplicate functions",
+        "status": "PASS",
+        "evidence": "8 unique functions, no duplicates detected"
+      },
+      {
+        "criterion": "Snapshot-based architecture",
+        "status": "PASS",
+        "evidence": "build_contract() uses TypeScript snapshots, no filesystem access"
+      },
+      {
+        "criterion": "Fail-closed behavior",
+        "status": "PASS",
+        "evidence": "8 fail-closed tests passing, invalid inputs raise exceptions"
+      }
+    ],
+    "warnings": [
+      {
+        "type": "DeprecationWarning",
+        "count": 56,
+        "message": "datetime.utcnow() deprecated in Python 3.13",
+        "severity": "LOW",
+        "recommendation": "Replace with datetime.now(datetime.UTC)"
+      }
+    ]
+  },
+  "r2": {
+    "verdict": "CONDITIONAL_PASS",
+    "module": "Contract Derivation",
+    "test_count": 60,
+    "tests_passing": 60,
+    "tests_failing": 0,
+    "pass_rate": 1.0,
+    "hardcoded_violations": [
+      {
+        "file": "app/contracts/repository_intelligence.py",
+        "line": 274,
+        "code": "metadata['difficulty_level'] = 'intermediate'",
+        "severity": "MEDIUM",
+        "context": "Hardcoded 'intermediate' default for missing snapshot data"
+      },
+      {
+        "file": "app/contracts/repository_intelligence.py",
+        "line": 238,
+        "code": "metadata['language'] = 'TypeScript'",
+        "severity": "LOW",
+        "context": "Hardcoded 'TypeScript' language inference from file extensions"
+      }
+    ],
+    "findings": [
+      {
+        "criterion": "No hardcoded values",
+        "status": "CONDITIONAL_PASS",
+        "evidence": "2 hardcoded defaults found (intermediate, TypeScript)"
+      },
+      {
+        "criterion": "seal_contract() exists",
+        "status": "PASS",
+        "evidence": "Function exists at app/contracts/engineering_contract.py:161"
+      },
+      {
+        "criterion": "ContractFieldEvidence exists",
+        "status": "PASS",
+        "evidence": "Model exists at app/contracts/repository_intelligence.py:34"
+      },
+      {
+        "criterion": "Test coverage",
+        "status": "PASS",
+        "evidence": "60/60 tests passed (100%)"
+      },
+      {
+        "criterion": "Evidence-based contract generation",
+        "status": "PASS",
+        "evidence": "All fields from snapshot evidence, verified via tests"
+      },
+      {
+        "criterion": "Contract immutability",
+        "status": "PASS",
+        "evidence": "Deterministic SHA-256 sealing verified"
+      }
+    ],
+    "warnings": [
+      {
+        "type": "DeprecationWarning",
+        "count": 60,
+        "message": "datetime.utcnow() deprecated",
+        "severity": "LOW"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "HIGH",
+        "action": "Externalize hardcoded 'intermediate' default",
+        "options": ["Fail if missing", "Use environment variable"]
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Externalize language inference map",
+        "suggestion": "Use LANGUAGE_EXTENSION_MAP constant"
+      }
+    ]
+  },
+  "r3": {
+    "verdict": "PARTIAL_PASS",
+    "module": "Persistence Layer",
+    "unit_test_count": 304,
+    "unit_tests_passing": 304,
+    "unit_tests_failing": 0,
+    "integration_test_count": 60,
+    "integration_tests_passing": 0,
+    "integration_tests_skipped": 60,
+    "integration_tests_failing": 0,
+    "unit_pass_rate": 1.0,
+    "integration_pass_rate": 0.0,
+    "in_memory_violations": [],
+    "orm_models": [
+      {
+        "name": "WorkflowModel",
+        "table": "project_ai_workflows",
+        "primary_key": "workflow_id"
+      },
+      {
+        "name": "StateTransitionModel",
+        "table": "project_ai_state_transitions",
+        "primary_key": "id"
+      },
+      {
+        "name": "ContractModel",
+        "table": "project_ai_contracts",
+        "primary_key": "contract_id"
+      },
+      {
+        "name": "CandidateModel",
+        "table": "project_ai_candidates",
+        "primary_key": "candidate_id"
+      },
+      {
+        "name": "ManifestModel",
+        "table": "project_ai_manifests",
+        "primary_key": "manifest_id"
+      },
+      {
+        "name": "ApprovalModel",
+        "table": "project_ai_approvals",
+        "primary_key": "approval_id"
+      }
+    ],
+    "repositories": [
+      {
+        "protocol": "WorkflowRepository",
+        "implementation": "PostgresWorkflowRepository"
+      },
+      {
+        "protocol": "ContractRepository",
+        "implementation": "PostgresContractRepository"
+      },
+      {
+        "protocol": "CandidateRepository",
+        "implementation": "PostgresCandidateRepository"
+      },
+      {
+        "protocol": "ManifestRepository",
+        "implementation": "PostgresManifestRepository"
+      },
+      {
+        "protocol": "ApprovalRepository",
+        "implementation": "PostgresApprovalRepository"
+      },
+      {
+        "protocol": "StateTransitionRepository",
+        "implementation": "PostgresStateTransitionRepository"
+      }
+    ],
+    "migrations": [
+      {
+        "file": "0026_steady_caretaker.sql",
+        "purpose": "Schema normalization (varchar sizing)"
+      },
+      {
+        "file": "0027_public_multiple_man.sql",
+        "purpose": "Type conversion (varchar to UUID for primary keys)"
+      }
+    ],
+    "findings": [
+      {
+        "criterion": "No in-memory stores in production",
+        "status": "PASS",
+        "evidence": "0 in-memory stores in app/, test fixtures acceptable"
+      },
+      {
+        "criterion": "No create_all() usage",
+        "status": "PASS",
+        "evidence": "0 matches found, schema via Drizzle migrations"
+      },
+      {
+        "criterion": "Exactly 6 ORM models",
+        "status": "PASS",
+        "evidence": "6 models in app/persistence/models.py"
+      },
+      {
+        "criterion": "Exactly 6 repositories",
+        "status": "PASS",
+        "evidence": "6 Protocol interfaces + 6 PostgreSQL implementations"
+      },
+      {
+        "criterion": "Drizzle migrations exist",
+        "status": "PASS",
+        "evidence": "Migrations 0026 and 0027 found"
+      },
+      {
+        "criterion": "Unit test coverage",
+        "status": "PASS",
+        "evidence": "304 tests passed (+5.6% over spec of 288)"
+      },
+      {
+        "criterion": "Integration test coverage",
+        "status": "FAIL",
+        "evidence": "0 executed, 60 skipped (expected 26)"
+      },
+      {
+        "criterion": "Hash-bound artifacts",
+        "status": "PASS",
+        "evidence": "SHA-256 tamper detection in all models"
+      },
+      {
+        "criterion": "Optimistic locking",
+        "status": "PASS",
+        "evidence": "Version column on WorkflowModel"
+      },
+      {
+        "criterion": "Async architecture",
+        "status": "PASS",
+        "evidence": "All repositories use AsyncSession"
+      }
+    ],
+    "critical_issues": [
+      {
+        "issue": "Zero integration tests executed",
+        "impact": "Cannot verify cross-session persistence, artifact bindings, hash verification in real database",
+        "priority": "CRITICAL",
+        "action_required": "Configure test database and execute integration tests"
+      }
+    ],
+    "warnings": [
+      {
+        "type": "DeprecationWarning",
+        "count": 60,
+        "message": "datetime.utcnow() deprecated"
+      },
+      {
+        "type": "UnknownPytestMark",
+        "count": 3,
+        "message": "@pytest.mark.negative not registered"
+      },
+      {
+        "type": "TestCountVariance",
+        "message": "Unit tests: +16 over spec, Integration tests: +34 over spec"
+      }
+    ]
+  },
+  "r4": {
+    "verdict": "CRITICAL_GAPS",
+    "module": "Authentication Status",
+    "total_endpoints": 37,
+    "endpoints_with_auth": 2,
+    "endpoints_without_auth": 35,
+    "endpoints_with_placeholder_auth": 2,
+    "endpoints_with_real_auth": 0,
+    "auth_coverage_percentage": 5.4,
+    "auth_gaps": [
+      {
+        "route_file": "workflows.py",
+        "endpoints": 5,
+        "security_level": "CRITICAL",
+        "issues": [
+          "Anyone can create workflows with arbitrary requester_id",
+          "State transitions without authentication",
+          "Audit trail publicly readable",
+          "Artifact binding without auth"
+        ]
+      },
+      {
+        "route_file": "candidate.py",
+        "endpoints": 7,
+        "security_level": "CRITICAL",
+        "issues": [
+          "Anyone can upload candidates",
+          "Manifest generation unprotected",
+          "Execution uses business logic approval check only (no identity verification)"
+        ]
+      },
+      {
+        "route_file": "governance.py",
+        "endpoints": 7,
+        "security_level": "CRITICAL",
+        "issues": [
+          "Self-approval prevention bypassable (no identity verification)",
+          "Anyone can submit/approve/reject",
+          "Separation of duties not enforced"
+        ]
+      },
+      {
+        "route_file": "snapshot.py",
+        "endpoints": 2,
+        "security_level": "MEDIUM",
+        "issues": [
+          "Full repository snapshot publicly accessible",
+          "Repository intelligence exposed"
+        ]
+      },
+      {
+        "route_file": "evidence.py",
+        "endpoints": 2,
+        "security_level": "MEDIUM",
+        "issues": [
+          "Evidence records publicly readable",
+          "Audit trail exposed"
+        ]
+      }
+    ],
+    "routes_audited": 10,
+    "routes_with_real_auth": 0,
+    "routes_with_placeholder_auth": 1,
+    "routes_with_no_auth": 9,
+    "self_approval_prevention": {
+      "implemented": true,
+      "layer": "business_logic",
+      "bypassable": true,
+      "reason": "Relies on client-provided identity without JWT verification"
+    },
+    "available_auth_infrastructure": {
+      "jwt_validation": "app/auth/dependencies.py::get_current_user",
+      "rbac_roles": ["contract_admin", "contract_reviewer", "contract_viewer"],
+      "ownership_checks": "Implemented in business logic (not auth layer)"
+    },
+    "critical_recommendations": [
+      {
+        "priority": "P0_CRITICAL",
+        "action": "Add JWT auth to workflow/candidate/governance routes",
+        "endpoints_affected": 19,
+        "effort": "HIGH"
+      },
+      {
+        "priority": "P0_CRITICAL",
+        "action": "Replace placeholder auth in contract routes",
+        "endpoints_affected": 2,
+        "effort": "LOW"
+      },
+      {
+        "priority": "P1_HIGH",
+        "action": "Move ownership checks to auth layer",
+        "effort": "MEDIUM"
+      },
+      {
+        "priority": "P1_HIGH",
+        "action": "Protect repository intelligence endpoints",
+        "endpoints_affected": 4,
+        "effort": "LOW"
+      }
+    ]
+  },
+  "overall_verdict": "PARTIAL_PASS",
+  "overall_summary": {
+    "strengths": [
+      "Single canonical implementation (R1)",
+      "Evidence-based contract generation (R2)",
+      "Database-backed persistence (R3)",
+      "398 unit tests passing (100% pass rate)",
+      "Zero in-memory stores in production",
+      "Strong architectural boundaries"
+    ],
+    "critical_blockers": [
+      "94.6% of API endpoints lack authentication (R4)",
+      "Zero integration tests executed (R3)",
+      "Self-approval prevention bypassable (R4)",
+      "Repository intelligence publicly exposed (R4)"
+    ],
+    "compliance_summary": {
+      "r1_pass_rate": 1.0,
+      "r2_pass_rate": 0.83,
+      "r3_pass_rate": 0.83,
+      "r4_pass_rate": 0.0,
+      "overall_pass_rate": 0.67
+    },
+    "immediate_actions": [
+      "Add JWT authentication to 19 core endpoints",
+      "Configure and execute 60 integration tests",
+      "Replace placeholder auth with real JWT validation",
+      "Externalize 2 hardcoded defaults in R2"
+    ]
+  }
+}

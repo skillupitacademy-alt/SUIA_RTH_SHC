@@ -1,0 +1,54 @@
+{
+  "gate": "F",
+  "timestamp": "2025-01-10T13:30:00Z",
+  "branch": "m2-project-ai-canonical-wiring",
+  "commit": "18413dac",
+  "domains": {
+    "domain1_jwt_identity": {
+      "passed": 4,
+      "total": 4,
+      "status": "PASS"
+    },
+    "domain2_rbac_authorization": {
+      "passed": 12,
+      "total": 19,
+      "status": "FAIL",
+      "failures": 7,
+      "failure_reason": "Missing database schema fields: 'uploader_brand' (CandidateModel) and 'requester_brand' (WorkflowModel). Tests expect these fields but they are not present in the SQLAlchemy models."
+    },
+    "domain3_w7_evidence": {
+      "passed": 21,
+      "total": 21,
+      "status": "PASS"
+    },
+    "domain4_w3c_artifact": {
+      "passed": 87,
+      "total": 87,
+      "status": "PASS"
+    },
+    "domain5_w5_placement": {
+      "passed": 29,
+      "total": 29,
+      "status": "PASS"
+    }
+  },
+  "full_suite": {
+    "passed": 153,
+    "failed": 7,
+    "error": 0,
+    "skipped": 1126,
+    "total_collected": 1286,
+    "coverage_pct": 29.0,
+    "note": "Integration tests skipped due to missing TEST_DATABASE_URL_TUTORIAL environment variable"
+  },
+  "all_domains_pass": false,
+  "verdict": "CHANGES_REQUESTED",
+  "blocking_issues": [
+    {
+      "domain": "domain2_rbac_authorization",
+      "issue": "Database schema mismatch",
+      "impact": "7 test failures in brand enforcement tests",
+      "required_fix": "Add 'uploader_brand' column to CandidateModel and 'requester_brand' column to WorkflowModel in services/project-ai/app/persistence/models.py"
+    }
+  ]
+}

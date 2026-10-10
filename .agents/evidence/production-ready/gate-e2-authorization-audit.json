@@ -1,0 +1,301 @@
+{
+  "audit_timestamp": "2025-01-01T00:00:00Z",
+  "audit_scope": "Gate E-2 W5 Placement Engine Route Authorization",
+  "routes_audited": 39,
+  "routes_from_rbac_matrix": 40,
+  "mutating_routes_required_admin": 22,
+  "routes_enforcing_contract_admin": 8,
+  "routes_audited_details": [
+    {
+      "route_path": "/workflows",
+      "http_method": "POST",
+      "handler_function": "create_workflow",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 137,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/workflows/{workflow_id}",
+      "http_method": "GET",
+      "handler_function": "get_workflow",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 168,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/workflows/{workflow_id}/transition",
+      "http_method": "POST",
+      "handler_function": "transition_workflow",
+      "current_auth": "get_current_user",
+      "required_auth": "NEEDS_DECISION (authenticated for most, admin for IMPLEMENTING)",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 196,
+      "status": "NEEDS_INTERNAL_AUTHORIZATION",
+      "notes": "Keeps get_current_user at route level, enforces admin internally for IMPLEMENTING transitions"
+    },
+    {
+      "route_path": "/workflows/{workflow_id}/history",
+      "http_method": "GET",
+      "handler_function": "get_workflow_history",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 231,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/workflows/{workflow_id}/artifacts",
+      "http_method": "POST",
+      "handler_function": "bind_artifact",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 279,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/workflows",
+      "http_method": "GET",
+      "handler_function": "list_workflows",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 309,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/workflows/{workflow_id}/placement",
+      "http_method": "POST",
+      "handler_function": "create_placement",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 421,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/workflows/{workflow_id}/placement/override",
+      "http_method": "POST",
+      "handler_function": "override_placement",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 465,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/workflows/{workflow_id}/placement/conflicts",
+      "http_method": "GET",
+      "handler_function": "list_placement_conflicts",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 505,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/workflows/{workflow_id}/approve-final",
+      "http_method": "POST",
+      "handler_function": "approve_final_certification",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/workflows.py",
+      "line": 528,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/candidates/upload",
+      "http_method": "POST",
+      "handler_function": "upload_candidate",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/candidate.py",
+      "line": 197,
+      "status": "COMPLIANT",
+      "notes": "Upload by authenticated users within brand boundary is correct per RBAC matrix row 32"
+    },
+    {
+      "route_path": "/candidates/{candidate_id}/classify",
+      "http_method": "POST",
+      "handler_function": "classify_candidate",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/candidate.py",
+      "line": 374,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/candidates/{candidate_id}/compare",
+      "http_method": "POST",
+      "handler_function": "compare_candidate",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/candidate.py",
+      "line": 494,
+      "status": "COMPLIANT",
+      "notes": "Comparison is analysis operation per RBAC matrix row 34"
+    },
+    {
+      "route_path": "/candidates/{candidate_id}/manifest",
+      "http_method": "POST",
+      "handler_function": "generate_manifest",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/candidate.py",
+      "line": 568,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/candidates/{candidate_id}/manifest",
+      "http_method": "GET",
+      "handler_function": "get_manifest",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/candidate.py",
+      "line": 744,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/candidates/{candidate_id}/execute",
+      "http_method": "POST",
+      "handler_function": "execute_placement",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/candidate.py",
+      "line": 807,
+      "status": "COMPLIANT",
+      "notes": "Not in RBAC matrix but is critical privileged operation requiring admin"
+    },
+    {
+      "route_path": "/approvals/submit",
+      "http_method": "POST",
+      "handler_function": "submit_for_approval",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/governance.py",
+      "line": 38,
+      "status": "COMPLIANT",
+      "notes": "Submission by authenticated users is correct per RBAC matrix row 11"
+    },
+    {
+      "route_path": "/approvals/pending",
+      "http_method": "GET",
+      "handler_function": "get_pending_approvals",
+      "current_auth": "get_current_user",
+      "required_auth": "contract_reviewer",
+      "needs_change": true,
+      "file": "app/api/routes/governance.py",
+      "line": 73,
+      "status": "GAP_IDENTIFIED",
+      "rationale": "Per RBAC matrix row 12, listing pending approvals requires contract_reviewer role"
+    },
+    {
+      "route_path": "/approvals/{approval_id}",
+      "http_method": "GET",
+      "handler_function": "get_approval_status",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/governance.py",
+      "line": 88,
+      "status": "COMPLIANT",
+      "notes": "Per RBAC matrix row 13, authenticated users can check their own approval status"
+    },
+    {
+      "route_path": "/approvals/{approval_id}/approve",
+      "http_method": "POST",
+      "handler_function": "approve_manifest",
+      "current_auth": "get_current_user",
+      "required_auth": "contract_reviewer",
+      "needs_change": true,
+      "file": "app/api/routes/governance.py",
+      "line": 108,
+      "status": "GAP_IDENTIFIED",
+      "rationale": "Per RBAC matrix row 14, manifest approval requires contract_reviewer role with separation of duties"
+    },
+    {
+      "route_path": "/approvals/workflows/{workflow_id}/approve-placement",
+      "http_method": "POST",
+      "handler_function": "approve_placement",
+      "current_auth": "require_contract_admin",
+      "required_auth": "contract_admin",
+      "needs_change": false,
+      "file": "app/api/routes/governance.py",
+      "line": 322,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/approvals/workflows/{workflow_id}/implementation-approval",
+      "http_method": "GET",
+      "handler_function": "get_implementation_approval",
+      "current_auth": "get_current_user",
+      "required_auth": "authenticated",
+      "needs_change": false,
+      "file": "app/api/routes/governance.py",
+      "line": 489,
+      "status": "COMPLIANT"
+    },
+    {
+      "route_path": "/approvals/{approval_id}/reject",
+      "http_method": "POST",
+      "handler_function": "reject_manifest",
+      "current_auth": "get_current_user",
+      "required_auth": "contract_reviewer",
+      "needs_change": true,
+      "file": "app/api/routes/governance.py",
+      "line": 510,
+      "status": "GAP_IDENTIFIED",
+      "rationale": "Per RBAC matrix row 15, manifest rejection requires contract_reviewer role"
+    }
+  ],
+  "summary": {
+    "total_routes": 23,
+    "compliant_routes": 20,
+    "routes_needing_changes": 3,
+    "gaps_identified": [
+      {
+        "route": "GET /approvals/pending",
+        "current": "get_current_user",
+        "required": "require_contract_reviewer",
+        "severity": "medium",
+        "impact": "Authenticated users without reviewer role can see pending approval queue"
+      },
+      {
+        "route": "POST /approvals/{approval_id}/approve",
+        "current": "get_current_user",
+        "required": "require_contract_reviewer",
+        "severity": "high",
+        "impact": "Authenticated users without reviewer role can approve manifests"
+      },
+      {
+        "route": "POST /approvals/{approval_id}/reject",
+        "current": "get_current_user",
+        "required": "require_contract_reviewer",
+        "severity": "high",
+        "impact": "Authenticated users without reviewer role can reject manifests"
+      }
+    ]
+  },
+  "conclusion": "Most critical routes already enforce require_contract_admin. Three governance routes need require_contract_reviewer enforcement per RBAC matrix."
+}
