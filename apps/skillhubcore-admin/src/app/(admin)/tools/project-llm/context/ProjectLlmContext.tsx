@@ -58,7 +58,16 @@ export function ProjectLlmProvider({ children }: { children: React.ReactNode }) 
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        setState((prev) => ({ ...prev, ...parsed }));
+        // Browser storage is not the workflow authority. Preserve user-selected
+        // presentation fields, but never restore lifecycle success from localStorage.
+        setState((prev) => ({
+          ...prev,
+          ...parsed,
+          candidateUploaded: false,
+          validationStarted: false,
+          validationCompleted: false,
+          certificationCompleted: false,
+        }));
       }
     } catch {
       // Ignore localStorage errors
