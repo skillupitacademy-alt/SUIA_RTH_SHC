@@ -1,0 +1,32 @@
+=========================== test session starts ===========================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\onlinewebsites\quiz-platform\services\project-ai
+configfile: pyproject.toml
+plugins: anyio-4.12.0, dash-3.3.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 21 items                                                         
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_all_required_evidence_passes PASSED [  4%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_super_admin_evidence_passes PASSED [  9%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_missing_required_evidence_type PASSED [ 14%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_missing_all_evidence PASSED [ 19%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_failed_verdict_rejected PASSED [ 23%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_blocked_verdict_rejected PASSED [ 28%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_partial_verdict_rejected PASSED [ 33%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_unknown_verdict_rejected PASSED [ 38%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_malformed_verdict_rejected PASSED [ 42%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_wrong_workflow_id_rejected PASSED [ 47%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_wrong_artifact_digest_rejected PASSED [ 52%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_stale_evidence_rejected PASSED [ 57%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_future_evidence_rejected PASSED [ 61%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_evidence_repository_unavailable PASSED [ 66%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_concurrent_certification_prevented PASSED [ 71%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_denial_leaves_state_unchanged PASSED [ 76%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_denial_creates_audit_event PASSED [ 80%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_certification_ready_verdict_accepted PASSED [ 85%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_mixed_accepted_verdicts PASSED [ 90%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_naive_timestamp_rejected PASSED [ 95%]
+services\project-ai\tests\security\test_w7_evidence_enforcement.py::test_empty_verdict_rejected PASSED [100%]
+=========================== 21 passed in 0.21s ============================
+
+Exit Code: 0
