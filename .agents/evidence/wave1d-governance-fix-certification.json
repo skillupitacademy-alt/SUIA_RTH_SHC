@@ -1,0 +1,18 @@
+{
+  "wave": "1D-governance-fix",
+  "timestamp": "2026-01-10T00:00:00Z",
+  "vulnerability": "governance-identity-spoofing",
+  "status": "FIXED",
+  "commit": "54cf7b320f7262bc9a3c6781387b80db159ebae5",
+  "branch": "m2-project-ai-canonical-wiring",
+  "testsAdded": 4,
+  "totalTestsPassing": 42,
+  "reviewVerdict": "APPROVED",
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\wave1d-governance-fix-review.md",
+  "fixSummary": {
+    "submitEndpoint": "identity extracted from JWT",
+    "approveEndpoint": "identity extracted from JWT, self-approval check uses JWT identities",
+    "rejectEndpoint": "identity extracted from JWT",
+    "schemaChanges": "removed submittedBy/decidedBy/rejectedBy from request models"
+  }
+}
