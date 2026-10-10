@@ -8,7 +8,6 @@ CREATE TYPE "public"."review_status" AS ENUM('pending_review', 'in_review', 'app
 CREATE TYPE "public"."section_status" AS ENUM('draft', 'generating', 'validating', 'pending_review', 'in_review', 'changes_requested', 'approved', 'deploying', 'deployed', 'archived');--> statement-breakpoint
 CREATE TYPE "public"."section_type" AS ENUM('notes', 'layman', 'visual', 'real_life', 'technical', 'code', 'practice', 'assignment', 'project', 'quiz', 'summary', 'interview');--> statement-breakpoint
 CREATE TYPE "public"."subsection_type" AS ENUM('definition', 'concept', 'syntax', 'analogy', 'example', 'visual', 'diagram', 'animation', 'pitfall', 'antipattern', 'gotcha', 'code', 'exercise', 'challenge', 'sandbox', 'checklist', 'cheatsheet', 'faq', 'glossary', 'interview_question', 'quiz_question', 'project_step', 'project_milestone', 'project_deliverable');--> statement-breakpoint
-CREATE TYPE "public"."assignment_help_request_status" AS ENUM('open', 'in_progress', 'resolved');--> statement-breakpoint
 CREATE TYPE "public"."assignment_progress_status" AS ENUM('not_started', 'in_progress', 'self_completed');--> statement-breakpoint
 CREATE TYPE "public"."assignment_question_type" AS ENUM('mcq', 'short_answer', 'code', 'open_ended');--> statement-breakpoint
 CREATE TYPE "public"."live_session_request_status" AS ENUM('pending', 'accepted', 'scheduled', 'completed', 'cancelled');--> statement-breakpoint
