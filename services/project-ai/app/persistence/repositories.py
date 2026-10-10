@@ -399,6 +399,7 @@ class PostgresWorkflowRepository:
                 target_family=workflow.target_family,
                 target_version=workflow.target_version,
                 requester_id=workflow.requester_id,
+                requester_brand=workflow.requester_brand,
                 current_state=workflow.current_state,
                 updated_at=workflow.updated_at,
                 contract_id=workflow.contract_id,
@@ -608,6 +609,8 @@ class PostgresCandidateRepository:
             uploaded_by=candidate.uploaded_by,
             target_family=candidate.target_family,
             target_version=candidate.target_version,
+            brand=candidate.brand,
+            uploader_brand=candidate.uploader_brand,
             candidate_sha256=candidate.candidate_sha256,
         ).on_conflict_do_update(
             index_elements=[CandidateModel.candidate_id],
@@ -616,6 +619,8 @@ class PostgresCandidateRepository:
                 files=candidate.files,
                 target_family=candidate.target_family,
                 target_version=candidate.target_version,
+                brand=candidate.brand,
+                uploader_brand=candidate.uploader_brand,
                 candidate_sha256=candidate.candidate_sha256,
             )
         ).returning(CandidateModel)

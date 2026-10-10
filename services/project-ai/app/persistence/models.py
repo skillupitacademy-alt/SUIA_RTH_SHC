@@ -28,7 +28,7 @@ from typing import Optional, Dict, Any, TYPE_CHECKING
 from sqlalchemy import (
     Column, String, Integer, DateTime, ForeignKey, Index, JSON, Text, UniqueConstraint, Identity
 )
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship, declarative_base, Mapped, mapped_column
 from sqlalchemy.sql import text
 
 # Avoid circular imports during type checking
@@ -57,6 +57,7 @@ class WorkflowModel(Base):
     target_family = Column(String(100), nullable=False)
     target_version = Column(String(100), nullable=False)
     requester_id = Column(String(255), nullable=False)
+    requester_brand: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     # Lifecycle state
     current_state = Column(String(100), nullable=False)
@@ -339,6 +340,7 @@ class CandidateModel(Base):
     # Wave 1C: Tenant ownership tracking
     # Candidates are tenant-scoped resources - track which brand uploaded them
     brand = Column(String(100), nullable=True)
+    uploader_brand: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     # Candidate hash (computed from files for tamper detection)
     candidate_sha256 = Column(String(64), nullable=True)
