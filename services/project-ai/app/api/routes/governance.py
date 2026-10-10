@@ -65,9 +65,12 @@ async def submit_for_approval(
     approval_id = str(uuid4())
     now = datetime.now(timezone.utc)
     
+    # Extract submitter identity from JWT (prevent identity spoofing)
+    submitted_by = user.get("user_id") or user.get("email") or user.get("sub") or "unknown"
+    
     audit_entry = {
         "action": "submitted",
-        "by": request.submittedBy,
+        "by": submitted_by,
         "at": now,
         "reason": None,
     }
@@ -76,7 +79,7 @@ async def submit_for_approval(
         "approvalId": approval_id,
         "manifestId": request.manifestId,
         "status": ApprovalStatus.PENDING,
-        "submittedBy": request.submittedBy,
+        "submittedBy": submitted_by,
         "submittedAt": now,
         "decidedBy": None,
         "decidedAt": None,
@@ -177,6 +180,9 @@ async def approve_manifest(
     
     approval = _approvals[approval_id]
     
+    # Extract approver identity from JWT (prevent identity spoofing)
+    decided_by = user.get("user_id") or user.get("email") or user.get("sub") or "unknown"
+    
     if approval["status"] != ApprovalStatus.PENDING:
         raise HTTPException(
             status_code=400,
@@ -184,21 +190,21 @@ async def approve_manifest(
         )
     
     # CRITICAL: Prevent self-approval (Wave 2)
-    if request.decidedBy == approval["submittedBy"]:
+    if decided_by == approval["submittedBy"]:
         now = datetime.now(timezone.utc)
         
         approval["status"] = ApprovalStatus.REJECTED
-        approval["decidedBy"] = request.decidedBy
+        approval["decidedBy"] = decided_by
         approval["decidedAt"] = now
         approval["reason"] = (
             f"Self-approval rejected. "
-            f"User '{request.decidedBy}' cannot approve their own submission. "
+            f"User '{decided_by}' cannot approve their own submission. "
             f"Separation of duties required."
         )
         
         audit_entry = {
             "action": "rejected_self_approval",
-            "by": request.decidedBy,
+            "by": decided_by,
             "at": now,
             "reason": approval["reason"],
         }
@@ -210,7 +216,7 @@ async def approve_manifest(
                 "error": "SELF_APPROVAL_REJECTED",
                 "message": approval["reason"],
                 "submittedBy": approval["submittedBy"],
-                "attemptedBy": request.decidedBy
+                "attemptedBy": decided_by
             }
         )
     
@@ -220,7 +226,7 @@ async def approve_manifest(
         
         # Reject approval due to manifest mutation
         approval["status"] = ApprovalStatus.MANIFEST_CHANGED
-        approval["decidedBy"] = request.decidedBy
+        approval["decidedBy"] = decided_by
         approval["decidedAt"] = now
         approval["reason"] = (
             f"Manifest hash mismatch detected. "
@@ -231,7 +237,7 @@ async def approve_manifest(
         
         audit_entry = {
             "action": "rejected_hash_mismatch",
-            "by": request.decidedBy,
+            "by": decided_by,
             "at": now,
             "reason": approval["reason"],
         }
@@ -250,13 +256,13 @@ async def approve_manifest(
     # Hash verified and not self-approved: approve
     now = datetime.now(timezone.utc)
     approval["status"] = ApprovalStatus.APPROVED
-    approval["decidedBy"] = request.decidedBy
+    approval["decidedBy"] = decided_by
     approval["decidedAt"] = now
     approval["reason"] = request.reason
     
     audit_entry = {
         "action": "approved",
-        "by": request.decidedBy,
+        "by": decided_by,
         "at": now,
         "reason": request.reason,
     }
@@ -627,6 +633,9 @@ async def reject_manifest(
     
     approval = _approvals[approval_id]
     
+    # Extract rejecter identity from JWT (prevent identity spoofing)
+    rejected_by = user.get("user_id") or user.get("email") or user.get("sub") or "unknown"
+    
     if approval["status"] != ApprovalStatus.PENDING:
         raise HTTPException(
             status_code=400,
@@ -635,13 +644,13 @@ async def reject_manifest(
     
     now = datetime.now(timezone.utc)
     approval["status"] = ApprovalStatus.REJECTED
-    approval["decidedBy"] = request.rejectedBy
+    approval["decidedBy"] = rejected_by
     approval["decidedAt"] = now
     approval["reason"] = request.reason
     
     audit_entry = {
         "action": "rejected",
-        "by": request.rejectedBy,
+        "by": rejected_by,
         "at": now,
         "reason": request.reason,
     }

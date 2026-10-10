@@ -19,19 +19,11 @@ class ApprovalSubmitRequest(BaseModel):
         description="Cryptographic hash of manifest content (for mutation detection)",
         min_length=1
     )
-    submittedBy: str = Field(
-        description="Identity of person/agent submitting for approval",
-        min_length=1
-    )
 
 
 class ApprovalDecisionRequest(BaseModel):
     """Request to approve or reject a pending manifest."""
     
-    decidedBy: str = Field(
-        description="Identity of person making approval decision",
-        min_length=1
-    )
     reason: Optional[str] = Field(
         default=None,
         description="Human-readable reason for approval/rejection"
@@ -45,10 +37,6 @@ class ApprovalDecisionRequest(BaseModel):
 class ApprovalRejectRequest(BaseModel):
     """Request to reject a pending manifest."""
     
-    rejectedBy: str = Field(
-        description="Identity of person rejecting the manifest",
-        min_length=1
-    )
     reason: Optional[str] = Field(
         default=None,
         description="Human-readable reason for rejection"
