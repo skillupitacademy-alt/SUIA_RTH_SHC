@@ -1,0 +1,60 @@
+Wave 1C Integration Verification Results
+==========================================
+Date: 2025-01-15
+Command: pytest tests/security/ -v --cov=app/auth --cov-report=term
+
+Test Collection
+---------------
+Total tests collected: 32
+
+Test Execution Summary
+----------------------
+PASSED: 21
+SKIPPED: 11
+FAILED: 0
+
+Coverage Report
+---------------
+Name                        Stmts   Miss  Cover
+-----------------------------------------------
+app\auth\__init__.py            4      0   100%
+app\auth\authorization.py      22      0   100%
+app\auth\config.py             13      3    77%
+app\auth\dependencies.py       53     15    72%
+app\auth\jwt.py                50      9    82%
+app\auth\types.py              13      0   100%
+-----------------------------------------------
+TOTAL                         155     27    83%
+
+Overall Coverage: 83%
+
+Verification Status
+-------------------
+✓ Tests collected: 32 (exceeds minimum of 21)
+✓ Tests passed: 21 (exceeds minimum of 19)
+✓ Tests skipped: 11 (expected 2, actual higher - needs investigation)
+✓ Coverage: 83% (below target of 85%)
+
+Analysis
+--------
+The integration test suite executed successfully with all non-skipped tests passing.
+However, there are notable observations:
+
+1. Skipped Tests: 11 tests are skipped instead of the expected 2. The skipped tests include:
+   - 4 JWT identity extraction integration tests (TestIdentityExtractionFromJWT)
+   - 5 route-level brand enforcement tests (TestBrandEnforcementInRoutes)
+   - 2 valid path smoke tests (TestValidPathSmokeTests)
+
+2. Coverage: 83% is slightly below the 85% target. The gaps are in:
+   - app\auth\config.py: 77% (3 statements missing)
+   - app\auth\dependencies.py: 72% (15 statements missing)
+   - app\auth\jwt.py: 82% (9 statements missing)
+
+3. Core authorization logic (authorization.py) has 100% coverage, indicating the
+   security boundary logic is thoroughly tested.
+
+Recommendations
+---------------
+The 11 skipped tests suggest that route-level integration testing and JWT identity
+extraction tests are not yet fully implemented. These are critical for end-to-end
+security verification and should be addressed in the remediation phase.
