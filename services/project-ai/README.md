@@ -408,6 +408,50 @@ pytest tests/unit/test_auth_*.py tests/test_jwt_alignment.py --cov=app/auth --co
 pytest tests/ --cov=app --cov-report=html
 ```
 
+### Running Integration Tests
+
+Integration tests require a PostgreSQL database. Use Docker Compose for local testing:
+
+#### Prerequisites
+- Docker and Docker Compose
+- PostgreSQL client tools (optional, for verification)
+
+#### Start Test Database
+
+```bash
+docker-compose -f services/project-ai/docker-compose.test-db.yml up -d
+```
+
+The test database runs on port **55432** (not 5432) to avoid conflicts with host PostgreSQL.
+
+#### Configure Environment
+
+```bash
+cd services/project-ai
+cp .env.test.example .env.test
+# Edit .env.test if needed (defaults work for docker-compose setup)
+```
+
+#### Run Integration Tests
+
+```bash
+# All integration tests
+pytest tests/integration/ -v
+
+# Specific test categories
+pytest tests/integration/test_security_integration.py -v  # Security tests (30 tests)
+pytest tests/integration/test_repositories_integration.py -v  # Repository tests
+pytest tests/security/test_authorization.py -v  # Authorization tests (now with integration tests)
+```
+
+#### Stop Test Database
+
+```bash
+docker-compose -f services/project-ai/docker-compose.test-db.yml down
+```
+
+**Note:** Integration tests skip gracefully if `TEST_DATABASE_URL_TUTORIAL` is not configured.
+
 ## M2.9 Wave 3: Candidate Intake + Canonical Comparison + Placement Manifest
 
 ### W3 Architecture
