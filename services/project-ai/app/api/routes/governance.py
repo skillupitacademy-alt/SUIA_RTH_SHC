@@ -456,7 +456,9 @@ async def approve_placement(
         )
     
     # Extract approver identity from JWT token (prevent identity spoofing)
-    approved_by = user.get("user_id") or user.get("email") or "unknown"
+    # user_id guaranteed by JWT validation; reject if absent
+    if not (approved_by := user.get("user_id")):
+        raise HTTPException(401, "Missing user_id claim")
     
     # Verify not self-approval (approver != workflow requester)
     if workflow_requester and approved_by == workflow_requester:

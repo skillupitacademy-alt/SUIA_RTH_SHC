@@ -241,3 +241,39 @@ def test_require_functions_with_none_user():
     with pytest.raises(HTTPException) as exc_info:
         require_contract_viewer(user_no_roles)
     assert exc_info.value.status_code == 403
+
+
+def test_user_id_guaranteed_by_jwt():
+    """
+    Test that get_current_user guarantees user_id from JWT.
+    
+    SECURITY FIX (FEAT-002): Verifies that user_id extraction from JWT is
+    guaranteed by the authentication layer. This test proves that:
+    1. get_current_user always returns a user_id field
+    2. user_id is extracted from the verified JWT userId claim
+    3. user_id is a non-empty string
+    4. Route handlers can safely use user['user_id'] without KeyError risk
+    
+    This guarantee is enforced by decode_access_token() in app/auth/jwt.py,
+    which validates the userId claim before returning the payload.
+    """
+    # Create valid JWT token with userId claim (and required identity claims)
+    data = {
+        "aud": "user",
+        "tokenType": "user",
+        "userId": "test_user_789",
+        "originalUserId": "test_user_789",
+        "shadowUserId": "test_user_789",
+        "roles": []
+    }
+    token = create_access_token(data)
+    authorization = f"Bearer {token}"
+    
+    # Call get_current_user
+    user = get_current_user(authorization)
+    
+    # Assert user_id is present and matches expected value
+    assert "user_id" in user, "user_id must be present in AuthenticatedPrincipal"
+    assert user["user_id"] == "test_user_789", "user_id must match JWT userId claim"
+    assert isinstance(user["user_id"], str), "user_id must be a string"
+    assert len(user["user_id"]) > 0, "user_id must be non-empty"

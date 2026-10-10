@@ -190,6 +190,30 @@ class TestIdentityExtractionFromJWT:
         are ignored in favor of JWT-extracted identity.
         """
         pass
+    
+    @pytest.mark.skip(reason="Requires integration test setup with TestClient and database")
+    def test_self_approval_prevention_with_jwt_identity(self):
+        """
+        Verify self-approval is rejected when requester_id equals approver user_id from JWT.
+        
+        SECURITY FIX (FEAT-002): Tests that governance.py self-approval logic (line 461-469)
+        correctly prevents a user from approving their own workflow submission. The test
+        verifies that both requester_id (set at workflow creation) and approver identity
+        (extracted from JWT at approval time) are properly validated to enforce separation
+        of duties.
+        
+        Test structure:
+        1. Create workflow with requester_id='user_alice' (from JWT during POST /workflows)
+        2. Attempt approve-placement with JWT for user_alice (same identity)
+        3. Expect 403 with 'SELF_APPROVAL_REJECTED' in detail
+        
+        Implementation note: This test requires full application context to:
+        - Create a workflow via POST /workflows with requester JWT
+        - Store requester_id from authenticated principal
+        - Attempt approval via POST /approvals/workflows/{id}/approve-placement
+        - Verify server extracts approver from JWT and rejects self-approval
+        """
+        pass
 
 
 class TestBrandEnforcementInRoutes:

@@ -112,6 +112,11 @@ def get_current_user(authorization: str = Header(...)) -> AuthenticatedPrincipal
             )
     
     # Extract user_id from userId claim (required by JWT validation)
+    # SECURITY: Direct access safe because decode_access_token() guarantees:
+    # 1. userId claim exists (KeyError impossible)
+    # 2. userId claim is non-empty string
+    # 3. Token signature and expiry are valid
+    # See app/auth/jwt.py decode_access_token() for validation logic
     user_id = payload["userId"]  # Direct access - jwt.py already validated non-empty
     
     return {

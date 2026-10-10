@@ -147,7 +147,9 @@ async def create_workflow(
         New workflow in REQUESTED state
     """
     # Extract requester identity from JWT token (prevent identity spoofing)
-    requester_id = user["user_id"]
+    # Defensive: user_id guaranteed by get_current_user but explicit check for clarity
+    if not (requester_id := user.get("user_id")):
+        raise HTTPException(401, "Missing user_id claim")
     
     workflow = await governance_service.create_workflow(
         target_family=request.target_family,
