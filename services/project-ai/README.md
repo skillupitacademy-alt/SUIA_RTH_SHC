@@ -36,7 +36,9 @@ The service expects the TypeScript snapshot at:
 <workspace-root>/packages/project-llm-discovery/output/snapshot.json
 ```
 
-Set `WORKSPACE_ROOT` environment variable to override the default path.
+Set `WORKSPACE_ROOT` environment variable to override the default path. If unset, the service resolves the repository root relative to its own source location; it does not use a developer-specific absolute path.
+
+Configure browser origins for the admin frontends with the comma-separated `PROJECT_AI_CORS_ORIGINS` environment variable (for example, `http://localhost:3000,http://localhost:3001`). The development defaults are localhost ports 3000, 3001, and 3009. Wildcard origins are rejected because the service enables credentialed requests. Production deployments should set only the exact trusted origins.
 
 ## Running the Service
 
