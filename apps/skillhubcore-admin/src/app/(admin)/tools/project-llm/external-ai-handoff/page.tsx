@@ -38,6 +38,45 @@ export default function ExternalAiHandoffPage() {
   const [copiedBrief, setCopiedBrief] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [previewTab, setPreviewTab] = useState<'preview' | 'html' | 'schema'>('preview');
+  const [workflowId, setWorkflowId] = useState('');
+  const [engineeringContract, setEngineeringContract] = useState<Record<string, unknown> | null>(null);
+  const [contractLoading, setContractLoading] = useState(false);
+  const [contractError, setContractError] = useState<string | null>(null);
+
+  const loadEngineeringContract = async () => {
+    const id = workflowId.trim();
+    if (!id) {
+      setContractError('Enter the persisted workflow ID to retrieve its canonical contract.');
+      return;
+    }
+
+    setContractLoading(true);
+    setContractError(null);
+    setEngineeringContract(null);
+    try {
+      const apiBase = (process.env.NEXT_PUBLIC_PROJECT_AI_API_URL || 'http://localhost:8000').replace(/\\/$/, '');
+      const response = await fetch(
+        `${apiBase}/workflows/${encodeURIComponent(id)}/engineering-contract`,
+        { method: 'GET', credentials: 'include', headers: { Accept: 'application/json' } }
+      );
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(`Contract request failed (${response.status}): ${detail || response.statusText}`);
+      }
+      const payload = await response.json();
+      if (!payload || typeof payload !== 'object' || typeof payload.contract_hash !== 'string' || !payload.contract_hash) {
+        throw new Error('Backend response is missing contract_hash; it cannot be treated as a canonical engineering contract.');
+      }
+      if (payload.workflow_id !== id) {
+        throw new Error('Returned contract workflow_id does not match the requested workflow.');
+      }
+      setEngineeringContract(payload as Record<string, unknown>);
+    } catch (error) {
+      setContractError(error instanceof Error ? error.message : 'Unable to retrieve the engineering contract.');
+    } finally {
+      setContractLoading(false);
+    }
+  };
 
   const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
     { key: 'summary', label: 'Summary', icon: Sparkles },
