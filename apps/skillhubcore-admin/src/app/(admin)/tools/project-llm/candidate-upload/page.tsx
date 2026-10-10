@@ -30,7 +30,7 @@ interface CheckItem {
   name: string;
   category: string;
   duration: string;
-  status: 'pending' | 'pending' | 'running';
+  status: 'pending' | 'running' | 'failed';
   details: string;
 }
 
