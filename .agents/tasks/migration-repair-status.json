@@ -1,108 +1,108 @@
 {
-  "execution_plan": "7-stage migration repair pipeline",
-  "current_stage": 1,
-  "stages": {
-    "stage_0": {
-      "name": "Baseline Verification",
-      "status": "COMPLETE",
-      "verdict": "CHANGES_REQUESTED at 6cdc85ed",
-      "completion_time": "2026-10-11T12:00:00Z"
-    },
-    "stage_1": {
-      "name": "P0 Safety Fixes",
-      "status": "IN_PROGRESS",
-      "workflow_id": "wf_dd91a88422e75b4d",
-      "phase": "implementation",
-      "features": [
-        {
-          "id": "FEAT-001",
-          "name": "Command Safety",
-          "file": "runner.py",
-          "status": "pending"
-        },
-        {
-          "id": "FEAT-002",
-          "name": "Database Validation",
-          "file": "safety.py",
-          "status": "pending"
-        },
-        {
-          "id": "FEAT-003",
-          "name": "Cleanup Guarantee",
-          "file": "verification.py",
-          "status": "pending"
-        },
-        {
-          "id": "FEAT-004",
-          "name": "Evidence Verification",
-          "file": "final_gate_agent.py",
-          "status": "pending"
-        },
-        {
-          "id": "FEAT-005",
-          "name": "Publication Stages",
-          "file": "publisher_agent.py",
-          "status": "pending"
-        }
-      ],
-      "success_criteria": [
-        "All 5 fixes implemented with unit tests",
-        "No shell=True in runner.py",
-        "DB validation at connection boundary",
-        "Cleanup verified with try/finally",
-        "Evidence hashes recomputed and verified",
-        "Remote SHA confirmed after push"
-      ]
-    },
-    "stage_2": {
-      "name": "W0 Controller",
-      "status": "PENDING",
-      "depends_on": "stage_1_approved",
-      "workflow_definition": ".agents/tasks/stage-workflows/stage2-w0-controller.md"
-    },
-    "stage_3": {
-      "name": "W1 Audits",
-      "status": "PENDING",
-      "depends_on": "stage_2_complete",
-      "workflow_definition": ".agents/tasks/stage-workflows/stage3-w1-audits.md",
-      "agents": [
-        "command_safety_auditor",
-        "database_safety_auditor",
-        "test_inventory_auditor",
-        "evidence_auditor"
-      ],
-      "execution": "parallel"
-    },
-    "stage_4": {
-      "name": "W2-W3 Planning",
-      "status": "PENDING",
-      "depends_on": "stage_3_complete",
-      "workflow_definition": ".agents/tasks/stage-workflows/stage4-w2w3-planning.md"
-    },
-    "stage_5": {
-      "name": "W4-W5 Implementation",
-      "status": "PENDING",
-      "depends_on": "stage_4_approved",
-      "workflow_definition": ".agents/tasks/stage-workflows/stage5-w4w5-implementation.md"
-    },
-    "stage_6": {
-      "name": "W6 Verification",
-      "status": "PENDING",
-      "depends_on": "stage_5_approved",
-      "workflow_definition": ".agents/tasks/stage-workflows/stage6-w6-verification.md"
-    },
-    "stage_7": {
-      "name": "W7-W9 Publication",
-      "status": "PENDING",
-      "depends_on": "stage_6_complete",
-      "workflow_definition": ".agents/tasks/stage-workflows/stage7-w7w8w9-publication.md"
-    }
-  },
-  "monitoring": {
-    "active_workflow": "wf_dd91a88422e75b4d",
-    "awaiting": "stage_1_completion",
-    "next_action": "Launch stage_2 after stage_1 approved"
-  },
-  "evidence_location": ".agents/evidence/runs/",
-  "last_updated": "2026-10-11T18:15:00Z"
+    "execution_plan":  "7-stage migration repair pipeline",
+    "current_stage":  2,
+    "stages":  {
+                   "stage_0":  {
+                                   "name":  "Baseline Verification",
+                                   "status":  "COMPLETE",
+                                   "verdict":  "CHANGES_REQUESTED at 6cdc85ed",
+                                   "completion_time":  "2026-10-11T12:00:00Z"
+                               },
+                   "stage_1":  {
+                                   "name":  "P0 Safety Fixes",
+                                   "status":  "COMPLETE",
+                                   "workflow_id":  "wf_dd91a88422e75b4d",
+                                   "phase":  "implementation",
+                                   "features":  [
+                                                    {
+                                                        "id":  "FEAT-001",
+                                                        "name":  "Command Safety",
+                                                        "file":  "runner.py",
+                                                        "status":  "pending"
+                                                    },
+                                                    {
+                                                        "id":  "FEAT-002",
+                                                        "name":  "Database Validation",
+                                                        "file":  "safety.py",
+                                                        "status":  "pending"
+                                                    },
+                                                    {
+                                                        "id":  "FEAT-003",
+                                                        "name":  "Cleanup Guarantee",
+                                                        "file":  "verification.py",
+                                                        "status":  "pending"
+                                                    },
+                                                    {
+                                                        "id":  "FEAT-004",
+                                                        "name":  "Evidence Verification",
+                                                        "file":  "final_gate_agent.py",
+                                                        "status":  "pending"
+                                                    },
+                                                    {
+                                                        "id":  "FEAT-005",
+                                                        "name":  "Publication Stages",
+                                                        "file":  "publisher_agent.py",
+                                                        "status":  "pending"
+                                                    }
+                                                ],
+                                   "success_criteria":  [
+                                                            "All 5 fixes implemented with unit tests",
+                                                            "No shell=True in runner.py",
+                                                            "DB validation at connection boundary",
+                                                            "Cleanup verified with try/finally",
+                                                            "Evidence hashes recomputed and verified",
+                                                            "Remote SHA confirmed after push"
+                                                        ]
+                               },
+                   "stage_2":  {
+                                   "name":  "W0 Controller",
+                                   "status":  "IN_PROGRESS",
+                                   "depends_on":  "stage_1_approved",
+                                   "workflow_definition":  ".agents/tasks/stage-workflows/stage2-w0-controller.md"
+                               },
+                   "stage_3":  {
+                                   "name":  "W1 Audits",
+                                   "status":  "PENDING",
+                                   "depends_on":  "stage_2_complete",
+                                   "workflow_definition":  ".agents/tasks/stage-workflows/stage3-w1-audits.md",
+                                   "agents":  [
+                                                  "command_safety_auditor",
+                                                  "database_safety_auditor",
+                                                  "test_inventory_auditor",
+                                                  "evidence_auditor"
+                                              ],
+                                   "execution":  "parallel"
+                               },
+                   "stage_4":  {
+                                   "name":  "W2-W3 Planning",
+                                   "status":  "PENDING",
+                                   "depends_on":  "stage_3_complete",
+                                   "workflow_definition":  ".agents/tasks/stage-workflows/stage4-w2w3-planning.md"
+                               },
+                   "stage_5":  {
+                                   "name":  "W4-W5 Implementation",
+                                   "status":  "PENDING",
+                                   "depends_on":  "stage_4_approved",
+                                   "workflow_definition":  ".agents/tasks/stage-workflows/stage5-w4w5-implementation.md"
+                               },
+                   "stage_6":  {
+                                   "name":  "W6 Verification",
+                                   "status":  "PENDING",
+                                   "depends_on":  "stage_5_approved",
+                                   "workflow_definition":  ".agents/tasks/stage-workflows/stage6-w6-verification.md"
+                               },
+                   "stage_7":  {
+                                   "name":  "W7-W9 Publication",
+                                   "status":  "PENDING",
+                                   "depends_on":  "stage_6_complete",
+                                   "workflow_definition":  ".agents/tasks/stage-workflows/stage7-w7w8w9-publication.md"
+                               }
+               },
+    "monitoring":  {
+                       "active_workflow":  "wf_c012af3a78838210",
+                       "awaiting":  "stage_2_completion",
+                       "next_action":  "Launch stage_2 after stage_1 approved"
+                   },
+    "evidence_location":  ".agents/evidence/runs/",
+    "last_updated":  "2026-10-11T18:15:00Z"
 }
