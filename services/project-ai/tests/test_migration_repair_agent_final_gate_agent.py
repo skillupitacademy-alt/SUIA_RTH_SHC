@@ -95,3 +95,19 @@ async def test_final_gate_agent_returns_verdict():
     # Should have gate verdict
     assert "gate_verdict" in result.outputs
     assert "check_results" in result.outputs
+
+
+def test_format_commit_message_includes_run_id():
+    """Test that format_commit_message includes Run-ID footer."""
+    from app.workflows.migration_repair.agents.final_gate_agent import format_commit_message
+    
+    run_id = "migration-repair-20261011-143539-06936246"
+    message = format_commit_message(run_id)
+    
+    assert "Run-ID: migration-repair-20261011-143539-06936246" in message
+    assert len(message.split("\n")) >= 2  # At least summary + footer
+    
+    # Test with custom summary
+    custom_message = format_commit_message(run_id, "Custom commit summary")
+    assert "Custom commit summary" in custom_message
+    assert "Run-ID: migration-repair-20261011-143539-06936246" in custom_message

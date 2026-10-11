@@ -134,6 +134,20 @@ def verify_test_coverage(check_results: dict[str, CheckStatus]) -> tuple[bool, l
     return all_tests_executed, skipped_tests
 
 
+def format_commit_message(run_id: str, summary: str = "Migration repair verification complete") -> str:
+    """
+    Format a commit message with Run-ID footer for traceability.
+    
+    Args:
+        run_id: Run identifier (e.g., "migration-repair-20261011-143539-06936246")
+        summary: Commit message summary line
+        
+    Returns:
+        Formatted commit message with Run-ID footer
+    """
+    return f"{summary}\n\nRun-ID: {run_id}"
+
+
 async def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]]:
     """
     Verify commit identity matches tested SHA.
@@ -150,6 +164,12 @@ async def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]]:
             "git rev-parse HEAD",
             timeout=10
         )
+        
+        # Validate git command succeeded
+        if result.exit_code != 0:
+            # Non-zero exit code indicates failure
+            return False, None, None
+        
         current_sha = result.stdout.strip()
         
         # TODO: In production, this would read tested_sha from verification_runner
