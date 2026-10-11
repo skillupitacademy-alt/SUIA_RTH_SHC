@@ -84,3 +84,15 @@ class VerificationStage(BaseModel):
     duration_ms: Optional[int] = Field(default=None, description="Execution duration in milliseconds")
     blocked_reason: Optional[str] = Field(default=None, description="Why stage was blocked if status is BLOCKED")
     cleanup_status: Optional[CheckStatus] = Field(default=None, description="Status of cleanup verification if applicable")
+
+
+class PublicationState(BaseModel):
+    """State tracking for publication phases."""
+    
+    approval_status: str = Field(description="Final gate verdict (e.g., 'PASS', 'FAIL', 'BLOCKED')")
+    local_sha: str = Field(description="Local HEAD commit SHA before push attempt")
+    push_attempted: bool = Field(description="Whether push to remote was attempted")
+    push_succeeded: bool = Field(description="Whether push command succeeded")
+    remote_sha: Optional[str] = Field(default=None, description="Remote HEAD SHA after push, or None if fetch failed")
+    sha_match: Optional[bool] = Field(default=None, description="Whether local_sha matches remote_sha")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(), description="Publication timestamp")
