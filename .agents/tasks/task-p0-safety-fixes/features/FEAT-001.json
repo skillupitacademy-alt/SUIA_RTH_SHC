@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Fix command injection vulnerability in runner.py by replacing shell=True subprocess calls with asyncio.create_subprocess_exec() using argument arrays, implement strict argv validation rejecting shell metacharacters, and add executable allowlist validation.",
+  "status": "completed",
+  "steps": [
+    "Read current runner.py implementation at services/project-ai/app/workflows/migration_repair/runner.py line 82-86 which uses asyncio.create_subprocess_shell",
+    "Create validate_argv() function that checks each argument for shell metacharacters (|, &, ;, $, `, \\, <, >, (, ), {, }, [, ], *, ?, ~, !, #, \\n, \\r, quotes) and raises ValueError if found",
+    "Create validate_executable() function that checks base command against ALLOWED_COMMANDS and optionally validates full path",
+    "Replace run_command() implementation: parse command string into argv array, validate each element, replace asyncio.create_subprocess_shell with asyncio.create_subprocess_exec(*argv, stdout=..., stderr=..., cwd=cwd, env=env)",
+    "Update validate_command() to call both validate_executable() and validate_argv()",
+    "Create test file services/project-ai/tests/test_runner_command_safety.py with tests: test_rejects_pipe_metacharacter, test_rejects_ampersand, test_rejects_semicolon, test_rejects_dollar_sign, test_rejects_backtick, test_rejects_redirect_operators, test_accepts_safe_command, test_validates_executable_in_allowlist, test_rejects_executable_not_in_allowlist",
+    "Add docstring warnings to run_command() stating: 'Uses create_subprocess_exec to prevent shell injection. Arguments are validated for shell metacharacters.'"
+  ],
+  "acceptance_criteria": [
+    "run_command() no longer uses shell=True or create_subprocess_shell",
+    "All shell metacharacters are rejected with ValueError before execution",
+    "Only executables in ALLOWED_COMMANDS can be executed",
+    "All 9+ unit tests pass: pytest services/project-ai/tests/test_runner_command_safety.py -v"
+  ],
+  "verification": [
+    "pytest services/project-ai/tests/test_runner_command_safety.py -v"
+  ],
+  "blocked_reason": null,
+  "findings": "Implementation complete. All 21 tests pass. Command injection vulnerability eliminated by replacing create_subprocess_shell with create_subprocess_exec. Added validate_argv() to reject 23 shell metacharacters and validate_executable() to enforce ALLOWED_COMMANDS allowlist. Safe commands using allowed executables (pytest, git, pnpm, etc.) with arguments containing no metacharacters are accepted. Malicious commands with injection attempts (pipes, semicolons, redirects, variable expansion, command substitution) are rejected with ValueError before execution."
+}
