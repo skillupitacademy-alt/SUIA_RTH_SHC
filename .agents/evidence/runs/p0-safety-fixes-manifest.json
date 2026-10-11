@@ -1,0 +1,248 @@
+{
+  "manifest_version": "1.0",
+  "task_id": "task-p0-safety-fixes",
+  "task_description": "Fix five P0 safety issues in migration repair workflow with comprehensive testing and verification",
+  "manifest_timestamp": "2026-10-11T20:15:00+05:30",
+  "verdict": "APPROVED",
+  "iteration": 1,
+  "features_completed": [
+    {
+      "id": "FEAT-001",
+      "description": "Fix command injection vulnerability in runner.py",
+      "status": "completed",
+      "commit_sha": "10ce6e10",
+      "commit_message": "fix: eliminate command injection in runner.py (FEAT-001)",
+      "tests_added": 21,
+      "tests_passing": 21,
+      "implementation_files": [
+        {
+          "path": "services/project-ai/app/workflows/migration_repair/runner.py",
+          "sha256": "3853F16E8B49D072251F004AD6CD7B7E2B81B4B2154A2FAD1610264BFE8F17BD",
+          "changes": "Replaced create_subprocess_shell with create_subprocess_exec, added validate_argv() to reject 23 shell metacharacters, added validate_executable() to enforce ALLOWED_COMMANDS allowlist"
+        }
+      ],
+      "test_files": [
+        {
+          "path": "services/project-ai/tests/test_runner_command_safety.py",
+          "sha256": "57CF0E880FEF0B7D575AE0D94F51DDBC3EE183A0618416F80A69A04EDEF079FA",
+          "tests": 21,
+          "passing": 21
+        }
+      ]
+    },
+    {
+      "id": "FEAT-002",
+      "description": "Add validate_and_connect() to safety.py with trusted host/database validation",
+      "status": "completed",
+      "commit_sha": "f6622f0e",
+      "commit_message": "fix: add trusted host/database validation (FEAT-002)",
+      "tests_added": 17,
+      "tests_passing": 17,
+      "implementation_files": [
+        {
+          "path": "services/project-ai/app/workflows/migration_repair/safety.py",
+          "sha256": "BCD708A1CA90CEE72CB37F4001312A9AEA7B116755D9C6CAF3A2759953E791AF",
+          "changes": "Added TRUSTED_TEST_HOSTS and TRUSTED_TEST_DATABASES constants, created parse_database_url() and validate_and_connect() functions with defense-in-depth validation, updated DatabaseTarget.__post_init__() to validate host against trusted allowlist"
+        }
+      ],
+      "test_files": [
+        {
+          "path": "services/project-ai/tests/test_database_connection_validation.py",
+          "sha256": "49A07BC477E34F7302CC7FECC97AED521287093256F1F7A352ADFF461A7A2414",
+          "tests": 17,
+          "passing": 17
+        }
+      ]
+    },
+    {
+      "id": "FEAT-003",
+      "description": "Add guaranteed cleanup to verification.py with try/finally blocks",
+      "status": "completed",
+      "commit_sha": "6bdc3389",
+      "commit_message": "fix: guarantee cleanup with verification (FEAT-003)",
+      "tests_added": 8,
+      "tests_passing": 8,
+      "implementation_files": [
+        {
+          "path": "services/project-ai/app/workflows/migration_repair/verification.py",
+          "sha256": "ACE8DA455C592B5D6B380329048CAAD163294E9A9B87FF92030CCFA38D97A58F",
+          "changes": "Added CleanupResult model, implemented ensure_cleanup() and verify_database_dropped() functions, wrapped run_verification_pipeline() in try/finally block, added cleanup_status field to VerificationStage, marks stage as BLOCKED if cleanup verification fails"
+        }
+      ],
+      "test_files": [
+        {
+          "path": "services/project-ai/tests/test_verification_cleanup.py",
+          "sha256": "3A0CC36B767960F5EE44A017E3B8FC84643D3B9641ABA60D52B2C9D2D47F3667",
+          "tests": 8,
+          "passing": 8
+        }
+      ]
+    },
+    {
+      "id": "FEAT-004",
+      "description": "Add evidence verification to final_gate_agent.py",
+      "status": "completed",
+      "commit_sha": "9bce2b68",
+      "commit_message": "fix: verify evidence files and commit identity (FEAT-004)",
+      "tests_added": 12,
+      "tests_passing": 12,
+      "implementation_files": [
+        {
+          "path": "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+          "sha256": "DFF40397C7E6E2EAE44D6EDF994F55D155979062B22C48EF70753B66FBB03487",
+          "changes": "Added verify_evidence_files(), verify_test_coverage(), and verify_commit_identity() functions, updated execute_final_gate_agent() to call all verifications before gate evaluation, returns BLOCKED with detailed error messages when evidence is missing/tampered, tests are skipped, or commit SHA mismatches"
+        }
+      ],
+      "test_files": [
+        {
+          "path": "services/project-ai/tests/test_final_gate_verification.py",
+          "sha256": "A1F6C734DB9A44BF0192059B04CB5BF9C0C68AB18CE4747D742FF7420FC3EB25",
+          "tests": 12,
+          "passing": 12
+        }
+      ]
+    },
+    {
+      "id": "FEAT-005",
+      "description": "Add publication confirmation to publisher_agent.py",
+      "status": "completed",
+      "commit_sha": "26e2413a",
+      "commit_message": "fix: confirm remote SHA after publication (FEAT-005)",
+      "tests_added": 11,
+      "tests_passing": 11,
+      "implementation_files": [
+        {
+          "path": "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+          "sha256": "055DB468FF7116B5C18E62E3E24CAF26E6383DCB2C8817B09B2C4AA7788E2955",
+          "changes": "Added PublicationState dataclass to models.py, implemented fetch_remote_sha() to parse git ls-remote output, implemented record_publication() to write publication.json to evidence, updated execute_publisher_agent() to fetch remote SHA, compare with local SHA, and return FAILED if SHA mismatch detected"
+        }
+      ],
+      "test_files": [
+        {
+          "path": "services/project-ai/tests/test_publisher_verification.py",
+          "sha256": "8B32BBC89BF8D887A8805EC22FADD3A4EADFA71FABF8F4E39FF47DA9DBBFA2AC",
+          "tests": 11,
+          "passing": 11
+        }
+      ]
+    }
+  ],
+  "test_summary": {
+    "total_tests_added": 69,
+    "total_tests_passing": 69,
+    "total_tests_failing": 0,
+    "total_tests_skipped": 0,
+    "test_files_created": 5,
+    "test_execution_results": [
+      {
+        "test_file": "test_runner_command_safety.py",
+        "tests": 21,
+        "passed": 21,
+        "failed": 0,
+        "execution_time": "0.34s"
+      },
+      {
+        "test_file": "test_database_connection_validation.py",
+        "tests": 17,
+        "passed": 17,
+        "failed": 0,
+        "execution_time": "0.34s"
+      },
+      {
+        "test_file": "test_verification_cleanup.py",
+        "tests": 8,
+        "passed": 8,
+        "failed": 0,
+        "execution_time": "0.22s"
+      },
+      {
+        "test_file": "test_final_gate_verification.py",
+        "tests": 12,
+        "passed": 12,
+        "failed": 0,
+        "execution_time": "0.65s"
+      },
+      {
+        "test_file": "test_publisher_verification.py",
+        "tests": 11,
+        "passed": 11,
+        "failed": 0,
+        "execution_time": "0.31s"
+      }
+    ]
+  },
+  "commit_history": [
+    {
+      "sha": "10ce6e10",
+      "message": "fix: eliminate command injection in runner.py (FEAT-001)",
+      "feat": "FEAT-001"
+    },
+    {
+      "sha": "f6622f0e",
+      "message": "fix: add trusted host/database validation (FEAT-002)",
+      "feat": "FEAT-002"
+    },
+    {
+      "sha": "6bdc3389",
+      "message": "fix: guarantee cleanup with verification (FEAT-003)",
+      "feat": "FEAT-003"
+    },
+    {
+      "sha": "9bce2b68",
+      "message": "fix: verify evidence files and commit identity (FEAT-004)",
+      "feat": "FEAT-004"
+    },
+    {
+      "sha": "26e2413a",
+      "message": "fix: confirm remote SHA after publication (FEAT-005)",
+      "feat": "FEAT-005"
+    },
+    {
+      "sha": "765c44f7",
+      "message": "fix: update ALLOWED_COMMANDS test to include docker-compose",
+      "feat": "FEAT-001"
+    },
+    {
+      "sha": "2f1a9d29",
+      "message": "fix: p0 integration issues - verification_runner outputs and CLI test async patterns",
+      "feat": "integration"
+    }
+  ],
+  "current_head": {
+    "sha": "2f1a9d29",
+    "branch": "project-llm-e2e-implementation",
+    "message": "fix: p0 integration issues - verification_runner outputs and CLI test async patterns"
+  },
+  "review_findings": [
+    {
+      "severity": "minor",
+      "description": "subprocess exec without explicit shell parameter — runner.py calls asyncio.create_subprocess_exec(*argv, ...) but does not explicitly pass shell=False. While create_subprocess_exec defaults to shell=False, explicit is better than implicit for security-critical code.",
+      "recommendation": "Add shell=False to the call."
+    },
+    {
+      "severity": "note",
+      "description": "Evidence file memory consumption — final_gate_agent.py reads entire evidence files into memory when recomputing SHA-256 hashes. For very large evidence files (e.g., multi-MB test output logs), this could cause memory pressure.",
+      "recommendation": "The code already chunks file reads at 8192 bytes, so this is a minor efficiency note rather than a blocking defect."
+    },
+    {
+      "severity": "minor",
+      "description": "Hardcoded database allowlists — TRUSTED_TEST_HOSTS and TRUSTED_TEST_DATABASES are hardcoded frozensets in safety.py. There is no mechanism to override these via environment variables or configuration files.",
+      "recommendation": "Consider adding optional environment variable overrides (e.g., TRUSTED_TEST_HOSTS_OVERRIDE) that extend the base allowlist."
+    }
+  ],
+  "verification_status": {
+    "all_features_completed": true,
+    "all_tests_passing": true,
+    "verdict_approved": true,
+    "evidence_collected": true,
+    "commits_on_branch": true,
+    "ready_for_publication": true
+  },
+  "evidence_locations": {
+    "task_directory": ".agents/tasks/task-p0-safety-fixes",
+    "verdict_file": ".agents/tasks/task-p0-safety-fixes/verdict.json",
+    "review_document": ".agents/tasks/task-p0-safety-fixes/2026-10-11-194100-review.md",
+    "feature_records": ".agents/tasks/task-p0-safety-fixes/features/FEAT-{001-005}.json",
+    "manifest": ".agents/evidence/runs/p0-safety-fixes-manifest.json"
+  }
+}
