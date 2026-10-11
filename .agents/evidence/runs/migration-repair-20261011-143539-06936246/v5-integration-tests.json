@@ -1,0 +1,15 @@
+{
+  "stage": "V5",
+  "verdict": "BLOCKED",
+  "reason": "V4 package tests blocked",
+  "repair_001_exit_code": null,
+  "repair_001_passed": 0,
+  "repair_001_failed": 0,
+  "data_integrity_check": {
+    "insert": false,
+    "select": false,
+    "delete": false
+  },
+  "test_log": "",
+  "run_id": "migration-repair-20261011-143539-06936246"
+}

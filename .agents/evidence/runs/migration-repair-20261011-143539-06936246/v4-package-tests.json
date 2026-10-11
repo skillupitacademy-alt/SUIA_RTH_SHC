@@ -1,0 +1,6 @@
+{
+  "stage": "V4",
+  "verdict": "BLOCKED",
+  "reason": "V3 schema verification blocked",
+  "run_id": "migration-repair-20261011-143539-06936246"
+}

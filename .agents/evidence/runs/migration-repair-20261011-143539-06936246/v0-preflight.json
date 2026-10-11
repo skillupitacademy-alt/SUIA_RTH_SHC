@@ -1,0 +1,20 @@
+{
+  "stage": "V0",
+  "verdict": "PASS",
+  "commit_sha": "3b07a649fe627bce508d58c3c135258b51758e97",
+  "checks": {
+    "no_production_markers": true,
+    "allowed_hosts_only": true,
+    "allowed_commands_only": true
+  },
+  "details": "V0 Pre-flight Safety Check PASSED. All checks successful: (1) No production markers: .env.test.local contains only 'tutorial_test' database name with no *_prod, *production*, tutorial_prod, or neon-prod markers. Comments mention production but no actual production values present. (2) Allowed hosts only: All DATABASE_URL variables point to localhost:55432 (test-postgres container). No external hosts found. (3) Allowed commands only: verification.py uses run_command() which restricts execution to ALLOWED_COMMANDS=['pnpm', 'turbo', 'pytest', 'node', 'tsx', 'drizzle-kit', 'git', 'npm', 'npx', 'docker-compose'] as defined in runner.py. The verification pipeline (V0-V10) requires only 'pnpm', 'git', and 'docker-compose' which are all present in the allowed list. Test environment configuration: .env.test.local created with isolated test database (postgresql://test_user:test_password@localhost:55432/tutorial_test) using docker-compose.test-db.yml. Production .env.local remains untouched and will not be used during Stage 6 verification.",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "test_config": {
+    "env_file": ".env.test.local",
+    "database_host": "localhost",
+    "database_port": 55432,
+    "database_name": "tutorial_test",
+    "docker_compose": "services/project-ai/docker-compose.test-db.yml",
+    "container_name": "project-ai-test-db"
+  }
+}
