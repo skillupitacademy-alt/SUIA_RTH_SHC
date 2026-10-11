@@ -32,6 +32,7 @@ class AgentContext:
     """Context provided to an agent during execution."""
     
     task_id: str
+    run_id: str
     workflow_state: Dict[str, Any]
     repository_snapshot: Dict[str, Any]
     evidence_graph: Dict[str, Any]
@@ -714,6 +715,7 @@ class AgentCoordinator:
                 # Update context with prior results
                 execution_context = AgentContext(
                     task_id=context.task_id,
+                    run_id=context.run_id,
                     workflow_state=context.workflow_state,
                     repository_snapshot=context.repository_snapshot,
                     evidence_graph=context.evidence_graph,
@@ -790,6 +792,7 @@ class AgentCoordinator:
             # Update context with prior results
             execution_context = AgentContext(
                 task_id=context.task_id,
+                run_id=context.run_id,
                 workflow_state=context.workflow_state,
                 repository_snapshot=context.repository_snapshot,
                 evidence_graph=context.evidence_graph,

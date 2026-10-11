@@ -181,8 +181,10 @@ class WorkflowEngine:
         repository_root = Path(task_context.get('repository_root', '.'))
         
         # Create agent execution context
+        task_id = task_context.get('task_id', 'unknown')
         agent_context = AgentContext(
-            task_id=task_context.get('task_id', 'unknown'),
+            task_id=task_id,
+            run_id=task_id,
             workflow_state=task_context,
             repository_snapshot=snapshot,
             evidence_graph=task_context.get('evidence_graph', {}),
@@ -358,6 +360,7 @@ class WorkflowEngine:
         # Create agent execution context
         context = AgentContext(
             task_id=workflow_id,
+            run_id=workflow_id,
             workflow_state=workflow.to_dict(),
             repository_snapshot=snapshot,
             evidence_graph={},

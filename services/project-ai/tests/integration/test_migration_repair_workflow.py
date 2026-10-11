@@ -68,6 +68,7 @@ def base_agent_context(mock_repository_root):
     """Create base agent context for testing."""
     return AgentContext(
         task_id="test-workflow-001",
+            run_id="test-workflow-001-run",
         workflow_state={"workflow_id": "test-workflow-001", "phase": "W0"},
         repository_snapshot={"structure": {}, "blocks": {}},
         evidence_graph={},

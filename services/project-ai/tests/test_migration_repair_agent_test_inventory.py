@@ -15,6 +15,7 @@ async def test_test_inventory_logs_evidence():
     """Test that test inventory agent logs to evidence ledger."""
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -36,6 +37,7 @@ async def test_test_inventory_handles_missing_directory():
     """Test that test inventory handles missing test directory gracefully."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -57,6 +59,7 @@ async def test_test_inventory_returns_summary():
     """Test that test inventory returns summary of tests."""
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

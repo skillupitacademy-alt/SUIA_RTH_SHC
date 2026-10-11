@@ -14,6 +14,7 @@ from app.orchestration.agent_coordinator import AgentContext, AgentResult, Agent
 from app.evidence import ledger
 from ..runner import run_command
 from ..models import CheckStatus, PublicationState
+from .final_gate_agent import format_commit_message
 
 
 async def fetch_remote_sha() -> Optional[str]:
@@ -187,6 +188,29 @@ async def execute_publisher_agent(context: AgentContext) -> AgentResult:
         # Record publication to evidence
         evidence_dir = Path(context.repository_root) / ".agents" / "evidence"
         record_publication(publication_state, evidence_dir)
+        
+        # Create final workflow completion commit if evidence was assembled
+        evidence_assembler = context.prior_agent_outputs.get("evidence_assembler")
+        if evidence_assembler and evidence_assembler.passed:
+            # Stage evidence files
+            await run_command("git add .agents/evidence/", cwd=str(context.repository_root))
+            
+            # Create commit with Run-ID footer
+            commit_message = format_commit_message(
+                run_id=context.run_id,
+                summary=f"Migration repair workflow complete - {gate_verdict}"
+            )
+            
+            # Commit evidence
+            result = await run_command(
+                f'git commit -m "{commit_message}"',
+                cwd=str(context.repository_root)
+            )
+            
+            if result.exit_code == 0:
+                # Update local_sha with new commit
+                sha_result = await run_command("git rev-parse HEAD", cwd=str(context.repository_root))
+                local_sha = sha_result.stdout.strip()
         
         # If push was attempted and succeeded, remote SHA MUST match local SHA
         if push_attempted and push_succeeded:

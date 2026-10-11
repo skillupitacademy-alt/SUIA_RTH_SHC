@@ -15,6 +15,7 @@ async def test_static_reviewer_logs_evidence():
     """Test that static reviewer agent logs to evidence ledger."""
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -36,6 +37,7 @@ async def test_static_reviewer_handles_missing_directory():
     """Test that static reviewer handles missing migration directory gracefully."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -55,6 +57,7 @@ async def test_static_reviewer_returns_syntax_results():
     """Test that static reviewer returns syntax check results."""
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

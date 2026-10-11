@@ -27,6 +27,7 @@ async def test_test_reviewer_logs_evidence():
     
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -48,6 +49,7 @@ async def test_test_reviewer_blocks_without_inventory():
     """Test that test reviewer blocks when inventory hasn't completed."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -79,6 +81,7 @@ async def test_test_reviewer_returns_coverage_analysis():
     
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

@@ -15,6 +15,7 @@ async def test_migration_audit_logs_evidence():
     """Test that migration audit agent logs to evidence ledger."""
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -40,6 +41,7 @@ async def test_migration_audit_handles_missing_directory():
     """Test that migration audit handles missing migration directory gracefully."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -62,6 +64,7 @@ async def test_migration_audit_returns_populated_result():
     """Test that migration audit returns result with outputs."""
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

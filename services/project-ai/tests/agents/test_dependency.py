@@ -51,6 +51,7 @@ async def test_execute_dependency_success():
     snapshot = create_test_snapshot_with_dependencies()
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},
@@ -77,6 +78,7 @@ async def test_execute_dependency_detects_cycles():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},
@@ -104,6 +106,7 @@ async def test_execute_dependency_detects_version_conflicts():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},

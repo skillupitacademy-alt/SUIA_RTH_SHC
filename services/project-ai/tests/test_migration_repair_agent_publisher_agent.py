@@ -29,6 +29,7 @@ async def test_publisher_agent_logs_evidence():
     
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -50,6 +51,7 @@ async def test_publisher_agent_blocks_without_gate_pass():
     """Test that publisher agent blocks when gate doesn't pass."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -82,6 +84,7 @@ async def test_publisher_agent_does_not_push():
     
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

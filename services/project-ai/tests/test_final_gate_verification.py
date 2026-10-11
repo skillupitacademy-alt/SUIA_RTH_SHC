@@ -165,6 +165,7 @@ async def test_gate_blocked_on_missing_evidence(tmp_path):
     """Test gate returns BLOCKED when evidence files are missing."""
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -208,6 +209,7 @@ async def test_gate_blocked_on_tampered_evidence(tmp_path):
     """Test gate returns BLOCKED when evidence files are tampered."""
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -251,6 +253,7 @@ async def test_gate_blocked_on_skipped_tests(tmp_path):
     """Test gate returns BLOCKED when required tests are skipped."""
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -294,6 +297,7 @@ async def test_gate_blocked_on_sha_mismatch(tmp_path):
     """Test gate returns BLOCKED when commit SHA doesn't match."""
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -337,6 +341,7 @@ async def test_gate_passes_with_all_verifications(tmp_path):
     """Test gate returns PASS when all verifications succeed."""
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

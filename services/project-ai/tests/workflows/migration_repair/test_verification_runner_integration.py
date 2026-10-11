@@ -29,6 +29,7 @@ async def test_verification_runner_complete_pipeline_execution():
     """
     context = AgentContext(
         task_id="test_integration_001",
+            run_id="test_integration_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -111,6 +112,7 @@ async def test_verification_runner_stages_blocked_on_failure():
     """
     context = AgentContext(
         task_id="test_integration_002",
+            run_id="test_integration_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -212,6 +214,7 @@ async def test_verification_runner_database_validation_failure():
     """
     context = AgentContext(
         task_id="test_integration_003",
+            run_id="test_integration_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -248,6 +251,7 @@ async def test_verification_runner_captures_exit_codes():
     """
     context = AgentContext(
         task_id="test_integration_004",
+            run_id="test_integration_004-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -318,6 +322,7 @@ async def test_verification_runner_evidence_collection():
     """
     context = AgentContext(
         task_id="test_integration_005",
+            run_id="test_integration_005-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

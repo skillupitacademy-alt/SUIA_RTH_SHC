@@ -15,6 +15,7 @@ async def test_evidence_audit_logs_evidence():
     """Test that evidence audit agent logs to evidence ledger."""
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -36,6 +37,7 @@ async def test_evidence_audit_handles_missing_evidence_dir():
     """Test that evidence audit handles missing evidence directory gracefully."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -57,6 +59,7 @@ async def test_evidence_audit_returns_validation_results():
     """Test that evidence audit returns validation results."""
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

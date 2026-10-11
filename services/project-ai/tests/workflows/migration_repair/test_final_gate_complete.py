@@ -115,6 +115,7 @@ async def test_final_gate_agent_success():
     
     context = AgentContext(
         task_id="test-final-gate-success",
+        run_id="test-run-final-gate-success",
         repository_root=repo_root,
         workflow_state={},
         repository_snapshot={},

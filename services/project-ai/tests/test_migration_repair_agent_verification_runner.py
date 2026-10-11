@@ -15,6 +15,7 @@ async def test_verification_runner_logs_evidence():
     """Test that verification runner agent logs to evidence ledger."""
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -36,6 +37,7 @@ async def test_verification_runner_returns_stage_results():
     """Test that verification runner returns verification stage results."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -57,6 +59,7 @@ async def test_verification_runner_handles_errors():
     """Test that verification runner handles errors without crashing."""
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

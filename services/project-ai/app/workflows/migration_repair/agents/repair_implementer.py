@@ -12,6 +12,7 @@ from pathlib import Path
 from app.orchestration.agent_coordinator import AgentContext, AgentResult, AgentStatus
 from app.evidence import ledger
 from ..runner import run_command
+from .final_gate_agent import format_commit_message
 
 
 async def execute_repair_implementer(context: AgentContext) -> AgentResult:
@@ -173,6 +174,24 @@ async def execute_repair_implementer(context: AgentContext) -> AgentResult:
                 except Exception as e:
                     # Continue even if this fails
                     pass
+        
+        # Stage modified files and create commit if any changes were made
+        if files_modified:
+            # Stage all modified files
+            for file_path in files_modified:
+                await run_command(f"git add {file_path}", cwd=str(context.repository_root))
+            
+            # Create commit with Run-ID footer
+            commit_message = format_commit_message(
+                run_id=context.run_id,
+                summary="Apply migration repair patches"
+            )
+            
+            # Commit staged changes
+            await run_command(
+                f'git commit -m "{commit_message}"',
+                cwd=str(context.repository_root)
+            )
         
         # Calculate duration
         end_time = datetime.now(UTC)

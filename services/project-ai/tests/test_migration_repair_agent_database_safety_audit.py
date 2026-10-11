@@ -16,6 +16,7 @@ async def test_database_safety_audit_logs_evidence():
     """Test that database safety audit agent logs to evidence ledger."""
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -41,6 +42,7 @@ async def test_database_safety_audit_handles_missing_env():
     
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -65,6 +67,7 @@ async def test_database_safety_audit_detects_production():
     
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -92,6 +95,7 @@ async def test_database_safety_audit_handles_errors():
     
     context = AgentContext(
         task_id="test_workflow_004",
+            run_id="test_workflow_004-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

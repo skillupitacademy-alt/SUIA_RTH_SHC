@@ -16,6 +16,7 @@ async def test_workflow_controller_logs_evidence():
     """Test that workflow controller agent logs to evidence ledger."""
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -37,6 +38,7 @@ async def test_workflow_controller_returns_success():
     """Test that workflow controller returns SUCCESS status."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -76,6 +78,7 @@ async def test_workflow_controller_handles_errors():
     
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

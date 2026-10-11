@@ -66,6 +66,7 @@ async def test_execute_documentation_builds_summary():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},
@@ -115,6 +116,7 @@ async def test_execute_documentation_handles_failures():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},
@@ -137,6 +139,7 @@ async def test_execute_documentation_collects_evidence():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},

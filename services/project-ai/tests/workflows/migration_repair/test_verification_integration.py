@@ -52,6 +52,7 @@ async def test_full_verification_pipeline_with_real_database():
     
     context = AgentContext(
         task_id="test-verification-integration",
+        run_id="test-run-verification-integration",
         repository_root=repo_root,
         workflow_state={
             "database_target": {
@@ -131,6 +132,7 @@ async def test_verification_runner_schema_mismatch_detection():
     
     context = AgentContext(
         task_id="test-schema-mismatch",
+        run_id="test-run-schema-mismatch",
         repository_root=repo_root,
         workflow_state={
             "database_target": {
@@ -189,6 +191,7 @@ async def test_verification_runner_disposable_db_cleanup():
     
     context = AgentContext(
         task_id="test-db-cleanup",
+        run_id="test-run-db-cleanup",
         repository_root=repo_root,
         workflow_state={
             "database_target": {

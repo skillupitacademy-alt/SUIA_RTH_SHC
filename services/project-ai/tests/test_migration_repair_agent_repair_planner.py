@@ -39,6 +39,7 @@ async def test_repair_planner_logs_evidence():
     
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -60,6 +61,7 @@ async def test_repair_planner_blocks_on_missing_w1():
     """Test that repair planner blocks when W1 agents haven't completed."""
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -90,6 +92,7 @@ async def test_repair_planner_handles_errors():
     
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},

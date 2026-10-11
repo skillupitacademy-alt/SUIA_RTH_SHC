@@ -28,6 +28,7 @@ async def test_workflow_controller_logs_evidence():
     
     context = AgentContext(
         task_id="test-workflow-evidence",
+        run_id="test-run-evidence",
         repository_root=repo_root,
         workflow_state={},
         repository_snapshot={},
@@ -135,6 +136,7 @@ async def test_workflow_controller_error_handling():
     
     context = AgentContext(
         task_id="test-workflow-error",
+        run_id="test-run-error",
         repository_root=repo_root,
         workflow_state={},
         repository_snapshot={},
@@ -168,6 +170,7 @@ async def test_workflow_controller_uses_run_command():
     
     context = AgentContext(
         task_id="test-run-command",
+        run_id="test-run-command",
         repository_root=repo_root,
         workflow_state={},
         repository_snapshot={},

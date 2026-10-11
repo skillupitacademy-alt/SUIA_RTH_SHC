@@ -29,6 +29,7 @@ async def test_execute_governance_prevents_self_approval():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "submitter": "alice@example.com",
             "approver": "alice@example.com"  # Same person!
@@ -68,6 +69,7 @@ async def test_execute_governance_allows_different_approver():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "submitter": "alice@example.com",
             "approver": "bob@example.com"  # Different person
@@ -106,6 +108,7 @@ async def test_execute_governance_verifies_manifest_hash():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "submitter": "alice@example.com",
             "approver": "bob@example.com"
@@ -131,6 +134,7 @@ async def test_execute_governance_warns_missing_approver():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "submitter": "alice@example.com"
             # No approver

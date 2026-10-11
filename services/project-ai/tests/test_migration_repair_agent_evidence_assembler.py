@@ -23,6 +23,7 @@ async def test_evidence_assembler_logs_evidence():
     
     context = AgentContext(
         task_id="test_workflow_001",
+            run_id="test_workflow_001-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -52,6 +53,7 @@ async def test_evidence_assembler_creates_workflow_evidence():
     
     context = AgentContext(
         task_id="test_workflow_002",
+            run_id="test_workflow_002-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
@@ -73,6 +75,7 @@ async def test_evidence_assembler_handles_errors():
     """Test that evidence assembler handles errors without crashing."""
     context = AgentContext(
         task_id="test_workflow_003",
+            run_id="test_workflow_003-run",
         workflow_state={},
         repository_snapshot={},
         evidence_graph={},
