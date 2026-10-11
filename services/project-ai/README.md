@@ -833,6 +833,44 @@ and a list of structured error strings on failure. A non-empty list causes the
 
 ---
 
+## Migration Repair Workflow
+
+The Migration Repair Workflow System is an autonomous execution framework that discovers, repairs, verifies, and publishes database migration fixes with complete evidence collection and independent review.
+
+### Documentation
+
+See [Migration Repair Workflow Documentation](docs/migration-repair-workflow.md) for:
+- Complete architecture overview with DAG diagram
+- All 13 agent responsibilities and capabilities
+- Safety constraints and production database protection
+- Evidence requirements and ledger format
+- Troubleshooting guide for common failures
+- How to add new verification stages
+- CLI usage examples
+
+### Quick Start
+
+```bash
+# Preview execution plan
+python scripts/run-migration-repair.py --dry-run
+
+# Run full workflow
+python scripts/run-migration-repair.py --verbose
+
+# Custom database URL
+python scripts/run-migration-repair.py --database-url postgresql://user:pass@localhost:55432/test_db
+```
+
+### Key Features
+
+- **Evidence-Based Verification**: All success claims backed by authenticated execution records
+- **Fail-Closed Design**: BLOCKED/SKIPPED never resolve to PASS
+- **Independent Review**: Multiple agents verify work without trusting prior conclusions
+- **Immutable Evidence**: Append-only JSONL ledgers with artifact hashing
+- **Production Safety**: Never mutates production databases automatically
+
+---
+
 ## M2.8 Implementation Status
 
 ### ✅ Implemented
