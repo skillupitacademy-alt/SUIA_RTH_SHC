@@ -450,3 +450,469 @@
 {"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T09:49:06.075261+00:00", "status": "completed", "duration_ms": 59, "evidence": {"workflow_id": "test_workflow_002", "baseline_sha": "74620dcc8aa6e2672291bb3567d7146dce641939", "waves_count": 10, "agents_count": 14}}
 {"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T09:49:06.087163+00:00", "status": "started"}
 {"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T09:49:06.089784+00:00", "status": "completed", "duration_ms": 2, "evidence": {"workflow_id": "test_workflow_003", "baseline_sha": "unknown", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.497378+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.499932+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.514076+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.516652+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.528115+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.530130+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.540886+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.543310+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.556240+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:34.558286+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.260324+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.262303+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.275083+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.287698+00:00", "status": "completed", "duration_ms": 12, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.299774+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.301671+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.313793+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.320797+00:00", "status": "completed", "duration_ms": 7, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.341481+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:30:57.343417+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.133484+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.135568+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.149558+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.155393+00:00", "status": "completed", "duration_ms": 5, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.169692+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.171650+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.188942+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.191037+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.205214+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:40:54.210633+00:00", "status": "completed", "duration_ms": 5, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.383337+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.385470+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.397815+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.399681+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.411489+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.413295+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.424736+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.426932+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.438091+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:41:21.440541+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.666284+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.668694+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.691124+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.692979+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.714733+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.717105+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.725995+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.727968+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.736272+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:42:16.738002+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:17.630639+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:17.633091+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:17.645208+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:17.957914+00:00", "status": "completed", "duration_ms": 312, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:17.974196+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:17.976265+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:17.989777+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:17.994347+00:00", "status": "completed", "duration_ms": 4, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:18.006608+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T13:55:18.008955+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.633885+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.635921+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.645313+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.646684+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.655328+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.656901+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.665519+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.666761+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.675729+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:06.677134+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.621239+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.622473+00:00", "status": "completed", "duration_ms": 1, "evidence": {"db_url_configured": false, "findings_count": 1}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.628888+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.630463+00:00", "status": "completed", "duration_ms": 1, "evidence": {"db_url_configured": false, "findings_count": 1}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.638574+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.639842+00:00", "status": "completed", "duration_ms": 1, "evidence": {"db_configured": true, "db_name": "tutorial_prod", "db_host": "localhost", "db_port": 5432, "findings_count": 2, "critical_findings": 2, "is_safe": false}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.647194+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.648147+00:00", "status": "completed", "duration_ms": 0, "evidence": {"db_configured": true, "db_name": "not-a-valid-url", "db_host": null, "db_port": null, "findings_count": 0, "critical_findings": 0, "is_safe": true}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:00:29.655223+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:00:29.719744+00:00", "status": "completed", "duration_ms": 64, "evidence": {"records_collected": 1, "evidence_file": "migration-repair-test_workflow_001.jsonl"}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:00:29.748169+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:00:29.786298+00:00", "status": "completed", "duration_ms": 38, "evidence": {"records_collected": 1, "evidence_file": "migration-repair-test_workflow_002.jsonl"}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:00:29.794642+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:00:29.796835+00:00", "status": "completed", "duration_ms": 2, "evidence": {"records_collected": 0, "evidence_file": "migration-repair-test_workflow_003.jsonl"}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.810930+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.884212+00:00", "status": "completed", "duration_ms": 73, "evidence": {"evidence_dir_exists": true, "jsonl_files_found": 6, "valid_records": 565, "invalid_records": 0}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.892767+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.894085+00:00", "status": "completed", "duration_ms": 1, "evidence": {"evidence_dir_exists": false, "jsonl_files_found": 0}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.903082+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:29.926612+00:00", "status": "completed", "duration_ms": 23, "evidence": {"evidence_dir_exists": true, "jsonl_files_found": 6, "valid_records": 569, "invalid_records": 0}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:29.934939+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:29.984607+00:00", "status": "completed", "duration_ms": 49, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 2, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:29.995002+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:30.000875+00:00", "status": "blocked", "duration_ms": 5}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:30.007764+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:00:30.055847+00:00", "status": "completed", "duration_ms": 48, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 2, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:30.062660+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:30.426803+00:00", "status": "failed", "duration_ms": 364, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:30.435628+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:30.437167+00:00", "status": "failed", "duration_ms": 1, "error": "Migration directory not found: \\nonexistent\\path\\packages\\db-tutorial\\migrations"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:30.450733+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:00:30.471355+00:00", "status": "failed", "duration_ms": 20, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:00:30.478362+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:00:30.529535+00:00", "status": "blocked", "duration_ms": 51}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:00:30.535736+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:00:30.536879+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:00:30.543146+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:00:30.599203+00:00", "status": "blocked", "duration_ms": 56}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:00:30.605345+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:00:30.606384+00:00", "status": "completed", "duration_ms": 1, "evidence": {"actions_implemented": 0, "files_modified": []}}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:00:30.615122+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:00:30.620702+00:00", "status": "blocked", "duration_ms": 5}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:00:30.627773+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:00:30.631720+00:00", "status": "completed", "duration_ms": 3, "evidence": {"actions_implemented": 0, "files_modified": []}}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:00:30.639980+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:00:30.643816+00:00", "status": "completed", "duration_ms": 3, "evidence": {"findings_analyzed": 0, "repair_actions_proposed": 0, "high_risk_actions": 0, "non_preserving_actions": 0}}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:00:30.650672+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:00:30.651712+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:00:30.659323+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:00:30.660709+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:00:30.670108+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:00:30.676002+00:00", "status": "completed", "duration_ms": 5, "evidence": {"actions_reviewed": 0, "approved": 0, "rejected": 0, "verdict": "APPROVED"}}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:00:30.684111+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:00:30.688105+00:00", "status": "blocked", "duration_ms": 3}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:00:30.723129+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:00:30.724940+00:00", "status": "completed", "duration_ms": 1, "evidence": {"actions_reviewed": 1, "approved": 1, "rejected": 0, "verdict": "APPROVED"}}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.735001+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.741844+00:00", "status": "failed", "duration_ms": 6, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.760244+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.761794+00:00", "status": "failed", "duration_ms": 1, "error": "Migration directory not found: \\nonexistent\\path\\packages\\db-tutorial\\migrations"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.770111+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.778974+00:00", "status": "failed", "duration_ms": 8, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:00:30.788703+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:00:30.815614+00:00", "status": "completed", "duration_ms": 26, "evidence": {"test_files_found": 120, "integration_tests_found": 12, "migration_tests_found": 19, "fixtures_found": 3, "db_fixtures_found": 2}}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:00:30.828309+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:00:30.842263+00:00", "status": "failed", "duration_ms": 13, "error": "Test directory not found: \\nonexistent\\path\\services\\project-ai\\tests"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:00:30.851280+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:00:30.867823+00:00", "status": "completed", "duration_ms": 16, "evidence": {"test_files_found": 120, "integration_tests_found": 12, "migration_tests_found": 19, "fixtures_found": 3, "db_fixtures_found": 2}}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.897103+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.907816+00:00", "status": "completed", "duration_ms": 10, "evidence": {"test_files_reviewed": 0, "migration_tests": 0, "integration_tests": 0, "findings": 3}}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.916156+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.917648+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.931874+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:00:30.941939+00:00", "status": "completed", "duration_ms": 10, "evidence": {"test_files_reviewed": 1, "migration_tests": 0, "integration_tests": 0, "findings": 3}}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:00:30.950478+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:00:35.048590+00:00", "status": "failed", "duration_ms": 4098, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:00:35.066904+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:00:39.120008+00:00", "status": "failed", "duration_ms": 4053, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:00:39.363437+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:00:43.440138+00:00", "status": "failed", "duration_ms": 4076, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:01:20.032140+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:01:24.113456+00:00", "status": "failed", "duration_ms": 4081, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:01:32.441154+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:01:32.487580+00:00", "status": "completed", "duration_ms": 46, "evidence": {"workflow_id": "test_workflow_001", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:01:32.494292+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:01:32.542990+00:00", "status": "completed", "duration_ms": 48, "evidence": {"workflow_id": "test_workflow_002", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:01:32.549191+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:01:32.550836+00:00", "status": "completed", "duration_ms": 1, "evidence": {"workflow_id": "test_workflow_003", "baseline_sha": "unknown", "waves_count": 10, "agents_count": 14}}
+{"runId": "run_test_execute_001_workflow_controller", "agentId": "workflow_controller", "wave": "W0", "commitBefore": "unknown", "commitAfter": "unknown", "filesChanged": [], "status": "success", "timestamp": "2026-10-11T14:02:55.823052+00:00", "duration_ms": 0.0, "errors": [], "warnings": []}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.335474+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.337275+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.357934+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.359679+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.367136+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.368695+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.394086+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.426424+00:00", "status": "completed", "duration_ms": 32, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.448268+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.464467+00:00", "status": "completed", "duration_ms": 16, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.658340+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.667362+00:00", "status": "completed", "duration_ms": 9, "evidence": {"db_url_configured": false, "findings_count": 1}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.672711+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.673410+00:00", "status": "completed", "duration_ms": 0, "evidence": {"db_url_configured": false, "findings_count": 1}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.678332+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.679231+00:00", "status": "completed", "duration_ms": 0, "evidence": {"db_configured": true, "db_name": "tutorial_prod", "db_host": "localhost", "db_port": 5432, "findings_count": 2, "critical_findings": 2, "is_safe": false}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.684432+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.685465+00:00", "status": "completed", "duration_ms": 1, "evidence": {"db_configured": true, "db_name": "not-a-valid-url", "db_host": null, "db_port": null, "findings_count": 0, "critical_findings": 0, "is_safe": true}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:03:12.690579+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:03:12.692340+00:00", "status": "completed", "duration_ms": 1, "evidence": {"records_collected": 1, "evidence_file": "migration-repair-test_workflow_001.jsonl"}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:03:12.697386+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:03:12.699177+00:00", "status": "completed", "duration_ms": 1, "evidence": {"records_collected": 1, "evidence_file": "migration-repair-test_workflow_002.jsonl"}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:03:12.705103+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:03:12.705766+00:00", "status": "completed", "duration_ms": 0, "evidence": {"records_collected": 0, "evidence_file": "migration-repair-test_workflow_003.jsonl"}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.710860+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.714636+00:00", "status": "completed", "duration_ms": 3, "evidence": {"evidence_dir_exists": true, "jsonl_files_found": 6, "valid_records": 666, "invalid_records": 0}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.719240+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.719985+00:00", "status": "completed", "duration_ms": 0, "evidence": {"evidence_dir_exists": false, "jsonl_files_found": 0}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.724410+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.727810+00:00", "status": "completed", "duration_ms": 3, "evidence": {"evidence_dir_exists": true, "jsonl_files_found": 6, "valid_records": 670, "invalid_records": 0}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.733735+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.796084+00:00", "status": "completed", "duration_ms": 62, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 2, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.804205+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.805229+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.818751+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:03:12.873122+00:00", "status": "completed", "duration_ms": 54, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 2, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.881519+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.890518+00:00", "status": "failed", "duration_ms": 8, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.899993+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.912378+00:00", "status": "failed", "duration_ms": 12, "error": "Migration directory not found: \\nonexistent\\path\\packages\\db-tutorial\\migrations"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.920182+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:03:12.926592+00:00", "status": "failed", "duration_ms": 6, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:03:12.933464+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:03:13.001090+00:00", "status": "blocked", "duration_ms": 67}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:03:13.010602+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:03:13.012823+00:00", "status": "blocked", "duration_ms": 2}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:03:13.032737+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:03:13.082031+00:00", "status": "blocked", "duration_ms": 49}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:03:13.089349+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:03:13.100697+00:00", "status": "completed", "duration_ms": 11, "evidence": {"actions_implemented": 0, "files_modified": []}}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:03:13.108651+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:03:13.109508+00:00", "status": "blocked", "duration_ms": 0}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:03:13.118673+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:03:13.119655+00:00", "status": "completed", "duration_ms": 0, "evidence": {"actions_implemented": 0, "files_modified": []}}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:03:13.127280+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:03:13.135206+00:00", "status": "completed", "duration_ms": 7, "evidence": {"findings_analyzed": 0, "repair_actions_proposed": 0, "high_risk_actions": 0, "non_preserving_actions": 0}}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:03:13.142273+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:03:13.143057+00:00", "status": "blocked", "duration_ms": 0}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:03:13.150467+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:03:13.156521+00:00", "status": "blocked", "duration_ms": 6}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:03:13.163768+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:03:13.164781+00:00", "status": "completed", "duration_ms": 1, "evidence": {"actions_reviewed": 0, "approved": 0, "rejected": 0, "verdict": "APPROVED"}}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:03:13.172524+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:03:13.173549+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:03:13.180537+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:03:13.181371+00:00", "status": "completed", "duration_ms": 0, "evidence": {"actions_reviewed": 1, "approved": 1, "rejected": 0, "verdict": "APPROVED"}}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.189264+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.207530+00:00", "status": "failed", "duration_ms": 18, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.216955+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.222981+00:00", "status": "failed", "duration_ms": 6, "error": "Migration directory not found: \\nonexistent\\path\\packages\\db-tutorial\\migrations"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.228865+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.234840+00:00", "status": "failed", "duration_ms": 5, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:03:13.243061+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:03:13.251956+00:00", "status": "completed", "duration_ms": 8, "evidence": {"test_files_found": 120, "integration_tests_found": 12, "migration_tests_found": 19, "fixtures_found": 3, "db_fixtures_found": 2}}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:03:13.264515+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:03:13.267378+00:00", "status": "failed", "duration_ms": 2, "error": "Test directory not found: \\nonexistent\\path\\services\\project-ai\\tests"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:03:13.275688+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:03:13.283315+00:00", "status": "completed", "duration_ms": 7, "evidence": {"test_files_found": 120, "integration_tests_found": 12, "migration_tests_found": 19, "fixtures_found": 3, "db_fixtures_found": 2}}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.293978+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.300430+00:00", "status": "completed", "duration_ms": 6, "evidence": {"test_files_reviewed": 0, "migration_tests": 0, "integration_tests": 0, "findings": 3}}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.309054+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.311383+00:00", "status": "blocked", "duration_ms": 2}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.318607+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:03:13.319931+00:00", "status": "completed", "duration_ms": 1, "evidence": {"test_files_reviewed": 1, "migration_tests": 0, "integration_tests": 0, "findings": 3}}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:03:13.327265+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:03:17.446102+00:00", "status": "failed", "duration_ms": 4118, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:03:17.456861+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:03:21.539048+00:00", "status": "failed", "duration_ms": 4082, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:03:21.545913+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:03:25.611060+00:00", "status": "failed", "duration_ms": 4065, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:03:25.912580+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:03:25.957338+00:00", "status": "completed", "duration_ms": 44, "evidence": {"workflow_id": "test_workflow_001", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:03:25.963196+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:03:26.008461+00:00", "status": "completed", "duration_ms": 45, "evidence": {"workflow_id": "test_workflow_002", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:03:26.014295+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:03:26.016871+00:00", "status": "completed", "duration_ms": 2, "evidence": {"workflow_id": "test_workflow_003", "baseline_sha": "unknown", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.459624+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.461485+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.470735+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.472697+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.484873+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.490412+00:00", "status": "completed", "duration_ms": 5, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.499539+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.511772+00:00", "status": "completed", "duration_ms": 12, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.519658+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.522685+00:00", "status": "completed", "duration_ms": 3, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.605050+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.606136+00:00", "status": "completed", "duration_ms": 1, "evidence": {"db_url_configured": false, "findings_count": 1}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.612467+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.633085+00:00", "status": "completed", "duration_ms": 20, "evidence": {"db_url_configured": false, "findings_count": 1}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.639465+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.644187+00:00", "status": "completed", "duration_ms": 4, "evidence": {"db_configured": true, "db_name": "tutorial_prod", "db_host": "localhost", "db_port": 5432, "findings_count": 2, "critical_findings": 2, "is_safe": false}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.650660+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.656126+00:00", "status": "completed", "duration_ms": 5, "evidence": {"db_configured": true, "db_name": "not-a-valid-url", "db_host": null, "db_port": null, "findings_count": 0, "critical_findings": 0, "is_safe": true}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:04:33.662498+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:04:33.664471+00:00", "status": "completed", "duration_ms": 1, "evidence": {"records_collected": 1, "evidence_file": "migration-repair-test_workflow_001.jsonl"}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:04:33.671743+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:04:33.673956+00:00", "status": "completed", "duration_ms": 2, "evidence": {"records_collected": 1, "evidence_file": "migration-repair-test_workflow_002.jsonl"}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:04:33.679840+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:04:33.681047+00:00", "status": "completed", "duration_ms": 1, "evidence": {"records_collected": 0, "evidence_file": "migration-repair-test_workflow_003.jsonl"}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.687421+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.692893+00:00", "status": "completed", "duration_ms": 5, "evidence": {"evidence_dir_exists": true, "jsonl_files_found": 6, "valid_records": 764, "invalid_records": 0}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.699441+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.706332+00:00", "status": "completed", "duration_ms": 6, "evidence": {"evidence_dir_exists": false, "jsonl_files_found": 0}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.712353+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.718802+00:00", "status": "completed", "duration_ms": 6, "evidence": {"evidence_dir_exists": true, "jsonl_files_found": 6, "valid_records": 768, "invalid_records": 0}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.725851+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.777234+00:00", "status": "completed", "duration_ms": 51, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 2, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.782791+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.783836+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.788740+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:04:33.835714+00:00", "status": "completed", "duration_ms": 46, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 2, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.843187+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.853480+00:00", "status": "failed", "duration_ms": 10, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.882078+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.887801+00:00", "status": "failed", "duration_ms": 5, "error": "Migration directory not found: \\nonexistent\\path\\packages\\db-tutorial\\migrations"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.893665+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:04:33.903329+00:00", "status": "failed", "duration_ms": 9, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:04:33.909781+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:04:33.968401+00:00", "status": "blocked", "duration_ms": 58}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:04:33.975000+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:04:33.993305+00:00", "status": "blocked", "duration_ms": 18}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:04:33.999419+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:04:34.060362+00:00", "status": "blocked", "duration_ms": 60}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:04:34.066164+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:04:34.070889+00:00", "status": "completed", "duration_ms": 4, "evidence": {"actions_implemented": 0, "files_modified": []}}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:04:34.088458+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:04:34.089557+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:04:34.097134+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:04:34.109090+00:00", "status": "completed", "duration_ms": 11, "evidence": {"actions_implemented": 0, "files_modified": []}}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:04:34.115387+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:04:34.120943+00:00", "status": "completed", "duration_ms": 5, "evidence": {"findings_analyzed": 0, "repair_actions_proposed": 0, "high_risk_actions": 0, "non_preserving_actions": 0}}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:04:34.127684+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:04:34.129225+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:04:34.135646+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:04:34.142149+00:00", "status": "blocked", "duration_ms": 6}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:04:34.148309+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:04:34.154260+00:00", "status": "completed", "duration_ms": 5, "evidence": {"actions_reviewed": 0, "approved": 0, "rejected": 0, "verdict": "APPROVED"}}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:04:34.160749+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:04:34.161858+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:04:34.169167+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:04:34.170290+00:00", "status": "completed", "duration_ms": 1, "evidence": {"actions_reviewed": 1, "approved": 1, "rejected": 0, "verdict": "APPROVED"}}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.177515+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.192457+00:00", "status": "failed", "duration_ms": 14, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.198254+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.199838+00:00", "status": "failed", "duration_ms": 1, "error": "Migration directory not found: \\nonexistent\\path\\packages\\db-tutorial\\migrations"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.206086+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.211266+00:00", "status": "failed", "duration_ms": 5, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:04:34.217366+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:04:34.226326+00:00", "status": "completed", "duration_ms": 8, "evidence": {"test_files_found": 120, "integration_tests_found": 12, "migration_tests_found": 19, "fixtures_found": 3, "db_fixtures_found": 2}}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:04:34.236153+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:04:34.241931+00:00", "status": "failed", "duration_ms": 5, "error": "Test directory not found: \\nonexistent\\path\\services\\project-ai\\tests"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:04:34.248509+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:04:34.256088+00:00", "status": "completed", "duration_ms": 7, "evidence": {"test_files_found": 120, "integration_tests_found": 12, "migration_tests_found": 19, "fixtures_found": 3, "db_fixtures_found": 2}}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.265736+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.286234+00:00", "status": "completed", "duration_ms": 20, "evidence": {"test_files_reviewed": 0, "migration_tests": 0, "integration_tests": 0, "findings": 3}}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.292806+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.297225+00:00", "status": "blocked", "duration_ms": 4}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.305123+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:04:34.309258+00:00", "status": "completed", "duration_ms": 4, "evidence": {"test_files_reviewed": 1, "migration_tests": 0, "integration_tests": 0, "findings": 3}}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:04:34.315297+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:04:38.406619+00:00", "status": "failed", "duration_ms": 4091, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:04:38.417152+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:04:42.454501+00:00", "status": "failed", "duration_ms": 4037, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:04:42.472042+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:04:46.531378+00:00", "status": "failed", "duration_ms": 4059, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:04:46.776002+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:04:46.823122+00:00", "status": "completed", "duration_ms": 47, "evidence": {"workflow_id": "test_workflow_001", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:04:46.828264+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:04:46.871883+00:00", "status": "completed", "duration_ms": 43, "evidence": {"workflow_id": "test_workflow_002", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:04:46.877970+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:04:46.880288+00:00", "status": "completed", "duration_ms": 2, "evidence": {"workflow_id": "test_workflow_003", "baseline_sha": "unknown", "waves_count": 10, "agents_count": 14}}
+{"runId": "run_test_execute_001_workflow_controller", "agentId": "workflow_controller", "wave": "W0", "commitBefore": "unknown", "commitAfter": "unknown", "filesChanged": [], "status": "success", "timestamp": "2026-10-11T14:04:47.255746+00:00", "duration_ms": 0.0, "errors": [], "warnings": []}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.665754+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.667676+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.674549+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.676495+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.682608+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.683569+00:00", "status": "completed", "duration_ms": 0, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.690405+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.691683+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.698142+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.699786+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.762723+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.764159+00:00", "status": "completed", "duration_ms": 1, "evidence": {"db_url_configured": false, "findings_count": 1}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.769742+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.770724+00:00", "status": "completed", "duration_ms": 0, "evidence": {"db_url_configured": false, "findings_count": 1}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.775500+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.776372+00:00", "status": "completed", "duration_ms": 0, "evidence": {"db_configured": true, "db_name": "tutorial_prod", "db_host": "localhost", "db_port": 5432, "findings_count": 2, "critical_findings": 2, "is_safe": false}}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.781530+00:00", "status": "started"}
+{"agent_id": "database_safety_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.783482+00:00", "status": "completed", "duration_ms": 1, "evidence": {"db_configured": true, "db_name": "not-a-valid-url", "db_host": null, "db_port": null, "findings_count": 0, "critical_findings": 0, "is_safe": true}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:10:07.788801+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:10:07.790440+00:00", "status": "completed", "duration_ms": 1, "evidence": {"records_collected": 1, "evidence_file": "migration-repair-test_workflow_001.jsonl"}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:10:07.795273+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:10:07.797454+00:00", "status": "completed", "duration_ms": 2, "evidence": {"records_collected": 1, "evidence_file": "migration-repair-test_workflow_002.jsonl"}}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:10:07.803117+00:00", "status": "started"}
+{"agent_id": "evidence_assembler", "wave": "W7", "timestamp": "2026-10-11T14:10:07.803969+00:00", "status": "completed", "duration_ms": 0, "evidence": {"records_collected": 0, "evidence_file": "migration-repair-test_workflow_003.jsonl"}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.809863+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.815018+00:00", "status": "completed", "duration_ms": 5, "evidence": {"evidence_dir_exists": true, "jsonl_files_found": 6, "valid_records": 863, "invalid_records": 0}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.820592+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.821728+00:00", "status": "completed", "duration_ms": 1, "evidence": {"evidence_dir_exists": false, "jsonl_files_found": 0}}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.826655+00:00", "status": "started"}
+{"agent_id": "evidence_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:07.831183+00:00", "status": "completed", "duration_ms": 4, "evidence": {"evidence_dir_exists": true, "jsonl_files_found": 6, "valid_records": 867, "invalid_records": 0}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.837140+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.887697+00:00", "status": "completed", "duration_ms": 50, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 2, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.894604+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.895698+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:07.901076+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:08.015713+00:00", "status": "completed", "duration_ms": 114, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 2, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:08.021455+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:08.037482+00:00", "status": "failed", "duration_ms": 16, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:08.052198+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:08.055187+00:00", "status": "failed", "duration_ms": 2, "error": "Migration directory not found: \\nonexistent\\path\\packages\\db-tutorial\\migrations"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:08.060297+00:00", "status": "started"}
+{"agent_id": "migration_audit", "wave": "W1", "timestamp": "2026-10-11T14:10:08.064417+00:00", "status": "failed", "duration_ms": 4, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:10:08.069988+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:10:08.120269+00:00", "status": "blocked", "duration_ms": 50}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:10:08.125919+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:10:08.126928+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:10:08.131858+00:00", "status": "started"}
+{"agent_id": "publisher_agent", "wave": "W9", "timestamp": "2026-10-11T14:10:08.174245+00:00", "status": "blocked", "duration_ms": 42}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:10:08.180019+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:10:08.187933+00:00", "status": "completed", "duration_ms": 7, "evidence": {"actions_implemented": 0, "files_modified": []}}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:10:08.193104+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:10:08.194241+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:10:08.200077+00:00", "status": "started"}
+{"agent_id": "repair_implementer", "wave": "W4", "timestamp": "2026-10-11T14:10:08.201083+00:00", "status": "completed", "duration_ms": 1, "evidence": {"actions_implemented": 0, "files_modified": []}}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:10:08.206105+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:10:08.207125+00:00", "status": "completed", "duration_ms": 1, "evidence": {"findings_analyzed": 0, "repair_actions_proposed": 0, "high_risk_actions": 0, "non_preserving_actions": 0}}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:10:08.212321+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:10:08.213547+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:10:08.226155+00:00", "status": "started"}
+{"agent_id": "repair_planner", "wave": "W2", "timestamp": "2026-10-11T14:10:08.227581+00:00", "status": "blocked", "duration_ms": 1}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:10:08.232529+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:10:08.233410+00:00", "status": "completed", "duration_ms": 0, "evidence": {"actions_reviewed": 0, "approved": 0, "rejected": 0, "verdict": "APPROVED"}}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:10:08.239362+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:10:08.240274+00:00", "status": "blocked", "duration_ms": 0}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:10:08.245463+00:00", "status": "started"}
+{"agent_id": "repair_reviewer", "wave": "W3", "timestamp": "2026-10-11T14:10:08.247223+00:00", "status": "completed", "duration_ms": 1, "evidence": {"actions_reviewed": 1, "approved": 1, "rejected": 0, "verdict": "APPROVED"}}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.252776+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.257172+00:00", "status": "failed", "duration_ms": 4, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.262847+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.265581+00:00", "status": "failed", "duration_ms": 2, "error": "Migration directory not found: \\nonexistent\\path\\packages\\db-tutorial\\migrations"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.270634+00:00", "status": "started"}
+{"agent_id": "static_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.274861+00:00", "status": "failed", "duration_ms": 4, "error": "'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:10:08.280353+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:10:08.294080+00:00", "status": "completed", "duration_ms": 13, "evidence": {"test_files_found": 120, "integration_tests_found": 12, "migration_tests_found": 19, "fixtures_found": 3, "db_fixtures_found": 2}}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:10:08.318613+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:10:08.332101+00:00", "status": "failed", "duration_ms": 13, "error": "Test directory not found: \\nonexistent\\path\\services\\project-ai\\tests"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:10:08.337830+00:00", "status": "started"}
+{"agent_id": "test_inventory", "wave": "W1", "timestamp": "2026-10-11T14:10:08.355185+00:00", "status": "completed", "duration_ms": 17, "evidence": {"test_files_found": 120, "integration_tests_found": 12, "migration_tests_found": 19, "fixtures_found": 3, "db_fixtures_found": 2}}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.384961+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.387353+00:00", "status": "completed", "duration_ms": 2, "evidence": {"test_files_reviewed": 0, "migration_tests": 0, "integration_tests": 0, "findings": 3}}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.395389+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.398336+00:00", "status": "blocked", "duration_ms": 2}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.403739+00:00", "status": "started"}
+{"agent_id": "test_reviewer", "wave": "W5", "timestamp": "2026-10-11T14:10:08.404806+00:00", "status": "completed", "duration_ms": 1, "evidence": {"test_files_reviewed": 1, "migration_tests": 0, "integration_tests": 0, "findings": 3}}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:10:08.409948+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:10:12.489509+00:00", "status": "failed", "duration_ms": 4079, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:10:12.496265+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:10:16.563213+00:00", "status": "failed", "duration_ms": 4066, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:10:16.569788+00:00", "status": "started"}
+{"agent_id": "verification_runner", "wave": "W6", "timestamp": "2026-10-11T14:10:20.632753+00:00", "status": "failed", "duration_ms": 4062, "error": "Database validation failed: Failed to connect to database: [WinError 1225] The remote computer refused the network connection"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:20.810196+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:20.854998+00:00", "status": "completed", "duration_ms": 44, "evidence": {"workflow_id": "test_workflow_001", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:20.861128+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:20.904496+00:00", "status": "completed", "duration_ms": 43, "evidence": {"workflow_id": "test_workflow_002", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:20.910278+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:20.912625+00:00", "status": "completed", "duration_ms": 2, "evidence": {"workflow_id": "test_workflow_003", "baseline_sha": "unknown", "waves_count": 10, "agents_count": 14}}
+{"runId": "run_test_execute_001_workflow_controller", "agentId": "workflow_controller", "wave": "W0", "commitBefore": "unknown", "commitAfter": "unknown", "filesChanged": [], "status": "success", "timestamp": "2026-10-11T14:10:21.289501+00:00", "duration_ms": 0.0, "errors": [], "warnings": []}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.665570+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.667372+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.675940+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.677183+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.687085+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.695181+00:00", "status": "completed", "duration_ms": 8, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.707543+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.714779+00:00", "status": "completed", "duration_ms": 7, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.735330+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:10:28.739740+00:00", "status": "completed", "duration_ms": 4, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:28.994729+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:29.043943+00:00", "status": "completed", "duration_ms": 49, "evidence": {"workflow_id": "test_workflow_001", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:29.059846+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:29.107986+00:00", "status": "completed", "duration_ms": 48, "evidence": {"workflow_id": "test_workflow_002", "baseline_sha": "765c44f7a864ffa769664814682d0e152567fb6d", "waves_count": 10, "agents_count": 14}}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:29.125677+00:00", "status": "started"}
+{"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:29.138252+00:00", "status": "completed", "duration_ms": 12, "evidence": {"workflow_id": "test_workflow_003", "baseline_sha": "unknown", "waves_count": 10, "agents_count": 14}}
+{"runId": "run_test_execute_001_workflow_controller", "agentId": "workflow_controller", "wave": "W0", "commitBefore": "unknown", "commitAfter": "unknown", "filesChanged": [], "status": "success", "timestamp": "2026-10-11T14:10:29.511018+00:00", "duration_ms": 0.0, "errors": [], "warnings": []}

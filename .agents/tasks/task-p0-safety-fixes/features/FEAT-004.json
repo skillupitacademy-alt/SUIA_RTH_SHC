@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-004",
+  "type": "fix",
+  "description": "Add evidence verification to final_gate_agent.py by verifying actual evidence files exist (not just claimed), recomputing SHA-256 hashes and comparing, checking ALL required test statuses (no SKIPPED allowed for mandatory tests), verifying commit identity matches tested SHA, and returning BLOCKED if any evidence is missing or tampered.",
+  "status": "completed",
+  "steps": [
+    "Read current final_gate_agent.py at services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py which accepts check_results from prior agents without verification",
+    "Add verify_evidence_files() async function that: (1) reads evidence manifest from .agents/evidence/, (2) checks each claimed file exists, (3) recomputes SHA-256 hash, (4) compares with claimed hash, (5) returns VerificationResult(all_exist: bool, all_match: bool, missing_files: list, tampered_files: list)",
+    "Add verify_test_coverage() function that checks no required tests have SKIPPED status (only PASS or FAIL allowed)",
+    "Add verify_commit_identity() function that: (1) runs 'git rev-parse HEAD', (2) compares with tested_sha from verification_runner outputs, (3) returns bool match",
+    "Update execute_final_gate_agent() to call all three verification functions before evaluate_final_gate()",
+    "Set gate_verdict to BLOCKED if: evidence files missing, hashes don't match, required tests SKIPPED, or commit SHA mismatch",
+    "Add detailed error messages listing specific missing/tampered files, skipped tests, or SHA mismatch",
+    "Update gate.py evaluate_final_gate() to explicitly reject SKIPPED status for any required check",
+    "Create test file services/project-ai/tests/test_final_gate_verification.py with tests: test_verify_evidence_files_checks_existence, test_verify_evidence_files_recomputes_hashes, test_verify_evidence_detects_tampered_file, test_verify_test_coverage_rejects_skipped, test_verify_commit_identity_matches_sha, test_gate_blocked_on_missing_evidence, test_gate_blocked_on_tampered_evidence, test_gate_blocked_on_skipped_tests, test_gate_blocked_on_sha_mismatch"
+  ],
+  "acceptance_criteria": [
+    "verify_evidence_files() checks existence AND recomputes hashes",
+    "Gate returns BLOCKED if any evidence file is missing or tampered",
+    "SKIPPED status is rejected for all required tests",
+    "Commit identity is verified by comparing git SHA with tested SHA",
+    "All 9+ unit tests pass: pytest services/project-ai/tests/test_final_gate_verification.py -v"
+  ],
+  "verification": [
+    "pytest services/project-ai/tests/test_final_gate_verification.py -v",
+    "pytest services/project-ai/tests/test_migration_repair_gate.py -v"
+  ],
+  "blocked_reason": null,
+  "findings": "FEAT-004 implementation completed successfully. Added three verification functions (verify_evidence_files, verify_test_coverage, verify_commit_identity) to final_gate_agent.py. Updated execute_final_gate_agent() to call all verifications before gate evaluation and return BLOCKED with detailed error messages when evidence is missing/tampered, tests are skipped, or commit SHA mismatches. Updated gate.py evaluate_final_gate() to explicitly document SKIPPED rejection (behavior was already implemented). Created test_final_gate_verification.py with 12 comprehensive tests covering all verification scenarios. All 12 new tests pass, and all 15 existing gate tests continue to pass. Committed as 9bce2b68."
+}

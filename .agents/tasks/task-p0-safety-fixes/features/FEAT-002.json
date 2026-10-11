@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-002",
+  "type": "fix",
+  "description": "Add validate_and_connect() to safety.py and verification_runner.py that validates database target BEFORE connecting, uses trusted host/database configuration (not just name patterns), requires isolated credentials for test databases, fails closed if target cannot be validated, and adds connection-time assertion that re-validates target.",
+  "status": "completed",
+  "steps": [
+    "Read current safety.py at services/project-ai/app/workflows/migration_repair/safety.py which only validates database names for 'prod' markers",
+    "Add TRUSTED_TEST_HOSTS constant to safety.py: frozenset(['localhost', '127.0.0.1', 'test-postgres']) with comment 'Only these hosts are allowed for VERIFY mode'",
+    "Add TRUSTED_TEST_DATABASES constant to safety.py: frozenset(['test_tutorial', 'test_quiz_platform', 'disposable_test_db']) with comment 'Allowlist of test database names'",
+    "Create validate_and_connect() async function in safety.py that: (1) validates target with validate_target(), (2) parses URL to extract host/dbname, (3) checks host in TRUSTED_TEST_HOSTS for VERIFY mode, (4) checks dbname in TRUSTED_TEST_DATABASES for VERIFY mode, (5) validates credentials are isolated (not production credentials), (6) returns connection object or raises ValueError",
+    "Add parse_database_url() helper function to extract host, port, database, user from PostgreSQL URL",
+    "Update DatabaseTarget.__post_init__() to also check parsed host against TRUSTED_TEST_HOSTS when mode is VERIFY",
+    "Document in safety.py docstring: 'Name pattern checking (prod in name) is NOT sufficient. Must validate against trusted host/database allowlists.'",
+    "Add to verification_runner.py: before calling run_verification_pipeline(), validate database target using validate_and_connect() from safety.py",
+    "Create test file services/project-ai/tests/test_database_connection_validation.py with tests: test_validate_and_connect_rejects_untrusted_host, test_validate_and_connect_rejects_untrusted_database, test_validate_and_connect_accepts_localhost_test_db, test_validate_and_connect_fails_closed_on_missing_host, test_parse_database_url_extracts_components, test_trusted_hosts_defined, test_trusted_databases_defined"
+  ],
+  "acceptance_criteria": [
+    "validate_and_connect() validates host AND database name against allowlists",
+    "VERIFY mode only accepts connections to TRUSTED_TEST_HOSTS",
+    "Name pattern checking is documented as insufficient",
+    "Connection validation fails closed (raises ValueError) on uncertainty",
+    "All 7+ unit tests pass: pytest services/project-ai/tests/test_database_connection_validation.py -v"
+  ],
+  "verification": [
+    "pytest services/project-ai/tests/test_database_connection_validation.py -v",
+    "pytest services/project-ai/tests/test_migration_repair_safety.py -v"
+  ],
+  "blocked_reason": null,
+  "findings": "Implementation complete. Added TRUSTED_TEST_HOSTS and TRUSTED_TEST_DATABASES constants to safety.py. Created parse_database_url() and validate_and_connect() functions with defense-in-depth validation. Updated DatabaseTarget.__post_init__() to validate host against trusted allowlist for VERIFY mode. Added pre-connection validation to verification_runner.py. Created comprehensive test suite with 17 tests covering all validation scenarios. All tests pass including existing regression tests. URL parsing validates scheme, host, database name, and credentials. Connection validation fails closed on any uncertainty or missing component. Documentation added noting that name pattern checking alone is insufficient."
+}

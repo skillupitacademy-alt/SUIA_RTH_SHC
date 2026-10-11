@@ -1,0 +1,27 @@
+{
+  "project_type": "Python FastAPI service with migration repair workflow",
+  "language": "Python 3.11+",
+  "build_system": "setuptools with pyproject.toml",
+  "test_framework": "pytest with pytest-asyncio (asyncio_mode=auto)",
+  "build_command": "N/A - Python module, no compile step",
+  "test_command": "pytest services/project-ai/tests/ -v",
+  "verification_instructions": "Run pytest with specific test file names. Tests must NOT execute actual database operations or shell commands with user input. Use mocks and validation-only checks.",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "DO NOT run database operations. DO NOT execute shell commands with unsanitized input. Tests run in memory or with mocks only.",
+  "contribution_requirements": "Fail closed on uncertain validation. Never silently pass security checks. Log all cleanup attempts to evidence. Verify file existence and hashes, never trust claims.",
+  "key_patterns": "Existing tests use pytest, pytest_asyncio fixtures, unittest.mock for mocking. Test files follow naming convention test_migration_repair_*.py. All async functions tested with @pytest.mark.asyncio or asyncio_mode=auto.",
+  "relevant_files": [
+    "services/project-ai/app/workflows/migration_repair/runner.py",
+    "services/project-ai/app/workflows/migration_repair/safety.py",
+    "services/project-ai/app/workflows/migration_repair/verification.py",
+    "services/project-ai/app/workflows/migration_repair/gate.py",
+    "services/project-ai/app/workflows/migration_repair/models.py",
+    "services/project-ai/app/workflows/migration_repair/agents/verification_runner.py",
+    "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+    "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+    "services/project-ai/tests/test_migration_repair_safety.py",
+    "services/project-ai/tests/test_migration_repair_gate.py",
+    "services/project-ai/tests/conftest.py"
+  ],
+  "directory_structure": "services/project-ai/app/workflows/migration_repair/ contains core workflow modules (runner, safety, verification, gate, models) and agents/ subdirectory with 13 agent implementations. Tests live in services/project-ai/tests/ with test_migration_repair_*.py naming convention."
+}

@@ -80,6 +80,15 @@ async def execute_verification_runner(context: AgentContext) -> AgentResult:
             return AgentResult(
                 agent_id=agent_id,
                 status=AgentStatus.FAILED,
+                outputs={
+                    "stages": [],
+                    "summary": {
+                        "total_stages": 0,
+                        "passed": 0,
+                        "failed": 0,
+                        "blocked": 0,
+                    },
+                },
                 errors=[f"Database validation failed: {str(e)}"],
                 evidence_ids=["agent-runs.jsonl"],
                 execution_time_ms=duration_ms,
@@ -172,6 +181,15 @@ async def execute_verification_runner(context: AgentContext) -> AgentResult:
         return AgentResult(
             agent_id=agent_id,
             status=AgentStatus.FAILED,
+            outputs={
+                "stages": [],
+                "summary": {
+                    "total_stages": 0,
+                    "passed": 0,
+                    "failed": 0,
+                    "blocked": 0,
+                },
+            },
             errors=[f"Verification runner failed: {str(e)}"],
             evidence_ids=["agent-runs.jsonl"],
             execution_time_ms=duration_ms,

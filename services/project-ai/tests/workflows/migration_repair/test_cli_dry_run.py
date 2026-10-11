@@ -28,21 +28,33 @@ def test_cli_dry_run_flag_produces_plan(tmp_path):
     # Should exit with 0
     assert result.returncode == 0, f"CLI failed with stderr: {result.stderr}"
     
+    # Python logging writes to stderr by default, so check both stdout and stderr
+    output = result.stdout + result.stderr
+    
     # Should contain dry_run output
-    assert "DRY RUN MODE" in result.stdout, "Missing dry run header"
-    assert "workflow_" in result.stdout, "Missing workflow ID"
-    assert "W0:" in result.stdout, "Missing wave W0"
-    assert "W1:" in result.stdout, "Missing wave W1"
-    assert "Total waves:" in result.stdout, "Missing waves count"
-    assert "Total agents:" in result.stdout, "Missing agents count"
-    assert "workflow_controller" in result.stdout, "Missing workflow_controller agent"
+    assert "DRY RUN MODE" in output, "Missing dry run header"
+    assert "workflow_" in output, "Missing workflow ID"
+    assert "W0:" in output, "Missing wave W0"
+    assert "W1:" in output, "Missing wave W1"
+    assert "Total waves:" in output, "Missing waves count"
+    assert "Total agents:" in output, "Missing agents count"
+    assert "workflow_controller" in output, "Missing workflow_controller agent"
 
 
-def test_cli_dry_run_does_not_execute_agents():
+@pytest.mark.asyncio
+async def test_cli_dry_run_does_not_execute_agents():
     """Test that --dry-run does not call actual agent execution."""
     import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "scripts"))
-    from run_migration_repair import MigrationRepairWorkflow
+    import importlib.util
+    
+    # Load the script module (with hyphens in name)
+    script_path = Path(__file__).parent.parent.parent.parent / "scripts" / "run-migration-repair.py"
+    spec = importlib.util.spec_from_file_location("run_migration_repair", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["run_migration_repair"] = module
+    spec.loader.exec_module(module)
+    
+    MigrationRepairWorkflow = module.MigrationRepairWorkflow
     
     # Create workflow in dry-run mode
     workflow = MigrationRepairWorkflow(
@@ -53,8 +65,7 @@ def test_cli_dry_run_does_not_execute_agents():
     # Mock the agent executor
     with patch.object(workflow.coordinator, 'execute_agent', new_callable=AsyncMock) as mock_exec:
         # Run the workflow
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(workflow.execute())
+        result = await workflow.execute()
         
         # Assert agent executor was NOT called in dry-run mode
         mock_exec.assert_not_called()
@@ -66,11 +77,20 @@ def test_cli_dry_run_does_not_execute_agents():
         assert result["total_agents"] > 0
 
 
-def test_cli_dry_run_does_not_write_to_database():
+@pytest.mark.asyncio
+async def test_cli_dry_run_does_not_write_to_database():
     """Test that --dry-run does not make any database writes."""
     import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "scripts"))
-    from run_migration_repair import MigrationRepairWorkflow
+    import importlib.util
+    
+    # Load the script module (with hyphens in name)
+    script_path = Path(__file__).parent.parent.parent.parent / "scripts" / "run-migration-repair.py"
+    spec = importlib.util.spec_from_file_location("run_migration_repair", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["run_migration_repair"] = module
+    spec.loader.exec_module(module)
+    
+    MigrationRepairWorkflow = module.MigrationRepairWorkflow
     from app.evidence.ledger import append_workflow_event, append_agent_run
     
     # Mock evidence logging functions
@@ -83,8 +103,7 @@ def test_cli_dry_run_does_not_write_to_database():
             )
             
             # Run the workflow
-            loop = asyncio.get_event_loop()
-            result = loop.run_until_complete(workflow.execute())
+            result = await workflow.execute()
             
             # In dry-run mode, should NOT log workflow events
             # (The current implementation may log start/completion events,
@@ -97,11 +116,20 @@ def test_cli_dry_run_does_not_write_to_database():
             mock_agent_run.assert_not_called()
 
 
-def test_cli_without_dry_run_executes_agents():
+@pytest.mark.asyncio
+async def test_cli_without_dry_run_executes_agents():
     """Test that CLI without --dry-run would execute agents (but mock them)."""
     import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "scripts"))
-    from run_migration_repair import MigrationRepairWorkflow
+    import importlib.util
+    
+    # Load the script module (with hyphens in name)
+    script_path = Path(__file__).parent.parent.parent.parent / "scripts" / "run-migration-repair.py"
+    spec = importlib.util.spec_from_file_location("run_migration_repair", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["run_migration_repair"] = module
+    spec.loader.exec_module(module)
+    
+    MigrationRepairWorkflow = module.MigrationRepairWorkflow
     from app.orchestration.agent_coordinator import AgentResult, AgentStatus
     
     # Create workflow NOT in dry-run mode
@@ -118,22 +146,27 @@ def test_cli_without_dry_run_executes_agents():
             outputs={"run_manifest": {}}
         )
         
-        # Run just the W0 wave (to avoid long execution)
-        loop = asyncio.get_event_loop()
-        
         # Execute just W0
-        task = workflow._execute_wave("W0")
-        loop.run_until_complete(task)
+        await workflow._execute_wave("W0")
         
         # Assert agent executor WAS called when not in dry-run mode
         assert mock_exec.call_count > 0
 
 
-def test_cli_dry_run_shows_all_waves():
+@pytest.mark.asyncio
+async def test_cli_dry_run_shows_all_waves():
     """Test that --dry-run displays all 10 waves (W0-W9)."""
     import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "scripts"))
-    from run_migration_repair import MigrationRepairWorkflow
+    import importlib.util
+    
+    # Load the script module (with hyphens in name)
+    script_path = Path(__file__).parent.parent.parent.parent / "scripts" / "run-migration-repair.py"
+    spec = importlib.util.spec_from_file_location("run_migration_repair", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["run_migration_repair"] = module
+    spec.loader.exec_module(module)
+    
+    MigrationRepairWorkflow = module.MigrationRepairWorkflow
     
     workflow = MigrationRepairWorkflow(
         workflow_id="test_waves_001",
@@ -141,8 +174,7 @@ def test_cli_dry_run_shows_all_waves():
     )
     
     # Run dry-run
-    loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(workflow.execute())
+    result = await workflow.execute()
     
     # Check execution plan has all waves
     execution_plan = result["execution_plan"]
