@@ -1,5 +1,5 @@
-ALTER TYPE "public"."section_type" ADD VALUE 'overview' BEFORE 'notes';--> statement-breakpoint
-ALTER TYPE "public"."section_type" ADD VALUE 'ai_tutor';--> statement-breakpoint
+ALTER TYPE "public"."section_type" ADD VALUE IF NOT EXISTS 'overview' BEFORE 'notes';--> statement-breakpoint
+ALTER TYPE "public"."section_type" ADD VALUE IF NOT EXISTS 'ai_tutor';--> statement-breakpoint
 CREATE TABLE "tutorial_section_ai_tutor" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"section_id" uuid NOT NULL,
