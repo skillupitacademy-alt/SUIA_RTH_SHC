@@ -68,6 +68,8 @@ def evaluate_final_gate(check_results: dict[str, CheckStatus]) -> CheckStatus:
     - If all required checks are PASS -> gate is PASS
     - Otherwise -> gate is BLOCKED
     
+    FEAT-004: Explicitly rejects SKIPPED status for any required check.
+    
     Args:
         check_results: Map of check_id to CheckStatus
         
@@ -85,6 +87,7 @@ def evaluate_final_gate(check_results: dict[str, CheckStatus]) -> CheckStatus:
         return CheckStatus.BLOCKED
     
     # Fail-closed: any non-PASS status blocks the gate
+    # FEAT-004: Explicitly reject SKIPPED status
     for required in REQUIRED_CHECKS:
         status = check_results[required.check_id]
         if status != CheckStatus.PASS:
