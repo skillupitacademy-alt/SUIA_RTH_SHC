@@ -234,6 +234,59 @@ class AgentCoordinator:
         elif agent.agentType == AgentType.CANDIDATE_CERTIFICATION:
             await self._execute_certification_agent(agent, context, result)
         
+        # Migration Repair Workflow agents (13 new dispatch branches)
+        elif agent.agentType == AgentType.MIGRATION_AUDIT:
+            from app.workflows.migration_repair.agents.migration_audit import execute_migration_audit
+            return await execute_migration_audit(context)
+        
+        elif agent.agentType == AgentType.DATABASE_SAFETY_AUDIT:
+            from app.workflows.migration_repair.agents.database_safety_audit import execute_database_safety_audit
+            return await execute_database_safety_audit(context)
+        
+        elif agent.agentType == AgentType.TEST_INVENTORY:
+            from app.workflows.migration_repair.agents.test_inventory import execute_test_inventory
+            return await execute_test_inventory(context)
+        
+        elif agent.agentType == AgentType.EVIDENCE_AUDIT:
+            from app.workflows.migration_repair.agents.evidence_audit import execute_evidence_audit
+            return await execute_evidence_audit(context)
+        
+        elif agent.agentType == AgentType.REPAIR_PLANNER:
+            from app.workflows.migration_repair.agents.repair_planner import execute_repair_planner
+            return await execute_repair_planner(context)
+        
+        elif agent.agentType == AgentType.REPAIR_REVIEWER:
+            from app.workflows.migration_repair.agents.repair_reviewer import execute_repair_reviewer
+            return await execute_repair_reviewer(context)
+        
+        elif agent.agentType == AgentType.REPAIR_IMPLEMENTER:
+            from app.workflows.migration_repair.agents.repair_implementer import execute_repair_implementer
+            return await execute_repair_implementer(context)
+        
+        elif agent.agentType == AgentType.STATIC_REVIEWER:
+            from app.workflows.migration_repair.agents.static_reviewer import execute_static_reviewer
+            return await execute_static_reviewer(context)
+        
+        elif agent.agentType == AgentType.TEST_REVIEWER:
+            from app.workflows.migration_repair.agents.test_reviewer import execute_test_reviewer
+            return await execute_test_reviewer(context)
+        
+        elif agent.agentType == AgentType.VERIFICATION_RUNNER:
+            from app.workflows.migration_repair.agents.verification_runner import execute_verification_runner
+            return await execute_verification_runner(context)
+        
+        elif agent.agentType == AgentType.EVIDENCE_ASSEMBLER:
+            from app.workflows.migration_repair.agents.evidence_assembler import execute_evidence_assembler
+            return await execute_evidence_assembler(context)
+        
+        elif agent.agentType == AgentType.FINAL_GATE_AGENT:
+            from app.workflows.migration_repair.agents.final_gate_agent import execute_final_gate_agent
+            return await execute_final_gate_agent(context)
+        
+        elif agent.agentType == AgentType.PUBLISHER_AGENT:
+            from app.workflows.migration_repair.agents.publisher_agent import execute_publisher_agent
+            return await execute_publisher_agent(context)
+        
         else:
             # Unimplemented handlers are not successful executions. Fail closed so
             # a stub cannot satisfy a mandatory dependency or certification gate.
