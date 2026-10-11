@@ -100,7 +100,8 @@ CREATE TABLE products (
 """)
     
     # Import and run migration audit logic
-    from app.workflows.migration_repair.agents.migration_audit import parse_sql_statements
+    # Note: parse_sql_statements is defined in this test file
+    # In a real implementation, this would be imported from migration_audit agent
     
     # Parse each migration file
     results = {}

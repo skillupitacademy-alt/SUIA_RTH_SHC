@@ -1,0 +1,342 @@
+{
+  "plan_id": "repair-plan-2025-01-11T14:40:00Z",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "created_by": "repair_planner",
+  "source_reports": [
+    "command-safety-audit.json",
+    "database-safety-audit.json",
+    "test-inventory-audit.json",
+    "evidence-audit.json"
+  ],
+  "findings_summary": {
+    "total_findings": 50,
+    "critical": 0,
+    "high": 1,
+    "medium": 10,
+    "low": 39,
+    "duplicates_removed": 0
+  },
+  "repair_items": [
+    {
+      "item_id": "REPAIR-001",
+      "finding_ids": [
+        "TEST-HIGH-001"
+      ],
+      "severity": "HIGH",
+      "file": "services/project-ai/tests/integration/test_migration_repair_verification_integration.py",
+      "lines": null,
+      "description": "Database schema validation tests rely on mocks, not real schema checks. W6 verification_runner lacks integration test with actual disposable DB.",
+      "owner_agent": "test_author",
+      "specific_change": "Create new integration test file test_migration_repair_verification_integration.py with test_verification_runner_integration_disposable_db that: (1) Uses disposable DB fixture from conftest.py, (2) Creates real test schema with migrations, (3) Runs verification_runner against actual database, (4) Validates that schema checks detect real mismatches, (5) Verifies proper cleanup of disposable DB.",
+      "acceptance_test": "test_verification_runner_integration_disposable_db",
+      "risk": "LOW - new test file, no changes to production code",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-002",
+      "finding_ids": [
+        "CMD-010"
+      ],
+      "severity": "MEDIUM",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/workflow_controller.py",
+      "lines": "141",
+      "description": "Direct subprocess.run() call bypasses centralized run_command() validation wrapper. While the call uses argv array format correctly ['git', 'rev-parse', 'HEAD'], it lacks audit trail and centralized validation.",
+      "owner_agent": "repair_implementer",
+      "specific_change": "Replace subprocess.run() at line 141 in _get_git_sha() function with: result = await run_command('git rev-parse HEAD', cwd=repo_root). Import run_command from runner.py. Make _get_git_sha() async: async def _get_git_sha(repo_root: Path) -> str. Update all callers to await the function.",
+      "acceptance_test": "test_workflow_controller_uses_run_command",
+      "risk": "LOW - minimal refactor from sync subprocess to async run_command wrapper",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-003",
+      "finding_ids": [
+        "CMD-011"
+      ],
+      "severity": "MEDIUM",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+      "lines": "149",
+      "description": "Direct subprocess.run() call bypasses centralized run_command() validation wrapper in verify_commit_identity(). While the call uses argv array format correctly, it lacks audit trail.",
+      "owner_agent": "repair_implementer",
+      "specific_change": "Replace subprocess.run() at line 149 in verify_commit_identity() function with: result = await run_command('git rev-parse HEAD'). Import run_command from runner.py. Make verify_commit_identity() async: async def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]]. Update all callers to await the function.",
+      "acceptance_test": "test_final_gate_agent_uses_run_command",
+      "risk": "LOW - minimal refactor from sync subprocess to async run_command wrapper",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-004",
+      "finding_ids": [
+        "CMD-012"
+      ],
+      "severity": "MEDIUM",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/workflow_controller.py",
+      "lines": "137-145",
+      "description": "Function _get_git_sha() is synchronous but other agents use async run_command(). This creates inconsistency in command execution patterns across the codebase.",
+      "owner_agent": "repair_implementer",
+      "specific_change": "This repair is covered by REPAIR-002. When replacing subprocess.run() with run_command(), the function signature must change to async def _get_git_sha(repo_root: Path) -> str and all callers must be updated to await the call.",
+      "acceptance_test": "test_get_git_sha_async",
+      "risk": "LOW - covered by REPAIR-002",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-005",
+      "finding_ids": [
+        "CMD-013"
+      ],
+      "severity": "MEDIUM",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+      "lines": "134-152",
+      "description": "Function verify_commit_identity() is synchronous but other agents use async run_command(). This creates inconsistency in command execution patterns.",
+      "owner_agent": "repair_implementer",
+      "specific_change": "This repair is covered by REPAIR-003. When replacing subprocess.run() with run_command(), the function signature must change to async def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]] and all callers must be updated to await the call.",
+      "acceptance_test": "test_verify_commit_identity_async",
+      "risk": "LOW - covered by REPAIR-003",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-006",
+      "finding_ids": [
+        "TEST-MEDIUM-001"
+      ],
+      "severity": "MEDIUM",
+      "file": "services/project-ai/tests/test_migration_repair_agent_workflow_controller.py",
+      "lines": null,
+      "description": "workflow_controller.py agent lacks dedicated unit test file. Only covered in integration tests, which does not provide sufficient isolation for unit-level validation.",
+      "owner_agent": "test_author",
+      "specific_change": "Create new unit test file test_migration_repair_agent_workflow_controller.py with tests for: (1) test_workflow_controller_logs_evidence - verifies evidence logging, (2) test_workflow_controller_git_sha_extraction - tests _get_git_sha() function, (3) test_workflow_controller_error_handling - tests failure scenarios, (4) test_workflow_controller_uses_run_command - verifies run_command() usage after REPAIR-002 is applied.",
+      "acceptance_test": "test_migration_repair_agent_workflow_controller.py::all",
+      "risk": "LOW - new test file, no changes to production code",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-007",
+      "finding_ids": [
+        "TEST-MEDIUM-002"
+      ],
+      "severity": "MEDIUM",
+      "file": "services/project-ai/tests/integration/test_migration_repair_evidence_concurrency.py",
+      "lines": null,
+      "description": "Evidence ledger concurrent write testing is incomplete (placeholder only in test_migration_repair_evidence.py). No actual threading/multiprocessing scenarios are tested.",
+      "owner_agent": "test_author",
+      "specific_change": "Create new integration test file test_migration_repair_evidence_concurrency.py with test_evidence_ledger_concurrent_writes that: (1) Uses threading.Thread or multiprocessing.Process to create 5-10 concurrent writers, (2) Each writer appends evidence records to evidence.jsonl, (3) Verifies all records are written without corruption, (4) Validates SHA-256 hashes for all records, (5) Checks for file locking or serialization behavior.",
+      "acceptance_test": "test_evidence_ledger_concurrent_writes",
+      "risk": "LOW - new test file, may reveal concurrency issues in evidence ledger implementation",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-008",
+      "finding_ids": [
+        "TEST-MEDIUM-003"
+      ],
+      "severity": "MEDIUM",
+      "file": "services/project-ai/tests/integration/test_migration_real_sql_parsing.py",
+      "lines": null,
+      "description": "Migration audit agent tests do not test actual SQL parsing of real migration files, only mocked scenarios. This leaves risk of parsing failures on real SQL syntax.",
+      "owner_agent": "test_author",
+      "specific_change": "Create new integration test file test_migration_real_sql_parsing.py with test_migration_audit_parses_real_sql that: (1) Creates temporary migration files with real SQL (CREATE TABLE, ALTER TABLE, DROP statements), (2) Runs migration audit agent against real files, (3) Verifies SQL statements are correctly identified, (4) Tests edge cases: multi-line statements, comments, transaction blocks, (5) Validates detection of DROP and TRUNCATE operations.",
+      "acceptance_test": "test_migration_audit_parses_real_sql",
+      "risk": "LOW - new test file, no changes to production code",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-009",
+      "finding_ids": [
+        "TEST-MEDIUM-004"
+      ],
+      "severity": "MEDIUM",
+      "file": "services/project-ai/tests/integration/test_publisher_git_operations.py",
+      "lines": null,
+      "description": "Publisher agent tests mock commit behavior but do not verify actual git operations with real repository. This leaves risk of git command failures in real scenarios.",
+      "owner_agent": "test_author",
+      "specific_change": "Create new integration test file test_publisher_git_operations.py with test_publisher_agent_real_git_operations that: (1) Creates temporary git repository with real .git directory, (2) Runs publisher agent to create commits, (3) Verifies commit exists with git log, (4) Validates commit message format, (5) Tests branch creation and switching, (6) Verifies no-push policy (no remote operations).",
+      "acceptance_test": "test_publisher_agent_real_git_operations",
+      "risk": "LOW - new test file, requires temporary git repo setup",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-010",
+      "finding_ids": [
+        "EVID-004"
+      ],
+      "severity": "MEDIUM",
+      "file": ".agents/evidence/runs/migration-repair-20261011-143539-06936246/commands.jsonl",
+      "lines": null,
+      "description": "Command log file exists but is empty. No command execution records found for the migration-repair workflow run. This prevents auditing of what operations were executed.",
+      "owner_agent": "evidence_assembler",
+      "specific_change": "Document root cause analysis in evidence directory: (1) Create EVID-004-root-cause-analysis.md in agent-reports/, (2) Investigate whether commands.jsonl logging is enabled in workflow_controller.py, (3) Check if run_command() writes to commands.jsonl, (4) Verify evidence ledger initialization, (5) Add note to run-manifest.json documenting the empty commands.jsonl issue and planned fix.",
+      "acceptance_test": "manual_review_of_root_cause_document",
+      "risk": "LOW - documentation only, no code changes",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-011",
+      "finding_ids": [
+        "EVID-006"
+      ],
+      "severity": "MEDIUM",
+      "file": ".agents/evidence/project-llm-ci-evidence-manifest.md",
+      "lines": null,
+      "description": "Project LLM CI evidence manifest reports incomplete workflow execution. Gates B and C are marked as INCOMPLETE with 0% completeness. Missing: fix commit, diff, summary (Gate B), and migration/test outputs (Gate C).",
+      "owner_agent": "evidence_assembler",
+      "specific_change": "Complete LLM CI workflow evidence capture: (1) Create EVID-006-llm-ci-completion-plan.md in agent-reports/, (2) Document required evidence for Gate B: commit SHA, git diff output, fix summary, (3) Document required evidence for Gate C: migration output logs, test execution results, (4) Add checkpoint to run-manifest.json noting incomplete LLM CI evidence, (5) Create checklist for future LLM CI workflow runs.",
+      "acceptance_test": "manual_review_of_completion_plan",
+      "risk": "LOW - documentation and planning only, no code changes",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-012",
+      "finding_ids": [
+        "CMD-001",
+        "CMD-002",
+        "CMD-003",
+        "CMD-004",
+        "CMD-005",
+        "CMD-006",
+        "CMD-007",
+        "CMD-008",
+        "CMD-009"
+      ],
+      "severity": "LOW",
+      "file": "N/A",
+      "lines": null,
+      "description": "COMPLIANT findings for command safety: Proper use of asyncio.create_subprocess_exec, executable allowlist (ALLOWED_COMMANDS frozenset), validate_executable(), validate_argv() blocking shell metacharacters, validate_command() pipeline, and run_command() wrapper usage in verification.py, repair_implementer.py, and publisher_agent.py.",
+      "owner_agent": "no_action_needed",
+      "specific_change": "No action required - these are positive findings demonstrating proper security controls are in place. Continue maintaining these patterns.",
+      "acceptance_test": "existing_tests_in_test_migration_repair_safety.py",
+      "risk": "N/A - no changes",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-013",
+      "finding_ids": [
+        "DB-001",
+        "DB-002",
+        "DB-003",
+        "DB-004",
+        "DB-005",
+        "DB-006",
+        "DB-007",
+        "DB-008",
+        "DB-009",
+        "DB-010",
+        "DB-011",
+        "DB-012",
+        "DB-013",
+        "DB-014",
+        "DB-015"
+      ],
+      "severity": "LOW",
+      "file": "N/A",
+      "lines": null,
+      "description": "COMPLIANT findings for database safety: TRUSTED_TEST_HOSTS and TRUSTED_TEST_DATABASES enforcement, validate_and_connect() comprehensive pre-connection validation, fail-closed behavior, production marker detection (FORBIDDEN_PRODUCTION_MARKERS), DatabaseTarget.__post_init__ early validation, validate_target() production migration prevention, credential isolation, proper separation of concerns (verification.py, runner.py, repair_implementer.py do not access DB directly).",
+      "owner_agent": "no_action_needed",
+      "specific_change": "No action required - these are positive findings demonstrating comprehensive database security controls are in place. Continue maintaining these patterns.",
+      "acceptance_test": "existing_tests_in_test_migration_repair_safety.py",
+      "risk": "N/A - no changes",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-014",
+      "finding_ids": [
+        "EVD-001",
+        "EVD-002",
+        "EVD-003",
+        "EVD-005",
+        "EVD-007",
+        "EVD-008",
+        "EVD-009"
+      ],
+      "severity": "LOW",
+      "file": "N/A",
+      "lines": null,
+      "description": "COMPLIANT findings for evidence: P0 safety fixes manifest comprehensive with SHA-256 hashes for all artifacts, integration test results captured (181 tests, 100% pass rate), run-manifest.json properly structured, production-ready evidence manifest comprehensive (337 tests, gates A-F certified), evidence.jsonl and agent-runs.jsonl properly formatted with integrity hashes.",
+      "owner_agent": "no_action_needed",
+      "specific_change": "No action required - these are positive findings demonstrating comprehensive evidence capture and documentation. Continue maintaining these patterns.",
+      "acceptance_test": "existing_tests_in_test_migration_repair_evidence.py",
+      "risk": "N/A - no changes",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-015",
+      "finding_ids": [
+        "EVD-010"
+      ],
+      "severity": "LOW",
+      "file": "N/A",
+      "lines": null,
+      "description": "Three minor review findings documented in P0 manifest but not blocking: (1) subprocess exec without explicit shell=False parameter, (2) potential memory consumption with large evidence files (mitigated by 8192-byte chunking), (3) hardcoded database allowlists without environment override mechanism.",
+      "owner_agent": "no_action_needed",
+      "specific_change": "No immediate action required - these are LOW severity findings with existing mitigations. Consider addressing in future iterations: add explicit shell=False, document memory constraints, add TRUSTED_TEST_HOSTS_OVERRIDE environment variable support.",
+      "acceptance_test": "N/A - future enhancement tracking",
+      "risk": "N/A - no immediate changes",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-016",
+      "finding_ids": [
+        "TEST-INFO-001",
+        "TEST-INFO-002",
+        "TEST-INFO-003"
+      ],
+      "severity": "LOW",
+      "file": "N/A",
+      "lines": null,
+      "description": "INFO findings from test inventory: Total of 112 individual test cases identified across 19 test files, all 13 agent implementation files have corresponding unit test coverage, integration tests require TEST_DATABASE_URL_TUTORIAL environment variable to run.",
+      "owner_agent": "no_action_needed",
+      "specific_change": "No action required - these are informational findings documenting current test coverage state. The test coverage is comprehensive with 112 tests.",
+      "acceptance_test": "N/A - informational only",
+      "risk": "N/A - no changes",
+      "file_ownership_verified": true
+    },
+    {
+      "item_id": "REPAIR-017",
+      "finding_ids": [
+        "TEST-LOW-001",
+        "TEST-LOW-002",
+        "TEST-LOW-003"
+      ],
+      "severity": "LOW",
+      "file": "N/A",
+      "lines": null,
+      "description": "LOW severity test coverage gaps: Agent interdependencies (unit tests mock prior_agent_outputs but integration tests could be more comprehensive), error recovery paths (most agent tests verify error handling but do not test recovery/retry logic), performance benchmarks (no performance or load testing).",
+      "owner_agent": "no_action_needed",
+      "specific_change": "No immediate action required - these are LOW severity gaps that do not affect correctness. Consider future enhancements: (1) Add integration tests for multi-agent data flow, (2) Add recovery/retry scenario tests, (3) Add performance benchmarks for agent execution time.",
+      "acceptance_test": "N/A - future enhancement tracking",
+      "risk": "N/A - no immediate changes",
+      "file_ownership_verified": true
+    }
+  ],
+  "grouped_by_agent": {
+    "repair_implementer": [
+      "REPAIR-002",
+      "REPAIR-003",
+      "REPAIR-004",
+      "REPAIR-005"
+    ],
+    "test_author": [
+      "REPAIR-001",
+      "REPAIR-006",
+      "REPAIR-007",
+      "REPAIR-008",
+      "REPAIR-009"
+    ],
+    "evidence_assembler": [
+      "REPAIR-010",
+      "REPAIR-011"
+    ],
+    "no_action_needed": [
+      "REPAIR-012",
+      "REPAIR-013",
+      "REPAIR-014",
+      "REPAIR-015",
+      "REPAIR-016",
+      "REPAIR-017"
+    ]
+  },
+  "estimated_effort": "3-6 hours",
+  "prerequisites": [
+    "P0 safety fixes remain in place (verified by EVD-001, EVD-002, EVD-003)",
+    "Working tree clean (no uncommitted changes)",
+    "TEST_DATABASE_URL_TUTORIAL environment variable configured for integration tests"
+  ],
+  "blockers": []
+}
