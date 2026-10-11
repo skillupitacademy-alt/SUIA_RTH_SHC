@@ -1,0 +1,15 @@
+{
+  "stage": "W0",
+  "agent": "workflow_controller",
+  "timestamp": "2026-10-11T14:35:39Z",
+  "actions": [
+    {"action": "pin_source_commit", "sha": "069362463165d851cb8ecb6f325957f00ad9942a", "status": "SUCCESS"},
+    {"action": "check_working_tree", "clean": true, "status": "SUCCESS"},
+    {"action": "generate_run_id", "run_id": "migration-repair-20261011-143539-06936246", "status": "SUCCESS"},
+    {"action": "create_directories", "path": ".agents/evidence/runs/migration-repair-20261011-143539-06936246", "status": "SUCCESS"},
+    {"action": "write_manifest", "path": ".agents/evidence/runs/migration-repair-20261011-143539-06936246/run-manifest.json", "status": "SUCCESS"}
+  ],
+  "status": "SUCCESS",
+  "duration_ms": 0,
+  "next_stage": "W1-audits"
+}
