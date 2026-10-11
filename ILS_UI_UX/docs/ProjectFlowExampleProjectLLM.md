@@ -5807,4 +5807,202 @@ The key idea is: **the External AI doesn't need to know our architecture because
 
 That is also why I would treat the **Engineering Contract as one of the most important deliverables of W2**. If that contract is weak, everything downstream becomes guesswork. If it is precise, the External AI can be completely ignorant of our repository and still produce a candidate that follows the same architectural rules as I1, C1 and D1.
 
+---
+
 so yes provide detailed implementation with code for all above discussion implementation to be successfully implemented how this implementation and code will be diviided between multiple workflow agent of project AI model which all to be run sequentially and which all to be run parallely please guide and log all testing result output so that once uploaded on github you can cross check and get more understanding on it correct?
+
+---
+
+# What are we trying to do now?
+
+After reviewing the two attachments, the main objective is clear: we are building one repository-aware, approval-controlled Project LLM workflow that can generate an engineering contract for a new tutorial block, verify an implementation from an external AI, integrate it into the existing Tutorial Composer, and prove the result with tests and evidence.
+
+We are not trying to build another Tutorial Composer, duplicate the existing runtime, or rewrite I1, C1, and D1. Those existing blocks are reference implementations that Project LLM should inspect to discover the real integration rules.&#x20;
+
+Branch · Explain I2 Creation Files.txt
+
+
+
+There are two connected objectives in your documents:
+
+Objective A — Build the Project LLM workflow
+
+Make the backend agents, repository intelligence, engineering-contract generator, candidate intake, validation, placement, runtime verification, certification, and final gate work together under one authoritative workflow.
+
+Objective B — Connect the existing frontend
+
+Make the existing Project LLM UI use the real backend APIs and workflow states, so users can select a family/version, receive a self-contained engineering contract, upload a candidate, approve its integration plan, and inspect real verification results.
+
+The end-to-end scenario that proves both objectives is:
+
+1. A user selects a family and version, such as Introduction / I2.
+2. Project LLM discovers the applicable canonical files and derives a version-specific engineering contract.
+3. The external AI receives that complete contract without needing prior knowledge of the repository.
+4. The user approves the design and obtains the implementation.
+5. Project LLM inspects and validates the uploaded candidate, calculates hashes, compares it with the contract, and creates a placement plan.
+6. A human approves the placement.
+7. Project LLM integrates the candidate and verifies its schema, registry, renderer, Composer discoverability, runtime identity, theme/brand compatibility, and relevant browser behavior.
+8. The final gate evaluates the actual test results and evidence.
+9. The user receives a certification decision supported by the exact source commit, logs, and reports.
+
+That complete scenario—not merely starting FastAPI, rendering the UI, or having all agents defined—is the real definition of success.
+
+## 1. What do Waves 0–11 mean?
+
+The first attachment describes the multi-agent implementation plan, while the second explains the tutorial-block integration contract that the workflow must implement. The first attachment also contains later revisions of the plan, so the wave numbering is not perfectly consistent throughout it. We should consolidate those revisions into one canonical schedule before letting the agents proceed.&#x20;
+
+Branch · Explain I2 Creation Files.txt
+
+
+
+Here is the clearest way to understand the remaining work.
+
+The statuses below describe the intended execution and closure criteria. They are not claims that the waves have already passed.
+
+## W0
+
+Architecture freeze
+
+Establish one canonical workflow state machine, one authority for approvals, explicit agent ownership, and the rule against duplicate workflows and artifacts.
+
+Close when the canonical architecture is documented, implementation paths are confirmed, and baseline tests/evidence are recorded.
+
+## W1
+
+Repository intelligence and foundation
+
+Run the repository-contract, target-binding, legacy-workflow, and evidence-harness agents in parallel. Confirm the real repository snapshot and the canonical patterns used by I1/C1/D1.
+
+Close when all reports, scoped commits, tests, changed-file lists, and evidence are available and independently reviewed.
+
+## W2
+
+Engineering Contract generation
+
+Generate a self-contained, immutable, version-specific contract from the repository snapshot, including schemas, renderer, Composer, runtime, theme/brand, tests, and acceptance criteria.
+
+Close when the API and contract schema are tested, the contract is bound to the target and snapshot, and an independent reviewer accepts it.
+
+## W3
+
+Candidate pipeline
+
+Implement candidate intake, content hashing, target binding, canonical comparison, and placement-manifest generation.
+
+Close when correct, incorrect, incomplete, mismatched, and duplicate candidates are handled by real tests—not mocked success responses alone.
+
+## W4
+
+Human approval and safe placement
+
+Enforce the approval boundary before repository changes. Integrate only approved placement manifests through the canonical repository adapter.
+
+Close when rejection prevents placement, approval is persisted, and placement can be traced to the approved candidate and source snapshot.
+
+## W5
+
+Verification and evidence
+
+Verify Composer registration and discoverability, schema compatibility, renderer routing, runtime behavior, browser behavior, theme/brand independence, and the applicable ILS/LSNB/RSSB boundaries.
+
+Close when each required verification produces actual evidence and unavailable checks are marked BLOCKED rather than PASS.
+
+## W6
+
+Final backend gate and golden E2E
+
+The gate validates the required evidence, exact source SHA, mandatory test outcomes, and unresolved findings. The canonical end-to-end journey and negative tests must then run successfully.
+
+Close when all required gates pass, evidence is valid, and any required human certification approval is recorded.
+
+## W7
+
+Frontend integration
+
+Connect the existing Project LLM UI to the stabilized FastAPI contracts. Remove hard-coded workflow/certification results and duplicate frontend workflow authority.
+
+Close when the real UI can complete the workflow through backend APIs and frontend/backend integration tests pass.
+
+## W8
+
+Frontend/backend stabilization
+
+Treat this as an explicit stabilization checkpoint if it is not already represented in the controller: resolve integration defects, freeze the API contract, and rerun affected tests.
+
+Close when the UI and backend agree on states, errors, approvals, and evidence. This is a proposed normalization of the wave schedule, not a verified existing W8 implementation.
+
+## W9
+
+Release-candidate freeze
+
+Freeze the candidate commit, run ID, API contracts, and evidence set that independent auditors will inspect.
+
+Close when the candidate SHA and working-tree state are recorded and the evidence package is reproducible. This is also a proposed normalization step.
+
+## W10
+
+Independent integration audits
+
+Q01 audits the backend; Q02 audits the frontend. Both inspect the frozen release candidate independently and report defects against concrete files and tests.
+
+Close when both audit reports are complete, blockers are resolved, and affected tests/reviews are repeated.
+
+## W11
+
+Golden E2E audit and GitHub evidence package
+
+Q03 independently validates the end-to-end certification journey using Q01/Q02 findings. Q04 assembles the final evidence package only after Q03 finishes.
+
+Close when E2E and negative tests pass, the tested and published SHAs match, evidence hashes verify, and the final report records a truthful certification verdict.
+
+The original wave table explicitly assigns Q01/Q02 to W10 and Q03/Q04 to W11. The later sections also describe a shorter W0–W7 backend schedule followed by audits and frontend work. We should therefore treat the wave table above as the proposed consolidated plan, not assume every W8/W9 task already exists or is complete.&#x20;
+
+Branch · Explain I2 Creation Files.txt
+
+
+
+## 2. When can we close the remaining waves?
+
+We should close waves based on evidence, not by a calendar date or by an agent saying “done.”
+
+The practical sequence is:
+
+| Milestone   | What must be true before proceeding                                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Close W1    | Audits are complete, discrepancies are resolved or explicitly recorded, and the repository-derived contract inputs are trustworthy. |
+| Close W2    | Engineering Contract generation is working and tested against real repository data.                                                 |
+| Close W3–W4 | Candidate intake, comparison, approval, and placement work end to end with rejection and failure paths tested.                      |
+| Close W5–W6 | Required verification evidence exists; final gate and golden E2E produce a defensible result.                                       |
+| Close W7–W9 | The existing frontend is wired to the real backend, integration defects are resolved, and a release candidate is frozen.            |
+| Close W10   | Independent backend and frontend audits pass or all their findings are resolved and re-reviewed.                                    |
+| Close W11   | The E2E audit and GitHub evidence packaging are complete; the final certification decision is independently supported.              |
+
+I cannot responsibly give you a completion date yet. The attachments define responsibilities and dependencies, but they do not establish the current verified status of every wave or the actual rate at which your implementation agents are completing work. We first need the latest controller run and pushed commits.
+
+## 3. Three things we must resolve before continuing
+
+The documents contain different versions of the agent and wave plans. In particular, later passages rename or shift the responsibilities of the B-series, F-series, and Q-series agents. The workflow controller must have one authoritative mapping; otherwise the same work can be performed twice or a required gate can be skipped.
+
+The controller should enforce these rules:
+
+1. One canonical workflow and approval authority. No competing workflow engines or frontend-owned lifecycle.
+2. No duplicate artifacts. Search first and update existing canonical records where possible.
+3. No fabricated PASS. Every test and gate result must reference actual logs, exit codes, report hashes, run ID, and source SHA.
+4. No certification based only on unit tests. The required Composer/runtime/browser journey must be exercised.
+5. No publication before final approval. The exact tested SHA must be the SHA confirmed on GitHub.
+
+## 4. What I recommend you do now
+
+Ask the Project AI controller for a wave-status report, not another implementation summary. It should include:
+
+- The canonical wave/agent mapping it is following.
+- Current status of W0–W11: `PASS`, `FAIL`, `BLOCKED`, `IN_PROGRESS`, or `NOT_STARTED`.
+- Each wave's before/after commit SHA and changed files.
+- Actual test commands, exit codes, passed/failed/skipped counts, and raw-log paths.
+- Open findings and dependencies preventing the next wave from starting.
+- The latest branch name and full GitHub HEAD SHA.
+
+Then we can identify the actual remaining work and close waves in dependency order. The last step is for me to inspect the pushed GitHub commit and independently compare its code, test reports, evidence hashes, and final-gate verdict.
+
+The goal is not simply to reach “Wave 11 complete.” It is to reach a reproducible, independently verifiable Project LLM workflow that can take a new block version from contract generation through safe integration and certification.
+
