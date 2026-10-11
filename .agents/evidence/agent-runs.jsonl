@@ -916,3 +916,13 @@
 {"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:29.125677+00:00", "status": "started"}
 {"agent_id": "workflow_controller", "wave": "W0", "timestamp": "2026-10-11T14:10:29.138252+00:00", "status": "completed", "duration_ms": 12, "evidence": {"workflow_id": "test_workflow_003", "baseline_sha": "unknown", "waves_count": 10, "agents_count": 14}}
 {"runId": "run_test_execute_001_workflow_controller", "agentId": "workflow_controller", "wave": "W0", "commitBefore": "unknown", "commitAfter": "unknown", "filesChanged": [], "status": "success", "timestamp": "2026-10-11T14:10:29.511018+00:00", "duration_ms": 0.0, "errors": [], "warnings": []}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.277793+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.280249+00:00", "status": "completed", "duration_ms": 2, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Missing evidence files: evidence.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.289133+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.295503+00:00", "status": "completed", "duration_ms": 6, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Tampered evidence files (hash mismatch): test-results.jsonl"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.304578+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.317348+00:00", "status": "completed", "duration_ms": 12, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Required tests were skipped: schema_verification"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.327584+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.329069+00:00", "status": "completed", "duration_ms": 1, "evidence": {"gate_verdict": "BLOCKED", "checks_evaluated": 7, "verification_errors": ["Commit SHA mismatch: current=None, tested=None"]}}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.338801+00:00", "status": "started"}
+{"agent_id": "final_gate_agent", "wave": "W8", "timestamp": "2026-10-11T14:24:10.361912+00:00", "status": "completed", "duration_ms": 23, "evidence": {"gate_verdict": "PASS", "checks_evaluated": 7, "verification_errors": []}}
