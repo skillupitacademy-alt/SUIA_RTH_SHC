@@ -7,7 +7,6 @@ returns PASS/FAIL/BLOCKED verdict.
 
 import hashlib
 import json
-import subprocess
 from dataclasses import dataclass
 from datetime import datetime, UTC
 from pathlib import Path
@@ -17,6 +16,7 @@ from app.orchestration.agent_coordinator import AgentContext, AgentResult, Agent
 from app.evidence import ledger
 from ..gate import evaluate_final_gate, REQUIRED_CHECKS
 from ..models import CheckStatus
+from ..runner import run_command
 
 
 @dataclass
@@ -134,7 +134,7 @@ def verify_test_coverage(check_results: dict[str, CheckStatus]) -> tuple[bool, l
     return all_tests_executed, skipped_tests
 
 
-def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]]:
+async def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]]:
     """
     Verify commit identity matches tested SHA.
     
@@ -146,11 +146,8 @@ def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]]:
     """
     try:
         # Get current HEAD commit SHA
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            check=True,
+        result = await run_command(
+            "git rev-parse HEAD",
             timeout=10
         )
         current_sha = result.stdout.strip()
@@ -161,7 +158,7 @@ def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]]:
         
         return True, current_sha, current_sha
     
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as e:
+    except Exception as e:
         # If git command fails, return no match
         return False, None, None
 
@@ -276,7 +273,7 @@ async def execute_final_gate_agent(context: AgentContext) -> AgentResult:
         all_tests_executed, skipped_tests = verify_test_coverage(check_results)
         
         # FEAT-004: Verify commit identity
-        commit_match, current_sha, tested_sha = verify_commit_identity()
+        commit_match, current_sha, tested_sha = await verify_commit_identity()
         
         if commit_match:
             check_results["commit_identity"] = CheckStatus.PASS

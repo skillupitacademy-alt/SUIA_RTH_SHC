@@ -9,9 +9,11 @@ This module provides command execution utilities. It is imported by verification
 
 import asyncio
 import hashlib
+import json
 import shlex
 import time
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from .models import CommandResult
@@ -112,7 +114,8 @@ async def run_command(
     command: str,
     cwd: Optional[str] = None,
     timeout: int = 300,
-    env: Optional[dict[str, str]] = None
+    env: Optional[dict[str, str]] = None,
+    log_to_commands_jsonl: bool = True
 ) -> CommandResult:
     """
     Execute a command with output capture and hashing.
@@ -125,6 +128,7 @@ async def run_command(
         cwd: Working directory for command execution
         timeout: Timeout in seconds (default: 300)
         env: Environment variables to set
+        log_to_commands_jsonl: Whether to log to commands.jsonl (default: True)
         
     Returns:
         CommandResult with exit code, stdout, stderr, and SHA-256 hash
@@ -172,7 +176,7 @@ async def run_command(
     combined_output = stdout + stderr
     sha256 = hashlib.sha256(combined_output.encode("utf-8")).hexdigest()
     
-    return CommandResult(
+    result = CommandResult(
         command=command,
         exit_code=proc.returncode or 0,
         stdout=stdout,
@@ -181,3 +185,68 @@ async def run_command(
         timestamp=datetime.now(),
         duration_ms=duration_ms
     )
+    
+    # Log command to commands.jsonl if enabled
+    if log_to_commands_jsonl:
+        _log_command_to_jsonl(argv, result.exit_code, duration_ms, cwd)
+    
+    return result
+
+
+def _log_command_to_jsonl(argv: list[str], exit_code: int, duration_ms: int, cwd: Optional[str]) -> None:
+    """
+    Log command execution to commands.jsonl in run directory.
+    
+    Args:
+        argv: Command arguments array
+        exit_code: Command exit code
+        duration_ms: Execution duration in milliseconds
+        cwd: Working directory where command was executed
+    """
+    try:
+        # Find run directory from .agents/evidence/runs/
+        # Walk up from current file to find .agents directory
+        current_path = Path(__file__).resolve()
+        evidence_root = None
+        
+        for parent in current_path.parents:
+            agents_dir = parent / ".agents"
+            if agents_dir.exists():
+                evidence_root = agents_dir / "evidence"
+                break
+        
+        if not evidence_root or not evidence_root.exists():
+            # Cannot find evidence directory, skip logging
+            return
+        
+        # Find the latest run directory
+        runs_dir = evidence_root / "runs"
+        if not runs_dir.exists():
+            return
+        
+        # Get all run directories sorted by modification time (most recent first)
+        run_dirs = sorted(runs_dir.glob("migration-repair-*"), key=lambda p: p.stat().st_mtime, reverse=True)
+        
+        if not run_dirs:
+            return
+        
+        # Use the most recent run directory
+        latest_run = run_dirs[0]
+        commands_log = latest_run / "commands.jsonl"
+        
+        # Create command log entry
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "command": argv,
+            "exit_code": exit_code,
+            "duration_ms": duration_ms,
+            "cwd": cwd
+        }
+        
+        # Append to commands.jsonl
+        with open(commands_log, "a", encoding="utf-8") as f:
+            f.write(json.dumps(log_entry) + "\n")
+    
+    except Exception:
+        # Silently fail if logging fails - don't break command execution
+        pass

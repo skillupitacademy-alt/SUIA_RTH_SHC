@@ -5,7 +5,6 @@ Initializes workflow run record, establishes file ownership map, and logs
 execution plan showing W0-W9 dependency graph.
 """
 
-import subprocess
 from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any, Dict
@@ -13,6 +12,7 @@ from typing import Any, Dict
 from app.orchestration.agent_coordinator import AgentContext, AgentResult, AgentStatus
 from app.evidence import ledger
 from app.workflows.migration_repair.plan import STEPS
+from ..runner import run_command
 
 
 async def execute_workflow_controller(context: AgentContext) -> AgentResult:
@@ -33,7 +33,7 @@ async def execute_workflow_controller(context: AgentContext) -> AgentResult:
     
     try:
         # Get baseline SHA from git
-        baseline_sha = _get_git_sha(context.repository_root)
+        baseline_sha = await _get_git_sha(context.repository_root)
         
         # Create workflow run record
         workflow_run = {
@@ -127,7 +127,7 @@ async def execute_workflow_controller(context: AgentContext) -> AgentResult:
         )
 
 
-def _get_git_sha(repo_root: Path) -> str:
+async def _get_git_sha(repo_root: Path) -> str:
     """
     Get current git SHA from repository.
     
@@ -138,14 +138,12 @@ def _get_git_sha(repo_root: Path) -> str:
         Git SHA string or 'unknown' if git not available
     """
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=repo_root,
-            capture_output=True,
-            text=True,
+        result = await run_command(
+            "git rev-parse HEAD",
+            cwd=str(repo_root),
             timeout=5
         )
-        if result.returncode == 0:
+        if result.exit_code == 0:
             return result.stdout.strip()
         return "unknown"
     except Exception:
