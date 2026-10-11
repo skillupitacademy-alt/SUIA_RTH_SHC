@@ -168,6 +168,6 @@ def test_allowed_commands_set():
     """Test ALLOWED_COMMANDS contains expected commands."""
     expected = {
         "pnpm", "turbo", "pytest", "node", "tsx", 
-        "drizzle-kit", "git", "npm", "npx"
+        "drizzle-kit", "git", "npm", "npx", "docker-compose"
     }
     assert ALLOWED_COMMANDS == expected
