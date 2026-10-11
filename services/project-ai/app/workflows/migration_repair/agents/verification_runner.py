@@ -3,14 +3,19 @@ Verification Runner Agent (W6)
 
 Calls run_verification_pipeline() from verification.py, marks stages BLOCKED
 on failure, and captures all exit codes.
+
+Pre-validates database target using validate_and_connect() before executing
+verification pipeline.
 """
 
 from datetime import datetime, UTC
+import os
 
 from app.orchestration.agent_coordinator import AgentContext, AgentResult, AgentStatus
 from app.evidence import ledger
 from ..verification import run_verification_pipeline
 from ..models import CheckStatus
+from ..safety import DatabaseTarget, DatabaseMode, validate_and_connect
 
 
 async def execute_verification_runner(context: AgentContext) -> AgentResult:
@@ -19,6 +24,8 @@ async def execute_verification_runner(context: AgentContext) -> AgentResult:
     
     Executes full migration chain against fresh PostgreSQL database,
     verifies schema, runs integration and security tests.
+    
+    Pre-validates database connection target before running verification pipeline.
     
     Args:
         context: Agent execution context
@@ -37,6 +44,47 @@ async def execute_verification_runner(context: AgentContext) -> AgentResult:
             "timestamp": start_time.isoformat(),
             "status": "started",
         })
+        
+        # Pre-connection validation: validate database target before running verification
+        # Extract database URL from environment or context
+        db_url = os.getenv("TEST_DATABASE_URL", "postgresql://test_user@localhost/test_quiz_platform")
+        db_name = os.getenv("TEST_DATABASE_NAME", "test_quiz_platform")
+        
+        # Create database target for validation
+        db_target = DatabaseTarget(
+            url=db_url,
+            name=db_name,
+            mode=DatabaseMode.VERIFY,
+            env="test"
+        )
+        
+        # Validate and connect to database (connection validates target)
+        # This will raise ValueError if target is unsafe
+        try:
+            conn = await validate_and_connect(db_target)
+            await conn.close()  # Close validation connection
+        except ValueError as e:
+            # Database validation failed - fail fast
+            end_time = datetime.now(UTC)
+            duration_ms = int((end_time - start_time).total_seconds() * 1000)
+            
+            ledger.append_agent_run({
+                "agent_id": agent_id,
+                "wave": "W6",
+                "timestamp": end_time.isoformat(),
+                "status": "failed",
+                "duration_ms": duration_ms,
+                "error": f"Database validation failed: {str(e)}"
+            })
+            
+            return AgentResult(
+                agent_id=agent_id,
+                status=AgentStatus.FAILED,
+                errors=[f"Database validation failed: {str(e)}"],
+                evidence_ids=["agent-runs.jsonl"],
+                execution_time_ms=duration_ms,
+                timestamp=end_time
+            )
         
         # Run verification pipeline
         stages = await run_verification_pipeline(

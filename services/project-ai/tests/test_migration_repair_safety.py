@@ -156,15 +156,14 @@ def test_validate_target_rejects_migrate_production():
 
 def test_validate_target_invalid_url():
     """Test validate_target rejects invalid PostgreSQL URL."""
-    target = DatabaseTarget(
-        url="mysql://localhost/test_db",
-        name="test_db",
-        mode=DatabaseMode.VERIFY,
-        env="test"
-    )
-    
+    # Invalid URL is now caught in DatabaseTarget.__post_init__ when mode is VERIFY
     with pytest.raises(ValueError, match="Invalid PostgreSQL URL format"):
-        validate_target(target)
+        DatabaseTarget(
+            url="mysql://localhost/test_db",
+            name="test_db",
+            mode=DatabaseMode.VERIFY,
+            env="test"
+        )
 
 
 def test_validate_target_allows_postgres_scheme():
