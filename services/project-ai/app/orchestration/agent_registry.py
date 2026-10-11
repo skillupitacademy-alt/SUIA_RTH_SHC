@@ -77,7 +77,7 @@ class AgentRegistry:
     - Governance: submits approval, verifies manifest hash, records audit trail
     - Documentation: updates backlog, generates evidence report, writes gate summary
     
-    Migration Repair Workflow 13 agents (Wave 1):
+    Migration Repair Workflow 13 agents (W1-W9):
     - Migration Audit: scans migration files, verifies journal consistency, detects duplicate objects
     - Database Safety Audit: validates database identity, checks environment, verifies privileges
     - Test Inventory: discovers test scripts, identifies fixtures, catalogs integration tests
@@ -91,6 +91,8 @@ class AgentRegistry:
     - Evidence Assembler: collects logs and exit codes, captures test results, hashes artifacts
     - Final Gate Agent: reviews code and evidence independently, issues pass/fail/blocked verdict
     - Publisher Agent: commits verified changes, publishes evidence, confirms SHA match
+    
+    Note: workflow_controller (W0) is an orchestration function, not a registered agent.
     """
     
     def __init__(self):

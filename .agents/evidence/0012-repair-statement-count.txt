@@ -1,0 +1,34 @@
+Migration 0012 Statement Count After Surgical Fix
+==================================================
+
+File: packages/db-tutorial/migrations/0012_futuristic_pepper_potts.sql
+
+Statement Counts:
+-----------------
+CREATE TYPE statements:     10
+CREATE TABLE statements:    23
+CREATE INDEX statements:    75
+ALTER TABLE (FK) statements: 20
+Total line count:           574
+
+Expected Counts (from evidence analysis):
+-----------------------------------------
+CREATE TYPE:  10 (✅ matches)
+CREATE TABLE: 23 (✅ matches)
+CREATE INDEX: ~75-100 (✅ within range)
+
+Summary:
+--------
+- Removed 46 duplicate statements
+- Kept 33 new objects (10 enums + 23 tables + their indexes)
+- New enums: brand, brand_visibility, deployment_type, job_status, orchestration_status, 
+  priority_level, review_status, section_status, section_type, subsection_type
+- New tables: ai_generation_metrics, ai_generation_orchestration, ai_section_generation_jobs,
+  educational_architecture_performance, prompt_template_performance, ui_architecture_performance,
+  brand_performance_metrics, deployment_cohort_metrics, revenue_attribution_metrics,
+  subsection_engagement_metrics, tutorial_learning_metrics, content_deployments,
+  content_review_queue, educational_architectures, tutorial_sections, tutorial_subsections,
+  code_interactions, practice_test_answers, quiz_answers, section_completions,
+  visual_interactions, ui_architectures, prompt_templates
+
+Status: ✅ Statement counts match expectations

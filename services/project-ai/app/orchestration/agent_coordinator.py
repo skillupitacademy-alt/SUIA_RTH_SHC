@@ -109,10 +109,10 @@ class AgentCoordinator:
         
         try:
             # R4 agents (intake, placement, governance, documentation, toolchain, dependency, 
-            # final-gate, canonical_comparison) use agentId string matching and bypass registry
+            # final-gate, canonical_comparison, workflow_controller) use agentId string matching and bypass registry
             r4_agents = [
                 "toolchain", "dependency", "intake", "placement", "governance", 
-                "documentation", "final-gate", "canonical_comparison"
+                "documentation", "final-gate", "canonical_comparison", "workflow_controller"
             ]
             
             if agent_id in r4_agents:
@@ -180,8 +180,11 @@ class AgentCoordinator:
         )
         
         # Map agent type to execution handlers
-        # Wave R4 handlers (six new agent handlers)
-        if agent.agentId == "toolchain":
+        # Wave R4 handlers (six new agent handlers + workflow_controller orchestration)
+        if agent.agentId == "workflow_controller":
+            from app.workflows.migration_repair.agents.workflow_controller import execute_workflow_controller
+            return await execute_workflow_controller(context)
+        elif agent.agentId == "toolchain":
             from app.agents.toolchain import execute_toolchain
             return await execute_toolchain(context)
         elif agent.agentId == "dependency":

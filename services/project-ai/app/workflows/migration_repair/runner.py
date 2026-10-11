@@ -2,6 +2,9 @@
 Command runner for migration repair workflow.
 
 Executes approved commands with output capture and SHA-256 hashing.
+
+This module provides command execution utilities. It is imported by verification.py
+(one-way dependency; runner does not import verification).
 """
 
 import asyncio

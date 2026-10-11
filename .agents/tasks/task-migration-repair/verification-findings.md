@@ -352,3 +352,64 @@ The Migration Repair Workflow System has successfully passed all integration ver
 **Status**: READY FOR USE
 
 The system can now be used for autonomous migration repair, testing, and evidence collection as designed.
+
+---
+
+## Import Relationship
+
+**Verification Command**: 
+```bash
+python -c "import app.workflows.migration_repair.runner; import app.workflows.migration_repair.verification; print('No circular imports')"
+```
+
+**Result**: ✅ No circular imports detected
+
+**Dependency Chain**:
+- `verification.py` imports `run_command` from `runner.py`
+- `runner.py` does NOT import from `verification.py`
+- This is a one-way dependency (verification → runner)
+
+**Module Documentation**:
+- Both modules now include docstrings documenting this one-way dependency
+- `runner.py`: "This module provides command execution utilities. It is imported by verification.py (one-way dependency; runner does not import verification)."
+- `verification.py`: "This module provides verification pipeline coordination. Imports run_command from runner.py (one-way dependency)."
+
+**Status**: VERIFIED - No circular import risk exists
+
+---
+
+## Coverage Verification
+
+**Command**: 
+```bash
+pytest --cov=app.workflows.migration_repair --cov-report=term --cov-report=json:coverage.json -q tests/
+```
+
+**Result**: ⚠️ BELOW TARGET
+
+- **Overall Coverage**: 25%
+- **Target Coverage**: 85%
+- **Gap**: 60 percentage points
+- **Status**: FAIL - Below 85% threshold
+
+**Coverage Summary**:
+- Total Statements: 899
+- Covered: 224
+- Missing: 675
+- Coverage Report: `.agents/evidence/migration-repair-coverage.json`
+
+**Analysis**:
+The low coverage is due to agent execute functions not being tested beyond interface verification. Current tests mock agent calls rather than executing business logic. See detailed gap analysis in `.agents/tasks/task-migration-repair/coverage-notes.md`.
+
+**Files with 100% Coverage**:
+- `models.py` (48/48 statements)
+- `agents/__init__.py` (15/15 statements)
+
+**Files Needing Most Work** (sorted by missing statements):
+1. `agents/repair_planner.py` - 9% (50 missing)
+2. `agents/repair_implementer.py` - 10% (60 missing)
+3. `agents/migration_audit.py` - 15% (52 missing)
+4. `agents/static_reviewer.py` - 12% (51 missing)
+5. `agents/repair_reviewer.py` - 7% (50 missing)
+
+**Recommendation**: Expand unit tests to execute agent logic with mocked filesystems and subprocess operations. Estimated 2-3 days of work to reach 85% target.

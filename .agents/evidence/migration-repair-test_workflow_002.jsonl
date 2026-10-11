@@ -1,0 +1,1 @@
+{"agent_id": "test_agent", "status": "success", "timestamp": "2026-10-11T09:27:55.983514+00:00", "execution_time_ms": 0.0, "outputs": {"test": "data"}, "errors": [], "warnings": [], "sha256": "d5e715eaae9d0df7d7190dcae7e5b23388d66ef81735d4e4a994074f7411df47"}

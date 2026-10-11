@@ -17,6 +17,7 @@ Agents by Wave:
 - W9: publisher_agent
 """
 
+from .workflow_controller import execute_workflow_controller
 from .migration_audit import execute_migration_audit
 from .database_safety_audit import execute_database_safety_audit
 from .test_inventory import execute_test_inventory
@@ -32,6 +33,7 @@ from .final_gate_agent import execute_final_gate_agent
 from .publisher_agent import execute_publisher_agent
 
 __all__ = [
+    "execute_workflow_controller",
     "execute_migration_audit",
     "execute_database_safety_audit",
     "execute_test_inventory",

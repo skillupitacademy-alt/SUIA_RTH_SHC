@@ -2,6 +2,9 @@
 Verification pipeline for migration repair workflow.
 
 Sequential execution of verification stages V0-V10 with blocking on failure.
+
+This module provides verification pipeline coordination. Imports run_command from
+runner.py (one-way dependency).
 """
 
 from typing import Optional

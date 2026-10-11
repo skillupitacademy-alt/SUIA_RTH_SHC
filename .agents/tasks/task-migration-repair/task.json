@@ -1,0 +1,7 @@
+{
+  "task_id": "task-migration-repair",
+  "task_description": "Implement Migration Repair Workflow System with 13 specialized agents organized into 9 waves (W0-W9) for autonomous migration repair, testing, and evidence collection",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005"],
+  "blocked_reason": null
+}
