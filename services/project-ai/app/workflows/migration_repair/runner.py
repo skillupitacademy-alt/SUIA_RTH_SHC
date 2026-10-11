@@ -29,6 +29,7 @@ ALLOWED_COMMANDS = frozenset([
     "git",
     "npm",
     "npx",
+    "docker-compose",
 ])
 
 

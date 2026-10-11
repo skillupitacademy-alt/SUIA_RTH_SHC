@@ -62,6 +62,15 @@ class MigrationFinding(BaseModel):
     recommended_action: Optional[str] = Field(default=None, description="Recommended remediation")
 
 
+class CleanupResult(BaseModel):
+    """Result of cleanup verification."""
+    
+    success: bool = Field(description="Whether cleanup command succeeded")
+    verified: bool = Field(description="Whether database drop was independently verified")
+    log_path: str = Field(description="Path to cleanup log file")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(), description="Cleanup timestamp")
+
+
 class VerificationStage(BaseModel):
     """A stage in the verification pipeline."""
     
@@ -74,3 +83,4 @@ class VerificationStage(BaseModel):
     timestamp: Optional[datetime] = Field(default=None, description="Execution timestamp")
     duration_ms: Optional[int] = Field(default=None, description="Execution duration in milliseconds")
     blocked_reason: Optional[str] = Field(default=None, description="Why stage was blocked if status is BLOCKED")
+    cleanup_status: Optional[CheckStatus] = Field(default=None, description="Status of cleanup verification if applicable")
