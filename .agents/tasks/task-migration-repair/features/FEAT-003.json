@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Agent implementations (Wave 2): Implement 13 agent execution functions, each performing specific migration repair workflow tasks and logging evidence to append-only ledgers. Each agent follows async def execute_{agent_name}(context: AgentContext) -> AgentResult pattern.",
+  "status": "completed",
+  "steps": [
+    "Create app/workflows/migration_repair/agents/__init__.py as package marker",
+    "Create app/workflows/migration_repair/agents/migration_audit.py: scans packages/db-tutorial/migrations/, reads Drizzle journal, detects duplicate CREATE statements, returns findings",
+    "Create app/workflows/migration_repair/agents/database_safety_audit.py: parses DATABASE_URL_TUTORIAL, validates not production-named, checks env vars, verifies read-only mode",
+    "Create app/workflows/migration_repair/agents/test_inventory.py: discovers pytest files in services/project-ai/tests/, checks for existing migration tests, validates fixtures",
+    "Create app/workflows/migration_repair/agents/evidence_audit.py: reads .agents/evidence/*.jsonl, validates JSON integrity, checks for hash mismatches, reports missing files",
+    "Create app/workflows/migration_repair/agents/repair_planner.py: aggregates findings from W1 agents, proposes minimal schema-preserving patches, maps to specific migrations, assesses risk",
+    "Create app/workflows/migration_repair/agents/repair_reviewer.py: checks proposed patches don't duplicate earlier migrations, rejects destructive changes, approves or blocks with reason",
+    "Create app/workflows/migration_repair/agents/repair_implementer.py: creates git worktree, applies approved patches, updates canonical docs in place, commits locally with evidence references",
+    "Create app/workflows/migration_repair/agents/static_reviewer.py: runs SQL syntax checks, verifies migration order from Drizzle journal, validates snapshot consistency, reviews diff scope",
+    "Create app/workflows/migration_repair/agents/test_reviewer.py: ensures tests exist for duplicate object failures, checks coverage of downstream functionality, validates test fixture patterns",
+    "Create app/workflows/migration_repair/agents/verification_runner.py: calls run_verification_pipeline() from verification.py, marks stages BLOCKED on failure, captures all exit codes",
+    "Create app/workflows/migration_repair/agents/evidence_assembler.py: collects all stdout/stderr/exit codes from prior stages, writes to .agents/evidence/migration-repair-{workflow_id}.jsonl with SHA-256 hashes",
+    "Create app/workflows/migration_repair/agents/final_gate_agent.py: calls evaluate_final_gate() from gate.py with collected check results, returns PASS/FAIL/BLOCKED verdict",
+    "Create app/workflows/migration_repair/agents/publisher_agent.py: after PASS verdict, pushes commit to remote, verifies remote SHA matches local SHA, writes audit record to evidence ledger",
+    "Add unit test file for each agent in tests/test_migration_repair_agent_{name}.py verifying evidence logging and error handling"
+  ],
+  "acceptance_criteria": [
+    "All 13 agent implementation files created in app/workflows/migration_repair/agents/",
+    "Each agent function logs start/completion via app.evidence.ledger.append_agent_run()",
+    "Each agent returns AgentResult with populated evidence_ids list",
+    "Each agent handles exceptions gracefully, returning FAILED status with error message",
+    "No agent mutates state outside approved scope (only repair_implementer writes to worktree)",
+    "Unit tests verify each agent logs evidence and handles errors without crashes"
+  ],
+  "verification": [
+    "cd services/project-ai && pytest tests/test_migration_repair_agent_*.py -v",
+    "python -c 'from app.workflows.migration_repair.agents import migration_audit, database_safety_audit, test_inventory, evidence_audit, repair_planner, repair_reviewer, repair_implementer, static_reviewer, test_reviewer, verification_runner, evidence_assembler, final_gate_agent, publisher_agent'",
+    "Verify .agents/evidence/agent-runs.jsonl receives entries when agents execute"
+  ],
+  "blocked_reason": null,
+  "findings": "All 13 agent implementation files created successfully. Each agent follows async execute pattern, logs to evidence ledger, returns AgentResult with populated evidence_ids, and handles exceptions gracefully. Unit tests verify evidence logging and error handling. Import verification passed. All W1 agent tests (13 tests) passed successfully."
+}
