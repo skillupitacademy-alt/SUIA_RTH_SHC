@@ -260,66 +260,6 @@ CREATE TABLE "tutorial_learning_metrics" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "assignment_help_requests" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"subtopic_id" uuid NOT NULL,
-	"assignment_id" uuid NOT NULL,
-	"question" text NOT NULL,
-	"status" "assignment_help_request_status" DEFAULT 'open' NOT NULL,
-	"assigned_to" uuid,
-	"resolved_at" timestamp,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "assignment_progress" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"subtopic_id" uuid NOT NULL,
-	"difficulty" "tutorial_difficulty" NOT NULL,
-	"status" "assignment_progress_status" DEFAULT 'not_started' NOT NULL,
-	"started_at" timestamp,
-	"completed_at" timestamp,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "badges" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"name" text NOT NULL,
-	"description" text,
-	"icon_url" text,
-	"level" "tutorial_project_level",
-	"scope" "tutorial_project_scope",
-	"criteria" jsonb,
-	"version" integer DEFAULT 1 NOT NULL,
-	"is_active" boolean DEFAULT true NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "certificates" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"scope" "tutorial_project_scope" NOT NULL,
-	"parent_id" uuid NOT NULL,
-	"parent_name" text NOT NULL,
-	"verification_code" text NOT NULL,
-	"pdf_url" text,
-	"issued_at" timestamp DEFAULT now() NOT NULL,
-	"expires_at" timestamp,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
 CREATE TABLE "content_deployments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"section_id" uuid NOT NULL,
@@ -344,24 +284,6 @@ CREATE TABLE "content_deployments" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "content_generation_jobs" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"subtopic_id" uuid NOT NULL,
-	"difficulty" "tutorial_difficulty" NOT NULL,
-	"status" "tutorial_content_job_status" DEFAULT 'pending' NOT NULL,
-	"prompt_version" integer DEFAULT 1 NOT NULL,
-	"prompt" jsonb,
-	"result" jsonb,
-	"error" text,
-	"generated_by" uuid,
-	"processed_at" timestamp,
-	"retry_count" integer DEFAULT 0 NOT NULL,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
 CREATE TABLE "content_review_queue" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"orchestration_id" uuid NOT NULL,
@@ -379,20 +301,6 @@ CREATE TABLE "content_review_queue" (
 	"priority" "priority_level" DEFAULT 'normal' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "domain_content_config" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"domain_id" uuid NOT NULL,
-	"audience_profile" text NOT NULL,
-	"default_language" text DEFAULT 'en' NOT NULL,
-	"seo_title_template" text,
-	"ai_tutor_enabled" boolean DEFAULT true NOT NULL,
-	"content_review_required" boolean DEFAULT true NOT NULL,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE "educational_architectures" (
@@ -569,337 +477,6 @@ CREATE TABLE "prompt_templates" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "layman_audit_logs" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"section_id" uuid,
-	"prompt_id" uuid,
-	"action" "layman_audit_action" NOT NULL,
-	"action_category" varchar(50) NOT NULL,
-	"user_id" uuid NOT NULL,
-	"user_role" varchar(50),
-	"brand_id" varchar(50) NOT NULL,
-	"before_state" jsonb,
-	"after_state" jsonb,
-	"diff" jsonb,
-	"metadata" jsonb,
-	"ip_address" varchar(45),
-	"user_agent" text,
-	"success" varchar(20) DEFAULT 'success' NOT NULL,
-	"error_message" text,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "layman_prompt_history" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"section_id" uuid,
-	"subtopic_id" uuid NOT NULL,
-	"prompt_template_id" uuid NOT NULL,
-	"template_name" varchar(255) NOT NULL,
-	"template_version" varchar(50) NOT NULL,
-	"system_prompt" text NOT NULL,
-	"user_prompt" text NOT NULL,
-	"full_prompt" text NOT NULL,
-	"variables" jsonb NOT NULL,
-	"prompt_hash" varchar(64) NOT NULL,
-	"prompt_signature" text,
-	"brand_id" varchar(50) NOT NULL,
-	"educational_architecture_id" uuid,
-	"educational_architecture_name" varchar(255),
-	"ui_architecture_id" uuid,
-	"ui_architecture_name" varchar(255),
-	"was_used" varchar(20) DEFAULT 'pending' NOT NULL,
-	"used_at" timestamp,
-	"export_count" integer DEFAULT 0 NOT NULL,
-	"last_exported_at" timestamp,
-	"export_format" varchar(50),
-	"metadata" jsonb,
-	"generated_by" uuid NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "layman_content_revisions" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"section_id" uuid NOT NULL,
-	"revision_number" integer NOT NULL,
-	"parent_revision_id" uuid,
-	"content" jsonb NOT NULL,
-	"quality_score" integer,
-	"hallucination_risk" integer,
-	"completeness_score" integer,
-	"validation_errors" jsonb,
-	"validation_warnings" jsonb,
-	"status" varchar(50) NOT NULL,
-	"governance_status" varchar(50),
-	"change_type" varchar(50) NOT NULL,
-	"change_reason" text,
-	"changed_subsections" jsonb,
-	"source_prompt_id" uuid,
-	"ai_response_raw" text,
-	"brand_id" varchar(50) NOT NULL,
-	"metadata" jsonb,
-	"created_by" uuid NOT NULL,
-	"created_by_role" varchar(50),
-	"is_current_version" varchar(10) DEFAULT 'yes' NOT NULL,
-	"replaced_at" timestamp,
-	"replaced_by" uuid,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_content" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"subtopic_id" uuid NOT NULL,
-	"difficulty" "tutorial_difficulty" NOT NULL,
-	"content_type" text DEFAULT 'standard' NOT NULL,
-	"content" jsonb NOT NULL,
-	"version" integer DEFAULT 1 NOT NULL,
-	"language" text DEFAULT 'en' NOT NULL,
-	"is_published" boolean DEFAULT false NOT NULL,
-	"generated_by_ai" boolean DEFAULT false NOT NULL,
-	"ai_model_used" text,
-	"generation_job_id" uuid,
-	"admin_approved_by" uuid,
-	"admin_approved_at" timestamp,
-	"quality_score" jsonb,
-	"regeneration_count" integer DEFAULT 0 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_domains" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"external_id" uuid NOT NULL,
-	"name" text NOT NULL,
-	"slug" text NOT NULL,
-	"deleted_at" timestamp,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_content_versions" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"content_id" uuid NOT NULL,
-	"version" integer NOT NULL,
-	"content" jsonb NOT NULL,
-	"saved_by" uuid NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_content_audit" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"content_id" uuid NOT NULL,
-	"user_id" uuid NOT NULL,
-	"action" "tutorial_content_audit_action" NOT NULL,
-	"diff" jsonb,
-	"created_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_assignments" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"subtopic_id" uuid NOT NULL,
-	"difficulty" "tutorial_difficulty" NOT NULL,
-	"question_type" "assignment_question_type" NOT NULL,
-	"question" text DEFAULT '' NOT NULL,
-	"hints" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"reference_answer" text DEFAULT '' NOT NULL,
-	"title" text DEFAULT '' NOT NULL,
-	"content" jsonb NOT NULL,
-	"order_index" integer,
-	"points" integer DEFAULT 10 NOT NULL,
-	"time_limit_sec" integer,
-	"is_published" boolean DEFAULT false NOT NULL,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "live_session_requests" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"student_id" uuid NOT NULL,
-	"subtopic_id" uuid NOT NULL,
-	"doubt_text" text,
-	"status" "live_session_request_status" DEFAULT 'pending' NOT NULL,
-	"faculty_id" uuid,
-	"meeting_link" text,
-	"scheduled_at" timestamp,
-	"completed_at" timestamp,
-	"cancelled_reason" text,
-	"deleted_at" timestamp,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_subjects" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"external_id" uuid NOT NULL,
-	"domain_id" uuid NOT NULL,
-	"name" text NOT NULL,
-	"slug" text NOT NULL,
-	"deleted_at" timestamp,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_topics" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"external_id" uuid NOT NULL,
-	"subject_id" uuid NOT NULL,
-	"name" text NOT NULL,
-	"slug" text NOT NULL,
-	"deleted_at" timestamp,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_subtopics" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"external_id" uuid NOT NULL,
-	"topic_id" uuid NOT NULL,
-	"name" text NOT NULL,
-	"slug" text NOT NULL,
-	"difficulty_levels" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"deleted_at" timestamp,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_projects" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"scope" "tutorial_project_scope" NOT NULL,
-	"parent_id" uuid NOT NULL,
-	"level" "tutorial_project_level" NOT NULL,
-	"title" text NOT NULL,
-	"description" text,
-	"deliverable_type" "tutorial_deliverable_type" NOT NULL,
-	"evaluation_type" "tutorial_evaluation_type" NOT NULL,
-	"estimated_hours" integer,
-	"badge_id" uuid,
-	"subtopics_covered" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"prerequisites" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"is_published" boolean DEFAULT false NOT NULL,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_project_submissions" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"project_id" uuid NOT NULL,
-	"project_level" "tutorial_project_level" NOT NULL,
-	"difficulty" "tutorial_difficulty" NOT NULL,
-	"submission_content" jsonb NOT NULL,
-	"status" "tutorial_project_submission_status" DEFAULT 'pending' NOT NULL,
-	"score" integer,
-	"feedback" text,
-	"ai_review" jsonb DEFAULT 'null'::jsonb,
-	"peer_reviews" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"admin_review" jsonb DEFAULT 'null'::jsonb,
-	"badge_awarded" boolean DEFAULT false NOT NULL,
-	"video_required" boolean DEFAULT false NOT NULL,
-	"video_url" text,
-	"submitted_at" timestamp,
-	"graded_at" timestamp,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "student_badges" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"badge_id" uuid NOT NULL,
-	"awarded_at" timestamp DEFAULT now() NOT NULL,
-	"project_submission_id" uuid,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_progress" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"subtopic_id" uuid NOT NULL,
-	"status" "tutorial_progress_status" DEFAULT 'not_started' NOT NULL,
-	"blocks_completed" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"remediation_triggered" boolean DEFAULT false NOT NULL,
-	"score" numeric(5, 2),
-	"time_spent_sec" integer DEFAULT 0 NOT NULL,
-	"completed_at" timestamp,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "tutorial_video_links" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"subtopic_id" uuid,
-	"project_id" uuid,
-	"assignment_difficulty" "tutorial_difficulty",
-	"provider" "tutorial_video_provider" NOT NULL,
-	"url" text NOT NULL,
-	"title" text NOT NULL,
-	"thumbnail_url" text,
-	"duration_seconds" integer,
-	"captions_available" boolean DEFAULT false NOT NULL,
-	"approved_by_admin" boolean DEFAULT false NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "remediation_triggers" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"exam_result_id" uuid NOT NULL,
-	"user_id" uuid NOT NULL,
-	"weak_subtopics" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"weak_subtopic_ids" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"recommended_content_types" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"status" "tutorial_trigger_status" DEFAULT 'pending' NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "subtopic_flow_progress" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"subtopic_id" uuid NOT NULL,
-	"layman_read_at" timestamp,
-	"real_life_read_at" timestamp,
-	"technical_read_at" timestamp,
-	"code_read_at" timestamp,
-	"ai_tutor_first_message_at" timestamp,
-	"assignment_unlocked_at" timestamp,
-	"assignment_completed_at" timestamp,
-	"current_flow_step" integer DEFAULT 1 NOT NULL,
-	"flow_completed" boolean DEFAULT false NOT NULL,
-	"time_on_layman_seconds" integer DEFAULT 0 NOT NULL,
-	"time_on_technical_seconds" integer DEFAULT 0 NOT NULL,
-	"time_on_code_seconds" integer DEFAULT 0 NOT NULL,
-	"total_time_seconds" integer DEFAULT 0 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "student_streaks" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"current_streak" integer DEFAULT 0 NOT NULL,
-	"longest_streak" integer DEFAULT 0 NOT NULL,
-	"last_activity" timestamp,
-	"total_xp" integer DEFAULT 0 NOT NULL,
-	"level" text DEFAULT 'bronze' NOT NULL,
-	"version" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
 ALTER TABLE "ai_generation_orchestration" ADD CONSTRAINT "ai_generation_orchestration_subtopic_id_tutorial_subtopics_id_fk" FOREIGN KEY ("subtopic_id") REFERENCES "public"."tutorial_subtopics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ai_generation_orchestration" ADD CONSTRAINT "ai_generation_orchestration_educational_architecture_id_educational_architectures_id_fk" FOREIGN KEY ("educational_architecture_id") REFERENCES "public"."educational_architectures"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ai_section_generation_jobs" ADD CONSTRAINT "ai_section_generation_jobs_orchestration_id_ai_generation_orchestration_id_fk" FOREIGN KEY ("orchestration_id") REFERENCES "public"."ai_generation_orchestration"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -908,7 +485,6 @@ ALTER TABLE "prompt_template_performance" ADD CONSTRAINT "prompt_template_perfor
 ALTER TABLE "ui_architecture_performance" ADD CONSTRAINT "ui_architecture_performance_architecture_id_ui_architectures_id_fk" FOREIGN KEY ("architecture_id") REFERENCES "public"."ui_architectures"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "subsection_engagement_metrics" ADD CONSTRAINT "subsection_engagement_metrics_subsection_id_tutorial_subsections_id_fk" FOREIGN KEY ("subsection_id") REFERENCES "public"."tutorial_subsections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tutorial_learning_metrics" ADD CONSTRAINT "tutorial_learning_metrics_section_id_tutorial_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."tutorial_sections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "assignment_help_requests" ADD CONSTRAINT "assignment_help_requests_assignment_id_tutorial_assignments_id_fk" FOREIGN KEY ("assignment_id") REFERENCES "public"."tutorial_assignments"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "content_deployments" ADD CONSTRAINT "content_deployments_section_id_tutorial_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."tutorial_sections"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tutorial_sections" ADD CONSTRAINT "tutorial_sections_subtopic_id_tutorial_subtopics_id_fk" FOREIGN KEY ("subtopic_id") REFERENCES "public"."tutorial_subtopics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tutorial_sections" ADD CONSTRAINT "tutorial_sections_prompt_template_id_prompt_templates_id_fk" FOREIGN KEY ("prompt_template_id") REFERENCES "public"."prompt_templates"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -921,12 +497,6 @@ ALTER TABLE "practice_test_answers" ADD CONSTRAINT "practice_test_answers_sectio
 ALTER TABLE "quiz_answers" ADD CONSTRAINT "quiz_answers_section_id_tutorial_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."tutorial_sections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "section_completions" ADD CONSTRAINT "section_completions_section_id_tutorial_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."tutorial_sections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "visual_interactions" ADD CONSTRAINT "visual_interactions_section_id_tutorial_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."tutorial_sections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "tutorial_subjects" ADD CONSTRAINT "tutorial_subjects_domain_id_tutorial_domains_id_fk" FOREIGN KEY ("domain_id") REFERENCES "public"."tutorial_domains"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "tutorial_topics" ADD CONSTRAINT "tutorial_topics_subject_id_tutorial_subjects_id_fk" FOREIGN KEY ("subject_id") REFERENCES "public"."tutorial_subjects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "tutorial_subtopics" ADD CONSTRAINT "tutorial_subtopics_topic_id_tutorial_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."tutorial_topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "tutorial_project_submissions" ADD CONSTRAINT "tutorial_project_submissions_project_id_tutorial_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."tutorial_projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "student_badges" ADD CONSTRAINT "student_badges_badge_id_badges_id_fk" FOREIGN KEY ("badge_id") REFERENCES "public"."badges"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "student_badges" ADD CONSTRAINT "student_badges_project_submission_id_tutorial_project_submissions_id_fk" FOREIGN KEY ("project_submission_id") REFERENCES "public"."tutorial_project_submissions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "uq_metrics_date_hour_level" ON "ai_generation_metrics" USING btree ("date","hour","aggregation_level");--> statement-breakpoint
 CREATE INDEX "idx_orchestration_status" ON "ai_generation_orchestration" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "idx_orchestration_subtopic" ON "ai_generation_orchestration" USING btree ("subtopic_id");--> statement-breakpoint
@@ -961,21 +531,13 @@ CREATE UNIQUE INDEX "uq_learning_metrics_date_hour_section_brand" ON "tutorial_l
 CREATE INDEX "idx_learning_section" ON "tutorial_learning_metrics" USING btree ("section_id");--> statement-breakpoint
 CREATE INDEX "idx_learning_brand" ON "tutorial_learning_metrics" USING btree ("brand_id");--> statement-breakpoint
 CREATE INDEX "idx_learning_date" ON "tutorial_learning_metrics" USING btree ("date");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_assignment_help_request_user_assignment" ON "assignment_help_requests" USING btree ("user_id","assignment_id","subtopic_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_assignment_progress_user_subtopic_difficulty" ON "assignment_progress" USING btree ("user_id","subtopic_id","difficulty");--> statement-breakpoint
-CREATE INDEX "idx_badges_scope" ON "badges" USING btree ("scope","level");--> statement-breakpoint
-CREATE INDEX "idx_certificates_user" ON "certificates" USING btree ("user_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_certificates_verify" ON "certificates" USING btree ("verification_code");--> statement-breakpoint
 CREATE INDEX "idx_deployments_section" ON "content_deployments" USING btree ("section_id");--> statement-breakpoint
 CREATE INDEX "idx_deployments_status" ON "content_deployments" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "idx_deployments_experiment" ON "content_deployments" USING btree ("experiment_id");--> statement-breakpoint
 CREATE INDEX "idx_deployments_brand" ON "content_deployments" USING btree ("brand_id");--> statement-breakpoint
-CREATE INDEX "idx_content_generation_jobs_subtopic" ON "content_generation_jobs" USING btree ("subtopic_id","status");--> statement-breakpoint
 CREATE INDEX "idx_review_queue_status" ON "content_review_queue" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "idx_review_queue_assigned" ON "content_review_queue" USING btree ("assigned_to");--> statement-breakpoint
 CREATE INDEX "idx_review_queue_priority" ON "content_review_queue" USING btree ("priority","status");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_domain_content_config_domain" ON "domain_content_config" USING btree ("domain_id");--> statement-breakpoint
-CREATE INDEX "idx_domain_content_config_domain" ON "domain_content_config" USING btree ("domain_id","default_language");--> statement-breakpoint
 CREATE INDEX "idx_educational_brand" ON "educational_architectures" USING btree ("brand_id");--> statement-breakpoint
 CREATE INDEX "idx_educational_active" ON "educational_architectures" USING btree ("is_active");--> statement-breakpoint
 CREATE INDEX "idx_sections_subtopic" ON "tutorial_sections" USING btree ("subtopic_id");--> statement-breakpoint
@@ -1009,54 +571,4 @@ CREATE INDEX "idx_ui_active" ON "ui_architectures" USING btree ("is_active");-->
 CREATE UNIQUE INDEX "uq_prompt_section_subsection_version_brand" ON "prompt_templates" USING btree ("section_type","subsection_type","version","brand_id");--> statement-breakpoint
 CREATE INDEX "idx_prompt_brand" ON "prompt_templates" USING btree ("brand_id");--> statement-breakpoint
 CREATE INDEX "idx_prompt_section" ON "prompt_templates" USING btree ("section_type");--> statement-breakpoint
-CREATE INDEX "idx_prompt_subsection" ON "prompt_templates" USING btree ("subsection_type");--> statement-breakpoint
-CREATE INDEX "idx_layman_audit_section_id" ON "layman_audit_logs" USING btree ("section_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_audit_prompt_id" ON "layman_audit_logs" USING btree ("prompt_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_audit_user_id" ON "layman_audit_logs" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_audit_action" ON "layman_audit_logs" USING btree ("action");--> statement-breakpoint
-CREATE INDEX "idx_layman_audit_brand_id" ON "layman_audit_logs" USING btree ("brand_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_audit_created_at" ON "layman_audit_logs" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX "idx_layman_prompt_history_section_id" ON "layman_prompt_history" USING btree ("section_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_prompt_history_subtopic_id" ON "layman_prompt_history" USING btree ("subtopic_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_prompt_history_hash" ON "layman_prompt_history" USING btree ("prompt_hash");--> statement-breakpoint
-CREATE INDEX "idx_layman_prompt_history_brand_id" ON "layman_prompt_history" USING btree ("brand_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_prompt_history_created_at" ON "layman_prompt_history" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX "idx_layman_content_revisions_section_id" ON "layman_content_revisions" USING btree ("section_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_content_revisions_revision_number" ON "layman_content_revisions" USING btree ("section_id","revision_number");--> statement-breakpoint
-CREATE INDEX "idx_layman_content_revisions_parent_id" ON "layman_content_revisions" USING btree ("parent_revision_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_content_revisions_prompt_id" ON "layman_content_revisions" USING btree ("source_prompt_id");--> statement-breakpoint
-CREATE INDEX "idx_layman_content_revisions_current" ON "layman_content_revisions" USING btree ("section_id","is_current_version");--> statement-breakpoint
-CREATE INDEX "idx_layman_content_revisions_created_at" ON "layman_content_revisions" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_content_subtopic" ON "tutorial_content" USING btree ("subtopic_id");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_content_published" ON "tutorial_content" USING btree ("subtopic_id","is_published");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_content_subtopic_difficulty_type" ON "tutorial_content" USING btree ("subtopic_id","difficulty","content_type");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_content_content_gin" ON "tutorial_content" USING gin ("content");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_domains_external_id" ON "tutorial_domains" USING btree ("external_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_domains_slug" ON "tutorial_domains" USING btree ("slug");--> statement-breakpoint
-CREATE INDEX "idx_content_versions_content_id" ON "tutorial_content_versions" USING btree ("content_id");--> statement-breakpoint
-CREATE INDEX "idx_content_audit_content_id" ON "tutorial_content_audit" USING btree ("content_id");--> statement-breakpoint
-CREATE INDEX "idx_assignments_subtopic_diff" ON "tutorial_assignments" USING btree ("subtopic_id","difficulty");--> statement-breakpoint
-CREATE INDEX "idx_session_requests_student" ON "live_session_requests" USING btree ("student_id");--> statement-breakpoint
-CREATE INDEX "idx_session_requests_faculty" ON "live_session_requests" USING btree ("faculty_id");--> statement-breakpoint
-CREATE INDEX "idx_session_requests_status" ON "live_session_requests" USING btree ("status");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_subjects_external_id" ON "tutorial_subjects" USING btree ("external_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_subjects_slug" ON "tutorial_subjects" USING btree ("slug");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_subjects_domain_id" ON "tutorial_subjects" USING btree ("domain_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_topics_external_id" ON "tutorial_topics" USING btree ("external_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_topics_slug" ON "tutorial_topics" USING btree ("slug");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_topics_subject_id" ON "tutorial_topics" USING btree ("subject_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_subtopics_external_id" ON "tutorial_subtopics" USING btree ("external_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_subtopics_slug" ON "tutorial_subtopics" USING btree ("slug");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_subtopics_topic_id" ON "tutorial_subtopics" USING btree ("topic_id");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_projects_scope" ON "tutorial_projects" USING btree ("scope","level");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_project_submissions_user" ON "tutorial_project_submissions" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_project_submissions_project" ON "tutorial_project_submissions" USING btree ("project_id");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_project_submissions_status" ON "tutorial_project_submissions" USING btree ("status");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_student_badges_user_badge" ON "student_badges" USING btree ("user_id","badge_id");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_progress_user" ON "tutorial_progress" USING btree ("user_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_tutorial_progress_user_subtopic" ON "tutorial_progress" USING btree ("user_id","subtopic_id");--> statement-breakpoint
-CREATE INDEX "idx_tutorial_video_links_subtopic" ON "tutorial_video_links" USING btree ("subtopic_id");--> statement-breakpoint
-CREATE INDEX "idx_remediation_triggers_user" ON "remediation_triggers" USING btree ("user_id","status");--> statement-breakpoint
-CREATE INDEX "idx_subtopic_flow_progress_user" ON "subtopic_flow_progress" USING btree ("user_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_subtopic_flow_progress_user_subtopic" ON "subtopic_flow_progress" USING btree ("user_id","subtopic_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_student_streaks_user" ON "student_streaks" USING btree ("user_id");
+CREATE INDEX "idx_prompt_subsection" ON "prompt_templates" USING btree ("subsection_type");
