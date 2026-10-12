@@ -11,6 +11,7 @@ Tests the full contract generation flow:
 """
 
 import pytest
+import pytest_asyncio
 import json
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timezone
@@ -30,16 +31,21 @@ from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.models.workflow_target import WorkflowTarget
 
 
-@pytest.fixture
-def governance_service():
+@pytest_asyncio.fixture
+async def governance_service(workflow_repo, approval_repo, state_transition_repo, db_session):
     """Fixture for governance service."""
-    return WorkflowGovernanceService()
+    return WorkflowGovernanceService(
+        workflow_repo=workflow_repo,
+        approval_repo=approval_repo,
+        state_transition_repo=state_transition_repo,
+        session=db_session
+    )
 
 
-@pytest.fixture
-def test_workflow(governance_service):
+@pytest_asyncio.fixture
+async def test_workflow(governance_service):
     """Create a test workflow."""
-    workflow = governance_service.create_workflow(
+    workflow = await governance_service.create_workflow(
         target_family="Introduction",
         target_version="I1",
         requester_id="test-user",
@@ -139,7 +145,7 @@ class TestW2ContractGenerationWithRealW1AWiring:
     ):
         """Test that contract generation fails if workflow target_family is empty."""
         # Create workflow with empty target_family
-        workflow = governance_service.create_workflow(
+        workflow = await governance_service.create_workflow(
             target_family="",
             target_version="I7",
             requester_id="test-user"
@@ -259,7 +265,7 @@ class TestW2ContractGenerationWithRealW1BWiring:
         # doesn't find matching patterns. So the defensive check should trigger.
         
         # Actually, let me test with a completely different block that won't match
-        workflow2 = governance_service.create_workflow(
+        workflow2 = await governance_service.create_workflow(
             target_family="Unknown",
             target_version="X1",
             requester_id="test-user"
@@ -295,12 +301,12 @@ class TestContractSHA256Determinism:
     ):
         """Test that same contract inputs produce same SHA-256 hash."""
         # Create two identical workflows
-        workflow1 = governance_service.create_workflow(
+        workflow1 = await governance_service.create_workflow(
             target_family="Introduction",
             target_version="I1",
             requester_id="test-user"
         )
-        workflow2 = governance_service.create_workflow(
+        workflow2 = await governance_service.create_workflow(
             target_family="Introduction",
             target_version="I1",
             requester_id="test-user"
