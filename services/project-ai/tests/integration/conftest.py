@@ -2,13 +2,13 @@
 PostgreSQL Integration Test Configuration for FEAT-004.
 
 CRITICAL: These tests require a real PostgreSQL database.
-The test database MUST be configured via TEST_DATABASE_URL_TUTORIAL environment variable.
+The test database MUST be configured via DATABASE_URL_TUTORIAL environment variable.
 
 DO NOT fall back to localhost guesses.
 DO NOT use SQLite as a substitute.
 DO NOT attempt to create the test database.
 
-If TEST_DATABASE_URL_TUTORIAL is not configured, tests will skip with a clear error message.
+If DATABASE_URL_TUTORIAL is not configured, tests will skip with a clear error message.
 """
 
 import os
@@ -28,14 +28,14 @@ from app.persistence.models import Base
 
 
 # Check for test database configuration
-TEST_DB_URL = os.environ.get("TEST_DATABASE_URL_TUTORIAL")
+TEST_DB_URL = os.environ.get("DATABASE_URL_TUTORIAL")
 
 # Pytest collection hook to skip entire module if database not configured
 def pytest_collection_modifyitems(config, items):
-    """Skip all integration tests if TEST_DATABASE_URL_TUTORIAL not configured."""
+    """Skip all integration tests if DATABASE_URL_TUTORIAL not configured."""
     if not TEST_DB_URL:
         skip_marker = pytest.mark.skip(
-            reason="TEST_DATABASE_URL_TUTORIAL not configured — cannot run PostgreSQL integration tests"
+            reason="DATABASE_URL_TUTORIAL not configured — cannot run PostgreSQL integration tests"
         )
         for item in items:
             item.add_marker(skip_marker)
@@ -46,13 +46,13 @@ async def integration_db_engine():
     """
     Create PostgreSQL database engine for integration tests.
     
-    Uses TEST_DATABASE_URL_TUTORIAL environment variable.
+    Uses DATABASE_URL_TUTORIAL environment variable.
     Requires explicit configuration - no fallback to localhost.
     
     Scope: session (shared across all tests for performance)
     """
     if not TEST_DB_URL:
-        pytest.skip("TEST_DATABASE_URL_TUTORIAL not configured")
+        pytest.skip("DATABASE_URL_TUTORIAL not configured")
     
     engine = create_async_engine(
         TEST_DB_URL,
