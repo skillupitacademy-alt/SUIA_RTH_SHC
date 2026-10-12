@@ -1,0 +1,117 @@
+BRAND-ISOLATION LAYER REMOVAL VERIFICATION
+===========================================
+Date: 2026-10-12
+Task: Read-only audit to verify brand-isolation cleanup
+Environment: Windows (PowerShell)
+
+VERIFICATION CHECKS PERFORMED:
+==============================
+
+1. CHECK: verify_brand_access removed from app code
+   COMMAND: grep -r "verify_brand_access" services/project-ai/app/
+   RESULT: No matches found.
+   STATUS: ✓ PASS
+
+2. CHECK: verify_brand_access removed from test code
+   COMMAND: grep -r "verify_brand_access" services/project-ai/tests/
+   RESULT: No matches found.
+   STATUS: ✓ PASS
+
+3. CHECK: BRAND_BOUNDARY_VIOLATION constant removed
+   COMMAND: grep -r "BRAND_BOUNDARY_VIOLATION" services/project-ai/app/
+   RESULT: No matches found.
+   STATUS: ✓ PASS
+
+4. CHECK: requester_brand removed from models
+   COMMAND: grep -r "requester_brand" services/project-ai/app/persistence/models.py
+   RESULT: No matches found.
+   STATUS: ✓ PASS
+
+5. CHECK: uploader_brand removed from models
+   COMMAND: grep -r "uploader_brand" services/project-ai/app/persistence/models.py
+   RESULT: No matches found.
+   STATUS: ✓ PASS
+
+6. CHECK: No brand references in persistence layer
+   COMMAND: grep -r "brand" services/project-ai/app/persistence/
+   RESULT: No matches found.
+   STATUS: ✓ PASS
+
+SECURITY CONTRACT VERIFICATION:
+================================
+
+7. CHECK: RBAC functions present
+   COMMAND: grep -r "is_super_admin|require_role|require_any_role" services/project-ai/app/auth/authorization.py
+   RESULT: All three functions present:
+   - is_super_admin() at line 16
+   - require_role() at line 48
+   - require_any_role() at line 92
+   STATUS: ✓ PASS
+
+8. CHECK: Self-approval prevention logic present
+   COMMAND: grep -r "decided_by.*submittedBy|self.approval|self_approval" services/project-ai/app/api/routes/governance.py
+   RESULT: Self-approval prevention found:
+   - Line 156: Documentation: "Self-approval prevention: Approver cannot be the same as submitter"
+   - Line 173: Documentation: "If self-approval attempted (Wave 2)"
+   - Line 198: Comment: "# CRITICAL: Prevent self-approval (Wave 2)"
+   - Line 199: Code: "if decided_by == approval['submittedBy']:"
+   - Line 212: Audit action: "action": "rejected_self_approval"
+   - Line 222: Error constant: "error": "SELF_APPROVAL_REJECTED"
+   - Line 348: Documentation: "Self-approval prevention via ImplementationApproval model"
+   - Line 475: Comment: "# Verify not self-approval (approver != workflow requester)"
+   - Line 477: Code: "if workflow_requester and approved_by == workflow_requester:"
+   - Line 480: Error constant: "error": "SELF_APPROVAL_REJECTED"
+   STATUS: ✓ PASS
+
+9. CHECK: Manifest hash verification present
+   COMMAND: grep -r "manifestHash|manifest_hash" services/project-ai/app/api/routes/governance.py
+   RESULT: Manifest hash verification found:
+   - Line 86: Stored at submission: "manifestHash": request.manifestHash
+   - Line 230: Verification: "if request.manifestHash != approval['manifestHash']:"
+   - Line 257: Error constant: "error": "MANIFEST_CHANGED"
+   - Line 288: Field definition: manifest_hash: str = Field(...)
+   - Line 317: Verified flag: manifest_hash_verified: bool
+   - Line 395: Stored hash retrieval: stored_manifest_hash = workflow.manifest_sha256
+   - Line 404: Null check: "if not stored_manifest_hash:"
+   - Line 410: Verification: "if payload.manifest_hash != stored_manifest_hash:"
+   - Line 497: Persistence: placement_manifest_sha256=payload.manifest_hash
+   - Line 540: Response: manifest_hash_verified=True
+   STATUS: ✓ PASS
+
+PHYSICAL DATABASE SCHEMA CHECK:
+================================
+
+10. CHECK: Physical PostgreSQL columns for brand fields
+    COMMAND: psql $DATABASE_DIRECT_URL_TUTORIAL -c "\d project_ai_workflows" | grep -i brand
+    RESULT: psql command not available on this Windows system
+    STATUS: ⚠ UNABLE TO VERIFY
+    
+    COMMAND: psql $DATABASE_DIRECT_URL_TUTORIAL -c "\d project_ai_candidates" | grep -i brand
+    RESULT: psql command not available on this Windows system
+    STATUS: ⚠ UNABLE TO VERIFY
+    
+    NOTE: Per the brand-isolation cleanup plan, physical PostgreSQL columns
+          were intentionally LEFT IN PLACE. The cleanup removed only:
+          - Python ORM model fields
+          - Code references
+          - Repository write operations
+          
+          Physical schema columns may still exist and this is EXPECTED per plan.
+
+OVERALL SUMMARY:
+================
+
+✓ All brand-isolation code references removed
+✓ All security contracts preserved:
+  - RBAC authorization (is_super_admin, require_role, require_any_role)
+  - Self-approval prevention (two enforcement points found)
+  - Manifest hash verification (multiple verification points found)
+
+⚠ Physical database schema check skipped (psql not available on Windows)
+  - This is acceptable per plan: columns were intentionally left in place
+  - Code-level removal is complete
+  - No code writes to or reads from brand columns
+
+VERIFICATION STATUS: CLEAN
+CODE-LEVEL REMOVAL: COMPLETE
+SECURITY CONTRACTS: PRESERVED

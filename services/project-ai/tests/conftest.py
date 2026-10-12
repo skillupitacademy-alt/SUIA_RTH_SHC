@@ -5,8 +5,14 @@ Provides async database session fixtures with transaction rollback
 and repository instances for testing.
 """
 
+import sys
+import asyncio
 import pytest
 import pytest_asyncio
+
+# Windows compatibility: psycopg requires SelectorEventLoop, not ProactorEventLoop
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool

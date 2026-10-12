@@ -15,6 +15,7 @@ import os
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy import text
 
 from app.persistence import (
     PostgresWorkflowRepository,
@@ -41,7 +42,7 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(skip_marker)
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def integration_db_engine():
     """
     Create PostgreSQL database engine for integration tests.
@@ -67,12 +68,12 @@ async def integration_db_engine():
     async with engine.begin() as conn:
         # Check if project_ai_workflows table exists (canary for schema)
         result = await conn.execute(
-            """
+            text("""
             SELECT EXISTS (
                 SELECT FROM information_schema.tables 
                 WHERE table_name = 'project_ai_workflows'
             )
-            """
+            """)
         )
         table_exists = result.scalar()
         

@@ -1,0 +1,219 @@
+{
+  "generated_at": "2025-01-11T00:00:00Z",
+  "current_branch": "m2-project-ai-canonical-wiring",
+  "working_tree_clean": true,
+  "commits_ahead_of_origin": 3,
+  "commits_behind_origin": 0,
+  "commits_ahead_of_main": 259,
+  "commits_behind_main": 0,
+  "merge_base_with_main": "9b27256791f7fd0e42aa95a227d61f6ce3097f90",
+  "unpushed_commits": [
+    {
+      "sha": "5ab1d807",
+      "message": "fix: use DATABASE_URL_TUTORIAL instead of non-existent TEST_DATABASE_URL_TUTORIAL"
+    },
+    {
+      "sha": "6c425b22",
+      "message": "refactor(project-ai): remove unused brand isolation security layer"
+    },
+    {
+      "sha": "fc4b3f33",
+      "message": "fix: remove orphaned verify_brand_access import from candidate.py"
+    }
+  ],
+  "diff_vs_origin_stat": {
+    "files_changed": 10,
+    "insertions": 296,
+    "deletions": 871,
+    "net_change": -575,
+    "summary": "Brand isolation layer removal - removed verify_brand_access(), brand filtering, and related ORM fields"
+  },
+  "diff_vs_main_stat": {
+    "files_changed": 942,
+    "insertions": 700031,
+    "deletions": 4327,
+    "net_change": 695704
+  },
+  "merge_conflicts_with_main": false,
+  "merge_type": "fast-forward",
+  "untracked_files": [
+    ".agents/evidence/runs/migration-repair-20261011-143539-06936246/commit-gate-files.txt",
+    ".agents/evidence/runs/migration-repair-20261011-143539-06936246/stage5-final-w5a-static-security-doc.md",
+    ".agents/evidence/runs/migration-repair-20261011-143539-06936246/stage5-final-w5b-test-doc.md",
+    ".agents/evidence/runs/migration-repair-20261011-143539-06936246/stage5-final-w5c-artifact-consistency-doc.md",
+    ".agents/evidence/w0-baseline-audit/COMPLETE-ROADMAP.md",
+    ".agents/evidence/w0-baseline-audit/EXECUTIVE-SUMMARY.md",
+    ".agents/evidence/w0-baseline-audit/SIMPLIFIED-PLAN.md",
+    ".agents/evidence/w0-baseline-audit/branch-audit-summary.md",
+    ".agents/evidence/w0-baseline-audit/branch-audit.json",
+    ".agents/evidence/w0-baseline-audit/canonical-docs-map.json",
+    ".agents/evidence/w0-baseline-audit/implementation-inventory.json",
+    ".agents/evidence/w0-baseline-audit/migration-repair-assessment.md",
+    ".agents/evidence/w0-baseline-audit/requirements-matrix-summary.md",
+    ".agents/evidence/w0-baseline-audit/requirements-matrix.csv",
+    ".agents/evidence/w0-baseline-audit/requirements-matrix.json",
+    ".agents/evidence/w0-baseline-audit/w0-summary.md",
+    ".agents/scripts/fix_agent_context.py",
+    ".agents/scripts/update_agent_context.py",
+    ".agents/tasks/PROJECT-LLM-INTEGRATION-PLAN.md",
+    ".agents/tasks/brand-isolation-removal/conftest-fix.txt",
+    ".agents/tasks/brand-isolation-removal/plan.md",
+    ".agents/tasks/brand-isolation-removal/removal-verification.txt",
+    ".agents/tasks/brand-isolation-removal/review.json",
+    ".agents/tasks/brand-isolation-removal/review.md",
+    ".agents/tasks/commit-wiring-plan.json",
+    ".agents/tasks/commit-wiring-plan.md",
+    ".agents/tasks/commit-wiring-review.json",
+    ".agents/tasks/commit-wiring-review.md",
+    ".agents/tasks/stage5-fixes-plan.md",
+    ".agents/temp-commit.bat",
+    "ILS_UI_UX/docs/TaskFinalized.md",
+    "commit-stage5-gate.bat",
+    "commit-stage5-gate.ps1",
+    "services/project-ai/run_tests.ps1"
+  ],
+  "untracked_file_count": 34,
+  "untracked_disposition": {
+    "COMMIT_evidence_documentation": [
+      ".agents/evidence/w0-baseline-audit/COMPLETE-ROADMAP.md",
+      ".agents/evidence/w0-baseline-audit/EXECUTIVE-SUMMARY.md",
+      ".agents/evidence/w0-baseline-audit/SIMPLIFIED-PLAN.md",
+      ".agents/evidence/w0-baseline-audit/branch-audit-summary.md",
+      ".agents/evidence/w0-baseline-audit/branch-audit.json",
+      ".agents/evidence/w0-baseline-audit/canonical-docs-map.json",
+      ".agents/evidence/w0-baseline-audit/implementation-inventory.json",
+      ".agents/evidence/w0-baseline-audit/migration-repair-assessment.md",
+      ".agents/evidence/w0-baseline-audit/requirements-matrix-summary.md",
+      ".agents/evidence/w0-baseline-audit/requirements-matrix.csv",
+      ".agents/evidence/w0-baseline-audit/requirements-matrix.json",
+      ".agents/evidence/w0-baseline-audit/w0-summary.md",
+      ".agents/tasks/brand-isolation-removal/conftest-fix.txt",
+      ".agents/tasks/brand-isolation-removal/plan.md",
+      ".agents/tasks/brand-isolation-removal/removal-verification.txt",
+      ".agents/tasks/brand-isolation-removal/review.json",
+      ".agents/tasks/brand-isolation-removal/review.md",
+      ".agents/tasks/PROJECT-LLM-INTEGRATION-PLAN.md",
+      ".agents/tasks/commit-wiring-plan.json",
+      ".agents/tasks/commit-wiring-plan.md",
+      ".agents/tasks/commit-wiring-review.json",
+      ".agents/tasks/commit-wiring-review.md",
+      ".agents/tasks/stage5-fixes-plan.md",
+      ".agents/evidence/runs/migration-repair-20261011-143539-06936246/commit-gate-files.txt",
+      ".agents/evidence/runs/migration-repair-20261011-143539-06936246/stage5-final-w5a-static-security-doc.md",
+      ".agents/evidence/runs/migration-repair-20261011-143539-06936246/stage5-final-w5b-test-doc.md",
+      ".agents/evidence/runs/migration-repair-20261011-143539-06936246/stage5-final-w5c-artifact-consistency-doc.md",
+      "ILS_UI_UX/docs/TaskFinalized.md"
+    ],
+    "COMMIT_utility_scripts": [
+      ".agents/scripts/fix_agent_context.py",
+      ".agents/scripts/update_agent_context.py",
+      "services/project-ai/run_tests.ps1"
+    ],
+    "DELETE_temporary_scripts": [
+      ".agents/temp-commit.bat",
+      "commit-stage5-gate.bat",
+      "commit-stage5-gate.ps1"
+    ]
+  },
+  "overall_status": "CONDITIONAL_READY",
+  "blockers": [
+    {
+      "severity": "CRITICAL",
+      "category": "test_verification",
+      "description": "1,270 tests reported as skipped, not passed - contradicts review approval claim",
+      "required_action": "Rerun test suite in properly configured environment, record actual pass/fail/skip counts"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "branch_sync",
+      "description": "3 unpushed commits on local branch",
+      "required_action": "Push commits to origin/m2-project-ai-canonical-wiring before merge"
+    },
+    {
+      "severity": "LOW",
+      "category": "housekeeping",
+      "description": "33 untracked files (evidence, scripts, docs)",
+      "required_action": "Commit evidence files, delete temporary scripts"
+    }
+  ],
+  "merge_safety_assessment": {
+    "code_conflicts": "CLEAR",
+    "branch_can_fast_forward": true,
+    "main_has_advanced": false,
+    "working_tree_state": "CLEAN",
+    "test_gate_status": "BLOCKED - skipped tests need investigation",
+    "evidence_completeness": "INCOMPLETE - untracked files present",
+    "overall_recommendation": "HOLD - Resolve test verification before merge"
+  },
+  "key_changes_summary": {
+    "brand_isolation_removal": {
+      "removed_functions": [
+        "verify_brand_access()"
+      ],
+      "removed_orm_fields": [
+        "CandidateModel.uploader_brand",
+        "WorkflowModel.requester_brand",
+        "WorkflowModel.brand"
+      ],
+      "preserved_features": [
+        "RBAC enforcement",
+        "Self-approval prevention",
+        "Manifest-hash verification",
+        "Brand-independence certification"
+      ],
+      "physical_schema_status": "PostgreSQL columns left in place (code-only cleanup)"
+    }
+  },
+  "pre_merge_checklist": [
+    {
+      "item": "Resolve skipped test contradiction",
+      "status": "PENDING",
+      "priority": "P0"
+    },
+    {
+      "item": "Push 3 local commits to origin",
+      "status": "PENDING",
+      "priority": "P1"
+    },
+    {
+      "item": "Commit evidence documentation",
+      "status": "PENDING",
+      "priority": "P1"
+    },
+    {
+      "item": "Delete temporary scripts",
+      "status": "PENDING",
+      "priority": "P2"
+    },
+    {
+      "item": "Verify RBAC still enforced",
+      "status": "PENDING",
+      "priority": "P0"
+    },
+    {
+      "item": "Verify self-approval prevention",
+      "status": "PENDING",
+      "priority": "P0"
+    },
+    {
+      "item": "Verify manifest-hash verification",
+      "status": "PENDING",
+      "priority": "P0"
+    },
+    {
+      "item": "Confirm ORM field removal doesn't break persistence",
+      "status": "PENDING",
+      "priority": "P0"
+    },
+    {
+      "item": "Review 259-commit diff for unintended changes",
+      "status": "PENDING",
+      "priority": "P1"
+    },
+    {
+      "item": "Final pre-merge approval from HAA",
+      "status": "PENDING",
+      "priority": "P0"
+    }
+  ]
+}
