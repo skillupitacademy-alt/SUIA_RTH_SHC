@@ -4,7 +4,7 @@ PostgreSQL Integration Tests for Security Contracts.
 Tests RBAC, brand isolation, identity extraction, state machine, and W3/W5 workflow security
 against real PostgreSQL database.
 
-CRITICAL: Requires TEST_DATABASE_URL_TUTORIAL to be configured.
+CRITICAL: Requires DATABASE_URL_TUTORIAL to be configured.
 """
 
 import hashlib
@@ -27,6 +27,7 @@ from app.persistence.models import (
     StateTransitionModel,
 )
 from fastapi import HTTPException
+from tests.fixtures import test_uuid
 
 
 # ============================================================================
@@ -56,9 +57,12 @@ async def test_contract_admin_can_create_workflow(db_session, workflow_repo):
     require_role(principal, "contract_admin")
     
     # Create workflow as contract_admin
+    workflow_id = test_uuid("wf_rbac_001")
+    spec_id = test_uuid("spec_001")
+    
     workflow = WorkflowModel(
-        workflow_id="wf_rbac_001",
-        specification_id="spec_001",
+        workflow_id=workflow_id,
+        specification_id=spec_id,
         target_family="tutorial",
         target_version="v1",
         requester_id=principal["user_id"],
@@ -69,7 +73,7 @@ async def test_contract_admin_can_create_workflow(db_session, workflow_repo):
     result = await workflow_repo.upsert(workflow)
     await db_session.commit()
     
-    assert result.workflow_id == "wf_rbac_001"
+    assert result.workflow_id == workflow_id
     assert result.requester_id == "admin_user"
 
 

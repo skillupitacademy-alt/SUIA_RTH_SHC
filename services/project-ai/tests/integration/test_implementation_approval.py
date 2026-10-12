@@ -7,7 +7,7 @@ Tests the complete implementation approval flow including:
 - State transitions via WorkflowGovernanceService
 - Security gates (self-approval, hash verification)
 
-Requires PostgreSQL configured via TEST_DATABASE_URL_TUTORIAL environment variable.
+Requires PostgreSQL configured via DATABASE_URL_TUTORIAL environment variable.
 """
 
 import hashlib
@@ -24,6 +24,7 @@ from app.persistence import (
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.orchestration.workflow_governance import WorkflowGovernanceService
 from app.models.implementation_approval import ImplementationApprovalStatus
+from tests.fixtures import test_uuid
 
 
 @pytest.mark.integration
@@ -39,23 +40,25 @@ async def test_submit_approval_success(db_session, workflow_repo, approval_repo)
     - State transitions to IMPLEMENTING
     - Approval record persisted to PostgreSQL
     """
-    workflow_id = "wf_approve_001"
+    workflow_id = test_uuid("wf_approve_001")
     requester_id = "requester@example.com"
     approver_id = "approver@example.com"
     candidate_hash = "a" * 64
     manifest_hash = "b" * 64
     contract_hash = "c" * 64
-    manifest_id = "manifest_001"
+    contract_id = test_uuid("ct_001")
+    manifest_id = test_uuid("manifest_001")
+    spec_id = test_uuid("spec_001")
     
     # Create workflow in AWAITING_IMPLEMENTATION_APPROVAL state
     workflow = WorkflowModel(
         workflow_id=workflow_id,
-        specification_id="spec_001",
+        specification_id=spec_id,
         target_family="Introduction",
         target_version="I7",
         requester_id=requester_id,
         current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
-        contract_id="ct_001",
+        contract_id=contract_id,
         contract_sha256=contract_hash,
         candidate_sha256=candidate_hash,
         manifest_sha256=manifest_hash,

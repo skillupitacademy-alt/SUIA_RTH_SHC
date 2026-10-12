@@ -26,6 +26,7 @@ from app.persistence.repositories import (
     OptimisticLockError,
     HashMismatchError,
 )
+from tests.fixtures import test_uuid
 
 
 # ============================================================================
@@ -38,9 +39,12 @@ from app.persistence.repositories import (
 async def test_workflow_upsert_and_get(db_session, workflow_repo):
     """Test workflow upsert creates record and get retrieves it."""
     # Create workflow
+    workflow_id = test_uuid("wf_test_001")
+    spec_id = test_uuid("spec_001")
+    
     workflow = WorkflowModel(
-        workflow_id="wf_test_001",
-        specification_id="spec_001",
+        workflow_id=workflow_id,
+        specification_id=spec_id,
         target_family="tutorial",
         target_version="v1",
         requester_id="user_test",
@@ -54,17 +58,17 @@ async def test_workflow_upsert_and_get(db_session, workflow_repo):
     result = await workflow_repo.upsert(workflow)
     await db_session.commit()
     
-    assert result.workflow_id == "wf_test_001"
-    assert result.specification_id == "spec_001"
+    assert result.workflow_id == workflow_id
+    assert result.specification_id == spec_id
     assert result.current_state == "REQUESTED"
     assert result.version == 1
     
     # Get
-    retrieved = await workflow_repo.get("wf_test_001", verify_bindings=False)
+    retrieved = await workflow_repo.get(workflow_id, verify_bindings=False)
     
     assert retrieved is not None
-    assert retrieved.workflow_id == "wf_test_001"
-    assert retrieved.specification_id == "spec_001"
+    assert retrieved.workflow_id == workflow_id
+    assert retrieved.specification_id == spec_id
     assert retrieved.current_state == "REQUESTED"
 
 

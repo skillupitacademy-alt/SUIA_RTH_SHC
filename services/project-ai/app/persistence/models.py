@@ -22,12 +22,14 @@ DOMAIN MODEL MAPPING:
 
 import hashlib
 import json
+import uuid
 from datetime import datetime
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
 from sqlalchemy import (
     Column, String, Integer, DateTime, ForeignKey, Index, JSON, Text, UniqueConstraint, Identity
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, declarative_base, Mapped, mapped_column
 from sqlalchemy.sql import text
 
@@ -49,11 +51,11 @@ class WorkflowModel(Base):
     
     __tablename__ = "project_ai_workflows"
     
-    # Primary key (varchar to match Drizzle schema)
-    workflow_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (uuid to match Drizzle schema and PostgreSQL database)
+    workflow_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
     
     # Target specification
-    specification_id = Column(String(255), nullable=False)
+    specification_id = Column(UUID(as_uuid=True), nullable=False)
     target_family = Column(String(100), nullable=False)
     target_version = Column(String(100), nullable=False)
     requester_id = Column(String(255), nullable=False)
@@ -66,20 +68,20 @@ class WorkflowModel(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Artifact bindings (hash-bound for security)
-    contract_id = Column(String(255), nullable=True)
+    contract_id = Column(UUID(as_uuid=True), nullable=True)
     contract_sha256 = Column(String(64), nullable=True)
     
-    candidate_id = Column(String(255), nullable=True)
+    candidate_id = Column(UUID(as_uuid=True), nullable=True)
     candidate_sha256 = Column(String(64), nullable=True)
     
-    manifest_id = Column(String(255), nullable=True)
+    manifest_id = Column(UUID(as_uuid=True), nullable=True)
     manifest_sha256 = Column(String(64), nullable=True)
     
-    snapshot_id = Column(String(255), nullable=True)
+    snapshot_id = Column(UUID(as_uuid=True), nullable=True)
     snapshot_sha256 = Column(String(64), nullable=True)
     
     # Approval tracking
-    approval_id = Column(String(255), nullable=True)
+    approval_id = Column(UUID(as_uuid=True), nullable=True)
     gate_results = Column(JSON, nullable=False, default=dict)
     
     # Evidence
@@ -246,8 +248,8 @@ class StateTransitionModel(Base):
     # globally unique string IDs, and sequential integers provide natural ordering.
     id = Column(Integer, Identity(start=1, increment=1), primary_key=True)
     
-    # Foreign key to workflow (varchar to match Drizzle schema)
-    workflow_id = Column(String(255), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False)
+    # Foreign key to workflow (uuid to match Drizzle schema and PostgreSQL database)
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False)
     
     # Transition details
     from_state = Column(String(100), nullable=True)
@@ -256,7 +258,7 @@ class StateTransitionModel(Base):
     triggered_by = Column(String(255), nullable=False)
     
     # Evidence
-    evidence_id = Column(String(255), nullable=True)
+    evidence_id = Column(UUID(as_uuid=True), nullable=True)
     reason = Column(Text, nullable=True)
     
     # Relationship
@@ -278,11 +280,11 @@ class ContractModel(Base):
     
     __tablename__ = "project_ai_contracts"
     
-    # Primary key (varchar to match Drizzle schema)
-    contract_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (uuid to match Drizzle schema and PostgreSQL database)
+    contract_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
     
-    # Foreign key to workflow (1:1 relationship, varchar to match Drizzle schema)
-    workflow_id = Column(String(255), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False, unique=True)
+    # Foreign key to workflow (1:1 relationship, uuid to match Drizzle schema and PostgreSQL database)
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False, unique=True)
     
     # Immutability verification
     contract_hash = Column(String(64), nullable=False, unique=True)
@@ -319,11 +321,11 @@ class CandidateModel(Base):
     
     __tablename__ = "project_ai_candidates"
     
-    # Primary key (varchar to match Drizzle schema)
-    candidate_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (uuid to match Drizzle schema and PostgreSQL database)
+    candidate_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
     
-    # Foreign key to workflow (optional, varchar to match Drizzle schema)
-    workflow_id = Column(String(255), ForeignKey("project_ai_workflows.workflow_id", ondelete="SET NULL"), nullable=True)
+    # Foreign key to workflow (optional, uuid to match Drizzle schema and PostgreSQL database)
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_workflows.workflow_id", ondelete="SET NULL"), nullable=True)
     
     # Files (stored as JSON array of CandidateFile objects)
     files = Column(JSON, nullable=False)
@@ -393,11 +395,11 @@ class ManifestModel(Base):
     
     __tablename__ = "project_ai_manifests"
     
-    # Primary key (varchar to match Drizzle schema)
-    manifest_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (uuid to match Drizzle schema and PostgreSQL database)
+    manifest_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
     
-    # Foreign key to candidate (varchar to match Drizzle schema)
-    candidate_id = Column(String(255), ForeignKey("project_ai_candidates.candidate_id", ondelete="CASCADE"), nullable=False)
+    # Foreign key to candidate (uuid to match Drizzle schema and PostgreSQL database)
+    candidate_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_candidates.candidate_id", ondelete="CASCADE"), nullable=False)
     
     # Immutability verification
     manifest_hash = Column(String(64), nullable=False, unique=True)
@@ -441,15 +443,15 @@ class ApprovalModel(Base):
     
     __tablename__ = "project_ai_approvals"
     
-    # Primary key (varchar to match Drizzle schema)
-    approval_id = Column(String(255), primary_key=True, server_default=text("gen_random_uuid()"))
+    # Primary key (uuid to match Drizzle schema and PostgreSQL database)
+    approval_id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
     
-    # Foreign key to workflow (1:1 relationship, varchar to match Drizzle schema)
-    workflow_id = Column(String(255), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False, unique=True)
+    # Foreign key to workflow (1:1 relationship, uuid to match Drizzle schema and PostgreSQL database)
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey("project_ai_workflows.workflow_id", ondelete="CASCADE"), nullable=False, unique=True)
     
     # Hash bindings
     candidate_sha256 = Column(String(64), nullable=False)
-    placement_manifest_id = Column(String(255), nullable=False)
+    placement_manifest_id = Column(UUID(as_uuid=True), nullable=False)
     placement_manifest_sha256 = Column(String(64), nullable=False)
     
     # Target specification

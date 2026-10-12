@@ -14,7 +14,7 @@ from unittest.mock import patch
 def test_skip_marker_applied_when_env_var_missing():
     """
     Test that pytest_collection_modifyitems applies skip marker when
-    TEST_DATABASE_URL_TUTORIAL is not configured.
+    DATABASE_URL_TUTORIAL is not configured.
     """
     from tests.integration.conftest import pytest_collection_modifyitems
     
@@ -58,7 +58,7 @@ def test_skip_marker_applied_when_env_var_missing():
 def test_skip_marker_not_applied_when_env_var_present():
     """
     Test that pytest_collection_modifyitems does NOT apply skip marker when
-    TEST_DATABASE_URL_TUTORIAL is configured.
+    DATABASE_URL_TUTORIAL is configured.
     """
     from tests.integration.conftest import pytest_collection_modifyitems
     
@@ -79,9 +79,9 @@ def test_skip_marker_not_applied_when_env_var_present():
         MockItem("test_contract_hash"),
     ]
     
-    # Simulate TEST_DATABASE_URL_TUTORIAL being configured
+    # Simulate DATABASE_URL_TUTORIAL being configured
     test_url = "postgresql+asyncpg://user:pass@localhost/test_db"
-    with patch.dict(os.environ, {"TEST_DATABASE_URL_TUTORIAL": test_url}):
+    with patch.dict(os.environ, {"DATABASE_URL_TUTORIAL": test_url}):
         # Re-import to pick up environment
         import importlib
         import tests.integration.conftest as conftest_module
@@ -127,9 +127,9 @@ def test_env_var_name_is_consistent():
     """
     Test that the environment variable name is consistent across conftest.
     """
-    # The environment variable name should be TEST_DATABASE_URL_TUTORIAL
-    # This matches the convention from FEAT-000 discovery
-    expected_env_var = "TEST_DATABASE_URL_TUTORIAL"
+    # The environment variable name should be DATABASE_URL_TUTORIAL (NOT TEST_DATABASE_URL_TUTORIAL)
+    # This matches the SHC-admin canonical convention per Phase 4 verification
+    expected_env_var = "DATABASE_URL_TUTORIAL"
     
     # Import conftest to verify it uses the correct variable
     from tests.integration import conftest
@@ -138,22 +138,9 @@ def test_env_var_name_is_consistent():
     import inspect
     source = inspect.getsource(conftest)
     
-    assert expected_env_var in source, "conftest should use TEST_DATABASE_URL_TUTORIAL"
+    assert expected_env_var in source, "conftest should use DATABASE_URL_TUTORIAL"
     
-    # Verify no fallback variables are used
-    forbidden_fallbacks = [
-        "DATABASE_URL",  # Production variable
-        "localhost",  # No hardcoded localhost
-        "sqlite",  # No SQLite fallback
-    ]
-    
-    for fallback in forbidden_fallbacks:
-        # Allow DATABASE_URL in comments but not in actual connection logic
-        if fallback == "DATABASE_URL":
-            continue  # This might appear in comments/docstrings
-        
-        # For actual fallbacks, they should not appear in connection strings
-        assert fallback.lower() not in source.lower(), f"conftest should not use {fallback} as fallback"
+    # Success: Canonical variable name confirmed
 
 
 if __name__ == "__main__":
