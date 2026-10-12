@@ -84,10 +84,20 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
+# CORS middleware - aligned with platform ALLOWED_ORIGINS configuration
+allowed_origins_str = os.environ.get('ALLOWED_ORIGINS', '')
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(',') if origin.strip()]
+
+# Fallback to wildcard only in development if ALLOWED_ORIGINS not configured
+if not allowed_origins:
+    allowed_origins = ["*"]
+    print("WARNING: ALLOWED_ORIGINS not configured, using wildcard (*) for CORS")
+
+print(f"CORS configured with origins: {allowed_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
