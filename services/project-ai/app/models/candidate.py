@@ -58,9 +58,6 @@ class CandidatePackage(BaseModel):
     target_family: Optional[str] = Field(None, description="Target block family from workflow")
     target_version: Optional[str] = Field(None, description="Target block version from workflow")
     
-    # Wave 1C: Tenant ownership
-    brand: Optional[str] = Field(None, description="Brand (tenant) that owns this candidate")
-    
     # Wave 3A: Server-computed contract hash
     contract_sha256: Optional[str] = Field(
         None,

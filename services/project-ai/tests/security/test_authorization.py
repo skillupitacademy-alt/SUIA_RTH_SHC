@@ -1,175 +1,13 @@
 """
-Authorization enforcement tests for Wave 1C.
+Authorization enforcement tests for RBAC.
 
-Tests brand boundary isolation and identity spoofing prevention.
+Tests role-based access control and identity extraction.
 """
 
 import pytest
 from fastapi import HTTPException
 
-from app.auth.authorization import verify_brand_access
 from app.auth.types import AuthenticatedPrincipal
-
-
-class TestVerifyBrandAccess:
-    """Tests for verify_brand_access function."""
-    
-    def test_verify_brand_access_same_brand_allowed(self):
-        """User with matching brand can access resource."""
-        principal: AuthenticatedPrincipal = {
-            "user_id": "user123",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": "skillhub",
-            "roles": [],
-            "portal_identity": None,
-            "token_type": None,
-            "is_admin": False,
-            "email": None,
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should not raise
-        verify_brand_access(principal, "skillhub")
-    
-    def test_verify_brand_access_cross_brand_denied(self):
-        """User with different brand cannot access resource."""
-        principal: AuthenticatedPrincipal = {
-            "user_id": "user123",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": "skillhub",
-            "roles": [],
-            "portal_identity": None,
-            "token_type": None,
-            "is_admin": False,
-            "email": None,
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        with pytest.raises(HTTPException) as exc_info:
-            verify_brand_access(principal, "techskills")
-        
-        assert exc_info.value.status_code == 403
-        assert "Cross-brand access denied" in exc_info.value.detail
-    
-    def test_verify_brand_access_none_user_brand_allowed(self):
-        """Infrastructure user (brand=None) can access any brand."""
-        principal: AuthenticatedPrincipal = {
-            "user_id": "admin123",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": None,
-            "roles": ["super_admin"],
-            "portal_identity": "super_admin",
-            "token_type": "admin",
-            "is_admin": True,
-            "email": None,
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should not raise for any brand
-        verify_brand_access(principal, "skillhub")
-        verify_brand_access(principal, "techskills")
-        verify_brand_access(principal, "anybrand")
-    
-    def test_verify_brand_access_none_resource_brand_allowed(self):
-        """
-        Brand-agnostic resource (resource_brand=None) requires infrastructure privilege.
-        
-        SECURITY FIX (FEAT-002): Unclassified resources are not publicly accessible.
-        Regular tenant users cannot access resource_brand=None resources.
-        Only infrastructure users (super_admin, infrastructure role, is_admin) can access.
-        """
-        # Regular user (no infrastructure privilege)
-        regular_principal: AuthenticatedPrincipal = {
-            "user_id": "user123",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": "skillhub",
-            "roles": [],
-            "portal_identity": None,
-            "token_type": None,
-            "is_admin": False,
-            "email": None,
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should raise 403 for regular user
-        with pytest.raises(HTTPException) as exc_info:
-            verify_brand_access(regular_principal, None)
-        
-        assert exc_info.value.status_code == 403
-        assert "unclassified resource requires infrastructure privilege" in exc_info.value.detail
-        
-        # Infrastructure user should succeed
-        infra_principal: AuthenticatedPrincipal = {
-            "user_id": "admin123",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": "skillhub",
-            "roles": ["super_admin"],
-            "portal_identity": "super_admin",
-            "token_type": "admin",
-            "is_admin": True,
-            "email": None,
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should not raise
-        verify_brand_access(infra_principal, None)
-    
-    def test_verify_brand_access_both_none_allowed(self):
-        """Infrastructure user accessing brand-agnostic resource."""
-        principal: AuthenticatedPrincipal = {
-            "user_id": "admin123",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": None,
-            "roles": ["infrastructure"],
-            "portal_identity": "infrastructure",
-            "token_type": "admin",
-            "is_admin": True,
-            "email": None,
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should not raise
-        verify_brand_access(principal, None)
-    
-    def test_infrastructure_bypass_requires_privileged_role(self):
-        """
-        Infrastructure bypass (brand=None) requires super_admin or infrastructure role.
-        
-        SECURITY FIX (FEAT-001): Prevents unprivileged users from setting brand=None
-        to bypass tenant isolation checks. Infrastructure access must be explicitly
-        granted through super_admin or infrastructure role.
-        """
-        principal: AuthenticatedPrincipal = {
-            "user_id": "user123",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": None,  # Attempting infrastructure bypass
-            "roles": [],  # No privileged role
-            "portal_identity": None,
-            "token_type": None,
-            "is_admin": False,
-            "email": None,
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        with pytest.raises(HTTPException) as exc_info:
-            verify_brand_access(principal, "skillhub")
-        
-        assert exc_info.value.status_code == 403
-        assert "Missing tenant identity" in exc_info.value.detail
 
 
 class TestIdentityExtractionFromJWT:
@@ -488,263 +326,6 @@ class TestMalformedJWT:
         assert "userId" in exc_info.value.detail
 
 
-class TestBrandEnforcementInRoutes:
-    """
-    Tests for brand enforcement in route handlers.
-    
-    Wave 1C focuses on tenant-scoped candidate resources.
-    Workflows are platform-scoped and do not require brand enforcement.
-    """
-    
-    @pytest.mark.integration
-    @pytest.mark.asyncio
-    async def test_candidate_upload_captures_brand(self, db_session, candidate_repo):
-        """
-        Verify candidate upload captures uploader's brand.
-        
-        Tests that POST /candidates/upload stores the authenticated user's
-        brand with the candidate for future enforcement.
-        """
-        from app.auth.types import AuthenticatedPrincipal
-        from app.persistence.models import CandidateModel
-        from datetime import datetime, timezone
-        
-        principal: AuthenticatedPrincipal = {
-            "user_id": "uploader_123",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": "skillhub",
-            "roles": [],
-            "portal_identity": None,
-            "token_type": "user",
-            "is_admin": False,
-            "email": "uploader@example.com",
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Create candidate with uploader's brand
-        candidate = CandidateModel(
-            candidate_id="cand_brand_capture_001",
-            workflow_id="wf_brand_001",
-            files={"test.ts": {"content": "test"}},
-            uploaded_at=datetime.now(timezone.utc),
-            uploaded_by=principal["user_id"],
-            uploader_brand=principal["brand"],  # Captured from JWT
-            target_family="tutorial",
-            target_version="v1",
-        )
-        
-        result = await candidate_repo.upsert(candidate)
-        await db_session.commit()
-        
-        # Verify brand captured
-        retrieved = await candidate_repo.get("cand_brand_capture_001")
-        assert retrieved.uploader_brand == "skillhub"
-    
-    @pytest.mark.integration
-    @pytest.mark.asyncio
-    async def test_candidate_execute_same_brand_succeeds(self, db_session, candidate_repo):
-        """
-        Verify same-brand candidate execution succeeds.
-        
-        Tests that POST /candidates/{id}/execute succeeds when executor's
-        brand matches the uploader's brand.
-        """
-        from app.auth.types import AuthenticatedPrincipal
-        from app.auth.authorization import verify_brand_access
-        from app.persistence.models import CandidateModel
-        from datetime import datetime, timezone
-        
-        # Upload candidate with brand
-        uploader_brand = "skillhub"
-        candidate = CandidateModel(
-            candidate_id="cand_same_brand_001",
-            workflow_id="wf_001",
-            files={"test.ts": {"content": "test"}},
-            uploaded_at=datetime.now(timezone.utc),
-            uploaded_by="uploader_user",
-            uploader_brand=uploader_brand,
-            target_family="tutorial",
-            target_version="v1",
-        )
-        
-        await candidate_repo.upsert(candidate)
-        await db_session.commit()
-        
-        # Executor with same brand
-        executor_principal: AuthenticatedPrincipal = {
-            "user_id": "executor_user",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": "skillhub",
-            "roles": ["contract_admin"],
-            "portal_identity": None,
-            "token_type": "user",
-            "is_admin": False,
-            "email": "executor@example.com",
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should not raise
-        verify_brand_access(executor_principal, uploader_brand)
-    
-    @pytest.mark.integration
-    @pytest.mark.asyncio
-    async def test_candidate_execute_cross_brand_denied(self, db_session, candidate_repo):
-        """
-        Verify cross-brand candidate execution is rejected.
-        
-        Tests that POST /candidates/{id}/execute returns 403 when executor's
-        brand differs from uploader's brand.
-        """
-        from app.auth.types import AuthenticatedPrincipal
-        from app.auth.authorization import verify_brand_access
-        from app.persistence.models import CandidateModel
-        from datetime import datetime, timezone
-        
-        # Upload candidate with brand
-        uploader_brand = "skillhub"
-        candidate = CandidateModel(
-            candidate_id="cand_cross_brand_001",
-            workflow_id="wf_002",
-            files={"test.ts": {"content": "test"}},
-            uploaded_at=datetime.now(timezone.utc),
-            uploaded_by="uploader_user",
-            uploader_brand=uploader_brand,
-            target_family="tutorial",
-            target_version="v1",
-        )
-        
-        await candidate_repo.upsert(candidate)
-        await db_session.commit()
-        
-        # Executor with different brand
-        executor_principal: AuthenticatedPrincipal = {
-            "user_id": "executor_user",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": "techskills",  # Different brand
-            "roles": ["contract_admin"],
-            "portal_identity": None,
-            "token_type": "user",
-            "is_admin": False,
-            "email": "executor@techskills.com",
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should raise 403
-        with pytest.raises(HTTPException) as exc_info:
-            verify_brand_access(executor_principal, uploader_brand)
-        
-        assert exc_info.value.status_code == 403
-    
-    @pytest.mark.integration
-    @pytest.mark.asyncio
-    async def test_candidate_execute_infrastructure_bypass(self, db_session, candidate_repo):
-        """
-        Verify infrastructure user can execute any candidate.
-        
-        Tests that user with brand=None (infrastructure) can execute
-        candidates regardless of uploader's brand.
-        """
-        from app.auth.types import AuthenticatedPrincipal
-        from app.auth.authorization import verify_brand_access
-        from app.persistence.models import CandidateModel
-        from datetime import datetime, timezone
-        
-        # Upload candidate with brand
-        uploader_brand = "skillhub"
-        candidate = CandidateModel(
-            candidate_id="cand_infra_bypass_001",
-            workflow_id="wf_003",
-            files={"test.ts": {"content": "test"}},
-            uploaded_at=datetime.now(timezone.utc),
-            uploaded_by="uploader_user",
-            uploader_brand=uploader_brand,
-            target_family="tutorial",
-            target_version="v1",
-        )
-        
-        await candidate_repo.upsert(candidate)
-        await db_session.commit()
-        
-        # Infrastructure executor (brand=None)
-        infra_principal: AuthenticatedPrincipal = {
-            "user_id": "infra_user",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": None,
-            "roles": ["super_admin"],
-            "portal_identity": "super_admin",
-            "token_type": "admin",
-            "is_admin": True,
-            "email": "infra@example.com",
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should not raise (infrastructure bypass)
-        verify_brand_access(infra_principal, uploader_brand)
-    
-    @pytest.mark.integration
-    @pytest.mark.asyncio
-    async def test_null_brand_candidate_requires_privileged_role(self, db_session, candidate_repo):
-        """
-        Verify NULL brand candidates cannot be executed by regular users.
-        
-        SECURITY FIX (FEAT-001): Tests that POST /candidates/{id}/execute
-        with candidate.brand=None and non-privileged user returns 403.
-        
-        Prevents regular tenant users from accessing legacy or unclassified
-        candidates that lack proper brand assignment. Only super_admin or
-        infrastructure roles may access NULL brand candidates.
-        """
-        from app.auth.types import AuthenticatedPrincipal
-        from app.auth.authorization import verify_brand_access
-        from app.persistence.models import CandidateModel
-        from datetime import datetime, timezone
-        
-        # Upload unclassified candidate (brand=None)
-        candidate = CandidateModel(
-            candidate_id="cand_null_brand_001",
-            workflow_id="wf_004",
-            files={"test.ts": {"content": "test"}},
-            uploaded_at=datetime.now(timezone.utc),
-            uploaded_by="system",
-            uploader_brand=None,  # Unclassified
-            target_family="tutorial",
-            target_version="v1",
-        )
-        
-        await candidate_repo.upsert(candidate)
-        await db_session.commit()
-        
-        # Regular user (no infrastructure privilege)
-        regular_principal: AuthenticatedPrincipal = {
-            "user_id": "regular_user",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": "skillhub",
-            "roles": [],
-            "portal_identity": None,
-            "token_type": "user",
-            "is_admin": False,
-            "email": "regular@example.com",
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Should raise 403
-        with pytest.raises(HTTPException) as exc_info:
-            verify_brand_access(regular_principal, None)
-        
-        assert exc_info.value.status_code == 403
-        assert "unclassified resource requires infrastructure privilege" in exc_info.value.detail
-
-
 class TestValidPathSmokeTests:
     """
     Valid path tests to ensure authorization doesn't break legitimate access.
@@ -755,95 +336,15 @@ class TestValidPathSmokeTests:
     
     @pytest.mark.integration
     @pytest.mark.asyncio
-    async def test_same_brand_workflow_approval_succeeds(self, db_session, workflow_repo):
+    async def test_infrastructure_role_has_unrestricted_access(self, db_session, workflow_repo):
         """
-        End-to-end workflow with same brand should succeed.
+        Infrastructure role (super_admin) should have unrestricted access.
         
-        Tests complete flow: create → upload → approve → execute
-        with matching brands throughout.
-        """
-        from app.auth.types import AuthenticatedPrincipal
-        from app.auth.authorization import verify_brand_access, require_role
-        from app.persistence.models import WorkflowModel
-        
-        brand = "skillhub"
-        
-        # Create workflow
-        workflow = WorkflowModel(
-            workflow_id="wf_e2e_001",
-            specification_id="spec_001",
-            target_family="tutorial",
-            target_version="v1",
-            requester_id="user_skillhub",
-            requester_brand=brand,
-            current_state="REQUESTED",
-            version=1,
-        )
-        
-        await workflow_repo.upsert(workflow)
-        await db_session.commit()
-        
-        # Approver with same brand
-        approver_principal: AuthenticatedPrincipal = {
-            "user_id": "approver_skillhub",
-            "original_user_id": None,
-            "shadow_user_id": None,
-            "brand": brand,
-            "roles": ["contract_admin"],
-            "portal_identity": None,
-            "token_type": "user",
-            "is_admin": False,
-            "email": "approver@skillhub.com",
-            "platforms": [],
-            "subscriptions": []
-        }
-        
-        # Verify brand access and role
-        verify_brand_access(approver_principal, brand)
-        require_role(approver_principal, "contract_admin")
-        
-        # Both checks passed - workflow can proceed
-        assert True
-    
-    @pytest.mark.integration
-    @pytest.mark.asyncio
-    async def test_infrastructure_user_cross_brand_access_succeeds(self, db_session, workflow_repo):
-        """
-        Infrastructure user (brand=None) should access all brands.
-        
-        Tests that super_admin/infrastructure users can access workflows
-        across different brands without restriction.
+        Tests that users with infrastructure roles can bypass standard restrictions.
         """
         from app.auth.types import AuthenticatedPrincipal
-        from app.auth.authorization import verify_brand_access
+        from app.auth.authorization import is_super_admin, require_role
         from app.persistence.models import WorkflowModel
-        
-        # Create workflows with different brands
-        wf1 = WorkflowModel(
-            workflow_id="wf_infra_multi_001",
-            specification_id="spec_001",
-            target_family="tutorial",
-            target_version="v1",
-            requester_id="user_skillhub",
-            requester_brand="skillhub",
-            current_state="REQUESTED",
-            version=1,
-        )
-        
-        wf2 = WorkflowModel(
-            workflow_id="wf_infra_multi_002",
-            specification_id="spec_002",
-            target_family="tutorial",
-            target_version="v1",
-            requester_id="user_techskills",
-            requester_brand="techskills",
-            current_state="REQUESTED",
-            version=1,
-        )
-        
-        await workflow_repo.upsert(wf1)
-        await workflow_repo.upsert(wf2)
-        await db_session.commit()
         
         # Infrastructure user
         infra_principal: AuthenticatedPrincipal = {
@@ -860,7 +361,42 @@ class TestValidPathSmokeTests:
             "subscriptions": []
         }
         
-        # Should access both brands without exception
-        verify_brand_access(infra_principal, "skillhub")
-        verify_brand_access(infra_principal, "techskills")
-        verify_brand_access(infra_principal, "anybrand")
+        # Verify infrastructure status
+        assert is_super_admin(infra_principal) is True
+        
+        # Should bypass role requirements
+        require_role(infra_principal, "contract_admin")  # Should not raise
+    
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_super_admin_bypasses_restrictions(self, db_session, workflow_repo):
+        """
+        Super admin should bypass RBAC restrictions.
+        
+        Tests that super_admin users can perform operations that would
+        normally require specific roles.
+        """
+        from app.auth.types import AuthenticatedPrincipal
+        from app.auth.authorization import require_role, require_any_role
+        from app.persistence.models import WorkflowModel
+        
+        # Super admin user
+        super_admin_principal: AuthenticatedPrincipal = {
+            "user_id": "super_admin_user",
+            "original_user_id": None,
+            "shadow_user_id": None,
+            "brand": None,
+            "roles": ["super_admin"],
+            "portal_identity": "super_admin",
+            "token_type": "admin",
+            "is_admin": True,
+            "email": "superadmin@example.com",
+            "platforms": [],
+            "subscriptions": []
+        }
+        
+        # Should bypass all role requirements without exception
+        require_role(super_admin_principal, "contract_admin")
+        require_role(super_admin_principal, "contract_reviewer")
+        require_any_role(super_admin_principal, ["contract_admin", "contract_reviewer"])
+

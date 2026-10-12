@@ -67,7 +67,6 @@ async def submit_for_approval(
     
     # Extract submitter identity from JWT (prevent identity spoofing)
     submitted_by = user.get("user_id") or user.get("email") or user.get("sub") or "unknown"
-    user_brand = user.get("brand")
     
     audit_entry = {
         "action": "submitted",
@@ -86,7 +85,6 @@ async def submit_for_approval(
         "decidedAt": None,
         "manifestHash": request.manifestHash,
         "reason": None,
-        "brand": user_brand,  # Store brand for boundary enforcement
         "auditTrail": [audit_entry],
     }
     
@@ -103,32 +101,18 @@ async def submit_for_approval(
 @router.get("/pending", response_model=list[ApprovalRecord])
 async def get_pending_approvals(user: AuthenticatedPrincipal = Depends(require_contract_reviewer)):
     """
-    Get all pending approval records within user's brand boundary.
+    Get all pending approval records.
     
     Returns list of approvals in PENDING status awaiting human review.
-    Brand filtering enforced: users only see approvals for their own brand.
     
     Returns:
-        List of pending approval records for user's brand
+        List of pending approval records
     """
-    user_brand = user.get("brand")
-    
-    # Super admins bypass brand boundary
-    from app.auth.authorization import is_super_admin
-    if is_super_admin(user):
-        pending = [
-            ApprovalRecord(**approval)
-            for approval in _approvals.values()
-            if approval["status"] == ApprovalStatus.PENDING
-        ]
-    else:
-        # Filter by brand boundary
-        pending = [
-            ApprovalRecord(**approval)
-            for approval in _approvals.values()
-            if approval["status"] == ApprovalStatus.PENDING
-            and approval.get("brand") == user_brand
-        ]
+    pending = [
+        ApprovalRecord(**approval)
+        for approval in _approvals.values()
+        if approval["status"] == ApprovalStatus.PENDING
+    ]
     
     return pending
 
@@ -171,7 +155,6 @@ async def approve_manifest(
     CRITICAL SECURITY GATES:
     1. Self-approval prevention: Approver cannot be the same as submitter
     2. Manifest hash verification: Detects tampering since submission
-    3. Brand boundary enforcement: Approver must belong to same brand as submission
     
     This prevents time-of-check-time-of-use attacks and enforces
     separation of duties.
@@ -188,7 +171,6 @@ async def approve_manifest(
         400: If approval is not in PENDING state
         401: If user_id claim missing from JWT
         403: If self-approval attempted (Wave 2)
-        403: If brand boundary violated
         409: If manifest hash does not match (manifest was mutated)
     """
     if approval_id not in _approvals:
@@ -207,28 +189,11 @@ async def approve_manifest(
             detail="Missing user_id claim in JWT token"
         )
     
-    user_brand = user.get("brand")
-    
     if approval["status"] != ApprovalStatus.PENDING:
         raise HTTPException(
             status_code=400,
             detail=f"Approval is in {approval['status']} state, expected PENDING"
         )
-    
-    # CRITICAL: Enforce brand boundary (unless super_admin)
-    from app.auth.authorization import is_super_admin
-    if not is_super_admin(user):
-        approval_brand = approval.get("brand")
-        if approval_brand != user_brand:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "error": "BRAND_BOUNDARY_VIOLATION",
-                    "message": f"User from brand '{user_brand}' cannot approve submission from brand '{approval_brand}'",
-                    "userBrand": user_brand,
-                    "approvalBrand": approval_brand
-                }
-            )
     
     # CRITICAL: Prevent self-approval (Wave 2)
     if decided_by == approval["submittedBy"]:
@@ -656,8 +621,7 @@ async def reject_manifest(
     Reject a pending manifest.
     
     SECURITY GATES:
-    1. Brand boundary enforcement: Rejecter must belong to same brand as submission
-    2. Identity validation: Rejects requests without user_id claim
+    1. Identity validation: Rejects requests without user_id claim
     
     Args:
         approval_id: Approval to reject
@@ -670,7 +634,6 @@ async def reject_manifest(
         404: If approval not found
         400: If approval is not in PENDING state
         401: If user_id claim missing from JWT
-        403: If brand boundary violated
     """
     if approval_id not in _approvals:
         raise HTTPException(
@@ -688,28 +651,11 @@ async def reject_manifest(
             detail="Missing user_id claim in JWT token"
         )
     
-    user_brand = user.get("brand")
-    
     if approval["status"] != ApprovalStatus.PENDING:
         raise HTTPException(
             status_code=400,
             detail=f"Approval is in {approval['status']} state, expected PENDING"
         )
-    
-    # CRITICAL: Enforce brand boundary (unless super_admin)
-    from app.auth.authorization import is_super_admin
-    if not is_super_admin(user):
-        approval_brand = approval.get("brand")
-        if approval_brand != user_brand:
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "error": "BRAND_BOUNDARY_VIOLATION",
-                    "message": f"User from brand '{user_brand}' cannot reject submission from brand '{approval_brand}'",
-                    "userBrand": user_brand,
-                    "approvalBrand": approval_brand
-                }
-            )
     
     now = datetime.now(timezone.utc)
     approval["status"] = ApprovalStatus.REJECTED
