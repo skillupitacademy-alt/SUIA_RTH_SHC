@@ -14,7 +14,7 @@ The original R3 audit and plan **incorrectly recommended SQLite** because it exa
 
 The platform **already has PostgreSQL + Drizzle ORM infrastructure** serving:
 - Tutorial content (tutorial_prod database)
-- Quiz platform (quiz_platform_prod database)  
+- Quiz platform (quiz_platform_prod database)
 - SkillHubCore hierarchy
 - People/auth (people_prod database)
 - Payment (payment_prod database)
@@ -282,11 +282,11 @@ RETURNING *;
 
 ```sql
 UPDATE project_ai_workflows
-SET 
+SET
     current_state = $1,
     version = version + 1,
     updated_at = NOW()
-WHERE 
+WHERE
     workflow_id = $2
     AND version = $3  -- Expected version
 RETURNING *;
@@ -304,7 +304,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 class WorkflowModel(Base):
     __tablename__ = 'project_ai_workflows'
-    
+
     gate_results = Column(JSONB, nullable=False, default={})
     evidence_ids = Column(JSONB, nullable=False, default=[])
 ```
@@ -388,7 +388,7 @@ services:
 # WRONG
 session.execute(text("INSERT OR IGNORE INTO contracts ..."))
 
-# CORRECT  
+# CORRECT
 session.execute(text("""
     INSERT INTO project_ai_contracts (workflow_id, ...)
     VALUES (:workflow_id, ...)

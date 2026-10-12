@@ -39,7 +39,7 @@ The implementation doesn't verify the sub claim is present. A token without a su
 The dependencies.py module implements get_current_user() which extracts the Bearer token from the Authorization header, decodes it, and returns {user_id: payload['sub'], roles: payload.get('roles', [])}. The three role enforcement functions implement hierarchy through inclusive checks:
 
 - contract_admin: must have "contract_admin" role
-- contract_reviewer: must have "contract_reviewer" OR "contract_admin" role  
+- contract_reviewer: must have "contract_reviewer" OR "contract_admin" role
 - contract_viewer: must have any of "contract_viewer", "contract_reviewer", or "contract_admin"
 
 The role enforcement functions have `user: dict = None` signatures instead of `user: dict = Depends(get_current_user)`. When used as `dependencies=[Depends(require_contract_admin)]` in a route, FastAPI won't know to call get_current_user() first. The correct pattern is `def require_contract_admin(user: dict = Depends(get_current_user)) -> dict:` which chains the dependencies automatically. The test file calls the functions directly with user dicts rather than testing them as FastAPI dependencies, so this gap isn't caught.

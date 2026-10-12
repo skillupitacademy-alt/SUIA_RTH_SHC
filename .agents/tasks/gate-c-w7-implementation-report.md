@@ -1,7 +1,7 @@
 # Gate C W7 Evidence Enforcement - Implementation Report
 
-**Date:** 2025-01-26  
-**Branch:** m2-project-ai-canonical-wiring  
+**Date:** 2025-01-26
+**Branch:** m2-project-ai-canonical-wiring
 **Implementer:** AI Subagent (Workflow Step)
 
 ---
@@ -180,26 +180,26 @@ pytest tests/ -q --tb=no
 ## Design Decisions
 
 ### 1. Governance Module Placement
-**Decision:** Place evidence_policy in `app/governance/` directory  
+**Decision:** Place evidence_policy in `app/governance/` directory
 **Rationale:** Evidence policy is a governance concern (controls what evidence is acceptable for state transitions), aligning with existing WorkflowGovernanceService location.
 
 ### 2. Defense in Depth
-**Decision:** Add evidence validation BEFORE FinalGateController.compute_verdict()  
+**Decision:** Add evidence validation BEFORE FinalGateController.compute_verdict()
 **Rationale:** Creates two enforcement layers:
 - `evidence_policy`: Structural requirements (artifact binding, staleness, workflow isolation)
-- `FinalGateController`: Gate pass/fail logic  
+- `FinalGateController`: Gate pass/fail logic
 Both must pass for approval.
 
 ### 3. Frozen Sets for Required Types
-**Decision:** Use `frozenset` for `EvidencePolicy.required_types`  
+**Decision:** Use `frozenset` for `EvidencePolicy.required_types`
 **Rationale:** Required types are immutable configuration. frozenset prevents accidental mutation and allows use in set operations.
 
 ### 4. 24-Hour Staleness Threshold
-**Decision:** max_age_seconds=86400 (24 hours)  
+**Decision:** max_age_seconds=86400 (24 hours)
 **Rationale:** Balances freshness requirement with practical workflow timelines. Most certifications complete within hours; 24 hours allows for reasonable delays without allowing stale evidence from prior iterations.
 
 ### 5. HTTP 409 for Evidence Rejection
-**Decision:** Return HTTP 409 (Conflict) for evidence policy violations  
+**Decision:** Return HTTP 409 (Conflict) for evidence policy violations
 **Rationale:** Not a 400 (Bad Request) because the request itself is well-formed. It's a conflict between the workflow's evidence state and the policy requirements.
 
 ---

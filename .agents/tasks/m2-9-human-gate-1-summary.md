@@ -1,8 +1,8 @@
 # M2.9 Remediation — Human Gate 1 Review Summary
 
-**Date:** 2025-01-30  
-**Branch:** m2-project-ai-canonical-wiring  
-**HEAD Commit:** f1e0718fb5470ed01c45a02add286b5993b263ea  
+**Date:** 2025-01-30
+**Branch:** m2-project-ai-canonical-wiring
+**HEAD Commit:** f1e0718fb5470ed01c45a02add286b5993b263ea
 **Wave 0 Status:** ✅ PASSED
 
 ---
@@ -11,9 +11,9 @@
 
 The 18-agent remediation plan has been successfully recovered from existing project documentation and partially executed. Wave 0 (Canonical Workflow Authority Freeze) has been completed, reviewed, and approved. The implementation establishes a single workflow authority by retiring legacy workflow bypass mechanisms.
 
-**Current Progress:** 67% complete (12 of 18 agents operational)  
-**Wave 0 Result:** PASSED — CreationMode removed, legacy /creation routes disabled, DesignSource enum added  
-**Remaining Work:** 3 P0 defects + 2 P1 defects across 6 agents  
+**Current Progress:** 67% complete (12 of 18 agents operational)
+**Wave 0 Result:** PASSED — CreationMode removed, legacy /creation routes disabled, DesignSource enum added
+**Remaining Work:** 3 P0 defects + 2 P1 defects across 6 agents
 **Ready for Wave 1:** ✅ YES (pending human authorization)
 
 ---
@@ -119,7 +119,7 @@ All `/creation` endpoints now return `405 METHOD_NOT_ALLOWED` with migration gui
 
 ### Test Results
 
-**Before Wave 0:** 533 tests collected  
+**Before Wave 0:** 533 tests collected
 **After Wave 0:** 537 tests collected (+4 new tests)
 
 **Test Changes:**
@@ -130,17 +130,17 @@ All `/creation` endpoints now return `405 METHOD_NOT_ALLOWED` with migration gui
 
 ### Architectural Verification
 
-✅ **Single workflow authority confirmed**  
-✅ **CanonicalWorkflowState intact and unchanged**  
-✅ **Legacy workflow bypass removed**  
-✅ **CreationMode removed and replaced**  
-✅ **All workflows follow same lifecycle**  
+✅ **Single workflow authority confirmed**
+✅ **CanonicalWorkflowState intact and unchanged**
+✅ **Legacy workflow bypass removed**
+✅ **CreationMode removed and replaced**
+✅ **All workflows follow same lifecycle**
 ✅ **No competing state machines remain**
 
 ### Commit Details
 
-**Commit Hash:** `f1e0718fb5470ed01c45a02add286b5993b263ea`  
-**Message:** `m2.9 W0: canonical workflow authority freeze — retire legacy CreationMode/Workflow routes`  
+**Commit Hash:** `f1e0718fb5470ed01c45a02add286b5993b263ea`
+**Message:** `m2.9 W0: canonical workflow authority freeze — retire legacy CreationMode/Workflow routes`
 **Files Changed:** 10 files (+1644 insertions, -313 deletions)
 
 ### Review Verdict
@@ -159,7 +159,7 @@ The review confirmed:
 1. Freeze record language could say "REPLACED" instead of "REMOVED" for precision
 2. Test execution results not independently verified (coder claims 461 pass, 58 fail)
 
-**Full review document:** `.agents/tasks/m2-9-wave0-review.md`  
+**Full review document:** `.agents/tasks/m2-9-wave0-review.md`
 **Verdict JSON:** `.agents/tasks/m2-9-wave0-verdict.json`
 
 ---
@@ -170,9 +170,9 @@ The review confirmed:
 
 #### P0-B03: Python Repository Scanning Violation
 
-**Agent:** B03 (Repository Contract Intelligence)  
-**Severity:** P0 (Critical architectural violation)  
-**File:** `services/project-ai/app/contracts/repository_intelligence.py`  
+**Agent:** B03 (Repository Contract Intelligence)
+**Severity:** P0 (Critical architectural violation)
+**File:** `services/project-ai/app/contracts/repository_intelligence.py`
 **Line:** 153
 
 **Current Code:**
@@ -180,7 +180,7 @@ The review confirmed:
 repo_path = Path(repo_root)
 ```
 
-**Architectural Violation:**  
+**Architectural Violation:**
 Python MUST NOT scan repository files. All repository facts MUST come from TypeScript discovery snapshot.
 
 **Required Fix:**
@@ -195,8 +195,8 @@ Python MUST NOT scan repository files. All repository facts MUST come from TypeS
 
 #### P0-BINDING: Hardcoded blockVersion='1.0.0'
 
-**Agent:** B07 (Placement Manifest Enhancement)  
-**Severity:** P0 (Critical version mismatch)  
+**Agent:** B07 (Placement Manifest Enhancement)
+**Severity:** P0 (Critical version mismatch)
 **Files:**
 - `services/project-ai/app/agents/placement.py` (line 54)
 - `services/project-ai/app/api/routes/candidate.py` (lines 379, 395)
@@ -206,7 +206,7 @@ Python MUST NOT scan repository files. All repository facts MUST come from TypeS
 blockVersion="1.0.0"  # WRONG - should use target.version like "I7"
 ```
 
-**Architectural Violation:**  
+**Architectural Violation:**
 The audit specifically notes version mismatch where UI shows "I7" but manifest uses "1.0.0". WorkflowTarget exists with correct version but is not being used.
 
 **Required Fix:**
@@ -228,8 +228,8 @@ The audit specifically notes version mismatch where UI shows "I7" but manifest u
 
 #### P1-CONTRACT: Engineering Contract Generic Defaults
 
-**Agent:** B18 (Engineering Contract Defaults)  
-**Severity:** P1 (Major data quality issue)  
+**Agent:** B18 (Engineering Contract Defaults)
+**Severity:** P1 (Major data quality issue)
 **File:** `services/project-ai/app/contracts/engineering_contract.py`
 
 **Current Code:**
@@ -245,7 +245,7 @@ required_artifacts: list[str] = Field(
 )
 ```
 
-**Architectural Violation:**  
+**Architectural Violation:**
 EngineeringContract should derive required artifacts from actual repository evidence, not use generic defaults.
 
 **Required Fix:**
@@ -262,8 +262,8 @@ EngineeringContract should derive required artifacts from actual repository evid
 
 #### P1-FRONTEND: Frontend Disconnected
 
-**Agent:** B17 (Frontend Integration)  
-**Severity:** P1 (Major integration gap)  
+**Agent:** B17 (Frontend Integration)
+**Severity:** P1 (Major integration gap)
 **Files:** `packages/ui/src/project-llm/` (entire directory)
 
 **Current State:**
@@ -272,7 +272,7 @@ EngineeringContract should derive required artifacts from actual repository evid
 - TypeScript `projectLlmWorkflowCoordinator` creates duplicate state machine
 - Candidate upload UI is visual only
 
-**Architectural Violation:**  
+**Architectural Violation:**
 Frontend must consume CanonicalWorkflowState from backend, not create a second state machine.
 
 **Required Fix:**
@@ -295,22 +295,22 @@ Wave 1 should execute **P0 fixes only** in strict dependency order:
 
 #### R1: B03 Boundary Fix (Priority 1, Sequential)
 
-**Agent:** B03 (Repository Contract Intelligence)  
-**Scope:** Remove `Path(repo_root)` usage, consume snapshot evidence only  
-**Files:** `services/project-ai/app/contracts/repository_intelligence.py`  
-**Dependencies:** None (can start immediately)  
-**Tests:** `test_repository_intelligence.py` must pass  
+**Agent:** B03 (Repository Contract Intelligence)
+**Scope:** Remove `Path(repo_root)` usage, consume snapshot evidence only
+**Files:** `services/project-ai/app/contracts/repository_intelligence.py`
+**Dependencies:** None (can start immediately)
+**Tests:** `test_repository_intelligence.py` must pass
 **Acceptance:** No Python file scanning, all data from `snapshot['evidence']`
 
 ---
 
 #### R2: B07 Version Fix (Priority 1, Sequential, depends on R1)
 
-**Agent:** B07 (Placement Manifest Enhancement)  
-**Scope:** Replace `blockVersion="1.0.0"` with `target.version`  
-**Files:** `placement.py` (line 54), `candidate.py` (lines 379, 395)  
-**Dependencies:** R1 must complete (needs correct snapshot consumption)  
-**Tests:** `test_placement.py::test_version_from_target` must pass  
+**Agent:** B07 (Placement Manifest Enhancement)
+**Scope:** Replace `blockVersion="1.0.0"` with `target.version`
+**Files:** `placement.py` (line 54), `candidate.py` (lines 379, 395)
+**Dependencies:** R1 must complete (needs correct snapshot consumption)
+**Tests:** `test_placement.py::test_version_from_target` must pass
 **Acceptance:** Manifest uses "I7" not "1.0.0", version from WorkflowTarget
 
 ---
@@ -319,22 +319,22 @@ Wave 1 should execute **P0 fixes only** in strict dependency order:
 
 #### R3: B18 Contract Defaults (Parallel with R4)
 
-**Agent:** B18 (Engineering Contract Defaults)  
-**Scope:** Replace generic defaults with repository-derived data  
-**Files:** `engineering_contract.py`, `contract_generator.py`  
-**Dependencies:** Wave 1 complete (needs corrected B03 snapshot data)  
-**Tests:** `test_engineering_contract.py` must verify real data extraction  
+**Agent:** B18 (Engineering Contract Defaults)
+**Scope:** Replace generic defaults with repository-derived data
+**Files:** `engineering_contract.py`, `contract_generator.py`
+**Dependencies:** Wave 1 complete (needs corrected B03 snapshot data)
+**Tests:** `test_engineering_contract.py` must verify real data extraction
 **Acceptance:** No hardcoded defaults, all data from snapshot evidence
 
 ---
 
 #### R4: B17 Frontend Integration (Parallel with R3)
 
-**Agent:** B17 (Frontend Integration)  
-**Scope:** Connect frontend to backend, remove duplicate state machine  
-**Files:** `useWorkflowState.ts`, `projectLlmClient.ts`, remove `projectLlmWorkflowCoordinator`  
-**Dependencies:** Wave 1 complete (needs stable backend API)  
-**Tests:** Frontend integration tests verify real API calls  
+**Agent:** B17 (Frontend Integration)
+**Scope:** Connect frontend to backend, remove duplicate state machine
+**Files:** `useWorkflowState.ts`, `projectLlmClient.ts`, remove `projectLlmWorkflowCoordinator`
+**Dependencies:** Wave 1 complete (needs stable backend API)
+**Tests:** Frontend integration tests verify real API calls
 **Acceptance:** Frontend consumes CanonicalWorkflowState from backend
 
 ---

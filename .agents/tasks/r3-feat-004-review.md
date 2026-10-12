@@ -1,7 +1,7 @@
 # FEAT-004 PostgreSQL Integration Tests
 
-**Review Date:** 2025-01-XX  
-**Reviewer:** Kiro Semantic Review  
+**Review Date:** 2025-01-XX
+**Reviewer:** Kiro Semantic Review
 **Iteration:** 2 (Post-Review Fix)
 
 The FEAT-004 implementation delivers a PostgreSQL integration test suite covering all five required repositories (workflows, contracts, candidates, manifests, approvals) plus state transitions. Tests enforce real PostgreSQL (no SQLite fallback), use transaction rollback for isolation, and implement restart simulation with proper test-level isolation. Configuration gaps are handled with explicit skip behavior. The iteration 2 fixes resolved all blocking concerns from the first review pass.
@@ -33,18 +33,18 @@ The pattern in `test_restart_persistence.py`:
 ```python
 async def test_workflow_persists_across_sessions(db_session_factory):
     workflow_id = "wf_restart_001"
-    
+
     # Session 1: Create workflow
     session = await db_session_factory()
     repo1 = PostgresWorkflowRepository(session)
     workflow = WorkflowModel(workflow_id=workflow_id, ...)
     await repo1.upsert(workflow)
     await session.flush()
-    
+
     # Session 2: Retrieve workflow
     repo2 = PostgresWorkflowRepository(session)
     retrieved = await repo2.get(workflow_id, verify_bindings=False)
-    
+
     assert retrieved is not None
     assert retrieved.workflow_id == workflow_id
 ```

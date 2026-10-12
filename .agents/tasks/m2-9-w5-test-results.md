@@ -1,15 +1,15 @@
 # M2.9 Wave 5 - Test Results Report
 
-**Date**: 2026-10-08  
-**Branch**: m2-project-ai-canonical-wiring  
-**Workflow**: wf_9adfb86ee2f74b65  
+**Date**: 2026-10-08
+**Branch**: m2-project-ai-canonical-wiring
+**Workflow**: wf_9adfb86ee2f74b65
 **Test Agent**: W5 Test Agent
 
 ---
 
 ## Executive Summary
 
-✅ **ALL W5 TESTS PASSING**  
+✅ **ALL W5 TESTS PASSING**
 ✅ **NO NEW REGRESSIONS INTRODUCED**
 
 Created comprehensive test suite for Wave 5 security-critical placement infrastructure.
@@ -28,39 +28,39 @@ Created comprehensive test suite for Wave 5 security-critical placement infrastr
   - Rejects `../` parent directory traversal
   - Rejects absolute paths (`/etc/passwd`, `/absolute/path`)
   - Rejects paths resolving outside workspace
-  
+
 - ✅ Allowlist enforcement (4 tests)
   - Accepts valid paths in `packages/ui/src/tutorial/blocks/`
   - Accepts valid paths in `packages/ui/src/tutorial/schemas/`
   - Accepts valid paths in `packages/shared/src/tutorial/`
   - Rejects unauthorized directories
-  
+
 - ✅ Extension validation (6 tests)
   - Accepts `.ts`, `.tsx`, `.json` files
   - Rejects `.py`, `.sh`, `.exe` files
-  
+
 - ✅ Dry-run mode (2 tests)
   - Verifies no files written when `dry_run=True`
   - Validates paths still enforced in dry-run
-  
+
 - ✅ Diff generation (2 tests)
   - Generates diff for new files (shows "NEW FILE")
   - Generates unified diff for updates
-  
+
 - ✅ Rollback capture (2 tests)
   - Captures rollback info for new files (`delete_on_rollback`)
   - Captures pre-mutation state for updates (`restore_on_rollback`)
-  
+
 - ✅ Target validation (4 tests)
   - Validates canonical Introduction targets (I1-I7)
   - Validates canonical Tutorial targets (T1-T5)
   - Rejects unknown families
   - Rejects unknown versions
-  
+
 - ✅ Evidence production (2 tests)
   - Produces operation records for every write
   - Exports evidence to JSON
-  
+
 - ✅ Git operations (3 tests)
   - Git operations return placeholders in dry-run mode
   - Verifies no git calls made during dry-run
@@ -77,17 +77,17 @@ Created comprehensive test suite for Wave 5 security-critical placement infrastr
   - Blocks manifest_sha256 mismatch
   - Blocks self-approval (requester == approver)
   - Blocks PENDING approval status
-  
+
 - ✅ Dry-run validation (1 test)
   - Verifies dry-run called before actual mutation
-  
+
 - ✅ Happy-path integration (2 tests)
   - Full integration: valid approval → dry-run → execute → evidence
   - Dry-run mode: no actual file writes
-  
+
 - ✅ Manifest hash verification (1 test)
   - Detects tampered manifest (wrong hash)
-  
+
 - ✅ Evidence production (1 test)
   - Produces evidence records during placement
 
@@ -102,11 +102,11 @@ Created comprehensive test suite for Wave 5 security-critical placement infrastr
   - manifest_id mismatch → BLOCKED
   - manifest_sha256 mismatch → BLOCKED
   - Self-approval → BLOCKED
-  
+
 - ✅ Status validation (2 tests)
   - PENDING status → BLOCKED
   - REJECTED status → BLOCKED
-  
+
 - ✅ Fail-closed policy (6 tests)
   - Missing workflow_id → BLOCKED
   - Missing candidate_sha256 → BLOCKED
@@ -114,14 +114,14 @@ Created comprehensive test suite for Wave 5 security-critical placement infrastr
   - Missing manifest_sha256 → BLOCKED
   - Missing requester_id → BLOCKED
   - None workflow_id → BLOCKED
-  
+
 - ✅ Approval not found (1 test)
   - Approval not in store → BLOCKED
-  
+
 - ✅ Evidence production (2 tests)
   - Produces evidence on approval
   - Produces evidence on rejection
-  
+
 - ✅ Bindings verified structure (2 tests)
   - All binding keys present in result
   - Failed bindings reported correctly
@@ -135,32 +135,32 @@ Created comprehensive test suite for Wave 5 security-critical placement infrastr
   - Path includes timestamp for uniqueness
   - Path includes manifest ID prefix
   - Context contains all required metadata
-  
+
 - ✅ Worktree isolation (1 test + 1 skipped)
   - Placement isolated to worktree, not main tree
   - Multiple worktrees don't interfere (skipped: git flakiness)
-  
+
 - ✅ Worktree cleanup (2 tests)
   - Cleanup removes worktree
   - Cleanup doesn't affect main tree
-  
+
 - ✅ Worktree commit (2 tests)
   - Can commit changes in worktree
   - Commit SHA is valid git hash
-  
+
 - ✅ Worktree diff (1 test)
   - Generates diff between worktree and base
-  
+
 - ✅ Worktree evidence (1 test)
   - Produces worktree evidence for audit
-  
+
 - ✅ Branch naming (2 tests)
   - Default branch naming pattern
   - Custom branch name support
-  
+
 - ✅ Error handling (1 test)
   - Error on invalid repository path
-  
+
 - ✅ List and cleanup (2 tests skipped)
   - List active worktrees (skipped: git flakiness)
   - Bulk cleanup (skipped: git flakiness)
@@ -250,30 +250,30 @@ All 58 failures are **pre-existing from W4-R1 baseline**:
 ## Key Testing Decisions
 
 ### 1. Comprehensive Authorization Testing
-**Decision**: Test every authorization failure mode separately  
-**Rationale**: Security-critical code must fail-closed on ANY missing or mismatched field  
+**Decision**: Test every authorization failure mode separately
+**Rationale**: Security-critical code must fail-closed on ANY missing or mismatched field
 **Coverage**: 13 tests covering all approval rejection scenarios
 
 ### 2. Path Security Testing
-**Decision**: Test all path traversal attack vectors  
-**Rationale**: Path security is first line of defense against malicious inputs  
+**Decision**: Test all path traversal attack vectors
+**Rationale**: Path security is first line of defense against malicious inputs
 **Coverage**: 7 tests covering traversal, absolute paths, allowlist violations
 
 ### 3. Dry-Run First
-**Decision**: Use dry-run mode for most executor tests  
-**Rationale**: Avoids git dependency issues in temp directories while validating logic  
+**Decision**: Use dry-run mode for most executor tests
+**Rationale**: Avoids git dependency issues in temp directories while validating logic
 **Coverage**: Tests validate both dry-run behavior and path through to actual execution
 
 ### 4. Skipped vs Mocked Git Worktree Tests
-**Decision**: Skip flaky concurrent git worktree tests rather than mock  
-**Rationale**:  
+**Decision**: Skip flaky concurrent git worktree tests rather than mock
+**Rationale**:
 - Core worktree functionality validated by 14 passing tests
 - Concurrent git operations in temp dirs are inherently flaky
 - Skipping 3 tests better than false negatives from timing issues
 
 ### 5. Flexible Assertion on Implementation Details
-**Decision**: Assert on behavior outcomes, not internal implementation details  
-**Rationale**:  
+**Decision**: Assert on behavior outcomes, not internal implementation details
+**Rationale**:
 - Approval enforcer implementation may vary (e.g., binding verification reporting)
 - Tests validate BLOCKED/APPROVED outcome, not exact error message format
 - More resilient to internal refactoring
@@ -379,17 +379,17 @@ tests/placement/
 
 ## Conclusion
 
-✅ **W5 Test Suite Complete**: 73 passing, 3 skipped (git flakiness)  
-✅ **No Regressions**: 616 total passing (up from 543 baseline)  
-✅ **Security Coverage**: 100% of critical security invariants tested  
-✅ **Fail-Closed Policy**: All security tests enforce BLOCKED on violations  
-✅ **Evidence Production**: All operations produce machine-readable evidence  
+✅ **W5 Test Suite Complete**: 73 passing, 3 skipped (git flakiness)
+✅ **No Regressions**: 616 total passing (up from 543 baseline)
+✅ **Security Coverage**: 100% of critical security invariants tested
+✅ **Fail-Closed Policy**: All security tests enforce BLOCKED on violations
+✅ **Evidence Production**: All operations produce machine-readable evidence
 
 **Status**: Ready for W5 gate creation and evidence collection.
 
 ---
 
-**Test Agent**: W5 Test Agent  
-**Completed**: 2026-10-08  
-**Branch**: m2-project-ai-canonical-wiring  
+**Test Agent**: W5 Test Agent
+**Completed**: 2026-10-08
+**Branch**: m2-project-ai-canonical-wiring
 **Workflow**: wf_9adfb86ee2f74b65

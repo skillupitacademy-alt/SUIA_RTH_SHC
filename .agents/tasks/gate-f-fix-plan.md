@@ -1,7 +1,7 @@
 # Gate F Security Domain Regression Fix Plan
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Task:** Fix 15 security domain failures (2 test failures + 13 fixture errors) in Domains 1 & 2  
+**Branch:** m2-project-ai-canonical-wiring
+**Task:** Fix 15 security domain failures (2 test failures + 13 fixture errors) in Domains 1 & 2
 **Goal:** Achieve 5/5 W6 domains passing with zero-tolerance security compliance
 
 ---
@@ -190,7 +190,7 @@ Add the following fixture after the `test_db_session` fixture definition (after 
 async def db_session(test_db_session):
     """
     Alias for test_db_session for backward compatibility.
-    
+
     Integration tests marked with @pytest.mark.integration reference
     'db_session' fixture. This alias delegates to test_db_session
     to maintain compatibility without renaming all test function signatures.
@@ -343,7 +343,7 @@ def create_test_token(user_id: str, roles: list = None):
     """Helper to create test JWT tokens."""
     if roles is None:
         roles = ["contract_viewer"]
-    
+
     data = {
         "userId": user_id,
         "originalUserId": user_id,
@@ -363,7 +363,7 @@ def create_test_token(user_id: str, roles: list = None, brand: str = "skillhub")
     """Helper to create test JWT tokens."""
     if roles is None:
         roles = ["contract_viewer"]
-    
+
     data = {
         "userId": user_id,
         "originalUserId": user_id,
@@ -479,9 +479,9 @@ cat coverage.json | grep '"percent_covered"'
 | **B** | Test Failure | `tests/security/test_governance_identity.py` | ~115 | Fix TypeError in self-approval test assertion |
 | **C** | Test Failure | `tests/security/test_governance_identity.py` | ~176 | Add `contract_reviewer` role to Bob's token |
 
-**Total Files Modified:** 2  
-**Total Issues Fixed:** 15 (13 errors + 2 failures)  
-**Domains Fixed:** 2 (Domain 1: JWT, Domain 2: RBAC)  
+**Total Files Modified:** 2
+**Total Issues Fixed:** 15 (13 errors + 2 failures)
+**Domains Fixed:** 2 (Domain 1: JWT, Domain 2: RBAC)
 **Final Domain Status:** 5/5 PASS (Zero-Tolerance Met)
 
 ---
@@ -497,7 +497,7 @@ pytest tests/security/ -v --tb=short
 # Verify Domain 1 (JWT): 7 passed, 0 failed, 0 errors
 pytest tests/security/test_governance_identity.py -v
 
-# Verify Domain 2 (RBAC): 22 passed, 0 failed, 0 errors  
+# Verify Domain 2 (RBAC): 22 passed, 0 failed, 0 errors
 pytest tests/security/test_authorization.py -v
 
 # Generate gate verdict:
@@ -530,7 +530,7 @@ python scripts/run_gate_f_verification.py
 
 ---
 
-**Plan Author:** Gate F Fix Planning Agent  
-**Workflow:** wf_90b66adc57ab6d48  
-**Timestamp:** 2025-01-28  
+**Plan Author:** Gate F Fix Planning Agent
+**Workflow:** wf_90b66adc57ab6d48
+**Timestamp:** 2025-01-28
 **Status:** Ready for Implementation

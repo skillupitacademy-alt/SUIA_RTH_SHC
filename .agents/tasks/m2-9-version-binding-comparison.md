@@ -1,6 +1,6 @@
 # M2.9 Phase 3C: Target/Version Binding Comparison
 
-**Investigation Date:** 2025-01-16  
+**Investigation Date:** 2025-01-16
 **Branches Compared:**
 - **Local:** `backup/local-m2-9-remediation`
 - **GitHub:** `backup/github-m2-9`
@@ -40,8 +40,8 @@ class WorkflowTarget(BaseModel):
     source_snapshot_id: str
 ```
 
-**Status:** ✅ Models are identical  
-**Risk:** LOW  
+**Status:** ✅ Models are identical
+**Risk:** LOW
 **Action:** Keep either (no conflict)
 
 ---
@@ -60,8 +60,8 @@ class CandidateBinding(BaseModel):
     contract_hash: str = ""
 ```
 
-**Status:** ✅ Models are identical  
-**Risk:** LOW  
+**Status:** ✅ Models are identical
+**Risk:** LOW
 **Action:** Keep either (no conflict)
 
 **Note:** Both branches have the foundation models. The defect is in *usage*, not *definition*.
@@ -113,8 +113,8 @@ manifest = PlacementManifest(
 )
 ```
 
-**Status:** ❌ GitHub has architectural defect  
-**Risk:** **HIGH** - This is the primary M2.9 defect  
+**Status:** ❌ GitHub has architectural defect
+**Risk:** **HIGH** - This is the primary M2.9 defect
 **Action:** **KEEP LOCAL**
 
 **Impact:** When placement agent runs in GitHub branch, it produces `PlacementManifest` with `blockVersion="1.0.0"` regardless of user's requested target (I7, C2, D3, etc.).
@@ -180,8 +180,8 @@ manifest = PlacementManifest(
 )
 ```
 
-**Status:** ❌ GitHub has architectural defect  
-**Risk:** **HIGH** - Direct API endpoint defect  
+**Status:** ❌ GitHub has architectural defect
+**Risk:** **HIGH** - Direct API endpoint defect
 **Action:** **KEEP LOCAL**
 
 **Impact:** When External AI calls `/candidates/{id}/generate_manifest`, GitHub returns hardcoded `"1.0.0"` instead of user-requested version from workflow binding.
@@ -198,8 +198,8 @@ Both branches have identical implementations:
 - `verify_auth()` and `verify_workflow_ownership()` dependency injection
 - Contract generation endpoints
 
-**Status:** ✅ Identical  
-**Risk:** LOW  
+**Status:** ✅ Identical
+**Risk:** LOW
 **Action:** Keep either (no conflict)
 
 **Note:** Contract routes populate `CandidateBinding.contract_hash`, not `blockVersion`. Version binding happens in workflow orchestration and candidate intake.
@@ -212,8 +212,8 @@ Both branches have identical test patterns:
 - `test_certification_gates.py` uses `blockVersion="I1"`, `blockVersion="C1"` (UBRC format) ✅
 - `test_placement.py` uses `blockVersion="1.0.0"` as test fixtures (acceptable for structure validation)
 
-**Status:** ✅ Equivalent  
-**Risk:** LOW  
+**Status:** ✅ Equivalent
+**Risk:** LOW
 **Note:** Test fixtures with "1.0.0" are acceptable. Integration tests validating dynamic extraction would be future enhancement.
 
 ---
@@ -233,7 +233,7 @@ Both branches have identical test patterns:
 | Candidate routes extract version dynamically | ✅ | ❌ |
 | No hardcoded "1.0.0" in production code | ✅ | ❌ |
 
-**Local satisfies M2.9:** ✅ YES  
+**Local satisfies M2.9:** ✅ YES
 **GitHub satisfies M2.9:** ❌ NO
 
 ---
@@ -340,6 +340,6 @@ External AI receives manifest with incorrect version
 
 ---
 
-**Investigation Complete**  
-*Artifact: `.agents/tasks/m2-9-version-binding-comparison.json`*  
+**Investigation Complete**
+*Artifact: `.agents/tasks/m2-9-version-binding-comparison.json`*
 *Report: `.agents/tasks/m2-9-version-binding-comparison.md`*

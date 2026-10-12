@@ -1,7 +1,7 @@
 # Wave 2: Candidate Placement Intelligence — Implementation Report
 
-**Completed:** 2025-01-29  
-**Branch:** `m2-project-ai-foundation`  
+**Completed:** 2025-01-29
+**Branch:** `m2-project-ai-foundation`
 **Commit:** `aa191754`
 
 ---
@@ -352,27 +352,27 @@ Runs TypeScript discovery scan to update snapshot with new blocks.
 ## Architectural Invariants Preserved
 
 ### 1. TypeScript-Python Boundary
-✅ Python reads TS-generated snapshot, never scans repository directly  
-✅ All repository facts come from authoritative TS discovery system  
+✅ Python reads TS-generated snapshot, never scans repository directly
+✅ All repository facts come from authoritative TS discovery system
 ✅ Comparator uses `snapshot['blocks']['verified']` for canonical blocks
 
 ### 2. Evidence Integrity
-✅ Evidence IDs sourced from TS discovery snapshot only  
-✅ No synthetic evidence IDs generated (removed `candidate-{id}-classification`)  
-✅ Returns BLOCKED when no verified blocks exist  
+✅ Evidence IDs sourced from TS discovery snapshot only
+✅ No synthetic evidence IDs generated (removed `candidate-{id}-classification`)
+✅ Returns BLOCKED when no verified blocks exist
 ✅ Never converts uncertainty into PASS
 
 ### 3. Safety Invariants
-✅ No arbitrary shell execution (only approved git commands)  
-✅ No self-approval (403 Forbidden)  
-✅ Manifest hash verification (409 Conflict)  
-✅ Approval required before execution  
+✅ No arbitrary shell execution (only approved git commands)
+✅ No self-approval (403 Forbidden)
+✅ Manifest hash verification (409 Conflict)
+✅ Approval required before execution
 ✅ Specific file staging (never `git add .`)
 
 ### 4. Canonical Artifact Policy
-✅ Extended existing `candidate.py` (not recreated)  
-✅ Extended existing `governance.py` (not recreated)  
-✅ Created new `placement/` module only after confirming no existing placement logic  
+✅ Extended existing `candidate.py` (not recreated)
+✅ Extended existing `governance.py` (not recreated)
+✅ Created new `placement/` module only after confirming no existing placement logic
 ✅ Documented why new artifacts were necessary
 
 ---
@@ -405,7 +405,7 @@ best_match, similarity_score, differences, evidence_ids = comparator.compare_to_
 
 ### Similarity Computation
 
-**Before:** Always 0.6  
+**Before:** Always 0.6
 **After:** Computed from:
 - Data attributes: +0.35 max (UBRC compliance)
 - File structure: +0.25 max (TypeScript/styles)
@@ -415,7 +415,7 @@ best_match, similarity_score, differences, evidence_ids = comparator.compare_to_
 
 ### Placement Decision
 
-**Before:** Simple thresholds on hardcoded 0.6  
+**Before:** Simple thresholds on hardcoded 0.6
 **After:** Evidence-backed thresholds on computed similarity:
 - ≥ 0.85: UPDATE existing
 - 0.6-0.84: EXTEND family
@@ -437,20 +437,20 @@ best_match, similarity_score, differences, evidence_ids = comparator.compare_to_
 
 ## Canonical Artifact Compliance
 
-✅ Extended existing `candidate.py` (not recreated)  
-✅ Extended existing `governance.py` (not recreated)  
-✅ Created new `placement/` module only after confirming no existing placement logic  
-✅ Documented why new artifacts were necessary (no existing comparator/executor)  
+✅ Extended existing `candidate.py` (not recreated)
+✅ Extended existing `governance.py` (not recreated)
+✅ Created new `placement/` module only after confirming no existing placement logic
+✅ Documented why new artifacts were necessary (no existing comparator/executor)
 ✅ Followed canonical artifact policy at `.agents/policies/canonical-artifact-policy.md`
 
 ---
 
 ## Commit Reference
 
-**Commit:** `aa191754`  
-**Message:** `feat: implement Wave 2 candidate placement intelligence with evidence-backed comparison`  
-**Files Changed:** 6  
-**Lines Added:** +1,551  
+**Commit:** `aa191754`
+**Message:** `feat: implement Wave 2 candidate placement intelligence with evidence-backed comparison`
+**Files Changed:** 6
+**Lines Added:** +1,551
 **Lines Removed:** -67
 
 ---
@@ -464,16 +464,16 @@ def test_compare_uses_snapshot_not_hardcoded(mock_snapshot_with_blocks, sample_c
     """Test that comparison uses real snapshot data, not hardcoded values."""
     comparator = CanonicalComparator(mock_snapshot_with_blocks)
     features = comparator.extract_features(sample_candidate_files)
-    
+
     best_match, score, differences, evidence_ids = comparator.compare_to_canonical(
         features,
         BlockFamily.INTRODUCTION,
         sample_candidate_files
     )
-    
+
     # Score should NOT be hardcoded 0.6
     assert score != 0.6  # ✅ PASS
-    
+
     # Best match should be from snapshot
     assert best_match in ["I1", "I1-introduction"]  # ✅ PASS
 ```
@@ -485,17 +485,17 @@ def test_compare_returns_real_evidence_ids(mock_snapshot_with_blocks, sample_can
     """Test that comparison returns real evidence IDs, not synthetic ones."""
     comparator = CanonicalComparator(mock_snapshot_with_blocks)
     features = comparator.extract_features(sample_candidate_files)
-    
+
     best_match, score, differences, evidence_ids = comparator.compare_to_canonical(
         features,
         BlockFamily.INTRODUCTION,
         sample_candidate_files
     )
-    
+
     # Must return real evidence IDs from snapshot
     assert len(evidence_ids) > 0
     assert "ev-intro-block-001" in evidence_ids  # ✅ PASS
-    
+
     # Must NOT contain synthetic IDs
     assert not any("candidate-" in eid for eid in evidence_ids)  # ✅ PASS
 ```
@@ -510,16 +510,16 @@ def test_self_approval_prevented():
         "status": ApprovalStatus.PENDING,
         "manifestHash": "abc123"
     }
-    
+
     request = ApprovalDecisionRequest(
         decidedBy="alice@example.com",  # Same as submitter!
         manifestHash="abc123"
     )
-    
+
     # Should raise 403 Forbidden
     with pytest.raises(HTTPException) as exc_info:
         asyncio.run(approve_manifest(approval_id, request))
-    
+
     assert exc_info.value.status_code == 403  # ✅ PASS
     assert "SELF_APPROVAL_REJECTED" in str(exc_info.value.detail)  # ✅ PASS
 ```

@@ -1,8 +1,8 @@
 # Commit History — M2 Project AI Canonical Wiring
 
-**Baseline SHA:** 59f15424  
-**Head SHA (at Gate G):** 86f1d31b  
-**Branch:** m2-project-ai-canonical-wiring  
+**Baseline SHA:** 59f15424
+**Head SHA (at Gate G):** 86f1d31b
+**Branch:** m2-project-ai-canonical-wiring
 **Generated:** 2025-01-03
 
 ## All Commits Since Baseline

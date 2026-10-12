@@ -1,8 +1,8 @@
 # Wave 1D Governance Identity Spoofing Fix - Implementation Report
 
-**Date**: 2026-01-10  
-**Branch**: m2-project-ai-canonical-wiring  
-**Commit**: 54cf7b32  
+**Date**: 2026-01-10
+**Branch**: m2-project-ai-canonical-wiring
+**Commit**: 54cf7b32
 **Status**: ✅ COMPLETE
 
 ## Executive Summary
@@ -113,10 +113,10 @@ $ grep -r "request\.submittedBy\|request\.decidedBy\|request\.rejectedBy" app/ap
 
 ### Security Guarantees
 
-✅ **Identity Forgery Prevention**: All identities extracted from cryptographically verified JWT tokens  
-✅ **Self-Approval Prevention**: Self-approval check compares two JWT-derived identities (submitter vs approver)  
-✅ **Audit Trail Integrity**: All audit entries record JWT-derived identities  
-✅ **No Bypass Paths**: Client cannot control identity via request body (fields removed from schemas)  
+✅ **Identity Forgery Prevention**: All identities extracted from cryptographically verified JWT tokens
+✅ **Self-Approval Prevention**: Self-approval check compares two JWT-derived identities (submitter vs approver)
+✅ **Audit Trail Integrity**: All audit entries record JWT-derived identities
+✅ **No Bypass Paths**: Client cannot control identity via request body (fields removed from schemas)
 
 ## Attack Surface Reduction
 
@@ -164,6 +164,6 @@ Next action: Begin P1 RBAC enforcement work (separate task).
 
 ---
 
-**Implementation by**: Kiro AI Agent  
-**Verification**: Automated test suite + manual code audit  
+**Implementation by**: Kiro AI Agent
+**Verification**: Automated test suite + manual code audit
 **Evidence**: Commit 54cf7b32, 4 passing security tests, 0 client-supplied identity references

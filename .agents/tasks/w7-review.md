@@ -108,7 +108,7 @@ async def test_endpoint_blocks_approval_when_evidence_fails(db_session, workflow
         ...
     }
     workflow = create_workflow_awaiting_gate_2(gate_results)
-    
+
     # Attempt to approve despite failed evidence
     with pytest.raises(HTTPException) as exc_info:
         await approve_final_certification(
@@ -116,7 +116,7 @@ async def test_endpoint_blocks_approval_when_evidence_fails(db_session, workflow
             request=FinalApprovalRequest(approved=True, ...),
             ...
         )
-    
+
     assert exc_info.value.status_code == 400
     assert "evidence verification failed" in exc_info.value.detail.lower()
 ```

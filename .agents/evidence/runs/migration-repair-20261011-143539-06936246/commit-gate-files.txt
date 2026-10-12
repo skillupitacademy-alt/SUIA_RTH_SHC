@@ -1,0 +1,13 @@
+To commit the Stage 5 gate evidence files, run these commands in PowerShell:
+
+cd "e:\onlinewebsites\quiz-platform"
+
+git add ".agents\evidence\runs\migration-repair-20261011-143539-06936246\stage5-final-w5a-static-security.json"
+git add ".agents\evidence\runs\migration-repair-20261011-143539-06936246\stage5-final-w5a-static-security-doc.md"
+git add ".agents\evidence\runs\migration-repair-20261011-143539-06936246\stage5-final-w5b-test.json"
+git add ".agents\evidence\runs\migration-repair-20261011-143539-06936246\stage5-final-w5b-test-doc.md"
+git add ".agents\evidence\runs\migration-repair-20261011-143539-06936246\stage5-final-w5c-artifact-consistency.json"
+git add ".agents\evidence\runs\migration-repair-20261011-143539-06936246\stage5-final-w5c-artifact-consistency-doc.md"
+git add ".agents\evidence\runs\migration-repair-20261011-143539-06936246\stage5-final-gate.json"
+
+git commit -m "Stage 5 final triple-review gate results" -m "" -m "All three reviews (static security, test coverage, artifact consistency) approved with no findings." -m "" -m "Run-ID: migration-repair-20261011-143539-06936246"

@@ -1,4 +1,4 @@
-﻿
+
 > @quiz/ui@0.1.0 test E:\onlinewebsites\quiz-platform\packages\ui
 > vitest --config vitest.config.ts run
 
@@ -18,18 +18,18 @@
 [31m       [31m├ù[31m CRITICAL BUG TEST: handles >600s pending time without losing remainder[39m[33m 1008[2mms[22m[39m
 [31m       [31m├ù[31m respects 600s cap even with delayed heartbeat[39m[33m 1008[2mms[22m[39m
 [31m       [31m├ù[31m continues timing after failed active-time request[39m[33m 30016[2mms[22m[39m
-node.exe : 
+node.exe :
 At C:\Users\RealTutorialHub\AppData\Roaming\npm\pnpm.ps1:24 char:5
 +     & "node$exe"  "$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
 +     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError
- 
-[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m[1m[41m Failed Tests 11 
+
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m[1m[41m Failed Tests 11
 [49m[22m[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m
 
-[41m[1m FAIL [22m[49m src/tutorial/__tests__/BlockDOMIdentity.test.tsx[2m > 
-[22mPhase 2 - DOM Block Identity[2m > [22mUnversioned Blocks[2m > 
+[41m[1m FAIL [22m[49m src/tutorial/__tests__/BlockDOMIdentity.test.tsx[2m >
+[22mPhase 2 - DOM Block Identity[2m > [22mUnversioned Blocks[2m >
 [22mSummaryBlock: exposes data-block-id and data-block-type (no version)
 [31m[1mAssertionError[22m: expected 'S1' to be null[39m
 
@@ -40,11 +40,11 @@ null
 "S1"
 
 [36m [2mΓ¥»[22m src/tutorial/__tests__/BlockDOMIdentity.test.tsx:[2m170:59[22m[39m
-    [90m168|[39m       
+    [90m168|[39m
 [34mexpect[39m(element)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
     [90m169|[39m       [34mexpect[39m(element[33m?.[39m[34mgetAttribute[39m([32
 m'data-block-type'[39m))[33m.[39m[34mtoBe[39m([32m'summary'[39m)[33m;[39m
-    [90m170|[39m       
+    [90m170|[39m
 expect(element?.getAttribute('data-block-version')).toBeNull(); ΓÇª
     [90m   |[39m                                                           [31m^[39m
     [90m171|[39m     })[33m;[39m
@@ -53,19 +53,19 @@ expect(element?.getAttribute('data-block-version')).toBeNull(); ΓÇª
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mVisit Emission[2m > 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mVisit Emission[2m >
 [22memits visit exactly once per block identity
 [31m[1mError[22m: Test timed out in 30000ms.
-If this is a long-running test, pass a timeout value as the last argument or configure 
+If this is a long-running test, pass a timeout value as the last argument or configure
 it globally with "testTimeout".[39m
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m71:5[22m[39m
     [90m 69|[39m
-    [90m 70|[39m   [34mdescribe[39m([32m'Visit Emission'[39m[33m,[39m () 
+    [90m 70|[39m   [34mdescribe[39m([32m'Visit Emission'[39m[33m,[39m ()
 [33m=>[39m {
-    [90m 71|[39m     [34mit[39m([32m'emits visit exactly once per block 
+    [90m 71|[39m     [34mit[39m([32m'emits visit exactly once per block
 identity'[39m[33m,[39m [35masync[39m () [33m=>[39m {
     [90m   |[39m     [31m^[39m
     [90m 72|[39m       vi[33m.[39m[34museFakeTimers[39m()[33m;[39m
@@ -74,9 +74,9 @@ identity'[39m[33m,[39m [35masync[39m () [33m=>[39m {
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mHeartbeat Active 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mHeartbeat Active
 Time[2m > [22msends 30 seconds on first heartbeat
 [31m[1mAssertionError[22m: expected undefined to be truthy[39m
 
@@ -88,11 +88,11 @@ undefined
 
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m164:26[22m[39m
-    [90m162|[39m         const calls = (global.fetch as ReturnType<typeof 
+    [90m162|[39m         const calls = (global.fetch as ReturnType<typeof
 vi.fn>).mock.ΓÇª
-    [90m163|[39m         const timeCall = calls.find(c => c[0] === 
+    [90m163|[39m         const timeCall = calls.find(c => c[0] ===
 '/api/tutorial/ils/bΓÇª
-    [90m164|[39m         
+    [90m164|[39m
 [34mexpect[39m(timeCall)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
     [90m   |[39m                          [31m^[39m
     [90m165|[39m         [35mconst[39m body [33m=[39m [33mJSON[39m[33m.[39m[3
@@ -103,9 +103,9 @@ mtoBe[39m([34m30[39m)[33m;[39m
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[3/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mHeartbeat Active 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mHeartbeat Active
 Time[2m > [22msends another 30 seconds on second heartbeat (NOT 60 cumulative)
 [31m[1mAssertionError[22m: expected undefined to be truthy[39m
 
@@ -117,11 +117,11 @@ undefined
 
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m203:31[22m[39m
-    [90m201|[39m         const calls = (global.fetch as ReturnType<typeof 
+    [90m201|[39m         const calls = (global.fetch as ReturnType<typeof
 vi.fn>).mock.ΓÇª
-    [90m202|[39m         const firstTimeCall = calls.find(c => c[0] === 
+    [90m202|[39m         const firstTimeCall = calls.find(c => c[0] ===
 '/api/tutorial/ΓÇª
-    [90m203|[39m         
+    [90m203|[39m
 [34mexpect[39m(firstTimeCall)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
     [90m   |[39m                               [31m^[39m
     [90m204|[39m         [35mconst[39m body [33m=[39m [33mJSON[39m[33m.[39m[3
@@ -132,18 +132,18 @@ mtoBe[39m([34m30[39m)[33m;[39m
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[4/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mHeartbeat Active 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mHeartbeat Active
 Time[2m > [22mpreserves fractional milliseconds between heartbeats
 [31m[1mTypeError[22m: Cannot read properties of undefined (reading '1')[39m
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m257:33[22m[39m
-    [90m255|[39m         const calls = (global.fetch as ReturnType<typeof 
+    [90m255|[39m         const calls = (global.fetch as ReturnType<typeof
 vi.fn>).mock.ΓÇª
-    [90m256|[39m         const call = calls.find(c => c[0] === 
+    [90m256|[39m         const call = calls.find(c => c[0] ===
 '/api/tutorial/ils/blockΓÇª
-    [90m257|[39m         [35mconst[39m body [33m=[39m 
+    [90m257|[39m         [35mconst[39m body [33m=[39m
 [33mJSON[39m[33m.[39m[34mparse[39m(call[[34m1[39m][33m.[39mbody)[33m;[39m
     [90m   |[39m                                 [31m^[39m
     [90m258|[39m         [34mexpect[39m(body[33m.[39mactiveTimeSec)[33m.[39m[34
@@ -153,9 +153,9 @@ mtoBe[39m([34m30[39m)[33m;[39m [90m// Floor to 30s[39m
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[5/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mBlock Transition[2m 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mBlock Transition[2m
 > [22mflushes A before starting B timing
 [31m[1mAssertionError[22m: expected undefined to be truthy[39m
 
@@ -169,7 +169,7 @@ undefined
 .tsx:[2m341:26[22m[39m
     [90m339|[39m         )[33m;[39m
     [90m340|[39m
-    [90m341|[39m         
+    [90m341|[39m
 [34mexpect[39m(timeCall)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
     [90m   |[39m                          [31m^[39m
     [90m342|[39m         [35mconst[39m timeBody [33m=[39m [33mJSON[39m[33m.[39
@@ -180,9 +180,9 @@ oBe[39m([32m'block-a'[39m)[33m;[39m
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[6/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mVisibility API[2m > 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mVisibility API[2m >
 [22mexcludes hidden time from accumulation
 [31m[1mAssertionError[22m: expected undefined to be truthy[39m
 
@@ -194,23 +194,23 @@ undefined
 
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m406:26[22m[39m
-    [90m404|[39m         const timeCall = calls.find(c => c[0] === 
+    [90m404|[39m         const timeCall = calls.find(c => c[0] ===
 '/api/tutorial/ils/bΓÇª
     [90m405|[39m
-    [90m406|[39m         
+    [90m406|[39m
 [34mexpect[39m(timeCall)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
     [90m   |[39m                          [31m^[39m
     [90m407|[39m         [35mconst[39m body [33m=[39m [33mJSON[39m[33m.[39m[3
 4mparse[39m(timeCall[[34m1[39m][33m.[39mbody)[33m;[39m
-    [90m408|[39m         // Should be 30 seconds (10 + 20), NOT 50 (hidden time 
+    [90m408|[39m         // Should be 30 seconds (10 + 20), NOT 50 (hidden time
 excludeΓÇª
 
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[7/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mUnmount[2m > 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mUnmount[2m >
 [22mflushes pending time on unmount
 [31m[1mAssertionError[22m: expected undefined to be truthy[39m
 
@@ -229,10 +229,10 @@ undefined
 
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m456:26[22m[39m
-    [90m454|[39m         const timeCall = calls.find(c => c[0] === 
+    [90m454|[39m         const timeCall = calls.find(c => c[0] ===
 '/api/tutorial/ils/bΓÇª
     [90m455|[39m
-    [90m456|[39m         
+    [90m456|[39m
 [34mexpect[39m(timeCall)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
     [90m   |[39m                          [31m^[39m
     [90m457|[39m         [35mconst[39m body [33m=[39m [33mJSON[39m[33m.[39m[3
@@ -243,9 +243,9 @@ mtoBe[39m([34m10[39m)[33m;[39m
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[8/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22m600-Second Cap[2m > 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22m600-Second Cap[2m >
 [22mCRITICAL BUG TEST: handles >600s pending time without losing remainder
 [31m[1mAssertionError[22m: expected undefined to be truthy[39m
 
@@ -257,10 +257,10 @@ undefined
 
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m504:27[22m[39m
-    [90m502|[39m         const firstCall = calls.find(c => c[0] === 
+    [90m502|[39m         const firstCall = calls.find(c => c[0] ===
 '/api/tutorial/ils/ΓÇª
     [90m503|[39m
-    [90m504|[39m         
+    [90m504|[39m
 [34mexpect[39m(firstCall)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
     [90m   |[39m                           [31m^[39m
     [90m505|[39m         [35mconst[39m body [33m=[39m [33mJSON[39m[33m.[39m[3
@@ -270,9 +270,9 @@ undefined
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[9/11]ΓÄ»
 [22m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22m600-Second Cap[2m > 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22m600-Second Cap[2m >
 [22mrespects 600s cap even with delayed heartbeat
 [31m[1mAssertionError[22m: expected undefined to be truthy[39m
 
@@ -284,36 +284,36 @@ undefined
 
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m572:22[22m[39m
-    [90m570|[39m         const call = calls.find(c => c[0] === 
+    [90m570|[39m         const call = calls.find(c => c[0] ===
 '/api/tutorial/ils/blockΓÇª
     [90m571|[39m
-    [90m572|[39m         
+    [90m572|[39m
 [34mexpect[39m(call)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
     [90m   |[39m                      [31m^[39m
-    [90m573|[39m         [35mconst[39m body [33m=[39m 
+    [90m573|[39m         [35mconst[39m body [33m=[39m
 [33mJSON[39m[33m.[39m[34mparse[39m(call[[34m1[39m][33m.[39mbody)[33m;[39m
     [90m574|[39m         [90m// Must not exceed 600[39m
 
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[10/11]ΓÄ»[2
 2m[39m
 
-[41m[1m FAIL [22m[49m 
-src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m > 
-[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mError Recovery[2m > 
+[41m[1m FAIL [22m[49m
+src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test.tsx[2m >
+[22mBlockTelemetryProvider - Behavioral State Machine[2m > [22mError Recovery[2m >
 [22mcontinues timing after failed active-time request
 [31m[1mError[22m: Test timed out in 30000ms.
-If this is a long-running test, pass a timeout value as the last argument or configure 
+If this is a long-running test, pass a timeout value as the last argument or configure
 it globally with "testTimeout".[39m
 [36m [2mΓ¥»[22m src/tutorial/runtime/__tests__/BlockTelemetryProvider.behavioral.test
 .tsx:[2m665:5[22m[39m
     [90m663|[39m
-    [90m664|[39m   [34mdescribe[39m([32m'Error Recovery'[39m[33m,[39m () 
+    [90m664|[39m   [34mdescribe[39m([32m'Error Recovery'[39m[33m,[39m ()
 [33m=>[39m {
-    [90m665|[39m     it('continues timing after failed active-time request', async () 
+    [90m665|[39m     it('continues timing after failed active-time request', async ()
 =ΓÇª
     [90m   |[39m     [31m^[39m
     [90m666|[39m       vi[33m.[39m[34museFakeTimers[39m()[33m;[39m
-    [90m667|[39m       
+    [90m667|[39m
 mockPerformanceNow[33m.[39m[34mmockReturnValue[39m([34m0[39m)[33m;[39m
 
 [31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[11/11]ΓÄ»[2

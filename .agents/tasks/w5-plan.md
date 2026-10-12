@@ -1,7 +1,7 @@
 # Wave 5 Implementation Plan: Placement Engine
 
-**Branch**: m2-project-ai-canonical-wiring  
-**Wave**: W5 (Placement Engine)  
+**Branch**: m2-project-ai-canonical-wiring
+**Wave**: W5 (Placement Engine)
 **Prerequisites**: W4 (Canonical Workflow Orchestration) - COMPLETE (commit 56f1030b)
 
 ## Context
@@ -61,9 +61,9 @@ Based on the original task description and gap analysis:
 
 ## Build System and Testing
 
-**Project**: FastAPI/Python 3.11+ service  
-**Dependencies**: pyproject.toml with pytest, pytest-asyncio, httpx  
-**Test Command**: `pytest tests/ -v --tb=short`  
+**Project**: FastAPI/Python 3.11+ service
+**Dependencies**: pyproject.toml with pytest, pytest-asyncio, httpx
+**Test Command**: `pytest tests/ -v --tb=short`
 **Baseline**: W4 established 528 passed, 58 pre-existing failures (certification_gates, integration)
 
 **Verification Strategy**:
@@ -100,7 +100,7 @@ class PlacementScorer:
         manifest: PlacementManifest,
         structural_features: Optional[StructuralFeatures] = None
     ) -> PlacementScore
-    
+
     def score_all_matches(
         self,
         candidate: CandidatePackage,
@@ -146,14 +146,14 @@ class MatchResult:
 class CandidateManifestMatcher:
     def __init__(self, scorer: PlacementScorer):
         self.scorer = scorer
-    
+
     async def find_matches(
         self,
         candidate: CandidatePackage,
         available_manifests: List[PlacementManifest],
         workflow: ProjectLLMWorkflow
     ) -> MatchResult
-    
+
     async def detect_conflicts(
         self,
         candidates: List[CandidatePackage],
@@ -212,21 +212,21 @@ class PlacementEngine:
         workflow_repo   # WorkflowRepository
     ):
         ...
-    
+
     async def create_placement(
         self,
         workflow_id: str,
         candidate_id: str,
         session: AsyncSession
     ) -> PlacementEngineResult
-    
+
     async def handle_placement_conflict(
         self,
         workflow_id: str,
         conflicting_candidates: List[str],
         session: AsyncSession
     ) -> Dict[str, PlacementEngineResult]
-    
+
     async def override_placement(
         self,
         workflow_id: str,
@@ -298,7 +298,7 @@ Gate: None (automated)
 **Files**:
 - Modify: `services/project-ai/app/orchestration/canonical_workflow.py`
 
-**Verify**: 
+**Verify**:
 - `pytest tests/test_canonical_workflow.py -v` - Existing tests still pass
 - `pytest tests/orchestration/ -v` - State transition tests include PLACEMENT
 
@@ -321,7 +321,7 @@ async def create_placement(
 ) -> PlacementEngineResponse:
     """
     Create placement decision for candidate in workflow.
-    
+
     Matches candidate to manifests, scores matches, creates placement record.
     """
     ...
@@ -347,7 +347,7 @@ async def override_placement(
 ) -> PlacementEngineResponse:
     """
     Manually override placement decision.
-    
+
     Allows human to specify exact manifest for candidate, bypassing scoring.
     """
     ...
@@ -378,7 +378,7 @@ async def get_placement_engine(
     manifest_repo = await get_manifest_repository(session)
     candidate_repo = await get_candidate_repository(session)
     workflow_repo = await get_workflow_repository(session)
-    
+
     return PlacementEngine(
         matcher=matcher,
         scorer=scorer,
@@ -393,7 +393,7 @@ async def get_placement_engine(
 - Create: `services/project-ai/app/api/schemas/placement.py`
 - Test: `services/project-ai/tests/api/test_placement_routes.py`
 
-**Verify**: 
+**Verify**:
 - `pytest tests/api/test_placement_routes.py -v` - All API tests pass
 - Manual test: `curl -X POST http://localhost:8000/workflows/{wf_id}/placement -d '{...}'`
 

@@ -19,7 +19,7 @@
 
 ## 2. R3 Result — Repository Boundary Complete
 
-**Agent:** B17 (P1-CONTRACT)  
+**Agent:** B17 (P1-CONTRACT)
 **Commit:** `185adebcd28676032739111643b9d9bd9dd0f53c`
 
 ### What Changed in contract.py
@@ -107,7 +107,7 @@ R3 removed this guessing and replaced it with consistent extraction from `workfl
 
 ## 3. R4 Result — Frontend Integration Complete
 
-**Agent:** B18 (P1-FRONTEND)  
+**Agent:** B18 (P1-FRONTEND)
 **Commit:** `00154f50f4a0420b808ad0fc7616c4d9eeaa10d0`
 
 ### API Client Created
@@ -389,8 +389,8 @@ Wave 2 has successfully completed the M2.9 remediation plan execution. R3 elimin
 
 ---
 
-*Summary generated: 2025-01-08*  
-*Branch: m2-project-ai-canonical-wiring*  
-*Workflow: M2.9 18-Agent Remediation Plan*  
+*Summary generated: 2025-01-08*
+*Branch: m2-project-ai-canonical-wiring*
+*Workflow: M2.9 18-Agent Remediation Plan*
 *Final Commits: 185adebc (R3), 00154f50 (R4)*
 

@@ -1,8 +1,8 @@
 # W7 Implementation Plan: Final Gate (Human Gate 2/3) - Production Ready Certification
 
-**Wave**: W7 (Final Gate)  
-**Status**: Planning Complete  
-**Branch**: m2-project-ai-canonical-wiring  
+**Wave**: W7 (Final Gate)
+**Status**: Planning Complete
+**Branch**: m2-project-ai-canonical-wiring
 **Planning Date**: 2026-01-30
 
 ---
@@ -23,8 +23,8 @@ W7 implements the **final human approval gate** (Human Gate 2/Gate 3) that certi
 
 ### W6 Completion Evidence
 
-**Location**: `.agents/tasks/m2-9-w6-evidence.json`  
-**Status**: ✅ W6-R3-COMPLETE  
+**Location**: `.agents/tasks/m2-9-w6-evidence.json`
+**Status**: ✅ W6-R3-COMPLETE
 **Final HEAD**: `c062d829b0d981aa8107df88b081dcbe570cfc51`
 
 ### W6 Gate Results (from evidence file)
@@ -102,24 +102,24 @@ async def approve_final_certification(
 ) -> FinalApprovalResponse:
     """
     Approve or reject final certification (Human Gate 2/Gate 3).
-    
+
     GATE ENFORCEMENT:
     - Workflow must be in AWAITING_GATE_2 state
     - Approved: transition to CERTIFIED
     - Rejected: transition to REJECTED with reason
-    
+
     EVIDENCE VERIFICATION:
     - All gates (UBRC, Brand, Theme, Runtime, Browser) must be PASS
     - Evidence bundle must be complete
     - No missing evidence IDs
-    
+
     Args:
         workflow_id: Workflow to approve/reject
         request: Approval decision with reason
-        
+
     Returns:
         Approval result with state transition
-        
+
     Raises:
         HTTPException: 400 if invalid state, 404 if workflow not found
     """
@@ -183,7 +183,7 @@ python -m pytest tests/unit/test_final_gate.py -v
 python -m pytest tests/agents/test_final_gate.py -v
 ```
 
-**Evidence**: 
+**Evidence**:
 - Unit tests: `tests/unit/test_final_gate.py` (15 tests covering verdict logic)
 - Agent tests: `tests/agents/test_final_gate.py` (12 tests covering metadata workflow)
 
@@ -203,12 +203,12 @@ python -m pytest tests/agents/test_final_gate.py -v
 async def test_complete_workflow_all_gates_pass(db_session, workflow_repo, approval_repo):
     """
     Complete workflow: REQUESTED → DISCOVERY → ... → CERTIFICATION_READY → AWAITING_GATE_2 → CERTIFIED.
-    
+
     Evidence:
     - All gates (UBRC, Brand, Theme, Runtime, Browser) return PASS
     - FinalGateController.compute_verdict() returns CERTIFICATION_READY
     - Final approval endpoint transitions to CERTIFIED
-    
+
     Verifies:
     - State transitions follow canonical workflow
     - Evidence binding is valid
@@ -222,11 +222,11 @@ async def test_complete_workflow_all_gates_pass(db_session, workflow_repo, appro
 async def test_missing_evidence_blocks_certification(db_session, workflow_repo):
     """
     Missing required evidence (e.g., runtime_verification missing) → BLOCKED.
-    
+
     Evidence:
     - Only 3/4 required evidence keys present
     - FinalGateController identifies missing keys
-    
+
     Verifies:
     - compute_verdict() returns BLOCKED with missing_evidence list
     - Cannot transition to AWAITING_GATE_2 from VERIFYING
@@ -239,13 +239,13 @@ async def test_missing_evidence_blocks_certification(db_session, workflow_repo):
 async def test_one_gate_fails_verdict_fail(db_session, workflow_repo):
     """
     One gate (e.g., UBRC) returns FAIL → FAIL verdict.
-    
+
     Evidence:
     - certification_gates: PASS
     - runtime_verification: FAIL
     - canonical_comparison: PASS
     - placement_approval: PASS
-    
+
     Verifies:
     - compute_verdict() returns FAIL with failed_gates list
     - Workflow transitions to REJECTED (not CERTIFICATION_READY)
@@ -258,12 +258,12 @@ async def test_one_gate_fails_verdict_fail(db_session, workflow_repo):
 async def test_human_rejection_at_final_gate(db_session, workflow_repo):
     """
     Workflow reaches AWAITING_GATE_2, human rejects → REJECTED.
-    
+
     Evidence:
     - All gates pass, verdict CERTIFICATION_READY
     - Transition to AWAITING_GATE_2
     - Human approval endpoint called with approved=False
-    
+
     Verifies:
     - Final approval endpoint accepts rejection
     - State transitions to REJECTED with reason
@@ -277,12 +277,12 @@ async def test_human_rejection_at_final_gate(db_session, workflow_repo):
 async def test_final_approval_endpoint_verification(client, db_session, workflow_repo):
     """
     Test final approval endpoint directly via HTTP client.
-    
+
     Evidence:
     - POST /workflows/{workflow_id}/approve-final
     - Request: {"approved": true, "approved_by": "haa-001", "reason": "All gates passed"}
     - Response: 200 with state transition details
-    
+
     Verifies:
     - Endpoint exists and is routable
     - Request validation (approved, approved_by, reason required)
@@ -297,11 +297,11 @@ async def test_final_approval_endpoint_verification(client, db_session, workflow
 async def test_cannot_approve_from_wrong_state(client, db_session, workflow_repo):
     """
     Attempting final approval from non-AWAITING_GATE_2 state → 400 error.
-    
+
     Evidence:
     - Workflow in VERIFYING state
     - POST /workflows/{workflow_id}/approve-final
-    
+
     Verifies:
     - Endpoint rejects with 400 "Invalid state for approval"
     - State machine validation enforced
@@ -315,11 +315,11 @@ async def test_cannot_approve_from_wrong_state(client, db_session, workflow_repo
 async def test_evidence_binding_validation(db_session, workflow_repo):
     """
     Evidence with mismatched commit SHA → evidence_binding_valid=False.
-    
+
     Evidence:
     - Gate evidence references commit abc123
     - Snapshot references commit def456 (mismatch)
-    
+
     Verifies:
     - FinalGateAgent.verify_evidence_binding() detects mismatch
     - FinalVerdict includes evidence_binding_valid=false
@@ -333,12 +333,12 @@ async def test_evidence_binding_validation(db_session, workflow_repo):
 async def test_canonical_backlog_append_never_overwrite(tmp_path, workflow_repo):
     """
     Final verdict appends to canonical backlog, preserves existing content.
-    
+
     Evidence:
     - Existing m1-m2-backlog.md with previous run records
     - FinalGateAgent.execute() generates new verdict
     - New verdict appended after separator
-    
+
     Verifies:
     - Existing content intact (byte-for-byte)
     - New verdict section added at end
@@ -649,7 +649,7 @@ git log --oneline origin/m2-project-ai-canonical-wiring -4
 ### Decision 1: Reuse Existing `final_gate.py`
 **Rationale**: `services/project-ai/app/agents/final_gate.py` already implements complete verdict logic with 27 tests passing. No need to rewrite.
 
-**Evidence**: 
+**Evidence**:
 - Unit tests: `tests/unit/test_final_gate.py` (15 tests)
 - Agent tests: `tests/agents/test_final_gate.py` (12 tests)
 - Architectural invariant already enforced: `compute_verdict()` never returns CERTIFIED
@@ -684,23 +684,23 @@ git log --oneline origin/m2-project-ai-canonical-wiring -4
 ## 10. Risk Assessment
 
 ### Risk 1: W6 Not Actually Complete
-**Likelihood**: Low  
-**Impact**: High (blocks W7)  
+**Likelihood**: Low
+**Impact**: High (blocks W7)
 **Mitigation**: W6 evidence file shows PASS for all gates. Classification report shows 0 production regressions. E1/E2 fixes verified.
 
 ### Risk 2: PostgreSQL Test Database Not Configured
-**Likelihood**: Medium  
-**Impact**: High (integration tests fail)  
+**Likelihood**: Medium
+**Impact**: High (integration tests fail)
 **Mitigation**: `conftest.py` skips tests with clear message if `TEST_DATABASE_URL_TUTORIAL` not set. Documentation includes setup instructions.
 
 ### Risk 3: State Machine Validation Edge Cases
-**Likelihood**: Low  
-**Impact**: Medium (wrong state allows approval)  
+**Likelihood**: Low
+**Impact**: Medium (wrong state allows approval)
 **Mitigation**: Integration test specifically covers "cannot approve from wrong state" scenario.
 
 ### Risk 4: Evidence Binding Fails in Production
-**Likelihood**: Low  
-**Impact**: Low (informational only)  
+**Likelihood**: Low
+**Impact**: Low (informational only)
 **Mitigation**: `evidence_binding_valid` flag is informational. Human approver makes final decision regardless.
 
 ---
@@ -832,8 +832,8 @@ All use PostgreSQL with transaction rollback for isolation.
 
 ---
 
-**Plan Status**: ✅ COMPLETE  
-**Ready for Implementation**: YES  
-**Estimated Implementation Time**: 4 hours  
+**Plan Status**: ✅ COMPLETE
+**Ready for Implementation**: YES
+**Estimated Implementation Time**: 4 hours
 **Blocking Issues**: None
 

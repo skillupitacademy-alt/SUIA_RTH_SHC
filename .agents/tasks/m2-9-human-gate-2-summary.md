@@ -146,6 +146,6 @@ Review artifacts available at:
 
 ---
 
-*Summary generated: 2025-01-08*  
-*Branch: m2-project-ai-canonical-wiring*  
+*Summary generated: 2025-01-08*
+*Branch: m2-project-ai-canonical-wiring*
 *Workflow: M2.9 18-Agent Remediation Plan*

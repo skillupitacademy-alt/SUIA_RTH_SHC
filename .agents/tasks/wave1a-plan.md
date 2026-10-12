@@ -72,7 +72,7 @@ Align Python JWT verification in Project AI service with SHC token issuance secr
       ADMIN_JWT_SECRET=your-secure-admin-jwt-secret-at-least-32-characters
       JWT_ALGORITHM=HS256
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
-      
+
       # Database Configuration
       DATABASE_URL_TUTORIAL=postgresql://user:pass@host/tutorial_prod?sslmode=require
       TEST_DATABASE_URL_TUTORIAL=postgresql+asyncpg://user:pass@host/tutorial_test?sslmode=require

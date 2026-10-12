@@ -1,7 +1,7 @@
 # API Contract Verification Report
 
-**Script**: verify-api-contract.py  
-**Timestamp**: 2026-10-09T15:42:56.518682  
+**Script**: verify-api-contract.py
+**Timestamp**: 2026-10-09T15:42:56.518682
 **Status**: FAIL
 
 ## Summary

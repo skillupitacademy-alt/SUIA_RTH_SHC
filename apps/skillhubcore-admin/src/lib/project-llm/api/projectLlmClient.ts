@@ -1,9 +1,9 @@
 /**
  * API client for Project LLM backend
- * 
+ *
  * All methods call the real FastAPI backend; no hardcoded data allowed.
  * Uses native fetch API (no additional dependencies).
- * 
+ *
  * Base URL defaults to '/api' and should be configured to proxy to
  * the FastAPI backend (typically http://localhost:8000).
  */
@@ -56,7 +56,7 @@ export class ProjectLlmClient {
   ): Promise<CandidateResponse> {
     const formData = new FormData();
     formData.append('workflowId', workflowId);
-    
+
     files.forEach((file) => {
       formData.append('files', file);
     });

@@ -19,12 +19,12 @@ import { useTutorialBlockEditor } from '../hooks/useTutorialBlockEditor'; // Pha
 export function TutorialPageContentBuilderClient() {
   // Local message state for error handling
   const [message, setMessage] = useState('');
-  
+
   // Stable error handler to prevent infinite useEffect loop in useTutorialComposerForm
   const handleError = useCallback((msg: string) => {
     setMessage(msg);
   }, []); // setMessage is stable from useState
-  
+
   // Phase 2B.15 Step 2: Hierarchy/form state managed by hook
   const {
     hierarchy,
@@ -45,13 +45,13 @@ export function TutorialPageContentBuilderClient() {
   } = useTutorialComposerForm({
     onError: handleError, // Stable reference prevents infinite loop
   });
-  
+
   // Phase 1: Navigation nodes for selected subtopic
   const { navigationNodes, isLoading: isLoadingNodes } = useTutorialNavigationNodes(
     form.subtopicId,
     form.brandId
   );
-  
+
   // Phase 1: Hydration hook manages document loading
   const {
     documentBlocks,
@@ -65,7 +65,7 @@ export function TutorialPageContentBuilderClient() {
     message: hydrationMessage,
     setMessage: setHydrationMessage,
   } = useTutorialHydration({ brandId: form.brandId });
-  
+
   const [previewMode, setPreviewMode] = useState<'document' | 'active-block'>('document');
 
   // Phase 2B.15 Step 3: Save/publish hook
@@ -141,7 +141,7 @@ export function TutorialPageContentBuilderClient() {
       <div className="mx-auto max-w-[1700px] space-y-6">
         {/* Top Header & Compact Horizontal Authoring Toolbar */}
         <header className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-6 shadow-xl border-t border-white/60 -translate-y-1 transition-all">
-          <TutorialComposerHeader 
+          <TutorialComposerHeader
             isLoadingDocument={isLoadingDocument}
             documentBlockCount={documentBlocks.length}
           />

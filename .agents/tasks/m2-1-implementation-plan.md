@@ -1,9 +1,9 @@
 # M2.1 V3 Evidence Lifecycle and Integrity Strengthening — Implementation Plan
 
-**Status:** Ready for implementation  
-**Branch:** m2-project-ai-foundation  
-**Base:** M1 commit 9b272567  
-**Test Command:** `pnpm --filter @quiz/project-llm-discovery test`  
+**Status:** Ready for implementation
+**Branch:** m2-project-ai-foundation
+**Base:** M1 commit 9b272567
+**Test Command:** `pnpm --filter @quiz/project-llm-discovery test`
 **Type Check Command:** `pnpm --filter @quiz/project-llm-discovery type-check`
 
 ---
@@ -173,7 +173,7 @@ const CRITICAL_KINDS: Set<Evidence['kind']> = new Set([
 
 /**
  * Validate evidence paths exist and content hashes match
- * 
+ *
  * - Missing critical evidence → error
  * - Missing historical evidence → warning
  * - Content hash mismatch → warning (file changed since scan)
@@ -255,7 +255,7 @@ import type { ValidationError, ValidationWarning } from './validator.js';
 
 /**
  * Validate evidence paths exist and content hashes match using lifecycle-based severity
- * 
+ *
  * M2.1 Lifecycle-based validation rules:
  * - Missing path + lifecycle === 'current' → ERROR (CURRENT_EVIDENCE_PATH_NOT_FOUND)
  * - Missing path + lifecycle !== 'current' → WARNING (HISTORICAL_EVIDENCE_PATH_NOT_FOUND)
@@ -426,7 +426,7 @@ export function normalizeEvidence(evidence: Evidence[]): Evidence[] {
   // Deduplicate by evidenceId
   const seen = new Set<string>();
   const deduplicated: Evidence[] = [];
-  
+
   for (const e of sorted) {
     if (!seen.has(e.evidenceId)) {
       seen.add(e.evidenceId);
@@ -444,7 +444,7 @@ import type { Evidence } from '../contracts/evidence.js';
 
 /**
  * Normalize evidence records by sorting, deduplicating, and validating
- * 
+ *
  * M2.1 changes:
  * - Sort by evidenceId (deterministic) instead of path + timestamp
  * - Throw error on duplicate evidenceId (not silent drop)
@@ -475,7 +475,7 @@ export function normalizeEvidence(evidence: Evidence[]): Evidence[] {
   // Detect duplicate evidenceIds (error, not silent drop)
   const seen = new Set<string>();
   const deduplicated: Evidence[] = [];
-  
+
   for (const e of sorted) {
     if (seen.has(e.evidenceId)) {
       throw new Error(
@@ -730,7 +730,7 @@ describe('V3 Evidence Lifecycle Validation', () => {
     expect(result.errors).toHaveLength(2);
     expect(result.errors[0]?.code).toBe('CURRENT_EVIDENCE_PATH_NOT_FOUND');
     expect(result.errors[1]?.code).toBe('CURRENT_EVIDENCE_CONTENT_HASH_MISMATCH');
-    
+
     expect(result.warnings).toHaveLength(1);
     expect(result.warnings[0]?.code).toBe('HISTORICAL_EVIDENCE_PATH_NOT_FOUND');
   });
@@ -769,7 +769,7 @@ describe('V3 Evidence Lifecycle Validation', () => {
 ## Risks and Gotchas
 
 ### 1. Backward Compatibility
-**Risk:** Existing evidence records without lifecycle field will cause validation errors.  
+**Risk:** Existing evidence records without lifecycle field will cause validation errors.
 **Mitigation:** The normalizer now validates lifecycle field presence. Existing snapshots must be regenerated or migrated. This is acceptable per M2 spec which requires M1 baseline immutability but allows M2 validators to strengthen.
 
 **Decision:** The spec states "All M2 validators must pass the M1 snapshot without regression." However, the authoritative requirement is to add a required `lifecycle` field. To resolve this conflict:
@@ -779,19 +779,19 @@ describe('V3 Evidence Lifecycle Validation', () => {
 - **If M1 snapshot compatibility is required**, the normalizer validation should be modified to treat missing lifecycle as 'historical' instead of throwing an error
 
 ### 2. CRITICAL_KINDS Removal
-**Risk:** Removing CRITICAL_KINDS changes validation behavior for existing evidence.  
+**Risk:** Removing CRITICAL_KINDS changes validation behavior for existing evidence.
 **Mitigation:** The new lifecycle-based approach is explicitly required by the authoritative spec. All new evidence will have explicit lifecycle classification, which is more precise than the old kind-based heuristic.
 
 ### 3. Normalizer Sort Order Change
-**Risk:** Changing sort order from path+timestamp to evidenceId could affect canonical hash.  
+**Risk:** Changing sort order from path+timestamp to evidenceId could affect canonical hash.
 **Mitigation:** This is intentional and required by the spec for determinism. Schema version bump to 1.1.0 signals this breaking change.
 
 ### 4. Duplicate Detection
-**Risk:** Throwing errors on duplicate evidenceIds could break existing snapshots that silently dropped duplicates.  
+**Risk:** Throwing errors on duplicate evidenceIds could break existing snapshots that silently dropped duplicates.
 **Mitigation:** This is a strengthening change required by the spec. Any duplicates indicate a bug in scanner implementation that should be surfaced, not hidden.
 
 ### 5. Test File Location
-**Risk:** The test file path `__tests__/unit/v3-evidence-paths-validator.test.ts` was verified to exist.  
+**Risk:** The test file path `__tests__/unit/v3-evidence-paths-validator.test.ts` was verified to exist.
 **Confirmation:** File exists at the expected location.
 
 ---
@@ -837,18 +837,18 @@ For existing evidence without lifecycle field:
 
 ## M2.1 Implementation Verification Results
 
-**Date:** 2024-01-XX  
-**Commit:** (pending)  
+**Date:** 2024-01-XX
+**Commit:** (pending)
 **Branch:** m2-project-ai-foundation
 
 ### Changes Implemented
 
-✅ Step 1: Added `EvidenceLifecycle` type and `lifecycle` field to Evidence contract  
-✅ Step 2: Updated collector.ts to default `lifecycle` to 'current'  
-✅ Step 3: Replaced CRITICAL_KINDS logic with lifecycle-based validation in V3 validator  
-✅ Step 4: Bumped schema version from '1.0.0' to '1.1.0'  
-✅ Step 5: Enhanced normalizer for determinism and duplicate detection  
-✅ Step 6: Extended test suite with V3 Evidence Lifecycle Validation tests  
+✅ Step 1: Added `EvidenceLifecycle` type and `lifecycle` field to Evidence contract
+✅ Step 2: Updated collector.ts to default `lifecycle` to 'current'
+✅ Step 3: Replaced CRITICAL_KINDS logic with lifecycle-based validation in V3 validator
+✅ Step 4: Bumped schema version from '1.0.0' to '1.1.0'
+✅ Step 5: Enhanced normalizer for determinism and duplicate detection
+✅ Step 6: Extended test suite with V3 Evidence Lifecycle Validation tests
 
 ### Verification Outcomes
 
@@ -870,8 +870,8 @@ npm test -- __tests__/unit/
   - Throw error on duplicate evidenceId (not silent drop)
 
 #### Integration Tests
-**Status:** ⚠️ FAILING (Expected)  
-**Cause:** Duplicate evidenceId detection in normalizer  
+**Status:** ⚠️ FAILING (Expected)
+**Cause:** Duplicate evidenceId detection in normalizer
 **Evidence:** `evidence-37b036a9f565d772` for `apps/api-server/package.json`
 
 **Analysis:** The normalizer is now correctly detecting duplicate evidence records being created by scanners. This is intentional M2.1 strengthening behavior. The duplicate detection prevents silent data corruption by throwing an error instead of silently dropping duplicates.
@@ -896,15 +896,15 @@ npm test -- __tests__/unit/
 
 ### Determinism Guarantees
 
-✅ Evidence sorted by `evidenceId` (not timestamp)  
-✅ Duplicate `evidenceId` detection throws error  
-✅ Timestamps excluded from canonical hash computation  
+✅ Evidence sorted by `evidenceId` (not timestamp)
+✅ Duplicate `evidenceId` detection throws error
+✅ Timestamps excluded from canonical hash computation
 ✅ Same repository state → deterministic snapshot hash
 
 ### Test Coverage
 
-**New Tests Added:** 6 lifecycle validation tests  
-**Tests Updated:** 13 existing tests (lifecycle field added)  
+**New Tests Added:** 6 lifecycle validation tests
+**Tests Updated:** 13 existing tests (lifecycle field added)
 **Total Unit Tests:** 183 passing
 
 ### Breaking Changes
@@ -916,8 +916,8 @@ npm test -- __tests__/unit/
 
 ### Backward Compatibility
 
-⚠️ **Not backward compatible** with M1 snapshots without lifecycle field  
-✅ Collector defaults all new evidence to 'current' lifecycle  
+⚠️ **Not backward compatible** with M1 snapshots without lifecycle field
+✅ Collector defaults all new evidence to 'current' lifecycle
 ✅ Type-safe migration path: regenerate snapshots with updated scanners
 
 ### Next Steps

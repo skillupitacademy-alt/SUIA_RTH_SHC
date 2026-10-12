@@ -95,7 +95,7 @@ All five W5-R2 security properties are verified as INTACT at commit a5f14c26. Th
 
 2. **Approval Existence Check** (Lines 212-230): Verifies approval record exists
 
-3. **Manifest ID Binding** (Line 235): 
+3. **Manifest ID Binding** (Line 235):
    ```python
    manifest_id_match = approval.placement_manifest_id == manifest_id
    ```
@@ -223,7 +223,7 @@ def execute_placement(
    workflow_id = getattr(manifest, '_workflow_id', None)
    if not workflow_id:
        raise HTTPException(status_code=400, ...)
-   
+
    requester_id = getattr(manifest, '_requester_id', None)
    if not requester_id:
        raise HTTPException(status_code=400, ...)

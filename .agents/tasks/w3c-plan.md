@@ -1,7 +1,7 @@
 # Implementation Plan: M2.9 Wave 3C — Placement Manifest Integration
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Task:** Integrate canonical artifact policy into placement manifest generation  
+**Branch:** m2-project-ai-canonical-wiring
+**Task:** Integrate canonical artifact policy into placement manifest generation
 **Target:** services/project-ai/app/placement/
 
 ---
@@ -9,7 +9,7 @@
 ## Implementation Steps
 
 - [ ] 1. Create `services/project-ai/app/placement/artifact_policy.py` implementing ADD/REUSE/EXTEND/UPDATE/REJECT action logic with repository matching.
-      
+
       **What to do:**
       - Create new Python module `artifact_policy.py` in `services/project-ai/app/placement/`
       - Import `PlacementDecision` from `app.models.candidate` (existing enum with ADD/UPDATE/EXTEND/REUSE/REJECT)
@@ -24,10 +24,10 @@
         * Quality/compatibility issue → REJECT
       - Implement `build_repository_index(snapshot: Dict[str, Any]) -> List[RepositoryArtifact]` that extracts artifacts from snapshot['evidence'], computing base_name for each via normalize_artifact_name
       - Add comprehensive docstrings explaining duplicate prevention logic
-      
+
       **Files:**
       - Create: `services/project-ai/app/placement/artifact_policy.py`
-      
+
       **Verify:**
       ```bash
       cd services/project-ai
@@ -36,7 +36,7 @@
       Expected: Unit tests for normalize_artifact_name, find_semantic_match, determine_action pass (will create tests in step 6).
 
 - [ ] 2. Wire `artifact_policy.py` into existing placement manifest generator so each artifact gets action determined by repository match.
-      
+
       **What to do:**
       - Open `services/project-ai/app/intake/placement_manifest.py` (existing manifest generator from Wave 3 Phase 2C)
       - Import `artifact_policy` module: `from app.placement import artifact_policy`
@@ -49,11 +49,11 @@
         * Store repository match evidence in manifest for audit trail
       - Ensure manifest still computes SHA-256 seal after all fields populated (existing logic preserved)
       - Add snapshot_path parameter to PlacementManifestGenerator.__init__() to pass discovery snapshot location
-      
+
       **Files:**
       - Modify: `services/project-ai/app/intake/placement_manifest.py`
       - Modify: `services/project-ai/app/placement/__init__.py` (add artifact_policy exports)
-      
+
       **Verify:**
       ```bash
       cd services/project-ai
@@ -62,7 +62,7 @@
       Expected: Existing manifest generation tests pass with new action determination logic.
 
 - [ ] 3. Implement duplicate prevention: never create ObjectiveBlockV2.tsx when ObjectiveBlock.tsx exists (generalize the pattern).
-      
+
       **What to do:**
       - In `artifact_policy.py`, ensure `normalize_artifact_name()` handles all version suffix patterns:
         * Uppercase: V2, V3, V10
@@ -78,11 +78,11 @@
         * REJECT → empty string
       - Integrate get_target_path into manifest generation so target paths always point to canonical locations
       - Add explicit check: if action is UPDATE or REUSE or EXTEND, target_path MUST be repository_match.path, not candidate_path
-      
+
       **Files:**
       - Modify: `services/project-ai/app/placement/artifact_policy.py`
       - Modify: `services/project-ai/app/intake/placement_manifest.py`
-      
+
       **Verify:**
       ```bash
       cd services/project-ai
@@ -91,7 +91,7 @@
       Expected: Test showing ObjectiveBlockV2.tsx maps to UPDATE action with target_path = "existing/ObjectiveBlock.tsx" passes.
 
 - [ ] 4. Add manifest validation: all artifacts have actions, no REJECT actions pass through, safe paths only, target version matches.
-      
+
       **What to do:**
       - In `placement_manifest.py`, add `validate_manifest(manifest: PlacementManifest) -> Tuple[bool, List[str]]` function:
         * Check all artifacts in manifest have non-empty action field
@@ -104,10 +104,10 @@
       - Call validate_manifest() at end of PlacementManifestGenerator.generate() before returning manifest
       - If validation fails, raise `PlacementExecutionError` with error list
       - Ensure rejected artifacts are recorded in separate field (manifest.rejected_artifacts) and not included in placements
-      
+
       **Files:**
       - Modify: `services/project-ai/app/intake/placement_manifest.py`
-      
+
       **Verify:**
       ```bash
       cd services/project-ai
@@ -116,7 +116,7 @@
       Expected: Tests for path traversal detection, REJECT filtering, version mismatch detection pass.
 
 - [ ] 5. Add manifest SHA-256 binding: bind manifest hash to workflow output.
-      
+
       **What to do:**
       - Existing manifest generation already computes SHA-256 in `_compute_manifest_seal()` (verified in test_placement_manifest.py)
       - Add `bind_manifest_to_workflow(manifest: PlacementManifest, workflow_id: str) -> Dict[str, Any]` function:
@@ -125,11 +125,11 @@
       - Ensure manifest hash is computed AFTER all fields populated but BEFORE approval status set
       - Add `verify_manifest_integrity(manifest: PlacementManifest, expected_hash: str) -> bool` to detect tampering
       - Integration point: when executor receives manifest, verify hash before execution (already exists in executor.py verify_manifest_hash method, ensure it's called)
-      
+
       **Files:**
       - Modify: `services/project-ai/app/intake/placement_manifest.py`
       - Verify: `services/project-ai/app/placement/executor.py` (already has verify_manifest_hash, ensure it's used)
-      
+
       **Verify:**
       ```bash
       cd services/project-ai
@@ -138,7 +138,7 @@
       Expected: Tests showing manifest seal integrity and tamper detection pass (already exist from Wave 3 Phase 2C).
 
 - [ ] 6. Create tests in `services/project-ai/tests/test_artifact_policy.py` covering all action logic, duplicate prevention, and manifest binding.
-      
+
       **What to do:**
       - Create `services/project-ai/tests/test_artifact_policy.py` following pytest patterns from existing test files
       - Test normalize_artifact_name with cases: "ObjectiveBlockV2.tsx", "ObjectiveBlock_v3.tsx", "ObjectiveBlockv2.tsx", "ObjectiveBlock.variant.tsx"
@@ -155,11 +155,11 @@
       - Test duplicate prevention: ObjectiveBlockV2.tsx with existing ObjectiveBlock.tsx → UPDATE action with target_path pointing to existing file
       - Test build_repository_index with mock snapshot evidence
       - All tests must use real validation logic (no mocked PASS without evidence)
-      
+
       **Files:**
       - Create: `services/project-ai/tests/test_artifact_policy.py`
       - Modify: `services/project-ai/tests/test_placement_manifest.py` (extend with integration tests using artifact_policy)
-      
+
       **Verify:**
       ```bash
       cd services/project-ai
@@ -168,7 +168,7 @@
       Expected: All new tests pass (20+ tests covering artifact_policy + placement_manifest integration).
 
 - [ ] 7. Update existing tests in `services/project-ai/tests/test_placement.py` to use artifact_policy for action determination.
-      
+
       **What to do:**
       - Review `services/project-ai/tests/test_placement.py` (existing tests for Wave 2 placement logic)
       - Update tests that mock placement decisions to use artifact_policy.determine_action()
@@ -176,10 +176,10 @@
       - Verify tests for canonical comparison (CanonicalComparator) still work with artifact_policy integration
       - Fix any broken tests due to signature changes in placement_manifest.py
       - Add integration test: end-to-end flow from candidate upload → validation → comparison → manifest generation with artifact_policy → execution
-      
+
       **Files:**
       - Modify: `services/project-ai/tests/test_placement.py`
-      
+
       **Verify:**
       ```bash
       cd services/project-ai
@@ -188,7 +188,7 @@
       Expected: All 40+ existing placement tests pass with artifact_policy integration.
 
 - [ ] 8. Run full test suite to ensure no regressions in existing functionality.
-      
+
       **What to do:**
       - Run complete test suite for project-ai service
       - Fix any import errors or signature mismatches
@@ -201,10 +201,10 @@
         * All other existing test files
       - Verify test count: should be 220+ tests passing (was 220 after M2 Phase 4, adding ~20 new tests)
       - Check for any warnings about deprecated imports or API changes
-      
+
       **Files:**
       - All test files in `services/project-ai/tests/`
-      
+
       **Verify:**
       ```bash
       cd services/project-ai
@@ -213,7 +213,7 @@
       Expected: 240+ tests passing, 0 failures, 0 errors.
 
 - [ ] 9. Commit changes with message 'feat(project-llm): integrate canonical artifact policy'.
-      
+
       **What to do:**
       - Stage all modified and new files:
         * `services/project-ai/app/placement/artifact_policy.py` (new)
@@ -231,14 +231,14 @@
         - Add manifest validation: reject REJECT actions, validate paths and versions
         - Bind manifest SHA-256 hash to workflow for tamper detection
         - Add comprehensive test coverage (60+ tests total)
-        
+
         Refs: M2.9 Wave 3C canonical artifact policy integration
         ```
       - Do NOT push yet (will push in step 10)
-      
+
       **Files:**
       - All modified/created files in services/project-ai/
-      
+
       **Verify:**
       ```bash
       git status
@@ -247,7 +247,7 @@
       Expected: Commit created with all changed files staged, message follows conventional commit format.
 
 - [ ] 10. Push to origin/m2-project-ai-canonical-wiring and write evidence to `.agents/tasks/w3c-placement-manifest-report.json`.
-      
+
       **What to do:**
       - Push commit to remote branch: `git push origin m2-project-ai-canonical-wiring`
       - Create evidence report JSON file at `e:\onlinewebsites\quiz-platform\.agents\tasks\w3c-placement-manifest-report.json`
@@ -291,10 +291,10 @@
         ```
       - Compute actual commit hash: `git rev-parse HEAD`
       - Get test results: `python -m pytest tests/ --tb=no -q` and capture output
-      
+
       **Files:**
       - Create: `e:\onlinewebsites\quiz-platform\.agents\tasks\w3c-placement-manifest-report.json`
-      
+
       **Verify:**
       ```bash
       git log origin/m2-project-ai-canonical-wiring -1 --oneline

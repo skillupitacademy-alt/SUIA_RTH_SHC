@@ -127,7 +127,7 @@ Since the fallback scenario can never occur (tokens without `userId` are rejecte
 def test_userid_takes_precedence_over_sub():
     """
     Test that userId claim takes precedence over sub when both are present.
-    Note: JWT validation requires userId, so tokens with only sub are rejected 
+    Note: JWT validation requires userId, so tokens with only sub are rejected
     before this extraction logic executes.
     """
 ```
@@ -141,15 +141,15 @@ The README previously documented a `sub` fallback claim that was never reachable
 The README adds a clarification about admin privilege flags:
 
 ```markdown
-**Important**: The presence of `isAdmin=True` or `tokenType='admin'` does NOT automatically 
-grant access to all routes. Route-level authorization checks (Wave 1D) must explicitly verify 
+**Important**: The presence of `isAdmin=True` or `tokenType='admin'` does NOT automatically
+grant access to all routes. Route-level authorization checks (Wave 1D) must explicitly verify
 permissions using RBAC dependencies like `require_contract_admin`.
 ```
 
 ## Test results and coverage
 
-**Identity extraction tests:** 15 passed (9 original + 6 new)  
-**All auth tests:** 32 passed (10 dependencies + 7 JWT + 15 identity)  
+**Identity extraction tests:** 15 passed (9 original + 6 new)
+**All auth tests:** 32 passed (10 dependencies + 7 JWT + 15 identity)
 **Auth coverage:** 92% (up from 91%)
 
 No tests were skipped or failed.

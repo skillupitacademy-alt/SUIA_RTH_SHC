@@ -34,7 +34,7 @@ for file in sorted_files:
         content_bytes = file.content.encode('utf-8') if isinstance(file.content, str) else file.content
     except UnicodeEncodeError as e:
         raise ValueError(f"Failed to encode file '{file.filename}': {str(e)}. Files must be valid UTF-8.")
-    
+
     file_hash = hashlib.sha256(content_bytes)
     sha256_hash.update(file_hash.digest())
 
@@ -79,7 +79,7 @@ try:
         artifact_id=package.candidateId,
         artifact_sha256=candidate_sha256
     )
-    
+
     await governance_service.transition_state(
         workflow_id=package.workflow_id,
         to_state=CanonicalWorkflowState.CANDIDATE_RECEIVED,

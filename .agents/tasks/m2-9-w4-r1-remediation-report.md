@@ -4,10 +4,10 @@
 
 W4-R1 successfully closed all 3 confirmed authorization bypass vulnerabilities identified in the independent security review. All security tests pass, no new regressions introduced.
 
-**Status:** COMPLETE  
-**Commit SHA:** `00ce3fbd00b4a1a1d7aab29f2aacf7f8c81f2ca5`  
-**Branch:** `m2-project-ai-canonical-wiring`  
-**W4 Baseline:** commit `56f1030b`, 54 tests, 528 regression passed, 58 pre-existing failures  
+**Status:** COMPLETE
+**Commit SHA:** `00ce3fbd00b4a1a1d7aab29f2aacf7f8c81f2ca5`
+**Branch:** `m2-project-ai-canonical-wiring`
+**W4 Baseline:** commit `56f1030b`, 54 tests, 528 regression passed, 58 pre-existing failures
 **W4-R1 Results:** 52 tests (54 baseline -2 deleted +9 new), 543 regression passed, 58 pre-existing failures, 0 new failures
 
 ---
@@ -106,8 +106,8 @@ W4-R1 successfully closed all 3 confirmed authorization bypass vulnerabilities i
 
 ### W4-R1 New Tests
 
-**Total:** 9 new security tests  
-**Passed:** 9  
+**Total:** 9 new security tests
+**Passed:** 9
 **Failed:** 0
 
 **Breakdown:**
@@ -121,15 +121,15 @@ W4-R1 successfully closed all 3 confirmed authorization bypass vulnerabilities i
 
 ### W4 Baseline Tests
 
-**W4 Baseline (commit `56f1030b`):** 54 tests passed  
-**W4-R1 Result:** 52 tests passed  
+**W4 Baseline (commit `56f1030b`):** 54 tests passed
+**W4-R1 Result:** 52 tests passed
 **Delta:** -2 tests (deleted insecure tests)
 
 **Note:** This is the expected outcome — we deliberately deleted 2 tests that validated insecure behavior.
 
 ### Full Regression Suite
 
-**W4 Baseline:** 528 passed, 58 failed (pre-existing), 0 new failures  
+**W4 Baseline:** 528 passed, 58 failed (pre-existing), 0 new failures
 **W4-R1 Result:** 543 passed, 58 failed (pre-existing), 0 new failures
 
 **Analysis:**
@@ -176,18 +176,18 @@ W4-R1 successfully closed all 3 confirmed authorization bypass vulnerabilities i
 
 ### W4-R1 Scope Compliance
 
-✅ **Authorization boundary only** — no repository placement, no runtime verification, no W5 work  
-✅ **Surgical fixes only** — no scope creep, no new features  
-✅ **No test weakening** — deleted insecure tests, added stricter tests  
-✅ **No graceful degradation** — fail-closed on all security checks  
+✅ **Authorization boundary only** — no repository placement, no runtime verification, no W5 work
+✅ **Surgical fixes only** — no scope creep, no new features
+✅ **No test weakening** — deleted insecure tests, added stricter tests
+✅ **No graceful degradation** — fail-closed on all security checks
 ✅ **Machine-readable evidence** — all evidence dicts populated, no empty dicts
 
 ### Security Contract Enforcement
 
-✅ **Self-approval enforced** — `workflow_requester` required, fail-closed when missing  
-✅ **Hash binding enforced** — all verification parameters required, no skips allowed  
-✅ **Parameter validation enforced** — explicit checks, informative error messages  
-✅ **Evidence always populated** — no conditional evidence, no SKIPPED checks  
+✅ **Self-approval enforced** — `workflow_requester` required, fail-closed when missing
+✅ **Hash binding enforced** — all verification parameters required, no skips allowed
+✅ **Parameter validation enforced** — explicit checks, informative error messages
+✅ **Evidence always populated** — no conditional evidence, no SKIPPED checks
 ✅ **Single state authority** — `CanonicalWorkflowState` remains single source of truth
 
 ---
@@ -219,7 +219,7 @@ W4-R1 is ready for independent security review verification:
 
 ## W5 Ready
 
-**Status:** NOT YET  
+**Status:** NOT YET
 **Reason:** W4-R1 must pass independent security review gate before W5 can begin.
 
 **Next Steps:**
@@ -239,8 +239,8 @@ W4-R1 is ready for independent security review verification:
 
 ## Commit Details
 
-**Commit SHA:** `00ce3fbd00b4a1a1d7aab29f2aacf7f8c81f2ca5`  
-**Branch:** `m2-project-ai-canonical-wiring`  
+**Commit SHA:** `00ce3fbd00b4a1a1d7aab29f2aacf7f8c81f2ca5`
+**Branch:** `m2-project-ai-canonical-wiring`
 **Message:** `fix: M2.9 W4-R1 - security remediation (fail-closed requester, mandatory hash verification, expiry resolution)`
 
 **Diff Summary:**
@@ -278,22 +278,22 @@ python -m pytest tests/ -v
 
 ---
 
-**Report Complete**  
-**Date:** 2025-01-XX (timestamp: commit time)  
-**Author:** W4-R1 Security Remediation Agent  
+**Report Complete**
+**Date:** 2025-01-XX (timestamp: commit time)
+**Author:** W4-R1 Security Remediation Agent
 **Review Status:** AWAITING_INDEPENDENT_REVIEW
 
 ---
 
 ## W4-R1 APPROVED — W5 may proceed
 
-**Independent Review Verdict:** APPROVED  
-**Review Artifact:** `.agents/tasks/m2-9-w4-r1-review.json`  
-**Final Commit:** `e945eab3`  
+**Independent Review Verdict:** APPROVED
+**Review Artifact:** `.agents/tasks/m2-9-w4-r1-review.json`
+**Final Commit:** `e945eab3`
 
 All three original security findings resolved with confirmed fail-closed enforcement:
 - ✅ Finding A (self-approval bypass) — RESOLVED
-- ✅ Finding B (hash verification bypass) — RESOLVED  
+- ✅ Finding B (hash verification bypass) — RESOLVED
 - ✅ Finding C (expiry documentation drift) — RESOLVED
 
 **W5-READY:** true

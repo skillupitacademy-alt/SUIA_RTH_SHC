@@ -62,7 +62,7 @@ def verify_manifest_hash(self, manifest: PlacementManifest) -> bool:
     }
     manifest_json = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
     computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
-    
+
     if computed_hash != manifest.manifestHash:
         raise PlacementExecutionError(...)
 ```
@@ -169,12 +169,12 @@ if not approval.verify_candidate_hash(candidate_sha256):
 def _compute_candidate_sha256(files: list[Any]) -> str:
     sha256_hash = hashlib.sha256()
     sorted_files = sorted(files, key=lambda f: f.filename)
-    
+
     for file in sorted_files:
         content_bytes = file.content.encode('utf-8') if isinstance(file.content, str) else file.content
         file_hash = hashlib.sha256(content_bytes)
         sha256_hash.update(file_hash.digest())
-    
+
     return sha256_hash.hexdigest()
 ```
 
@@ -236,7 +236,7 @@ def verify_not_self_approved(self, requester_id: str) -> bool:
     # Fail-closed: missing workflow_requester means we cannot verify separation of duties
     if not self.workflow_requester:
         return False
-    
+
     return self.approved_by != self.workflow_requester
 ```
 
@@ -410,25 +410,25 @@ def valid_w5r2_approval():
         # Identity bindings
         approval_id="approval-12345678-1234-1234-1234-123456789abc",
         workflow_id="wf-workflow-id-goes-here",
-        
+
         # Binding 3 & 5: Candidate hash (64 hex chars)
         candidate_sha256="a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a",
-        
+
         # Target metadata
         target_family="Introduction",
         target_version="I7",
-        
+
         # Binding 1: Manifest hash
         placement_manifest_id="manifest-87654321-4321-4321-4321-abcdef123456",
         placement_manifest_sha256="b8ffd7f9cg2fe86752d25867b172e773e691fe5ef54c5agb93e91b5c91g9545b",
-        
+
         # Binding 4: Separation of duties (requester != approver)
         approved_by="approver-alice@example.com",
         workflow_requester="requester-bob@example.com",
-        
+
         # Binding 2: Approval status
         status=ImplementationApprovalStatus.APPROVED,
-        
+
         # Metadata
         approval_timestamp=datetime.now(timezone.utc).isoformat(),
         evidence={
@@ -475,26 +475,26 @@ import hashlib
 def compute_candidate_sha256(files: list) -> str:
     """
     Compute candidate hash from files (matches production algorithm).
-    
+
     Args:
         files: List of dicts with 'filename' and 'content' keys
-    
+
     Returns:
         64-character hex SHA-256 hash
     """
     sha256_hash = hashlib.sha256()
-    
+
     # CRITICAL: Sort by filename for deterministic hash
     sorted_files = sorted(files, key=lambda f: f['filename'])
-    
+
     for file in sorted_files:
         # Hash each file's content
         content_bytes = file['content'].encode('utf-8')
         file_hash = hashlib.sha256(content_bytes)
-        
+
         # Update cumulative hash with this file's hash digest
         sha256_hash.update(file_hash.digest())
-    
+
     return sha256_hash.hexdigest()
 
 # Example:
@@ -521,19 +521,19 @@ import json
 def compute_manifest_sha256(manifest_data: dict) -> str:
     """
     Compute manifest hash (matches production algorithm).
-    
+
     Args:
         manifest_data: Dict with manifest fields (excluding manifestHash itself)
-    
+
     Returns:
         64-character hex SHA-256 hash
     """
     # CRITICAL: Use sorted keys and no whitespace
     manifest_json = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
-    
+
     # Compute SHA-256 of JSON string
     computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
-    
+
     return computed_hash
 
 # Example:

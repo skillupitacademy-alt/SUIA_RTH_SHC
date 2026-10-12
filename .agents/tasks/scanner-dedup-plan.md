@@ -102,7 +102,7 @@ add(evidence: Evidence): void {
     // This is expected when multiple scanners examine the same file
     return;
   }
-  
+
   this.seenIds.add(evidence.evidenceId);
   this.evidence.push(evidence);
 }

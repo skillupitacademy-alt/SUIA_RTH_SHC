@@ -1,7 +1,7 @@
 # Authority Retirement Plan - M2.9 Wave 0
 
-**Purpose:** Document the deprecation and retirement strategy for competing workflow authorities  
-**Date:** 2025-01-08  
+**Purpose:** Document the deprecation and retirement strategy for competing workflow authorities
+**Date:** 2025-01-08
 **Status:** Wave 0 Complete (Deprecation Marked), Wave 1+ Execution Pending
 
 ---
@@ -18,8 +18,8 @@ M2.9 Wave 0 establishes `CanonicalWorkflowState` as the single source of truth f
 
 ### 1. TaskState (Workflow-Level Usage)
 
-**Current Status:** Partially deprecated  
-**Location:** `app/models/task_state.py`, `app/api/routes/tasks.py`  
+**Current Status:** Partially deprecated
+**Location:** `app/models/task_state.py`, `app/api/routes/tasks.py`
 **Scope:** Workflow-level state tracking (task creation, approval, rejection)
 
 **Decision:**
@@ -40,8 +40,8 @@ M2.9 Wave 0 establishes `CanonicalWorkflowState` as the single source of truth f
 
 ### 2. Frontend State Machine (ProjectLlmContext)
 
-**Current Status:** Not deprecated (Wave 0 is backend-only)  
-**Location:** `apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/context/ProjectLlmContext.tsx`  
+**Current Status:** Not deprecated (Wave 0 is backend-only)
+**Location:** `apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/context/ProjectLlmContext.tsx`
 **Scope:** Frontend-local workflow state management using localStorage
 
 **Decision:**
@@ -69,7 +69,7 @@ const [step, setStep] = useState(1);
 const [workflowState, setWorkflowState] = useState("discovery");
 
 // NEW (Wave 1+): Backend owns state
-const { data: workflow } = useQuery(['workflow', workflowId], 
+const { data: workflow } = useQuery(['workflow', workflowId],
   () => fetchWorkflowState(workflowId)
 );
 const step = getStepFromBackendState(workflow.state.current); // Display only
@@ -79,8 +79,8 @@ const step = getStepFromBackendState(workflow.state.current); // Display only
 
 ### 3. Creation Routes (`/creation` endpoints)
 
-**Current Status:** Not deprecated yet (no competing routes found in codebase)  
-**Location:** If exists, likely in `app/api/routes/creation.py`  
+**Current Status:** Not deprecated yet (no competing routes found in codebase)
+**Location:** If exists, likely in `app/api/routes/creation.py`
 **Scope:** Alternative workflow creation endpoints using non-canonical states
 
 **Decision:**
@@ -98,8 +98,8 @@ const step = getStepFromBackendState(workflow.state.current); // Display only
 
 ### 4. Legacy Workflow State Dictionaries
 
-**Current Status:** Coexisting with canonical workflow (Wave 0)  
-**Location:** `app/api/routes/governance.py` (`_workflow_states` dict)  
+**Current Status:** Coexisting with canonical workflow (Wave 0)
+**Location:** `app/api/routes/governance.py` (`_workflow_states` dict)
 **Scope:** In-memory workflow state storage predating WorkflowGovernanceService
 
 **Decision:**
@@ -163,7 +163,7 @@ const step = getStepFromBackendState(workflow.state.current); // Display only
 
 ## Database Persistence
 
-**Current Status:** In-memory storage only (Wave 0)  
+**Current Status:** In-memory storage only (Wave 0)
 **Location:** `WorkflowGovernanceService._workflows` dict, `_approvals` dict
 
 **Retirement Timeline:**
@@ -228,18 +228,18 @@ All authority retirement actions must produce evidence:
 
 ### Wave 0 Risks (MITIGATED)
 
-**Risk:** Breaking existing workflows using `/tasks` or `_workflow_states`  
+**Risk:** Breaking existing workflows using `/tasks` or `_workflow_states`
 **Mitigation:** ✅ Deprecation warnings only, no functional changes. Adapter layer provides compatibility.
 
-**Risk:** Frontend breaks due to backend state changes  
+**Risk:** Frontend breaks due to backend state changes
 **Mitigation:** ✅ Wave 0 is backend-only. Frontend untouched. No breaking changes.
 
 ### Wave 1+ Risks
 
-**Risk:** Lost workflows during database migration  
+**Risk:** Lost workflows during database migration
 **Mitigation:** Export in-memory workflows before migration, verify migration completeness
 
-**Risk:** Frontend-backend state desynchronization  
+**Risk:** Frontend-backend state desynchronization
 **Mitigation:** Backend becomes single source of truth, frontend becomes read-only consumer
 
 ---

@@ -66,18 +66,18 @@ The review brief expects commit message `feat(project-llm): add evidence harness
 <details>
 <summary>File map</summary>
 
-**services/project-ai/app/evidence/schemas.py** — Pydantic models (TestResult, EvidenceRecord, AgentRun)  
-**services/project-ai/app/evidence/ledger.py** — JSONL append with threading + file locks, schema-based record_* functions, retrieval  
-**services/project-ai/app/evidence/integration.py** — record_wave_completion helper with UUID run ID generation  
-**services/project-ai/app/evidence/__init__.py** — Public API exports (schemas, integration, ledger functions)  
-**services/project-ai/tests/evidence/__init__.py** — Test module marker  
-**services/project-ai/tests/evidence/test_schemas.py** — Schema validation tests (17 test cases)  
-**services/project-ai/tests/evidence/test_ledger.py** — JSONL append, concurrency, retrieval tests (16 test cases)  
-**services/project-ai/tests/evidence/test_integration.py** — Wave completion helper tests (7 test cases)  
-**.agents/evidence/agent-runs.jsonl** — Evidence ledger file (append-only, 4 pre-existing records from other waves)  
-**.agents/evidence/evidence.jsonl** — Empty placeholder  
-**.agents/evidence/gate-results.jsonl** — Empty placeholder  
-**.agents/evidence/test-results.jsonl** — Empty placeholder  
+**services/project-ai/app/evidence/schemas.py** — Pydantic models (TestResult, EvidenceRecord, AgentRun)
+**services/project-ai/app/evidence/ledger.py** — JSONL append with threading + file locks, schema-based record_* functions, retrieval
+**services/project-ai/app/evidence/integration.py** — record_wave_completion helper with UUID run ID generation
+**services/project-ai/app/evidence/__init__.py** — Public API exports (schemas, integration, ledger functions)
+**services/project-ai/tests/evidence/__init__.py** — Test module marker
+**services/project-ai/tests/evidence/test_schemas.py** — Schema validation tests (17 test cases)
+**services/project-ai/tests/evidence/test_ledger.py** — JSONL append, concurrency, retrieval tests (16 test cases)
+**services/project-ai/tests/evidence/test_integration.py** — Wave completion helper tests (7 test cases)
+**.agents/evidence/agent-runs.jsonl** — Evidence ledger file (append-only, 4 pre-existing records from other waves)
+**.agents/evidence/evidence.jsonl** — Empty placeholder
+**.agents/evidence/gate-results.jsonl** — Empty placeholder
+**.agents/evidence/test-results.jsonl** — Empty placeholder
 
 Full diff: `git diff main`
 

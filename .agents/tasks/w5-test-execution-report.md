@@ -1,4 +1,4 @@
-﻿# W5 Placement Engine - Test Execution Report
+# W5 Placement Engine - Test Execution Report
 
 **Date**: 2025-01-09
 **Wave**: W5 - Placement Engine
@@ -21,7 +21,7 @@ python -m pytest services/project-ai/tests/placement/test_placement_engine.py -v
 
 #### Matching Tests (5 tests) - All PASSED
 1. ✅ test_match_candidate_to_add_manifest
-2. ✅ test_match_candidate_to_update_manifest  
+2. ✅ test_match_candidate_to_update_manifest
 3. ✅ test_match_candidate_by_family_version
 4. ✅ test_no_match_for_rejected_manifest
 5. ✅ test_match_with_structural_similarity

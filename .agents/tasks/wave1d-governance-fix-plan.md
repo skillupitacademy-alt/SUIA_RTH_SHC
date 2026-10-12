@@ -135,7 +135,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
    ```python
    # OLD:
    "by": request.submittedBy,
-   
+
    # NEW:
    "by": user["user_id"],
    ```
@@ -144,7 +144,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
    ```python
    # OLD:
    "submittedBy": request.submittedBy,
-   
+
    # NEW:
    "submittedBy": user["user_id"],
    ```
@@ -170,7 +170,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
    ```python
    # OLD:
    if request.decidedBy == approval["submittedBy"]:
-   
+
    # NEW:
    if user["user_id"] == approval["submittedBy"]:
    ```
@@ -179,7 +179,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
    ```python
    # OLD:
    approval["decidedBy"] = request.decidedBy
-   
+
    # NEW:
    approval["decidedBy"] = user["user_id"]
    ```
@@ -191,7 +191,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
        "action": "rejected_self_approval",
        "by": request.decidedBy,
        ...
-   
+
    # NEW:
    audit_entry = {
        "action": "rejected_self_approval",
@@ -206,7 +206,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
        ...
        "attemptedBy": request.decidedBy
    }
-   
+
    # NEW:
    detail={
        ...
@@ -218,7 +218,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
    ```python
    # OLD:
    approval["decidedBy"] = request.decidedBy
-   
+
    # NEW:
    approval["decidedBy"] = user["user_id"]
    ```
@@ -230,7 +230,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
        "action": "rejected_hash_mismatch",
        "by": request.decidedBy,
        ...
-   
+
    # NEW:
    audit_entry = {
        "action": "rejected_hash_mismatch",
@@ -242,7 +242,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
    ```python
    # OLD:
    approval["decidedBy"] = request.decidedBy
-   
+
    # NEW:
    approval["decidedBy"] = user["user_id"]
    ```
@@ -254,7 +254,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
        "action": "approved",
        "by": request.decidedBy,
        ...
-   
+
    # NEW:
    audit_entry = {
        "action": "approved",
@@ -283,7 +283,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
    ```python
    # OLD:
    approval["decidedBy"] = request.rejectedBy
-   
+
    # NEW:
    approval["decidedBy"] = user["user_id"]
    ```
@@ -295,7 +295,7 @@ Test command: `pytest services/project-ai/tests/security/` (from workspace root)
        "action": "rejected",
        "by": request.rejectedBy,
        ...
-   
+
    # NEW:
    audit_entry = {
        "action": "rejected",
@@ -342,28 +342,28 @@ def test_governance_submit_uses_jwt_identity():
         "roles": ["contract_viewer"]
     }
     token = create_access_token(token_data)
-    
+
     # Submit with JWT from alice but NO submittedBy field (removed from schema)
     request_data = {
         "manifestId": "manifest-123",
         "manifestHash": "abc123def456"
     }
-    
+
     response = client.post(
         "/approvals/submit",
         json=request_data,
         headers={"Authorization": f"Bearer {token}"}
     )
-    
+
     assert response.status_code == 200
     approval_id = response.json()["approvalId"]
-    
+
     # Verify stored approval record has JWT identity
     status_response = client.get(
         f"/approvals/{approval_id}",
         headers={"Authorization": f"Bearer {token}"}
     )
-    
+
     approval_data = status_response.json()
     assert approval_data["submittedBy"] == "alice@example.com"  # From JWT, not request
     assert approval_data["auditTrail"][0]["by"] == "alice@example.com"  # From JWT
@@ -390,7 +390,7 @@ def test_governance_approve_prevents_jwt_self_approval():
         "roles": ["contract_viewer"]
     }
     alice_token = create_access_token(alice_token_data)
-    
+
     submit_response = client.post(
         "/approvals/submit",
         json={
@@ -399,9 +399,9 @@ def test_governance_approve_prevents_jwt_self_approval():
         },
         headers={"Authorization": f"Bearer {alice_token}"}
     )
-    
+
     approval_id = submit_response.json()["approvalId"]
-    
+
     # Alice attempts to approve her own submission
     approve_response = client.post(
         f"/approvals/{approval_id}/approve",
@@ -411,7 +411,7 @@ def test_governance_approve_prevents_jwt_self_approval():
         },
         headers={"Authorization": f"Bearer {alice_token}"}
     )
-    
+
     # Self-approval must be rejected
     assert approve_response.status_code == 403
     error_detail = approve_response.json()["detail"]
@@ -441,7 +441,7 @@ def test_governance_approve_allows_different_jwt_identity():
         "roles": ["contract_viewer"]
     }
     alice_token = create_access_token(alice_token_data)
-    
+
     submit_response = client.post(
         "/approvals/submit",
         json={
@@ -450,9 +450,9 @@ def test_governance_approve_allows_different_jwt_identity():
         },
         headers={"Authorization": f"Bearer {alice_token}"}
     )
-    
+
     approval_id = submit_response.json()["approvalId"]
-    
+
     # Bob approves (different JWT)
     bob_token_data = {
         "userId": "bob@example.com",
@@ -463,7 +463,7 @@ def test_governance_approve_allows_different_jwt_identity():
         "roles": ["contract_admin"]
     }
     bob_token = create_access_token(bob_token_data)
-    
+
     approve_response = client.post(
         f"/approvals/{approval_id}/approve",
         json={
@@ -472,7 +472,7 @@ def test_governance_approve_allows_different_jwt_identity():
         },
         headers={"Authorization": f"Bearer {bob_token}"}
     )
-    
+
     # Approval must succeed
     assert approve_response.status_code == 200
     approval_data = approve_response.json()
@@ -536,7 +536,7 @@ def test_governance_approve_allows_different_jwt_identity():
        """Helper to create test JWT tokens."""
        if roles is None:
            roles = ["contract_viewer"]
-       
+
        data = {
            "userId": user_id,
            "originalUserId": user_id,
@@ -591,7 +591,7 @@ def test_submit_approval_request():
 
 **Why**: The changes affect authentication and authorization, so we must verify existing RBAC tests still pass.
 
-**Command**: 
+**Command**:
 ```bash
 pytest services/project-ai/tests/security/ -v
 ```
@@ -626,7 +626,7 @@ pytest services/project-ai/tests/security/ -v
 - [ ] No new references to client-supplied identity fields exist in governance.py
 - [ ] Self-approval check (line 225) compares JWT identity (`user["user_id"]`) against stored JWT identity (`approval["submittedBy"]`)
 
-**How to verify**: 
+**How to verify**:
 1. Run `grep -n "request\.submittedBy\|request\.decidedBy\|request\.rejectedBy" services/project-ai/app/api/routes/governance.py` from workspace root
    - Expected: No matches (all references removed)
 

@@ -6,9 +6,9 @@ Create PostgreSQL integration test infrastructure for the project-ai service, en
 
 ## Context
 
-**Service:** `services/project-ai` (Python FastAPI)  
-**Database:** PostgreSQL via SQLAlchemy + asyncpg  
-**Test Framework:** pytest with pytest-asyncio  
+**Service:** `services/project-ai` (Python FastAPI)
+**Database:** PostgreSQL via SQLAlchemy + asyncpg
+**Test Framework:** pytest with pytest-asyncio
 **Existing Infrastructure:** Integration test fixtures in `tests/integration/conftest.py`, persistence layer in `app/persistence/`, security authorization in `app/auth/`
 
 **Key Findings from Exploration:**
@@ -36,7 +36,7 @@ Create `services/project-ai/docker-compose.test-db.yml` with:
 
 **Files:** `services/project-ai/docker-compose.test-db.yml`
 
-**Verify:** 
+**Verify:**
 ```bash
 docker-compose -f services/project-ai/docker-compose.test-db.yml up -d
 docker-compose -f services/project-ai/docker-compose.test-db.yml ps  # Shows healthy status

@@ -1,0 +1,106 @@
+# Foundation Branch Unique File Changes (vs Canonical-Wiring)
+
+## Change Summary
+78 files changed, 111,854 insertions(+), 1,993 deletions(-)
+
+## New Agents Added (15 total)
+A	services/project-ai/app/agents/approval.py                    (284 lines)
+A	services/project-ai/app/agents/block_specification.py         (355 lines)
+A	services/project-ai/app/agents/classification.py              (249 lines)
+A	services/project-ai/app/agents/evidence_freeze.py             (290 lines)
+A	services/project-ai/app/agents/final_evidence_freeze.py       (225 lines)
+A	services/project-ai/app/agents/human_certification.py         (304 lines)
+A	services/project-ai/app/agents/placement_executor.py          (193 lines)
+A	services/project-ai/app/agents/placement_manifest.py          (236 lines)
+A	services/project-ai/app/agents/playwright_browser_agent.py    (269 lines)
+A	services/project-ai/app/agents/post_placement_verification.py (243 lines)
+A	services/project-ai/app/agents/repository_auditor.py          (280 lines)
+A	services/project-ai/app/agents/runtime_agent.py               (169 lines)
+A	services/project-ai/app/agents/snapshot_authority.py          (229 lines)
+
+## Modified Agents
+M	services/project-ai/app/agents/final_gate.py                  (89 changes)
+M	services/project-ai/app/agents/intake.py                      (154 changes)
+
+## New Data Models (6 total)
+A	services/project-ai/app/models/agent_result.py                (79 lines)
+A	services/project-ai/app/models/certification.py               (94 lines)
+A	services/project-ai/app/models/gate_result.py                 (61 lines)
+A	services/project-ai/app/models/placement.py                   (104 lines)
+A	services/project-ai/app/models/specification.py               (82 lines)
+
+## New Orchestration Components
+A	services/project-ai/app/orchestration/workflow_dag.py         (191 lines)
+M	services/project-ai/app/orchestration/agent_coordinator.py    (221 changes)
+M	services/project-ai/app/orchestration/agent_registry.py       (249 changes)
+M	services/project-ai/app/orchestration/workflow_engine.py      (163 changes)
+
+## New Verification System
+A	services/project-ai/app/verification/dependency.py            (205 lines)
+
+## Database/Schema Changes
+A	services/project-ai/app/database/schema_certification_reviews.sql (32 lines)
+A	services/project-ai/migrations/001_approval_requests.sql      (49 lines)
+
+## New Test Files (18 agent tests + 2 integration tests + 1 DAG test)
+A	services/project-ai/tests/agents/test_approval.py                       (241 lines)
+A	services/project-ai/tests/agents/test_block_specification.py            (373 lines)
+A	services/project-ai/tests/agents/test_classification.py                 (231 lines)
+A	services/project-ai/tests/agents/test_evidence_freeze.py                (340 lines)
+A	services/project-ai/tests/agents/test_final_evidence_freeze.py          (138 lines)
+A	services/project-ai/tests/agents/test_human_certification.py            (195 lines)
+A	services/project-ai/tests/agents/test_placement_executor.py             (294 lines)
+A	services/project-ai/tests/agents/test_placement_manifest.py             (236 lines)
+A	services/project-ai/tests/agents/test_playwright_browser_agent.py       (326 lines)
+A	services/project-ai/tests/agents/test_post_placement_verification.py    (254 lines)
+A	services/project-ai/tests/agents/test_repository_auditor.py             (205 lines)
+A	services/project-ai/tests/agents/test_runtime_agent.py                  (257 lines)
+A	services/project-ai/tests/agents/test_snapshot_authority.py             (252 lines)
+A	services/project-ai/tests/integration/test_full_certification_workflow.py (380 lines)
+A	services/project-ai/tests/orchestration/test_workflow_dag_execution.py  (350 lines)
+
+## Modified Test Files
+M	services/project-ai/tests/agents/test_final_gate.py            (123 changes)
+M	services/project-ai/tests/agents/test_intake.py                (72 additions)
+M	services/project-ai/tests/certification/test_gates.py          (278 additions)
+M	services/project-ai/tests/integration/test_certification_negative.py (68 changes)
+M	services/project-ai/tests/test_agent_registry.py               (176 changes)
+M	services/project-ai/tests/test_certification_gates.py          (284 changes)
+M	services/project-ai/tests/test_workflow_engine_agents.py       (32 changes)
+
+## Documentation/Planning Files
+A	.agents/tasks/project-ai-18-agent-dag/2025-01-30-120000-review.md
+A	.agents/tasks/project-ai-18-agent-dag/2026-10-07-073810-review.md
+A	.agents/tasks/project-ai-18-agent-dag/2026-10-07-184500-review.md
+A	.agents/tasks/project-ai-18-agent-dag/context.json
+A	.agents/tasks/project-ai-18-agent-dag/features/FEAT-001.json
+A	.agents/tasks/project-ai-18-agent-dag/features/FEAT-002.json
+A	.agents/tasks/project-ai-18-agent-dag/features/FEAT-003.json
+A	.agents/tasks/project-ai-18-agent-dag/features/FEAT-004.json
+A	.agents/tasks/project-ai-18-agent-dag/features/FEAT-005.json
+A	.agents/tasks/project-ai-18-agent-dag/task.json
+A	.agents/tasks/project-ai-18-agent-dag/test-results.txt
+A	.agents/tasks/project-ai-18-agent-dag/verdict.json
+A	.agents/tasks/project-ai-dag-design-review.md
+A	.agents/tasks/project-ai-dag-design-verdict.json
+A	.agents/tasks/project-ai-dag-design.md                         (2,809 lines)
+A	.agents/tasks/project-ai-dag-plan.md                           (355 lines)
+A	.project-ai/runs/phase2/completion-report.md                   (229 lines)
+
+## Helper/Fix Scripts
+A	services/project-ai/fix_gate_tests.py                          (34 lines)
+A	services/project-ai/fix_gate_tests_v2.py                       (36 lines)
+A	services/project-ai/fix_old_gate_tests.py                      (59 lines)
+
+## Large Modified Files (metadata/diffs)
+M	.agents/tasks/full-diff.txt                                    (96,084 insertions)
+M	.agents/tasks/m1-snapshot-test.json                            (1,758 changes)
+M	.agents/tasks/project-ai-remediation-review.json               (69 changes)
+M	.agents/tasks/project-ai-remediation-review.md                 (325 changes)
+
+## Modified Infrastructure
+M	services/project-ai/app/certification/gates.py                 (214 additions)
+M	services/project-ai/app/evidence/logger.py                     (14 additions)
+M	services/project-ai/app/models/__init__.py                     (44 additions)
+M	services/project-ai/app/orchestration/__init__.py              (4 additions)
+M	apps/api-server/next-env.d.ts                                  (2 changes)

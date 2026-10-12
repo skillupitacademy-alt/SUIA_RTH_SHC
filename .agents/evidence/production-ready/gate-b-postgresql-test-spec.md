@@ -1,8 +1,8 @@
 # Gate B-3: PostgreSQL Test Environment Specification
 
-**Task:** Define isolated PostgreSQL test database requirements for project-ai service  
-**Phase:** M2 Gate B — Project AI Canonical Wiring  
-**Branch:** m2-project-ai-canonical-wiring  
+**Task:** Define isolated PostgreSQL test database requirements for project-ai service
+**Phase:** M2 Gate B — Project AI Canonical Wiring
+**Branch:** m2-project-ai-canonical-wiring
 **Authority:** Drizzle migrations (as specified in R3)
 
 ---
@@ -134,7 +134,7 @@ async def db_session_factory(integration_db_engine):
 async def workflow_repo(db_session):
     return PostgresWorkflowRepository(db_session)
 
-# Similar for: contract_repo, candidate_repo, manifest_repo, 
+# Similar for: contract_repo, candidate_repo, manifest_repo,
 # approval_repo, state_transition_repo
 ```
 
@@ -384,30 +384,30 @@ def pytest_collection_modifyitems(config, items):
 def _validate_test_database_url(url: str) -> tuple[bool, str]:
     """
     Validate that database URL is safe for testing.
-    
+
     Returns: (is_valid, error_message)
     """
     try:
         parsed = urlparse(url)
-        
+
         # Extract database name from path
         db_name = parsed.path.lstrip('/')
-        
+
         # Safety Check 1: Database name MUST contain 'test'
         if 'test' not in db_name.lower():
             return False, f"Database name '{db_name}' does not contain 'test' (PRODUCTION PROTECTION)"
-        
+
         # Safety Check 2: Must be localhost or 127.0.0.1
         if parsed.hostname not in ('localhost', '127.0.0.1'):
             return False, f"Database host '{parsed.hostname}' is not localhost (PRODUCTION PROTECTION)"
-        
+
         # Safety Check 3: Should use non-standard port (warning only)
         if parsed.port == 5432:
             # Warning but not fatal (developer might use standard port locally)
             pass
-        
+
         return True, ""
-    
+
     except Exception as e:
         return False, f"Invalid database URL: {e}"
 
@@ -416,23 +416,23 @@ def _validate_test_database_url(url: str) -> tuple[bool, str]:
 async def integration_db_engine():
     """
     Create PostgreSQL database engine for integration tests.
-    
+
     Safety Assertions:
     1. TEST_DATABASE_URL_TUTORIAL must be configured
     2. Database name must contain 'test'
     3. Host must be localhost/127.0.0.1
     4. Schema must exist (project_ai_workflows table check)
-    
+
     Scope: session (shared across all tests for performance)
     """
     if not TEST_DB_URL:
         pytest.skip("TEST_DATABASE_URL_TUTORIAL not configured")
-    
+
     # Validate URL safety
     is_valid, error_msg = _validate_test_database_url(TEST_DB_URL)
     if not is_valid:
         pytest.skip(f"TEST_DATABASE_URL_TUTORIAL failed safety check: {error_msg}")
-    
+
     # Create engine
     engine = create_async_engine(
         TEST_DB_URL,
@@ -441,7 +441,7 @@ async def integration_db_engine():
         pool_size=5,
         max_overflow=10,
     )
-    
+
     # Verify connectivity and schema exists
     try:
         async with engine.begin() as conn:
@@ -449,13 +449,13 @@ async def integration_db_engine():
             result = await conn.execute(
                 """
                 SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
+                    SELECT FROM information_schema.tables
                     WHERE table_name = 'project_ai_workflows'
                 )
                 """
             )
             table_exists = result.scalar()
-            
+
             if not table_exists:
                 await engine.dispose()
                 pytest.skip(
@@ -466,9 +466,9 @@ async def integration_db_engine():
     except Exception as e:
         await engine.dispose()
         pytest.skip(f"Failed to connect to test database: {e}")
-    
+
     yield engine
-    
+
     # Cleanup
     await engine.dispose()
 
@@ -477,10 +477,10 @@ async def integration_db_engine():
 async def db_session(integration_db_engine):
     """
     Create an async database session with transaction rollback for test isolation.
-    
+
     Each test gets a fresh session within a transaction that is rolled back
     after the test completes, ensuring tests don't interfere with each other.
-    
+
     Scope: function (new session per test)
     """
     async_session_factory = async_sessionmaker(
@@ -488,7 +488,7 @@ async def db_session(integration_db_engine):
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    
+
     async with async_session_factory() as session:
         async with session.begin():
             yield session
@@ -500,10 +500,10 @@ async def db_session(integration_db_engine):
 async def db_session_factory(integration_db_engine):
     """
     Provide a session factory for tests that need to simulate restarts.
-    
+
     Returns a callable that creates new sessions, allowing tests to
     close one session and open another to simulate application restart.
-    
+
     TRANSACTION ISOLATION:
     This fixture wraps all restart test operations in an outer transaction
     that automatically rolls back at test completion. Individual sessions
@@ -516,16 +516,16 @@ async def db_session_factory(integration_db_engine):
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    
+
     # Start outer transaction for test-level isolation
     async with async_session_factory() as outer_session:
         async with outer_session.begin():
             async def _factory():
                 """Return the outer session for all restart test operations."""
                 return outer_session
-            
+
             yield _factory
-            
+
             # Rollback outer transaction at test end
             await outer_session.rollback()
 ```
@@ -622,7 +622,7 @@ async with session.begin():
 async def cleanup_tables(integration_db_engine):
     """Explicit table truncation (fallback cleanup)."""
     yield
-    
+
     # Cleanup after test (only if rollback fails)
     async with integration_db_engine.begin() as conn:
         await conn.execute("TRUNCATE TABLE project_ai_state_transitions CASCADE")
@@ -675,7 +675,7 @@ on:
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:17-alpine
@@ -691,37 +691,37 @@ jobs:
           --health-timeout 5s
           --health-retries 5
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-      
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       - name: Install pnpm
         run: npm install -g pnpm
-      
+
       - name: Install dependencies
         run: |
           pnpm install
           cd services/project-ai && pip install -e ".[dev]"
-      
+
       - name: Apply Drizzle migrations
         run: pnpm --filter @quiz/db-tutorial db:migrate
         env:
           # Use standard port in CI (service container uses 5432)
           DATABASE_DIRECT_URL_TUTORIAL: postgresql://project_ai_test:test_password_123@localhost:5432/project_ai_test
-      
+
       - name: Run integration tests
         run: |
           cd services/project-ai
@@ -730,7 +730,7 @@ jobs:
           TEST_DATABASE_URL_TUTORIAL: postgresql+asyncpg://project_ai_test:test_password_123@localhost:5432/project_ai_test
           JWT_SECRET: test_user_secret_key_at_least_32_characters_long_12345678
           ADMIN_JWT_SECRET: test_admin_secret_key_at_least_32_characters_long_12345678
-      
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -745,7 +745,7 @@ jobs:
 
 ### 1. Environment Variable Separation
 
-**Test:** `TEST_DATABASE_URL_TUTORIAL`  
+**Test:** `TEST_DATABASE_URL_TUTORIAL`
 **Production:** `DATABASE_URL_TUTORIAL`
 
 No overlap or fallback between them.
@@ -767,7 +767,7 @@ if parsed.hostname not in ALLOWED_TEST_HOSTS:
 
 ### 4. Port Isolation
 
-Default test port: `55432` (non-standard)  
+Default test port: `55432` (non-standard)
 Production port: `5432` (standard)
 
 ### 5. Explicit Skip on Missing Config
@@ -864,7 +864,7 @@ async def test_workflow_create_and_retrieve(workflow_repo):
         status="draft",
         config={"model": "gpt-4"}
     )
-    
+
     retrieved = await workflow_repo.get_by_id("wf-test-001")
     assert retrieved.workflow_id == "wf-test-001"
     assert retrieved.status == "draft"
@@ -882,12 +882,12 @@ async def test_contract_create_and_update(contract_repo):
         specification={"topics": ["Python", "FastAPI"]},
         status="pending"
     )
-    
+
     updated = await contract_repo.update_status(
         contract_id="contract-test-001",
         status="active"
     )
-    
+
     assert updated.status == "active"
     assert updated.contract_id == "contract-test-001"
 ```
@@ -904,7 +904,7 @@ async def test_candidate_create_and_list(candidate_repo):
             artifact={"content": f"Candidate {i}"},
             quality_score=0.75 + (i * 0.05)
         )
-    
+
     candidates = await candidate_repo.list_by_contract("contract-test-001")
     assert len(candidates) == 3
     assert candidates[0].quality_score >= candidates[1].quality_score
@@ -922,7 +922,7 @@ async def test_manifest_create_and_retrieve(manifest_repo):
             "metrics": {"quality": 0.92}
         }
     )
-    
+
     retrieved = await manifest_repo.get_by_id("manifest-test-001")
     assert retrieved.manifest_data["metrics"]["quality"] == 0.92
     assert len(retrieved.manifest_data["deliverables"]) == 2
@@ -939,7 +939,7 @@ async def test_approval_create_and_query(approval_repo):
         decision="approved",
         rationale="Meets quality standards"
     )
-    
+
     approvals = await approval_repo.list_by_workflow("wf-test-001")
     assert len(approvals) == 1
     assert approvals[0].decision == "approved"
@@ -957,7 +957,7 @@ async def test_state_transition_create_and_audit(state_transition_repo):
         triggered_by="user-123",
         reason="Manual activation"
     )
-    
+
     transitions = await state_transition_repo.get_audit_log("wf-test-001")
     assert len(transitions) == 1
     assert transitions[0].from_state == "draft"
@@ -981,7 +981,7 @@ async def test_user_cannot_access_other_user_workflows(workflow_repo):
         user_id="user-a",
         status="draft"
     )
-    
+
     # Create workflow for user B
     await workflow_repo.create(
         workflow_id="wf-user-b-001",
@@ -989,7 +989,7 @@ async def test_user_cannot_access_other_user_workflows(workflow_repo):
         user_id="user-b",
         status="draft"
     )
-    
+
     # Query as user A (repository should filter by user_id)
     user_a_workflows = await workflow_repo.list_by_user("user-a")
     assert len(user_a_workflows) == 1
@@ -1008,7 +1008,7 @@ async def test_admin_can_access_all_workflows(workflow_repo):
             user_id=user_id,
             status="draft"
         )
-    
+
     # Admin query (no user_id filter)
     all_workflows = await workflow_repo.list_all(admin_role=True)
     assert len(all_workflows) >= 3
@@ -1024,7 +1024,7 @@ async def test_cannot_modify_locked_workflow(workflow_repo):
         user_id="user-123",
         status="locked"
     )
-    
+
     with pytest.raises(ValueError, match="Cannot modify locked workflow"):
         await workflow_repo.update_config(
             workflow_id="wf-locked-001",
@@ -1050,12 +1050,12 @@ async def test_contract_creation_rollback_on_error(contract_repo, db_session):
                 specification={"topics": []},
                 status="pending"
             )
-            
+
             # Simulate error
             raise ValueError("Simulated error")
     except ValueError:
         pass
-    
+
     # Verify contract was not persisted
     retrieved = await contract_repo.get_by_id("contract-rollback-001")
     assert retrieved is None
@@ -1076,7 +1076,7 @@ async def test_cascade_rollback_on_constraint_violation(
                 user_id="user-123",
                 status="draft"
             )
-            
+
             # Create contracts (should succeed)
             await contract_repo.create(
                 contract_id="contract-cascade-001",
@@ -1085,7 +1085,7 @@ async def test_cascade_rollback_on_constraint_violation(
                 specification={},
                 status="pending"
             )
-            
+
             # Violate constraint (duplicate primary key)
             await contract_repo.create(
                 contract_id="contract-cascade-001",  # Duplicate!
@@ -1096,7 +1096,7 @@ async def test_cascade_rollback_on_constraint_violation(
             )
     except Exception:
         pass
-    
+
     # Verify both workflow and contract rolled back
     assert await workflow_repo.get_by_id("wf-cascade-001") is None
     assert await contract_repo.get_by_id("contract-cascade-001") is None
@@ -1113,7 +1113,7 @@ async def test_workflow_resume_after_restart(db_session_factory, workflow_repo):
     # Session 1: Create workflow
     session1 = await db_session_factory()
     repo1 = PostgresWorkflowRepository(session1)
-    
+
     workflow = await repo1.create(
         workflow_id="wf-restart-001",
         workflow_type="tutorial_gen",
@@ -1122,24 +1122,24 @@ async def test_workflow_resume_after_restart(db_session_factory, workflow_repo):
     )
     await session1.commit()
     await session1.close()
-    
+
     # Session 2: Resume workflow (simulate restart)
     session2 = await db_session_factory()
     repo2 = PostgresWorkflowRepository(session2)
-    
+
     retrieved = await repo2.get_by_id("wf-restart-001")
     assert retrieved.workflow_id == "wf-restart-001"
     assert retrieved.status == "draft"
-    
+
     # Update status
     await repo2.update_status("wf-restart-001", "active")
     await session2.commit()
     await session2.close()
-    
+
     # Session 3: Verify update persisted
     session3 = await db_session_factory()
     repo3 = PostgresWorkflowRepository(session3)
-    
+
     final = await repo3.get_by_id("wf-restart-001")
     assert final.status == "active"
 ```
@@ -1153,7 +1153,7 @@ async def test_workflow_resume_after_restart(db_session_factory, workflow_repo):
 async def test_list_workflows_by_status(workflow_repo):
     """Query workflows by status."""
     statuses = ["draft", "active", "completed", "failed"]
-    
+
     for i, status in enumerate(statuses):
         await workflow_repo.create(
             workflow_id=f"wf-status-{i:03d}",
@@ -1161,7 +1161,7 @@ async def test_list_workflows_by_status(workflow_repo):
             user_id="user-123",
             status=status
         )
-    
+
     active_workflows = await workflow_repo.list_by_status("active")
     assert len(active_workflows) == 1
     assert active_workflows[0].status == "active"
@@ -1172,7 +1172,7 @@ async def test_list_workflows_by_status(workflow_repo):
 async def test_list_candidates_ranked_by_quality(candidate_repo):
     """Retrieve candidates ranked by quality score."""
     scores = [0.65, 0.92, 0.78, 0.84]
-    
+
     for i, score in enumerate(scores):
         await candidate_repo.create(
             candidate_id=f"candidate-rank-{i:03d}",
@@ -1181,7 +1181,7 @@ async def test_list_candidates_ranked_by_quality(candidate_repo):
             artifact={"content": f"Candidate {i}"},
             quality_score=score
         )
-    
+
     ranked = await candidate_repo.list_by_contract_ranked("contract-test-001")
     assert len(ranked) == 4
     assert ranked[0].quality_score == 0.92  # Highest first
@@ -1193,9 +1193,9 @@ async def test_list_candidates_ranked_by_quality(candidate_repo):
 async def test_list_workflows_by_date_range(workflow_repo):
     """Query workflows created within a date range."""
     from datetime import datetime, timedelta, timezone
-    
+
     now = datetime.now(timezone.utc)
-    
+
     # Create workflows with different timestamps
     for i in range(5):
         await workflow_repo.create(
@@ -1205,7 +1205,7 @@ async def test_list_workflows_by_date_range(workflow_repo):
             status="draft",
             created_at=now - timedelta(days=i)
         )
-    
+
     # Query last 3 days
     start_date = now - timedelta(days=3)
     recent = await workflow_repo.list_by_date_range(start_date, now)
@@ -1240,7 +1240,7 @@ async def test_cannot_create_duplicate_workflow_id(workflow_repo):
         user_id="user-123",
         status="draft"
     )
-    
+
     with pytest.raises(Exception):  # UniqueViolation
         await workflow_repo.create(
             workflow_id="wf-unique-001",  # Duplicate!
@@ -1265,13 +1265,13 @@ async def test_workflow_requires_user_id(workflow_repo):
 
 ### Integration Test Acceptance Criteria
 
-**AC-INT-1:** All CRUD operation tests (TC-1.1 through TC-1.6) pass  
-**AC-INT-2:** RBAC enforcement tests (TC-2.1 through TC-2.3) pass  
-**AC-INT-3:** Transaction rollback tests (TC-3.1, TC-3.2) pass  
-**AC-INT-4:** Restart simulation test (TC-4.1) passes  
-**AC-INT-5:** Complex query tests (TC-5.1 through TC-5.3) pass  
-**AC-INT-6:** Data integrity tests (TC-6.1 through TC-6.3) pass  
-**AC-INT-7:** Test execution time < 60 seconds for full suite  
+**AC-INT-1:** All CRUD operation tests (TC-1.1 through TC-1.6) pass
+**AC-INT-2:** RBAC enforcement tests (TC-2.1 through TC-2.3) pass
+**AC-INT-3:** Transaction rollback tests (TC-3.1, TC-3.2) pass
+**AC-INT-4:** Restart simulation test (TC-4.1) passes
+**AC-INT-5:** Complex query tests (TC-5.1 through TC-5.3) pass
+**AC-INT-6:** Data integrity tests (TC-6.1 through TC-6.3) pass
+**AC-INT-7:** Test execution time < 60 seconds for full suite
 **AC-INT-8:** Zero test pollution (tests can run in any order)
 
 ---
@@ -1341,9 +1341,9 @@ diff schema_before.txt schema_after.txt
 
 ### Rollback Test Acceptance Criteria
 
-**AC-RB-1:** Single migration rollback procedure documented  
-**AC-RB-2:** Rollback verification queries defined  
-**AC-RB-3:** Known risks of rollback documented (data loss scenarios)  
+**AC-RB-1:** Single migration rollback procedure documented
+**AC-RB-2:** Rollback verification queries defined
+**AC-RB-3:** Known risks of rollback documented (data loss scenarios)
 **AC-RB-4:** Rollback testing is **NOT BLOCKING** for Gate C (forward migrations are sufficient)
 
 ---
@@ -1371,16 +1371,16 @@ SELECT * FROM project_ai_workflows WHERE workflow_id = 'wf-test-001';
 **PT-1.2: User Workflow List**
 ```sql
 -- Target: < 20ms for up to 100 workflows
-SELECT * FROM project_ai_workflows 
-WHERE user_id = 'user-123' 
-ORDER BY created_at DESC 
+SELECT * FROM project_ai_workflows
+WHERE user_id = 'user-123'
+ORDER BY created_at DESC
 LIMIT 50;
 ```
 
 **PT-1.3: Contract Lookup with Join**
 ```sql
 -- Target: < 30ms
-SELECT 
+SELECT
     c.contract_id, c.status, w.workflow_id, w.user_id
 FROM project_ai_contracts c
 JOIN project_ai_workflows w ON c.workflow_id = w.workflow_id
@@ -1406,7 +1406,7 @@ async def benchmark_query(repo, query_func, *args, iterations=100):
     for _ in range(iterations):
         await query_func(*args)
     end = time.perf_counter()
-    
+
     avg_duration = (end - start) / iterations
     return avg_duration
 ```
@@ -1417,13 +1417,13 @@ async def benchmark_query(repo, query_func, *args, iterations=100):
 
 **Verification Method:**
 ```sql
-EXPLAIN ANALYZE 
+EXPLAIN ANALYZE
 SELECT * FROM project_ai_workflows WHERE workflow_id = 'wf-test-001';
 ```
 
 **Expected Output:**
 ```
-Index Scan using project_ai_workflows_pkey on project_ai_workflows  
+Index Scan using project_ai_workflows_pkey on project_ai_workflows
   (cost=0.15..8.17 rows=1 width=...)
 ```
 
@@ -1441,14 +1441,14 @@ Index Scan using project_ai_workflows_pkey on project_ai_workflows
 async def test_connection_pool_concurrency():
     """Verify connection pool handles 20 concurrent queries."""
     import asyncio
-    
+
     async def query_workflow(workflow_id):
         return await workflow_repo.get_by_id(workflow_id)
-    
+
     # Create 20 concurrent queries
     tasks = [query_workflow(f"wf-test-{i:03d}") for i in range(20)]
     results = await asyncio.gather(*tasks)
-    
+
     assert len(results) == 20
 ```
 
@@ -1471,9 +1471,9 @@ async def test_connection_pool_concurrency():
 async def test_large_result_set():
     """Query 1000 workflows and verify memory efficiency."""
     import tracemalloc
-    
+
     tracemalloc.start()
-    
+
     # Insert 1000 workflows
     for i in range(1000):
         await workflow_repo.create(
@@ -1482,28 +1482,28 @@ async def test_large_result_set():
             user_id="user-123",
             status="draft"
         )
-    
+
     # Query all (should use streaming/batching)
     snapshot_before = tracemalloc.take_snapshot()
     workflows = await workflow_repo.list_by_user("user-123", limit=1000)
     snapshot_after = tracemalloc.take_snapshot()
-    
+
     memory_used = sum(
-        stat.size_diff 
+        stat.size_diff
         for stat in snapshot_after.compare_to(snapshot_before, 'lineno')
     )
-    
+
     # Verify memory usage is reasonable (< 50MB for 1000 rows)
     assert memory_used < 50 * 1024 * 1024
 ```
 
 ### Performance Test Acceptance Criteria
 
-**AC-PERF-1:** Query benchmarks documented for all major operations  
-**AC-PERF-2:** Index usage verified via EXPLAIN ANALYZE  
-**AC-PERF-3:** Connection pool handles 20 concurrent queries without errors  
-**AC-PERF-4:** Large result sets (1000+ rows) do not cause memory issues  
-**AC-PERF-5:** Performance baselines recorded for future regression testing  
+**AC-PERF-1:** Query benchmarks documented for all major operations
+**AC-PERF-2:** Index usage verified via EXPLAIN ANALYZE
+**AC-PERF-3:** Connection pool handles 20 concurrent queries without errors
+**AC-PERF-4:** Large result sets (1000+ rows) do not cause memory issues
+**AC-PERF-5:** Performance baselines recorded for future regression testing
 **AC-PERF-6:** Load testing (1000+ concurrent users) is **OUT OF SCOPE** for Gate B
 
 ---

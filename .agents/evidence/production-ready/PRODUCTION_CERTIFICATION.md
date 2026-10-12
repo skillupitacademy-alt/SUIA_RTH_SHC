@@ -1,9 +1,9 @@
 # Production Certification — M2 Project AI Canonical Wiring
 
-**Certification Date:** 2025-01-24  
-**Branch:** m2-project-ai-canonical-wiring  
-**Baseline SHA:** 59f15424  
-**Certified Commit SHA:** 86f1d31b  
+**Certification Date:** 2025-01-24
+**Branch:** m2-project-ai-canonical-wiring
+**Baseline SHA:** 59f15424
+**Certified Commit SHA:** 86f1d31b
 **Certification Status:** ✅ PRODUCTION READY
 
 ---

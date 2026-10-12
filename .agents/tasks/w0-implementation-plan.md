@@ -1,8 +1,8 @@
 # Implementation Plan: Canonical Workflow Authority Freeze (Wave 0 / Agent B01)
 
-**Task:** Establish CanonicalWorkflowState as the single source of truth for Project LLM workflow lifecycle  
-**Branch:** m2-project-ai-canonical-wiring  
-**Design Document:** `.agents/tasks/w0-design-doc.md`  
+**Task:** Establish CanonicalWorkflowState as the single source of truth for Project LLM workflow lifecycle
+**Branch:** m2-project-ai-canonical-wiring
+**Design Document:** `.agents/tasks/w0-design-doc.md`
 **Authority Audit:** `.agents/tasks/w0-authority-audit.md`
 
 ---
@@ -18,7 +18,7 @@ This plan implements the canonical workflow authority freeze per M2.9 Wave 0 / A
 5. Deprecating conflicting authorities (task routes, frontend independent state)
 6. Creating comprehensive tests for state transitions, governance, and authorization
 
-**Design Decision (grounded in audit findings):**  
+**Design Decision (grounded in audit findings):**
 The audit confirms that `CanonicalWorkflowState` (17 states) is well-designed and complete, but not wired to execution. Rather than redesigning the state machine, this plan wires the existing canonical states to workflow execution by creating `WorkflowGovernanceService` as the single point of authority for state transitions, and updating `WorkflowEngine` to use canonical states instead of `TaskState`.
 
 ---
@@ -194,7 +194,7 @@ The audit confirms that `CanonicalWorkflowState` (17 states) is well-designed an
 - Update docstrings with deprecation notice:
   ```
   DEPRECATED (M2.9 Wave 0): Use POST /workflows instead.
-  
+
   This endpoint will be removed in future versions.
   Migration path: POST /workflows with target_family, target_version, requester_id.
   ```
@@ -506,9 +506,9 @@ The audit confirms that `CanonicalWorkflowState` (17 states) is well-designed an
 - Commit with message:
   ```
   M2.9 W0: Freeze canonical workflow authority (Agent B01)
-  
+
   Establish CanonicalWorkflowState as single source of truth for workflow lifecycle.
-  
+
   - Created ProjectLLMWorkflow model with hash-bound artifact tracking
   - Created WorkflowGovernanceService for state transition enforcement
   - Created /workflows API endpoints using canonical states
@@ -517,10 +517,10 @@ The audit confirms that `CanonicalWorkflowState` (17 states) is well-designed an
   - Deprecated /tasks routes (migration to /workflows in Wave 1+)
   - Created comprehensive test suite (50+ tests)
   - Documented frontend integration requirements
-  
+
   Resolves multiple-authority conflict per authority audit.
   All tests passing. Evidence report: .agents/tasks/w0-architecture-freeze-report.json
-  
+
   Design: .agents/tasks/w0-design-doc.md
   Audit: .agents/tasks/w0-authority-audit.md
   Plan: .agents/tasks/w0-implementation-plan.md
@@ -578,10 +578,10 @@ Additional documentation:
 
 ## Dependencies and Constraints
 
-**Language:** Python 3.11+  
-**Test Framework:** pytest 9.1.1 with pytest-asyncio  
-**Web Framework:** FastAPI with Pydantic v2  
-**Build System:** None required (Python modules only)  
+**Language:** Python 3.11+
+**Test Framework:** pytest 9.1.1 with pytest-asyncio
+**Web Framework:** FastAPI with Pydantic v2
+**Build System:** None required (Python modules only)
 **Test Command:** `python -m pytest services/project-ai/tests -v --tb=short`
 
 **Key Dependencies (from existing pyproject.toml):**

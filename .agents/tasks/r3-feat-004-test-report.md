@@ -1,8 +1,8 @@
 # FEAT-004: PostgreSQL Integration Tests - Implementation Report
 
-**Implementation Date:** 2025-01-XX  
-**Status:** ✅ COMPLETE (Review Iteration 2 - All Findings Resolved)  
-**Test Database:** Not configured (tests skip gracefully)  
+**Implementation Date:** 2025-01-XX
+**Status:** ✅ COMPLETE (Review Iteration 2 - All Findings Resolved)
+**Test Database:** Not configured (tests skip gracefully)
 **Dependencies:** FEAT-003 (repository implementations)
 
 ---
@@ -92,7 +92,7 @@ async def db_session(integration_db_engine):
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    
+
     async with async_session_factory() as session:
         async with session.begin():
             yield session
@@ -106,7 +106,7 @@ async def db_session(integration_db_engine):
 async def db_session_factory(integration_db_engine):
     """
     Provide a session factory for tests that need to simulate restarts.
-    
+
     TRANSACTION ISOLATION (Fixed in Review Iteration 2):
     This fixture wraps all restart test operations in an outer transaction
     that automatically rolls back at test completion. Individual sessions
@@ -119,19 +119,19 @@ async def db_session_factory(integration_db_engine):
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    
+
     # Start outer transaction for test-level isolation
     async with async_session_factory() as outer_session:
         async with outer_session.begin():
             # Create a savepoint for nested transaction support
             nested_transaction = await outer_session.begin_nested()
-            
+
             async def _factory():
                 """Return the outer session for all restart test operations."""
                 return outer_session
-            
+
             yield _factory
-            
+
             # Rollback outer transaction at test end
             await outer_session.rollback()
 ```
@@ -281,38 +281,38 @@ assert exc_info.value.expected_version == 1
 async def test_workflow_persists_across_sessions(db_session_factory):
     """
     Test that workflow persists across sessions (simulates restart).
-    
+
     Note: Both "sessions" use the same underlying database session within
     a transaction that rolls back at test end. This simulates restart
     persistence while maintaining test isolation.
     """
     workflow_id = "wf_restart_001"
-    
+
     # ========== Session 1: Create workflow ==========
     session = await db_session_factory()
     repo1 = PostgresWorkflowRepository(session)
-    
+
     workflow = WorkflowModel(
         workflow_id=workflow_id,
         specification_id="spec_restart_001",
         ...
     )
-    
+
     await repo1.upsert(workflow)
     await session.flush()  # Make visible within transaction
-    
+
     # Simulate "closing" session 1 by creating new repo instance
-    
+
     # ========== Session 2: Retrieve workflow ==========
     repo2 = PostgresWorkflowRepository(session)
-    
+
     retrieved = await repo2.get(workflow_id, verify_bindings=False)
-    
+
     # Verify all fields persisted correctly
     assert retrieved is not None
     assert retrieved.workflow_id == workflow_id
     # ... more assertions
-    
+
     # At test end, outer transaction rolls back automatically
 ```
 
@@ -369,7 +369,7 @@ tests/integration/test_restart_persistence.py::test_artifact_bindings_persist SK
 
 ### Skip Reason (Verbose Output):
 ```
-SKIPPED [26] tests\integration\...: 
+SKIPPED [26] tests\integration\...:
 TEST_DATABASE_URL_TUTORIAL not configured — cannot run PostgreSQL integration tests
 ```
 
@@ -478,7 +478,7 @@ Add to CI pipeline configuration:
 env:
   # Production database (for migration verification)
   DATABASE_URL_TUTORIAL: ${{ secrets.DATABASE_URL_TUTORIAL }}
-  
+
   # Test database (for integration tests)
   TEST_DATABASE_URL_TUTORIAL: ${{ secrets.TEST_DATABASE_URL_TUTORIAL }}
 ```
@@ -568,7 +568,7 @@ async def db_session(integration_db_engine):
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    
+
     async with async_session_factory() as session:
         async with session.begin():
             yield session
@@ -769,11 +769,11 @@ The test suite provides confidence that the persistence layer correctly implemen
 - Idempotent upsert operations
 - Transaction safety
 
-**Test Count:** 26 integration tests (4 conftest unit tests + 17 repository tests + 5 restart tests)  
-**Status:** All tests skip gracefully when `TEST_DATABASE_URL_TUTORIAL` not configured  
+**Test Count:** 26 integration tests (4 conftest unit tests + 17 repository tests + 5 restart tests)
+**Status:** All tests skip gracefully when `TEST_DATABASE_URL_TUTORIAL` not configured
 **Next Step:** Configure test database to enable test execution
 
 ---
 
-**FEAT-004 Implementation Complete (Review Iteration 2)**  
+**FEAT-004 Implementation Complete (Review Iteration 2)**
 **Ready for FEAT-005:** Documentation & Final Verification

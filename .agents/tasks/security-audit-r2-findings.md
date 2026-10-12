@@ -28,8 +28,8 @@ Performed comprehensive grep searches across all Python files in the `app/` and 
 ### 1.2 Findings
 
 #### ❌ VIOLATION 1: Hardcoded 'intermediate' difficulty level
-**File:** `app/contracts/repository_intelligence.py`  
-**Line:** 274  
+**File:** `app/contracts/repository_intelligence.py`
+**Line:** 274
 **Code:**
 ```python
 # Default difficulty level if not provided
@@ -39,14 +39,14 @@ if not metadata['difficulty_level']:
 
 **Context:** This occurs in the `extract_metadata_from_snapshot()` function when the snapshot metadata does not contain a difficulty_level field.
 
-**Severity:** MEDIUM  
+**Severity:** MEDIUM
 **Justification:** While this is a fallback default for missing snapshot data, it represents a hardcoded business logic value that should ideally be configurable or derived from the snapshot explicitly.
 
 ---
 
 #### ❌ VIOLATION 2: Hardcoded 'TypeScript' language inference
-**File:** `app/contracts/repository_intelligence.py`  
-**Line:** 238  
+**File:** `app/contracts/repository_intelligence.py`
+**Line:** 238
 **Code:**
 ```python
 if path.endswith('.tsx') or path.endswith('.ts'):
@@ -59,13 +59,13 @@ elif path.endswith('.jsx') or path.endswith('.js'):
 
 **Context:** This occurs in the `extract_metadata_from_snapshot()` function when inferring language from file extensions in snapshot evidence.
 
-**Severity:** LOW  
+**Severity:** LOW
 **Justification:** This is a reasonable inference heuristic based on file extensions (evidence-derived), but uses hardcoded string literals for language names. Could be externalized to a configuration mapping.
 
 ---
 
 #### ✅ CLEAN: No hardcoded values in `create_engineering_contract()`
-**File:** `app/api/routes/contract.py`  
+**File:** `app/api/routes/contract.py`
 **Function:** `create_engineering_contract()` (line 232)
 
 **Scans performed:**
@@ -80,13 +80,13 @@ grep -rn 'language.*=' app/api/routes/contract.py    # No matches
 ---
 
 #### ✅ CLEAN: No hardcoded framework strings
-**Scan:** `grep -rn 'framework.*"' app/contracts/*.py`  
+**Scan:** `grep -rn 'framework.*"' app/contracts/*.py`
 **Result:** No matches found in contracts module
 
 ---
 
 #### ✅ CLEAN: No hardcoded difficulty_level assignment strings
-**Scan:** `grep -rn 'difficulty_level.*"' app/contracts/*.py`  
+**Scan:** `grep -rn 'difficulty_level.*"' app/contracts/*.py`
 **Result:** No matches found (the violation above uses a plain string, not in assignment context within contracts)
 
 ---
@@ -110,8 +110,8 @@ grep -rn 'language.*=' app/api/routes/contract.py    # No matches
 
 ✅ **EXISTS**
 
-**File:** `app/contracts/engineering_contract.py`  
-**Line:** 161  
+**File:** `app/contracts/engineering_contract.py`
+**Line:** 161
 **Definition:**
 ```python
 def seal_contract(contract: EngineeringContract) -> str:
@@ -128,14 +128,14 @@ def seal_contract(contract: EngineeringContract) -> str:
 
 ✅ **EXISTS**
 
-**File:** `app/contracts/repository_intelligence.py`  
-**Line:** 34  
+**File:** `app/contracts/repository_intelligence.py`
+**Line:** 34
 **Definition:**
 ```python
 class ContractFieldEvidence(BaseModel):
     """
     Evidence tracking for a single contract field.
-    
+
     Records the provenance of each contract field value, enabling:
     - Audit trail showing which snapshot evidence backs each field
     - Debugging when fields appear incorrect
@@ -273,8 +273,8 @@ plugins: anyio-4.12.0, dash-3.3.0, asyncio-1.4.0
 ## 5. Recommendations
 
 ### 5.1 HIGH PRIORITY: Externalize Default Values
-**Issue:** Hardcoded 'intermediate' default (line 274)  
-**Recommendation:** 
+**Issue:** Hardcoded 'intermediate' default (line 274)
+**Recommendation:**
 ```python
 # Option 1: Make it a required field (fail if missing)
 if not metadata['difficulty_level']:
@@ -287,7 +287,7 @@ if not metadata['difficulty_level']:
 ```
 
 ### 5.2 MEDIUM PRIORITY: Externalize Language Inference Map
-**Issue:** Hardcoded 'TypeScript'/'JavaScript' strings (line 238)  
+**Issue:** Hardcoded 'TypeScript'/'JavaScript' strings (line 238)
 **Recommendation:**
 ```python
 LANGUAGE_EXTENSION_MAP = {
@@ -305,7 +305,7 @@ for extension, language in LANGUAGE_EXTENSION_MAP.items():
 ```
 
 ### 5.3 LOW PRIORITY: Update datetime.utcnow() Calls
-**Issue:** 60 deprecation warnings  
+**Issue:** 60 deprecation warnings
 **Recommendation:** Replace `datetime.utcnow()` with `datetime.now(timezone.utc)` throughout codebase
 
 ---

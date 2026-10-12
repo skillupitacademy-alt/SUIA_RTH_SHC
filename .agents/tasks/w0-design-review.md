@@ -1,8 +1,8 @@
 # Design Review: Canonical Project LLM Workflow Authority (Wave 0 / Agent B01)
 
-**Review Date:** 2026-01-08  
-**Design Document:** `e:\onlinewebsites\quiz-platform\.agents\tasks\w0-design-doc.md`  
-**Audit Reference:** `e:\onlinewebsites\quiz-platform\.agents\tasks\w0-authority-audit.md`  
+**Review Date:** 2026-01-08
+**Design Document:** `e:\onlinewebsites\quiz-platform\.agents\tasks\w0-design-doc.md`
+**Audit Reference:** `e:\onlinewebsites\quiz-platform\.agents\tasks\w0-authority-audit.md`
 **Reviewer:** Design Review Agent (Fresh Review, No Implementation Context)
 
 ---
@@ -151,30 +151,30 @@ The following design assumptions could not be verified because the components do
 
 ### ⚠️ WorkflowGovernanceService (NEW FILE)
 
-**Location:** `services/project-ai/app/orchestration/workflow_governance.py`  
-**Status:** File does not exist in repository  
-**Assumption:** Design specifies complete API with 6 methods  
+**Location:** `services/project-ai/app/orchestration/workflow_governance.py`
+**Status:** File does not exist in repository
+**Assumption:** Design specifies complete API with 6 methods
 **Risk:** None — this is the implementation target for Wave 0
 
 ### ⚠️ ProjectLLMWorkflow Model (NEW FILE)
 
-**Location:** `services/project-ai/app/models/workflow.py`  
-**Status:** File does not exist in repository  
-**Assumption:** Design specifies complete dataclass model  
+**Location:** `services/project-ai/app/models/workflow.py`
+**Status:** File does not exist in repository
+**Assumption:** Design specifies complete dataclass model
 **Risk:** None — this is the implementation target for Wave 0
 
 ### ⚠️ Workflow API Routes (NEW FILE)
 
-**Location:** `services/project-ai/app/api/routes/workflows.py`  
-**Status:** File does not exist in repository  
-**Assumption:** Design specifies 5 REST endpoints  
+**Location:** `services/project-ai/app/api/routes/workflows.py`
+**Status:** File does not exist in repository
+**Assumption:** Design specifies 5 REST endpoints
 **Risk:** None — this is the implementation target for Wave 0
 
 ### ⚠️ Workflow Schemas (NEW FILE)
 
-**Location:** `services/project-ai/app/api/schemas/workflow.py`  
-**Status:** File does not exist in repository  
-**Assumption:** Design specifies Pydantic schemas  
+**Location:** `services/project-ai/app/api/schemas/workflow.py`
+**Status:** File does not exist in repository
+**Assumption:** Design specifies Pydantic schemas
 **Risk:** None — this is the implementation target for Wave 0
 
 ---
@@ -460,11 +460,11 @@ The NITs are optional documentation improvements. The design is **ready for impl
 
 ### Integration Order
 
-**Step 1:** Create `WorkflowGovernanceService` and verify unit tests pass (8 tests from Section 8.1)  
-**Step 2:** Create `/workflows` API endpoints and verify API tests pass (4 tests from Section 8.3)  
-**Step 3:** Modify `WorkflowEngine.execute_step()` to call `governance_service.transition_state()` and verify integration tests pass (4 tests from Section 8.2)  
-**Step 4:** Update governance routes to use `governance_service` instead of `_workflow_states` dict  
-**Step 5:** Add deprecation warnings to `/tasks` endpoints  
+**Step 1:** Create `WorkflowGovernanceService` and verify unit tests pass (8 tests from Section 8.1)
+**Step 2:** Create `/workflows` API endpoints and verify API tests pass (4 tests from Section 8.3)
+**Step 3:** Modify `WorkflowEngine.execute_step()` to call `governance_service.transition_state()` and verify integration tests pass (4 tests from Section 8.2)
+**Step 4:** Update governance routes to use `governance_service` instead of `_workflow_states` dict
+**Step 5:** Add deprecation warnings to `/tasks` endpoints
 **Step 6:** Update frontend to fetch backend state (Wave 2, optional for Wave 0)
 
 ---
@@ -473,13 +473,13 @@ The NITs are optional documentation improvements. The design is **ready for impl
 
 **APPROVED — Ready for implementation**
 
-**Confidence Level:** HIGH  
-**Blocking Issues:** 0  
-**Optional Improvements:** 3 NITs  
+**Confidence Level:** HIGH
+**Blocking Issues:** 0
+**Optional Improvements:** 3 NITs
 **Estimated Implementation Effort:** 6-8 agent-hours (Wave 0 scope only)
 
 ---
 
-**Review Complete**  
-**Reviewer:** Design Review Agent  
+**Review Complete**
+**Reviewer:** Design Review Agent
 **Sign-off:** 2026-01-08

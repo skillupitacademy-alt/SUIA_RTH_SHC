@@ -55,7 +55,7 @@ These client-controlled values are used for:
 
 **Wave 1D Plan Coverage**: ❌ NOT COVERED - Added as FEAT-005 via send_message
 
-**Verification**: 
+**Verification**:
 - `test_governance_ignores_client_supplied_submitter`
 - `test_governance_ignores_client_supplied_decider`
 - `test_self_approval_rejected_with_jwt_identity`
@@ -109,7 +109,7 @@ Before Wave 1D approval:
 - ✅ README documents RBAC model
 - ✅ Route-to-role authorization matrix documented
 
-**Total Expected Tests**: 
+**Total Expected Tests**:
 - Wave 1B: 15 tests
 - Wave 1C: 24 tests (includes remediation)
 - Wave 1D: 18 tests (15 RBAC + 3 governance identity)

@@ -73,7 +73,7 @@ Wave 5 implements the placement engine core logic that matches candidates to ava
 - **Finding**: API schemas existed but no FastAPI endpoints implemented
 - **Resolution**: Added three endpoints to workflows.py:
   - POST /workflows/{id}/placement
-  - POST /workflows/{id}/placement/override  
+  - POST /workflows/{id}/placement/override
   - GET /workflows/{id}/placement/conflicts
 - **Implementation**: Full dependency injection with PlacementEngine factory
 

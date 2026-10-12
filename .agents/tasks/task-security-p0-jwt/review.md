@@ -1,7 +1,7 @@
 # JWT Authentication Security Review - project-ai Service
 
-**Branch**: m2-project-ai-canonical-wiring  
-**Review Date**: 2026-10-09  
+**Branch**: m2-project-ai-canonical-wiring
+**Review Date**: 2026-10-09
 **Reviewer**: Kiro AI Security Agent
 
 ## Executive Summary
@@ -31,7 +31,7 @@ No blocking issues found. Implementation meets all acceptance criteria.
 
 ## JWT Configuration and Startup Validation
 
-**File**: `services/project-ai/app/auth/config.py`  
+**File**: `services/project-ai/app/auth/config.py`
 **Lines**: 21-31
 
 The `get_jwt_config()` function validates JWT_SECRET_KEY at startup:
@@ -39,7 +39,7 @@ The `get_jwt_config()` function validates JWT_SECRET_KEY at startup:
 - Raises ValueError if JWT_SECRET_KEY is less than 32 characters
 - Returns configuration with secret_key, algorithm (default HS256), and access_token_expire_minutes (default 30)
 
-**File**: `services/project-ai/app/main.py`  
+**File**: `services/project-ai/app/main.py`
 **Lines**: 65-70
 
 The lifespan function calls `get_jwt_config()` during startup validation, ensuring the application fails fast if JWT configuration is invalid. This prevents the service from starting in an insecure state.
@@ -48,7 +48,7 @@ The lifespan function calls `get_jwt_config()` during startup validation, ensuri
 
 ## JWT Token Creation and Claim Validation
 
-**File**: `services/project-ai/app/auth/jwt.py`  
+**File**: `services/project-ai/app/auth/jwt.py`
 **Lines**: 1-121
 
 ### Token Creation (`create_access_token`)
@@ -83,7 +83,7 @@ The decode function implements comprehensive claim validation:
 
 ## Dependency Configuration
 
-**File**: `services/project-ai/pyproject.toml`  
+**File**: `services/project-ai/pyproject.toml`
 **Lines**: 5-14
 
 Dependencies array includes:
@@ -286,25 +286,25 @@ The review found **no authentication bypass vulnerabilities**, **no missing auth
 
 ## Acceptance Criteria Verification
 
-✅ **1. pyproject.toml includes pyjwt[crypto]>=2.8.0**  
+✅ **1. pyproject.toml includes pyjwt[crypto]>=2.8.0**
    Verified in `services/project-ai/pyproject.toml` line 14: `"pyjwt[crypto]>=2.8.0"`
 
-✅ **2. All 35 endpoints (excluding /health) have Depends(get_current_user)**  
+✅ **2. All 35 endpoints (excluding /health) have Depends(get_current_user)**
    Verified across 8 route files + root endpoint. Total: 35 endpoints authenticated, 1 public (/health), 4 deprecated (creation.py returns 405).
 
-✅ **3. contract.py removed custom verify_auth and uses standard pattern**  
+✅ **3. contract.py removed custom verify_auth and uses standard pattern**
    Verified: contract.py uses `user: dict = Depends(get_current_user)` on both endpoints (lines 135, 433). No custom verify_auth or verify_workflow_ownership functions found.
 
-✅ **4. test_jwt_verifier.py exists with 12 tests, all passing**  
+✅ **4. test_jwt_verifier.py exists with 12 tests, all passing**
    Verified: `tests/unit/test_jwt_verifier.py` contains 12 tests covering audience, tokenType, identity claims, expiration, invalid signatures, and malformed tokens. Execution: `12 passed in 0.20s`.
 
-✅ **5. No auth bypass vulnerabilities introduced**  
+✅ **5. No auth bypass vulnerabilities introduced**
    Confirmed: All endpoints use FastAPI dependency injection with consistent get_current_user pattern. decode_access_token implements fail-closed validation with no code path allowing invalid tokens.
 
-✅ **6. Code follows existing FastAPI dependency injection pattern**  
+✅ **6. Code follows existing FastAPI dependency injection pattern**
    Confirmed: All endpoints use `user: dict = Depends(get_current_user)` parameter, consistent with existing FastAPI patterns in the codebase.
 
-✅ **7. JWT_SECRET_KEY validation in startup remains functional**  
+✅ **7. JWT_SECRET_KEY validation in startup remains functional**
    Verified: `app/main.py` lifespan function (lines 65-70) calls `get_jwt_config()` which validates JWT_SECRET_KEY presence and length >= 32 characters, raising ValueError if invalid.
 
 ## Test Execution Summary

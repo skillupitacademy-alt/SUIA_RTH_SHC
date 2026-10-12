@@ -84,7 +84,7 @@ The test fixtures (`tests/integration/conftest.py`) validate schema existence:
 result = await conn.execute(
     """
     SELECT EXISTS (
-        SELECT FROM information_schema.tables 
+        SELECT FROM information_schema.tables
         WHERE table_name = 'project_ai_workflows'
     )
     """

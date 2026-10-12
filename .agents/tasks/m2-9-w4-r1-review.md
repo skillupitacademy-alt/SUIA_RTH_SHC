@@ -2,8 +2,8 @@
 
 Remediation of three authorization bypass vulnerabilities identified in the W4 independent security review.
 
-**Commit:** `00ce3fbd00b4a1a1d7aab29f2aacf7f8c81f2ca5`  
-**Branch:** `m2-project-ai-canonical-wiring`  
+**Commit:** `00ce3fbd00b4a1a1d7aab29f2aacf7f8c81f2ca5`
+**Branch:** `m2-project-ai-canonical-wiring`
 **Remediation Report:** `.agents/tasks/m2-9-w4-r1-remediation-report.md`
 
 ## Summary
@@ -45,7 +45,7 @@ def verify_not_self_approved(self, requester_id: str) -> bool:
     # Fail-closed: missing workflow_requester means we cannot verify separation of duties
     if not self.workflow_requester:
         return False
-    
+
     return self.approved_by != self.workflow_requester
 ```
 

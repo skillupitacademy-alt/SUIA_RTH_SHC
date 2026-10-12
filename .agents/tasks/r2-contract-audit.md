@@ -7,8 +7,8 @@ This audit documents which fields in the `create_engineering_contract()` functio
 Generated during FEAT-001 implementation
 
 ## Function Location
-File: `services/project-ai/app/api/routes/contract.py`  
-Function: `create_engineering_contract()`  
+File: `services/project-ai/app/api/routes/contract.py`
+Function: `create_engineering_contract()`
 Lines: 327-437 (EngineeringContract construction)
 
 ---
@@ -19,7 +19,7 @@ Lines: 327-437 (EngineeringContract construction)
 - **Line 335**: `difficulty_level='intermediate'` - HARDCODED
   - Current: Static string literal
   - Should derive from: Snapshot metadata or learning objective complexity analysis
-  
+
 - **Line 336**: `content_type=target.block_type` - DERIVED from request parameter
   - This is passed through from the workflow target, not snapshot evidence
 

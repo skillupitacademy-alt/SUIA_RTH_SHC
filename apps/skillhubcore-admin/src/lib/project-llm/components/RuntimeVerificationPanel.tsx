@@ -1,9 +1,9 @@
 /**
  * Runtime Verification Orchestration UI
- * 
+ *
  * Provides controls to trigger runtime verification and displays results.
  * Shows runtime health, process management status, and browser verification.
- * 
+ *
  * CRITICAL RULE: All data from real backend calls; no hardcoded mock results.
  */
 
@@ -64,10 +64,10 @@ export const RuntimeVerificationPanel: React.FC<RuntimeVerificationPanelProps> =
 
     try {
       const response = await projectLlmClient.triggerRuntimeVerification(workflowId);
-      
+
       if (response.triggered) {
         setSuccessMessage('Runtime verification triggered successfully');
-        
+
         // Notify parent to refetch workflow state
         if (onVerificationComplete) {
           onVerificationComplete();
@@ -120,7 +120,7 @@ export const RuntimeVerificationPanel: React.FC<RuntimeVerificationPanelProps> =
         <h4 className="text-sm font-semibold text-gray-700 mb-3">
           Runtime Health Check
         </h4>
-        
+
         {runtimeHealth ? (
           <div className="space-y-2 bg-gray-50 p-3 rounded">
             <div className="flex items-center justify-between">
@@ -133,14 +133,14 @@ export const RuntimeVerificationPanel: React.FC<RuntimeVerificationPanelProps> =
                 {runtimeHealth.healthy ? '✓ Healthy' : '✗ Unhealthy'}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Process Status:</span>
               <span className="text-sm font-mono text-gray-800">
                 {runtimeHealth.processStatus}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Last Checked:</span>
               <span className="text-sm text-gray-800">
@@ -160,7 +160,7 @@ export const RuntimeVerificationPanel: React.FC<RuntimeVerificationPanelProps> =
         <h4 className="text-sm font-semibold text-gray-700 mb-3">
           Browser Verification
         </h4>
-        
+
         {browserVerification ? (
           <div className="bg-gray-50 p-3 rounded">
             <div className="flex items-center justify-between mb-2">
@@ -174,7 +174,7 @@ export const RuntimeVerificationPanel: React.FC<RuntimeVerificationPanelProps> =
                 {browserVerification.result}
               </span>
             </div>
-            
+
             {browserVerification.detail && (
               <div className="mt-3 pt-3 border-t border-gray-200">
                 <p className="text-xs text-gray-600 mb-1">Details:</p>
@@ -183,7 +183,7 @@ export const RuntimeVerificationPanel: React.FC<RuntimeVerificationPanelProps> =
                 </p>
               </div>
             )}
-            
+
             {browserVerification.result === 'SKIPPED' && (
               <p className="text-xs text-gray-500 mt-2 italic">
                 Browser verification was skipped (not a failure)

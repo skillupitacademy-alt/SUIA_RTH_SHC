@@ -1,7 +1,7 @@
 # Security P1 Migration Authority Cleanup - Audit Report
 
-**Date:** 2026-10-09  
-**Branch:** m2-project-ai-canonical-wiring  
+**Date:** 2026-10-09
+**Branch:** m2-project-ai-canonical-wiring
 **Priority:** P1 (Security — prevents dual-authority schema drift)
 
 ---
@@ -207,5 +207,5 @@ Get-ChildItem packages/db-tutorial/migrations -Filter "*.sql" | Select-String "p
 
 ---
 
-**Audit Completed By:** Workflow Agent (Security P1)  
+**Audit Completed By:** Workflow Agent (Security P1)
 **Review Status:** Ready for human verification

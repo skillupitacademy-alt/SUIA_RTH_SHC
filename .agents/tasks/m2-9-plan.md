@@ -1,9 +1,9 @@
 # M2.9 Canonical Project LLM Wiring — Implementation Plan
 
-**Task ID:** m2-9-canonical-project-llm-wiring  
-**Base Branch:** `project-ai-gui` (HEAD: 44d4928d)  
-**Target Branch:** `m2-project-ai-canonical-wiring` (to be created from `project-ai-gui`)  
-**Status:** Ready for implementation  
+**Task ID:** m2-9-canonical-project-llm-wiring
+**Base Branch:** `project-ai-gui` (HEAD: 44d4928d)
+**Target Branch:** `m2-project-ai-canonical-wiring` (to be created from `project-ai-gui`)
+**Status:** Ready for implementation
 **Date:** 2026-10-07
 
 ## Executive Summary

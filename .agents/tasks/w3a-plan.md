@@ -9,8 +9,8 @@ This plan implements the candidate intake pipeline for the Project AI service, c
 - Package validation (unsafe paths, empty packages, missing manifest)
 - State transition enforcement
 
-**Branch**: m2-project-ai-canonical-wiring  
-**Workspace**: e:\onlinewebsites\quiz-platform  
+**Branch**: m2-project-ai-canonical-wiring
+**Workspace**: e:\onlinewebsites\quiz-platform
 **Service**: services/project-ai (Python 3.11+, FastAPI, pytest)
 
 ## Discovered Project Context
@@ -27,7 +27,7 @@ This plan implements the candidate intake pipeline for the Project AI service, c
   - Validators: `app/intake/candidate_validator.py` (already exists with SHA-256 verification)
   - Comparator: `app/intake/canonical_comparator.py` (already exists)
   - Manifest generator: `app/intake/placement_manifest.py` (already exists)
-- **Existing Tests**: 
+- **Existing Tests**:
   - `tests/test_candidate_validator.py` (unit tests for validator)
   - `tests/unit/test_candidate_intake.py` (integrity verification tests)
   - `tests/test_candidate.py` (route tests)
@@ -60,16 +60,16 @@ This plan implements the candidate intake pipeline for the Project AI service, c
 
 ## Design Decisions
 
-**Decision 1: Reuse existing CandidateValidator for SHA-256 calculation**  
+**Decision 1: Reuse existing CandidateValidator for SHA-256 calculation**
 Rationale: The CandidateValidator._compute_candidate_hash method already implements the correct hash calculation from file content (concatenating sorted file hashes for directories). This ensures consistency with validation logic and avoids duplicating hash computation.
 
-**Decision 2: Use WorkflowGovernanceService for state verification and transition**  
+**Decision 2: Use WorkflowGovernanceService for state verification and transition**
 Rationale: WorkflowGovernanceService is the single source of truth for workflow state management (per app/orchestration/workflow_governance.py docstring). All state transitions must flow through this service to ensure validation, authorization, and audit trail. The upload route will inject this service via dependency injection.
 
-**Decision 3: Validation happens before state transition**  
+**Decision 3: Validation happens before state transition**
 Rationale: Package validation (unsafe paths, empty packages, missing files) must occur before transitioning to CANDIDATE_RECEIVED. If validation fails, workflow remains in CANDIDATE_REQUESTED and the client receives a 400 error with specific validation messages. This prevents invalid candidates from polluting the workflow state.
 
-**Decision 4: Target binding validation uses workflow.target_family and workflow.target_version as authority**  
+**Decision 4: Target binding validation uses workflow.target_family and workflow.target_version as authority**
 Rationale: These fields were bound during workflow creation (per app/models/workflow_target.py). The upload route already validates they are non-empty strings. We enforce that the candidate's files match the expected naming pattern (e.g., IntroductionI7Block.tsx for family=Introduction, version=I7).
 
 ## Verification Steps

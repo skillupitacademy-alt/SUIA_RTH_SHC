@@ -77,7 +77,7 @@ def analyze_block_patterns(snapshot: Dict[str, Any], family: str, version: str) 
 **Logic**:
 - Locate canonical block evidence for (family, version) from snapshot
 - If snapshot evidence includes `sourceText` or `metadata` fields, parse for:
-  - UBRC attributes: `data-block-id`, `data-block-type`, `data-block-version` 
+  - UBRC attributes: `data-block-id`, `data-block-type`, `data-block-version`
   - Theme props: `theme.primary`, `theme.secondary`, `theme.primaryDark`
   - Runtime context: `runtimeContext?.blockId`, `runtimeContext?.blockType`, etc.
   - ILS/LSNB/RSSB references in code
@@ -113,7 +113,7 @@ def analyze_block_patterns(snapshot: Dict[str, Any], family: str, version: str) 
 
 **Test Coverage**:
 - `test_discover_canonical_blocks_i1()`: Mock snapshot with IntroductionBlock evidence, verify extraction
-- `test_discover_canonical_blocks_c1()`: Mock snapshot with CodeC1Block evidence, verify extraction  
+- `test_discover_canonical_blocks_c1()`: Mock snapshot with CodeC1Block evidence, verify extraction
 - `test_discover_canonical_blocks_d1()`: Mock snapshot with DefinitionBlock evidence, verify extraction
 - `test_discover_canonical_blocks_missing()`: Empty snapshot, verify graceful handling (empty list)
 - `test_analyze_block_patterns_with_source()`: Mock evidence with TSX source text, verify UBRC/theme/ILS extraction

@@ -53,7 +53,7 @@ This plan removes the **unused brand isolation security layer** from Project AI 
 - **Lines 76-89**: Entire brand filtering block:
   ```python
   user_brand = user.get("brand")
-  
+
   # Super admins bypass brand boundary
   from app.auth.authorization import is_super_admin
   if is_super_admin(user):
@@ -156,7 +156,7 @@ This plan removes the **unused brand isolation security layer** from Project AI 
 - **Line 402**: `requester_brand=workflow.requester_brand,` (in UPDATE VALUES clause)
 
 **PostgresCandidateRepository.upsert():**
-- **Lines 613, 623**: 
+- **Lines 613, 623**:
   ```python
   brand=candidate.brand,
   uploader_brand=candidate.uploader_brand,
@@ -608,6 +608,6 @@ This refactoring is complete when:
 
 ---
 
-**Plan prepared:** $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") UTC  
-**Target completion:** 1 development day  
+**Plan prepared:** $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") UTC
+**Target completion:** 1 development day
 **Estimated effort:** 4-6 hours (coding + testing)

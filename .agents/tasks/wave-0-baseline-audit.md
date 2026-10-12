@@ -1,8 +1,8 @@
 # Wave 0 Baseline Audit
 
-**Commit**: 6003c76d6210405766fe4802bffd083054d1a141  
-**Branch**: m2-project-ai-canonical-wiring  
-**Date**: 2026-10-09  
+**Commit**: 6003c76d6210405766fe4802bffd083054d1a141
+**Branch**: m2-project-ai-canonical-wiring
+**Date**: 2026-10-09
 **Status**: Complete
 
 ## Executive Summary
@@ -88,21 +88,21 @@ private assertIdentityClaims(payload: Partial<TokenPayload>): asserts payload is
 def decode_access_token(token: str) -> dict:
     # Decode with HS256, no audience verification during decode
     payload = jwt.decode(token, config["secret_key"], algorithms=[config["algorithm"]])
-    
+
     # Validate audience == "user"
     if payload.get("aud") != "user":
         raise HTTPException(401, "Invalid token audience")
-    
+
     # Validate tokenType == "user"
     if payload.get("tokenType") != "user":
         raise HTTPException(401, "Invalid token type")
-    
+
     # Validate required identity claims
     required_claims = ["userId", "originalUserId", "shadowUserId"]
     for claim in required_claims:
         if not isinstance(payload.get(claim), str) or not payload.get(claim).strip():
             raise HTTPException(401, f"Missing or invalid {claim} claim")
-    
+
     return payload
 ```
 
@@ -111,7 +111,7 @@ def decode_access_token(token: str) -> dict:
 def get_current_user(authorization: str = Header(...)) -> dict:
     # Extract Bearer token
     payload = decode_access_token(token)
-    
+
     return {
         "user_id": payload.get("sub"),
         "roles": payload.get("roles", [])
@@ -398,7 +398,7 @@ async def validate_database_connectivity() -> bool:
     # Test basic connectivity
     # Verify required tables exist
     required_tables = ["project_ai_workflows", ...]
-    
+
     if missing_tables:
         raise RuntimeError(
             f"Required tables not found in database: {', '.join(missing_tables)}. "

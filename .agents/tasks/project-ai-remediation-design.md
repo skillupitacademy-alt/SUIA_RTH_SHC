@@ -1,8 +1,8 @@
 # Project AI Remediation: Technical Design Document
 
-**Document ID:** project-ai-remediation-design  
-**Branch:** m2-project-ai-foundation  
-**Date:** 2025-01-30  
+**Document ID:** project-ai-remediation-design
+**Branch:** m2-project-ai-foundation
+**Date:** 2025-01-30
 **Status:** REVISED (Revision 1)
 
 ---
@@ -173,7 +173,7 @@ This design addresses the remediation of Project AI M2 foundation across 9 waves
 
 **Projects:**
 - chromium — Desktop Chrome
-- firefox — Desktop Firefox  
+- firefox — Desktop Firefox
 - webkit — Desktop Safari
 - suia — SUIA brand tests (http://skillup.localhost:3009)
 
@@ -283,16 +283,16 @@ interface RepositorySnapshot {
 class DiscoveryClient:
     def __init__(self, snapshot_path: Path):
         """Load snapshot from path, never scan repository."""
-        
+
     def load_snapshot(self) -> Dict[str, Any]:
         """Read and parse snapshot.json."""
-        
+
     def get_evidence_by_id(self, evidence_id: str) -> Optional[Dict[str, Any]]:
         """Lookup evidence by ID."""
-        
+
     def get_blocks(self) -> List[Dict[str, Any]]:
         """Get all block implementations."""
-        
+
     def get_verified_blocks(self) -> List[Dict[str, Any]]:
         """Get blocks with UBRC verification."""
 ```
@@ -337,7 +337,7 @@ class EvidenceRecord:
     lifecycle: str
     symbol: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     @classmethod
     def from_snapshot(cls, record: Dict[str, Any]) -> 'EvidenceRecord':
         """Parse evidence from snapshot JSON."""
@@ -490,7 +490,7 @@ class AgentResult:
     warnings: List[str]
     execution_time_ms: float
     timestamp: datetime
-    
+
     @property
     def passed(self) -> bool:
         return self.status == AgentStatus.SUCCESS
@@ -536,18 +536,18 @@ class GateExecutionResult:
 class BrowserCertificationRunner:
     """
     Orchestrates browser verification using existing Node/Playwright infrastructure.
-    
+
     ARCHITECTURAL RULE: NO playwright-python installation.
     Python spawns Node process to execute Playwright tests.
-    
+
     IMPLEMENTATION NOTE: Existing browser.py imports playwright.async_api directly.
     This import must be removed and replaced with the subprocess orchestration
     pattern shown below.
     """
-    
+
     def __init__(self, repository_root: Path):
         self.repository_root = repository_root
-        
+
     async def run_certification(
         self,
         block_type: str,
@@ -557,7 +557,7 @@ class BrowserCertificationRunner:
     ) -> RuntimeVerification:
         """
         Run browser certification by orchestrating Node/Playwright.
-        
+
         Steps:
         1. Generate Playwright test spec for block verification
         2. Execute: pnpm exec playwright test {spec} --project=chromium
@@ -565,19 +565,19 @@ class BrowserCertificationRunner:
         4. Collect evidence IDs from snapshot
         5. Return RuntimeVerification result
         """
-        
+
         # Generate test spec (temporary file)
         test_spec = self._generate_test_spec(block_type, route)
-        
+
         # Execute Playwright via approved command
         result = await self._run_playwright(test_spec, target)
-        
+
         # Parse results
         verification = self._parse_results(result, block_type)
-        
+
         # Cleanup temporary spec
         test_spec.unlink()
-        
+
         return verification
 ```
 
@@ -588,24 +588,24 @@ import { test, expect } from '@playwright/test';
 
 test('verify block {block_type} at {route}', async ({ page }) => {
   await page.goto('{route}');
-  
+
   // Wait for block to render
   const block = await page.locator('[data-block-type="{block_type}"]');
   await expect(block).toBeVisible({ timeout: 30000 });
-  
+
   // Verify data-block-version attribute
   const version = await block.getAttribute('data-block-version');
   expect(version).toBeTruthy();
-  
+
   // Capture screenshot
   await page.screenshot({ path: '.project-ai/runs/{id}/screenshots/{block_type}.png' });
-  
+
   // Verify no console errors
   const errors = [];
   page.on('console', msg => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
-  
+
   expect(errors).toHaveLength(0);
 });
 ```
@@ -690,17 +690,17 @@ test('verify block {block_type} at {route}', async ({ page }) => {
 def validate_r3_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
     """Validate Wave R3 prerequisites are met."""
     errors = []
-    
+
     # R2 must be complete: DiscoveryClient exists
     discovery_file = repository_root / 'services/project-ai/app/repository/discovery_client.py'
     if not discovery_file.exists():
         errors.append("R2 prerequisite: discovery_client.py not found")
-    
+
     # R8 must be complete: Evidence logging exists
     evidence_logger_file = repository_root / 'services/project-ai/app/evidence/logger.py'
     if not evidence_logger_file.exists():
         errors.append("R8 prerequisite: evidence logger not found")
-    
+
     return (len(errors) == 0, errors)
 ```
 - **What exists:**
@@ -719,7 +719,7 @@ def validate_r3_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
 def validate_r4_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
     """Validate Wave R4 prerequisites are met."""
     errors = []
-    
+
     # R3 must be complete: gates require manifests
     gates_file = repository_root / 'services/project-ai/app/certification/gates.py'
     if not gates_file.exists():
@@ -728,7 +728,7 @@ def validate_r4_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
         content = gates_file.read_text()
         if 'PlacementManifest' not in content:
             errors.append("R3 prerequisite: Gates do not accept PlacementManifest")
-    
+
     return (len(errors) == 0, errors)
 ```
 - **Complete:** None (no agent handlers exist)
@@ -754,18 +754,18 @@ def validate_r4_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
 def validate_r6_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
     """Validate Wave R6 prerequisites are met."""
     errors = []
-    
+
     # R4 must be complete: agent handlers exist
     agents_dir = repository_root / 'services/project-ai/app/agents'
     if not agents_dir.exists():
         errors.append("R4 prerequisite: agents/ directory not found")
     else:
-        required_handlers = ['toolchain.py', 'dependency.py', 'intake.py', 
+        required_handlers = ['toolchain.py', 'dependency.py', 'intake.py',
                             'placement.py', 'governance.py', 'documentation.py']
         for handler in required_handlers:
             if not (agents_dir / handler).exists():
                 errors.append(f"R4 prerequisite: {handler} not found")
-    
+
     return (len(errors) == 0, errors)
 ```
 - **What exists:**
@@ -798,12 +798,12 @@ def validate_r6_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
 def validate_r9_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
     """Validate Wave R9 prerequisites are met."""
     errors = []
-    
+
     # R8 must be complete: evidence logging exists
     evidence_dir = repository_root / '.project-ai'
     if not evidence_dir.exists():
         errors.append("R8 prerequisite: .project-ai/ directory not found")
-    
+
     # R6 must be complete: runtime verification exists
     runtime_file = repository_root / 'services/project-ai/app/verification/runtime.py'
     if not runtime_file.exists():
@@ -812,7 +812,7 @@ def validate_r9_prerequisites(repository_root: Path) -> Tuple[bool, List[str]]:
         content = runtime_file.read_text()
         if 'verify_health' not in content:
             errors.append("R6 prerequisite: verify_health() not implemented")
-    
+
     return (len(errors) == 0, errors)
 ```
 - **What exists:**
@@ -881,17 +881,17 @@ class CertificationGateExecutor:
     def _validate_manifest(self, manifest: PlacementManifest) -> Tuple[bool, List[str]]:
         """
         Validate manifest before gate execution.
-        
+
         Validations:
         - Manifest hash verification (tamper detection)
         - No path inference from block name
         - All evidence IDs exist in snapshot
-        
+
         Returns:
             (is_valid, errors)
         """
         errors = []
-        
+
         # Verify manifest hash
         manifest_copy = manifest.model_copy()
         manifest_copy.manifestHash = ""
@@ -899,18 +899,18 @@ class CertificationGateExecutor:
         computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
         if computed_hash != manifest.manifestHash:
             errors.append("Manifest hash verification failed (tampering detected)")
-        
+
         # Verify no path inference from block name
         # (Check if targetPath appears to be derived from candidateId)
         if manifest.candidateId.lower().replace('-', '/') in manifest.targetPath:
             errors.append("Target path appears inferred from block name (must use PlacementManifest decision only)")
-        
+
         # Verify evidence IDs exist in snapshot
         snapshot_evidence_ids = {e['evidenceId'] for e in self.snapshot.get('evidence', [])}
         for evidence_id in manifest.evidenceIds:
             if evidence_id not in snapshot_evidence_ids:
                 errors.append(f"Evidence ID {evidence_id} not found in snapshot")
-        
+
         return (len(errors) == 0, errors)
 ```
 
@@ -922,7 +922,7 @@ class CertificationGateExecutor:
         manifest: PlacementManifest  # NEW: require manifest parameter
     ) -> GateExecutionResult:
         """Execute UBRC gate using manifest-defined blocks."""
-        
+
         # Validate manifest first
         valid, errors = self._validate_manifest(manifest)
         if not valid:
@@ -932,10 +932,10 @@ class CertificationGateExecutor:
                 evidence_ids=[],
                 blockers=errors
             )
-        
+
         # Extract blocks from manifest (not from candidate name)
         candidate_blocks = self._extract_blocks_from_manifest(manifest)
-        
+
         # ... rest of gate logic unchanged
 ```
 
@@ -1016,7 +1016,7 @@ class AgentCoordinator:
     async def execute_agent(self, agent_id: str, context: AgentContext) -> AgentResult:
         """
         Execute agent by dispatching to handler function.
-        
+
         Maps agent_id to handler function and executes with context.
         """
         # Dispatch mapping from agent_id to handler function
@@ -1059,22 +1059,22 @@ class AgentCoordinator:
 async def execute_{agent_name}(context: AgentContext) -> AgentResult:
     """
     Execute {agent name} agent.
-    
+
     Reads: context.repository_snapshot (TypeScript discovery snapshot)
     Returns: AgentResult with outputs, evidence_ids, errors
     """
     start_time = datetime.now(datetime.UTC)
-    
+
     try:
         # Extract relevant snapshot data
         snapshot = context.repository_snapshot
-        
+
         # Perform analysis (agent-specific)
         outputs = await _analyze(snapshot, context)
-        
+
         # Collect evidence IDs from snapshot
         evidence_ids = _collect_evidence_ids(outputs, snapshot)
-        
+
         # Return success
         execution_time = (datetime.now(datetime.UTC) - start_time).total_seconds() * 1000
         return AgentResult(
@@ -1087,7 +1087,7 @@ async def execute_{agent_name}(context: AgentContext) -> AgentResult:
             execution_time_ms=execution_time,
             timestamp=datetime.now(datetime.UTC)
         )
-        
+
     except Exception as e:
         execution_time = (datetime.now(datetime.UTC) - start_time).total_seconds() * 1000
         return AgentResult(
@@ -1111,22 +1111,22 @@ async def execute_{agent_name}(context: AgentContext) -> AgentResult:
 async def execute_{agent_name}(context: AgentContext) -> AgentResult:
     """
     Execute {agent name} agent.
-    
+
     Reads: context.repository_snapshot (TypeScript discovery snapshot)
     Returns: AgentResult with outputs, evidence_ids, errors
     """
     start_time = datetime.now(datetime.UTC)
-    
+
     try:
         # Extract relevant snapshot data
         snapshot = context.repository_snapshot
-        
+
         # Perform analysis (agent-specific)
         outputs = await _analyze(snapshot, context)
-        
+
         # Collect evidence IDs from snapshot
         evidence_ids = _collect_evidence_ids(outputs, snapshot)
-        
+
         # Return success
         return AgentResult(
             agent_id="{agent-name}",
@@ -1137,7 +1137,7 @@ async def execute_{agent_name}(context: AgentContext) -> AgentResult:
             warnings=[],
             execution_time_ms=(datetime.now(datetime.UTC) - start_time).total_seconds() * 1000
         )
-        
+
     except Exception as e:
         return AgentResult(
             agent_id="{agent-name}",
@@ -1157,7 +1157,7 @@ async def execute_{agent_name}(context: AgentContext) -> AgentResult:
 async def execute_toolchain(context: AgentContext) -> AgentResult:
     """Analyze toolchain versions from D2 scanner data."""
     toolchains = context.repository_snapshot.get('runtime', {}).get('toolchains', [])
-    
+
     outputs = {
         'toolchain_count': len(toolchains),
         'toolchains': [
@@ -1170,9 +1170,9 @@ async def execute_toolchain(context: AgentContext) -> AgentResult:
             for t in toolchains
         ]
     }
-    
+
     evidence_ids = [t['evidenceId'] for t in toolchains]
-    
+
     return AgentResult(
         agent_id="toolchain",
         status=AgentStatus.SUCCESS,
@@ -1190,28 +1190,28 @@ async def execute_dependency(context: AgentContext) -> AgentResult:
     deps = context.repository_snapshot.get('dependencies', {})
     nodes = deps.get('nodes', [])
     edges = deps.get('edges', [])
-    
+
     # Detect cycles
     cycles = _detect_cycles(nodes, edges)
-    
+
     # Detect conflicts
     conflicts = _detect_version_conflicts(nodes, edges)
-    
+
     outputs = {
         'node_count': len(nodes),
         'edge_count': len(edges),
         'cycles': cycles,
         'conflicts': conflicts
     }
-    
+
     evidence_ids = [n['evidenceId'] for n in nodes] + [e['evidenceId'] for e in edges]
-    
+
     warnings = []
     if cycles:
         warnings.append(f"Detected {len(cycles)} dependency cycle(s)")
     if conflicts:
         warnings.append(f"Detected {len(conflicts)} version conflict(s)")
-    
+
     return AgentResult(
         agent_id="dependency",
         status=AgentStatus.SUCCESS,
@@ -1228,13 +1228,13 @@ async def execute_intake(context: AgentContext) -> AgentResult:
     """Classify candidate block family."""
     candidate_id = context.workflow_state.get('candidate_id')
     candidate_files = context.workflow_state.get('candidate_files', [])
-    
+
     # Extract features from candidate
     features = CanonicalComparator(context.repository_snapshot).extract_features(candidate_files)
-    
+
     # Classify family based on features
     family, confidence, reasoning = _classify_family(features)
-    
+
     outputs = {
         'candidate_id': candidate_id,
         'detected_family': family,
@@ -1247,7 +1247,7 @@ async def execute_intake(context: AgentContext) -> AgentResult:
             'has_media_embed': features.has_media_embed
         }
     }
-    
+
     return AgentResult(
         agent_id="intake",
         status=AgentStatus.SUCCESS,
@@ -1265,18 +1265,18 @@ async def execute_placement(context: AgentContext) -> AgentResult:
     candidate_id = context.workflow_state.get('candidate_id')
     candidate_files = context.workflow_state.get('candidate_files', [])
     family = context.workflow_state.get('detected_family')
-    
+
     comparator = CanonicalComparator(context.repository_snapshot)
     features = comparator.extract_features(candidate_files)
-    
+
     # Compare to canonical blocks
     existing_block, similarity, differences, evidence_ids = comparator.compare_to_canonical(
         features, family, candidate_files
     )
-    
+
     # Determine placement decision
     decision = _determine_decision(similarity)
-    
+
     # Generate manifest
     manifest = PlacementManifest(
         manifestId=f"manifest-{uuid.uuid4().hex[:8]}",
@@ -1290,17 +1290,17 @@ async def execute_placement(context: AgentContext) -> AgentResult:
         manifestHash="",  # Computed below
         createdAt=datetime.now(datetime.UTC).isoformat()
     )
-    
+
     # Compute manifest hash
     manifest_json = manifest.model_dump_json(exclude={'manifestHash'}, indent=2)
     manifest.manifestHash = hashlib.sha256(manifest_json.encode()).hexdigest()
-    
+
     outputs = {
         'manifest': manifest.model_dump(),
         'similarity': similarity,
         'existing_block': existing_block
     }
-    
+
     return AgentResult(
         agent_id="placement",
         status=AgentStatus.SUCCESS,
@@ -1318,7 +1318,7 @@ async def execute_governance(context: AgentContext) -> AgentResult:
     manifest = context.workflow_state.get('manifest')
     submitter = context.workflow_state.get('submitter')
     approver = context.workflow_state.get('approver')
-    
+
     # Self-approval prevention
     if submitter == approver:
         return AgentResult(
@@ -1329,7 +1329,7 @@ async def execute_governance(context: AgentContext) -> AgentResult:
             errors=["Self-approval not allowed: submitter and approver must be different"],
             warnings=[]
         )
-    
+
     # Verify manifest hash
     executor = PlacementExecutor(context.repository_root)
     if not executor.verify_manifest_hash(manifest):
@@ -1341,13 +1341,13 @@ async def execute_governance(context: AgentContext) -> AgentResult:
             errors=["Manifest hash verification failed (tampering detected)"],
             warnings=[]
         )
-    
+
     outputs = {
         'approval_status': 'APPROVED',
         'approver': approver,
         'timestamp': datetime.now(datetime.UTC).isoformat()
     }
-    
+
     return AgentResult(
         agent_id="governance",
         status=AgentStatus.SUCCESS,
@@ -1364,17 +1364,17 @@ async def execute_documentation(context: AgentContext) -> AgentResult:
     """Update canonical documentation with certification results."""
     run_id = context.workflow_state.get('run_id')
     gate_results = context.workflow_state.get('gate_results', {})
-    
+
     # Read canonical backlog
     backlog_path = context.repository_root / '.agents' / 'tasks' / 'm1-m2-backlog.md'
     backlog_content = backlog_path.read_text()
-    
+
     # Generate update section
     update_section = f"""
 ## Certification Run {run_id}
 
-**Date:** {datetime.now(datetime.UTC).isoformat()}  
-**Commit:** {context.repository_snapshot['repository']['commitSha']}  
+**Date:** {datetime.now(datetime.UTC).isoformat()}
+**Commit:** {context.repository_snapshot['repository']['commitSha']}
 **Status:** {'PASS' if all(r['status'] == 'PASS' for r in gate_results.values()) else 'FAIL'}
 
 ### Gate Results
@@ -1382,16 +1382,16 @@ async def execute_documentation(context: AgentContext) -> AgentResult:
 """
     for gate_name, result in gate_results.items():
         update_section += f"- **{gate_name}:** {result['status']} — {result['message']}\n"
-    
+
     # Append to canonical backlog (never replace)
     updated_content = backlog_content + "\n" + update_section
     backlog_path.write_text(updated_content)
-    
+
     outputs = {
         'updated_file': str(backlog_path),
         'section_added': update_section
     }
-    
+
     return AgentResult(
         agent_id="documentation",
         status=AgentStatus.SUCCESS,
@@ -1441,10 +1441,10 @@ APP_PORTS = {
 def get_health_url(target: str) -> str:
     """
     Construct health check URL for target application.
-    
+
     Args:
         target: Application target name
-        
+
     Returns:
         Health check URL
     """
@@ -1458,22 +1458,22 @@ class ApplicationProcess:
     def verify_health(self, health_url: str, timeout: int = 10) -> bool:
         """
         Verify application health via HTTP health check endpoint.
-        
+
         Fallback strategy:
         1. Try /api/health
         2. If 404, try /health
         3. If 404, try / (root)
         4. Any 200 response = healthy
-        
+
         Args:
             health_url: Primary health check URL (e.g., http://localhost:3000/api/health)
             timeout: Maximum seconds to wait for response
-            
+
         Returns:
             True if health check passes, False otherwise
         """
         import requests
-        
+
         # Try primary endpoint
         try:
             response = requests.get(health_url, timeout=timeout)
@@ -1481,7 +1481,7 @@ class ApplicationProcess:
                 return True
         except requests.RequestException:
             pass
-        
+
         # Fallback: try /health
         base_url = health_url.rsplit('/api/health', 1)[0]
         try:
@@ -1490,7 +1490,7 @@ class ApplicationProcess:
                 return True
         except requests.RequestException:
             pass
-        
+
         # Fallback: try / (root)
         try:
             response = requests.get(base_url, timeout=timeout)
@@ -1498,7 +1498,7 @@ class ApplicationProcess:
                 return True
         except requests.RequestException:
             pass
-        
+
         return False
 ```
 
@@ -1515,17 +1515,17 @@ class ApplicationProcess:
             stderr=subprocess.PIPE,
             shell=False
         )
-        
+
         # Construct health check URL
         health_url = get_health_url(self.target)
-        
+
         # Wait for startup with timeout
         start_time = time.time()
         while time.time() - start_time < timeout:
             if self.verify_health(health_url):
                 return True
             time.sleep(1)
-        
+
         # Timeout expired
         self.stop()
         return False
@@ -1537,19 +1537,19 @@ class ApplicationProcess:
     def stop(self, timeout: int = 10) -> bool:
         """
         Stop application process cleanly.
-        
+
         Args:
             timeout: Maximum seconds to wait for clean shutdown
-            
+
         Returns:
             True if stopped cleanly, False if force-killed
         """
         if not self.process:
             return True
-        
+
         # Send SIGTERM (graceful shutdown)
         self.process.terminate()
-        
+
         try:
             # Wait for clean shutdown
             self.process.wait(timeout=timeout)
@@ -1596,7 +1596,7 @@ playwright install chromium
 // packages/ui/src/tutorial/blocks/IntroductionBlock.tsx
 export const IntroductionBlock: React.FC<Props> = ({ content }) => {
   return (
-    <div 
+    <div
       data-block-type="introduction"
       data-block-version="1.0.0"  // ADD THIS
       className="introduction-block"
@@ -1618,10 +1618,10 @@ class BrowserCertificationRunner:
         config: BrowserVerificationConfig
     ) -> RuntimeVerification:
         """Run browser certification via Playwright orchestration."""
-        
+
         # Generate temporary Playwright test
         test_spec = self._generate_test_spec(block_type, route, config)
-        
+
         # Execute via Node/Playwright (NO playwright-python)
         result = subprocess.run(
             ["pnpm", "exec", "playwright", "test", str(test_spec), "--project=chromium"],
@@ -1629,13 +1629,13 @@ class BrowserCertificationRunner:
             capture_output=True,
             shell=False
         )
-        
+
         # Parse results
         verification = self._parse_playwright_output(result, block_type)
-        
+
         # Cleanup
         test_spec.unlink()
-        
+
         return verification
 ```
 
@@ -1676,7 +1676,7 @@ from typing import Optional, Dict, Any
 class EvidenceRecord:
     """
     Python representation of TypeScript Evidence interface.
-    
+
     Used to parse evidence records from snapshot.json.
     """
     evidence_id: str
@@ -1690,15 +1690,15 @@ class EvidenceRecord:
     lifecycle: str
     symbol: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     @classmethod
     def from_snapshot(cls, record: Dict[str, Any]) -> 'EvidenceRecord':
         """
         Parse evidence from snapshot JSON.
-        
+
         Args:
             record: Evidence record from snapshot['evidence']
-            
+
         Returns:
             EvidenceRecord instance
         """
@@ -1735,7 +1735,7 @@ class EvidenceLogger:
     def __init__(self, repository_root: Path):
         self.repository_root = repository_root
         self.evidence_dir = repository_root / '.project-ai'
-        
+
     def create_run_directory(
         self,
         commit_sha: str,
@@ -1744,29 +1744,29 @@ class EvidenceLogger:
     ) -> Path:
         """
         Create run directory with structure.
-        
+
         Args:
             commit_sha: Git commit SHA
             snapshot_hash: Snapshot canonical hash
             snapshot_path: Path to TypeScript snapshot.json file to copy
-        
+
         Returns:
             Path to run directory
         """
         run_id = f"{commit_sha}-{snapshot_hash}"
         run_dir = self.evidence_dir / 'runs' / run_id
-        
+
         # Create directory structure
         run_dir.mkdir(parents=True, exist_ok=True)
         (run_dir / 'gates').mkdir(exist_ok=True)
         (run_dir / 'agents').mkdir(exist_ok=True)
         (run_dir / 'screenshots').mkdir(exist_ok=True)
-        
+
         # Copy snapshot to run directory for self-contained evidence
         import shutil
         snapshot_dest = run_dir / 'snapshot.json'
         shutil.copy2(snapshot_path, snapshot_dest)
-        
+
         # Create metadata.json
         metadata = {
             'runId': run_id,
@@ -1777,10 +1777,10 @@ class EvidenceLogger:
             'timestamp': datetime.now(datetime.UTC).isoformat(),
             'status': 'in-progress'
         }
-        
+
         metadata_path = run_dir / 'metadata.json'
         metadata_path.write_text(json.dumps(metadata, indent=2))
-        
+
         # Update 'current' symlink (with Windows fallback)
         current_link = self.evidence_dir / 'current'
         try:
@@ -1790,7 +1790,7 @@ class EvidenceLogger:
         except OSError:
             # Symlink failed (Windows permissions) - write current.txt instead
             (self.evidence_dir / 'current.txt').write_text(str(run_dir))
-        
+
         return run_dir
 ```
 
@@ -1805,7 +1805,7 @@ class EvidenceLogger:
     ) -> None:
         """Log gate execution result to run directory."""
         gate_file = run_dir / 'gates' / f'{gate_name}.json'
-        
+
         gate_data = {
             'gateId': gate_name,
             'status': result.status.value,
@@ -1814,7 +1814,7 @@ class EvidenceLogger:
             'evidenceIds': result.evidence_ids,
             'blockers': result.blockers
         }
-        
+
         gate_file.write_text(json.dumps(gate_data, indent=2))
 ```
 
@@ -1828,7 +1828,7 @@ class EvidenceLogger:
     ) -> None:
         """Log agent execution result to run directory."""
         agent_file = run_dir / 'agents' / f'{result.agent_id}.json'
-        
+
         agent_data = {
             'agentId': result.agent_id,
             'status': result.status.value,
@@ -1839,7 +1839,7 @@ class EvidenceLogger:
             'errors': result.errors,
             'warnings': result.warnings
         }
-        
+
         agent_file.write_text(json.dumps(agent_data, indent=2))
 ```
 
@@ -1853,31 +1853,31 @@ class WorkflowEngine:
         snapshot: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Execute step with evidence logging."""
-        
+
         # Create run directory
         logger = EvidenceLogger(self.repository_root)
         run_dir = logger.create_run_directory(
             commit_sha=snapshot['repository']['commitSha'],
             snapshot_hash=snapshot['canonicalHash']
         )
-        
+
         # Execute agents
         agent_results = await self.agent_coordinator.execute_sequential(
             agents_to_execute,
             agent_context
         )
-        
+
         # Log agent results
         for result in agent_results:
             logger.log_agent_result(run_dir, result)
-        
+
         # Execute gates
         gate_results = self.gate_controller.execute_gates(manifest)
-        
+
         # Log gate results
         for gate_name, result in gate_results.items():
             logger.log_gate_result(run_dir, gate_name, result)
-        
+
         return result
 ```
 
@@ -1903,43 +1903,43 @@ class WorkflowEngine:
 async def execute_final_gate(context: AgentContext) -> AgentResult:
     """
     Generate final certification verdict and append to canonical docs.
-    
+
     Reads all gate results from run directory and generates FinalVerdict.
     """
     run_dir = Path(context.workflow_state.get('run_dir'))
-    
+
     # Read all gate results
     gate_results = {}
     gates_dir = run_dir / 'gates'
     for gate_file in gates_dir.glob('*.json'):
         gate_data = json.loads(gate_file.read_text())
         gate_results[gate_data['gateId']] = gate_data['status']
-    
+
     # Read all agent results
     agent_results = {}
     agents_dir = run_dir / 'agents'
     for agent_file in agents_dir.glob('*.json'):
         agent_data = json.loads(agent_file.read_text())
         agent_results[agent_data['agentId']] = agent_data['status']
-    
+
     # Determine overall verdict
     all_gates_pass = all(status == 'PASS' for status in gate_results.values())
     all_agents_succeed = all(status == 'SUCCESS' for status in agent_results.values())
     verdict = 'APPROVED' if all_gates_pass and all_agents_succeed else 'REJECTED'
-    
+
     # Compute statistics from snapshot
     def _compute_statistics(snapshot: Dict[str, Any]) -> Dict[str, int]:
         """Compute statistics from repository snapshot."""
         evidence = snapshot.get('evidence', [])
         blocks = snapshot.get('blocks', {})
-        
+
         return {
             'evidenceRecords': len(evidence),
             'blockImplementations': len(blocks.get('implementations', [])),
             'blockRenderers': len(blocks.get('rendered', [])),
             'verifiedBlocks': len(blocks.get('verified', []))
         }
-    
+
     # Generate FinalVerdict
     final_verdict = {
         'verdictId': f"remediation-{datetime.now(datetime.UTC).strftime('%Y-%m-%d')}",
@@ -1952,23 +1952,23 @@ async def execute_final_gate(context: AgentContext) -> AgentResult:
         'agentResults': agent_results,
         'statistics': _compute_statistics(context.repository_snapshot)
     }
-    
+
     # Write verdict to .agents/tasks/
     verdict_path = context.repository_root / '.agents' / 'tasks' / f"final-gate-verdict-{datetime.now(datetime.UTC).strftime('%Y-%m-%d')}.json"
     verdict_path.write_text(json.dumps(final_verdict, indent=2))
-    
+
     # Append to canonical backlog
     backlog_path = context.repository_root / '.agents' / 'tasks' / 'm1-m2-backlog.md'
     backlog_content = backlog_path.read_text()
-    
+
     update_section = f"""
 ---
 
 ## Final Certification Gate — {final_verdict['verdictId']}
 
-**Status:** {verdict}  
-**Date:** {datetime.now(datetime.UTC).strftime('%Y-%m-%d')}  
-**Commit:** {final_verdict['commitSha']}  
+**Status:** {verdict}
+**Date:** {datetime.now(datetime.UTC).strftime('%Y-%m-%d')}
+**Commit:** {final_verdict['commitSha']}
 **Report:** `.agents/tasks/final-gate-verdict-{datetime.now(datetime.UTC).strftime('%Y-%m-%d')}.json`
 
 ### Gate Results
@@ -1978,24 +1978,24 @@ async def execute_final_gate(context: AgentContext) -> AgentResult:
 """
     for gate_name, status in gate_results.items():
         update_section += f"| {gate_name} | {status} |\n"
-    
+
     update_section += "\n### Verdict\n\n"
     update_section += f"**{verdict}** — "
     if verdict == 'APPROVED':
         update_section += "All gates passed and all agents succeeded. Ready for production."
     else:
         update_section += "One or more gates failed or agents encountered errors. Review gate results for details."
-    
+
     # Append (never replace)
     updated_content = backlog_content + "\n" + update_section
     backlog_path.write_text(updated_content)
-    
+
     outputs = {
         'verdict': verdict,
         'verdict_file': str(verdict_path),
         'canonical_update': str(backlog_path)
     }
-    
+
     return AgentResult(
         agent_id="final-gate",
         status=AgentStatus.SUCCESS,
@@ -2128,8 +2128,8 @@ new_section = f"""
 
 ## New Entry Title
 
-**Date:** {date}  
-**Commit:** {commit_sha}  
+**Date:** {date}
+**Commit:** {commit_sha}
 **Status:** {status}
 
 Content here...
@@ -2544,15 +2544,15 @@ This design provides complete implementation details for all 9 waves, with concr
 
 ## Appendix: Design Review Response
 
-**Review Date:** 2025-01-30  
-**Revision:** 1  
+**Review Date:** 2025-01-30
+**Revision:** 1
 **Findings Addressed:** 15 findings (4 HIGH, 6 MEDIUM, 5 NIT)
 
 ### HIGH Findings
 
 **HIGH-1: Missing Agent Handler Implementations**
 - **Status:** ✅ ADDRESSED
-- **Action Taken:** 
+- **Action Taken:**
   - Clarified Wave R4 creates `services/project-ai/app/agents/` directory from scratch (not completing stubs)
   - Added explicit step to create 6 new handler files: toolchain.py, dependency.py, intake.py, placement.py, governance.py, documentation.py
   - Added dispatch mechanism to AgentCoordinator.execute_agent() with concrete mapping from agent_id to handler functions

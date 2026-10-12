@@ -1,7 +1,7 @@
 # Test Execution Summary - Brand Isolation Removal
 
-**Date:** 2026-10-12  
-**Commit:** bf5d5866  
+**Date:** 2026-10-12
+**Commit:** bf5d5866
 **Branch:** m2-project-ai-canonical-wiring
 
 ---
@@ -45,10 +45,10 @@ All critical security requirements verified:
 
 ## Pre-Existing Issue Discovered
 
-**Issue:** PostgreSQL UUID/VARCHAR Type Mismatch  
-**Scope:** 17 integration tests fail on workflow/manifest creation  
-**Root Cause:** Database columns are UUID type, ORM sends VARCHAR  
-**Impact on Brand Removal:** NONE - RBAC tests confirm brand removal is correct  
+**Issue:** PostgreSQL UUID/VARCHAR Type Mismatch
+**Scope:** 17 integration tests fail on workflow/manifest creation
+**Root Cause:** Database columns are UUID type, ORM sends VARCHAR
+**Impact on Brand Removal:** NONE - RBAC tests confirm brand removal is correct
 **Recommendation:** Log separate issue for schema alignment
 
 **Error Example:**

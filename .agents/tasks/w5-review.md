@@ -70,7 +70,7 @@ GET /workflows/{workflow_id}/placement/conflicts always returns an empty list be
 
 ## Test coverage gaps
 
-18 tests cover matching (5), scoring (4), conflicts (3), overrides (2), database persistence (1), and dataclass instantiation (3). 
+18 tests cover matching (5), scoring (4), conflicts (3), overrides (2), database persistence (1), and dataclass instantiation (3).
 
 The database persistence test verifies that _persist_placement exists, but doesn't test that it actually writes to the database (because it's a stub). One override test claims "override requires approval" but only checks that ApprovalEnforcer exists, not that it enforces anything.
 

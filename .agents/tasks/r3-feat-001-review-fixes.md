@@ -1,7 +1,7 @@
 # FEAT-001 Review Fixes — PostgreSQL Infrastructure
 
-**Date:** 2025-01-XX  
-**Migration:** `0026_steady_caretaker.sql` (ALTER migration)  
+**Date:** 2025-01-XX
+**Migration:** `0026_steady_caretaker.sql` (ALTER migration)
 **Status:** ✅ All review findings addressed
 
 ---
@@ -115,12 +115,12 @@ SQLAlchemy models with `Identity()` import without errors.
 
 ## Architecture Compliance
 
-**DRIZZLE-ONLY migration authority:** ✅ Maintained  
-**No `create_all()` in application code:** ✅ Verified  
-**Uses `DATABASE_URL_TUTORIAL`:** ✅ Verified  
-**Existing `tutorial_prod` database:** ✅ Verified  
-**`project_ai_*` namespace:** ✅ Verified  
-**Async asyncpg driver:** ✅ Verified  
+**DRIZZLE-ONLY migration authority:** ✅ Maintained
+**No `create_all()` in application code:** ✅ Verified
+**Uses `DATABASE_URL_TUTORIAL`:** ✅ Verified
+**Existing `tutorial_prod` database:** ✅ Verified
+**`project_ai_*` namespace:** ✅ Verified
+**Async asyncpg driver:** ✅ Verified
 
 ---
 
@@ -182,7 +182,7 @@ Without `foreign_keys=`, SQLAlchemy might infer the wrong foreign key if the mod
 
 ### Constraint Name Strategy
 
-**Drizzle convention:** `{table}_{column}_{referenced_table}_{referenced_column}_fk`  
+**Drizzle convention:** `{table}_{column}_{referenced_table}_{referenced_column}_fk`
 **SQLAlchemy convention:** Auto-generated, typically shorter
 
 **Decision:** Use explicit short names in Drizzle schema for clarity:

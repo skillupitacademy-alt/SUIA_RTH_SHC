@@ -1,0 +1,22 @@
+Endpoint,Method,In_CanonicalWiring_Backend,In_GUI_Frontend,Payload_Match,Notes
+/api/project-llm/workflows,POST,YES,NO,N/A,Backend: CreateWorkflowRequest with target_family/version/purpose. GUI: No API client implementation
+/api/project-llm/workflows/{id},GET,YES,YES (client),UNKNOWN,Backend: Returns WorkflowResponse with full state. GUI: projectLlmClient.getWorkflowState() exists but never called from pages
+/api/project-llm/workflows/{id}/transition,POST,YES,NO,N/A,Backend: State transition with TransitionRequest. GUI: State machine in-memory only
+/api/project-llm/workflows/{id}/certification,GET,YES,YES (client),UNKNOWN,Backend: Returns CertificationStatus. GUI: projectLlmClient.getCertificationStatus() exists but never called
+/api/project-llm/workflows/{id}/runtime-verification,POST,YES,YES (client),UNKNOWN,Backend: Triggers ILS/LSNB/RSSB verification. GUI: projectLlmClient.triggerRuntimeVerification() exists but never called
+/api/project-llm/workflows/{id}/runtime-health,GET,YES,YES (client),UNKNOWN,Backend: Returns RuntimeHealthStatus. GUI: projectLlmClient.getRuntimeHealth() exists but never called
+/api/project-llm/workflows/{id}/browser-verification,GET,YES,YES (client),UNKNOWN,Backend: Returns BrowserVerificationStatus. GUI: projectLlmClient.getBrowserVerificationStatus() exists but never called
+/api/project-llm/candidates/upload,POST,YES,YES (client),UNKNOWN,Backend: Multipart file upload with workflow_id. GUI: projectLlmClient.uploadCandidate() exists but never called
+/api/project-llm/candidates/{id},GET,YES,NO,N/A,Backend: Returns candidate details. GUI: No client method
+/api/project-llm/approvals/submit,POST,YES,NO,N/A,Backend: Submit manifest for approval (ApprovalSubmitRequest). GUI: Mock approval UI only
+/api/project-llm/approvals/approve,POST,YES,YES (client),UNKNOWN,Backend: Approve implementation with workflow_id + manifest_hash. GUI: projectLlmClient.approveImplementation() exists but never called
+/api/project-llm/approvals/decide,POST,YES,NO,N/A,Backend: Make approval decision (ApprovalDecisionRequest). GUI: No client method
+/api/project-llm/approvals/{id},GET,YES,NO,N/A,Backend: Get approval record. GUI: No client method
+/api/project-llm/evidence/{id},GET,YES,NO,N/A,Backend: Get evidence record by ID from snapshot. GUI: No client method
+/api/project-llm/evidence,GET,YES,NO,N/A,Backend: Get all evidence records. GUI: No client method
+/api/project-llm/contract,Various,YES,NO,N/A,Backend: Contract admin route protection with @require_contract_admin. GUI: No auth/role logic
+/api/project-llm/governance,Various,YES,NO,N/A,Backend: Governance endpoints for approvals. GUI: No governance UI
+/api/project-llm/agents,Various,YES,NO,N/A,Backend: Agent execution endpoints. GUI: Agent stubs in coordinator only
+/api/project-llm/creation,Various,YES,NO,N/A,Backend: Creation workflow endpoints. GUI: Creation wizard in-memory only
+/api/project-llm/snapshot,Various,YES,NO,N/A,Backend: Snapshot management. GUI: No snapshot integration
+/api/project-llm/tasks,Various,YES,NO,N/A,Backend: Task management endpoints (legacy Wave 2). GUI: No task UI

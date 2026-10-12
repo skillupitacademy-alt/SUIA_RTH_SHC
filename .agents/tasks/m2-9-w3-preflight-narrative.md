@@ -1,8 +1,8 @@
 # M2.9 W3 Preflight Verification Narrative
 
-**Branch**: m2-project-ai-canonical-wiring (HEAD 996824fa)  
-**Date**: 2026-10-08  
-**Verifier**: Preflight Agent  
+**Branch**: m2-project-ai-canonical-wiring (HEAD 996824fa)
+**Date**: 2026-10-08
+**Verifier**: Preflight Agent
 **Status**: ⚠️ BLOCKED (1 blocker, 5/6 checks passed)
 
 ---
@@ -125,7 +125,7 @@ The file `projectLlmWorkflowCoordinator.ts` does not exist in the workspace. Thi
    def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> RepositoryBlockContract:
        """
        Build a repository block contract from TypeScript snapshot evidence.
-       
+
        ARCHITECTURAL BOUNDARY:
        This function must NEVER open, read, or walk repository files.
        All data comes from the snapshot['evidence'] array provided by TypeScript discovery.
@@ -225,7 +225,7 @@ Repository intelligence contract is correctly derived from TypeScript snapshot e
 
 Version binding is MOSTLY dynamic via `target.version`, but a critical hardcoded fallback remains in compatibility verification. This violates the W1/W2 prerequisite that version must come from `WorkflowTarget.version` dynamically.
 
-**Recommendation**: 
+**Recommendation**:
 - Pass `target.version` through to compatibility verification functions
 - Remove unsafe `"1.0.0"` fallback or explicitly fail with error if version is missing
 - Ensure all verification code paths use the authoritative version from WorkflowTarget

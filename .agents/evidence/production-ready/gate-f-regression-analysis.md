@@ -1,7 +1,7 @@
 # Gate F Regression Analysis
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Baseline:** Gate A (891 passed, 94 failed, 39 skipped)  
+**Branch:** m2-project-ai-canonical-wiring
+**Baseline:** Gate A (891 passed, 94 failed, 39 skipped)
 **Current:** Gate F (146 passed in domain tests, 2 failed, 13 errors, 1286 skipped in full suite)
 
 ---
@@ -94,8 +94,8 @@ No tests that were failing at Gate A baseline are now passing at Gate F.
 
 ## Coverage Regression
 
-**Baseline:** 67%  
-**Current:** 29%  
+**Baseline:** 67%
+**Current:** 29%
 **Delta:** -38 percentage points
 
 **Root Cause:** 1,286 tests skipped due to TEST_DATABASE_URL_TUTORIAL not set. Skipped tests do not execute code, resulting in artificially low coverage.
@@ -114,7 +114,7 @@ No tests that were failing at Gate A baseline are now passing at Gate F.
 3. **API Response Format Change:** JWT self-approval test expects dict, receives string
 4. **Endpoint Behavior Change:** Rejection endpoint returns 403 instead of 200
 
-**Recommendation:** 
+**Recommendation:**
 1. Set TEST_DATABASE_URL_TUTORIAL environment variable
 2. Fix fixture references in integration tests (db_session → test_db_session)
 3. Investigate JWT self-approval endpoint response format
@@ -157,6 +157,6 @@ No tests that were failing at Gate A baseline are now passing at Gate F.
 
 ---
 
-**Analysis Generated:** Gate F Regression Analysis  
-**Certified By:** Gate F Integration Agent  
+**Analysis Generated:** Gate F Regression Analysis
+**Certified By:** Gate F Integration Agent
 **Workflow:** wf_cedd495b3c1d4b2e

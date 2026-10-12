@@ -1,8 +1,8 @@
 # E1-A-1: Certification Fixture Analysis Report
 
-**Workspace:** e:\onlinewebsites\quiz-platform  
-**Analysis Date:** 2025-01-29  
-**Analyzed By:** E1-A-1 Sub-agent  
+**Workspace:** e:\onlinewebsites\quiz-platform
+**Analysis Date:** 2025-01-29
+**Analyzed By:** E1-A-1 Sub-agent
 **Status:** READ-ONLY INVESTIGATION COMPLETE
 
 ---
@@ -120,9 +120,9 @@ Located at `gates.py` lines 296-375:
 
 ### Test 1: `test_approval_gate_fails_with_self_approval`
 
-**Location:** `test_certification_gates.py` line 233  
-**Expected Outcome:** Gate returns FAIL with "self-approval" in blockers  
-**Actual Outcome:** Gate execution likely succeeds, test fails on assertion  
+**Location:** `test_certification_gates.py` line 233
+**Expected Outcome:** Gate returns FAIL with "self-approval" in blockers
+**Actual Outcome:** Gate execution likely succeeds, test fails on assertion
 
 **Root Cause:** Test fixture `test_manifest` created at line 13-30 is incomplete:
 - ✅ Has: `manifestId`, `targetPath`, `decision`, `blockFamily`, `blockVersion`, `evidenceIds`, `createdAt`
@@ -139,9 +139,9 @@ Located at `gates.py` lines 296-375:
 
 ### Test 2: `test_test_evidence_gate_passes_with_valid_tests`
 
-**Location:** `test_certification_gates.py` line 338  
-**Expected Outcome:** Gate returns PASS with evidence IDs  
-**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure  
+**Location:** `test_certification_gates.py` line 338
+**Expected Outcome:** Gate returns PASS with evidence IDs
+**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure
 
 **Root Cause:** Test creates local manifest at line 340, but:
 - ✅ Has: Basic fields populated
@@ -164,9 +164,9 @@ test_manifest = PlacementManifest(...)  # Missing hash computation step
 
 ### Test 3: `test_test_evidence_gate_blocked_with_no_tests`
 
-**Location:** `test_certification_gates.py` line 361  
-**Expected Outcome:** Gate returns BLOCKED with "no test results" message  
-**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure (wrong blocker message)  
+**Location:** `test_certification_gates.py` line 361
+**Expected Outcome:** Gate returns BLOCKED with "no test results" message
+**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure (wrong blocker message)
 
 **Root Cause:** Same as Test 2 - manifest validation fails before reaching test evidence check.
 
@@ -178,9 +178,9 @@ test_manifest = PlacementManifest(...)  # Missing hash computation step
 
 ### Test 4: `test_test_evidence_gate_fails_with_failing_tests`
 
-**Location:** `test_certification_gates.py` line 376  
-**Expected Outcome:** Gate returns FAIL with "test failed" in blockers  
-**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure  
+**Location:** `test_certification_gates.py` line 376
+**Expected Outcome:** Gate returns FAIL with "test failed" in blockers
+**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure
 
 **Root Cause:** Same as Tests 2-3 - manifest validation blocks gate execution.
 
@@ -192,9 +192,9 @@ test_manifest = PlacementManifest(...)  # Missing hash computation step
 
 ### Test 5: `test_runtime_gate_blocked_with_empty_snapshot`
 
-**Location:** `test_certification_gates.py` line 402  
-**Expected Outcome:** Gate returns BLOCKED with "no verified blocks" message  
-**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure (wrong blocker message)  
+**Location:** `test_certification_gates.py` line 402
+**Expected Outcome:** Gate returns BLOCKED with "no verified blocks" message
+**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure (wrong blocker message)
 
 **Root Cause:** Test uses `test_manifest` fixture which fails validation.
 
@@ -221,9 +221,9 @@ snapshot = {
 
 ### Test 6: `test_ubrc_gate_blocked_with_empty_snapshot`
 
-**Location:** `test_certification_gates.py` line 416  
-**Expected Outcome:** Gate returns BLOCKED with "no verified blocks" message  
-**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure  
+**Location:** `test_certification_gates.py` line 416
+**Expected Outcome:** Gate returns BLOCKED with "no verified blocks" message
+**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure
 
 **Root Cause:** Same as Test 5 - manifest validation fails before UBRC check.
 
@@ -235,9 +235,9 @@ snapshot = {
 
 ### Test 7: `test_ubrc_gate_fails_with_missing_attribute`
 
-**Location:** `test_certification_gates.py` line 430  
-**Expected Outcome:** Gate returns FAIL with "attribute" in blockers  
-**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure  
+**Location:** `test_certification_gates.py` line 430
+**Expected Outcome:** Gate returns FAIL with "attribute" in blockers
+**Actual Outcome:** Gate returns BLOCKED due to manifest validation failure
 
 **Root Cause:** Test uses `test_manifest` which fails validation.
 
@@ -272,9 +272,9 @@ snapshot = {
 
 ### Test 8: `test_full_pipeline_with_valid_candidate`
 
-**Location:** `test_certification_pipeline.py` line 154  
-**Expected Outcome:** All gates return PASS, overall status is PASS  
-**Actual Outcome:** Some gates return BLOCKED due to manifest validation failures  
+**Location:** `test_certification_pipeline.py` line 154
+**Expected Outcome:** All gates return PASS, overall status is PASS
+**Actual Outcome:** Some gates return BLOCKED due to manifest validation failures
 
 **Root Cause:** Test uses `complete_manifest` fixture (line 66-86) which appears complete but may have issues:
 
@@ -456,11 +456,11 @@ From `app/models/implementation_approval.py`:
        # Generate non-inferrable candidate ID
        if candidate_id is None:
            candidate_id = f"candidate-{uuid4().hex[:8]}"
-       
+
        # Use provided evidence IDs or generate empty list
        if evidence_ids is None:
            evidence_ids = []
-       
+
        manifest = PlacementManifest(
            manifestId=f"manifest-{uuid4().hex[:8]}",
            candidateId=candidate_id,
@@ -473,14 +473,14 @@ From `app/models/implementation_approval.py`:
            manifestHash="",
            createdAt=datetime.now(timezone.utc).isoformat()
        )
-       
+
        # Compute hash
        manifest_copy = manifest.model_copy()
        manifest_copy.manifestHash = ""
        manifest_json = manifest_copy.model_dump_json(exclude_none=True, indent=2)
        computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
        manifest.manifestHash = computed_hash
-       
+
        return manifest
    ```
 
@@ -573,5 +573,5 @@ Once these fixtures are corrected, all tests should pass their intended gate-spe
 
 ---
 
-**Report prepared by E1-A-1 Sub-agent**  
+**Report prepared by E1-A-1 Sub-agent**
 **Next Step:** E1-B-1 to implement corrected test fixtures

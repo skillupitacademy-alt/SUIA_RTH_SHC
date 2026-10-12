@@ -229,16 +229,16 @@ This plan completes the integration of the CanonicalComparator (implemented in W
 
 This wiring enables the full W3 intake pipeline:
 ```
-CANDIDATE_RECEIVED 
+CANDIDATE_RECEIVED
   → CandidateValidator validates upload
   → CANDIDATE_AUDIT
 
-CANDIDATE_AUDIT 
+CANDIDATE_AUDIT
   → CanonicalComparator runs compliance gates (✅ this task)
   → INTEGRATION_PLANNED (if PASS)
   → REJECTED (if FAIL)
 
-INTEGRATION_PLANNED 
+INTEGRATION_PLANNED
   → PlacementManifestGenerator creates manifest
   → AWAITING_IMPLEMENTATION_APPROVAL
 ```

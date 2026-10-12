@@ -1,9 +1,9 @@
 # Gate B: W3C/W5 Requirements Specification
 
-**Project:** Quiz Platform - Project AI Service  
-**Branch:** m2-project-ai-canonical-wiring  
-**Date:** 2026-01-30  
-**Status:** Policy Definition (No Implementation)  
+**Project:** Quiz Platform - Project AI Service
+**Branch:** m2-project-ai-canonical-wiring
+**Date:** 2026-01-30
+**Status:** Policy Definition (No Implementation)
 **Purpose:** Define comprehensive requirements for W3C Canonical Artifact Policy and W5 Placement Engine authorization consistency
 
 ---
@@ -53,7 +53,7 @@ A **canonical artifact** is:
 4. Versioned through git history, not filename suffixes
 5. Documented in the Canonical Artifacts Registry
 
-**Example:** 
+**Example:**
 - ✅ Canonical: `.agents/tasks/gate-b-route-rbac-matrix.csv` (40-route RBAC mapping)
 - ❌ Non-Canonical: `.agents/tasks/gate-b-route-rbac-matrix-v2.csv` (duplicate with version suffix)
 
@@ -90,9 +90,9 @@ Before creating any new artifact, agents MUST:
 ```markdown
 # [DEPRECATED] This artifact is deprecated
 
-**Canonical Version:** `.agents/tasks/canonical-artifact-name.md`  
-**Deprecation Date:** 2026-01-30  
-**Reason:** Duplicate of canonical artifact. Content consolidated.  
+**Canonical Version:** `.agents/tasks/canonical-artifact-name.md`
+**Deprecation Date:** 2026-01-30
+**Reason:** Duplicate of canonical artifact. Content consolidated.
 **Action Required:** Use canonical version for all references.
 ```
 
@@ -409,17 +409,17 @@ async def approve_manifest(
 ):
     """Approve manifest - requires reviewer role and separation of duties."""
     require_any_role(principal, ["contract_reviewer", "contract_admin"])
-    
+
     approval = await approval_repo.get_by_id(approval_id)
-    
+
     # Separation of duties check
     if approval.submitter_id == principal["user_id"]:
         raise HTTPException(status_code=403, detail="Self-approval not allowed")
-    
+
     # Hash verification
     if approval.manifest_sha256 != compute_hash(approval.manifest_content):
         raise HTTPException(status_code=400, detail="Manifest hash mismatch - tamper detected")
-    
+
     # ... approval logic
 ```
 

@@ -91,43 +91,43 @@ return new SignJWT({
 def get_jwt_config() -> dict:
     """
     Get JWT configuration from environment variables.
-    
+
     Returns:
         dict with keys:
             - user_secret: str (JWT signing secret for user tokens)
             - admin_secret: str (JWT signing secret for admin tokens)
             - algorithm: str (default: HS256)
             - access_token_expire_minutes: int (default: 30)
-    
+
     Raises:
         ValueError: If JWT_SECRET is missing or less than 32 characters
     """
     user_secret = os.environ.get("JWT_SECRET")
-    
+
     if not user_secret:
         raise ValueError(
             "JWT_SECRET environment variable is required. "
             "Set it to a secure random string of at least 32 characters."
         )
-    
+
     if len(user_secret) < 32:
         raise ValueError(
             f"JWT_SECRET must be at least 32 characters long. "
             f"Current length: {len(user_secret)}"
         )
-    
+
     # ADMIN_JWT_SECRET falls back to JWT_SECRET (matching SHC pattern)
     admin_secret = os.environ.get("ADMIN_JWT_SECRET", user_secret)
-    
+
     if len(admin_secret) < 32:
         raise ValueError(
             f"ADMIN_JWT_SECRET must be at least 32 characters long. "
             f"Current length: {len(admin_secret)}"
         )
-    
+
     algorithm = os.environ.get("JWT_ALGORITHM", "HS256")
     expire_minutes = int(os.environ.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
-    
+
     return {
         "user_secret": user_secret,
         "admin_secret": admin_secret,
@@ -188,7 +188,7 @@ for claim in required_claims:
         )
 ```
 
-**Findings**: 
+**Findings**:
 - ✅ `config.py` reads both `JWT_SECRET` and `ADMIN_JWT_SECRET` with >= 32 character validation
 - ✅ `jwt.py` implements strict secret binding: admin tokens must verify with admin secret, user tokens with user secret
 - ✅ Issuer validation enforced: requires `iss='skillhubcore.in'`
@@ -359,7 +359,7 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
    - Provides commands to run JWT alignment tests
    - Documents coverage options
 
-**Findings**: 
+**Findings**:
 - ✅ `.env.example` exists and documents all JWT environment variables with security notes
 - ✅ `README.md` contains comprehensive JWT Authentication section (77 lines)
 - ✅ Documentation covers SHC token contract, issuer validation, strict secret binding, and usage examples
@@ -386,7 +386,7 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 **Overall Status**: PASS
 
-**Rationale**: 
+**Rationale**:
 
 All seven verification steps completed successfully:
 
@@ -406,7 +406,7 @@ The implementation demonstrates:
 
 **Blockers**: None
 
-**Recommendations**: 
+**Recommendations**:
 
 1. **Proceed to Wave 1B**: JWT alignment foundation is solid and ready for next phase
 2. **Monitor Production Metrics**: Track token validation success/failure rates after deployment

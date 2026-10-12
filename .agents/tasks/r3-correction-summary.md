@@ -46,7 +46,7 @@ CORRECT: tutorial_prod (existing PostgreSQL database)
 ```sql
 -- Project AI tables in tutorial_prod with namespace prefix
 project_ai_workflows
-project_ai_state_transitions  
+project_ai_state_transitions
 project_ai_contracts
 project_ai_candidates
 project_ai_manifests
@@ -60,7 +60,7 @@ project_ai_approvals
 ### REMOVE
 
 ❌ SQLite
-❌ aiosqlite driver  
+❌ aiosqlite driver
 ❌ `sqlite+aiosqlite:///./project_ai.db`
 ❌ In-memory SQLite tests
 ❌ SQLite-specific SQL (`INSERT OR IGNORE`)
@@ -133,7 +133,7 @@ Must complete before any schema changes:
 Step 0: Database Discovery (MANDATORY FIRST)
   ↓
 Step 1: Add asyncpg dependency
-  ↓  
+  ↓
 Step 2: Create PostgreSQL connection layer
   ↓
 Step 3: Define SQLAlchemy ORM models
@@ -161,7 +161,7 @@ Steps 19-20: Verification and commit
 **Project AI MUST use tutorial_prod.**
 Creating project_ai_prod or project_ai.db is FORBIDDEN without architecture owner approval.
 
-### RULE 2: Technology Stack  
+### RULE 2: Technology Stack
 **SQLite is FORBIDDEN in Project AI production.**
 Only PostgreSQL + asyncpg allowed.
 
@@ -225,7 +225,7 @@ No agent may proceed without completing discovery.
 ### For Planning Agent (Complete)
 
 ✅ Created r3-architecture-correction.md
-✅ Created r3-plan-corrected.md  
+✅ Created r3-plan-corrected.md
 ✅ Created r3-correction-summary.md
 ✅ Documented architectural decisions
 ✅ Provided corrected implementation plan
@@ -252,7 +252,7 @@ When workflow resumes:
 ## Estimated Timeline
 
 - **Discovery (Step 0):** 1-2 hours
-- **Infrastructure (Steps 1-6):** 4-5 hours  
+- **Infrastructure (Steps 1-6):** 4-5 hours
 - **Integration (Steps 7-12):** 3-4 hours
 - **Testing (Steps 13-16):** 2-3 hours
 - **Documentation (Steps 17-20):** 1-2 hours

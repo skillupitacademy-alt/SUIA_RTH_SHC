@@ -135,7 +135,7 @@ Remaining 55 failures are due to manifest validation logic (evidence ID validati
 ## Cross-FEAT Integration Verified
 
 ✓ workflow_dag.py ↔ agent_registry.py: All 15 agent types match
-✓ workflow_engine.py ↔ workflow_dag.py: AGENT_WORKFLOW_DAG imported and used correctly  
+✓ workflow_engine.py ↔ workflow_dag.py: AGENT_WORKFLOW_DAG imported and used correctly
 ✓ orchestration/__init__.py: Exports AGENT_WORKFLOW_DAG properly
 ✓ All 15 agent files present in app/agents/ directory
 ✓ All gate executors properly require manifest parameter

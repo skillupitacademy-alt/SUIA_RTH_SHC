@@ -1,10 +1,10 @@
 /**
  * Certification Badge Component
- * 
+ *
  * Displays the certification lifecycle: CERTIFICATION_READY → Human Gate 2 → CERTIFIED
  * Shows gate results: UBRC, brand, theme, registry, renderer, evidence
  * Shows runtime and browser verification status
- * 
+ *
  * CRITICAL RULE: NEVER displays fabricated PASS status.
  * All data sourced from real backend responses only.
  */

@@ -1,8 +1,8 @@
 # Gate F Security Domain Regression Fix Report
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Iteration:** 1  
-**Date:** 2025-01-28  
+**Branch:** m2-project-ai-canonical-wiring
+**Iteration:** 1
+**Date:** 2025-01-28
 **Status:** ✅ PRIMARY FIXES COMPLETE - 15/15 targeted issues resolved
 
 ---
@@ -60,7 +60,7 @@ async def test_db_session(test_db_engine):
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    
+
     async with async_session() as session:
         # Don't use 'async with session.begin()' - let tests manage transactions
         yield session
@@ -92,7 +92,7 @@ alice_token = create_test_token("alice@example.com")
 alice_token = create_test_token("alice@example.com", roles=["contract_reviewer"])
 ```
 
-**Security Validation:** 
+**Security Validation:**
 - ✅ Self-approval prevention logic remains intact in `governance.py` (lines 240-257)
 - ✅ Error response format is correct (returns dict with `"error": "SELF_APPROVAL_REJECTED"`)
 - ✅ No security controls weakened - only test role assignment corrected
@@ -189,7 +189,7 @@ Failing Tests (7) - Pre-existing issues, NOT caused by my fixes:
 
 These are NOT part of the 15 targeted fixes (13 fixture errors + 2 JWT test failures). They are pre-existing schema issues.
 
-**Fix Impact:** 
+**Fix Impact:**
 - Before: 10 errors (fixture not found), 9 passing
 - After: 0 errors, 12 passing, 7 failing (model schema issues)
 - **Net improvement: +3 passing tests, -13 fixture errors**
@@ -427,7 +427,7 @@ Domain 1 (JWT Identity Extraction) now achieves 100% pass rate with zero-toleran
 
 ---
 
-**Report Author:** Gate F Fix Implementation Agent  
-**Workflow:** wf_90b66adc57ab6d48  
-**Timestamp:** 2025-01-28  
+**Report Author:** Gate F Fix Implementation Agent
+**Workflow:** wf_90b66adc57ab6d48
+**Timestamp:** 2025-01-28
 **Next Gate:** Schema remediation for Domain 2 brand tracking fields

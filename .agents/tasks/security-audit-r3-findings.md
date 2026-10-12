@@ -42,7 +42,7 @@ grep -rn '_store\s*=\s*{}' services/project-ai/ --include="*.py"
 
 **Matches Found (ALL in tests/):**
 - `tests/test_authorization_checker.py` (10 occurrences) - Test fixtures only
-- `tests/placement/test_approval_enforcer.py` (2 occurrences) - Test fixtures only  
+- `tests/placement/test_approval_enforcer.py` (2 occurrences) - Test fixtures only
 - `tests/test_workflow_transitions.py` (11 occurrences) - Test fixtures only
 - `tests/certification/test_certification_pipeline.py` (4 occurrences) - Test fixtures only
 - `tests/certification/test_certification_gates.py` (2 occurrences) - Test fixtures only
@@ -196,9 +196,9 @@ grep -rn 'create_all()' services/project-ai/app/ --include="*.py"
 **Critical Changes:**
 ```sql
 -- Example: Workflow ID conversion
-ALTER TABLE "project_ai_workflows" 
+ALTER TABLE "project_ai_workflows"
   ALTER COLUMN "workflow_id" SET DATA TYPE uuid USING workflow_id::uuid;
-ALTER TABLE "project_ai_workflows" 
+ALTER TABLE "project_ai_workflows"
   ALTER COLUMN "workflow_id" SET DEFAULT gen_random_uuid();
 ```
 

@@ -1,8 +1,8 @@
 # M2.6 UBRC Structural Verification Report
 
-**Branch:** `m2-project-ai-foundation`  
-**Commit:** `d93d9e2de23cd3ecc8af99d98c57a0b59074a62c`  
-**Date:** 2025-01-27  
+**Branch:** `m2-project-ai-foundation`
+**Commit:** `d93d9e2de23cd3ecc8af99d98c57a0b59074a62c`
+**Date:** 2025-01-27
 **Status:** ✅ COMPLETE
 
 ---
@@ -299,7 +299,7 @@ UBRC evidence is:
 ### INFO Findings
 
 ```
-[info] Discovered 18 documented block families, 13 implemented blocks, 
+[info] Discovered 18 documented block families, 13 implemented blocks,
        21 rendered blocks, 13 verified blocks
 ```
 
@@ -476,9 +476,9 @@ Extend UBRC verification to check version range completeness for block families.
 
 ## Commit Details
 
-**Commit SHA:** `d93d9e2de23cd3ecc8af99d98c57a0b59074a62c`  
-**Message:** `feat(m2.6): implement UBRC structural verification`  
-**Branch:** `m2-project-ai-foundation`  
+**Commit SHA:** `d93d9e2de23cd3ecc8af99d98c57a0b59074a62c`
+**Message:** `feat(m2.6): implement UBRC structural verification`
+**Branch:** `m2-project-ai-foundation`
 **Pushed:** ✅ `origin/m2-project-ai-foundation`
 
 **Files Changed:**
@@ -513,8 +513,8 @@ Extend UBRC verification to check version range completeness for block families.
 
 ### SummaryBlock UBRC Compliance Fixed
 
-**Date:** 2025-01-27  
-**Commit:** [pending]  
+**Date:** 2025-01-27
+**Commit:** [pending]
 **Status:** ✅ COMPLETE
 
 Added missing `data-block-version="S1"` attribute to SummaryBlock renderer.
@@ -560,6 +560,6 @@ M2.6 UBRC structural verification is complete and operational. The system succes
 
 ---
 
-**Report Generated:** 2025-01-27  
-**Scanner Version:** M2.6  
+**Report Generated:** 2025-01-27
+**Scanner Version:** M2.6
 **Verification Level:** UBRC_VALID (report itself is verified)

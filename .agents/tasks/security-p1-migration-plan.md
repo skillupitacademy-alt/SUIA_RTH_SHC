@@ -1,7 +1,7 @@
 # Security P1 Migration Authority Cleanup - Implementation Plan
 
-**Branch:** `m2-project-ai-canonical-wiring`  
-**Target:** Remove Alembic from services/project-ai and enforce Drizzle-only migration authority  
+**Branch:** `m2-project-ai-canonical-wiring`
+**Target:** Remove Alembic from services/project-ai and enforce Drizzle-only migration authority
 **Priority:** P1 (Security — prevents dual-authority schema drift)
 
 ---
@@ -111,7 +111,7 @@ git log origin/m2-project-ai-canonical-wiring -1 --oneline
 
 ## Security Impact
 
-**Before:** Developer could accidentally run `alembic revision --autogenerate` and create conflicting migrations.  
+**Before:** Developer could accidentally run `alembic revision --autogenerate` and create conflicting migrations.
 **After:** Alembic is not installed; any attempt to import it raises `ImportError`. Anti-DDL tests enforce read-only ORM boundary.
 
 **Risk Reduction:** Eliminates dual-authority schema drift vulnerability (P1 → resolved).

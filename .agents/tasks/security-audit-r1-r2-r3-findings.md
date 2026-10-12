@@ -1,9 +1,9 @@
 # Security Audit - Consolidated Findings Report
 ## R1 Repository Intelligence | R2 Contract Derivation | R3 Persistence Layer | R4 Authentication
 
-**Audit Date:** 2025-01-27  
-**Branch:** m2-project-ai-canonical-wiring  
-**Workspace:** e:/onlinewebsites/quiz-platform  
+**Audit Date:** 2025-01-27
+**Branch:** m2-project-ai-canonical-wiring
+**Workspace:** e:/onlinewebsites/quiz-platform
 **Service:** services/project-ai
 
 ---
@@ -112,7 +112,7 @@ No duplicates detected.
 
 # Part 2: R2 Contract Derivation Audit
 
-**Module:** Contract Derivation  
+**Module:** Contract Derivation
 **Files:** `app/contracts/repository_intelligence.py`, `app/contracts/engineering_contract.py`
 
 ## R2 Compliance Verdict: ⚠️ CONDITIONAL PASS
@@ -127,7 +127,7 @@ Strong architectural compliance, but **2 hardcoded default values** violate zero
 if not metadata['difficulty_level']:
     metadata['difficulty_level'] = 'intermediate'
 ```
-**Severity:** MEDIUM  
+**Severity:** MEDIUM
 **Context:** Fallback default for missing snapshot data
 
 ### ❌ VIOLATION 2: Hardcoded 'TypeScript' language inference
@@ -137,7 +137,7 @@ if path.endswith('.tsx') or path.endswith('.ts'):
     metadata['language'] = 'TypeScript'
     break
 ```
-**Severity:** LOW  
+**Severity:** LOW
 **Context:** Inference heuristic from file extensions (evidence-derived)
 
 ### ✅ CLEAN: No hardcoded values in contract endpoint
@@ -324,7 +324,7 @@ Strong database-backed architecture, but **all 60 integration tests are SKIPPED*
 304 passed, 13 skipped, 60 warnings in 2.67s
 ```
 
-**Variance:** +16 tests over specification (+5.6%)  
+**Variance:** +16 tests over specification (+5.6%)
 **Assessment:** Positive deviation (more coverage)
 
 ## 7. Integration Tests: ❌ CRITICAL FAIL
@@ -336,7 +336,7 @@ Strong database-backed architecture, but **all 60 integration tests are SKIPPED*
 0 passed, 60 skipped, 3 warnings in 0.31s
 ```
 
-**Expected:** 26 integration tests  
+**Expected:** 26 integration tests
 **Actual:** 60 tests collected, **ALL SKIPPED**
 
 **Skipped Tests:**
@@ -408,7 +408,7 @@ Strong database-backed architecture, but **all 60 integration tests are SKIPPED*
 
 ## Authentication Status Summary
 
-**Total Endpoints Analyzed:** 37  
+**Total Endpoints Analyzed:** 37
 **Route Files:** 10
 
 | Auth Status | Count | Percentage |
@@ -426,8 +426,8 @@ Strong database-backed architecture, but **all 60 integration tests are SKIPPED*
 | POST | `/workflows/{id}/engineering-contract` | PLACEHOLDER | ✅ YES |
 | GET | `/workflows/{id}/engineering-contract` | PLACEHOLDER | ✅ YES |
 
-**Auth Implementation:** `verify_auth()` placeholder (accepts any token ≥8 chars)  
-**Ownership:** `verify_workflow_ownership()` validates requester_id  
+**Auth Implementation:** `verify_auth()` placeholder (accepts any token ≥8 chars)
+**Ownership:** `verify_workflow_ownership()` validates requester_id
 **Security Level:** 🟡 MEDIUM (auth present but temporary)
 
 ### `workflows.py` (5 endpoints) - ❌ NO AUTH
@@ -502,9 +502,9 @@ Strong database-backed architecture, but **all 60 integration tests are SKIPPED*
 
 ### Other Routes
 
-**`agents.py` (2):** No auth - 🟢 LOW (agent metadata)  
-**`health.py` (1):** No auth - 🟢 LOW (standard health check)  
-**`tasks.py` (4):** No auth - 🟡 MEDIUM (deprecated, in-memory storage)  
+**`agents.py` (2):** No auth - 🟢 LOW (agent metadata)
+**`health.py` (1):** No auth - 🟢 LOW (standard health check)
+**`tasks.py` (4):** No auth - 🟡 MEDIUM (deprecated, in-memory storage)
 **`creation.py` (4):** Disabled - 🟢 LOW (returns 405)
 
 ## Critical Security Gaps
@@ -680,7 +680,7 @@ Log JWT-verified identities (not client-provided strings)
 
 ---
 
-**Audit Completed:** 2025-01-27  
-**Auditors:** R1, R2, R3, R4 Autonomous Security Agents  
-**Branch:** m2-project-ai-canonical-wiring  
+**Audit Completed:** 2025-01-27
+**Auditors:** R1, R2, R3, R4 Autonomous Security Agents
+**Branch:** m2-project-ai-canonical-wiring
 **Overall Status:** STRONG ARCHITECTURE, CRITICAL AUTH GAPS, INTEGRATION TESTS NEEDED

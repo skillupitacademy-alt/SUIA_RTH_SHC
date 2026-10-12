@@ -1,6 +1,6 @@
 /**
  * Tests for ProjectLlmClient
- * 
+ *
  * Verifies that the API client correctly calls backend endpoints
  * and never fabricates data.
  */

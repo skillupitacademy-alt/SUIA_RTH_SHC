@@ -102,28 +102,28 @@ Workflow creation uses `user["user_id"]` (dictionary access), governance approva
 <details>
 <summary>File map</summary>
 
-**app/auth/authorization.py** (new)  
+**app/auth/authorization.py** (new)
 Four-rule brand access enforcement function with infrastructure bypass
 
-**app/api/routes/governance.py**  
+**app/api/routes/governance.py**
 Removed `approved_by` from `WorkflowApprovalPayload`, extract approver from JWT token
 
-**app/api/routes/workflows.py**  
+**app/api/routes/workflows.py**
 Extract `requester_id` from JWT token instead of request body
 
-**app/api/routes/candidate.py**  
+**app/api/routes/candidate.py**
 Capture uploader's brand on upload, enforce brand boundary on execution via `verify_brand_access`
 
-**app/api/schemas/workflow.py**  
+**app/api/schemas/workflow.py**
 Removed `requester_id` field from `CreateWorkflowRequest` schema
 
-**app/models/candidate.py**  
+**app/models/candidate.py**
 Added `brand: Optional[str]` field to `CandidatePackage` model
 
-**app/persistence/models.py**  
+**app/persistence/models.py**
 Added `brand = Column(String(100))` to `CandidateModel` ORM
 
-**tests/security/test_authorization.py** (new)  
+**tests/security/test_authorization.py** (new)
 Five unit tests for `verify_brand_access()` (all passing), nine integration tests (all skipped)
 
 **Full diff:** `git diff a27705a4..76aaba51`

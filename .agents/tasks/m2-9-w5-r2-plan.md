@@ -86,7 +86,7 @@ Expected: Existing tests that pass ApprovalStatus will fail (expected breaking c
    ```python
    from app.models.implementation_approval import ImplementationApproval
    from app.placement.approval_enforcer import ApprovalEnforcer
-   
+
    # In-memory storage for approvals (M3 foundation)
    # TODO: Replace with persistent storage in production
    _approvals_store: Dict[str, ImplementationApproval] = {}
@@ -99,7 +99,7 @@ Expected: Existing tests that pass ApprovalStatus will fail (expected breaking c
    # SAFETY: Enforce implementation approval via ApprovalEnforcer
    # Compute candidate SHA-256 from uploaded files
    candidate_sha256 = _compute_candidate_sha256(package.files)
-   
+
    # Get workflow_id from manifest metadata
    # Note: In production, workflow_id comes from candidate binding at upload
    # For M3 foundation, we use manifest metadata or require it at upload
@@ -110,7 +110,7 @@ Expected: Existing tests that pass ApprovalStatus will fail (expected breaking c
            detail="Manifest missing workflow_id binding. "
                   "This indicates the candidate was not properly bound to a workflow."
        )
-   
+
    # Get requester_id from manifest metadata
    requester_id = getattr(manifest, '_requester_id', None)
    if not requester_id:
@@ -119,7 +119,7 @@ Expected: Existing tests that pass ApprovalStatus will fail (expected breaking c
            detail="Manifest missing requester_id. "
                   "Cannot verify approval without requester identity."
        )
-   
+
    # Enforce approval via ApprovalEnforcer
    enforcer = ApprovalEnforcer(_approvals_store)
    enforcement_result = enforcer.enforce_approval(
@@ -129,7 +129,7 @@ Expected: Existing tests that pass ApprovalStatus will fail (expected breaking c
        manifest_sha256=manifest.manifestHash,
        requester_id=requester_id
    )
-   
+
    if not enforcement_result.approved:
        raise HTTPException(
            status_code=403,
@@ -137,14 +137,14 @@ Expected: Existing tests that pass ApprovalStatus will fail (expected breaking c
                   f"Bindings verified: {enforcement_result.bindings_verified}. "
                   f"Submit for approval via governance API first."
        )
-   
+
    # Retrieve actual ImplementationApproval object for executor
    if workflow_id not in _approvals_store:
        raise HTTPException(
            status_code=500,
            detail="Internal error: approval enforcement passed but approval not found"
        )
-   
+
    approval = _approvals_store[workflow_id]
    ```
 
@@ -153,27 +153,27 @@ Expected: Existing tests that pass ApprovalStatus will fail (expected breaking c
    def _compute_candidate_sha256(files: List[Any]) -> str:
        """
        Compute SHA-256 hash from candidate files.
-       
+
        Matches CandidateValidator._compute_candidate_hash pattern:
        concatenates sorted file hashes for consistency.
-       
+
        Args:
            files: List of CandidateFile objects with content attribute
-           
+
        Returns:
            Hex-encoded SHA-256 hash
        """
        sha256_hash = hashlib.sha256()
-       
+
        # Sort files by filename for deterministic hash
        sorted_files = sorted(files, key=lambda f: f.filename)
-       
+
        for file in sorted_files:
            # Hash each file's content
            content_bytes = file.content.encode('utf-8') if isinstance(file.content, str) else file.content
            file_hash = hashlib.sha256(content_bytes)
            sha256_hash.update(file_hash.digest())
-       
+
        return sha256_hash.hexdigest()
    ```
 
@@ -277,7 +277,7 @@ def sample_candidate():
         <div data-step="1">Step 1</div>
     </div>
     """
-    
+
     files = [
         CandidateFile(
             filename="tutorial.html",
@@ -286,14 +286,14 @@ def sample_candidate():
             hash=hashlib.sha256(html_content.encode('utf-8')).hexdigest()
         )
     ]
-    
+
     package = CandidatePackage(
         candidateId="test-security-001",
         files=files,
         uploadedAt=datetime.now(timezone.utc).isoformat() + "Z",
         uploadedBy="test-user"
     )
-    
+
     # Compute candidate SHA-256
     sha256_hash = hashlib.sha256()
     for file in sorted(files, key=lambda f: f.filename):
@@ -301,7 +301,7 @@ def sample_candidate():
         file_hash = hashlib.sha256(content_bytes)
         sha256_hash.update(file_hash.digest())
     candidate_sha256 = sha256_hash.hexdigest()
-    
+
     return package, candidate_sha256
 
 
@@ -309,7 +309,7 @@ def sample_candidate():
 def sample_manifest(sample_candidate):
     """Create sample placement manifest."""
     package, _ = sample_candidate
-    
+
     manifest_data = {
         "manifestId": "manifest-security-001",
         "candidateId": "test-security-001",
@@ -321,12 +321,12 @@ def sample_manifest(sample_candidate):
         "evidenceIds": ["evidence-001"],
         "createdAt": datetime.now(timezone.utc).isoformat() + "Z"
     }
-    
+
     manifest_json = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
     manifest_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
-    
+
     from app.models.candidate import PlacementManifest, PlacementDecision
-    
+
     manifest = PlacementManifest(
         manifestId=manifest_data["manifestId"],
         candidateId=manifest_data["candidateId"],
@@ -339,11 +339,11 @@ def sample_manifest(sample_candidate):
         manifestHash=manifest_hash,
         createdAt=manifest_data["createdAt"]
     )
-    
+
     # Add workflow binding metadata
     manifest._workflow_id = "wf-security-001"
     manifest._requester_id = "requester@example.com"
-    
+
     return manifest, manifest_hash
 
 
@@ -351,14 +351,14 @@ def test_placement_rejected_without_approval(sample_candidate, sample_manifest):
     """Test placement execution rejected when no approval exists."""
     package, candidate_sha256 = sample_candidate
     manifest, manifest_hash = sample_manifest
-    
+
     # Store candidate and manifest
     _candidates_store[package.candidateId] = package
     _manifests_store[package.candidateId] = manifest
-    
+
     # Try to execute without approval
     response = client.post(f"/candidates/{package.candidateId}/execute")
-    
+
     assert response.status_code == 403
     assert "approval enforcement failed" in response.json()["detail"].lower()
 
@@ -367,18 +367,18 @@ def test_placement_rejected_with_legacy_approval_status(sample_candidate, sample
     """Test that legacy ApprovalStatus enum is rejected (no longer accepted)."""
     package, candidate_sha256 = sample_candidate
     manifest, manifest_hash = sample_manifest
-    
+
     # Store candidate and manifest
     _candidates_store[package.candidateId] = package
     _manifests_store[package.candidateId] = manifest
-    
+
     # Try to attach legacy ApprovalStatus (this pattern should no longer work)
     from app.models.governance import ApprovalStatus
     manifest._approval_status = ApprovalStatus.APPROVED
-    
+
     # Execute should still fail - no ImplementationApproval in store
     response = client.post(f"/candidates/{package.candidateId}/execute")
-    
+
     assert response.status_code == 403
     assert "approval enforcement failed" in response.json()["detail"].lower()
 
@@ -387,11 +387,11 @@ def test_placement_rejected_candidate_hash_mismatch(sample_candidate, sample_man
     """Test placement rejected when candidate hash doesn't match approval."""
     package, candidate_sha256 = sample_candidate
     manifest, manifest_hash = sample_manifest
-    
+
     # Store candidate and manifest
     _candidates_store[package.candidateId] = package
     _manifests_store[package.candidateId] = manifest
-    
+
     # Create approval with WRONG candidate hash
     approval = create_implementation_approval(
         workflow_id="wf-security-001",
@@ -404,12 +404,12 @@ def test_placement_rejected_candidate_hash_mismatch(sample_candidate, sample_man
         workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.APPROVED
     )
-    
+
     _approvals_store["wf-security-001"] = approval
-    
+
     # Execute should fail with hash mismatch
     response = client.post(f"/candidates/{package.candidateId}/execute")
-    
+
     assert response.status_code == 403
     detail = response.json()["detail"].lower()
     assert "approval enforcement failed" in detail
@@ -420,11 +420,11 @@ def test_placement_rejected_manifest_id_mismatch(sample_candidate, sample_manife
     """Test placement rejected when manifest ID doesn't match approval."""
     package, candidate_sha256 = sample_candidate
     manifest, manifest_hash = sample_manifest
-    
+
     # Store candidate and manifest
     _candidates_store[package.candidateId] = package
     _manifests_store[package.candidateId] = manifest
-    
+
     # Create approval with WRONG manifest ID
     approval = create_implementation_approval(
         workflow_id="wf-security-001",
@@ -437,12 +437,12 @@ def test_placement_rejected_manifest_id_mismatch(sample_candidate, sample_manife
         workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.APPROVED
     )
-    
+
     _approvals_store["wf-security-001"] = approval
-    
+
     # Execute should fail with manifest ID mismatch
     response = client.post(f"/candidates/{package.candidateId}/execute")
-    
+
     assert response.status_code == 403
     detail = response.json()["detail"].lower()
     assert "approval enforcement failed" in detail
@@ -453,11 +453,11 @@ def test_placement_rejected_manifest_hash_mismatch(sample_candidate, sample_mani
     """Test placement rejected when manifest hash doesn't match approval."""
     package, candidate_sha256 = sample_candidate
     manifest, manifest_hash = sample_manifest
-    
+
     # Store candidate and manifest
     _candidates_store[package.candidateId] = package
     _manifests_store[package.candidateId] = manifest
-    
+
     # Create approval with WRONG manifest hash
     approval = create_implementation_approval(
         workflow_id="wf-security-001",
@@ -470,12 +470,12 @@ def test_placement_rejected_manifest_hash_mismatch(sample_candidate, sample_mani
         workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.APPROVED
     )
-    
+
     _approvals_store["wf-security-001"] = approval
-    
+
     # Execute should fail with hash mismatch
     response = client.post(f"/candidates/{package.candidateId}/execute")
-    
+
     assert response.status_code == 403
     detail = response.json()["detail"].lower()
     assert "approval enforcement failed" in detail
@@ -486,11 +486,11 @@ def test_placement_rejected_self_approval(sample_candidate, sample_manifest):
     """Test placement rejected when self-approval detected."""
     package, candidate_sha256 = sample_candidate
     manifest, manifest_hash = sample_manifest
-    
+
     # Store candidate and manifest
     _candidates_store[package.candidateId] = package
     _manifests_store[package.candidateId] = manifest
-    
+
     # Create approval where approved_by == workflow_requester (self-approval)
     approval = create_implementation_approval(
         workflow_id="wf-security-001",
@@ -503,12 +503,12 @@ def test_placement_rejected_self_approval(sample_candidate, sample_manifest):
         workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.APPROVED
     )
-    
+
     _approvals_store["wf-security-001"] = approval
-    
+
     # Execute should fail with self-approval error
     response = client.post(f"/candidates/{package.candidateId}/execute")
-    
+
     assert response.status_code == 403
     detail = response.json()["detail"].lower()
     assert "approval enforcement failed" in detail
@@ -519,11 +519,11 @@ def test_placement_success_all_bindings_valid(sample_candidate, sample_manifest)
     """Test placement succeeds when ALL bindings are valid."""
     package, candidate_sha256 = sample_candidate
     manifest, manifest_hash = sample_manifest
-    
+
     # Store candidate and manifest
     _candidates_store[package.candidateId] = package
     _manifests_store[package.candidateId] = manifest
-    
+
     # Create VALID approval with ALL correct bindings
     approval = create_implementation_approval(
         workflow_id="wf-security-001",
@@ -536,12 +536,12 @@ def test_placement_success_all_bindings_valid(sample_candidate, sample_manifest)
         workflow_requester="requester@example.com",
         status=ImplementationApprovalStatus.APPROVED
     )
-    
+
     _approvals_store["wf-security-001"] = approval
-    
+
     # Execute should succeed (may fail with PlacementExecutionError if workspace invalid, but NOT 403)
     response = client.post(f"/candidates/{package.candidateId}/execute")
-    
+
     # Should NOT be 403 Forbidden (approval enforcement passed)
     assert response.status_code != 403
     # May be 500 if PlacementExecutor fails (workspace issues), but that's execution failure, not auth failure

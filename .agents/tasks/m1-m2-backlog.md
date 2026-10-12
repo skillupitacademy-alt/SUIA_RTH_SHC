@@ -19,8 +19,8 @@ Currently V8 uses keyword substring matching. Replace with direct entity↔evide
 ## Medium Priority
 
 ### M2-3: Real Toolchain Version Execution (D1/D2) ✅ COMPLETE
-**Status:** ✅ COMPLETE (2025-01-06)  
-**Commit:** `50785dbe`  
+**Status:** ✅ COMPLETE (2025-01-06)
+**Commit:** `50785dbe`
 **Report:** `.agents/tasks/m2-phase1-toolchain-report.md`
 
 Current D1/D2 infer versions from config files. For M2, execute toolchain binaries to get runtime versions.
@@ -33,8 +33,8 @@ Current D1/D2 infer versions from config files. For M2, execute toolchain binari
 - All 218 tests passing
 
 ### M2-4: Richer D4 Composer/API/Schema Analysis ✅ COMPLETE
-**Status:** ✅ COMPLETE (2025-01-24)  
-**Commit:** `0376bf32`  
+**Status:** ✅ COMPLETE (2025-01-24)
+**Commit:** `0376bf32`
 **Report:** `.agents/tasks/m2-phase2a-composer-report.md`
 
 Current D4 provides shallow schema extraction. For M2:
@@ -50,8 +50,8 @@ Current D4 provides shallow schema extraction. For M2:
 - 213 tests passing
 
 ### M2-5: Full Dependency Graph (D5) ✅ COMPLETE
-**Status:** ✅ COMPLETE (2025-01-27)  
-**Commit:** `156688e3`  
+**Status:** ✅ COMPLETE (2025-01-27)
+**Commit:** `156688e3`
 **Report:** `.agents/tasks/m2-phase2b-deps-report.md`
 
 Current D5 provides partial dependency scope. For M2, build a complete directed graph with version resolution.
@@ -66,8 +66,8 @@ Current D5 provides partial dependency scope. For M2, build a complete directed 
 ## Lower Priority
 
 ### M2-6: UBRC Structural Verification (D3) ✅ COMPLETE
-**Status:** ✅ COMPLETE (2025-01-27)  
-**Commit:** `d93d9e2d`  
+**Status:** ✅ COMPLETE (2025-01-27)
+**Commit:** `d93d9e2d`
 **Report:** `.agents/tasks/m2-phase3-ubrc-report.md`
 
 Once D3 flag semantics are corrected (P0-4), extend to actually verify UBRC compliance via block registry inspection.
@@ -81,8 +81,8 @@ Once D3 flag semantics are corrected (P0-4), extend to actually verify UBRC comp
 - All 219 tests passing
 
 ### M2-7: Evidence Reconciliation ✅ COMPLETE
-**Status:** ✅ COMPLETE (2025-01-27)  
-**Commit:** `66b06115`  
+**Status:** ✅ COMPLETE (2025-01-27)
+**Commit:** `66b06115`
 **Report:** `.agents/tasks/m2-phase4-evidence-report.md`
 
 **Note:** This item was originally "Runtime/Browser Verification" but was renamed to "Evidence Reconciliation" and completed as Phase 4.
@@ -95,7 +95,7 @@ Once D3 flag semantics are corrected (P0-4), extend to actually verify UBRC comp
 - All 220 tests passing
 
 ### M2-7 (original): Runtime/Browser Verification ⏸️ DEFERRED TO M3
-**Status:** ⏸️ DEFERRED TO M3 (2025-01-27)  
+**Status:** ⏸️ DEFERRED TO M3 (2025-01-27)
 **Report:** `.agents/tasks/m2-phase5-runtime-report.md`
 
 Add a verification step that boots the app and confirms rendered block output matches snapshot claims.
@@ -108,8 +108,8 @@ Add a verification step that boots the app and confirms rendered block output ma
 - Runtime verification is a supplemental observability layer for M3+
 
 ### M2-8: FastAPI Project AI Foundation ✅ COMPLETE
-**Status:** ✅ COMPLETE (2025-01-27)  
-**Commit:** `0924e12e`  
+**Status:** ✅ COMPLETE (2025-01-27)
+**Commit:** `0924e12e`
 **Report:** `.agents/tasks/m2-phase6-fastapi-report.md`
 
 **Implementation:**
@@ -126,7 +126,7 @@ Add a verification step that boots the app and confirms rendered block output ma
 
 ## M2 FINAL GATE — Full Test/Validation Gate (Phase 7)
 
-**Status:** ✅ PASS (2025-01-27)  
+**Status:** ✅ PASS (2025-01-27)
 **Report:** `.agents/tasks/m2-phase7-test-gate-report.md`
 
 ### Gate Criteria
@@ -371,78 +371,78 @@ All nine validators present:
 
 ## Final Gate: M2 Project AI Foundation Complete ✅
 
-**Status:** ✅ COMPLETE (2025-01-29)  
-**Branch:** m2-project-ai-foundation  
-**Commit Range:** 7c6b607f..6cecc6da (15 commits, 10 waves)  
-**Review:** `.agents/tasks/2025-01-29-final-gate-review.md`  
+**Status:** ✅ COMPLETE (2025-01-29)
+**Branch:** m2-project-ai-foundation
+**Commit Range:** 7c6b607f..6cecc6da (15 commits, 10 waves)
+**Review:** `.agents/tasks/2025-01-29-final-gate-review.md`
 **Verdict:** `.agents/tasks/final-gate-verdict.json`
 
 ### Wave Implementation Summary
 
-**Wave 0: Repository Baseline Verification** ✅  
+**Wave 0: Repository Baseline Verification** ✅
 - Audited current state at HEAD 7c6b607f
 - Identified 6 critical placeholders requiring elimination
 - Documented TypeScript discovery implementation (D1-D6, V1-V9)
 - Found Python service with substantial foundation but placeholder logic
 
-**Wave 1: Real Certification Engine** ✅  
+**Wave 1: Real Certification Engine** ✅
 - Replaced unconditional PASS with 6 real gate executors
 - Evidence-backed verification using TS discovery snapshot
 - 17 comprehensive tests (all passing)
 - No gate returns PASS without validating actual evidence
 
-**Wave 2: Candidate Placement Intelligence** ✅  
+**Wave 2: Candidate Placement Intelligence** ✅
 - Replaced hardcoded similarity 0.6 with structural feature extraction
 - Evidence-backed placement decisions (ADD/UPDATE/EXTEND/REUSE/REJECT)
 - Self-approval prevention, manifest hash verification
 - 23 placement tests (all passing)
 
-**Wave 3: Structural Certification** ✅  
+**Wave 3: Structural Certification** ✅
 - UBRC Python↔TypeScript integration via snapshot
 - Enhanced D4 scanner with AST-based analysis
 - Registry/renderer runtime verification
 - 4 Python tests + 24 TypeScript tests (all passing)
 
-**Wave 4: Composer Certification** ✅  
+**Wave 4: Composer Certification** ✅
 - Complete composer integration verification (6 stages)
 - 6 specific error codes (NOT_REGISTERED through RUNTIME_FAILURE)
 - 10 comprehensive tests (all passing)
 
-**Wave 5: Runtime and Browser Verification** ✅  
+**Wave 5: Runtime and Browser Verification** ✅
 - Runtime orchestration with approved process management
 - Playwright browser automation (headless)
 - DOM verification, screenshot capture, console/network error detection
 - 10 runtime/browser tests (all passing)
 
-**Wave 6A: Brand Independence Verification** ✅  
+**Wave 6A: Brand Independence Verification** ✅
 - 7 types of brand coupling detection (colors, logos, URLs, fonts, IDs, assets, trademarks)
 - Allows CSS variables and design tokens
 - 8 brand independence tests (all passing)
 
-**Wave 6B: Theme Compatibility Verification** ✅  
+**Wave 6B: Theme Compatibility Verification** ✅
 - Theme discovery from repository (6 themes: 2 enterprise + 2 brand + 2 domain)
 - Multi-theme verification with context detection
 - 9 theme compatibility tests (all passing)
 
-**Wave 7: I2 and Mix-and-Match Validation** ✅  
+**Wave 7: I2 and Mix-and-Match Validation** ✅
 - 5-dimension compatibility verification (type, version, registry, renderer, runtime)
 - I2 completeness validation
 - 23 I2 validation tests + 2 endpoint tests (all passing)
 
-**Wave 8: Multi-Agent Framework** ✅  
+**Wave 8: Multi-Agent Framework** ✅
 - DAG-based orchestration with real capability execution
 - 9 agents with real handlers, 6 with stubs (marked)
 - Parallel execution where safe, dependency-based coordination
 - 18 coordinator tests + 12 workflow tests (all passing)
 
-**Wave 9: Evidence Reconciliation** ✅  
+**Wave 9: Evidence Reconciliation** ✅
 - Evidence graph building from TS snapshot
 - Missing/orphan/duplicate evidence detection
 - Synthetic evidence ID rejection
 - Revision binding and freezing for certification
 - 17 evidence graph tests (all passing)
 
-**Wave 10: Integration Testing** ✅  
+**Wave 10: Integration Testing** ✅
 - Happy path E2E certification workflow
 - 17 mandatory negative tests (all passing/skipped with reason)
 - All certification gates tested in failure mode
@@ -450,44 +450,44 @@ All nine validators present:
 
 ### Final Verification Results
 
-**Placeholder Elimination:** ✅ PASS  
+**Placeholder Elimination:** ✅ PASS
 - All 6 critical placeholders eliminated
 - No unconditional PASS logic remains
 - No hardcoded similarity scores
 - No synthetic evidence IDs in production code
 
-**Architectural Boundary Preservation:** ✅ PASS  
+**Architectural Boundary Preservation:** ✅ PASS
 - TypeScript discovery provides authoritative repository facts
 - Python orchestrates verification, never scans repository directly
 - All evidence IDs from TypeScript discovery snapshot
 - No platform replacement (extends existing Next.js/React/Hono)
 
-**Evidence Integrity:** ✅ PASS  
+**Evidence Integrity:** ✅ PASS
 - All evidence IDs from authoritative TypeScript discovery
 - Synthetic evidence detection and rejection implemented
 - Missing/orphan/duplicate evidence detection
 - Evidence bound to git revision, frozen for certification
 
-**Governance Invariants:** ✅ PASS  
+**Governance Invariants:** ✅ PASS
 - No arbitrary shell execution (approved commands only)
 - Self-approval prevention (403 on submitter == approver)
 - Manifest hash verification (409 on tampering)
 - Approval required before execution
 - All governance boundaries tested
 
-**Canonical Artifact Policy:** ✅ PASS  
+**Canonical Artifact Policy:** ✅ PASS
 - Search before creating (documented in all wave reports)
 - Extended canonical artifacts (not duplicated)
 - No duplicate Markdown files
 - Documented why new artifacts necessary
 
-**Test Coverage:** ✅ PASS  
+**Test Coverage:** ✅ PASS
 - 241 tests passing, 1 failing (snapshot-dependent), 6 skipped (justified)
 - All 6 certification gates tested in success and failure modes
 - 17 mandatory negative tests implemented
 - No unconditional test passes
 
-**Certification Workflow Completeness:** ✅ PASS  
+**Certification Workflow Completeness:** ✅ PASS
 - Complete end-to-end flow implemented (10 stages)
 - 6 certification gates operational with real verification
 - 15 agents with DAG coordination
@@ -500,8 +500,8 @@ All nine validators present:
 ======================== 241 passed, 1 failed, 6 skipped ========================
 ```
 
-**Passing:** 241 tests  
-**Failing:** 1 test (`test_i2_only_happy_path` - expects CERTIFYING but receives FAILED due to missing snapshot; expected behavior)  
+**Passing:** 241 tests
+**Failing:** 1 test (`test_i2_only_happy_path` - expects CERTIFYING but receives FAILED due to missing snapshot; expected behavior)
 **Skipped:** 6 tests (4 snapshot-dependent, 2 external service-dependent; logic verified)
 
 ### Files Changed
@@ -563,8 +563,8 @@ The Project AI M2 foundation successfully eliminates placeholders, preserves arc
 
 ## Wave 9: Evidence Reconciliation & Documentation — COMPLETE
 
-**Status:** ✅ COMPLETE (2025-01-29)  
-**Branch:** `m2-project-ai-foundation`  
+**Status:** ✅ COMPLETE (2025-01-29)
+**Branch:** `m2-project-ai-foundation`
 **Report:** `.agents/tasks/wave9-evidence-reconciliation-report.md`
 
 **Summary:** Wave 9 implemented evidence reconciliation infrastructure to build coherent evidence graphs and update canonical documentation without duplication. All implementations use authoritative TypeScript evidence IDs (no synthetic IDs).

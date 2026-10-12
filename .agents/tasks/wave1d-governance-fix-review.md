@@ -67,7 +67,7 @@ Four new tests in `test_governance_identity.py` verify the fix:
 - `services/project-ai/app/api/schemas/governance.py` — Removed `submittedBy`, `decidedBy`, and `rejectedBy` fields from request schemas
 - `services/project-ai/tests/security/test_governance_identity.py` — New file with 4 JWT identity extraction security tests
 
-**Commit:** 54cf7b32  
+**Commit:** 54cf7b32
 **Full diff:** `git show 54cf7b32`
 
 </details>

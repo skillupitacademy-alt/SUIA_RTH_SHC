@@ -1,8 +1,8 @@
 # M2.9 Remediation Plan Reconciliation Report
 
-**Report Date:** 2025-01-30  
-**Branch:** m2-project-ai-canonical-wiring  
-**HEAD Commit:** 39716a78  
+**Report Date:** 2025-01-30
+**Branch:** m2-project-ai-canonical-wiring
+**HEAD Commit:** 39716a78
 **Recovery Status:** ✅ **RECOVERED** (authoritative 18-agent plan found)
 
 ---
@@ -77,9 +77,9 @@ The remediation plan defines 18 specialized agents organized into 10 waves follo
 
 #### P0-B03: Python Repository Scanning Violation
 
-**Agent:** B03 (Repository Contract Intelligence)  
-**File:** `services/project-ai/app/contracts/repository_intelligence.py`  
-**Line:** 153  
+**Agent:** B03 (Repository Contract Intelligence)
+**File:** `services/project-ai/app/contracts/repository_intelligence.py`
+**Line:** 153
 **Current Code:**
 ```python
 repo_path = Path(repo_root)
@@ -99,7 +99,7 @@ repo_path = Path(repo_root)
 
 #### P0-BINDING: Hardcoded blockVersion='1.0.0'
 
-**Agent:** B07 (Placement Manifest Enhancement)  
+**Agent:** B07 (Placement Manifest Enhancement)
 **Files:**
 - `services/project-ai/app/agents/placement.py` (line 54)
 - `services/project-ai/app/api/routes/candidate.py` (lines 379, 395)
@@ -128,9 +128,9 @@ blockVersion="1.0.0"  # WRONG - should use target.version like "I7"
 
 #### P0-LEGACY: CreationMode Not Removed
 
-**Agent:** B13 (Legacy Cleanup)  
-**File:** `services/project-ai/app/models/creation.py`  
-**Line:** 9  
+**Agent:** B13 (Legacy Cleanup)
+**File:** `services/project-ai/app/models/creation.py`
+**Line:** 9
 **Current Code:**
 ```python
 # DEPRECATION NOTICE (M2.9):
@@ -164,8 +164,8 @@ class CreationMode(str, Enum):
 
 #### P0-BROWSER: Status CLARIFIED (NO DEFECT FOUND)
 
-**Agent:** B10 (Browser Verification)  
-**File:** `services/project-ai/app/certification/browser_verification.py`  
+**Agent:** B10 (Browser Verification)
+**File:** `services/project-ai/app/certification/browser_verification.py`
 **Allegation:** "Browser verification fabricates PASS when Playwright unavailable"
 
 **INVESTIGATION RESULT:** ✅ **NO DEFECT**
@@ -198,8 +198,8 @@ def verify(...) -> BrowserVerificationReport:
 
 #### P1-CONTRACT: Engineering Contract Generic Defaults
 
-**Agent:** B18 (Engineering Contract Defaults)  
-**File:** `services/project-ai/app/contracts/engineering_contract.py`  
+**Agent:** B18 (Engineering Contract Defaults)
+**File:** `services/project-ai/app/contracts/engineering_contract.py`
 **Current Code:**
 ```python
 required_artifacts: list[str] = Field(
@@ -229,8 +229,8 @@ required_artifacts: list[str] = Field(
 
 #### P1-FRONTEND: Frontend Disconnected
 
-**Agent:** B17 (Frontend Integration)  
-**Files:** `packages/ui/src/project-llm/` (entire directory)  
+**Agent:** B17 (Frontend Integration)
+**Files:** `packages/ui/src/project-llm/` (entire directory)
 **Current State:**
 - No fetch/axios calls to backend found in audit
 - Hardcoded fixture data in UI

@@ -1,9 +1,9 @@
 # Wave 0 Canonical Workflow Authority Implementation
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Commit:** f438718809e37af1bcb80c9e4493c04fad2d539d  
-**Design:** `.agents/tasks/w0-design-doc.md`  
-**Plan:** `.agents/tasks/w0-implementation-plan.md`  
+**Branch:** m2-project-ai-canonical-wiring
+**Commit:** f438718809e37af1bcb80c9e4493c04fad2d539d
+**Design:** `.agents/tasks/w0-design-doc.md`
+**Plan:** `.agents/tasks/w0-implementation-plan.md`
 **Evidence:** `.agents/tasks/w0-architecture-freeze-report.json`
 
 ---
@@ -124,7 +124,7 @@ The API does not include a list workflows endpoint in the reviewed code, though 
 
 36 new unit tests cover workflow model and governance service. `test_workflow_model.py` (13 tests) verifies StateTransition creation, serialization, workflow creation, terminal state detection, gate state detection, artifact binding, state history tracking, and final_status setting for terminal states. Tests use parameterized checks for all gate states and non-terminal states.
 
-`test_workflow_governance_service.py` (23 tests) covers workflow creation with and without purpose, workflow retrieval, validation of valid and invalid transitions, terminal state boundary enforcement, state transition execution, final_status setting, authorization gate enforcement, approval registration, and artifact binding for all four artifact types. 
+`test_workflow_governance_service.py` (23 tests) covers workflow creation with and without purpose, workflow retrieval, validation of valid and invalid transitions, terminal state boundary enforcement, state transition execution, final_status setting, authorization gate enforcement, approval registration, and artifact binding for all four artifact types.
 
 Authorization tests verify all six checks: missing approval fails, wrong status fails, candidate hash mismatch fails, manifest ID mismatch fails, manifest hash mismatch fails, and self-approval fails. A successful authorization test confirms that when all checks pass, the transition to IMPLEMENTING succeeds.
 

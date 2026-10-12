@@ -1,9 +1,9 @@
 # Project AI Remediation Implementation Review
 
-**Branch:** m2-project-ai-foundation  
-**Base:** main  
-**Commit:** 2aca5db5  
-**Review Date:** 2025-01-30  
+**Branch:** m2-project-ai-foundation
+**Base:** main
+**Commit:** 2aca5db5
+**Review Date:** 2025-01-30
 
 ## Summary
 

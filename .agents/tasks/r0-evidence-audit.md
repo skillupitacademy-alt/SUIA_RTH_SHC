@@ -1,7 +1,7 @@
 # R0 Evidence Authority Audit Report
 
-**Date**: 2026-10-08  
-**Workflow**: M2.9 R0 — Evidence Authority Reconciliation  
+**Date**: 2026-10-08
+**Workflow**: M2.9 R0 — Evidence Authority Reconciliation
 **Branch**: m2-project-ai-canonical-wiring (HEAD f589c0b3)
 
 ## Executive Summary
@@ -324,5 +324,5 @@ EVIDENCE_ROOT = Path(__file__).parent.parent.parent.parent.parent / ".agents" / 
 
 ---
 
-**Audit completed**: 2026-10-08  
+**Audit completed**: 2026-10-08
 **Next step**: Implement R0 remediation plan per `r0-plan.md`

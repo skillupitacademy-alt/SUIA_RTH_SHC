@@ -1,8 +1,8 @@
 # E1-A-2: Self-Approval Forensic Investigation Report
 
-**Investigation Date:** 2025-01-29  
-**Investigator:** Forensic Analysis Agent  
-**Target Test:** `test_approval_gate_fails_with_self_approval`  
+**Investigation Date:** 2025-01-29
+**Investigator:** Forensic Analysis Agent
+**Target Test:** `test_approval_gate_fails_with_self_approval`
 **Test Location:** `services/project-ai/tests/certification/test_certification_gates.py::TestApprovalGate::test_approval_gate_fails_with_self_approval`
 
 ---
@@ -23,7 +23,7 @@ The test fixture creates an ImplementationApproval where `approved_by="approver-
 
 ### 1. Approval Gate Implementation Analysis
 
-**File:** `services/project-ai/app/certification/gates.py`  
+**File:** `services/project-ai/app/certification/gates.py`
 **Method:** `execute_approval_gate()` (lines 261-330)
 
 The approval gate correctly implements self-approval checking:
@@ -42,7 +42,7 @@ if not approval.verify_not_self_approved(requester_id):
 
 ### 2. ImplementationApproval Schema Analysis
 
-**File:** `services/project-ai/app/models/implementation_approval.py`  
+**File:** `services/project-ai/app/models/implementation_approval.py`
 **Method:** `verify_not_self_approved()` (lines 64-79)
 
 The schema contains both required fields:
@@ -56,20 +56,20 @@ The schema contains both required fields:
 def verify_not_self_approved(self, requester_id: str) -> bool:
     """
     Verify approval is not self-approval.
-    
+
     Enforces separation of duties: approver must differ from workflow requester.
     Fail-closed: missing workflow_requester causes verification failure.
-    
+
     Args:
         requester_id: Workflow requester identity (for evidence only)
-        
+
     Returns:
         True if not self-approved, False if self-approved or requester missing
     """
     # Fail-closed: missing workflow_requester means we cannot verify separation of duties
     if not self.workflow_requester:
         return False
-    
+
     return self.approved_by != self.workflow_requester
 ```
 
@@ -85,7 +85,7 @@ This means the gate compares the `approved_by` field against the `workflow_reque
 
 ### 3. Test Fixture Analysis
 
-**File:** `services/project-ai/tests/certification/test_certification_gates.py`  
+**File:** `services/project-ai/tests/certification/test_certification_gates.py`
 **Method:** `test_approval_gate_fails_with_self_approval()` (lines 212-227)
 
 **Fixture Setup (mock_approvals_store):**
@@ -313,5 +313,5 @@ This correctly PASSES because requester and approver are different.
 
 ---
 
-**Report Generated:** 2025-01-29  
+**Report Generated:** 2025-01-29
 **Next Action:** Fix test fixture to set `approved_by == workflow_requester` in the approval record

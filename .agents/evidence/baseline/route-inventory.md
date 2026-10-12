@@ -1,7 +1,7 @@
 # Route Inventory - FastAPI Project AI Service
 
-**Generated:** 2025-01-10  
-**Service:** project-ai (FastAPI)  
+**Generated:** 2025-01-10
+**Service:** project-ai (FastAPI)
 **Total Routes:** 39
 
 ---
@@ -104,7 +104,7 @@
 1. **POST /approvals/{approval_id}/approve** - Approve manifest (Wave 2)
    - Self-approval prevention
    - Manifest hash verification
-   
+
 2. **POST /approvals/workflows/{workflow_id}/approve-placement** - Approve placement (Wave 4)
    - Self-approval prevention (requester ≠ approver)
    - Manifest hash verification
@@ -128,7 +128,7 @@
   - Workflow binding enforcement
   - SHA-256 computation server-side
   - State transition (CANDIDATE_REQUESTED → CANDIDATE_RECEIVED)
-  
+
 - **POST /candidates/{candidate_id}/manifest** - Generate placement manifest
   - Evidence-backed placement decision
   - Manifest hash computation

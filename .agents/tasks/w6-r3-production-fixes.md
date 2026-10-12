@@ -1,8 +1,8 @@
 # W6-R3 Phase 2: Production Regression Fixes - Investigation Report
 
-**Date**: 2026-10-08  
-**Branch**: m2-project-ai-canonical-wiring  
-**Agent**: Phase 2 - Production Regression Fixes  
+**Date**: 2026-10-08
+**Branch**: m2-project-ai-canonical-wiring
+**Agent**: Phase 2 - Production Regression Fixes
 **Status**: ✅ COMPLETE - 0 Production Regressions Found
 
 ---
@@ -121,9 +121,9 @@ The failing tests use an incompatible pattern:
 ```typescript
 it('test name', async () => {
   vi.useFakeTimers();  // <-- Fake timers active
-  
+
   render(<BlockTelemetryProvider .../>);
-  
+
   await vi.waitFor(() => {  // <-- vi.waitFor uses polling with timers
     expect(global.fetch).toHaveBeenCalled();
   });

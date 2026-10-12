@@ -1,10 +1,10 @@
 # W5 Re-Review After Remediation: Canonical Placement Security Infrastructure
 
-**Reviewer**: Independent Security Review Agent  
-**Date**: 2025-01-29  
-**Review Pass**: W5 Re-Review (post-remediation)  
-**Branch**: m2-project-ai-canonical-wiring  
-**Head SHA**: 89d9816f2e773e315f9ba71f5cf9cc2574edda3d  
+**Reviewer**: Independent Security Review Agent
+**Date**: 2025-01-29
+**Review Pass**: W5 Re-Review (post-remediation)
+**Branch**: m2-project-ai-canonical-wiring
+**Head SHA**: 89d9816f2e773e315f9ba71f5cf9cc2574edda3d
 **Workflow**: wf_9adfb86ee2f74b65
 
 ---
@@ -262,7 +262,7 @@ All W5 gate criteria satisfied. Ready to proceed to Wave 6.
 
 ---
 
-**Independent Security Reviewer**  
-**Completed**: 2025-01-29 (Re-review)  
-**Branch**: m2-project-ai-canonical-wiring  
+**Independent Security Reviewer**
+**Completed**: 2025-01-29 (Re-review)
+**Branch**: m2-project-ai-canonical-wiring
 **Workflow**: wf_9adfb86ee2f74b65

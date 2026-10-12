@@ -14,7 +14,7 @@ Wave 1B implementation is present and functional but contains one critical defec
 **Status**: PASS
 **Remote HEAD SHA**: f41b4a6cd0ef74ae475b8e0d933424d441523c48
 **Claimed SHA 30ab1ad5**: Present on remote branch, one commit behind current HEAD
-**Evidence**: 
+**Evidence**:
 ```
 f41b4a6c (HEAD -> m2-project-ai-canonical-wiring, origin/m2-project-ai-canonical-wiring) chore(wave1b): add identity extraction evidence and review approval
 30ab1ad5 feat(auth): extract complete identity claims from SHC tokens (Wave 1B)
@@ -65,7 +65,7 @@ The JWT verifier (`jwt.py`) requires `userId` to be a non-empty string at line 1
 
 The test `test_userid_fallback_to_sub` does not test the fallback scenario. It includes both `userId` and `sub` in the token, then asserts that `userId` takes precedence. This tests precedence, not fallback when `userId` is absent.
 
-**Recommendation**: 
+**Recommendation**:
 1. **Option A (Strict)**: Remove the fallback code from `dependencies.py` and update the docstring to remove the "fallback to sub for backward compatibility" claim. Remove or rename the test to reflect what it actually tests (precedence, not fallback).
 2. **Option B (Permissive)**: Relax the JWT validator to allow `userId` to be optional, then add a real fallback test that omits `userId` entirely and verifies that `sub` is used. This weakens the identity validation contract.
 
@@ -142,7 +142,7 @@ This contradicts the claim in the existing wave1b-review.md document. The review
 **Actual auth tests collected**: 26
 **Test breakdown**:
 - `test_auth_dependencies.py`: 10 tests
-- `test_auth_jwt.py`: 7 tests  
+- `test_auth_jwt.py`: 7 tests
 - `test_identity_extraction.py`: 9 tests
 - **Total**: 26 tests
 

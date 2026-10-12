@@ -1,4 +1,4 @@
-﻿=== Brand Isolation Removal Test Results ===
+=== Brand Isolation Removal Test Results ===
 Execution Date: 10/12/2026 16:13:58
 
 [OK] Loaded environment from .env.local
@@ -1447,7 +1447,7 @@ SUMMARY: 8 passed, 17 failed in 80.08s
 PASSED TESTS (8):
 ✓ test_contract_viewer_denied_workflow_creation
 ✓ test_infrastructure_portal_identity_bypasses_rbac
-✓ test_empty_roles_denies_privileged_operations  
+✓ test_empty_roles_denies_privileged_operations
 ✓ test_contract_reviewer_read_only
 ✓ test_require_any_role_accepts_multiple
 ✓ test_rbac_denial_logs_warning
@@ -1464,7 +1464,7 @@ Error: "column 'manifest_id' is of type uuid but expression is of type character
 
 ANALYSIS:
 - RBAC tests: ALL PASSED (8/8 that don't require workflow creation)
-- Authorization logic: FULLY FUNCTIONAL  
+- Authorization logic: FULLY FUNCTIONAL
 - Brand-isolation removal: NO IMPACT ON SECURITY
 - Schema issue: Affects workflow/manifest creation tests only
 

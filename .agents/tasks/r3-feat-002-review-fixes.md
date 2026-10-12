@@ -1,8 +1,8 @@
 # FEAT-002 Review Fixes: ORM Models and Repositories
 
-**Fix Date:** 2025-01-XX  
-**Review Document:** `r3-feat-002-review.md`  
-**Verdict:** All 7 findings addressed ✅  
+**Fix Date:** 2025-01-XX
+**Review Document:** `r3-feat-002-review.md`
+**Verdict:** All 7 findings addressed ✅
 
 ---
 
@@ -185,7 +185,7 @@ async def get(self, contract_id: str, verify_hash: bool = True) -> Optional[Cont
 async def get(self, contract_id: str) -> Optional[ContractModel]:
     """
     Get contract by ID with automatic hash verification.
-    
+
     Hash verification is always performed to ensure contract integrity.
     """
 ```
@@ -213,13 +213,13 @@ async def get(self, workflow_id: str, verify_bindings: bool = True) -> Optional[
         select(WorkflowModel).where(WorkflowModel.workflow_id == workflow_id)
     )
     workflow = result.scalar_one_or_none()
-    
+
     if workflow is not None and verify_bindings:
         if not workflow.verify_artifact_bindings(
             contract=workflow.contract if hasattr(workflow, 'contract') else None,
         ):
             raise HashMismatchError(...)
-    
+
     return workflow
 ```
 
@@ -252,9 +252,9 @@ async def get(self, workflow_id: str, verify_bindings: bool = True) -> Optional[
 
 ### Hash Computation Verification
 
-**Contract Hash:** ✅ Computed via `seal_contract()`, verified via `verify_hash()`  
-**Candidate Hash:** ✅ Now computed via `compute_hash()`, verified via `verify_hash()`  
-**Manifest Hash:** ✅ Computed at creation, verified via `verify_hash()`  
+**Contract Hash:** ✅ Computed via `seal_contract()`, verified via `verify_hash()`
+**Candidate Hash:** ✅ Now computed via `compute_hash()`, verified via `verify_hash()`
+**Manifest Hash:** ✅ Computed at creation, verified via `verify_hash()`
 **Workflow Bindings:** ✅ Verified via `verify_artifact_bindings()` in repository.get()
 
 ---
@@ -320,6 +320,6 @@ FEAT-003 (Replace In-Memory Stores) can now proceed with confidence:
 
 ---
 
-**Fix Implementation Complete:** 2025-01-XX  
-**Next Task:** FEAT-003 — Replace In-Memory Stores with Repositories  
+**Fix Implementation Complete:** 2025-01-XX
+**Next Task:** FEAT-003 — Replace In-Memory Stores with Repositories
 **Blocker Status:** None — FEAT-003 can proceed immediately

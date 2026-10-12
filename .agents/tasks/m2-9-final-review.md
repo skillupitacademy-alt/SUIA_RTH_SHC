@@ -1,7 +1,7 @@
 # M2.9 Canonical Project LLM Wiring — Final Architecture Review
 
-**Reviewed:** 2024-01-09  
-**Scope:** Wave 0 through Wave 7 (Backend B01-B14 agents)  
+**Reviewed:** 2024-01-09
+**Scope:** Wave 0 through Wave 7 (Backend B01-B14 agents)
 **Repository:** e:\onlinewebsites\quiz-platform
 
 This is a controlled multi-agent engineering pipeline that transforms Project AI from independent agent chaos into a sequenced, evidence-backed, gate-enforced workflow. The goal: one canonical workflow state machine, one engineering contract, explicit human gates, and tamper-proof evidence chains from user request through HAA certification.
@@ -71,9 +71,9 @@ Evidence ledger has append_agent_run, append_test_result, append_gate_result, ap
 CanonicalWorkflowState enum in app/orchestration/canonical_workflow.py defines all 17 required states:
 
 ```
-REQUESTED → DISCOVERY → BRIEF_READY → AWAITING_GATE_1 → GUI_APPROVED → 
-CANDIDATE_REQUESTED → CANDIDATE_RECEIVED → CANDIDATE_AUDIT → INTEGRATION_PLANNED → 
-AWAITING_IMPLEMENTATION_APPROVAL → IMPLEMENTING → IMPLEMENTED → VERIFYING → 
+REQUESTED → DISCOVERY → BRIEF_READY → AWAITING_GATE_1 → GUI_APPROVED →
+CANDIDATE_REQUESTED → CANDIDATE_RECEIVED → CANDIDATE_AUDIT → INTEGRATION_PLANNED →
+AWAITING_IMPLEMENTATION_APPROVAL → IMPLEMENTING → IMPLEMENTED → VERIFYING →
 CERTIFICATION_READY → AWAITING_GATE_2 → CERTIFIED | REJECTED
 ```
 

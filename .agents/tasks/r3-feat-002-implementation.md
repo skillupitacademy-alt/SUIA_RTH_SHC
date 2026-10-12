@@ -1,8 +1,8 @@
 # FEAT-002: ORM Models and Repositories Implementation Report
 
-**Implementation Date:** 2025-01-XX  
-**Status:** ✅ COMPLETE  
-**Database:** `tutorial_prod` (Neon PostgreSQL, ap-southeast-1)  
+**Implementation Date:** 2025-01-XX
+**Status:** ✅ COMPLETE
+**Database:** `tutorial_prod` (Neon PostgreSQL, ap-southeast-1)
 **Migration Dependency:** Migration 0026 (FEAT-001)
 
 ---
@@ -172,7 +172,7 @@ Implemented all 6 repository protocols using SQLAlchemy AsyncSession:
 
 #### PostgresWorkflowRepository
 - **get()**: SELECT by workflow_id
-- **upsert()**: 
+- **upsert()**:
   - Insert if new workflow
   - Update if existing with optimistic lock check (version column)
   - Increments version on every update
@@ -491,22 +491,22 @@ class WorkflowGovernanceService:
         self.workflow_repo = workflow_repo
         self.contract_repo = contract_repo
         # ...
-    
+
     async def create_workflow(self, ...):
         workflow = WorkflowModel(...)
         return await self.workflow_repo.upsert(workflow)
-    
+
     async def transition_state(self, workflow_id: str, to_state: str):
         workflow = await self.workflow_repo.get(workflow_id)
         # Optimistic lock check
         expected_version = workflow.version
         workflow.current_state = to_state
         workflow.updated_at = datetime.utcnow()
-        
+
         # Record transition
         transition = StateTransitionModel(...)
         await self.state_transition_repo.create(transition)
-        
+
         # Update workflow with version check
         return await self.workflow_repo.upsert(workflow, expected_version)
 ```
@@ -629,6 +629,6 @@ The persistence foundation is solid. FEAT-003 can now replace in-memory stores w
 
 ---
 
-**Implementation Complete:** 2025-01-XX  
-**Next Task:** FEAT-003 — Replace In-Memory Stores with PostgreSQL Repositories  
+**Implementation Complete:** 2025-01-XX
+**Next Task:** FEAT-003 — Replace In-Memory Stores with PostgreSQL Repositories
 **Blocker Status:** None — FEAT-003 can proceed immediately

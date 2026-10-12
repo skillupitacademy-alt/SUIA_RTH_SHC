@@ -9,97 +9,97 @@
 ## Implementation Steps
 
 - [ ] 1. **Create `app/auth/authorization.py` with brand access verification**
-      
+
       Add `verify_brand_access(principal: AuthenticatedPrincipal, resource_brand: Optional[str]) -> None` that:
       - Raises `HTTPException(403, "Cross-brand access denied")` when `principal["brand"]` is not None and does not match `resource_brand`
       - Allows access when `principal["brand"]` is None (infrastructure/super_admin tokens with no brand restriction)
       - Allows access when `resource_brand` is None (brand-agnostic resources)
       - Logs warning for missing brand claim on non-infrastructure tokens
-      
+
       **Files**: `services/project-ai/app/auth/authorization.py` (new file)
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_authorization.py::test_verify_brand_access_* -v` — 4 new tests pass (same-brand approval, cross-brand rejection, None-brand bypass, None-resource bypass)
 
 - [ ] 2. **Audit and document identity spoofing vectors in route files**
-      
+
       Review all three route files (`candidate.py`, `workflows.py`, `governance.py`) and document findings:
       - `candidate.py` line 327: Uses `user.get("user_id", "unknown")` for `triggered_by` (SAFE — extracts from JWT)
       - `workflows.py` line 599: Uses `user.get("email") or user.get("sub") or user.get("id") or "unknown"` for `approved_by` (SAFE — extracts from JWT)
       - `governance.py` line 460: Compares `payload.approved_by` (client-supplied) against `workflow_requester` (stored in DB) for self-approval check (VULNERABLE — accepts client-supplied approver identity)
       - `workflows.py` CreateWorkflowRequest: accepts `requester_id` from client (VULNERABLE — should use JWT user_id)
       - No `roles` or `actor` fields found in request bodies (SAFE)
-      
+
       **Files**: Document findings in `.agents/tasks/wave1c-identity-audit.md` (new file)
-      
+
       **Verify**: Manual review — document exists with all findings listed
 
 - [ ] 3. **Fix identity spoofing in `governance.py` POST /approve-implementation**
-      
+
       Replace client-supplied `payload.approved_by` with JWT-extracted identity:
       - Remove `approved_by` field from `ImplementationApprovalPayload` schema (line 293)
       - Extract approver from JWT: `approved_by = user.get("user_id") or user.get("email") or "unknown"` (after line 360, before approval creation)
       - Update self-approval check to use extracted identity (line 460)
       - Update all `payload.approved_by` references to use `approved_by` variable
-      
+
       **Files**: `services/project-ai/app/api/routes/governance.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_authorization.py::test_approver_identity_extraction_from_jwt -v` — new test passes, verifying approver is extracted from JWT not request body
 
 - [ ] 4. **Fix identity spoofing in `workflows.py` POST /workflows**
-      
+
       Replace client-supplied `request.requester_id` with JWT-extracted identity:
       - Remove `requester_id` field from `CreateWorkflowRequest` schema in `app/api/schemas/workflow.py` (line 93)
       - Extract requester from JWT in `create_workflow` handler: `requester_id = user["user_id"]` (line 149, before `governance_service.create_workflow`)
       - Pass extracted `requester_id` to `governance_service.create_workflow()`
-      
+
       **Files**: `services/project-ai/app/api/schemas/workflow.py`, `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_authorization.py::test_requester_identity_extraction_from_jwt -v` — new test passes, verifying requester is extracted from JWT not request body
 
 - [ ] 5. **Add brand enforcement to `workflows.py` GET /workflows/{workflow_id}`**
-      
+
       Workflows are brand-scoped resources. Add brand verification after workflow retrieval:
       - Extract workflow's brand from `workflow.target_family` metadata or add `brand` field to workflow model (check existing schema)
       - If workflow model lacks brand field, skip brand enforcement for now (note in TODO comment)
       - If brand field exists, call `verify_brand_access(user, workflow.brand)` after line 190
-      
+
       **Files**: `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_authorization.py::test_workflow_brand_enforcement -v` — new test passes (cross-brand GET rejected)
 
 - [ ] 6. **Add brand enforcement to `workflows.py` POST /workflows/{workflow_id}/approve-final`**
-      
+
       Final certification approval is brand-scoped. Add brand verification:
       - Extract workflow's brand (same logic as step 5)
       - Call `verify_brand_access(user, workflow.brand)` after line 528 (after workflow retrieval, before approval logic)
-      
+
       **Files**: `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_authorization.py::test_final_approval_brand_enforcement -v` — new test passes (cross-brand approval rejected)
 
 - [ ] 7. **Add brand enforcement to `candidate.py` POST /candidates/upload`**
-      
+
       Candidate uploads are implicitly brand-scoped via workflow binding. Add brand verification:
       - After workflow retrieval (line 282), extract workflow's brand
       - Call `verify_brand_access(user, workflow.brand)` before candidate storage
-      
+
       **Files**: `services/project-ai/app/api/routes/candidate.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_authorization.py::test_candidate_upload_brand_enforcement -v` — new test passes (cross-brand upload rejected)
 
 - [ ] 8. **Add brand enforcement to `candidate.py` POST /candidates/{candidate_id}/execute`**
-      
+
       Placement execution is brand-scoped. Add brand verification:
       - After candidate retrieval (line 826), extract candidate's workflow_id
       - Retrieve workflow from governance service to get brand
       - Call `verify_brand_access(user, workflow.brand)` before approval enforcement
-      
+
       **Files**: `services/project-ai/app/api/routes/candidate.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_authorization.py::test_placement_execution_brand_enforcement -v` — new test passes (cross-brand execution rejected)
 
 - [ ] 9. **Create comprehensive security test suite in `tests/security/test_authorization.py`**
-      
+
       Add test cases for:
       - **Brand enforcement** (8 tests):
         - `test_verify_brand_access_same_brand_allowed` — user with brand=skillhub can access skillhub resource
@@ -110,48 +110,48 @@
         - `test_final_approval_brand_enforcement` — POST /workflows/{id}/approve-final rejects cross-brand
         - `test_candidate_upload_brand_enforcement` — POST /candidates/upload rejects cross-brand
         - `test_placement_execution_brand_enforcement` — POST /candidates/{id}/execute rejects cross-brand
-      
+
       - **Identity spoofing prevention** (3 tests):
         - `test_approver_identity_extraction_from_jwt` — POST /approve-implementation uses JWT user_id, not request body
         - `test_requester_identity_extraction_from_jwt` — POST /workflows uses JWT user_id, not request body
         - `test_client_supplied_user_id_ignored` — verify client cannot override JWT identity with request body fields
-      
+
       - **Valid path smoke tests** (2 tests):
         - `test_same_brand_workflow_approval_succeeds` — end-to-end workflow with same brand
         - `test_infrastructure_user_cross_brand_access_succeeds` — user with brand=None can access all brands
-      
+
       **Files**: `services/project-ai/tests/security/test_authorization.py` (new file)
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_authorization.py -v --tb=short` — all 13 tests pass
 
 - [ ] 10. **Update README.md with authorization guidance**
-      
+
       Add "Authorization Enforcement (Wave 1C)" section after "Identity Claims (Wave 1B)" section:
       - Document brand isolation rules (same-brand access only, infrastructure bypass)
       - Document identity extraction from JWT (never trust request bodies for userId/roles/approved_by)
       - Add example of using `verify_brand_access()` in route handlers
       - Add security note: "Route handlers must extract user identity from JWT via `get_current_user()`. Never accept userId, roles, or approver identity from request bodies or query parameters."
-      
+
       **Files**: `services/project-ai/README.md`
-      
+
       **Verify**: Manual review — section exists with all authorization rules documented
 
 - [ ] 11. **Run full security test suite and verify coverage**
-      
+
       Run all security tests to verify no regressions:
       ```bash
       cd services/project-ai
       pytest tests/security/ -v --cov=app/auth --cov-report=term
       ```
-      
+
       Expected results:
       - `test_identity_extraction.py`: 15 tests pass (existing Wave 1B tests)
       - `test_authorization.py`: 13 tests pass (new Wave 1C tests)
       - Total: 28 security tests pass
       - Auth coverage: ≥93% (up from 92% in Wave 1B)
-      
+
       **Files**: N/A (test execution)
-      
+
       **Verify**: All 28 security tests pass with no failures; coverage report shows ≥93% for `app/auth/` module
 
 ---
@@ -264,17 +264,17 @@ def verify_brand_access(
 ) -> None:
     """
     Verify user has access to resource within their brand boundary.
-    
+
     RULES:
     1. If principal["brand"] is None → Allow (infrastructure/super_admin bypass)
     2. If resource_brand is None → Allow (brand-agnostic resource)
     3. If principal["brand"] == resource_brand → Allow
     4. Otherwise → Raise HTTPException(403, "Cross-brand access denied")
-    
+
     Args:
         principal: Authenticated user from JWT token
         resource_brand: Brand identifier of the resource being accessed
-        
+
     Raises:
         HTTPException: 403 if cross-brand access attempted
     """
@@ -298,10 +298,10 @@ async def get_workflow(
     workflow = await governance_service.get_workflow(workflow_id)
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")
-    
+
     # Enforce brand boundary
     verify_brand_access(user, workflow.brand)
-    
+
     # Return workflow if brand check passes
     return _workflow_to_response(workflow)
 ```

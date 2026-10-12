@@ -17,9 +17,9 @@ All changes target the services/project-ai subtree and preserve existing test pa
 ### Finding 1 & 2: Infrastructure Bypass and NULL Brand Candidates
 
 - [ ] 1. **Fix infrastructure bypass in verify_brand_access**
-      
+
       Modify `services/project-ai/app/auth/authorization.py` function `verify_brand_access()` around lines 33-36.
-      
+
       **Current code (line 33-36):**
       ```python
       # Rule 1: Infrastructure users (brand=None) bypass brand restrictions
@@ -27,7 +27,7 @@ All changes target the services/project-ai subtree and preserve existing test pa
           logger.debug("Infrastructure user bypassing brand check (user brand=None)")
           return
       ```
-      
+
       **Change to:**
       ```python
       # Rule 1: Infrastructure users (brand=None) bypass brand restrictions ONLY if privileged
@@ -45,15 +45,15 @@ All changes target the services/project-ai subtree and preserve existing test pa
           logger.debug("Infrastructure user bypassing brand check (privileged role verified)")
           return
       ```
-      
+
       Files: `services/project-ai/app/auth/authorization.py`
-      
+
       Verify: Add unit test (see step 3), then run `pytest tests/security/test_authorization.py::TestVerifyBrandAccess -v`
 
 - [ ] 2. **Fix NULL brand candidate execution**
-      
+
       Modify `services/project-ai/app/api/routes/candidate.py` function `execute_placement()` around line 858 (after the `verify_brand_access(user, package.brand)` call).
-      
+
       **Add after line 858:**
       ```python
       # Finding 2: Candidates with brand=None require privileged role
@@ -66,15 +66,15 @@ All changes target the services/project-ai subtree and preserve existing test pa
                   detail="Access to unbranded candidates requires super_admin or infrastructure role"
               )
       ```
-      
+
       Files: `services/project-ai/app/api/routes/candidate.py`
-      
+
       Verify: Add integration test skeleton (see step 4), then run `pytest tests/security/test_authorization.py -v`
 
 - [ ] 3. **Add test for infrastructure bypass role requirement**
-      
+
       Add test to `services/project-ai/tests/security/test_authorization.py` in class `TestVerifyBrandAccess`:
-      
+
       ```python
       def test_infrastructure_bypass_requires_privileged_role(self):
           """Infrastructure bypass (brand=None) requires super_admin or infrastructure role."""
@@ -91,36 +91,36 @@ All changes target the services/project-ai subtree and preserve existing test pa
               "platforms": [],
               "subscriptions": []
           }
-          
+
           with pytest.raises(HTTPException) as exc_info:
               verify_brand_access(principal, "skillhub")
-          
+
           assert exc_info.value.status_code == 403
           assert "Infrastructure access requires" in exc_info.value.detail
       ```
-      
+
       Files: `services/project-ai/tests/security/test_authorization.py`
-      
+
       Verify: `pytest tests/security/test_authorization.py::TestVerifyBrandAccess::test_infrastructure_bypass_requires_privileged_role -v` — expect PASSED
 
 - [ ] 4. **Add integration test skeleton for NULL brand candidate enforcement**
-      
+
       Add test to `services/project-ai/tests/security/test_authorization.py` in class `TestBrandEnforcementInRoutes`:
-      
+
       ```python
       @pytest.mark.skip(reason="Requires integration test setup with TestClient and database")
       def test_null_brand_candidate_execution_requires_privileged_role(self):
           """
           Verify NULL brand candidates cannot be executed by regular tenant users.
-          
+
           Tests that POST /candidates/{id}/execute returns 403 when candidate.brand=None
           and executor lacks super_admin or infrastructure role.
           """
           pass
       ```
-      
+
       Files: `services/project-ai/tests/security/test_authorization.py`
-      
+
       Verify: `pytest tests/security/test_authorization.py::TestBrandEnforcementInRoutes -v` — expect SKIPPED with clear reason
 
 ---
@@ -128,20 +128,20 @@ All changes target the services/project-ai subtree and preserve existing test pa
 ### Finding 3: Self-Approval Prevention Test
 
 - [ ] 5. **Add self-approval prevention test**
-      
+
       Add test to `services/project-ai/tests/security/test_authorization.py` in class `TestIdentityExtractionFromJWT`:
-      
+
       ```python
       @pytest.mark.skip(reason="Requires integration test setup with TestClient and database")
       def test_self_approval_prevention_with_jwt_identity(self):
           """
           Verify self-approval is rejected when requester_id equals approver user_id from JWT.
-          
+
           Tests that POST /approvals/workflows/{id}/approve-placement endpoint:
           1. Extracts approver identity from JWT token (not request body)
           2. Compares approver user_id against workflow.requester_id
           3. Returns 403 with 'SELF_APPROVAL_REJECTED' when they match
-          
+
           Test structure:
           - Create workflow with requester_id='user_alice'
           - Create JWT token for user_alice (userId='user_alice')
@@ -151,9 +151,9 @@ All changes target the services/project-ai subtree and preserve existing test pa
           """
           pass
       ```
-      
+
       Files: `services/project-ai/tests/security/test_authorization.py`
-      
+
       Verify: `pytest tests/security/test_authorization.py::TestIdentityExtractionFromJWT::test_self_approval_prevention_with_jwt_identity -v` — expect SKIPPED with clear reason
 
 ---
@@ -161,15 +161,15 @@ All changes target the services/project-ai subtree and preserve existing test pa
 ### Finding 4: Inconsistent user_id Extraction
 
 - [ ] 6. **Document user_id guarantee in dependencies.py**
-      
+
       Review `services/project-ai/app/auth/dependencies.py` function `get_current_user()` line 89.
-      
+
       **Current code (line 89):**
       ```python
       # Extract user_id from userId claim (required by JWT validation)
       user_id = payload["userId"]  # Direct access - jwt.py already validated non-empty
       ```
-      
+
       **Add comment above line 89:**
       ```python
       # SECURITY: user_id is guaranteed non-empty by decode_access_token() validation
@@ -177,21 +177,21 @@ All changes target the services/project-ai subtree and preserve existing test pa
       # Direct access is safe here; downstream handlers can rely on this guarantee.
       user_id = payload["userId"]  # Direct access - jwt.py already validated non-empty
       ```
-      
+
       Files: `services/project-ai/app/auth/dependencies.py`
-      
+
       Verify: Read the file, confirm comment placement
 
 - [ ] 7. **Add defensive user_id extraction in workflows.py**
-      
+
       Modify `services/project-ai/app/api/routes/workflows.py` line 150.
-      
+
       **Current code (line 150):**
       ```python
       # Extract requester identity from JWT token (prevent identity spoofing)
       requester_id = user["user_id"]
       ```
-      
+
       **Change to:**
       ```python
       # Extract requester identity from JWT token (prevent identity spoofing)
@@ -204,21 +204,21 @@ All changes target the services/project-ai subtree and preserve existing test pa
           )
       requester_id = user_id
       ```
-      
+
       Files: `services/project-ai/app/api/routes/workflows.py`
-      
+
       Verify: Run `pytest tests/ -k "workflow" -v` — expect all workflow tests pass
 
 - [ ] 8. **Fix approver identity extraction in governance.py**
-      
+
       Modify `services/project-ai/app/api/routes/governance.py` line 459.
-      
+
       **Current code (line 459):**
       ```python
       # Extract approver identity from JWT token (prevent identity spoofing)
       approved_by = user.get("user_id") or user.get("email") or "unknown"
       ```
-      
+
       **Change to:**
       ```python
       # Extract approver identity from JWT token (prevent identity spoofing)
@@ -230,21 +230,21 @@ All changes target the services/project-ai subtree and preserve existing test pa
               detail="Missing user_id claim in authenticated principal"
           )
       ```
-      
+
       Files: `services/project-ai/app/api/routes/governance.py`
-      
+
       Verify: Run `pytest tests/ -k "governance" -v` — expect all governance tests pass
 
 - [ ] 9. **Add test proving user_id guarantee**
-      
+
       Add test to `services/project-ai/tests/unit/test_auth_dependencies.py`:
-      
+
       ```python
       def test_user_id_guaranteed_by_jwt():
           """Test that get_current_user guarantees user_id from JWT userId claim."""
           from app.auth.jwt import create_access_token
           from app.auth.dependencies import get_current_user
-          
+
           # Create JWT with userId claim
           token = create_access_token(
               {
@@ -255,19 +255,19 @@ All changes target the services/project-ai subtree and preserve existing test pa
                   "tokenType": "user"
               }
           )
-          
+
           authorization = f"Bearer {token}"
           user = get_current_user(authorization)
-          
+
           # Verify user_id is present and non-empty
           assert "user_id" in user
           assert user["user_id"] == "test_user_456"
           assert isinstance(user["user_id"], str)
           assert len(user["user_id"]) > 0
       ```
-      
+
       Files: `services/project-ai/tests/unit/test_auth_dependencies.py`
-      
+
       Verify: `pytest tests/unit/test_auth_dependencies.py::test_user_id_guaranteed_by_jwt -v` — expect PASSED
 
 ---
@@ -275,17 +275,17 @@ All changes target the services/project-ai subtree and preserve existing test pa
 ## Final Verification
 
 - [ ] 10. **Run full security test suite with coverage**
-      
+
       Command: `cd services/project-ai && pytest tests/security/ -v --cov=app/auth --cov-report=term`
-      
+
       Expected outcome:
       - All existing ~20 Wave 1C tests pass
       - 3 new tests added: 1 passing (infrastructure bypass), 2 skipped (integration stubs)
       - Total: ≥21 tests collected, ≥19 passed, 2 skipped
       - Coverage: app/auth/authorization.py ≥ 90%, app/auth/dependencies.py ≥ 85%
-      
+
       Files: N/A (test execution)
-      
+
       Verify: Check pytest output for test count, pass/skip/fail status, and coverage percentages
 
 ---

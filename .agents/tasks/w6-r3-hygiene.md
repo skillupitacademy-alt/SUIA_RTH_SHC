@@ -1,7 +1,7 @@
 # W6-R3 Repository Hygiene - Status Report
 
-**Date:** 2026-01-08  
-**Task:** Remove `.worktrees/` directory from git tracking and prevent re-commitment  
+**Date:** 2026-01-08
+**Task:** Remove `.worktrees/` directory from git tracking and prevent re-commitment
 **Branch:** `m2-project-ai-canonical-wiring`
 
 ## Summary

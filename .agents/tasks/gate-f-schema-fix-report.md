@@ -1,6 +1,6 @@
 # Gate F Schema Fix Report
-**Date:** 2025-01-XX  
-**Task:** Fix database schema mismatch in project-ai service  
+**Date:** 2025-01-XX
+**Task:** Fix database schema mismatch in project-ai service
 **Status:** ✅ COMPLETE
 
 ## Executive Summary
@@ -104,11 +104,11 @@ from sqlalchemy.orm import relationship, declarative_base
 
 ```sql
 -- Add uploader_brand to candidates table
-ALTER TABLE project_ai_candidates 
+ALTER TABLE project_ai_candidates
 ADD COLUMN uploader_brand VARCHAR(255) NULL;
 
 -- Add requester_brand to workflows table
-ALTER TABLE project_ai_workflows 
+ALTER TABLE project_ai_workflows
 ADD COLUMN requester_brand VARCHAR(255) NULL;
 ```
 
@@ -119,7 +119,7 @@ ADD COLUMN requester_brand VARCHAR(255) NULL;
 ## Test Results
 
 ### Domain 1: Governance Identity
-**File:** `services/project-ai/tests/security/test_governance_identity.py`  
+**File:** `services/project-ai/tests/security/test_governance_identity.py`
 **Result:** ✅ 4/4 PASSED
 
 **Tests:**
@@ -133,8 +133,8 @@ ADD COLUMN requester_brand VARCHAR(255) NULL;
 ---
 
 ### Domain 2: RBAC Authorization ⭐ (Fixed)
-**File:** `services/project-ai/tests/security/test_authorization.py`  
-**Result:** ✅ 19/19 PASSED  
+**File:** `services/project-ai/tests/security/test_authorization.py`
+**Result:** ✅ 19/19 PASSED
 **Previous:** 12/19 FAILED
 
 **Newly Fixed Tests (7):**
@@ -163,7 +163,7 @@ ADD COLUMN requester_brand VARCHAR(255) NULL;
 ---
 
 ### Domain 3: Evidence Enforcement
-**File:** `services/project-ai/tests/security/test_w7_evidence_enforcement.py`  
+**File:** `services/project-ai/tests/security/test_w7_evidence_enforcement.py`
 **Result:** ✅ 21/21 PASSED
 
 **Coverage:**
@@ -207,7 +207,7 @@ ADD COLUMN requester_brand VARCHAR(255) NULL;
 ---
 
 ### Domain 5: Placement Authorization (W5)
-**File:** `services/project-ai/tests/security/test_w5_placement_authorization.py`  
+**File:** `services/project-ai/tests/security/test_w5_placement_authorization.py`
 **Result:** ✅ 29/29 PASSED
 
 **Coverage:**
@@ -238,7 +238,7 @@ ADD COLUMN requester_brand VARCHAR(255) NULL;
 | Domain 5 | Placement Authorization (W5) | 29/29 | ✅ PASS | No change |
 | **TOTAL** | **All Domains** | **160/160** | **✅ PASS** | **+7 fixed** |
 
-**Execution Time:** 1.63 seconds  
+**Execution Time:** 1.63 seconds
 **Test Framework:** pytest 9.1.1, Python 3.13.5
 
 ---
@@ -254,7 +254,7 @@ ADD COLUMN requester_brand VARCHAR(255) NULL;
    - Updated `PostgresCandidateRepository.upsert()` to persist `brand` and `uploader_brand`
    - Updated `PostgresWorkflowRepository.upsert()` to persist `requester_brand`
 
-**Total Files Modified:** 2  
+**Total Files Modified:** 2
 **Total Lines Changed:** ~10 additions
 
 ---
@@ -280,11 +280,11 @@ pytest services/project-ai/tests/security/test_governance_identity.py \
 
 ## Constraints Satisfied
 
-✅ **Schema-only changes:** Added columns only, no business logic modified  
-✅ **Nullable columns:** Both columns are nullable, existing rows will have NULL  
-✅ **No breaking changes:** All existing passing tests remain passing  
-✅ **Repository consistency:** Updated upsert methods to persist new columns  
-✅ **Type safety:** Used SQLAlchemy 2.0 `Mapped` type hints for new columns  
+✅ **Schema-only changes:** Added columns only, no business logic modified
+✅ **Nullable columns:** Both columns are nullable, existing rows will have NULL
+✅ **No breaking changes:** All existing passing tests remain passing
+✅ **Repository consistency:** Updated upsert methods to persist new columns
+✅ **Type safety:** Used SQLAlchemy 2.0 `Mapped` type hints for new columns
 
 ---
 
@@ -323,6 +323,6 @@ The schema fix successfully resolved all 7 failing brand enforcement tests by ad
 
 ---
 
-**Report Generated:** 2025-01-XX  
-**Author:** Kiro AI Workflow Agent  
+**Report Generated:** 2025-01-XX
+**Author:** Kiro AI Workflow Agent
 **Workflow:** gate-f-schema-fix

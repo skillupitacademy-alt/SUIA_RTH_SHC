@@ -1,0 +1,137 @@
+{
+  "task_id": "commit-wiring-migration-repair",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "summary": "Wire format_commit_message(run_id, summary) into all commit pathways in migration repair workflow",
+  "key_finding": "No actual git commits are currently made in the workflow. Files are modified but never staged/committed. Need to add commit operations and wire format_commit_message() into them.",
+  "files_to_modify": [
+    {
+      "path": "services/project-ai/app/orchestration/agent_coordinator.py",
+      "line": 38,
+      "change": "Add run_id: str field to AgentContext dataclass",
+      "reason": "All agents need access to run_id to format commit messages"
+    },
+    {
+      "path": "services/project-ai/app/workflows/migration_repair/agents/workflow_controller.py",
+      "line": 47,
+      "change": "Add run_id field to workflow_run dict",
+      "reason": "Capture run_id explicitly in workflow manifest"
+    },
+    {
+      "path": "services/project-ai/app/workflows/migration_repair/agents/repair_implementer.py",
+      "line_ranges": [
+        {"line": 12, "change": "Add import: from ..agents.final_gate_agent import format_commit_message"},
+        {"line": 180, "change": "Add git staging and commit operations with format_commit_message() call"}
+      ],
+      "reason": "repair_implementer modifies files but never commits them - add commit operation"
+    },
+    {
+      "path": "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+      "line_ranges": [
+        {"line": 11, "change": "Add import: from .final_gate_agent import format_commit_message"},
+        {"line": 175, "change": "Add git commit operation for evidence files with format_commit_message() call"}
+      ],
+      "reason": "publisher_agent should commit evidence files before publication-ready state"
+    },
+    {
+      "path": "services/project-ai/app/placement/repository_adapter.py",
+      "line_ranges": [
+        {"line": 1, "change": "Add import: from app.workflows.migration_repair.agents.final_gate_agent import format_commit_message"},
+        {"line": 497, "change": "Add optional run_id parameter to git_commit() and call format_commit_message() when provided"}
+      ],
+      "reason": "Make repository_adapter commit function support Run-ID footer for all callers"
+    }
+  ],
+  "test_files_to_update": [
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_final_gate_agent.py",
+      "line": 115,
+      "change": "Add test_format_commit_message_integration() test function",
+      "reason": "Verify format_commit_message() produces valid commit messages"
+    },
+    {
+      "path": "services/project-ai/tests/workflows/migration_repair/test_git_operations_real.py",
+      "line": 100,
+      "change": "Add test_commit_message_with_run_id_footer() test function",
+      "reason": "Integration test to verify Run-ID footer appears in actual git log output"
+    },
+    {
+      "path": "services/project-ai/tests/workflows/migration_repair/agents/test_repair_implementer.py",
+      "change": "Update existing tests to verify commits are created with Run-ID footer",
+      "reason": "Verify repair_implementer creates commits after file modifications"
+    },
+    {
+      "path": "services/project-ai/tests/workflows/migration_repair/agents/test_publisher_agent.py",
+      "change": "Update existing tests to verify evidence commits include Run-ID footer",
+      "reason": "Verify publisher_agent creates commits with Run-ID footer"
+    },
+    {
+      "path": "services/project-ai/tests/placement/test_repository_adapter.py",
+      "change": "Add test for git_commit() with run_id parameter",
+      "reason": "Verify repository_adapter.git_commit() correctly formats messages with Run-ID"
+    },
+    {
+      "path": "ALL_TEST_FILES_WITH_AGENTCONTEXT",
+      "change": "Add run_id parameter to all AgentContext instantiations",
+      "reason": "AgentContext now requires run_id field"
+    }
+  ],
+  "import_changes": [
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/agents/repair_implementer.py",
+      "import": "from ..agents.final_gate_agent import format_commit_message"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+      "import": "from .final_gate_agent import format_commit_message"
+    },
+    {
+      "file": "services/project-ai/app/placement/repository_adapter.py",
+      "import": "from app.workflows.migration_repair.agents.final_gate_agent import format_commit_message"
+    }
+  ],
+  "commit_sites_found": [
+    {
+      "location": "services/project-ai/app/placement/repository_adapter.py",
+      "line": 510,
+      "type": "subprocess.run git commit",
+      "currently_used": false,
+      "note": "General-purpose commit function but never called by migration_repair workflow"
+    },
+    {
+      "location": "services/project-ai/app/workflows/migration_repair/agents/repair_implementer.py",
+      "line": "MISSING",
+      "type": "NO COMMIT OPERATION",
+      "currently_used": false,
+      "note": "Modifies files but never stages or commits them"
+    },
+    {
+      "location": "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+      "line": "MISSING",
+      "type": "NO COMMIT OPERATION",
+      "currently_used": false,
+      "note": "Explicitly does NOT push to remote, also does NOT create commits"
+    }
+  ],
+  "run_id_source": "context.task_id (e.g., 'migration-repair-20261011-143539-06936246')",
+  "function_location": {
+    "file": "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+    "line": 168,
+    "signature": "format_commit_message(run_id: str, summary: str = 'Migration repair verification complete') -> str"
+  },
+  "implementation_order": [
+    "1. Add run_id field to AgentContext",
+    "2. Update workflow_controller to capture run_id",
+    "3. Add commit operations to repair_implementer",
+    "4. Add commit operations to publisher_agent",
+    "5. Update repository_adapter.git_commit()",
+    "6. Add unit tests for format_commit_message integration",
+    "7. Add integration test for Run-ID in git log",
+    "8. Fix all AgentContext instantiations codebase-wide"
+  ],
+  "verification_commands": {
+    "unit_tests": "python -m pytest services/project-ai/tests/test_migration_repair_agent_final_gate_agent.py -v",
+    "integration_tests": "python -m pytest services/project-ai/tests/workflows/migration_repair/test_git_operations_real.py -v --integration",
+    "agent_tests": "python -m pytest services/project-ai/tests/workflows/migration_repair/agents/ -v",
+    "full_suite": "python -m pytest services/project-ai/tests/ -v -k 'agent or git'"
+  }
+}

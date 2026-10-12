@@ -1,8 +1,8 @@
 # Gate B: Route-to-Role RBAC Policy Proposal
 
-**Project:** Quiz Platform - Project AI Service  
-**Branch:** m2-project-ai-canonical-wiring  
-**Date:** 2024  
+**Project:** Quiz Platform - Project AI Service
+**Branch:** m2-project-ai-canonical-wiring
+**Date:** 2024
 **Status:** Policy Design (No Implementation)
 
 ---
@@ -224,8 +224,8 @@ These operations maintain their enforcement even for super-admin to preserve sys
 
 ### Gap 1: Unauthenticated Route with Mutations (CRITICAL)
 
-**Route:** `/creation/workflows` (POST)  
-**Current Auth:** `none`  
+**Route:** `/creation/workflows` (POST)
+**Current Auth:** `none`
 **Issue:** Allows unauthenticated workflow creation
 
 **Status:** ✅ RESOLVED - Endpoint is deprecated and returns 405 Method Not Allowed. No security risk.
@@ -234,15 +234,15 @@ These operations maintain their enforcement even for super-admin to preserve sys
 
 ### Gap 2: State Transition Role Policy Undefined (NEEDS DECISION)
 
-**Route:** `/workflows/{workflow_id}/transition` (POST)  
-**Current Auth:** `get_current_user` (authenticated only)  
+**Route:** `/workflows/{workflow_id}/transition` (POST)
+**Current Auth:** `get_current_user` (authenticated only)
 **Issue:** Some state transitions require governance approval (e.g., AWAITING_IMPLEMENTATION_APPROVAL → IMPLEMENTING), but no role enforcement exists at the route level.
 
 **Current Implementation:** Governance enforcement happens inside `WorkflowGovernanceService.transition_state()` which checks for approval records, but there's no route-level role check.
 
 **Options:**
 1. **Keep current design** - Rely on service-layer governance checks (approval record must exist for IMPLEMENTING transition)
-2. **Add route-level role check** - Change dependency to `require_contract_admin` 
+2. **Add route-level role check** - Change dependency to `require_contract_admin`
 3. **Transition-specific role mapping** - Add middleware to inspect `to_state` and enforce role based on transition type
 
 **Recommendation:** Option 1 (keep current design) with enhanced documentation. The service layer already enforces governance via approval records. Adding route-level role checks would create redundant authorization logic.
@@ -253,8 +253,8 @@ These operations maintain their enforcement even for super-admin to preserve sys
 
 ### Gap 3: Placement Override Missing Separation of Duties Check
 
-**Route:** `/workflows/{workflow_id}/placement/override` (POST)  
-**Current Auth:** `get_current_user`  
+**Route:** `/workflows/{workflow_id}/placement/override` (POST)
+**Current Auth:** `get_current_user`
 **Issue:** Manual placement override has no separation of duties check to prevent users from overriding their own placements.
 
 **Risk:** User creates workflow → creates placement → overrides their own placement with different manifest.
@@ -271,7 +271,7 @@ These operations maintain their enforcement even for super-admin to preserve sys
 
 **Issue:** Should `/workflows/{workflow_id}/transition` require role-based authorization at the route level, or rely on service-layer governance checks?
 
-**Context:** 
+**Context:**
 - Some transitions are informational (REQUESTED → DISCOVERY)
 - Some transitions are governance gates (AWAITING_IMPLEMENTATION_APPROVAL → IMPLEMENTING)
 - Service layer already enforces approval record requirements for sensitive transitions
@@ -441,10 +441,10 @@ All governance operations must log:
 
 ## Appendix A: Route Inventory Summary
 
-**Total Routes:** 40  
-**Public Routes:** 1 (/health)  
-**Deprecated Routes:** 4 (/creation/*)  
-**Authenticated Routes:** 35  
+**Total Routes:** 40
+**Public Routes:** 1 (/health)
+**Deprecated Routes:** 4 (/creation/*)
+**Authenticated Routes:** 35
 
 **By Operation Type:**
 - Read-only: 19
@@ -474,10 +474,10 @@ def require_contract_admin(user: AuthenticatedPrincipal = Depends(get_current_us
     # Super admin bypass
     if is_super_admin(user):
         return user
-    
+
     if "contract_admin" not in user.get("roles", []):
         raise HTTPException(status_code=403, detail="Requires contract_admin role")
-    
+
     return user
 ```
 

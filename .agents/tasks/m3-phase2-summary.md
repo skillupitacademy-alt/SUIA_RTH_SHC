@@ -1,7 +1,7 @@
 # M3 Phase 2 Summary Report
 
-**Branch:** `m2-project-ai-foundation`  
-**Date:** 2025  
+**Branch:** `m2-project-ai-foundation`
+**Date:** 2025
 **Status:** ✅ Complete
 
 ---

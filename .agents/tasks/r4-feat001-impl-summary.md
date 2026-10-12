@@ -116,13 +116,13 @@ All FEAT-001 tests pass. Auth module imports successfully verified.
 
 ## Acceptance Criteria Status
 
-✅ python-jose[cryptography] added to pyproject.toml dependencies  
-✅ app/auth/ module created with jwt.py, dependencies.py, config.py, __init__.py  
-✅ JWT_SECRET_KEY validation in main.py lifespan fails startup if missing or weak  
-✅ create_access_token() produces valid JWT with exp claim  
-✅ decode_access_token() validates JWT and raises HTTPException 401 on invalid/expired  
-✅ RBAC dependencies enforce role hierarchy (admin ⊃ reviewer ⊃ viewer)  
-✅ 16 unit tests pass in test_auth_jwt.py and test_auth_dependencies.py  
+✅ python-jose[cryptography] added to pyproject.toml dependencies
+✅ app/auth/ module created with jwt.py, dependencies.py, config.py, __init__.py
+✅ JWT_SECRET_KEY validation in main.py lifespan fails startup if missing or weak
+✅ create_access_token() produces valid JWT with exp claim
+✅ decode_access_token() validates JWT and raises HTTPException 401 on invalid/expired
+✅ RBAC dependencies enforce role hierarchy (admin ⊃ reviewer ⊃ viewer)
+✅ 16 unit tests pass in test_auth_jwt.py and test_auth_dependencies.py
 
 **All acceptance criteria met. FEAT-001 complete.**
 
@@ -164,8 +164,8 @@ All 16 tests pass successfully (verified above)
 
 ## Git Commit
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Commit:** 423d2b7f  
+**Branch:** m2-project-ai-canonical-wiring
+**Commit:** 423d2b7f
 **Message:** feat: implement JWT authentication infrastructure (FEAT-001)
 
 ## Notes
@@ -186,7 +186,7 @@ FEAT-001 is complete. Ready for:
 ## Dependencies Satisfied
 
 - R1: Not required for FEAT-001
-- R2: Not required for FEAT-001  
+- R2: Not required for FEAT-001
 - R3: Not required for FEAT-001
 
 FEAT-001 is self-contained and has no dependencies on R1-R3 deliverables.

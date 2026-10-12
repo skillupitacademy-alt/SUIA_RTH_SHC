@@ -24,7 +24,7 @@ const CRITICAL_KINDS: Set<Evidence['kind']> = new Set([
 
 **Critical kinds** (missing → ERROR):
 - `type-definition` — Source type definitions that define current state
-- `component` — Renderer registrations and implementations  
+- `component` — Renderer registrations and implementations
 - `service` — Active service implementations
 
 **Historical kinds** (missing → WARNING):
@@ -73,7 +73,7 @@ function hasEvidenceForPath(entityPath: string): boolean {
   const normalizedEntityPath = normalizePath(entityPath);
   for (const evidencePath of evidencePaths) {
     // Check if evidence is within entity directory or is the entity path itself
-    if (evidencePath.startsWith(normalizedEntityPath + '/') || 
+    if (evidencePath.startsWith(normalizedEntityPath + '/') ||
         evidencePath.startsWith(normalizedEntityPath + '\\') ||
         evidencePath === normalizedEntityPath) {
       return true;
@@ -179,7 +179,7 @@ To support M2-1 requirements, extend the Evidence interface with provenance meta
 ```typescript
 export interface Evidence {
   // ... existing fields ...
-  
+
   // Provenance metadata (M2+)
   baseline?: string;              // 'm1' | 'm2' | 'm3' etc. — which milestone generated this
   scannerVersion?: string;        // semantic version of scanner at discovery time
@@ -245,7 +245,7 @@ Hash mismatch → WARNING
 if (!exists) {
   const isM1Evidence = !evidence.baseline || evidence.baseline === 'm1';
   const isM2Evidence = evidence.baseline === 'm2';
-  
+
   if (isM1Evidence) {
     // Historical M1 evidence missing → WARNING (preserve backward compat)
     warnings.push({
@@ -279,7 +279,7 @@ if (!exists) {
 ```typescript
 if (currentHash !== evidence.contentHash) {
   const isM2Evidence = evidence.baseline === 'm2';
-  
+
   if (isM2Evidence) {
     // M2 evidence hash mismatch → ERROR (strict integrity)
     errors.push({

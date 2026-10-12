@@ -1,9 +1,9 @@
 # Gate B: W7 Evidence Validation Contract
 
-**Project:** Quiz Platform - Project AI Service  
-**Branch:** m2-project-ai-canonical-wiring  
-**Date:** 2026-01-30  
-**Status:** Policy Definition (No Implementation)  
+**Project:** Quiz Platform - Project AI Service
+**Branch:** m2-project-ai-canonical-wiring
+**Date:** 2026-01-30
+**Status:** Policy Definition (No Implementation)
 **Purpose:** Define comprehensive evidence validation contract for W7 final gate certification
 
 ---
@@ -27,14 +27,14 @@ This document defines the **complete evidence validation contract** for W7 Final
 
 **Evidence Type Identifier:** `security_scan`
 
-**Purpose and Scope:**  
+**Purpose and Scope:**
 Attests that the artifact has passed automated security scanning including:
 - Dependency vulnerability scanning
 - Static code analysis for security anti-patterns
 - Authentication/authorization boundary verification
 - SQL injection and XSS vulnerability detection
 
-**Who/What Produces It:**  
+**Who/What Produces It:**
 - Automated security scanner agent (W0-E1 security verification agent)
 - Manual security audit by security reviewer (produces APPROVED verdict)
 
@@ -52,7 +52,7 @@ Attests that the artifact has passed automated security scanning including:
 - `REJECTED` - Manual security review rejected the artifact
 - Any empty string, null, or undefined verdict
 
-**Freshness Policy:**  
+**Freshness Policy:**
 Maximum age: **86400 seconds (24 hours)**
 
 **Rationale:** Security vulnerabilities are discovered continuously. Evidence older than 24 hours may not reflect current threat landscape or newly disclosed CVEs.
@@ -63,18 +63,18 @@ Maximum age: **86400 seconds (24 hours)**
 - `created_at` - Timezone-aware UTC timestamp
 - `evidence_id` - Unique identifier for audit trail
 
-**Mandatory vs Optional:**  
+**Mandatory vs Optional:**
 **MANDATORY** - Security verification is a required gate for certification.
 
-**What Happens if Missing:**  
+**What Happens if Missing:**
 Certification **BLOCKED**. Error: `missing_required_evidence:security_scan`
 
-**What Happens if Stale:**  
-Certification **BLOCKED**. Error: `stale_evidence:{evidence_id}`  
+**What Happens if Stale:**
+Certification **BLOCKED**. Error: `stale_evidence:{evidence_id}`
 Rationale: Stale security evidence does not reflect current security posture.
 
-**What Happens if Verdict is Unaccepted:**  
-Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`  
+**What Happens if Verdict is Unaccepted:**
+Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 Rationale: Any non-passing verdict indicates a security issue that must be resolved before certification.
 
 ---
@@ -83,14 +83,14 @@ Rationale: Any non-passing verdict indicates a security issue that must be resol
 
 **Evidence Type Identifier:** `ubrc_verification`
 
-**Purpose and Scope:**  
+**Purpose and Scope:**
 Attests that the artifact complies with UBRC contract requiring:
 - No hardcoded colors or brand-specific styles
 - All visual elements use theme system abstractions
 - Brand-agnostic component implementations
 - Zero UBRC policy violations detected
 
-**Who/What Produces It:**  
+**Who/What Produces It:**
 - UBRC compliance scanner (automated static analysis)
 - UBRC manual audit agent (for complex violations)
 
@@ -108,7 +108,7 @@ Attests that the artifact complies with UBRC contract requiring:
 - `REJECTED` - Manual UBRC audit rejected
 - Any empty string, null, or undefined verdict
 
-**Freshness Policy:**  
+**Freshness Policy:**
 Maximum age: **86400 seconds (24 hours)**
 
 **Rationale:** UBRC violations can be introduced by recent commits. Fresh evidence ensures current compliance state.
@@ -119,16 +119,16 @@ Maximum age: **86400 seconds (24 hours)**
 - `created_at` - Timezone-aware UTC timestamp
 - `evidence_id` - Unique identifier for audit trail
 
-**Mandatory vs Optional:**  
+**Mandatory vs Optional:**
 **MANDATORY** - UBRC compliance is foundational to brand-agnostic architecture.
 
-**What Happens if Missing:**  
+**What Happens if Missing:**
 Certification **BLOCKED**. Error: `missing_required_evidence:ubrc_verification`
 
-**What Happens if Stale:**  
+**What Happens if Stale:**
 Certification **BLOCKED**. Error: `stale_evidence:{evidence_id}`
 
-**What Happens if Verdict is Unaccepted:**  
+**What Happens if Verdict is Unaccepted:**
 Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 
 ---
@@ -137,14 +137,14 @@ Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 
 **Evidence Type Identifier:** `brand_certification`
 
-**Purpose and Scope:**  
+**Purpose and Scope:**
 Attests that artifact maintains brand independence by:
 - Using only theme system variables for branding
 - No direct references to specific brand names in logic
 - Brand context passed through dependency injection
 - Identical behavior across all brand contexts
 
-**Who/What Produces It:**  
+**Who/What Produces It:**
 - Brand independence verification agent (automated multi-brand test suite)
 - Manual brand audit by brand governance team
 
@@ -162,7 +162,7 @@ Attests that artifact maintains brand independence by:
 - `REJECTED` - Manual brand audit rejected
 - Any empty string, null, or undefined verdict
 
-**Freshness Policy:**  
+**Freshness Policy:**
 Maximum age: **86400 seconds (24 hours)**
 
 **Rationale:** Brand independence must be verified against current artifact state. Recent changes may introduce brand-specific dependencies.
@@ -173,16 +173,16 @@ Maximum age: **86400 seconds (24 hours)**
 - `created_at` - Timezone-aware UTC timestamp
 - `evidence_id` - Unique identifier for audit trail
 
-**Mandatory vs Optional:**  
+**Mandatory vs Optional:**
 **MANDATORY** - Brand independence is core architectural requirement.
 
-**What Happens if Missing:**  
+**What Happens if Missing:**
 Certification **BLOCKED**. Error: `missing_required_evidence:brand_certification`
 
-**What Happens if Stale:**  
+**What Happens if Stale:**
 Certification **BLOCKED**. Error: `stale_evidence:{evidence_id}`
 
-**What Happens if Verdict is Unaccepted:**  
+**What Happens if Verdict is Unaccepted:**
 Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 
 ---
@@ -191,14 +191,14 @@ Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 
 **Evidence Type Identifier:** `theme_certification`
 
-**Purpose and Scope:**  
+**Purpose and Scope:**
 Attests that artifact correctly implements theme system by:
 - Supporting multiple theme variants (light/dark mode)
 - Using theme tokens instead of hardcoded colors
 - Correct theme switching behavior without re-render bugs
 - Accessible contrast ratios in all theme modes
 
-**Who/What Produces It:**  
+**Who/What Produces It:**
 - Theme compliance scanner (automated theme token usage verification)
 - Theme runtime verifier (multi-theme rendering tests)
 - Manual theme audit by design systems team
@@ -217,7 +217,7 @@ Attests that artifact correctly implements theme system by:
 - `REJECTED` - Manual theme audit rejected
 - Any empty string, null, or undefined verdict
 
-**Freshness Policy:**  
+**Freshness Policy:**
 Maximum age: **86400 seconds (24 hours)**
 
 **Rationale:** Theme implementation must be verified against current artifact. Recent changes may break theme switching or introduce hardcoded styles.
@@ -228,16 +228,16 @@ Maximum age: **86400 seconds (24 hours)**
 - `created_at` - Timezone-aware UTC timestamp
 - `evidence_id` - Unique identifier for audit trail
 
-**Mandatory vs Optional:**  
+**Mandatory vs Optional:**
 **MANDATORY** - Theme certification ensures visual consistency and accessibility.
 
-**What Happens if Missing:**  
+**What Happens if Missing:**
 Certification **BLOCKED**. Error: `missing_required_evidence:theme_certification`
 
-**What Happens if Stale:**  
+**What Happens if Stale:**
 Certification **BLOCKED**. Error: `stale_evidence:{evidence_id}`
 
-**What Happens if Verdict is Unaccepted:**  
+**What Happens if Verdict is Unaccepted:**
 Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 
 ---
@@ -246,7 +246,7 @@ Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 
 **Evidence Type Identifier:** `runtime_verification`
 
-**Purpose and Scope:**  
+**Purpose and Scope:**
 Attests that artifact functions correctly in production-like runtime environment:
 - HTTP health checks return 200 OK
 - Critical API endpoints respond within SLA
@@ -254,7 +254,7 @@ Attests that artifact functions correctly in production-like runtime environment
 - No runtime exceptions during smoke tests
 - Integration with dependent services verified
 
-**Who/What Produces It:**  
+**Who/What Produces It:**
 - Runtime verification agent (automated smoke test suite)
 - Production deployment readiness checker
 - Manual runtime verification by SRE team
@@ -273,7 +273,7 @@ Attests that artifact functions correctly in production-like runtime environment
 - `REJECTED` - Manual runtime verification rejected
 - Any empty string, null, or undefined verdict
 
-**Freshness Policy:**  
+**Freshness Policy:**
 Maximum age: **86400 seconds (24 hours)**
 
 **Rationale:** Runtime environment can change (infrastructure updates, dependency changes). Fresh evidence ensures artifact works with current runtime configuration.
@@ -284,16 +284,16 @@ Maximum age: **86400 seconds (24 hours)**
 - `created_at` - Timezone-aware UTC timestamp
 - `evidence_id` - Unique identifier for audit trail
 
-**Mandatory vs Optional:**  
+**Mandatory vs Optional:**
 **MANDATORY** - Runtime verification proves artifact is deployable.
 
-**What Happens if Missing:**  
+**What Happens if Missing:**
 Certification **BLOCKED**. Error: `missing_required_evidence:runtime_verification`
 
-**What Happens if Stale:**  
+**What Happens if Stale:**
 Certification **BLOCKED**. Error: `stale_evidence:{evidence_id}`
 
-**What Happens if Verdict is Unaccepted:**  
+**What Happens if Verdict is Unaccepted:**
 Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 
 ---
@@ -350,7 +350,7 @@ Certification **BLOCKED**. Error: `unaccepted_verdict:{evidence_id}:{verdict}`
 
 **Validation Logic:**
 ```python
-required_types = {"security_scan", "ubrc_verification", "brand_certification", 
+required_types = {"security_scan", "ubrc_verification", "brand_certification",
                   "theme_certification", "runtime_verification"}
 present_types = {ev.evidence_type for ev in evidence_list}
 missing_types = required_types - present_types
@@ -493,7 +493,7 @@ if verdict_normalized not in ACCEPTED_VERDICTS:
 **Validation Logic:**
 ```python
 # Known verdicts (accepted or documented unaccepted)
-KNOWN_VERDICTS = {"PASS", "APPROVED", "CERTIFICATION_READY", "FAIL", "BLOCKED", 
+KNOWN_VERDICTS = {"PASS", "APPROVED", "CERTIFICATION_READY", "FAIL", "BLOCKED",
                   "PARTIAL", "PENDING", "UNKNOWN", "REJECTED"}
 
 verdict_normalized = evidence.verdict.upper() if evidence.verdict else None
@@ -759,8 +759,8 @@ Every certification attempt (success or failure) must log the following:
 
 ### Audit Log Location
 
-**Primary Storage:** `.agents/evidence/certification-audit.jsonl`  
-**Format:** JSON Lines (one JSON object per line)  
+**Primary Storage:** `.agents/evidence/certification-audit.jsonl`
+**Format:** JSON Lines (one JSON object per line)
 **Rotation:** Daily rotation with YYYY-MM-DD suffix after 100 MB
 
 **Example:**
@@ -883,8 +883,8 @@ All validation errors follow structured format for machine parsing:
 
 ## Policy Versioning
 
-**Version:** 1.0  
-**Effective Date:** 2026-01-30  
+**Version:** 1.0
+**Effective Date:** 2026-01-30
 **Review Date:** 2026-04-30 (3 months)
 
 **Version History:**
@@ -942,8 +942,8 @@ This evidence contract satisfies the following compliance requirements:
 
 ---
 
-**Document Status:** COMPLETE  
-**Implementation Status:** Policy definition only (no code changes)  
+**Document Status:** COMPLETE
+**Implementation Status:** Policy definition only (no code changes)
 **Next Phase:** W7 Implementation (evidence validation integration)
 
 ---

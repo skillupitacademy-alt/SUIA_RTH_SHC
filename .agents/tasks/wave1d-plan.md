@@ -49,86 +49,86 @@ Extracted from JWT by `AuthenticatedPrincipal`:
 ### FEAT-001: Add RBAC Helper Functions to `authorization.py`
 
 - [ ] 1. **Add role-checking utility functions to `app/auth/authorization.py`**
-      
+
       Add three new functions to the existing authorization module:
-      
+
       - `require_role(principal: AuthenticatedPrincipal, required_role: str) -> None`: Checks if principal has the exact role. Raises `HTTPException(403)` if not. Case-insensitive role matching. Empty roles list denies by default. Logs denial at WARNING level with audit message including `user_id`, `required_role`, and timestamp.
-      
+
       - `require_any_role(principal: AuthenticatedPrincipal, required_roles: list[str]) -> None`: Checks if principal has ANY of the required roles. Raises `HTTPException(403)` if none match. Case-insensitive role matching. Empty roles list denies by default. Logs denial at WARNING level.
-      
+
       - `is_super_admin(principal: AuthenticatedPrincipal) -> bool`: Returns `True` if user has `super_admin` role OR `portal_identity == "super_admin"` OR `portal_identity == "infrastructure"`. Used for infrastructure bypass logic.
-      
+
       Each function must:
       - Use case-insensitive role comparison (`role.lower()`)
       - Return immediately if `is_super_admin()` returns `True` (super_admin bypass)
       - Log WARNING-level denial messages: `f"RBAC denial: user={principal['user_id']}, required_roles={required_roles}, user_roles={principal.get('roles', [])}"`
       - Include comprehensive docstrings with Args, Returns, Raises, and usage examples
-      
+
       **Files**: `services/project-ai/app/auth/authorization.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_rbac.py::TestRoleChecking -v` — 5 new tests pass (require_role, require_any_role, is_super_admin, super_admin_bypass, case_insensitive_matching)
 
 ### FEAT-002: Apply RBAC to Privileged Routes
 
 - [ ] 2. **Replace `get_current_user` with `require_contract_admin` in workflow creation endpoint**
-      
+
       In `services/project-ai/app/api/routes/workflows.py`:
       - Line 142: Change function signature from `user: AuthenticatedPrincipal = Depends(get_current_user)` to `user: AuthenticatedPrincipal = Depends(require_contract_admin)`
       - Add import at top: Update existing import line to include `require_contract_admin` from `app.auth.dependencies`
       - No other changes needed — identity extraction on line 156 (`requester_id = user["user_id"]`) remains unchanged
-      
+
       This enforces that only `contract_admin` users can create workflows.
-      
+
       **Files**: `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_rbac.py::test_workflow_creation_requires_contract_admin -v` — new test passes
 
 - [ ] 3. **Replace `get_current_user` with `require_contract_admin` in final certification approval endpoint**
-      
+
       In `services/project-ai/app/api/routes/workflows.py`:
       - Line 505: In `async def approve_final_certification(...)`, change `user: AuthenticatedPrincipal = Depends(get_current_user)` to `user: AuthenticatedPrincipal = Depends(require_contract_admin)`
       - Add `require_contract_admin` to imports at top if not already present
       - No other changes needed — endpoint already extracts approver identity from JWT (line 555: `user.get("email") or user.get("sub") or user.get("id") or "unknown"`)
-      
+
       This enforces that only `contract_admin` users can approve final certification.
-      
+
       **Files**: `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_rbac.py::test_final_approval_requires_contract_admin -v` — new test passes
 
 - [ ] 4. **Replace `get_current_user` with `require_contract_admin` in placement approval endpoint**
-      
+
       In `services/project-ai/app/api/routes/governance.py`:
       - Find the `POST /approvals/workflows/{id}/approve-placement` endpoint (approximately line 330-340)
       - Change function signature from `user: AuthenticatedPrincipal = Depends(get_current_user)` to `user: AuthenticatedPrincipal = Depends(require_contract_admin)`
       - Add import at top: Update existing import to include `require_contract_admin` from `app.auth.dependencies`
       - No other changes needed — endpoint already extracts approver identity from JWT
-      
+
       This enforces that only `contract_admin` users can approve placement.
-      
+
       **Files**: `services/project-ai/app/api/routes/governance.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_rbac.py::test_placement_approval_requires_contract_admin -v` — new test passes
 
 - [ ] 5. **Replace `get_current_user` with `require_contract_admin` in candidate execution endpoint**
-      
+
       In `services/project-ai/app/api/routes/candidate.py`:
       - Line 806: In `async def execute_placement(...)`, change `user: AuthenticatedPrincipal = Depends(get_current_user)` to `user: AuthenticatedPrincipal = Depends(require_contract_admin)`
       - Add import at top: Update existing import line to include `require_contract_admin` from `app.auth.dependencies`
       - No other changes needed — endpoint already performs brand enforcement after this check
-      
+
       This enforces that only `contract_admin` users can execute placement.
-      
+
       **Files**: `services/project-ai/app/api/routes/candidate.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_rbac.py::test_candidate_execution_requires_contract_admin -v` — new test passes
 
 ### FEAT-003: Comprehensive RBAC Test Suite
 
 - [ ] 6. **Create comprehensive RBAC test suite in `tests/security/test_rbac.py`**
-      
+
       Create new test file with 15 tests organized into 3 categories:
-      
+
       **Category 1: RBAC Helper Functions (5 tests)**
       - `test_require_role_success`: User with exact role passes
       - `test_require_role_denial`: User without role gets 403
@@ -137,50 +137,50 @@ Extracted from JWT by `AuthenticatedPrincipal`:
       - `test_is_super_admin_detection`: Correctly identifies super_admin via role, portal_identity "super_admin", or portal_identity "infrastructure"
       - `test_super_admin_bypass`: super_admin bypasses role checks
       - `test_case_insensitive_role_matching`: "Contract_Admin" matches "contract_admin"
-      
+
       **Category 2: Route-Level RBAC Enforcement (4 tests)**
       - `test_workflow_creation_requires_contract_admin`: POST /workflows with contract_viewer gets 403
       - `test_final_approval_requires_contract_admin`: POST /workflows/{id}/approve-final with contract_reviewer gets 403
       - `test_placement_approval_requires_contract_admin`: POST /approvals/workflows/{id}/approve-placement with contract_viewer gets 403
       - `test_candidate_execution_requires_contract_admin`: POST /candidates/{id}/execute with contract_reviewer gets 403
-      
+
       **Category 3: Valid Path Smoke Tests (4 tests)**
       - `test_contract_admin_can_create_workflow`: User with contract_admin role successfully creates workflow
       - `test_contract_admin_can_approve_final`: User with contract_admin role successfully approves certification
       - `test_super_admin_bypasses_all_checks`: User with super_admin role can perform all privileged operations
       - `test_empty_roles_list_denies_access`: User with empty roles list gets 403 on all privileged routes
-      
+
       All tests use pytest fixtures for token creation (reuse patterns from `test_identity_extraction.py`). Tests mock database dependencies where needed to isolate RBAC logic.
-      
+
       **Files**: `services/project-ai/tests/security/test_rbac.py` (new file)
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_rbac.py -v --tb=short` — all 15 tests pass
 
 ### FEAT-004: Fix Governance Identity Spoofing (P0 Security Issue)
 
 - [ ] 7. **Remove client-supplied identity fields from governance approval schemas**
-      
+
       **CRITICAL P0 VULNERABILITY**: Legacy governance endpoints (`POST /submit`, `POST /{approval_id}/approve`, `POST /{approval_id}/reject`) accept client-supplied `submittedBy`, `decidedBy`, and `rejectedBy` fields, allowing identity spoofing in audit trails and self-approval bypass.
-      
+
       In `services/project-ai/app/api/schemas/governance.py`:
       - Remove `submittedBy: str` field from `ApprovalSubmitRequest` (line 22-25)
       - Remove `decidedBy: str` field from `ApprovalDecisionRequest` (line 31-34)
       - Remove `rejectedBy: str` field from `ApprovalRejectRequest` (line 49-52)
       - Update docstrings to note: "Identity extracted from JWT token"
       - Keep `submittedBy`, `decidedBy` in response model `ApprovalRecord` (these are stored values, not client input)
-      
+
       **Files**: `services/project-ai/app/api/schemas/governance.py`
-      
+
       **Verify**: Schema compilation succeeds (no Pydantic errors)
 
 - [ ] 8. **Replace client-supplied identities with JWT extraction in governance route handlers**
-      
+
       In `services/project-ai/app/api/routes/governance.py`:
-      
+
       **POST /submit endpoint** (line 45):
       - Line 70: Replace `"by": request.submittedBy` with `"by": user.get("user_id") or user.get("email") or "unknown"`
       - Line 79: Replace `"submittedBy": request.submittedBy` with `"submittedBy": user.get("user_id") or user.get("email") or "unknown"`
-      
+
       **POST /{approval_id}/approve endpoint** (line 147):
       - Extract decider at start: `decided_by = user.get("user_id") or user.get("email") or "unknown"`
       - Line 187: Replace `if request.decidedBy == approval["submittedBy"]:` with `if decided_by == approval["submittedBy"]:`
@@ -192,39 +192,39 @@ Extracted from JWT by `AuthenticatedPrincipal`:
       - Line 234: Replace `"by": request.decidedBy` with `"by": decided_by`
       - Line 253: Replace `approval["decidedBy"] = request.decidedBy` with `approval["decidedBy"] = decided_by`
       - Line 259: Replace `"by": request.decidedBy` with `"by": decided_by`
-      
+
       **POST /{approval_id}/reject endpoint** (line 595):
       - Extract rejecter at start: `rejected_by = user.get("user_id") or user.get("email") or "unknown"`
       - Line 638: Replace `approval["decidedBy"] = request.rejectedBy` with `approval["decidedBy"] = rejected_by`
       - Line 642: Replace `"by": request.rejectedBy` with `"by": rejected_by`
-      
+
       **NOTE**: The `POST /workflows/{id}/approve-placement` endpoint (line 331) already extracts approver from JWT correctly (line 463: `approved_by = user.get("user_id")`). This endpoint is NOT vulnerable.
-      
+
       **Files**: `services/project-ai/app/api/routes/governance.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_rbac.py::TestGovernanceIdentitySpoofing -v` — 3 new tests pass
 
 - [ ] 9. **Add governance identity spoofing prevention tests to RBAC test suite**
-      
+
       Add to `services/project-ai/tests/security/test_rbac.py`:
-      
+
       **Category 4: Governance Identity Spoofing Prevention (3 tests)**
       - `test_governance_submit_ignores_client_supplied_submitter`: Call `POST /approvals/submit` with JWT user_id="user123". Verify stored `submittedBy` is "user123", NOT the value from request body (if one was sent).
-      
+
       - `test_governance_approve_ignores_client_supplied_decider`: Call `POST /approvals/{id}/approve` with JWT user_id="admin456". Verify stored `decidedBy` is "admin456", NOT from request body.
-      
+
       - `test_governance_self_approval_uses_jwt_identity`: Submit manifest with user A (JWT), attempt approve with same user A (JWT). Verify self-approval is rejected with error code `SELF_APPROVAL_REJECTED`, proving the check uses JWT identity not request body.
-      
+
       These tests prove clients cannot forge identities in governance approval workflows.
-      
+
       **Files**: `services/project-ai/tests/security/test_rbac.py`
-      
+
       **Verify**: `pytest services/project-ai/tests/security/test_rbac.py::TestGovernanceIdentitySpoofing -v` — all 3 tests pass
 
 ### FEAT-005: Documentation and Verification
 
 - [ ] 10. **Update README.md with RBAC documentation**
-      
+
       In `services/project-ai/README.md`:
       - Add new section "## Role-Based Access Control (Wave 1D)" after the "Authorization Enforcement (Wave 1C)" section
       - Document all four roles: `contract_admin`, `contract_reviewer`, `contract_viewer`, `super_admin`
@@ -236,19 +236,19 @@ Extracted from JWT by `AuthenticatedPrincipal`:
       - Document super_admin bypass logic
       - Add code example showing `require_contract_admin` usage in route handlers
       - Add security note: "All privileged routes enforce RBAC at the FastAPI dependency level. Users without required roles receive HTTP 403 Forbidden with role requirement detail."
-      
+
       **Files**: `services/project-ai/README.md`
-      
+
       **Verify**: Manual review — section exists with all RBAC rules documented
 
 - [ ] 11. **Run full security test suite and verify coverage**
-      
+
       Execute complete security test suite to verify no regressions:
       ```bash
       cd services/project-ai
       pytest tests/security/ -v --cov=app/auth --cov=app/api/routes/governance --cov-report=term-missing
       ```
-      
+
       Expected results:
       - `test_identity_extraction.py`: 15 tests pass (Wave 1B baseline)
       - `test_authorization.py`: 20 tests pass (Wave 1C baseline)
@@ -256,9 +256,9 @@ Extracted from JWT by `AuthenticatedPrincipal`:
       - Total: 53 security tests pass with 0 failures
       - Auth module coverage: ≥94% (up from 82% in Wave 1C)
       - Governance routes coverage: ≥85% (up from current baseline)
-      
+
       **Files**: N/A (test execution)
-      
+
       **Verify**: All 53 security tests pass; coverage report shows ≥94% for `app/auth/` and ≥85% for `app/api/routes/governance.py`
 
 ---
@@ -400,14 +400,14 @@ def require_role(
 ) -> None:
     """
     Verify principal has the required role.
-    
+
     Case-insensitive role matching. Empty roles list denies by default.
     super_admin bypass: Users with super_admin role bypass this check.
-    
+
     Args:
         principal: Authenticated user from JWT token
         required_role: Role identifier required for access
-        
+
     Raises:
         HTTPException: 403 if user lacks required role
     """
@@ -419,14 +419,14 @@ def require_any_role(
 ) -> None:
     """
     Verify principal has at least one of the required roles.
-    
+
     Case-insensitive role matching. Empty roles list denies by default.
     super_admin bypass: Users with super_admin role bypass this check.
-    
+
     Args:
         principal: Authenticated user from JWT token
         required_roles: List of role identifiers (any one grants access)
-        
+
     Raises:
         HTTPException: 403 if user lacks all required roles
     """
@@ -435,15 +435,15 @@ def require_any_role(
 def is_super_admin(principal: AuthenticatedPrincipal) -> bool:
     """
     Check if principal has super_admin privileges.
-    
+
     Returns True if any of:
     - Has 'super_admin' role (case-insensitive)
     - Has portal_identity == 'super_admin'
     - Has portal_identity == 'infrastructure'
-    
+
     Args:
         principal: Authenticated user from JWT token
-        
+
     Returns:
         True if user has super_admin privileges
     """
@@ -467,12 +467,12 @@ async def create_workflow(
 ):
     """
     Create new workflow (requires contract_admin role).
-    
+
     RBAC: Only contract_admin users can create workflows.
     Identity: Requester extracted from JWT token to prevent spoofing.
     """
     requester_id = user["user_id"]
-    
+
     workflow = await governance_service.create_workflow(
         target_family=request.target_family,
         target_version=request.target_version,
@@ -480,7 +480,7 @@ async def create_workflow(
         purpose=request.purpose
     )
     await session.commit()
-    
+
     return _workflow_to_response(workflow)
 ```
 
@@ -531,11 +531,11 @@ pytest tests/security/ -v --cov=app/auth --cov-report=term-missing
 6. **Logging**: Use `logging.warning()` for RBAC denials with user_id and required role
 
 ### Relevant Files
-- **Auth layer**: 
+- **Auth layer**:
   - `app/auth/dependencies.py` — Already has `require_contract_admin`, `require_contract_reviewer`, `require_contract_viewer`
   - `app/auth/authorization.py` — Add new RBAC helper functions here
   - `app/auth/types.py` — `AuthenticatedPrincipal` type definition
-- **Route handlers**: 
+- **Route handlers**:
   - `app/api/routes/workflows.py` — Lines 142, 505 need `require_contract_admin`
   - `app/api/routes/governance.py` — Find approve-placement endpoint, add `require_contract_admin`
   - `app/api/routes/candidate.py` — Line 806 needs `require_contract_admin`
@@ -584,7 +584,7 @@ pytest tests/security/ -v --cov=app/auth --cov-report=term-missing
 - **P0 Security Issue**: The governance identity spoofing vulnerability (FEAT-004) is a **critical priority** and must be fixed before Wave 1D approval. This vulnerability allows clients to forge `submittedBy`, `decidedBy`, and `rejectedBy` identities, bypassing self-approval checks and poisoning audit trails.
 
 - **Existing Dependencies Available**: `require_contract_admin`, `require_contract_reviewer`, and `require_contract_viewer` already exist in `app/auth/dependencies.py` and are well-tested in `test_auth_dependencies.py`. We're just applying them to routes.
-  
+
 - **Helper Functions Purpose**: The new RBAC helper functions (`require_role`, `require_any_role`, `is_super_admin`) are utilities for more flexible role checking in business logic, not replacements for the FastAPI dependencies. Use FastAPI dependencies for route-level enforcement.
 
 - **super_admin Bypass**: Infrastructure users with `super_admin` role, `portal_identity="super_admin"`, or `portal_identity="infrastructure"` bypass all role checks. This is intentional — platform administrators need unrestricted access.

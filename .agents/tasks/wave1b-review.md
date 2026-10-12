@@ -30,7 +30,7 @@ The extraction logic uses `payload["userId"]` as the primary identity claim with
 
 ## Post-Verification Remediation
 
-**Date**: 2025-01-10  
+**Date**: 2025-01-10
 **Remediation Required**: P0 defect and P1 validation gaps identified in independent verification
 
 ### Issues Found in Verification

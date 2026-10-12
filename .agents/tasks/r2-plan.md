@@ -2,8 +2,8 @@
 
 **Task:** Make engineering contract fully repository-derived, not hardcoded
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Base:** d2bbdcbc (R0 complete)  
+**Branch:** m2-project-ai-canonical-wiring
+**Base:** d2bbdcbc (R0 complete)
 **Workspace:** e:\onlinewebsites\quiz-platform
 
 ---
@@ -163,7 +163,7 @@ The Engineering Contract in `services/project-ai/app/contracts/engineering_contr
 Closes R2 - Engineering Contract Derivation Completion"
        git push origin m2-project-ai-canonical-wiring
        ```
-       **Verify:** 
+       **Verify:**
        - Run `git log -1 --oneline` - shows commit with correct message
        - Run `git diff origin/m2-project-ai-canonical-wiring` - shows no uncommitted changes
        - Check GitHub/GitLab - commit appears on branch with all modified files
@@ -207,11 +207,11 @@ Closes R2 - Engineering Contract Derivation Completion"
 
 ## Success Criteria
 
-✅ All contract fields derived from snapshot evidence, zero hardcoded values  
-✅ ContractFieldEvidence model tracks provenance for every field  
-✅ seal_contract() produces deterministic SHA-256 excluding contract_id and contract_hash  
-✅ All existing tests pass with updated contract construction  
-✅ New tests verify: evidence traceability, determinism, missing evidence handling  
-✅ Commit pushed to branch with conventional commit message  
+✅ All contract fields derived from snapshot evidence, zero hardcoded values
+✅ ContractFieldEvidence model tracks provenance for every field
+✅ seal_contract() produces deterministic SHA-256 excluding contract_id and contract_hash
+✅ All existing tests pass with updated contract construction
+✅ New tests verify: evidence traceability, determinism, missing evidence handling
+✅ Commit pushed to branch with conventional commit message
 ✅ No grep matches for hardcoded "intermediate", "TypeScript", "React" in contract construction
 

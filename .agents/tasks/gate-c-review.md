@@ -1,7 +1,7 @@
 # Gate C W7 Evidence Enforcement Implementation Review
 
-**Reviewed:** 2025-01-26  
-**Implementation branch:** m2-project-ai-canonical-wiring  
+**Reviewed:** 2025-01-26
+**Implementation branch:** m2-project-ai-canonical-wiring
 **Test evidence:** gate-c-test-results.json (21 tests passed, 0 failures)
 
 ---

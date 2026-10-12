@@ -27,9 +27,9 @@ const blockType = runtimeContext?.blockType ?? 'block-type-name';
 const blockVersion = runtimeContext?.blockVersion ?? block.version; // if applicable
 
 // Apply as DOM attributes
-<div 
-  data-block-id={blockId} 
-  data-block-type={blockType} 
+<div
+  data-block-id={blockId}
+  data-block-type={blockType}
   data-block-version={blockVersion}
 >
 ```
@@ -150,7 +150,7 @@ Based on W6 implementation report:
 
 **Likely Cause**: Tests may assert old snapshot structure or old block evidence format.
 
-**Fix Strategy**: 
+**Fix Strategy**:
 1. Read test expectations
 2. Update mock snapshot fixtures to include new UBRC attributes (`data-block-id`, `data-block-type`, `data-block-version`)
 3. Update evidence format expectations if runtime verifier now checks for theme tokens
@@ -278,7 +278,7 @@ Based on W6 implementation report:
 
 3. Update test assertions if gate message format changed
 
-**Verification**: 
+**Verification**:
 ```bash
 cd services/project-ai
 python -m pytest tests/certification/test_certification_gates.py::TestRuntimeGate -v
@@ -323,7 +323,7 @@ Expected: 3/3 tests pass
    theme_aware_code = """
    <div style={{ color: theme.primary }}>
    """
-   
+
    # New (correct pattern):
    theme_aware_code = """
    import { getThemeColor } from '../theme-utils';
@@ -630,7 +630,7 @@ If fixes introduce new issues:
 
 ---
 
-**Plan Author**: W6-R3 Planning Agent  
-**Date**: 2025-01-20  
-**Branch**: m2-project-ai-canonical-wiring  
+**Plan Author**: W6-R3 Planning Agent
+**Date**: 2025-01-20
+**Branch**: m2-project-ai-canonical-wiring
 **Baseline Commit**: 0b2d07a4 (W6 implementation)

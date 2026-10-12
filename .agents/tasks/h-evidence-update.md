@@ -1,7 +1,7 @@
 # Phase 4: Agent H — Evidence Controller Update Report
 
-**Date**: 2026-10-08  
-**Workflow**: W6-R3-COMPLETE  
+**Date**: 2026-10-08
+**Workflow**: W6-R3-COMPLETE
 **Target File**: `.agents/tasks/m2-9-w6-evidence.json`
 
 ---
@@ -106,6 +106,6 @@ All updated fields sourced from official Phase 2 and Phase 3 agent reports. No a
 
 ---
 
-**Report Generated**: 2026-10-08  
-**Agent**: H — Evidence Controller  
+**Report Generated**: 2026-10-08
+**Agent**: H — Evidence Controller
 **Status**: COMPLETE

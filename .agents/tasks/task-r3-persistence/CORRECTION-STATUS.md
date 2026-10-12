@@ -1,7 +1,7 @@
 # R3 Persistence Layer - Architecture Correction Status
 
-**Date:** 2025-01-31  
-**Status:** ✅ CORRECTED IN PLACE  
+**Date:** 2025-01-31
+**Status:** ✅ CORRECTED IN PLACE
 **Action Required:** Update workflow to use corrected FEAT files
 
 ---
@@ -30,7 +30,7 @@
 ✅ `context.json` - Updated with PostgreSQL requirements, Drizzle discovery, prohibited SQLite
 ✅ `features/FEAT-000.json` - **NEW** - Mandatory database architecture discovery
 ✅ `features/FEAT-001.json` - PostgreSQL infrastructure (was SQLite)
-✅ `features/FEAT-002.json` - PostgreSQL ORM models and repositories  
+✅ `features/FEAT-002.json` - PostgreSQL ORM models and repositories
 ✅ `features/FEAT-003.json` - Service integration (unchanged logic, PostgreSQL repos)
 ✅ `features/FEAT-004.json` - PostgreSQL test infrastructure (was SQLite)
 ✅ `features/FEAT-005.json` - Documentation with PostgreSQL architecture
@@ -63,21 +63,21 @@ FEAT-005: Documentation & Verification
 
 ### PROHIBITED
 
-❌ SQLite database (sqlite, aiosqlite, project_ai.db)  
-❌ New database creation (project_ai_prod, any separate database)  
-❌ In-memory test databases (:memory:)  
+❌ SQLite database (sqlite, aiosqlite, project_ai.db)
+❌ New database creation (project_ai_prod, any separate database)
+❌ In-memory test databases (:memory:)
 ❌ SQLite-specific SQL (INSERT OR IGNORE)
 
 ### REQUIRED
 
-✅ Use existing tutorial_prod PostgreSQL database  
-✅ Use DATABASE_URL_TUTORIAL environment variable  
-✅ Use asyncpg driver (postgresql+asyncpg://)  
-✅ Use PostgreSQL test database with explicit TEST_DATABASE_URL_TUTORIAL (no implicit fallback)  
-✅ Use PostgreSQL SQL (ON CONFLICT DO NOTHING)  
-✅ Namespace tables with project_ai_ prefix  
-✅ Schema changes ONLY through migration authority discovered by FEAT-000 (Drizzle expected)  
-✅ init_db() validates connectivity only, does NOT run create_all() or mutate schema  
+✅ Use existing tutorial_prod PostgreSQL database
+✅ Use DATABASE_URL_TUTORIAL environment variable
+✅ Use asyncpg driver (postgresql+asyncpg://)
+✅ Use PostgreSQL test database with explicit TEST_DATABASE_URL_TUTORIAL (no implicit fallback)
+✅ Use PostgreSQL SQL (ON CONFLICT DO NOTHING)
+✅ Namespace tables with project_ai_ prefix
+✅ Schema changes ONLY through migration authority discovered by FEAT-000 (Drizzle expected)
+✅ init_db() validates connectivity only, does NOT run create_all() or mutate schema
 ✅ No route instantiates repositories/sessions directly (all through FastAPI dependency layer)
 
 ---
@@ -85,27 +85,27 @@ FEAT-005: Documentation & Verification
 ## Hard Rules for Agents
 
 ### RULE 1: Discovery First
-**FEAT-000 is MANDATORY before any schema changes.**  
+**FEAT-000 is MANDATORY before any schema changes.**
 No implementation may proceed until database architecture is discovered and documented in r3-database-discovery.md.
 
 ### RULE 2: Database Selection
-**Must use tutorial_prod (existing PostgreSQL database).**  
+**Must use tutorial_prod (existing PostgreSQL database).**
 Creating project_ai_prod, project_ai.db, or any other database is FORBIDDEN.
 
 ### RULE 3: Technology Stack
-**SQLite is FORBIDDEN in all Project AI code.**  
+**SQLite is FORBIDDEN in all Project AI code.**
 Production and tests must use PostgreSQL exclusively.
 
 ### RULE 4: Migration Coordination
-**FEAT-000 discovers migration authority. Default assumption: Drizzle owns tutorial_prod.**  
+**FEAT-000 discovers migration authority. Default assumption: Drizzle owns tutorial_prod.**
 Python Project AI uses SQLAlchemy for data access ONLY. Schema changes through discovered migration authority. Do not introduce Alembic unless repository evidence proves Python-owned migrations already exist.
 
 ### RULE 5: Test Infrastructure
-**Tests MUST use PostgreSQL.**  
+**Tests MUST use PostgreSQL.**
 In-memory SQLite fixtures are invalid for production PostgreSQL verification.
 
 ### RULE 6: SQL Dialect
-**All SQL must be PostgreSQL-compatible.**  
+**All SQL must be PostgreSQL-compatible.**
 Use ON CONFLICT, JSONB, DateTime(timezone=True), not SQLite equivalents.
 
 ---
@@ -132,8 +132,8 @@ Before approving any R3 implementation:
 
 ## Workflow Status
 
-**Current Workflow:** wf_17098bae4c4091f9  
-**Status:** Planning step completed (this step)  
+**Current Workflow:** wf_17098bae4c4091f9
+**Status:** Planning step completed (this step)
 **Queued Steps:** Replace existing tail with corrected FEAT sequence
 
 ### Action Required
@@ -241,7 +241,7 @@ For questions about R3 architecture correction:
 - **Implementation plan:** r3-plan-corrected.md
 - **Executive summary:** r3-correction-summary.md
 
-**Do not use original r3-plan.md (SQLite-based).**  
+**Do not use original r3-plan.md (SQLite-based).**
 **Use task-r3-persistence/*.json files only.**
 
 ---

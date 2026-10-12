@@ -4,8 +4,8 @@
 
 W4 implementation passed automated gates (54/54 tests) but independent security review identified **3 confirmed authorization bypasses**. This plan provides surgical fixes to close these gaps without expanding scope beyond the authorization boundary.
 
-**Finding A (HIGH)**: Self-approval bypass when `workflow_requester` is None  
-**Finding B (HIGH)**: Hash verification bypass via empty-string defaults  
+**Finding A (HIGH)**: Self-approval bypass when `workflow_requester` is None
+**Finding B (HIGH)**: Hash verification bypass via empty-string defaults
 **Finding C (MEDIUM)**: Expiry documentation drift (no actual requirement found)
 
 All fixes maintain W4 scope: authorization boundary only, no repository placement, no runtime verification, no W5 work.
@@ -33,7 +33,7 @@ All fixes maintain W4 scope: authorization boundary only, no repository placemen
 def verify_not_self_approved(self, requester_id: str) -> bool:
     if self.workflow_requester:
         return self.approved_by != self.workflow_requester
-    
+
     # BYPASS: if workflow_requester is None and requester_id is "", returns True
     return self.approved_by != requester_id
 ```
@@ -87,19 +87,19 @@ Current W4 tests (45 collected):
      def verify_not_self_approved(self, requester_id: str) -> bool:
          """
          Verify approval is not self-approval.
-         
+
          Enforces separation of duties: approver must differ from workflow requester.
-         
+
          Args:
              requester_id: Workflow requester identity (for evidence only)
-             
+
          Returns:
              True if not self-approved, False if self-approved or requester missing
          """
          # Fail-closed: missing workflow_requester means we cannot verify separation of duties
          if not self.workflow_requester:
              return False
-         
+
          return self.approved_by != self.workflow_requester
      ```
    - Update docstring in `ImplementationApproval` class to state `workflow_requester` is mandatory for approval verification
@@ -158,11 +158,11 @@ Current W4 tests (45 collected):
              workflow_requester=None,  # Missing
              evidence={}
          )
-         
+
          # Should fail-closed when workflow_requester is missing
          assert approval.verify_not_self_approved("any@example.com") is False
      ```
-   
+
    - `test_is_valid_for_implementation_fails_missing_requester()`:
      ```python
      def test_is_valid_for_implementation_fails_missing_requester():
@@ -181,14 +181,14 @@ Current W4 tests (45 collected):
              workflow_requester=None,  # Missing
              evidence={}
          )
-         
+
          is_valid = approval.is_valid_for_implementation(
              requester_id="requester@example.com",
              candidate_sha256="abc123",
              manifest_id="manifest-456",
              manifest_sha256="def456",
          )
-         
+
          assert is_valid is False
      ```
 
@@ -200,14 +200,14 @@ Current W4 tests (45 collected):
 
 6. **`services/project-ai/tests/test_workflow_transitions.py`**
    - All 9 tests must ensure workflow requester is populated
-   
+
 7. **`services/project-ai/tests/test_authorization_checker.py`**
    - All 11 tests must ensure workflow requester is populated
 
 8. **`services/project-ai/tests/unit/test_approval_gate.py`**
    - All 12 tests must ensure workflow requester is populated
 
-**Verify:** 
+**Verify:**
 ```bash
 cd services/project-ai
 python -m pytest tests/test_implementation_approval.py -v -k "missing_requester or self_approval"
@@ -235,7 +235,7 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
      ) -> tuple[bool, str]:
          """
          Check if workflow can transition to IMPLEMENTING state.
-         
+
          AUTHORIZATION GATES:
          - ImplementationApproval must exist for workflow_id
          - Approval status must be APPROVED
@@ -243,7 +243,7 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
          - Manifest ID must match approval record (REQUIRED)
          - Manifest hash must match approval record (REQUIRED)
          - Must not be self-approved (REQUIRED)
-         
+
          Args:
              workflow_id: Workflow identifier
              approvals_store: Dictionary of ImplementationApproval records (keyed by workflow_id)
@@ -251,7 +251,7 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              candidate_sha256: Candidate hash to verify (REQUIRED)
              manifest_id: Placement manifest ID to verify (REQUIRED)
              manifest_sha256: Placement manifest hash to verify (REQUIRED)
-             
+
          Returns:
              Tuple of (can_transition: bool, reason: str)
              - (True, "") if transition authorized
@@ -260,58 +260,58 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
          # Check if approval exists
          if workflow_id not in approvals_store:
              return (False, f"No implementation approval found for workflow {workflow_id}")
-         
+
          approval = approvals_store[workflow_id]
-         
+
          # Check if approval status is APPROVED
          from app.models.implementation_approval import ImplementationApprovalStatus
          if approval.status != ImplementationApprovalStatus.APPROVED:
              return (False, f"Approval status is {approval.status.value}, expected APPROVED")
-         
+
          # REQUIRED: Verify requester_id provided
          if not requester_id:
              return (False, "Missing required parameter: requester_id")
-         
+
          # REQUIRED: Verify candidate hash provided
          if not candidate_sha256:
              return (False, "Missing required parameter: candidate_sha256")
-         
+
          # REQUIRED: Verify manifest ID provided
          if not manifest_id:
              return (False, "Missing required parameter: manifest_id")
-         
+
          # REQUIRED: Verify manifest hash provided
          if not manifest_sha256:
              return (False, "Missing required parameter: manifest_sha256")
-         
+
          # Verify candidate hash matches
          if not approval.verify_candidate_hash(candidate_sha256):
              return (
                  False,
                  f"Candidate hash mismatch: expected {approval.candidate_sha256}, got {candidate_sha256}"
              )
-         
+
          # Verify manifest ID matches
          if approval.placement_manifest_id != manifest_id:
              return (
                  False,
                  f"Manifest ID mismatch: expected {approval.placement_manifest_id}, got {manifest_id}"
              )
-         
+
          # Verify manifest hash matches
          if not approval.verify_manifest_hash(manifest_sha256):
              return (
                  False,
                  f"Manifest hash mismatch: expected {approval.placement_manifest_sha256}, got {manifest_sha256}"
              )
-         
+
          # Verify not self-approved
          if not approval.verify_not_self_approved(requester_id):
              return (
                  False,
                  f"Self-approval detected: approver '{approval.approved_by}' is the workflow requester"
              )
-         
+
          # All checks passed
          return (True, "")
      ```
@@ -319,7 +319,7 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
 **New tests to add:**
 
 2. **`services/project-ai/tests/test_workflow_transitions.py`**
-   
+
    - `test_transition_blocked_missing_requester_id()`:
      ```python
      def test_transition_blocked_missing_requester_id():
@@ -335,9 +335,9 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              workflow_requester="requester@example.com",
              status=ImplementationApprovalStatus.APPROVED,
          )
-         
+
          approvals_store = {"wf-123": approval}
-         
+
          can_transition, reason = can_transition_to_implementing(
              workflow_id="wf-123",
              approvals_store=approvals_store,
@@ -346,11 +346,11 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              manifest_id="manifest-456",
              manifest_sha256="def456",
          )
-         
+
          assert can_transition is False
          assert "Missing required parameter: requester_id" in reason
      ```
-   
+
    - `test_transition_blocked_missing_candidate_sha256()`:
      ```python
      def test_transition_blocked_missing_candidate_sha256():
@@ -366,9 +366,9 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              workflow_requester="requester@example.com",
              status=ImplementationApprovalStatus.APPROVED,
          )
-         
+
          approvals_store = {"wf-123": approval}
-         
+
          can_transition, reason = can_transition_to_implementing(
              workflow_id="wf-123",
              approvals_store=approvals_store,
@@ -377,11 +377,11 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              manifest_id="manifest-456",
              manifest_sha256="def456",
          )
-         
+
          assert can_transition is False
          assert "Missing required parameter: candidate_sha256" in reason
      ```
-   
+
    - `test_transition_blocked_missing_manifest_id()`:
      ```python
      def test_transition_blocked_missing_manifest_id():
@@ -397,9 +397,9 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              workflow_requester="requester@example.com",
              status=ImplementationApprovalStatus.APPROVED,
          )
-         
+
          approvals_store = {"wf-123": approval}
-         
+
          can_transition, reason = can_transition_to_implementing(
              workflow_id="wf-123",
              approvals_store=approvals_store,
@@ -408,11 +408,11 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              manifest_id="",  # Empty/missing
              manifest_sha256="def456",
          )
-         
+
          assert can_transition is False
          assert "Missing required parameter: manifest_id" in reason
      ```
-   
+
    - `test_transition_blocked_missing_manifest_sha256()`:
      ```python
      def test_transition_blocked_missing_manifest_sha256():
@@ -428,9 +428,9 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              workflow_requester="requester@example.com",
              status=ImplementationApprovalStatus.APPROVED,
          )
-         
+
          approvals_store = {"wf-123": approval}
-         
+
          can_transition, reason = can_transition_to_implementing(
              workflow_id="wf-123",
              approvals_store=approvals_store,
@@ -439,7 +439,7 @@ Expected: 2 new tests pass, existing self-approval tests still pass with updated
              manifest_id="manifest-456",
              manifest_sha256="",  # Empty/missing
          )
-         
+
          assert can_transition is False
          assert "Missing required parameter: manifest_sha256" in reason
      ```
@@ -477,31 +477,31 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
      ) -> AuthorizationResult:
          """
          Check if implementation is authorized for a workflow.
-         
+
          PLACEMENT EXECUTOR CONTRACT:
          - Executor MUST call this before any repository write
          - Executor MUST abort if authorized=False
          - Executor MUST NOT proceed with graceful degradation
-         
+
          AUTHORIZATION CHECKS:
          1. Approval record exists for workflow_id
          2. Approval status is APPROVED
          3. Candidate hash matches approval record (REQUIRED)
          4. Manifest hash matches approval record (REQUIRED)
          5. Not self-approved (REQUIRED - requester_id must be provided)
-         
+
          Args:
              workflow_id: Workflow identifier
              candidate_sha256: Candidate hash to verify (REQUIRED)
              manifest_sha256: Placement manifest hash to verify (REQUIRED)
              approvals_store: Dictionary of ImplementationApproval records
              requester_id: Workflow requester identity (REQUIRED for self-approval check)
-             
+
          Returns:
              AuthorizationResult with authorization decision and evidence
          """
          checked_at = datetime.now(timezone.utc).isoformat()
-         
+
          # Validate required parameters
          if not candidate_sha256:
              return AuthorizationResult(
@@ -516,7 +516,7 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
                      "checked_at": checked_at,
                  }
              )
-         
+
          if not manifest_sha256:
              return AuthorizationResult(
                  authorized=False,
@@ -530,7 +530,7 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
                      "checked_at": checked_at,
                  }
              )
-         
+
          if not requester_id:
              return AuthorizationResult(
                  authorized=False,
@@ -544,7 +544,7 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
                      "checked_at": checked_at,
                  }
              )
-         
+
          # ... rest of existing checks unchanged ...
      ```
 
@@ -602,7 +602,7 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
 **New tests to add:**
 
 2. **`services/project-ai/tests/test_authorization_checker.py`**
-   
+
    - `test_authorization_blocks_missing_candidate_hash()`:
      ```python
      def test_authorization_blocks_missing_candidate_hash():
@@ -618,9 +618,9 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
              workflow_requester="requester@example.com",
              status=ImplementationApprovalStatus.APPROVED,
          )
-         
+
          approvals_store = {"wf-123": approval}
-         
+
          result = check_implementation_approval(
              workflow_id="wf-123",
              candidate_sha256="",  # Empty/missing
@@ -628,12 +628,12 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
              approvals_store=approvals_store,
              requester_id="requester@example.com",
          )
-         
+
          assert result.authorized is False
          assert "Missing required parameter: candidate_sha256" in result.failure_reason
          assert result.evidence["parameter_validation"] == "FAIL"
      ```
-   
+
    - `test_authorization_blocks_missing_manifest_hash()`:
      ```python
      def test_authorization_blocks_missing_manifest_hash():
@@ -649,9 +649,9 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
              workflow_requester="requester@example.com",
              status=ImplementationApprovalStatus.APPROVED,
          )
-         
+
          approvals_store = {"wf-123": approval}
-         
+
          result = check_implementation_approval(
              workflow_id="wf-123",
              candidate_sha256="abc123",
@@ -659,12 +659,12 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
              approvals_store=approvals_store,
              requester_id="requester@example.com",
          )
-         
+
          assert result.authorized is False
          assert "Missing required parameter: manifest_sha256" in result.failure_reason
          assert result.evidence["parameter_validation"] == "FAIL"
      ```
-   
+
    - `test_authorization_blocks_missing_requester_id()`:
      ```python
      def test_authorization_blocks_missing_requester_id():
@@ -680,9 +680,9 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
              workflow_requester="requester@example.com",
              status=ImplementationApprovalStatus.APPROVED,
          )
-         
+
          approvals_store = {"wf-123": approval}
-         
+
          result = check_implementation_approval(
              workflow_id="wf-123",
              candidate_sha256="abc123",
@@ -690,7 +690,7 @@ Expected: 4 new tests pass (missing parameter rejections), 8 existing tests stil
              approvals_store=approvals_store,
              requester_id="",  # Empty/missing
          )
-         
+
          assert result.authorized is False
          assert "Missing required parameter: requester_id" in result.failure_reason
          assert result.evidence["parameter_validation"] == "FAIL"
@@ -723,13 +723,13 @@ Expected: 3 new tests pass (missing parameter rejections), 10 existing tests sti
      ```python
      """
      Implementation Approval Authorization Checker - M2.9 Wave 4
-     
+
      Authorization hook for placement executor to verify implementation approval.
-     
+
      CRITICAL RULE:
      Placement executor MUST call check_implementation_approval() before any
      repository mutation. Executor MUST abort if authorized=False.
-     
+
      AUTHORIZATION GATES:
      - Approval must exist for workflow_id
      - Approval status must be APPROVED
@@ -737,36 +737,36 @@ Expected: 3 new tests pass (missing parameter rejections), 10 existing tests sti
      - Manifest hash must match
      - Manifest ID must match (W4-R1: added to enforce exact manifest binding)
      - Must not be self-approved
-     
+
      NO GRACEFUL DEGRADATION:
      Missing or invalid approval MUST return authorized=False, NOT warning-then-True.
      """
      ```
-   
+
    - Update `check_implementation_approval()` docstring to remove expiry:
      ```python
      """
      Check if implementation is authorized for a workflow.
-     
+
      PLACEMENT EXECUTOR CONTRACT:
      - Executor MUST call this before any repository write
      - Executor MUST abort if authorized=False
      - Executor MUST NOT proceed with graceful degradation
-     
+
      AUTHORIZATION CHECKS:
      1. Approval record exists for workflow_id
      2. Approval status is APPROVED
      3. Candidate hash matches approval record (REQUIRED)
      4. Manifest hash matches approval record (REQUIRED)
      5. Not self-approved (REQUIRED - requester_id must be provided)
-     
+
      Args:
          workflow_id: Workflow identifier
          candidate_sha256: Candidate hash to verify (REQUIRED)
          manifest_sha256: Placement manifest hash to verify (REQUIRED)
          approvals_store: Dictionary of ImplementationApproval records
          requester_id: Workflow requester identity (REQUIRED for self-approval check)
-         
+
      Returns:
          AuthorizationResult with authorization decision and evidence
      """
@@ -774,7 +774,7 @@ Expected: 3 new tests pass (missing parameter rejections), 10 existing tests sti
 
 **No tests needed for documentation changes.**
 
-**Verify:** 
+**Verify:**
 ```bash
 grep -n "expir" services/project-ai/app/authorization/approval_checker.py
 ```

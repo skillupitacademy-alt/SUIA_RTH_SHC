@@ -1,8 +1,8 @@
 # Project AI Remediation Implementation Plan
 
-**Document ID:** project-ai-remediation-plan  
-**Branch:** m2-project-ai-foundation  
-**Date:** 2025-01-30  
+**Document ID:** project-ai-remediation-plan
+**Branch:** m2-project-ai-foundation
+**Date:** 2025-01-30
 **Based on:** project-ai-remediation-design.md (APPROVED)
 
 ---
@@ -12,12 +12,12 @@
 This plan implements 9 Project AI remediation waves organized into 4 phases following the approved technical design. Waves execute in strict sequential/parallel order per phase architecture:
 
 - **PHASE 1 (Sequential):** R1 → R8 → R2 (Foundation & Evidence Logging)
-- **PHASE 2 (Mixed):** R3 → (R4 + R5) (Certification & Agents)  
+- **PHASE 2 (Mixed):** R3 → (R4 + R5) (Certification & Agents)
 - **PHASE 3 (Sequential):** R6 → R7 → R9 (Runtime & Final Gate)
 - **PHASE 4:** Integration Validation
 
-**Status:** R1 ✅ COMPLETE, R2 ✅ COMPLETE, R5 ✅ COMPLETE  
-**To Implement:** R8, R3, R4, R6, R9, Integration  
+**Status:** R1 ✅ COMPLETE, R2 ✅ COMPLETE, R5 ✅ COMPLETE
+**To Implement:** R8, R3, R4, R6, R9, Integration
 **Deferred to M3:** R7 (Playwright integration)
 
 ---
@@ -83,7 +83,7 @@ This plan implements 9 Project AI remediation waves organized into 4 phases foll
       lifecycle: str
       symbol: Optional[str] = None
       metadata: Dict[str, Any] = field(default_factory=dict)
-      
+
       @classmethod
       def from_snapshot(cls, record: Dict[str, Any]) -> 'EvidenceRecord':
           return cls(
@@ -100,11 +100,11 @@ This plan implements 9 Project AI remediation waves organized into 4 phases foll
               metadata=record.get('metadata', {})
           )
   ```
-  **Files:** `services/project-ai/app/models/evidence.py`  
+  **Files:** `services/project-ai/app/models/evidence.py`
   **Verify:** `grep -n 'class EvidenceRecord' services/project-ai/app/models/evidence.py`
 
 - [ ] 2. Create `.project-ai/runs/` directory structure in repository root.
-  **Files:** `.project-ai/runs/` (directory)  
+  **Files:** `.project-ai/runs/` (directory)
   **Verify:** `ls -la .project-ai/`
 
 - [ ] 3. Create `services/project-ai/app/evidence/logger.py` with EvidenceLogger class containing:
@@ -112,8 +112,8 @@ This plan implements 9 Project AI remediation waves organized into 4 phases foll
   - `log_gate_result(run_dir, gate_name, result)` — Writes gate JSON to gates/{gate-name}.json with 2-space indentation
   - `log_agent_result(run_dir, result)` — Writes agent JSON to agents/{agent-id}.json with 2-space indentation
   - `_get_current_branch()` — Gets git branch using subprocess.run(['git', 'branch', '--show-current'])
-  
-  **Files:** `services/project-ai/app/evidence/logger.py`  
+
+  **Files:** `services/project-ai/app/evidence/logger.py`
   **Verify:** `grep -n 'class EvidenceLogger' services/project-ai/app/evidence/logger.py`
 
 - [ ] 4. Create `tests/evidence/test_logger.py` with 7 tests:
@@ -124,8 +124,8 @@ This plan implements 9 Project AI remediation waves organized into 4 phases foll
   - `test_agent_result_logging()` — Verify agent results logged to agents/
   - `test_current_symlink_update()` — Verify symlink points to latest run
   - `test_current_fallback_windows()` — Verify fallback to current.txt on Windows
-  
-  **Files:** `tests/evidence/test_logger.py`  
+
+  **Files:** `tests/evidence/test_logger.py`
   **Verify:** `cd services/project-ai && pytest tests/evidence/test_logger.py -v`
 
 **Interfaces:**
@@ -169,7 +169,7 @@ grep -n 'indent=2' services/project-ai/app/evidence/logger.py
   ```python
   def _validate_manifest(self, manifest: PlacementManifest) -> Tuple[bool, List[str]]:
       errors = []
-      
+
       # Verify manifest hash (tamper detection)
       manifest_copy = manifest.model_copy()
       manifest_copy.manifestHash = ""
@@ -177,20 +177,20 @@ grep -n 'indent=2' services/project-ai/app/evidence/logger.py
       computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
       if computed_hash != manifest.manifestHash:
           errors.append("Manifest hash verification failed (tampering detected)")
-      
+
       # Verify no path inference from block name
       if manifest.candidateId.lower().replace('-', '/') in manifest.targetPath:
           errors.append("Target path appears inferred from block name")
-      
+
       # Verify evidence IDs exist in snapshot
       snapshot_evidence_ids = {e['evidenceId'] for e in self.snapshot.get('evidence', [])}
       for evidence_id in manifest.evidenceIds:
           if evidence_id not in snapshot_evidence_ids:
               errors.append(f"Evidence ID {evidence_id} not found in snapshot")
-      
+
       return (len(errors) == 0, errors)
   ```
-  **Files:** `services/project-ai/app/certification/gates.py`  
+  **Files:** `services/project-ai/app/certification/gates.py`
   **Verify:** `grep -n '_validate_manifest' services/project-ai/app/certification/gates.py`
 
 - [ ] 2. Update all 6 gate methods to require `manifest: PlacementManifest` parameter and call `_validate_manifest()` first:
@@ -200,7 +200,7 @@ grep -n 'indent=2' services/project-ai/app/evidence/logger.py
   - `execute_renderer_verification_gate(manifest: PlacementManifest)`
   - `execute_evidence_binding_gate(manifest: PlacementManifest)`
   - `execute_composer_verification_gate(manifest: PlacementManifest)`
-  
+
   Each gate must:
   ```python
   valid, errors = self._validate_manifest(manifest)
@@ -212,7 +212,7 @@ grep -n 'indent=2' services/project-ai/app/evidence/logger.py
           blockers=errors
       )
   ```
-  **Files:** `services/project-ai/app/certification/gates.py`  
+  **Files:** `services/project-ai/app/certification/gates.py`
   **Verify:** `grep -A 5 'def execute_ubrc_gate' services/project-ai/app/certification/gates.py | grep 'manifest'`
 
 - [ ] 3. Add 5 tests to `tests/certification/test_gates.py`:
@@ -221,8 +221,8 @@ grep -n 'indent=2' services/project-ai/app/evidence/logger.py
   - `test_path_inference_detection()` — Inferred path → BLOCKED
   - `test_gate_execution_with_invalid_manifest()` — Invalid manifest → BLOCKED
   - `test_manifest_evidence_validation()` — Missing evidence ID → BLOCKED
-  
-  **Files:** `tests/certification/test_gates.py`  
+
+  **Files:** `tests/certification/test_gates.py`
   **Verify:** `cd services/project-ai && pytest tests/certification/test_gates.py -v -k manifest`
 
 **Interfaces:**
@@ -271,7 +271,7 @@ grep -n 'PlacementManifest' services/project-ai/app/certification/gates.py | wc 
 **Implementation:**
 
 - [ ] 1. Create `services/project-ai/app/agents/` directory and `__init__.py`.
-  **Files:** `services/project-ai/app/agents/__init__.py`  
+  **Files:** `services/project-ai/app/agents/__init__.py`
   **Verify:** `ls -la services/project-ai/app/agents/`
 
 - [ ] 2-7. Create 6 agent handler files (toolchain.py, dependency.py, intake.py, placement.py, governance.py, documentation.py), each with:
@@ -281,13 +281,13 @@ grep -n 'PlacementManifest' services/project-ai/app/certification/gates.py | wc 
       try:
           # Extract snapshot data
           snapshot = context.repository_snapshot
-          
+
           # Agent-specific analysis
           outputs = await _analyze(snapshot, context)
-          
+
           # Collect evidence IDs
           evidence_ids = _collect_evidence_ids(outputs, snapshot)
-          
+
           return AgentResult(
               agent_id="{agent-name}",
               status=AgentStatus.SUCCESS,
@@ -310,7 +310,7 @@ grep -n 'PlacementManifest' services/project-ai/app/certification/gates.py | wc 
               timestamp=datetime.now(datetime.UTC)
           )
   ```
-  
+
   **Agent-Specific Logic:**
   - **toolchain.py:** Extract runtime.toolchains from snapshot, return toolchain_count and toolchains list
   - **dependency.py:** Extract dependencies, detect cycles and version conflicts, add warnings
@@ -318,8 +318,8 @@ grep -n 'PlacementManifest' services/project-ai/app/certification/gates.py | wc 
   - **placement.py:** Generate PlacementManifest with hash, compare to canonical blocks
   - **governance.py:** Enforce self-approval prevention (submitter != approver), verify manifest hash
   - **documentation.py:** Append certification run to canonical backlog, never replace existing
-  
-  **Files:** `services/project-ai/app/agents/{toolchain,dependency,intake,placement,governance,documentation}.py`  
+
+  **Files:** `services/project-ai/app/agents/{toolchain,dependency,intake,placement,governance,documentation}.py`
   **Verify:** `ls services/project-ai/app/agents/*.py | wc -l` (expect 7 files including __init__.py)
 
 - [ ] 8. Add dispatch mechanism to `AgentCoordinator.execute_agent()` in `services/project-ai/app/orchestration/agent_coordinator.py`:
@@ -355,11 +355,11 @@ grep -n 'PlacementManifest' services/project-ai/app/certification/gates.py | wc 
               timestamp=datetime.now(datetime.UTC)
           )
   ```
-  **Files:** `services/project-ai/app/orchestration/agent_coordinator.py`  
+  **Files:** `services/project-ai/app/orchestration/agent_coordinator.py`
   **Verify:** `grep -A 20 'def execute_agent' services/project-ai/app/orchestration/agent_coordinator.py | grep 'if agent_id'`
 
 - [ ] 9. Create `tests/agents/` directory and `__init__.py`.
-  **Files:** `tests/agents/__init__.py`  
+  **Files:** `tests/agents/__init__.py`
   **Verify:** `ls -la tests/agents/`
 
 - [ ] 10-15. Create 6 test files (test_toolchain.py, test_dependency.py, test_intake.py, test_placement.py, test_governance.py, test_documentation.py), each with 4-5 tests:
@@ -367,8 +367,8 @@ grep -n 'PlacementManifest' services/project-ai/app/certification/gates.py | wc 
   - Agent-specific functionality (e.g., cycle detection, family classification, self-approval prevention)
   - Evidence collection from snapshot
   - Error handling
-  
-  **Files:** `tests/agents/test_{toolchain,dependency,intake,placement,governance,documentation}.py`  
+
+  **Files:** `tests/agents/test_{toolchain,dependency,intake,placement,governance,documentation}.py`
   **Verify:** `cd services/project-ai && pytest tests/agents/ -v`
 
 **Interfaces:**
@@ -414,7 +414,7 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
       'suia-admin': 3009,
   }
   ```
-  **Files:** `services/project-ai/app/verification/runtime.py`  
+  **Files:** `services/project-ai/app/verification/runtime.py`
   **Verify:** `grep 'APP_PORTS' services/project-ai/app/verification/runtime.py`
 
 - [ ] 2. Add `get_health_url(target: str) -> str` function:
@@ -423,14 +423,14 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
       port = APP_PORTS.get(target, 3000)
       return f"http://localhost:{port}/api/health"
   ```
-  **Files:** `services/project-ai/app/verification/runtime.py`  
+  **Files:** `services/project-ai/app/verification/runtime.py`
   **Verify:** `grep -n 'def get_health_url' services/project-ai/app/verification/runtime.py`
 
 - [ ] 3. Add `verify_health()` method to ApplicationProcess with 3-level fallback:
   ```python
   def verify_health(self, health_url: str, timeout: int = 10) -> bool:
       import requests
-      
+
       # Try /api/health
       try:
           response = requests.get(health_url, timeout=timeout)
@@ -438,7 +438,7 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
               return True
       except requests.RequestException:
           pass
-      
+
       # Fallback: try /health
       base_url = health_url.rsplit('/api/health', 1)[0]
       try:
@@ -447,7 +447,7 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
               return True
       except requests.RequestException:
           pass
-      
+
       # Fallback: try / (root)
       try:
           response = requests.get(base_url, timeout=timeout)
@@ -455,10 +455,10 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
               return True
       except requests.RequestException:
           pass
-      
+
       return False
   ```
-  **Files:** `services/project-ai/app/verification/runtime.py`  
+  **Files:** `services/project-ai/app/verification/runtime.py`
   **Verify:** `grep -A 10 'def verify_health' services/project-ai/app/verification/runtime.py`
 
 - [ ] 4. Update `ApplicationProcess.start()` method with timeout enforcement:
@@ -471,18 +471,18 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
           stderr=subprocess.PIPE,
           shell=False
       )
-      
+
       health_url = get_health_url(self.target)
       start_time = time.time()
       while time.time() - start_time < timeout:
           if self.verify_health(health_url):
               return True
           time.sleep(1)
-      
+
       self.stop()
       return False
   ```
-  **Files:** `services/project-ai/app/verification/runtime.py`  
+  **Files:** `services/project-ai/app/verification/runtime.py`
   **Verify:** `grep -n 'timeout' services/project-ai/app/verification/runtime.py`
 
 - [ ] 5. Add clean shutdown to `ApplicationProcess.stop()`:
@@ -490,9 +490,9 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
   def stop(self, timeout: int = 10) -> bool:
       if not self.process:
           return True
-      
+
       self.process.terminate()
-      
+
       try:
           self.process.wait(timeout=timeout)
           return True
@@ -501,7 +501,7 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
           self.process.wait()
           return False
   ```
-  **Files:** `services/project-ai/app/verification/runtime.py`  
+  **Files:** `services/project-ai/app/verification/runtime.py`
   **Verify:** `grep -A 10 'def stop' services/project-ai/app/verification/runtime.py`
 
 - [ ] 6. Create `tests/verification/test_runtime.py` with 6 tests:
@@ -511,8 +511,8 @@ grep 'submitter.*approver' services/project-ai/app/agents/governance.py
   - `test_startup_timeout()` — Slow start → RUNTIME_START_FAILURE
   - `test_clean_shutdown()` — SIGTERM → clean exit
   - `test_force_kill_on_timeout()` — Hung process → SIGKILL
-  
-  **Files:** `tests/verification/test_runtime.py`  
+
+  **Files:** `tests/verification/test_runtime.py`
   **Verify:** `cd services/project-ai && pytest tests/verification/test_runtime.py -v`
 
 **Interfaces:**
@@ -567,24 +567,24 @@ grep -n 'verify_health' services/project-ai/app/verification/runtime.py
   ```python
   async def execute_final_gate(context: AgentContext) -> AgentResult:
       run_dir = Path(context.workflow_state.get('run_dir'))
-      
+
       # Read all gate results
       gate_results = {}
       for gate_file in (run_dir / 'gates').glob('*.json'):
           gate_data = json.loads(gate_file.read_text())
           gate_results[gate_data['gateId']] = gate_data['status']
-      
+
       # Read all agent results
       agent_results = {}
       for agent_file in (run_dir / 'agents').glob('*.json'):
           agent_data = json.loads(agent_file.read_text())
           agent_results[agent_data['agentId']] = agent_data['status']
-      
+
       # Determine verdict
       all_gates_pass = all(status == 'PASS' for status in gate_results.values())
       all_agents_succeed = all(status == 'SUCCESS' for status in agent_results.values())
       verdict = 'APPROVED' if all_gates_pass and all_agents_succeed else 'REJECTED'
-      
+
       # Compute statistics
       def _compute_statistics(snapshot):
           return {
@@ -593,7 +593,7 @@ grep -n 'verify_health' services/project-ai/app/verification/runtime.py
               'blockRenderers': len(snapshot.get('blocks', {}).get('rendered', [])),
               'verifiedBlocks': len(snapshot.get('blocks', {}).get('verified', []))
           }
-      
+
       # Generate FinalVerdict
       final_verdict = {
           'verdictId': f"remediation-{datetime.now(datetime.UTC).strftime('%Y-%m-%d')}",
@@ -606,23 +606,23 @@ grep -n 'verify_health' services/project-ai/app/verification/runtime.py
           'agentResults': agent_results,
           'statistics': _compute_statistics(context.repository_snapshot)
       }
-      
+
       # Write verdict file
       verdict_path = context.repository_root / '.agents' / 'tasks' / f"final-gate-verdict-{datetime.now(datetime.UTC).strftime('%Y-%m-%d')}.json"
       verdict_path.write_text(json.dumps(final_verdict, indent=2))
-      
+
       # Append to canonical backlog
       backlog_path = context.repository_root / '.agents' / 'tasks' / 'm1-m2-backlog.md'
       existing = backlog_path.read_text()
-      
+
       update_section = f"""
 ---
 
 ## Final Certification Gate — {final_verdict['verdictId']}
 
-**Status:** {verdict}  
-**Date:** {datetime.now(datetime.UTC).strftime('%Y-%m-%d')}  
-**Commit:** {final_verdict['commitSha']}  
+**Status:** {verdict}
+**Date:** {datetime.now(datetime.UTC).strftime('%Y-%m-%d')}
+**Commit:** {final_verdict['commitSha']}
 
 ### Gate Results
 
@@ -631,9 +631,9 @@ grep -n 'verify_health' services/project-ai/app/verification/runtime.py
 """
       for gate_name, status in gate_results.items():
           update_section += f"| {gate_name} | {status} |\n"
-      
+
       backlog_path.write_text(existing + "\n" + update_section)
-      
+
       return AgentResult(
           agent_id="final-gate",
           status=AgentStatus.SUCCESS,
@@ -649,7 +649,7 @@ grep -n 'verify_health' services/project-ai/app/verification/runtime.py
           timestamp=datetime.now(datetime.UTC)
       )
   ```
-  **Files:** `services/project-ai/app/agents/final_gate.py`  
+  **Files:** `services/project-ai/app/agents/final_gate.py`
   **Verify:** `ls services/project-ai/app/agents/final_gate.py`
 
 - [ ] 2. Add 'final-gate' dispatch case to `AgentCoordinator.execute_agent()`:
@@ -658,7 +658,7 @@ grep -n 'verify_health' services/project-ai/app/verification/runtime.py
       from app.agents.final_gate import execute_final_gate
       return await execute_final_gate(context)
   ```
-  **Files:** `services/project-ai/app/orchestration/agent_coordinator.py`  
+  **Files:** `services/project-ai/app/orchestration/agent_coordinator.py`
   **Verify:** `grep 'final-gate' services/project-ai/app/orchestration/agent_coordinator.py`
 
 - [ ] 3. Create `tests/agents/test_final_gate.py` with 4 tests:
@@ -666,8 +666,8 @@ grep -n 'verify_health' services/project-ai/app/verification/runtime.py
   - `test_final_verdict_any_fail()` — Any FAIL → REJECTED
   - `test_canonical_backlog_append()` — Backlog extended, not replaced
   - `test_verdict_file_creation()` — JSON file created
-  
-  **Files:** `tests/agents/test_final_gate.py`  
+
+  **Files:** `tests/agents/test_final_gate.py`
   **Verify:** `cd services/project-ai && pytest tests/agents/test_final_gate.py -v`
 
 **Interfaces:**
@@ -702,7 +702,7 @@ grep 'append' services/project-ai/app/agents/final_gate.py
   ```bash
   pnpm --filter @quiz/project-llm-discovery scan
   ```
-  **Files:** `packages/project-llm-discovery/output/snapshot.json`  
+  **Files:** `packages/project-llm-discovery/output/snapshot.json`
   **Verify:** `ls -lh packages/project-llm-discovery/output/snapshot.json`
 
 - [ ] 2. Verify snapshot valid:

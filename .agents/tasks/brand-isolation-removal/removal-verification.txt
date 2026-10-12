@@ -85,17 +85,17 @@ PHYSICAL DATABASE SCHEMA CHECK:
     COMMAND: psql $DATABASE_DIRECT_URL_TUTORIAL -c "\d project_ai_workflows" | grep -i brand
     RESULT: psql command not available on this Windows system
     STATUS: ⚠ UNABLE TO VERIFY
-    
+
     COMMAND: psql $DATABASE_DIRECT_URL_TUTORIAL -c "\d project_ai_candidates" | grep -i brand
     RESULT: psql command not available on this Windows system
     STATUS: ⚠ UNABLE TO VERIFY
-    
+
     NOTE: Per the brand-isolation cleanup plan, physical PostgreSQL columns
           were intentionally LEFT IN PLACE. The cleanup removed only:
           - Python ORM model fields
           - Code references
           - Repository write operations
-          
+
           Physical schema columns may still exist and this is EXPECTED per plan.
 
 OVERALL SUMMARY:

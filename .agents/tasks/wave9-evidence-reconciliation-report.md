@@ -1,7 +1,7 @@
 # Wave 9: Evidence Reconciliation & Documentation — Implementation Report
 
-**Completed:** 2025-01-29  
-**Branch:** `m2-project-ai-foundation`  
+**Completed:** 2025-01-29
+**Branch:** `m2-project-ai-foundation`
 **Commit:** `4fff31a` (pending)
 
 ---
@@ -195,31 +195,31 @@ query.get_historical_evidence()   # lifecycle='historical' (lenient)
 
 ### 1. TypeScript-Python Boundary
 
-✅ Python reads TS-generated snapshot, never scans repository directly  
-✅ All evidence IDs come from authoritative TS discovery system  
-✅ No synthetic evidence IDs generated (e.g., `candidate-<id>-classification`)  
+✅ Python reads TS-generated snapshot, never scans repository directly
+✅ All evidence IDs come from authoritative TS discovery system
+✅ No synthetic evidence IDs generated (e.g., `candidate-<id>-classification`)
 ✅ Evidence structure follows TS Evidence interface exactly
 
 ### 2. Evidence Integrity
 
-✅ Evidence IDs are deterministic (SHA-256 of kind+path+symbol+contentHash)  
-✅ Evidence graph validates structure (required fields, no synthetic IDs)  
-✅ Orphan detection identifies unused evidence  
-✅ Missing evidence detection identifies unsupported claims  
+✅ Evidence IDs are deterministic (SHA-256 of kind+path+symbol+contentHash)
+✅ Evidence graph validates structure (required fields, no synthetic IDs)
+✅ Orphan detection identifies unused evidence
+✅ Missing evidence detection identifies unsupported claims
 ✅ Binding to git revision ensures forensic traceability
 
 ### 3. No Synthetic Evidence
 
-✅ `validate_evidence_structure()` explicitly checks for synthetic IDs  
-✅ Patterns rejected: `candidate-<id>-classification`, `candidate-<id>-comparison`  
-✅ All evidence must have real `evidenceId` from TS discovery  
+✅ `validate_evidence_structure()` explicitly checks for synthetic IDs
+✅ Patterns rejected: `candidate-<id>-classification`, `candidate-<id>-comparison`
+✅ All evidence must have real `evidenceId` from TS discovery
 ✅ Tests verify synthetic ID detection and rejection
 
 ### 4. Canonical Documentation
 
-✅ Extended `.agents/tasks/m1-m2-backlog.md` (not recreated)  
-✅ No duplicate Markdown files created  
-✅ Wave 9 section added to existing backlog structure  
+✅ Extended `.agents/tasks/m1-m2-backlog.md` (not recreated)
+✅ No duplicate Markdown files created
+✅ Wave 9 section added to existing backlog structure
 ✅ All prior M2 milestone documentation preserved
 
 ---
@@ -435,20 +435,20 @@ query.get_historical_evidence()   # lifecycle='historical' (lenient)
 
 ## Canonical Artifact Compliance
 
-✅ Extended existing `.agents/tasks/m1-m2-backlog.md` (not recreated)  
-✅ Created new evidence modules only after confirming no existing implementation  
-✅ Extended backlog file (not duplicated)  
-✅ Documented why new artifacts were necessary (no existing evidence reconciliation)  
+✅ Extended existing `.agents/tasks/m1-m2-backlog.md` (not recreated)
+✅ Created new evidence modules only after confirming no existing implementation
+✅ Extended backlog file (not duplicated)
+✅ Documented why new artifacts were necessary (no existing evidence reconciliation)
 ✅ No duplicate Markdown files created
 
 ---
 
 ## Commit Reference
 
-**Commit:** `4fff31a` (pending)  
-**Message:** `feat(wave9): evidence reconciliation with authoritative TS evidence IDs and canonical doc updates`  
-**Files Changed:** 6  
-**Lines Added:** +1,108  
+**Commit:** `4fff31a` (pending)
+**Message:** `feat(wave9): evidence reconciliation with authoritative TS evidence IDs and canonical doc updates`
+**Files Changed:** 6
+**Lines Added:** +1,108
 **Lines Removed:** -1
 
 ---
@@ -470,11 +470,11 @@ def test_detect_synthetic_evidence_ids(sample_snapshot):
             'lifecycle': 'current',
         }
     ]
-    
+
     graph = EvidenceGraph(sample_snapshot, synthetic_evidence)
     graph.build_graph()
     query = EvidenceQuery(graph)
-    
+
     result = query.validate_evidence_structure('candidate-123-classification')
     assert not result['valid']
     assert any('Synthetic evidence ID detected' in err for err in result['errors'])

@@ -1,9 +1,9 @@
 # Evidence Manifest — M2 Project AI Canonical Wiring
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Baseline SHA:** 59f15424  
-**Head SHA:** 86f1d31b  
-**Generated:** 2025-01-24 UTC  
+**Branch:** m2-project-ai-canonical-wiring
+**Baseline SHA:** 59f15424
+**Head SHA:** 86f1d31b
+**Generated:** 2025-01-24 UTC
 **Total Tests Documented:** 337 (160 W6 + 40 integration + 21 W7 + 87 E-1 + 29 E-2)
 
 ## Gate Evidence Index

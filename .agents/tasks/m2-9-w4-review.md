@@ -36,7 +36,7 @@ The fallback creates a bypass: if `workflow_requester` was never populated and t
 def verify_not_self_approved(self, requester_id: str) -> bool:
     if self.workflow_requester:
         return self.approved_by != self.workflow_requester
-    
+
     # Fallback: if requester_id is "" and workflow_requester is None, this returns True
     return self.approved_by != requester_id
 ```

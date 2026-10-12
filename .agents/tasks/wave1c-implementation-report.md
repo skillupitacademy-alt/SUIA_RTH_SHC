@@ -1,8 +1,8 @@
 # Wave 1C Implementation Report
 
-**Date**: 2025-01-31  
-**Base Commit**: a27705a4  
-**Final Commit**: 76aaba51  
+**Date**: 2025-01-31
+**Base Commit**: a27705a4
+**Final Commit**: 76aaba51
 **Status**: ✅ COMPLETE
 
 ## Summary
@@ -219,7 +219,7 @@ The addition of the `brand` column to `project_ai_candidates` table requires a d
 
 ```sql
 -- Add brand column to candidates table
-ALTER TABLE project_ai_candidates 
+ALTER TABLE project_ai_candidates
 ADD COLUMN brand VARCHAR(100);
 
 -- Create index for brand-based queries

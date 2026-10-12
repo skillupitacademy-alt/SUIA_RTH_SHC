@@ -1,8 +1,8 @@
 # Technical Design: Canonical Project LLM Workflow Authority
 
-**Wave:** M2.9 Wave 0 / Agent B01  
-**Branch:** m2-project-ai-canonical-wiring  
-**Design Date:** 2026-01-08  
+**Wave:** M2.9 Wave 0 / Agent B01
+**Branch:** m2-project-ai-canonical-wiring
+**Design Date:** 2026-01-08
 **Author:** Architecture Authority Agent
 
 ---
@@ -41,57 +41,57 @@ class StateTransition:
 class ProjectLLMWorkflow:
     """
     Canonical workflow model for Project LLM M2.9.
-    
+
     Single source of truth for workflow lifecycle state, approval gates,
     and artifact bindings.
     """
     # Identity
     workflow_id: str
     specification_id: str  # Block family + version (e.g., "I7")
-    
+
     # Target binding
     target_family: str  # e.g., "Introduction"
     target_version: str  # e.g., "I7"
     requester_id: str  # For self-approval prevention
-    
+
     # Lifecycle state
     current_state: CanonicalWorkflowState
     state_history: List[StateTransition] = field(default_factory=list)
-    
+
     # Artifact bindings (hash-bound for security)
     contract_id: Optional[str] = None
     contract_sha256: Optional[str] = None
-    
+
     candidate_id: Optional[str] = None
     candidate_sha256: Optional[str] = None
-    
+
     manifest_id: Optional[str] = None
     manifest_sha256: Optional[str] = None
-    
+
     # Approval tracking
     approval_id: Optional[str] = None  # ImplementationApproval ID
     gate_results: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Evidence
     evidence_ids: List[str] = field(default_factory=list)
     snapshot_id: Optional[str] = None
     snapshot_sha256: Optional[str] = None
-    
+
     # Metadata
     created_at: datetime
     updated_at: datetime
     final_status: Optional[str] = None  # "CERTIFIED" or "REJECTED" when terminal
-    
+
     def is_terminal(self) -> bool:
         """Check if workflow is in terminal state."""
         from app.orchestration.canonical_workflow import is_terminal_state
         return is_terminal_state(self.current_state)
-    
+
     def requires_approval(self) -> bool:
         """Check if current state requires human approval."""
         from app.orchestration.canonical_workflow import is_gate_state
         return is_gate_state(self.current_state)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -205,26 +205,26 @@ from app.models.implementation_approval import ImplementationApproval
 class WorkflowGovernanceService:
     """
     Governance service for canonical workflow state management.
-    
+
     RESPONSIBILITIES:
     - Create workflows in REQUESTED state
     - Validate and execute state transitions
     - Enforce authorization gates
     - Prevent mutation of terminal states
     - Track state history
-    
+
     SECURITY BOUNDARIES:
     - No transitions after terminal state reached
     - Hash verification for IMPLEMENTING transition
     - Self-approval prevention
     - Evidence required for gate transitions
     """
-    
+
     def __init__(self):
         # In-memory storage for M2.9 (Wave 1+ will add persistence)
         self._workflows: Dict[str, ProjectLLMWorkflow] = {}
         self._approvals: Dict[str, ImplementationApproval] = {}
-    
+
     def create_workflow(
         self,
         target_family: str,
@@ -234,20 +234,20 @@ class WorkflowGovernanceService:
     ) -> ProjectLLMWorkflow:
         """
         Create a new workflow in REQUESTED state.
-        
+
         Args:
             target_family: Block family (e.g., "Introduction")
             target_version: Target version (e.g., "I7")
             requester_id: User creating the workflow
             purpose: Optional purpose description
-            
+
         Returns:
             New workflow in REQUESTED state
         """
         workflow_id = str(uuid4())
         specification_id = f"{target_family[0]}{target_version}"  # e.g., "I7"
         now = datetime.now(timezone.utc)
-        
+
         initial_transition = StateTransition(
             from_state=None,  # No prior state
             to_state=CanonicalWorkflowState.REQUESTED,
@@ -255,7 +255,7 @@ class WorkflowGovernanceService:
             triggered_by="system",
             reason="Workflow created"
         )
-        
+
         workflow = ProjectLLMWorkflow(
             workflow_id=workflow_id,
             specification_id=specification_id,
@@ -267,17 +267,17 @@ class WorkflowGovernanceService:
             created_at=now,
             updated_at=now
         )
-        
+
         if purpose:
             workflow.gate_results["purpose"] = purpose
-        
+
         self._workflows[workflow_id] = workflow
         return workflow
-    
+
     def get_workflow(self, workflow_id: str) -> Optional[ProjectLLMWorkflow]:
         """Get workflow by ID."""
         return self._workflows.get(workflow_id)
-    
+
     def validate_transition(
         self,
         workflow_id: str,
@@ -285,28 +285,28 @@ class WorkflowGovernanceService:
     ) -> Tuple[bool, str]:
         """
         Validate if a state transition is allowed.
-        
+
         Args:
             workflow_id: Workflow to transition
             to_state: Target state
-            
+
         Returns:
             Tuple of (is_valid, reason)
         """
         workflow = self.get_workflow(workflow_id)
         if not workflow:
             return (False, f"Workflow not found: {workflow_id}")
-        
+
         # Check if terminal state reached
         if workflow.is_terminal():
             return (False, f"Workflow is in terminal state {workflow.current_state.value}")
-        
+
         # Check if transition is valid per state machine
         if not is_valid_transition(workflow.current_state, to_state):
             return (False, f"Invalid transition: {workflow.current_state.value} -> {to_state.value}")
-        
+
         return (True, "")
-    
+
     def transition_state(
         self,
         workflow_id: str,
@@ -317,17 +317,17 @@ class WorkflowGovernanceService:
     ) -> ProjectLLMWorkflow:
         """
         Execute a state transition with validation.
-        
+
         Args:
             workflow_id: Workflow to transition
             to_state: Target state
             triggered_by: User or system component
             evidence_id: Optional evidence ID for audit trail
             reason: Optional reason for transition
-            
+
         Returns:
             Updated workflow
-            
+
         Raises:
             ValueError: If transition is invalid or unauthorized
         """
@@ -335,9 +335,9 @@ class WorkflowGovernanceService:
         is_valid, validation_reason = self.validate_transition(workflow_id, to_state)
         if not is_valid:
             raise ValueError(validation_reason)
-        
+
         workflow = self._workflows[workflow_id]
-        
+
         # Special authorization for IMPLEMENTING transition
         if to_state == CanonicalWorkflowState.IMPLEMENTING:
             can_implement, auth_reason = can_transition_to_implementing(
@@ -350,7 +350,7 @@ class WorkflowGovernanceService:
             )
             if not can_implement:
                 raise ValueError(f"Authorization failed: {auth_reason}")
-        
+
         # Execute transition
         now = datetime.now(timezone.utc)
         transition = StateTransition(
@@ -361,17 +361,17 @@ class WorkflowGovernanceService:
             evidence_id=evidence_id,
             reason=reason
         )
-        
+
         workflow.current_state = to_state
         workflow.state_history.append(transition)
         workflow.updated_at = now
-        
+
         # Set final status for terminal states
         if is_terminal_state(to_state):
             workflow.final_status = to_state.value
-        
+
         return workflow
-    
+
     def register_approval(
         self,
         workflow_id: str,
@@ -379,17 +379,17 @@ class WorkflowGovernanceService:
     ) -> None:
         """
         Register an implementation approval for workflow.
-        
+
         Args:
             workflow_id: Workflow ID
             approval: ImplementationApproval record
         """
         self._approvals[workflow_id] = approval
-        
+
         workflow = self._workflows.get(workflow_id)
         if workflow:
             workflow.approval_id = approval.approval_id
-    
+
     def bind_artifact(
         self,
         workflow_id: str,
@@ -399,20 +399,20 @@ class WorkflowGovernanceService:
     ) -> None:
         """
         Bind an artifact to workflow with hash.
-        
+
         Args:
             workflow_id: Workflow ID
             artifact_type: "contract", "candidate", "manifest", or "snapshot"
             artifact_id: Artifact identifier
             artifact_sha256: SHA-256 hash of artifact
-            
+
         Raises:
             ValueError: If workflow not found or artifact type invalid
         """
         workflow = self.get_workflow(workflow_id)
         if not workflow:
             raise ValueError(f"Workflow not found: {workflow_id}")
-        
+
         if artifact_type == "contract":
             workflow.contract_id = artifact_id
             workflow.contract_sha256 = artifact_sha256
@@ -427,7 +427,7 @@ class WorkflowGovernanceService:
             workflow.snapshot_sha256 = artifact_sha256
         else:
             raise ValueError(f"Invalid artifact type: {artifact_type}")
-        
+
         workflow.updated_at = datetime.now(timezone.utc)
 ```
 
@@ -612,7 +612,7 @@ Governance endpoints will be updated to use `WorkflowGovernanceService`:
 async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
     """
     Approve or reject placement manifest.
-    
+
     CHANGES:
     - Reads workflow from WorkflowGovernanceService instead of _workflow_states dict
     - Calls governance_service.transition_state() for state changes
@@ -622,23 +622,23 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
     workflow = governance_service.get_workflow(workflow_id)
     if not workflow:
         raise HTTPException(404, "Workflow not found")
-    
+
     # Verify workflow is in AWAITING_IMPLEMENTATION_APPROVAL
     if workflow.current_state != CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL:
         raise HTTPException(409, "Wrong state")
-    
+
     # Verify hashes match workflow artifacts
     if payload.manifest_hash != workflow.manifest_sha256:
         raise HTTPException(409, "Manifest hash mismatch")
-    
+
     # Prevent self-approval
     if payload.approved_by == workflow.requester_id:
         raise HTTPException(403, "Self-approval rejected")
-    
+
     # Create approval record
     approval = create_implementation_approval(...)
     governance_service.register_approval(workflow_id, approval)
-    
+
     if payload.approved:
         # Transition to IMPLEMENTING
         governance_service.transition_state(
@@ -655,7 +655,7 @@ async def approve_placement(workflow_id: str, payload: WorkflowApprovalPayload):
             triggered_by=payload.approved_by,
             reason=payload.reason
         )
-    
+
     return WorkflowApprovalResponse(...)
 ```
 
@@ -702,7 +702,7 @@ class WorkflowEngine:
         self.agent_registry = agent_registry or AgentRegistry()
         self.agent_coordinator = agent_coordinator or AgentCoordinator(self.agent_registry)
         self.governance_service = governance_service or WorkflowGovernanceService()
-    
+
     async def execute_workflow_stage(
         self,
         workflow_id: str,
@@ -710,11 +710,11 @@ class WorkflowEngine:
     ) -> Dict[str, Any]:
         """
         Execute agents for current workflow stage.
-        
+
         Args:
             workflow_id: Workflow identifier
             snapshot: Repository snapshot
-            
+
         Returns:
             Execution results
         """
@@ -722,9 +722,9 @@ class WorkflowEngine:
         workflow = self.governance_service.get_workflow(workflow_id)
         if not workflow:
             raise ValueError(f"Workflow not found: {workflow_id}")
-        
+
         current_state = workflow.current_state
-        
+
         # Map canonical state to agent execution
         if current_state == CanonicalWorkflowState.REQUESTED:
             # Execute discovery agents
@@ -734,7 +734,7 @@ class WorkflowEngine:
                 self.agent_registry.get_agent(AgentType.COMPOSER),
                 self.agent_registry.get_agent(AgentType.DEPENDENCY)
             ]
-            
+
             context = AgentContext(
                 task_id=workflow_id,
                 workflow_state=workflow.to_dict(),
@@ -744,9 +744,9 @@ class WorkflowEngine:
                 prior_agent_outputs={},
                 repository_root=Path.cwd()
             )
-            
+
             results = await self.agent_coordinator.execute_sequential(agents, context)
-            
+
             # If successful, transition to DISCOVERY
             if all(r.passed for r in results):
                 self.governance_service.transition_state(
@@ -755,7 +755,7 @@ class WorkflowEngine:
                     triggered_by="system",
                     reason="Discovery agents completed"
                 )
-        
+
         elif current_state == CanonicalWorkflowState.DISCOVERY:
             # Execute contract generation
             # ... then transition to BRIEF_READY
@@ -765,9 +765,9 @@ class WorkflowEngine:
                 triggered_by="system",
                 reason="Engineering contract generated"
             )
-        
+
         # ... additional state mappings
-        
+
         return {"workflow_id": workflow_id, "state": workflow.current_state.value}
 ```
 
@@ -784,7 +784,7 @@ class WorkflowEngine:
 async def create_planning_task(request: TaskCreateRequest):
     """
     DEPRECATED (M2.9 Wave 0): Use POST /workflows instead.
-    
+
     This endpoint will be removed in future versions.
     Migration path: POST /workflows with target_family, target_version, requester_id.
     """
@@ -795,7 +795,7 @@ async def create_planning_task(request: TaskCreateRequest):
         requester_id=request.context.get("user_id", "anonymous"),
         purpose=request.description
     )
-    
+
     # Return task-shaped response for compatibility
     return TaskResponse(
         task_id=workflow.workflow_id,
@@ -974,25 +974,25 @@ Frontend: renders UI step based on backendState
 ```python
 def test_create_workflow():
     """Test workflow creation in REQUESTED state."""
-    
+
 def test_valid_transition():
     """Test valid state transition (REQUESTED â†’ DISCOVERY)."""
-    
+
 def test_invalid_transition():
     """Test invalid transition raises ValueError."""
-    
+
 def test_terminal_state_immutability():
     """Test no transitions allowed from CERTIFIED or REJECTED."""
-    
+
 def test_implementing_authorization_gates():
     """Test IMPLEMENTING transition requires all 6 authorization gates."""
-    
+
 def test_self_approval_prevention():
     """Test self-approval is rejected."""
-    
+
 def test_hash_verification():
     """Test candidate/manifest hash mismatch blocks transition."""
-    
+
 def test_artifact_binding():
     """Test bind_artifact() updates workflow artifacts."""
 ```
@@ -1004,13 +1004,13 @@ def test_artifact_binding():
 ```python
 async def test_full_workflow_lifecycle():
     """Test complete workflow: REQUESTED â†’ CERTIFIED."""
-    
+
 async def test_workflow_rejection_at_gate_1():
     """Test workflow rejection at AWAITING_GATE_1."""
-    
+
 async def test_workflow_engine_integration():
     """Test WorkflowEngine calls governance_service.transition_state()."""
-    
+
 async def test_approval_endpoint_integration():
     """Test approve-placement endpoint transitions workflow state."""
 ```
@@ -1022,13 +1022,13 @@ async def test_approval_endpoint_integration():
 ```python
 def test_create_workflow_endpoint():
     """Test POST /workflows creates workflow in REQUESTED state."""
-    
+
 def test_get_workflow_endpoint():
     """Test GET /workflows/{workflow_id} returns current state."""
-    
+
 def test_bind_artifact_endpoint():
     """Test POST /workflows/{workflow_id}/artifacts binds artifact."""
-    
+
 def test_invalid_workflow_id_returns_404():
     """Test invalid workflow_id returns 404."""
 ```
@@ -1138,7 +1138,7 @@ def workflow_with_approval(governance_service, sample_workflow):
         "man_456",
         "def456..."
     )
-    
+
     # Create and register approval
     approval = create_implementation_approval(
         workflow_id=sample_workflow.workflow_id,
@@ -1152,7 +1152,7 @@ def workflow_with_approval(governance_service, sample_workflow):
         status=ImplementationApprovalStatus.APPROVED
     )
     governance_service.register_approval(sample_workflow.workflow_id, approval)
-    
+
     return sample_workflow
 ```
 
@@ -1345,14 +1345,15 @@ The WorkflowGovernanceService enforces transition validation using the existing 
 **Rejection Paths:**
 - Any gate can transition to REJECTED
 - Automated gates (CANDIDATE_AUDIT, VERIFYING) can reject on verification failure
-- REJECTED is terminal — no further transitions allowed
+- REJECTED is terminal ï¿½ no further transitions allowed
 
 ### 3.2 Terminal State Enforcement
 
 Once a workflow reaches CERTIFIED or REJECTED:
 
 1. inal_status field is set (immutable)
-2. certified_at or ejected_at timestamp recorded
+2. certified_at or
+ejected_at timestamp recorded
 3. 	ransition_state() rejects any further transition attempts with error:
    `python
    if is_terminal_state(workflow.current_state):
@@ -1368,7 +1369,7 @@ Once set, artifact hashes cannot be modified:
 `python
 def bind_artifact(self, workflow_id, artifact_type, artifact_id, artifact_sha256):
     workflow = self.get_workflow(workflow_id)
-    
+
     # Check if hash already set
     existing_hash = getattr(workflow, f"{artifact_type}_sha256", None)
     if existing_hash and existing_hash != artifact_sha256:
@@ -1376,7 +1377,7 @@ def bind_artifact(self, workflow_id, artifact_type, artifact_id, artifact_sha256
             f"{artifact_type} hash already set and cannot be modified. "
             f"Expected: {existing_hash}, Got: {artifact_sha256}"
         )
-    
+
     # Set hash (first time or re-binding with same hash)
     setattr(workflow, f"{artifact_type}_id", artifact_id)
     setattr(workflow, f"{artifact_type}_sha256", artifact_sha256)
@@ -1421,7 +1422,7 @@ GET /workflows/{workflow_id}/can-transition/{to_state}
 POST /governance/workflows/{workflow_id}/approve-gate-1
 - Approves GUI prototype (Gate 1)
 - Calls: workflow_governance.transition_state(
-    workflow_id, 
+    workflow_id,
     CanonicalWorkflowState.GUI_APPROVED,
     triggered_by="user",
     actor_id=approver_id
@@ -1462,7 +1463,7 @@ class WorkflowEngine:
         self.agent_registry = agent_registry
         self.agent_coordinator = agent_coordinator
         self.workflow_governance = workflow_governance  # NEW
-    
+
     async def execute_workflow_stage(
         self,
         workflow_id: str,
@@ -1470,40 +1471,40 @@ class WorkflowEngine:
     ) -> Dict[str, Any]:
         """
         Execute agents for current workflow stage.
-        
-        NO LONGER manages state transitions — that's WorkflowGovernanceService's job.
+
+        NO LONGER manages state transitions ï¿½ that's WorkflowGovernanceService's job.
         Reads current state, executes appropriate agents, returns results.
         Caller is responsible for transitioning state based on results.
         """
         workflow = self.workflow_governance.get_workflow(workflow_id)
         current_state = workflow.current_state
-        
+
         # Map canonical state to agent execution
         if current_state == CanonicalWorkflowState.DISCOVERY:
             return await self._execute_discovery_agents(workflow_id, snapshot)
-        
+
         elif current_state == CanonicalWorkflowState.CANDIDATE_AUDIT:
             return await self._execute_audit_agents(workflow_id, snapshot)
-        
+
         elif current_state == CanonicalWorkflowState.IMPLEMENTING:
             return await self._execute_placement_agents(workflow_id, snapshot)
-        
+
         elif current_state == CanonicalWorkflowState.VERIFYING:
             return await self._execute_verification_agents(workflow_id, snapshot)
-        
+
         else:
             return {"status": "no_agents", "message": f"No agents for state {current_state.value}"}
 `
 
 **Key Changes:**
-1. **Removed:** TaskState usage — workflow_id now maps to CanonicalWorkflowState
-2. **Removed:** State transition logic — WorkflowEngine no longer calls 	ask.state = TaskState.IMPLEMENTING
+1. **Removed:** TaskState usage ï¿½ workflow_id now maps to CanonicalWorkflowState
+2. **Removed:** State transition logic ï¿½ WorkflowEngine no longer calls 	ask.state = TaskState.IMPLEMENTING
 3. **Added:** Dependency on WorkflowGovernanceService for state queries
 4. **Preserved:** Agent orchestration logic via AgentCoordinator
 
 ### 4.3 AgentCoordinator (No Changes Required)
 
-AgentCoordinator remains unchanged — it's already a pure orchestration adapter with no state management. It receives AgentContext and executes agents in sequential/parallel/DAG mode.
+AgentCoordinator remains unchanged ï¿½ it's already a pure orchestration adapter with no state management. It receives AgentContext and executes agents in sequential/parallel/DAG mode.
 
 **Integration:** WorkflowEngine continues to call gent_coordinator.execute_dag() as before.
 
@@ -1519,13 +1520,13 @@ export function useWorkflowState(workflowId: string) {
     fetcher,
     { refreshInterval: 5000 } // Poll every 5s for state updates
   );
-  
+
   return {
     workflow: data as WorkflowResponse,
     isLoading: !data && !error,
     error,
     refresh: mutate,
-    
+
     // Computed properties
     currentState: data?.state?.current,
     isTerminal: data?.state?.is_terminal,
@@ -1704,28 +1705,28 @@ CREATE INDEX idx_transitions_workflow ON state_transitions(workflow_id);
 `python
 def test_create_workflow():
     """Test workflow creation in REQUESTED state."""
-    
+
 def test_valid_transition():
     """Test allowed state transition."""
-    
+
 def test_invalid_transition_blocked():
     """Test that invalid transitions are rejected."""
-    
+
 def test_terminal_state_blocks_transitions():
     """Test that CERTIFIED and REJECTED are terminal."""
-    
+
 def test_gate_2_authorization_checks():
     """Test all six authorization gates for IMPLEMENTING transition."""
-    
+
 def test_self_approval_rejected():
     """Test that self-approval is blocked at Gate 2."""
-    
+
 def test_hash_mismatch_rejected():
     """Test that hash mismatch blocks Gate 2 approval."""
-    
+
 def test_artifact_hash_immutability():
     """Test that artifact hashes cannot be modified after set."""
-    
+
 def test_state_history_recorded():
     """Test that all transitions are recorded in state_history."""
 `
@@ -1740,13 +1741,13 @@ def test_full_workflow_happy_path():
     Test complete workflow: REQUESTED ? CERTIFIED.
     Verifies all state transitions, approvals, and agent executions.
     """
-    
+
 def test_workflow_rejection_at_gate_1():
     """Test rejection path at GUI approval gate."""
-    
+
 def test_workflow_rejection_at_candidate_audit():
     """Test automated rejection when gates fail."""
-    
+
 def test_workflow_with_workflow_engine():
     """
     Test WorkflowEngine integration with WorkflowGovernanceService.
@@ -1761,19 +1762,19 @@ def test_workflow_with_workflow_engine():
 `python
 def test_create_workflow_endpoint():
     """Test POST /workflows"""
-    
+
 def test_get_workflow_endpoint():
     """Test GET /workflows/{workflow_id}"""
-    
+
 def test_transition_endpoint():
     """Test POST /workflows/{workflow_id}/transition"""
-    
+
 def test_approve_placement_endpoint():
     """Test POST /governance/workflows/{workflow_id}/approve-placement"""
-    
+
 def test_approve_placement_self_approval_blocked():
     """Test that self-approval returns 403"""
-    
+
 def test_approve_placement_hash_mismatch():
     """Test that hash mismatch returns 409"""
 `
@@ -1820,7 +1821,7 @@ test('canTransitionTo checks valid transitions', async () => {
 | services/project-ai/app/orchestration/workflow_engine.py | - Add workflow_governance dependency<br>- Replace TaskState with CanonicalWorkflowState<br>- Remove state transition logic<br>- Preserve agent orchestration |
 | services/project-ai/app/api/routes/governance.py | - Add Gate 1 approval endpoint<br>- Modify Gate 2 approval to call workflow_governance.transition_state()<br>- Add Gate 3 approval endpoint<br>- Integrate with WorkflowGovernanceService |
 | services/project-ai/app/api/routes/tasks.py | - Add deprecation warnings<br>- Map to canonical workflow (if needed for transition)<br>- **Consider removing in M3.0** |
-| services/project-ai/app/models/task_state.py | - Update docstring: "INTERNAL ONLY — agent execution tracking"<br>- Add warning: "Do not use for workflow state" |
+| services/project-ai/app/models/task_state.py | - Update docstring: "INTERNAL ONLY ï¿½ agent execution tracking"<br>- Add warning: "Do not use for workflow state" |
 | services/project-ai/app/main.py | - Register workflows router<br>- Initialize WorkflowGovernanceService singleton |
 | pps/skillhubcore-admin/src/app/(admin)/tools/project-llm/context/ProjectLlmContext.tsx | - Add deprecation comment<br>- Prepare for removal in M3.0 |
 
@@ -1829,8 +1830,8 @@ test('canTransitionTo checks valid transitions', async () => {
 | File | Status |
 |------|--------|
 | services/project-ai/app/models/creation.py | Deprecate WorkflowStatus, CreationWorkflow (keep DesignSource) |
-| services/project-ai/app/api/routes/creation.py | Already returns 405 — remove in M3.0 |
-| services/project-ai/app/api/schemas/creation.py | Deprecate — remove in M3.0 |
+| services/project-ai/app/api/routes/creation.py | Already returns 405 ï¿½ remove in M3.0 |
+| services/project-ai/app/api/schemas/creation.py | Deprecate ï¿½ remove in M3.0 |
 
 ---
 
@@ -1855,7 +1856,7 @@ Verification Modules (brand, theme, composer, runtime, browser)
 
 **Workflow Creation:**
 `
-User (Frontend) 
+User (Frontend)
   ? POST /workflows {family, version, requester_id}
   ? WorkflowGovernanceService.create_workflow()
   ? ProjectLLMWorkflow (state: REQUESTED)
@@ -1925,7 +1926,7 @@ logger.info(
     f"expected {expected_hash}, got {provided_hash}",
     extra={"workflow_id": workflow_id, "artifact_type": "manifest"}
 )
-raise WorkflowStateError("Manifest hash mismatch — potential tampering detected")
+raise WorkflowStateError("Manifest hash mismatch ï¿½ potential tampering detected")
 `
 
 ---
@@ -1937,14 +1938,14 @@ raise WorkflowStateError("Manifest hash mismatch — potential tampering detected"
 **1. User navigates away during approval:**
 - **Workflow state:** Persisted in backend (in-memory or DB)
 - **Frontend state:** Reloads from /workflows/{id} on page refresh
-- **Resolution:** No data loss — approval decision preserved in state_history
+- **Resolution:** No data loss ï¿½ approval decision preserved in state_history
 
 **2. Concurrent approval attempts:**
-- **M2.9 Wave 0:** In-memory dict — last write wins (acceptable for single-instance deployment)
+- **M2.9 Wave 0:** In-memory dict ï¿½ last write wins (acceptable for single-instance deployment)
 - **M3.0+:** Database with optimistic locking via updated_at timestamp
   `sql
-  UPDATE workflows 
-  SET current_state = ?, updated_at = NOW() 
+  UPDATE workflows
+  SET current_state = ?, updated_at = NOW()
   WHERE workflow_id = ? AND updated_at = ?
   `
 
@@ -1976,7 +1977,8 @@ raise WorkflowStateError("Manifest hash mismatch — potential tampering detected"
 
 **Invariant 5:** Every state transition is recorded in state_history with timestamp and actor.
 
-**Invariant 6:** equester_id and pproved_by must differ at all approval gates (no self-approval).
+**Invariant 6:**
+equester_id and pproved_by must differ at all approval gates (no self-approval).
 
 **Invariant 7:** A workflow in AWAITING_GATE_1, AWAITING_IMPLEMENTATION_APPROVAL, or AWAITING_GATE_2 cannot progress without explicit human approval action.
 
@@ -1987,21 +1989,21 @@ These invariants are enforced by WorkflowGovernanceService:
 `python
 def transition_state(self, workflow_id, to_state, triggered_by, actor_id, evidence_id, reason):
     workflow = self.get_workflow(workflow_id)
-    
+
     # Invariant 2: Terminal state check
     if is_terminal_state(workflow.current_state):
         raise WorkflowStateError("Cannot transition from terminal state")
-    
+
     # Invariant 1: Valid transition check
     if not is_valid_transition(workflow.current_state, to_state):
         raise WorkflowStateError(f"Invalid transition: {workflow.current_state} ? {to_state}")
-    
+
     # Invariant 7: Gate approval check
     if to_state == CanonicalWorkflowState.IMPLEMENTING:
         can_proceed, auth_reason = can_transition_to_implementing(...)
         if not can_proceed:
             raise WorkflowStateError(f"Authorization failed: {auth_reason}")
-    
+
     # Invariant 5: Record transition
     transition = StateTransition(
         from_state=workflow.current_state,
@@ -2013,7 +2015,7 @@ def transition_state(self, workflow_id, to_state, triggered_by, actor_id, eviden
         reason=reason
     )
     workflow.state_history.append(transition)
-    
+
     # Update state
     workflow.current_state = to_state
     workflow.updated_at = datetime.now(timezone.utc)
@@ -2026,9 +2028,10 @@ def transition_state(self, workflow_id, to_state, triggered_by, actor_id, eviden
 ### 10.1 Unit Testable Components
 
 **WorkflowGovernanceService:**
-- **Pure functions:** alidate_transition(), is_terminal(), equires_approval()
+- **Pure functions:** alidate_transition(), is_terminal(),
+equires_approval()
 - **State mutations:** create_workflow(), 	ransition_state(), ind_artifact()
-- **Mocking:** Not required — service operates on in-memory dict, can be instantiated fresh per test
+- **Mocking:** Not required ï¿½ service operates on in-memory dict, can be instantiated fresh per test
 
 **CanonicalWorkflowState validation functions:**
 - **Pure functions:** is_valid_transition(), is_gate_state(), is_terminal_state(), can_transition_to_implementing()
@@ -2087,21 +2090,21 @@ class WorkflowBuilder:
         self.target_version = "I7"
         self.requester_id = "user_123"
         self.current_state = CanonicalWorkflowState.REQUESTED
-    
+
     def in_state(self, state: CanonicalWorkflowState):
         self.current_state = state
         return self
-    
+
     def with_candidate(self, candidate_id, candidate_sha256):
         self.candidate_id = candidate_id
         self.candidate_sha256 = candidate_sha256
         return self
-    
+
     def with_manifest(self, manifest_id, manifest_sha256):
         self.manifest_id = manifest_id
         self.manifest_sha256 = manifest_sha256
         return self
-    
+
     def build(self) -> ProjectLLMWorkflow:
         return ProjectLLMWorkflow(
             workflow_id=self.workflow_id,
@@ -2171,7 +2174,7 @@ workflow = (WorkflowBuilder()
 
 - [ ] Add architecture freeze report (rchitecture-freeze-report.json)
 - [ ] Run pytest suite: pytest services/project-ai/tests -q
-- [ ] Run frontend tests: 
+- [ ] Run frontend tests:
 pm test -- --runInBand
 - [ ] Create evidence ledger entry for Wave 0 completion
 
@@ -2209,30 +2212,30 @@ pm test -- --runInBand
 
 ### Risk 1: Frontend Breaks During Migration
 
-**Likelihood:** Medium  
-**Impact:** High  
+**Likelihood:** Medium
+**Impact:** High
 **Mitigation:** Dual-write period (M2.9) where both localStorage and backend API are updated. Frontend can fall back to localStorage if API fails.
 
 ### Risk 2: Concurrent Workflow Edits
 
-**Likelihood:** Low (single user per workflow expected)  
-**Impact:** Medium  
-**Mitigation M2.9:** In-memory storage — last write wins (acceptable for single-instance deployment).  
+**Likelihood:** Low (single user per workflow expected)
+**Impact:** Medium
+**Mitigation M2.9:** In-memory storage ï¿½ last write wins (acceptable for single-instance deployment).
 **Mitigation M3.0:** Optimistic locking with updated_at timestamp check.
 
 ### Risk 3: Approval Gate Bypass
 
-**Likelihood:** Low  
-**Impact:** Critical  
-**Mitigation:** 
+**Likelihood:** Low
+**Impact:** Critical
+**Mitigation:**
 - All transitions through WorkflowGovernanceService (single point of enforcement)
 - Gate states cannot be skipped (validated by VALID_TRANSITIONS dict)
 - Authorization failures logged for audit
 
 ### Risk 4: Agent Execution Without Approval
 
-**Likelihood:** Medium (if WorkflowEngine integration incorrect)  
-**Impact:** High  
+**Likelihood:** Medium (if WorkflowEngine integration incorrect)
+**Impact:** High
 **Mitigation:**
 - WorkflowEngine checks current state before executing agents
 - Integration tests verify agents not executed in wrong state
@@ -2240,9 +2243,9 @@ pm test -- --runInBand
 
 ### Risk 5: Data Loss During In-Memory Storage
 
-**Likelihood:** High (process restart loses workflows)  
-**Impact:** Medium  
-**Mitigation M2.9:** Document limitation — workflows lost on restart.  
+**Likelihood:** High (process restart loses workflows)
+**Impact:** Medium
+**Mitigation M2.9:** Document limitation ï¿½ workflows lost on restart.
 **Mitigation M3.0:** Persistent database storage.
 
 ---

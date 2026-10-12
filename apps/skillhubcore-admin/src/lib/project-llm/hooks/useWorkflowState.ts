@@ -1,6 +1,6 @@
 /**
  * React hook for fetching CanonicalWorkflowState from backend.
- * 
+ *
  * Fetches real workflow state from the backend; never returns fabricated data.
  * Provides loading and error states for proper UI feedback.
  */
@@ -40,7 +40,7 @@ export function useWorkflowState(workflowId: string): UseWorkflowStateResult {
 
       try {
         const workflowState = await projectLlmClient.getWorkflowState(workflowId);
-        
+
         if (!isCancelled) {
           setState(workflowState);
           setIsLoading(false);

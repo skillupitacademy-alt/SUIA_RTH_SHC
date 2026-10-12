@@ -34,7 +34,7 @@ Located in `services/project-ai/app/placement/`:
 - Framework: pytest with pytest-asyncio
 - Test command: `pytest` (from services/project-ai/)
 - Test location: `services/project-ai/tests/`
-- Existing patterns: 
+- Existing patterns:
   - Unit tests in `tests/unit/`
   - Integration tests in `tests/`
   - Security tests in `tests/security/`
@@ -47,67 +47,67 @@ Located in `services/project-ai/app/placement/`:
 ### Phase 1: Route Authorization Audit and Enforcement
 
 - [ ] 1. **Audit all workflow routes in workflows.py for authorization consistency**
-      
+
       Read `services/project-ai/app/api/routes/workflows.py` and identify all route handlers. Document which currently use `get_current_user` vs `require_contract_admin`. Cross-reference with the RBAC matrix to identify the 22 mutating routes.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/workflows.py` (read only, document findings)
       - `.agents/evidence/gate-e2-authorization-audit.json` (create - structured audit report)
-      
+
       **Verify**: Document contains JSON with route_path, http_method, handler_function, current_auth, required_auth, needs_change boolean for all routes.
 
 ---
 
 - [ ] 2. **Enforce require_contract_admin on POST /workflows/{id}/placement (create_placement)**
-      
+
       Replace `user: AuthenticatedPrincipal = Depends(get_current_user)` with `user: AuthenticatedPrincipal = Depends(require_contract_admin)` in the `create_placement` handler (line ~430). This is a privileged operation that creates placement decisions requiring matching and scoring.
-      
+
       **Rationale**: Per RBAC matrix row 24, `POST /workflows/{id}/placement` requires `contract_admin` role as it creates placement decisions that bind candidates to manifests - a privileged governance operation.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: Run `pytest tests/security/test_rbac.py -v` - all existing RBAC tests pass. Run `pytest tests/ -k placement -v` - all placement tests pass.
 
 ---
 
 - [ ] 3. **Enforce require_contract_admin on POST /workflows/{id}/placement/override (override_placement)**
-      
+
       Replace `user: AuthenticatedPrincipal = Depends(get_current_user)` with `user: AuthenticatedPrincipal = Depends(require_contract_admin)` in the `override_placement` handler (line ~470). Manual overrides are critical governance operations requiring admin approval.
-      
+
       **Rationale**: Per RBAC matrix row 25, placement overrides require `contract_admin` with mandatory reason for audit trail. This is an Override/Emergency operation with separation of duties enforcement.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: Run `pytest tests/security/test_rbac.py -v` - all RBAC tests pass.
 
 ---
 
 - [ ] 4. **Enforce require_contract_admin on POST /workflows/{id}/artifacts (bind_artifact)**
-      
+
       Replace `user: AuthenticatedPrincipal = Depends(get_current_user)` with `user: AuthenticatedPrincipal = Depends(require_contract_admin)` in the `bind_artifact` handler (line ~280). Artifact binding with SHA-256 hash is a privileged operation affecting workflow integrity.
-      
+
       **Rationale**: Per RBAC matrix row 22, artifact binding requires `contract_admin` as it associates artifacts (contract, candidate, manifest, snapshot) with SHA-256 hashes for integrity verification.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: Run `pytest tests/ -k artifact -v` - all artifact-related tests pass.
 
 ---
 
 - [ ] 5. **Review and enforce authorization on POST /workflows/{id}/transition (transition_workflow)**
-      
-      This route currently uses `get_current_user` (line ~200). Per RBAC matrix row 20, state transitions need role policy per transition type. The route comment says "NEEDS_DECISION" for role requirements. 
-      
+
+      This route currently uses `get_current_user` (line ~200). Per RBAC matrix row 20, state transitions need role policy per transition type. The route comment says "NEEDS_DECISION" for role requirements.
+
       **Decision**: Keep `get_current_user` for now, but add internal authorization logic that checks the target state. For transitions to `IMPLEMENTING`, enforce `contract_admin` role. For other transitions, allow authenticated users. Document this decision in the handler's docstring.
-      
+
       **Rationale**: State transitions have varying authorization requirements. Read-only transitions (REQUESTED→CANDIDATE_AUDIT) can be authenticated-only, but privileged transitions (→IMPLEMENTING) require admin role per governance gates.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/workflows.py`
-      
+
       **Verify**: Run `pytest tests/ -k transition -v` - all transition tests pass.
 
 ---
@@ -115,37 +115,37 @@ Located in `services/project-ai/app/placement/`:
 ### Phase 2: Candidate Routes Authorization (candidate.py)
 
 - [ ] 6. **Audit candidate.py routes for authorization gaps**
-      
+
       Read `services/project-ai/app/api/routes/candidate.py` and identify all mutating routes. Per the evidence file showing `execute_placement` at line 809 already uses `require_contract_admin`, verify which other routes need enforcement.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/candidate.py` (read only)
       - `.agents/evidence/gate-e2-authorization-audit.json` (update - add candidate routes)
-      
+
       **Verify**: Audit JSON updated with candidate route findings.
 
 ---
 
 - [ ] 7. **Enforce require_contract_admin on POST /candidates/{id}/classify (classify_candidate)**
-      
+
       Per RBAC matrix row 33, classification is a privileged analysis operation requiring `contract_admin`. Locate the `classify_candidate` handler and replace `get_current_user` with `require_contract_admin`.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/candidate.py`
-      
+
       **Verify**: Run `pytest tests/ -k candidate -v` - all candidate tests pass.
 
 ---
 
 - [ ] 8. **Enforce require_contract_admin on POST /candidates/{id}/manifest (generate_manifest)**
-      
+
       Per RBAC matrix row 35, manifest generation creates binding decisions requiring `contract_admin`. Locate the `generate_manifest` handler and replace `get_current_user` with `require_contract_admin`.
-      
+
       **Rationale**: Manifest generation creates placement manifests that define where candidates will be placed - a privileged operation that binds deployment decisions.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/candidate.py`
-      
+
       **Verify**: Run `pytest tests/ -k manifest -v` - all manifest tests pass.
 
 ---
@@ -153,31 +153,31 @@ Located in `services/project-ai/app/placement/`:
 ### Phase 3: Governance Routes Authorization (governance.py)
 
 - [ ] 9. **Audit governance.py routes for authorization consistency**
-      
+
       Read `services/project-ai/app/api/routes/governance.py`. The evidence shows line 322 already uses `require_contract_admin` for `approve_placement_workflow`. Verify all approval and governance routes use appropriate authorization.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/governance.py` (read only)
       - `.agents/evidence/gate-e2-authorization-audit.json` (update - add governance routes)
-      
+
       **Verify**: Audit JSON updated with governance route findings.
 
 ---
 
 - [ ] 10. **Enforce authorization on remaining governance approval routes**
-      
+
       Review approval routes from RBAC matrix:
       - Row 9: POST /tasks/{id}/approve - requires `contract_admin` with separation of duties
       - Row 10: POST /tasks/{id}/reject - requires `contract_admin`
       - Row 14: POST /approvals/{id}/approve - requires `contract_reviewer` with separation of duties
       - Row 15: POST /approvals/{id}/reject - requires `contract_reviewer`
-      
+
       Apply appropriate role enforcement (admin or reviewer) to each handler.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/api/routes/governance.py`
       - May need to create `require_contract_reviewer` if not already exists (check `app/auth/dependencies.py`)
-      
+
       **Verify**: Run `pytest tests/security/test_rbac.py -v` - all RBAC tests pass.
 
 ---
@@ -185,11 +185,11 @@ Located in `services/project-ai/app/placement/`:
 ### Phase 4: Test Suite Development (20-25 tests)
 
 - [ ] 11. **Create test_w5_placement_authorization.py with 25 authorization tests**
-      
+
       Create comprehensive test suite covering all placement engine route authorization patterns. Test file location: `services/project-ai/tests/security/test_w5_placement_authorization.py`
-      
+
       **Test categories** (25 tests total):
-      
+
       **A. Placement Route Tests (8 tests)**
       1. `test_create_placement_requires_contract_admin` - POST /workflows/{id}/placement with contract_admin succeeds
       2. `test_create_placement_denies_authenticated_non_admin` - authenticated user without admin role gets 403
@@ -199,37 +199,37 @@ Located in `services/project-ai/app/placement/`:
       6. `test_override_placement_requires_reason` - override without reason fails validation
       7. `test_list_conflicts_allows_authenticated` - GET /placement/conflicts allows authenticated users
       8. `test_placement_super_admin_bypass` - super_admin can access all placement routes
-      
+
       **B. Artifact Binding Tests (4 tests)**
       9. `test_bind_artifact_requires_contract_admin` - artifact binding with admin succeeds
       10. `test_bind_artifact_denies_contract_reviewer` - reviewer role gets 403
       11. `test_bind_artifact_validates_artifact_type` - invalid artifact type fails
       12. `test_bind_artifact_validates_sha256_format` - malformed SHA-256 fails validation
-      
+
       **C. Candidate Route Tests (5 tests)**
       13. `test_classify_candidate_requires_contract_admin` - classification with admin succeeds
       14. `test_classify_candidate_denies_authenticated` - authenticated non-admin gets 403
       15. `test_generate_manifest_requires_contract_admin` - manifest generation with admin succeeds
       16. `test_generate_manifest_denies_contract_viewer` - viewer role gets 403
       17. `test_execute_placement_requires_contract_admin` - placement execution with admin succeeds
-      
+
       **D. Workflow Transition Tests (4 tests)**
       18. `test_transition_to_implementing_requires_contract_admin` - transition to IMPLEMENTING with admin succeeds
       19. `test_transition_to_implementing_denies_authenticated` - non-admin cannot transition to IMPLEMENTING
       20. `test_transition_to_candidate_audit_allows_authenticated` - non-privileged transitions allow authenticated users
       21. `test_transition_validates_state_machine` - invalid transitions rejected
-      
+
       **E. Cross-Brand Boundary Tests (4 tests)**
       22. `test_placement_enforces_brand_boundary` - user from brand A cannot access brand B workflow
       23. `test_artifact_binding_enforces_brand_boundary` - cross-brand artifact binding fails
       24. `test_super_admin_bypasses_brand_boundary` - super_admin can access any brand
       25. `test_workflow_creation_sets_brand_from_token` - new workflow inherits requester's brand
-      
+
       **Test infrastructure**: Use pytest fixtures for JWT token generation, mock repositories, and AsyncSession. Follow patterns from `tests/security/test_rbac.py` (lines 14-30 show fixture patterns).
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/tests/security/test_w5_placement_authorization.py` (create)
-      
+
       **Verify**: Run `pytest tests/security/test_w5_placement_authorization.py -v` - all 25 tests pass (0 failures, 0 skipped).
 
 ---
@@ -237,41 +237,41 @@ Located in `services/project-ai/app/placement/`:
 ### Phase 5: Integration with Evidence and Artifact Policies
 
 - [ ] 12. **Verify artifact_policy.py integration with placement routes**
-      
+
       Read `services/project-ai/app/placement/placement_engine.py` to confirm it imports and uses `artifact_policy.py` functions (`determine_action`, `get_target_path`, `find_semantic_match`). Verify the placement engine enforces ADD/REUSE/EXTEND/UPDATE/REJECT logic.
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/app/placement/placement_engine.py` (read only)
       - `.agents/evidence/gate-e2-policy-integration.json` (create - document integration points)
-      
+
       **Verify**: Document shows artifact_policy import, function calls, and enforcement points.
 
 ---
 
 - [ ] 13. **Verify evidence_policy.py integration with final gate approval**
-      
+
       Already verified in workflows.py line 539: `from app.governance.evidence_policy import EvidenceResult, validate_final_gate_evidence, FINAL_GATE_POLICY`. The approve_final_certification handler (line ~520) calls `validate_final_gate_evidence` before FinalGateController. This integration is complete.
-      
+
       Document the integration for Gate E-2 certification.
-      
-      **Files**: 
+
+      **Files**:
       - `.agents/evidence/gate-e2-policy-integration.json` (update - add evidence_policy integration)
-      
+
       **Verify**: Document shows evidence_policy import at line 539, validation call before line 570, and fail-closed enforcement with 409 error on policy violation.
 
 ---
 
 - [ ] 14. **Add policy enforcement tests to test suite**
-      
+
       Add 3 integration tests to `test_w5_placement_authorization.py`:
-      
+
       26. `test_placement_respects_artifact_policy` - placement engine calls artifact_policy.determine_action
       27. `test_final_gate_enforces_evidence_policy` - approve_final rejects if evidence_policy validation fails
       28. `test_stale_evidence_rejected` - evidence older than 24 hours rejected per FINAL_GATE_POLICY
-      
-      **Files**: 
+
+      **Files**:
       - `services/project-ai/tests/security/test_w5_placement_authorization.py` (update)
-      
+
       **Verify**: Run `pytest tests/security/test_w5_placement_authorization.py -v` - all 28 tests pass.
 
 ---
@@ -279,45 +279,45 @@ Located in `services/project-ai/app/placement/`:
 ### Phase 6: Documentation and Certification
 
 - [ ] 15. **Create Gate E-2 implementation evidence report**
-      
+
       Create structured evidence report documenting:
       - Authorization enforcement summary (routes changed, decorators applied)
       - Test suite results (28 tests, 100% pass rate)
       - Policy integration verification (artifact_policy and evidence_policy)
       - Security gaps closed (20+ routes now enforce contract_admin)
       - RBAC matrix compliance status (all 22 mutating routes enforced)
-      
-      **Files**: 
+
+      **Files**:
       - `.agents/evidence/gate-e2-implementation-report.json` (create)
-      
+
       **Verify**: JSON report is valid, complete, and includes test execution timestamps.
 
 ---
 
 - [ ] 16. **Update RBAC matrix with current authorization state**
-      
+
       Update the `current_auth` column in gate-b-route-rbac-matrix.csv for all routes modified in this implementation. Change from `get_current_user` to `require_contract_admin` for routes 22, 24, 25, 33, 35, etc.
-      
-      **Files**: 
+
+      **Files**:
       - `.agents/tasks/gate-b-route-rbac-matrix.csv` (update - do NOT modify structure, only update current_auth column values)
-      
+
       **Verify**: CSV file validates with same row count (40 routes), updated current_auth values match implementation.
 
 ---
 
 - [ ] 17. **Run full test suite and generate final report**
-      
+
       Execute comprehensive test run covering:
       - All security tests: `pytest tests/security/ -v`
       - All placement tests: `pytest tests/placement/ -v`
       - All route tests: `pytest tests/ -k "test_auth or test_rbac" -v`
       - Full suite: `pytest tests/ -v --tb=short`
-      
+
       Capture test results (pass/fail/skip counts, execution time) for certification.
-      
-      **Files**: 
+
+      **Files**:
       - `.agents/evidence/gate-e2-test-results.txt` (create - capture pytest output)
-      
+
       **Verify**: All tests pass with 0 failures. Report shows test count ≥ 28 for new authorization tests.
 
 ---
@@ -339,7 +339,7 @@ Located in `services/project-ai/app/placement/`:
 
 **Risk**: Changing authorization from `get_current_user` to `require_contract_admin` may break existing functionality if client code expects authenticated users to access these endpoints.
 
-**Mitigation**: 
+**Mitigation**:
 - Review existing test failures after enforcement changes
 - If legitimate use cases exist for authenticated non-admin access, create separate read-only endpoints
 - Ensure all mutating operations require admin; read operations can remain authenticated-only

@@ -2,7 +2,7 @@
 
 ## Context
 
-**Branch:** m2-project-ai-canonical-wiring (base 5acbd7b3, W0 complete)  
+**Branch:** m2-project-ai-canonical-wiring (base 5acbd7b3, W0 complete)
 **Task:** M2.9 Wave 1C — Legacy Creation Authority Cleanup
 
 W0 established the canonical workflow authority:

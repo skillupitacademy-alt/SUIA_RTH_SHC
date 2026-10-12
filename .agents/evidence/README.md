@@ -1,7 +1,7 @@
 # Canonical Evidence System
 
-**Location**: `.agents/evidence/`  
-**Status**: CANONICAL (since Wave 1D, commit 7af488f9)  
+**Location**: `.agents/evidence/`
+**Status**: CANONICAL (since Wave 1D, commit 7af488f9)
 **Updated**: 2026-10-08 (M2.9 R0 — Evidence Authority Reconciliation)
 
 This directory contains the **single source of truth** for M2.9 wave-based multi-agent pipeline evidence.

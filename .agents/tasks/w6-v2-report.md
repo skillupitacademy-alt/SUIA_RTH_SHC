@@ -91,7 +91,7 @@ All 6 M2.9 canonical tables exist and are properly defined:
 - **Status:** ✅ EXISTS
 - **Tables Defined:** All 6 M2.9 canonical tables
 - **Migration Authority:** Drizzle ORM (confirmed)
-- **Architecture Notes:** 
+- **Architecture Notes:**
   - All tables use project_ai_* namespace
   - Proper foreign key relationships with ON DELETE actions
   - Comprehensive indexing strategy on foreign keys, hash fields, and query patterns

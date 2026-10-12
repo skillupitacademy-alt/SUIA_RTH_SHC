@@ -1,7 +1,7 @@
 # FEAT-000: Database Discovery Report — M2.9 R3 Durable Persistence Layer
 
-**Discovery Date:** 2025-01-XX  
-**Database:** `tutorial_prod` (Neon PostgreSQL, hosted on ap-southeast-1)  
+**Discovery Date:** 2025-01-XX
+**Database:** `tutorial_prod` (Neon PostgreSQL, hosted on ap-southeast-1)
 **Purpose:** Establish migration authority and architecture decisions for Project AI persistence layer
 
 ---
@@ -60,9 +60,9 @@ DATABASE_URL_TUTORIAL=postgresql://neondb_owner:npg_QjFse2RHgY1h@ep-solitary-hil
 DATABASE_DIRECT_URL_TUTORIAL=postgresql://neondb_owner:npg_QjFse2RHgY1h@ep-solitary-hill-a1m0s7zl.ap-southeast-1.aws.neon.tech/tutorial_prod?sslmode=require&channel_binding=require
 ```
 
-**Host:** `ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech` (pooled)  
-**Port:** Default PostgreSQL (5432)  
-**Database Name:** `tutorial_prod`  
+**Host:** `ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech` (pooled)
+**Port:** Default PostgreSQL (5432)
+**Database Name:** `tutorial_prod`
 **Driver:** Neon Serverless (`@neondatabase/serverless`) for TypeScript, `asyncpg` for Python
 
 **Python Connection Pattern:**
@@ -369,9 +369,9 @@ async def lifespan(app: FastAPI):
     # Startup: validate database connectivity
     from app.database.session import validate_database_connectivity
     await validate_database_connectivity()
-    
+
     yield
-    
+
     # Shutdown: close database connections
     from app.database.session import close_db
     await close_db()

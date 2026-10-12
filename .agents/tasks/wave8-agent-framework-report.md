@@ -1,7 +1,7 @@
 # Wave 8: Multi-Agent Framework Execution Report
 
-**Status:** ✅ COMPLETE  
-**Date:** 2025-01-26  
+**Status:** ✅ COMPLETE
+**Date:** 2025-01-26
 **Branch:** m2-project-ai-foundation
 
 ## Executive Summary
@@ -245,7 +245,7 @@ if failed_agents:
 class AgentCoordinator:
     def __init__(self):
         self._execution_history: List[AgentResult] = []
-    
+
     async def execute_agent(self, agent_id, context):
         result = await self._execute_agent_capabilities(agent, context)
         self._execution_history.append(result)  # Persist
@@ -576,7 +576,7 @@ All success criteria met. Ready for Wave 9 (Evidence Reconciliation) and Wave 10
 
 ---
 
-**Delivered by:** Wave 8 Agent Framework Implementation  
-**Commit:** `feat(wave8): multi-agent framework with DAG orchestration and real capability execution`  
-**Tests:** ✅ 30 new tests, all passing  
+**Delivered by:** Wave 8 Agent Framework Implementation
+**Commit:** `feat(wave8): multi-agent framework with DAG orchestration and real capability execution`
+**Tests:** ✅ 30 new tests, all passing
 **Verification:** ✅ No regressions, existing tests passing

@@ -1,9 +1,9 @@
 # PROJECT AI WORKFLOW AGENT — LAUNCH PROMPT
 ## Complete Project LLM Implementation from Current Repository State
 
-**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`  
-**Branch:** `m2-project-ai-foundation`  
-**Current HEAD:** `7c6b607f` (2026-01-XX M3 Foundation)  
+**Repository:** `skillupitacademy-alt/SUIA_RTH_SHC`
+**Branch:** `m2-project-ai-foundation`
+**Current HEAD:** `7c6b607f` (2026-01-XX M3 Foundation)
 **Target:** Project LLM Certification-Ready State
 
 ---
@@ -78,7 +78,7 @@ You are **Project AI Workflow Orchestrator**. Your responsibility is to complete
 - **Certification gates:** Defined but not executing real verification
   - Current: `for gate in gates: gate.status = PASS`
   - Required: Real deterministic checks per gate type
-  
+
 - **Candidate comparison:** HTML classification exists, but not evidence-backed canonical placement
   - Current: Hard-coded similarity scores
   - Required: Repository snapshot → canonical artifact → exact placement decision
@@ -621,7 +621,7 @@ evidence_graph = load_evidence_graph()
 for canonical_block in canonical_blocks:
     structural_similarity = compare_structure(candidate, canonical_block)
     contract_compatibility = compare_contracts(candidate, canonical_block)
-    
+
     if structural_similarity > threshold and contract_compatibility:
         action = determine_placement_action(candidate, canonical_block)
         target_path = determine_target_path(canonical_block, action)
@@ -785,19 +785,19 @@ composition = workflow["composition"]
 
 for component_type, source in composition.items():
     component = resolve_component(source)
-    
+
     # Type compatibility
     verify_types_compatible(component, composition)
-    
+
     # Version compatibility
     verify_versions_compatible(component, composition)
-    
+
     # Registry compatibility
     verify_registry_compatible(component, composition)
-    
+
     # Renderer compatibility
     verify_renderer_compatible(component, composition)
-    
+
     # Runtime compatibility
     verify_runtime_compatible(component, composition)
 
@@ -877,8 +877,8 @@ else:
 | 15 | - | Mix & Match | `services/project-ai/app/api/routes/creation.py` | No |
 | 16 | - | UI | `apps/skillhubcore-admin/src/app/(authenticated)/project-ai/` | Yes*** |
 
-\* PA-04 and PA-05 may run in parallel if file scopes do not overlap  
-** PA-11 may run partially parallel with PA-10 if contracts are stable  
+\* PA-04 and PA-05 may run in parallel if file scopes do not overlap
+** PA-11 may run partially parallel with PA-10 if contracts are stable
 *** UI components may be developed in parallel if properly scoped
 
 ---

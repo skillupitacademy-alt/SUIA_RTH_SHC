@@ -1,7 +1,7 @@
 # Migration Guide: Legacy /creation to Canonical Workflow
 
-**Version:** M2.9 Wave 1C  
-**Status:** Complete  
+**Version:** M2.9 Wave 1C
+**Status:** Complete
 **Branch:** m2-project-ai-canonical-wiring
 
 ## Overview
@@ -143,16 +143,16 @@ class CreationMode(str, Enum):
 class DesignSource(str, Enum):
     """
     Indicates where block design originates, WITHOUT bypassing canonical workflow.
-    
+
     All design sources follow the same CanonicalWorkflowState lifecycle.
     DesignSource controls WHAT is discovered, not HOW workflow proceeds.
     """
     REPOSITORY_CANONICAL = "REPOSITORY_CANONICAL"
     # Design from existing canonical blocks (I1-I6, C1-C5)
-    
+
     EXTERNAL_AI_PROTOTYPE = "EXTERNAL_AI_PROTOTYPE"
     # Design created by External AI based on requirements + repository context
-    
+
     USER_SPECIFICATION = "USER_SPECIFICATION"
     # Design specified directly by user with explicit requirements
 ```

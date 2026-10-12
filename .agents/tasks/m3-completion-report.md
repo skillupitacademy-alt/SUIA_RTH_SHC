@@ -1,7 +1,7 @@
 # M3 Completion Report: Candidate Block Foundation
 
-**Branch:** `m2-project-ai-foundation`  
-**Evaluation Date:** 2026-10-06  
+**Branch:** `m2-project-ai-foundation`
+**Evaluation Date:** 2026-10-06
 **Final Verdict:** ✅ M2_COMPLIANT_M3_FOUNDATION_COMPLETE
 
 ---
@@ -164,7 +164,7 @@ def test_manifest_hash_is_security_boundary():
         f"/approvals/{approval_id}/approve",
         json=malicious_approve
     )
-    
+
     # Attack prevented by hash verification ✅
     assert attack_response.status_code == 409
     assert attack_response.json()["detail"]["error"] == "MANIFEST_CHANGED"
@@ -527,8 +527,8 @@ The system is ready for M3.5 LLM integration and runtime verification phases.
 
 ---
 
-**Report Generated:** 2026-10-06  
-**Branch:** `m2-project-ai-foundation`  
-**Evaluator:** M3 Final Gate Validator  
+**Report Generated:** 2026-10-06
+**Branch:** `m2-project-ai-foundation`
+**Evaluator:** M3 Final Gate Validator
 **Verification Level:** COMPLETE
 

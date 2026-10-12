@@ -89,10 +89,10 @@ Error: Duplicate evidenceId detected: evidence-37b036a9f565d772
 
 ## Summary
 
-✅ **Primary goal achieved:** All integration tests pass  
-✅ **Root cause fixed:** Duplicate evidenceId creation eliminated via collector deduplication  
-✅ **No regressions:** All 212 tests passing, TypeScript clean  
-✅ **Architecture improved:** Single point of deduplication for all scanners  
+✅ **Primary goal achieved:** All integration tests pass
+✅ **Root cause fixed:** Duplicate evidenceId creation eliminated via collector deduplication
+✅ **No regressions:** All 212 tests passing, TypeScript clean
+✅ **Architecture improved:** Single point of deduplication for all scanners
 ✅ **M2.1 compatibility:** Schema version 1.1.0 fully integrated
 
 The fix implements the exact strategy outlined in `scanner-dedup-plan.md` and maintains the normalizer's strict duplicate detection as a safety check while preventing duplicates upstream.

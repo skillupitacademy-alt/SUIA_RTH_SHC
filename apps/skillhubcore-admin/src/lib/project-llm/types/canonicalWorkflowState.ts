@@ -1,9 +1,9 @@
 /**
  * TypeScript types mirroring Python CanonicalWorkflowState and related models.
- * 
+ *
  * Source of truth: services/project-ai/app/orchestration/canonical_workflow.py
  * DO NOT diverge from backend enum values.
- * 
+ *
  * Last synchronized: M2.9 Wave 2 R4
  */
 

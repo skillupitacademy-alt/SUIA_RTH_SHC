@@ -1,14 +1,14 @@
 # M2.9 Wave 4 Implementation Plan: Human Implementation Approval Gate
 
-**Branch:** m2-project-ai-canonical-wiring  
-**W3 Baseline Commits:** 5aca876b (preflight fix), 22214ef6 (W3 implementation)  
+**Branch:** m2-project-ai-canonical-wiring
+**W3 Baseline Commits:** 5aca876b (preflight fix), 22214ef6 (W3 implementation)
 **Service Root:** e:\onlinewebsites\quiz-platform/services/project-ai/
 
 ---
 
 ## Preflight Summary
 
-**Status:** PASS  
+**Status:** PASS
 **W3 Verified:** Commits 5aca876b and 22214ef6 exist. W3 gate shows PASS with all components (CandidateValidator, CanonicalComparator, PlacementManifestGenerator) fully implemented with real validation logic, evidence population, and manifest sealing.
 
 **Key Findings:**
@@ -27,7 +27,7 @@
 ### Phase 1: ImplementationApproval Domain Model
 
 - [ ] 1. Create ImplementationApproval domain model in services/project-ai/app/models/implementation_approval.py
-      
+
       **What to implement:**
       - Create Python dataclass `ImplementationApproval` with fields:
         * `approval_id: str` (UUID, primary key)
@@ -42,28 +42,28 @@
         * `status: ApprovalStatus` (enum: PENDING, APPROVED, REJECTED)
         * `evidence: Dict[str, Any]` (machine-readable approval evidence)
         * `rejection_reason: Optional[str]` (populated if status=REJECTED)
-      
+
       - Create enum `ApprovalStatus` with values: PENDING, APPROVED, REJECTED
-      
+
       - Add validation methods:
         * `verify_manifest_hash(manifest: PlacementManifest) -> bool`: Compare placement_manifest_sha256 with manifest.manifest_sha256
         * `verify_candidate_hash(validation: ValidationResult) -> bool`: Compare candidate_sha256 with validation.sha256
         * `verify_not_self_approved(requester: str) -> bool`: Ensure approved_by != requester
         * `is_valid_for_implementation() -> bool`: All hashes match AND status=APPROVED AND not self-approved
-      
+
       - Add evidence population method:
         * `to_evidence_dict() -> Dict[str, Any]`: Convert to machine-readable evidence format matching W3 pattern
-      
+
       **Files:**
       - CREATE: services/project-ai/app/models/implementation_approval.py
       - UPDATE: services/project-ai/app/models/__init__.py (add imports)
-      
+
       **Architectural notes:**
       - Follow W3 evidence pattern: all evidence fields populated, no empty dicts on success
       - Timestamp in ISO 8601 format with timezone (datetime.now(timezone.utc).isoformat())
       - Immutable fields after approval granted: all hash/ID fields
       - Follow dataclass pattern from placement_manifest.py and candidate_validator.py
-      
+
       **Verify:**
       ```bash
       pytest tests/test_implementation_approval.py::test_approval_model_creation -v
@@ -76,7 +76,7 @@
 ### Phase 2: Approval API Endpoint Completion
 
 - [ ] 2. Complete the approve-placement endpoint stub in services/project-ai/app/api/routes/governance.py
-      
+
       **What to implement:**
       - The stub endpoint `POST /approvals/workflows/{workflow_id}/approve-placement` already exists with correct structure
       - Extend WorkflowApprovalPayload to include additional fields:
@@ -93,23 +93,23 @@
       - Add GET endpoint for approval status: `GET /approvals/workflows/{workflow_id}/implementation-approval`
         * Returns ImplementationApproval record if exists
         * Returns 404 if no approval record found
-      
+
       **Files:**
       - UPDATE: services/project-ai/app/api/routes/governance.py
       - UPDATE: services/project-ai/app/api/schemas/governance.py (if new response models needed)
-      
+
       **Error responses to implement:**
       - 400: Invalid hash (candidate_sha256 or manifest_sha256 mismatch)
       - 403: Self-approval attempt (approved_by == workflow requester)
       - 409: Wrong state (workflow not in AWAITING_IMPLEMENTATION_APPROVAL)
       - 409: Manifest ID mismatch
       - 422: Validation error (missing fields)
-      
+
       **Architectural notes:**
       - Reuse existing WorkflowApprovalResponse or extend it to include candidate_sha256_verified field
       - Store ImplementationApproval in _implementation_approvals dict for now (in-memory for M2.9, database in M3+)
       - Follow the pattern established by existing approve_manifest() function
-      
+
       **Verify:**
       ```bash
       pytest tests/test_approval_endpoint.py::test_approve_placement_success -v
@@ -124,7 +124,7 @@
 ### Phase 3: Workflow Transition Authorization
 
 - [ ] 3. Wire approval verification into canonical workflow transition AWAITING_IMPLEMENTATION_APPROVAL → IMPLEMENTING
-      
+
       **What to implement:**
       - Create new function in services/project-ai/app/orchestration/canonical_workflow.py:
         * `can_transition_to_implementing(workflow_id: str, approvals_store: Dict) -> Tuple[bool, str]`
@@ -143,18 +143,18 @@
         * Hash mismatch (candidate or manifest tampered)
         * Self-approved
         * Expired (if expiry field exists in approval model)
-      
+
       **Files:**
       - UPDATE: services/project-ai/app/orchestration/canonical_workflow.py
       - MAY CREATE: services/project-ai/app/orchestration/transition_guards.py (if separating guard logic)
-      
+
       **Architectural notes:**
       - Do not create a second workflow engine or state authority
       - CanonicalWorkflowState remains the ONLY lifecycle authority
       - TaskState (if used) remains internal agent execution state only
       - Approval verification is a guard on the existing transition, not a new state machine
       - Follow the pattern of is_valid_transition() but add approval checking
-      
+
       **Verify:**
       ```bash
       pytest tests/test_workflow_transitions.py::test_transition_requires_approval -v
@@ -168,7 +168,7 @@
 ### Phase 4: Placement Executor Authorization Hook
 
 - [ ] 4. Create authorization checker module for placement executor
-      
+
       **What to implement:**
       - Create services/project-ai/app/authorization/ directory
       - Create services/project-ai/app/authorization/__init__.py
@@ -187,18 +187,18 @@
         * Function `produce_authorization_evidence(result: AuthorizationResult, workflow_id: str) -> Dict[str, Any]`
           - Converts AuthorizationResult to machine-readable evidence format
           - Returns dict matching W3 evidence pattern
-      
+
       **Files:**
       - CREATE: services/project-ai/app/authorization/__init__.py
       - CREATE: services/project-ai/app/authorization/approval_checker.py
-      
+
       **Architectural notes:**
       - This is the hook that W5 (placement executor) will call before any repository mutation
       - No repository changes in W4 — this is the authorization boundary only
       - Evidence must be machine-readable and include all verification steps
       - Follow W3 pattern: no empty evidence dicts, all fields populated
       - If expiry logic exists in current approval contract, implement expiry checking; otherwise skip
-      
+
       **Verify:**
       ```bash
       pytest tests/test_authorization_checker.py::test_authorization_with_valid_approval -v
@@ -212,7 +212,7 @@
 ### Phase 5: Test Suite
 
 - [ ] 5. Create comprehensive W4 test suite
-      
+
       **What to implement:**
       - CREATE: services/project-ai/tests/test_implementation_approval.py
         * Test approval model creation with all required fields
@@ -220,7 +220,7 @@
         * Test self-approval detection (verify_not_self_approved)
         * Test is_valid_for_implementation logic
         * Test evidence dict population (to_evidence_dict)
-      
+
       - CREATE: services/project-ai/tests/test_approval_endpoint.py
         * Test approve-placement endpoint with valid approval
         * Test self-approval rejection (approved_by == requester)
@@ -229,7 +229,7 @@
         * Test manifest ID mismatch rejection
         * Test wrong state rejection (not in AWAITING_IMPLEMENTATION_APPROVAL)
         * Test GET implementation-approval endpoint (found and not found cases)
-      
+
       - CREATE: services/project-ai/tests/test_workflow_transitions.py
         * Test transition AWAITING_IMPLEMENTATION_APPROVAL → IMPLEMENTING requires valid approval
         * Test transition blocked when approval missing
@@ -238,7 +238,7 @@
         * Test transition blocked when manifest hash mismatch
         * Test transition succeeds with valid approval
         * Test transition produces evidence
-      
+
       - CREATE: services/project-ai/tests/test_authorization_checker.py
         * Test check_implementation_approval with valid approval (authorized=True)
         * Test check blocks missing approval (authorized=False)
@@ -248,13 +248,13 @@
         * Test check blocks expired approval (if expiry exists)
         * Test authorization evidence population
         * Test produce_authorization_evidence format
-      
+
       **Files:**
       - CREATE: services/project-ai/tests/test_implementation_approval.py
       - CREATE: services/project-ai/tests/test_approval_endpoint.py
       - CREATE: services/project-ai/tests/test_workflow_transitions.py
       - CREATE: services/project-ai/tests/test_authorization_checker.py
-      
+
       **Test requirements:**
       - Follow W3 test pattern: use real assertions (pytest.raises, assert conditions)
       - No @pytest.mark.skip or @pytest.mark.xfail
@@ -263,7 +263,7 @@
       - Verify evidence dict is populated in all cases
       - Use pytest-asyncio for async endpoint tests
       - Use httpx.AsyncClient for API endpoint tests (pattern from existing tests)
-      
+
       **Verify:**
       ```bash
       pytest tests/test_implementation_approval.py -v
@@ -277,7 +277,7 @@
 ### Phase 6: W4 Gate Evidence and Verification
 
 - [ ] 6. Run W4 test suite and produce W4 gate evidence
-      
+
       **What to implement:**
       - Run all W4-specific tests:
         ```bash
@@ -340,28 +340,28 @@
         * no_test_weakening
         * evidence_populated
         * commit_exists
-      
+
       **Files:**
       - CREATE: .agents/tasks/m2-9-w4-evidence.json
       - CREATE: .agents/tasks/m2-9-w4-gate.json
       - CREATE: .agents/tasks/m2-9-w4-gate-review.md (human-readable gate summary)
-      
+
       **Architectural notes:**
       - Follow W3 evidence pattern exactly (structure, field names, completeness)
       - Record Git commit SHA after all changes committed
       - No graceful degradation: missing approval must return error, not PASS
       - Evidence must prove: self-approval rejected, hash binding verified, unauthorized transition blocked
       - Verification must cover canonical transition: AWAITING_IMPLEMENTATION_APPROVAL → IMPLEMENTING only with valid approval
-      
+
       **Verify:**
       ```bash
       # Verify evidence files exist and are valid JSON
       python -m json.tool .agents/tasks/m2-9-w4-evidence.json
       python -m json.tool .agents/tasks/m2-9-w4-gate.json
-      
+
       # Verify Git commit recorded
       git log -1 --oneline
-      
+
       # Verify W4 gate verdict
       cat .agents/tasks/m2-9-w4-gate.json | grep '"w5_ready"'
       ```

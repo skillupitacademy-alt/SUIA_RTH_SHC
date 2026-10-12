@@ -9,7 +9,7 @@
 2. **`docs/project-llm/evidence/`** (4 lines in agent-runs.jsonl) — **STALE/DEPRECATED**
 
 **Analysis:**
-- The Python implementation in `services/project-ai/app/evidence/ledger.py` line 18 explicitly points to `.agents/evidence/`: 
+- The Python implementation in `services/project-ai/app/evidence/ledger.py` line 18 explicitly points to `.agents/evidence/`:
   ```python
   EVIDENCE_ROOT = Path(__file__).parent.parent.parent.parent.parent / ".agents" / "evidence"
   ```
@@ -265,45 +265,45 @@ from .integration import record_wave_completion
 class CanonicalEvidenceStore:
     """
     Single source of truth for M2.9 evidence recording and retrieval.
-    
+
     Evidence is stored in append-only JSONL files under .agents/evidence/.
     This class provides a structured API over raw JSONL operations.
-    
+
     Usage:
         store = CanonicalEvidenceStore()
         store.record_agent_run(run_data)
         recent_runs = store.get_recent_runs(n=10)
     """
-    
+
     def __init__(self, evidence_root: Optional[Path] = None):
         """
         Initialize the evidence store.
-        
+
         Args:
             evidence_root: Path to evidence directory. Defaults to .agents/evidence/
         """
         self.evidence_root = evidence_root or EVIDENCE_ROOT
-    
+
     def record_agent_run(self, run_data: dict) -> None:
         """Record an agent run to the evidence ledger."""
         append_agent_run(run_data)
-    
+
     def record_test_result(self, result_data: dict) -> None:
         """Record a test result to the evidence ledger."""
         append_test_result(result_data)
-    
+
     def record_gate_result(self, gate_data: dict) -> None:
         """Record a gate decision to the evidence ledger."""
         append_gate_result(gate_data)
-    
+
     def record_certification(self, cert_data: dict) -> None:
         """Record a certification result to the evidence ledger."""
         append_certification_result(cert_data)
-    
+
     def record_workflow_event(self, event_data: dict) -> None:
         """Record a workflow state transition or event."""
         append_workflow_event(event_data)
-    
+
     def record_wave_completion(
         self,
         wave_id: str,
@@ -322,19 +322,19 @@ class CanonicalEvidenceStore:
             tests_passed=tests_passed,
             tests_failed=tests_failed,
         )
-    
+
     def get_recent_runs(self, n: int = 10) -> List[dict]:
         """
         Retrieve the last N agent runs from the evidence ledger.
-        
+
         Args:
             n: Number of runs to retrieve
-        
+
         Returns:
             List of agent run dictionaries (most recent last)
         """
         return read_last_n_runs(n)
-    
+
     def get_evidence_root(self) -> Path:
         """Get the canonical evidence directory path."""
         return self.evidence_root

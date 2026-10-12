@@ -1,9 +1,9 @@
 # Gate E-1: W3C Canonical Artifact Policy Remediation - Implementation Plan
 
-**Project:** Quiz Platform - Project AI Service  
-**Branch:** m2-project-ai-canonical-wiring  
-**Date:** 2026-01-30  
-**Status:** Ready for Implementation  
+**Project:** Quiz Platform - Project AI Service
+**Branch:** m2-project-ai-canonical-wiring
+**Date:** 2026-01-30
+**Status:** Ready for Implementation
 **Purpose:** Implement W3C Canonical Artifact Policy enforcement with duplicate detection, version conflict resolution, and canonical selection
 
 ---
@@ -42,13 +42,13 @@ This plan implements the W3C Canonical Artifact Policy requirements from `.agent
 
 ## Project Context
 
-**Project Type:** FastAPI (Python 3.11+) service for AI orchestration  
-**Language:** Python 3.11+  
-**Build System:** pip with pyproject.toml  
-**Test Framework:** pytest with pytest-asyncio  
-**Build Command:** `pip install -e .` (from services/project-ai)  
-**Test Command:** `pytest tests/` (from services/project-ai)  
-**Quick Test Command:** `pytest tests/test_artifact_policy.py -v` (focused test)  
+**Project Type:** FastAPI (Python 3.11+) service for AI orchestration
+**Language:** Python 3.11+
+**Build System:** pip with pyproject.toml
+**Test Framework:** pytest with pytest-asyncio
+**Build Command:** `pip install -e .` (from services/project-ai)
+**Test Command:** `pytest tests/` (from services/project-ai)
+**Quick Test Command:** `pytest tests/test_artifact_policy.py -v` (focused test)
 **Coverage Command:** `pytest tests/test_artifact_policy.py --cov=app/placement --cov-report=term`
 
 **Environment Constraints:**
@@ -105,7 +105,7 @@ services/project-ai/
 
 ### FEAT-001: Content-Based Duplicate Detection
 
-**Type:** feat  
+**Type:** feat
 **Description:** Implement duplicate detection across semantically different filenames using content hash comparison. Detects when multiple artifacts serve the same purpose even if named differently.
 
 **Steps:**
@@ -148,7 +148,7 @@ Expected: 4+ new tests pass (detect empty, detect single, detect multiple, rejec
 
 ### FEAT-002: Version Conflict Resolution
 
-**Type:** feat  
+**Type:** feat
 **Description:** Implement version conflict resolution when multiple versions of same artifact exist with different content. Uses timestamp-based canonical selection (earliest wins) with content consistency validation.
 
 **Steps:**
@@ -197,7 +197,7 @@ Expected: 5+ new tests pass (detect conflicts, select canonical, tie-breaking, r
 
 ### FEAT-003: Enhanced Rejection Policy
 
-**Type:** feat  
+**Type:** feat
 **Description:** Extend PlacementDecision.REJECT with structured rejection reasons. Enforces duplicate prevention and version conflict policies with clear, actionable feedback.
 
 **Steps:**
@@ -237,7 +237,7 @@ Expected: 3+ new tests pass (rejection reason creation, formatting, backward com
 
 ### FEAT-004: Provenance Metadata Tracking
 
-**Type:** feat  
+**Type:** feat
 **Description:** Add provenance metadata to RepositoryArtifact for audit trail and traceability. Tracks creation timestamp, last modified timestamp, references, and version history.
 
 **Steps:**
@@ -288,7 +288,7 @@ Expected: 4+ new tests pass (provenance extraction, graph building, lineage trac
 
 ### FEAT-005: Canonical Artifact Registry Integration
 
-**Type:** feat  
+**Type:** feat
 **Description:** Implement canonical artifact discovery that searches repository, snapshot evidence, and canonical registry before creating new artifacts. Aligns with policy: "Search before creating."
 
 **Steps:**
@@ -335,7 +335,7 @@ Expected: 4+ new tests pass (load registry, find artifact, should create checks,
 
 ### FEAT-006: Comprehensive Test Suite (20+ Tests)
 
-**Type:** test  
+**Type:** test
 **Description:** Expand test coverage to minimum 20 tests covering duplicate submission rejection, version conflict resolution, canonical artifact retrieval, edge cases (same timestamp, hash collisions), and integration with existing governance flow.
 
 **Steps:**
@@ -400,7 +400,7 @@ Expected: 32+ tests pass (12 existing + 20 new), coverage ≥85%
 
 ### FEAT-007: Documentation and W7 Evidence Integration
 
-**Type:** docs  
+**Type:** docs
 **Description:** Document W3C policy implementation in code comments, update API documentation, and ensure compatibility with W7 evidence enforcement (Gate C).
 
 **Steps:**
@@ -691,7 +691,7 @@ cd services/project-ai
 # FEAT-001: Content Duplicate Detection
 pytest tests/test_artifact_policy.py::TestContentDuplicateDetection -v
 
-# FEAT-002: Version Conflict Resolution  
+# FEAT-002: Version Conflict Resolution
 pytest tests/test_artifact_policy.py::TestVersionConflictResolution -v
 
 # FEAT-003: Rejection Policy
@@ -841,9 +841,9 @@ After Gate E-1 completion:
 
 ---
 
-**Plan Status:** ✅ READY FOR IMPLEMENTATION  
-**Dependencies Met:** ✅ All requirements documented, codebase analyzed, patterns identified  
-**Risk Level:** LOW (no breaking changes, comprehensive tests, backward compatible)  
+**Plan Status:** ✅ READY FOR IMPLEMENTATION
+**Dependencies Met:** ✅ All requirements documented, codebase analyzed, patterns identified
+**Risk Level:** LOW (no breaking changes, comprehensive tests, backward compatible)
 **Review Required:** NO (follows established patterns, aligns with requirements)
 
 ---

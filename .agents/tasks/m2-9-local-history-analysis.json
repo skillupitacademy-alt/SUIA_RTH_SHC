@@ -2,7 +2,7 @@
   "analysisTimestamp": "2024-01-XX",
   "targetBranch": "backup/local-m2-9-remediation",
   "comparisonBase": "backup/github-m2-9",
-  
+
   "shaVerification": {
     "f1e0718f": "commit",
     "f9583d62": "commit",
@@ -12,7 +12,7 @@
     "37701ee5": "commit",
     "c60e29dc": "commit"
   },
-  
+
   "commitMetadata": [
     {
       "sha": "f1e0718fb5470ed01c45a02add286b5993b263ea",
@@ -165,9 +165,9 @@
       "purpose": "Wave 2 Human Gate 3 summary - M2.9 remediation complete"
     }
   ],
-  
+
   "graphOutput": "* 37701ee5 (HEAD -> m2-project-ai-canonical-wiring, backup/local-m2-9-remediation) docs: Wave 2 Human Gate 3 summary - M2.9 remediation complete\n* c60e29dc chore: record Wave 2 gate status - PASS\n* 185adebc m2.9 W2-R3: complete repository boundary + contract defaults (P1-CONTRACT) - migrate contract route, remove legacy filesystem access, derive contract from snapshot\n* 00154f50 m2.9 W2-R4: frontend integration (P1-FRONTEND) - add API client, state hooks, certification UI, runtime verification controls\n* df5e3e19 m2.9 W1-R2: fix version binding (B07) - use WorkflowTarget.version not hardcoded 1.0.0\n* f9583d62 m2.9 W1-R1: fix repository intelligence boundary (B03) - remove Path(repo_root), consume snapshot only\n* f1e0718f m2.9 W0: canonical workflow authority freeze — retire legacy CreationMode/Workflow routes\n* 39716a78 (origin/m2-project-ai-canonical-wiring, backup/github-m2-9) docs(m2.9): final wave review artifacts and E2E test results",
-  
+
   "localOnlyCommits": [
     {
       "sha": "37701ee55fa34b95a37e9e268426071960ed856a",
@@ -205,11 +205,11 @@
       "subject": "m2.9 W0: canonical workflow authority freeze — retire legacy CreationMode/Workflow routes"
     }
   ],
-  
+
   "cherryOutput": "+ f1e0718fb5470ed01c45a02add286b5993b263ea\n+ f9583d62dec0e6b8473109a88a2343432a741ccb\n+ df5e3e19554acbfdbf61078cacb36565f7384ddc\n+ 00154f50f4a0420b808ad0fc7616c4d9eeaa10d0\n+ 185adebcd28676032739111643b9d9bd9dd0f53c\n+ c60e29dc3547d90682465328ad30f3552ed33bb6\n+ 37701ee55fa34b95a37e9e268426071960ed856a",
-  
+
   "cherryInterpretation": "All 7 local commits are marked with '+', meaning they are UNIQUE to the local branch. No equivalent patches exist in the GitHub remote (backup/github-m2-9). This indicates completely independent work.",
-  
+
   "diffStatOutput": {
     "summary": "29 files changed, 3295 insertions(+), 856 deletions(-)",
     "keyFiles": [
@@ -229,7 +229,7 @@
       "services/project-ai/app/contracts/repository_intelligence.py (262+ significant rewrite)"
     ]
   },
-  
+
   "ancestry": {
     "commonAncestor": "39716a786c3feab4de2ac1e19540f37cfe14c026",
     "commonAncestorSubject": "docs(m2.9): final wave review artifacts and E2E test results",
@@ -238,6 +238,6 @@
     "localCommitCount": 7,
     "localIsAheadBy": 7
   },
-  
+
   "notes": "LOCAL HISTORY ANALYSIS COMPLETE\n\nKey Findings:\n\n1. **All 7 commits are unique to local** - git cherry shows all '+' markers, meaning no equivalent patches exist in GitHub remote.\n\n2. **Linear history from common ancestor 39716a78** - Local branch diverged cleanly from GitHub at commit 39716a78 and built 7 sequential commits.\n\n3. **M2.9 Remediation Work** - The local commits implement:\n   - Wave 0: Canonical workflow authority freeze (f1e0718f)\n   - Wave 1 R1: Fix repository intelligence boundary B03 (f9583d62)\n   - Wave 1 R2: Fix version binding B07 (df5e3e19)\n   - Wave 2 R4: Frontend integration P1-FRONTEND (00154f50) - DELETES projectLlmWorkflowCoordinator.ts\n   - Wave 2 R3: Repository boundary + contract P1-CONTRACT (185adebc)\n   - Wave 2 Gate: Record PASS status (c60e29dc)\n   - Wave 2 Docs: Human Gate 3 summary (37701ee5)\n\n4. **Critical architectural changes**:\n   - services/project-ai/app/api/routes/creation.py: 360 lines modified (legacy routes retired)\n   - apps/.../projectLlmWorkflowCoordinator.ts: DELETED (441 lines removed)\n   - services/project-ai/app/contracts/repository_intelligence.py: 262+ insertions (major rewrite)\n   - New frontend: API client, hooks, certification UI, runtime verification\n\n5. **Net change**: +3295 insertions, -856 deletions across 29 files\n\n6. **No merge conflicts detected in git structure** - This is a clean linear divergence\n\n**Next Investigation Required**: Compare GitHub remote history to understand what work exists there that local does not have."
 }

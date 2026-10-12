@@ -1,0 +1,106 @@
+{
+  "branch": "project-llm-e2e-implementation",
+  "base_branch": "m2-project-ai-canonical-wiring",
+  "total_commits": 60,
+  "total_files_changed": 218,
+  "added": 186,
+  "modified": 28,
+  "renamed": 2,
+  "deleted": 2,
+  "by_area": {
+    ".agents_evidence_files": 124,
+    "app_code": 30,
+    "tests": 24,
+    "cli": 0,
+    "workflow_engine": 7,
+    "other": 14
+  },
+  "change_details": {
+    "services_project_ai_app": 30,
+    "services_project_ai_tests": 24,
+    "agents_evidence": 33,
+    "agents_evidence_runs": 48,
+    "agents_tasks": 14,
+    "db_migrations": 8,
+    "frontend_admin": 1,
+    "other": 14
+  },
+  "insertions": 26430,
+  "deletions": 24618,
+  "net_change": 1812,
+  "migration_repair_commits": 34,
+  "production_feature_commits": 26,
+  "timeline_earliest": "2026-10-10 22:16:51 +0530",
+  "timeline_latest": "2026-10-12 00:05:02 +0530",
+  "timeline_duration_hours": 25.24,
+  "commit_message_patterns": {
+    "feat": "New features including Stage 6 verification and migration repair workflow",
+    "fix": "P0 safety fixes (FEAT-001 through FEAT-005), fail-closed verification, and migration repairs",
+    "chore": "Evidence collection, Stage 5/6 gate results, W6 verification pipeline",
+    "docs": "Migration repair assessment, W1 audit reports, CLI documentation",
+    "test": "Integration tests, fail-closed patterns, browser verification"
+  },
+  "key_features_added": [
+    "Migration repair workflow (Stages 1-5 complete, Stage 6 blocked)",
+    "P0 safety fixes: command injection elimination (FEAT-001), trusted host validation (FEAT-002), cleanup verification (FEAT-003), evidence file verification (FEAT-004), remote SHA confirmation (FEAT-005)",
+    "W6 verification pipeline (V0-V10 validators)",
+    "13 migration repair agents in services/project-ai/app/workflows/migration_repair/agents/",
+    "Agent registry extended to 28 agents",
+    "Evidence assembly and audit infrastructure",
+    "Stage workflow controllers and gate execution",
+    "Database migration repairs (0012, 0017-0021) removing duplicate statements",
+    "Fail-closed security patterns for stub agents and browser verification",
+    "External AI canonical contract binding"
+  ],
+  "stage_6_blocker": {
+    "status": "BLOCKED",
+    "reason": "Docker environment not available for PostgreSQL database verification",
+    "evidence_files": [
+      ".agents/evidence/runs/migration-repair-20261011-143539-06936246/stage6-setup.json",
+      ".agents/evidence/runs/migration-repair-20261011-143539-06936246/stage6-verification.json"
+    ],
+    "skipped_validations": [
+      "stage6-migrations.json",
+      "stage6-tests.json"
+    ],
+    "passed_validations": [
+      "stage6-cleanup.json"
+    ]
+  },
+  "test_results": {
+    "note": "Test results from gate-f-w6-domain-results-final.json on canonical-wiring branch",
+    "reference_branch": "m2-project-ai-canonical-wiring",
+    "passed": 153,
+    "failed": 7,
+    "skipped": 1126,
+    "total_collected": 1286,
+    "failure_reason": "Missing database schema fields: uploader_brand and requester_brand"
+  },
+  "merge_risk_assessment": {
+    "conflict_potential": "MEDIUM-HIGH",
+    "divergence_commits": 60,
+    "file_overlap": "218 files changed (186 added, 28 modified, 2 deleted)",
+    "largest_areas_of_change": [
+      ".agents/evidence (33 files, 12,778 insertions)",
+      ".agents/evidence/runs (48 files in run subdirectory)",
+      "services/project-ai/app (30 files, 4,521 insertions for migration repair workflow)",
+      "services/project-ai/tests (24 files for migration repair tests)"
+    ],
+    "unique_value": "HIGH - migration repair workflow, P0 safety fixes, verification pipeline infrastructure",
+    "code_quality": "SOLID - Stage 5 final gate APPROVED, comprehensive evidence collection",
+    "completion_status": "PARTIAL - Stages 1-5 complete, Stage 6 blocked by environment constraint"
+  },
+  "recommendation": {
+    "action": "DEFER_MERGE_UNTIL_CANONICAL_WIRING_MERGED",
+    "rationale": "E2E branch contains valuable migration repair work (Stages 1-5) and P0 safety fixes. However, it diverged from canonical-wiring 60 commits ago and has significant overlap. Canonical-wiring branch has 7 test failures that need resolution first. Once canonical-wiring is merged to main, E2E branch should be rebased and its unique features (migration repair workflow, P0 fixes) should be evaluated for cherry-picking or full merge.",
+    "next_steps": [
+      "Wait for canonical-wiring branch to resolve 7 test failures (uploader_brand/requester_brand schema issue)",
+      "Merge canonical-wiring to main first",
+      "Rebase E2E branch on new main",
+      "Evaluate Stage 6 blocker: install Docker or defer Stage 6 verification",
+      "Consider cherry-picking migration repair workflow and P0 safety fixes if full merge has conflicts",
+      "Run full test suite after merge/cherry-pick"
+    ],
+    "stage_6_decision": "Stage 6 verification can be deferred - it's primarily evidence collection and final status reporting. Stages 1-5 contain the actual repair work and are APPROVED."
+  }
+}

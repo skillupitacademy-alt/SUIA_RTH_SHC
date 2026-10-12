@@ -1,9 +1,9 @@
 # M2.9 Wave 5 - Consolidated Implementation Report
 
-**Wave**: W5  
-**Branch**: m2-project-ai-canonical-wiring  
-**Workflow**: wf_9adfb86ee2f74b65  
-**Date**: 2025-01-29  
+**Wave**: W5
+**Branch**: m2-project-ai-canonical-wiring
+**Workflow**: wf_9adfb86ee2f74b65
+**Date**: 2025-01-29
 **Head SHA**: 89d9816f2e773e315f9ba71f5cf9cc2574edda3d
 
 ---
@@ -23,7 +23,7 @@ All security invariants validated. All tests passing. Zero regressions introduce
 ## Files Created (5 files)
 
 ### 1. `services/project-ai/app/placement/repository_adapter.py` (676 lines)
-**Agent**: Agent A  
+**Agent**: Agent A
 **Purpose**: Abstraction interface for ALL repository mutations with security invariants
 
 **Key Security Features**:
@@ -39,7 +39,7 @@ All security invariants validated. All tests passing. Zero regressions introduce
 **Methods**: `validate_path()`, `validate_file_extension()`, `validate_target()`, `compute_file_hash()`, `capture_rollback_info()`, `generate_diff()`, `write_file()`, `delete_file()`, `git_checkout_branch()`, `git_add_files()`, `git_commit()`, `get_evidence_records()`, `export_evidence()`
 
 ### 2. `services/project-ai/app/placement/approval_enforcer.py` (354 lines)
-**Agent**: Agent B  
+**Agent**: Agent B
 **Purpose**: Comprehensive approval validation integrating with existing authorization system
 
 **Key Security Features**:
@@ -61,7 +61,7 @@ All security invariants validated. All tests passing. Zero regressions introduce
 7. Parameter validation (all required fields present)
 
 ### 3. `services/project-ai/app/placement/worktree_manager.py` (416 lines)
-**Agent**: Agent B  
+**Agent**: Agent B
 **Purpose**: Git worktree isolation for safe placement operations
 
 **Key Features**:
@@ -76,7 +76,7 @@ All security invariants validated. All tests passing. Zero regressions introduce
 **Worktree Naming**: `.worktrees/placement-<timestamp>-<manifest_id_prefix>/`
 
 ### 4-5. Test Files (4 comprehensive test suites)
-**Agent**: Test Agent  
+**Agent**: Test Agent
 **Files Created**:
 - `tests/placement/test_repository_adapter.py` (28 tests)
 - `tests/placement/test_placement_executor.py` (12 tests)
@@ -90,7 +90,7 @@ All security invariants validated. All tests passing. Zero regressions introduce
 ## Files Modified (3 files)
 
 ### 1. `services/project-ai/app/placement/executor.py`
-**Agent**: Agent A  
+**Agent**: Agent A
 **Changes**:
 1. Added imports: `ImplementationApproval`, `ImplementationApprovalStatus`, `RepositoryAdapter`
 2. Updated `__init__()`: Added `dry_run` parameter, instantiates `RepositoryAdapter`
@@ -116,14 +116,14 @@ All security invariants validated. All tests passing. Zero regressions introduce
 - **NEW**: Path security enforced
 
 ### 2. `services/project-ai/app/placement/__init__.py`
-**Agents**: Agent A + Agent B  
+**Agents**: Agent A + Agent B
 **Changes**:
 - Added exports for `RepositoryAdapter`, `RepositoryAdapterError`, `PathValidationError`, `OperationRecord`
 - Added exports for `ApprovalEnforcer`, `ApprovalEnforcementResult`, `create_approval_enforcer`
 - Added exports for `WorktreeManager`, `WorktreeContext`, `WorktreeError`, `create_worktree_manager`
 
 ### 3. Test baseline tracking
-**Agent**: Test Agent  
+**Agent**: Test Agent
 **Changes**: Created comprehensive test suite covering all W5 security invariants
 
 ---
@@ -131,15 +131,15 @@ All security invariants validated. All tests passing. Zero regressions introduce
 ## Key Architectural Decisions
 
 ### 1. Adapter Pattern for Repository Operations
-**Decision**: Implemented RepositoryAdapter as separate abstraction layer  
+**Decision**: Implemented RepositoryAdapter as separate abstraction layer
 **Rationale**: Separation of concerns, testability, reusability, maintainability
 
 ### 2. Backward Compatibility Strategy
-**Decision**: Made `execute_placement()` accept both `ApprovalStatus` (legacy) and `ImplementationApproval` (new)  
+**Decision**: Made `execute_placement()` accept both `ApprovalStatus` (legacy) and `ImplementationApproval` (new)
 **Rationale**: Preserves all 23 existing placement tests without modification, allows gradual migration
 
 ### 3. Path Allowlist Strategy
-**Decision**: Hardcoded allowlist of permitted target directories  
+**Decision**: Hardcoded allowlist of permitted target directories
 **Rationale**: Explicit > implicit for security-critical paths, fail-closed on unknown paths
 
 **Allowed Directories**:
@@ -150,19 +150,19 @@ All security invariants validated. All tests passing. Zero regressions introduce
 5. `packages/shared/src/tutorial/`
 
 ### 4. Evidence Production Strategy
-**Decision**: Every operation creates `OperationRecord` with full audit trail  
+**Decision**: Every operation creates `OperationRecord` with full audit trail
 **Rationale**: Compliance requirements, rollback capability, machine-readable automation
 
 ### 5. Dry-Run Implementation
-**Decision**: Dry-run flag propagates through entire operation chain  
+**Decision**: Dry-run flag propagates through entire operation chain
 **Rationale**: Testing without side effects, "what-if" analysis, evidence still captured
 
 ### 6. Approval Integration Strategy
-**Decision**: Extend existing `approval_checker` rather than duplicate  
+**Decision**: Extend existing `approval_checker` rather than duplicate
 **Rationale**: Reuse proven authorization logic, add placement-specific bindings
 
 ### 7. Worktree Isolation Strategy
-**Decision**: Timestamp-based unique worktrees for each placement  
+**Decision**: Timestamp-based unique worktrees for each placement
 **Rationale**: Safe concurrent operations, no interference with main tree, clean rollback
 
 ---
@@ -260,7 +260,7 @@ if not approval.verify_not_self_approved(requester_id):
 | Family="Assessment", Version="A1" | ✅ VALID | 1 test |
 | Family="Unknown", Version="X1" | ❌ INVALID | 1 test |
 
-**Canonical Families**: Introduction, Tutorial, Assessment, Media, Summary, Custom  
+**Canonical Families**: Introduction, Tutorial, Assessment, Media, Summary, Custom
 **Canonical Versions**: I1-I7, T1-T5, A1, Q1, M1, S1, C1
 
 ---
@@ -292,8 +292,8 @@ if not approval.verify_not_self_approved(requester_id):
 }
 ```
 
-**Commit in Worktree**: Returns valid git commit SHA  
-**Diff Generation**: Compares worktree state vs base  
+**Commit in Worktree**: Returns valid git commit SHA
+**Diff Generation**: Compares worktree state vs base
 **Cleanup**: Removes worktree, preserves main tree
 
 ---
@@ -476,23 +476,23 @@ Every `WorktreeManager.create_worktree()` produces:
 
 ## Conclusion
 
-✅ **RepositoryAdapter**: Fully implemented with all security invariants  
-✅ **ApprovalEnforcer**: Comprehensive binding verification, fail-closed policy  
-✅ **WorktreeManager**: Isolated worktree operations, safe concurrent placements  
-✅ **Path Security**: Traversal prevention, allowlist enforcement, extension validation  
-✅ **Approval Enforcement**: Self-approval prevention, manifest hash verification, binding validation  
-✅ **Evidence Production**: Machine-readable operation records with rollback info  
-✅ **Test Coverage**: 73 passing W5 tests, zero new regressions  
+✅ **RepositoryAdapter**: Fully implemented with all security invariants
+✅ **ApprovalEnforcer**: Comprehensive binding verification, fail-closed policy
+✅ **WorktreeManager**: Isolated worktree operations, safe concurrent placements
+✅ **Path Security**: Traversal prevention, allowlist enforcement, extension validation
+✅ **Approval Enforcement**: Self-approval prevention, manifest hash verification, binding validation
+✅ **Evidence Production**: Machine-readable operation records with rollback info
+✅ **Test Coverage**: 73 passing W5 tests, zero new regressions
 ✅ **Security Validation**: 41 security tests, 100% critical path coverage
 
 **Wave 5 Status**: ✅ COMPLETE - Ready for independent review and gate creation
 
 ---
 
-**Implementation Agents**: Agent A, Agent B, Test Agent  
-**Date**: 2025-01-29  
-**Branch**: m2-project-ai-canonical-wiring  
-**Head SHA**: 89d9816f2e773e315f9ba71f5cf9cc2574edda3d  
+**Implementation Agents**: Agent A, Agent B, Test Agent
+**Date**: 2025-01-29
+**Branch**: m2-project-ai-canonical-wiring
+**Head SHA**: 89d9816f2e773e315f9ba71f5cf9cc2574edda3d
 **Workflow**: wf_9adfb86ee2f74b65
 
 ---
@@ -502,7 +502,7 @@ Every `WorktreeManager.create_worktree()` produces:
 **Independent Review Findings**: 4 findings identified, 3 blocking, 1 advisory
 
 ### Finding 1: Worktree isolation not integrated ✅ FIXED
-**Severity**: Blocking  
+**Severity**: Blocking
 **Issue**: WorktreeManager implemented but PlacementExecutor never used it. All operations happened on main working tree instead of isolated worktrees.
 
 **Remediation**:
@@ -529,7 +529,7 @@ Every `WorktreeManager.create_worktree()` produces:
 ---
 
 ### Finding 2: API route bypasses approval enforcer ✅ FIXED
-**Severity**: Blocking  
+**Severity**: Blocking
 **Issue**: `/candidates/{candidate_id}/execute` endpoint used legacy `ApprovalStatus` check instead of `ImplementationApproval` with full binding verification. This bypassed comprehensive approval enforcement (workflow_id, candidate_sha256, manifest_id, manifest_sha256 verification) and self-approval prevention.
 
 **Remediation**:
@@ -556,7 +556,7 @@ Every `WorktreeManager.create_worktree()` produces:
 ---
 
 ### Finding 3: Evidence claims inconsistent ✅ FIXED
-**Severity**: Blocking  
+**Severity**: Blocking
 **Issue**: `evidence.json` claimed `worktree_isolated: true` but PlacementExecutor didn't actually use WorktreeManager. Evidence should reflect actual implementation state.
 
 **Remediation**:
@@ -585,7 +585,7 @@ Every `WorktreeManager.create_worktree()` produces:
 ---
 
 ### Finding 4: Private SDK config access ✅ NOT PRESENT
-**Severity**: Advisory  
+**Severity**: Advisory
 **Issue**: Review claimed `approval_checker.py` accessed Anthropic SDK internal config via `client._config.api_key`.
 
 **Investigation**: Searched for `_config` in `services/project-ai/app/authorization/*.py` - no matches found. This issue does not exist in current codebase.
@@ -614,7 +614,7 @@ test_worktree_isolation.py::17 tests ....... PASSED (3 skipped)
 58 failed, 616 passed, 21 skipped in 32.52s
 ```
 
-**Analysis**: 
+**Analysis**:
 - ✅ All 73 W5 tests pass after remediation
 - ✅ Zero new regressions introduced
 - ✅ 58 failures match W4-R1 baseline exactly (pre-existing)
@@ -663,7 +663,7 @@ test_worktree_isolation.py::17 tests ....... PASSED (3 skipped)
 
 ---
 
-**Remediation Complete**: 2025-01-29  
-**Remediation Agent**: W5 Remediation Sub-agent  
-**Review Findings Resolved**: 3 of 3 blocking findings (1 advisory N/A)  
+**Remediation Complete**: 2025-01-29
+**Remediation Agent**: W5 Remediation Sub-agent
+**Review Findings Resolved**: 3 of 3 blocking findings (1 advisory N/A)
 **Status**: ✅ READY FOR RE-REVIEW

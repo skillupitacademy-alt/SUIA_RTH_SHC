@@ -2,7 +2,7 @@
 
 This plan addresses 6 findings from the Gate E-2 review to remediate authorization gaps in the W5 placement engine routes. The fixes enforce the RBAC matrix specifications, add brand boundary checks, and resolve test mock failures.
 
-**Review findings file**: `e:\onlinewebsites\quiz-platform/.agents/tasks/gate-e2-review.json`  
+**Review findings file**: `e:\onlinewebsites\quiz-platform/.agents/tasks/gate-e2-review.json`
 **RBAC matrix**: `e:\onlinewebsites\quiz-platform/.agents/tasks/gate-b-route-rbac-matrix.csv`
 
 ---
@@ -318,29 +318,29 @@ async def test_create_placement_requires_contract_admin(
     """Test that create_placement allows contract_admin users."""
     from app.api.routes.workflows import create_placement
     from app.api.schemas.placement import CreatePlacementRequest
-    
+
     request = CreatePlacementRequest(candidate_id="candidate-001")
-    
+
     # Mock the placement result to match PlacementEngineResponse schema
     mock_result = MagicMock()
     mock_result.workflow_id = "workflow-001"
     mock_result.candidate_id = "candidate-001"
     mock_result.placement_decision = PlacementDecision.UPDATE
     mock_result.manifest_id = "manifest-001"
-    
+
     # Mock score object
     mock_result.score = MagicMock()
     mock_result.score.score = 0.85
     mock_result.score.criteria = {"semantic": 0.9, "structural": 0.8}
     mock_result.score.reasoning = "High similarity"
-    
+
     # Evidence must be Dict, not List
     mock_result.evidence = {"similarity_score": 0.85, "method": "semantic"}
     mock_result.conflicts = []
     mock_result.created_at = datetime.now(timezone.utc).isoformat()
-    
+
     mock_placement_engine.create_placement = AsyncMock(return_value=mock_result)
-    
+
     result = await create_placement(
         workflow_id="workflow-001",
         request=request,
@@ -348,7 +348,7 @@ async def test_create_placement_requires_contract_admin(
         placement_engine=mock_placement_engine,
         session=mock_session
     )
-    
+
     assert result.workflow_id == "workflow-001"
     assert result.candidate_id == "candidate-001"
     assert result.placement_decision == PlacementDecision.UPDATE.value
@@ -365,7 +365,7 @@ async def test_approve_manifest_allows_contract_reviewer(
 ):
     """Test that approve_manifest allows contract_reviewer role."""
     from app.auth.dependencies import require_contract_reviewer
-    
+
     # Create reviewer user
     reviewer_user = {
         "user_id": "reviewer-user-001",
@@ -377,7 +377,7 @@ async def test_approve_manifest_allows_contract_reviewer(
         "platforms": [],
         "subscriptions": []
     }
-    
+
     # Should not raise
     result = require_contract_reviewer(reviewer_user)
     assert result == reviewer_user
@@ -426,11 +426,11 @@ async def submit_for_approval(
 ):
     """
     Submit a placement manifest for human approval.
-    
+
     TODO GATE-E2-FINDING-4: USING LEGACY IN-MEMORY STORAGE
     This function uses the _approvals dict (line 43). Data is lost on service restart.
     Migration to ApprovalRepository pending.
-    
+
     ...
 ```
 
@@ -468,14 +468,14 @@ Add new test in section F (Policy Integration Tests):
 async def test_multi_role_self_approval_prevention():
     """
     Test that users with both submitter and reviewer roles cannot self-approve.
-    
+
     Verifies that self-approval prevention works at identity level (user_id),
     not role level. A user who submits a manifest cannot approve it even if
     they hold the contract_reviewer role.
     """
     from app.api.routes.governance import submit_for_approval, approve_manifest
     from app.api.schemas.governance import ApprovalSubmitRequest, ApprovalDecisionRequest
-    
+
     # Create user with both roles
     multi_role_user = {
         "user_id": "multi-role-001",
@@ -487,33 +487,33 @@ async def test_multi_role_self_approval_prevention():
         "platforms": [],
         "subscriptions": []
     }
-    
+
     # Submit as this user
     submit_request = ApprovalSubmitRequest(
         manifestId="manifest-001",
         manifestHash="a" * 64
     )
-    
+
     submit_response = await submit_for_approval(
         request=submit_request,
         user=multi_role_user
     )
-    
+
     approval_id = submit_response.approvalId
-    
+
     # Try to approve as same user (should fail)
     approve_request = ApprovalDecisionRequest(
         manifestHash="a" * 64,
         reason="Approving my own work"
     )
-    
+
     with pytest.raises(HTTPException) as exc_info:
         await approve_manifest(
             approval_id=approval_id,
             request=approve_request,
             user=multi_role_user  # Same user_id as submitter
         )
-    
+
     # Should return 403 SELF_APPROVAL_REJECTED
     assert exc_info.value.status_code == 403
     assert "SELF_APPROVAL_REJECTED" in str(exc_info.value.detail)

@@ -1,0 +1,443 @@
+[
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\ARCHITECTURE-DOCUMENTATION-INDEX.md",
+    "type": "ARCHITECTURE",
+    "title": "UBRC Architecture Documentation Index",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Comprehensive index of all UBRC and Tutorial V2 block-based architecture documentation. Provides navigation guide to 24 documentation files including reading order recommendations, document relationships, and current implementation status. Primary entry point for UBRC block development.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\NEW-BLOCK-DEVELOPMENT-READING-ORDER.md",
+    "type": "ARCHITECTURE",
+    "title": "NEW-BLOCK-DEVELOPMENT-READING-ORDER.md",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Definitive authoritative reading order for creating new UBRC blocks. Complete 27-document reading sequence in dependency order covering UBRC contracts, multi-brand requirements, normal block pipeline, and prohibited implementations. START HERE for any new block development.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\governance-contracts-index.md",
+    "type": "ARCHITECTURE",
+    "title": "Governance Contracts Index",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Authoritative registry of all Phase 0 governance contracts (0.1 through 0.10). Tracks contract versions, lifecycle states, supersession relationships, and dependencies. All 10 contracts are FROZEN and EFFECTIVE as of 2026-10-01.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.1-AI-ROLES-RESPONSIBILITY-CONTRACT-V1.md",
+    "type": "ARCHITECTURE",
+    "title": "Phase 0.1: AI Roles & Responsibility Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining actor authority boundaries, responsibility assignment, and capability classification for Project LLM. Establishes separation between External AI (block creation), Project LLM (integration/certification), and Human Architecture Authority (final approval).",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.2-HUMAN-APPROVAL-CONTRACT-V1.md",
+    "type": "ARCHITECTURE",
+    "title": "Phase 0.2: Human Approval Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining approval gates and Human Architecture Authority decision rights for Project LLM workflows. Specifies when and what requires human approval before repository modification.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.3-REPOSITORY-MODIFICATION-CONTRACT-V1.md",
+    "type": "ARCHITECTURE",
+    "title": "Phase 0.3: Repository Modification Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract governing Git-based modification, checkpoint mechanism, and historical preservation for Project LLM repository operations. Defines safe repository change procedures.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.4-RUNTIME-BOUNDARY-CONTRACT-V1.md",
+    "type": "ARCHITECTURE",
+    "title": "Phase 0.4: Runtime Boundary Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining separation between governance layer and runtime layer. Establishes that Project LLM creates blocks that participate in runtime but does not own or replace runtime systems (ILS, LSNB, RSSB).",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.5-HANDOFF-PROTOCOL-CONTRACT-V1.md",
+    "type": "ARCHITECTURE",
+    "title": "Phase 0.5: Handoff Protocol Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining package handoff between External AI and Project LLM. Establishes completeness thresholds, required artifacts, and handoff validation procedures.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.6-EVIDENCE-AND-CERTIFICATION-CONTRACT-V1.md",
+    "type": "EVIDENCE_SCHEMA",
+    "title": "Phase 0.6: Evidence & Certification Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining evidence maturity levels (DECLARED, OBSERVED, MEASURED, VERIFIED, CERTIFIED) and certification authority for Project LLM. Establishes evidence collection requirements and certification procedures.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.7-VALIDATION-AND-TESTING-CONTRACT-V1.md",
+    "type": "TEST_CONVENTION",
+    "title": "Phase 0.7: Validation & Testing Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining 9 validation levels (L0-L8) and testing methodology for Project LLM block certification. Establishes testing requirements from schema validation through runtime verification.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.8-STOP-CONDITIONS-CONTRACT-V1.md",
+    "type": "ARCHITECTURE",
+    "title": "Phase 0.8: STOP Conditions Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining STOP taxonomy (11 states) and escalation procedures for Project LLM. Specifies when automated processes must pause and seek human intervention.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.9-ROLLBACK-AND-RECOVERY-CONTRACT-V1.md",
+    "type": "ARCHITECTURE",
+    "title": "Phase 0.9: Rollback & Recovery Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining rollback scope, governance, and the 'Historical Truth Is Immutable' principle for Project LLM. Establishes recovery procedures and data preservation requirements.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-0.10-CONTRACT-VERSIONING-EVOLUTION-CONTRACT-V1.md",
+    "type": "ARCHITECTURE",
+    "title": "Phase 0.10: Contract Versioning & Evolution Contract V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Frozen governance contract defining contract identity model, lifecycle states, versioning semantics, erratum protocol, supersession model, dependency management, and migration procedures for all Phase 0 contracts.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\definition-block-version-architecture.md",
+    "type": "BLOCK_SPEC",
+    "title": "Definition Block Version Architecture",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Reference implementation architecture for Definition Block (D1-D6). Defines version-aware architecture pattern, three-layer model (Author Content → Canonical Document → Runtime Presentation), and system-controlled hierarchy. Serves as locked reference pattern for all 18 UBRC blocks.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\UBRC-NEW-BLOCK-AUTHORITATIVE-GUIDE.md",
+    "type": "BLOCK_SPEC",
+    "title": "UBRC New Block Authoritative Guide",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Official guide for converting AI-generated prototypes into Tutorial Composer blocks. Defines 7 core principles, authoritative workflow (Phase 1-4), UBRC contracts, integration requirements, and common anti-patterns. Primary implementation guide for all new block development.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\TUTORIAL-BLOCK-CREATION-WORKFLOW.md",
+    "type": "BLOCK_SPEC",
+    "title": "Tutorial Block Creation Workflow",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Step-by-step instructions for each phase of block development. Covers prototype generation (Free AI), D1/C1 inspection (Project AI), conversion to production, Tutorial Composer integration, and verification procedures. Detailed implementation guide with code examples.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\UBRC-MULTI-BRAND-THEME-CONTRACT.md",
+    "type": "BLOCK_SPEC",
+    "title": "UBRC Multi-Brand Theme Contract",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Contract defining brand-theme separation for UBRC blocks. Establishes that brand data must not be in block JSON, theme is resolved at runtime via brand context, and single block implementation serves multiple brands (RealTutorialHub, SkillUp IT Academy).",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\TUTORIAL-PAGE-ENGINEERING-SOP.md",
+    "type": "ARCHITECTURE",
+    "title": "Tutorial Page Engineering SOP",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Engineering standards and rules for Tutorial V2 development. Defines identity architecture, block versioning rules (permanent, never rename), universal vs block-specific features, ILS/LSNB/RSSB separation of concerns, and development SOPs. Critical rules for maintaining architectural integrity.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\REPOSITORY-AUDIT-REPORT-2026-09-13.md",
+    "type": "ARCHITECTURE",
+    "title": "Repository Audit Report 2026-09-13",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Comprehensive audit-only verification of all existing UBRC blocks. Documents complete inventory: 2 actual UBRC blocks (D1, C1), 15 supporting components, evidence matrix, brand-independent architecture verification, and distinction from legacy tutorial_sections architecture.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\MULTI-BRAND-AUDIT-REPORT-2026-09-13.md",
+    "type": "ARCHITECTURE",
+    "title": "Multi-Brand Audit Report 2026-09-13",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Verification that D1/C1 blocks receive brand-specific themes for RealTutorialHub (orange/blue) and SkillUp IT Academy (pink/navy). Documents theme resolution mechanism, theme usage patterns, database schema brand isolation, and ILS API X-Brand header mechanism.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PLANNED-UBRC-BLOCKS-INVENTORY.md",
+    "type": "BLOCK_SPEC",
+    "title": "Planned UBRC Blocks Inventory",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Complete inventory of the 18-block UBRC system with 137 total versions. Documents implemented blocks (D1, C1) and planned blocks (I1-I6, O1-O5, V1-V10, etc.). Critical constraint: D1 must pass qualification gate before any other UBRC block work begins.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\PHASE-1A-PROJECT-LLM-ARCHITECTURE-V1.md",
+    "type": "PROJECT_LLM",
+    "title": "Phase 1A — Project LLM Architecture V1",
+    "lastModified": "2026-10-01 07:23:51 +0530",
+    "summary": "Proposed technical architecture for Project LLM (Platform Integration & Certification Engine). Defines orchestrated agent system, component model, execution phases (Discovery → Audit → Adaptation → Integration → Validation), and integration with Phase 0 governance. Status: PROPOSED ARCHITECTURE awaiting Human Architecture Authority review.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\.agents\\specs\\m2-implementation-specification.md",
+    "type": "PROJECT_LLM",
+    "title": "M2 Project AI Foundation - Implementation Specification",
+    "lastModified": "2026-10-06 05:26:19 +0530",
+    "summary": "M2 foundation specification defining strict separation: TypeScript/Node for deterministic repository scanning and snapshot generation, Python/FastAPI for AI reasoning layer consuming snapshots. Establishes evidence-driven approach, V3/V8 evidence integrity validation, and 8-phase breakdown (M2.1-M2.8) building on M1 baseline (commit 9b272567).",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\.agents\\specs\\project-llm-ci-repair-implementation-brief.md",
+    "type": "PROJECT_LLM",
+    "title": "Project LLM CI Repair Implementation Brief",
+    "lastModified": "2026-10-08 03:00:26 +0530",
+    "summary": "Implementation brief for Project LLM CI repair workflow. Addresses migration repair, evidence integrity, and certification pipeline fixes. Documents repair strategy for database schema issues and integration test requirements.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\api\\api-server.openapi.yaml",
+    "type": "API_CONTRACT",
+    "title": "Auth API (api-server) OpenAPI Specification",
+    "lastModified": "2026-03-31 14:05:30 +0530",
+    "summary": "OpenAPI specification for Auth API service. Base URLs: api.realtutorialhub.com, api.skillupitacademy.com. Framework: Next.js App Router. Brand detection: hostname-based. Defines authentication, authorization, and user management endpoints.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\api\\skillhubcore.openapi.yaml",
+    "type": "API_CONTRACT",
+    "title": "SkillHub Core Service OpenAPI Specification",
+    "lastModified": "2026-03-31 14:05:30 +0530",
+    "summary": "OpenAPI specification for SkillHub Core Service. Base URL: api.skillhubcore.in. Framework: Hono. Brand detection: JWT platform claim. Defines core platform services including tutorial content, ILS telemetry, and cross-brand shared services.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\api\\README.md",
+    "type": "API_CONTRACT",
+    "title": "API Documentation README",
+    "lastModified": "2026-03-31 14:05:30 +0530",
+    "summary": "Overview of API services architecture. Documents brand isolation principles, portal identity via x-portal-identity header (user, admin, faculty, super_admin, infrastructure), and shadow user linking between brand databases and shared services via Identity Bridge.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-rich-document\\blocks\\index.ts",
+    "type": "BLOCK_SPEC",
+    "title": "Tutorial Block Type Definitions",
+    "lastModified": "2026-09-21 22:44:53 +0530",
+    "summary": "TypeScript type definitions for all tutorial blocks. Exports TutorialBlock discriminated union (ContentBlockExtended | ContainerBlock) and version-specific block types (CodeC1, IntroductionI1, SummaryS1, etc.). Core type system that all block implementations build on.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\packages\\validation\\src\\tutorialSections\\visual.schema.ts",
+    "type": "BLOCK_SPEC",
+    "title": "Visual Section Schema",
+    "lastModified": "2026-07-24 00:31:57 +0530",
+    "summary": "Zod validation schema for Visual tutorial sections (legacy tutorial_sections architecture). Defines required fields, validation rules, and type safety for visual content blocks. Note: tutorial_sections is deprecated in favor of UBRC block-based architecture.",
+    "authoritative": false,
+    "supersededBy": "UBRC block-based schemas in packages/types/src/tutorial-rich-document/blocks/"
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\playwright.config.ts",
+    "type": "TEST_CONVENTION",
+    "title": "Playwright E2E Test Configuration",
+    "lastModified": "2026-09-29 00:30:48 +0530",
+    "summary": "Playwright configuration for end-to-end browser testing. Defines testDir (./tests/e2e), timeout (120s), parallel execution settings, browser projects (chromium, firefox), and reporters (HTML). Excludes specific ILS and instructional completion tests.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\vitest.workspace.ts",
+    "type": "TEST_CONVENTION",
+    "title": "Vitest Workspace Configuration",
+    "lastModified": "2026-10-05 15:07:29 +0530",
+    "summary": "Vitest workspace configuration defining test suites across monorepo. References vitest.config.ts files for apps (api-server, web-app, admin-app) and packages (db, api-client, project-llm-discovery). Establishes unit and integration test execution patterns.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\.kiro\\specs\\tutorial-block-composer\\architecture.md",
+    "type": "COMPOSER_INTEGRATION",
+    "title": "Tutorial Block Composer Architecture",
+    "lastModified": null,
+    "summary": "Architecture specification for Tutorial Block Composer. Defines block selection UI, configuration flow, serialization to TutorialDocument, and integration with Tutorial Engine. Details how authors compose tutorials from certified UBRC blocks.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\.kiro\\specs\\tutorial-block-composer\\requirements.md",
+    "type": "COMPOSER_INTEGRATION",
+    "title": "Tutorial Block Composer Requirements",
+    "lastModified": null,
+    "summary": "Requirements specification for Tutorial Block Composer. Defines functional requirements, user workflows, block discovery mechanism, validation rules, and integration points with Project LLM certification pipeline.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\preflight.spec.ts",
+    "type": "TEST_CONVENTION",
+    "title": "Project AI Preflight E2E Test",
+    "lastModified": "2026-09-29 00:30:48 +0530",
+    "summary": "Playwright E2E test verifying Project AI preflight checks. Tests environment setup, service availability, and baseline health checks before block certification workflow execution.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\i2-composition.spec.ts",
+    "type": "TEST_CONVENTION",
+    "title": "Project AI I2 Composition E2E Test",
+    "lastModified": "2026-09-29 00:30:48 +0530",
+    "summary": "Playwright E2E test verifying Introduction I2 block creation workflow. Tests complete path from candidate upload through integration, validation, Composer registration, and runtime rendering verification.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\mix-match-composition.spec.ts",
+    "type": "TEST_CONVENTION",
+    "title": "Project AI Mix & Match Composition E2E Test",
+    "lastModified": "2026-09-29 00:30:48 +0530",
+    "summary": "Playwright E2E test verifying Mix & Match block composition workflow. Tests reuse and combination of design ideas from existing certified blocks, compatibility verification, and rendering validation for composed blocks.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\evidence\\schemas.py",
+    "type": "EVIDENCE_SCHEMA",
+    "title": "Project AI Evidence Schemas",
+    "lastModified": "2026-10-06 05:26:19 +0530",
+    "summary": "Pydantic schemas for Project AI evidence collection. Defines AgentRun, TestResult, EvidenceRecord, GateResult, and WorkflowEvent models. Establishes structured evidence format binding test results to certification decisions with content-addressed evidence locators.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\evidence\\ledger.py",
+    "type": "EVIDENCE_SCHEMA",
+    "title": "Project AI Evidence Ledger",
+    "lastModified": "2026-10-06 05:26:19 +0530",
+    "summary": "Append-only JSONL ledger implementation for evidence collection. Provides concurrency-safe evidence recording with SHA-256 hash chains for tamper detection. Implements CanonicalEvidenceStore with R0+ canonical evidence model.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\.kiro\\README.md",
+    "type": "OTHER",
+    "title": "Kiro Directory README",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Navigation guide for .kiro documentation directory. Points to Master Documentation Map, AI Prompt Registry (165-task implementation roadmap), and Current State Report. Entry point for understanding 20+ documentation folders in the project.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\README.md",
+    "type": "OTHER",
+    "title": "UBRC Documentation README",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Overview of UBRC documentation folder. Provides document inventory, recommended reading order for different audiences (first-time developers, experienced developers, architectural reviewers), quick links to common sections, and critical rules summary. References UBRC-NEW-BLOCK-AUTHORITATIVE-GUIDE.md as primary entry point.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\README.md",
+    "type": "EVIDENCE_SCHEMA",
+    "title": "Agents Evidence Directory README",
+    "lastModified": "2026-10-08 03:00:26 +0530",
+    "summary": "Overview of .agents/evidence directory structure. Documents evidence collection system using append-only JSONL ledgers (agent-runs.jsonl, evidence.jsonl, test-results.jsonl, gate-results.jsonl) and certification artifact organization. Defines evidence maturity levels and audit trail requirements.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\tutorialengine.md",
+    "type": "ARCHITECTURE",
+    "title": "Tutorial Engine Architecture",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Tutorial Engine architecture and Composer design. Covers 16-page Composer architecture, TutorialDocument model, TutorialBlock union type, database schema (tutorial_content with JSONB), content analysis and block suggestions, presentation suggestions, human-in-the-loop workflow, and component hierarchy.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\TutorialPageArchitectEngineTheme.md",
+    "type": "ARCHITECTURE",
+    "title": "Tutorial Page Theme Engine Architecture",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Theme engine architecture and brand resolution. Defines runtime theme resolution, brand detection mechanisms, theme propagation chains, domain themes vs brand themes, Tailwind configuration, CSS variable usage, and theme context providers for multi-brand support.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\TutorialPageArchitectEngineContent.md",
+    "type": "ARCHITECTURE",
+    "title": "Tutorial Page Content Engine Architecture",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Content delivery and rendering architecture. Defines TutorialDocument structure, block rendering pipeline, content storage (JSONB), content versioning, delivery service patterns, SSR vs CSR considerations, and content caching strategies.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\ubrc\\TutorialPageArchitectEngineUI_UX.md",
+    "type": "ARCHITECTURE",
+    "title": "Tutorial Page UI/UX Engine Architecture",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "UI/UX patterns and component architecture. Defines page layout structure, navigation patterns, LSNB (Left Side Navigation Bar), RSSB (Right Side Status Bar), tutorial content area, responsive design patterns, and accessibility requirements (WCAG compliance).",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\architecture\\DATABASE-ARCHITECTURE.md",
+    "type": "ARCHITECTURE",
+    "title": "Database Architecture",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Multi-database architecture specification. Defines 5 PostgreSQL databases (rth_prod, skillup_prod, people_prod, quiz_platform_prod, skillhubcore_admin_prod), brand isolation principles, Identity Bridge linking shadow users, Drizzle ORM schema definitions, and migration management patterns.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\docs\\architecture\\DOMAIN-DATABASE-MAP.md",
+    "type": "ARCHITECTURE",
+    "title": "Domain-Database Mapping",
+    "lastModified": "2026-09-13 19:38:11 +0530",
+    "summary": "Mapping of application domains to database schemas. Documents which services access which databases, cross-database join restrictions, and data sovereignty boundaries ensuring brand isolation is maintained at both application and database layers.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\.kiro\\specs\\multi-brand-auth-architecture\\ARCHITECTURE-MASTER-OVERVIEW.md",
+    "type": "ARCHITECTURE",
+    "title": "Multi-Brand Auth Architecture Master Overview",
+    "lastModified": null,
+    "summary": "Master overview of multi-brand authentication architecture. Defines brand detection flow, JWT structure with platform claims, session management across brands, cookie domain strategies, and authentication boundary enforcement for RealTutorialHub and SkillUp IT Academy.",
+    "authoritative": true,
+    "supersededBy": null
+  },
+  {
+    "path": "e:\\onlinewebsites\\quiz-platform\\.kiro\\specs\\ai-dual-pipeline-orchestration\\readme.md",
+    "type": "PROJECT_LLM",
+    "title": "AI Dual Pipeline Orchestration",
+    "lastModified": null,
+    "summary": "Specification for dual-pipeline AI orchestration. Documents separation between External AI (creative block design) and Project LLM (engineering integration/certification). Defines handoff protocols, validation gates, and orchestration patterns for block lifecycle management.",
+    "authoritative": true,
+    "supersededBy": null
+  }
+]

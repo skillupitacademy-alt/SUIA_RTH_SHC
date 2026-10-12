@@ -1,9 +1,9 @@
 # Wave 1C Independent Verification Report
 
-**Verification Date**: 2025-01-31  
-**Verifier**: independent-verification-workflow (READ-ONLY)  
-**Commits Claimed**: 772b2630, 76aaba51, 860cc2ef, ceb7b49b  
-**Branch**: m2-project-ai-canonical-wiring  
+**Verification Date**: 2025-01-31
+**Verifier**: independent-verification-workflow (READ-ONLY)
+**Commits Claimed**: 772b2630, 76aaba51, 860cc2ef, ceb7b49b
+**Branch**: m2-project-ai-canonical-wiring
 **Workspace**: e:\onlinewebsites\quiz-platform
 
 ---
@@ -28,7 +28,7 @@ The Wave 1C implementation delivers on its core identity spoofing fixes and esta
 
 ### 1. Infrastructure Bypass Security (CRITICAL)
 
-**Claim**: `verify_brand_access()` requires explicit privileged role for `brand=None` bypass  
+**Claim**: `verify_brand_access()` requires explicit privileged role for `brand=None` bypass
 **Actual**: ❌ **NO EXPLICIT PRIVILEGE CHECK**
 
 **Evidence**:
@@ -62,13 +62,13 @@ if user_brand is None:
     # Infrastructure bypass ONLY for explicitly privileged users
     roles = principal.get("roles", [])
     is_admin = principal.get("is_admin", False)
-    
+
     if not (is_admin or "super_admin" in roles or "infrastructure" in roles):
         raise HTTPException(
             status_code=403,
             detail="Missing brand claim. Tenant users must have valid brand."
         )
-    
+
     logger.debug(f"Infrastructure user bypassing brand check: roles={roles}")
     return
 ```
@@ -77,7 +77,7 @@ if user_brand is None:
 
 ### 2. Legacy Candidate Access (HIGH)
 
-**Claim**: Legacy candidates with `brand=NULL` are accessible only to verified infrastructure principals  
+**Claim**: Legacy candidates with `brand=NULL` are accessible only to verified infrastructure principals
 **Actual**: ❌ **ALL AUTHENTICATED USERS CAN ACCESS LEGACY CANDIDATES**
 
 **Evidence**:
@@ -108,7 +108,7 @@ if package.brand is None:
     user_brand = user.get("brand")
     roles = user.get("roles", [])
     is_admin = user.get("is_admin", False)
-    
+
     # Only infrastructure users may access unclassified resources
     if user_brand is not None and not (is_admin or "super_admin" in roles):
         raise HTTPException(
@@ -122,7 +122,7 @@ if package.brand is None:
 
 ### 3. Integration Test Coverage Gap (MEDIUM)
 
-**Claim**: 20/20 tests passing  
+**Claim**: 20/20 tests passing
 **Actual**: ✅ **20 UNIT TESTS PASSING, 9 INTEGRATION TESTS SKIPPED**
 
 **Evidence**:
@@ -159,7 +159,7 @@ if package.brand is None:
 
 ### 4. Self-Approval Test Missing (MEDIUM)
 
-**Claim**: Self-approval rejection is tested  
+**Claim**: Self-approval rejection is tested
 **Actual**: ⚠️ **IMPLEMENTATION EXISTS, NO DEDICATED UNIT TEST**
 
 **Evidence**:
@@ -210,7 +210,7 @@ def test_self_approval_rejected():
 
 ### 5. KeyError Risk in Workflow Creation (LOW)
 
-**Claim**: Workflow creation assumes `user["user_id"]` exists, risking `KeyError`  
+**Claim**: Workflow creation assumes `user["user_id"]` exists, risking `KeyError`
 **Actual**: ✅ **HARDENED AGAINST KEYERROR**
 
 **Evidence**:
@@ -255,7 +255,7 @@ if not requester_id:
 
 ### 6. Database Migration Status (INFO)
 
-**Claim**: Migration documented for `brand` column  
+**Claim**: Migration documented for `brand` column
 **Actual**: ⚠️ **MIGRATION DOCUMENTED, NOT VERIFIED AS APPLIED**
 
 **Evidence**:
@@ -295,7 +295,7 @@ CREATE INDEX idx_candidate_brand ON project_ai_candidates(brand);
 
 ### 7. Test Evidence Verification (CRITICAL)
 
-**Claim**: Independent test run proves 20/20 tests passing, 82% coverage  
+**Claim**: Independent test run proves 20/20 tests passing, 82% coverage
 **Actual**: ⚠️ **EVIDENCE REFLECTS WORKFLOW AGENT'S OWN RUN, NOT INDEPENDENT EXECUTION**
 
 **Evidence**:
@@ -316,9 +316,9 @@ CREATE INDEX idx_candidate_brand ON project_ai_candidates(brand);
 ```
 
 **Analysis**:
-✅ The evidence file exists and is well-structured  
-✅ The numbers match the claimed results (20 passed, 9 skipped, 82% coverage)  
-❌ This verification **DID NOT execute the test suite independently**  
+✅ The evidence file exists and is well-structured
+✅ The numbers match the claimed results (20 passed, 9 skipped, 82% coverage)
+❌ This verification **DID NOT execute the test suite independently**
 ❌ The evidence is a **self-report** from the implementation workflow
 
 **Risk Level**: 🔴 **CRITICAL** (for acceptance process, not security)
@@ -491,9 +491,9 @@ Once remediated, Wave 1C will be **COMPLETE** and ready for Wave 1D (role-based 
 
 This verification was performed READ-ONLY. No code was modified, no tests were executed, no commits were created.
 
-**Verifier**: independent-verification-workflow  
-**Date**: 2025-01-31  
-**Method**: Manual code inspection + evidence review  
+**Verifier**: independent-verification-workflow
+**Date**: 2025-01-31
+**Method**: Manual code inspection + evidence review
 **Limitations**: Did not execute tests, did not verify database state, did not test end-to-end flows
 
 ---

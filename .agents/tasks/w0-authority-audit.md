@@ -1,8 +1,8 @@
 # Workflow Authority Audit: Project LLM M2.9
 
-**Branch:** m2-project-ai-canonical-wiring  
-**Commit:** 55613c81  
-**Audit Date:** 2026-01-08  
+**Branch:** m2-project-ai-canonical-wiring
+**Commit:** 55613c81
+**Audit Date:** 2026-01-08
 **Auditor:** Planning Agent (Wave 0 / Agent B01 Authority Investigation)
 
 ---
@@ -167,7 +167,7 @@ async def execute_step(step, task_context, snapshot):
             self.agent_registry.get_agent(AgentType.DEPENDENCY)
         ]
         agent_results = await self.agent_coordinator.execute_sequential(...)
-    
+
     elif step.step_id == "verification":
         # Build dependency graph and execute agents with dependencies
         dependencies = {
@@ -757,7 +757,7 @@ PROBLEM: This code path does not exist
      ├── Governance (gates transitions via approvals)
      ├── AgentCoordinator (executes agents within transitions)
      └── GateController (validates technical compliance)
-   
+
    Frontend (UI) consumes CanonicalWorkflowState, does not define states
    TaskState retired as workflow authority (can remain as agent-level tracking)
    ```

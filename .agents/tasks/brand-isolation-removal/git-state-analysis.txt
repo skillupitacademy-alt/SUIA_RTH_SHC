@@ -1,4 +1,4 @@
-﻿GIT STATE ANALYSIS FOR m2-project-ai-canonical-wiring BRANCH
+GIT STATE ANALYSIS FOR m2-project-ai-canonical-wiring BRANCH
 Generated: 2026-10-12 16:09:07
 =============================================================================
 
@@ -84,14 +84,14 @@ CATEGORY A - Evidence & Documentation (RECOMMEND: COMMIT)
     - requirements-matrix.csv
     - requirements-matrix.json
     - w0-summary.md
-  
+
   .agents/tasks/brand-isolation-removal/ (5 files)
     - conftest-fix.txt
     - plan.md
     - removal-verification.txt
     - review.json
     - review.md
-  
+
   .agents/tasks/ (5 files)
     - PROJECT-LLM-INTEGRATION-PLAN.md
     - commit-wiring-plan.json
@@ -113,7 +113,7 @@ CATEGORY B - Utility Scripts (RECOMMEND: COMMIT with review)
   .agents/scripts/ (2 files)
     - fix_agent_context.py
     - update_agent_context.py
-  
+
   services/project-ai/ (1 file)
     - run_tests.ps1
 

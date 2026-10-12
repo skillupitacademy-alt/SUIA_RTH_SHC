@@ -1,10 +1,10 @@
 # WAVE 0: Repository Baseline Verification
 ## Current State Audit — Project AI Foundation
 
-**Audit Date:** 2025-01-29  
-**Repository:** skillupitacademy-alt/SUIA_RTH_SHC  
-**Branch:** m2-project-ai-foundation  
-**HEAD Commit:** 7c6b607f690f047a334962f8fca640784a084d57  
+**Audit Date:** 2025-01-29
+**Repository:** skillupitacademy-alt/SUIA_RTH_SHC
+**Branch:** m2-project-ai-foundation
+**HEAD Commit:** 7c6b607f690f047a334962f8fca640784a084d57
 **Auditor:** PA-00 (Gate Controller Agent)
 
 ---
@@ -647,7 +647,7 @@ Then proceed to Wave 2.
 
 ---
 
-**Audit completed:** 2025-01-29  
-**JSON audit file:** `.agents/tasks/CURRENT_STATE_AUDIT.json`  
-**Auditor:** PA-00 Gate Controller Agent  
+**Audit completed:** 2025-01-29
+**JSON audit file:** `.agents/tasks/CURRENT_STATE_AUDIT.json`
+**Auditor:** PA-00 Gate Controller Agent
 **Status:** ACCEPTED WITH CLARIFICATIONS

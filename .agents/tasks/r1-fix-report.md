@@ -7,7 +7,7 @@ Review iteration after initial implementation
 Two blocking issues were identified in the review (r1-review.json):
 
 ### Finding 1: Import failure in app/intelligence/__init__.py
-**Severity:** Blocking  
+**Severity:** Blocking
 **Issue:** The __init__.py imports from .repository_intelligence, but that file is now .repository_intelligence.py.archived. Python raises ModuleNotFoundError.
 
 **Impact:** Any import of `app.intelligence` would fail at runtime with ModuleNotFoundError.
@@ -15,7 +15,7 @@ Two blocking issues were identified in the review (r1-review.json):
 **Risk:** Latent failure (no production code currently imports from app.intelligence, verified by grep).
 
 ### Finding 2: build_contract_legacy() performs filesystem operations
-**Severity:** Blocking  
+**Severity:** Blocking
 **Issue:** The function is marked DEPRECATED but remains callable. It calls full_path.exists() and compute_sha256(full_path), both of which violate the architectural boundary.
 
 **Impact:** If production code calls build_contract_legacy(), the consolidation goal is not met.

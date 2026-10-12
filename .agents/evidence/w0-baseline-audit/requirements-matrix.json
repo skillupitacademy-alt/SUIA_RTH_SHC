@@ -1,0 +1,429 @@
+{
+  "audit_metadata": {
+    "audit_date": "2026-01-XX",
+    "repository": "e:\\onlinewebsites\\quiz-platform",
+    "audit_type": "READ_ONLY_REQUIREMENTS_VERIFICATION",
+    "total_requirements": 25,
+    "verified": 14,
+    "partial": 7,
+    "missing": 3,
+    "unknown": 1
+  },
+  "requirements": [
+    {
+      "requirementId": "R01",
+      "description": "Repository Discovery: System must examine repository snapshot and discover actual block components, schemas, types, and version conventions from real files",
+      "expectedFiles": [
+        "packages/project-llm-discovery/src/scanners/d3-blocks-scanner.ts",
+        "packages/project-llm-discovery/src/index.ts",
+        "packages/project-llm-discovery/src/contracts/snapshot.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\project-llm-discovery\\src\\scanners\\d3-blocks-scanner.ts (lines 1-726)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\project-llm-discovery\\src\\index.ts (lines 1-48)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\project-llm-discovery\\src\\contracts\\snapshot.ts"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\integration\\test_w2_contract_generation.py",
+      "dependencies": [],
+      "acceptanceCriteria": "D3-blocks-scanner discovers block families from PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md, type definitions from content-blocks.ts, and renderer components from blocks/ directory with evidence IDs and SHA-256 hashes"
+    },
+    {
+      "requirementId": "R02",
+      "description": "Reference Implementation Discovery: Discover I1, C1, D1 reference implementations and derive integration requirements from them",
+      "expectedFiles": [
+        "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts",
+        "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
+        "packages/ui/src/tutorial/blocks/CodeC1Block.tsx",
+        "packages/ui/src/tutorial/blocks/DefinitionBlock.tsx"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-rich-document\\blocks\\content-blocks.ts (lines 214-217: IntroductionI1Block, 311-313: CodeC1Block, 509-511: DefinitionD1Block)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\blocks\\IntroductionBlock.tsx",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\blocks\\CodeC1Block.tsx",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\blocks\\DefinitionBlock.tsx"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\__tests__\\TutorialRendererRouting.test.tsx",
+      "dependencies": ["R01"],
+      "acceptanceCriteria": "Scanner discovers I1, C1, D1 type definitions and renderer implementations with version enforcement (I1/C1 only) in TutorialBlockRenderer.tsx lines 97-107 and 83-91"
+    },
+    {
+      "requirementId": "R03",
+      "description": "Renderer/Registry Integration Discovery: Discover actual renderer and registry integration patterns",
+      "expectedFiles": [
+        "packages/ui/src/tutorial/TutorialBlockRenderer.tsx",
+        "packages/types/src/tutorial-rich-document/registry.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\TutorialBlockRenderer.tsx (lines 1-149, switch-case routing lines 70-133)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-rich-document\\registry.ts"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\__tests__\\TutorialRendererRouting.test.tsx",
+      "dependencies": ["R01", "R02"],
+      "acceptanceCriteria": "TutorialBlockRenderer switch-case routing discovered with 20+ block types, version enforcement for I1/C1, and BLOCK_REGISTRY with type definitions"
+    },
+    {
+      "requirementId": "R04",
+      "description": "Tutorial Composer Registration Discovery: Discover actual Tutorial Composer registration and authoring contract",
+      "expectedFiles": [
+        "packages/db-tutorial/src/services/tutorial-composer.service.ts",
+        "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-block-composer"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\tutorial-composer.service.ts (lines 1-100+)",
+        "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\app\\(admin)\\tools\\tutorial-block-composer (Next.js page artifacts)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\__tests__\\tutorial-composer.service.phase1.test.ts",
+      "dependencies": ["R03"],
+      "acceptanceCriteria": "Tutorial Composer service layer and admin UI discovered with TutorialDocument schema validation, (subtopicId, navigationNodeId, brandId) identity, and block selection interface"
+    },
+    {
+      "requirementId": "R05",
+      "description": "Runtime/Browser-Test Requirements Discovery: Discover runtime and browser-test requirements from the repository",
+      "expectedFiles": [
+        "playwright.config.ts",
+        "tests/e2e/*.spec.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\playwright.config.ts",
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\introduction-i1.browser.spec.ts",
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\tutorial-composer-phase2-hydration.spec.ts",
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\ils-tutorial-session.spec.ts"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\introduction-i1.browser.spec.ts (lines 1-100+)",
+      "dependencies": [],
+      "acceptanceCriteria": "Playwright E2E tests verify browser rendering, data-block-type/data-block-version attributes, console error classification, and runtime compatibility"
+    },
+    {
+      "requirementId": "R06",
+      "description": "Theme/Brand Boundary Discovery: Discover theme and brand boundaries from the repository",
+      "expectedFiles": [
+        "apps/realtutorialhub-quiz/src/components/reports/context/reportThemeTokens.ts",
+        "packages/ui/src/tutorial/TutorialBlockRenderer.tsx"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\apps\\realtutorialhub-quiz\\src\\components\\reports\\context\\reportThemeTokens.ts",
+        "e:\\onlinewebsites\\quiz-platform\\apps\\realtutorialhub-quiz\\src\\components\\reports\\hooks\\useReportThemeTokens.ts",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\TutorialBlockRenderer.tsx (lines 103-107: theme validation for I1)",
+        "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\projectLlmCreationBrief.ts (brand independence constraints)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": null,
+      "dependencies": ["R03"],
+      "acceptanceCriteria": "Theme system discovered with ThemeTokens interface, dark/light mode support, brand-specific themes, and theme prop requirement for I1/C1 blocks"
+    },
+    {
+      "requirementId": "R07",
+      "description": "ILS/LSNB/RSSB Responsibilities Discovery: Discover ILS, LSNB, RSSB component responsibilities",
+      "expectedFiles": [
+        "packages/ui/src/tutorial/runtime/ILSProvider.tsx",
+        "packages/ui/src/tutorial/runtime/LearningProgressSidebar/LearningProgressSidebar.tsx",
+        "packages/ui/src/tutorial/runtime/ActiveBlockContext.tsx"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\ILSProvider.tsx (lines 1-100+)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\LearningProgressSidebar\\LearningProgressSidebar.tsx",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\LearningProgressSidebar\\index.tsx (lines 2-25: RSSB Macro 4 documentation)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\ActiveBlockContext.tsx",
+        "e:\\onlinewebsites\\quiz-platform\\src\\share-branding\\LearningExperience\\components\\TutorialPageShell.tsx (lines 305-410: integration hierarchy)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\ils-tutorial-session.spec.ts",
+      "dependencies": ["R03"],
+      "acceptanceCriteria": "ILS provider with overallProgress and activeBlockProgress data discovered, RSSB as Macro 4 passive consumer, ActiveBlockProvider with intersection observer, and integration hierarchy verified in TutorialPageShell"
+    },
+    {
+      "requirementId": "R08",
+      "description": "Engineering Contract Generation: Generate self-contained engineering contract explaining target, required artifacts, integration rules, tests, acceptance criteria, prohibited behaviors, and repository evidence",
+      "expectedFiles": [
+        "services/project-ai/app/contracts/engineering_contract.py",
+        "services/project-ai/app/contracts/repository_intelligence.py"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\contracts\\engineering_contract.py (lines 1-100+)",
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\contracts\\repository_intelligence.py (lines 1-150+)",
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\api\\routes\\contract.py (seal_contract at line 374)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\integration\\test_w2_contract_generation.py",
+      "dependencies": ["R01", "R02", "R03", "R04", "R05", "R06", "R07"],
+      "acceptanceCriteria": "EngineeringContract model with seal_contract function generating SHA-256 hash, RepositoryBlockContract with ContractFieldEvidence tracking, PROHIBITED_BEHAVIORS list, and immutability guarantee through PostgreSQL persistence"
+    },
+    {
+      "requirementId": "R09",
+      "description": "Candidate File Inventory and Hashing: Inventory and hash uploaded candidate files",
+      "expectedFiles": [
+        "services/project-ai/app/orchestration/agent_registry.py (CANDIDATE_INTAKE agent)"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\orchestration\\agent_registry.py (lines 160-168: CANDIDATE_INTAKE agent with receive_upload, classify_block_family, compute_hash capabilities)"
+      ],
+      "status": "PARTIAL",
+      "testEvidence": null,
+      "dependencies": [],
+      "acceptanceCriteria": "CANDIDATE_INTAKE agent defined with file hashing capability (SHA-256), but full upload route handlers not confirmed in Python backend"
+    },
+    {
+      "requirementId": "R10",
+      "description": "Candidate Verification: Verify family, version, workflow, and contract binding of candidate",
+      "expectedFiles": [
+        "services/project-ai/app/orchestration/agent_registry.py (CANDIDATE_INTAKE agent)"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\orchestration\\agent_registry.py (lines 160-168: CANDIDATE_INTAKE agent with classify_block_family capability)",
+        "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\projectLlmCreationBrief.ts (UBRC compliance constraints)"
+      ],
+      "status": "PARTIAL",
+      "testEvidence": null,
+      "dependencies": ["R09"],
+      "acceptanceCriteria": "CANDIDATE_INTAKE agent can classify block family, and creation brief includes UBRC compliance constraints, but full verification pipeline not confirmed"
+    },
+    {
+      "requirementId": "R11",
+      "description": "Candidate vs Repository Comparison: Compare candidate with current repository and canonical contracts",
+      "expectedFiles": [
+        "services/project-ai/app/orchestration/agent_registry.py (CANDIDATE_PLACEMENT agent)",
+        "services/project-ai/app/placement/artifact_policy.py"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\orchestration\\agent_registry.py (lines 169-177: CANDIDATE_PLACEMENT agent with compare_canonical capability)",
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\placement\\artifact_policy.py (lines 1-100+: semantic matching logic)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\test_placement_manifest.py",
+      "dependencies": ["R10"],
+      "acceptanceCriteria": "CANDIDATE_PLACEMENT agent with compare_canonical capability and artifact_policy.py with semantic matching, content-based duplicate detection using SHA-256, and canonical artifact comparison"
+    },
+    {
+      "requirementId": "R12",
+      "description": "Missing Artifact Detection: Identify missing artifacts, conflicts, duplicates, and incompatible dependencies",
+      "expectedFiles": [
+        "services/project-ai/app/placement/artifact_policy.py"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\placement\\artifact_policy.py (lines 1-100+: duplicate prevention, RejectionReason model)",
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\test_artifact_policy.py (lines 376-379: TestDuplicatePrevention)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\test_artifact_policy.py",
+      "dependencies": ["R11"],
+      "acceptanceCriteria": "Duplicate prevention logic rejects ObjectiveBlockV2.tsx when ObjectiveBlock.tsx exists, RejectionReason model with structured rejection codes and actionable guidance"
+    },
+    {
+      "requirementId": "R13",
+      "description": "Placement Manifest: Produce placement manifest with ADD/UPDATE/EXTEND/REUSE/REJECT verbs",
+      "expectedFiles": [
+        "services/project-ai/app/placement/artifact_policy.py",
+        "services/project-ai/app/models/candidate.py (PlacementDecision)"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\placement\\artifact_policy.py (lines 1-100+: ADD/REUSE/EXTEND/UPDATE/REJECT logic)",
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\models\\candidate.py (PlacementDecision model)",
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\orchestration\\agent_registry.py (lines 169-177: CANDIDATE_PLACEMENT agent with generate_manifest, propose_placement)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\test_placement_manifest.py",
+      "dependencies": ["R11", "R12"],
+      "acceptanceCriteria": "Placement manifest generation with ADD (no match), REUSE (identical hash), EXTEND (variant indicators), UPDATE (semantic match), REJECT (duplicate prevention) actions implemented and tested"
+    },
+    {
+      "requirementId": "R14",
+      "description": "Human Approval Gate: Obtain human approval before any repository changes",
+      "expectedFiles": [
+        "apps/skillhubcore-admin/src/lib/project-llm/projectLlmCreationBrief.ts",
+        "apps/skillhubcore-admin/src/lib/project-llm/api/projectLlmClient.ts",
+        "apps/skillhubcore-admin/src/lib/project-llm/types/canonicalWorkflowState.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\projectLlmCreationBrief.ts (lines 127-131: E-002 Human GUI Approval Required constraint, lines 236-246: buildHumanApprovalGate function)",
+        "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\api\\projectLlmClient.ts (lines 84-90: approveImplementation method)",
+        "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\types\\canonicalWorkflowState.ts (line 20: AWAITING_IMPLEMENTATION_APPROVAL state, ApprovalResponse type)"
+      ],
+      "status": "PARTIAL",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\projectLlmCreationBrief.test.ts",
+      "dependencies": ["R13"],
+      "acceptanceCriteria": "Human approval gate exists in creation brief with STOP instruction and AWAITING_IMPLEMENTATION_APPROVAL workflow state, but approval enforcement mechanism in Python backend not fully confirmed"
+    },
+    {
+      "requirementId": "R15",
+      "description": "Controlled Repository Operation: Perform approved placement through controlled repository operation",
+      "expectedFiles": [
+        "services/project-ai/app/orchestration/agent_registry.py (CANDIDATE_PLACEMENT agent)"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\orchestration\\agent_registry.py (lines 169-177: CANDIDATE_PLACEMENT agent with propose_placement capability)"
+      ],
+      "status": "PARTIAL",
+      "testEvidence": null,
+      "dependencies": ["R14"],
+      "acceptanceCriteria": "CANDIDATE_PLACEMENT agent can propose placement, but actual repository write operations (file creation, git operations) not confirmed in audit"
+    },
+    {
+      "requirementId": "R16",
+      "description": "Post-Placement Rediscovery: Rediscover repository and verify resulting implementation after placement",
+      "expectedFiles": [
+        "packages/project-llm-discovery/src/scanners/d3-blocks-scanner.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\project-llm-discovery\\src\\scanners\\d3-blocks-scanner.ts (lines 1-726: scanBlocks function)"
+      ],
+      "status": "PARTIAL",
+      "testEvidence": null,
+      "dependencies": ["R15"],
+      "acceptanceCriteria": "D3-blocks-scanner can rediscover blocks after placement, but automated post-placement verification trigger not confirmed"
+    },
+    {
+      "requirementId": "R17",
+      "description": "Tutorial Composer Discoverability: Block must appear in Tutorial Composer's available block options after integration",
+      "expectedFiles": [
+        "packages/types/src/tutorial-rich-document/registry.ts",
+        "packages/ui/src/tutorial/TutorialBlockRenderer.tsx"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-rich-document\\registry.ts (BLOCK_REGISTRY with 20+ block types)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\TutorialBlockRenderer.tsx (switch-case routing)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\tutorial-composer-phase2-hydration.spec.ts",
+      "dependencies": ["R04"],
+      "acceptanceCriteria": "BLOCK_REGISTRY defines available block types and TutorialBlockRenderer switch cases provide runtime dispatch, making blocks discoverable to composer"
+    },
+    {
+      "requirementId": "R18",
+      "description": "Author Selection and Configuration: Author can select the block, provide valid content, configure supported properties",
+      "expectedFiles": [
+        "packages/db-tutorial/src/services/tutorial-composer.service.ts",
+        "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-block-composer"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\tutorial-composer.service.ts (TutorialDocument schema validation)",
+        "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\app\\(admin)\\tools\\tutorial-block-composer (Next.js page)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\__tests__\\tutorial-composer.service.phase1.test.ts",
+      "dependencies": ["R17"],
+      "acceptanceCriteria": "Tutorial Composer service validates TutorialDocument with blocks array, admin UI provides block selection interface, and service layer persists configured content"
+    },
+    {
+      "requirementId": "R19",
+      "description": "Serialization Verification: Composer produces valid tutorial configuration with correct block identity, type, version, data",
+      "expectedFiles": [
+        "packages/db-tutorial/src/services/tutorial-composer.service.ts",
+        "packages/types/src/tutorial-rich-document/blocks/content-blocks.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\tutorial-composer.service.ts (TutorialDocumentSchema validation)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-rich-document\\blocks\\content-blocks.ts (TypeScript type definitions with version fields)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\__tests__\\tutorial-composer.service.phase1.test.ts",
+      "dependencies": ["R18"],
+      "acceptanceCriteria": "TutorialDocumentSchema validation ensures blocks have correct type, version, and data fields before persistence"
+    },
+    {
+      "requirementId": "R20",
+      "description": "Rendering Verification: Existing renderer resolves configuration to correct implementation",
+      "expectedFiles": [
+        "packages/ui/src/tutorial/TutorialBlockRenderer.tsx"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\TutorialBlockRenderer.tsx (lines 70-133: switch-case routing with version enforcement)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\__tests__\\TutorialRendererRouting.test.tsx",
+      "dependencies": ["R19"],
+      "acceptanceCriteria": "TutorialBlockRenderer resolves block type to correct component implementation with version enforcement for I1 and C1, and error handling for unsupported types/versions"
+    },
+    {
+      "requirementId": "R21",
+      "description": "Runtime Compatibility: Block participates in existing runtime without creating replacement nav/progress/telemetry",
+      "expectedFiles": [
+        "packages/ui/src/tutorial/runtime/ILSProvider.tsx",
+        "src/share-branding/LearningExperience/components/TutorialPageShell.tsx"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\ILSProvider.tsx (ILS data context)",
+        "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\ActiveBlockContext.tsx (active block tracking)",
+        "e:\\onlinewebsites\\quiz-platform\\src\\share-branding\\LearningExperience\\components\\TutorialPageShell.tsx (lines 305-410: ActiveBlockProvider → ILSProvider → BlockTelemetryProvider → RSSB hierarchy)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\ils-tutorial-session.spec.ts",
+      "dependencies": ["R07", "R20"],
+      "acceptanceCriteria": "Blocks receive runtimeContext prop, participate in ILS/ActiveBlock/Telemetry provider hierarchy without implementing their own navigation or progress systems"
+    },
+    {
+      "requirementId": "R22",
+      "description": "Browser E2E Verification: Automated browser tests exercise real authoring and rendering path",
+      "expectedFiles": [
+        "tests/e2e/introduction-i1.browser.spec.ts",
+        "tests/e2e/tutorial-composer-phase2-hydration.spec.ts",
+        "tests/e2e/project-ai/i2-composition.spec.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\introduction-i1.browser.spec.ts (I1 browser rendering with console error classification)",
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\tutorial-composer-phase2-hydration.spec.ts (composer hydration race protection)",
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\i2-composition.spec.ts (I2 composition verification)",
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\ils-tutorial-session.spec.ts (ILS lifecycle verification)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\introduction-i1.browser.spec.ts",
+      "dependencies": ["R21"],
+      "acceptanceCriteria": "Playwright E2E tests verify complete authoring-to-rendering path including block selection in composer, tutorial generation, browser rendering, data-block-type/version attributes, and ILS integration"
+    },
+    {
+      "requirementId": "R23",
+      "description": "Evidence-Based Certification: Final status based on actual test results; missing/inconclusive evidence must NOT be reported as a pass",
+      "expectedFiles": [
+        "services/project-ai/app/evidence/ledger.py",
+        "services/project-ai/app/evidence/canonical_evidence.py",
+        ".agents/evidence/*.jsonl"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\evidence\\ledger.py (append-only JSONL with concurrency safety)",
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\evidence\\canonical_evidence.py",
+        "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\evidence\\schemas.py (AgentRun, TestResult, EvidenceRecord)",
+        "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\agent-runs.jsonl",
+        "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\evidence.jsonl",
+        "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\README.md (R0+ canonical store with SHA-256 hash chains)"
+      ],
+      "status": "VERIFIED",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\evidence\\test_ledger.py",
+      "dependencies": ["R22"],
+      "acceptanceCriteria": "Evidence collection uses append-only JSONL ledgers with SHA-256 hash chains for tamper detection, CanonicalEvidenceStore with R0+ canonical evidence, and structured evidence schemas binding test results to certification decisions"
+    },
+    {
+      "requirementId": "R24",
+      "description": "I2-Only Creation Workflow: Separate workflow for creating/updating Introduction I2 specifically",
+      "expectedFiles": [
+        "services/project-ai/app/workflows/",
+        "apps/skillhubcore-admin/src/lib/project-llm/projectLlmCreationBrief.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\projectLlmCreationBrief.ts (buildTargetSpecification function supporting family/version parameters)",
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\i2-composition.spec.ts (I2 composition verification test)"
+      ],
+      "status": "PARTIAL",
+      "testEvidence": "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\i2-composition.spec.ts",
+      "dependencies": ["R08"],
+      "acceptanceCriteria": "Dedicated I2 workflow exists with target binding to Introduction family I2 version, but full workflow orchestration implementation not confirmed"
+    },
+    {
+      "requirementId": "R25",
+      "description": "Mix-and-Match as Design Input Only: Mix & Match is a design/reuse input, NOT a separate workflow engine; composition verification is separate from individual block certification",
+      "expectedFiles": [
+        "tests/e2e/project-ai/mix-match-composition.spec.ts"
+      ],
+      "actualFiles": [
+        "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\mix-match-composition.spec.ts"
+      ],
+      "status": "UNKNOWN",
+      "testEvidence": null,
+      "dependencies": ["R24"],
+      "acceptanceCriteria": "Mix-and-match test exists but implementation boundary between design input and certification workflow requires further investigation beyond current audit scope"
+    }
+  ]
+}
