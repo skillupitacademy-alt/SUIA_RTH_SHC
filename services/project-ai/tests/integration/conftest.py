@@ -64,9 +64,22 @@ async def integration_db_engine():
         pytest.skip("DATABASE_URL_TUTORIAL not configured")
     
     # Convert postgresql:// to postgresql+asyncpg:// for SQLAlchemy async engine
+    # Remove query parameters that are not compatible with asyncpg (sslmode, channel_binding)
+    # asyncpg uses ssl='require' instead of sslmode=require
     db_url = TEST_DB_URL
     if db_url.startswith("postgresql://"):
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
+    # Remove incompatible query parameters from URL
+    # sslmode and channel_binding are handled by asyncpg differently
+    if "?" in db_url:
+        base_url, query_string = db_url.split("?", 1)
+        # Filter out sslmode and channel_binding parameters
+        params = [p for p in query_string.split("&") if not p.startswith(("sslmode=", "channel_binding="))]
+        if params:
+            db_url = f"{base_url}?{'&'.join(params)}"
+        else:
+            db_url = base_url
     
     engine = create_async_engine(
         db_url,
@@ -74,6 +87,7 @@ async def integration_db_engine():
         pool_pre_ping=True,  # Verify connections before using
         pool_size=5,
         max_overflow=10,
+        connect_args={"ssl": "require"},  # asyncpg SSL requirement
     )
     
     # Verify connectivity and that schema exists
