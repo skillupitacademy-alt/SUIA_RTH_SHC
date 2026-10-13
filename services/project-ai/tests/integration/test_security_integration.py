@@ -764,7 +764,7 @@ async def test_invalid_state_transition_prevented(db_session, workflow_repo):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_candidate_validator_hash_verification(db_session, candidate_repo):
+async def test_candidate_validator_hash_verification(db_session, workflow_repo, candidate_repo):
     """Test candidate upload computes SHA-256 from file content."""
     workflow = WorkflowModel(
         workflow_id=test_uuid_str("wf_hash_001"),
@@ -775,8 +775,7 @@ async def test_candidate_validator_hash_verification(db_session, candidate_repo)
         current_state="REQUESTED",
         version=1,
     )
-    db_session.add(workflow)
-    await db_session.flush()
+    await workflow_repo.upsert(workflow)
 
     files_data = {
         "index.ts": {"content": "export const x = 1;"},

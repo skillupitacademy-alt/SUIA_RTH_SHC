@@ -24,6 +24,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from typing import List, Optional, Protocol, Dict, Any
+from uuid import UUID as PythonUUID
 
 from sqlalchemy import select, update, delete
 from sqlalchemy.dialects.postgresql import insert
@@ -37,6 +38,20 @@ from .models import (
     ManifestModel,
     ApprovalModel
 )
+
+
+def _coerce_uuid(value: Any) -> Optional[PythonUUID]:
+    """Convert string UUID inputs to UUID objects for SQLAlchemy UUID columns."""
+    if value is None or isinstance(value, PythonUUID):
+        return value
+    return PythonUUID(str(value))
+
+
+def _normalize_uuid_fields(model: Any, *field_names: str) -> Any:
+    """Normalize UUID-bearing ORM fields before binding to PostgreSQL."""
+    for field_name in field_names:
+        setattr(model, field_name, _coerce_uuid(getattr(model, field_name)))
+    return model
 
 
 class OptimisticLockError(Exception):
@@ -338,6 +353,7 @@ class PostgresWorkflowRepository:
         Raises:
             HashMismatchError: If verify_bindings=True and artifact binding verification fails
         """
+        workflow_id = _coerce_uuid(workflow_id)
         result = await self.session.execute(
             select(WorkflowModel).where(WorkflowModel.workflow_id == workflow_id)
         )
@@ -366,6 +382,17 @@ class PostgresWorkflowRepository:
         Uses SELECT FOR UPDATE to read current version atomically when expected_version is None,
         eliminating race conditions between read and update operations.
         """
+        _normalize_uuid_fields(
+            workflow,
+            "workflow_id",
+            "specification_id",
+            "contract_id",
+            "candidate_id",
+            "manifest_id",
+            "snapshot_id",
+            "approval_id",
+        )
+
         # If no expected version provided, we need to check if workflow exists
         if expected_version is None:
             # Use SELECT FOR UPDATE to lock the row and read version atomically
@@ -451,6 +478,7 @@ class PostgresWorkflowRepository:
     
     async def delete(self, workflow_id: str) -> bool:
         """Delete workflow and cascade to related records."""
+        workflow_id = _coerce_uuid(workflow_id)
         result = await self.session.execute(
             delete(WorkflowModel).where(WorkflowModel.workflow_id == workflow_id)
         )
@@ -478,6 +506,7 @@ class PostgresContractRepository:
         Raises:
             HashMismatchError: If hash verification fails
         """
+        contract_id = _coerce_uuid(contract_id)
         result = await self.session.execute(
             select(ContractModel).where(ContractModel.contract_id == contract_id)
         )
@@ -508,6 +537,7 @@ class PostgresContractRepository:
         Raises:
             HashMismatchError: If hash verification fails
         """
+        workflow_id = _coerce_uuid(workflow_id)
         result = await self.session.execute(
             select(ContractModel).where(ContractModel.workflow_id == workflow_id)
         )
@@ -538,6 +568,7 @@ class PostgresContractRepository:
         
         Idempotent by contract_hash: if hash exists, return existing contract.
         """
+        _normalize_uuid_fields(contract, "contract_id", "workflow_id")
         stmt = insert(ContractModel).values(
             contract_id=contract.contract_id,
             workflow_id=contract.workflow_id,
@@ -580,6 +611,7 @@ class PostgresCandidateRepository:
     
     async def get(self, candidate_id: str) -> Optional[CandidateModel]:
         """Get candidate by ID."""
+        candidate_id = _coerce_uuid(candidate_id)
         result = await self.session.execute(
             select(CandidateModel).where(CandidateModel.candidate_id == candidate_id)
         )
@@ -587,6 +619,7 @@ class PostgresCandidateRepository:
     
     async def list_by_workflow(self, workflow_id: str) -> List[CandidateModel]:
         """List candidates for workflow."""
+        workflow_id = _coerce_uuid(workflow_id)
         result = await self.session.execute(
             select(CandidateModel)
             .where(CandidateModel.workflow_id == workflow_id)
@@ -600,6 +633,7 @@ class PostgresCandidateRepository:
         
         Automatically computes candidate_sha256 from files before storage.
         """
+        _normalize_uuid_fields(candidate, "candidate_id", "workflow_id")
         # Compute hash from files for tamper detection
         candidate.candidate_sha256 = candidate.compute_hash()
         
@@ -629,6 +663,7 @@ class PostgresCandidateRepository:
     
     async def delete(self, candidate_id: str) -> bool:
         """Delete candidate and cascade to manifests."""
+        candidate_id = _coerce_uuid(candidate_id)
         result = await self.session.execute(
             delete(CandidateModel).where(CandidateModel.candidate_id == candidate_id)
         )
@@ -656,6 +691,7 @@ class PostgresManifestRepository:
         Raises:
             HashMismatchError: If hash verification fails
         """
+        manifest_id = _coerce_uuid(manifest_id)
         result = await self.session.execute(
             select(ManifestModel).where(ManifestModel.manifest_id == manifest_id)
         )
@@ -693,6 +729,7 @@ class PostgresManifestRepository:
     
     async def list_by_candidate(self, candidate_id: str) -> List[ManifestModel]:
         """List manifests for candidate."""
+        candidate_id = _coerce_uuid(candidate_id)
         result = await self.session.execute(
             select(ManifestModel)
             .where(ManifestModel.candidate_id == candidate_id)
@@ -702,6 +739,7 @@ class PostgresManifestRepository:
     
     async def upsert(self, manifest: ManifestModel) -> ManifestModel:
         """Insert or update manifest using ON CONFLICT."""
+        _normalize_uuid_fields(manifest, "manifest_id", "candidate_id")
         stmt = insert(ManifestModel).values(
             manifest_id=manifest.manifest_id,
             candidate_id=manifest.candidate_id,
@@ -752,6 +790,7 @@ class PostgresApprovalRepository:
     
     async def get(self, approval_id: str) -> Optional[ApprovalModel]:
         """Get approval by ID."""
+        approval_id = _coerce_uuid(approval_id)
         result = await self.session.execute(
             select(ApprovalModel).where(ApprovalModel.approval_id == approval_id)
         )
@@ -759,6 +798,7 @@ class PostgresApprovalRepository:
     
     async def get_by_workflow(self, workflow_id: str) -> Optional[ApprovalModel]:
         """Get approval by workflow ID."""
+        workflow_id = _coerce_uuid(workflow_id)
         result = await self.session.execute(
             select(ApprovalModel).where(ApprovalModel.workflow_id == workflow_id)
         )
@@ -766,6 +806,12 @@ class PostgresApprovalRepository:
     
     async def upsert(self, approval: ApprovalModel) -> ApprovalModel:
         """Insert or update approval using ON CONFLICT."""
+        _normalize_uuid_fields(
+            approval,
+            "approval_id",
+            "workflow_id",
+            "placement_manifest_id",
+        )
         stmt = insert(ApprovalModel).values(
             approval_id=approval.approval_id,
             workflow_id=approval.workflow_id,
@@ -827,6 +873,7 @@ class PostgresStateTransitionRepository:
     
     async def list_by_workflow(self, workflow_id: str) -> List[StateTransitionModel]:
         """List transitions for workflow (ordered by timestamp)."""
+        workflow_id = _coerce_uuid(workflow_id)
         result = await self.session.execute(
             select(StateTransitionModel)
             .where(StateTransitionModel.workflow_id == workflow_id)
@@ -836,6 +883,7 @@ class PostgresStateTransitionRepository:
     
     async def create(self, transition: StateTransitionModel) -> StateTransitionModel:
         """Create state transition (append-only)."""
+        _normalize_uuid_fields(transition, "workflow_id", "evidence_id")
         self.session.add(transition)
         await self.session.flush()
         await self.session.refresh(transition)

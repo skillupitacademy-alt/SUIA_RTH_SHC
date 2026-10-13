@@ -13,7 +13,7 @@ import hashlib
 import uuid as _uuid
 import json
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.persistence.models import (
     WorkflowModel,

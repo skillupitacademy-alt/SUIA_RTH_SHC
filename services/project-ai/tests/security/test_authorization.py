@@ -8,6 +8,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.auth.types import AuthenticatedPrincipal
+from tests.fixtures import test_uuid_str
 
 
 class TestIdentityExtractionFromJWT:
@@ -91,8 +92,8 @@ class TestIdentityExtractionFromJWT:
         
         # Create workflow using JWT identity
         workflow = WorkflowModel(
-            workflow_id="wf_jwt_requester_001",
-            specification_id="spec_001",
+            workflow_id=test_uuid_str("wf_jwt_requester_001"),
+            specification_id=test_uuid_str("spec_001"),
             target_family="tutorial",
             target_version="v1",
             requester_id=principal["user_id"],  # From JWT
@@ -140,8 +141,8 @@ class TestIdentityExtractionFromJWT:
         
         # Route handler uses JWT identity, ignores request body
         workflow = WorkflowModel(
-            workflow_id="wf_client_ignore_001",
-            specification_id="spec_001",
+            workflow_id=test_uuid_str("wf_client_ignore_001"),
+            specification_id=test_uuid_str("spec_001"),
             target_family="tutorial",
             target_version="v1",
             requester_id=principal["user_id"],  # JWT, NOT client request
@@ -153,7 +154,7 @@ class TestIdentityExtractionFromJWT:
         await db_session.commit()
         
         # Verify only JWT identity persisted
-        retrieved = await workflow_repo.get("wf_client_ignore_001", verify_bindings=False)
+        retrieved = await workflow_repo.get(test_uuid_str("wf_client_ignore_001"), verify_bindings=False)
         assert retrieved.requester_id == jwt_user_id
         assert retrieved.requester_id != malicious_user_id
     
