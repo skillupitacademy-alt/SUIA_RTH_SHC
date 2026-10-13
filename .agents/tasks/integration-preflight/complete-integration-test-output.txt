@@ -1,0 +1,348 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\onlinewebsites\quiz-platform\services\project-ai
+configfile: pyproject.toml
+plugins: anyio-4.12.0, dash-3.3.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 127 items
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_evidence_blocks_certification PASSED [  0%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_wrong_block_version_fails PASSED [  1%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_registry_fails PASSED [  2%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_renderer_fails PASSED [  3%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_renderer_mismatch_fails PASSED [  3%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_schema_mismatch_fails PASSED [  4%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_composer_failure_blocks PASSED [  5%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_runtime_failure_blocks PASSED [  6%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_browser_failure_blocks PASSED [  7%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_brand_coupling_fails PASSED [  7%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_theme_mismatch_fails PASSED [  8%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected PASSED [  9%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked PASSED [ 10%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_invalid_mix_and_match_blocked PASSED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected SKIPPED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_canonical_artifact_detected PASSED [ 12%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected PASSED [ 13%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_workflow_id_returns_404 PASSED [ 14%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_candidate_id_returns_404 PASSED [ 14%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_workflow_with_empty_composition PASSED [ 15%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_workflow_with_invalid_mode PASSED [ 16%]
+tests/integration/test_conftest_skip_behavior.py::test_skip_marker_applied_when_env_var_missing PASSED [ 17%]
+tests/integration/test_conftest_skip_behavior.py::test_skip_marker_not_applied_when_env_var_present PASSED [ 18%]
+tests/integration/test_conftest_skip_behavior.py::test_integration_db_engine_fixture_skips_when_table_missing PASSED [ 18%]
+tests/integration/test_conftest_skip_behavior.py::test_env_var_name_is_consistent PASSED [ 19%]
+tests/integration/test_final_gate.py::test_final_approval_submission_success PASSED [ 20%]
+tests/integration/test_final_gate.py::test_final_approval_requires_awaiting_state PASSED [ 21%]
+tests/integration/test_final_gate.py::test_gate_blocks_when_w6_not_complete PASSED [ 22%]
+tests/integration/test_final_gate.py::test_gate_blocks_on_critical_security_issues PASSED [ 22%]
+tests/integration/test_final_gate.py::test_gate_blocks_when_tests_failing PASSED [ 23%]
+tests/integration/test_final_gate.py::test_gate_blocks_when_migrations_not_applied PASSED [ 24%]
+tests/integration/test_final_gate.py::test_gate_blocks_when_docs_incomplete PASSED [ 25%]
+tests/integration/test_final_gate.py::test_gate_passes_when_all_checks_pass PASSED [ 25%]
+tests/integration/test_final_gate.py::test_terminal_state_prevents_transitions PASSED [ 26%]
+tests/integration/test_final_gate.py::test_gate_returns_detailed_check_results PASSED [ 27%]
+tests/integration/test_final_gate.py::test_endpoint_blocks_approval_when_evidence_fails PASSED [ 28%]
+tests/integration/test_final_gate.py::test_endpoint_idempotent_for_repeated_approval PASSED [ 29%]
+tests/integration/test_i2_e2e_certification.py::test_i2_complete_certification_workflow SKIPPED [ 29%]
+tests/integration/test_i2_e2e_certification.py::test_i2_workflow_with_multiple_candidate_blocks SKIPPED [ 30%]
+tests/integration/test_i2_e2e_certification.py::test_workflow_state_persistence SKIPPED [ 31%]
+tests/integration/test_implementation_approval.py::test_submit_approval_success PASSED [ 32%]
+tests/integration/test_implementation_approval.py::test_self_approval_rejected PASSED [ 33%]
+tests/integration/test_implementation_approval.py::test_unauthorized_user_rejected PASSED [ 33%]
+tests/integration/test_implementation_approval.py::test_workflow_transitions_to_implementing_after_approval PASSED [ 34%]
+tests/integration/test_implementation_approval.py::test_workflow_stays_awaiting_without_approval PASSED [ 35%]
+tests/integration/test_implementation_approval.py::test_approval_audit_trail_recorded PASSED [ 36%]
+tests/integration/test_implementation_approval.py::test_duplicate_approval_handled PASSED [ 37%]
+tests/integration/test_implementation_approval.py::test_approval_status_endpoint_returns_pending PASSED [ 37%]
+tests/integration/test_implementation_approval.py::test_approval_status_endpoint_returns_approved PASSED [ 38%]
+tests/integration/test_implementation_approval.py::test_rejection_blocks_implementation_transition PASSED [ 39%]
+tests/integration/test_implementation_approval.py::test_manifest_hash_mismatch_rejection PASSED [ 40%]
+tests/integration/test_implementation_approval.py::test_candidate_hash_mismatch_rejection PASSED [ 40%]
+tests/integration/test_placement_engine.py::test_match_candidate_to_add_manifest PASSED [ 41%]
+tests/integration/test_placement_engine.py::test_match_candidate_to_update_manifest PASSED [ 42%]
+tests/integration/test_placement_engine.py::test_match_candidate_by_family_version PASSED [ 43%]
+tests/integration/test_placement_engine.py::test_no_match_for_rejected_manifest PASSED [ 44%]
+tests/integration/test_placement_engine.py::test_match_with_structural_similarity PASSED [ 44%]
+tests/integration/test_placement_engine.py::test_score_exact_family_version_match PASSED [ 45%]
+tests/integration/test_placement_engine.py::test_score_penalizes_conflicts PASSED [ 46%]
+tests/integration/test_placement_engine.py::test_score_availability_preference PASSED [ 47%]
+tests/integration/test_placement_engine.py::test_score_reasoning_populated PASSED [ 48%]
+tests/integration/test_placement_engine.py::test_detect_placement_conflict PASSED [ 48%]
+tests/integration/test_placement_engine.py::test_resolve_conflict_by_score PASSED [ 49%]
+tests/integration/test_placement_engine.py::test_conflict_evidence_recorded PASSED [ 50%]
+tests/integration/test_placement_engine.py::test_override_placement_manual PASSED [ 51%]
+tests/integration/test_placement_engine.py::test_override_requires_approval PASSED [ 51%]
+tests/integration/test_placement_engine.py::test_placement_persisted_to_database PASSED [ 52%]
+tests/integration/test_placement_engine.py::test_placement_engine_result_creation PASSED [ 53%]
+tests/integration/test_placement_engine.py::test_match_result_creation PASSED [ 54%]
+tests/integration/test_placement_engine.py::test_placement_score_creation PASSED [ 55%]
+tests/integration/test_repositories_integration.py::test_workflow_upsert_and_get FAILED [ 55%]
+tests/integration/test_repositories_integration.py::test_workflow_upsert_idempotent PASSED [ 56%]
+tests/integration/test_repositories_integration.py::test_optimistic_locking_conflict PASSED [ 57%]
+tests/integration/test_repositories_integration.py::test_workflow_list_by_state PASSED [ 58%]
+tests/integration/test_repositories_integration.py::test_workflow_delete PASSED [ 59%]
+tests/integration/test_repositories_integration.py::test_contract_upsert_and_get FAILED [ 59%]
+tests/integration/test_repositories_integration.py::test_contract_hash_integrity_stored_and_verified FAILED [ 60%]
+tests/integration/test_repositories_integration.py::test_contract_hash_drift_detection FAILED [ 61%]
+tests/integration/test_repositories_integration.py::test_contract_get_by_workflow FAILED [ 62%]
+tests/integration/test_repositories_integration.py::test_candidate_upsert_and_get FAILED [ 62%]
+tests/integration/test_repositories_integration.py::test_candidate_list_by_workflow FAILED [ 63%]
+tests/integration/test_repositories_integration.py::test_manifest_upsert_and_get FAILED [ 64%]
+tests/integration/test_repositories_integration.py::test_manifest_hash_drift_detection FAILED [ 65%]
+tests/integration/test_repositories_integration.py::test_approval_upsert_and_get FAILED [ 66%]
+tests/integration/test_repositories_integration.py::test_approval_get_by_workflow FAILED [ 66%]
+tests/integration/test_repositories_integration.py::test_approval_list_by_status FAILED [ 67%]
+tests/integration/test_repositories_integration.py::test_state_transition_create_and_list FAILED [ 68%]
+tests/integration/test_restart_persistence.py::test_workflow_persists_across_sessions PASSED [ 69%]
+tests/integration/test_restart_persistence.py::test_contract_persists_across_sessions PASSED [ 70%]
+tests/integration/test_restart_persistence.py::test_approval_persists_across_sessions PASSED [ 70%]
+tests/integration/test_restart_persistence.py::test_workflow_state_updates_persist PASSED [ 71%]
+tests/integration/test_restart_persistence.py::test_artifact_bindings_persist PASSED [ 72%]
+tests/integration/test_security_integration.py::test_contract_admin_can_create_workflow PASSED [ 73%]
+tests/integration/test_security_integration.py::test_contract_viewer_denied_workflow_creation PASSED [ 74%]
+tests/integration/test_security_integration.py::test_super_admin_bypasses_rbac PASSED [ 74%]
+tests/integration/test_security_integration.py::test_infrastructure_portal_identity_bypasses_rbac PASSED [ 75%]
+tests/integration/test_security_integration.py::test_empty_roles_denies_privileged_operations PASSED [ 76%]
+tests/integration/test_security_integration.py::test_case_insensitive_role_matching PASSED [ 77%]
+tests/integration/test_security_integration.py::test_contract_reviewer_read_only PASSED [ 77%]
+tests/integration/test_security_integration.py::test_require_any_role_accepts_multiple PASSED [ 78%]
+tests/integration/test_security_integration.py::test_admin_token_type_with_contract_admin_role PASSED [ 79%]
+tests/integration/test_security_integration.py::test_rbac_denial_logs_warning PASSED [ 80%]
+tests/integration/test_security_integration.py::test_user_id_extracted_from_jwt PASSED [ 81%]
+tests/integration/test_security_integration.py::test_original_user_id_extraction PASSED [ 81%]
+tests/integration/test_security_integration.py::test_shadow_user_id_extraction PASSED [ 82%]
+tests/integration/test_security_integration.py::test_client_supplied_user_id_ignored PASSED [ 83%]
+tests/integration/test_security_integration.py::test_missing_user_id_claim_rejected PASSED [ 84%]
+tests/integration/test_security_integration.py::test_workflow_creation_initial_state PASSED [ 85%]
+tests/integration/test_security_integration.py::test_state_transition_recorded PASSED [ 85%]
+tests/integration/test_security_integration.py::test_approval_transitions_to_implementing PASSED [ 86%]
+tests/integration/test_security_integration.py::test_reject_transitions_to_rejected PASSED [ 87%]
+tests/integration/test_security_integration.py::test_invalid_state_transition_prevented PASSED [ 88%]
+tests/integration/test_security_integration.py::test_candidate_validator_hash_verification PASSED [ 88%]
+tests/integration/test_security_integration.py::test_canonical_comparator_brand_independence_check PASSED [ 89%]
+tests/integration/test_security_integration.py::test_placement_manifest_sealed_with_hash PASSED [ 90%]
+tests/integration/test_security_integration.py::test_placement_approval_requires_contract_admin PASSED [ 91%]
+tests/integration/test_security_integration.py::test_placement_manifest_tamper_detection PASSED [ 92%]
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target PASSED [ 92%]
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_fails_if_target_family_empty PASSED [ 93%]
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence PASSED [ 94%]
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_generation_fails_without_evidence PASSED [ 95%]
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash PASSED [ 96%]
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_modified_contract_produces_different_hash PASSED [ 96%]
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract PASSED [ 97%]
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready PASSED [ 98%]
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding PASSED [ 99%]
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract PASSED [100%]
+
+================================== FAILURES ===================================
+________________________ test_workflow_upsert_and_get _________________________
+tests\integration\test_repositories_integration.py:95: in test_workflow_upsert_and_get
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+________________________ test_contract_upsert_and_get _________________________
+tests\integration\test_repositories_integration.py:278: in test_contract_upsert_and_get
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_test_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+______________ test_contract_hash_integrity_stored_and_verified _______________
+tests\integration\test_repositories_integration.py:316: in test_contract_hash_integrity_stored_and_verified
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_hash_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+_____________________ test_contract_hash_drift_detection ______________________
+tests\integration\test_repositories_integration.py:349: in test_contract_hash_drift_detection
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_drift_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+________________________ test_contract_get_by_workflow ________________________
+tests\integration\test_repositories_integration.py:388: in test_contract_get_by_workflow
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_contract_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+________________________ test_candidate_upsert_and_get ________________________
+tests\integration\test_repositories_integration.py:422: in test_candidate_upsert_and_get
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_test_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+_______________________ test_candidate_list_by_workflow _______________________
+tests\integration\test_repositories_integration.py:458: in test_candidate_list_by_workflow
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_cand_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+________________________ test_manifest_upsert_and_get _________________________
+tests\integration\test_repositories_integration.py:518: in test_manifest_upsert_and_get
+    await _ensure_parent_candidate(db_session, workflow_repo, candidate_repo, "cand_test_001", "wf_test_001")
+tests\integration\test_repositories_integration.py:58: in _ensure_parent_candidate
+    await _ensure_parent_workflow(db_session, workflow_repo, workflow_id_name)
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+_____________________ test_manifest_hash_drift_detection ______________________
+tests\integration\test_repositories_integration.py:563: in test_manifest_hash_drift_detection
+    await _ensure_parent_candidate(db_session, workflow_repo, candidate_repo, "cand_drift_001", "wf_test_001")
+tests\integration\test_repositories_integration.py:58: in _ensure_parent_candidate
+    await _ensure_parent_workflow(db_session, workflow_repo, workflow_id_name)
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+________________________ test_approval_upsert_and_get _________________________
+tests\integration\test_repositories_integration.py:619: in test_approval_upsert_and_get
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_test_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+________________________ test_approval_get_by_workflow ________________________
+tests\integration\test_repositories_integration.py:654: in test_approval_get_by_workflow
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_approval_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+________________________ test_approval_list_by_status _________________________
+tests\integration\test_repositories_integration.py:684: in test_approval_list_by_status
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+____________________ test_state_transition_create_and_list ____________________
+tests\integration\test_repositories_integration.py:735: in test_state_transition_create_and_list
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_trans_001")
+tests\integration\test_repositories_integration.py:44: in _ensure_parent_workflow
+    created_at=datetime.now(timezone.utc),
+                            ^^^^^^^^
+E   NameError: name 'timezone' is not defined
+============================== warnings summary ===============================
+C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1
+  C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests\integration\test_certification_negative.py:25
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:25: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests\integration\test_certification_negative.py:765
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:765: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:613: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:621: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:629: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:637: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:645: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:653: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:661: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\api\routes\contract.py:381: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    contract_data=contract.dict(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/integration/test_repositories_integration.py::test_workflow_upsert_and_get
+FAILED tests/integration/test_repositories_integration.py::test_contract_upsert_and_get
+FAILED tests/integration/test_repositories_integration.py::test_contract_hash_integrity_stored_and_verified
+FAILED tests/integration/test_repositories_integration.py::test_contract_hash_drift_detection
+FAILED tests/integration/test_repositories_integration.py::test_contract_get_by_workflow
+FAILED tests/integration/test_repositories_integration.py::test_candidate_upsert_and_get
+FAILED tests/integration/test_repositories_integration.py::test_candidate_list_by_workflow
+FAILED tests/integration/test_repositories_integration.py::test_manifest_upsert_and_get
+FAILED tests/integration/test_repositories_integration.py::test_manifest_hash_drift_detection
+FAILED tests/integration/test_repositories_integration.py::test_approval_upsert_and_get
+FAILED tests/integration/test_repositories_integration.py::test_approval_get_by_workflow
+FAILED tests/integration/test_repositories_integration.py::test_approval_list_by_status
+FAILED tests/integration/test_repositories_integration.py::test_state_transition_create_and_list
+===== 13 failed, 110 passed, 4 skipped, 67 warnings in 300.62s (0:05:00) ======

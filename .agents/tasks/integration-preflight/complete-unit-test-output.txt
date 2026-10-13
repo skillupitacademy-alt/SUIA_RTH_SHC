@@ -1,0 +1,439 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\onlinewebsites\quiz-platform\services\project-ai
+configfile: pyproject.toml
+plugins: anyio-4.12.0, dash-3.3.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 339 items
+
+tests/unit/test_approval_gate.py::test_approve_with_correct_hashes SKIPPED [  0%]
+tests/unit/test_approval_gate.py::test_approve_with_wrong_manifest_hash SKIPPED [  0%]
+tests/unit/test_approval_gate.py::test_approve_when_not_in_awaiting_approval_state SKIPPED [  0%]
+tests/unit/test_approval_gate.py::test_reject_transitions_to_rejected_state SKIPPED [  1%]
+tests/unit/test_approval_gate.py::test_approve_workflow_not_found SKIPPED [  1%]
+tests/unit/test_approval_gate.py::test_approve_with_wrong_contract_hash SKIPPED [  1%]
+tests/unit/test_approval_gate.py::test_workflow_id_mismatch_path_vs_payload SKIPPED [  2%]
+tests/unit/test_approval_gate.py::test_register_workflow_for_approval SKIPPED [  2%]
+tests/unit/test_approval_gate.py::test_transition_to_approval_gate SKIPPED [  2%]
+tests/unit/test_approval_gate.py::test_transition_to_approval_gate_from_wrong_state SKIPPED [  2%]
+tests/unit/test_approval_gate.py::test_transition_to_approval_gate_workflow_not_registered SKIPPED [  3%]
+tests/unit/test_approval_gate.py::test_full_approval_workflow SKIPPED    [  3%]
+tests/unit/test_auth_config.py::test_get_jwt_config_with_both_secrets PASSED [  3%]
+tests/unit/test_auth_config.py::test_get_jwt_config_admin_secret_fallback PASSED [  4%]
+tests/unit/test_auth_config.py::test_get_jwt_config_missing_jwt_secret PASSED [  4%]
+tests/unit/test_auth_config.py::test_get_jwt_config_jwt_secret_too_short PASSED [  4%]
+tests/unit/test_auth_config.py::test_get_jwt_config_admin_secret_too_short PASSED [  5%]
+tests/unit/test_auth_config.py::test_get_jwt_config_custom_algorithm PASSED [  5%]
+tests/unit/test_auth_config.py::test_get_jwt_config_custom_expiry PASSED [  5%]
+tests/unit/test_auth_config.py::test_get_jwt_config_all_custom_values PASSED [  5%]
+tests/unit/test_auth_dependencies.py::test_get_current_user_valid PASSED [  6%]
+tests/unit/test_auth_dependencies.py::test_get_current_user_with_userid_only PASSED [  6%]
+tests/unit/test_auth_dependencies.py::test_get_current_user_missing_header PASSED [  6%]
+tests/unit/test_auth_dependencies.py::test_get_current_user_invalid_token PASSED [  7%]
+tests/unit/test_auth_dependencies.py::test_require_contract_admin_success PASSED [  7%]
+tests/unit/test_auth_dependencies.py::test_require_contract_admin_missing_role PASSED [  7%]
+tests/unit/test_auth_dependencies.py::test_require_contract_viewer_accepts_any_role PASSED [  7%]
+tests/unit/test_auth_dependencies.py::test_require_contract_reviewer_accepts_admin PASSED [  8%]
+tests/unit/test_auth_dependencies.py::test_get_current_user_invalid_format PASSED [  8%]
+tests/unit/test_auth_dependencies.py::test_require_functions_with_none_user PASSED [  8%]
+tests/unit/test_auth_dependencies.py::test_user_id_guaranteed_by_jwt PASSED [  9%]
+tests/unit/test_auth_jwt.py::test_create_access_token_valid PASSED       [  9%]
+tests/unit/test_auth_jwt.py::test_decode_access_token_valid PASSED       [  9%]
+tests/unit/test_auth_jwt.py::test_decode_access_token_expired PASSED     [ 10%]
+tests/unit/test_auth_jwt.py::test_decode_access_token_invalid_signature PASSED [ 10%]
+tests/unit/test_auth_jwt.py::test_decode_access_token_malformed PASSED   [ 10%]
+tests/unit/test_auth_jwt.py::test_create_decode_roundtrip PASSED         [ 10%]
+tests/unit/test_auth_jwt.py::test_token_exp_claim_is_timezone_aware PASSED [ 11%]
+tests/unit/test_browser_verification.py::TestBrowserVerifier::test_playwright_not_available_returns_skipped PASSED [ 11%]
+tests/unit/test_browser_verification.py::TestBrowserVerifier::test_playwright_available_but_not_implemented_returns_blocked PASSED [ 11%]
+tests/unit/test_browser_verification.py::TestBrowserVerifier::test_check_playwright_returns_false_on_import_error PASSED [ 12%]
+tests/unit/test_browser_verification.py::TestBrowserVerifier::test_check_playwright_returns_true_when_available PASSED [ 12%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationReport::test_report_construction_with_skipped_status PASSED [ 12%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationReport::test_report_construction_with_pass_status PASSED [ 12%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationReport::test_report_construction_with_fail_status PASSED [ 13%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationReport::test_report_construction_with_blocked_status PASSED [ 13%]
+tests/unit/test_browser_verification.py::TestBrowserCheckResult::test_check_result_with_all_statuses PASSED [ 13%]
+tests/unit/test_browser_verification.py::TestBrowserCheckResult::test_check_result_with_screenshot PASSED [ 14%]
+tests/unit/test_browser_verification.py::TestBrowserCheckResult::test_check_result_with_error_message PASSED [ 14%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationIntegration::test_skipped_status_is_not_blocker PASSED [ 14%]
+tests/unit/test_browser_verification.py::TestBrowserVerificationIntegration::test_blocked_vs_skipped_distinction PASSED [ 15%]
+tests/unit/test_candidate_intake.py::TestCandidateManifestModel::test_valid_manifest_construction PASSED [ 15%]
+tests/unit/test_candidate_intake.py::TestCandidateManifestModel::test_manifest_requires_workflow_id PASSED [ 15%]
+tests/unit/test_candidate_intake.py::TestCandidateManifestModel::test_manifest_requires_contract_id PASSED [ 15%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_passes_when_hash_matches PASSED [ 16%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_hash_mismatches PASSED [ 16%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_target_family_empty PASSED [ 16%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_target_version_empty PASSED [ 17%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_workflow_id_empty PASSED [ 17%]
+tests/unit/test_candidate_intake.py::TestVerifyCandidateIntegrity::test_verify_candidate_integrity_raises_when_contract_id_empty PASSED [ 17%]
+tests/unit/test_candidate_intake.py::TestSha256File::test_sha256_file_produces_valid_hash PASSED [ 17%]
+tests/unit/test_candidate_intake.py::TestSha256File::test_sha256_file_deterministic PASSED [ 18%]
+tests/unit/test_candidate_intake.py::TestSha256File::test_sha256_file_different_content_different_hash PASSED [ 18%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_wrong_version_returns_fail PASSED [ 18%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_wrong_family_returns_fail PASSED [ 19%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_missing_required_artifact_returns_fail PASSED [ 19%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_all_match_returns_pass PASSED [ 19%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_unavailable_contract_returns_blocked PASSED [ 20%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_unexpected_artifacts_do_not_fail PASSED [ 20%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_evidence_ids_extracted_from_contract PASSED [ 20%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_comparison_result_model PASSED [ 20%]
+tests/unit/test_canonical_comparison.py::TestCanonicalComparator::test_artifact_comparison_model PASSED [ 21%]
+tests/unit/test_canonical_comparison.py::TestComparisonResultProperties::test_is_approved_true_when_pass PASSED [ 21%]
+tests/unit/test_canonical_comparison.py::TestComparisonResultProperties::test_is_approved_false_when_fail PASSED [ 21%]
+tests/unit/test_canonical_comparison.py::TestComparisonResultProperties::test_is_approved_false_when_blocked PASSED [ 22%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_all_pass_returns_pass PASSED [ 22%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_one_fail_returns_fail PASSED [ 22%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_one_blocked_returns_blocked PASSED [ 23%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_empty_gates_returns_blocked PASSED [ 23%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_fail_takes_precedence_over_blocked PASSED [ 23%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_multiple_fails_returns_fail PASSED [ 23%]
+tests/unit/test_certification_gates.py::TestComputeOverallStatus::test_multiple_blocked_returns_blocked PASSED [ 24%]
+tests/unit/test_certification_gates.py::TestGateResultModel::test_gate_result_with_pass PASSED [ 24%]
+tests/unit/test_certification_gates.py::TestGateResultModel::test_gate_result_with_fail PASSED [ 24%]
+tests/unit/test_certification_gates.py::TestGateResultModel::test_gate_result_with_blocked PASSED [ 25%]
+tests/unit/test_certification_gates.py::TestCertificationResultModel::test_certification_result_aggregates_gates PASSED [ 25%]
+tests/unit/test_certification_gates.py::TestCertificationResultModel::test_certification_result_with_failure PASSED [ 25%]
+tests/unit/test_certification_gates.py::TestMissingRequiredGate::test_missing_required_gate_returns_blocked PASSED [ 25%]
+tests/unit/test_certification_gates.py::TestMissingRequiredGate::test_can_detect_missing_gates_at_orchestration_level PASSED [ 26%]
+tests/unit/test_contract_evidence.py::test_contract_field_evidence_model PASSED [ 26%]
+tests/unit/test_contract_evidence.py::test_evidence_provenance_tracking PASSED [ 26%]
+tests/unit/test_contract_routes.py::test_placeholder SKIPPED (TODO F...) [ 27%]
+tests/unit/test_contract_serialization.py::TestContractSerializationDeterministic::test_contract_serialization_deterministic PASSED [ 27%]
+tests/unit/test_contract_serialization.py::TestContractHashStableAcrossRuns::test_contract_hash_stable_across_runs PASSED [ 27%]
+tests/unit/test_contract_serialization.py::TestJSONKeyOrdering::test_json_key_ordering PASSED [ 28%]
+tests/unit/test_contract_serialization.py::TestUnicodeHandling::test_unicode_handling PASSED [ 28%]
+tests/unit/test_contract_serialization.py::TestUnicodeHandling::test_unicode_differences_detected PASSED [ 28%]
+tests/unit/test_engineering_contract.py::TestEngineeringContractConstruction::test_valid_engineering_contract PASSED [ 28%]
+tests/unit/test_engineering_contract.py::TestEngineeringContractConstruction::test_engineering_contract_with_defaults PASSED [ 29%]
+tests/unit/test_engineering_contract.py::TestEngineeringContractConstruction::test_engineering_contract_missing_required_field PASSED [ 29%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_seal_contract_produces_valid_hash PASSED [ 29%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_deterministic PASSED [ 30%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_changes_when_field_modified PASSED [ 30%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_changes_when_nested_field_modified PASSED [ 30%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_changes_when_list_modified PASSED [ 30%]
+tests/unit/test_engineering_contract.py::TestContractHash::test_contract_hash_field_excluded_from_hash_calculation PASSED [ 31%]
+tests/unit/test_engineering_contract.py::TestProhibitedBehaviors::test_prohibited_behaviors_list_populated PASSED [ 31%]
+tests/unit/test_engineering_contract.py::TestProhibitedBehaviors::test_prohibited_behaviors_constant_has_expected_items PASSED [ 31%]
+tests/unit/test_engineering_contract.py::TestProhibitedBehaviors::test_prohibited_behaviors_can_be_customized PASSED [ 32%]
+tests/unit/test_engineering_contract.py::TestNoHardcodedValuesRegression::test_no_hardcoded_values_in_contract PASSED [ 32%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_contract_immutability_detection PASSED [ 32%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_contract_integrity_verification PASSED [ 33%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_seal_contract_excludes_contract_id PASSED [ 33%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_same_snapshot_produces_same_hash PASSED [ 33%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_modified_snapshot_produces_different_hash PASSED [ 33%]
+tests/unit/test_engineering_contract.py::TestContractImmutability::test_hash_includes_all_thirteen_gate_contracts PASSED [ 34%]
+tests/unit/test_evidence_ledger.py::TestAppendAgentRun::test_writes_to_correct_file PASSED [ 34%]
+tests/unit/test_evidence_ledger.py::TestAppendAgentRun::test_multiple_appends_produce_multiple_lines PASSED [ 34%]
+tests/unit/test_evidence_ledger.py::TestAppendAgentRun::test_existing_content_not_truncated PASSED [ 35%]
+tests/unit/test_evidence_ledger.py::TestAppendWorkflowEvent::test_writes_to_correct_file PASSED [ 35%]
+tests/unit/test_evidence_ledger.py::TestReadLastNRuns::test_returns_empty_list_when_file_missing PASSED [ 35%]
+tests/unit/test_evidence_ledger.py::TestReadLastNRuns::test_returns_correct_number_of_records PASSED [ 35%]
+tests/unit/test_evidence_ledger.py::TestReadLastNRuns::test_returns_all_records_if_n_larger_than_file PASSED [ 36%]
+tests/unit/test_evidence_ledger.py::TestReadLastNRuns::test_skips_malformed_lines PASSED [ 36%]
+tests/unit/test_evidence_ledger.py::TestOtherAppendFunctions::test_append_test_result PASSED [ 36%]
+tests/unit/test_evidence_ledger.py::TestOtherAppendFunctions::test_append_gate_result PASSED [ 37%]
+tests/unit/test_evidence_ledger.py::TestOtherAppendFunctions::test_append_certification_result PASSED [ 37%]
+tests/unit/test_evidence_ledger.py::TestEvidenceRunSchema::test_schema_accepts_all_fields PASSED [ 37%]
+tests/unit/test_evidence_ledger.py::TestEvidenceRunSchema::test_schema_accepts_minimal_fields PASSED [ 38%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_missing_evidence_returns_blocked PASSED [ 38%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_partial_evidence_returns_blocked PASSED [ 38%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_one_fail_gate_returns_fail PASSED [ 38%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_multiple_fail_gates_returns_fail PASSED [ 39%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_one_blocked_gate_returns_blocked PASSED [ 39%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_all_pass_returns_certification_ready_not_certified PASSED [ 39%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_fail_takes_precedence_over_blocked PASSED [ 40%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_missing_evidence_takes_precedence PASSED [ 40%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_none_evidence_values_treated_as_missing PASSED [ 40%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_evidence_summary_included_in_result PASSED [ 41%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_non_dict_evidence_values_not_checked_for_status PASSED [ 41%]
+tests/unit/test_final_gate.py::TestFinalGateController::test_extra_evidence_keys_ignored PASSED [ 41%]
+tests/unit/test_final_gate.py::TestFinalGateResultModel::test_valid_result_creation PASSED [ 41%]
+tests/unit/test_final_gate.py::TestFinalGateResultModel::test_verdict_must_be_valid_literal PASSED [ 42%]
+tests/unit/test_final_gate.py::TestFinalGateResultModel::test_invalid_verdict_raises_validation_error PASSED [ 42%]
+tests/unit/test_final_gate.py::TestInvariantEnforcement::test_compute_verdict_never_returns_certified PASSED [ 42%]
+tests/unit/test_final_gate.py::TestInvariantEnforcement::test_certification_ready_is_maximum_verdict PASSED [ 43%]
+tests/unit/test_jwt_verifier.py::test_verify_valid_token_with_all_claims PASSED [ 43%]
+tests/unit/test_jwt_verifier.py::test_verify_token_missing_audience PASSED [ 43%]
+tests/unit/test_jwt_verifier.py::test_verify_token_wrong_audience PASSED [ 43%]
+tests/unit/test_jwt_verifier.py::test_verify_token_missing_token_type PASSED [ 44%]
+tests/unit/test_jwt_verifier.py::test_verify_token_wrong_token_type PASSED [ 44%]
+tests/unit/test_jwt_verifier.py::test_verify_token_missing_user_id PASSED [ 44%]
+tests/unit/test_jwt_verifier.py::test_verify_token_missing_original_user_id PASSED [ 45%]
+tests/unit/test_jwt_verifier.py::test_verify_token_missing_shadow_user_id PASSED [ 45%]
+tests/unit/test_jwt_verifier.py::test_verify_expired_token PASSED        [ 45%]
+tests/unit/test_jwt_verifier.py::test_verify_invalid_signature PASSED    [ 46%]
+tests/unit/test_jwt_verifier.py::test_verify_malformed_token PASSED      [ 46%]
+tests/unit/test_jwt_verifier.py::test_create_token_includes_required_claims PASSED [ 46%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorApprovalValidation::test_executor_rejects_non_approved_manifest PASSED [ 46%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorApprovalValidation::test_executor_rejects_rejected_manifest PASSED [ 47%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorApprovalValidation::test_executor_rejects_mismatched_approval_hash PASSED [ 47%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorActions::test_reuse_action_does_not_call_repo_adapter PASSED [ 47%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorActions::test_add_action_calls_repo_adapter_add_file PASSED [ 48%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorActions::test_update_action_calls_repo_adapter_update_file PASSED [ 48%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorActions::test_extend_action_calls_repo_adapter_extend_file PASSED [ 48%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorResultHandling::test_successful_execution_returns_success_status PASSED [ 48%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorResultHandling::test_partial_failure_returns_partial_status PASSED [ 49%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorResultHandling::test_complete_failure_returns_failed_status PASSED [ 49%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorResultHandling::test_reject_action_in_placements_raises_error PASSED [ 49%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorEvidenceRecording::test_executor_records_evidence_id PASSED [ 50%]
+tests/unit/test_placement_executor.py::TestPlacementExecutorEvidenceRecording::test_executor_records_all_placement_details PASSED [ 50%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_removes_version_suffix_v2 PASSED [ 50%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_removes_version_suffix_v3 PASSED [ 51%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_removes_lowercase_version_suffix PASSED [ 51%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_removes_underscore_version_suffix PASSED [ 51%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_preserves_base_name_without_version PASSED [ 51%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_handles_multiple_extensions PASSED [ 52%]
+tests/unit/test_placement_manifest.py::TestNormalizeArtifactName::test_handles_different_file_types PASSED [ 52%]
+tests/unit/test_placement_manifest.py::TestFindSemanticMatch::test_matches_same_base_name PASSED [ 52%]
+tests/unit/test_placement_manifest.py::TestFindSemanticMatch::test_no_match_for_different_base_name PASSED [ 53%]
+tests/unit/test_placement_manifest.py::TestFindSemanticMatch::test_no_match_for_empty_index PASSED [ 53%]
+tests/unit/test_placement_manifest.py::TestFindSemanticMatch::test_no_match_for_missing_filename PASSED [ 53%]
+tests/unit/test_placement_manifest.py::TestArtifactsAreIdentical::test_identical_content PASSED [ 53%]
+tests/unit/test_placement_manifest.py::TestArtifactsAreIdentical::test_different_content PASSED [ 54%]
+tests/unit/test_placement_manifest.py::TestCanExtendArtifact::test_variant_indicator_dot_notation PASSED [ 54%]
+tests/unit/test_placement_manifest.py::TestCanExtendArtifact::test_variant_indicator_dash_notation PASSED [ 54%]
+tests/unit/test_placement_manifest.py::TestCanExtendArtifact::test_no_variant_indicator PASSED [ 55%]
+tests/unit/test_placement_manifest.py::TestCanUpdateArtifact::test_can_update_non_variant PASSED [ 55%]
+tests/unit/test_placement_manifest.py::TestCanUpdateArtifact::test_cannot_update_variant PASSED [ 55%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_add_new_artifact PASSED [ 56%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_update_existing_artifact_with_version_suffix PASSED [ 56%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_reuse_identical_artifact PASSED [ 56%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_extend_variant_artifact PASSED [ 56%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_reject_artifact_without_filename PASSED [ 57%]
+tests/unit/test_placement_manifest.py::TestBuildPlacementManifest::test_multiple_artifacts PASSED [ 57%]
+tests/unit/test_placement_manifest.py::TestBuildRepositoryIndex::test_builds_index_from_snapshot PASSED [ 57%]
+tests/unit/test_placement_manifest.py::TestBuildRepositoryIndex::test_handles_empty_snapshot PASSED [ 58%]
+tests/unit/test_placement_manifest.py::TestBuildRepositoryIndex::test_handles_missing_evidence_key PASSED [ 58%]
+tests/unit/test_placement_manifest.py::TestBuildRepositoryIndex::test_skips_evidence_without_path PASSED [ 58%]
+tests/unit/test_repository_intelligence.py::TestRepositoryEvidence::test_repository_evidence_creation PASSED [ 58%]
+tests/unit/test_repository_intelligence.py::TestCanonicalReference::test_canonical_reference_creation PASSED [ 59%]
+tests/unit/test_repository_intelligence.py::TestRuntimeContract::test_runtime_contract_defaults PASSED [ 59%]
+tests/unit/test_repository_intelligence.py::TestRepositoryBlockContract::test_repository_block_contract_creation PASSED [ 59%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_returns_contract PASSED [ 60%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_sha256_non_empty PASSED [ 60%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_nonexistent_family_returns_empty_references PASSED [ 60%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_introduction_i1 PASSED [ 61%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_definition_d1 PASSED [ 61%]
+tests/unit/test_repository_intelligence.py::TestBuildContract::test_build_contract_evidence_id_deterministic PASSED [ 61%]
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot PASSED [ 61%]
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_introduction_i1 PASSED [ 62%]
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_definition_d1 PASSED [ 62%]
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output PASSED [ 62%]
+tests/unit/test_repository_intelligence.py::TestFailClosedBehavior::test_unknown_version_raises_blocked PASSED [ 63%]
+tests/unit/test_repository_intelligence.py::TestFailClosedBehavior::test_missing_snapshot_raises_blocked PASSED [ 63%]
+tests/unit/test_repository_intelligence.py::TestFailClosedBehavior::test_empty_snapshot_raises_blocked PASSED [ 63%]
+tests/unit/test_repository_intelligence.py::TestFailClosedBehavior::test_snapshot_without_evidence_array_raises_blocked PASSED [ 64%]
+tests/unit/test_repository_intelligence.py::TestFailClosedBehavior::test_snapshot_evidence_not_list_raises_blocked PASSED [ 64%]
+tests/unit/test_repository_intelligence.py::TestFailClosedBehavior::test_missing_evidence_for_family_raises_blocked PASSED [ 64%]
+tests/unit/test_repository_intelligence.py::TestFailClosedBehavior::test_evidence_missing_content_hash_raises_blocked PASSED [ 64%]
+tests/unit/test_repository_intelligence.py::TestFailClosedBehavior::test_evidence_missing_evidence_id_raises_blocked PASSED [ 65%]
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_no_file_operations PASSED [ 65%]
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_with_nonexistent_path PASSED [ 65%]
+tests/unit/test_repository_intelligence.py::TestHelperFunctions::test_compute_sha256 PASSED [ 66%]
+tests/unit/test_repository_intelligence.py::TestHelperFunctions::test_generate_evidence_id PASSED [ 66%]
+tests/unit/test_repository_intelligence.py::TestHelperFunctions::test_generate_evidence_id_deterministic PASSED [ 66%]
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_extract_metadata_from_snapshot PASSED [ 66%]
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_extract_metadata_infers_language_from_files PASSED [ 67%]
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_extract_metadata_infers_framework_from_patterns PASSED [ 67%]
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_extract_metadata_defaults_difficulty PASSED [ 67%]
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_derive_file_paths PASSED [ 68%]
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_extract_test_patterns PASSED [ 68%]
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_build_contract_extracts_metadata PASSED [ 68%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_with_none_snapshot_returns_blocked PASSED [ 69%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_with_none_contract_returns_blocked PASSED [ 69%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_compute_overall_all_pass_returns_pass PASSED [ 69%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_compute_overall_one_fail_returns_fail PASSED [ 69%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_compute_overall_one_blocked_returns_blocked PASSED [ 70%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_compute_overall_fail_takes_precedence_over_blocked PASSED [ 70%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_ubrc_registered PASSED [ 70%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_ils_passive_not_direct PASSED [ 71%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_lsnb_page_level PASSED [ 71%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_rssb_page_level PASSED [ 71%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_theme_injection PASSED [ 71%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_required_checks_contains_brand_independence PASSED [ 72%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_executes_all_required_checks PASSED [ 72%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_check_ubrc_registered_with_no_blocks_returns_blocked PASSED [ 72%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_check_ubrc_registered_with_valid_blocks_returns_pass PASSED [ 73%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_check_ubrc_registered_with_failed_blocks_returns_fail PASSED [ 73%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_runtime_verification_report_blocked_constructor PASSED [ 73%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_does_not_modify_snapshot PASSED [ 74%]
+tests/unit/test_runtime_verification.py::TestRuntimeVerifier::test_verify_does_not_modify_contract PASSED [ 74%]
+tests/unit/test_terminal_states.py::test_terminal_state_detection[CERTIFIED-True] PASSED [ 74%]
+tests/unit/test_terminal_states.py::test_terminal_state_detection[REJECTED-True] PASSED [ 74%]
+tests/unit/test_terminal_states.py::test_terminal_state_detection[REQUESTED-False] PASSED [ 75%]
+tests/unit/test_terminal_states.py::test_terminal_state_detection[DISCOVERY-False] PASSED [ 75%]
+tests/unit/test_terminal_states.py::test_terminal_state_detection[IMPLEMENTING-False] PASSED [ 75%]
+tests/unit/test_terminal_states.py::test_terminal_state_detection[AWAITING_GATE_1-False] PASSED [ 76%]
+tests/unit/test_terminal_states.py::test_terminal_state_immutability_certified PASSED [ 76%]
+tests/unit/test_terminal_states.py::test_terminal_state_immutability_rejected PASSED [ 76%]
+tests/unit/test_terminal_states.py::test_transition_state_raises_from_terminal PASSED [ 76%]
+tests/unit/test_terminal_states.py::test_final_status_set_on_certified PASSED [ 77%]
+tests/unit/test_terminal_states.py::test_final_status_set_on_rejected PASSED [ 77%]
+tests/unit/test_terminal_states.py::test_evidence_binding PASSED         [ 77%]
+tests/unit/test_terminal_states.py::test_gate_state_detection[AWAITING_GATE_1-True] PASSED [ 78%]
+tests/unit/test_terminal_states.py::test_gate_state_detection[AWAITING_IMPLEMENTATION_APPROVAL-True] PASSED [ 78%]
+tests/unit/test_terminal_states.py::test_gate_state_detection[AWAITING_GATE_2-True] PASSED [ 78%]
+tests/unit/test_terminal_states.py::test_gate_state_detection[REQUESTED-False] PASSED [ 79%]
+tests/unit/test_terminal_states.py::test_gate_state_detection[DISCOVERY-False] PASSED [ 79%]
+tests/unit/test_terminal_states.py::test_gate_state_detection[IMPLEMENTING-False] PASSED [ 79%]
+tests/unit/test_terminal_states.py::test_gate_state_detection[CERTIFIED-False] PASSED [ 79%]
+tests/unit/test_terminal_states.py::test_gate_state_detection[REJECTED-False] PASSED [ 80%]
+tests/unit/test_workflow_governance.py::test_create_workflow PASSED      [ 80%]
+tests/unit/test_workflow_governance.py::test_create_workflow_without_purpose PASSED [ 80%]
+tests/unit/test_workflow_governance.py::test_get_workflow PASSED         [ 81%]
+tests/unit/test_workflow_governance.py::test_get_workflow_not_found PASSED [ 81%]
+tests/unit/test_workflow_governance.py::test_validate_transition_valid PASSED [ 81%]
+tests/unit/test_workflow_governance.py::test_validate_transition_invalid_state_machine PASSED [ 82%]
+tests/unit/test_workflow_governance.py::test_validate_transition_workflow_not_found PASSED [ 82%]
+tests/unit/test_workflow_governance.py::test_validate_transition_from_terminal_state PASSED [ 82%]
+tests/unit/test_workflow_governance.py::test_transition_state_success PASSED [ 82%]
+tests/unit/test_workflow_governance.py::test_transition_state_sets_final_status PASSED [ 83%]
+tests/unit/test_workflow_governance.py::test_transition_state_invalid_raises_error PASSED [ 83%]
+tests/unit/test_workflow_governance.py::test_transition_to_implementing_requires_authorization PASSED [ 83%]
+tests/unit/test_workflow_governance.py::test_transition_to_implementing_with_approval_succeeds PASSED [ 84%]
+tests/unit/test_workflow_governance.py::test_transition_to_implementing_rejects_hash_mismatch PASSED [ 84%]
+tests/unit/test_workflow_governance.py::test_register_approval PASSED    [ 84%]
+tests/unit/test_workflow_governance.py::test_register_approval_workflow_not_found PASSED [ 84%]
+tests/unit/test_workflow_governance.py::test_bind_artifact_contract PASSED [ 85%]
+tests/unit/test_workflow_governance.py::test_bind_artifact_candidate PASSED [ 85%]
+tests/unit/test_workflow_governance.py::test_bind_artifact_manifest PASSED [ 85%]
+tests/unit/test_workflow_governance.py::test_bind_artifact_snapshot PASSED [ 86%]
+tests/unit/test_workflow_governance.py::test_bind_artifact_invalid_type PASSED [ 86%]
+tests/unit/test_workflow_governance.py::test_bind_artifact_workflow_not_found PASSED [ 86%]
+tests/unit/test_workflow_governance.py::test_list_workflows PASSED       [ 87%]
+tests/unit/test_workflow_governance_service.py::test_create_workflow PASSED [ 87%]
+tests/unit/test_workflow_governance_service.py::test_create_workflow_without_purpose PASSED [ 87%]
+tests/unit/test_workflow_governance_service.py::test_get_workflow PASSED [ 87%]
+tests/unit/test_workflow_governance_service.py::test_get_workflow_not_found PASSED [ 88%]
+tests/unit/test_workflow_governance_service.py::test_validate_transition_valid PASSED [ 88%]
+tests/unit/test_workflow_governance_service.py::test_validate_transition_invalid_state_machine PASSED [ 88%]
+tests/unit/test_workflow_governance_service.py::test_validate_transition_workflow_not_found PASSED [ 89%]
+tests/unit/test_workflow_governance_service.py::test_validate_transition_from_terminal_state PASSED [ 89%]
+tests/unit/test_workflow_governance_service.py::test_transition_state_success PASSED [ 89%]
+tests/unit/test_workflow_governance_service.py::test_transition_state_sets_final_status PASSED [ 89%]
+tests/unit/test_workflow_governance_service.py::test_transition_state_invalid_raises_error PASSED [ 90%]
+tests/unit/test_workflow_governance_service.py::test_transition_to_implementing_requires_authorization PASSED [ 90%]
+tests/unit/test_workflow_governance_service.py::test_transition_to_implementing_with_approval_succeeds PASSED [ 90%]
+tests/unit/test_workflow_governance_service.py::test_transition_to_implementing_rejects_hash_mismatch PASSED [ 91%]
+tests/unit/test_workflow_governance_service.py::test_register_approval PASSED [ 91%]
+tests/unit/test_workflow_governance_service.py::test_register_approval_workflow_not_found PASSED [ 91%]
+tests/unit/test_workflow_governance_service.py::test_bind_artifact_contract PASSED [ 92%]
+tests/unit/test_workflow_governance_service.py::test_bind_artifact_candidate PASSED [ 92%]
+tests/unit/test_workflow_governance_service.py::test_bind_artifact_manifest PASSED [ 92%]
+tests/unit/test_workflow_governance_service.py::test_bind_artifact_snapshot PASSED [ 92%]
+tests/unit/test_workflow_governance_service.py::test_bind_artifact_invalid_type PASSED [ 93%]
+tests/unit/test_workflow_governance_service.py::test_bind_artifact_workflow_not_found PASSED [ 93%]
+tests/unit/test_workflow_governance_service.py::test_list_workflows PASSED [ 93%]
+tests/unit/test_workflow_model.py::test_state_transition_creation PASSED [ 94%]
+tests/unit/test_workflow_model.py::test_state_transition_serialization PASSED [ 94%]
+tests/unit/test_workflow_model.py::test_state_transition_no_from_state PASSED [ 94%]
+tests/unit/test_workflow_model.py::test_workflow_creation PASSED         [ 94%]
+tests/unit/test_workflow_model.py::test_is_terminal_certified PASSED     [ 95%]
+tests/unit/test_workflow_model.py::test_is_terminal_rejected PASSED      [ 95%]
+tests/unit/test_workflow_model.py::test_is_terminal_non_terminal_state PASSED [ 95%]
+tests/unit/test_workflow_model.py::test_requires_approval_gate_states PASSED [ 96%]
+tests/unit/test_workflow_model.py::test_requires_approval_non_gate_states PASSED [ 96%]
+tests/unit/test_workflow_model.py::test_artifact_binding PASSED          [ 96%]
+tests/unit/test_workflow_model.py::test_state_history_tracking PASSED    [ 97%]
+tests/unit/test_workflow_model.py::test_serialization PASSED             [ 97%]
+tests/unit/test_workflow_model.py::test_final_status_set_on_terminal_state PASSED [ 97%]
+tests/unit/test_workflow_target.py::TestWorkflowTarget::test_valid_workflow_target PASSED [ 97%]
+tests/unit/test_workflow_target.py::TestWorkflowTarget::test_workflow_target_uses_version_not_semver PASSED [ 98%]
+tests/unit/test_workflow_target.py::TestWorkflowTarget::test_workflow_target_missing_required_field PASSED [ 98%]
+tests/unit/test_workflow_target.py::TestCandidateBinding::test_valid_candidate_binding PASSED [ 98%]
+tests/unit/test_workflow_target.py::TestCandidateBinding::test_candidate_binding_default_contract_hash PASSED [ 99%]
+tests/unit/test_workflow_target.py::TestCandidateBinding::test_candidate_binding_empty_family_allowed PASSED [ 99%]
+tests/unit/test_workflow_target.py::TestCandidateBinding::test_candidate_binding_missing_required_field PASSED [ 99%]
+tests/unit/test_workflow_target.py::TestWorkflowTargetIntegration::test_workflow_target_prevents_version_mismatch PASSED [100%]
+
+============================== warnings summary ===============================
+tests/unit/test_contract_evidence.py::test_contract_field_evidence_model
+tests/unit/test_contract_evidence.py::test_evidence_provenance_tracking
+tests/unit/test_contract_evidence.py::test_evidence_provenance_tracking
+  C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\pydantic\main.py:263: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+
+tests/unit/test_contract_evidence.py::test_contract_field_evidence_model
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\unit\test_contract_evidence.py:52: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    time_diff = datetime.utcnow() - evidence_auto_time.derived_at
+
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_introduction_i1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_definition_d1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_no_file_operations
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_with_nonexistent_path
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_build_contract_extracts_metadata
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:613: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_introduction_i1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_definition_d1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_no_file_operations
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_with_nonexistent_path
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_build_contract_extracts_metadata
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:621: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_introduction_i1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_definition_d1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_no_file_operations
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_with_nonexistent_path
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_build_contract_extracts_metadata
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:629: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_introduction_i1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_definition_d1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_no_file_operations
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_with_nonexistent_path
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_build_contract_extracts_metadata
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:637: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_introduction_i1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_definition_d1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_no_file_operations
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_with_nonexistent_path
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_build_contract_extracts_metadata
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:645: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_introduction_i1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_definition_d1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_no_file_operations
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_with_nonexistent_path
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_build_contract_extracts_metadata
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:653: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_introduction_i1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_definition_d1
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestSnapshotBasedBuildContract::test_build_contract_deterministic_output
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_no_file_operations
+tests/unit/test_repository_intelligence.py::TestNoFilesystemAccess::test_build_contract_with_nonexistent_path
+tests/unit/test_repository_intelligence.py::TestMetadataExtraction::test_build_contract_extracts_metadata
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:661: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================ 326 passed, 13 skipped, 60 warnings in 2.30s =================
