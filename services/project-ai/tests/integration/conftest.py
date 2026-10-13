@@ -12,10 +12,18 @@ If DATABASE_URL_TUTORIAL is not configured, tests will skip with a clear error m
 """
 
 import os
+from pathlib import Path
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy import text
+
+# Load .env.local from workspace root for DATABASE_URL_TUTORIAL
+from dotenv import load_dotenv
+workspace_root = Path(__file__).parent.parent.parent.parent.parent  # Go up to quiz-platform/
+env_file = workspace_root / ".env.local"
+if env_file.exists():
+    load_dotenv(env_file)
 
 from app.persistence import (
     PostgresWorkflowRepository,
