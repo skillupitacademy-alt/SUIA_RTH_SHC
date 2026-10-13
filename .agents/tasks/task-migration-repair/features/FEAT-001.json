@@ -1,0 +1,36 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Foundation modules (Wave 0): Create core data models, safety validation, dependency plan, command runner, gate evaluation, and verification pipeline. This establishes the type system and execution primitives that all agents depend on.",
+  "status": "completed",
+  "steps": [
+    "Create app/workflows/__init__.py and app/workflows/migration_repair/__init__.py as package markers",
+    "Create app/workflows/migration_repair/models.py with RunStatus, CheckStatus, AgentResult, CommandResult, MigrationFinding, and VerificationStage",
+    "Create app/workflows/migration_repair/safety.py with DatabaseMode enum, DatabaseTarget dataclass, validate_target() function, and FORBIDDEN_PRODUCTION_MARKERS tuple",
+    "Create app/workflows/migration_repair/plan.py with AgentStep dataclass, STEPS tuple mapping 13 agents to W0-W9, ready_steps() function, and validate_no_cycles() function",
+    "Create app/workflows/migration_repair/runner.py with ALLOWED_COMMANDS frozenset (extracted from package.json), run_command() async function with stdout/stderr capture and SHA-256 hashing, and validate_command() function",
+    "Create app/workflows/migration_repair/gate.py with RequiredCheck dataclass, REQUIRED_CHECKS tuple, and evaluate_final_gate() function implementing fail-closed logic",
+    "Create app/workflows/migration_repair/verification.py with run_verification_pipeline() function executing stages V0-V10 sequentially, marking subsequent stages BLOCKED on failure",
+    "Create tests/test_migration_repair_models.py with unit tests for all enums and dataclasses",
+    "Create tests/test_migration_repair_safety.py with unit tests verifying production database protection",
+    "Create tests/test_migration_repair_plan.py with unit tests for dependency resolution and cycle detection",
+    "Create tests/test_migration_repair_gate.py with unit tests verifying fail-closed behavior (BLOCKED/SKIPPED never resolve to PASS)"
+  ],
+  "acceptance_criteria": [
+    "All 8 foundation module files created in app/workflows/migration_repair/",
+    "pytest tests/test_migration_repair_models.py passes all tests",
+    "pytest tests/test_migration_repair_safety.py passes all tests including production DB rejection",
+    "pytest tests/test_migration_repair_plan.py passes dependency resolution tests",
+    "pytest tests/test_migration_repair_gate.py passes fail-closed behavior tests",
+    "validate_target() raises ValueError when production DB name used in VERIFY mode",
+    "evaluate_final_gate() returns BLOCKED when any required check is SKIPPED or BLOCKED",
+    "ready_steps() correctly identifies executable steps based on completed dependencies"
+  ],
+  "verification": [
+    "cd services/project-ai && pytest tests/test_migration_repair_models.py tests/test_migration_repair_safety.py tests/test_migration_repair_plan.py tests/test_migration_repair_gate.py -v",
+    "python -c 'from app.workflows.migration_repair.models import RunStatus, CheckStatus, AgentResult, CommandResult, MigrationFinding, VerificationStage'",
+    "python -c 'from app.workflows.migration_repair.safety import validate_target, DatabaseTarget, DatabaseMode; import pytest; pytest.raises(ValueError, validate_target, DatabaseTarget(url=\"postgresql://localhost/tutorial_prod\", name=\"tutorial_prod\", mode=DatabaseMode.VERIFY, env=\"production\"))'"
+  ],
+  "blocked_reason": null,
+  "findings": "All 8 foundation module files created successfully. 63 unit tests pass. All acceptance criteria met:\n- models.py: RunStatus, CheckStatus, AgentResult, CommandResult, MigrationFinding, VerificationStage\n- safety.py: DatabaseMode, DatabaseTarget, validate_target() with production DB protection\n- plan.py: 14 agents (Agent0-Agent13) across waves W0-W9 with dependency resolution\n- runner.py: Command execution with ALLOWED_COMMANDS validation and SHA-256 hashing\n- gate.py: Fail-closed gate evaluation (BLOCKED/SKIPPED never resolve to PASS)\n- verification.py: Sequential V0-V10 pipeline with blocking on failure\n- All unit tests passing: test_migration_repair_models.py (11 tests), test_migration_repair_safety.py (15 tests), test_migration_repair_plan.py (22 tests), test_migration_repair_gate.py (15 tests)\n- Production database protection verified: validate_target() raises ValueError for tutorial_prod in VERIFY mode\n- Fail-closed behavior verified: evaluate_final_gate() returns BLOCKED for any non-PASS status\n- Dependency resolution verified: ready_steps() correctly identifies executable steps"
+}

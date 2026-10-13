@@ -54,6 +54,7 @@ async def test_execute_toolchain_success():
     snapshot = create_test_snapshot_with_toolchains()
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},
@@ -81,6 +82,7 @@ async def test_execute_toolchain_empty():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},
@@ -102,6 +104,7 @@ async def test_execute_toolchain_collects_evidence():
     snapshot = create_test_snapshot_with_toolchains()
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={},
         repository_snapshot=snapshot,
         evidence_graph={},

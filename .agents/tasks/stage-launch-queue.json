@@ -1,0 +1,70 @@
+{
+  "queue": [
+    {
+      "stage": 2,
+      "name": "W0 Controller",
+      "trigger": "stage_1_approved",
+      "label": "stage2-w0-controller",
+      "execution": "sequential",
+      "agents": ["workflow_controller"],
+      "ready_to_launch": false
+    },
+    {
+      "stage": 3,
+      "name": "W1 Audits",
+      "trigger": "stage_2_complete",
+      "label": "stage3-w1-parallel-audits",
+      "execution": "parallel",
+      "agents": [
+        "command_safety_auditor",
+        "database_safety_auditor",
+        "test_inventory_auditor",
+        "evidence_auditor"
+      ],
+      "ready_to_launch": false
+    },
+    {
+      "stage": 4,
+      "name": "W2-W3 Planning",
+      "trigger": "stage_3_complete",
+      "label": "stage4-w2w3-planning",
+      "execution": "sequential",
+      "agents": ["repair_planner", "repair_reviewer"],
+      "ready_to_launch": false
+    },
+    {
+      "stage": 5,
+      "name": "W4-W5 Implementation",
+      "trigger": "stage_4_approved",
+      "label": "stage5-w4w5-implementation",
+      "execution": "mixed",
+      "agents": ["repair_implementer", "static_reviewer", "test_reviewer", "artifact_reviewer"],
+      "ready_to_launch": false
+    },
+    {
+      "stage": 6,
+      "name": "W6 Verification",
+      "trigger": "stage_5_approved",
+      "label": "stage6-w6-verification",
+      "execution": "sequential",
+      "agents": ["verification_runner"],
+      "stages": ["V0", "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10"],
+      "ready_to_launch": false
+    },
+    {
+      "stage": 7,
+      "name": "W7-W9 Publication",
+      "trigger": "stage_6_complete",
+      "label": "stage7-w7w8w9-publication",
+      "execution": "sequential",
+      "agents": ["evidence_assembler", "final_gate_agent", "publisher_agent"],
+      "ready_to_launch": false
+    }
+  ],
+  "monitoring": {
+    "current_stage": 1,
+    "active_workflow": "wf_dd91a88422e75b4d",
+    "auto_launch_enabled": true,
+    "wait_for_approval": true
+  }
+}

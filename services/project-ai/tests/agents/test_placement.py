@@ -65,6 +65,7 @@ async def test_execute_placement_new_block():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "workflow_target": {
                 "workflow_id": "test-workflow-001",
@@ -118,6 +119,7 @@ async def test_execute_placement_existing_block():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "workflow_target": {
                 "workflow_id": "test-workflow-002",
@@ -165,6 +167,7 @@ async def test_execute_placement_no_path_inference():
     
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "workflow_target": {
                 "workflow_id": "test-workflow-003",

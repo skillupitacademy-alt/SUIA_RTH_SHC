@@ -1,0 +1,34 @@
+{
+  "workflow_id": "migration-repair-workflow",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "source_commit_sha": "069362463165d851cb8ecb6f325957f00ad9942a",
+  "branch": "project-llm-e2e-implementation",
+  "started_at": "2026-10-11T14:35:39Z",
+  "baseline_clean": true,
+  "database_mode": "VERIFY",
+  "safety_policies": {
+    "database_validation": "verify-before-write",
+    "command_allowlist": "strict",
+    "cleanup": "guaranteed"
+  },
+  "file_ownership": {
+    "w0-controller": ["run-manifest.json", "w0-controller.json"],
+    "w1-audits": ["reports/w1-schema-audit.json", "reports/w1-migration-audit.json"],
+    "w2-w3": ["reports/w2-w3-implementation.json"],
+    "w4-w5": ["reports/w4-review.json"],
+    "w6-w9": ["reports/w6-w9-finalize.json"]
+  },
+  "stages": ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9"],
+  "stage_status": {
+    "W0": "complete",
+    "W1": "pending",
+    "W2": "pending",
+    "W3": "pending",
+    "W4": "pending",
+    "W5": "pending",
+    "W6": "pending",
+    "W7": "pending",
+    "W8": "pending",
+    "W9": "pending"
+  }
+}

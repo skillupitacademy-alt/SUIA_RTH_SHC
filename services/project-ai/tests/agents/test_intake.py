@@ -53,6 +53,7 @@ async def test_execute_intake_introduction():
     snapshot = create_test_snapshot_with_blocks()
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "candidate": {
                 "candidateId": "candidate-intro-001",
@@ -82,6 +83,7 @@ async def test_execute_intake_assessment():
     snapshot = create_test_snapshot_with_blocks()
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "candidate": {
                 "candidateId": "candidate-quiz-001",
@@ -109,6 +111,7 @@ async def test_execute_intake_finds_similar_blocks():
     snapshot = create_test_snapshot_with_blocks()
     context = AgentContext(
         task_id="test-task",
+            run_id="test-run",
         workflow_state={
             "candidate": {
                 "candidateId": "candidate-intro-002",

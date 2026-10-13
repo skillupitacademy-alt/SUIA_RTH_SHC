@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-005",
+  "type": "fix",
+  "description": "Add publication confirmation to publisher_agent.py by separating approval -> local commit -> push attempt -> remote SHA confirmation, fetching remote SHA after push and comparing, recording publication.json with all four states, and returning FAILED if remote SHA doesn't match local SHA.",
+  "status": "completed",
+  "steps": [
+    "Read current publisher_agent.py at services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py which checks gate verdict but does not verify remote SHA",
+    "Create PublicationState dataclass in models.py with fields: approval_status, local_sha, push_attempted, push_succeeded, remote_sha, sha_match, timestamp",
+    "Add fetch_remote_sha() async function that: (1) runs 'git ls-remote origin HEAD', (2) parses SHA from output, (3) returns remote SHA or None if fetch failed",
+    "Create record_publication() function that writes publication.json to .agents/evidence/runs/ with all PublicationState fields",
+    "Update execute_publisher_agent() flow: (1) verify gate approval, (2) get local SHA with 'git rev-parse HEAD', (3) attempt push (currently skipped per instructions), (4) fetch remote SHA, (5) compare local vs remote, (6) record all states to publication.json, (7) return FAILED if push attempted but SHA mismatch",
+    "Add validation: if push was attempted and succeeded, remote SHA MUST match local SHA, otherwise return AgentStatus.FAILED",
+    "Add detailed error in outputs if SHA mismatch: 'Remote SHA {remote_sha} does not match local SHA {local_sha} - publication verification failed'",
+    "Create test file services/project-ai/tests/test_publisher_verification.py with tests: test_publication_state_records_all_phases, test_fetch_remote_sha_parses_output, test_publication_fails_on_sha_mismatch, test_publication_succeeds_on_sha_match, test_record_publication_writes_json, test_publisher_blocked_without_approval, test_publisher_verifies_tested_commit"
+  ],
+  "acceptance_criteria": [
+    "PublicationState tracks approval, local commit, push, and remote verification separately",
+    "fetch_remote_sha() retrieves actual remote HEAD SHA after push",
+    "publication.json is written to .agents/evidence/runs/ with all states",
+    "Publisher returns FAILED if remote SHA doesn't match local SHA",
+    "All 7+ unit tests pass: pytest services/project-ai/tests/test_publisher_verification.py -v"
+  ],
+  "verification": [
+    "pytest services/project-ai/tests/test_publisher_verification.py -v"
+  ],
+  "blocked_reason": null,
+  "findings": "Implementation complete. Added PublicationState dataclass to models.py with approval_status, local_sha, push_attempted, push_succeeded, remote_sha, sha_match, and timestamp fields. Implemented fetch_remote_sha() to parse git ls-remote output and return remote HEAD SHA. Implemented record_publication() to write publication.json to .agents/evidence/runs/. Updated execute_publisher_agent() to fetch remote SHA, compare with local SHA, and return FAILED if push attempted and SHA mismatch detected. Created test_publisher_verification.py with 11 comprehensive tests covering all scenarios. All tests pass. Commit: 26e2413a."
+}

@@ -38,6 +38,45 @@ export default function ExternalAiHandoffPage() {
   const [copiedBrief, setCopiedBrief] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [previewTab, setPreviewTab] = useState<'preview' | 'html' | 'schema'>('preview');
+  const [workflowId, setWorkflowId] = useState('');
+  const [engineeringContract, setEngineeringContract] = useState<Record<string, unknown> | null>(null);
+  const [contractLoading, setContractLoading] = useState(false);
+  const [contractError, setContractError] = useState<string | null>(null);
+
+  const loadEngineeringContract = async () => {
+    const id = workflowId.trim();
+    if (!id) {
+      setContractError('Enter the persisted workflow ID to retrieve its canonical contract.');
+      return;
+    }
+
+    setContractLoading(true);
+    setContractError(null);
+    setEngineeringContract(null);
+    try {
+      const apiBase = (process.env.NEXT_PUBLIC_PROJECT_AI_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+      const response = await fetch(
+        `${apiBase}/workflows/${encodeURIComponent(id)}/engineering-contract`,
+        { method: 'GET', credentials: 'include', headers: { Accept: 'application/json' } }
+      );
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(`Contract request failed (${response.status}): ${detail || response.statusText}`);
+      }
+      const payload = await response.json();
+      if (!payload || typeof payload !== 'object' || typeof payload.contract_hash !== 'string' || !payload.contract_hash) {
+        throw new Error('Backend response is missing contract_hash; it cannot be treated as a canonical engineering contract.');
+      }
+      if (payload.workflow_id !== id) {
+        throw new Error('Returned contract workflow_id does not match the requested workflow.');
+      }
+      setEngineeringContract(payload as Record<string, unknown>);
+    } catch (error) {
+      setContractError(error instanceof Error ? error.message : 'Unable to retrieve the engineering contract.');
+    } finally {
+      setContractLoading(false);
+    }
+  };
 
   const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
     { key: 'summary', label: 'Summary', icon: Sparkles },
@@ -51,74 +90,72 @@ export default function ExternalAiHandoffPage() {
   ];
 
   const handleCopyPrompt = () => {
-    const prompt = `You are an expert Frontend & Educational Technology Engineer.
-Your task is to implement Block Family: ${state.familyName} (${state.familyId}), Version: ${state.targetVersion}.
+    if (!engineeringContract) {
+      setContractError('Load the backend-generated engineering contract before copying an implementation prompt.');
+      return;
+    }
+    const prompt = `Use the following immutable, backend-generated Project LLM engineering contract as the sole implementation authority. Do not invent missing requirements. If the contract conflicts with generic guidance, the contract wins.
 
-PURPOSE:
-${state.purpose}
+WORKFLOW ID: ${workflowId.trim()}
+CONTRACT HASH: ${String(engineeringContract.contract_hash)}
 
-EXISTING VERSIONS IN FAMILY:
-${state.existingVersions.join(', ')}
+ENGINEERING CONTRACT JSON:
+${JSON.stringify(engineeringContract, null, 2)}
 
-PHASE 1: DESIGN PROTOTYPE
-1. Semantic HTML5 layout with clean markup
-2. Responsive CSS design matching modern card aesthetic
-3. Interactive vanilla JavaScript logic
-4. Sample content JSON schema
-
-PHASE 2: REACT / TYPESCRIPT IMPLEMENTATION
-1. Component: ${state.familyName}${state.targetVersion}.tsx
-2. Type Definitions: types.ts
-3. JSON Schema: schema.json
-4. Registry Entry: Block family registration UID
-5. Composer Renderer: Composer preview & property controls
-6. Unit Tests: __tests__/${state.familyName}${state.targetVersion}.test.tsx
-
-Deliver the output as a structured package adhering to all repository standards.`;
-
-    navigator.clipboard.writeText(prompt);
-    setCopiedPrompt(true);
-    setTimeout(() => setCopiedPrompt(false), 2000);
+Implement only against this contract. Preserve family/version bindings and report unmet acceptance criteria as BLOCKED, never PASS.`;
+    void navigator.clipboard.writeText(prompt).then(() => {
+      setCopiedPrompt(true);
+      setTimeout(() => setCopiedPrompt(false), 2000);
+    }).catch(() => setContractError('Clipboard access failed. Copy the loaded contract JSON directly instead.'));
   };
 
   const handleCopyBrief = () => {
-    const brief = `PROJECT LLM COMPLIANCE BRIEF FOR EXTERNAL AI
-Block: ${state.familyName} ${state.targetVersion}
-Target: ${state.purpose}
-Existing Family: ${state.existingVersions.join(', ')}
-All 9 Repository Compliance Gates must be satisfied before candidate integration.`;
-    navigator.clipboard.writeText(brief);
-    setCopiedBrief(true);
-    setTimeout(() => setCopiedBrief(false), 2000);
+    if (!engineeringContract) {
+      setContractError('Load the backend-generated engineering contract before copying a compliance brief.');
+      return;
+    }
+    const brief = `PROJECT LLM CANONICAL ENGINEERING CONTRACT
+Workflow ID: ${workflowId.trim()}
+Contract SHA-256: ${String(engineeringContract.contract_hash)}
+
+${JSON.stringify(engineeringContract, null, 2)}
+
+The persisted backend contract is authoritative. Do not invent requirements or claim a gate passed without attached verification evidence.`;
+    void navigator.clipboard.writeText(brief).then(() => {
+      setCopiedBrief(true);
+      setTimeout(() => setCopiedBrief(false), 2000);
+    }).catch(() => setContractError('Clipboard access failed. Copy the loaded contract JSON directly instead.'));
   };
 
   const handleDownloadMarkdown = () => {
-    const md = `# External AI Handoff Brief: ${state.familyName} ${state.targetVersion}
+    if (!engineeringContract) {
+      setContractError('Load the backend-generated engineering contract before downloading the handoff.');
+      return;
+    }
+    const md = `# Canonical External AI Handoff Contract
 
-## 1. Specifications
-- **Family**: ${state.familyName} (${state.familyId})
-- **Version**: ${state.targetVersion}
-- **Purpose**: ${state.purpose}
-- **Baseline Versions**: ${state.existingVersions.join(', ')}
+- **Workflow ID:** ${workflowId.trim()}
+- **Contract SHA-256:** ${String(engineeringContract.contract_hash)}
+- **Family:** ${String(engineeringContract.target_family ?? state.familyName)}
+- **Version:** ${String(engineeringContract.target_version ?? state.targetVersion)}
 
-## 2. Requirements
-1. Instructional Learning Structure (ILS)
-2. Learning Structure & Navigation (LSNB)
-3. Rendering Structure & Style (RSSB)
-4. Tutorial Composer Integration
-5. Runtime Compatibility
-6. Test Verification Suite
-7. Brand Independence
-8. Theme Compatibility
-9. Evidence Graph Artifacts
+## Immutable Backend Contract
 
-Generated autonomously by Project LLM Control Plane.`;
+\`\`\`json
+${JSON.stringify(engineeringContract, null, 2)}
+\`\`\`
 
+## Implementation rules
+
+- Treat the persisted backend contract as the sole source of requirements.
+- Preserve workflow ID, target family/version, snapshot hash, and evidence bindings.
+- Do not claim PASS without real, persisted verification evidence.
+- Report missing requirements or unavailable integrations as BLOCKED.`;
     const blob = new Blob([md], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `compliance_brief_${state.familyName.toLowerCase()}_${state.targetVersion.toLowerCase()}.md`;
+    a.download = `canonical_contract_${workflowId.trim().replace(/[^a-zA-Z0-9_-]/g, '_')}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -152,6 +189,50 @@ Generated autonomously by Project LLM Control Plane.`;
 
       {/* Context Banner */}
       <ProjectLlmContextBanner />
+
+      {/* Canonical backend contract: generic client-side briefs are not authoritative. */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <h2 className="text-base font-bold text-slate-900">Canonical Engineering Contract</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Enter an existing persisted workflow ID to retrieve its immutable contract from Project AI. The returned workflow ID and contract hash are checked before the contract can be used in the external-AI prompt.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            aria-label="Persisted workflow ID"
+            value={workflowId}
+            onChange={(event) => { setWorkflowId(event.target.value); setEngineeringContract(null); setContractError(null); }}
+            placeholder="Persisted workflow ID"
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900"
+          />
+          <button
+            type="button"
+            onClick={loadEngineeringContract}
+            disabled={contractLoading || !workflowId.trim()}
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {contractLoading ? 'Loading contract…' : 'Load backend contract'}
+          </button>
+        </div>
+        {contractError && <p role="alert" className="text-sm text-rose-700">{contractError}</p>}
+        {engineeringContract && (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              Contract retrieved and identity-bound. Workflow: <strong>{String(engineeringContract.workflow_id)}</strong>
+              <div className="mt-1 break-all font-mono text-xs">SHA-256: {String(engineeringContract.contract_hash)}</div>
+            </div>
+            <pre className="max-h-72 overflow-auto rounded-lg bg-slate-950 p-3 text-xs text-slate-100">{JSON.stringify(engineeringContract, null, 2)}</pre>
+            <button
+              type="button"
+              onClick={handleCopyPrompt}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              Copy prompt from canonical contract
+            </button>
+          </div>
+        )}
+      </section>
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -500,7 +581,7 @@ Generated autonomously by Project LLM Control Plane.`;
             </h4>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
               After the External AI finishes implementing the component package for{' '}
-              <span className="font-bold text-slate-900">{state.familyName} {state.targetVersion}</span>, proceed to Candidate Upload & Validation where all 11 autonomous quality gates will verify compliance.
+              <span className="font-bold text-slate-900">{state.familyName} {state.targetVersion}</span>, proceed to Candidate Upload & Validation where the backend-defined quality gates will verify compliance.
             </p>
           </div>
         </div>

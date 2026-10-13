@@ -9,16 +9,16 @@ class TestAgentRegistry:
     """Test suite for AgentRegistry."""
     
     def test_all_15_agents_registered(self):
-        """All 15 specialized agents are registered."""
+        """All 28 specialized agents are registered."""
         registry = AgentRegistry()
         agents = registry.list_agents()
         
-        assert len(agents) == 15, f"Expected 15 agents, got {len(agents)}"
+        assert len(agents) == 28, f"Expected 28 agents, got {len(agents)}"
     
     def test_agent_types_enum_complete(self):
-        """AgentType enum contains all 15 agent types."""
+        """AgentType enum contains all 28 agent types."""
         agent_types = list(AgentType)
-        assert len(agent_types) == 15, f"Expected 15 agent types, got {len(agent_types)}"
+        assert len(agent_types) == 28, f"Expected 28 agent types, got {len(agent_types)}"
     
     def test_get_agent_returns_correct_agent(self):
         """get_agent() returns the correct agent for each type."""
@@ -32,11 +32,11 @@ class TestAgentRegistry:
             assert agent.agentId == agent_type.value
     
     def test_list_agents_returns_15_entries(self):
-        """list_agents() returns exactly 15 agents."""
+        """list_agents() returns exactly 28 agents."""
         registry = AgentRegistry()
         agents = registry.list_agents()
         
-        assert len(agents) == 15
+        assert len(agents) == 28
         assert all(isinstance(agent, Agent) for agent in agents)
     
     def test_no_agent_has_stub_or_todo(self):
@@ -198,3 +198,37 @@ class TestAgentRegistry:
         
         ids = [agent.agentId for agent in agents]
         assert len(ids) == len(set(ids)), "Agent IDs are not unique"
+    
+    def test_migration_repair_agents_registered(self):
+        """All 13 migration repair agents exist and have non-empty capabilities."""
+        registry = AgentRegistry()
+        
+        migration_repair_agents = [
+            AgentType.MIGRATION_AUDIT,
+            AgentType.DATABASE_SAFETY_AUDIT,
+            AgentType.TEST_INVENTORY,
+            AgentType.EVIDENCE_AUDIT,
+            AgentType.REPAIR_PLANNER,
+            AgentType.REPAIR_REVIEWER,
+            AgentType.REPAIR_IMPLEMENTER,
+            AgentType.STATIC_REVIEWER,
+            AgentType.TEST_REVIEWER,
+            AgentType.VERIFICATION_RUNNER,
+            AgentType.EVIDENCE_ASSEMBLER,
+            AgentType.FINAL_GATE_AGENT,
+            AgentType.PUBLISHER_AGENT,
+        ]
+        
+        assert len(migration_repair_agents) == 13, "Expected 13 migration repair agents"
+        
+        for agent_type in migration_repair_agents:
+            agent = registry.get_agent(agent_type)
+            assert agent is not None, f"Agent {agent_type} not found in registry"
+            assert len(agent.capabilities) >= 3, \
+                f"Agent {agent.name} has fewer than 3 capabilities: {agent.capabilities}"
+            assert agent.status == "active", \
+                f"Agent {agent.name} is not active: {agent.status}"
+            assert "stub" not in agent.description.lower(), \
+                f"Agent {agent.name} has 'stub' in description"
+            assert "TODO" not in agent.description, \
+                f"Agent {agent.name} has 'TODO' in description"

@@ -1,0 +1,40 @@
+{
+  "stage": "V8",
+  "verdict": "PASS",
+  "commit_sha": "3b07a649fe627bce508d58c3c135258b51758e97",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "manifest": {
+    "v0-preflight.json": {
+      "sha256": "DEBECC58C8E68D6AC34906A766301149CAA89AB32801135E2271C0253EF8BE03",
+      "verdict": "PASS"
+    },
+    "v1-database-setup.json": {
+      "sha256": "50EAD256374ADCB9C7F2D359B2C56ECEE7AA1DF987855796E50B9D776A1700CE",
+      "verdict": "BLOCKED"
+    },
+    "v2-migration-execution.json": {
+      "sha256": "58BB0DA871427687C6E735163F23A7815D44A1DC565732B0C6CBA28209C8D560",
+      "verdict": "BLOCKED"
+    },
+    "v3-schema-verification.json": {
+      "sha256": "6B2B4DE95428EC8EF3EB139FC7613C0E29312EC2E3302B521D67E925285F0DAD",
+      "verdict": "BLOCKED"
+    },
+    "v4-package-tests.json": {
+      "sha256": "DA9AF5AAC645052995C7D25F7C7BDFBEC39B279718438AD7CABAEE9AB0A5C2B1",
+      "verdict": "BLOCKED"
+    },
+    "v5-integration-tests.json": {
+      "sha256": "88B99335241C93A9EF569AEDD41DB7E031429A09DCFE4B94AD4745A9FE32EB1B",
+      "verdict": "BLOCKED"
+    },
+    "v6-security-tests.json": {
+      "sha256": "F3CE3F8F54CE009D272A7045E50B816BFB1144EF68522A57F813871E6E705A2E",
+      "verdict": "BLOCKED"
+    },
+    "v7-performance-baseline.json": {
+      "sha256": "77BDA4235E0CD8FD35BE84067BA270E689D7A17253222931D4E0A35CC1D9364F",
+      "verdict": "BLOCKED"
+    }
+  }
+}

@@ -28,6 +28,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from app.workflows.migration_repair.agents.final_gate_agent import format_commit_message
+
 
 class RepositoryAdapterError(Exception):
     """Error during repository operations."""
@@ -493,12 +495,13 @@ class RepositoryAdapter:
                 f"Git add failed: {e.stderr}"
             )
     
-    def git_commit(self, commit_message: str) -> str:
+    def git_commit(self, commit_message: str, run_id: Optional[str] = None) -> str:
         """
         Commit staged changes.
         
         Args:
             commit_message: Commit message
+            run_id: Optional run identifier to append as footer
             
         Returns:
             Commit hash
@@ -508,6 +511,10 @@ class RepositoryAdapter:
         """
         if self.dry_run:
             return "dry-run-commit-hash"
+        
+        # Format message with Run-ID footer if provided
+        if run_id:
+            commit_message = format_commit_message(run_id, commit_message)
         
         try:
             subprocess.run(

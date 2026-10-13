@@ -1,0 +1,26 @@
+Migration 0012 Surgical Fix - Commit Details
+============================================
+
+Commit SHA: 7da64232eed0e70f25e5a16c19de329b603c19f2
+Branch: project-llm-e2e-implementation
+Remote: origin/project-llm-e2e-implementation
+
+Commit Message:
+---------------
+fix(db): remove 46 duplicate statements from migration 0012
+
+- Root cause: migration 0011 snapshot was empty, causing Drizzle to regenerate
+- Removed 21 duplicates from 0011 (layman tables/enum/indexes)
+- Removed 25 duplicates from 0000-0010 (old tables/enums)
+- Kept 33 genuinely new objects (10 enums, 23 tables)
+- Updated 0012 snapshot to reflect corrected state
+- Evidence: .agents/evidence/0012-duplicate-vs-new-analysis.json
+
+Files Changed:
+--------------
+- packages/db-tutorial/migrations/0012_futuristic_pepper_potts.sql
+  * 1 insertion(+)
+  * 489 deletions(-)
+
+Push Status: ✅ Successfully pushed to origin/project-llm-e2e-implementation
+Verification: Local and remote branches are in sync

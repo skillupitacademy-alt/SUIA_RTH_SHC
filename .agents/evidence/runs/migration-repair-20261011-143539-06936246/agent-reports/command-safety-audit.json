@@ -1,0 +1,152 @@
+{
+  "audit_type": "command_safety",
+  "auditor": "command-safety-auditor",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "timestamp": "2025-01-11T14:35:45Z",
+  "files_scanned": [
+    "services/project-ai/app/workflows/migration_repair/runner.py",
+    "services/project-ai/app/workflows/migration_repair/verification.py",
+    "services/project-ai/app/workflows/migration_repair/agents/repair_implementer.py",
+    "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+    "services/project-ai/app/workflows/migration_repair/agents/workflow_controller.py",
+    "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py"
+  ],
+  "findings": [
+    {
+      "finding_id": "CMD-001",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/runner.py",
+      "line": 145,
+      "description": "Proper use of asyncio.create_subprocess_exec(*argv) with no shell=True. Command arguments are passed as separate parameters, preventing shell injection.",
+      "recommended_action": "None - this is the correct pattern. Continue using this approach.",
+      "required_test": "test_migration_repair_safety.py::test_run_command_uses_exec_not_shell"
+    },
+    {
+      "finding_id": "CMD-002",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/runner.py",
+      "line": 44,
+      "description": "Executable allowlist ALLOWED_COMMANDS is properly defined as a frozenset with approved commands only.",
+      "recommended_action": "None - this is the correct pattern. Continue maintaining this allowlist.",
+      "required_test": "test_migration_repair_safety.py::test_allowed_commands_is_frozen"
+    },
+    {
+      "finding_id": "CMD-003",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/runner.py",
+      "line": 58,
+      "description": "validate_executable() function properly checks that executables are in ALLOWED_COMMANDS allowlist.",
+      "recommended_action": "None - this is the correct pattern. Continue using this validation.",
+      "required_test": "test_migration_repair_safety.py::test_validate_executable_rejects_disallowed"
+    },
+    {
+      "finding_id": "CMD-004",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/runner.py",
+      "line": 72,
+      "description": "validate_argv() function properly rejects arguments containing shell metacharacters from SHELL_METACHARACTERS set.",
+      "recommended_action": "None - this is the correct pattern. Continue using this validation.",
+      "required_test": "test_migration_repair_safety.py::test_validate_argv_blocks_shell_metacharacters"
+    },
+    {
+      "finding_id": "CMD-005",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/runner.py",
+      "line": 91,
+      "description": "validate_command() function properly validates both executable allowlist and argument safety before execution.",
+      "recommended_action": "None - this is the correct pattern. Continue using this validation.",
+      "required_test": "test_migration_repair_safety.py::test_validate_command_full_pipeline"
+    },
+    {
+      "finding_id": "CMD-006",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/verification.py",
+      "line": 50,
+      "description": "Uses run_command() helper which provides validated command execution. No direct subprocess calls.",
+      "recommended_action": "None - this is the correct pattern. Continue using run_command() wrapper.",
+      "required_test": "test_migration_repair_safety.py::test_verification_uses_run_command"
+    },
+    {
+      "finding_id": "CMD-007",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/verification.py",
+      "line": 187,
+      "description": "All command executions in verification pipeline use run_command() helper with pre-defined command strings from VERIFICATION_STAGES.",
+      "recommended_action": "None - this is the correct pattern. Continue using run_command() with static command strings.",
+      "required_test": "test_migration_repair_safety.py::test_verification_stages_use_static_commands"
+    },
+    {
+      "finding_id": "CMD-008",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/repair_implementer.py",
+      "line": 120,
+      "description": "Uses run_command() helper for git operations. No direct subprocess calls.",
+      "recommended_action": "None - this is the correct pattern. Continue using run_command() wrapper.",
+      "required_test": "test_migration_repair_agent_repair_implementer.py::test_implementer_uses_run_command"
+    },
+    {
+      "finding_id": "CMD-009",
+      "type": "COMPLIANT",
+      "severity": "LOW",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+      "line": 27,
+      "description": "Uses run_command() helper for git operations. No direct subprocess calls.",
+      "recommended_action": "None - this is the correct pattern. Continue using run_command() wrapper.",
+      "required_test": "test_migration_repair_agent_publisher.py::test_publisher_uses_run_command"
+    },
+    {
+      "finding_id": "CMD-010",
+      "type": "VIOLATION",
+      "severity": "MEDIUM",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/workflow_controller.py",
+      "line": 141,
+      "description": "Direct subprocess.run() call without using run_command() wrapper. While this specific call uses argv array format correctly ['git', 'rev-parse', 'HEAD'], it bypasses the centralized validation in runner.py.",
+      "recommended_action": "Replace direct subprocess.run() with run_command() helper to ensure consistent validation and audit trail. Change _get_git_sha() to use: result = await run_command('git rev-parse HEAD', cwd=repo_root)",
+      "required_test": "test_migration_repair_agent_workflow_controller.py::test_workflow_controller_uses_run_command"
+    },
+    {
+      "finding_id": "CMD-011",
+      "type": "VIOLATION",
+      "severity": "MEDIUM",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+      "line": 149,
+      "description": "Direct subprocess.run() call without using run_command() wrapper. While this specific call uses argv array format correctly ['git', 'rev-parse', 'HEAD'], it bypasses the centralized validation in runner.py.",
+      "recommended_action": "Replace direct subprocess.run() with run_command() helper to ensure consistent validation and audit trail. Change verify_commit_identity() to use: result = await run_command('git rev-parse HEAD')",
+      "required_test": "test_migration_repair_agent_final_gate.py::test_final_gate_uses_run_command"
+    },
+    {
+      "finding_id": "CMD-012",
+      "type": "INCONSISTENT",
+      "severity": "MEDIUM",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/workflow_controller.py",
+      "line": 137,
+      "description": "Function _get_git_sha() is synchronous but other agents use async run_command(). This creates inconsistency in command execution patterns.",
+      "recommended_action": "Make _get_git_sha() async and use run_command() for consistency: async def _get_git_sha(repo_root: Path) -> str",
+      "required_test": "test_migration_repair_agent_workflow_controller.py::test_get_git_sha_is_async"
+    },
+    {
+      "finding_id": "CMD-013",
+      "type": "INCONSISTENT",
+      "severity": "MEDIUM",
+      "file": "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+      "line": 134,
+      "description": "Function verify_commit_identity() is synchronous but other agents use async run_command(). This creates inconsistency in command execution patterns.",
+      "recommended_action": "Make verify_commit_identity() async and use run_command() for consistency: async def verify_commit_identity() -> tuple[bool, Optional[str], Optional[str]]",
+      "required_test": "test_migration_repair_agent_final_gate.py::test_verify_commit_identity_is_async"
+    }
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 4,
+    "low": 9
+  }
+}

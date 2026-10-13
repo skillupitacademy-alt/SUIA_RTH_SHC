@@ -44,22 +44,25 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+      
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          run_install: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
+      
       - name: Install Node dependencies
         run: pnpm install
 
       - name: Run Drizzle migrations
         env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/tutorial_test
+          DATABASE_URL_TUTORIAL: postgresql://test_user:test_password@localhost:5432/tutorial_test
         run: |
           cd packages/db-tutorial
           pnpm db:migrate

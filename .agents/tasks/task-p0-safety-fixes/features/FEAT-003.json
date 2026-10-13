@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-003",
+  "type": "fix",
+  "description": "Add guaranteed cleanup to verification.py by wrapping all database operations in try/finally blocks, implementing ensure_cleanup() that runs even on exceptions, adding cleanup verification (checking database actually dropped), logging cleanup success/failure to evidence, and marking as BLOCKED if cleanup fails.",
+  "status": "completed",
+  "steps": [
+    "Read current verification.py at services/project-ai/app/workflows/migration_repair/verification.py which runs V0-V10 stages sequentially but has no guaranteed cleanup",
+    "Create ensure_cleanup() async function that: (1) runs V10 teardown command, (2) verifies database no longer exists, (3) logs cleanup status to .agents/evidence/runs/, (4) returns CleanupResult(success: bool, verified: bool, log_path: str)",
+    "Wrap run_verification_pipeline() main logic in try/finally block where finally always calls ensure_cleanup()",
+    "Add verify_database_dropped() async helper that checks docker-compose ps output to confirm test-postgres container is down",
+    "Update VerificationStage model in models.py to include cleanup_status: Optional[CheckStatus] field",
+    "Modify run_verification_pipeline() to set stage status to BLOCKED if cleanup fails, with blocked_reason='Cleanup verification failed - test database may still exist'",
+    "Add cleanup logging to evidence: append to .agents/evidence/runs/cleanup-{timestamp}.jsonl with fields {timestamp, stage_id, cleanup_attempted, cleanup_verified, database_dropped, exit_code}",
+    "Create test file services/project-ai/tests/test_verification_cleanup.py with tests: test_cleanup_runs_in_finally_on_success, test_cleanup_runs_in_finally_on_exception, test_ensure_cleanup_verifies_database_dropped, test_cleanup_failure_marks_blocked, test_cleanup_logs_to_evidence, test_verify_database_dropped_checks_container"
+  ],
+  "acceptance_criteria": [
+    "ensure_cleanup() always runs in finally block regardless of success/failure",
+    "Cleanup verification checks that database is actually dropped",
+    "Cleanup status is logged to .agents/evidence/runs/ with timestamp",
+    "Failed cleanup marks stage as BLOCKED, not PASS",
+    "All 6+ unit tests pass: pytest services/project-ai/tests/test_verification_cleanup.py -v"
+  ],
+  "verification": [
+    "pytest services/project-ai/tests/test_verification_cleanup.py -v"
+  ],
+  "blocked_reason": null,
+  "findings": "Implementation complete with 8 passing tests. Added CleanupResult model to models.py, implemented ensure_cleanup() and verify_database_dropped() in verification.py, wrapped run_verification_pipeline() in try/finally block, added cleanup_status field to VerificationStage, marks stage as BLOCKED if cleanup verification fails, logs cleanup attempts to .agents/evidence/runs/cleanup-{timestamp}.jsonl with all required fields, and added docker-compose to ALLOWED_COMMANDS in runner.py."
+}

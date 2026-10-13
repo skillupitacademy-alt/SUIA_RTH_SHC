@@ -1,0 +1,6 @@
+{
+  "stage": "V3",
+  "verdict": "BLOCKED",
+  "reason": "V2 migration execution blocked/failed",
+  "run_id": "migration-repair-20261011-143539-06936246"
+}

@@ -58,18 +58,6 @@ class BrowserVerificationConfig:
     viewport_height: int = 720
 
 
-@dataclass
-class BrowserVerificationConfig:
-    """Configuration for browser verification."""
-    
-    base_url: str = 'http://localhost:3000'
-    headless: bool = True
-    timeout: int = 30000  # 30 seconds
-    screenshot_path: Optional[Path] = None
-    viewport_width: int = 1280
-    viewport_height: int = 720
-
-
 class BrowserCertificationRunner:
     """
     Browser certification runner using subprocess orchestration.
@@ -133,9 +121,47 @@ class BrowserCertificationRunner:
                 timeout=120,
             )
             
-            # Parse JSON reporter output
+            # A non-zero process exit is a failed verification even if a report exists.
+            if result.returncode != 0:
+                return RuntimeVerification(
+                    verificationId=verification_id,
+                    target=base_url,
+                    route="/preflight",
+                    blockType="preflight",
+                    expected={},
+                    observed={
+                        "error": "playwright_nonzero_exit",
+                        "returncode": result.returncode,
+                        "stdout": result.stdout,
+                        "stderr": result.stderr,
+                    },
+                    passed=False,
+                    evidenceIds=[],
+                    consoleErrors=[],
+                    networkErrors=[],
+                    error_code=RuntimeErrorCode.RUNTIME_START_FAILURE,
+                    error_message=f"Playwright exited with status {result.returncode}",
+                )
+
+            # Parse JSON reporter output only after a successful process exit.
             if results_path.exists():
-                results = json.loads(results_path.read_text())
+                try:
+                    results = json.loads(results_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError) as exc:
+                    return RuntimeVerification(
+                        verificationId=verification_id,
+                        target=base_url,
+                        route="/preflight",
+                        blockType="preflight",
+                        expected={},
+                        observed={"error": "invalid_playwright_report"},
+                        passed=False,
+                        evidenceIds=[],
+                        consoleErrors=[],
+                        networkErrors=[],
+                        error_code=RuntimeErrorCode.RUNTIME_START_FAILURE,
+                        error_message=f"Playwright report could not be read or parsed: {exc}",
+                    )
                 return self._parse_playwright_results(results, verification_id)
             else:
                 # Playwright ran but no results file
@@ -289,8 +315,8 @@ async def verify_in_browser(
     """
     verification_id = f"browser-{uuid.uuid4().hex[:8]}"
     
-    # For now, return graceful degradation
-    # Full implementation would generate dynamic Playwright test spec and execute it
+    # This helper does not execute a browser. It must not claim a successful
+    # verification based only on configuration or caller-supplied evidence.
     return RuntimeVerification(
         verificationId=verification_id,
         target=config.base_url,
@@ -298,15 +324,15 @@ async def verify_in_browser(
         blockType=block_type,
         expected=expected,
         observed={
-            'note': 'Browser verification uses subprocess orchestration',
-            'implementation': 'Use BrowserCertificationRunner.execute_preflight() for actual tests'
+            "error": "browser_execution_not_implemented",
+            "note": "Use BrowserCertificationRunner.execute_preflight() to run actual Playwright tests.",
         },
-        passed=True,
-        evidenceIds=evidence_ids,
+        passed=False,
+        evidenceIds=[],
         consoleErrors=[],
         networkErrors=[],
-        error_code=None,
-        error_message=None
+        error_code=RuntimeErrorCode.RUNTIME_START_FAILURE,
+        error_message="Browser verification was not executed; no browser pass can be asserted.",
     )
 
 

@@ -240,6 +240,7 @@ class M29GoldenE2ETest:
             # Create agent context for discovery
             agent_context = AgentContext(
                 task_id=self.workflow_id,
+                run_id=self.workflow_id,
                 workflow_state=self.workflow_context,
                 repository_snapshot={},  # Would be populated from real snapshot
                 evidence_graph={},

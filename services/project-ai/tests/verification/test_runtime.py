@@ -23,6 +23,7 @@ from app.verification.runtime import (
     get_health_url,
     APP_PORTS
 )
+from app.verification.browser import BrowserVerificationConfig, verify_in_browser
 
 
 class TestHealthUrl:
@@ -42,14 +43,27 @@ class TestHealthUrl:
 class TestHealthCheckFallback:
     """Test health check fallback strategy."""
     
-    def test_health_check_success_primary(self):
-        """Health check succeeds on /api/health."""
+    def test_missing_requests_dependency_fails_closed(self):
+        """A missing HTTP client must not be treated as a healthy runtime."""
         app_process = ApplicationProcess(Path('/test'), 'test-target')
-        
+
         with patch('builtins.__import__', side_effect=ImportError):
-            # requests not available - should return True (graceful degradation)
             result = app_process.verify_health('http://localhost:3000/api/health')
-            assert result is True
+
+        assert result is False
+
+    def test_health_check_success_primary(self):
+        """A real HTTP 200 from the primary health endpoint passes."""
+        app_process = ApplicationProcess(Path('/test'), 'test-target')
+        response = Mock(status_code=200)
+        fake_requests = Mock()
+        fake_requests.get.return_value = response
+
+        with patch.dict('sys.modules', {'requests': fake_requests}):
+            result = app_process.verify_health('http://localhost:3000/api/health')
+
+        assert result is True
+        fake_requests.get.assert_called_once_with('http://localhost:3000/api/health', timeout=10)
     
     def test_health_check_fallback_to_health(self):
         """Health check falls back to /health when /api/health fails."""
@@ -68,6 +82,26 @@ class TestHealthCheckFallback:
         # This test verifies the error handling exists in the implementation
         # Actual HTTP mocking is complex with dynamic imports
         pass
+
+
+class TestBrowserVerificationFailClosed:
+    """Browser helpers must not claim success without executing a browser."""
+
+    @pytest.mark.asyncio
+    async def test_unexecuted_browser_helper_is_not_a_pass(self):
+        config = BrowserVerificationConfig(base_url="http://localhost:3000")
+        result = await verify_in_browser(
+            block_type="introduction",
+            route="/tutorial",
+            expected={"version": "I7"},
+            config=config,
+            evidence_ids=["caller-supplied-evidence"],
+        )
+
+        assert result.passed is False
+        assert result.evidenceIds == []
+        assert result.error_code == RuntimeErrorCode.RUNTIME_START_FAILURE
+        assert "not executed" in (result.error_message or "").lower()
 
 
 class TestStartupTimeout:

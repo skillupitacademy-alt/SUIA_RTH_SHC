@@ -36,7 +36,9 @@ The service expects the TypeScript snapshot at:
 <workspace-root>/packages/project-llm-discovery/output/snapshot.json
 ```
 
-Set `WORKSPACE_ROOT` environment variable to override the default path.
+Set `WORKSPACE_ROOT` environment variable to override the default path. If unset, the service resolves the repository root relative to its own source location; it does not use a developer-specific absolute path.
+
+Configure browser origins for the admin frontends with the comma-separated `PROJECT_AI_CORS_ORIGINS` environment variable (for example, `http://localhost:3000,http://localhost:3001`). The development defaults are localhost ports 3000, 3001, and 3009. Wildcard origins are rejected because the service enables credentialed requests. Production deployments should set only the exact trusted origins.
 
 ## Running the Service
 
@@ -828,6 +830,44 @@ and a list of structured error strings on failure. A non-empty list causes the
 2. Ensure the evidence is populated in `workflow.gate_results` before
    calling the approve-final endpoint.
 3. Add a test in `tests/security/test_w7_evidence_enforcement.py`.
+
+---
+
+## Migration Repair Workflow
+
+The Migration Repair Workflow System is an autonomous execution framework that discovers, repairs, verifies, and publishes database migration fixes with complete evidence collection and independent review.
+
+### Documentation
+
+See [Migration Repair Workflow Documentation](docs/migration-repair-workflow.md) for:
+- Complete architecture overview with DAG diagram
+- All 13 agent responsibilities and capabilities
+- Safety constraints and production database protection
+- Evidence requirements and ledger format
+- Troubleshooting guide for common failures
+- How to add new verification stages
+- CLI usage examples
+
+### Quick Start
+
+```bash
+# Preview execution plan
+python scripts/run-migration-repair.py --dry-run
+
+# Run full workflow
+python scripts/run-migration-repair.py --verbose
+
+# Custom database URL
+python scripts/run-migration-repair.py --database-url postgresql://user:pass@localhost:55432/test_db
+```
+
+### Key Features
+
+- **Evidence-Based Verification**: All success claims backed by authenticated execution records
+- **Fail-Closed Design**: BLOCKED/SKIPPED never resolve to PASS
+- **Independent Review**: Multiple agents verify work without trusting prior conclusions
+- **Immutable Evidence**: Append-only JSONL ledgers with artifact hashing
+- **Production Safety**: Never mutates production databases automatically
 
 ---
 

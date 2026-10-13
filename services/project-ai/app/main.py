@@ -27,9 +27,12 @@ async def lifespan(app: FastAPI):
     Validates configuration on startup, cleans up on shutdown.
     """
     # Startup: Validate snapshot path configuration
+    # Resolve the workspace from this service's repository location unless
+    # deployment explicitly configures WORKSPACE_ROOT. Never assume a developer's
+    # machine-specific absolute path.
     workspace_root = os.environ.get(
-        'WORKSPACE_ROOT',
-        'E:\\onlinewebsites\\quiz-platform'
+        "WORKSPACE_ROOT",
+        str(Path(__file__).resolve().parents[3]),
     )
     snapshot_path = Path(workspace_root) / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json'
     
@@ -84,23 +87,37 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware - aligned with platform ALLOWED_ORIGINS configuration
-allowed_origins_str = os.environ.get('ALLOWED_ORIGINS', '')
-allowed_origins = [origin.strip() for origin in allowed_origins_str.split(',') if origin.strip()]
+# CORS middleware. Credentialed requests must use explicit origins.
+# Prefer platform ALLOWED_ORIGINS, with PROJECT_AI_CORS_ORIGINS as a service-specific override.
+_default_cors_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3009",
+]
+_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get(
+        "PROJECT_AI_CORS_ORIGINS",
+        os.environ.get(
+            "ALLOWED_ORIGINS",
+            ",".join(_default_cors_origins),
+        ),
+    ).split(",")
+    if origin.strip()
+]
+if "*" in _cors_origins:
+    raise RuntimeError(
+        "CORS origins must not contain '*' when credentialed requests are enabled."
+    )
 
-# Fallback to wildcard only in development if ALLOWED_ORIGINS not configured
-if not allowed_origins:
-    allowed_origins = ["*"]
-    print("WARNING: ALLOWED_ORIGINS not configured, using wildcard (*) for CORS")
-
-print(f"CORS configured with origins: {allowed_origins}")
+print(f"CORS configured with origins: {_cors_origins}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # Mount route modules

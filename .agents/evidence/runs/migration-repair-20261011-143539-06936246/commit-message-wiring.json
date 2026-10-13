@@ -1,0 +1,25 @@
+{
+  "commit_pathways_modified": [
+    "services/project-ai/app/workflows/migration_repair/agents/repair_implementer.py:180-195",
+    "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py:190-210",
+    "services/project-ai/app/placement/repository_adapter.py:496-520"
+  ],
+  "test_results": "PASS - All core tests passing: agent_coordinator (21/21), repair_implementer (3/3), publisher_agent (3/3)",
+  "example_commit_message": "Apply migration repair patches\n\nRun-ID: migration-repair-20261011-143539-06936246",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "dataclass_modified": "app/orchestration/agent_coordinator.py:AgentContext - added run_id field",
+  "production_instantiations_updated": [
+    "app/orchestration/agent_coordinator.py:716",
+    "app/orchestration/agent_coordinator.py:792",
+    "app/orchestration/workflow_engine.py:184",
+    "app/orchestration/workflow_engine.py:359"
+  ],
+  "test_instantiations_updated": 27,
+  "imports_added": [
+    "services/project-ai/app/workflows/migration_repair/agents/repair_implementer.py:15",
+    "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py:16",
+    "services/project-ai/app/placement/repository_adapter.py:31"
+  ],
+  "commit_sha": "4c094c60",
+  "commit_message_verified": "Run-ID footer present in git log -1 output"
+}

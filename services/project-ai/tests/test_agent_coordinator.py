@@ -26,6 +26,7 @@ class TestAgentCoordinator:
         """Create sample agent context for testing."""
         return AgentContext(
             task_id="test-task-001",
+            run_id="test-run-001",
             workflow_state={"test": "value"},
             repository_snapshot={
                 "blocks": {
@@ -339,7 +340,7 @@ class TestAgentCoordinator:
         assert result.agent_id == "candidate_certification"
         assert result.status == AgentStatus.SUCCESS
         assert result.outputs["certification_passed"] is True
-        assert result.outputs["verdict"] == "CERTIFIED"
+        assert result.outputs["verdict"] == "CERTIFICATION_READY"
     
     @pytest.mark.asyncio
     async def test_certification_agent_rejects_on_failure(self, coordinator, sample_context):
@@ -566,6 +567,7 @@ class TestAgentContextCreation:
         """AgentContext can be created with required fields."""
         context = AgentContext(
             task_id="test-001",
+            run_id="test-001-run",
             workflow_state={"key": "value"},
             repository_snapshot={"blocks": {}},
             evidence_graph={},

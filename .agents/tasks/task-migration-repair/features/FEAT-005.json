@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-005",
+  "type": "docs",
+  "description": "Documentation and CLI tooling (Wave 5): Create comprehensive documentation covering architecture, agent responsibilities, safety constraints, and troubleshooting. Provide example CLI script demonstrating workflow execution.",
+  "status": "completed",
+  "steps": [
+    "Create docs/migration-repair-workflow.md with sections: Architecture overview with DAG diagram, Agent responsibilities (all 13 agents), Safety constraints (production database protection), Evidence requirements and ledger format, How to add new verification stages, How to extend ALLOWED_COMMANDS, Troubleshooting guide for common failures",
+    "Create scripts/run-migration-repair.py CLI script that: creates workflow_id, initializes AgentCoordinator, executes agents in DAG order via execute_dag(), logs progress to stdout, writes final report to .agents/tasks/migration-repair-{workflow_id}-report.json",
+    "Add --dry-run flag to CLI script for execution plan preview without mutations",
+    "Add usage examples to docs showing: basic workflow execution, custom database URL, enabling verbose logging, interpreting evidence ledger",
+    "Update services/project-ai/README.md to reference migration repair workflow documentation"
+  ],
+  "acceptance_criteria": [
+    "docs/migration-repair-workflow.md created with complete architecture documentation",
+    "All 13 agents documented with their capabilities and responsibilities",
+    "Safety constraints clearly explained with examples of forbidden operations",
+    "Evidence ledger format documented with field descriptions and example entries",
+    "scripts/run-migration-repair.py executes successfully with --dry-run flag",
+    "CLI script logs agent execution order and status to stdout",
+    "Final report JSON includes workflow_id, agent results, evidence paths, and verdict"
+  ],
+  "verification": [
+    "python scripts/run-migration-repair.py --dry-run",
+    "Verify dry-run logs show agent execution plan without making changes",
+    "cat docs/migration-repair-workflow.md and verify all 13 agents documented",
+    "Verify README.md links to migration-repair-workflow.md"
+  ],
+  "blocked_reason": null,
+  "findings": "✓ docs/migration-repair-workflow.md created with complete architecture documentation\n✓ All 14 agents documented (Agent 0: Workflow Controller + 13 main agents: Migration Audit, Database Safety Audit, Test Inventory, Evidence Audit, Repair Planner, Independent Repair Review, Repair Implementer, Static Reviewer, Test Reviewer, Verification Runner, Evidence Assembler, Final Independent Gate, Publisher)\n✓ Architecture includes DAG diagram showing 10 waves (W0-W9) with execution dependencies\n✓ Safety constraints documented with production database protection rules and fail-closed enforcement\n✓ Evidence ledger format documented with JSON schema examples and field descriptions\n✓ Troubleshooting guide includes 5 common failure scenarios with resolution steps\n✓ How to add new verification stages documented with 8-step guide\n✓ How to extend ALLOWED_COMMANDS documented with safety justification requirements\n✓ scripts/run-migration-repair.py CLI script created with dry-run, verbose, and custom database URL flags\n✓ CLI script logs agent execution order and status to stdout\n✓ Final report JSON generated at .agents/tasks/migration-repair-<workflow_id>-report.json with all required fields\n✓ README.md updated with Migration Repair Workflow section and link to docs/migration-repair-workflow.md\n✓ Dry-run verification passed: shows 10 waves, 14 agents, execution plan without mutations\n✓ Usage examples documented: basic workflow, custom database, verbose logging, evidence ledger interpretation"
+}

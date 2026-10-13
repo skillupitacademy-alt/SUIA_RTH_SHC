@@ -32,6 +32,7 @@ class AgentContext:
     """Context provided to an agent during execution."""
     
     task_id: str
+    run_id: str
     workflow_state: Dict[str, Any]
     repository_snapshot: Dict[str, Any]
     evidence_graph: Dict[str, Any]
@@ -109,10 +110,10 @@ class AgentCoordinator:
         
         try:
             # R4 agents (intake, placement, governance, documentation, toolchain, dependency, 
-            # final-gate, canonical_comparison) use agentId string matching and bypass registry
+            # final-gate, canonical_comparison, workflow_controller) use agentId string matching and bypass registry
             r4_agents = [
                 "toolchain", "dependency", "intake", "placement", "governance", 
-                "documentation", "final-gate", "canonical_comparison"
+                "documentation", "final-gate", "canonical_comparison", "workflow_controller"
             ]
             
             if agent_id in r4_agents:
@@ -180,8 +181,11 @@ class AgentCoordinator:
         )
         
         # Map agent type to execution handlers
-        # Wave R4 handlers (six new agent handlers)
-        if agent.agentId == "toolchain":
+        # Wave R4 handlers (six new agent handlers + workflow_controller orchestration)
+        if agent.agentId == "workflow_controller":
+            from app.workflows.migration_repair.agents.workflow_controller import execute_workflow_controller
+            return await execute_workflow_controller(context)
+        elif agent.agentId == "toolchain":
             from app.agents.toolchain import execute_toolchain
             return await execute_toolchain(context)
         elif agent.agentId == "dependency":
@@ -234,10 +238,65 @@ class AgentCoordinator:
         elif agent.agentType == AgentType.CANDIDATE_CERTIFICATION:
             await self._execute_certification_agent(agent, context, result)
         
+        # Migration Repair Workflow agents (13 new dispatch branches)
+        elif agent.agentType == AgentType.MIGRATION_AUDIT:
+            from app.workflows.migration_repair.agents.migration_audit import execute_migration_audit
+            return await execute_migration_audit(context)
+        
+        elif agent.agentType == AgentType.DATABASE_SAFETY_AUDIT:
+            from app.workflows.migration_repair.agents.database_safety_audit import execute_database_safety_audit
+            return await execute_database_safety_audit(context)
+        
+        elif agent.agentType == AgentType.TEST_INVENTORY:
+            from app.workflows.migration_repair.agents.test_inventory import execute_test_inventory
+            return await execute_test_inventory(context)
+        
+        elif agent.agentType == AgentType.EVIDENCE_AUDIT:
+            from app.workflows.migration_repair.agents.evidence_audit import execute_evidence_audit
+            return await execute_evidence_audit(context)
+        
+        elif agent.agentType == AgentType.REPAIR_PLANNER:
+            from app.workflows.migration_repair.agents.repair_planner import execute_repair_planner
+            return await execute_repair_planner(context)
+        
+        elif agent.agentType == AgentType.REPAIR_REVIEWER:
+            from app.workflows.migration_repair.agents.repair_reviewer import execute_repair_reviewer
+            return await execute_repair_reviewer(context)
+        
+        elif agent.agentType == AgentType.REPAIR_IMPLEMENTER:
+            from app.workflows.migration_repair.agents.repair_implementer import execute_repair_implementer
+            return await execute_repair_implementer(context)
+        
+        elif agent.agentType == AgentType.STATIC_REVIEWER:
+            from app.workflows.migration_repair.agents.static_reviewer import execute_static_reviewer
+            return await execute_static_reviewer(context)
+        
+        elif agent.agentType == AgentType.TEST_REVIEWER:
+            from app.workflows.migration_repair.agents.test_reviewer import execute_test_reviewer
+            return await execute_test_reviewer(context)
+        
+        elif agent.agentType == AgentType.VERIFICATION_RUNNER:
+            from app.workflows.migration_repair.agents.verification_runner import execute_verification_runner
+            return await execute_verification_runner(context)
+        
+        elif agent.agentType == AgentType.EVIDENCE_ASSEMBLER:
+            from app.workflows.migration_repair.agents.evidence_assembler import execute_evidence_assembler
+            return await execute_evidence_assembler(context)
+        
+        elif agent.agentType == AgentType.FINAL_GATE_AGENT:
+            from app.workflows.migration_repair.agents.final_gate_agent import execute_final_gate_agent
+            return await execute_final_gate_agent(context)
+        
+        elif agent.agentType == AgentType.PUBLISHER_AGENT:
+            from app.workflows.migration_repair.agents.publisher_agent import execute_publisher_agent
+            return await execute_publisher_agent(context)
+        
         else:
-            # For agents without implemented handlers yet, mark as success with stub
-            result.warnings.append(f"Agent {agent.agentId} has no execution handler yet (stub)")
-            result.outputs["status"] = "stub_execution"
+            # Unimplemented handlers are not successful executions. Fail closed so
+            # a stub cannot satisfy a mandatory dependency or certification gate.
+            result.status = AgentStatus.BLOCKED
+            result.warnings.append(f"Agent {agent.agentId} has no execution handler (stub; not executed)")
+            result.outputs["status"] = "not_implemented"
         
         return result
     
@@ -441,10 +500,14 @@ class AgentCoordinator:
         result: AgentResult
     ) -> None:
         """Execute composer workflow orchestration capabilities."""
-        # This agent orchestrates the I2 workflow
-        result.outputs["workflow_status"] = "validated"
+        # The former handler asserted validation without invoking the intake,
+        # certification, or placement workflows. Do not manufacture that state.
+        result.status = AgentStatus.BLOCKED
+        result.outputs["workflow_status"] = "not_executed"
         result.outputs["i2_flow"] = "intake → certification → placement"
-        result.warnings.append("Composer workflow agent using simplified validation")
+        result.errors.append(
+            "Composer workflow orchestration is not wired to the authoritative lifecycle; validation was not asserted."
+        )
     
     async def _execute_runtime_browser_agent(
         self,
@@ -457,11 +520,15 @@ class AgentCoordinator:
             # Get blocks to verify
             block_types = context.workflow_state.get('block_types', [])
             
-            # Browser verification requires actual browser launch
-            # For now, verify browser module availability
-            result.outputs["browser_available"] = True
+            # Merely importing the browser module does not verify a running app.
+            # Require an explicit browser execution result before this agent can pass.
+            result.status = AgentStatus.BLOCKED
+            result.outputs["browser_available"] = None
             result.outputs["blocks_to_verify"] = block_types
-            result.warnings.append("Browser verification requires runtime environment (stub)")
+            result.outputs["verification_status"] = "NOT_RUN"
+            result.errors.append(
+                "Browser verification was not executed by this handler; runtime evidence is required."
+            )
         
         except Exception as e:
             result.status = AgentStatus.FAILED
@@ -583,7 +650,9 @@ class AgentCoordinator:
         
         result.outputs["certification_passed"] = certification_passed
         result.outputs["required_gates"] = required_agents
-        result.outputs["verdict"] = "CERTIFIED" if certification_passed else "REJECTED"
+        # Automated checks can establish readiness only. Final certification
+        # requires the separate, authenticated Human Gate 2 approval workflow.
+        result.outputs["verdict"] = "CERTIFICATION_READY" if certification_passed else "REJECTED"
         
         if not certification_passed:
             result.status = AgentStatus.FAILED
@@ -646,6 +715,7 @@ class AgentCoordinator:
                 # Update context with prior results
                 execution_context = AgentContext(
                     task_id=context.task_id,
+                    run_id=context.run_id,
                     workflow_state=context.workflow_state,
                     repository_snapshot=context.repository_snapshot,
                     evidence_graph=context.evidence_graph,
@@ -722,6 +792,7 @@ class AgentCoordinator:
             # Update context with prior results
             execution_context = AgentContext(
                 task_id=context.task_id,
+                run_id=context.run_id,
                 workflow_state=context.workflow_state,
                 repository_snapshot=context.repository_snapshot,
                 evidence_graph=context.evidence_graph,

@@ -1,0 +1,14 @@
+{
+  "stage": "V9",
+  "verdict": "PASS",
+  "container_stopped": false,
+  "container_removed": false,
+  "env_test_removed": false,
+  "volumes_cleaned": false,
+  "stop_exit_code": null,
+  "rm_exit_code": null,
+  "reason": "No container was created in V1 (blocked), no cleanup needed",
+  "docker_available": false,
+  "env_test_existed": false,
+  "run_id": "migration-repair-20261011-143539-06936246"
+}

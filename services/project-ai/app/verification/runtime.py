@@ -127,9 +127,9 @@ class ApplicationProcess:
         try:
             import requests
         except ImportError:
-            # If requests is not installed, assume health check passed
-            # to avoid blocking runtime verification
-            return True
+            # A missing HTTP client means no health check was performed.
+            # Fail closed: dependency absence must never be reported as healthy.
+            return False
         
         # Try /api/health
         try:
