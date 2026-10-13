@@ -547,7 +547,7 @@ async def approve_final_certification(
         raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
     
     # Handle idempotent requests - if already in terminal state with same decision, return existing result
-    if workflow.state.current == CanonicalWorkflowState.CERTIFIED:
+    if workflow.current_state == CanonicalWorkflowState.CERTIFIED:
         if request.approved:
             # Already approved, return existing approval
             return FinalApprovalResponse(
@@ -566,7 +566,7 @@ async def approve_final_certification(
                 status_code=400,
                 detail=f"Workflow already CERTIFIED, cannot reject"
             )
-    elif workflow.state.current == CanonicalWorkflowState.REJECTED:
+    elif workflow.current_state == CanonicalWorkflowState.REJECTED:
         if not request.approved:
             # Already rejected, return existing rejection
             return FinalApprovalResponse(
@@ -587,14 +587,15 @@ async def approve_final_certification(
             )
     
     # Validate state - must be AWAITING_GATE_2 for new approval/rejection
-    if workflow.state.current != CanonicalWorkflowState.AWAITING_GATE_2:
+    if workflow.current_state != CanonicalWorkflowState.AWAITING_GATE_2:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid state for approval: {workflow.state.current.value}. Must be AWAITING_GATE_2"
+            detail=f"Invalid state for approval: {workflow.current_state.value}. Must be AWAITING_GATE_2"
         )
     
     # W7 Evidence Policy Enforcement - validate evidence before FinalGateController
     gate_results = workflow.gate_results or {}
+    bound_artifact_sha256 = workflow.contract_sha256 or ""
     evidence_list = []
     for etype, edata in gate_results.items():
         if isinstance(edata, dict):
@@ -614,14 +615,14 @@ async def approve_final_certification(
                 evidence_type=etype,
                 verdict=edata.get("status") or edata.get("verdict") or "",
                 workflow_id=edata.get("workflow_id") or workflow_id,
-                artifact_sha256=edata.get("artifact_sha256") or workflow.artifacts.contract.sha256 or "",
+                artifact_sha256=edata.get("artifact_sha256") or bound_artifact_sha256,
                 created_at=created_at,
                 evidence_id=edata.get("evidence_id") or f"{workflow_id}-{etype}",
             ))
     
     evidence_errors = validate_final_gate_evidence(
         workflow_id=workflow_id,
-        artifact_sha256=workflow.artifacts.contract.sha256 or "",
+        artifact_sha256=bound_artifact_sha256,
         evidence=evidence_list,
         policy=FINAL_GATE_POLICY,
     )
@@ -660,7 +661,7 @@ async def approve_final_certification(
         target_state = CanonicalWorkflowState.REJECTED
     
     # Perform transition
-    previous_state = workflow.state.current.value
+    previous_state = workflow.current_state.value
     
     try:
         workflow = await governance_service.transition_state(
@@ -679,7 +680,7 @@ async def approve_final_certification(
     return FinalApprovalResponse(
         workflow_id=workflow_id,
         previous_state=previous_state,
-        new_state=workflow.state.current.value,
+        new_state=workflow.current_state.value,
         approved=request.approved,
         approved_by=approved_by,
         approved_at=datetime.now(timezone.utc).isoformat(),

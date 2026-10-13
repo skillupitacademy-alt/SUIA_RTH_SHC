@@ -22,7 +22,7 @@ TRANSACTION MANAGEMENT:
 
 import hashlib
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Protocol, Dict, Any
 
 from sqlalchemy import select, update, delete
@@ -387,7 +387,7 @@ class PostgresWorkflowRepository:
                 expected_version = existing_version
         
         # Atomic update with version check in WHERE clause
-        workflow.updated_at = datetime.utcnow()
+        workflow.updated_at = datetime.now(timezone.utc)
         new_version = expected_version + 1
         
         result = await self.session.execute(
@@ -423,8 +423,11 @@ class PostgresWorkflowRepository:
             # Version mismatch - concurrent update detected
             raise OptimisticLockError("Workflow", workflow.workflow_id, expected_version)
         
-        # Update succeeded - refresh to get new state
+        # Update succeeded - merge into session then refresh to get new state
         await self.session.flush()
+        # After raw SQL update(), the object isn't tracked by the session.
+        # merge() adds it to the identity map so refresh() can find it.
+        workflow = await self.session.merge(workflow)
         await self.session.refresh(workflow)
         return workflow
     
@@ -778,8 +781,9 @@ class PostgresApprovalRepository:
             evidence=approval.evidence,
             rejection_reason=approval.rejection_reason,
         ).on_conflict_do_update(
-            index_elements=[ApprovalModel.approval_id],
+            index_elements=[ApprovalModel.workflow_id],
             set_=dict(
+                approval_id=approval.approval_id,
                 candidate_sha256=approval.candidate_sha256,
                 placement_manifest_id=approval.placement_manifest_id,
                 placement_manifest_sha256=approval.placement_manifest_sha256,

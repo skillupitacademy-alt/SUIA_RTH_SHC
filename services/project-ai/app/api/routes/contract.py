@@ -294,7 +294,7 @@ async def create_engineering_contract(
         )
     
     # Generate contract ID
-    contract_id = f"contract-{workflow_id}-{uuid.uuid4().hex[:8]}"
+    contract_id = str(uuid.uuid4())
     
     # Build engineering contract
     contract = EngineeringContract(

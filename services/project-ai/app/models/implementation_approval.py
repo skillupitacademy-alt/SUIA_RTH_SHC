@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Any, Optional
+from uuid import UUID
 
 
 class ImplementationApprovalStatus(str, Enum):
@@ -52,7 +53,7 @@ class ImplementationApproval:
     placement_manifest_id: str
     placement_manifest_sha256: str
     approved_by: str
-    approval_timestamp: str  # ISO 8601 format
+    approval_timestamp: datetime
     status: ImplementationApprovalStatus
     evidence: Dict[str, Any] = field(default_factory=dict)
     rejection_reason: Optional[str] = None
@@ -157,16 +158,27 @@ class ImplementationApproval:
         Returns:
             Evidence dictionary with all verification details
         """
+        def serialize_evidence(value: Any) -> Any:
+            if isinstance(value, UUID):
+                return str(value)
+            if hasattr(value, "isoformat"):
+                return value.isoformat()
+            if isinstance(value, dict):
+                return {k: serialize_evidence(v) for k, v in value.items()}
+            if isinstance(value, list):
+                return [serialize_evidence(item) for item in value]
+            return value
+
         return {
-            "approval_id": self.approval_id,
-            "workflow_id": self.workflow_id,
+            "approval_id": str(self.approval_id),
+            "workflow_id": str(self.workflow_id),
             "candidate_sha256": self.candidate_sha256,
             "target_family": self.target_family,
             "target_version": self.target_version,
-            "placement_manifest_id": self.placement_manifest_id,
+            "placement_manifest_id": str(self.placement_manifest_id) if self.placement_manifest_id else None,
             "placement_manifest_sha256": self.placement_manifest_sha256,
             "approved_by": self.approved_by,
-            "approval_timestamp": self.approval_timestamp,
+            "approval_timestamp": self.approval_timestamp.isoformat() if hasattr(self.approval_timestamp, 'isoformat') else self.approval_timestamp,
             "status": self.status.value,
             "rejection_reason": self.rejection_reason,
             "workflow_requester": self.workflow_requester,
@@ -176,7 +188,7 @@ class ImplementationApproval:
                 "self_approval_check_performed": bool(self.workflow_requester or self.approved_by),
                 "status_check_performed": True,
             },
-            "evidence": self.evidence,
+            "evidence": serialize_evidence(self.evidence or {}),
         }
 
 
@@ -213,10 +225,10 @@ def create_implementation_approval(
     from uuid import uuid4
     
     approval_id = str(uuid4())
-    approval_timestamp = datetime.now(timezone.utc).isoformat()
+    approval_timestamp = datetime.now(timezone.utc)
     
     evidence = {
-        "created_at": approval_timestamp,
+        "created_at": approval_timestamp.isoformat(),
         "workflow_id": workflow_id,
         "target": f"{target_family}{target_version}",
         "hashes_recorded": {

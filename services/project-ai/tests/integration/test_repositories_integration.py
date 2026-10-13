@@ -10,6 +10,7 @@ Tests each repository's operations against real PostgreSQL database:
 """
 
 import hashlib
+import uuid as _uuid
 import json
 import pytest
 from datetime import datetime
@@ -26,8 +27,50 @@ from app.persistence.repositories import (
     OptimisticLockError,
     HashMismatchError,
 )
-from tests.fixtures import test_uuid
+from tests.fixtures import test_uuid, test_uuid_str
 
+
+async def _ensure_parent_workflow(db_session, workflow_repo, workflow_id_name="wf_test_001"):
+    wf_id = test_uuid(workflow_id_name)
+    existing = await workflow_repo.get(wf_id, verify_bindings=False)
+    if existing is None:
+        wf = WorkflowModel(
+            workflow_id=wf_id,
+            specification_id=test_uuid("spec_fk_parent"),
+            target_family="tutorial",
+            target_version="v1",
+            requester_id="fk_test_user",
+            current_state="REQUESTED",
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+            version=1,
+        )
+        await workflow_repo.upsert(wf)
+        await db_session.commit()
+    return test_uuid_str(workflow_id_name)
+
+
+
+
+
+async def _ensure_parent_candidate(db_session, workflow_repo, candidate_repo, 
+                                     candidate_id_name="cand_test_001", workflow_id_name="wf_test_001"):
+    await _ensure_parent_workflow(db_session, workflow_repo, workflow_id_name)
+    cand_id = test_uuid_str(candidate_id_name)
+    existing = await candidate_repo.get(cand_id)
+    if existing is None:
+        cand = CandidateModel(
+            candidate_id=test_uuid_str(candidate_id_name),
+            workflow_id=test_uuid_str(workflow_id_name),
+            files={"setup.ts": {"content": "// fk parent"}},
+            uploaded_at=datetime.now(timezone.utc),
+            uploaded_by="fk_test_user",
+            target_family="tutorial",
+            target_version="v1",
+        )
+        await candidate_repo.upsert(cand)
+        await db_session.commit()
+    return cand_id
 
 # ============================================================================
 # Workflow Repository Tests
@@ -49,8 +92,8 @@ async def test_workflow_upsert_and_get(db_session, workflow_repo):
         target_version="v1",
         requester_id="user_test",
         current_state="REQUESTED",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
         version=1,
     )
     
@@ -78,8 +121,8 @@ async def test_workflow_upsert_idempotent(db_session, workflow_repo):
     """Test upserting same workflow_id twice increments version."""
     # First upsert
     workflow = WorkflowModel(
-        workflow_id="wf_idempotent_001",
-        specification_id="spec_001",
+        workflow_id=test_uuid_str("wf_idempotent_001"),
+        specification_id=test_uuid_str("spec_001"),
         target_family="tutorial",
         target_version="v1",
         requester_id="user_test",
@@ -103,7 +146,7 @@ async def test_workflow_upsert_idempotent(db_session, workflow_repo):
     assert result2.current_state == "BRIEF_READY"
     
     # Verify only one record exists
-    retrieved = await workflow_repo.get("wf_idempotent_001", verify_bindings=False)
+    retrieved = await workflow_repo.get(test_uuid_str("wf_idempotent_001"), verify_bindings=False)
     assert retrieved.version == 2
 
 
@@ -113,8 +156,8 @@ async def test_optimistic_locking_conflict(db_session, workflow_repo):
     """Test that concurrent update with wrong version raises OptimisticLockError."""
     # Create workflow
     workflow = WorkflowModel(
-        workflow_id="wf_lock_001",
-        specification_id="spec_001",
+        workflow_id=test_uuid_str("wf_lock_001"),
+        specification_id=test_uuid_str("spec_001"),
         target_family="tutorial",
         target_version="v1",
         requester_id="user_test",
@@ -137,7 +180,7 @@ async def test_optimistic_locking_conflict(db_session, workflow_repo):
         await workflow_repo.upsert(workflow, expected_version=1)  # Wrong version
     
     assert exc_info.value.entity_type == "Workflow"
-    assert exc_info.value.entity_id == "wf_lock_001"
+    assert str(exc_info.value.entity_id) == test_uuid_str("wf_lock_001")
     assert exc_info.value.expected_version == 1
 
 
@@ -147,8 +190,8 @@ async def test_workflow_list_by_state(db_session, workflow_repo):
     """Test listing workflows by state."""
     # Create workflows in different states
     wf1 = WorkflowModel(
-        workflow_id="wf_list_001",
-        specification_id="spec_001",
+        workflow_id=test_uuid_str("wf_list_001"),
+        specification_id=test_uuid_str("spec_001"),
         target_family="tutorial",
         target_version="v1",
         requester_id="user_test",
@@ -157,8 +200,8 @@ async def test_workflow_list_by_state(db_session, workflow_repo):
     )
     
     wf2 = WorkflowModel(
-        workflow_id="wf_list_002",
-        specification_id="spec_002",
+        workflow_id=test_uuid_str("wf_list_002"),
+        specification_id=test_uuid_str("spec_002"),
         target_family="tutorial",
         target_version="v1",
         requester_id="user_test",
@@ -167,8 +210,8 @@ async def test_workflow_list_by_state(db_session, workflow_repo):
     )
     
     wf3 = WorkflowModel(
-        workflow_id="wf_list_003",
-        specification_id="spec_003",
+        workflow_id=test_uuid_str("wf_list_003"),
+        specification_id=test_uuid_str("spec_003"),
         target_family="tutorial",
         target_version="v1",
         requester_id="user_test",
@@ -184,10 +227,10 @@ async def test_workflow_list_by_state(db_session, workflow_repo):
     # List workflows in REQUESTED state
     requested = await workflow_repo.list_by_state("REQUESTED")
     
-    requested_ids = [wf.workflow_id for wf in requested]
-    assert "wf_list_001" in requested_ids
-    assert "wf_list_002" in requested_ids
-    assert "wf_list_003" not in requested_ids
+    requested_ids = [str(wf.workflow_id) for wf in requested]
+    assert test_uuid_str("wf_list_001") in requested_ids
+    assert test_uuid_str("wf_list_002") in requested_ids
+    assert test_uuid_str("wf_list_003") not in requested_ids
 
 
 @pytest.mark.integration
@@ -196,8 +239,8 @@ async def test_workflow_delete(db_session, workflow_repo):
     """Test workflow deletion."""
     # Create workflow
     workflow = WorkflowModel(
-        workflow_id="wf_delete_001",
-        specification_id="spec_001",
+        workflow_id=test_uuid_str("wf_delete_001"),
+        specification_id=test_uuid_str("spec_001"),
         target_family="tutorial",
         target_version="v1",
         requester_id="user_test",
@@ -209,17 +252,17 @@ async def test_workflow_delete(db_session, workflow_repo):
     await db_session.commit()
     
     # Delete
-    deleted = await workflow_repo.delete("wf_delete_001")
+    deleted = await workflow_repo.delete(test_uuid_str("wf_delete_001"))
     await db_session.commit()
     
     assert deleted is True
     
     # Verify deleted
-    retrieved = await workflow_repo.get("wf_delete_001", verify_bindings=False)
+    retrieved = await workflow_repo.get(test_uuid_str("wf_delete_001"), verify_bindings=False)
     assert retrieved is None
     
     # Delete non-existent
-    deleted_again = await workflow_repo.delete("wf_delete_001")
+    deleted_again = await workflow_repo.delete(test_uuid_str("wf_delete_001"))
     assert deleted_again is False
 
 
@@ -230,11 +273,12 @@ async def test_workflow_delete(db_session, workflow_repo):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_contract_upsert_and_get(db_session, contract_repo):
+async def test_contract_upsert_and_get(db_session, contract_repo, workflow_repo):
     """Test contract upsert and retrieval with hash verification."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_test_001")
     # Create contract
     contract_data = {
-        "purpose": "Test contract",
+        "purpose": "Test contract", "run_id": _uuid.uuid4().hex[:8],
         "requirements": ["req1", "req2"],
     }
     
@@ -242,34 +286,36 @@ async def test_contract_upsert_and_get(db_session, contract_repo):
     contract_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     
     contract = ContractModel(
-        contract_id="ct_test_001",
-        workflow_id="wf_test_001",
+        contract_id=test_uuid_str("ct_test_001"),
+        workflow_id=test_uuid_str("wf_test_001"),
         contract_hash=contract_hash,
         contract_data=contract_data,
-        created_at=datetime.utcnow(),
+        contract_version="1.0",
+        created_at=datetime.now(timezone.utc),
     )
     
     # Upsert
     result = await contract_repo.upsert(contract)
     await db_session.commit()
     
-    assert result.contract_id == "ct_test_001"
+    assert str(result.contract_id) == test_uuid_str("ct_test_001")
     assert result.contract_hash == contract_hash
     
     # Get with automatic hash verification
-    retrieved = await contract_repo.get("ct_test_001")
+    retrieved = await contract_repo.get(test_uuid_str("ct_test_001"))
     
     assert retrieved is not None
-    assert retrieved.contract_id == "ct_test_001"
+    assert str(retrieved.contract_id) == test_uuid_str("ct_test_001")
     assert retrieved.contract_data == contract_data
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_contract_hash_integrity_stored_and_verified(db_session, contract_repo):
+async def test_contract_hash_integrity_stored_and_verified(db_session, contract_repo, workflow_repo):
     """Test that contract hash is computed correctly and verified on read."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_hash_001")
     contract_data = {
-        "purpose": "Hash integrity test",
+        "purpose": "Hash integrity test", "run_id": _uuid.uuid4().hex[:8],
         "blocks": ["block1", "block2"],
     }
     
@@ -278,18 +324,19 @@ async def test_contract_hash_integrity_stored_and_verified(db_session, contract_
     expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     
     contract = ContractModel(
-        contract_id="ct_hash_001",
-        workflow_id="wf_hash_001",
+        contract_id=test_uuid_str("ct_hash_001"),
+        workflow_id=test_uuid_str("wf_hash_001"),
         contract_hash=expected_hash,
         contract_data=contract_data,
-        created_at=datetime.utcnow(),
+        contract_version="1.0",
+        created_at=datetime.now(timezone.utc),
     )
     
     await contract_repo.upsert(contract)
     await db_session.commit()
     
     # Read back and verify hash matches
-    retrieved = await contract_repo.get("ct_hash_001")
+    retrieved = await contract_repo.get(test_uuid_str("ct_hash_001"))
     
     assert retrieved.contract_hash == expected_hash
     assert retrieved.verify_hash() is True
@@ -297,69 +344,70 @@ async def test_contract_hash_integrity_stored_and_verified(db_session, contract_
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_contract_hash_drift_detection(db_session, contract_repo):
+async def test_contract_hash_drift_detection(db_session, contract_repo, workflow_repo):
     """Test that manually corrupted contract_hash raises HashMismatchError."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_drift_001")
     contract_data = {
-        "purpose": "Drift detection test",
+        "purpose": "Drift detection test", "run_id": _uuid.uuid4().hex[:8],
     }
     
     canonical = json.dumps(contract_data, sort_keys=True, ensure_ascii=False)
     correct_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     
     contract = ContractModel(
-        contract_id="ct_drift_001",
-        workflow_id="wf_drift_001",
+        contract_id=test_uuid_str("ct_drift_001"),
+        workflow_id=test_uuid_str("wf_drift_001"),
         contract_hash=correct_hash,
         contract_data=contract_data,
-        created_at=datetime.utcnow(),
+        contract_version="1.0",
+        created_at=datetime.now(timezone.utc),
     )
     
     await contract_repo.upsert(contract)
     await db_session.commit()
     
     # Manually corrupt the hash in the database
-    await db_session.execute(
-        """
-        UPDATE project_ai_contracts
-        SET contract_hash = 'corrupted_hash_00000000000000000000000000000000'
-        WHERE contract_id = 'ct_drift_001'
-        """
+    corrupted_hash = "corrupted_" + _uuid.uuid4().hex[:50]
+    from sqlalchemy import text
+    await db_session.execute(text("UPDATE project_ai_contracts SET contract_hash = :chash WHERE contract_id = :cid"), {"cid": test_uuid_str("ct_drift_001"), "chash": corrupted_hash}
     )
     await db_session.commit()
     
     # Attempt to read - should raise HashMismatchError
     with pytest.raises(HashMismatchError) as exc_info:
-        await contract_repo.get("ct_drift_001")
+        await contract_repo.get(test_uuid_str("ct_drift_001"))
     
     assert exc_info.value.entity_type == "Contract"
-    assert exc_info.value.entity_id == "ct_drift_001"
+    assert str(exc_info.value.entity_id) == test_uuid_str("ct_drift_001")
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_contract_get_by_workflow(db_session, contract_repo):
+async def test_contract_get_by_workflow(db_session, contract_repo, workflow_repo):
     """Test retrieving contract by workflow_id."""
-    contract_data = {"purpose": "Test by workflow"}
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_contract_001")
+    contract_data = {"purpose": "Test by workflow", "run_id": _uuid.uuid4().hex[:8]}
     canonical = json.dumps(contract_data, sort_keys=True, ensure_ascii=False)
     contract_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     
     contract = ContractModel(
-        contract_id="ct_wf_001",
-        workflow_id="wf_contract_001",
+        contract_id=test_uuid_str("ct_wf_001"),
+        workflow_id=test_uuid_str("wf_contract_001"),
         contract_hash=contract_hash,
         contract_data=contract_data,
-        created_at=datetime.utcnow(),
+        contract_version="1.0",
+        created_at=datetime.now(timezone.utc),
     )
     
     await contract_repo.upsert(contract)
     await db_session.commit()
     
     # Get by workflow
-    retrieved = await contract_repo.get_by_workflow("wf_contract_001")
+    retrieved = await contract_repo.get_by_workflow(test_uuid_str("wf_contract_001"))
     
     assert retrieved is not None
-    assert retrieved.contract_id == "ct_wf_001"
-    assert retrieved.workflow_id == "wf_contract_001"
+    assert str(retrieved.contract_id) == test_uuid_str("ct_wf_001")
+    assert str(retrieved.workflow_id) == test_uuid_str("wf_contract_001")
 
 
 # ============================================================================
@@ -369,18 +417,19 @@ async def test_contract_get_by_workflow(db_session, contract_repo):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_candidate_upsert_and_get(db_session, candidate_repo):
+async def test_candidate_upsert_and_get(db_session, candidate_repo, workflow_repo):
     """Test candidate upsert and retrieval."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_test_001")
     files_data = {
         "file1.ts": {"content": "console.log('test')"},
         "file2.ts": {"content": "export const x = 1"},
     }
     
     candidate = CandidateModel(
-        candidate_id="cand_test_001",
-        workflow_id="wf_test_001",
+        candidate_id=test_uuid_str("cand_test_001"),
+        workflow_id=test_uuid_str("wf_test_001"),
         files=files_data,
-        uploaded_at=datetime.utcnow(),
+        uploaded_at=datetime.now(timezone.utc),
         uploaded_by="user_test",
         target_family="tutorial",
         target_version="v1",
@@ -390,47 +439,49 @@ async def test_candidate_upsert_and_get(db_session, candidate_repo):
     result = await candidate_repo.upsert(candidate)
     await db_session.commit()
     
-    assert result.candidate_id == "cand_test_001"
+    assert str(result.candidate_id) == test_uuid_str("cand_test_001")
     assert result.candidate_sha256 is not None
     assert len(result.candidate_sha256) == 64  # SHA256 hex length
     
     # Get
-    retrieved = await candidate_repo.get("cand_test_001")
+    retrieved = await candidate_repo.get(test_uuid_str("cand_test_001"))
     
     assert retrieved is not None
-    assert retrieved.candidate_id == "cand_test_001"
+    assert str(retrieved.candidate_id) == test_uuid_str("cand_test_001")
     assert retrieved.files == files_data
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_candidate_list_by_workflow(db_session, candidate_repo):
+async def test_candidate_list_by_workflow(db_session, candidate_repo, workflow_repo):
     """Test listing candidates by workflow."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_cand_001")
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_cand_002")
     cand1 = CandidateModel(
-        candidate_id="cand_list_001",
-        workflow_id="wf_cand_001",
+        candidate_id=test_uuid_str("cand_list_001"),
+        workflow_id=test_uuid_str("wf_cand_001"),
         files={"file1.ts": {"content": "test1"}},
-        uploaded_at=datetime.utcnow(),
+        uploaded_at=datetime.now(timezone.utc),
         uploaded_by="user_test",
         target_family="tutorial",
         target_version="v1",
     )
     
     cand2 = CandidateModel(
-        candidate_id="cand_list_002",
-        workflow_id="wf_cand_001",
+        candidate_id=test_uuid_str("cand_list_002"),
+        workflow_id=test_uuid_str("wf_cand_001"),
         files={"file2.ts": {"content": "test2"}},
-        uploaded_at=datetime.utcnow(),
+        uploaded_at=datetime.now(timezone.utc),
         uploaded_by="user_test",
         target_family="tutorial",
         target_version="v1",
     )
     
     cand3 = CandidateModel(
-        candidate_id="cand_list_003",
-        workflow_id="wf_cand_002",
+        candidate_id=test_uuid_str("cand_list_003"),
+        workflow_id=test_uuid_str("wf_cand_002"),
         files={"file3.ts": {"content": "test3"}},
-        uploaded_at=datetime.utcnow(),
+        uploaded_at=datetime.now(timezone.utc),
         uploaded_by="user_test",
         target_family="tutorial",
         target_version="v1",
@@ -442,13 +493,13 @@ async def test_candidate_list_by_workflow(db_session, candidate_repo):
     await db_session.commit()
     
     # List by workflow
-    candidates = await candidate_repo.list_by_workflow("wf_cand_001")
+    candidates = await candidate_repo.list_by_workflow(test_uuid_str("wf_cand_001"))
     
-    candidate_ids = [c.candidate_id for c in candidates]
+    candidate_ids = [str(c.candidate_id) for c in candidates]
     assert len(candidate_ids) == 2
-    assert "cand_list_001" in candidate_ids
-    assert "cand_list_002" in candidate_ids
-    assert "cand_list_003" not in candidate_ids
+    assert test_uuid_str("cand_list_001") in candidate_ids
+    assert test_uuid_str("cand_list_002") in candidate_ids
+    assert test_uuid_str("cand_list_003") not in candidate_ids
 
 
 # ============================================================================
@@ -458,8 +509,13 @@ async def test_candidate_list_by_workflow(db_session, candidate_repo):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_manifest_upsert_and_get(db_session, manifest_repo):
+async def test_manifest_upsert_and_get(db_session, manifest_repo, workflow_repo, candidate_repo):
     """Test manifest upsert and retrieval with hash verification."""
+    # Clean stale manifests from prior runs to avoid uniq_manifest_hash collision
+    from sqlalchemy import text as sql_text
+    await db_session.execute(sql_text("DELETE FROM project_ai_manifests WHERE manifest_hash = :h"), {"h": hashlib.sha256(json.dumps({"block_family": "tutorial", "block_version": "v1", "decision": "ACCEPT", "evidence_ids": ["ev1"], "required_changes": [], "target_path": "/test/path"}, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()})
+    await db_session.commit()
+    await _ensure_parent_candidate(db_session, workflow_repo, candidate_repo, "cand_test_001", "wf_test_001")
     manifest_data = {
         "decision": "ACCEPT",
         "target_path": "/test/path",
@@ -473,8 +529,8 @@ async def test_manifest_upsert_and_get(db_session, manifest_repo):
     manifest_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     
     manifest = ManifestModel(
-        manifest_id="man_test_001",
-        candidate_id="cand_test_001",
+        manifest_id=test_uuid_str("man_test_001"),
+        candidate_id=test_uuid_str("cand_test_001"),
         manifest_hash=manifest_hash,
         decision="ACCEPT",
         target_path="/test/path",
@@ -482,28 +538,35 @@ async def test_manifest_upsert_and_get(db_session, manifest_repo):
         block_version="v1",
         required_changes=[],
         evidence_ids=["ev1"],
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     
     # Upsert
     result = await manifest_repo.upsert(manifest)
     await db_session.commit()
     
-    assert result.manifest_id == "man_test_001"
+    assert str(result.manifest_id) == test_uuid_str("man_test_001")
     assert result.manifest_hash == manifest_hash
     
     # Get with automatic hash verification
-    retrieved = await manifest_repo.get("man_test_001")
+    retrieved = await manifest_repo.get(test_uuid_str("man_test_001"))
     
     assert retrieved is not None
-    assert retrieved.manifest_id == "man_test_001"
+    assert str(retrieved.manifest_id) == test_uuid_str("man_test_001")
     assert retrieved.decision == "ACCEPT"
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_manifest_hash_drift_detection(db_session, manifest_repo):
+async def test_manifest_hash_drift_detection(db_session, manifest_repo, workflow_repo, candidate_repo):
     """Test that corrupted manifest hash is detected on read."""
+    await _ensure_parent_candidate(db_session, workflow_repo, candidate_repo, "cand_drift_001", "wf_test_001")
+    # Clean stale manifests from prior runs
+    from sqlalchemy import text as sql_text
+    drift_data = {"block_family": "tutorial", "block_version": "v1", "decision": "ACCEPT", "evidence_ids": [], "required_changes": [], "target_path": "/test"}
+    drift_hash = hashlib.sha256(json.dumps(drift_data, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+    await db_session.execute(sql_text("DELETE FROM project_ai_manifests WHERE manifest_hash = :h"), {"h": drift_hash})
+    await db_session.commit()
     manifest_data = {
         "decision": "ACCEPT",
         "target_path": "/test",
@@ -517,8 +580,8 @@ async def test_manifest_hash_drift_detection(db_session, manifest_repo):
     correct_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     
     manifest = ManifestModel(
-        manifest_id="man_drift_001",
-        candidate_id="cand_drift_001",
+        manifest_id=test_uuid_str("man_drift_001"),
+        candidate_id=test_uuid_str("cand_drift_001"),
         manifest_hash=correct_hash,
         decision="ACCEPT",
         target_path="/test",
@@ -526,25 +589,20 @@ async def test_manifest_hash_drift_detection(db_session, manifest_repo):
         block_version="v1",
         required_changes=[],
         evidence_ids=[],
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     
     await manifest_repo.upsert(manifest)
     await db_session.commit()
     
-    # Corrupt the hash
-    await db_session.execute(
-        """
-        UPDATE project_ai_manifests
-        SET manifest_hash = 'corrupted_hash'
-        WHERE manifest_id = 'man_drift_001'
-        """
-    )
+    # Corrupt the hash with a unique value per run
+    corrupted = "corrupted_" + _uuid.uuid4().hex[:50]
+    await db_session.execute(sql_text("UPDATE project_ai_manifests SET manifest_hash = :chash WHERE manifest_id = :mid"), {"chash": corrupted, "mid": test_uuid_str("man_drift_001")})
     await db_session.commit()
     
     # Should raise HashMismatchError
     with pytest.raises(HashMismatchError) as exc_info:
-        await manifest_repo.get("man_drift_001")
+        await manifest_repo.get(test_uuid_str("man_drift_001"))
     
     assert exc_info.value.entity_type == "Manifest"
 
@@ -556,18 +614,19 @@ async def test_manifest_hash_drift_detection(db_session, manifest_repo):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_approval_upsert_and_get(db_session, approval_repo):
+async def test_approval_upsert_and_get(db_session, approval_repo, workflow_repo):
     """Test approval upsert and retrieval."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_test_001")
     approval = ApprovalModel(
-        approval_id="app_test_001",
-        workflow_id="wf_test_001",
+        approval_id=test_uuid_str("app_test_001"),
+        workflow_id=test_uuid_str("wf_test_001"),
         candidate_sha256="abc123" * 10 + "abcd",  # 64 chars
-        placement_manifest_id="man_test_001",
+        placement_manifest_id=test_uuid_str("man_test_001"),
         placement_manifest_sha256="def456" * 10 + "defg",  # 64 chars
         target_family="tutorial",
         target_version="v1",
         approved_by="reviewer_test",
-        approval_timestamp=datetime.utcnow(),
+        approval_timestamp=datetime.now(timezone.utc),
         status="APPROVED",
         workflow_requester="user_test",
     )
@@ -576,30 +635,33 @@ async def test_approval_upsert_and_get(db_session, approval_repo):
     result = await approval_repo.upsert(approval)
     await db_session.commit()
     
-    assert result.approval_id == "app_test_001"
+    assert str(result.approval_id) == test_uuid_str("app_test_001")
     assert result.status == "APPROVED"
     
     # Get
-    retrieved = await approval_repo.get("app_test_001")
+    retrieved = await approval_repo.get(test_uuid_str("app_test_001"))
     
     assert retrieved is not None
-    assert retrieved.approval_id == "app_test_001"
+    assert str(retrieved.approval_id) == test_uuid_str("app_test_001")
     assert retrieved.status == "APPROVED"
     assert retrieved.approved_by == "reviewer_test"
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_approval_get_by_workflow(db_session, approval_repo):
+async def test_approval_get_by_workflow(db_session, approval_repo, workflow_repo):
     """Test retrieving approval by workflow_id."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_approval_001")
     approval = ApprovalModel(
-        approval_id="app_wf_001",
-        workflow_id="wf_approval_001",
+        approval_id=test_uuid_str("app_wf_001"),
+        workflow_id=test_uuid_str("wf_approval_001"),
         candidate_sha256="abc" * 20 + "abcd",
+        placement_manifest_id=test_uuid_str("man_approval_001"),
+        placement_manifest_sha256="xyz" * 20 + "xyzw",
         target_family="tutorial",
         target_version="v1",
         approved_by="reviewer",
-        approval_timestamp=datetime.utcnow(),
+        approval_timestamp=datetime.now(timezone.utc),
         status="APPROVED",
         workflow_requester="user",
     )
@@ -608,37 +670,43 @@ async def test_approval_get_by_workflow(db_session, approval_repo):
     await db_session.commit()
     
     # Get by workflow
-    retrieved = await approval_repo.get_by_workflow("wf_approval_001")
+    retrieved = await approval_repo.get_by_workflow(test_uuid_str("wf_approval_001"))
     
     assert retrieved is not None
-    assert retrieved.approval_id == "app_wf_001"
-    assert retrieved.workflow_id == "wf_approval_001"
+    assert str(retrieved.approval_id) == test_uuid_str("app_wf_001")
+    assert str(retrieved.workflow_id) == test_uuid_str("wf_approval_001")
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_approval_list_by_status(db_session, approval_repo):
+async def test_approval_list_by_status(db_session, approval_repo, workflow_repo):
     """Test listing approvals by status."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_001")
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_002")
     app1 = ApprovalModel(
-        approval_id="app_status_001",
-        workflow_id="wf_001",
+        approval_id=test_uuid_str("app_status_001"),
+        workflow_id=test_uuid_str("wf_001"),
         candidate_sha256="a" * 64,
+        placement_manifest_id=test_uuid_str("man_status_001"),
+        placement_manifest_sha256="m" * 64,
         target_family="tutorial",
         target_version="v1",
         approved_by="reviewer",
-        approval_timestamp=datetime.utcnow(),
+        approval_timestamp=datetime.now(timezone.utc),
         status="APPROVED",
         workflow_requester="user",
     )
     
     app2 = ApprovalModel(
-        approval_id="app_status_002",
-        workflow_id="wf_002",
+        approval_id=test_uuid_str("app_status_002"),
+        workflow_id=test_uuid_str("wf_002"),
         candidate_sha256="b" * 64,
+        placement_manifest_id=test_uuid_str("man_status_002"),
+        placement_manifest_sha256="n" * 64,
         target_family="tutorial",
         target_version="v1",
         approved_by="reviewer",
-        approval_timestamp=datetime.utcnow(),
+        approval_timestamp=datetime.now(timezone.utc),
         status="PENDING",
         workflow_requester="user",
     )
@@ -651,8 +719,8 @@ async def test_approval_list_by_status(db_session, approval_repo):
     approved = await approval_repo.list_by_status("APPROVED")
     approved_ids = [a.approval_id for a in approved]
     
-    assert "app_status_001" in approved_ids
-    assert "app_status_002" not in approved_ids
+    assert test_uuid_str("app_status_001") in [str(a) for a in approved_ids]
+    assert test_uuid_str("app_status_002") not in [str(a) for a in approved_ids]
 
 
 # ============================================================================
@@ -664,10 +732,11 @@ async def test_approval_list_by_status(db_session, approval_repo):
 @pytest.mark.asyncio
 async def test_state_transition_create_and_list(db_session, workflow_repo, state_transition_repo):
     """Test creating state transitions and listing by workflow."""
+    await _ensure_parent_workflow(db_session, workflow_repo, "wf_trans_001")
     # Create workflow first
     workflow = WorkflowModel(
-        workflow_id="wf_trans_001",
-        specification_id="spec_001",
+        workflow_id=test_uuid_str("wf_trans_001"),
+        specification_id=test_uuid_str("spec_001"),
         target_family="tutorial",
         target_version="v1",
         requester_id="user_test",
@@ -680,18 +749,18 @@ async def test_state_transition_create_and_list(db_session, workflow_repo, state
     
     # Create transitions
     trans1 = StateTransitionModel(
-        workflow_id="wf_trans_001",
+        workflow_id=test_uuid_str("wf_trans_001"),
         from_state="REQUESTED",
         to_state="BRIEF_READY",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         triggered_by="system",
     )
     
     trans2 = StateTransitionModel(
-        workflow_id="wf_trans_001",
+        workflow_id=test_uuid_str("wf_trans_001"),
         from_state="BRIEF_READY",
         to_state="IMPLEMENTING",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         triggered_by="user_test",
     )
     
@@ -703,7 +772,7 @@ async def test_state_transition_create_and_list(db_session, workflow_repo, state
     assert result2.id is not None
     
     # List transitions
-    transitions = await state_transition_repo.list_by_workflow("wf_trans_001")
+    transitions = await state_transition_repo.list_by_workflow(test_uuid_str("wf_trans_001"))
     
     assert len(transitions) == 2
     assert transitions[0].from_state == "REQUESTED"

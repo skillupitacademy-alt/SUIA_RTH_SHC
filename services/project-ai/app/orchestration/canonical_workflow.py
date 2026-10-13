@@ -481,7 +481,7 @@ async def can_transition_to_implementing_async(
         )
     
     # Verify manifest ID matches
-    if approval.placement_manifest_id != manifest_id:
+    if str(approval.placement_manifest_id) != str(manifest_id):
         return (
             False,
             f"Manifest ID mismatch: expected {approval.placement_manifest_id}, got {manifest_id}"

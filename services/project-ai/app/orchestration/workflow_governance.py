@@ -25,7 +25,7 @@ R3 PERSISTENCE:
 
 from datetime import datetime, timezone
 from typing import Optional, Tuple
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -49,6 +49,10 @@ from app.persistence import (
 )
 
 
+def _str_or_none(value):
+    return str(value) if value is not None else None
+
+
 def _workflow_model_to_domain(model: WorkflowModel) -> ProjectLLMWorkflow:
     """Convert WorkflowModel (ORM) to ProjectLLMWorkflow (domain model)."""
     state_transitions = [
@@ -64,8 +68,8 @@ def _workflow_model_to_domain(model: WorkflowModel) -> ProjectLLMWorkflow:
     ]
     
     return ProjectLLMWorkflow(
-        workflow_id=model.workflow_id,
-        specification_id=model.specification_id,
+        workflow_id=str(model.workflow_id),
+        specification_id=str(model.specification_id),
         target_family=model.target_family,
         target_version=model.target_version,
         requester_id=model.requester_id,
@@ -73,15 +77,15 @@ def _workflow_model_to_domain(model: WorkflowModel) -> ProjectLLMWorkflow:
         state_history=state_transitions,
         created_at=model.created_at,
         updated_at=model.updated_at,
-        contract_id=model.contract_id,
+        contract_id=_str_or_none(model.contract_id),
         contract_sha256=model.contract_sha256,
-        candidate_id=model.candidate_id,
+        candidate_id=_str_or_none(model.candidate_id),
         candidate_sha256=model.candidate_sha256,
-        manifest_id=model.manifest_id,
+        manifest_id=_str_or_none(model.manifest_id),
         manifest_sha256=model.manifest_sha256,
-        snapshot_id=model.snapshot_id,
+        snapshot_id=_str_or_none(model.snapshot_id),
         snapshot_sha256=model.snapshot_sha256,
-        approval_id=model.approval_id,
+        approval_id=_str_or_none(model.approval_id),
         gate_results=model.gate_results or {},
         evidence_ids=model.evidence_ids or [],
         final_status=model.final_status,
@@ -92,7 +96,7 @@ def _domain_to_workflow_model(domain: ProjectLLMWorkflow, version: Optional[int]
     """Convert ProjectLLMWorkflow (domain) to WorkflowModel (ORM)."""
     model = WorkflowModel(
         workflow_id=domain.workflow_id,
-        specification_id=domain.specification_id,
+        specification_id=uuid5(NAMESPACE_URL, f"project-ai:specification:{domain.specification_id}"),
         target_family=domain.target_family,
         target_version=domain.target_version,
         requester_id=domain.requester_id,
@@ -122,10 +126,10 @@ def _approval_model_to_domain(model: ApprovalModel) -> ImplementationApproval:
     from app.models.implementation_approval import ImplementationApprovalStatus
     
     return ImplementationApproval(
-        approval_id=model.approval_id,
-        workflow_id=model.workflow_id,
+        approval_id=str(model.approval_id),
+        workflow_id=str(model.workflow_id),
         candidate_sha256=model.candidate_sha256,
-        placement_manifest_id=model.placement_manifest_id,
+        placement_manifest_id=str(model.placement_manifest_id),
         placement_manifest_sha256=model.placement_manifest_sha256,
         target_family=model.target_family,
         target_version=model.target_version,
@@ -152,7 +156,7 @@ def _domain_to_approval_model(domain: ImplementationApproval) -> ApprovalModel:
         approval_timestamp=domain.approval_timestamp,
         status=domain.status.value,
         workflow_requester=domain.workflow_requester,
-        evidence=domain.evidence,
+        evidence=domain.to_evidence_dict(),
         rejection_reason=domain.rejection_reason,
     )
 

@@ -14,13 +14,20 @@ Usage:
 """
 
 import uuid
+import os
 from typing import Dict
 
 # Namespace for deterministic test UUIDs (UUID5)
-# This allows human-readable test identifiers to map to valid UUIDs
-TEST_NAMESPACE = uuid.UUID('00000000-0000-0000-0000-000000000001')
+# Include a per-run session token so each pytest run generates unique IDs.
+# This prevents collisions with stale data from previous runs when
+# transaction rollback isn't used for test isolation.
+_session_token = os.environ.get("PYTEST_RUN_ID", uuid.uuid4().hex[:12])
+TEST_NAMESPACE = uuid.uuid5(
+    uuid.UUID('00000000-0000-0000-0000-000000000001'),
+    _session_token
+)
 
-# Cache to ensure same input always returns same UUID
+# Cache to ensure same input always returns same UUID within a run
 _uuid_cache: Dict[str, uuid.UUID] = {}
 
 
@@ -47,6 +54,9 @@ def test_uuid(name: str) -> uuid.UUID:
         _uuid_cache[name] = uuid.uuid5(TEST_NAMESPACE, name)
     return _uuid_cache[name]
 
+# Prevent pytest from collecting this helper function as a test
+test_uuid.__test__ = False
+
 
 def test_uuid_str(name: str) -> str:
     """
@@ -62,6 +72,8 @@ def test_uuid_str(name: str) -> str:
     """
     return str(test_uuid(name))
 
+# Prevent pytest from collecting this helper function as a test
+test_uuid_str.__test__ = False
 
 # Pre-generated common test UUIDs for convenience
 WORKFLOW_IDS = {

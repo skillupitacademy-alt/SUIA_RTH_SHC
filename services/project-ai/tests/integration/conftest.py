@@ -18,13 +18,6 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy import text
 
-# Load .env.local from workspace root for DATABASE_URL_TUTORIAL
-from dotenv import load_dotenv
-workspace_root = Path(__file__).parent.parent.parent.parent.parent  # Go up to quiz-platform/
-env_file = workspace_root / ".env.local"
-if env_file.exists():
-    load_dotenv(env_file)
-
 from app.persistence import (
     PostgresWorkflowRepository,
     PostgresContractRepository,
@@ -36,13 +29,16 @@ from app.persistence import (
 from app.persistence.models import Base
 
 
-# Check for test database configuration
-TEST_DB_URL = os.environ.get("DATABASE_URL_TUTORIAL")
+def _get_test_db_url() -> str | None:
+    """Get DATABASE_URL_TUTORIAL at runtime (not import time)."""
+    return os.environ.get("DATABASE_URL_TUTORIAL")
+
 
 # Pytest collection hook to skip entire module if database not configured
 def pytest_collection_modifyitems(config, items):
     """Skip all integration tests if DATABASE_URL_TUTORIAL not configured."""
-    if not TEST_DB_URL:
+    # Check environment at RUNTIME, not import time, so dotenv has loaded
+    if not _get_test_db_url():
         skip_marker = pytest.mark.skip(
             reason="DATABASE_URL_TUTORIAL not configured — cannot run PostgreSQL integration tests"
         )
@@ -58,15 +54,16 @@ async def integration_db_engine():
     Uses DATABASE_URL_TUTORIAL environment variable.
     Requires explicit configuration - no fallback to localhost.
     
-    Scope: session (shared across all tests for performance)
+    Scope: function (per-test isolation)
     """
-    if not TEST_DB_URL:
+    db_url_raw = _get_test_db_url()
+    if not db_url_raw:
         pytest.skip("DATABASE_URL_TUTORIAL not configured")
     
     # Convert postgresql:// to postgresql+asyncpg:// for SQLAlchemy async engine
     # Remove query parameters that are not compatible with asyncpg (sslmode, channel_binding)
     # asyncpg uses ssl='require' instead of sslmode=require
-    db_url = TEST_DB_URL
+    db_url = db_url_raw
     if db_url.startswith("postgresql://"):
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     
@@ -121,10 +118,13 @@ async def integration_db_engine():
 @pytest_asyncio.fixture
 async def db_session(integration_db_engine):
     """
-    Create an async database session with transaction rollback for test isolation.
+    Create an async database session for integration tests.
     
-    Each test gets a fresh session within a transaction that is rolled back
-    after the test completes, ensuring tests don't interfere with each other.
+    Tests can call session.commit() and session.flush() freely.
+    Uncommitted changes are rolled back at teardown.
+    
+    Note: Committed data persists in the test DB. Test isolation is
+    maintained by using unique deterministic IDs (via test_uuid).
     
     Scope: function (new session per test)
     """
@@ -135,9 +135,9 @@ async def db_session(integration_db_engine):
     )
     
     async with async_session_factory() as session:
-        async with session.begin():
-            yield session
-            # Automatic rollback when context exits
+        yield session
+        # Rollback any uncommitted changes
+        if session.in_transaction():
             await session.rollback()
 
 
@@ -231,7 +231,14 @@ async def state_transition_repo(db_session):
 
 # Pytest configuration for async tests
 def pytest_configure(config):
-    """Configure pytest for async integration tests."""
+    """Load environment and configure pytest for async integration tests."""
+    # Load .env.local BEFORE fixture evaluation so DATABASE_URL_TUTORIAL is available
+    from dotenv import load_dotenv
+    workspace_root = Path(__file__).parent.parent.parent.parent.parent  # Go up to quiz-platform/
+    env_file = workspace_root / ".env.local"
+    if env_file.exists():
+        load_dotenv(env_file, override=True)
+    
     config.addinivalue_line(
         "markers", "integration: mark test as PostgreSQL integration test"
     )

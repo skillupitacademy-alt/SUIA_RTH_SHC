@@ -23,7 +23,7 @@ DOMAIN MODEL MAPPING:
 import hashlib
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
 from sqlalchemy import (
@@ -64,8 +64,8 @@ class WorkflowModel(Base):
     current_state = Column(String(100), nullable=False)
     
     # Timestamps
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # Artifact bindings (hash-bound for security)
     contract_id = Column(UUID(as_uuid=True), nullable=True)
@@ -254,7 +254,7 @@ class StateTransitionModel(Base):
     # Transition details
     from_state = Column(String(100), nullable=True)
     to_state = Column(String(100), nullable=False)
-    timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
+    timestamp = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     triggered_by = Column(String(255), nullable=False)
     
     # Evidence
@@ -293,7 +293,7 @@ class ContractModel(Base):
     contract_data = Column(JSON, nullable=False)
     
     # Metadata
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     contract_version = Column(String(50), nullable=False, default="1.0")
     
     # Relationship
@@ -307,7 +307,10 @@ class ContractModel(Base):
     
     def verify_hash(self) -> bool:
         """Verify contract data matches stored hash."""
-        canonical = json.dumps(self.contract_data, sort_keys=True, ensure_ascii=False)
+        hash_data = dict(self.contract_data)
+        hash_data.pop("contract_id", None)
+        hash_data.pop("contract_hash", None)
+        canonical = json.dumps(hash_data, sort_keys=True, ensure_ascii=False)
         computed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
         return self.contract_hash == computed_hash
 
@@ -331,7 +334,7 @@ class CandidateModel(Base):
     files = Column(JSON, nullable=False)
     
     # Metadata
-    uploaded_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    uploaded_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     uploaded_by = Column(String(255), nullable=False)
     
     # Workflow target binding
@@ -415,7 +418,7 @@ class ManifestModel(Base):
     evidence_ids = Column(JSON, nullable=False, default=list)
     
     # Metadata
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     
     # Relationship
     candidate = relationship("CandidateModel", back_populates="manifests")
@@ -460,7 +463,7 @@ class ApprovalModel(Base):
     
     # Approval tracking
     approved_by = Column(String(255), nullable=False)
-    approval_timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
+    approval_timestamp = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     status = Column(String(50), nullable=False)
     
     # Self-approval prevention

@@ -401,9 +401,10 @@ async def test_override_placement_manual():
                     'contract_sha256': 'a' * 64
                 })()
             elif id.startswith("wf"):
+                # NOTE: lambda needs self param because type() creates a method descriptor
                 return type('obj', (object,), {
                     'workflow_id': id,
-                    'to_dict': lambda: {
+                    'to_dict': lambda self: {
                         'workflow_id': id,
                         'target': {'family': 'Introduction', 'version': 'I7'}
                     }
@@ -434,6 +435,11 @@ async def test_override_placement_manual():
         workflow_repo=MockRepo()
     )
     
+    # Patch _persist_placement to no-op (session=None would crash real DB persist)
+    async def _noop_persist(result, session):
+        pass
+    engine._persist_placement = _noop_persist
+    
     result = await engine.override_placement(
         workflow_id="wf-001",
         candidate_id="cand-001",
@@ -445,6 +451,7 @@ async def test_override_placement_manual():
     assert result.evidence.get("override") is True
     assert result.evidence.get("override_reason") == "Human decision to use different manifest"
     assert result.score is None  # No scoring for manual override
+
 
 
 def test_override_requires_approval():

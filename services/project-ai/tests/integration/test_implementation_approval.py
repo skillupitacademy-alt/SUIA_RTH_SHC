@@ -24,7 +24,26 @@ from app.persistence import (
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.orchestration.workflow_governance import WorkflowGovernanceService
 from app.models.implementation_approval import ImplementationApprovalStatus
-from tests.fixtures import test_uuid
+from tests.fixtures import test_uuid, test_uuid_str
+
+
+async def create_parent_workflow(
+    db_session,
+    workflow_id: str,
+    requester_id: str = "requester@example.com",
+) -> None:
+    """Create the parent workflow required by the approval FK."""
+    workflow = WorkflowModel(
+        workflow_id=workflow_id,
+        specification_id=test_uuid_str(f"spec_parent_{workflow_id}"),
+        target_family="Introduction",
+        target_version="I7",
+        requester_id=requester_id,
+        current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
+        version=1,
+    )
+    db_session.add(workflow)
+    await db_session.flush()
 
 
 @pytest.mark.integration
@@ -133,22 +152,22 @@ async def test_self_approval_rejected(db_session, workflow_repo, approval_repo):
     - Workflow stays in AWAITING_IMPLEMENTATION_APPROVAL state
     - Rejection audit trail recorded
     """
-    workflow_id = "wf_self_approve_001"
+    workflow_id = test_uuid_str("wf_self_approve_001")
     user_id = "user@example.com"  # Same person as requester and approver
     candidate_hash = "d" * 64
     manifest_hash = "e" * 64
     contract_hash = "f" * 64
-    manifest_id = "manifest_self_001"
+    manifest_id = test_uuid_str("manifest_self_001")
     
     # Create workflow
     workflow = WorkflowModel(
         workflow_id=workflow_id,
-        specification_id="spec_002",
+        specification_id=test_uuid_str("spec_002"),
         target_family="Introduction",
         target_version="I7",
         requester_id=user_id,
         current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
-        contract_id="ct_002",
+        contract_id=test_uuid_str("ct_002"),
         contract_sha256=contract_hash,
         candidate_sha256=candidate_hash,
         manifest_sha256=manifest_hash,
@@ -190,23 +209,23 @@ async def test_unauthorized_user_rejected(db_session, workflow_repo):
     This test verifies that role checking is in place (though the current
     implementation focuses on self-approval prevention).
     """
-    workflow_id = "wf_unauth_001"
+    workflow_id = test_uuid_str("wf_unauth_001")
     requester_id = "requester@example.com"
     unauthorized_user = "unauthorized@example.com"
     
     # Create workflow
     workflow = WorkflowModel(
         workflow_id=workflow_id,
-        specification_id="spec_003",
+        specification_id=test_uuid_str("spec_003"),
         target_family="Introduction",
         target_version="I7",
         requester_id=requester_id,
         current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
-        contract_id="ct_003",
+        contract_id=test_uuid_str("ct_003"),
         contract_sha256="g" * 64,
         candidate_sha256="h" * 64,
         manifest_sha256="i" * 64,
-        manifest_id="manifest_003",
+        manifest_id=test_uuid_str("manifest_003"),
         version=1,
     )
     
@@ -235,23 +254,23 @@ async def test_workflow_transitions_to_implementing_after_approval(
     - State transition executed via governance service
     - New state persisted to database
     """
-    workflow_id = "wf_transition_001"
+    workflow_id = test_uuid_str("wf_transition_001")
     requester_id = "requester@example.com"
     approver_id = "approver@example.com"
     candidate_hash = "j" * 64
     manifest_hash = "k" * 64
     contract_hash = "l" * 64
-    manifest_id = "manifest_004"
+    manifest_id = test_uuid_str("manifest_004")
     
     # Create workflow
     workflow = WorkflowModel(
         workflow_id=workflow_id,
-        specification_id="spec_004",
+        specification_id=test_uuid_str("spec_004"),
         target_family="Introduction",
         target_version="I7",
         requester_id=requester_id,
         current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
-        contract_id="ct_004",
+        contract_id=test_uuid_str("ct_004"),
         contract_sha256=contract_hash,
         candidate_sha256=candidate_hash,
         manifest_sha256=manifest_hash,
@@ -315,22 +334,22 @@ async def test_workflow_stays_awaiting_without_approval(db_session, workflow_rep
     
     Verifies that workflow cannot transition without approval record.
     """
-    workflow_id = "wf_no_approval_001"
+    workflow_id = test_uuid_str("wf_no_approval_001")
     requester_id = "requester@example.com"
     
     # Create workflow in AWAITING_IMPLEMENTATION_APPROVAL
     workflow = WorkflowModel(
         workflow_id=workflow_id,
-        specification_id="spec_005",
+        specification_id=test_uuid_str("spec_005"),
         target_family="Introduction",
         target_version="I7",
         requester_id=requester_id,
         current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
-        contract_id="ct_005",
+        contract_id=test_uuid_str("ct_005"),
         contract_sha256="m" * 64,
         candidate_sha256="n" * 64,
         manifest_sha256="o" * 64,
-        manifest_id="manifest_005",
+        manifest_id=test_uuid_str("manifest_005"),
         version=1,
     )
     
@@ -353,9 +372,10 @@ async def test_approval_audit_trail_recorded(db_session, approval_repo):
     - Approver identity captured
     - Evidence dictionary populated
     """
-    workflow_id = "wf_audit_001"
+    workflow_id = test_uuid_str("wf_audit_001")
     requester_id = "requester@example.com"
     approver_id = "approver@example.com"
+    await create_parent_workflow(db_session, workflow_id, requester_id)
     
     # Create approval
     from app.models.implementation_approval import create_implementation_approval
@@ -366,7 +386,7 @@ async def test_approval_audit_trail_recorded(db_session, approval_repo):
         candidate_sha256="p" * 64,
         target_family="Introduction",
         target_version="I7",
-        placement_manifest_id="manifest_006",
+        placement_manifest_id=test_uuid_str("manifest_006"),
         placement_manifest_sha256="q" * 64,
         approved_by=approver_id,
         workflow_requester=requester_id,
@@ -396,10 +416,11 @@ async def test_duplicate_approval_handled(db_session, approval_repo):
     Verifies that submitting approval twice for same workflow_id
     overwrites the first record (via upsert).
     """
-    workflow_id = "wf_duplicate_001"
+    workflow_id = test_uuid_str("wf_duplicate_001")
     requester_id = "requester@example.com"
     approver_id_1 = "approver1@example.com"
     approver_id_2 = "approver2@example.com"
+    await create_parent_workflow(db_session, workflow_id, requester_id)
     
     # First approval
     from app.models.implementation_approval import create_implementation_approval
@@ -410,7 +431,7 @@ async def test_duplicate_approval_handled(db_session, approval_repo):
         candidate_sha256="r" * 64,
         target_family="Introduction",
         target_version="I7",
-        placement_manifest_id="manifest_007",
+        placement_manifest_id=test_uuid_str("manifest_007"),
         placement_manifest_sha256="s" * 64,
         approved_by=approver_id_1,
         workflow_requester=requester_id,
@@ -427,7 +448,7 @@ async def test_duplicate_approval_handled(db_session, approval_repo):
         candidate_sha256="r" * 64,
         target_family="Introduction",
         target_version="I7",
-        placement_manifest_id="manifest_007",
+        placement_manifest_id=test_uuid_str("manifest_007"),
         placement_manifest_sha256="s" * 64,
         approved_by=approver_id_2,  # Different approver
         workflow_requester=requester_id,
@@ -453,8 +474,9 @@ async def test_approval_status_endpoint_returns_pending(db_session, approval_rep
     Verifies GET /workflows/{workflow_id}/implementation-approval returns
     correct status for pending approval.
     """
-    workflow_id = "wf_status_pending_001"
+    workflow_id = test_uuid_str("wf_status_pending_001")
     requester_id = "requester@example.com"
+    await create_parent_workflow(db_session, workflow_id, requester_id)
     
     # Create pending approval
     from app.models.implementation_approval import create_implementation_approval
@@ -465,7 +487,7 @@ async def test_approval_status_endpoint_returns_pending(db_session, approval_rep
         candidate_sha256="t" * 64,
         target_family="Introduction",
         target_version="I7",
-        placement_manifest_id="manifest_008",
+        placement_manifest_id=test_uuid_str("manifest_008"),
         placement_manifest_sha256="u" * 64,
         approved_by="approver@example.com",
         workflow_requester=requester_id,
@@ -491,9 +513,10 @@ async def test_approval_status_endpoint_returns_approved(db_session, approval_re
     Verifies GET /workflows/{workflow_id}/implementation-approval returns
     correct status after approval.
     """
-    workflow_id = "wf_status_approved_001"
+    workflow_id = test_uuid_str("wf_status_approved_001")
     requester_id = "requester@example.com"
     approver_id = "approver@example.com"
+    await create_parent_workflow(db_session, workflow_id, requester_id)
     
     # Create approved approval
     from app.models.implementation_approval import create_implementation_approval
@@ -504,7 +527,7 @@ async def test_approval_status_endpoint_returns_approved(db_session, approval_re
         candidate_sha256="v" * 64,
         target_family="Introduction",
         target_version="I7",
-        placement_manifest_id="manifest_009",
+        placement_manifest_id=test_uuid_str("manifest_009"),
         placement_manifest_sha256="w" * 64,
         approved_by=approver_id,
         workflow_requester=requester_id,
@@ -535,24 +558,24 @@ async def test_rejection_blocks_implementation_transition(
     - Workflow transitions to REJECTED state (not IMPLEMENTING)
     - Rejection reason recorded
     """
-    workflow_id = "wf_reject_001"
+    workflow_id = test_uuid_str("wf_reject_001")
     requester_id = "requester@example.com"
     approver_id = "approver@example.com"
     rejection_reason = "Implementation does not meet requirements"
     candidate_hash = "x" * 64
     manifest_hash = "y" * 64
     contract_hash = "z" * 64
-    manifest_id = "manifest_010"
+    manifest_id = test_uuid_str("manifest_010")
     
     # Create workflow
     workflow = WorkflowModel(
         workflow_id=workflow_id,
-        specification_id="spec_010",
+        specification_id=test_uuid_str("spec_010"),
         target_family="Introduction",
         target_version="I7",
         requester_id=requester_id,
         current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
-        contract_id="ct_010",
+        contract_id=test_uuid_str("ct_010"),
         contract_sha256=contract_hash,
         candidate_sha256=candidate_hash,
         manifest_sha256=manifest_hash,
@@ -622,7 +645,7 @@ async def test_manifest_hash_mismatch_rejection(db_session, workflow_repo):
     Verifies that approval with mismatched manifest hash is detected
     and prevents state transition.
     """
-    workflow_id = "wf_hash_mismatch_001"
+    workflow_id = test_uuid_str("wf_hash_mismatch_001")
     requester_id = "requester@example.com"
     stored_manifest_hash = "stored" + ("a" * 58)
     provided_manifest_hash = "provided" + ("b" * 56)
@@ -630,16 +653,16 @@ async def test_manifest_hash_mismatch_rejection(db_session, workflow_repo):
     # Create workflow with stored hash
     workflow = WorkflowModel(
         workflow_id=workflow_id,
-        specification_id="spec_011",
+        specification_id=test_uuid_str("spec_011"),
         target_family="Introduction",
         target_version="I7",
         requester_id=requester_id,
         current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
-        contract_id="ct_011",
+        contract_id=test_uuid_str("ct_011"),
         contract_sha256="aa" * 32,
         candidate_sha256="bb" * 32,
         manifest_sha256=stored_manifest_hash,
-        manifest_id="manifest_011",
+        manifest_id=test_uuid_str("manifest_011"),
         version=1,
     )
     
@@ -654,7 +677,7 @@ async def test_manifest_hash_mismatch_rejection(db_session, workflow_repo):
         candidate_sha256="bb" * 32,
         target_family="Introduction",
         target_version="I7",
-        placement_manifest_id="manifest_011",
+        placement_manifest_id=test_uuid_str("manifest_011"),
         placement_manifest_sha256=provided_manifest_hash,  # Mismatch
         approved_by="approver@example.com",
         workflow_requester=requester_id,
@@ -675,7 +698,7 @@ async def test_candidate_hash_mismatch_rejection(db_session, workflow_repo):
     Verifies that approval with mismatched candidate hash is detected
     and prevents state transition.
     """
-    workflow_id = "wf_candidate_mismatch_001"
+    workflow_id = test_uuid_str("wf_candidate_mismatch_001")
     requester_id = "requester@example.com"
     stored_candidate_hash = "stored" + ("c" * 58)
     provided_candidate_hash = "provided" + ("d" * 56)
@@ -683,16 +706,16 @@ async def test_candidate_hash_mismatch_rejection(db_session, workflow_repo):
     # Create workflow with stored hash
     workflow = WorkflowModel(
         workflow_id=workflow_id,
-        specification_id="spec_012",
+        specification_id=test_uuid_str("spec_012"),
         target_family="Introduction",
         target_version="I7",
         requester_id=requester_id,
         current_state=CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL.value,
-        contract_id="ct_012",
+        contract_id=test_uuid_str("ct_012"),
         contract_sha256="cc" * 32,
         candidate_sha256=stored_candidate_hash,
         manifest_sha256="dd" * 32,
-        manifest_id="manifest_012",
+        manifest_id=test_uuid_str("manifest_012"),
         version=1,
     )
     
@@ -707,7 +730,7 @@ async def test_candidate_hash_mismatch_rejection(db_session, workflow_repo):
         candidate_sha256=provided_candidate_hash,  # Mismatch
         target_family="Introduction",
         target_version="I7",
-        placement_manifest_id="manifest_012",
+        placement_manifest_id=test_uuid_str("manifest_012"),
         placement_manifest_sha256="dd" * 32,
         approved_by="approver@example.com",
         workflow_requester=requester_id,

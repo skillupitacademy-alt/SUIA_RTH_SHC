@@ -1,34 +1,30 @@
 """
-Integration tests for W2 Engineering Contract Generation
+Integration tests for W2 Engineering Contract Generation.
 
-Tests the full contract generation flow:
-- W1A target binding integration
-- W1B repository intelligence integration
-- Contract SHA-256 determinism
-- Contract immutability enforcement
-- Workflow state transitions
-- Evidence recording
+These tests call the current FastAPI route function directly and pass its
+dependency-injected collaborators explicitly.
 """
 
 import pytest
 import pytest_asyncio
-import json
-from unittest.mock import patch, MagicMock
-from datetime import datetime, timezone
-from pathlib import Path
+from fastapi import HTTPException
+from unittest.mock import patch
 
-from app.api.routes.contract import (
-    create_engineering_contract,
-    calculate_snapshot_sha256,
-    load_repository_snapshot
-)
-from app.contracts.engineering_contract import (
-    seal_contract,
-    PROHIBITED_BEHAVIORS
-)
-from app.orchestration.workflow_governance import WorkflowGovernanceService
-from app.orchestration.canonical_workflow import CanonicalWorkflowState
+from app.api.routes.contract import create_engineering_contract
+from app.contracts.engineering_contract import PROHIBITED_BEHAVIORS, seal_contract
+from app.contracts.repository_intelligence import RuntimeContract
 from app.models.workflow_target import WorkflowTarget
+from app.orchestration.canonical_workflow import CanonicalWorkflowState
+from app.orchestration.workflow_governance import WorkflowGovernanceService
+
+
+TEST_USER = {
+    "user_id": "test-admin",
+    "brand": "skillhub",
+    "roles": ["contract_admin"],
+    "token_type": "admin",
+    "is_admin": True,
+}
 
 
 @pytest_asyncio.fixture
@@ -38,20 +34,27 @@ async def governance_service(workflow_repo, approval_repo, state_transition_repo
         workflow_repo=workflow_repo,
         approval_repo=approval_repo,
         state_transition_repo=state_transition_repo,
-        session=db_session
+        session=db_session,
     )
 
 
 @pytest_asyncio.fixture
-async def test_workflow(governance_service):
-    """Create a test workflow."""
+async def test_workflow(governance_service, db_session):
+    """Create a test workflow in the contract-generatable DISCOVERY state."""
     workflow = await governance_service.create_workflow(
         target_family="Introduction",
         target_version="I1",
         requester_id="test-user",
-        purpose="Test W2 contract generation"
+        purpose="Test W2 contract generation",
     )
-    return workflow
+    await governance_service.transition_state(
+        workflow_id=workflow.workflow_id,
+        to_state=CanonicalWorkflowState.DISCOVERY,
+        triggered_by="test",
+        reason="Prepare W2 contract generation",
+    )
+    await db_session.commit()
+    return await governance_service.get_workflow(workflow.workflow_id)
 
 
 @pytest.fixture
@@ -63,307 +66,262 @@ def mock_snapshot():
             "language": "TypeScript",
             "framework": "React",
             "style": "CSS Modules",
-            "difficulty_level": "intermediate"
+            "difficulty_level": "intermediate",
         },
         "evidence": [
             {
                 "kind": "canonical_block",
                 "path": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
                 "contentHash": "a" * 64,
-                "evidenceId": "evidence-intro-001"
+                "evidenceId": "evidence-intro-001",
             },
             {
                 "kind": "test",
                 "path": "packages/ui/src/tutorial/blocks/__tests__/IntroductionBlock.test.tsx",
                 "contentHash": "b" * 64,
-                "evidenceId": "evidence-intro-test-001"
+                "evidenceId": "evidence-intro-test-001",
             },
             {
                 "kind": "config",
                 "path": "tsconfig.json",
                 "contentHash": "c" * 64,
-                "evidenceId": "evidence-tsconfig-001"
-            }
-        ]
+                "evidenceId": "evidence-tsconfig-001",
+            },
+        ],
     }
+
+
+async def generate_contract(
+    workflow_id,
+    governance_service,
+    contract_repo,
+    db_session,
+):
+    return await create_engineering_contract(
+        workflow_id=workflow_id,
+        user=TEST_USER,
+        governance_service=governance_service,
+        contract_repo=contract_repo,
+        session=db_session,
+    )
 
 
 class TestW2ContractGenerationWithRealW1AWiring:
     """Test contract generation with real W1A target binding."""
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_contract_uses_real_w1a_target(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
+        mock_snapshot_sha,
         test_workflow,
         governance_service,
-        mock_snapshot
+        contract_repo,
+        db_session,
+        mock_snapshot,
     ):
-        """Test that contract generation uses real W1A target from governance service."""
-        # Setup mocks
-        mock_gov_service.get_workflow.return_value = test_workflow
-        mock_gov_service.bind_artifact = MagicMock()
-        mock_gov_service.transition_state = MagicMock()
         mock_load_snapshot.return_value = mock_snapshot
         mock_snapshot_sha.return_value = "b" * 64
-        
-        # Create contract
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user",
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        
-        contract = await create_engineering_contract(
-            workflow_id=test_workflow.workflow_id,
-            workflow=workflow_dict
+
+        contract = await generate_contract(
+            test_workflow.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        # Verify contract uses real target from W1A
+
         assert contract.target.family == "Introduction"
         assert contract.target.version == "I1"
         assert contract.target.workflow_id == test_workflow.workflow_id
-        
-        # Verify NOT using placeholder Introduction/I7
         assert contract.workflow_id == test_workflow.workflow_id
         assert contract.workflow_id != "placeholder"
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_contract_fails_if_target_family_empty(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
+        mock_snapshot_sha,
         governance_service,
-        mock_snapshot
+        contract_repo,
+        db_session,
+        mock_snapshot,
     ):
-        """Test that contract generation fails if workflow target_family is empty."""
-        # Create workflow with empty target_family
         workflow = await governance_service.create_workflow(
             target_family="",
-            target_version="I7",
-            requester_id="test-user"
+            target_version="I1",
+            requester_id="test-user",
         )
-        
-        mock_gov_service.get_workflow.return_value = workflow
+        await governance_service.transition_state(
+            workflow_id=workflow.workflow_id,
+            to_state=CanonicalWorkflowState.DISCOVERY,
+            triggered_by="test",
+            reason="Prepare W2 contract generation",
+        )
+        await db_session.commit()
+
         mock_load_snapshot.return_value = mock_snapshot
         mock_snapshot_sha.return_value = "b" * 64
-        
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user"
-        }
-        
-        # Should raise HTTP 400 for empty target_family
-        with pytest.raises(Exception) as exc_info:
-            await create_engineering_contract(
-                workflow_id=workflow.workflow_id,
-                workflow=workflow_dict
+
+        with pytest.raises(HTTPException) as exc_info:
+            await generate_contract(
+                workflow.workflow_id,
+                governance_service,
+                contract_repo,
+                db_session,
             )
-        
-        assert "empty target_family" in str(exc_info.value).lower()
+
+        assert exc_info.value.status_code == 400
+        assert "empty target_family" in str(exc_info.value.detail).lower()
 
 
 class TestW2ContractGenerationWithRealW1BWiring:
     """Test contract generation with real W1B repository intelligence."""
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_contract_uses_real_w1b_repository_intelligence(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
+        mock_snapshot_sha,
         test_workflow,
         governance_service,
-        mock_snapshot
+        contract_repo,
+        db_session,
+        mock_snapshot,
     ):
-        """Test that contract uses real W1B repository intelligence from snapshot."""
-        # Setup mocks
-        mock_gov_service.get_workflow.return_value = test_workflow
-        mock_gov_service.bind_artifact = MagicMock()
-        mock_gov_service.transition_state = MagicMock()
         mock_load_snapshot.return_value = mock_snapshot
         mock_snapshot_sha.return_value = "b" * 64
-        
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user"
-        }
-        
-        contract = await create_engineering_contract(
-            workflow_id=test_workflow.workflow_id,
-            workflow=workflow_dict
+
+        contract = await generate_contract(
+            test_workflow.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        # Verify contract has canonical references from W1B
-        assert len(contract.canonical_references) >= 0  # May be 0 if no match in snapshot
-        
-        # Verify repository snapshot is populated
+
+        assert len(contract.canonical_references) >= 1
         assert contract.repository_snapshot_sha256 == "b" * 64
-        assert contract.repository_snapshot_sha256 != ""
-        
-        # Verify required artifacts from W1B
         assert len(contract.required_artifacts) > 0
-        
-        # Verify acceptance criteria from W1B
         assert len(contract.acceptance_criteria) > 0
-        
-        # Verify snapshot-derived values are used (from mock_snapshot metadata)
         assert contract.implementation_contract["language"] == "TypeScript"
         assert contract.implementation_contract["framework"] == "React"
         assert contract.implementation_contract["style"] == "CSS Modules"
         assert contract.educational_contract["difficulty_level"] == "intermediate"
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_contract_generation_fails_without_evidence(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
-        test_workflow,
-        governance_service
+        mock_snapshot_sha,
+        governance_service,
+        contract_repo,
+        db_session,
     ):
-        """Test that contract generation fails when required evidence is missing."""
-        # Create snapshot with no evidence that can derive metadata
         incomplete_snapshot = {
             "timestamp": "2024-01-15T10:00:00Z",
-            "metadata": {},  # Empty metadata
+            "metadata": {},
             "evidence": [
                 {
                     "kind": "canonical_block",
                     "path": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
                     "contentHash": "a" * 64,
-                    "evidenceId": "evidence-intro-001"
+                    "evidenceId": "evidence-intro-001",
                 }
-                # No test files, no tsconfig, minimal evidence
-            ]
+            ],
         }
-        
-        # Setup mocks
-        mock_gov_service.get_workflow.return_value = test_workflow
-        mock_load_snapshot.return_value = incomplete_snapshot
-        mock_snapshot_sha.return_value = "x" * 64
-        
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user"
-        }
-        
-        # Contract generation should succeed because extract_metadata_from_snapshot infers TypeScript
-        # from .tsx extension and React from Block.tsx pattern. But if file_paths is empty, it should fail.
-        # Actually, with the current implementation, file_paths will be empty because derive_file_paths
-        # doesn't find matching patterns. So the defensive check should trigger.
-        
-        # Actually, let me test with a completely different block that won't match
-        workflow2 = await governance_service.create_workflow(
+        workflow = await governance_service.create_workflow(
             target_family="Unknown",
             target_version="X1",
-            requester_id="test-user"
+            requester_id="test-user",
         )
-        mock_gov_service.get_workflow.return_value = workflow2
-        
-        # Should raise HTTP 503 for missing evidence (RepositoryEvidenceBlocked)
-        from fastapi import HTTPException
+        await governance_service.transition_state(
+            workflow_id=workflow.workflow_id,
+            to_state=CanonicalWorkflowState.DISCOVERY,
+            triggered_by="test",
+            reason="Prepare W2 contract generation",
+        )
+        await db_session.commit()
+
+        mock_load_snapshot.return_value = incomplete_snapshot
+        mock_snapshot_sha.return_value = "x" * 64
+
         with pytest.raises(HTTPException) as exc_info:
-            await create_engineering_contract(
-                workflow_id=workflow2.workflow_id,
-                workflow=workflow_dict
+            await generate_contract(
+                workflow.workflow_id,
+                governance_service,
+                contract_repo,
+                db_session,
             )
-        
-        # Verify it's a 503 error
+
         assert exc_info.value.status_code == 503
         assert "evidence" in str(exc_info.value.detail).lower()
 
 
 class TestContractSHA256Determinism:
     """Test that contract SHA-256 is deterministic."""
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_same_inputs_produce_same_hash(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
+        mock_snapshot_sha,
         governance_service,
-        mock_snapshot
+        contract_repo,
+        db_session,
+        mock_snapshot,
     ):
-        """Test that same contract inputs produce same SHA-256 hash."""
-        # Create two identical workflows
         workflow1 = await governance_service.create_workflow(
             target_family="Introduction",
             target_version="I1",
-            requester_id="test-user"
+            requester_id="test-user",
         )
         workflow2 = await governance_service.create_workflow(
             target_family="Introduction",
             target_version="I1",
-            requester_id="test-user"
+            requester_id="test-user",
         )
-        
-        # Setup mocks to return identical data
+        for workflow in (workflow1, workflow2):
+            await governance_service.transition_state(
+                workflow_id=workflow.workflow_id,
+                to_state=CanonicalWorkflowState.DISCOVERY,
+                triggered_by="test",
+                reason="Prepare W2 contract generation",
+            )
+        await db_session.commit()
+
         mock_load_snapshot.return_value = mock_snapshot
         mock_snapshot_sha.return_value = "c" * 64
-        
-        # Mock governance to return workflow1 first, then workflow2
-        def get_workflow_side_effect(wf_id):
-            if wf_id == workflow1.workflow_id:
-                return workflow1
-            return workflow2
-        
-        mock_gov_service.get_workflow.side_effect = get_workflow_side_effect
-        mock_gov_service.bind_artifact = MagicMock()
-        mock_gov_service.transition_state = MagicMock()
-        
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user"
-        }
-        
-        # Generate contracts
-        contract1 = await create_engineering_contract(
-            workflow_id=workflow1.workflow_id,
-            workflow=workflow_dict
+
+        contract1 = await generate_contract(
+            workflow1.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        contract2 = await create_engineering_contract(
-            workflow_id=workflow2.workflow_id,
-            workflow=workflow_dict
+        contract2 = await generate_contract(
+            workflow2.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        # Different contract IDs (contain unique UUIDs)
+
         assert contract1.contract_id != contract2.contract_id
-        
-        # But if we manually set same contract_id and workflow_id, hashes should match
+
         contract2_copy = contract2.model_copy(deep=True)
         contract2_copy.contract_id = contract1.contract_id
         contract2_copy.workflow_id = contract1.workflow_id
-        # Also update target to match (includes source_snapshot_id)
         contract2_copy.target = contract1.target.model_copy(deep=True)
         contract2_copy.repository_snapshot_id = contract1.repository_snapshot_id
-        
-        hash1 = seal_contract(contract1)
-        hash2 = seal_contract(contract2_copy)
-        
-        assert hash1 == hash2
-    
+
+        assert seal_contract(contract1) == seal_contract(contract2_copy)
+
     def test_modified_contract_produces_different_hash(self, test_workflow):
-        """Test that modifying contract fields produces different hash."""
         from app.contracts.engineering_contract import EngineeringContract
-        from app.contracts.repository_intelligence import RuntimeContract
-        
-        # Create base contract
+
         contract = EngineeringContract(
             contract_id="test-contract",
             workflow_id=test_workflow.workflow_id,
@@ -373,65 +331,52 @@ class TestContractSHA256Determinism:
                 version="I7",
                 block_type="introduction",
                 specification_id="I7",
-                source_snapshot_id="snapshot-001"
+                source_snapshot_id="snapshot-001",
             ),
             repository_snapshot_id="snapshot-001",
             repository_snapshot_sha256="d" * 64,
             runtime_contract=RuntimeContract(),
-            prohibited_behaviors=PROHIBITED_BEHAVIORS
+            prohibited_behaviors=PROHIBITED_BEHAVIORS,
         )
-        
+
         original_hash = seal_contract(contract)
-        
-        # Modify a field
         contract.contract_version = "2.0"
-        
         modified_hash = seal_contract(contract)
-        
+
         assert original_hash != modified_hash
 
 
 class TestContractImmutabilityAfterWorkflowBinding:
     """Test contract immutability after workflow binding."""
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_second_contract_call_returns_same_contract(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
+        mock_snapshot_sha,
         test_workflow,
         governance_service,
-        mock_snapshot
+        contract_repo,
+        db_session,
+        mock_snapshot,
     ):
-        """Test that calling contract endpoint twice returns identical contract."""
-        # Setup mocks
-        mock_gov_service.get_workflow.return_value = test_workflow
-        mock_gov_service.bind_artifact = MagicMock()
-        mock_gov_service.transition_state = MagicMock()
         mock_load_snapshot.return_value = mock_snapshot
         mock_snapshot_sha.return_value = "e" * 64
-        
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user"
-        }
-        
-        # First call
-        contract1 = await create_engineering_contract(
-            workflow_id=test_workflow.workflow_id,
-            workflow=workflow_dict
+
+        contract1 = await generate_contract(
+            test_workflow.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        # Second call (should return same contract from store)
-        contract2 = await create_engineering_contract(
-            workflow_id=test_workflow.workflow_id,
-            workflow=workflow_dict
+        contract2 = await generate_contract(
+            test_workflow.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        # Should be identical
+
         assert contract1.contract_id == contract2.contract_id
         assert contract1.contract_hash == contract2.contract_hash
         assert contract1 == contract2
@@ -439,136 +384,84 @@ class TestContractImmutabilityAfterWorkflowBinding:
 
 class TestWorkflowStateTransition:
     """Test workflow state transitions after contract generation."""
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_workflow_transitions_to_brief_ready(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
+        mock_snapshot_sha,
         test_workflow,
         governance_service,
-        mock_snapshot
+        contract_repo,
+        db_session,
+        mock_snapshot,
     ):
-        """Test that workflow transitions to BRIEF_READY after contract generation."""
-        # Setup mocks
-        mock_gov_service.get_workflow.return_value = test_workflow
-        mock_gov_service.bind_artifact = MagicMock()
-        mock_gov_service.transition_state = MagicMock()
         mock_load_snapshot.return_value = mock_snapshot
         mock_snapshot_sha.return_value = "f" * 64
-        
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user"
-        }
-        
-        # Generate contract
-        contract = await create_engineering_contract(
-            workflow_id=test_workflow.workflow_id,
-            workflow=workflow_dict
+
+        await generate_contract(
+            test_workflow.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        # Verify state transition was called
-        mock_gov_service.transition_state.assert_called_once()
-        call_args = mock_gov_service.transition_state.call_args
-        
-        assert call_args[1]['workflow_id'] == test_workflow.workflow_id
-        assert call_args[1]['to_state'] == CanonicalWorkflowState.BRIEF_READY
-        assert call_args[1]['triggered_by'] == "W2-EngineeringContract"
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+        updated_workflow = await governance_service.get_workflow(test_workflow.workflow_id)
+        assert updated_workflow.current_state == CanonicalWorkflowState.BRIEF_READY
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_contract_artifact_binding(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
+        mock_snapshot_sha,
         test_workflow,
         governance_service,
-        mock_snapshot
+        contract_repo,
+        db_session,
+        mock_snapshot,
     ):
-        """Test that contract artifact is bound to workflow with SHA-256."""
-        # Setup mocks
-        mock_gov_service.get_workflow.return_value = test_workflow
-        mock_gov_service.bind_artifact = MagicMock()
-        mock_gov_service.transition_state = MagicMock()
         mock_load_snapshot.return_value = mock_snapshot
         mock_snapshot_sha.return_value = "g" * 64
-        
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user"
-        }
-        
-        # Generate contract
-        contract = await create_engineering_contract(
-            workflow_id=test_workflow.workflow_id,
-            workflow=workflow_dict
+
+        contract = await generate_contract(
+            test_workflow.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        # Verify artifact binding was called
-        mock_gov_service.bind_artifact.assert_called_once()
-        call_args = mock_gov_service.bind_artifact.call_args
-        
-        assert call_args[1]['workflow_id'] == test_workflow.workflow_id
-        assert call_args[1]['artifact_type'] == "contract"
-        assert call_args[1]['artifact_id'] == contract.contract_id
-        assert call_args[1]['artifact_sha256'] == contract.contract_hash
+
+        updated_workflow = await governance_service.get_workflow(test_workflow.workflow_id)
+        assert str(updated_workflow.contract_id) == contract.contract_id
+        assert updated_workflow.contract_sha256 == contract.contract_hash
 
 
 class TestProhibitedBehaviorsPopulated:
     """Test that prohibited behaviors are populated in contract."""
-    
-    @patch('app.api.routes.contract.load_repository_snapshot')
-    @patch('app.api.routes.contract.calculate_snapshot_sha256')
-    @patch('app.api.routes.contract.governance_service')
+
+    @patch("app.api.routes.contract.calculate_snapshot_sha256")
+    @patch("app.api.routes.contract.load_repository_snapshot")
     async def test_prohibited_behaviors_in_contract(
         self,
-        mock_gov_service,
-        mock_snapshot_sha,
         mock_load_snapshot,
+        mock_snapshot_sha,
         test_workflow,
         governance_service,
-        mock_snapshot
+        contract_repo,
+        db_session,
+        mock_snapshot,
     ):
-        """Test that all prohibited behaviors are included in generated contract."""
-        # Setup mocks
-        mock_gov_service.get_workflow.return_value = test_workflow
-        mock_gov_service.bind_artifact = MagicMock()
-        mock_gov_service.transition_state = MagicMock()
         mock_load_snapshot.return_value = mock_snapshot
         mock_snapshot_sha.return_value = "h" * 64
-        
-        workflow_dict = {
-            "state": "DISCOVERY",
-            "owner": "test-user"
-        }
-        
-        # Generate contract
-        contract = await create_engineering_contract(
-            workflow_id=test_workflow.workflow_id,
-            workflow=workflow_dict
+
+        contract = await generate_contract(
+            test_workflow.workflow_id,
+            governance_service,
+            contract_repo,
+            db_session,
         )
-        
-        # Verify all expected prohibited behaviors are present
-        expected_behaviors = [
-            "implement_duplicate_ils",
-            "call_ils_api_directly",
-            "implement_page_navigation",
-            "implement_page_progress",
-            "implement_duplicate_lsnb",
-            "implement_duplicate_rssb",
-            "hard_code_suia_branding",
-            "hard_code_rth_branding",
-            "create_duplicate_composer",
-            "create_duplicate_renderer",
-            "modify_unapproved_repository_paths"
-        ]
-        
-        assert len(contract.prohibited_behaviors) == 11
-        for behavior in expected_behaviors:
+
+        assert len(contract.prohibited_behaviors) == len(PROHIBITED_BEHAVIORS)
+        for behavior in PROHIBITED_BEHAVIORS:
             assert behavior in contract.prohibited_behaviors
