@@ -1,7 +1,20 @@
 # Merge to Main - Quick Start Guide
 
-**Status:** ✅ Ready to merge  
-**Full Roadmap:** See `merge-to-main-roadmap.md`
+**Status:** ⚠️ **NOT READY - VERIFICATION REQUIRED**  
+**Full Roadmap:** See `merge-to-main-roadmap.md`  
+**CRITICAL:** See `PRE-MERGE-VERIFICATION-REQUIRED.md` for blocking issues
+
+---
+
+## 🚨 STOP: Read This First
+
+**DO NOT proceed with merge until blocking issues are resolved:**
+
+1. **Database Isolation Issue:** Integration tests use `tutorial_prod` - verify this is safe or create separate test database
+2. **Git State Inconsistencies:** Documents reference wrong commits - needs correction
+3. **Roadmap Corrections:** Remove dangerous fast-track and force-push options
+
+**Full details:** See `PRE-MERGE-VERIFICATION-REQUIRED.md`
 
 ---
 
