@@ -1,0 +1,576 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\onlinewebsites\quiz-platform\services\project-ai
+configfile: pyproject.toml
+plugins: anyio-4.12.0, dash-3.3.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 130 items
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_evidence_blocks_certification FAILED [  0%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_wrong_block_version_fails PASSED [  1%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_registry_fails FAILED [  2%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_renderer_fails FAILED [  3%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_renderer_mismatch_fails FAILED [  3%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_schema_mismatch_fails FAILED [  4%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_composer_failure_blocks FAILED [  5%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_runtime_failure_blocks FAILED [  6%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_browser_failure_blocks FAILED [  6%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_brand_coupling_fails FAILED [  7%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_theme_mismatch_fails FAILED [  8%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected FAILED [  9%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked FAILED [ 10%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_invalid_mix_and_match_blocked PASSED [ 10%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected FAILED [ 11%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_canonical_artifact_detected FAILED [ 12%]
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected FAILED [ 13%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_workflow_id_returns_404 FAILED [ 13%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_candidate_id_returns_404 FAILED [ 14%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_workflow_with_empty_composition FAILED [ 15%]
+tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_workflow_with_invalid_mode PASSED [ 16%]
+tests/integration/test_conftest_skip_behavior.py::test_skip_marker_applied_when_env_var_missing FAILED [ 16%]
+tests/integration/test_conftest_skip_behavior.py::test_skip_marker_not_applied_when_env_var_present PASSED [ 17%]
+tests/integration/test_conftest_skip_behavior.py::test_integration_db_engine_fixture_skips_when_table_missing PASSED [ 18%]
+tests/integration/test_conftest_skip_behavior.py::test_env_var_name_is_consistent PASSED [ 19%]
+tests/integration/test_final_gate.py::test_final_approval_submission_success ERROR [ 20%]
+tests/integration/test_final_gate.py::test_final_approval_requires_awaiting_state ERROR [ 20%]
+tests/integration/test_final_gate.py::test_gate_blocks_when_w6_not_complete ERROR [ 21%]
+tests/integration/test_final_gate.py::test_gate_blocks_on_critical_security_issues ERROR [ 22%]
+tests/integration/test_final_gate.py::test_gate_blocks_when_tests_failing ERROR [ 23%]
+tests/integration/test_final_gate.py::test_gate_blocks_when_migrations_not_applied ERROR [ 23%]
+tests/integration/test_final_gate.py::test_gate_blocks_when_docs_incomplete ERROR [ 24%]
+tests/integration/test_final_gate.py::test_gate_passes_when_all_checks_pass ERROR [ 25%]
+tests/integration/test_final_gate.py::test_terminal_state_prevents_transitions ERROR [ 26%]
+tests/integration/test_final_gate.py::test_gate_returns_detailed_check_results ERROR [ 26%]
+tests/integration/test_final_gate.py::test_endpoint_blocks_approval_when_evidence_fails ERROR [ 27%]
+tests/integration/test_final_gate.py::test_endpoint_idempotent_for_repeated_approval ERROR [ 28%]
+tests/integration/test_i2_e2e_certification.py::test_i2_complete_certification_workflow SKIPPED [ 29%]
+tests/integration/test_i2_e2e_certification.py::test_i2_workflow_with_multiple_candidate_blocks SKIPPED [ 30%]
+tests/integration/test_i2_e2e_certification.py::test_workflow_state_persistence SKIPPED [ 30%]
+tests/integration/test_implementation_approval.py::test_uuid ERROR       [ 31%]
+tests/integration/test_implementation_approval.py::test_submit_approval_success ERROR [ 32%]
+tests/integration/test_implementation_approval.py::test_self_approval_rejected ERROR [ 33%]
+tests/integration/test_implementation_approval.py::test_unauthorized_user_rejected ERROR [ 33%]
+tests/integration/test_implementation_approval.py::test_workflow_transitions_to_implementing_after_approval ERROR [ 34%]
+tests/integration/test_implementation_approval.py::test_workflow_stays_awaiting_without_approval ERROR [ 35%]
+tests/integration/test_implementation_approval.py::test_approval_audit_trail_recorded ERROR [ 36%]
+tests/integration/test_implementation_approval.py::test_duplicate_approval_handled ERROR [ 36%]
+tests/integration/test_implementation_approval.py::test_approval_status_endpoint_returns_pending ERROR [ 37%]
+tests/integration/test_implementation_approval.py::test_approval_status_endpoint_returns_approved ERROR [ 38%]
+tests/integration/test_implementation_approval.py::test_rejection_blocks_implementation_transition ERROR [ 39%]
+tests/integration/test_implementation_approval.py::test_manifest_hash_mismatch_rejection ERROR [ 40%]
+tests/integration/test_implementation_approval.py::test_candidate_hash_mismatch_rejection ERROR [ 40%]
+tests/integration/test_placement_engine.py::test_match_candidate_to_add_manifest PASSED [ 41%]
+tests/integration/test_placement_engine.py::test_match_candidate_to_update_manifest PASSED [ 42%]
+tests/integration/test_placement_engine.py::test_match_candidate_by_family_version PASSED [ 43%]
+tests/integration/test_placement_engine.py::test_no_match_for_rejected_manifest PASSED [ 43%]
+tests/integration/test_placement_engine.py::test_match_with_structural_similarity PASSED [ 44%]
+tests/integration/test_placement_engine.py::test_score_exact_family_version_match PASSED [ 45%]
+tests/integration/test_placement_engine.py::test_score_penalizes_conflicts PASSED [ 46%]
+tests/integration/test_placement_engine.py::test_score_availability_preference PASSED [ 46%]
+tests/integration/test_placement_engine.py::test_score_reasoning_populated PASSED [ 47%]
+tests/integration/test_placement_engine.py::test_detect_placement_conflict PASSED [ 48%]
+tests/integration/test_placement_engine.py::test_resolve_conflict_by_score PASSED [ 49%]
+tests/integration/test_placement_engine.py::test_conflict_evidence_recorded PASSED [ 50%]
+tests/integration/test_placement_engine.py::test_override_placement_manual FAILED [ 50%]
+tests/integration/test_placement_engine.py::test_override_requires_approval PASSED [ 51%]
+tests/integration/test_placement_engine.py::test_placement_persisted_to_database PASSED [ 52%]
+tests/integration/test_placement_engine.py::test_placement_engine_result_creation PASSED [ 53%]
+tests/integration/test_placement_engine.py::test_match_result_creation PASSED [ 53%]
+tests/integration/test_placement_engine.py::test_placement_score_creation PASSED [ 54%]
+tests/integration/test_repositories_integration.py::test_uuid ERROR      [ 55%]
+tests/integration/test_repositories_integration.py::test_workflow_upsert_and_get ERROR [ 56%]
+tests/integration/test_repositories_integration.py::test_workflow_upsert_idempotent ERROR [ 56%]
+tests/integration/test_repositories_integration.py::test_optimistic_locking_conflict ERROR [ 57%]
+tests/integration/test_repositories_integration.py::test_workflow_list_by_state ERROR [ 58%]
+tests/integration/test_repositories_integration.py::test_workflow_delete ERROR [ 59%]
+tests/integration/test_repositories_integration.py::test_contract_upsert_and_get ERROR [ 60%]
+tests/integration/test_repositories_integration.py::test_contract_hash_integrity_stored_and_verified ERROR [ 60%]
+tests/integration/test_repositories_integration.py::test_contract_hash_drift_detection ERROR [ 61%]
+tests/integration/test_repositories_integration.py::test_contract_get_by_workflow ERROR [ 62%]
+tests/integration/test_repositories_integration.py::test_candidate_upsert_and_get ERROR [ 63%]
+tests/integration/test_repositories_integration.py::test_candidate_list_by_workflow ERROR [ 63%]
+tests/integration/test_repositories_integration.py::test_manifest_upsert_and_get ERROR [ 64%]
+tests/integration/test_repositories_integration.py::test_manifest_hash_drift_detection ERROR [ 65%]
+tests/integration/test_repositories_integration.py::test_approval_upsert_and_get ERROR [ 66%]
+tests/integration/test_repositories_integration.py::test_approval_get_by_workflow ERROR [ 66%]
+tests/integration/test_repositories_integration.py::test_approval_list_by_status ERROR [ 67%]
+tests/integration/test_repositories_integration.py::test_state_transition_create_and_list ERROR [ 68%]
+tests/integration/test_restart_persistence.py::test_workflow_persists_across_sessions ERROR [ 69%]
+tests/integration/test_restart_persistence.py::test_contract_persists_across_sessions ERROR [ 70%]
+tests/integration/test_restart_persistence.py::test_approval_persists_across_sessions ERROR [ 70%]
+tests/integration/test_restart_persistence.py::test_workflow_state_updates_persist ERROR [ 71%]
+tests/integration/test_restart_persistence.py::test_artifact_bindings_persist ERROR [ 72%]
+tests/integration/test_security_integration.py::test_uuid ERROR          [ 73%]
+tests/integration/test_security_integration.py::test_contract_admin_can_create_workflow ERROR [ 73%]
+tests/integration/test_security_integration.py::test_contract_viewer_denied_workflow_creation ERROR [ 74%]
+tests/integration/test_security_integration.py::test_super_admin_bypasses_rbac ERROR [ 75%]
+tests/integration/test_security_integration.py::test_infrastructure_portal_identity_bypasses_rbac ERROR [ 76%]
+tests/integration/test_security_integration.py::test_empty_roles_denies_privileged_operations ERROR [ 76%]
+tests/integration/test_security_integration.py::test_case_insensitive_role_matching ERROR [ 77%]
+tests/integration/test_security_integration.py::test_contract_reviewer_read_only ERROR [ 78%]
+tests/integration/test_security_integration.py::test_require_any_role_accepts_multiple ERROR [ 79%]
+tests/integration/test_security_integration.py::test_admin_token_type_with_contract_admin_role ERROR [ 80%]
+tests/integration/test_security_integration.py::test_rbac_denial_logs_warning ERROR [ 80%]
+tests/integration/test_security_integration.py::test_user_id_extracted_from_jwt ERROR [ 81%]
+tests/integration/test_security_integration.py::test_original_user_id_extraction ERROR [ 82%]
+tests/integration/test_security_integration.py::test_shadow_user_id_extraction ERROR [ 83%]
+tests/integration/test_security_integration.py::test_client_supplied_user_id_ignored ERROR [ 83%]
+tests/integration/test_security_integration.py::test_missing_user_id_claim_rejected ERROR [ 84%]
+tests/integration/test_security_integration.py::test_workflow_creation_initial_state ERROR [ 85%]
+tests/integration/test_security_integration.py::test_state_transition_recorded ERROR [ 86%]
+tests/integration/test_security_integration.py::test_approval_transitions_to_implementing ERROR [ 86%]
+tests/integration/test_security_integration.py::test_reject_transitions_to_rejected ERROR [ 87%]
+tests/integration/test_security_integration.py::test_invalid_state_transition_prevented ERROR [ 88%]
+tests/integration/test_security_integration.py::test_candidate_validator_hash_verification ERROR [ 89%]
+tests/integration/test_security_integration.py::test_canonical_comparator_brand_independence_check ERROR [ 90%]
+tests/integration/test_security_integration.py::test_placement_manifest_sealed_with_hash ERROR [ 90%]
+tests/integration/test_security_integration.py::test_placement_approval_requires_contract_admin ERROR [ 91%]
+tests/integration/test_security_integration.py::test_placement_manifest_tamper_detection ERROR [ 92%]
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target ERROR [ 93%]
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_fails_if_target_family_empty ERROR [ 93%]
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence ERROR [ 94%]
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_generation_fails_without_evidence ERROR [ 95%]
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash ERROR [ 96%]
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_modified_contract_produces_different_hash ERROR [ 96%]
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract ERROR [ 97%]
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready ERROR [ 98%]
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding ERROR [ 99%]
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract ERROR [100%]
+
+=================================== ERRORS ====================================
+__________ ERROR at setup of test_final_approval_submission_success ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+________ ERROR at setup of test_final_approval_requires_awaiting_state ________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+___________ ERROR at setup of test_gate_blocks_when_w6_not_complete ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______ ERROR at setup of test_gate_blocks_on_critical_security_issues ________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____________ ERROR at setup of test_gate_blocks_when_tests_failing ____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______ ERROR at setup of test_gate_blocks_when_migrations_not_applied ________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+___________ ERROR at setup of test_gate_blocks_when_docs_incomplete ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+___________ ERROR at setup of test_gate_passes_when_all_checks_pass ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_________ ERROR at setup of test_terminal_state_prevents_transitions __________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_________ ERROR at setup of test_gate_returns_detailed_check_results __________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_____ ERROR at setup of test_endpoint_blocks_approval_when_evidence_fails _____
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______ ERROR at setup of test_endpoint_idempotent_for_repeated_approval _______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_________________________ ERROR at setup of test_uuid _________________________
+file E:\onlinewebsites\quiz-platform\services\project-ai\tests\fixtures\uuid_fixtures.py, line 27
+  def test_uuid(name: str) -> uuid.UUID:
+E       fixture 'name' not found
+>       available fixtures: _asyncio_loop_factory, _class_scoped_runner, _function_scoped_runner, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, anyio_backend, anyio_backend_name, anyio_backend_options, approval_repo, cache, candidate_repo, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, contract_repo, cov, dash_br, dash_duo, dash_duo_mp, dash_multi_process_server, dash_process_server, dash_thread_server, dashjl, dashjl_server, dashr, dashr_server, db_session, db_session_factory, diskcache_manager, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, integration_db_engine, manifest_repo, mock_database_dependencies, mock_db_session, mock_jwt_config, monkeypatch, no_cover, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, state_transition_repo, subtests, test_approval_repo, test_candidate_repo, test_contract_repo, test_db_engine, test_db_session, test_governance_service, test_manifest_repo, test_state_transition_repo, test_workflow_repo, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory, workflow_repo
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\fixtures\uuid_fixtures.py:27
+_______________ ERROR at setup of test_submit_approval_success ________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+________________ ERROR at setup of test_self_approval_rejected ________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_unauthorized_user_rejected ______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of test_workflow_transitions_to_implementing_after_approval __
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______ ERROR at setup of test_workflow_stays_awaiting_without_approval _______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____________ ERROR at setup of test_approval_audit_trail_recorded _____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_duplicate_approval_handled ______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______ ERROR at setup of test_approval_status_endpoint_returns_pending _______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______ ERROR at setup of test_approval_status_endpoint_returns_approved _______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______ ERROR at setup of test_rejection_blocks_implementation_transition ______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+___________ ERROR at setup of test_manifest_hash_mismatch_rejection ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+__________ ERROR at setup of test_candidate_hash_mismatch_rejection ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_________________________ ERROR at setup of test_uuid _________________________
+file E:\onlinewebsites\quiz-platform\services\project-ai\tests\fixtures\uuid_fixtures.py, line 27
+  def test_uuid(name: str) -> uuid.UUID:
+E       fixture 'name' not found
+>       available fixtures: _asyncio_loop_factory, _class_scoped_runner, _function_scoped_runner, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, anyio_backend, anyio_backend_name, anyio_backend_options, approval_repo, cache, candidate_repo, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, contract_repo, cov, dash_br, dash_duo, dash_duo_mp, dash_multi_process_server, dash_process_server, dash_thread_server, dashjl, dashjl_server, dashr, dashr_server, db_session, db_session_factory, diskcache_manager, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, integration_db_engine, manifest_repo, mock_database_dependencies, mock_db_session, mock_jwt_config, monkeypatch, no_cover, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, state_transition_repo, subtests, test_approval_repo, test_candidate_repo, test_contract_repo, test_db_engine, test_db_session, test_governance_service, test_manifest_repo, test_state_transition_repo, test_workflow_repo, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory, workflow_repo
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\fixtures\uuid_fixtures.py:27
+_______________ ERROR at setup of test_workflow_upsert_and_get ________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_workflow_upsert_idempotent ______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_____________ ERROR at setup of test_optimistic_locking_conflict ______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+________________ ERROR at setup of test_workflow_list_by_state ________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+___________________ ERROR at setup of test_workflow_delete ____________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______________ ERROR at setup of test_contract_upsert_and_get ________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_____ ERROR at setup of test_contract_hash_integrity_stored_and_verified ______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____________ ERROR at setup of test_contract_hash_drift_detection _____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______________ ERROR at setup of test_contract_get_by_workflow _______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______________ ERROR at setup of test_candidate_upsert_and_get _______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_candidate_list_by_workflow ______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______________ ERROR at setup of test_manifest_upsert_and_get ________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____________ ERROR at setup of test_manifest_hash_drift_detection _____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______________ ERROR at setup of test_approval_upsert_and_get ________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______________ ERROR at setup of test_approval_get_by_workflow _______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______________ ERROR at setup of test_approval_list_by_status ________________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+___________ ERROR at setup of test_state_transition_create_and_list ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+__________ ERROR at setup of test_workflow_persists_across_sessions ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+__________ ERROR at setup of test_contract_persists_across_sessions ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+__________ ERROR at setup of test_approval_persists_across_sessions ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____________ ERROR at setup of test_workflow_state_updates_persist ____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_artifact_bindings_persist _______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_________________________ ERROR at setup of test_uuid _________________________
+file E:\onlinewebsites\quiz-platform\services\project-ai\tests\fixtures\uuid_fixtures.py, line 27
+  def test_uuid(name: str) -> uuid.UUID:
+E       fixture 'name' not found
+>       available fixtures: _asyncio_loop_factory, _class_scoped_runner, _function_scoped_runner, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, anyio_backend, anyio_backend_name, anyio_backend_options, approval_repo, cache, candidate_repo, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, contract_repo, cov, dash_br, dash_duo, dash_duo_mp, dash_multi_process_server, dash_process_server, dash_thread_server, dashjl, dashjl_server, dashr, dashr_server, db_session, db_session_factory, diskcache_manager, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, integration_db_engine, manifest_repo, mock_database_dependencies, mock_db_session, mock_jwt_config, monkeypatch, no_cover, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, state_transition_repo, subtests, test_approval_repo, test_candidate_repo, test_contract_repo, test_db_engine, test_db_session, test_governance_service, test_manifest_repo, test_state_transition_repo, test_workflow_repo, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory, workflow_repo
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\fixtures\uuid_fixtures.py:27
+__________ ERROR at setup of test_contract_admin_can_create_workflow __________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______ ERROR at setup of test_contract_viewer_denied_workflow_creation _______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_super_admin_bypasses_rbac _______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_____ ERROR at setup of test_infrastructure_portal_identity_bypasses_rbac _____
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______ ERROR at setup of test_empty_roles_denies_privileged_operations _______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____________ ERROR at setup of test_case_insensitive_role_matching ____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_____________ ERROR at setup of test_contract_reviewer_read_only ______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+__________ ERROR at setup of test_require_any_role_accepts_multiple ___________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______ ERROR at setup of test_admin_token_type_with_contract_admin_role _______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_______________ ERROR at setup of test_rbac_denial_logs_warning _______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_user_id_extracted_from_jwt ______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_____________ ERROR at setup of test_original_user_id_extraction ______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_shadow_user_id_extraction _______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+___________ ERROR at setup of test_client_supplied_user_id_ignored ____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____________ ERROR at setup of test_missing_user_id_claim_rejected ____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+___________ ERROR at setup of test_workflow_creation_initial_state ____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______________ ERROR at setup of test_state_transition_recorded _______________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_________ ERROR at setup of test_approval_transitions_to_implementing _________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____________ ERROR at setup of test_reject_transitions_to_rejected ____________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+__________ ERROR at setup of test_invalid_state_transition_prevented __________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+________ ERROR at setup of test_candidate_validator_hash_verification _________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+____ ERROR at setup of test_canonical_comparator_brand_independence_check _____
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_________ ERROR at setup of test_placement_manifest_sealed_with_hash __________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+______ ERROR at setup of test_placement_approval_requires_contract_admin ______
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_________ ERROR at setup of test_placement_manifest_tamper_detection __________
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestW2ContractGenerationWithRealW1AWiring.test_contract_uses_real_w1a_target _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestW2ContractGenerationWithRealW1AWiring.test_contract_fails_if_target_family_empty _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestW2ContractGenerationWithRealW1BWiring.test_contract_uses_real_w1b_repository_intelligence _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestW2ContractGenerationWithRealW1BWiring.test_contract_generation_fails_without_evidence _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestContractSHA256Determinism.test_same_inputs_produce_same_hash _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestContractSHA256Determinism.test_modified_contract_produces_different_hash _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestContractImmutabilityAfterWorkflowBinding.test_second_contract_call_returns_same_contract _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestWorkflowStateTransition.test_workflow_transitions_to_brief_ready _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestWorkflowStateTransition.test_contract_artifact_binding _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+_ ERROR at setup of TestProhibitedBehaviorsPopulated.test_prohibited_behaviors_in_contract _
+E   OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 5432, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 5432)
+================================== FAILURES ===================================
+E   AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no evidence' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000026AE7445110>()
+     +    where <built-in method lower of str object at 0x0000026AE7445110> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000026AE76EC830>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000026AE7445110>()
+     +    where <built-in method lower of str object at 0x0000026AE7445110> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000026AE76EC830>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:86: AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no evidence' in 'manifest validation failed')
+E   AssertionError: Registry verification gate should fail when registry missing
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:150: AssertionError: Registry verification gate should fail when registry missing
+E   AssertionError: assert ('renderer' in 'manifest validation failed' or 'rendered' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000026AE7445110>()
+     +    where <built-in method lower of str object at 0x0000026AE7445110> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000026AE75DE8B0>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000026AE7445110>()
+     +    where <built-in method lower of str object at 0x0000026AE7445110> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000026AE75DE8B0>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:189: AssertionError: assert ('renderer' in 'manifest validation failed' or 'rendered' in 'manifest validation failed')
+E   AssertionError: UBRC gate should fail when renderer mismatches block type
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:229: AssertionError: UBRC gate should fail when renderer mismatches block type
+E   AssertionError: Composer gate should fail when schema invalid
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:268: AssertionError: Composer gate should fail when schema invalid
+E   AssertionError: Composer gate should fail when block not registered
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:302: AssertionError: Composer gate should fail when block not registered
+E   AssertionError: assert ('runtime' in 'manifest validation failed' or 'error' in 'manifest validation failed')
+     +  where 'manifest validation failed' = <built-in method lower of str object at 0x0000026AE7445110>()
+     +    where <built-in method lower of str object at 0x0000026AE7445110> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000026AE758E470>.message
+     +  and   'manifest validation failed' = <built-in method lower of str object at 0x0000026AE7445110>()
+     +    where <built-in method lower of str object at 0x0000026AE7445110> = 'Manifest validation failed'.lower
+     +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x0000026AE758E470>.message
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:343: AssertionError: assert ('runtime' in 'manifest validation failed' or 'error' in 'manifest validation failed')
+E   AssertionError: Browser gate should fail when browser errors occur
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:376: AssertionError: Browser gate should fail when browser errors occur
+E   AssertionError: Brand independence gate should fail when brand values are hard-coded
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:412: AssertionError: Brand independence gate should fail when brand values are hard-coded
+E   AssertionError: Theme compatibility gate should fail with hard-coded colors
+    assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+      
+      - FAIL
+      + BLOCKED
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:450: AssertionError: Theme compatibility gate should fail with hard-coded colors
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:482: assert 422 == 200
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:543: assert 422 == 200
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:620: assert 422 == 200
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:670: assert 422 == 200
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:716: assert 422 == 200
+E   assert 405 == 404
+     +  where 405 = <Response [405 Method Not Allowed]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:742: assert 405 == 404
+E   assert 422 == 404
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:752: assert 422 == 404
+E   assert 422 == 200
+     +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:766: assert 422 == 200
+E   assert 0 > 0
+     +  where 0 = len([])
+     +    where [] = <tests.integration.test_conftest_skip_behavior.test_skip_marker_applied_when_env_var_missing.<locals>.MockItem object at 0x0000026AE76EEBA0>.markers
+E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_conftest_skip_behavior.py:52: assert 0 > 0
+E   ValueError: Workflow wf-001 not found
+E:\onlinewebsites\quiz-platform\services\project-ai\app\placement\placement_engine.py:263: ValueError: Workflow wf-001 not found
+============================== warnings summary ===============================
+C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1
+  C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests\integration\test_certification_negative.py:25
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:25: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests\integration\test_certification_negative.py:732
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:732: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:468: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"tamper-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:479: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:529: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"unapproved-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:540: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:606: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"self-approval-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:617: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:699: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"duplicate-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:710: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_evidence_blocks_certification
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_registry_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_renderer_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_renderer_mismatch_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_schema_mismatch_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_composer_failure_blocks
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_runtime_failure_blocks
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_browser_failure_blocks
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_brand_coupling_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_theme_mismatch_fails
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_missing_canonical_artifact_detected
+FAILED tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected
+FAILED tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_workflow_id_returns_404
+FAILED tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_invalid_candidate_id_returns_404
+FAILED tests/integration/test_certification_negative.py::TestWorkflowNegativeScenarios::test_workflow_with_empty_composition
+FAILED tests/integration/test_conftest_skip_behavior.py::test_skip_marker_applied_when_env_var_missing
+FAILED tests/integration/test_placement_engine.py::test_override_placement_manual
+ERROR tests/integration/test_final_gate.py::test_final_approval_submission_success
+ERROR tests/integration/test_final_gate.py::test_final_approval_requires_awaiting_state
+ERROR tests/integration/test_final_gate.py::test_gate_blocks_when_w6_not_complete
+ERROR tests/integration/test_final_gate.py::test_gate_blocks_on_critical_security_issues
+ERROR tests/integration/test_final_gate.py::test_gate_blocks_when_tests_failing
+ERROR tests/integration/test_final_gate.py::test_gate_blocks_when_migrations_not_applied
+ERROR tests/integration/test_final_gate.py::test_gate_blocks_when_docs_incomplete
+ERROR tests/integration/test_final_gate.py::test_gate_passes_when_all_checks_pass
+ERROR tests/integration/test_final_gate.py::test_terminal_state_prevents_transitions
+ERROR tests/integration/test_final_gate.py::test_gate_returns_detailed_check_results
+ERROR tests/integration/test_final_gate.py::test_endpoint_blocks_approval_when_evidence_fails
+ERROR tests/integration/test_final_gate.py::test_endpoint_idempotent_for_repeated_approval
+ERROR tests/integration/test_implementation_approval.py::test_uuid
+ERROR tests/integration/test_implementation_approval.py::test_submit_approval_success
+ERROR tests/integration/test_implementation_approval.py::test_self_approval_rejected
+ERROR tests/integration/test_implementation_approval.py::test_unauthorized_user_rejected
+ERROR tests/integration/test_implementation_approval.py::test_workflow_transitions_to_implementing_after_approval
+ERROR tests/integration/test_implementation_approval.py::test_workflow_stays_awaiting_without_approval
+ERROR tests/integration/test_implementation_approval.py::test_approval_audit_trail_recorded
+ERROR tests/integration/test_implementation_approval.py::test_duplicate_approval_handled
+ERROR tests/integration/test_implementation_approval.py::test_approval_status_endpoint_returns_pending
+ERROR tests/integration/test_implementation_approval.py::test_approval_status_endpoint_returns_approved
+ERROR tests/integration/test_implementation_approval.py::test_rejection_blocks_implementation_transition
+ERROR tests/integration/test_implementation_approval.py::test_manifest_hash_mismatch_rejection
+ERROR tests/integration/test_implementation_approval.py::test_candidate_hash_mismatch_rejection
+ERROR tests/integration/test_repositories_integration.py::test_uuid
+ERROR tests/integration/test_repositories_integration.py::test_workflow_upsert_and_get
+ERROR tests/integration/test_repositories_integration.py::test_workflow_upsert_idempotent
+ERROR tests/integration/test_repositories_integration.py::test_optimistic_locking_conflict
+ERROR tests/integration/test_repositories_integration.py::test_workflow_list_by_state
+ERROR tests/integration/test_repositories_integration.py::test_workflow_delete
+ERROR tests/integration/test_repositories_integration.py::test_contract_upsert_and_get
+ERROR tests/integration/test_repositories_integration.py::test_contract_hash_integrity_stored_and_verified
+ERROR tests/integration/test_repositories_integration.py::test_contract_hash_drift_detection
+ERROR tests/integration/test_repositories_integration.py::test_contract_get_by_workflow
+ERROR tests/integration/test_repositories_integration.py::test_candidate_upsert_and_get
+ERROR tests/integration/test_repositories_integration.py::test_candidate_list_by_workflow
+ERROR tests/integration/test_repositories_integration.py::test_manifest_upsert_and_get
+ERROR tests/integration/test_repositories_integration.py::test_manifest_hash_drift_detection
+ERROR tests/integration/test_repositories_integration.py::test_approval_upsert_and_get
+ERROR tests/integration/test_repositories_integration.py::test_approval_get_by_workflow
+ERROR tests/integration/test_repositories_integration.py::test_approval_list_by_status
+ERROR tests/integration/test_repositories_integration.py::test_state_transition_create_and_list
+ERROR tests/integration/test_restart_persistence.py::test_workflow_persists_across_sessions
+ERROR tests/integration/test_restart_persistence.py::test_contract_persists_across_sessions
+ERROR tests/integration/test_restart_persistence.py::test_approval_persists_across_sessions
+ERROR tests/integration/test_restart_persistence.py::test_workflow_state_updates_persist
+ERROR tests/integration/test_restart_persistence.py::test_artifact_bindings_persist
+ERROR tests/integration/test_security_integration.py::test_uuid
+ERROR tests/integration/test_security_integration.py::test_contract_admin_can_create_workflow
+ERROR tests/integration/test_security_integration.py::test_contract_viewer_denied_workflow_creation
+ERROR tests/integration/test_security_integration.py::test_super_admin_bypasses_rbac
+ERROR tests/integration/test_security_integration.py::test_infrastructure_portal_identity_bypasses_rbac
+ERROR tests/integration/test_security_integration.py::test_empty_roles_denies_privileged_operations
+ERROR tests/integration/test_security_integration.py::test_case_insensitive_role_matching
+ERROR tests/integration/test_security_integration.py::test_contract_reviewer_read_only
+ERROR tests/integration/test_security_integration.py::test_require_any_role_accepts_multiple
+ERROR tests/integration/test_security_integration.py::test_admin_token_type_with_contract_admin_role
+ERROR tests/integration/test_security_integration.py::test_rbac_denial_logs_warning
+ERROR tests/integration/test_security_integration.py::test_user_id_extracted_from_jwt
+ERROR tests/integration/test_security_integration.py::test_original_user_id_extraction
+ERROR tests/integration/test_security_integration.py::test_shadow_user_id_extraction
+ERROR tests/integration/test_security_integration.py::test_client_supplied_user_id_ignored
+ERROR tests/integration/test_security_integration.py::test_missing_user_id_claim_rejected
+ERROR tests/integration/test_security_integration.py::test_workflow_creation_initial_state
+ERROR tests/integration/test_security_integration.py::test_state_transition_recorded
+ERROR tests/integration/test_security_integration.py::test_approval_transitions_to_implementing
+ERROR tests/integration/test_security_integration.py::test_reject_transitions_to_rejected
+ERROR tests/integration/test_security_integration.py::test_invalid_state_transition_prevented
+ERROR tests/integration/test_security_integration.py::test_candidate_validator_hash_verification
+ERROR tests/integration/test_security_integration.py::test_canonical_comparator_brand_independence_check
+ERROR tests/integration/test_security_integration.py::test_placement_manifest_sealed_with_hash
+ERROR tests/integration/test_security_integration.py::test_placement_approval_requires_contract_admin
+ERROR tests/integration/test_security_integration.py::test_placement_manifest_tamper_detection
+ERROR tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+ERROR tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_fails_if_target_family_empty
+ERROR tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+ERROR tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_generation_fails_without_evidence
+ERROR tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+ERROR tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_modified_contract_produces_different_hash
+ERROR tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+ERROR tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+ERROR tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+ERROR tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+= 20 failed, 23 passed, 3 skipped, 11 warnings, 84 errors in 332.01s (0:05:32) =
