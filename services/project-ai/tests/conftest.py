@@ -185,13 +185,20 @@ def mock_jwt_config(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def mock_database_dependencies(monkeypatch, mock_db_session):
+def mock_database_dependencies(request, monkeypatch, mock_db_session):
     """
-    Automatically mock database dependencies for all tests.
+    Automatically mock database dependencies for unit tests only.
     
     This prevents tests from trying to connect to real PostgreSQL
-    unless they explicitly use test_db_session fixture.
+    unless they explicitly use test_db_session fixture or are integration tests.
+    
+    Integration tests (in tests/integration/) are skipped by checking the test file path.
     """
+    # Skip mocking for integration tests
+    if "integration" in str(request.fspath):
+        yield
+        return
+    
     from app.persistence import database
     
     # Mock the get_db_session dependency
