@@ -1,4 +1,11 @@
 /**
+ * Evidence lifecycle classification
+ * - 'current': Evidence reflecting present state at snapshot time (strict validation)
+ * - 'historical': Evidence retained for audit/lineage (lenient validation)
+ */
+export type EvidenceLifecycle = 'current' | 'historical';
+
+/**
  * Evidence record representing a discovered fact about the repository
  * 
  * Evidence provides forensic-grade traceability for all discovery claims.
@@ -30,6 +37,9 @@
  * - `test-directory`: Directory containing tests
  * - `test-file`: Individual test file
  * - `type-definition`: TypeScript type/interface definition
+ * - `dependency-declaration`: package.json dependency declaration
+ * - `dependency-resolution`: lockfile resolution data
+ * - `ubrc-verification`: UBRC compliance verification
  * 
  * ## Critical vs Historical Evidence
  * - **Critical kinds** (missing = validation error):
@@ -71,10 +81,14 @@ export interface Evidence {
     | 'config'
     | 'test-directory'
     | 'test-file'
-    | 'type-definition';
+    | 'type-definition'
+    | 'dependency-declaration'
+    | 'dependency-resolution'
+    | 'ubrc-verification';
   symbol?: string; // explicit identity component used in deterministic ID
   claim: string;
   locator: string;
   contentHash: string;
+  lifecycle: EvidenceLifecycle;
   metadata?: Record<string, unknown>;
 }

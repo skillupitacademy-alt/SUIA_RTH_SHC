@@ -1,0 +1,2271 @@
+{
+  "domain": "api-contract",
+  "status": "FAIL",
+  "endpoints_found": 320,
+  "auth_covered": 47,
+  "issues": [
+    "Missing authentication: POST /user-registered",
+    "Missing authentication: POST /payment-received",
+    "Missing authentication: GET /content/:brandId",
+    "Missing authentication: GET /control-plane/:brandId",
+    "Missing authentication: GET /bootstrap/:brandId",
+    "Missing authentication: GET /courses",
+    "Missing authentication: GET /courses/:slug",
+    "Missing authentication: GET /api/faculty",
+    "Missing authentication: POST /api/onboarding",
+    "Missing authentication: GET /api/profile",
+    "Not in spec: POST /register",
+    "Not in spec: POST /login",
+    "Not in spec: POST /admin/login",
+    "Not in spec: POST /refresh",
+    "Not in spec: POST /callback/validate",
+    "Not in spec: POST /logout",
+    "Not in spec: GET /me",
+    "Not in spec: GET /sessions",
+    "Not in spec: DELETE /sessions/:id",
+    "Not in spec: DELETE /sessions"
+  ],
+  "timestamp": "2026-10-09T15:42:56.552658",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/register",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/login",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/login",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/refresh",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/callback/validate",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/logout",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/sessions",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/sessions/:id",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/sessions",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\auth.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/user-registered",
+      "framework": "hono",
+      "has_auth": false,
+      "file": "services\\skillhubcore-service\\src\\modules\\events\\skillhubcore-events.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/payment-received",
+      "framework": "hono",
+      "has_auth": false,
+      "file": "services\\skillhubcore-service\\src\\modules\\events\\skillhubcore-events.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/domains",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\hierarchy\\hierarchy.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/subjects",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\hierarchy\\hierarchy.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/topics",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\hierarchy\\hierarchy.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/subtopics",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\hierarchy\\hierarchy.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/subtopics",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\hierarchy\\hierarchy.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/content/:brandId",
+      "framework": "hono",
+      "has_auth": false,
+      "file": "services\\skillhubcore-service\\src\\modules\\marketing\\marketing.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/control-plane/:brandId",
+      "framework": "hono",
+      "has_auth": false,
+      "file": "services\\skillhubcore-service\\src\\modules\\marketing\\marketing.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/bootstrap/:brandId",
+      "framework": "hono",
+      "has_auth": false,
+      "file": "services\\skillhubcore-service\\src\\modules\\marketing\\marketing.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/courses",
+      "framework": "hono",
+      "has_auth": false,
+      "file": "services\\skillhubcore-service\\src\\modules\\marketing\\marketing.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/courses/:slug",
+      "framework": "hono",
+      "has_auth": false,
+      "file": "services\\skillhubcore-service\\src\\modules\\marketing\\marketing.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/:userId/platforms",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\sso\\sso.routes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/:userId/platforms",
+      "framework": "hono",
+      "has_auth": true,
+      "file": "services\\skillhubcore-service\\src\\modules\\auth\\sso\\sso.routes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/batches",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\batches\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/faculty",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\faculty\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/healthz",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\healthz\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/onboarding",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\onboarding\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/profile",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\profile\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/profile",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\profile\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/programs",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\programs\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/sections/[subtopicId]",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\sections\\[subtopicId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/interactions/[type]",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\interactions\\[type]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/interactions/[type]",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\interactions\\[type]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/active-time",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\ils\\active-time\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-active-time",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\ils\\block-active-time\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-completion",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\ils\\block-completion\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-visit",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\ils\\block-visit\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/complete-node",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\ils\\complete-node\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/visit",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\ils\\visit\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/ils/subtopic/[subtopicId]/progress",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\ils\\subtopic\\[subtopicId]\\progress\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/ils/navigation/[nodeId]",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\ils\\navigation\\[nodeId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/content/[subtopicId]",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\tutorial\\content\\[subtopicId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/student/attendance",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\student\\attendance\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/student/dashboard",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\student\\dashboard\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/student/my-batch",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\student\\my-batch\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/student/payments",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\student\\payments\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/student/placement",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillup-web\\src\\app\\api\\student\\placement\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/quiz/active",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\quiz\\active\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/quiz/answer",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\quiz\\answer\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/quiz/count",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\quiz\\count\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/quiz/result",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\quiz\\result\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/quiz/start",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\quiz\\start\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/quiz/state",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\quiz\\state\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/quiz/submit",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\quiz\\submit\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/programs/[slug]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\programs\\[slug]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/onboarding/session",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\onboarding\\session\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/content-manager/add-section",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\content-manager\\add-section\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/forgot-password",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\forgot-password\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\login\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\logout\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/placement-handoff",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\placement-handoff\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\refresh\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/reset-password",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\reset-password\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/reset-password",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\reset-password\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\sessions\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/auth/sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\sessions\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/signup",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\signup\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify-email",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\verify-email\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/auth/sessions/[sessionId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-web\\src\\app\\api\\auth\\sessions\\[sessionId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/healthz",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\healthz\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/batches",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\batches\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/batches",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\batches\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/payments",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\payments\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/payments",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\payments\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/students",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\students\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/students",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\students\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/students/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\students\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/students/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\students\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/students/[id]/enroll",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\students\\[id]\\enroll\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/placement/jobs",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\placement\\jobs\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/placement/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\placement\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/placement/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\placement\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/payments/export",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\payments\\export\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/payments/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\payments\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/payments/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\payments\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/crm/enquiries",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\crm\\enquiries\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/crm/enquiries",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\crm\\enquiries\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/crm/enquiries/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\crm\\enquiries\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/batches/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\batches\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/audit-log/export",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillup-admin\\src\\app\\api\\admin\\audit-log\\export\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\health\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial-left-sidebar",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-left-sidebar",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial-left-sidebar/hierarchy",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\hierarchy\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial-left-sidebar/navigation-nodes",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-left-sidebar\\navigation-nodes\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-composer/analysis",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\analysis\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-composer/block-suggestions",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\block-suggestions\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-composer/import",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\import\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-composer/presentation-ideas",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\presentation-ideas\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial-composer/sections",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-composer/sections",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial-composer/sections/[sectionId]",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/tutorial-composer/sections/[sectionId]",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tutorial-composer/sections/[sectionId]",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-composer/sections/[sectionId]/blocks",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\blocks\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-composer/sections/[sectionId]/publish",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\publish\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial-composer/sections/[sectionId]/suggestions/apply",
+      "framework": "nextjs",
+      "has_auth": true,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\tutorial-composer\\sections\\[sectionId]\\suggestions\\apply\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/marketing/control-plane/[brandId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\marketing\\control-plane\\[brandId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/marketing/collector/observability",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\marketing\\collector\\observability\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/marketing/bootstrap/[brandId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\marketing\\bootstrap\\[brandId]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/logs/client",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\logs\\client\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/factory/check-duplicates",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\factory\\check-duplicates\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/factory/save",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\factory\\save\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\auth\\login\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\auth\\logout\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\auth\\me\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/blueprints",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\blueprints\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/blueprints",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\blueprints\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/domains",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/domains",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/domains",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/domains",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/questions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\questions\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/questions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\questions\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/skills",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/skills",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\route.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/skills",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/skills",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/subjects",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/subjects",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\route.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/subjects",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/subjects",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/subtopics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/subtopics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\route.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/subtopics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/subtopics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/topics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/topics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\route.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/topics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/topics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/topics/batch-delete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\batch-delete\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/topics/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/topics/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/topics/[id]/skills",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\[id]\\skills\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/topics/[id]/skills",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\topics\\[id]\\skills\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/subtopics/batch-delete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\batch-delete\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/subtopics/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/subtopics/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subtopics\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/subjects/batch-delete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\batch-delete\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/subjects/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/subjects/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\subjects\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/skills/batch-delete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\batch-delete\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/skills/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/skills/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\skills\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/questions/batch-delete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\questions\\batch-delete\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/questions/bulk",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\questions\\bulk\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/questions/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\questions\\[id]\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/questions/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\questions\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/questions/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\questions\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/domains/batch-delete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\batch-delete\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/domains/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/domains/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\domains\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/blueprints/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\blueprints\\[id]\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/blueprints/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\blueprints\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/blueprints/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\blueprints\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/auth/me",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhubcore-admin\\src\\app\\api\\admin\\auth\\me\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/healthz",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhub-placement\\src\\app\\api\\healthz\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/handoff",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\skillhub-placement\\src\\app\\api\\auth\\handoff\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/healthz",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\healthz\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/onboarding",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\onboarding\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/test-deployment",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\test-deployment\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/award-project-badge",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\award-project-badge\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/handle-exam-completed",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\handle-exam-completed\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/index-content-vector",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\index-content-vector\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/issue-certificate",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\issue-certificate\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/notify-session-accepted",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\notify-session-accepted\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/notify-session-requested",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\notify-session-requested\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/notify-session-scheduled",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\notify-session-scheduled\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/refresh-weak-areas-view",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\refresh-weak-areas-view\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/review-project",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\review-project\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/send-remediation-notification",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\send-remediation-notification\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/sync-hierarchy",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\workers\\sync-hierarchy\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/remediation",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\remediation\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/sessions/my-requests",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\sessions\\my-requests\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/tutorial/sessions/[requestId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\sessions\\[requestId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/sections/[subtopicId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\sections\\[subtopicId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/remediation/[examResultId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\remediation\\[examResultId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/projects/[projectId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\projects\\[projectId]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/progress/mark-complete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\progress\\mark-complete\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/interactions/[type]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\interactions\\[type]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/interactions/[type]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\interactions\\[type]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/active-time",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\ils\\active-time\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-active-time",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\ils\\block-active-time\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-completion",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\ils\\block-completion\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-visit",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\ils\\block-visit\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/complete-node",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\ils\\complete-node\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/visit",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\ils\\visit\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/ils/subtopic/[subtopicId]/progress",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\ils\\subtopic\\[subtopicId]\\progress\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/ils/navigation/[nodeId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\ils\\navigation\\[nodeId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/content/[subtopicId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\content\\[subtopicId]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/assignments/[subtopicId]/complete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\assignments\\[subtopicId]\\complete\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/assignments/[subtopicId]/start",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\tutorial\\assignments\\[subtopicId]\\start\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/quiz/active",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\quiz\\active\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/quiz/answer",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\quiz\\answer\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/quiz/count",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\quiz\\count\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/quiz/result",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\quiz\\result\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/quiz/start",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\quiz\\start\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/quiz/state",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\quiz\\state\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/quiz/submit",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\quiz\\submit\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/onboarding/session",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\onboarding\\session\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/content-manager/add-section",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\content-manager\\add-section\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/certificates/verify/[verificationCode]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\certificates\\verify\\[verificationCode]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/forgot-password",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\forgot-password\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\login\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\logout\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/placement-handoff",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\placement-handoff\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\refresh\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/reset-password",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\reset-password\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/reset-password",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\reset-password\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\sessions\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/auth/sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\sessions\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/signup",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\signup\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify-email",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\verify-email\\route.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/auth/sessions/[sessionId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\auth\\sessions\\[sessionId]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai-tutor/query",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-web\\src\\app\\api\\ai-tutor\\query\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/telemetry",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-quiz\\src\\app\\api\\telemetry\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bff/exam-config",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-quiz\\src\\app\\api\\bff\\exam-config\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bff/quiz-hierarchy",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-quiz\\src\\app\\api\\bff\\quiz-hierarchy\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/telemetry",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\telemetry\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/content",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\content\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/sessions/requests",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\sessions\\requests\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tutorial/sessions/requests/[id]/accept",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\sessions\\requests\\[id]\\accept\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tutorial/sessions/requests/[id]/complete",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\sessions\\requests\\[id]\\complete\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tutorial/sessions/requests/[id]/schedule",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\sessions\\requests\\[id]\\schedule\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/projects/submissions/[id]/approve",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\projects\\submissions\\[id]\\approve\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/projects/submissions/[id]/request-revision",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\projects\\submissions\\[id]\\request-revision\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/hierarchy/domains",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\hierarchy\\domains\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/hierarchy/subjects",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\hierarchy\\subjects\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/hierarchy/subtopics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\hierarchy\\subtopics\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/hierarchy/topics",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\hierarchy\\topics\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/content/audit",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\content\\audit\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/content/versions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\content\\versions\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/content/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\content\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tutorial/content/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\content\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/content/[id]/publish",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\content\\[id]\\publish\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/content/[id]/restore",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\content\\[id]\\restore\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/assignments/draft",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\assignments\\draft\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/assignments/help-requests",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\assignments\\help-requests\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/assignments/publish",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\assignments\\publish\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tutorial/assignments/help-requests/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\tutorial\\assignments\\help-requests\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bff/dashboard-summary",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\bff\\dashboard-summary\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/docs",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\realtutorialhub-admin\\src\\app\\api\\admin\\docs\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/assignments",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\assignments\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/healthz",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\healthz\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/help-requests",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\help-requests\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/review-queue",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\review-queue\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/faculty/attendance",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\attendance\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/faculty/attendance",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\attendance\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/faculty/batches",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\batches\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/faculty/help-requests",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\help-requests\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/faculty/project-reviews",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\project-reviews\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/faculty/session-requests",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\session-requests\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/faculty/sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\sessions\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/faculty/sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\sessions\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/faculty/sessions/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\sessions\\[id]\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/faculty/session-requests/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\session-requests\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/faculty/session-requests/[id]/accept",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\session-requests\\[id]\\accept\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/faculty/project-reviews/[id]/approve",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\project-reviews\\[id]\\approve\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/faculty/project-reviews/[id]/request-revision",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\project-reviews\\[id]\\request-revision\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/faculty/help-requests/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\faculty-app\\src\\app\\api\\faculty\\help-requests\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/attendance",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\attendance\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/attendance",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\attendance\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/certificate-issued",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\workers\\certificate-issued\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/payment-overdue",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\workers\\payment-overdue\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workers/session-reminder",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\workers\\session-reminder\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/progress",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\progress\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/progress",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\progress\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/interactions/code",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\code\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/interactions/code",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\code\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/interactions/completion",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\completion\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/interactions/completion",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\completion\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/interactions/practice",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\practice\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/interactions/practice",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\practice\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/interactions/quiz",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\quiz\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/interactions/quiz",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\quiz\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/interactions/visual",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\visual\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/interactions/visual",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\interactions\\visual\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/active-time",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\ils\\active-time\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-active-time",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\ils\\block-active-time\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-completion",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\ils\\block-completion\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/block-visit",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\ils\\block-visit\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/complete-node",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\ils\\complete-node\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/ils/visit",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\ils\\visit\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/ils/subtopic/[subtopicId]/progress",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\ils\\subtopic\\[subtopicId]\\progress\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/ils/navigation/[nodeId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\ils\\navigation\\[nodeId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/faculty/assignments",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\assignments\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/faculty/help-requests",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\help-requests\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/faculty/live-sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\live-sessions\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/faculty/project-reviews",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\project-reviews\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/faculty/review-queue",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\review-queue\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/faculty/project-reviews/[id]/approve",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\project-reviews\\[id]\\approve\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/faculty/project-reviews/[id]/request-revision",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\project-reviews\\[id]\\request-revision\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tutorial/faculty/live-sessions/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\live-sessions\\[id]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/faculty/live-sessions/[id]/accept",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\live-sessions\\[id]\\accept\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tutorial/faculty/help-requests/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\faculty\\help-requests\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tutorial/content/[subtopicId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\tutorial\\content\\[subtopicId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/features/ai-labs",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\features\\ai-labs\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/features/ai-labs",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\features\\ai-labs\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/faculty/sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\faculty\\sessions\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/faculty/sessions",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\faculty\\sessions\\route.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/faculty/sessions/[id]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\faculty\\sessions\\[id]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/export/download",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\export\\download\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/export/trigger",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\export\\trigger\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/export/workflow",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\export\\workflow\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/export/status/[jobId]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\export\\status\\[jobId]\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/certificates/verify/[code]",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\certificates\\verify\\[code]\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout-all",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\auth\\logout-all\\route.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/users",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\admin\\users\\route.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/users",
+      "framework": "nextjs",
+      "has_auth": false,
+      "file": "apps\\api-server\\src\\app\\api\\admin\\users\\route.ts"
+    }
+  ]
+}

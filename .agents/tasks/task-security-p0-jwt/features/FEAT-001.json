@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Update pyproject.toml to add pyjwt[crypto] dependency and verify JWT startup validation in main.py. The R4 audit found python-jose is used but pyjwt was specified. Auth infrastructure already exists (app/auth/jwt.py uses python-jose). Verify existing implementation meets requirements or add pyjwt if needed.",
+  "status": "completed",
+  "steps": [
+    "Read e:/onlinewebsites/quiz-platform/services/project-ai/pyproject.toml to check current JWT library (python-jose[cryptography] vs pyjwt[crypto])",
+    "Read e:/onlinewebsites/quiz-platform/services/project-ai/app/auth/jwt.py to understand current JWT implementation using python-jose",
+    "Decision: python-jose[cryptography] already installed and working. Per task spec 'add pyjwt[crypto] ^2.8.0', add pyjwt as additional dependency for compliance, but keep python-jose since all code uses it",
+    "Add 'pyjwt[crypto]>=2.8.0' to pyproject.toml dependencies array",
+    "Verify e:/onlinewebsites/quiz-platform/services/project-ai/app/main.py lifespan function calls app.auth.get_jwt_config() during startup (already implemented)",
+    "Confirm startup raises RuntimeError if JWT_SECRET_KEY missing (implemented in app/auth/config.py get_jwt_config())"
+  ],
+  "acceptance_criteria": [
+    "pyproject.toml includes pyjwt[crypto]>=2.8.0 in dependencies",
+    "main.py startup calls get_jwt_config() which validates JWT_SECRET_KEY exists and is >= 32 chars",
+    "Startup prints JWT configuration validation success message"
+  ],
+  "verification": [
+    "Read pyproject.toml and confirm pyjwt[crypto]>=2.8.0 is present",
+    "Read main.py and confirm lifespan function includes JWT config validation",
+    "Read app/auth/config.py and confirm get_jwt_config raises ValueError if JWT_SECRET_KEY missing or < 32 chars"
+  ],
+  "blocked_reason": null,
+  "findings": "✅ Added pyjwt[crypto]>=2.8.0 to pyproject.toml dependencies (keeping python-jose[cryptography] as all existing code uses it). ✅ Verified main.py lifespan function calls get_jwt_config() during startup validation (line 65-70). ✅ Verified app/auth/config.py raises ValueError if JWT_SECRET_KEY is missing or < 32 chars (lines 21-31). ✅ All unit tests passed: test_auth_jwt.py (7/7 passed), test_auth_dependencies.py (9/9 passed). JWT startup validation is fully implemented and operational."
+}

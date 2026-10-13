@@ -1,0 +1,41 @@
+{
+  "gate": "G",
+  "title": "Final Production Certification",
+  "branch": "m2-project-ai-canonical-wiring",
+  "baselineSha": "59f15424",
+  "certifiedSha": "86f1d31b",
+  "certificationDate": "2025-01-24",
+  "verdict": "APPROVED",
+  "certificationStatus": "PRODUCTION_READY",
+  "totalTests": 337,
+  "testBreakdown": {
+    "w6Integration": 160,
+    "w7Evidence": 21,
+    "postgresIntegration": 40,
+    "w3cArtifactPolicy": 87,
+    "w5PlacementAuth": 29
+  },
+  "gates": {
+    "A": "CERTIFIED",
+    "B": "CERTIFIED",
+    "C": "CERTIFIED",
+    "D": "APPROVED",
+    "E1": "CERTIFIED",
+    "E2": "CERTIFIED",
+    "F": "APPROVED",
+    "G": "CERTIFIED"
+  },
+  "securityDomains": {
+    "brandIsolation": "PASSING",
+    "multiTenantBrandEnforcement": "PASSING",
+    "rbacAuthorization": "PASSING",
+    "auditTrail": "PASSING",
+    "placementAuthorization": "PASSING"
+  },
+  "criticalFindings": 0,
+  "breakingChanges": false,
+  "migrationRequired": true,
+  "migrationNote": "Add uploader_brand and requester_brand columns before deployment",
+  "evidenceBundle": ".agents/evidence/production-ready/",
+  "prReady": true
+}

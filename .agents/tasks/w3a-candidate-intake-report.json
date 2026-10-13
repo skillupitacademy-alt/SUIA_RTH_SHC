@@ -1,0 +1,30 @@
+{
+  "wave": "W3A",
+  "task": "candidate-intake",
+  "status": "complete",
+  "files_changed": [
+    "services/project-ai/app/api/routes/candidate.py",
+    "services/project-ai/tests/test_candidate_wave3a.py"
+  ],
+  "tests_run": "pytest tests/test_candidate_wave3a.py -v: 16 passed, 1 skipped",
+  "commit_sha": "9bb0676d06d9eceb449985304b0b00d569320b8f",
+  "branch": "m2-project-ai-canonical-wiring",
+  "review_findings_fixed": [
+    "Windows UNC path bypass - Added check for UNC paths starting with '\\\\\\\\'",
+    "Bind/transition atomicity gap - Wrapped bind_artifact and transition_state in try/except with rollback on failure",
+    "Empty string vs None for workflow target - Added explicit None checks alongside strip() checks",
+    "State transition reason truncates hash - Increased hash truncation from 8 to 16 characters",
+    "Validation error message inconsistency - Standardized all validation messages to 'Package validation failed: [issue]' format",
+    "Missing manifest validation too strict - Kept strict validation (user decision: requires primary deliverable)",
+    "Hash computation encoding assumption - Added error handling for UTF-8 encoding failures with descriptive error message"
+  ],
+  "tests_added": [
+    "test_validate_absolute_path_windows_unc - Tests rejection of Windows UNC paths",
+    "test_compute_hash_encoding_error - Tests hash computation handles encoding gracefully"
+  ],
+  "verification": {
+    "command": "python -m pytest tests/test_candidate_wave3a.py -v",
+    "result": "16 passed, 1 skipped in 0.46s",
+    "all_tests_passed": true
+  }
+}

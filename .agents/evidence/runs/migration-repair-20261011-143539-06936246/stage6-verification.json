@@ -1,0 +1,14 @@
+{
+  "stage": "stage6",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "overall_verdict": "BLOCKED",
+  "steps": {
+    "setup": "BLOCKED",
+    "migrations": "BLOCKED",
+    "tests": "BLOCKED",
+    "cleanup": "PASS"
+  },
+  "production_configs_touched": false,
+  "test_database_url": "postgresql://test:testpass@localhost:5433/stage6_test",
+  "timestamp": "2025-01-11T14:52:03Z"
+}

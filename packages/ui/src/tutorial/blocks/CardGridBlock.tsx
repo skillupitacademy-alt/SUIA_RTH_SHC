@@ -8,9 +8,14 @@ export function CardGridBlock({
   theme,
   className = '',
   renderChild,
+  runtimeContext,
 }: BlockComponentProps<ICardGridBlock>) {
   const cards = Array.isArray(block.content?.cards) ? block.content.cards : [];
   const columns = block.presentation?.columns || 3;
+
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'card-grid';
 
   let colClass = 'grid-cols-1 md:grid-cols-3';
   if (columns === 2) {
@@ -33,9 +38,9 @@ export function CardGridBlock({
 
   return (
     <div
-      id={block.id}
-      data-block-id={block.id}
-      data-block-type="card-grid"
+      id={blockId}
+      data-block-id={blockId}
+      data-block-type={blockType}
       className={`my-4 grid ${colClass} gap-4 items-stretch ${className}`}
     >
       {cards.map((card, cIdx) => {

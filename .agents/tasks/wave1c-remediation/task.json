@@ -1,0 +1,7 @@
+{
+  "task_id": "task-wave1c-remediation",
+  "task_description": "Fix Wave 1C security vulnerabilities: unsafe infrastructure bypass, legacy NULL brand access, missing self-approval test, and inconsistent user_id extraction",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

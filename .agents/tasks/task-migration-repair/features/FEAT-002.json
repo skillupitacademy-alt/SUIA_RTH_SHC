@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Agent registry integration (Wave 1): Extend existing agent registry and coordinator to recognize and route 13 new migration repair agents, bringing total agent count from 15 to 28.",
+  "status": "completed",
+  "steps": [
+    "Add 13 new AgentType enum values to app/orchestration/agent_registry.py: MIGRATION_AUDIT, DATABASE_SAFETY_AUDIT, TEST_INVENTORY, EVIDENCE_AUDIT, REPAIR_PLANNER, REPAIR_REVIEWER, REPAIR_IMPLEMENTER, STATIC_REVIEWER, TEST_REVIEWER, VERIFICATION_RUNNER, EVIDENCE_ASSEMBLER, FINAL_GATE_AGENT, PUBLISHER_AGENT",
+    "Add 13 Agent definitions in _initialize_agents() method with capabilities for each agent following the pattern: migration_audit has [scan_migration_files, verify_journal_consistency, detect_duplicate_objects, check_dependency_order]",
+    "Update app/orchestration/agent_coordinator.py _execute_agent_capabilities() to add dispatch branches for each new agent type, importing from app.workflows.migration_repair.agents.{agent_name}",
+    "Update tests/test_agent_registry.py: change assertion from 15 to 28 agents in test_all_15_agents_registered() and test_agent_types_enum_complete()",
+    "Add test_migration_repair_agents_registered() to verify all 13 new agents exist and have non-empty capabilities"
+  ],
+  "acceptance_criteria": [
+    "AgentType enum contains exactly 28 values (15 existing + 13 new)",
+    "AgentRegistry._initialize_agents() returns 28 Agent definitions",
+    "Each new agent has at least 3 capabilities listed",
+    "No agent has 'stub' or 'TODO' in capabilities or description",
+    "pytest tests/test_agent_registry.py passes with updated assertions",
+    "AgentCoordinator routes to 28 agent handlers without import errors"
+  ],
+  "verification": [
+    "cd services/project-ai && pytest tests/test_agent_registry.py -v",
+    "python -c 'from app.orchestration.agent_registry import AgentRegistry; registry = AgentRegistry(); assert len(registry.list_agents()) == 28'",
+    "python -c 'from app.orchestration.agent_registry import AgentType; assert len(list(AgentType)) == 28'"
+  ],
+  "blocked_reason": null,
+  "findings": "FEAT-002 completed successfully:\n- Added 13 new AgentType enum values (MIGRATION_AUDIT through PUBLISHER_AGENT)\n- Implemented 13 Agent definitions with 3-4 capabilities each\n- Added 13 dispatch branches in agent_coordinator.py routing to app.workflows.migration_repair.agents.{agent_name}\n- Updated all test assertions from 15 to 28 agents\n- Added test_migration_repair_agents_registered() test verifying all 13 new agents\n- All 12 tests pass (pytest tests/test_agent_registry.py -v)\n- Python verification confirms 28 agents in registry and 28 AgentType enum values\n- AgentCoordinator imports without errors\n- No 'stub' or 'TODO' in any agent capabilities or descriptions\n- All acceptance criteria met"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Contract CRUD API endpoints with RBAC. Depends on FEAT-001 (auth infrastructure). Expands services/project-ai/app/api/routes/contract.py with 7 new endpoints using auth dependencies from FEAT-001. Uses existing ContractRepository from R3, seal_contract() from R2, and ContractFieldEvidence from R2. All endpoints require JWT auth, different endpoints require different roles per RBAC design.",
+  "status": "pending",
+  "steps": [
+    "Read services/project-ai/app/api/routes/contract.py to understand existing endpoints (POST /{workflow_id}/engineering-contract, GET /{workflow_id}/engineering-contract) and imports",
+    "Add imports at top of contract.py: from app.auth.dependencies import get_current_user, require_contract_admin, require_contract_reviewer, require_contract_viewer",
+    "Change router prefix from /workflows to /api/v1/contracts to match R4 spec, keep tags=['Engineering Contracts']",
+    "Add POST /api/v1/contracts/ endpoint: async def create_contract(contract_data: dict, user: dict = Depends(require_contract_admin), contract_repo: ContractRepository = Depends(get_contract_repository), session: AsyncSession = Depends(get_db_session)). Create ContractModel from contract_data, call repo.upsert(), session.commit(), return created contract. Raise HTTPException 400 if validation fails.",
+    "Add GET /api/v1/contracts/{contract_id} endpoint: async def get_contract(contract_id: str, user: dict = Depends(require_contract_viewer), contract_repo: ContractRepository = Depends(get_contract_repository)). Call repo.get(contract_id), raise HTTPException 404 if not found, return contract. Hash verification is automatic in repo.get() from R3.",
+    "Add GET /api/v1/contracts/ endpoint with pagination: async def list_contracts(skip: int = 0, limit: int = 100, user: dict = Depends(require_contract_viewer), session: AsyncSession = Depends(get_db_session)). Query ContractModel with offset/limit, return list. Use session.execute(select(ContractModel).offset(skip).limit(limit)).",
+    "Add PUT /api/v1/contracts/{contract_id} endpoint: async def update_contract(contract_id: str, updates: dict, user: dict = Depends(require_contract_admin), contract_repo: ContractRepository = Depends(get_contract_repository), session: AsyncSession = Depends(get_db_session)). Get existing contract, check if sealed (contract_hash != ''), raise HTTPException 409 if sealed ('Cannot update sealed contract'), otherwise update contract_data fields, repo.upsert(), session.commit(), return updated contract.",
+    "Add DELETE /api/v1/contracts/{contract_id} endpoint: async def delete_contract(contract_id: str, user: dict = Depends(require_contract_admin), session: AsyncSession = Depends(get_db_session)). Execute delete(ContractModel).where(ContractModel.contract_id == contract_id), session.commit(), return {deleted: true} or raise HTTPException 404 if not found.",
+    "Add POST /api/v1/contracts/{contract_id}/seal endpoint: async def seal_contract_endpoint(contract_id: str, user: dict = Depends(require_contract_reviewer), contract_repo: ContractRepository = Depends(get_contract_repository), session: AsyncSession = Depends(get_db_session)). Get contract, check if already sealed, if not sealed call seal_contract(EngineeringContract(**contract.contract_data)) from app.contracts.engineering_contract import seal_contract, update contract.contract_hash, repo.upsert(), session.commit(), return sealed contract.",
+    "Add GET /api/v1/contracts/{contract_id}/evidence endpoint: async def get_contract_evidence(contract_id: str, user: dict = Depends(require_contract_viewer), contract_repo: ContractRepository = Depends(get_contract_repository)). Get contract, extract field_evidence from contract_data (contract.contract_data.get('field_evidence', {})), return as dict of ContractFieldEvidence objects. Raise HTTPException 404 if contract not found.",
+    "Update existing POST /{workflow_id}/engineering-contract endpoint to use new router prefix /api/v1/contracts/{workflow_id}/engineering-contract (keep for backward compatibility) or deprecate in favor of new POST /api/v1/contracts/",
+    "Run python -m pytest services/project-ai/tests/unit/test_contract_routes.py -v to verify existing tests still pass (may need to update imports)"
+  ],
+  "acceptance_criteria": [
+    "Router prefix changed to /api/v1/contracts with 7 new endpoints + 2 existing",
+    "All new endpoints use RBAC dependencies (admin/reviewer/viewer)",
+    "POST /api/v1/contracts/ creates contract (admin only)",
+    "GET /api/v1/contracts/{contract_id} retrieves with hash verification (viewer+)",
+    "GET /api/v1/contracts/ lists with pagination (viewer+)",
+    "PUT /api/v1/contracts/{contract_id} updates unsealed contracts (admin only)",
+    "DELETE /api/v1/contracts/{contract_id} deletes (admin only)",
+    "POST /api/v1/contracts/{contract_id}/seal seals with seal_contract() from R2 (reviewer+)",
+    "GET /api/v1/contracts/{contract_id}/evidence returns ContractFieldEvidence (viewer+)",
+    "All endpoints call session.commit() after writes",
+    "Sealed contracts cannot be updated (409 error)"
+  ],
+  "verification": [
+    "cd services/project-ai && python -c 'from app.api.routes.contract import router; print(f\"Router prefix: {router.prefix}, Routes: {[r.path for r in router.routes]}\")' confirms /api/v1/contracts prefix and 9 routes",
+    "cd services/project-ai && python -m pytest tests/unit/test_contract_routes.py -v (may skip if tests need updating)",
+    "Start app with valid JWT_SECRET_KEY, navigate to http://localhost:8000/docs, verify /api/v1/contracts endpoints appear with lock icons indicating auth required"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

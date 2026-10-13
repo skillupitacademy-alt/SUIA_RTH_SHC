@@ -1,0 +1,635 @@
+{
+  "analysis_metadata": {
+    "analyzed_date": "2026-10-12",
+    "total_commits_reviewed": 18,
+    "security_fixes": 6,
+    "infrastructure": 12,
+    "method": "READ-ONLY git analysis, no cherry-picks performed"
+  },
+  "security_fixes": [
+    {
+      "id": "FEAT-001",
+      "sha": "10ce6e10d56ba907f3610af7535d1e95323d7133",
+      "summary": "fix: eliminate command injection in runner.py",
+      "date": "2026-10-11",
+      "files_changed": [
+        ".agents/task-p0-safety-fixes/features/FEAT-001.json",
+        "services/project-ai/app/workflows/migration_repair/runner.py",
+        "services/project-ai/tests/test_runner_command_safety.py"
+      ],
+      "dependencies": [
+        "8e8a16f6 (FEAT-001 foundation - creates runner.py)",
+        "6cdc85ed (review findings fix)"
+      ],
+      "standalone": false,
+      "risk_level": "HIGH",
+      "security_impact": "CRITICAL - Prevents arbitrary command execution via shell metacharacters",
+      "patterns_to_extract": [
+        "Replace asyncio.create_subprocess_shell → create_subprocess_exec",
+        "Block 23 shell metacharacters (|, &, ;, $, `, etc.)",
+        "Whitelist validation (ALLOWED_COMMANDS)",
+        "validate_executable(), validate_argv(), validate_command() functions"
+      ],
+      "test_coverage": "21 tests in test_runner_command_safety.py",
+      "extraction_target": "app/security/command_validation.py",
+      "notes": "Depends on foundation runner.py existing. Must extract foundation module first or apply pattern to existing command execution code."
+    },
+    {
+      "id": "FEAT-002",
+      "sha": "f6622f0ef8b6caa15703775525ec488868b37d4b",
+      "summary": "fix: add trusted host/database validation",
+      "date": "2026-10-11",
+      "files_changed": [
+        "services/project-ai/app/workflows/migration_repair/agents/verification_runner.py",
+        "services/project-ai/app/workflows/migration_repair/safety.py",
+        "services/project-ai/tests/test_database_connection_validation.py",
+        "services/project-ai/tests/test_migration_repair_safety.py"
+      ],
+      "dependencies": [
+        "8e8a16f6 (FEAT-001 foundation - creates safety.py baseline)",
+        "f606dd02 (agent registry - creates verification_runner.py)"
+      ],
+      "standalone": false,
+      "risk_level": "HIGH",
+      "security_impact": "CRITICAL - Prevents production database writes during test runs",
+      "patterns_to_extract": [
+        "TRUSTED_TEST_HOSTS allowlist (localhost, 127.0.0.1, test-postgres)",
+        "TRUSTED_TEST_DATABASES allowlist",
+        "Defense-in-depth validation (host AND database name)",
+        "parse_database_url() and validate_target() functions",
+        "DatabaseTarget dataclass"
+      ],
+      "test_coverage": "17 tests in test_database_connection_validation.py",
+      "extraction_target": "app/security/database_validation.py",
+      "notes": "Extends foundation safety.py. Can be extracted as standalone module if database connection validation pattern is needed."
+    },
+    {
+      "id": "FEAT-004",
+      "sha": "9bce2b6874ef71eb5dac6205ba87c37ee8ca6acd",
+      "summary": "fix: verify evidence files and commit identity",
+      "date": "2026-10-11",
+      "files_changed": [
+        "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+        "services/project-ai/app/workflows/migration_repair/gate.py",
+        "services/project-ai/tests/test_final_gate_verification.py"
+      ],
+      "dependencies": [
+        "c66198db (creates final_gate_agent.py)",
+        "8e8a16f6 (foundation - creates gate.py)"
+      ],
+      "standalone": false,
+      "risk_level": "MEDIUM",
+      "security_impact": "HIGH - Prevents approval based on fabricated evidence",
+      "patterns_to_extract": [
+        "Recompute SHA-256 hashes of evidence files",
+        "Compare computed vs claimed hashes",
+        "Reject SKIPPED tests in final gate",
+        "Verify commit identity (git SHA match)",
+        "verify_evidence_files() function"
+      ],
+      "test_coverage": "12 tests in test_final_gate_verification.py",
+      "extraction_target": "app/security/evidence_verification.py",
+      "notes": "Core verification pattern is standalone, but integrates with final_gate_agent. Pattern can be extracted independently for evidence validation."
+    },
+    {
+      "id": "CORS-FIX",
+      "sha": "75c0a2adff51ec00a323ea1a5fd0275e57dcbac9",
+      "summary": "fix(project-ai): configure explicit CORS origins and portable workspace root",
+      "date": "2026-10-10",
+      "files_changed": [
+        "services/project-ai/app/main.py"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "LOW",
+      "security_impact": "HIGH - Hardens production API security by removing allow_origins=['*']",
+      "patterns_to_extract": [
+        "Replace allow_origins=['*'] with explicit allowlist",
+        "Environment variable configuration (PROJECT_AI_CORS_ORIGINS)",
+        "Fail-fast validation on wildcard detection",
+        "Portable workspace resolution (relative to __file__)"
+      ],
+      "test_coverage": "Integration tests for CORS config",
+      "extraction_target": "services/project-ai/app/main.py",
+      "notes": "STANDALONE - Can be cherry-picked directly. No dependencies on other E2E commits."
+    },
+    {
+      "id": "STUB-FAIL-1",
+      "sha": "c717bd015da680b4abfb086133ae26a93df0a286",
+      "summary": "fix(project-ai): fail closed on browser verification stubs",
+      "date": "2026-10-10",
+      "files_changed": [
+        "services/project-ai/app/verification/browser.py"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "LOW",
+      "security_impact": "HIGH - Prevents stub agents from passing certification",
+      "patterns_to_extract": [
+        "Fail-closed design (stubs return FAIL, not PASS)",
+        "Explicit verification required (no default success)",
+        "Remove stub handler that returns success by default"
+      ],
+      "test_coverage": "Browser verification tests",
+      "extraction_target": "app/verification/browser.py",
+      "notes": "STANDALONE - Can be cherry-picked directly. Changes only browser.py."
+    },
+    {
+      "id": "STUB-FAIL-2",
+      "sha": "c2e08c52f55a56fb9939ca22fb9e18f1f2c31df8",
+      "summary": "fix(project-ai): prevent stub agents from passing certification",
+      "date": "2026-10-10",
+      "files_changed": [
+        "services/project-ai/app/orchestration/agent_coordinator.py"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "LOW",
+      "security_impact": "HIGH - Removes stub execution fallback",
+      "patterns_to_extract": [
+        "Remove stub handler that returns success by default",
+        "All agents require explicit implementation"
+      ],
+      "test_coverage": "Agent coordinator tests",
+      "extraction_target": "app/orchestration/agent_coordinator.py",
+      "notes": "STANDALONE - Can be cherry-picked directly. May conflict with f606dd02 if both extracted (both modify agent_coordinator.py)."
+    }
+  ],
+  "infrastructure": [
+    {
+      "id": "INFRA-001",
+      "sha": "8e8a16f65caa4e22c68fd406473d1772446894db",
+      "summary": "feat: FEAT-001 foundation modules for migration repair workflow",
+      "date": "2026-10-11",
+      "files_changed": [
+        ".agents/task-migration-repair/features/FEAT-001.json",
+        "services/project-ai/app/workflows/__init__.py",
+        "services/project-ai/app/workflows/migration_repair/__init__.py",
+        "services/project-ai/app/workflows/migration_repair/gate.py",
+        "services/project-ai/app/workflows/migration_repair/models.py",
+        "services/project-ai/app/workflows/migration_repair/plan.py",
+        "services/project-ai/app/workflows/migration_repair/runner.py",
+        "services/project-ai/app/workflows/migration_repair/safety.py",
+        "services/project-ai/app/workflows/migration_repair/verification.py",
+        "services/project-ai/tests/test_migration_repair_gate.py",
+        "services/project-ai/tests/test_migration_repair_models.py",
+        "services/project-ai/tests/test_migration_repair_plan.py",
+        "services/project-ai/tests/test_migration_repair_safety.py"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "LOW",
+      "category": "foundation",
+      "value": "Creates baseline workflow infrastructure (models, runner, verification, gate logic)",
+      "notes": "FOUNDATION MODULE - Required by 10ce6e10, f6622f0e, 9bce2b68, 6bdc3389, 26e2413a. If extracting security fixes, need these modules or apply patterns to existing code."
+    },
+    {
+      "id": "INFRA-002",
+      "sha": "f606dd0266512f92912c396fc049d50732f0da4c",
+      "summary": "feat: FEAT-002 extend agent registry to 28 agents",
+      "date": "2026-10-11",
+      "files_changed": [
+        ".agents/task-migration-repair/features/FEAT-002.json",
+        "services/project-ai/app/orchestration/agent_coordinator.py",
+        "services/project-ai/app/orchestration/agent_registry.py",
+        "services/project-ai/tests/test_agent_registry.py"
+      ],
+      "dependencies": [
+        "8e8a16f6 (foundation)"
+      ],
+      "standalone": false,
+      "risk_level": "LOW",
+      "category": "orchestration",
+      "value": "Agent registry expansion methodology - 13 new migration repair agents registered",
+      "notes": "Context-specific to migration repair. EXTRACT PATTERN ONLY if canonical-wiring needs agent registry expansion. Conflicts with c2e08c52 (both modify agent_coordinator.py)."
+    },
+    {
+      "id": "INFRA-003",
+      "sha": "c66198db74330080dd3b9d0f3f2ef68e431a342f",
+      "summary": "feat: FEAT-003 implement 13 migration repair agents",
+      "date": "2026-10-11",
+      "files_changed": [
+        ".agents/task-migration-repair/features/FEAT-003.json",
+        "services/project-ai/app/workflows/migration_repair/agents/__init__.py",
+        "services/project-ai/app/workflows/migration_repair/agents/database_safety_audit.py",
+        "services/project-ai/app/workflows/migration_repair/agents/evidence_assembler.py",
+        "services/project-ai/app/workflows/migration_repair/agents/evidence_audit.py",
+        "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+        "services/project-ai/app/workflows/migration_repair/agents/migration_audit.py",
+        "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+        "services/project-ai/app/workflows/migration_repair/agents/repair_implementer.py",
+        "services/project-ai/app/workflows/migration_repair/agents/repair_planner.py",
+        "services/project-ai/app/workflows/migration_repair/agents/repair_reviewer.py",
+        "services/project-ai/app/workflows/migration_repair/agents/static_reviewer.py",
+        "services/project-ai/app/workflows/migration_repair/agents/test_inventory.py",
+        "services/project-ai/app/workflows/migration_repair/agents/test_reviewer.py",
+        "services/project-ai/app/workflows/migration_repair/agents/verification_runner.py",
+        "28 test files"
+      ],
+      "dependencies": [
+        "8e8a16f6 (foundation)",
+        "f606dd02 (agent registry)"
+      ],
+      "standalone": false,
+      "risk_level": "LOW",
+      "category": "agents",
+      "value": "Wave-based orchestration pattern with 13 migration repair agents",
+      "notes": "Context-specific to migration repair workflow. LARGE COMMIT (3692 lines). Creates final_gate_agent.py, publisher_agent.py, verification_runner.py needed by subsequent fixes. DO NOT EXTRACT all agents - only patterns if needed."
+    },
+    {
+      "id": "INFRA-004",
+      "sha": "6bdc3389236a2e29c021cbcc4dfa8299f01da5f0",
+      "summary": "fix: guarantee cleanup with verification (FEAT-003)",
+      "date": "2026-10-11",
+      "files_changed": [
+        "services/project-ai/app/workflows/migration_repair/models.py",
+        "services/project-ai/app/workflows/migration_repair/runner.py",
+        "services/project-ai/app/workflows/migration_repair/verification.py",
+        "services/project-ai/tests/test_verification_cleanup.py"
+      ],
+      "dependencies": [
+        "8e8a16f6 (foundation - creates models.py, runner.py, verification.py)"
+      ],
+      "standalone": false,
+      "risk_level": "LOW",
+      "category": "reliability",
+      "value": "Prevents resource leaks with try/finally cleanup guarantees",
+      "patterns_to_extract": [
+        "try/finally wrapper ensuring cleanup always runs",
+        "Verify database actually dropped (docker-compose ps)",
+        "Log cleanup to evidence ledger"
+      ],
+      "test_coverage": "8 tests in test_verification_cleanup.py",
+      "extraction_target": "app/workflows/verification.py (if workflow exists)",
+      "notes": "Modifies foundation modules (models.py, runner.py, verification.py). Pattern is valuable for any cleanup-critical workflow. MEDIUM PRIORITY for extraction."
+    },
+    {
+      "id": "INFRA-005",
+      "sha": "26e2413ad7b75f5f97b438353c4656c39c3e3926",
+      "summary": "fix: confirm remote SHA after publication (FEAT-005)",
+      "date": "2026-10-11",
+      "files_changed": [
+        "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+        "services/project-ai/app/workflows/migration_repair/models.py",
+        "services/project-ai/tests/test_publisher_verification.py"
+      ],
+      "dependencies": [
+        "c66198db (creates publisher_agent.py)",
+        "8e8a16f6 (foundation - creates models.py)"
+      ],
+      "standalone": false,
+      "risk_level": "LOW",
+      "category": "reliability",
+      "value": "Confirms publication integrity by verifying remote SHA matches local",
+      "patterns_to_extract": [
+        "Fetch remote SHA after push (git ls-remote)",
+        "Compare local vs remote SHA",
+        "Record publication audit trail"
+      ],
+      "test_coverage": "11 tests in test_publisher_verification.py",
+      "extraction_target": "app/workflows/publisher.py (if workflow exists)",
+      "notes": "Modifies publisher_agent.py (created by c66198db) and models.py. Pattern is valuable for any git publication workflow. MEDIUM PRIORITY for extraction."
+    },
+    {
+      "id": "INFRA-006",
+      "sha": "d979050f32c4be8065ae8ab27b15a964f8c3c5be",
+      "summary": "test: FEAT-004 integration tests for migration repair workflow",
+      "date": "2026-10-11",
+      "files_changed": [
+        ".agents/task-migration-repair/features/FEAT-004.json",
+        "services/project-ai/tests/integration/test_migration_repair_evidence.py",
+        "services/project-ai/tests/integration/test_migration_repair_workflow.py"
+      ],
+      "dependencies": [
+        "8e8a16f6 (foundation)",
+        "c66198db (agents)"
+      ],
+      "standalone": false,
+      "risk_level": "LOW",
+      "category": "test_infrastructure",
+      "value": "Integration test baseline for evidence verification",
+      "test_coverage": "15+ integration tests (1116 lines)",
+      "notes": "Context-specific integration tests for migration repair workflow. DO NOT EXTRACT unless canonical-wiring implements same workflow structure."
+    },
+    {
+      "id": "INFRA-007",
+      "sha": "2079cdde6291a8ec8fe0fcb04daf0aef1cd009da",
+      "summary": "test(project-ai): cover fail-closed runtime health checks",
+      "date": "2026-10-10",
+      "files_changed": [
+        "services/project-ai/tests/verification/test_runtime.py"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "LOW",
+      "category": "test_infrastructure",
+      "value": "Runtime health validation with fail-closed patterns",
+      "patterns_to_extract": [
+        "HTTP client availability checks",
+        "Fail-closed when dependencies missing"
+      ],
+      "test_coverage": "Runtime health tests (23 lines added)",
+      "notes": "STANDALONE - Can be cherry-picked if project-ai runtime health tests exist."
+    },
+    {
+      "id": "INFRA-008",
+      "sha": "717cb906565ad0c03b88c6b736ee6535ba951e4f",
+      "summary": "test(project-ai): prevent unexecuted browser checks from passing",
+      "date": "2026-10-10",
+      "files_changed": [
+        "services/project-ai/tests/verification/test_runtime.py"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "LOW",
+      "category": "test_infrastructure",
+      "value": "Browser verification test coverage",
+      "patterns_to_extract": [
+        "Ensure browser checks actually execute",
+        "Fail if checks skipped"
+      ],
+      "test_coverage": "Browser verification tests (21 lines added)",
+      "notes": "STANDALONE - Can be cherry-picked. Modifies same file as 2079cdde (test_runtime.py). Extract both or neither."
+    },
+    {
+      "id": "INFRA-009",
+      "sha": "ae2a4b80abc44c80cafcfc49b6578269e2f28230",
+      "summary": "fix(project-llm): ignore cached lifecycle success flags",
+      "date": "2026-10-10",
+      "files_changed": [
+        "app/(admin)/tools/project-llm/context/ProjectLlmContext.tsx"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "LOW",
+      "category": "frontend_fix",
+      "value": "Prevents caching of lifecycle success state in React context",
+      "notes": "STANDALONE - project-llm frontend fix. Can be cherry-picked if project-llm context exists in canonical-wiring."
+    },
+    {
+      "id": "INFRA-010",
+      "sha": "7da64232eed0e70f25e5a16c19de329b603c19f2",
+      "summary": "fix(db): remove 46 duplicate statements from migration 0012",
+      "date": "2026-10-11",
+      "files_changed": [
+        "packages/db-tutorial/migrations/0012_futuristic_pepper_potts.sql"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "MEDIUM",
+      "category": "database_migration_repair",
+      "value": "Surgical fix reducing migration file from 59KB → 20KB",
+      "notes": "CONDITIONAL EXTRACTION - Apply only if canonical-wiring has same duplicate statement issue in migration 0012. VERIFY BEFORE APPLYING."
+    },
+    {
+      "id": "INFRA-011",
+      "sha": "3e18f0607fbbfc471d570c3159442a7a1633b984",
+      "summary": "fix(db): make section_type enum migration idempotent",
+      "date": "2026-10-11",
+      "files_changed": [
+        "packages/db-tutorial/migrations/0018_amused_rockslide.sql"
+      ],
+      "dependencies": [],
+      "standalone": true,
+      "risk_level": "LOW",
+      "category": "database_migration_improvement",
+      "value": "Idempotent migration pattern using CREATE TYPE IF NOT EXISTS",
+      "notes": "CONDITIONAL EXTRACTION - Apply if canonical-wiring needs idempotent enum migrations in 0018. Low risk, good pattern."
+    },
+    {
+      "id": "INFRA-012",
+      "sha": "0a12952cdc8ebe7dbbf4482de1edba4137975f13",
+      "summary": "fix(db): make delivery indexes idempotent in migration 0018",
+      "date": "2026-10-11",
+      "files_changed": [
+        "packages/db-tutorial/migrations/0018_amused_rockslide.sql"
+      ],
+      "dependencies": [
+        "3e18f060 (both modify 0018 migration)"
+      ],
+      "standalone": false,
+      "risk_level": "LOW",
+      "category": "database_migration_improvement",
+      "value": "Idempotent index creation using CREATE INDEX IF NOT EXISTS",
+      "notes": "CONDITIONAL EXTRACTION - Apply if canonical-wiring needs idempotent index creation in 0018. Conflicts with 3e18f060 (same file). Extract both or neither."
+    }
+  ],
+  "dependency_graph": {
+    "10ce6e10": ["8e8a16f6", "6cdc85ed"],
+    "f6622f0e": ["8e8a16f6", "f606dd02"],
+    "9bce2b68": ["c66198db", "8e8a16f6"],
+    "75c0a2ad": [],
+    "c717bd01": [],
+    "c2e08c52": [],
+    "6bdc3389": ["8e8a16f6"],
+    "26e2413a": ["c66198db", "8e8a16f6"],
+    "d979050f": ["8e8a16f6", "c66198db"],
+    "2079cdde": [],
+    "717cb906": [],
+    "ae2a4b80": [],
+    "f606dd02": ["8e8a16f6"],
+    "c66198db": ["8e8a16f6", "f606dd02"],
+    "8e8a16f6": [],
+    "7da64232": [],
+    "3e18f060": [],
+    "0a12952c": ["3e18f060"]
+  },
+  "minimum_sets": {
+    "command_injection_only": {
+      "commits": ["10ce6e10"],
+      "requires_foundation": true,
+      "notes": "Requires 8e8a16f6 foundation or pattern extraction to existing runner code"
+    },
+    "database_validation_only": {
+      "commits": ["f6622f0e"],
+      "requires_foundation": true,
+      "notes": "Requires 8e8a16f6 foundation or standalone extraction to app/security/database_validation.py"
+    },
+    "evidence_verification_only": {
+      "commits": ["9bce2b68"],
+      "requires_foundation": true,
+      "notes": "Requires c66198db (final_gate_agent) or standalone extraction to app/security/evidence_verification.py"
+    },
+    "standalone_security_only": {
+      "commits": ["75c0a2ad", "c717bd01", "c2e08c52"],
+      "requires_foundation": false,
+      "notes": "Three standalone fixes: CORS hardening, browser stub fail-closed, agent coordinator stub removal. NO DEPENDENCIES."
+    },
+    "all_security_fixes": {
+      "commits": ["10ce6e10", "f6622f0e", "9bce2b68", "75c0a2ad", "c717bd01", "c2e08c52"],
+      "requires_foundation": true,
+      "notes": "Requires foundation modules 8e8a16f6, f606dd02, c66198db OR pattern extraction to existing canonical-wiring code"
+    },
+    "reliability_improvements": {
+      "commits": ["6bdc3389", "26e2413a"],
+      "requires_foundation": true,
+      "notes": "Cleanup guarantees and publication verification. Requires foundation + agent infrastructure."
+    },
+    "database_migration_fixes": {
+      "commits": ["7da64232", "3e18f060", "0a12952c"],
+      "requires_foundation": false,
+      "notes": "Conditional extraction - apply only if canonical-wiring has same migration issues. 3e18f060 and 0a12952c conflict (same file)."
+    }
+  },
+  "shared_file_conflicts": [
+    {
+      "file": "packages/db-tutorial/migrations/0018_amused_rockslide.sql",
+      "commits": ["3e18f060", "0a12952c"],
+      "resolution": "Extract both (sequential changes to enum and indexes) or neither",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/app/orchestration/agent_coordinator.py",
+      "commits": ["c717bd01", "c2e08c52", "f606dd02"],
+      "resolution": "Prioritize c2e08c52 (remove stub handler) over f606dd02 (agent registry). Both security fixes can be extracted if applied in order.",
+      "risk": "MEDIUM"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/models.py",
+      "commits": ["8e8a16f6", "6bdc3389", "26e2413a"],
+      "resolution": "Sequential additive changes. Must apply in order: foundation → cleanup → publication",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/runner.py",
+      "commits": ["8e8a16f6", "10ce6e10", "6bdc3389"],
+      "resolution": "Sequential changes: foundation → command injection fix → cleanup. Must apply in order.",
+      "risk": "MEDIUM"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/verification.py",
+      "commits": ["8e8a16f6", "6bdc3389"],
+      "resolution": "Foundation creates, cleanup extends. Must apply foundation first.",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/safety.py",
+      "commits": ["8e8a16f6", "f6622f0e"],
+      "resolution": "Foundation creates baseline, database validation extends. Must apply foundation first.",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/gate.py",
+      "commits": ["8e8a16f6", "9bce2b68"],
+      "resolution": "Foundation creates, evidence verification extends. Must apply foundation first.",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+      "commits": ["c66198db", "9bce2b68"],
+      "resolution": "Agent implementation creates, evidence verification extends. Must apply c66198db first.",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+      "commits": ["c66198db", "26e2413a"],
+      "resolution": "Agent implementation creates, publication verification extends. Must apply c66198db first.",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/app/workflows/migration_repair/agents/verification_runner.py",
+      "commits": ["c66198db", "f6622f0e"],
+      "resolution": "Agent implementation creates, database validation extends. Must apply c66198db first.",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/tests/verification/test_runtime.py",
+      "commits": ["2079cdde", "717cb906"],
+      "resolution": "Both add independent tests. Can cherry-pick both in either order.",
+      "risk": "LOW"
+    },
+    {
+      "file": "services/project-ai/tests/test_migration_repair_safety.py",
+      "commits": ["8e8a16f6", "f6622f0e"],
+      "resolution": "Foundation creates baseline tests, database validation adds 17 tests. Must apply foundation first.",
+      "risk": "LOW"
+    }
+  ],
+  "extraction_recommendations": {
+    "phase_1_immediate": {
+      "title": "Standalone Security Fixes (No Dependencies)",
+      "commits": ["75c0a2ad", "c717bd01", "c2e08c52"],
+      "effort_estimate": "2-4 hours",
+      "risk": "LOW",
+      "rationale": "These three commits are standalone, have no dependencies, and fix critical security issues (CORS hardening, stub fail-closed patterns). Can be cherry-picked immediately after canonical-wiring merge.",
+      "validation": "Run existing project-ai tests. Verify CORS config, browser verification, agent coordinator behavior."
+    },
+    "phase_2_pattern_extraction": {
+      "title": "Security Pattern Extraction (Foundation-Dependent)",
+      "commits": ["10ce6e10", "f6622f0e", "9bce2b68"],
+      "effort_estimate": "8-16 hours",
+      "risk": "MEDIUM",
+      "approach": "Extract security patterns WITHOUT importing full migration repair workflow",
+      "steps": [
+        "Create app/security/command_validation.py with command injection prevention patterns from 10ce6e10",
+        "Create app/security/database_validation.py with database target validation from f6622f0e",
+        "Create app/security/evidence_verification.py with SHA-256 verification from 9bce2b68",
+        "Write integration tests adapting test_runner_command_safety.py, test_database_connection_validation.py, test_final_gate_verification.py",
+        "Apply patterns to existing canonical-wiring code that executes commands or connects to databases"
+      ],
+      "rationale": "Extract security patterns without dependency on migration repair infrastructure. Apply to canonical-wiring's existing command execution and database connection code.",
+      "validation": "Run new security tests. Verify command execution blocks shell metacharacters. Verify database connections reject production targets."
+    },
+    "phase_3_conditional": {
+      "title": "Database Migration Fixes (If Applicable)",
+      "commits": ["7da64232", "3e18f060", "0a12952c"],
+      "effort_estimate": "1-2 hours",
+      "risk": "LOW",
+      "approach": "Apply only if canonical-wiring has identified migration issues",
+      "steps": [
+        "Investigate whether canonical-wiring has duplicate statements in migration 0012 (7da64232)",
+        "Check if migration 0018 needs idempotent enum/index creation (3e18f060, 0a12952c)",
+        "If issues confirmed, cherry-pick relevant commits",
+        "Run migration tests to verify idempotency"
+      ],
+      "rationale": "These are surgical fixes to specific migration files. Only apply if canonical-wiring has the same issues.",
+      "validation": "Run Drizzle migrations multiple times. Verify idempotency. Check for duplicate statements."
+    },
+    "phase_4_defer": {
+      "title": "Infrastructure and Agent Implementations (Defer to Phase 2)",
+      "commits": ["8e8a16f6", "f606dd02", "c66198db", "6bdc3389", "26e2413a", "d979050f", "2079cdde", "717cb906", "ae2a4b80"],
+      "effort_estimate": "N/A - Not recommended for immediate extraction",
+      "risk": "HIGH",
+      "rationale": "These commits implement the full migration repair workflow infrastructure (4000+ lines), 13 specialized agents, and context-specific orchestration. Extracting would introduce large architectural changes incompatible with canonical-wiring baseline. Defer foundation DAG decision as recommended.",
+      "alternative": "Keep E2E branch as reference implementation. Extract specific patterns (cleanup guarantees, publication verification) if canonical-wiring later adopts similar workflow architecture."
+    }
+  },
+  "risk_assessment": {
+    "cherry_pick_all_18_blindly": {
+      "risk": "CRITICAL",
+      "reason": "Would introduce 4000+ lines of migration repair infrastructure incompatible with canonical-wiring baseline. Would create merge conflicts in 12+ files. Would bypass security review of individual commits."
+    },
+    "phase_1_standalone_only": {
+      "risk": "LOW",
+      "reason": "Three independent commits with clear security benefits and no dependencies. Easy to validate and revert if needed."
+    },
+    "phase_2_pattern_extraction": {
+      "risk": "MEDIUM",
+      "reason": "Requires creating new security modules and adapting patterns to canonical-wiring code. Needs thorough testing but provides high security value."
+    },
+    "phase_3_migration_fixes": {
+      "risk": "LOW",
+      "reason": "Surgical changes to specific migration files. Easy to validate with existing migration tests. Low blast radius."
+    },
+    "extracting_foundation_infrastructure": {
+      "risk": "HIGH",
+      "reason": "Would introduce competing orchestration architecture before canonical-wiring is production-validated. Conflicts with recommendation to defer foundation DAG decision."
+    }
+  },
+  "verification_checklist": [
+    "Before any extraction: Record exact remote commit SHAs for main, canonical-wiring, and project-llm-e2e-implementation",
+    "Phase 1: Cherry-pick 75c0a2ad, c717bd01, c2e08c52 in sequence",
+    "Phase 1: Run project-ai tests (pytest services/project-ai/tests/)",
+    "Phase 1: Verify CORS config rejects wildcard origins",
+    "Phase 1: Verify browser verification stubs fail closed",
+    "Phase 2: Create app/security/ modules with extracted patterns",
+    "Phase 2: Write integration tests for each security pattern",
+    "Phase 2: Apply patterns to existing canonical-wiring command/database code",
+    "Phase 2: Run full security test suite",
+    "Phase 3: Investigate migration 0012 and 0018 for duplicate/non-idempotent issues",
+    "Phase 3: If confirmed, cherry-pick 7da64232, 3e18f060, 0a12952c",
+    "Phase 3: Run Drizzle migrations multiple times to verify idempotency",
+    "All phases: Do NOT push to main, merge PRs, or delete branches until approval",
+    "All phases: Preserve exact SHAs, commands, exit codes, test results in integration report"
+  ]
+}

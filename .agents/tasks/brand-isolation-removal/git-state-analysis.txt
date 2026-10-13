@@ -1,0 +1,148 @@
+GIT STATE ANALYSIS FOR m2-project-ai-canonical-wiring BRANCH
+Generated: 2026-10-12 16:09:07
+=============================================================================
+
+1. CURRENT BRANCH AND WORKING TREE STATUS
+=============================================================================
+Branch: m2-project-ai-canonical-wiring
+Working tree: CLEAN (no staged or modified files)
+Status: Ahead of origin/m2-project-ai-canonical-wiring by 3 commits
+Untracked files: 33 files present (evidence, docs, scripts)
+
+Last 10 commits:
+5ab1d807 (HEAD) fix: use DATABASE_URL_TUTORIAL instead of non-existent TEST_DATABASE_URL_TUTORIAL
+6c425b22 refactor(project-ai): remove unused brand isolation security layer
+fc4b3f33 fix: remove orphaned verify_brand_access import from candidate.py
+2e49b2a9 (origin/m2-project-ai-canonical-wiring) docs: Add remaining Gate E-2 certification and review artifacts
+f8a11efa feat(gate-g): Complete production certification and evidence bundle
+86f1d31b docs(gate-f): Add Gate F integration verification evidence and reports
+47c78208 fix(schema): add uploader_brand to CandidateModel, requester_brand to WorkflowModel
+18413dac fix: resolve 15 Gate F security domain regressions
+ce0c8ab1 fix(gate-e2): add missing require_contract_admin import in contract.py
+8d4dd297 fix(gate-e2): resolve W5 placement authorization review findings
+
+2. REMOTE TRACKING STATE
+=============================================================================
+Commits ahead of origin/m2-project-ai-canonical-wiring: 3
+Commits behind origin/m2-project-ai-canonical-wiring: 0
+
+Unpushed commits:
+5ab1d807 fix: use DATABASE_URL_TUTORIAL instead of non-existent TEST_DATABASE_URL_TUTORIAL
+6c425b22 refactor(project-ai): remove unused brand isolation security layer
+fc4b3f33 fix: remove orphaned verify_brand_access import from candidate.py
+
+3. DIFF VS ORIGIN
+=============================================================================
+ .agents/tasks/brand-isolation-removal/evidence.md  | 249 ++++++++++
+ services/project-ai/app/api/routes/candidate.py    |  18 -
+ services/project-ai/app/api/routes/governance.py   |  70 +--
+ services/project-ai/app/auth/authorization.py      |  81 +---
+ services/project-ai/app/models/candidate.py        |   3 -
+ services/project-ai/app/persistence/models.py      |   6 -
+ .../project-ai/app/persistence/repositories.py     |   5 -
+ services/project-ai/tests/integration/conftest.py  |  14 +-
+ .../tests/integration/test_security_integration.py | 197 --------
+ .../tests/security/test_authorization.py           | 524 ++-------------------
+ 10 files changed, 296 insertions(+), 871 deletions(-)
+
+Summary: Net deletion of 575 lines (removed brand isolation layer)
+
+4. COMMITS AHEAD OF MAIN
+=============================================================================
+Total commits ahead: 259
+Merge base with main: 9b27256791f7fd0e42aa95a227d61f6ce3097f90
+
+Main is at: 9b272567 (Merge PR #23: M1 Repository Discovery - HAA Approved)
+This branch diverged from main at that commit.
+
+Total diff vs main: 942 files changed, 700031 insertions(+), 4327 deletions(-)
+
+5. MERGE CONFLICT PREVIEW
+=============================================================================
+Merge test result: Already up to date
+Conflicts detected: NONE
+Merge status: CLEAN - No conflicts expected
+
+Explanation: The canonical-wiring branch is ahead of main by 259 commits.
+Main has not advanced since the branch diverged. A fast-forward merge is possible.
+
+6. UNTRACKED FILES DISPOSITION
+=============================================================================
+Total untracked files: 33
+
+CATEGORY A - Evidence & Documentation (RECOMMEND: COMMIT)
+  .agents/evidence/w0-baseline-audit/ (11 files)
+    - COMPLETE-ROADMAP.md
+    - EXECUTIVE-SUMMARY.md
+    - SIMPLIFIED-PLAN.md
+    - branch-audit-summary.md
+    - branch-audit.json
+    - canonical-docs-map.json
+    - implementation-inventory.json
+    - migration-repair-assessment.md
+    - requirements-matrix-summary.md
+    - requirements-matrix.csv
+    - requirements-matrix.json
+    - w0-summary.md
+
+  .agents/tasks/brand-isolation-removal/ (5 files)
+    - conftest-fix.txt
+    - plan.md
+    - removal-verification.txt
+    - review.json
+    - review.md
+
+  .agents/tasks/ (5 files)
+    - PROJECT-LLM-INTEGRATION-PLAN.md
+    - commit-wiring-plan.json
+    - commit-wiring-plan.md
+    - commit-wiring-review.json
+    - commit-wiring-review.md
+    - stage5-fixes-plan.md
+
+  .agents/evidence/runs/ (3 files)
+    - migration-repair-20261011-143539-06936246/commit-gate-files.txt
+    - migration-repair-20261011-143539-06936246/stage5-final-w5a-static-security-doc.md
+    - migration-repair-20261011-143539-06936246/stage5-final-w5b-test-doc.md
+    - migration-repair-20261011-143539-06936246/stage5-final-w5c-artifact-consistency-doc.md
+
+  ILS_UI_UX/docs/ (1 file)
+    - TaskFinalized.md
+
+CATEGORY B - Utility Scripts (RECOMMEND: COMMIT with review)
+  .agents/scripts/ (2 files)
+    - fix_agent_context.py
+    - update_agent_context.py
+
+  services/project-ai/ (1 file)
+    - run_tests.ps1
+
+CATEGORY C - Temporary Scripts (RECOMMEND: DELETE)
+  Root level (3 files)
+    - .agents/temp-commit.bat
+    - commit-stage5-gate.bat
+    - commit-stage5-gate.ps1
+
+7. OVERALL ASSESSMENT
+=============================================================================
+Branch state: READY with minor housekeeping needed
+Working tree: CLEAN
+Remote sync: 3 commits ahead (brand isolation removal)
+Merge conflicts: NONE
+Blockers: NONE
+
+ACTIONS REQUIRED BEFORE MERGE:
+1. Push the 3 local commits to origin/m2-project-ai-canonical-wiring
+2. Commit untracked evidence files (Categories A & B)
+3. Delete temporary scripts (Category C)
+4. Verify test suite passes (resolve skipped tests issue)
+5. Final review of the 259-commit diff
+
+MERGE READINESS: CONDITIONAL
+- Code changes are clean and conflict-free
+- Branch can fast-forward merge into main
+- Test verification is the primary gate (1,270 skipped tests issue)
+- Evidence documentation needs to be committed
+
+=============================================================================
+END OF ANALYSIS

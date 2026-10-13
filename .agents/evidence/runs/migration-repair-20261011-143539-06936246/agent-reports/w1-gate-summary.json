@@ -1,0 +1,58 @@
+{
+  "stage": "Stage3-W1",
+  "timestamp": "2025-01-11T14:45:00.000Z",
+  "reports_found": [
+    "command-safety-audit.json",
+    "database-safety-audit.json",
+    "test-inventory-audit.json",
+    "evidence-audit.json"
+  ],
+  "reports_missing": [],
+  "git_clean": false,
+  "gate_passed": false,
+  "gate_failure_reason": "Source file modified: ILS_UI_UX/docs/ProjectFlowExampleProjectLLM.md",
+  "finding_counts": {
+    "command_safety": 13,
+    "database_safety": 15,
+    "test_inventory": 8,
+    "evidence": 10
+  },
+  "finding_severity_summary": {
+    "command_safety": {
+      "critical": 0,
+      "high": 0,
+      "medium": 4,
+      "low": 9
+    },
+    "database_safety": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 15
+    },
+    "test_inventory": {
+      "critical": 0,
+      "high": 1,
+      "medium": 4,
+      "low": 3
+    },
+    "evidence": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 8
+    }
+  },
+  "git_status": {
+    "modified_files": [
+      "ILS_UI_UX/docs/ProjectFlowExampleProjectLLM.md"
+    ],
+    "untracked_files": [
+      ".agents/evidence/runs/current-run-id.json",
+      ".agents/evidence/runs/migration-repair-20261011-143539-06936246/agent-reports/",
+      ".agents/tasks/stage-workflows/stage4-w2w3-planning.md"
+    ]
+  },
+  "next_stage": "BLOCKED - Git working tree must be clean before proceeding to Stage4-W2W3-Planning",
+  "required_action": "Commit or revert changes to ILS_UI_UX/docs/ProjectFlowExampleProjectLLM.md before proceeding"
+}

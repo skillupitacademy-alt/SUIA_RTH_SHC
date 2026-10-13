@@ -1,0 +1,163 @@
+{
+  "generated_at": "2026-10-12T18:06:00Z",
+  "branches": {
+    "main": {
+      "local_sha": "9b27256791f7fd0e42aa95a227d61f6ce3097f90",
+      "remote_sha": "9b27256791f7fd0e42aa95a227d61f6ce3097f90",
+      "ahead": 0,
+      "behind": 0,
+      "merge_base_with_main": "N/A",
+      "recent_commits": [
+        "9b272567 Merge PR #23: M1 Repository Discovery - HAA Approved",
+        "99d05957 docs(m1): document terminal sync and closure decision - accept self-referential limitation",
+        "85f26654 fix(m1): terminal evidence synchronization - regenerate from final HEAD ac673b64",
+        "ac673b64 docs(m1): add evidence synchronization report",
+        "ab4a6989 fix(m1): regenerate final evidence from actual HEAD 57d325c8 - forensic evidence chain correction"
+      ]
+    },
+    "canonical_wiring": {
+      "full_name": "m2-project-ai-canonical-wiring",
+      "local_sha": "6d43d423f0cd538d5893caae6ac7e95b5633c0b5",
+      "remote_sha": "2e49b2a9f14e15b8f12ba230bb0dc88ce10d0d6f",
+      "ahead": 261,
+      "behind": 0,
+      "merge_base_with_main": "9b27256791f7fd0e42aa95a227d61f6ce3097f90",
+      "local_ahead_of_remote": 5,
+      "recent_commits": [
+        "6d43d423 docs: Add test execution summary and final report",
+        "bf5d5866 test: Complete brand-isolation removal verification",
+        "5ab1d807 fix: use DATABASE_URL_TUTORIAL instead of non-existent TEST_DATABASE_URL_TUTORIAL",
+        "6c425b22 refactor(project-ai): remove unused brand isolation security layer",
+        "fc4b3f33 fix: remove orphaned verify_brand_access import from candidate.py"
+      ]
+    },
+    "foundation_dag": {
+      "full_name": "m2-project-ai-foundation",
+      "local_sha": "0d7b4684c204fb76d34072908b9b6258c875c34b",
+      "remote_sha": "0d7b4684c204fb76d34072908b9b6258c875c34b",
+      "ahead": 69,
+      "behind": 0,
+      "merge_base_with_main": "9b27256791f7fd0e42aa95a227d61f6ce3097f90",
+      "local_ahead_of_remote": 0,
+      "recent_commits": [
+        "0d7b4684 feat(project-ai): Add 15-agent DAG architecture final review",
+        "e2d04981 fix: Integration fixes and review findings",
+        "7ce614a3 docs: Update test-results.txt with consolidation completion status",
+        "3e242e66 fix: Consolidate to 15-agent architecture with proper DAG/Registry alignment",
+        "ae7e74c7 feat: Wave F - Final certification sequence and DAG orchestration (FEAT-005)"
+      ]
+    },
+    "e2e_security": {
+      "full_name": "project-llm-e2e-implementation",
+      "local_sha": "506366fe3f78f5d503203cfa12ca38e12b1cc2ee",
+      "remote_sha": "506366fe3f78f5d503203cfa12ca38e12b1cc2ee",
+      "ahead": 316,
+      "behind": 0,
+      "merge_base_with_main": "9b27256791f7fd0e42aa95a227d61f6ce3097f90",
+      "local_ahead_of_remote": 0,
+      "recent_commits": [
+        "506366fe chore(stage6): W6 V0-V10 verification pipeline results",
+        "759d66f4 chore: add V8 evidence manifest for run migration-repair-20261011-143539-06936246",
+        "f0eddb9c feat(stage6): verification evidence - BLOCKED",
+        "3b07a649 chore: Stage 5 final gate APPROVED - all HIGH severity fixes verified",
+        "66a2cda2 feat: wire format_commit_message into migration repair workflow"
+      ]
+    },
+    "gui": {
+      "full_name": "project-ai-gui",
+      "local_sha": "44d4928d95b2b695761779f87789c1444f7e46dd",
+      "remote_sha": "44d4928d95b2b695761779f87789c1444f7e46dd",
+      "ahead": 68,
+      "behind": 0,
+      "merge_base_with_main": "9b27256791f7fd0e42aa95a227d61f6ce3097f90",
+      "local_ahead_of_remote": 0,
+      "tag_exists": false,
+      "existing_gui_tags": [],
+      "recent_commits": [
+        "44d4928d feat(project-llm): recreate Dashboard page matching screenshot design 100%",
+        "6bf7c91a feat(project-llm): complete 7-page human-centric autonomous engineering GUI",
+        "b1d136c7 fix: Add PlacementManifest parameter to certification gate tests",
+        "22aeced3 chore(skillhubcore-admin): update next-env.d.ts type reference",
+        "85804239 docs(project-ai): document review findings resolution in Phase 4 report"
+      ]
+    }
+  },
+  "current_branch": "m2-project-ai-canonical-wiring",
+  "working_tree_clean": false,
+  "untracked_files_count": 44,
+  "all_branches": [
+    "backup-before-rollback",
+    "backup-before-sync",
+    "backup/github-m2-9",
+    "backup/local-m2-9-remediation",
+    "backup/main-before-6e3a46a9",
+    "backup/main-before-investigation-cherry-pick",
+    "backup/tutorial-v2-p0-transformation-2026-08-21",
+    "backup/vps-migration-final",
+    "candidate/test-security-001",
+    "feat/layman-architecture-new",
+    "feature/content-intelligence-pipeline-with-templates",
+    "feature/education-architecture-notes-section",
+    "feature/javascript-promises-content",
+    "feature/layman-uiux-enhancement",
+    "feature/tutorial-v2-phase-1h-migration",
+    "feature/vps-migration",
+    "investigation/tutorial-db-runtime-failure",
+    "m1-repository-discovery",
+    "m2-project-ai-canonical-wiring",
+    "m2-project-ai-foundation",
+    "main",
+    "manifesto/phase-a-parent",
+    "manifesto/phase-a1-eslint-shared",
+    "manifesto/phase-a2-any-removal",
+    "manifesto/phase-b-parent",
+    "manifesto/phase-c-parent",
+    "manifesto/phase-d-parent",
+    "manifesto/phase-e-parent",
+    "manifesto/phase-f-parent",
+    "manifesto/phase-f3-client-logging",
+    "phase-4.6-console-cleanup",
+    "phase-f-smoke",
+    "project-ai-gui",
+    "project-llm-e2e-implementation",
+    "project-llm-e2e-implementation-fix",
+    "recovery-commits",
+    "release/6e3a46a9-signup-stable",
+    "remove-admin-tools-routes",
+    "skillhubcore-admin-educational-hierarchy",
+    "test-white-hero-branding"
+  ],
+  "remote_branches": [
+    "origin/HEAD -> origin/main",
+    "origin/dependabot/github_actions/actions/checkout-6",
+    "origin/dependabot/github_actions/actions/setup-node-6",
+    "origin/dependabot/github_actions/google-github-actions/auth-3",
+    "origin/dependabot/github_actions/pnpm/action-setup-6",
+    "origin/dependabot/npm_and_yarn/axe-core/react-4.11.3",
+    "origin/dependabot/npm_and_yarn/cross-env-10.1.0",
+    "origin/dependabot/npm_and_yarn/dev-dependencies-0b66924718",
+    "origin/dependabot/npm_and_yarn/drizzle-orm-0.45.2",
+    "origin/dependabot/npm_and_yarn/echarts-6.1.0",
+    "origin/dependabot/npm_and_yarn/next-framework-8d7fedde30",
+    "origin/dependabot/npm_and_yarn/puppeteer-core-25.0.4",
+    "origin/dependabot/npm_and_yarn/react-resizable-panels-4.11.2",
+    "origin/dependabot/npm_and_yarn/typescript-f6f5ebf992",
+    "origin/dependabot/npm_and_yarn/upstash/workflow-1.3.0",
+    "origin/m1-repository-discovery",
+    "origin/m2-project-ai-canonical-wiring",
+    "origin/m2-project-ai-foundation",
+    "origin/main",
+    "origin/project-ai-gui",
+    "origin/project-llm-e2e-implementation"
+  ],
+  "remote_url": "https://github.com/skillupitacademy-alt/SUIA_RTH_SHC.git",
+  "notes": {
+    "canonical_wiring_status": "Local is 5 commits ahead of remote (261 commits ahead of main)",
+    "foundation_dag_status": "Synced with remote (69 commits ahead of main)",
+    "e2e_security_status": "Synced with remote (316 commits ahead of main)",
+    "gui_status": "Synced with remote (68 commits ahead of main), no existing tags",
+    "main_status": "Synced with remote",
+    "working_tree": "44 untracked files present in .agents/ directories",
+    "all_branches_share_merge_base": "All feature branches diverged from main at 9b272567"
+  }
+}

@@ -47,6 +47,7 @@ describe('Determinism Integration Tests', () => {
       },
       getGitCommit: async () => 'abc123def456789',
       getGitRoot: async () => '/mock/repo',
+      runCommand: async () => ({ stdout: '', stderr: '', exitCode: 0 }),
       ...overrides,
     };
 

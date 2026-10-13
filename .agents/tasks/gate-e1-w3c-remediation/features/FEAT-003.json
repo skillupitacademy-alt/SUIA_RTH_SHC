@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Strengthen manifest validation and add comprehensive test coverage. Enhance validation to reject empty hashes, placeholder values (TODO, FIXME, empty strings), and inconsistent actions. Create comprehensive test suite with 20+ tests covering all artifact actions (ADD, UPDATE, EXTEND, REUSE, REJECT), path validation (traversal attacks, protected paths), hash validation, and fail-closed behavior from FEAT-001.",
+  "status": "pending",
+  "steps": [
+    "1. Read existing validate_manifest method in services/project-ai/app/intake/placement_manifest.py to understand current validation rules",
+    "2. Add new validation functions in services/project-ai/app/placement/artifact_policy.py: validate_content_hash(hash: str) -> Tuple[bool, str] to check for empty, placeholder, or malformed hashes (must be 64-char hex for SHA-256)",
+    "3. Add validate_placement_action(action: PlacementDecision, repository_match: Optional[RepositoryArtifact]) -> Tuple[bool, str] to ensure action consistency (e.g., UPDATE requires repository_match, ADD requires no match)",
+    "4. Integrate new validators into determine_action and get_target_path functions, raising ValueError on validation failures",
+    "5. Create comprehensive test file services/project-ai/tests/unit/test_artifact_policy_comprehensive.py (new file) with test classes: TestHashValidation (8 tests: valid hash, empty hash, TODO placeholder, FIXME placeholder, short hash, non-hex hash, None hash, whitespace hash), TestActionConsistency (6 tests: ADD with no match, ADD with match rejected, UPDATE with match, UPDATE without match rejected, REUSE with identical hash, EXTEND with variant), TestPathSafety (4 tests: traversal attack, protected .git, protected node_modules, valid relative path), TestFailClosed (3 tests: snapshot unavailable raises exception, snapshot load failure raises exception, empty evidence list raises exception)",
+    "6. Add integration test in services/project-ai/tests/integration/test_manifest_validation.py (new file) to verify rejected manifests are never persisted to disk or database",
+    "7. Update README.md or docs/architecture/artifact-policy.md with behavior change notes explaining fail-closed policy and strengthened validation"
+  ],
+  "acceptance_criteria": [
+    "validate_content_hash rejects empty strings, 'TODO', 'FIXME', '', hashes not matching 64-char hex pattern",
+    "validate_placement_action rejects inconsistent action/match combinations (UPDATE without match, ADD with match unless intentional)",
+    "Test suite has minimum 20 tests covering all scenarios listed",
+    "All new tests pass: pytest services/project-ai/tests/unit/test_artifact_policy_comprehensive.py -v shows 20+ passed",
+    "Integration test proves rejected manifests are not written to storage",
+    "Documentation updated with fail-closed behavior explanation"
+  ],
+  "verification": [
+    "Run pytest services/project-ai/tests/unit/test_artifact_policy_comprehensive.py -v --tb=short and confirm 20+ tests pass",
+    "Run pytest services/project-ai/tests/integration/test_manifest_validation.py -v to verify integration test passes",
+    "Run full existing test suite: pytest services/project-ai/tests/test_artifact_policy.py -v to ensure no regressions",
+    "Run pytest services/project-ai/tests/unit/ -v to verify all unit tests pass",
+    "Manually verify documentation exists: cat README.md or cat docs/architecture/artifact-policy.md | grep -i 'fail-closed\\|behavior change'"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,10 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    "Candidate upload doesn't enforce brand on the uploader — Upload captures user.get('brand') without validating the user has permission to upload for that brand. If a JWT contains an unexpected or malformed brand value, it's stored as-is. Consider adding brand validation or documenting that JWT claims are trusted. (likely)",
+    "Self-approval check has no test coverage — The governance approval endpoint extracts approver identity and compares it to workflow requester, but test_authorization.py doesn't include a self-approval rejection test. The logic is present in governance.py lines 373-388, but no test confirms it fires correctly with JWT-extracted identities. (confirmed)",
+    "Infrastructure bypass has no negative test — test_verify_brand_access_none_user_brand_allowed confirms infrastructure users can access any brand, but no test verifies that a malicious user can't set brand=None in a forged token. This is a JWT validation concern, not an authorization concern, but the review should note the trust boundary. (likely)",
+    "Workflow creation extracts user_id with no fallback — workflows.py line 156 uses user['user_id'] with no fallback to email or sub, unlike governance approval (line 363). If a valid JWT arrives without user_id, workflow creation will raise a KeyError. Governance approval uses user.get('user_id') or user.get('email') or 'unknown'. Align the two. (confirmed)"
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\wave1c-review.md"
+}

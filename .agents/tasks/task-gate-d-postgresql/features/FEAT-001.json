@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-001",
+  "type": "test",
+  "description": "PostgreSQL Test Database Infrastructure. Create docker-compose.test-db.yml with postgres:17 container on port 55432 using tmpfs for ephemeral data and fast I/O. Add .env.test.example with TEST_DATABASE_URL_TUTORIAL and JWT secrets. This feature provides the database infrastructure needed by FEAT-002 security tests.",
+  "status": "pending",
+  "steps": [
+    "Create services/project-ai/docker-compose.test-db.yml with postgres:17 image, container name project-ai-test-db, port mapping 55432:5432, tmpfs mount at /var/lib/postgresql/data for ephemeral storage, healthcheck with pg_isready, environment variables POSTGRES_DB=tutorial_test, POSTGRES_USER=test_user, POSTGRES_PASSWORD=test_password, POSTGRES_HOST_AUTH_METHOD=trust",
+    "Create services/project-ai/.env.test.example based on .env.example pattern. Add TEST_DATABASE_URL_TUTORIAL=postgresql+asyncpg://test_user:test_password@localhost:55432/tutorial_test with comment explaining it points to docker-compose test database. Include JWT_SECRET and ADMIN_JWT_SECRET with test values (minimum 32 characters). Add comment: 'Copy to .env.test and customize for local testing'",
+    "Verify docker-compose.test-db.yml by running: docker-compose -f services/project-ai/docker-compose.test-db.yml up -d. Check container starts and is healthy: docker-compose -f services/project-ai/docker-compose.test-db.yml ps should show 'healthy' status. Test connectivity: docker exec project-ai-test-db pg_isready -U test_user should return 'accepting connections'",
+    "Verify .env.test.example has correct structure: file should have TEST_DATABASE_URL_TUTORIAL, JWT_SECRET, ADMIN_JWT_SECRET variables. Format should match .env.example (comments explaining each variable). Connection string should reference localhost:55432 to match docker-compose port mapping"
+  ],
+  "acceptance_criteria": [
+    "docker-compose.test-db.yml creates postgres:17 container on port 55432 with tmpfs",
+    "docker-compose up succeeds and healthcheck passes",
+    ".env.test.example documents TEST_DATABASE_URL_TUTORIAL pointing to localhost:55432",
+    "Connection string uses postgresql+asyncpg:// driver format for SQLAlchemy async"
+  ],
+  "verification": [
+    "docker-compose -f services/project-ai/docker-compose.test-db.yml up -d — container starts",
+    "docker-compose -f services/project-ai/docker-compose.test-db.yml ps — shows healthy status",
+    "docker exec project-ai-test-db pg_isready -U test_user — returns 'accepting connections'",
+    "cat services/project-ai/.env.test.example — confirms TEST_DATABASE_URL_TUTORIAL variable exists"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

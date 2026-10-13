@@ -16,7 +16,7 @@ describe('Full Discovery Integration with Validation', () => {
       const snapshot = await buildSnapshot(repositoryRoot, adapter);
 
       // Verify snapshot structure
-      expect(snapshot.schemaVersion).toBe('1.0.0');
+      expect(snapshot.schemaVersion).toBe('1.1.0');
       expect(snapshot.canonicalHash).toBeDefined();
       expect(snapshot.canonicalHash.length).toBe(64); // SHA-256 hex length
 

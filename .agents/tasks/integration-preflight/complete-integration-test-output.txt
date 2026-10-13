@@ -1,0 +1,105 @@
+﻿..............s......................sss................................ [ 56%]
+.......................................................                  [100%]
+============================== warnings summary ===============================
+C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1
+  C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests\integration\test_certification_negative.py:25
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:25: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests\integration\test_certification_negative.py:765
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:765: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:613: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:621: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:629: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:637: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:645: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:653: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\contracts\repository_intelligence.py:661: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    derived_at=datetime.utcnow()
+
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1AWiring::test_contract_uses_real_w1a_target
+tests/integration/test_w2_contract_generation.py::TestW2ContractGenerationWithRealW1BWiring::test_contract_uses_real_w1b_repository_intelligence
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractSHA256Determinism::test_same_inputs_produce_same_hash
+tests/integration/test_w2_contract_generation.py::TestContractImmutabilityAfterWorkflowBinding::test_second_contract_call_returns_same_contract
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_workflow_transitions_to_brief_ready
+tests/integration/test_w2_contract_generation.py::TestWorkflowStateTransition::test_contract_artifact_binding
+tests/integration/test_w2_contract_generation.py::TestProhibitedBehaviorsPopulated::test_prohibited_behaviors_in_contract
+  E:\onlinewebsites\quiz-platform\services\project-ai\app\api\routes\contract.py:381: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    contract_data=contract.dict(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+123 passed, 4 skipped, 67 warnings in 321.25s (0:05:21)

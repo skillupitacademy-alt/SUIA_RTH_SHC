@@ -1,0 +1,14 @@
+{
+  "check": "2B-LegacyRoutes",
+  "status": "PASS",
+  "http_405_count": 8,
+  "endpoints_retired": [
+    "POST /creation/workflows",
+    "GET /creation/workflows/{workflow_id}",
+    "POST /creation/workflows/{workflow_id}/validate",
+    "POST /creation/workflows/{workflow_id}/certify"
+  ],
+  "active_workflow_creation_found": false,
+  "active_creation_matches": [],
+  "notes": "All 4 legacy creation endpoints properly return HTTP 405. Each endpoint has status_code=405 in the route decorator and raises HTTPException with status_code=405. No active CreationWorkflow instantiation found. All endpoints provide clear deprecation notices and canonical workflow migration paths. Compliance verified: legacy workflow authority is completely retired."
+}

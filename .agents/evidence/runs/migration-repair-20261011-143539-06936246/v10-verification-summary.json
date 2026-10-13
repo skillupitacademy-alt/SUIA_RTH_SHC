@@ -1,0 +1,21 @@
+{
+  "stage": "V10",
+  "overall_verdict": "BLOCKED",
+  "commit_sha": "759d66f42419f155a129fffb947f151b6159fab8",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "stage_verdicts": {
+    "V0": "PASS",
+    "V1": "BLOCKED",
+    "V2": "BLOCKED",
+    "V3": "BLOCKED",
+    "V4": "BLOCKED",
+    "V5": "BLOCKED",
+    "V6": "BLOCKED",
+    "V7": "BLOCKED",
+    "V8": "PASS",
+    "V9": "PASS"
+  },
+  "ready_for_stage7": false,
+  "blocked_stages": ["V1", "V2", "V3", "V4", "V5", "V6", "V7"],
+  "failed_stages": []
+}

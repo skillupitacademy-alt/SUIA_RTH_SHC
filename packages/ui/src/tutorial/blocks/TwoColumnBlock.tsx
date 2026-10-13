@@ -8,10 +8,15 @@ export function TwoColumnBlock({
   theme,
   className = '',
   renderChild,
+  runtimeContext,
 }: BlockComponentProps<ITwoColumnBlock>) {
   const leftBlocks = Array.isArray(block.content?.left?.blocks) ? block.content.left.blocks : [];
   const rightBlocks = Array.isArray(block.content?.right?.blocks) ? block.content.right.blocks : [];
   const ratio = block.presentation?.ratio || '50-50';
+
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'two-column';
 
   // Responsive column ratio classes (12-column grid system)
   let leftColSpan = 'md:col-span-6';
@@ -55,9 +60,9 @@ export function TwoColumnBlock({
 
   return (
     <div
-      id={block.id}
-      data-block-id={block.id}
-      data-block-type="two-column"
+      id={blockId}
+      data-block-id={blockId}
+      data-block-type={blockType}
       className={`my-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-start ${className}`}
     >
       <div className={`flex flex-col space-y-2 min-w-0 ${leftColSpan}`}>

@@ -13,6 +13,7 @@ describe('D1 Structure Scanner', () => {
       getFileHash: vi.fn(),
       getGitCommit: vi.fn(),
       getGitRoot: vi.fn(),
+      runCommand: vi.fn(),
     };
   });
 

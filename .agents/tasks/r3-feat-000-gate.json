@@ -1,0 +1,43 @@
+{
+  "complete": true,
+  "migration_authority": "DRIZZLE-ONLY",
+  "db_env_var": "DATABASE_URL_TUTORIAL",
+  "test_db_env_var": "TEST_DATABASE_URL_TUTORIAL",
+  "database_name": "tutorial_prod",
+  "database_host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+  "python_driver": "asyncpg",
+  "typescript_driver": "@neondatabase/serverless",
+  "schema_namespace": "project_ai_*",
+  "required_tables": [
+    "project_ai_workflows",
+    "project_ai_state_transitions",
+    "project_ai_contracts",
+    "project_ai_candidates",
+    "project_ai_manifests",
+    "project_ai_approvals"
+  ],
+  "existing_migration_count": 27,
+  "next_migration_number": "0026",
+  "postgresql_version": "14+",
+  "jsonb_available": true,
+  "on_conflict_available": true,
+  "optimistic_locking_available": true,
+  "python_connection_fix_required": true,
+  "python_connection_current_var": "DATABASE_URL",
+  "python_connection_correct_var": "DATABASE_URL_TUTORIAL",
+  "alembic_exists": false,
+  "drizzle_schema_path": "packages/db-tutorial/src/schema",
+  "drizzle_migration_path": "packages/db-tutorial/migrations",
+  "drizzle_generate_command": "pnpm --filter @quiz/db-tutorial db:generate",
+  "drizzle_migrate_command": "pnpm --filter @quiz/db-tutorial db:migrate",
+  "forbidden_patterns": [
+    "create_all()",
+    "Alembic migrations",
+    "DATABASE_URL (use DATABASE_URL_TUTORIAL)",
+    "new project_ai_prod database",
+    "SQLite",
+    "schema mutations at startup"
+  ],
+  "discovery_date": "2025-01-08",
+  "discovery_agent": "FEAT-000"
+}

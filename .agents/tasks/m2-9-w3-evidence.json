@@ -1,0 +1,137 @@
+{
+  "status": "COMPLETE",
+  "commit": "22214ef6",
+  "preflight_blocker_fix_commit": "5aca876b",
+  "linter_results": "not available (flake8 not installed)",
+  "type_checker_results": "not available (mypy not installed)",
+  "test_results": {
+    "candidate_validator": {
+      "passed": 9,
+      "failed": 0,
+      "output": "All tests passed - validation logic enforces explicit version, hash verification, and artifact structure"
+    },
+    "canonical_comparator": {
+      "passed": 9,
+      "failed": 0,
+      "output": "All tests passed - comparison detects structural diffs, API changes, UBRC/theme deviations, and brand violations"
+    },
+    "placement_manifest": {
+      "passed": 13,
+      "failed": 0,
+      "output": "All tests passed - manifest generation, seal integrity, replacement strategies verified"
+    },
+    "full_suite": {
+      "passed": 467,
+      "failed": 13,
+      "output": "13 pre-existing failures in certification_gates and integration tests (not introduced by W3). All previously passing tests still pass."
+    }
+  },
+  "validation_example": {
+    "valid": true,
+    "sha256": "abc123def456789",
+    "target_family": "Introduction",
+    "target_version": "I7",
+    "errors": [],
+    "evidence": {
+      "candidate_path": "/path/to/candidate",
+      "is_directory": true,
+      "is_file": false,
+      "computed_sha256": "abc123def456789",
+      "expected_sha256": "abc123def456789",
+      "hash_match": true,
+      "target_family": "Introduction",
+      "target_version": "I7",
+      "workflow_id": "workflow-123",
+      "artifact_count": 3,
+      "validation_timestamp": "2026-10-07T19:00:00.000000+00:00"
+    }
+  },
+  "comparison_example": {
+    "has_breaking_changes": false,
+    "structural_diffs": [],
+    "api_changes": [],
+    "deviations": [],
+    "evidence": {
+      "candidate_file_count": 2,
+      "canonical_file_count": 1,
+      "candidate_files": [
+        "IntroductionI7Block.tsx",
+        "IntroductionI7Schema.ts"
+      ],
+      "checked_exports": [
+        "IntroductionI7Block",
+        "IntroductionI7Schema"
+      ],
+      "checked_ubrc_markers": [
+        "runtimeContext",
+        "theme",
+        "ils"
+      ],
+      "checked_theme_markers": [
+        "theme.primary",
+        "theme.secondary"
+      ],
+      "structural_diff_count": 0,
+      "api_change_count": 0,
+      "deviation_count": 0,
+      "comparison_timestamp": "2026-10-07T19:00:00.000000+00:00"
+    },
+    "canonical_sha256": "canonical_hash_abc123"
+  },
+  "manifest_example": {
+    "manifest_id": "550e8400-e29b-41d4-a716-446655440000",
+    "candidate_sha256": "abc123def456789",
+    "target_family": "Introduction",
+    "target_version": "I7",
+    "file_paths": [
+      {
+        "source": "IntroductionI7Block.tsx",
+        "target": "packages/ui/src/tutorial/blocks/IntroductionI7Block.tsx",
+        "type": "component",
+        "action": "write",
+        "backup_required": true
+      },
+      {
+        "source": "IntroductionI7Schema.ts",
+        "target": "packages/ui/src/tutorial/schemas/IntroductionI7Schema.ts",
+        "type": "schema",
+        "action": "write",
+        "backup_required": true
+      }
+    ],
+    "replacement_strategy": "atomic_replace",
+    "rollback_plan": {
+      "strategy": "git_worktree_delete",
+      "description": "Delete worktree for IntroductionI7 (workflow workflow-123)",
+      "steps": [
+        "Delete git worktree",
+        "Remove temporary files",
+        "Restore pre-placement state"
+      ],
+      "verification": [
+        "Verify main branch unchanged",
+        "Verify no orphaned files",
+        "Verify worktree removed"
+      ],
+      "notes": "Rollback is safe if placement fails before merge to main"
+    },
+    "generated_at": "2026-10-07T19:00:00.000000+00:00",
+    "manifest_sha256": "manifest_seal_hash_def456"
+  },
+  "architectural_compliance": {
+    "no_pass_without_evidence": true,
+    "no_test_weakening": true,
+    "snapshot_derived_contracts": true,
+    "readme_updated": true,
+    "machine_readable_evidence": true
+  },
+  "preflight_blockers_fixed": [
+    {
+      "blocker": "dynamic_version_binding",
+      "location": "app/verification/compatibility.py line 178",
+      "issue": "Hardcoded '1.0.0' fallback instead of deriving from WorkflowTarget.version",
+      "fix": "Removed fallback, now fails explicitly if version is missing",
+      "commit": "5aca876b"
+    }
+  ]
+}

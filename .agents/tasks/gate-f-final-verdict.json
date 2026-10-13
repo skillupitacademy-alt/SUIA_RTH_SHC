@@ -1,0 +1,7 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "Database schema missing brand columns — Add `uploader_brand: Optional[str]` to `CandidateModel` and `requester_brand: Optional[str]` to `WorkflowModel` in `services/project-ai/app/persistence/models.py`, then create a migration to add these columns to the database schema."
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform/.agents/tasks/gate-f-final-review.md"
+}

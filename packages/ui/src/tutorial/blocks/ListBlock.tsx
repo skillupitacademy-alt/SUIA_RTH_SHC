@@ -21,15 +21,19 @@ function renderListItem(item: ListItem, index: number, style: 'ordered' | 'unord
   );
 }
 
-export function ListBlock({ block, className = '' }: BlockComponentProps<IListBlock>) {
+export function ListBlock({ block, className = '', runtimeContext }: BlockComponentProps<IListBlock>) {
   const { style, items } = block.content;
+
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'list';
 
   if (style === 'ordered') {
     return (
       <ol
-        id={block.id}
-        data-block-id={block.id}
-        data-block-type="list"
+        id={blockId}
+        data-block-id={blockId}
+        data-block-type={blockType}
         className={`list-decimal list-inside space-y-1.5 my-3 pl-2 text-slate-700 dark:text-slate-300 ${className}`}
       >
         {items.map((item, index) => renderListItem(item, index, style))}
@@ -39,9 +43,9 @@ export function ListBlock({ block, className = '' }: BlockComponentProps<IListBl
 
   return (
     <ul
-      id={block.id}
-      data-block-id={block.id}
-      data-block-type="list"
+      id={blockId}
+      data-block-id={blockId}
+      data-block-type={blockType}
       className={`list-disc list-inside space-y-1.5 my-3 pl-2 text-slate-700 dark:text-slate-300 ${className}`}
     >
       {items.map((item, index) => renderListItem(item, index, style))}

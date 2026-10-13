@@ -1,0 +1,23 @@
+{
+  "project_type": "Python FastAPI service with Pydantic models, async/await patterns",
+  "language": "Python 3.11+",
+  "build_system": "setuptools via pyproject.toml",
+  "test_framework": "pytest with pytest-asyncio for async tests",
+  "build_command": "No explicit build command required (Python interpreted language)",
+  "test_command": "pytest services/project-ai/tests/unit/test_artifact_policy.py -v",
+  "verification_instructions": "Run pytest on the specific test file. For full verification, run pytest services/project-ai/tests/ to ensure no regressions.",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "Python 3.11+ required. Tests run synchronously (no async DB required for unit tests).",
+  "contribution_requirements": "Python code follows standard patterns. No specific linting mentioned in docs for Python services, but tests must pass.",
+  "key_patterns": "- Pydantic models in app/models/ with BaseModel and Field\n- DataClasses for internal structures with @dataclass\n- Exception raising for error conditions (not silent fallbacks)\n- Validation functions return Tuple[bool, List[str]] (is_valid, errors)\n- Test classes group related tests (TestClassName pattern)\n- pytest fixtures for test data setup",
+  "relevant_files": [
+    "services/project-ai/app/placement/artifact_policy.py",
+    "services/project-ai/app/intake/placement_manifest.py",
+    "services/project-ai/app/placement/comparator.py",
+    "services/project-ai/app/intake/canonical_comparator.py",
+    "services/project-ai/app/agents/canonical_comparison.py",
+    "services/project-ai/tests/test_artifact_policy.py",
+    "services/project-ai/app/models/candidate.py"
+  ],
+  "directory_structure": "services/project-ai/\n├── app/\n│   ├── placement/         # Artifact policy and comparator logic\n│   ├── intake/            # Manifest generation and canonical comparison\n│   ├── agents/            # Agent handlers\n│   └── models/            # Pydantic models and enums\n└── tests/\n    ├── unit/              # Unit tests (91 total test files)\n    ├── integration/       # Integration tests\n    └── certification/     # Certification gate tests"
+}

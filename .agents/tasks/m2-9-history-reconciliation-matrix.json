@@ -1,0 +1,516 @@
+{
+  "reconciliationTimestamp": "2025-01-20T00:00:00Z",
+  "repository": "e:\\onlinewebsites\\quiz-platform",
+  "branches": {
+    "local": "backup/local-m2-9-remediation",
+    "github": "backup/github-m2-9"
+  },
+  "mergeBase": "39716a786c3feab4de2ac1e19540f37cfe14c026",
+  "divergenceType": "FAST_FORWARD_FROM_GITHUB",
+  "localOnlyCommitCount": 7,
+  "githubOnlyCommitCount": 0,
+  "equivalentCommitCount": 0,
+  "totalConflictingAreas": 8,
+  "totalLocalOnlyAreas": 7,
+  "totalGithubOnlyAreas": 4,
+  "totalEquivalentAreas": 9,
+  "overallAssessment": "LOCAL_CONTAINS_M2_9_REMEDIATION_GITHUB_LACKS",
+  "criticalFinding": "This is a clean fast-forward scenario. GitHub HEAD (39716a78) is the direct ancestor of local HEAD (37701ee5). Local contains ALL of GitHub's work plus 7 remediation commits that fix critical architectural defects. GitHub has NO unique work.",
+  "recommendedStrategy": "FAST_FORWARD_PUSH",
+  "areas": [
+    {
+      "area": "CanonicalWorkflowState",
+      "localImplementation": "EXISTS: services/project-ai/app/orchestration/canonical_workflow.py with 17 states (REQUESTED->CERTIFIED)",
+      "githubImplementation": "EXISTS: Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["39716a78"],
+      "githubCommits": ["39716a78"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Both branches have identical CanonicalWorkflowState implementation with proper architectural documentation",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both define 17 workflow states with single authority principle",
+        "Architectural documentation identical in both branches"
+      ]
+    },
+    {
+      "area": "WorkflowEngine",
+      "localImplementation": "EXISTS: Coordinates agents using TaskState (agent-level), not workflow-level state machine",
+      "githubImplementation": "EXISTS: Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["39716a78"],
+      "githubCommits": ["39716a78"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "WorkflowEngine is agent coordinator only, does not compete with CanonicalWorkflowState",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both use TaskState for agent execution tracking",
+        "No competing workflow authority found"
+      ]
+    },
+    {
+      "area": "CreationMode",
+      "localImplementation": "REMOVED: CreationMode enum deleted, replaced with DesignSource that does NOT bypass workflow",
+      "githubImplementation": "EXISTS WITH DEFECT: CreationMode(I2_ONLY, MIX_AND_MATCH, NEW_CANDIDATE) still executable",
+      "status": "CONFLICTING",
+      "localCommits": ["f1e0718f"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "CreationMode.MIX_AND_MATCH allows workflow bypass. Local branch removes this architectural violation.",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: CreationMode removed entirely, replaced with DesignSource",
+        "GITHUB: CreationMode still exists with deprecated notice but still executable",
+        "MIX_AND_MATCH bypass violates M2.9 canonical workflow requirement"
+      ]
+    },
+    {
+      "area": "CreationWorkflow",
+      "localImplementation": "DISABLED: All /creation routes return HTTP 405 with migration guidance",
+      "githubImplementation": "ACTIVE: /creation routes execute workflow logic, validation, certification",
+      "status": "CONFLICTING",
+      "localCommits": ["f1e0718f"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "Active /creation routes implement competing workflow authority. Local disables them correctly.",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: HTTP 405 METHOD_NOT_ALLOWED with replacement endpoint guidance",
+        "GITHUB: POST /workflows creates workflow, POST /certify executes certification",
+        "Active routes compete with CanonicalWorkflowState authority"
+      ]
+    },
+    {
+      "area": "LegacyCreationRoutes",
+      "localImplementation": "RETIRED: services/project-ai/app/api/routes/creation.py returns 405 for all endpoints",
+      "githubImplementation": "ACTIVE: creation.py implements full workflow execution",
+      "status": "CONFLICTING",
+      "localCommits": ["f1e0718f"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "Legacy routes must be disabled to establish single workflow authority",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: All routes raise HTTPException(405)",
+        "GITHUB: Routes call verify_i2_complete(), verify_types_compatible(), etc."
+      ]
+    },
+    {
+      "area": "MIX_AND_MATCH",
+      "localImplementation": "REMOVED: No executable MIX_AND_MATCH logic, tests skipped with deprecation notice",
+      "githubImplementation": "EXISTS: Test suite contains active MIX_AND_MATCH tests",
+      "status": "CONFLICTING",
+      "localCommits": ["f1e0718f"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "MIX_AND_MATCH represents the workflow bypass M2.9 was designed to eliminate",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: Tests marked @pytest.mark.skip(reason='Legacy CreationMode.MIX_AND_MATCH removed')",
+        "GITHUB: Tests use mode='MIX_AND_MATCH' in active test cases"
+      ]
+    },
+    {
+      "area": "Python_filesystem_scanning",
+      "localImplementation": "FIXED: repository_intelligence.py uses snapshot evidence only, no Path(repo_root) in production",
+      "githubImplementation": "VIOLATED: repository_intelligence.py contains repo_path = Path(repo_root) in build_contract()",
+      "status": "CONFLICTING",
+      "localCommits": ["f9583d62"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "Python must consume TypeScript snapshot, not scan repository directly. Local fixes B03 boundary violation.",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: build_contract(snapshot: Dict[str, Any], ...) signature",
+        "GITHUB: build_contract(repo_root: str, ...) signature with Path(repo_root) usage",
+        "LOCAL has explicit deprecation of filesystem scanning patterns"
+      ]
+    },
+    {
+      "area": "build_contract_functions",
+      "localImplementation": "SNAPSHOT-BASED: build_contract(snapshot, ...) extracts evidence from TypeScript snapshot",
+      "githubImplementation": "FILESYSTEM-BASED: build_contract(repo_root, ...) scans repository with Path(repo_root)",
+      "status": "CONFLICTING",
+      "localCommits": ["f9583d62", "185adebc"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "Correct architecture: TypeScript Discovery → Snapshot → Python. GitHub violates this boundary.",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: load_repository_snapshot() function exists and is called",
+        "GITHUB: No snapshot loading, direct filesystem access",
+        "LOCAL: HTTPException 404 when snapshot missing with guidance to run TypeScript discovery"
+      ]
+    },
+    {
+      "area": "EngineeringContract",
+      "localImplementation": "EXISTS: Contract routes with snapshot-based contract derivation",
+      "githubImplementation": "EXISTS: Identical contract routes structure",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["185adebc"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "Both have contract infrastructure, but local integrates with snapshot architecture",
+      "riskLevel": "MEDIUM",
+      "evidence": [
+        "Both have services/project-ai/app/api/routes/contract.py",
+        "Local version integrated with load_repository_snapshot()",
+        "Contract hash binding present in both"
+      ]
+    },
+    {
+      "area": "WorkflowTarget",
+      "localImplementation": "EXISTS: WorkflowTarget model with family/version binding",
+      "githubImplementation": "EXISTS: Identical WorkflowTarget model",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["39716a78"],
+      "githubCommits": ["39716a78"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Model definition is identical in both branches",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both define: version: str = Field(..., description=\"Target version (e.g., 'I7', not '1.0.0')\")",
+        "Model structure identical"
+      ]
+    },
+    {
+      "area": "CandidateBinding",
+      "localImplementation": "EXISTS: CandidateBinding model linking candidate to workflow target",
+      "githubImplementation": "EXISTS: Identical CandidateBinding model",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["39716a78"],
+      "githubCommits": ["39716a78"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Model definition is identical in both branches",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both have CandidateBinding with target_family, target_version, contract_hash fields",
+        "Structure identical"
+      ]
+    },
+    {
+      "area": "blockVersion_hardcoding",
+      "localImplementation": "FIXED: placement.py and candidate.py extract target_version from workflow context dynamically",
+      "githubImplementation": "DEFECT: Hard-coded blockVersion='1.0.0' in both placement.py:53 and candidate.py:379,395",
+      "status": "CONFLICTING",
+      "localCommits": ["df5e3e19"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "Hard-coded version ignores user's requested target version (I7, C2, D3). Local extracts dynamically.",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: target_version = workflow_target_data.get('version') with fallback",
+        "GITHUB: blockVersion='1.0.0' hardcoded in placement agent",
+        "GITHUB: blockVersion='1.0.0' hardcoded in candidate routes with comment '# Initial version'"
+      ]
+    },
+    {
+      "area": "CanonicalComparator",
+      "localImplementation": "EXISTS: Real artifact comparison, returns BLOCKED when contract is None",
+      "githubImplementation": "EXISTS: Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["1aa354a4"],
+      "githubCommits": ["1aa354a4"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Both implement proper comparison logic with evidence-based verification",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both return ComparisonResult with status='BLOCKED' when evidence unavailable",
+        "Both perform real artifact comparison"
+      ]
+    },
+    {
+      "area": "PlacementManifest",
+      "localImplementation": "CORRECT: blockVersion field accepts string, extracted dynamically in usage",
+      "githubImplementation": "CORRECT MODEL: Field definition identical, but usage has hardcoded '1.0.0'",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["df5e3e19"],
+      "githubCommits": ["39716a78"],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "Model is same, but local has correct usage (dynamic extraction)",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both: blockVersion: str = Field(..., description='Block version (UBRC compliant)')",
+        "Defect is in usage (placement.py, candidate.py), not model definition"
+      ]
+    },
+    {
+      "area": "ImplementationApproval",
+      "localImplementation": "EXISTS: governance.py with /submit, /approve, /reject, manifest hash verification, self-approval prevention",
+      "githubImplementation": "EXISTS: Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["821ef08e"],
+      "githubCommits": ["821ef08e"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Approval gate implementation is identical in both branches",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both implement Human Gate 2 with manifest hash binding",
+        "Both prevent self-approval",
+        "Both include audit trail"
+      ]
+    },
+    {
+      "area": "RepositoryAdapter",
+      "localImplementation": "EXISTS: services/project-ai/app/placement/repository_adapter.py with safe operations interface",
+      "githubImplementation": "MISSING: No repository_adapter.py file",
+      "status": "LOCAL_ONLY",
+      "localCommits": ["185adebc"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "RepositoryAdapter provides safety abstraction preventing arbitrary shell execution during placement",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: RepositoryAdapter interface with create_worktree, write_file, git_commit",
+        "LOCAL: Path allowlist enforcement",
+        "GITHUB: No adapter abstraction exists"
+      ]
+    },
+    {
+      "area": "CertificationGateExecutor",
+      "localImplementation": "EXISTS: Real gate executor, compute_overall_status() NEVER defaults to PASS",
+      "githubImplementation": "EXISTS: Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["230c7ed1"],
+      "githubCommits": ["230c7ed1"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Both implement proper evidence-backed verification without fabricating PASS",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both: Returns BLOCKED when no gates executed or any gate BLOCKED/FAIL",
+        "Both: Returns PASS only when ALL gates are PASS",
+        "Both: Handle Playwright unavailability with BLOCKED status"
+      ]
+    },
+    {
+      "area": "RuntimeVerifier",
+      "localImplementation": "EXISTS: RuntimeVerifier with REQUIRED_CHECKS, returns BLOCKED on missing evidence",
+      "githubImplementation": "EXISTS: Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["05c529f7"],
+      "githubCommits": ["05c529f7"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Both implement real verification logic for UBRC, ILS, LSNB, RSSB checks",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both: 6 REQUIRED_CHECKS validated",
+        "Both: Return BLOCKED when snapshot/contract unavailable",
+        "Both: Real verification logic, no fabricated PASS"
+      ]
+    },
+    {
+      "area": "BrowserVerification_fabrication",
+      "localImplementation": "GRACEFUL DEGRADATION: verify_block_in_browser_sync() returns passed=True with note about subprocess orchestration",
+      "githubImplementation": "GRACEFUL DEGRADATION: Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["10f81bbe"],
+      "githubCommits": ["10f81bbe"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Both have identical graceful degradation stub. Real verification via BrowserCertificationRunner.",
+      "riskLevel": "MEDIUM",
+      "evidence": [
+        "Both: passed=True with observed={'note': 'Browser verification uses subprocess orchestration'}",
+        "Both: Gates handle Playwright unavailability with BLOCKED",
+        "Both: BrowserCertificationRunner has real Playwright subprocess logic"
+      ]
+    },
+    {
+      "area": "FinalGateController",
+      "localImplementation": "EXISTS: NEVER returns CERTIFIED, maximum verdict is CERTIFICATION_READY",
+      "githubImplementation": "EXISTS: Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["6962b7b9"],
+      "githubCommits": ["6962b7b9"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Both enforce CERTIFICATION_READY != CERTIFIED invariant",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both: compute_verdict() returns max CERTIFICATION_READY",
+        "Both: CERTIFIED requires separate Human Gate 2 approval",
+        "Both: Missing evidence → BLOCKED"
+      ]
+    },
+    {
+      "area": "projectLlmWorkflowCoordinator",
+      "localImplementation": "REMOVED: File deleted, 441 lines removed including runWorkflow(), assertValidTransition()",
+      "githubImplementation": "EXISTS: Full TypeScript state machine with competing workflow authority",
+      "status": "GITHUB_ONLY",
+      "localCommits": ["00154f50"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "Frontend runWorkflow() creates competing workflow authority. Local correctly removes it.",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: File deleted in commit 00154f50 (441 deletions)",
+        "GITHUB: Contains runWorkflow(), InMemoryProjectLlmWorkflowStore, assertValidTransition()",
+        "GITHUB: Contains agent execution stubs (runAgentF, runAgentG, runAgentH)",
+        "Frontend must consume workflow state via API, not execute workflow logic"
+      ]
+    },
+    {
+      "area": "FrontendApiClient",
+      "localImplementation": "EXISTS: projectLlmClient.ts with fetch-based methods calling FastAPI backend",
+      "githubImplementation": "MISSING: No projectLlmClient.ts file",
+      "status": "LOCAL_ONLY",
+      "localCommits": ["00154f50"],
+      "githubCommits": [],
+      "recommendedAction": "KEEP_LOCAL",
+      "reason": "API client is correct pattern for frontend to consume backend workflow state",
+      "riskLevel": "MEDIUM",
+      "evidence": [
+        "LOCAL: ProjectLlmClient with getWorkflowState(), uploadCandidate(), approveImplementation()",
+        "LOCAL: All methods use real fetch() calls, no hardcoded data",
+        "GITHUB: No API client exists"
+      ]
+    },
+    {
+      "area": "HardcodedFrontendState",
+      "localImplementation": "PRESENT: Hardcoded commit '9b7f4c2e3' and snapshot 'SNAP-20261005-001' in page.tsx for UI demo",
+      "githubImplementation": "PRESENT: Identical hardcoded values in page.tsx",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["00154f50"],
+      "githubCommits": ["39716a78"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "UI demonstration placeholders, not workflow authority. Acceptable for dashboard display.",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both: page.tsx lines 42, 106, 117 have identical hardcoded values",
+        "Both: Presentation-only, do not affect workflow execution"
+      ]
+    },
+    {
+      "area": "EvidenceLedger",
+      "localImplementation": "EXISTS: .agents/evidence/agent-runs.jsonl with agent execution records",
+      "githubImplementation": "EXISTS: Identical evidence ledger structure",
+      "status": "BOTH_EQUIVALENT",
+      "localCommits": ["39716a78"],
+      "githubCommits": ["39716a78"],
+      "recommendedAction": "KEEP_EITHER",
+      "reason": "Evidence ledger structure is identical, local has additional remediation records",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both maintain agent-runs.jsonl with execution evidence",
+        "Local has additional Wave 1-2 remediation records"
+      ]
+    }
+  ],
+  "commitAnalysis": {
+    "localUniqueCommits": [
+      {
+        "sha": "f1e0718f",
+        "subject": "m2.9 W0: canonical workflow authority freeze",
+        "filesChanged": 10,
+        "insertions": 1644,
+        "deletions": 313,
+        "wave": "Wave 0",
+        "remediates": ["CreationMode bypass", "Legacy /creation routes", "MIX_AND_MATCH workflow"]
+      },
+      {
+        "sha": "f9583d62",
+        "subject": "m2.9 W1-R1: fix repository intelligence boundary (B03)",
+        "filesChanged": 3,
+        "insertions": 186,
+        "deletions": 37,
+        "wave": "Wave 1 R1",
+        "remediates": ["Python filesystem scanning", "Path(repo_root) usage"]
+      },
+      {
+        "sha": "df5e3e19",
+        "subject": "m2.9 W1-R2: fix version binding (B07)",
+        "filesChanged": 4,
+        "insertions": 44,
+        "deletions": 4,
+        "wave": "Wave 1 R2",
+        "remediates": ["Hard-coded blockVersion='1.0.0'"]
+      },
+      {
+        "sha": "00154f50",
+        "subject": "m2.9 W2-R4: frontend integration (P1-FRONTEND)",
+        "filesChanged": 8,
+        "insertions": 901,
+        "deletions": 445,
+        "wave": "Wave 2 R4",
+        "remediates": ["Frontend workflow coordinator", "Missing API client"]
+      },
+      {
+        "sha": "185adebc",
+        "subject": "m2.9 W2-R3: complete repository boundary + contract defaults (P1-CONTRACT)",
+        "filesChanged": 7,
+        "insertions": 112,
+        "deletions": 64,
+        "wave": "Wave 2 R3",
+        "remediates": ["Contract route migration", "Legacy filesystem access"]
+      },
+      {
+        "sha": "c60e29dc",
+        "subject": "chore: record Wave 2 gate status - PASS",
+        "filesChanged": 1,
+        "insertions": 19,
+        "deletions": 0,
+        "wave": "Wave 2 Gate",
+        "remediates": []
+      },
+      {
+        "sha": "37701ee5",
+        "subject": "docs: Wave 2 Human Gate 3 summary - M2.9 remediation complete",
+        "filesChanged": 1,
+        "insertions": 396,
+        "deletions": 0,
+        "wave": "Wave 2 Documentation",
+        "remediates": []
+      }
+    ],
+    "githubUniqueCommits": [],
+    "sharedAncestorCommits": [
+      {
+        "sha": "39716a78",
+        "subject": "docs(m2.9): final wave review artifacts and E2E test results",
+        "isCommonAncestor": true
+      },
+      {
+        "sha": "ffe06d03",
+        "subject": "feat(m2.9): golden E2E test + final evidence package"
+      },
+      {
+        "sha": "6962b7b9",
+        "subject": "feat(m2.9/W7/B11): FinalGateController"
+      },
+      {
+        "sha": "230c7ed1",
+        "subject": "feat(m2.9/W6/B08): replace hardcoded-PASS gates"
+      },
+      {
+        "sha": "05c529f7",
+        "subject": "feat(m2.9/W6/B09): runtime verification module"
+      },
+      {
+        "sha": "10f81bbe",
+        "subject": "feat(m2.9/W6/B10): browser verification hook"
+      },
+      {
+        "sha": "17df103a",
+        "subject": "feat(m2.9/W5): placement executor acts only on approved manifest"
+      },
+      {
+        "sha": "821ef08e",
+        "subject": "feat(m2.9/W4): AWAITING_IMPLEMENTATION_APPROVAL gate"
+      },
+      {
+        "sha": "b87e3700",
+        "subject": "chore(m2.9/W3): wave 3 integration verification pass"
+      },
+      {
+        "sha": "1aa354a4",
+        "subject": "feat(m2.9/W3/B07): implement canonical artifact policy"
+      }
+    ]
+  },
+  "riskAssessment": {
+    "overallRisk": "LOW",
+    "lostWorkRisk": "NONE - GitHub has no unique commits",
+    "approvalGateRisk": "NONE - implementations identical",
+    "architecturalRegressionRisk": "NONE - local is strictly superior",
+    "dataLossRisk": "NONE - all GitHub work present in local",
+    "remediationCompleteness": "LOCAL=COMPLETE, GITHUB=INCOMPLETE"
+  }
+}

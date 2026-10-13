@@ -7,6 +7,7 @@ export interface ApplicationInfo {
   type: string;
   framework: string;
   entrypoint: string;
+  evidenceId: string;
 }
 
 export interface PackageInfo {
@@ -15,6 +16,7 @@ export interface PackageInfo {
   version: string;
   dependencies: string[];
   exports: string[];
+  evidenceId: string;
 }
 
 export interface ServiceInfo {
@@ -23,6 +25,7 @@ export interface ServiceInfo {
   type: string;
   port?: number;
   entrypoint: string;
+  evidenceId: string;
 }
 
 export interface FrameworkInfo {
@@ -54,13 +57,39 @@ export interface BlockImplementation {
   version?: string;
   path: string;
   exported: boolean;
+  evidenceId: string;
 }
 
 export interface BlockRenderer {
   blockType: string;
   componentPath: string;
   registeredInRenderer: boolean;
+  evidenceId: string;
+  ubrcStatus?: UBRCStatus;
+  ubrcDetails?: {
+    hasDataBlockVersion: boolean;
+    registryEntry?: boolean;
+    versionMatch?: boolean;
+  };
 }
+
+/**
+ * UBRC (Universal Block Registry Contract) Compliance Status
+ * 
+ * A block is UBRC-compliant when it has a complete verification chain:
+ * - Block type exists in BLOCK_REGISTRY
+ * - Renderer implementation exists
+ * - Renderer includes data-block-version attribute
+ * - Version matches across implementation and registry
+ */
+export type UBRCStatus =
+  | 'UBRC_VALID'              // Complete chain present
+  | 'UBRC_MISSING'            // Block exists but no registry entry
+  | 'UBRC_VERSION_MISMATCH'   // Registry version ≠ implementation version
+  | 'UBRC_TYPE_MISMATCH'      // Registry type ≠ expected type
+  | 'UBRC_REGISTRY_MISSING'   // No registry file found
+  | 'UBRC_RENDERER_MISSING'   // No renderer implementation
+  | 'UBRC_ATTRIBUTE_MISSING'; // No data-block-version attribute in renderer
 
 /**
  * Verification level progression for block implementations.
@@ -95,6 +124,8 @@ export interface BlockVerification {
   tested: boolean;
   /** Highest verification level achieved based on evidence */
   verificationLevel: VerificationLevel;
+  /** UBRC (Universal Block Registry Contract) compliance status */
+  ubrcStatus?: UBRCStatus;
 }
 
 export interface BlockDiscrepancy {
@@ -109,24 +140,28 @@ export interface ComposerService {
   name: string;
   path: string;
   methods: string[];
+  evidenceId: string;
 }
 
 export interface ComposerAPI {
   endpoint: string;
   method: string;
   handler: string;
+  evidenceId: string;
 }
 
 export interface ComposerSchema {
   name: string;
   path: string;
   tables: string[];
+  evidenceId: string;
 }
 
 export interface ComposerUI {
   component: string;
   path: string;
   blocksUsed: string[];
+  evidenceId: string;
 }
 
 export interface DependencyNode {
@@ -134,12 +169,16 @@ export interface DependencyNode {
   name: string;
   version: string;
   type: 'package' | 'app' | 'service';
+  evidenceId: string;
 }
 
 export interface DependencyEdge {
   from: string;
   to: string;
   kind: 'dependency' | 'devDependency' | 'peerDependency';
+  requestedVersion?: string;
+  resolvedVersion?: string;
+  evidenceId: string;
 }
 
 export interface TestSuite {
@@ -154,8 +193,76 @@ export interface TestSuite {
   };
 }
 
+export interface BrandFacts {
+  hardCodedColors: Array<{
+    path: string;
+    lineNumber: number;
+    colorValue: string;
+    context: string;
+    evidenceId: string;
+  }>;
+  logoReferences: Array<{
+    path: string;
+    assetPath: string;
+    type: 'logo' | 'icon' | 'image';
+    evidenceId: string;
+  }>;
+  brandUrls: Array<{
+    path: string;
+    url: string;
+    domain: string;
+    evidenceId: string;
+  }>;
+  brandFonts: Array<{
+    path: string;
+    fontFamily: string;
+    evidenceId: string;
+  }>;
+  tenantIds: Array<{
+    path: string;
+    tenantId: string;
+    evidenceId: string;
+  }>;
+  brandCopy: Array<{
+    path: string;
+    text: string;
+    category: 'brand-name' | 'slogan' | 'tagline';
+    evidenceId: string;
+  }>;
+}
+
+export interface ThemeFacts {
+  themeConfigs: Array<{
+    path: string;
+    configType: 'tailwind' | 'css-modules' | 'styled-components' | 'theme-file';
+    evidenceId: string;
+  }>;
+  hardCodedValues: Array<{
+    path: string;
+    lineNumber: number;
+    property: string;
+    value: string;
+    context: string;
+    evidenceId: string;
+  }>;
+  cssVariables: Array<{
+    path: string;
+    variableName: string;
+    value: string;
+    scope: 'root' | 'scoped';
+    evidenceId: string;
+  }>;
+  themeTokens: Array<{
+    path: string;
+    tokenName: string;
+    tokenValue: string;
+    category: 'color' | 'spacing' | 'typography' | 'shadow' | 'other';
+    evidenceId: string;
+  }>;
+}
+
 export interface RepositorySnapshot {
-  schemaVersion: '1.0.0';
+  schemaVersion: '1.0.0' | '1.1.0';
   repository: {
     owner: string;
     name: string;
@@ -194,6 +301,8 @@ export interface RepositorySnapshot {
     integration: TestSuite[];
     e2e: TestSuite[];
   };
+  brand?: BrandFacts;
+  theme?: ThemeFacts;
   evidence: Evidence[];
   findings: Finding[];
   canonicalHash: string;

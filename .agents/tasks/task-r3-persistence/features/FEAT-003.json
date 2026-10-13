@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Service Integration with PostgreSQL Repositories: Replace all in-memory dict stores (contracts_store, workflows_store, _candidates_store, _manifests_store, _approvals_store) with PostgreSQL repository dependencies in WorkflowGovernanceService and all route handlers. Wire repositories via FastAPI dependency injection. Implement optimistic locking retry logic for concurrent state transitions.",
+  "status": "pending",
+  "steps": [
+    "Update services/project-ai/app/orchestration/workflow_governance.py: Replace __init__(self) with __init__(self, workflow_repo: WorkflowRepository, approval_repo: ApprovalRepository), remove self._workflows and self._approvals dicts, update create_workflow to call await workflow_repo.create(workflow, idempotency_key=idempotency_key) if idempotency_key provided in kwargs, update get_workflow to call await workflow_repo.get_by_id(workflow_id), update transition_state to implement optimistic locking retry loop: for attempt in range(3): try: workflow = await workflow_repo.get_by_id(workflow_id); new_workflow = await workflow_repo.update_state(workflow_id, to_state, transition, expected_version=workflow.version); break; except OptimisticLockError: if attempt == 2: raise; await asyncio.sleep(0.1), update bind_artifact to call await workflow_repo.bind_artifact(...), update list_workflows to call await workflow_repo.list_all(), add approval methods to call approval_repo",
+    "Update services/project-ai/app/api/routes/contract.py: Remove contracts_store and workflows_store module-level dicts, add contract_repo: ContractRepository = Depends(get_contract_repo) parameter to create_engineering_contract and get_engineering_contract handlers, replace contracts_store[workflow_id] = contract with contract = await contract_repo.create(contract), replace contracts_store.get(workflow_id) lookup with contract = await contract_repo.get_by_workflow_id(workflow_id), contract_repo handles hash verification automatically and raises ContractDriftError which becomes 500 response with integrity message",
+    "Update services/project-ai/app/api/routes/candidate.py: Remove _candidates_store, _manifests_store, _approvals_store module-level dicts, add candidate_repo: CandidateRepository = Depends(get_candidate_repo), manifest_repo: ManifestRepository = Depends(get_manifest_repo), approval_repo: ApprovalRepository = Depends(get_approval_repo) parameters to handlers, replace dict operations: upload_candidate calls await candidate_repo.create(package) then await candidate_repo.bind_workflow(...), classify_candidate calls await candidate_repo.get_by_id(candidate_id), compare_candidate calls await candidate_repo.get_by_id(candidate_id), generate_manifest calls await manifest_repo.create(manifest), get_manifest calls await manifest_repo.get_by_candidate_id(candidate_id), list_candidates calls await candidate_repo.list_all(), execute_placement calls await approval_repo.get_by_workflow_id(workflow_id) for verification",
+    "Update services/project-ai/app/api/routes/workflows.py: Remove module-level governance_service = WorkflowGovernanceService() instantiation, create get_governance_service dependency function: async def get_governance_service(workflow_repo: WorkflowRepository = Depends(get_workflow_repo), approval_repo: ApprovalRepository = Depends(get_approval_repo)) -> WorkflowGovernanceService: return WorkflowGovernanceService(workflow_repo, approval_repo), add governance_service: WorkflowGovernanceService = Depends(get_governance_service) parameter to all route handlers (create_workflow, get_workflow, transition_workflow, get_workflow_history, bind_artifact, list_workflows), handlers now use injected governance_service instead of global instance"
+  ],
+  "acceptance_criteria": [
+    "No module-level dict stores remain in contract.py, candidate.py, workflows.py, workflow_governance.py",
+    "WorkflowGovernanceService constructor requires workflow_repo and approval_repo parameters (no default empty dicts)",
+    "All route handlers accept repository dependencies via Depends(get_*_repo)",
+    "No route instantiates repositories or database sessions directly (all through FastAPI dependency layer)",
+    "Optimistic locking retry logic implemented in transition_state (max 3 attempts with 0.1s sleep)",
+    "Contract hash verification errors propagate as HTTPException 500 with integrity message",
+    "All existing API endpoint contracts preserved (request/response schemas unchanged)",
+    "Service starts without errors and all endpoints accessible"
+  ],
+  "verification": [
+    "grep -E '(contracts_store|workflows_store|_candidates_store|_manifests_store|_approvals_store)\\s*=\\s*\\{' services/project-ai/app/ (no matches - all dicts removed)",
+    "grep 'OptimisticLockError' services/project-ai/app/orchestration/workflow_governance.py (retry logic present)",
+    "cd services/project-ai && pytest tests/test_workflows.py -v (workflow lifecycle tests pass)",
+    "cd services/project-ai && pytest tests/test_contract.py -v (contract endpoints pass)",
+    "cd services/project-ai && pytest tests/test_candidate.py -v (candidate endpoints pass)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

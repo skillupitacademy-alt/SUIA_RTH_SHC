@@ -4,7 +4,7 @@ import type { RepositorySnapshot } from '../../../src/contracts/snapshot.js';
 
 describe('V1 Schema Validator', () => {
   const createValidSnapshot = (): RepositorySnapshot => ({
-    schemaVersion: '1.0.0',
+    schemaVersion: '1.1.0',
     repository: {
       owner: 'test-owner',
       name: 'test-repo',
@@ -65,7 +65,7 @@ describe('V1 Schema Validator', () => {
     expect(result.errors.length).toBeGreaterThan(0);
     const versionError = result.errors.find((e) => e.code === 'INVALID_SCHEMA_VERSION');
     expect(versionError).toBeDefined();
-    expect(versionError?.message).toContain('1.0.0');
+    expect(versionError?.message).toContain('1.1.0');
   });
 
   it('should fail validation for missing required fields', async () => {
@@ -90,6 +90,7 @@ describe('V1 Schema Validator', () => {
         claim: 'test claim',
         locator: 'test:1:1',
         contentHash: 'hash123',
+        lifecycle: 'current',
       },
     ];
 
@@ -110,11 +111,68 @@ describe('V1 Schema Validator', () => {
         claim: 'test claim',
         locator: 'test:1:1',
         contentHash: 'hash123',
+        lifecycle: 'current',
       },
     ];
 
     const result = await validateSchema(snapshot);
 
     expect(result.errors.length).toBeGreaterThan(0);
+  });
+
+  // Phase F: Schema enforcement tests for evidenceId
+
+  it('should pass validation for entity with evidenceId', async () => {
+    const snapshot = createValidSnapshot();
+    snapshot.structure.applications = [
+      {
+        name: 'test-app',
+        path: 'apps/test',
+        type: 'application',
+        framework: 'next',
+        entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-001',
+      },
+    ];
+    snapshot.evidence = [
+      {
+        evidenceId: 'evidence-001',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00Z',
+        path: 'apps/test/package.json',
+        kind: 'package',
+        claim: 'Application discovered',
+        locator: 'file:apps/test/package.json',
+        contentHash: 'hash123',
+        lifecycle: 'current',
+      },
+    ];
+
+    const result = await validateSchema(snapshot);
+
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('should fail validation for entity without evidenceId', async () => {
+    const snapshot = createValidSnapshot();
+    snapshot.structure.packages = [
+      {
+        name: '@quiz/types',
+        path: 'packages/types',
+        version: '1.0.0',
+        dependencies: [],
+        exports: [],
+        // Missing evidenceId field
+      } as any,
+    ];
+
+    const result = await validateSchema(snapshot);
+
+    expect(result.errors.length).toBeGreaterThan(0);
+    const error = result.errors.find((e) => 
+      e.message.includes('evidenceId') || 
+      e.code === 'SCHEMA_VALIDATION_FAILED'
+    );
+    expect(error).toBeDefined();
   });
 });

@@ -1,0 +1,204 @@
+{
+  "summary": {
+    "total_duplicates": 39,
+    "duplicate_indexes": 17,
+    "duplicate_tables": 5,
+    "duplicate_constraints": 5,
+    "duplicate_enum_values": 2
+  },
+  "duplicates": [
+    {
+      "type": "INDEX",
+      "name": "idx_sections_delivery",
+      "first_migration": "0017",
+      "duplicate_migrations": ["0018"],
+      "statement": "CREATE INDEX IF NOT EXISTS idx_sections_delivery ON tutorial_sections (subtopic_id, difficulty, status, order_index);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_sections_delivery_by_type",
+      "first_migration": "0017",
+      "duplicate_migrations": ["0018"],
+      "statement": "CREATE INDEX IF NOT EXISTS idx_sections_delivery_by_type ON tutorial_sections (subtopic_id, difficulty, section_type, status);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_code_interactions_user",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_code_interactions_user ON code_interactions (user_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_code_interactions_section",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_code_interactions_section ON code_interactions (section_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_code_interactions_example",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_code_interactions_example ON code_interactions (code_example_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_practice_test_answers_user",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_practice_test_answers_user ON practice_test_answers (user_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_practice_test_answers_section",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_practice_test_answers_section ON practice_test_answers (section_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_practice_test_answers_question",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_practice_test_answers_question ON practice_test_answers (question_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_quiz_answers_user",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_quiz_answers_user ON quiz_answers (user_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_quiz_answers_section",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_quiz_answers_section ON quiz_answers (section_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_quiz_answers_question",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_quiz_answers_question ON quiz_answers (question_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_section_completions_user",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_section_completions_user ON section_completions (user_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_section_completions_section",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_section_completions_section ON section_completions (section_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_section_completions_subsection",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_section_completions_subsection ON section_completions (subsection_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_visual_interactions_user",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_visual_interactions_user ON visual_interactions (user_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_visual_interactions_section",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_visual_interactions_section ON visual_interactions (section_id);"
+    },
+    {
+      "type": "INDEX",
+      "name": "idx_visual_interactions_component",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"],
+      "statement": "CREATE INDEX ... idx_visual_interactions_component ON visual_interactions (component_id);"
+    },
+    {
+      "type": "ALTER_TYPE_ADD_VALUE",
+      "enum": "section_type",
+      "value": "overview",
+      "first_migration": "0016",
+      "duplicate_migrations": ["0018"]
+    },
+    {
+      "type": "ALTER_TYPE_ADD_VALUE",
+      "enum": "section_type",
+      "value": "ai_tutor",
+      "first_migration": "0014",
+      "duplicate_migrations": ["0018"]
+    },
+    {
+      "type": "TABLE",
+      "name": "code_interactions",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "TABLE",
+      "name": "practice_test_answers",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "TABLE",
+      "name": "quiz_answers",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "TABLE",
+      "name": "section_completions",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "TABLE",
+      "name": "visual_interactions",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "CONSTRAINT",
+      "name": "code_interactions_section_id_tutorial_sections_id_fk",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "CONSTRAINT",
+      "name": "practice_test_answers_section_id_tutorial_sections_id_fk",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "CONSTRAINT",
+      "name": "quiz_answers_section_id_tutorial_sections_id_fk",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "CONSTRAINT",
+      "name": "section_completions_section_id_tutorial_sections_id_fk",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    },
+    {
+      "type": "CONSTRAINT",
+      "name": "visual_interactions_section_id_tutorial_sections_id_fk",
+      "first_migration": "0012_futuristic_pepper_potts",
+      "duplicate_migrations": ["0012_user_interactions_only"]
+    }
+  ]
+}

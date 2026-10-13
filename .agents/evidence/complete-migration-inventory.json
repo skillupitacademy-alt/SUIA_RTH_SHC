@@ -1,0 +1,136 @@
+{
+  "metadata": {
+    "scan_date": "2025-01-XX",
+    "total_migrations": 29,
+    "scan_range": "0000-0027 plus 0012_user_interactions_only"
+  },
+  "indexes": {
+    "idx_sections_delivery": {
+      "first_seen_in": "0017",
+      "duplicate_in": ["0018"],
+      "note": "Created in 0017, recreated in 0018, then dropped in 0021"
+    },
+    "idx_sections_delivery_by_type": {
+      "first_seen_in": "0017",
+      "duplicate_in": ["0018"],
+      "note": "Created in 0017, recreated in 0018, then dropped in 0021"
+    },
+    "idx_code_interactions_user": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_code_interactions_section": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_code_interactions_example": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_practice_test_answers_user": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_practice_test_answers_section": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_practice_test_answers_question": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_quiz_answers_user": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_quiz_answers_section": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_quiz_answers_question": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_section_completions_user": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_section_completions_section": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_section_completions_subsection": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_visual_interactions_user": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_visual_interactions_section": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "idx_visual_interactions_component": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    }
+  },
+  "enums": {},
+  "enum_values": {
+    "section_type.overview": {
+      "first_seen_in": "0016",
+      "duplicate_in": ["0018"],
+      "note": "0016 adds 'overview', 0018 tries to add it again"
+    },
+    "section_type.ai_tutor": {
+      "first_seen_in": "0014",
+      "duplicate_in": ["0018"],
+      "note": "0014 adds 'ai_tutor', 0018 tries to add it again"
+    }
+  },
+  "tables": {
+    "code_interactions": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "practice_test_answers": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "quiz_answers": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "section_completions": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "visual_interactions": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    }
+  },
+  "constraints": {
+    "code_interactions_section_id_tutorial_sections_id_fk": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "practice_test_answers_section_id_tutorial_sections_id_fk": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "quiz_answers_section_id_tutorial_sections_id_fk": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "section_completions_section_id_tutorial_sections_id_fk": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    },
+    "visual_interactions_section_id_tutorial_sections_id_fk": {
+      "first_seen_in": "0012_futuristic_pepper_potts",
+      "duplicate_in": ["0012_user_interactions_only"]
+    }
+  }
+}

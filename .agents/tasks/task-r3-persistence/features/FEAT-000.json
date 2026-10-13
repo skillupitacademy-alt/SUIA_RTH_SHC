@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-000",
+  "type": "feat",
+  "description": "Database Architecture Discovery (MANDATORY FIRST): Inspect existing Tutorial PostgreSQL database infrastructure to determine exact connection configuration, Drizzle schema ownership, migration mechanism, table naming conventions, and test database strategy. This establishes repository facts before any implementation.",
+  "status": "pending",
+  "steps": [
+    "Inspect packages/db-tutorial/drizzle.config.ts to determine database connection variable (DATABASE_URL_TUTORIAL or DATABASE_DIRECT_URL_TUTORIAL), dialect (postgresql), and migration output directory",
+    "Examine packages/db-tutorial/src/schema/*.ts to understand existing table naming conventions, schema organization (public schema vs separate schemas), and Drizzle table definition patterns",
+    "Review packages/db-tutorial/migrations/ to determine migration file format, versioning strategy, and whether Drizzle owns ALL schema changes for tutorial_prod or if mixed ownership exists",
+    "Search for existing Python services using tutorial_prod: grep -r 'DATABASE_URL_TUTORIAL' services/ to determine if any other Python service already consumes this database and what patterns they use",
+    "Examine packages/db-tutorial/src/db.ts or src/index.ts to understand connection pooling configuration, transaction patterns, and any existing repository/service patterns",
+    "Determine test database strategy: search for tutorial_test, test schemas, or Docker-based test databases in existing test files (grep -r 'tutorial.*test' packages/db-tutorial/)",
+    "Verify PostgreSQL version and features: examine platform-database-catalog.json or connect to tutorial_prod to check version (PostgreSQL 17.x expected based on catalog)",
+    "Document findings in .agents/tasks/task-r3-persistence/r3-database-discovery.md with sections: (1) Connection Configuration (exact env var, connection string format), (2) Schema Ownership (Drizzle exclusive or mixed), (3) Migration Authority (Drizzle-only or allow Alembic), (4) Table Naming Conventions (prefix patterns, snake_case), (5) Test Database Strategy (dedicated DB, test schema, or Docker), (6) Recommendations (how Project AI should integrate)"
+  ],
+  "acceptance_criteria": [
+    "r3-database-discovery.md exists with complete findings from actual repository inspection",
+    "Database connection variable identified (DATABASE_URL_TUTORIAL verified in .env.local)",
+    "Drizzle schema ownership determined (exclusive or mixed)",
+    "Migration strategy recommendation provided (coordinate with Drizzle or use Alembic)",
+    "Table naming convention documented (project_ai_ prefix or schema-based)",
+    "Test database strategy identified from existing patterns",
+    "No assumptions made - all findings based on actual repository files"
+  ],
+  "verification": [
+    "cat .agents/tasks/task-r3-persistence/r3-database-discovery.md (complete findings documented)",
+    "grep -r 'DATABASE_URL_TUTORIAL' .env.local (connection variable confirmed)",
+    "ls packages/db-tutorial/src/schema/ (existing schema files examined)",
+    "ls packages/db-tutorial/migrations/ (existing migrations reviewed)",
+    "grep -r 'tutorial_test' packages/db-tutorial/ (test strategy identified)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

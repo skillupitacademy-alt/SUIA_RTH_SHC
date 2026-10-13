@@ -23,6 +23,7 @@ export class TutorialComposerService {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanComposer(mockAdapter);
@@ -51,6 +52,7 @@ export class TutorialComposerService {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanComposer(mockAdapter);
@@ -74,6 +76,7 @@ export class TutorialComposerService {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     // Mock to simulate discovering the service file multiple times
@@ -100,6 +103,7 @@ export class TutorialComposerService {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanComposer(mockAdapter);
@@ -126,6 +130,7 @@ export class TutorialComposerService {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanComposer(mockAdapter);
@@ -149,6 +154,7 @@ export class TutorialComposerService {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanComposer(mockAdapter);
@@ -172,6 +178,7 @@ export class TutorialComposerService {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanComposer(mockAdapter);

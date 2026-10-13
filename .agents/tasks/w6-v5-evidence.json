@@ -1,0 +1,58 @@
+{
+  "domain": "security",
+  "status": "FAIL",
+  "timestamp": "2026-10-09T11:51:48.223586Z",
+  "jwt_endpoints_covered": 24,
+  "placeholder_auth_remaining": 0,
+  "cors_ok": false,
+  "secrets_validated": true,
+  "issues": [
+    "candidate.py: Endpoint 'get_discovery_client' lacks auth dependency",
+    "contract.py: Endpoint 'calculate_snapshot_sha256' lacks auth dependency",
+    "creation.py: Endpoint 'create_workflow' lacks auth dependency",
+    "creation.py: Endpoint 'get_workflow' lacks auth dependency",
+    "creation.py: Endpoint 'validate_workflow' lacks auth dependency",
+    "evidence.py: Endpoint 'get_discovery_client' lacks auth dependency",
+    "snapshot.py: Endpoint 'get_discovery_client' lacks auth dependency",
+    "workflows.py: Endpoint '_workflow_to_response' lacks auth dependency",
+    "CORS allows wildcard origins (*) - unsafe for production",
+    "CORS has TODO comment about production restriction"
+  ],
+  "critical_failures": [
+    "CORS uses wildcard origins (*)"
+  ],
+  "warnings": [
+    "12 unprotected endpoints (excluding health)"
+  ],
+  "details": {
+    "jwt": {
+      "protected": 24,
+      "unprotected": 12,
+      "placeholder": 0,
+      "issues": [
+        "candidate.py: Endpoint 'get_discovery_client' lacks auth dependency",
+        "contract.py: Endpoint 'calculate_snapshot_sha256' lacks auth dependency",
+        "creation.py: Endpoint 'create_workflow' lacks auth dependency",
+        "creation.py: Endpoint 'get_workflow' lacks auth dependency",
+        "creation.py: Endpoint 'validate_workflow' lacks auth dependency",
+        "evidence.py: Endpoint 'get_discovery_client' lacks auth dependency",
+        "snapshot.py: Endpoint 'get_discovery_client' lacks auth dependency",
+        "workflows.py: Endpoint '_workflow_to_response' lacks auth dependency"
+      ]
+    },
+    "cors": {
+      "configured": true,
+      "wildcard_origins": true,
+      "issues": [
+        "CORS allows wildcard origins (*) - unsafe for production",
+        "CORS has TODO comment about production restriction"
+      ]
+    },
+    "secrets": {
+      "jwt_validated": true,
+      "db_validated": true,
+      "startup_validates": true,
+      "issues": []
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "remediation": "R1-B03",
+  "status": "COMPLETE",
+  "commit": "f9583d62dec0e6b8473109a88a2343432a741ccb",
+  "linesRemoved": [
+    "Path(repo_root) - replaced with snapshot consumption",
+    "direct file system access via open(), .exists(), .is_file()",
+    "compute_sha256(full_path) - moved to legacy compatibility function"
+  ],
+  "patternUsed": "snapshot.evidence[kind=canonical_block]",
+  "testResult": "13 passed in test_repository_intelligence.py; full suite: 461 passed, 58 failed (baseline maintained), 18 skipped",
+  "newFailuresIntroduced": 0,
+  "notes": "Architectural boundary fix complete. Main build_contract() now consumes TypeScript snapshot only. Legacy build_contract_legacy() preserved for backward compatibility with existing tests and routes that haven't been wired to snapshot yet. No Path(repo_root) or filesystem access in production code path."
+}

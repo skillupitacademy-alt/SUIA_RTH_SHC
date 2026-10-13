@@ -80,5 +80,24 @@ export async function validateReferenceIntegrity(
     }
   }
 
+  // V2.3: Check for 'unknown' versions in workspace and build system (M2.3)
+  if (snapshot.runtime?.workspace?.version === 'unknown') {
+    warnings.push({
+      validator: 'V2-reference-integrity',
+      code: 'UNKNOWN_WORKSPACE_VERSION',
+      message: `Workspace manager version is 'unknown' - toolchain detection may have failed`,
+      details: { workspace: snapshot.runtime.workspace },
+    });
+  }
+
+  if (snapshot.runtime?.buildSystem?.version === 'unknown') {
+    warnings.push({
+      validator: 'V2-reference-integrity',
+      code: 'UNKNOWN_BUILD_SYSTEM_VERSION',
+      message: `Build system version is 'unknown' - toolchain detection may have failed`,
+      details: { buildSystem: snapshot.runtime.buildSystem },
+    });
+  }
+
   return { errors, warnings };
 }

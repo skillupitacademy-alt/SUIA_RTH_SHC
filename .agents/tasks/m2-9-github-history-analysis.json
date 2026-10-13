@@ -1,0 +1,363 @@
+{
+  "shaVerification": {
+    "39716a78": "commit",
+    "ffe06d03": "commit",
+    "6962b7b9": "commit",
+    "230c7ed1": "commit",
+    "05c529f7": "commit",
+    "10f81bbe": "commit",
+    "17df103a": "commit",
+    "821ef08e": "commit",
+    "b87e3700": "commit",
+    "1aa354a4": "commit"
+  },
+  "commitMetadata": [
+    {
+      "sha": "39716a786c3feab4de2ac1e19540f37cfe14c026",
+      "parent": "ffe06d03b37b9f90e048fa99a9c391ff5d7e726b",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 20:07:11 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 20:07:11 2026 +0530",
+      "subject": "docs(m2.9): final wave review artifacts and E2E test results",
+      "filesChanged": [
+        ".agents/tasks/m2-9-final-review.json",
+        ".agents/tasks/m2-9-final-review.md",
+        ".agents/tasks/m2-9-wave0-review.json",
+        ".agents/tasks/m2-9-wave0-review.md",
+        ".agents/tasks/m2-9-wave1-b04-summary.md",
+        ".agents/tasks/m2-9-wave2-review.json",
+        ".agents/tasks/m2-9-wave2-review.md",
+        ".agents/tasks/m2-9-wave3-review.json",
+        ".agents/tasks/m2-9-wave3-review.md",
+        ".agents/tasks/workflow-e2e-result.json",
+        "docs/project-llm/canonical-agent-registry.md",
+        "docs/project-llm/canonical-architecture.md",
+        "docs/project-llm/canonical-implementation-status.md",
+        "docs/project-llm/canonical-workflow.md",
+        "services/project-ai/app/api/routes/creation.py",
+        "services/project-ai/app/models/creation.py",
+        "services/project-ai/app/orchestration/agent_registry.py",
+        "services/project-ai/scripts/append_b03_evidence.py",
+        "services/project-ai/tests/integration/test_certification_negative.py",
+        "services/project-ai/tests/test_agent_registry.py",
+        "services/project-ai/tests/test_creation.py"
+      ],
+      "insertions": 1084,
+      "deletions": 231
+    },
+    {
+      "sha": "ffe06d03b37b9f90e048fa99a9c391ff5d7e726b",
+      "parent": "6962b7b95ba7e38961651992fbd7fee8f13b8a26",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:47:04 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:48:28 2026 +0530",
+      "subject": "feat(m2.9): golden E2E test + final evidence package [M2.9 complete]",
+      "filesChanged": [
+        ".agents/tasks/workflow-e2e-result.json",
+        "docs/project-llm/evidence/agent-runs.jsonl",
+        "services/project-ai/tests/e2e/__init__.py",
+        "services/project-ai/tests/e2e/test_m2_9_golden_e2e.py"
+      ],
+      "insertions": 893,
+      "deletions": 0
+    },
+    {
+      "sha": "6962b7b95ba7e38961651992fbd7fee8f13b8a26",
+      "parent": "230c7ed154b62bdcec0d34386993d08fd9b7ba8c",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:36:29 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:36:29 2026 +0530",
+      "subject": "feat(m2.9/W7/B11): FinalGateController with CERTIFICATION_READY != CERTIFIED invariant",
+      "filesChanged": [
+        ".agents/agent-runs.jsonl",
+        ".agents/evidence/certification-results.jsonl",
+        "services/project-ai/app/agents/final_gate.py",
+        "services/project-ai/tests/unit/test_final_gate.py"
+      ],
+      "insertions": 476,
+      "deletions": 1
+    },
+    {
+      "sha": "230c7ed154b62bdcec0d34386993d08fd9b7ba8c",
+      "parent": "05c529f792905176d3c15b1a43c2a845d5abc4d0",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:29:42 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:29:42 2026 +0530",
+      "subject": "feat(m2.9/W6/B08): replace hardcoded-PASS gates with real GateStatus logic",
+      "filesChanged": [
+        ".agents/agent-runs.jsonl",
+        "docs/project-llm/evidence/gate-results.jsonl",
+        "services/project-ai/app/certification/gates.py",
+        "services/project-ai/tests/unit/test_certification_gates.py"
+      ],
+      "insertions": 439,
+      "deletions": 0
+    },
+    {
+      "sha": "05c529f792905176d3c15b1a43c2a845d5abc4d0",
+      "parent": "10f81bbe3c6cc9b95e929c26943f236b51373e3a",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:28:33 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:28:33 2026 +0530",
+      "subject": "feat(m2.9/W6/B09): runtime verification module for UBRC/ILS/LSNB/RSSB contracts",
+      "filesChanged": [
+        ".agents/agent-runs.jsonl",
+        "services/project-ai/app/certification/runtime_verification.py",
+        "services/project-ai/tests/unit/test_runtime_verification.py"
+      ],
+      "insertions": 631,
+      "deletions": 0
+    },
+    {
+      "sha": "10f81bbe3c6cc9b95e929c26943f236b51373e3a",
+      "parent": "17df103aaf441973befd187945dd604f1575b2ed",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:27:25 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:27:25 2026 +0530",
+      "subject": "feat(m2.9/W6/B10): browser verification hook with Playwright support",
+      "filesChanged": [
+        ".agents/evidence/agent-runs.jsonl",
+        "services/project-ai/app/certification/browser_verification.py",
+        "services/project-ai/tests/unit/test_browser_verification.py"
+      ],
+      "insertions": 464,
+      "deletions": 0
+    },
+    {
+      "sha": "17df103aaf441973befd187945dd604f1575b2ed",
+      "parent": "821ef08e831ef200a19933995cedbaa2d9a8b68c",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:20:54 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:20:54 2026 +0530",
+      "subject": "feat(m2.9/W5): placement executor acts only on approved manifest",
+      "filesChanged": [
+        ".agents/agent-runs.jsonl",
+        "services/project-ai/app/agents/placement_executor.py",
+        "services/project-ai/tests/unit/test_placement_executor.py"
+      ],
+      "insertions": 709,
+      "deletions": 0
+    },
+    {
+      "sha": "821ef08e831ef200a19933995cedbaa2d9a8b68c",
+      "parent": "b87e370011c7fd404468b2797553b2d662d6c7c4",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:17:36 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:17:36 2026 +0530",
+      "subject": "feat(m2.9/W4): AWAITING_IMPLEMENTATION_APPROVAL gate + approve-placement endpoint",
+      "filesChanged": [
+        ".agents/evidence/agent-runs.jsonl",
+        "services/project-ai/app/api/routes/governance.py",
+        "services/project-ai/tests/unit/test_approval_gate.py"
+      ],
+      "insertions": 616,
+      "deletions": 0
+    },
+    {
+      "sha": "b87e370011c7fd404468b2797553b2d662d6c7c4",
+      "parent": "1aa354a4432adf92160c018ce3970722ccf6da22",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:04:25 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:04:25 2026 +0530",
+      "subject": "chore(m2.9/W3): wave 3 integration verification pass",
+      "filesChanged": [
+        ".agents/tasks/m2-9-wave3-integration-check.md"
+      ],
+      "insertions": 80,
+      "deletions": 0
+    },
+    {
+      "sha": "1aa354a4432adf92160c018ce3970722ccf6da22",
+      "parent": "2b9c1bdd7bdca7aa93dfb5bdef6f81b579e82b50",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 19:01:00 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 19:01:00 2026 +0530",
+      "subject": "feat(m2.9/W3/B07): implement canonical artifact policy ADD/UPDATE/EXTEND/REUSE",
+      "filesChanged": [
+        ".agents/agent-runs.jsonl",
+        ".agents/evidence/agent-runs.jsonl",
+        "services/project-ai/app/agents/canonical_comparison.py",
+        "services/project-ai/app/agents/placement_manifest.py",
+        "services/project-ai/tests/unit/test_canonical_comparison.py",
+        "services/project-ai/tests/unit/test_placement_manifest.py"
+      ],
+      "insertions": 1435,
+      "deletions": 0
+    }
+  ],
+  "localOnlyCommits": [
+    {
+      "sha": "37701ee5",
+      "subject": "docs: Wave 2 Human Gate 3 summary - M2.9 remediation complete"
+    },
+    {
+      "sha": "c60e29dc",
+      "subject": "chore: record Wave 2 gate status - PASS"
+    },
+    {
+      "sha": "185adebc",
+      "subject": "m2.9 W2-R3: complete repository boundary + contract defaults (P1-CONTRACT) - migrate contract route, remove legacy filesystem access, derive contract from snapshot"
+    },
+    {
+      "sha": "00154f50",
+      "subject": "m2.9 W2-R4: frontend integration (P1-FRONTEND) - add API client, state hooks, certification UI, runtime verification controls"
+    },
+    {
+      "sha": "df5e3e19",
+      "subject": "m2.9 W1-R2: fix version binding (B07) - use WorkflowTarget.version not hardcoded 1.0.0"
+    },
+    {
+      "sha": "f9583d62",
+      "subject": "m2.9 W1-R1: fix repository intelligence boundary (B03) - remove Path(repo_root), consume snapshot only"
+    },
+    {
+      "sha": "f1e0718f",
+      "subject": "m2.9 W0: canonical workflow authority freeze — retire legacy CreationMode/Workflow routes"
+    }
+  ],
+  "localCommitMetadata": [
+    {
+      "sha": "37701ee55fa34b95a37e9e268426071960ed856a",
+      "parent": "c60e29dc3547d90682465328ad30f3552ed33bb6",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 22:46:57 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 22:46:57 2026 +0530",
+      "subject": "docs: Wave 2 Human Gate 3 summary - M2.9 remediation complete",
+      "filesChanged": [
+        ".agents/tasks/m2-9-human-gate-3-summary.md"
+      ],
+      "insertions": 396,
+      "deletions": 0
+    },
+    {
+      "sha": "c60e29dc3547d90682465328ad30f3552ed33bb6",
+      "parent": "185adebcd28676032739111643b9d9bd9dd0f53c",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 22:33:52 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 22:33:52 2026 +0530",
+      "subject": "chore: record Wave 2 gate status - PASS",
+      "filesChanged": [
+        ".agents/tasks/m2-9-wave2-gate.json"
+      ],
+      "insertions": 19,
+      "deletions": 0
+    },
+    {
+      "sha": "185adebcd28676032739111643b9d9bd9dd0f53c",
+      "parent": "00154f50f4a0420b808ad0fc7616c4d9eeaa10d0",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 22:19:15 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 22:19:15 2026 +0530",
+      "subject": "m2.9 W2-R3: complete repository boundary + contract defaults (P1-CONTRACT) - migrate contract route, remove legacy filesystem access, derive contract from snapshot",
+      "filesChanged": [
+        "services/project-ai/app/agents/placement.py",
+        "services/project-ai/app/api/routes/candidate.py",
+        "services/project-ai/app/api/routes/contract.py",
+        "services/project-ai/app/contracts/engineering_contract.py",
+        "services/project-ai/app/contracts/repository_intelligence.py",
+        "services/project-ai/tests/unit/test_contract_routes.py",
+        "services/project-ai/tests/unit/test_repository_intelligence.py"
+      ],
+      "insertions": 112,
+      "deletions": 64
+    },
+    {
+      "sha": "00154f50f4a0420b808ad0fc7616c4d9eeaa10d0",
+      "parent": "df5e3e19554acbfdbf61078cacb36565f7384ddc",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 22:19:00 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 22:19:00 2026 +0530",
+      "subject": "m2.9 W2-R4: frontend integration (P1-FRONTEND) - add API client, state hooks, certification UI, runtime verification controls",
+      "filesChanged": [
+        "apps/skillhubcore-admin/src/lib/project-llm/api/__tests__/projectLlmClient.test.ts",
+        "apps/skillhubcore-admin/src/lib/project-llm/api/projectLlmClient.ts",
+        "apps/skillhubcore-admin/src/lib/project-llm/components/CertificationBadge.tsx",
+        "apps/skillhubcore-admin/src/lib/project-llm/components/RuntimeVerificationPanel.tsx",
+        "apps/skillhubcore-admin/src/lib/project-llm/hooks/useWorkflowState.ts",
+        "apps/skillhubcore-admin/src/lib/project-llm/index.ts",
+        "apps/skillhubcore-admin/src/lib/project-llm/projectLlmWorkflowCoordinator.ts",
+        "apps/skillhubcore-admin/src/lib/project-llm/types/canonicalWorkflowState.ts"
+      ],
+      "insertions": 901,
+      "deletions": 445
+    },
+    {
+      "sha": "df5e3e19554acbfdbf61078cacb36565f7384ddc",
+      "parent": "f9583d62dec0e6b8473109a88a2343432a741ccb",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 21:53:23 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 21:53:23 2026 +0530",
+      "subject": "m2.9 W1-R2: fix version binding (B07) - use WorkflowTarget.version not hardcoded 1.0.0",
+      "filesChanged": [
+        "services/project-ai/app/agents/placement.py",
+        "services/project-ai/app/api/routes/candidate.py",
+        "services/project-ai/tests/agents/test_placement.py",
+        "services/project-ai/tests/certification/test_gates.py"
+      ],
+      "insertions": 44,
+      "deletions": 4
+    },
+    {
+      "sha": "f9583d62dec0e6b8473109a88a2343432a741ccb",
+      "parent": "f1e0718fb5470ed01c45a02add286b5993b263ea",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 21:45:02 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 21:45:02 2026 +0530",
+      "subject": "m2.9 W1-R1: fix repository intelligence boundary (B03) - remove Path(repo_root), consume snapshot only",
+      "filesChanged": [
+        "services/project-ai/app/api/routes/contract.py",
+        "services/project-ai/app/contracts/repository_intelligence.py",
+        "services/project-ai/tests/unit/test_repository_intelligence.py"
+      ],
+      "insertions": 186,
+      "deletions": 37
+    },
+    {
+      "sha": "f1e0718fb5470ed01c45a02add286b5993b263ea",
+      "parent": "39716a786c3feab4de2ac1e19540f37cfe14c026",
+      "author": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "authorDate": "Wed Oct 7 21:28:24 2026 +0530",
+      "committer": "Ajay Shah(Personal) <realtutorialh@gmail.com>",
+      "commitDate": "Wed Oct 7 21:28:24 2026 +0530",
+      "subject": "m2.9 W0: canonical workflow authority freeze — retire legacy CreationMode/Workflow routes",
+      "filesChanged": [
+        ".agents/tasks/m2-9-reconciliation-report.md",
+        ".agents/tasks/m2-9-remediation-plan-recovered.json",
+        ".agents/tasks/m2-9-wave0-freeze.json",
+        "services/project-ai/app/api/routes/creation.py",
+        "services/project-ai/app/api/schemas/creation.py",
+        "services/project-ai/app/models/creation.py",
+        "services/project-ai/tests/integration/test_i2_e2e_certification.py",
+        "services/project-ai/tests/test_creation.py",
+        "services/project-ai/tests/test_integration.py",
+        "services/project-ai/tests/test_validation_endpoint.py"
+      ],
+      "insertions": 1644,
+      "deletions": 313
+    }
+  ],
+  "graphOutput": "* 39716a78 (origin/m2-project-ai-canonical-wiring, backup/github-m2-9) docs(m2.9): final wave review artifacts and E2E test results\n* ffe06d03 feat(m2.9): golden E2E test + final evidence package [M2.9 complete]\n* 6962b7b9 feat(m2.9/W7/B11): FinalGateController with CERTIFICATION_READY != CERTIFIED invariant\n* 230c7ed1 feat(m2.9/W6/B08): replace hardcoded-PASS gates with real GateStatus logic\n* 05c529f7 feat(m2.9/W6/B09): runtime verification module for UBRC/ILS/LSNB/RSSB contracts\n* 10f81bbe feat(m2.9/W6/B10): browser verification hook with Playwright support\n* 17df103a feat(m2.9/W5): placement executor acts only on approved manifest\n* 821ef08e feat(m2.9/W4): AWAITING_IMPLEMENTATION_APPROVAL gate + approve-placement endpoint\n* b87e3700 chore(m2.9/W3): wave 3 integration verification pass\n* 1aa354a4 feat(m2.9/W3/B07): implement canonical artifact policy ADD/UPDATE/EXTEND/REUSE",
+  "githubOnlyCommits": [],
+  "cherryOutput": "No output - all commits on GitHub are ancestors of local",
+  "mergeBase": "39716a786c3feab4de2ac1e19540f37cfe14c026",
+  "divergenceType": "FAST_FORWARD_FROM_GITHUB",
+  "localHeadSHA": "37701ee55fa34b95a37e9e268426071960ed856a",
+  "githubHeadSHA": "39716a786c3feab4de2ac1e19540f37cfe14c026",
+  "notes": "CRITICAL FINDING: This is a clean fast-forward scenario. The merge-base is 39716a78, which is the HEAD of backup/github-m2-9. This means GitHub's HEAD (39716a78) is a direct ancestor of local HEAD (37701ee5). Local contains ALL of GitHub's work plus 6 additional remediation commits. The histories are linear - no true divergence exists. GitHub has NO unique commits that local doesn't already have as ancestors. The local branch built directly on top of the GitHub HEAD commit. Safe integration strategy: simple fast-forward push (no merge needed). All 10 GitHub SHAs verified as existing commits. GitHub branch contains Wave 0-7 implementation (M2.9 original work). Local branch contains Wave 0-7 PLUS Wave 1-2 remediation fixes addressing architectural defects found during Human Gate 3 audit. Remediation commits address: W0 (canonical authority freeze), W1-R1 (repository boundary fix), W1-R2 (version binding fix), W2-R3 (contract defaults), W2-R4 (frontend integration), plus documentation."
+}

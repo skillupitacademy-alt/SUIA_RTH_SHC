@@ -1,0 +1,1 @@
+{"tests_executed":14,"gate_id":"B08_certification_gate_executor","findings":[],"timestamp":"2026-10-07T19:28:49.9309587+05:30","reason":"Replaced hardcoded-PASS stubs with real GateStatus logic and compute_overall_status function","status":"PASS","evidence_ids":["ev-b08-gates-py-modified","ev-b08-unit-tests-created"],"workflow_id":"m2-9-canonical-wiring","tests_passed":14}

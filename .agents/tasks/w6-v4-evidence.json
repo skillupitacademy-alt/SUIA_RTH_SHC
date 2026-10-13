@@ -1,0 +1,17 @@
+{
+  "domain": "test-coverage",
+  "status": "FAIL",
+  "coverage_pct": 25.404768913747425,
+  "threshold": 80.0,
+  "critical_skips": [
+    "services\\project-ai\\tests\\test_integration.py",
+    "services\\project-ai\\tests\\test_integration.py",
+    "services\\project-ai\\tests\\integration\\test_certification_negative.py",
+    "services\\project-ai\\tests\\integration\\test_i2_e2e_certification.py"
+  ],
+  "issues": [
+    "Coverage 25.40% below threshold 80.0%"
+  ],
+  "has_integration_tests": true,
+  "timestamp": "2026-10-09T15:46:54.340297"
+}

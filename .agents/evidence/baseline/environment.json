@@ -1,0 +1,31 @@
+{
+  "capturedAt": "2026-10-10T05:01:07Z",
+  "pythonVersion": "Python 3.13.7",
+  "pipVersion": "pip 25.3",
+  "postgresqlAvailable": false,
+  "testDatabaseUrlSet": false,
+  "maskedDatabaseUrl": null,
+  "keyPackages": {
+    "fastapi": "0.142.2",
+    "pytest": "9.1.1",
+    "sqlalchemy": "2.1.4",
+    "alembic": "not-installed",
+    "psycopg2": "2.9.13",
+    "asyncpg": "0.32.0",
+    "pydantic": "2.13.5",
+    "httpx": "0.28.1",
+    "coverage": "7.16.2"
+  },
+  "additionalPackages": {
+    "pytest-asyncio": "1.4.0",
+    "pytest-cov": "7.1.0",
+    "uvicorn": "0.54.0",
+    "pydantic_core": "2.46.5"
+  },
+  "environmentLabel": "local-development",
+  "notes": [
+    "TEST_DATABASE_URL_TUTORIAL environment variable is not set",
+    "PostgreSQL connectivity cannot be confirmed without database URL",
+    "No connection test was performed"
+  ]
+}

@@ -2,6 +2,10 @@ import type { Evidence } from '../contracts/evidence.js';
 
 /**
  * Normalize evidence records by sorting, deduplicating, and validating
+ * 
+ * M2.1 changes:
+ * - Sort by evidenceId (deterministic) instead of path + timestamp
+ * - Throw error on duplicate evidenceId (not silent drop)
  */
 export function normalizeEvidence(evidence: Evidence[]): Evidence[] {
   // Validate required fields
@@ -18,26 +22,27 @@ export function normalizeEvidence(evidence: Evidence[]): Evidence[] {
     if (!e.claim) {
       throw new Error(`Evidence ${e.evidenceId} missing required field: claim`);
     }
+    if (!e.lifecycle) {
+      throw new Error(`Evidence ${e.evidenceId} missing required field: lifecycle`);
+    }
   }
 
-  // Sort by path, then by timestamp
-  const sorted = [...evidence].sort((a, b) => {
-    const pathCompare = a.path.localeCompare(b.path);
-    if (pathCompare !== 0) {
-      return pathCompare;
-    }
-    return a.timestamp.localeCompare(b.timestamp);
-  });
+  // Sort by evidenceId for deterministic ordering (not timestamp-dependent)
+  const sorted = [...evidence].sort((a, b) => a.evidenceId.localeCompare(b.evidenceId));
 
-  // Deduplicate by evidenceId
+  // Detect duplicate evidenceIds (error, not silent drop)
   const seen = new Set<string>();
   const deduplicated: Evidence[] = [];
   
   for (const e of sorted) {
-    if (!seen.has(e.evidenceId)) {
-      seen.add(e.evidenceId);
-      deduplicated.push(e);
+    if (seen.has(e.evidenceId)) {
+      throw new Error(
+        `Duplicate evidenceId detected: ${e.evidenceId} (path: ${e.path}, kind: ${e.kind}). ` +
+        `Evidence IDs must be unique within a snapshot.`
+      );
     }
+    seen.add(e.evidenceId);
+    deduplicated.push(e);
   }
 
   return deduplicated;

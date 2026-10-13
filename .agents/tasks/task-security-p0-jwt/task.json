@@ -1,0 +1,7 @@
+{
+  "task_id": "task-security-p0-jwt",
+  "task_description": "Implement P0 JWT authentication security fix for project-ai service: add pyjwt dependency, secure all 35 unauthenticated endpoints with Depends(get_current_user), expand unit tests, and validate startup JWT_SECRET check",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

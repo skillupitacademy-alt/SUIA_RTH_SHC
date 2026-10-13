@@ -1,0 +1,193 @@
+{
+  "task": "Security P1 Migration Authority Cleanup",
+  "date": "2026-10-09",
+  "branch": "m2-project-ai-canonical-wiring",
+  "priority": "P1",
+  "status": "COMPLETED",
+  "audit_summary": {
+    "alembic_dependency_removed": true,
+    "alembic_directory_exists": false,
+    "alembic_ini_exists": false,
+    "alembic_imports_in_code": 0,
+    "ddl_operations_in_production_code": 0,
+    "drizzle_migrations_verified": true
+  },
+  "removed_items": [
+    {
+      "type": "dependency",
+      "file": "services/project-ai/pyproject.toml",
+      "line": 11,
+      "content": "alembic>=1.13.0",
+      "action": "removed",
+      "reason": "Eliminate dual migration authority risk"
+    }
+  ],
+  "audit_findings": {
+    "alembic_dependency": {
+      "status": "REMOVED",
+      "location": "services/project-ai/pyproject.toml",
+      "before": "alembic>=1.13.0",
+      "after": "dependency removed",
+      "verification": "pip list | grep alembic returns empty"
+    },
+    "alembic_directory": {
+      "status": "NOT_PRESENT",
+      "location": "services/project-ai/alembic/",
+      "finding": "Directory does not exist"
+    },
+    "alembic_config": {
+      "status": "NOT_PRESENT",
+      "location": "services/project-ai/alembic.ini",
+      "finding": "Configuration file does not exist"
+    },
+    "alembic_imports": {
+      "status": "CLEAN",
+      "scope": "services/project-ai/**/*.py (excluding tests)",
+      "finding": "Zero Alembic imports found",
+      "verification_command": "grep -r 'import alembic|from alembic' services/project-ai/ --include='*.py' --exclude-dir=tests"
+    },
+    "ddl_operations": {
+      "status": "CLEAN",
+      "scope": "services/project-ai/app/ (production code only)",
+      "finding": "Zero DDL operations found",
+      "verification_method": "Anti-DDL test suite (4 tests)"
+    },
+    "drizzle_migrations": {
+      "status": "VERIFIED",
+      "location": "packages/db-tutorial/migrations/",
+      "tables_managed": [
+        "project_ai_workflows",
+        "project_ai_state_transitions",
+        "project_ai_contracts",
+        "project_ai_candidates",
+        "project_ai_manifests",
+        "project_ai_approvals"
+      ],
+      "sample_migrations": [
+        "0026_steady_caretaker.sql",
+        "0027_*.sql"
+      ]
+    }
+  },
+  "test_results": {
+    "test_suite": "tests/unit/test_no_ddl.py",
+    "execution_time_seconds": 0.28,
+    "total_tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "test_cases": [
+      {
+        "name": "test_no_metadata_create_all_in_production_code",
+        "status": "PASSED",
+        "description": "Verify no Base.metadata.create_all() calls in production code"
+      },
+      {
+        "name": "test_no_raw_create_table_sql_in_production_code",
+        "status": "PASSED",
+        "description": "Verify no raw CREATE TABLE SQL statements executed in production code"
+      },
+      {
+        "name": "test_no_alembic_imports_in_production_code",
+        "status": "PASSED",
+        "description": "Verify no Alembic imports in production code"
+      },
+      {
+        "name": "test_alembic_package_not_importable",
+        "status": "PASSED",
+        "description": "Verify Alembic package cannot be imported (not installed)"
+      }
+    ]
+  },
+  "security_impact": {
+    "before": {
+      "vulnerability": "Alembic dependency present in pyproject.toml",
+      "attack_vector": "Developer could run 'alembic init' or 'alembic revision --autogenerate'",
+      "impact": "Dual migration authority (Drizzle + Alembic) would cause schema drift",
+      "severity": "P1"
+    },
+    "after": {
+      "vulnerability": "ELIMINATED",
+      "enforcement": "Anti-DDL test suite prevents reintroduction",
+      "impact": "Single source of truth (Drizzle) enforced at build time",
+      "severity": "RESOLVED"
+    }
+  },
+  "deliverables": [
+    {
+      "type": "code_change",
+      "file": "services/project-ai/pyproject.toml",
+      "description": "Removed alembic>=1.13.0 from dependencies"
+    },
+    {
+      "type": "test_suite",
+      "file": "tests/unit/test_no_ddl.py",
+      "description": "Anti-DDL test suite with 4 test cases (all passing)"
+    },
+    {
+      "type": "documentation",
+      "file": "docs/architecture/migration-authority.md",
+      "description": "Architecture document: Decision, Process, Forbidden operations"
+    },
+    {
+      "type": "audit_report",
+      "file": ".agents/tasks/security-p1-migration-audit.md",
+      "description": "Detailed audit findings and verification summary"
+    },
+    {
+      "type": "test_report",
+      "file": ".agents/tasks/security-p1-migration-test-report.md",
+      "description": "Test execution log and proof of DDL-free code"
+    },
+    {
+      "type": "evidence",
+      "file": ".agents/evidence/security-p1-migration-cleanup.json",
+      "description": "This JSON summary file"
+    }
+  ],
+  "verification_checklist": {
+    "alembic_dependency_removed": true,
+    "alembic_not_importable": true,
+    "no_alembic_imports_in_code": true,
+    "no_ddl_in_production_code": true,
+    "drizzle_migrations_exist": true,
+    "test_suite_passing": true,
+    "architecture_docs_created": true,
+    "changes_committed": true,
+    "changes_pushed": true
+  },
+  "git_operations": {
+    "branch": "m2-project-ai-canonical-wiring",
+    "files_modified": [
+      "services/project-ai/pyproject.toml"
+    ],
+    "files_created": [
+      "tests/unit/test_no_ddl.py",
+      "docs/architecture/migration-authority.md",
+      ".agents/tasks/security-p1-migration-audit.md",
+      ".agents/tasks/security-p1-migration-test-report.md",
+      ".agents/evidence/security-p1-migration-cleanup.json"
+    ],
+    "commit_message": "fix: remove Alembic, establish Drizzle-only migration authority",
+    "commit_convention": "Conventional Commits (fix:)",
+    "pushed_to_remote": true
+  },
+  "references": {
+    "plan_document": ".agents/tasks/security-p1-migration-plan.md",
+    "audit_report": ".agents/tasks/security-p1-migration-audit.md",
+    "test_report": ".agents/tasks/security-p1-migration-test-report.md",
+    "architecture_policy": "docs/architecture/migration-authority.md",
+    "test_suite": "tests/unit/test_no_ddl.py"
+  },
+  "next_steps": [
+    "Monitor: Anti-DDL tests run on every CI build to prevent regression",
+    "Policy Enforcement: Code review checklist includes 'No new DDL operations'",
+    "Human Review: Verify changes in pull request"
+  ],
+  "workflow_metadata": {
+    "workflow_id": "wf_8d90ae0732685c74",
+    "step_name": "Security P1 — Migration Authority Cleanup",
+    "completed_at": "2026-10-09T13:40:00Z",
+    "agent_type": "subagent"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "PostgreSQL Persistence Infrastructure: Connect to existing Tutorial PostgreSQL database (tutorial_prod), add asyncpg driver, create async SQLAlchemy session management, and coordinate with existing Drizzle migrations. MANDATORY ARCHITECTURE: Use existing tutorial_prod database (NOT SQLite, NOT new database). Depends on FEAT-000 discovery findings.",
+  "status": "pending",
+  "steps": [
+    "BLOCKING: Read .agents/tasks/task-r3-persistence/r3-database-discovery.md to understand existing database architecture, connection configuration, and migration ownership determined in FEAT-000",
+    "Update services/project-ai/pyproject.toml dependencies: add asyncpg>=0.29.0 (Python async PostgreSQL driver), verify sqlalchemy[asyncio]>=2.0.0 already present, conditionally add alembic>=1.13.0 ONLY if FEAT-000 determined mixed migration ownership is allowed",
+    "Create services/project-ai/app/database/__init__.py (empty module marker) and services/project-ai/app/database/session.py with: (1) Load DATABASE_URL_TUTORIAL from environment (fail if not set), (2) Convert to asyncpg format: DATABASE_URL_TUTORIAL.replace('postgresql://', 'postgresql+asyncpg://'), (3) Create AsyncEngine with pool_size=10, max_overflow=20, pool_pre_ping=True, (4) Create AsyncSessionLocal sessionmaker with expire_on_commit=False, (5) Define Base = declarative_base(), (6) async def init_db() that ONLY validates connectivity via engine.connect() - DOES NOT create schema (schema changes ONLY through migration authority established by FEAT-000), (7) async def close_db() that disposes engine, (8) async def get_db_session() generator for FastAPI Depends() with commit/rollback/close",
+    "Update services/project-ai/app/main.py lifespan function: import init_db and close_db from app.database.session, in startup section add await init_db() after snapshot validation with log message 'Database initialized (tutorial_prod)', in shutdown section add await close_db() with log message, add DATABASE_URL_TUTORIAL to startup logging (sanitized - hide credentials)",
+    "Based on FEAT-000 findings, determine migration strategy: MANDATORY: If FEAT-000 determines Drizzle owns tutorial_prod schema (expected case) → Document that Project AI tables MUST be added via Drizzle schema in packages/db-tutorial/src/schema/project-ai.ts, coordinate with TypeScript team, DO NOT create Alembic migrations unless FEAT-000 provides explicit repository evidence that Python-owned migrations already exist in tutorial_prod. DEFAULT ASSUMPTION: Drizzle remains the migration authority. Python Project AI uses SQLAlchemy for data access ONLY, not schema management, unless repository evidence proves otherwise",
+    "Verify connection: pip install -e . in services/project-ai, run python -c 'from app.database.session import engine; import asyncio; asyncio.run(engine.connect())' to confirm tutorial_prod connection succeeds, check startup logs show 'Database initialized (tutorial_prod)'"
+  ],
+  "acceptance_criteria": [
+    "asyncpg dependency added to pyproject.toml (NOT aiosqlite)",
+    "app/database/session.py connects to tutorial_prod via DATABASE_URL_TUTORIAL (NOT project_ai.db)",
+    "AsyncEngine uses postgresql+asyncpg:// driver (NOT sqlite+aiosqlite://)",
+    "FastAPI lifespan initializes database connection on startup",
+    "Migration strategy determined and documented based on FEAT-000 findings",
+    "python -c 'from app.database.session import engine' succeeds without errors",
+    "python -m app.main starts and logs 'Database initialized (tutorial_prod)'",
+    "init_db() validates connectivity only, does NOT run create_all() or mutate schema",
+    "Schema creation exclusively through migration authority established by FEAT-000",
+    "No SQLite references in any production code"
+  ],
+  "verification": [
+    "grep 'asyncpg' services/project-ai/pyproject.toml (driver present)",
+    "grep 'DATABASE_URL_TUTORIAL' services/project-ai/app/database/session.py (correct env var)",
+    "grep -v 'sqlite' services/project-ai/app/database/ (no SQLite)",
+    "cd services/project-ai && pip install -e . && python -c 'from app.database.session import engine; print(engine.url)' (shows postgresql+asyncpg://...tutorial_prod)",
+    "cd services/project-ai && python -m app.main & sleep 2 && curl http://localhost:8000/health && kill %1 (service starts, health check passes)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

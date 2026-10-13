@@ -1,0 +1,24 @@
+{
+  "project_type": "Python FastAPI service within a TypeScript monorepo",
+  "language": "Python 3.11+",
+  "build_system": "setuptools, no build step required for Python service",
+  "test_framework": "pytest with pytest-asyncio for async tests",
+  "build_command": "No build required (Python interpreted). For full project: would be npm/pnpm workspace commands",
+  "test_command": "python -m pytest tests/ -v (from services/project-ai directory)",
+  "verification_instructions": "Run pytest after each change: `python -m pytest tests/unit/ -v` for unit tests, `python -m pytest tests/integration/ -v` for integration tests, `python -m pytest tests/ -v` for full suite before commit",
+  "snapshot_or_generated_files": "None - Python service does not generate checked-in files. Tests validate in-memory contract objects and mocked snapshots",
+  "environment_constraints": "Must run from services/project-ai directory. Requires Python 3.11+. Repository snapshot at packages/project-llm-discovery/output/snapshot.json is read but not modified. WorkflowGovernanceService and in-memory contracts_store are Wave 2 placeholders (will be replaced in Wave 3)",
+  "contribution_requirements": "Follow existing code patterns in services/project-ai. Use Pydantic models for data validation. Maintain architectural boundary: Python consumes TypeScript snapshots, never scans repository directly. All contract fields must be evidence-backed. Tests must verify evidence traceability and determinism",
+  "key_patterns": "Pydantic BaseModel for all data models, snake_case for Python identifiers, type hints required, async/await for route handlers, dependency injection via FastAPI Depends(), unit tests with fixtures in conftest.py, integration tests mock snapshot loading",
+  "relevant_files": [
+    "services/project-ai/app/contracts/engineering_contract.py",
+    "services/project-ai/app/contracts/repository_intelligence.py",
+    "services/project-ai/app/api/routes/contract.py",
+    "services/project-ai/app/models/workflow_target.py",
+    "services/project-ai/tests/unit/test_engineering_contract.py",
+    "services/project-ai/tests/unit/test_repository_intelligence.py",
+    "services/project-ai/tests/integration/test_w2_contract_generation.py",
+    "services/project-ai/pyproject.toml"
+  ],
+  "directory_structure": "services/project-ai/ contains: app/ (application code with api/routes/, contracts/, models/, orchestration/), tests/ (unit/, integration/, e2e/), pyproject.toml. Contracts module defines EngineeringContract and RepositoryBlockContract models. Repository intelligence extracts evidence from TypeScript snapshot. Routes module handles HTTP endpoints and calls governance service"
+}

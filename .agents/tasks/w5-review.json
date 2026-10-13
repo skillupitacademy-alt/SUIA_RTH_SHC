@@ -1,0 +1,13 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    "Conflicts endpoint incomplete — GET /workflows/{id}/placement/conflicts always returns empty array because candidate_repo.list_by_workflow doesn't exist. Either implement the repository method or document the endpoint as a future enhancement and return 501 Not Implemented.",
+    "Structural similarity default masks integration failures — When structural_similarity is None, the scorer defaults to 0.0. This is defensible (avoids arbitrary bias) but means a broken CanonicalComparator integration produces valid-looking scores with zero structural contribution. Add logging or consider whether a None score should fail-fast rather than silently contribute zero.",
+    "Persistence deferred creates technical debt — _persist_placement is a documented stub. While the rationale is clear (placement decisions are embedded in approval workflow), this creates a gap in audit trail granularity. If placement decisions later need independent querying (e.g., 'show all placements by user' or 'when was this candidate placed'), the data isn't captured. Consider whether placement events should be recorded even if they're not primary entities.",
+    "Async session passed but not used — create_placement, override_placement, and handle_placement_conflict accept session: AsyncSession but never use it directly. All repository calls go through self.*_repo which presumably uses its own session. Either remove the parameter or clarify why it's threaded through.",
+    "Conflict detection requires all_candidates upfront — create_placement only detects conflicts when all_candidates is passed as a parameter, meaning the caller must load all workflow candidates in advance. This design makes conflict detection opt-in and shifts responsibility to the caller. Consider whether conflict detection should always run by having the engine load candidates internally.",
+    "Manual override bypass lacks guard rails — override_placement allows any manifest_id without verifying it's compatible with the candidate's family/version. A human could override a Multimedia candidate to an Introduction manifest. Add validation that the manual_manifest is at least in the same family, or document that override explicitly bypasses all constraints.",
+    "candidate_id parameter inconsistency — POST /placement/override takes candidate_id as a query parameter, while POST /placement takes it in the request body. This inconsistency complicates API usage. Prefer body or path parameter for entity identifiers."
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\w5-review.md"
+}

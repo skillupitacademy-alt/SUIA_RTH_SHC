@@ -50,3 +50,8 @@ export {
   reconcileWithLegacyFixture,
   type ReconciliationResult,
 } from './validation/fixture-reconciliation.js';
+export {
+  verifyRegistryRendererRuntime,
+  type RegistryRendererVerificationResult,
+} from './verification/index.js';
+export { DiscoveryStatus } from './scanners/d4-composer-scanner.js';

@@ -1,0 +1,12 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    "Empty target field validation gap — Validation checks `workflow.target_family.strip() == ''` but Pydantic's `min_length` validation isn't enforced at the model level, so workflows can be created with whitespace-only target fields. Add `min_length=1` to `target_family` and `target_version` fields in `ProjectLLMWorkflow` schema.",
+    "Drift detection only at contract re-generation — Contract drift detection only runs when `POST /engineering-contract` is called again; if workflow target fields are mutated after the first contract generation but before the second call, the drift goes undetected until then. Add drift detection to candidate upload (compare candidate's source workflow target with current workflow target) to catch mutations earlier.",
+    "Candidates route not implemented — The review scope lists `candidates.py` as modified, but `git ls-tree` shows it doesn't exist in the branch. The candidate upload and manifest generation logic exists in `candidate.py` (singular), which is not in scope. Verify that `candidate.py` includes target binding as described in the evidence report.",
+    "Contract generation fails silently if governance service import fails — The contract route imports `governance_service` from `workflows` module inside the function body, so import errors surface as 500 instead of startup failures. Move the import to module level to fail fast at server startup.",
+    "Manifest error message improvement not verified — The evidence report claims finding_1 was addressed (changing error message from 'Re-upload candidate' to 'Delete this candidate and upload again'), but the diff wasn't fetched for the full candidate.py file. The review can't confirm the fix without seeing the actual error message text.",
+    "Target_block_type defaulted from family name — Contract generation sets `target.block_type = workflow_obj.target_family.lower()` (e.g., 'Introduction' → 'introduction'), but `ProjectLLMWorkflow` doesn't have a `target_block_type` field—only `target_family` and `target_version`. The contract route is computing block_type locally instead of reading it from workflow state, creating a potential inconsistency if block_type logic changes. Either add `target_block_type` to the workflow model or document that block_type is always derived from family."
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\2025-01-29-153045-review.md"
+}

@@ -1,0 +1,18 @@
+{
+  "timestamp": "2025-01-10T23:05:30Z",
+  "commit_sha": "5872b981dbe877ec18f7be8b93f4e1cf018f14cb",
+  "migration_status": "SKIP",
+  "migration_errors": [],
+  "integration_tests": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0
+  },
+  "security_tests": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0
+  },
+  "overall_status": "SKIP_NO_DB",
+  "notes": "PostgreSQL not available locally (pg_isready not found), Docker daemon not running. Cannot execute database migrations or integration tests."
+}

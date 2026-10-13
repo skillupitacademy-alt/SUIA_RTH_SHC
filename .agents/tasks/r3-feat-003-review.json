@@ -1,0 +1,7 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    "list_workflows default behavior undocumented at API layer — The route /workflows GET does not document that calling it with no filters returns only REQUESTED workflows. The repository layer documents this, but API consumers see the route docstring, not the repository internals. Add a note to the route docstring or the API response schema."
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\r3-feat-003-review.md"
+}

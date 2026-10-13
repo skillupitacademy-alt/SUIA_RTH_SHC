@@ -1,0 +1,131 @@
+{
+  "analysis_timestamp": "2024-01-XX",
+  "branches_compared": {
+    "canonical_wiring": "origin/m2-project-ai-canonical-wiring",
+    "e2e": "origin/project-llm-e2e-implementation"
+  },
+  "FEAT-001": {
+    "description": "Command injection eliminated in runner.py",
+    "in_canonical_wiring": false,
+    "in_e2e_only": true,
+    "commit": "10ce6e10",
+    "files_modified": [
+      "services/project-ai/app/workflows/migration_repair/runner.py",
+      "services/project-ai/tests/test_runner_command_safety.py"
+    ],
+    "evidence": "E2E branch commit 10ce6e10 replaced asyncio.create_subprocess_shell with asyncio.create_subprocess_exec to prevent shell injection. Added validate_argv() rejecting 23 shell metacharacters (|, &, ;, $, `, \\, <, >, etc.) and validate_executable() enforcing ALLOWED_COMMANDS allowlist. Canonical-wiring does NOT have this fix - the migration_repair directory does not exist in canonical-wiring.",
+    "security_impact": "HIGH - Prevents arbitrary command execution via shell metacharacter injection",
+    "test_coverage": "21 tests in test_runner_command_safety.py - all passing"
+  },
+  "FEAT-002": {
+    "description": "Trusted host/database validation",
+    "in_canonical_wiring": false,
+    "in_e2e_only": true,
+    "commit": "f6622f0e",
+    "files_modified": [
+      "services/project-ai/app/workflows/migration_repair/safety.py",
+      "services/project-ai/app/workflows/migration_repair/agents/verification_runner.py",
+      "services/project-ai/tests/test_database_connection_validation.py"
+    ],
+    "evidence": "E2E branch commit f6622f0e added TRUSTED_TEST_HOSTS allowlist (localhost, 127.0.0.1, test-postgres) and TRUSTED_TEST_DATABASES allowlist. Implemented validate_and_connect() with defense-in-depth: validates host AND database name against allowlists, parses PostgreSQL URLs, validates credentials isolation. Documented that name pattern checking alone is insufficient. Canonical-wiring does NOT have this fix.",
+    "security_impact": "HIGH - Prevents accidental production database writes during VERIFY mode operations",
+    "test_coverage": "17 tests covering validation scenarios - all passing"
+  },
+  "FEAT-003": {
+    "description": "Cleanup verification guarantee",
+    "in_canonical_wiring": false,
+    "in_e2e_only": true,
+    "commit": "6bdc3389",
+    "files_modified": [
+      "services/project-ai/app/workflows/migration_repair/verification.py",
+      "services/project-ai/app/workflows/migration_repair/models.py",
+      "services/project-ai/tests/test_verification_cleanup.py"
+    ],
+    "evidence": "E2E branch commit 6bdc3389 wrapped run_verification_pipeline() in try/finally block ensuring cleanup always runs. Added ensure_cleanup() that runs V10 teardown, added verify_database_dropped() checking docker-compose ps output, logs cleanup to .agents/evidence/runs/cleanup-{timestamp}.jsonl, marks stage BLOCKED if cleanup fails. Canonical-wiring does NOT have this fix.",
+    "security_impact": "MEDIUM - Prevents resource leaks and ensures test database containers are properly torn down",
+    "test_coverage": "8 tests covering cleanup guarantee - all passing"
+  },
+  "FEAT-004": {
+    "description": "Evidence file verification",
+    "in_canonical_wiring": false,
+    "in_e2e_only": true,
+    "commit": "9bce2b68",
+    "files_modified": [
+      "services/project-ai/app/workflows/migration_repair/agents/final_gate_agent.py",
+      "services/project-ai/app/workflows/migration_repair/gate.py",
+      "services/project-ai/tests/test_final_gate_verification.py"
+    ],
+    "evidence": "E2E branch commit 9bce2b68 added three verification functions: verify_evidence_files() (checks existence AND recomputes SHA-256 hashes), verify_test_coverage() (rejects SKIPPED status for required tests), verify_commit_identity() (compares git SHA with tested SHA). Returns BLOCKED with detailed errors if evidence missing/tampered, tests skipped, or SHA mismatch. Canonical-wiring does NOT have this fix.",
+    "security_impact": "HIGH - Prevents approval based on fabricated or tampered test evidence",
+    "test_coverage": "12 tests in test_final_gate_verification.py, 15 existing gate tests - all passing"
+  },
+  "FEAT-005": {
+    "description": "Remote SHA confirmation after publication",
+    "in_canonical_wiring": false,
+    "in_e2e_only": true,
+    "commit": "26e2413a",
+    "files_modified": [
+      "services/project-ai/app/workflows/migration_repair/agents/publisher_agent.py",
+      "services/project-ai/app/workflows/migration_repair/models.py",
+      "services/project-ai/tests/test_publisher_verification.py"
+    ],
+    "evidence": "E2E branch commit 26e2413a added PublicationState tracking approval/local commit/push/remote verification. Implemented fetch_remote_sha() parsing git ls-remote output, comparing local vs remote SHA after push. Returns FAILED if SHA mismatch detected. Records full publication.json to .agents/evidence/runs/. Canonical-wiring does NOT have this fix.",
+    "security_impact": "MEDIUM - Confirms published code matches approved/tested code, prevents silent publication failures",
+    "test_coverage": "11 tests covering all publication scenarios - all passing"
+  },
+  "cherry_pick_candidates": [
+    {
+      "commit": "10ce6e10",
+      "feat": "FEAT-001",
+      "priority": "CRITICAL",
+      "reason": "Command injection vulnerability - must be fixed before any shell command execution",
+      "dependencies": "None - standalone fix to runner.py"
+    },
+    {
+      "commit": "f6622f0e",
+      "feat": "FEAT-002",
+      "priority": "CRITICAL",
+      "reason": "Prevents production database access during VERIFY operations",
+      "dependencies": "Depends on FEAT-001 (runner.py command execution safety)"
+    },
+    {
+      "commit": "9bce2b68",
+      "feat": "FEAT-004",
+      "priority": "HIGH",
+      "reason": "Prevents approval based on fabricated evidence - critical for trust in verification pipeline",
+      "dependencies": "Requires verification.py and gate.py from E2E workflow"
+    },
+    {
+      "commit": "6bdc3389",
+      "feat": "FEAT-003",
+      "priority": "MEDIUM",
+      "reason": "Ensures resource cleanup but not security-critical if manual cleanup is performed",
+      "dependencies": "Requires verification.py from E2E workflow"
+    },
+    {
+      "commit": "26e2413a",
+      "feat": "FEAT-005",
+      "priority": "MEDIUM",
+      "reason": "Confirms publication integrity but only affects deployment confidence, not runtime security",
+      "dependencies": "Requires publisher_agent.py from E2E workflow"
+    }
+  ],
+  "applicability_to_canonical_wiring": {
+    "direct_cherry_pick_feasible": false,
+    "reason": "All five P0 fixes modify files in services/project-ai/app/workflows/migration_repair/ which does NOT exist in canonical-wiring",
+    "migration_repair_workflow_unique_to_e2e": true,
+    "recommendation": "These fixes are specific to the E2E branch's migration_repair workflow. Canonical-wiring does not have this workflow infrastructure, so cherry-picking these commits directly would fail. If migration_repair workflow features are needed in canonical-wiring, the entire workflow directory structure must be merged first, then the P0 fixes would already be included."
+  },
+  "verdict": {
+    "summary": "ALL FIVE P0 SAFETY FIXES ARE UNIQUE TO E2E BRANCH",
+    "canonical_wiring_has_p0_fixes": false,
+    "e2e_security_hardening_complete": true,
+    "action_required": "If merging E2E into canonical-wiring, all P0 fixes will come with the migration_repair workflow. If canonical-wiring is the primary branch, evaluate whether migration_repair workflow features are needed; if not, these fixes are not applicable."
+  },
+  "notes": [
+    "Canonical-wiring branch has extensive FEAT-labeled commits for JWT auth (R4), PostgreSQL persistence (R3), project-llm contract sealing (R2), and M1 snapshot validation - but NONE of these are the P0 safety fixes",
+    "The P0 safety fixes (FEAT-001 through FEAT-005) are dated Oct 11, 2026 and form a cohesive security hardening suite for the migration_repair workflow",
+    "All P0 fixes include comprehensive test coverage and detailed feature specification JSON files",
+    "E2E branch contains canonical-wiring's full commit history plus the migration_repair workflow additions"
+  ]
+}

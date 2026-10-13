@@ -1,0 +1,32 @@
+{
+  "project_type": "FastAPI service with Pydantic models (services/project-ai)",
+  "language": "Python 3.11+",
+  "build_system": "pip install -e . (pyproject.toml with setuptools build backend)",
+  "test_framework": "pytest with pytest-asyncio, asyncio_mode=auto, FastAPI TestClient for integration tests",
+  "build_command": "pip install -e '.[dev]'",
+  "test_command": "pytest tests/ -v",
+  "verification_instructions": "Run pytest tests/ -v after each feature. All tests must pass. For database features, verify: (1) Tables exist in tutorial_prod via psql $DATABASE_URL_TUTORIAL -c '\\dt project_ai_*', (2) python -m app.main starts without errors and GET /health returns 200, (3) Workflow persists across service restart with same contract_sha256",
+  "snapshot_or_generated_files": "None - database tables are persistent, no generated files to commit",
+  "environment_constraints": "Database operations are async (use AsyncEngine, AsyncSession from SQLAlchemy async). MANDATORY: Use existing tutorial_prod PostgreSQL database (DATABASE_URL_TUTORIAL environment variable). PROHIBITED: SQLite (sqlite, aiosqlite, :memory:), new database creation (project_ai_prod, project_ai.db). Test database must be PostgreSQL (tutorial_test or test schema). Always use PostgreSQL-specific SQL (ON CONFLICT, JSONB) not SQLite SQL (INSERT OR IGNORE, JSON).",
+  "contribution_requirements": "Per docs/governance/CONTRIBUTING.md: type hints required, docstrings for public APIs, test coverage 80%+. Python specific: no 'any' types, strict boolean checks, await all promises, complexity <20.",
+  "key_patterns": "Existing patterns: (1) Pydantic BaseModel for domain models (app/models/*.py), (2) Dataclass for internal state (ProjectLLMWorkflow, StateTransition), (3) FastAPI dependency injection (Depends()), (4) async/await throughout, (5) In-memory dict stores at module level (contracts_store, _candidates_store - TO BE REPLACED), (6) TestClient(app) for integration tests with fixtures per file, (7) No conftest.py currently - FEAT-004 creates it with PostgreSQL fixtures. FEAT-000 will discover existing Drizzle patterns in packages/db-tutorial/src/schema/",
+  "relevant_files": [
+    "packages/db-tutorial/drizzle.config.ts",
+    "packages/db-tutorial/src/schema/*.ts",
+    "packages/db-tutorial/migrations/",
+    ".env.local (DATABASE_URL_TUTORIAL)",
+    "services/project-ai/pyproject.toml",
+    "services/project-ai/app/main.py",
+    "services/project-ai/app/models/workflow.py",
+    "services/project-ai/app/models/implementation_approval.py",
+    "services/project-ai/app/models/candidate.py",
+    "services/project-ai/app/contracts/engineering_contract.py",
+    "services/project-ai/app/orchestration/workflow_governance.py",
+    "services/project-ai/app/api/routes/contract.py",
+    "services/project-ai/app/api/routes/candidate.py",
+    "services/project-ai/app/api/routes/workflows.py",
+    "services/project-ai/tests/test_candidate.py",
+    "services/project-ai/tests/test_workflow_transitions.py"
+  ],
+  "directory_structure": "services/project-ai/: app/ (main.py, api/routes/, models/, contracts/, orchestration/, database/ [NEW in FEAT-001]), tests/ (test_*.py files, conftest.py [NEW in FEAT-004]), pyproject.toml, README.md. NEW database/ module: __init__.py, session.py, models.py, repositories.py, repositories_impl.py, exceptions.py, dependencies.py. Existing packages/db-tutorial/: drizzle.config.ts, src/schema/ (Drizzle table definitions), migrations/ (Drizzle migration SQL files). Project AI adds project_ai_* tables to existing tutorial_prod database."
+}

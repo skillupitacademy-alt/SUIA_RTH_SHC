@@ -1,0 +1,283 @@
+{
+  "audit_type": "test_inventory",
+  "auditor": "test-inventory-auditor",
+  "run_id": "migration-repair-20261011-143539-06936246",
+  "timestamp": "2025-01-11T14:40:00.000Z",
+  "files_scanned": [
+    "services/project-ai/tests/test_migration_repair_agent_database_safety_audit.py",
+    "services/project-ai/tests/test_migration_repair_agent_evidence_assembler.py",
+    "services/project-ai/tests/test_migration_repair_agent_evidence_audit.py",
+    "services/project-ai/tests/test_migration_repair_agent_final_gate_agent.py",
+    "services/project-ai/tests/test_migration_repair_agent_migration_audit.py",
+    "services/project-ai/tests/test_migration_repair_agent_publisher_agent.py",
+    "services/project-ai/tests/test_migration_repair_agent_repair_implementer.py",
+    "services/project-ai/tests/test_migration_repair_agent_repair_planner.py",
+    "services/project-ai/tests/test_migration_repair_agent_repair_reviewer.py",
+    "services/project-ai/tests/test_migration_repair_agent_static_reviewer.py",
+    "services/project-ai/tests/test_migration_repair_agent_test_inventory.py",
+    "services/project-ai/tests/test_migration_repair_agent_test_reviewer.py",
+    "services/project-ai/tests/test_migration_repair_agent_verification_runner.py",
+    "services/project-ai/tests/test_migration_repair_gate.py",
+    "services/project-ai/tests/test_migration_repair_models.py",
+    "services/project-ai/tests/test_migration_repair_plan.py",
+    "services/project-ai/tests/test_migration_repair_safety.py",
+    "services/project-ai/tests/integration/test_migration_repair_evidence.py",
+    "services/project-ai/tests/integration/test_migration_repair_workflow.py",
+    "services/project-ai/tests/conftest.py",
+    "services/project-ai/tests/integration/conftest.py",
+    "packages/db-tutorial/package.json"
+  ],
+  "total_test_files": 19,
+  "test_files": [
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_database_safety_audit.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 4,
+      "description": "Tests database safety audit agent: evidence logging, missing env handling, production database detection, and error handling"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_evidence_audit.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests evidence audit agent: evidence logging, missing evidence directory handling, and validation results"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_evidence_assembler.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests evidence assembler agent: evidence logging, workflow evidence file creation, and error handling"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_final_gate_agent.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests final gate agent: evidence logging, blocking without verification, and gate verdict output"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_migration_audit.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests migration audit agent: evidence logging, missing directory handling, and populated result output"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_publisher_agent.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests publisher agent: evidence logging, blocking without gate pass, and no-push policy compliance"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_repair_implementer.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests repair implementer agent: evidence logging, blocking without approval, and error handling"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_repair_planner.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests repair planner agent: evidence logging, blocking on missing W1 agents, and error handling"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_repair_reviewer.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests repair reviewer agent: evidence logging, blocking without planner, and safe action approval"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_static_reviewer.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests static reviewer agent: evidence logging, missing directory handling, and syntax results output"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_test_inventory.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests test inventory agent: evidence logging, missing directory handling, and test summary output"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_test_reviewer.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests test reviewer agent: evidence logging, blocking without inventory, and coverage analysis output"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_agent_verification_runner.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": ["fixtures"],
+      "test_count": 3,
+      "description": "Tests verification runner agent: evidence logging, stage results output, and error handling"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_gate.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": [],
+      "test_count": 15,
+      "description": "Tests gate evaluation logic: fail-closed behavior, BLOCKED/SKIPPED handling, and required checks validation"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_models.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": [],
+      "test_count": 13,
+      "description": "Tests migration repair workflow models: enums, dataclasses, AgentResult, CommandResult, MigrationFinding, VerificationStage"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_plan.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": [],
+      "test_count": 17,
+      "description": "Tests workflow planning: dependency resolution, cycle detection, wave distribution, and ready_steps function"
+    },
+    {
+      "path": "services/project-ai/tests/test_migration_repair_safety.py",
+      "category": "unit",
+      "mandatory": true,
+      "dependencies": [],
+      "test_count": 15,
+      "description": "Tests database safety validation: production database protection, READONLY mode, VERIFY mode restrictions, and URL validation"
+    },
+    {
+      "path": "services/project-ai/tests/integration/test_migration_repair_evidence.py",
+      "category": "integration",
+      "mandatory": true,
+      "dependencies": ["database", "fixtures"],
+      "test_count": 19,
+      "description": "Tests evidence ledger: agent run records, command capture, SHA-256 hash computation, evidence assembler collection, evidence survival, and ledger integrity"
+    },
+    {
+      "path": "services/project-ai/tests/integration/test_migration_repair_workflow.py",
+      "category": "integration",
+      "mandatory": true,
+      "dependencies": ["database", "fixtures"],
+      "test_count": 15,
+      "description": "Tests full workflow execution: initialization, parallel execution, dependency propagation, verification runner, final gate agent, publisher agent, and workflow rejection"
+    }
+  ],
+  "skipped_tests": [
+    {
+      "file": "services/project-ai/tests/integration/test_migration_repair_workflow.py",
+      "test_name": "all tests in module",
+      "reason": "TEST_DATABASE_URL_TUTORIAL not configured — cannot run PostgreSQL integration tests"
+    },
+    {
+      "file": "services/project-ai/tests/integration/test_migration_repair_evidence.py",
+      "test_name": "all tests in module",
+      "reason": "TEST_DATABASE_URL_TUTORIAL not configured — cannot run PostgreSQL integration tests"
+    },
+    {
+      "file": "services/project-ai/tests/integration/conftest.py",
+      "test_name": "pytest_collection_modifyitems",
+      "reason": "Skips all integration tests if TEST_DATABASE_URL_TUTORIAL not configured"
+    }
+  ],
+  "coverage_gaps": [
+    {
+      "area": "workflow_controller agent",
+      "description": "No dedicated unit test file for workflow_controller.py agent. Only covered in integration tests.",
+      "severity": "MEDIUM"
+    },
+    {
+      "area": "Agent interdependencies",
+      "description": "Unit tests mock prior_agent_outputs but do not test actual data flow between agents in detail. Integration tests cover this but could be more comprehensive.",
+      "severity": "LOW"
+    },
+    {
+      "area": "Evidence ledger file locking",
+      "description": "test_migration_repair_evidence.py has a placeholder test for concurrent writes but doesn't actually test threading/multiprocessing scenarios.",
+      "severity": "MEDIUM"
+    },
+    {
+      "area": "Real migration file parsing",
+      "description": "Migration audit agent tests do not test actual SQL parsing of real migration files, only mocked scenarios.",
+      "severity": "MEDIUM"
+    },
+    {
+      "area": "Git commit verification",
+      "description": "Publisher agent tests mock commit behavior but do not verify actual git operations with real repository.",
+      "severity": "MEDIUM"
+    },
+    {
+      "area": "Database schema validation",
+      "description": "Static reviewer and verification runner tests do not validate against real database schema, only mocked responses.",
+      "severity": "HIGH"
+    },
+    {
+      "area": "Error recovery paths",
+      "description": "Most agent tests verify error handling but do not test recovery mechanisms or retry logic.",
+      "severity": "LOW"
+    },
+    {
+      "area": "Performance benchmarks",
+      "description": "No performance or load testing for agent execution time, evidence ledger writes, or database operations.",
+      "severity": "LOW"
+    }
+  ],
+  "test_scripts": {
+    "from_package_json": {
+      "test": "vitest --config vitest.config.ts run",
+      "test:watch": "vitest --config vitest.config.ts",
+      "test:coverage": "vitest --config vitest.config.ts run --coverage"
+    }
+  },
+  "findings": [
+    {
+      "severity": "INFO",
+      "message": "Total of 112 individual test cases identified across 19 test files"
+    },
+    {
+      "severity": "INFO",
+      "message": "All 13 agent implementation files have corresponding unit test coverage"
+    },
+    {
+      "severity": "INFO",
+      "message": "Integration tests require TEST_DATABASE_URL_TUTORIAL environment variable to run"
+    },
+    {
+      "severity": "MEDIUM",
+      "message": "workflow_controller.py agent lacks dedicated unit test file (only tested in integration)"
+    },
+    {
+      "severity": "HIGH",
+      "message": "Database schema validation tests rely on mocks, not real schema checks"
+    },
+    {
+      "severity": "MEDIUM",
+      "message": "Evidence ledger concurrent write testing is incomplete (placeholder only)"
+    }
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 1,
+    "medium": 4,
+    "low": 3
+  }
+}

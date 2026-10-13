@@ -3,6 +3,19 @@ node_modules/
 package-lock.json
 yarn.lock
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+
 # Logs
 *.log
 npm-debug.log*
@@ -137,6 +150,7 @@ WHAT_*.md
 *_ANALYSIS*.md
 *_IMPLEMENTATION*.md
 !ILS_UI_UX/docs/PROJECT_LLM_MVP_IMPLEMENTATION_CONTRACT.md
+!ILS_UI_UX/docs/PROJECT_LLM_IMPLEMENTATION_ALIGNMENT_MATRIX_2026-10-07.md
 *_VISUAL*.md
 scripts/PHASE*.md
 
@@ -197,3 +211,6 @@ scripts/.tmp-*
 scripts/inspect-*.mjs
 scripts/test-*.mjs
 scripts/verify-*.mjs
+
+# Git worktrees (temporary working directories)
+.worktrees/

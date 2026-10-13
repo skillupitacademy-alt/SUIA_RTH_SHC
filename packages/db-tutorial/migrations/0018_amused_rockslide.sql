@@ -1,5 +1,5 @@
-ALTER TYPE "public"."section_type" ADD VALUE 'overview' BEFORE 'notes';--> statement-breakpoint
-ALTER TYPE "public"."section_type" ADD VALUE 'ai_tutor';--> statement-breakpoint
+ALTER TYPE "public"."section_type" ADD VALUE IF NOT EXISTS 'overview' BEFORE 'notes';--> statement-breakpoint
+ALTER TYPE "public"."section_type" ADD VALUE IF NOT EXISTS 'ai_tutor';--> statement-breakpoint
 CREATE TABLE "tutorial_section_ai_tutor" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"section_id" uuid NOT NULL,
@@ -222,5 +222,5 @@ ALTER TABLE "tutorial_section_real_life" ADD CONSTRAINT "tutorial_section_real_l
 ALTER TABLE "tutorial_section_summary" ADD CONSTRAINT "tutorial_section_summary_section_id_tutorial_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."tutorial_sections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tutorial_section_technical" ADD CONSTRAINT "tutorial_section_technical_section_id_tutorial_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."tutorial_sections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tutorial_section_visual" ADD CONSTRAINT "tutorial_section_visual_section_id_tutorial_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."tutorial_sections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_sections_delivery" ON "tutorial_sections" USING btree ("subtopic_id","difficulty","status","order_index");--> statement-breakpoint
-CREATE INDEX "idx_sections_delivery_by_type" ON "tutorial_sections" USING btree ("subtopic_id","difficulty","section_type","status");
+CREATE INDEX IF NOT EXISTS "idx_sections_delivery" ON "tutorial_sections" USING btree ("subtopic_id","difficulty","status","order_index");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_sections_delivery_by_type" ON "tutorial_sections" USING btree ("subtopic_id","difficulty","section_type","status");

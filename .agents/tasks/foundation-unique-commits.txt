@@ -1,0 +1,23 @@
+# Foundation Branch Unique Commits (vs Canonical-Wiring)
+
+## Branch SHAs
+- Foundation HEAD: 0d7b4684c204fb76d34072908b9b6258c875c34b
+- Canonical-Wiring HEAD: 2e49b2a9f14e15b8f12ba230bb0dc88ce10d0d6f
+- Merge Base (Common Ancestor): b035c3034ecb01f11270ee4fdbcc0e5500ecac9f
+
+## Unique Commit Count
+9 commits unique to foundation branch
+
+## Commit History (oldest to newest)
+d52e2cb8 feat: Wave A - Foundation contracts and DAG structure (FEAT-001)
+8626882e feat: Wave B - Foundation agents 01-04 (FEAT-002)
+a4dae2ba feat: Wave C - Candidate pipeline agents 05-11 (FEAT-003)
+05b49e51 feat: Wave D+E - Certification gates and runtime chain (FEAT-004)
+ae7e74c7 feat: Wave F - Final certification sequence and DAG orchestration (FEAT-005)
+3e242e66 fix: Consolidate to 15-agent architecture with proper DAG/Registry alignment
+7ce614a3 docs: Update test-results.txt with consolidation completion status
+e2d04981 fix: Integration fixes and review findings
+0d7b4684 feat(project-ai): Add 15-agent DAG architecture final review
+
+## Analysis
+The foundation branch introduces a complete 15-agent DAG architecture in 5 feature waves (FEAT-001 through FEAT-005), with subsequent consolidation fixes and final review. This is a major architectural enhancement beyond canonical-wiring's scope.

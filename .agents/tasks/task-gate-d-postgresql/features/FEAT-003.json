@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-003",
+  "type": "docs",
+  "description": "Documentation and CI Setup for PostgreSQL Integration Tests. Update README.md with 'Running Integration Tests' section, create .agents/tasks/gate-d-ci-setup.md with CI configuration instructions for GitHub Actions, and update gate-d-plan.md with final implementation summary. This feature documents the infrastructure from FEAT-001 and tests from FEAT-002 for future developers and CI pipelines.",
+  "status": "pending",
+  "steps": [
+    "Update services/project-ai/README.md after '## Testing' section. Add '### Running Integration Tests' subsection with: (1) Prerequisites: Docker and PostgreSQL, (2) Start test database: docker-compose -f services/project-ai/docker-compose.test-db.yml up -d, (3) Configure environment: cp .env.test.example .env.test, (4) Run integration tests: pytest tests/integration/ -v, (5) Stop test database: docker-compose -f services/project-ai/docker-compose.test-db.yml down, (6) Note: Integration tests skip gracefully if TEST_DATABASE_URL_TUTORIAL not configured",
+    "Create .agents/tasks/gate-d-ci-setup.md documenting CI configuration. Structure: (1) Overview: PostgreSQL integration tests in CI, (2) GitHub Actions Service Container pattern: postgres:17 service with health check, (3) Environment variables: TEST_DATABASE_URL_TUTORIAL=postgresql+asyncpg://postgres:postgres@localhost:5432/tutorial_test, JWT_SECRET and ADMIN_JWT_SECRET with test values, (4) Migration step: explain that Drizzle migrations must run before pytest tests, (5) Example workflow YAML snippet showing postgres service, env vars, migration command, and pytest command, (6) Local development: reference docker-compose.test-db.yml for local testing",
+    "Update .agents/tasks/gate-d-plan.md (this file) with completion summary. Add '## Implementation Status' section at bottom with: Features completed (FEAT-001, FEAT-002, FEAT-003), Test counts (30 integration tests), Files modified (docker-compose.test-db.yml, .env.test.example, test_security_integration.py, README.md, gate-d-ci-setup.md), Verification commands run, Next steps (integrate into CI pipeline)",
+    "Verify README.md section exists: grep -A 10 'Running Integration Tests' services/project-ai/README.md shows complete instructions. Verify gate-d-ci-setup.md exists: cat .agents/tasks/gate-d-ci-setup.md shows CI configuration. Verify gate-d-plan.md updated: grep 'Implementation Status' .agents/tasks/gate-d-plan.md confirms completion section added"
+  ],
+  "acceptance_criteria": [
+    "README.md documents how to run integration tests locally with docker-compose",
+    "gate-d-ci-setup.md provides GitHub Actions configuration template",
+    "gate-d-plan.md updated with implementation summary",
+    "Documentation references correct port (55432 for local, 5432 for CI)",
+    "CI setup explains Drizzle migration prerequisite"
+  ],
+  "verification": [
+    "grep -A 10 'Running Integration Tests' services/project-ai/README.md — section exists with docker-compose commands",
+    "cat .agents/tasks/gate-d-ci-setup.md — shows GitHub Actions postgres service configuration",
+    "grep 'Implementation Status' .agents/tasks/gate-d-plan.md — completion summary exists",
+    "Documentation complete for developers and CI automation"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

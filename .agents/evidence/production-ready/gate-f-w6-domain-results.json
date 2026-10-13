@@ -1,0 +1,39 @@
+{
+  "domain1_jwt": {
+    "passed": 5,
+    "failed": 2,
+    "errors": 3,
+    "status": "FAIL",
+    "notes": "JWT identity extraction tests have 3 fixture errors (db_session not found) and 2 test failures"
+  },
+  "domain2_rbac": {
+    "passed": 9,
+    "failed": 0,
+    "errors": 10,
+    "status": "FAIL",
+    "notes": "RBAC authorization tests have 10 fixture errors (db_session not found for integration marked tests)"
+  },
+  "domain3_w7_evidence": {
+    "passed": 21,
+    "failed": 0,
+    "errors": 0,
+    "status": "PASS"
+  },
+  "domain4_w3c_artifact": {
+    "passed": 87,
+    "failed": 0,
+    "errors": 0,
+    "status": "PASS"
+  },
+  "domain5_w5_placement": {
+    "passed": 29,
+    "failed": 0,
+    "errors": 0,
+    "status": "PASS"
+  },
+  "all_domains_pass": false,
+  "security_regressions": [
+    "Domain 1 (JWT) - 2 failures and 3 errors in JWT identity extraction tests",
+    "Domain 2 (RBAC) - 10 fixture errors in RBAC authorization tests"
+  ]
+}

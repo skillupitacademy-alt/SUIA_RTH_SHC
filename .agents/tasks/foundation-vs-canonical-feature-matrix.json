@@ -1,0 +1,398 @@
+{
+  "metadata": {
+    "foundation_head": "0d7b4684c204fb76d34072908b9b6258c875c34b",
+    "canonical_wiring_head": "2e49b2a9f14e15b8f12ba230bb0dc88ce10d0d6f",
+    "merge_base": "b035c3034ecb01f11270ee4fdbcc0e5500ecac9f",
+    "comparison_date": "2025-01-31",
+    "unique_commits_in_foundation": 9,
+    "total_files_changed": 78,
+    "total_lines_added": 111854,
+    "total_lines_deleted": 1993
+  },
+  "agents": {
+    "foundation_total": 23,
+    "canonical_wiring_total": 13,
+    "foundation_only": [
+      "approval.py",
+      "block_specification.py",
+      "classification.py",
+      "evidence_freeze.py",
+      "final_evidence_freeze.py",
+      "human_certification.py",
+      "placement_executor.py",
+      "placement_manifest.py",
+      "playwright_browser_agent.py",
+      "post_placement_verification.py",
+      "repository_auditor.py",
+      "runtime_agent.py",
+      "snapshot_authority.py"
+    ],
+    "canonical_wiring_only": [
+      "canonical_comparison.py"
+    ],
+    "present_in_both": [
+      "browser_certification.py",
+      "dependency.py",
+      "documentation.py",
+      "final_gate.py",
+      "governance.py",
+      "intake.py",
+      "placement.py",
+      "runtime_verification.py",
+      "toolchain.py"
+    ],
+    "modified_in_foundation": [
+      "final_gate.py",
+      "intake.py"
+    ],
+    "foundation_architecture": {
+      "total_agents": 15,
+      "description": "Complete 15-agent DAG architecture with 5 feature waves (FEAT-001 through FEAT-005)",
+      "agent_sequence": [
+        "01. Repository Auditor - Validates git repository state",
+        "02. Snapshot Authority - Generates snapshot and creates run directory",
+        "03. Evidence Freeze - Validates evidence structure from snapshot",
+        "04. Block Specification - Parses candidate structure and generates requirements",
+        "05. Candidate Intake - Validates package structure and computes hashes",
+        "06. Candidate Classification - Classifies block family with confidence scoring",
+        "07. Canonical Comparison - Compares with canonical artifacts",
+        "08. Placement Manifest - Generates placement manifest with hash",
+        "09. Human Approval - Database polling approval workflow (Governance)",
+        "10. Placement Executor - Executes approved placement manifest",
+        "11. Post-Placement Snapshot - Verifies placement using git diff",
+        "12. Certification Controller - Orchestrates all certification gates",
+        "13. Runtime Agent (12K) - Verifies blocks at runtime by starting application",
+        "14. Playwright Browser Agent (12L) - Orchestrates Node Playwright browser tests",
+        "15. Human Certification - Final human certification with database polling"
+      ],
+      "human_in_loop_gates": [
+        "Agent 09: Human Approval (with manifest_hash validation)",
+        "Agent 15: Human Certification (final certification review)"
+      ]
+    }
+  },
+  "verification_modules": {
+    "foundation_total": 8,
+    "canonical_wiring_total": 9,
+    "foundation_only": [
+      "dependency.py"
+    ],
+    "canonical_wiring_only": [
+      "browser_verifier.py",
+      "runtime_verifier.py"
+    ],
+    "present_in_both": [
+      "__init__.py",
+      "brand.py",
+      "browser.py",
+      "compatibility.py",
+      "composer.py",
+      "runtime.py",
+      "theme.py"
+    ],
+    "notes": "Foundation adds dependency.py for dependency graph verification (circular dependencies, version conflicts, unlicensed packages). Canonical-wiring has browser_verifier.py and runtime_verifier.py which foundation integrates into agents."
+  },
+  "certification_gates": {
+    "foundation_total": 2,
+    "canonical_wiring_total": 4,
+    "foundation_only": [],
+    "canonical_wiring_only": [
+      "browser_verification.py",
+      "runtime_verification.py"
+    ],
+    "present_in_both": [
+      "__init__.py",
+      "gates.py"
+    ],
+    "foundation_architecture": {
+      "gate_orchestration": "Agent 12 (Certification Controller) orchestrates all gates as methods, not separate modules",
+      "gates_list": [
+        "Contract Gate",
+        "UBRC Gate",
+        "Registry Gate",
+        "Renderer Gate",
+        "Composer Gate",
+        "Tests Gate",
+        "Runtime Gate",
+        "Browser Gate",
+        "Brand Gate",
+        "Theme Gate",
+        "Dependency Gate"
+      ]
+    },
+    "notes": "Foundation consolidates gate execution into gates.py with modifications (214 additions). Canonical-wiring has separate browser_verification.py and runtime_verification.py modules."
+  },
+  "evidence_systems": {
+    "foundation_total": 4,
+    "canonical_wiring_total": 8,
+    "foundation_only": [],
+    "canonical_wiring_only": [
+      "canonical_evidence.py",
+      "integration.py",
+      "ledger.py",
+      "schemas.py"
+    ],
+    "present_in_both": [
+      "__init__.py",
+      "graph.py",
+      "logger.py",
+      "query.py"
+    ],
+    "notes": "Canonical-wiring has 4 additional evidence modules. Foundation modified logger.py (14 additions) but removed or consolidated canonical_evidence.py, integration.py, ledger.py, and schemas.py."
+  },
+  "data_models": {
+    "foundation_total": 11,
+    "canonical_wiring_total": 9,
+    "foundation_only": [
+      "agent_result.py",
+      "certification.py",
+      "gate_result.py",
+      "placement.py",
+      "specification.py"
+    ],
+    "canonical_wiring_only": [
+      "implementation_approval.py",
+      "workflow.py",
+      "workflow_target.py"
+    ],
+    "present_in_both": [
+      "__init__.py",
+      "candidate.py",
+      "creation.py",
+      "evidence.py",
+      "governance.py",
+      "task_state.py"
+    ],
+    "notes": "Foundation adds 5 DAG-specific models (agent_result, certification, gate_result, placement, specification). Canonical-wiring has implementation_approval, workflow, and workflow_target models."
+  },
+  "orchestration": {
+    "foundation_total": 6,
+    "canonical_wiring_total": 7,
+    "foundation_only": [
+      "workflow_dag.py"
+    ],
+    "canonical_wiring_only": [
+      "canonical_workflow.py",
+      "workflow_governance.py"
+    ],
+    "present_in_both": [
+      "__init__.py",
+      "agent_coordinator.py",
+      "agent_registry.py",
+      "gate_controller.py",
+      "workflow_engine.py"
+    ],
+    "modified_in_foundation": [
+      "agent_coordinator.py (221 changes)",
+      "agent_registry.py (249 changes)",
+      "workflow_engine.py (163 changes)"
+    ],
+    "notes": "Foundation adds workflow_dag.py (191 lines) defining the 15-agent DAG structure. Canonical-wiring has canonical_workflow.py and workflow_governance.py. Both branches heavily modified core orchestration files."
+  },
+  "test_files": {
+    "foundation_total": 22,
+    "canonical_wiring_total": 9,
+    "agent_tests": {
+      "foundation_total": 22,
+      "canonical_wiring_total": 9,
+      "foundation_only": [
+        "test_approval.py",
+        "test_block_specification.py",
+        "test_classification.py",
+        "test_evidence_freeze.py",
+        "test_final_evidence_freeze.py",
+        "test_human_certification.py",
+        "test_placement_executor.py",
+        "test_placement_manifest.py",
+        "test_playwright_browser_agent.py",
+        "test_post_placement_verification.py",
+        "test_repository_auditor.py",
+        "test_runtime_agent.py",
+        "test_snapshot_authority.py"
+      ],
+      "present_in_both": [
+        "test_browser_certification.py",
+        "test_dependency.py",
+        "test_documentation.py",
+        "test_final_gate.py",
+        "test_governance.py",
+        "test_intake.py",
+        "test_placement.py",
+        "test_toolchain.py"
+      ]
+    },
+    "integration_tests": {
+      "foundation_only": [
+        "test_full_certification_workflow.py"
+      ],
+      "canonical_wiring_only": [
+        "conftest.py",
+        "test_conftest_skip_behavior.py",
+        "test_final_gate.py",
+        "test_implementation_approval.py",
+        "test_placement_engine.py",
+        "test_repositories_integration.py",
+        "test_restart_persistence.py",
+        "test_security_integration.py",
+        "test_w2_contract_generation.py"
+      ],
+      "present_in_both": [
+        "test_certification_negative.py",
+        "test_i2_e2e_certification.py"
+      ]
+    },
+    "orchestration_tests": {
+      "foundation_only": [
+        "test_workflow_dag_execution.py"
+      ],
+      "canonical_wiring_only": []
+    },
+    "modified_tests_in_foundation": [
+      "test_final_gate.py (123 changes)",
+      "test_intake.py (72 additions)",
+      "test_certification_negative.py (68 changes)"
+    ],
+    "notes": "Foundation adds 13 new agent tests for DAG-specific agents plus 1 DAG execution test and 1 full workflow integration test. Canonical-wiring has more integration tests covering implementation_approval, placement_engine, repositories, restart persistence, security, and contract generation."
+  },
+  "database_schema": {
+    "foundation_only": [
+      "services/project-ai/app/database/schema_certification_reviews.sql",
+      "services/project-ai/migrations/001_approval_requests.sql"
+    ],
+    "notes": "Foundation adds database schema for approval_requests table and certification_reviews table to support human-in-loop approval (Agent 09) and certification (Agent 15) workflows with database polling."
+  },
+  "documentation": {
+    "foundation_only": [
+      ".agents/tasks/project-ai-18-agent-dag/context.json",
+      ".agents/tasks/project-ai-18-agent-dag/features/FEAT-001.json",
+      ".agents/tasks/project-ai-18-agent-dag/features/FEAT-002.json",
+      ".agents/tasks/project-ai-18-agent-dag/features/FEAT-003.json",
+      ".agents/tasks/project-ai-18-agent-dag/features/FEAT-004.json",
+      ".agents/tasks/project-ai-18-agent-dag/features/FEAT-005.json",
+      ".agents/tasks/project-ai-18-agent-dag/task.json",
+      ".agents/tasks/project-ai-18-agent-dag/test-results.txt",
+      ".agents/tasks/project-ai-18-agent-dag/verdict.json",
+      ".agents/tasks/project-ai-18-agent-dag/2025-01-30-120000-review.md",
+      ".agents/tasks/project-ai-18-agent-dag/2026-10-07-073810-review.md",
+      ".agents/tasks/project-ai-18-agent-dag/2026-10-07-184500-review.md",
+      ".agents/tasks/project-ai-dag-design-review.md",
+      ".agents/tasks/project-ai-dag-design-verdict.json",
+      ".agents/tasks/project-ai-dag-design.md (2809 lines)",
+      ".agents/tasks/project-ai-dag-plan.md (355 lines)",
+      ".project-ai/runs/phase2/completion-report.md (229 lines)"
+    ],
+    "notes": "Foundation includes extensive documentation for the 15-agent DAG design, 5 feature waves (FEAT-001 to FEAT-005), design reviews, verdicts, and phase 2 completion report."
+  },
+  "helper_scripts": {
+    "foundation_only": [
+      "services/project-ai/fix_gate_tests.py",
+      "services/project-ai/fix_gate_tests_v2.py",
+      "services/project-ai/fix_old_gate_tests.py"
+    ],
+    "notes": "Foundation includes Python helper scripts to fix gate test issues during development."
+  },
+  "architectural_differences": {
+    "foundation": {
+      "architecture": "15-agent DAG with explicit dependencies and parallel execution groups",
+      "orchestration": "workflow_dag.py defines agent sequence and dependencies",
+      "human_in_loop": "Two database-polling human gates (Agent 09 Approval, Agent 15 Certification)",
+      "verification": "Dedicated Runtime Agent (12K) and Playwright Browser Agent (12L)",
+      "evidence": "Evidence Freeze (Agent 03) validates snapshot evidence structure",
+      "snapshot": "Snapshot Authority (Agent 02) generates snapshot once, frozen for workflow",
+      "repository_validation": "Repository Auditor (Agent 01) validates git state before workflow",
+      "approval_workflow": "Approval agent polls approval_requests table with manifest_hash validation",
+      "certification_workflow": "Human Certification agent polls certification_reviews table",
+      "placement": "Separate Placement Manifest (08) and Placement Executor (10) agents",
+      "classification": "Dedicated Classification agent (06) with confidence scoring",
+      "specification": "Block Specification agent (04) generates CandidateBlockSpecification",
+      "dependency_verification": "Dependency verification in verification/dependency.py with circular dependency detection"
+    },
+    "canonical_wiring": {
+      "architecture": "Agent registry with workflow engine coordination",
+      "orchestration": "canonical_workflow.py and workflow_governance.py define workflow",
+      "human_in_loop": "Implementation approval process",
+      "verification": "Separate browser_verification.py and runtime_verification.py modules in certification/",
+      "evidence": "Evidence modules include canonical_evidence, integration, ledger, schemas",
+      "snapshot": "Snapshot generation integrated in workflow",
+      "repository_validation": "Integrated in workflow engine",
+      "approval_workflow": "Implementation approval with governance models",
+      "certification_workflow": "Final gate certification without separate human review agent",
+      "placement": "Unified placement agent",
+      "classification": "Classification integrated in other agents",
+      "specification": "Specification generation integrated",
+      "dependency_verification": "Dependency agent handles dependency verification"
+    }
+  },
+  "key_requirements_dependencies": {
+    "foundation_requires": [
+      "Database tables: approval_requests, certification_reviews",
+      "Environment variables: PROJECT_AI_APPROVAL_TIMEOUT_SEC, PROJECT_AI_CERTIFICATION_TIMEOUT_SEC",
+      "Node Playwright installed and configured with playwright.project-ai.config.ts",
+      "pnpm workspace with TypeScript discovery script at .agents/scripts/regenerate-m1-snapshot.mjs",
+      "Git repository with clean working directory",
+      "Run directory structure at .project-ai/runs/{commit-sha}-{snapshot-hash}/",
+      "Evidence directory structure for frozen evidence baseline"
+    ],
+    "canonical_wiring_requires": [
+      "Implementation approval workflow",
+      "Workflow governance models",
+      "Canonical evidence schemas",
+      "Evidence ledger and integration systems",
+      "Workflow and workflow_target models"
+    ]
+  },
+  "merge_considerations": {
+    "conflicts_expected": [
+      "agent_coordinator.py - 221 changes in foundation",
+      "agent_registry.py - 249 changes in foundation",
+      "workflow_engine.py - 163 changes in foundation",
+      "gates.py - 214 additions in foundation",
+      "evidence/logger.py - 14 additions in foundation",
+      "models/__init__.py - 44 additions in foundation",
+      "final_gate.py and intake.py modified in both branches"
+    ],
+    "architectural_decision_required": [
+      "Choose DAG-based (foundation) vs workflow-engine-based (canonical-wiring) orchestration",
+      "Decide on human-in-loop approach: database polling (foundation) vs implementation approval (canonical-wiring)",
+      "Evidence system: frozen baseline (foundation) vs ledger/integration (canonical-wiring)",
+      "Verification architecture: dedicated agents (foundation) vs separate modules (canonical-wiring)",
+      "Model structure: DAG-specific models (foundation) vs workflow models (canonical-wiring)"
+    ],
+    "incompatible_features": [
+      "workflow_dag.py (foundation) vs canonical_workflow.py + workflow_governance.py (canonical-wiring)",
+      "agent_result.py, gate_result.py, certification.py models (foundation) vs implementation_approval.py, workflow.py models (canonical-wiring)",
+      "approval.py + human_certification.py polling agents (foundation) vs governance-based approval (canonical-wiring)",
+      "Evidence freeze + snapshot authority agents (foundation) vs integrated snapshot generation (canonical-wiring)"
+    ]
+  },
+  "recommendation": {
+    "merge_feasibility": "NOT RECOMMENDED - Fundamentally incompatible architectures",
+    "reason": "Foundation implements a complete 15-agent DAG architecture with 111,854 lines added across 9 commits. Canonical-wiring has a different orchestration model. Merging would require choosing one architecture and discarding the other, not reconciling both.",
+    "alternatives": [
+      "Option 1: Merge canonical-wiring to main, keep foundation as experimental DAG branch",
+      "Option 2: Merge foundation to main if DAG architecture is the chosen direction, cherry-pick needed canonical-wiring features",
+      "Option 3: Create foundation-v2 branch that incorporates desired canonical-wiring features into the DAG architecture"
+    ],
+    "unique_value_in_foundation": [
+      "Complete 15-agent DAG with explicit dependencies and parallel execution",
+      "Human-in-loop approval gates with database polling and manifest_hash validation",
+      "Repository Auditor enforcing clean git state",
+      "Snapshot Authority with frozen evidence baseline",
+      "Evidence Freeze validation preventing hash recomputation",
+      "Dedicated Classification agent with confidence scoring",
+      "Separate Placement Manifest and Placement Executor for governance separation",
+      "Playwright Browser Agent orchestrating Node Playwright (not Python Playwright)",
+      "Dependency verification with circular dependency and version conflict detection",
+      "Comprehensive test coverage for all 15 agents (13 new agent tests)"
+    ],
+    "unique_value_in_canonical_wiring": [
+      "Implementation approval workflow with governance models",
+      "Canonical evidence schemas and ledger system",
+      "Evidence integration framework",
+      "More comprehensive integration tests (9 additional tests)",
+      "Restart persistence and security integration tests",
+      "Contract generation tests",
+      "Workflow and workflow_target models for flexible workflow definition"
+    ]
+  }
+}

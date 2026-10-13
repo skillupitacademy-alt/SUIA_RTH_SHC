@@ -1,0 +1,7 @@
+{
+  "task_id": "task-gate-d-postgresql",
+  "task_description": "Gate D — PostgreSQL Integration Test Infrastructure for project-ai service. Create docker-compose test database, .env.test configuration, and implement 30 integration tests for RBAC, Brand Isolation, Identity Extraction, State Machine, and W3/W5 workflows.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

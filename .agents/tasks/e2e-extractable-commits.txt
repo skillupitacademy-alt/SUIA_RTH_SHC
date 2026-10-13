@@ -1,0 +1,246 @@
+# E2E Branch Extractable Commits
+
+**Branch:** project-llm-e2e-implementation  
+**Total Commits:** 60 unique commits  
+**Extractable:** 18 commits (30% of branch)  
+**Strategy:** Pattern extraction, not raw cherry-pick
+
+---
+
+## Priority 1: EXTRACT IMMEDIATELY (Security-Critical)
+
+**Rationale:** These commits fix critical security vulnerabilities (command injection, production database access, fabricated evidence). Must be extracted first.
+
+**Commits:**
+
+10ce6e10 - fix: eliminate command injection in runner.py (FEAT-001)
+  • Security: CRITICAL — Prevents arbitrary command execution
+  • Pattern: Replace create_subprocess_shell → create_subprocess_exec
+  • Pattern: Block 23 shell metacharacters (|, &, ;, $, `, etc.)
+  • Pattern: Whitelist validation (ALLOWED_COMMANDS)
+  • Test Coverage: 21 tests in test_runner_command_safety.py
+  • Extract To: app/security/command_validation.py
+
+f6622f0e - fix: add trusted host/database validation (FEAT-002)
+  • Security: CRITICAL — Prevents production database writes
+  • Pattern: TRUSTED_TEST_HOSTS allowlist (localhost, 127.0.0.1, test-postgres)
+  • Pattern: TRUSTED_TEST_DATABASES allowlist
+  • Pattern: Defense-in-depth validation (host AND database name)
+  • Test Coverage: 17 tests in test_database_connection_validation.py
+  • Extract To: app/security/database_validation.py
+
+9bce2b68 - fix: verify evidence files and commit identity (FEAT-004)
+  • Security: HIGH — Prevents approval based on fabricated evidence
+  • Pattern: Recompute SHA-256 hashes of evidence files
+  • Pattern: Reject SKIPPED tests in final gate
+  • Pattern: Verify commit identity (git SHA match)
+  • Test Coverage: 12 tests in test_final_gate_verification.py
+  • Extract To: app/security/evidence_verification.py
+
+75c0a2ad - fix(project-ai): configure explicit CORS origins and portable workspace root
+  • Security: HIGH — Hardens production API security
+  • Pattern: Replace allow_origins=["*"] with explicit allowlist
+  • Pattern: Environment variable configuration (PROJECT_AI_CORS_ORIGINS)
+  • Pattern: Fail-fast validation on wildcard detection
+  • Pattern: Portable workspace resolution (relative to __file__)
+  • Test Coverage: Integration tests for CORS config
+  • Extract To: services/project-ai/app/main.py
+
+c717bd01 - fix(project-ai): fail closed on browser verification stubs
+  • Security: HIGH — Prevents stub agents from passing certification
+  • Pattern: Fail-closed design (stubs return FAIL, not PASS)
+  • Pattern: Explicit verification required (no default success)
+  • Test Coverage: Browser verification tests
+  • Extract To: app/orchestration/agent_coordinator.py
+
+c2e08c52 - fix(project-ai): prevent stub agents from passing certification
+  • Security: HIGH — Removes stub execution fallback
+  • Pattern: Remove stub handler that returns success by default
+  • Pattern: All agents require explicit implementation
+  • Test Coverage: Agent coordinator tests
+  • Extract To: app/orchestration/agent_coordinator.py
+
+---
+
+## Priority 2: EXTRACT SOON (High Value, Low Risk)
+
+**Rationale:** These commits provide valuable improvements (cleanup guarantees, publication verification, test coverage) without critical security impact. Extract after Priority 1.
+
+**Commits:**
+
+6bdc3389 - fix: guarantee cleanup with verification (FEAT-003)
+  • Security: MEDIUM — Prevents resource leaks
+  • Pattern: try/finally wrapper ensuring cleanup always runs
+  • Pattern: Verify database actually dropped (docker-compose ps)
+  • Pattern: Log cleanup to evidence ledger
+  • Test Coverage: 8 tests in test_verification_cleanup.py
+  • Extract To: app/workflows/verification.py (if workflow exists)
+
+26e2413a - fix: confirm remote SHA after publication (FEAT-005)
+  • Security: MEDIUM — Confirms publication integrity
+  • Pattern: Fetch remote SHA after push (git ls-remote)
+  • Pattern: Compare local vs remote SHA
+  • Pattern: Record publication audit trail
+  • Test Coverage: 11 tests in test_publisher_verification.py
+  • Extract To: app/workflows/publisher.py (if workflow exists)
+
+d979050f - test: FEAT-004 integration tests for migration repair workflow
+  • Value: Test infrastructure for evidence verification
+  • Pattern: Integration test baseline
+  • Pattern: Evidence collection validation
+  • Test Coverage: 15+ integration tests
+  • Extract To: tests/integration/test_evidence_verification.py
+
+2079cdde - test(project-ai): cover fail-closed runtime health checks
+  • Value: Runtime health validation
+  • Pattern: HTTP client availability checks
+  • Pattern: Fail-closed when dependencies missing
+  • Test Coverage: Runtime health tests
+  • Extract To: tests/test_runtime_health.py
+
+717cb906 - fix(project-llm): remove hard-coded compliance gate counts from handoff
+  • Value: Dynamic gate count calculation
+  • Pattern: Remove fabricated gate counts
+  • Pattern: Calculate from actual gate results
+  • Test Coverage: Handoff validation tests
+  • Extract To: services/project-llm/handoff logic
+
+ae2a4b80 - test(project-ai): prevent unexecuted browser checks from passing
+  • Value: Browser verification test coverage
+  • Pattern: Ensure browser checks actually execute
+  • Pattern: Fail if checks skipped
+  • Test Coverage: Browser verification tests
+  • Extract To: tests/test_browser_verification.py
+
+---
+
+## Priority 3: EVALUATE AFTER VALIDATION (Context-Specific)
+
+**Rationale:** These commits are valuable but context-specific to migration repair workflow. Evaluate whether canonical-wiring needs this functionality before extracting.
+
+**Commits:**
+
+f606dd02 - feat: FEAT-002 extend agent registry to 28 agents
+  • Value: Agent registry expansion methodology
+  • Pattern: 13 new migration repair agents registered
+  • Pattern: Structured agent definitions (capabilities, descriptions)
+  • Decision: Extract registry pattern, not specific agents
+  • Extract To: app/orchestration/agent_registry.py (pattern only)
+
+c66198db - feat: FEAT-003 implement 13 migration repair agents
+  • Value: Wave-based orchestration pattern
+  • Pattern: W1-W9 wave execution with dependency management
+  • Pattern: File ownership map (agents can only modify specific files)
+  • Decision: Extract orchestration pattern if needed
+  • Extract To: app/workflows/ (pattern documentation)
+
+8e8a16f6 - feat: FEAT-001 foundation modules for migration repair workflow
+  • Value: Workflow infrastructure patterns
+  • Pattern: models.py (data models), runner.py (command execution)
+  • Pattern: verification.py (V0-V10 pipeline), gate.py (final gate logic)
+  • Decision: Extract command execution + verification patterns
+  • Extract To: app/security/command_validation.py, app/workflows/verification.py
+
+7da64232 - fix(db): remove 46 duplicate statements from migration 0012
+  • Value: Database migration repair
+  • Pattern: Surgical fix reducing migration file from 59KB → 20KB
+  • Decision: Apply if canonical-wiring has same issue
+  • Extract To: packages/db-tutorial/migrations/0012_*.sql (if needed)
+
+3e18f060 - fix(db): make section_type enum migration idempotent
+  • Value: Idempotent migration pattern
+  • Pattern: Use CREATE TYPE IF NOT EXISTS for PostgreSQL enums
+  • Decision: Apply if canonical-wiring needs idempotent migrations
+  • Extract To: packages/db-tutorial/migrations/0021_*.sql (if needed)
+
+0a12952c - fix(db): make delivery indexes idempotent in migration 0018
+  • Value: Idempotent index creation
+  • Pattern: Use CREATE INDEX IF NOT EXISTS for PostgreSQL indexes
+  • Decision: Apply if canonical-wiring needs idempotent migrations
+  • Extract To: packages/db-tutorial/migrations/0018_*.sql (if needed)
+
+---
+
+## NOT EXTRACTABLE (Keep in E2E Branch for Reference)
+
+**Rationale:** These commits are deeply coupled to E2E branch context (migration repair workflow, evidence collection, Stage 6 verification). Do not extract; keep as reference implementation.
+
+**Commits:**
+
+506366fe - chore(stage6): W6 V0-V10 verification pipeline results
+759d66f4 - chore: add V8 evidence manifest for run migration-repair-20261011-143539-06936246
+f0eddb9c - feat(stage6): verification evidence - BLOCKED
+3b07a649 - chore: Stage 5 final gate APPROVED - all HIGH severity fixes verified
+66a2cda2 - feat: wire format_commit_message into migration repair workflow
+61d8b253 - fix: Stage 5 HIGH severity fixes — exit code validation, run-ID in commit message
+704bf018 - feat: complete Stages 1-5 of migration repair workflow with evidence
+a64e5b13 - W4: Apply repair plan items REPAIR-001..004, TEST-001, EVID-002, EVID-007
+47092b61 - docs: update ProjectFlowExampleProjectLLM.md and add W1 audit reports
+f26a5311 - chore(w0): initialize migration repair run migration-repair-20261011-143539-06936246
+06936246 - chore: commit P0 evidence files - agent-runs, verdict, review doc
+16e2aec1 - docs: add P0 safety fixes evidence and review
+8da0eb2d - chore: finalize P0 safety fixes - add manifest, summary, mark task completed
+2f1a9d29 - fix: p0 integration issues - verification_runner outputs and CLI test async patterns
+765c44f7 - fix: update ALLOWED_COMMANDS test to include docker-compose
+6cdc85ed - fix: resolve 5 review findings - add workflow_controller agent, fix db_session, etc.
+74620dcc - chore: add iteration 1 verification findings for migration repair workflow
+e1929d4c - docs: FEAT-005 documentation and CLI for migration repair workflow
+3a1e4487 - docs: add migration and test execution report for 2026-10-11
+1dadd030 - fix: restore missing project_ai_* CREATE TABLE statements in migration chain
+07420c89 - docs: document comprehensive migration repair strategy
+9b0490e5 - docs: complete Drizzle snapshot chain investigation
+cae2f063 - docs: add critical findings and gate execution log
+decaf92f - fix(db): remove duplicate layman_audit_action enum (exists in migration 0011)
+5fdb5238 - fix(db): remove ALL duplicate enums from migration 0012 (comprehensive fix)
+6591fb4c - docs: add Gates A-D evidence for project-llm CI duplicate enum fix
+b9bcc27f - fix(db): remove duplicate assignment_question_type enum from migration 0012
+5872b981 - fix(db): avoid recreating existing assignment help enum
+06100718 - ci: use tutorial database URL expected by Drizzle config
+4d6c7d30 - ci: install pinned pnpm before setup-node cache
+6128c1a8 - fix(project-llm): require canonical contract for all handoff exports
+95eb94d0 - fix(project-llm): correct API base URL normalization
+2cb2b41f - feat(project-llm): bind external AI prompt to persisted engineering contract
+4461f795 - feat(project-llm): fetch canonical engineering contract for external handoff
+8f669c6e - fix(project-llm): correct candidate gate status type
+15a54d8e - fix(project-llm): remove simulated candidate validation progress
+37cd8a3e - fix(project-llm): prevent candidate screen from fabricating passing gates
+4e2eb2d9 - fix(project-llm): remove hard-coded compliance gate counts from handoff
+03f9f022 - docs(project-ai): document workspace and CORS configuration
+24ad9769 - fix(project-llm): remove fabricated workflow success defaults
+ed1433cd - fix(project-ai): fail closed when runtime HTTP client is missing
+
+**Total NOT extractable:** 42 commits (70% of branch)
+**Reason:** Context-specific to migration repair workflow, evidence collection infrastructure, or E2E branch-specific documentation
+
+---
+
+## Extraction Strategy Summary
+
+| Priority | Commits | Security Impact | Extraction Method | Timeline |
+|----------|---------|-----------------|-------------------|----------|
+| **Priority 1** | 6 | CRITICAL/HIGH | Pattern extraction to app/security/ | Week 1-2 |
+| **Priority 2** | 6 | MEDIUM/HIGH | Pattern extraction + test infrastructure | Week 3-4 |
+| **Priority 3** | 6 | LOW | Evaluate need, extract patterns if applicable | Week 5-6 |
+| **Not Extractable** | 42 | N/A | Keep in E2E branch for reference | Archive |
+
+**Total Extraction Effort:** 15-25 hours over 4-7 weeks (staged rollout)
+
+---
+
+## Next Steps
+
+1. **Wait for canonical-wiring merge to main**
+2. **Create feature branches** (feat/security-hardening, feat/test-infrastructure, feat/orchestration)
+3. **Extract Priority 1 commits** (security-critical)
+4. **Test and merge** security hardening branch
+5. **Extract Priority 2 commits** (high value)
+6. **Test and merge** test infrastructure branch
+7. **Evaluate Priority 3 commits** (context-specific)
+8. **Archive E2E branch** with extraction documentation
+
+---
+
+**Extraction Plan Complete**  
+**18 commits identified for extraction (30% of E2E branch)**  
+**42 commits to remain in E2E branch as reference implementation (70%)**
+

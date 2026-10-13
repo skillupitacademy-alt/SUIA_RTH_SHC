@@ -1,0 +1,83 @@
+{
+  "wave": "M2.9 Wave 3C",
+  "task": "Placement Manifest Integration - Canonical Artifact Policy",
+  "status": "COMPLETED",
+  "branch": "m2-project-ai-canonical-wiring",
+  "commit_hash": "261275e947e6b9caea1be7592a7e0ad504ec9087",
+  "completion_timestamp": "2025-01-13T15:30:00Z",
+  "review_findings_addressed": {
+    "finding_1": {
+      "description": "Manifest generator doesn't call artifact_policy",
+      "status": "FIXED",
+      "solution": "Wired artifact_policy into _generate_file_paths() - each file now gets action via determine_action() and target path via get_target_path()"
+    },
+    "finding_2": {
+      "description": "Validation detects REJECT but generation never produces it",
+      "status": "NOTED",
+      "solution": "No action needed - validation logic is correct and will catch REJECT actions when artifact_policy produces them (reserved for future quality gates)"
+    },
+    "finding_3": {
+      "description": "No test coverage for artifact_policy integration in manifest generation",
+      "status": "FIXED",
+      "solution": "Added test_artifact_policy_integration_duplicate_prevention() and test_artifact_policy_integration_new_artifact() - tests verify UPDATE action for duplicates and ADD action for new artifacts"
+    },
+    "finding_4": {
+      "description": "_load_repository_index returns empty list when snapshot missing",
+      "status": "FIXED",
+      "solution": "Added logging.warning() when snapshot_path is None or snapshot load fails - operators will be alerted to degraded duplicate prevention"
+    }
+  },
+  "files_created": [],
+  "files_modified": [
+    "services/project-ai/app/intake/placement_manifest.py",
+    "services/project-ai/tests/test_placement_manifest.py",
+    ".agents/tasks/w3c-coder-verification.txt"
+  ],
+  "test_results": {
+    "test_placement_manifest": {
+      "total_tests": 23,
+      "passed": 23,
+      "failed": 0,
+      "new_tests": 2
+    },
+    "test_artifact_policy": {
+      "total_tests": 27,
+      "passed": 27,
+      "failed": 0,
+      "new_tests": 0
+    },
+    "combined": {
+      "total_tests": 50,
+      "passed": 50,
+      "failed": 0,
+      "execution_time_seconds": 0.44
+    }
+  },
+  "key_features": [
+    "ADD/REUSE/EXTEND/UPDATE/REJECT action determination via artifact_policy",
+    "Duplicate prevention via semantic matching (ObjectiveBlockV2.tsx → UPDATE ObjectiveBlock.tsx)",
+    "Target path resolution respects canonical naming (no versioned file proliferation)",
+    "Manifest validation (paths, versions, REJECT filtering)",
+    "SHA-256 manifest binding for tamper detection (already implemented)",
+    "Logging warnings for missing snapshots (duplicate prevention degraded)"
+  ],
+  "verification_evidence": {
+    "duplicate_prevention_test": "IntroductionI7Block.tsx candidate with existing artifact → UPDATE action with target pointing to existing file",
+    "new_artifact_test": "AssessmentA1Block.tsx candidate with no repository match → ADD action with new target path",
+    "manifest_validation_test": "Path traversal rejected, REJECT actions filtered, family/version mismatches caught",
+    "hash_binding_test": "Manifest seal verified, tampering detected (existing tests pass)"
+  },
+  "artifact_policy_integration": {
+    "wired_into": "PlacementManifestGenerator._generate_file_paths()",
+    "calls_per_file": [
+      "artifact_policy.find_semantic_match(filename, repository_index)",
+      "artifact_policy.determine_action(content, filename, match)",
+      "artifact_policy.get_target_path(action, candidate_path, match)"
+    ],
+    "repository_index_source": "Discovery snapshot loaded via _load_repository_index()",
+    "snapshot_path_parameter": "Optional[str] in PlacementManifestGenerator.__init__()"
+  },
+  "manifest_hash_bound": true,
+  "duplicate_prevention_working": true,
+  "all_tests_passing": true
+}

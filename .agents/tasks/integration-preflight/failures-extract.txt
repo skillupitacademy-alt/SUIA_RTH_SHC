@@ -1,0 +1,185 @@
+﻿=== FAILURES ===================================
+_ TestCertificationNegativeScenarios.test_missing_evidence_blocks_certification _
+tests\integration\test_certification_negative.py:86: in test_missing_evidence_blocks_certification
+    assert 'unavailable' in result.message.lower() or 'no evidence' in result.message.lower()
+E   AssertionError: assert ('unavailable' in 'manifest validation failed' or 'no evidence' in 'manifest validation failed')
+E    +  where 'manifest validation failed' = <built-in method lower of str object at 0x00000175CEE78760>()
+E    +    where <built-in method lower of str object at 0x00000175CEE78760> = 'Manifest validation failed'.lower
+E    +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000175CF2082F0>.message
+E    +  and   'manifest validation failed' = <built-in method lower of str object at 0x00000175CEE78760>()
+E    +    where <built-in method lower of str object at 0x00000175CEE78760> = 'Manifest validation failed'.lower
+E    +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000175CF2082F0>.message
+_______ TestCertificationNegativeScenarios.test_missing_registry_fails ________
+tests\integration\test_certification_negative.py:150: in test_missing_registry_fails
+    assert result.status == CertificationGateStatus.FAIL, \
+E   AssertionError: Registry verification gate should fail when registry missing
+E   assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E     
+E     - FAIL
+E     + BLOCKED
+_______ TestCertificationNegativeScenarios.test_missing_renderer_fails ________
+tests\integration\test_certification_negative.py:189: in test_missing_renderer_fails
+    assert 'renderer' in result.message.lower() or 'rendered' in result.message.lower()
+E   AssertionError: assert ('renderer' in 'manifest validation failed' or 'rendered' in 'manifest validation failed')
+E    +  where 'manifest validation failed' = <built-in method lower of str object at 0x00000175CEE78760>()
+E    +    where <built-in method lower of str object at 0x00000175CEE78760> = 'Manifest validation failed'.lower
+E    +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000175CF1383E0>.message
+E    +  and   'manifest validation failed' = <built-in method lower of str object at 0x00000175CEE78760>()
+E    +    where <built-in method lower of str object at 0x00000175CEE78760> = 'Manifest validation failed'.lower
+E    +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000175CF1383E0>.message
+_______ TestCertificationNegativeScenarios.test_renderer_mismatch_fails _______
+tests\integration\test_certification_negative.py:229: in test_renderer_mismatch_fails
+    assert result.status == CertificationGateStatus.FAIL, \
+E   AssertionError: UBRC gate should fail when renderer mismatches block type
+E   assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E     
+E     - FAIL
+E     + BLOCKED
+________ TestCertificationNegativeScenarios.test_schema_mismatch_fails ________
+tests\integration\test_certification_negative.py:268: in test_schema_mismatch_fails
+    assert result.status == CertificationGateStatus.FAIL, \
+E   AssertionError: Composer gate should fail when schema invalid
+E   assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E     
+E     - FAIL
+E     + BLOCKED
+_______ TestCertificationNegativeScenarios.test_composer_failure_blocks _______
+tests\integration\test_certification_negative.py:302: in test_composer_failure_blocks
+    assert result.status == CertificationGateStatus.FAIL, \
+E   AssertionError: Composer gate should fail when block not registered
+E   assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E     
+E     - FAIL
+E     + BLOCKED
+_______ TestCertificationNegativeScenarios.test_runtime_failure_blocks ________
+tests\integration\test_certification_negative.py:343: in test_runtime_failure_blocks
+    assert 'runtime' in result.message.lower() or 'error' in result.message.lower()
+E   AssertionError: assert ('runtime' in 'manifest validation failed' or 'error' in 'manifest validation failed')
+E    +  where 'manifest validation failed' = <built-in method lower of str object at 0x00000175CEE78760>()
+E    +    where <built-in method lower of str object at 0x00000175CEE78760> = 'Manifest validation failed'.lower
+E    +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000175CF1A28B0>.message
+E    +  and   'manifest validation failed' = <built-in method lower of str object at 0x00000175CEE78760>()
+E    +    where <built-in method lower of str object at 0x00000175CEE78760> = 'Manifest validation failed'.lower
+E    +      where 'Manifest validation failed' = <app.certification.gates.GateExecutionResult object at 0x00000175CF1A28B0>.message
+_______ TestCertificationNegativeScenarios.test_browser_failure_blocks ________
+tests\integration\test_certification_negative.py:376: in test_browser_failure_blocks
+    assert result.status == CertificationGateStatus.FAIL, \
+E   AssertionError: Browser gate should fail when browser errors occur
+E   assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E     
+E     - FAIL
+E     + BLOCKED
+________ TestCertificationNegativeScenarios.test_brand_coupling_fails _________
+tests\integration\test_certification_negative.py:412: in test_brand_coupling_fails
+    assert result.status == CertificationGateStatus.FAIL, \
+E   AssertionError: Brand independence gate should fail when brand values are hard-coded
+E   assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E     
+E     - FAIL
+E     + BLOCKED
+________ TestCertificationNegativeScenarios.test_theme_mismatch_fails _________
+tests\integration\test_certification_negative.py:450: in test_theme_mismatch_fails
+    assert result.status == CertificationGateStatus.FAIL, \
+E   AssertionError: Theme compatibility gate should fail with hard-coded colors
+E   assert <Certificatio...ED: 'BLOCKED'> == <Certificatio....FAIL: 'FAIL'>
+E     
+E     - FAIL
+E     + BLOCKED
+_____ TestCertificationNegativeScenarios.test_manifest_tampering_rejected _____
+tests\integration\test_certification_negative.py:482: in test_manifest_tampering_rejected
+    assert upload_response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_____ TestCertificationNegativeScenarios.test_unapproved_mutation_blocked _____
+tests\integration\test_certification_negative.py:543: in test_unapproved_mutation_blocked
+    assert upload_response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_______ TestCertificationNegativeScenarios.test_self_approval_rejected ________
+tests\integration\test_certification_negative.py:620: in test_self_approval_rejected
+    assert upload_response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_ TestCertificationNegativeScenarios.test_missing_canonical_artifact_detected _
+tests\integration\test_certification_negative.py:670: in test_missing_canonical_artifact_detected
+    assert create_response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_____ TestCertificationNegativeScenarios.test_duplicate_artifact_rejected _____
+tests\integration\test_certification_negative.py:716: in test_duplicate_artifact_rejected
+    assert upload_response_1.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_____ TestWorkflowNegativeScenarios.test_invalid_workflow_id_returns_404 ______
+tests\integration\test_certification_negative.py:742: in test_invalid_workflow_id_returns_404
+    assert get_response.status_code == 404
+E   assert 405 == 404
+E    +  where 405 = <Response [405 Method Not Allowed]>.status_code
+_____ TestWorkflowNegativeScenarios.test_invalid_candidate_id_returns_404 _____
+tests\integration\test_certification_negative.py:752: in test_invalid_candidate_id_returns_404
+    assert classify_response.status_code == 404
+E   assert 422 == 404
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_____ TestWorkflowNegativeScenarios.test_workflow_with_empty_composition ______
+tests\integration\test_certification_negative.py:766: in test_workflow_with_empty_composition
+    assert create_response.status_code == 200
+E   assert 422 == 200
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+_______________________ test_env_var_name_is_consistent _______________________
+tests\integration\test_conftest_skip_behavior.py:141: in test_env_var_name_is_consistent
+    assert expected_env_var in source, "conftest should use TEST_DATABASE_URL_TUTORIAL"
+E   AssertionError: conftest should use TEST_DATABASE_URL_TUTORIAL
+E   assert 'TEST_DATABASE_URL_TUTORIAL' in '"""\nPostgreSQL Integration Test Configuration for FEAT-004.\n\nCRITICAL: These tests require a real PostgreSQL database.\nThe test database MUST be configured via DATABASE_URL_TUTORIAL environment variable.\n\nDO NOT fall back to localhost guesses.\nDO NOT use SQLite as a substitute.\nDO NOT attempt to create the test database.\n\nIf DATABASE_URL_TUTORIAL is not configured, tests will skip with a clear error message.\n"""\n\nimport os\nimport pytest\nimport pytest_asyncio\nfrom sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker\nfrom sqlalchemy import text\n\nfrom app.persistence import (\n    PostgresWorkflowRepository,\n    PostgresContractRepository,\n    PostgresCandidateRepository,\n    PostgresManifestRepository,\n    PostgresApprovalRepository,\n    PostgresStateTransitionRepository,\n)\nfrom app.persistence.models import Base\n\n\n# Check for test database configuration\nTEST_DB_URL = os.environ.get("DATABASE_URL_TUTORIAL")\n\n# Pytest collection hook to skip entire module if database not configured\ndef pytest_collection_modifyitems(config, items):\n    """Skip all integration tests if DATABASE_URL_TUTORIAL not configured."""\n    if no...ory(db_session)\n\n\n@pytest_asyncio.fixture\nasync def contract_repo(db_session):\n    """Create a ContractRepository with PostgreSQL session."""\n    return PostgresContractRepository(db_session)\n\n\n@pytest_asyncio.fixture\nasync def candidate_repo(db_session):\n    """Create a CandidateRepository with PostgreSQL session."""\n    return PostgresCandidateRepository(db_session)\n\n\n@pytest_asyncio.fixture\nasync def manifest_repo(db_session):\n    """Create a ManifestRepository with PostgreSQL session."""\n    return PostgresManifestRepository(db_session)\n\n\n@pytest_asyncio.fixture\nasync def approval_repo(db_session):\n    """Create an ApprovalRepository with PostgreSQL session."""\n    return PostgresApprovalRepository(db_session)\n\n\n@pytest_asyncio.fixture\nasync def state_transition_repo(db_session):\n    """Create a StateTransitionRepository with PostgreSQL session."""\n    return PostgresStateTransitionRepository(db_session)\n\n\n# Pytest configuration for async tests\ndef pytest_configure(config):\n    """Configure pytest for async integration tests."""\n    config.addinivalue_line(\n        "markers", "integration: mark test as PostgreSQL integration test"\n    )\n'
+_______________________ test_override_placement_manual ________________________
+tests\integration\test_placement_engine.py:437: in test_override_placement_manual
+    result = await engine.override_placement(
+app\placement\placement_engine.py:263: in override_placement
+    raise ValueError(f"Workflow {workflow_id} not found")
+E   ValueError: Workflow wf-001 not found
+============================== warnings summary ===============================
+C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1
+  C:\Users\RealTutorialHub\AppData\Roaming\Python\Python313\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests\integration\test_certification_negative.py:25
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:25: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests\integration\test_certification_negative.py:732
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:732: PytestUnknownMarkWarning: Unknown pytest.mark.negative - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.negative
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:468: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"tamper-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_manifest_tampering_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:479: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:529: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"unapproved-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_unapproved_mutation_blocked
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:540: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:606: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"self-approval-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_self_approval_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:617: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:699: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    candidate_id = f"duplicate-test-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+
+tests/integration/test_certification_negative.py::TestCertificationNegativeScenarios::test_duplicate_artifact_rejected
+  E:\onlinewebsites\quiz-platform\services\project-ai\tests\integration\test_certification_negative.py:710: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "uploadedAt": datetime.utcnow().isoformat() + "Z",
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================

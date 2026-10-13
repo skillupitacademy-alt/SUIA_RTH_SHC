@@ -1,8 +1,12 @@
 import React from 'react';
 import type { ICalloutBlock, BlockComponentProps } from '../types';
 
-export function CalloutBlock({ block, className = '' }: BlockComponentProps<ICalloutBlock>) {
+export function CalloutBlock({ block, className = '', runtimeContext }: BlockComponentProps<ICalloutBlock>) {
   const { variant, title, text } = block.content;
+
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'callout';
 
   const getVariantStyles = () => {
     switch (variant) {
@@ -56,9 +60,9 @@ export function CalloutBlock({ block, className = '' }: BlockComponentProps<ICal
 
   return (
     <aside
-      id={block.id}
-      data-block-id={block.id}
-      data-block-type="callout"
+      id={blockId}
+      data-block-id={blockId}
+      data-block-type={blockType}
       role="note"
       aria-label={title || defaultTitle}
       className={`my-4 p-4 rounded-lg border-l-4 border ${container} shadow-sm ${className}`}

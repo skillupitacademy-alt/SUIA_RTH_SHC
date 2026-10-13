@@ -1,0 +1,13 @@
+route,method,file,protected,decorator_added_this_gate
+/workflows,POST,app/api/routes/workflows.py,true,false
+/workflows/{workflow_id}/approve-final,POST,app/api/routes/workflows.py,true,false
+/workflows/{workflow_id}/placement,POST,app/api/routes/workflows.py,true,false
+/workflows/{workflow_id}/placement/override,POST,app/api/routes/workflows.py,true,false
+/workflows/{workflow_id}/artifacts,POST,app/api/routes/workflows.py,true,false
+/approvals/workflows/{workflow_id}/approve-placement,POST,app/api/routes/governance.py,true,false
+/approvals/pending,GET,app/api/routes/governance.py,true,true
+/approvals/{approval_id}/approve,POST,app/api/routes/governance.py,true,true
+/approvals/{approval_id}/reject,POST,app/api/routes/governance.py,true,true
+/candidates/{candidate_id}/classify,POST,app/api/routes/candidate.py,true,false
+/candidates/{candidate_id}/manifest,POST,app/api/routes/candidate.py,true,false
+/candidates/{candidate_id}/execute,POST,app/api/routes/candidate.py,true,false

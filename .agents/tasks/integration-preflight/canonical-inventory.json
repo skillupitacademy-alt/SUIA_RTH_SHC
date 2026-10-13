@@ -1,0 +1,304 @@
+{
+  "inventory_date": "2026-10-12T18:30:00+05:30",
+  "workflow_id": "wf_8578873cde58d4ba",
+  "purpose": "Identify existing canonical task files that should be UPDATED rather than duplicated when recording Phase 1 integration findings",
+  
+  "uuid_varchar_files": [
+    {
+      "path": ".agents/tasks/brand-isolation-removal/FINAL-TEST-REPORT.md",
+      "size_bytes": 18127,
+      "category": "uuid_varchar_issue_primary",
+      "excerpt": "17 integration test failures are due to pre-existing UUID/VARCHAR schema mismatch, NOT related to brand-isolation removal. Error: column \"manifest_id\" is of type uuid but expression is of type character varying. Recommendation: Log as separate issue: \"Fix UUID type handling in project-ai ORM models\""
+    },
+    {
+      "path": ".agents/tasks/brand-isolation-removal/EXECUTION-SUMMARY.md",
+      "size_bytes": 2376,
+      "category": "uuid_varchar_issue_primary",
+      "excerpt": "Issue: PostgreSQL UUID/VARCHAR Type Mismatch. Scope: 17 integration tests fail on workflow/manifest creation. Root Cause: Database columns are UUID type, ORM sends VARCHAR. Impact on Brand Removal: NONE - RBAC tests confirm brand removal is correct."
+    },
+    {
+      "path": ".agents/tasks/canonical-wiring-merge-readiness.md",
+      "size_bytes": 14519,
+      "category": "merge_readiness_canonical",
+      "excerpt": "Integration Security Tests: BLOCKED (Environment Dependency). Blocker: ModuleNotFoundError: No module named 'psycopg'. Key Finding: 425/442 tests pass; 17 UUID/VARCHAR failures reported as pre-existing. Status: CONDITIONAL APPROVAL - Environment Dependency Blocker"
+    },
+    {
+      "path": ".agents/tasks/gate-f-schema-fix-report.md",
+      "size_bytes": null,
+      "category": "uuid_varchar_schema",
+      "excerpt": "ALTER TABLE project_ai_candidates ADD COLUMN uploader_brand VARCHAR(255) NULL; ALTER TABLE project_ai_workflows ADD COLUMN requester_brand VARCHAR(255) NULL;"
+    }
+  ],
+  
+  "merge_readiness_files": [
+    {
+      "path": ".agents/tasks/canonical-wiring-merge-readiness.md",
+      "size_bytes": 14519,
+      "last_modified": "2026-10-12T16:28:46+05:30",
+      "category": "merge_readiness_canonical",
+      "status": "CONDITIONAL APPROVAL",
+      "branch": "m2-project-ai-canonical-wiring → main",
+      "excerpt": "Test Results: Security Tests (91 passed, 0 failed), Integration Security Tests (BLOCKED by psycopg), Unit Tests (326 passed, 0 failed). Key Finding: 425/442 tests pass; 17 UUID/VARCHAR failures reported as pre-existing."
+    }
+  ],
+  
+  "integration_failure_files": [
+    {
+      "path": ".agents/tasks/brand-isolation-removal/FINAL-TEST-REPORT.md",
+      "size_bytes": 18127,
+      "category": "integration_test_analysis",
+      "failure_count": 17,
+      "root_cause": "PostgreSQL UUID/VARCHAR type mismatch",
+      "excerpt": "Integration RBAC: 8 passed, 17 failed. 17 integration test failures are due to pre-existing UUID/VARCHAR schema mismatch. Affects: manifest_id, candidate_id, workflow_id columns. PostgreSQL schema defines columns as UUID type, Python ORM models send as VARCHAR/string."
+    },
+    {
+      "path": ".agents/tasks/f-integration-report.md",
+      "size_bytes": null,
+      "category": "integration_phase2_report",
+      "excerpt": "Phase 2 Integration Report: Agent F — Integration Reconciler. Test Results: Test Files: 17 failed | 28 passed (45 total). Tests: 60 failed | 639 passed | 92 skipped (791 total). Phase 2 Remediation Results: E1: Certification Fixture Remediation."
+    },
+    {
+      "path": ".agents/tasks/gate-d-plan.md",
+      "size_bytes": null,
+      "category": "integration_test_infrastructure",
+      "excerpt": "Existing pattern: test_repositories_integration.py with 17 integration tests using real PostgreSQL. No docker-compose test database configuration exists."
+    },
+    {
+      "path": ".agents/tasks/r5-certification-report.md",
+      "size_bytes": null,
+      "category": "integration_test_inventory",
+      "excerpt": "17 integration test functions in test_repositories_integration.py: Workflow CRUD operations, Idempotent upsert. Canonical workflow uses repository-based approval checks. 17 integration tests verify repository behavior."
+    }
+  ],
+  
+  "phase_files": [
+    {
+      "path": ".agents/tasks/e2e-audit-summary.md",
+      "size_bytes": null,
+      "category": "phase_1_2_analysis",
+      "excerpt": "Phase 1 & 2: Branch Scope + Migration-Repair Classification. Confirmed Branch Statistics: 60 unique commits, 218 files changed, +26,430 insertions, -24,618 deletions. Workflow Step: Phase 1 & 2 analysis COMPLETE."
+    },
+    {
+      "path": ".agents/tasks/foundation-audit-summary.md",
+      "size_bytes": null,
+      "category": "phase_2_foundation",
+      "excerpt": "Documents Phase 2 Integration completion. Waves R3, R4, R5 implementation status. Test results summary: 60/60 Phase 2 tests passing. Phase 2 — Foundation branch: Proceed with read-only audit."
+    },
+    {
+      "path": ".agents/tasks/f-integration-report.md",
+      "size_bytes": null,
+      "category": "phase_2_integration",
+      "excerpt": "Phase 2 Integration Report: Agent F — Integration Reconciler. Workflow: W6-R3 Phase 2 Completion. Phase 2 Success Criteria: ✅ MET. Phase 2 is complete. Phase 2 deliverables ready for integration."
+    },
+    {
+      "path": ".agents/tasks/agent-e-implementation-report.md",
+      "size_bytes": null,
+      "category": "phase_1_limitation",
+      "excerpt": "Phase 1: I2 Pilot — External AI Handoff Brief. Phase 1 workflow mandates GUI prototype → human gate → React candidate. Appendix A: Known Limitations (Phase 1). Phase 1 only supports GUI_PROTOTYPE stage."
+    },
+    {
+      "path": ".agents/tasks/e2e-branch-audit.md",
+      "size_bytes": 29388,
+      "category": "phase_1_2_extraction",
+      "excerpt": "Phase 1: Pre-Extraction (Week 1) - Monitor canonical-wiring status. Phase 2: Security Hardening Extraction (Week 2) - Extract FEAT-001 (Command Injection Prevention). Next Step: Monitor canonical-wiring merge, then begin Phase 1 extraction."
+    }
+  ],
+  
+  "branch_audit_files": [
+    {
+      "path": ".agents/tasks/integration-preflight/README.md",
+      "size_bytes": 7937,
+      "last_modified": "2026-10-12T18:06:58+05:30",
+      "category": "preflight_verification",
+      "status": "COMPLETE",
+      "excerpt": "Integration Preflight Verification Report. All four branch audit reports and the E2E extractable commits list have been located, verified, and cataloged. Verified Audit Artifacts: canonical-wiring, foundation, E2E, GUI."
+    },
+    {
+      "path": ".agents/tasks/e2e-branch-audit.md",
+      "size_bytes": 29388,
+      "last_modified": "2026-10-12T17:26:48+05:30",
+      "category": "branch_audit_complete",
+      "branch": "project-llm-e2e-implementation",
+      "excerpt": "E2E Branch Audit Report. 60 unique commits, 218 files changed. 18 extractable commits (30%); 42 branch-specific commits (70%). Recommendation: Cherry-pick high-value components after canonical-wiring merges to main."
+    },
+    {
+      "path": ".agents/tasks/foundation-branch-audit-final.md",
+      "size_bytes": 33616,
+      "last_modified": "2026-10-12T17:38:56+05:30",
+      "category": "branch_audit_complete",
+      "branch": "m2-project-ai-foundation",
+      "excerpt": "Foundation Branch Audit — Complete Report. 15-agent DAG architecture; incompatible with canonical-wiring. Recommendation: RECONCILE — Merge canonical-wiring to main first, defer to Phase 2."
+    },
+    {
+      "path": ".agents/tasks/gui-branch-audit.md",
+      "size_bytes": 79381,
+      "last_modified": "2026-10-12T17:44:38+05:30",
+      "category": "branch_audit_complete",
+      "branch": "origin/project-ai-gui",
+      "excerpt": "Project AI GUI Branch Audit Report. GUI Branch Status: HISTORICAL REFERENCE. Pure frontend prototype with zero backend integration. Recommendation: Preserve as design reference; do not merge."
+    },
+    {
+      "path": ".agents/tasks/foundation-audit-summary.md",
+      "size_bytes": null,
+      "category": "branch_audit_summary",
+      "excerpt": "Foundation branch introduces complete 15-agent DAG architecture. 9 unique commits adding 111,854 lines across 78 files. Key Finding: Foundation is NOT a small incremental change — comprehensive architectural feature."
+    },
+    {
+      "path": ".agents/tasks/e2e-audit-summary.md",
+      "size_bytes": null,
+      "category": "branch_audit_summary",
+      "excerpt": "E2E Branch Audit Summary. 60 unique commits with 218 files changed. Migration repair workflow (Stages 1-5 COMPLETE, Stage 6 BLOCKED). P0 safety fixes (FEAT-001 through FEAT-005)."
+    }
+  ],
+  
+  "manifest_workflow_id_files": [
+    {
+      "path": ".agents/tasks/e2-test-analysis.md",
+      "size_bytes": null,
+      "category": "test_fixture_requirements",
+      "excerpt": "ImplementationApproval fields: workflow_id, candidate_sha256, placement_manifest_id, placement_manifest_sha256, approved_by. Test cases: test_blocks_invalid_workflow_id, test_blocks_manifest_id_mismatch."
+    },
+    {
+      "path": ".agents/tasks/e2-security-contract.md",
+      "size_bytes": null,
+      "category": "security_binding_contract",
+      "excerpt": "5 Authorization Bindings: workflow_id binding, manifest_id binding, candidate_sha256 binding, manifest_sha256 binding, requester/approver separation. Hash computed from: manifest_id, candidate_id, decision, targetPath, blockFamily, blockVersion."
+    },
+    {
+      "path": ".agents/tasks/e1-self-approval-forensics.md",
+      "size_bytes": null,
+      "category": "security_test_forensics",
+      "excerpt": "ImplementationApproval structure: approval_id, workflow_id, candidate_sha256, placement_manifest_id, placement_manifest_sha256, approved_by. execute_approval_gate parameters: workflow_id, requester_id, manifest_id, manifest_sha256."
+    },
+    {
+      "path": ".agents/tasks/m2-9-w4-plan.md",
+      "size_bytes": null,
+      "category": "dataclass_schema_definition",
+      "excerpt": "ImplementationApproval dataclass fields: approval_id (UUID), workflow_id (UUID, foreign key), candidate_sha256 (must match ValidationResult), placement_manifest_id (UUID from PlacementManifest.manifest_id), placement_manifest_sha256."
+    }
+  ],
+  
+  "update_strategy": [
+    {
+      "file": ".agents/tasks/canonical-wiring-merge-readiness.md",
+      "reason_to_update": "PRIMARY CANONICAL DOCUMENT - This is the authoritative merge-readiness report for canonical-wiring branch. Should be updated with: (a) exact remote branch SHAs recorded, (b) baseline-versus-proposed test comparison results, (c) detailed classification of all 17 UUID/VARCHAR failures with SQL/column/model evidence, (d) psycopg installation verification, (e) full integration test results after environment fix.",
+      "sections_to_update": [
+        "Integration Security Tests section (add post-psycopg results)",
+        "P0 - CRITICAL section (mark psycopg install as COMPLETE)",
+        "UUID/VARCHAR analysis (add detailed failure classification)",
+        "Branch SHA recording (add exact commit hashes for all branches)"
+      ]
+    },
+    {
+      "file": ".agents/tasks/brand-isolation-removal/FINAL-TEST-REPORT.md",
+      "reason_to_update": "UUID/VARCHAR ISSUE DOCUMENTATION - This file contains the most detailed analysis of the 17 integration test failures. Should be updated with: (a) comparison against pre-change baseline to confirm failures are truly pre-existing, (b) exact PostgreSQL schema definition vs ORM model mismatch details, (c) decision on schema migration approach (UUID in Python vs VARCHAR in PostgreSQL).",
+      "sections_to_update": [
+        "Pre-Existing Issues Discovered section (add baseline comparison)",
+        "Issue: PostgreSQL UUID/VARCHAR Type Mismatch (add schema/model evidence)",
+        "Action Items section (track separate UUID issue creation)"
+      ]
+    },
+    {
+      "file": ".agents/tasks/integration-preflight/README.md",
+      "reason_to_update": "PREFLIGHT TRACKING DOCUMENT - This file tracks overall integration preflight status. Should be updated with: (a) completion status of Phase 2 tasks (Branch SHA Recording, Test Baseline), (b) results of 17 failure classification analysis, (c) E2E commit dependency review status, (d) progression through Next Phase Requirements checklist.",
+      "sections_to_update": [
+        "Outstanding Verification Requirements checklist",
+        "Next Phase Requirements section (mark completed items)",
+        "Add Phase 2 completion section when baseline testing finishes"
+      ]
+    },
+    {
+      "file": ".agents/tasks/e2e-branch-audit.md",
+      "reason_to_update": "E2E EXTRACTION TRACKING - This audit identifies 18 extractable commits. Should be updated with: (a) security commit dependency review results (which of 18 are truly independent), (b) targeted security test results for each extracted commit, (c) actual extraction status (which commits have been cherry-picked), (d) any conflicts or adaptations required during extraction.",
+      "sections_to_update": [
+        "7.3 Next Actions section (track Phase 1 and Phase 2 progress)",
+        "Add Extraction Execution Log section (record actual cherry-pick results)",
+        "Update recommendation status based on canonical-wiring merge outcome"
+      ]
+    },
+    {
+      "file": ".agents/tasks/foundation-branch-audit-final.md",
+      "reason_to_update": "FOUNDATION DECISION TRACKING - User approved Option C (defer foundation to Phase 2). Should be updated with: (a) formal decision record with date and rationale, (b) Phase 2 evaluation criteria for foundation features, (c) any immediate blocking incompatibilities discovered that affect later integration, (d) preservation plan for foundation branch during canonical merge.",
+      "sections_to_update": [
+        "Add Decision Record section (document Option C approval)",
+        "Add Phase 2 Evaluation Criteria section",
+        "Update Executive Summary with deferred status"
+      ]
+    },
+    {
+      "file": ".agents/tasks/gui-branch-audit.md",
+      "reason_to_update": "GUI REFERENCE PRESERVATION - User approved preserving GUI as design reference. Should be updated with: (a) annotated tag creation details (tag name, SHA, annotation text), (b) preservation verification (confirm tag exists and is not pushed yet), (c) documentation of which GUI design patterns are reference-worthy for future implementation.",
+      "sections_to_update": [
+        "Add Preservation Status section (record tag details)",
+        "Update recommendation to reflect approved design-reference status",
+        "Add Design Reference Guidance section (what to extract from GUI)"
+      ]
+    },
+    {
+      "file": ".agents/tasks/e2e-audit-summary.md",
+      "reason_to_update": "E2E AUDIT SUMMARY - Complements the detailed e2e-branch-audit.md. Should be updated in parallel with e2e-branch-audit.md to maintain consistency: (a) extraction progress tracking, (b) Stage 6 blocker resolution status, (c) any changes to the 60-commit classification after detailed review.",
+      "sections_to_update": [
+        "Phase 1 & 2 section (add Phase 2 extraction results)",
+        "Update commit classification if dependencies found",
+        "Add extraction outcome summary"
+      ]
+    },
+    {
+      "file": ".agents/tasks/foundation-audit-summary.md",
+      "reason_to_update": "FOUNDATION SUMMARY - Complements foundation-branch-audit-final.md. Should be updated with: (a) Option C decision record, (b) Phase 2 deferral details, (c) architectural incompatibility summary for quick reference.",
+      "sections_to_update": [
+        "Executive Summary (add decision outcome)",
+        "Add Integration Decision section",
+        "Update with Phase 2 evaluation timeline"
+      ]
+    }
+  ],
+  
+  "critical_constraints_reminder": [
+    "Do NOT merge anything to main without explicit approval after verification",
+    "Do NOT cherry-pick all 18 E2E commits automatically - review dependencies first",
+    "Do NOT merge GUI branch into production - preserve as design reference only",
+    "Do NOT change database schemas until migration approved",
+    "Do NOT create duplicate reports - update existing canonical records listed above",
+    "Do NOT push, delete branches, or create tags until final diff reviewed"
+  ],
+  
+  "recommended_new_files": [
+    {
+      "path": ".agents/tasks/integration-preflight/uuid-varchar-issue.md",
+      "purpose": "Dedicated tracking document for the 17 UUID/VARCHAR integration test failures. Should contain: baseline comparison, schema-vs-ORM evidence, migration decision, resolution timeline.",
+      "create_only_if": "Detailed analysis reveals this is NOT documented sufficiently in FINAL-TEST-REPORT.md"
+    },
+    {
+      "path": ".agents/tasks/integration-preflight/branch-shas.json",
+      "purpose": "Machine-readable record of exact remote branch commit SHAs for main, canonical-wiring, E2E, foundation, GUI at integration freeze point.",
+      "create_only_if": "Phase 2 (Branch SHA Recording) has not yet created this"
+    },
+    {
+      "path": ".agents/tasks/integration-preflight/e2e-extraction-log.md",
+      "purpose": "Execution log for E2E commit extraction: which commits were cherry-picked, any conflicts, test results after each extraction, final integration status.",
+      "create_only_if": "E2E extraction begins (currently deferred until canonical-wiring merges)"
+    }
+  ],
+  
+  "files_not_to_duplicate": [
+    "canonical-wiring-merge-readiness.md (already canonical)",
+    "brand-isolation-removal/FINAL-TEST-REPORT.md (UUID issue primary documentation)",
+    "e2e-branch-audit.md (comprehensive E2E analysis)",
+    "foundation-branch-audit-final.md (complete foundation analysis)",
+    "gui-branch-audit.md (complete GUI analysis)",
+    "Any file in .agents/tasks/ matching pattern '*audit*', '*merge-readiness*', '*integration*' without reading first"
+  ],
+  
+  "search_summary": {
+    "total_md_files_in_tasks": 279,
+    "subdirectories_with_content": 18,
+    "uuid_varchar_mentions": "Multiple files (4 primary sources identified)",
+    "phase_1_2_mentions": "Multiple files (5 primary sources identified)",
+    "merge_readiness_mentions": "1 canonical file identified",
+    "integration_failure_mentions": "4 files with detailed analysis",
+    "manifest_workflow_id_mentions": "Multiple test and contract files (4 primary sources identified)"
+  },
+  
+  "compliance_statement": "This inventory was created as a READ-ONLY search operation. No files were modified. No duplicate reports were created. All existing canonical documents have been identified for future UPDATE operations only."
+}

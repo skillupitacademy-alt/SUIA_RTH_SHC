@@ -10,6 +10,7 @@ const ApplicationInfoSchema = z.object({
   type: z.string(),
   framework: z.string(),
   entrypoint: z.string(),
+  evidenceId: z.string().min(1),
 });
 
 const PackageInfoSchema = z.object({
@@ -18,6 +19,7 @@ const PackageInfoSchema = z.object({
   version: z.string(),
   dependencies: z.array(z.string()),
   exports: z.array(z.string()),
+  evidenceId: z.string().min(1),
 });
 
 const ServiceInfoSchema = z.object({
@@ -26,6 +28,7 @@ const ServiceInfoSchema = z.object({
   type: z.string(),
   port: z.number().optional(),
   entrypoint: z.string(),
+  evidenceId: z.string().min(1),
 });
 
 const FrameworkInfoSchema = z.object({
@@ -57,12 +60,14 @@ const BlockImplementationSchema = z.object({
   version: z.string().optional(),
   path: z.string(),
   exported: z.boolean(),
+  evidenceId: z.string().min(1),
 });
 
 const BlockRendererSchema = z.object({
   blockType: z.string(),
   componentPath: z.string(),
   registeredInRenderer: z.boolean(),
+  evidenceId: z.string().min(1),
 });
 
 const BlockVerificationSchema = z.object({
@@ -86,24 +91,28 @@ const ComposerServiceSchema = z.object({
   name: z.string(),
   path: z.string(),
   methods: z.array(z.string()),
+  evidenceId: z.string().min(1),
 });
 
 const ComposerAPISchema = z.object({
   endpoint: z.string(),
   method: z.string(),
   handler: z.string(),
+  evidenceId: z.string().min(1),
 });
 
 const ComposerSchemaObjSchema = z.object({
   name: z.string(),
   path: z.string(),
   tables: z.array(z.string()),
+  evidenceId: z.string().min(1),
 });
 
 const ComposerUISchema = z.object({
   component: z.string(),
   path: z.string(),
   blocksUsed: z.array(z.string()),
+  evidenceId: z.string().min(1),
 });
 
 const DependencyNodeSchema = z.object({
@@ -111,12 +120,16 @@ const DependencyNodeSchema = z.object({
   name: z.string(),
   version: z.string(),
   type: z.enum(['package', 'app', 'service']),
+  evidenceId: z.string().min(1),
 });
 
 const DependencyEdgeSchema = z.object({
   from: z.string(),
   to: z.string(),
   kind: z.enum(['dependency', 'devDependency', 'peerDependency']),
+  requestedVersion: z.string().optional(),
+  resolvedVersion: z.string().optional(),
+  evidenceId: z.string().min(1),
 });
 
 const TestSuiteSchema = z.object({
@@ -161,6 +174,9 @@ const EvidenceSchema = z.object({
     'test-directory',
     'test-file',
     'type-definition',
+    'dependency-declaration',
+    'dependency-resolution',
+    'ubrc-verification',
   ]),
   claim: z.string(),
   locator: z.string(),
@@ -169,7 +185,7 @@ const EvidenceSchema = z.object({
 });
 
 const SnapshotSchema = z.object({
-  schemaVersion: z.literal('1.0.0'),
+  schemaVersion: z.literal('1.1.0'),
   repository: z.object({
     owner: z.string(),
     name: z.string(),
@@ -242,12 +258,12 @@ export async function validateSchema(
   }
 
   // Additional schema version check
-  if (snapshot.schemaVersion !== '1.0.0') {
+  if (snapshot.schemaVersion !== '1.1.0') {
     errors.push({
       validator: 'V1-schema',
       code: 'INVALID_SCHEMA_VERSION',
-      message: `Expected schema version 1.0.0, got ${snapshot.schemaVersion}`,
-      details: { expected: '1.0.0', actual: snapshot.schemaVersion },
+      message: `Expected schema version 1.1.0, got ${snapshot.schemaVersion}`,
+      details: { expected: '1.1.0', actual: snapshot.schemaVersion },
     });
   }
 

@@ -1,0 +1,70 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "category": "architectural_violation",
+      "title": "Python Playwright import violates architecture",
+      "description": "browser.py imports 'from playwright.async_api import async_playwright' (line 101), directly contradicting the architectural rule that Python must spawn Node/Playwright via subprocess. Remove this import and implement BrowserCertificationRunner with subprocess orchestration as designed.",
+      "location": "services/project-ai/app/verification/browser.py:101",
+      "remediation": "Remove playwright.async_api import and implement subprocess orchestration: generate test specs, execute via 'pnpm exec playwright test', parse JSON results"
+    },
+    {
+      "severity": "HIGH",
+      "category": "architectural_violation",
+      "title": "Path inference from block names in creation.py",
+      "description": "Lines 217-220 construct candidate file paths by inferring from block type (f\"packages/ui/src/tutorial/blocks/{block_type.capitalize()}Block.tsx\"), violating the PlacementManifest requirement. Remove this inference and require paths from manifest only.",
+      "location": "services/project-ai/app/api/routes/creation.py:217-220",
+      "remediation": "Remove path inference logic and require all paths come from PlacementManifest.targetPath"
+    },
+    {
+      "severity": "HIGH",
+      "category": "test_failures",
+      "title": "22 test failures in brand/theme gates",
+      "description": "Brand independence and theme compatibility gates have assertion failures indicating verification logic doesn't match test expectations. Review gate implementations and test expectations to resolve mismatches.",
+      "location": "tests/test_certification_gates.py, tests/test_agent_coordinator.py",
+      "remediation": "Debug gate verification logic and test data to align expectations"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "integration",
+      "title": "Snapshot generation not integrated",
+      "description": "TypeScript discovery package.json lacks a 'scan' script, requiring developers to manually run 'npx ts-node scripts/generate-snapshot.ts'. Add script: \"scan\": \"tsx scripts/generate-snapshot.ts\" and output directory creation.",
+      "location": "packages/project-llm-discovery/package.json",
+      "remediation": "Add 'scan' script to package.json scripts section, create output/ directory"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "missing_implementation",
+      "title": "AgentCoordinator missing final-gate dispatch",
+      "description": "The execute_agent() dispatcher has cases for toolchain, dependency, intake, placement, governance, documentation but no final-gate case, despite final_gate.py existing. Add the dispatch case.",
+      "location": "services/project-ai/app/orchestration/agent_coordinator.py:164-182",
+      "remediation": "Add elif branch: elif agent_id == \"final-gate\": from app.agents.final_gate import execute_final_gate; return await execute_final_gate(context)"
+    },
+    {
+      "severity": "LOW",
+      "category": "graceful_degradation",
+      "title": "Browser.py graceful degradation incomplete",
+      "description": "browser.py returns RuntimeVerification when Playwright not installed but doesn't properly integrate with gate execution flow. Ensure gates handle this degradation without blocking certification.",
+      "location": "services/project-ai/app/verification/browser.py",
+      "remediation": "Verify gates properly handle RUNTIME_START_FAILURE without blocking entire certification workflow"
+    },
+    {
+      "severity": "LOW",
+      "category": "data_consistency",
+      "title": "EvidenceRecord to_dict uses camelCase",
+      "description": "Python evidence.py converts snake_case to camelCase for JSON serialization, but this creates inconsistency risk. Verify all consumers expect camelCase keys.",
+      "location": "services/project-ai/app/models/evidence.py",
+      "remediation": "Add integration test verifying Python-generated JSON consumed correctly by TypeScript/other systems"
+    },
+    {
+      "severity": "LOW",
+      "category": "deprecation",
+      "title": "datetime.utcnow deprecation warnings",
+      "description": "AgentContext and AgentResult use datetime.utcnow() (deprecated in Python 3.13), causing 286 test warnings. Replace with datetime.now(UTC) throughout.",
+      "location": "services/project-ai/app/orchestration/agent_coordinator.py:47,65",
+      "remediation": "Replace default_factory=datetime.utcnow with default_factory=lambda: datetime.now(UTC)"
+    }
+  ],
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\project-ai-remediation-review.md"
+}

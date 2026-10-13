@@ -1,0 +1,43 @@
+{
+  "id": "FEAT-004",
+  "type": "test",
+  "description": "PHASE 4 Integration Validation: Generate TypeScript snapshot, fix integration tests, verify complete test suite passes. Generates snapshot.json using TypeScript discovery CLI, updates test expectations for snapshot-dependent tests, runs full test suite to verify 241+ tests passing with 0 failures. This feature validates all prior FEAT implementations work together correctly and meet the M2 completion criteria.",
+  "status": "pending",
+  "steps": [
+    "1. Generate TypeScript snapshot by running: pnpm --filter @quiz/project-llm-discovery scan (creates packages/project-llm-discovery/output/snapshot.json)",
+    "2. Verify snapshot generated successfully: check file exists at packages/project-llm-discovery/output/snapshot.json and contains schemaVersion, repository, structure, blocks, evidence fields",
+    "3. Run TypeScript discovery tests: pnpm --filter @quiz/project-llm-discovery test to verify 220/220 tests pass",
+    "4. Run Python integration tests: cd services/project-ai && pytest tests/integration/ -v to identify failing tests due to missing snapshot",
+    "5. Fix test_i2_e2e_certification.py if failing: update test expectations to handle snapshot availability, ensure test checks for CERTIFYING or FAILED state based on snapshot presence",
+    "6. Run previously skipped snapshot-dependent tests: cd services/project-ai && pytest tests/ -v (no -k filter) to execute all tests including previously skipped ones",
+    "7. Verify test count: cd services/project-ai && pytest tests/ --collect-only to confirm 241+ tests discovered",
+    "8. Run full Python test suite: cd services/project-ai && pytest tests/ -v and verify 241+ tests pass, 0 failures, 0-6 skipped (only external service-dependent tests)",
+    "9. Verify evidence directory structure created: ls -la .project-ai/runs/ to confirm directory exists (may be empty if no runs executed yet)",
+    "10. Verify agent handlers wired: cd services/project-ai && python -c 'from app.orchestration.agent_coordinator import AgentCoordinator; c = AgentCoordinator(); print(\"Agent dispatch ready\")' to confirm imports work",
+    "11. Run cross-feature integration check: generate test run directory using EvidenceLogger, execute one agent handler, log results, verify JSON files created with correct structure and 2-space indentation",
+    "12. Final verification: pnpm --filter @quiz/project-llm-discovery test && cd services/project-ai && pytest tests/ -v to confirm entire test suite passes"
+  ],
+  "acceptance_criteria": [
+    "packages/project-llm-discovery/output/snapshot.json exists and is valid (contains schemaVersion 1.1.0, 842 evidence records)",
+    "TypeScript discovery tests pass: 220/220 tests passing (100%)",
+    "Python integration tests pass with snapshot present: tests/integration/test_i2_e2e_certification.py passes",
+    "Previously skipped snapshot-dependent tests now run and pass",
+    "Full Python test suite passes: 241+ tests, 0 failures, 0-6 skipped (only justified external service dependencies)",
+    ".project-ai/runs/ directory exists (created by FEAT-001 evidence logger)",
+    "All agent handlers importable and dispatch mechanism functional (verified by import check)",
+    "Cross-feature integration works: EvidenceLogger + agent execution + result logging produces valid JSON files",
+    "Complete test suite verification: pnpm test (TypeScript) && pytest (Python) both pass with 100% pass rate on non-skipped tests"
+  ],
+  "verification": [
+    "pnpm --filter @quiz/project-llm-discovery scan",
+    "ls -lh packages/project-llm-discovery/output/snapshot.json",
+    "pnpm --filter @quiz/project-llm-discovery test",
+    "cd services/project-ai && pytest tests/ -v --tb=short",
+    "cd services/project-ai && pytest tests/ --collect-only | grep 'test session starts'",
+    "ls -la .project-ai/",
+    "python -c 'from services.project_ai.app.orchestration.agent_coordinator import AgentCoordinator; print(\"OK\")'",
+    "Final: pnpm --filter @quiz/project-llm-discovery test && cd services/project-ai && pytest tests/ -v"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

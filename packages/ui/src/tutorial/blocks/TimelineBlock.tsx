@@ -8,9 +8,14 @@ export function TimelineBlock({
   theme,
   className = '',
   renderChild,
+  runtimeContext,
 }: BlockComponentProps<ITimelineBlock>) {
   const items = Array.isArray(block.content?.items) ? block.content.items : [];
   const orientation = block.content?.orientation || 'vertical';
+
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'timeline';
 
   const renderBlockItem = (childBlock: TutorialBlock, idx: number, bIdx: number) => {
     // Phase 2.5: Always use renderChild (provided by parent renderer with runtimeContext)
@@ -27,9 +32,9 @@ export function TimelineBlock({
   if (orientation === 'horizontal') {
     return (
       <div
-        id={block.id}
-        data-block-id={block.id}
-        data-block-type="timeline"
+        id={blockId}
+        data-block-id={blockId}
+        data-block-type={blockType}
         className={`my-6 overflow-x-auto pb-4 ${className}`}
       >
         <div className="flex items-start gap-6 min-w-max">
@@ -69,9 +74,9 @@ export function TimelineBlock({
   // Default Vertical
   return (
     <div
-      id={block.id}
-      data-block-id={block.id}
-      data-block-type="timeline"
+      id={blockId}
+      data-block-id={blockId}
+      data-block-type={blockType}
       className={`my-6 pl-4 border-l-2 border-indigo-200 dark:border-indigo-900/60 space-y-6 ${className}`}
     >
       {items.map((item, idx) => {

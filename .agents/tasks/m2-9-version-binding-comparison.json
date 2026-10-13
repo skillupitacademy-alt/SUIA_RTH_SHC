@@ -1,0 +1,192 @@
+{
+  "comparisonMetadata": {
+    "phase": "3C",
+    "focus": "Target/Version Binding Implementation",
+    "branches": {
+      "local": "backup/local-m2-9-remediation",
+      "github": "backup/github-m2-9"
+    },
+    "timestamp": "2025-01-16T18:00:00Z",
+    "investigator": "phase-3c-agent"
+  },
+  "areas": [
+    {
+      "area": "WorkflowTarget_model",
+      "description": "WorkflowTarget model binding workflow to family/version",
+      "localImplementation": "PRESENT - services/project-ai/app/models/workflow_target.py defines WorkflowTarget with fields: workflow_id, family, version (e.g., 'I7'), block_type, specification_id, source_snapshot_id",
+      "githubImplementation": "PRESENT - Identical model exists",
+      "status": "BOTH_EQUIVALENT",
+      "isDefect": {
+        "local": false,
+        "github": false
+      },
+      "recommendedAction": "KEEP_EITHER",
+      "riskLevel": "LOW",
+      "evidence": [
+        "backup/local-m2-9-remediation:services/project-ai/app/models/workflow_target.py",
+        "backup/github-m2-9:services/project-ai/app/models/workflow_target.py",
+        "Both define: version: str = Field(..., description=\"Target version (e.g., 'I7', not '1.0.0')\")"
+      ]
+    },
+    {
+      "area": "CandidateBinding_model",
+      "description": "CandidateBinding model linking candidate to workflow target",
+      "localImplementation": "PRESENT - services/project-ai/app/models/workflow_target.py defines CandidateBinding with fields: workflow_id, target_family, target_version, specification_id, contract_hash",
+      "githubImplementation": "PRESENT - Identical model exists",
+      "status": "BOTH_EQUIVALENT",
+      "isDefect": {
+        "local": false,
+        "github": false
+      },
+      "recommendedAction": "KEEP_EITHER",
+      "riskLevel": "LOW",
+      "evidence": [
+        "backup/local-m2-9-remediation:services/project-ai/app/models/workflow_target.py:29",
+        "backup/github-m2-9:services/project-ai/app/models/workflow_target.py:29",
+        "CandidateBinding present in both branches with identical structure"
+      ]
+    },
+    {
+      "area": "blockVersion_hardcoding_in_placement_agent",
+      "description": "Placement agent (app/agents/placement.py) blockVersion assignment",
+      "localImplementation": "REMEDIATED - Extracts target_version from context.workflow_state.get('workflow_target', {}).get('version'), fallback to 'UNKNOWN_VERSION', then assigns blockVersion=target_version (dynamic)",
+      "githubImplementation": "DEFECT - Hardcoded blockVersion='1.0.0' in PlacementManifest constructor (line 53)",
+      "status": "CONFLICTING",
+      "isDefect": {
+        "local": false,
+        "github": true
+      },
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: services/project-ai/app/agents/placement.py:46-53 extracts workflow_target_data.get('version')",
+        "LOCAL: services/project-ai/app/agents/placement.py:63 blockVersion=target_version",
+        "GITHUB: services/project-ai/app/agents/placement.py:53 blockVersion='1.0.0'",
+        "git diff shows LOCAL added version extraction logic (B07 fix)"
+      ],
+      "criticalityReason": "This is the PRIMARY defect M2.9 was designed to remediate. GitHub branch produces PlacementManifest with blockVersion='1.0.0' regardless of user's requested target (I7, C2, etc.). Local branch correctly binds version from workflow context."
+    },
+    {
+      "area": "blockVersion_hardcoding_in_candidate_routes",
+      "description": "Candidate routes (app/api/routes/candidate.py) blockVersion assignment in /generate_manifest endpoint",
+      "localImplementation": "REMEDIATED - Lines 376-382: Extracts target_version from package.target_version with fallback to 'UNKNOWN_VERSION', assigns blockVersion=target_version in both manifest_data dict and PlacementManifest constructor",
+      "githubImplementation": "DEFECT - Lines 379, 395: Hardcoded blockVersion='1.0.0' with comment '# Initial version for new blocks'",
+      "status": "CONFLICTING",
+      "isDefect": {
+        "local": false,
+        "github": true
+      },
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "LOCAL: candidate.py:376-382 getattr(package, 'target_version', None) with validation",
+        "LOCAL: candidate.py:391 'blockVersion': target_version",
+        "LOCAL: candidate.py:407 blockVersion=target_version",
+        "GITHUB: candidate.py:379 'blockVersion': '1.0.0', # Initial version for new blocks",
+        "GITHUB: candidate.py:395 blockVersion='1.0.0'"
+      ],
+      "criticalityReason": "Direct API endpoint defect. When External AI calls /candidates/{id}/generate_manifest, GitHub returns hardcoded '1.0.0' instead of user-requested version. Local remediation extracts from package binding."
+    },
+    {
+      "area": "blockVersion_field_definition",
+      "description": "PlacementManifest.blockVersion field in models/candidate.py",
+      "localImplementation": "CORRECT - blockVersion: str = Field(..., description='Block version (UBRC compliant)')",
+      "githubImplementation": "CORRECT - Identical field definition",
+      "status": "BOTH_EQUIVALENT",
+      "isDefect": {
+        "local": false,
+        "github": false
+      },
+      "recommendedAction": "KEEP_EITHER",
+      "riskLevel": "LOW",
+      "evidence": [
+        "backup/local-m2-9-remediation:services/project-ai/app/models/candidate.py:96",
+        "backup/github-m2-9:services/project-ai/app/models/candidate.py:96",
+        "Field accepts string, does not enforce hardcoded value - implementation defect is in usage, not schema"
+      ]
+    },
+    {
+      "area": "test_blockVersion_usage",
+      "description": "Test fixtures and assertions for blockVersion",
+      "localImplementation": "MIXED - Most tests use 'I1', 'C1' (UBRC format), but test_placement.py still contains '1.0.0' literals (lines 422, 437, 507, 522) as fixtures",
+      "githubImplementation": "MIXED - Identical test pattern, same '1.0.0' fixtures in test_placement.py",
+      "status": "BOTH_EQUIVALENT",
+      "isDefect": {
+        "local": false,
+        "github": false
+      },
+      "recommendedAction": "KEEP_EITHER",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both branches: test_certification_gates.py uses blockVersion='I1' (correct)",
+        "Both branches: test_placement.py uses blockVersion='1.0.0' (test fixture, acceptable)",
+        "Tests validate field presence, not enforcement of dynamic extraction"
+      ],
+      "note": "Test fixtures with '1.0.0' are acceptable as they test manifest structure. Integration tests should verify dynamic version extraction, but that's a future enhancement."
+    },
+    {
+      "area": "EngineeringContract_routes",
+      "description": "Contract generation routes that should populate CandidateBinding.contract_hash",
+      "localImplementation": "PRESENT - services/project-ai/app/api/routes/contract.py with load_repository_snapshot() function, contracts_store, workflows_store, verify_auth(), verify_workflow_ownership()",
+      "githubImplementation": "PRESENT - Identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "isDefect": {
+        "local": false,
+        "github": false
+      },
+      "recommendedAction": "KEEP_EITHER",
+      "riskLevel": "LOW",
+      "evidence": [
+        "Both branches have identical contract.py routes",
+        "Both include load_repository_snapshot() for TypeScript snapshot integration",
+        "Both have CandidateBinding.contract_hash field ready for population"
+      ],
+      "note": "Contract routes do not directly handle blockVersion binding - they populate contract_hash field. Version binding happens in workflow orchestration and candidate intake."
+    }
+  ],
+  "summary": {
+    "totalAreas": 7,
+    "defectsInLocal": 0,
+    "defectsInGithub": 2,
+    "criticalFindings": [
+      "CRITICAL: GitHub branch has hardcoded blockVersion='1.0.0' in placement agent (services/project-ai/app/agents/placement.py:53)",
+      "CRITICAL: GitHub branch has hardcoded blockVersion='1.0.0' in candidate routes (services/project-ai/app/api/routes/candidate.py:379, 395)",
+      "CRITICAL: Local branch remediates both defects by extracting target_version from workflow context"
+    ],
+    "architecturalDifference": "LOCAL branch implements the full M2.9 B07 fix: dynamic version extraction from WorkflowTarget → CandidateBinding → PlacementManifest. GITHUB branch has the models defined but does not use them for version binding - hardcodes '1.0.0' in both placement agent and candidate routes.",
+    "reconciliationStrategy": "PRESERVE_LOCAL_IMPLEMENTATION - The local remediation is the correct implementation of M2.9 requirement. GitHub branch contains the architectural defect that M2.9 was designed to fix."
+  },
+  "rawCommandOutputs": {
+    "placement_agent_diff": "git diff backup/github-m2-9..backup/local-m2-9-remediation -- services/project-ai/app/agents/placement.py shows LOCAL added workflow_target_data.get('version') extraction and removed hardcoded '1.0.0'",
+    "candidate_routes_diff": "git diff shows LOCAL added getattr(package, 'target_version', None) extraction in candidate.py:376-382 and replaced hardcoded '1.0.0' with target_version variable",
+    "blockVersion_grep_local": "18 occurrences, most use dynamic assignment or test fixtures with 'I1', 'C1' formats",
+    "blockVersion_grep_github": "18 occurrences, includes hardcoded '1.0.0' in agents/placement.py:53 and routes/candidate.py:379,395",
+    "CandidateBinding_presence": "Present in both branches identically - model exists but GitHub doesn't use it for version binding"
+  },
+  "requirementVerification": {
+    "m2_9_objective": "Bind every workflow and candidate to target block family/version, preventing version mismatches (e.g., I7 requested but 1.0.0 hardcoded)",
+    "localSatisfiesObjective": true,
+    "githubSatisfiesObjective": false,
+    "verificationEvidence": [
+      "WorkflowTarget model: BOTH HAVE (foundation)",
+      "CandidateBinding model: BOTH HAVE (foundation)",
+      "Dynamic version extraction in placement agent: LOCAL ONLY",
+      "Dynamic version extraction in candidate routes: LOCAL ONLY",
+      "Hardcoded '1.0.0' removed: LOCAL ONLY"
+    ]
+  },
+  "reconciliationPlan": {
+    "recommendation": "CHERRY_PICK_LOCAL_CHANGES",
+    "filesToPreserveFromLocal": [
+      "services/project-ai/app/agents/placement.py (lines 46-53, 63: version extraction logic)",
+      "services/project-ai/app/api/routes/candidate.py (lines 376-391, 407: target_version extraction and assignment)"
+    ],
+    "filesToPreserveFromGithub": [],
+    "potentialConflicts": "None expected - the diff is additive (version extraction logic) and substitutive (variable replacement). No structural conflicts detected.",
+    "testingRequired": [
+      "Run services/project-ai/tests/test_placement.py to verify placement agent works with workflow_target context",
+      "Run services/project-ai/tests/test_candidate.py to verify candidate routes extract target_version",
+      "Integration test: create workflow with target version 'I7' → upload candidate → verify PlacementManifest.blockVersion='I7' (not '1.0.0')"
+    ]
+  }
+}

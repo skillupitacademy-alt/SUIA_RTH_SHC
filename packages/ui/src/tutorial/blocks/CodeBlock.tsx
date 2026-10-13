@@ -3,9 +3,13 @@
 import React, { useState } from 'react';
 import type { ICodeBlock, BlockComponentProps } from '../types';
 
-export function CodeBlock({ block, className = '' }: BlockComponentProps<ICodeBlock>) {
+export function CodeBlock({ block, className = '', runtimeContext }: BlockComponentProps<ICodeBlock>) {
   const { language, code, filename, caption, showLineNumbers, highlightLines } = block.content;
   const [copied, setCopied] = useState(false);
+
+  // UBRC: Use runtimeContext if available, fallback to block fields
+  const blockId = runtimeContext?.blockId ?? block.id;
+  const blockType = runtimeContext?.blockType ?? 'code';
 
   const handleCopy = async () => {
     try {
@@ -23,7 +27,9 @@ export function CodeBlock({ block, className = '' }: BlockComponentProps<ICodeBl
 
   return (
     <figure
-      id={block.id}
+      id={blockId}
+      data-block-id={blockId}
+      data-block-type={blockType}
       className={`my-4 rounded-lg overflow-hidden border border-slate-700/60 bg-slate-950 text-slate-100 shadow-sm ${className}`}
     >
       {(filename || language) && (

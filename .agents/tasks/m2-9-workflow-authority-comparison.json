@@ -1,0 +1,257 @@
+{
+  "investigationDate": "2025-01-20",
+  "branches": {
+    "local": "backup/local-m2-9-remediation",
+    "github": "backup/github-m2-9"
+  },
+  "summary": {
+    "overallStatus": "LOCAL_CONTAINS_CRITICAL_FIXES",
+    "recommendation": "CHERRY_PICK_LOCAL_REMEDIATION_FIXES",
+    "riskLevel": "HIGH",
+    "keyFindings": [
+      "Local has removed CreationMode enum entirely (REMEDIATED)",
+      "GitHub still has CreationMode with MIX_AND_MATCH workflow bypass (DEFECT)",
+      "Local has disabled /creation routes with HTTP 405 (REMEDIATED)",
+      "GitHub has active /creation routes executing independent workflow (DEFECT)",
+      "Local has fixed hard-coded blockVersion='1.0.0' in placement.py (REMEDIATED)",
+      "GitHub still has hard-coded version in placement.py and candidate.py (DEFECT)",
+      "Local has removed frontend ProjectLlmWorkflowCoordinator (REMEDIATED)",
+      "GitHub still has frontend runWorkflow() coordinator (COMPETING AUTHORITY)",
+      "Both have CanonicalWorkflowState (EQUIVALENT)",
+      "Both have TaskState with proper deprecation notice (EQUIVALENT)"
+    ]
+  },
+  "areas": [
+    {
+      "area": "CanonicalWorkflowState",
+      "localImplementation": "EXISTS: services/project-ai/app/orchestration/canonical_workflow.py with 17 states (REQUESTED->CERTIFIED) and proper architectural documentation",
+      "githubImplementation": "EXISTS: services/project-ai/app/orchestration/canonical_workflow.py with identical content",
+      "status": "BOTH_EQUIVALENT",
+      "recommendedAction": "KEEP_EITHER",
+      "riskLevel": "LOW",
+      "evidence": [
+        "git show backup/local-m2-9-remediation:services/project-ai/app/orchestration/canonical_workflow.py",
+        "git show backup/github-m2-9:services/project-ai/app/orchestration/canonical_workflow.py",
+        "Both define: REQUESTED, DISCOVERY, BRIEF_READY, AWAITING_GATE_1, GUI_APPROVED, CANDIDATE_REQUESTED, etc.",
+        "Both have identical architectural documentation about single authority"
+      ]
+    },
+    {
+      "area": "TaskState (Agent-Level State)",
+      "localImplementation": "EXISTS: services/project-ai/app/models/task_state.py with DEPRECATION NOTICE clarifying it's agent-level state, not workflow-level",
+      "githubImplementation": "EXISTS: services/project-ai/app/models/task_state.py with identical DEPRECATION NOTICE",
+      "status": "BOTH_EQUIVALENT",
+      "recommendedAction": "KEEP_EITHER",
+      "riskLevel": "LOW",
+      "evidence": [
+        "git show backup/local-m2-9-remediation:services/project-ai/app/models/task_state.py",
+        "git show backup/github-m2-9:services/project-ai/app/models/task_state.py",
+        "Both clarify: 'TaskState is NOT a workflow state machine; it tracks individual agent execution'",
+        "Both reference CanonicalWorkflowState as the workflow authority"
+      ]
+    },
+    {
+      "area": "WorkflowEngine (Agent Coordinator)",
+      "localImplementation": "EXISTS: services/project-ai/app/orchestration/workflow_engine.py - Uses TaskState for agent execution, not workflow lifecycle",
+      "githubImplementation": "EXISTS: services/project-ai/app/orchestration/workflow_engine.py - identical implementation",
+      "status": "BOTH_EQUIVALENT",
+      "recommendedAction": "KEEP_EITHER",
+      "riskLevel": "LOW",
+      "evidence": [
+        "git show backup/local-m2-9-remediation:services/project-ai/app/orchestration/workflow_engine.py",
+        "git show backup/github-m2-9:services/project-ai/app/orchestration/workflow_engine.py",
+        "WorkflowEngine coordinates agents using TaskState (agent-level) not CanonicalWorkflowState (workflow-level)",
+        "Both are identical - no competing authority found"
+      ]
+    },
+    {
+      "area": "CreationMode Enum",
+      "localImplementation": "REMOVED: services/project-ai/app/models/creation.py no longer has CreationMode. Replaced with DesignSource enum that does NOT bypass workflow.",
+      "githubImplementation": "EXISTS WITH DEFECT: services/project-ai/app/models/creation.py still has CreationMode(I2_ONLY, MIX_AND_MATCH, NEW_CANDIDATE) with DEPRECATION notice but still executable",
+      "status": "CONFLICTING",
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "git grep -n 'class CreationMode' backup/local-m2-9-remediation - NO RESULTS in production code",
+        "git grep -n 'class CreationMode' backup/github-m2-9 - FOUND: services/project-ai/app/models/creation.py:9",
+        "LOCAL: Replaced with DesignSource(REPOSITORY_CANONICAL, EXTERNAL_AI_PROTOTYPE, USER_SPECIFICATION)",
+        "GITHUB: Still has deprecated CreationMode allowing workflow bypass",
+        "LOCAL has explicit comment: 'M2.9 Wave 0 / Agent B13: CreationMode REMOVED'",
+        "GITHUB has: 'DEPRECATED: Use DesignSource' but CreationMode still exists"
+      ],
+      "architecturalViolation": "CreationMode.MIX_AND_MATCH allows workflow bypass, violating M2.9 requirement that all candidates follow same canonical lifecycle"
+    },
+    {
+      "area": "Legacy /creation Routes",
+      "localImplementation": "DISABLED: services/project-ai/app/api/routes/creation.py returns HTTP 405 METHOD_NOT_ALLOWED for all endpoints with clear migration guidance",
+      "githubImplementation": "ACTIVE: services/project-ai/app/api/routes/creation.py still executes workflow logic, validates composition, runs certification",
+      "status": "CONFLICTING",
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "git show backup/local-m2-9-remediation:services/project-ai/app/api/routes/creation.py",
+        "git show backup/github-m2-9:services/project-ai/app/api/routes/creation.py",
+        "LOCAL: All routes raise HTTPException 405 with replacement guidance",
+        "GITHUB: POST /workflows creates workflow, POST /validate runs validation, POST /certify executes certification",
+        "LOCAL has explicit comment: 'M2.9 Wave 0: LEGACY WORKFLOW AUTHORITY RETIRED'",
+        "GITHUB still executes: verify_i2_complete(), verify_types_compatible(), etc."
+      ],
+      "architecturalViolation": "Active /creation routes implement independent workflow authority competing with CanonicalWorkflowState"
+    },
+    {
+      "area": "Hard-coded blockVersion (placement.py)",
+      "localImplementation": "FIXED: services/project-ai/app/agents/placement.py extracts target_version from workflow_target binding. Falls back to 'UNKNOWN_VERSION' sentinel if missing.",
+      "githubImplementation": "DEFECT: services/project-ai/app/agents/placement.py has hard-coded blockVersion='1.0.0'",
+      "status": "CONFLICTING",
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "git show backup/local-m2-9-remediation:services/project-ai/app/agents/placement.py",
+        "git show backup/github-m2-9:services/project-ai/app/agents/placement.py",
+        "LOCAL line ~60: target_version = workflow_target_data.get('version') with fallback to 'UNKNOWN_VERSION'",
+        "GITHUB line 53: blockVersion='1.0.0' (hard-coded)",
+        "LOCAL has comment: '# Extract target version from workflow_target (B07 fix)'",
+        "GITHUB has no version extraction logic"
+      ],
+      "architecturalViolation": "Hard-coded version ignores user's requested target version (e.g., I7, C2, D3)"
+    },
+    {
+      "area": "Hard-coded blockVersion (candidate.py route)",
+      "localImplementation": "FIXED: services/project-ai/app/api/routes/candidate.py extracts target_version from package.target_version with fallback to 'UNKNOWN_VERSION'",
+      "githubImplementation": "DEFECT: services/project-ai/app/api/routes/candidate.py has hard-coded blockVersion='1.0.0' with comment '# Initial version for new blocks'",
+      "status": "CONFLICTING",
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "git show backup/local-m2-9-remediation:services/project-ai/app/api/routes/candidate.py (lines 370-410)",
+        "git show backup/github-m2-9:services/project-ai/app/api/routes/candidate.py (lines 370-410)",
+        "LOCAL: target_version = getattr(package, 'target_version', None) with proper fallback",
+        "GITHUB line 379: 'blockVersion': '1.0.0', # Initial version for new blocks",
+        "LOCAL has comment: '# B07 fix: Extract target version from candidate binding/workflow'"
+      ],
+      "architecturalViolation": "Hard-coded version creates incorrect manifest that doesn't match user's target version requirement"
+    },
+    {
+      "area": "Python Repository Scanning",
+      "localImplementation": "Path(repo_root) found once in services/project-ai/app/contracts/repository_intelligence.py line 282 - NEEDS INSPECTION",
+      "githubImplementation": "Path(repo_root) found once in services/project-ai/app/contracts/repository_intelligence.py line 153 - NEEDS INSPECTION",
+      "status": "BOTH_PRESENT",
+      "recommendedAction": "MANUAL_RECONCILIATION",
+      "riskLevel": "MEDIUM",
+      "evidence": [
+        "git grep -n 'Path(repo_root)' backup/local-m2-9-remediation -- services/project-ai",
+        "git grep -n 'Path(repo_root)' backup/github-m2-9 -- services/project-ai",
+        "Both have repository_intelligence.py with Path(repo_root) usage",
+        "Different line numbers suggest code differences in this file",
+        "Need to verify if this is legitimate utility function or prohibited direct repository scanning"
+      ],
+      "note": "This requires detailed inspection of repository_intelligence.py context to determine if Path(repo_root) is legitimate build-time processing or runtime scanning defect"
+    },
+    {
+      "area": "Frontend Workflow Coordinator",
+      "localImplementation": "REMOVED: No projectLlmWorkflowCoordinator.ts found. Frontend only has API client, hooks, and presentation components.",
+      "githubImplementation": "EXISTS: apps/skillhubcore-admin/src/lib/project-llm/projectLlmWorkflowCoordinator.ts with runWorkflow(), assertValidTransition(), InMemoryProjectLlmWorkflowStore",
+      "status": "CONFLICTING",
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "HIGH",
+      "evidence": [
+        "git ls-tree -r --name-only backup/local-m2-9-remediation apps/skillhubcore-admin/src/lib/project-llm/ - NO coordinator file",
+        "git ls-tree -r --name-only backup/github-m2-9 apps/skillhubcore-admin/src/lib/project-llm/ - HAS projectLlmWorkflowCoordinator.ts",
+        "LOCAL has: api/projectLlmClient.ts, hooks/useWorkflowState.ts, types/canonicalWorkflowState.ts",
+        "GITHUB has: runWorkflow() function implementing workflow execution logic",
+        "GITHUB has: assertValidTransition(), ALLOWED_TRANSITIONS state machine",
+        "GITHUB has: InMemoryProjectLlmWorkflowStore for workflow persistence"
+      ],
+      "architecturalViolation": "Frontend runWorkflow() creates competing workflow authority. Frontend should only consume workflow state from backend, not execute workflow logic."
+    },
+    {
+      "area": "Test Files (MIX_AND_MATCH references)",
+      "localImplementation": "services/project-ai/tests/test_creation.py has test SKIPPED with reason='Legacy CreationMode.MIX_AND_MATCH removed in Wave 0'",
+      "githubImplementation": "services/project-ai/tests/test_creation.py has active test using mode='MIX_AND_MATCH'",
+      "status": "CONFLICTING",
+      "recommendedAction": "KEEP_LOCAL",
+      "riskLevel": "MEDIUM",
+      "evidence": [
+        "git grep -n 'MIX_AND_MATCH' backup/local-m2-9-remediation services/project-ai/tests/test_creation.py",
+        "git grep -n 'MIX_AND_MATCH' backup/github-m2-9 services/project-ai/tests/test_creation.py",
+        "LOCAL line 71: @pytest.mark.skip(reason='Legacy CreationMode.MIX_AND_MATCH removed in Wave 0')",
+        "GITHUB line 29: 'mode': 'MIX_AND_MATCH' in active test"
+      ],
+      "note": "Tests reflect the implementation status - local tests disabled legacy mode, GitHub tests still expect it to work"
+    }
+  ],
+  "rawCommandOutputs": {
+    "canonical_workflow_local": "EXISTS - identical to GitHub",
+    "canonical_workflow_github": "EXISTS - identical to local",
+    "workflow_engine_local": "EXISTS - uses TaskState for agent coordination, not workflow lifecycle",
+    "workflow_engine_github": "EXISTS - identical to local",
+    "task_state_local": "EXISTS with deprecation notice clarifying agent-level state",
+    "task_state_github": "EXISTS with identical deprecation notice",
+    "creation_mode_local": "NOT FOUND - removed entirely, replaced with DesignSource",
+    "creation_mode_github": "FOUND at services/project-ai/app/models/creation.py:9 with MIX_AND_MATCH",
+    "creation_routes_local": "DISABLED - all routes return HTTP 405",
+    "creation_routes_github": "ACTIVE - executes validation and certification logic",
+    "placement_version_local": "FIXED - extracts from workflow_target",
+    "placement_version_github": "DEFECT - hard-coded '1.0.0'",
+    "candidate_version_local": "FIXED - extracts from package.target_version",
+    "candidate_version_github": "DEFECT - hard-coded '1.0.0'",
+    "frontend_coordinator_local": "NOT FOUND - removed",
+    "frontend_coordinator_github": "FOUND at apps/skillhubcore-admin/src/lib/project-llm/projectLlmWorkflowCoordinator.ts"
+  },
+  "reconciliationPlan": {
+    "strategy": "CHERRY_PICK_LOCAL_FIXES_TO_GITHUB",
+    "rationale": "Local contains M2.9 remediation fixes that resolve critical architectural defects. GitHub has the same foundation (CanonicalWorkflowState) but retains legacy bypass mechanisms.",
+    "criticalFiles": [
+      "services/project-ai/app/models/creation.py - LOCAL removes CreationMode, adds DesignSource",
+      "services/project-ai/app/api/routes/creation.py - LOCAL disables routes with HTTP 405",
+      "services/project-ai/app/agents/placement.py - LOCAL fixes hard-coded version",
+      "services/project-ai/app/api/routes/candidate.py - LOCAL fixes hard-coded version",
+      "services/project-ai/tests/test_creation.py - LOCAL skips legacy tests"
+    ],
+    "filesToRemove": [
+      "apps/skillhubcore-admin/src/lib/project-llm/projectLlmWorkflowCoordinator.ts - competing frontend authority"
+    ],
+    "requiresManualReview": [
+      "services/project-ai/app/contracts/repository_intelligence.py - verify Path(repo_root) usage is legitimate",
+      "services/project-ai/app/api/schemas/creation.py - may need DesignSource schema updates",
+      "All test files - verify test coverage after CreationMode removal"
+    ],
+    "nextSteps": [
+      "1. Create integration branch from backup/github-m2-9",
+      "2. Cherry-pick local commits that remediated CreationMode",
+      "3. Cherry-pick local commits that disabled /creation routes",
+      "4. Cherry-pick local commits that fixed hard-coded versions",
+      "5. Remove frontend projectLlmWorkflowCoordinator.ts",
+      "6. Inspect repository_intelligence.py Path(repo_root) usage",
+      "7. Run full test suite",
+      "8. Manual review of evidence ledger and certification gates",
+      "9. Push to new branch (NOT force-push to existing branch)"
+    ]
+  },
+  "architecturalCompliance": {
+    "canonicalWorkflowStateAuthority": {
+      "local": "COMPLIANT - single authority established",
+      "github": "PARTIAL - authority exists but bypasses remain"
+    },
+    "noCompetingWorkflowStates": {
+      "local": "COMPLIANT - CreationMode removed, TaskState clarified as agent-level",
+      "github": "NON_COMPLIANT - CreationMode still executable, frontend coordinator exists"
+    },
+    "noWorkflowBypass": {
+      "local": "COMPLIANT - /creation routes disabled, no MIX_AND_MATCH",
+      "github": "NON_COMPLIANT - /creation routes active, MIX_AND_MATCH executable"
+    },
+    "noHardCodedVersions": {
+      "local": "COMPLIANT - dynamic version extraction from workflow_target",
+      "github": "NON_COMPLIANT - hard-coded '1.0.0' in placement.py and candidate.py"
+    },
+    "typeScriptSnapshotOnly": {
+      "local": "NEEDS_VERIFICATION - Path(repo_root) found in repository_intelligence.py",
+      "github": "NEEDS_VERIFICATION - Path(repo_root) found in repository_intelligence.py"
+    },
+    "frontendConsumesOnly": {
+      "local": "COMPLIANT - no workflow execution logic in frontend",
+      "github": "NON_COMPLIANT - projectLlmWorkflowCoordinator.ts implements runWorkflow()"
+    }
+  }
+}

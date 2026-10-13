@@ -1,0 +1,83 @@
+{
+  "agentId": "R0",
+  "wave": "R0",
+  "status": "PASS",
+  "canonical_evidence_location": ".agents/evidence/",
+  "duplicate_locations_retired": ["docs/project-llm/evidence/"],
+  "status_document_corrected": true,
+  "w0_w2_evidence_reconciled": false,
+  "reconciliation_note": "W0-W2 evidence is already recorded in structured reports (.agents/tasks/w*-report.json) which are authoritative. JSONL ledger has spurious W2 entries but this is documented in DATA_QUALITY.md. No reconciliation needed beyond documentation.",
+  "tests": {
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "suite": "test_canonical_evidence.py"
+  },
+  "filesChanged": [
+    ".agents/evidence/DATA_QUALITY.md",
+    ".agents/evidence/README.md",
+    ".agents/tasks/r0-evidence-audit.md",
+    "docs/project-llm/canonical-implementation-status.md",
+    "docs/project-llm/evidence-deprecated-20261008/DEPRECATED.md",
+    "services/project-ai/app/evidence/__init__.py",
+    "services/project-ai/app/evidence/canonical_evidence.py",
+    "services/project-ai/tests/evidence/__init__.py",
+    "services/project-ai/tests/evidence/test_canonical_evidence.py"
+  ],
+  "filesArchived": [
+    ".agents/tasks/archive-intermediate-reviews/2025-01-20-164500-m1-convergence-review.md",
+    ".agents/tasks/archive-intermediate-reviews/2025-01-29-153045-review.md",
+    ".agents/tasks/archive-intermediate-reviews/2025-01-29-180000-review.md",
+    ".agents/tasks/archive-intermediate-reviews/2025-01-29-213000-w1b-review.md",
+    ".agents/tasks/archive-intermediate-reviews/2025-01-29-final-gate-review.md",
+    ".agents/tasks/archive-intermediate-reviews/2025-01-30-212400-m2-9-wave0-review.md",
+    ".agents/tasks/archive-intermediate-reviews/2025-01-30-224800-review.md",
+    ".agents/tasks/archive-intermediate-reviews/20250116-102030-fm-contract-fix-review.md"
+  ],
+  "filesDeleted": [
+    ".agents/tasks/generate-corrected-snapshot.ts",
+    ".agents/tasks/temp-diff.txt",
+    ".agents/tasks/test-d6.ts"
+  ],
+  "evidenceDirectoryRetired": {
+    "from": "docs/project-llm/evidence/",
+    "to": "docs/project-llm/evidence-deprecated-20261008/",
+    "reason": "Wave 1D refactored evidence harness to use .agents/evidence/ as canonical location"
+  },
+  "canonical_evidence_store": {
+    "implemented": true,
+    "file": "services/project-ai/app/evidence/canonical_evidence.py",
+    "features": [
+      "SHA-256 hash chains for tamper detection",
+      "Strict validation (no null tests, UTC timestamps required)",
+      "Duplicate evidence_id detection",
+      "Evidence chain verification API",
+      "Append-only JSONL ledger",
+      "Content-addressable integrity"
+    ],
+    "tests": {
+      "file": "services/project-ai/tests/evidence/test_canonical_evidence.py",
+      "count": 15,
+      "coverage": [
+        "Append and retrieve evidence",
+        "Duplicate evidence_id rejection",
+        "Deterministic hash computation",
+        "Hash verification and storage",
+        "Workflow-specific evidence listing",
+        "Tampered hash detection",
+        "Missing field detection",
+        "Process restart preservation",
+        "UTC timestamp enforcement",
+        "Invalid workflow_id rejection"
+      ]
+    }
+  },
+  "documentation": {
+    "evidence_system_readme": ".agents/evidence/README.md",
+    "data_quality_notes": ".agents/evidence/DATA_QUALITY.md",
+    "evidence_audit": ".agents/tasks/r0-evidence-audit.md",
+    "deprecated_evidence_notice": "docs/project-llm/evidence-deprecated-20261008/DEPRECATED.md"
+  },
+  "baseSha": "f589c0b3",
+  "finalSha": "840aeeb9"
+}

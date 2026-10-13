@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Fix infrastructure bypass and NULL brand candidate access vulnerabilities. Finding 1 (CRITICAL): verify_brand_access treats any brand=None principal as infrastructure-level without verifying privileged roles. Finding 2 (HIGH): candidates with brand=None are accessible to all tenants. Both must require super_admin or infrastructure role verification.",
+  "status": "completed",
+  "steps": [
+    "1. Modify verify_brand_access() in services/project-ai/app/auth/authorization.py line 33-36. When user_brand is None, check if 'super_admin' or 'infrastructure' in principal.get('roles', []). If not present, raise HTTPException 403 with detail='Infrastructure access requires super_admin or infrastructure role'.",
+    "2. Modify execute_placement() in services/project-ai/app/api/routes/candidate.py around line 858 (after verify_brand_access call). Add conditional: if package.brand is None and user does not have super_admin or infrastructure role, raise HTTPException 403 with detail='Access to unbranded candidates requires super_admin or infrastructure role'.",
+    "3. Add test_infrastructure_bypass_requires_privileged_role() in tests/security/test_authorization.py. Create principal with brand=None but roles=[] (no privileged role), call verify_brand_access(principal, 'skillhub'), expect HTTPException 403 with 'Infrastructure access requires' in detail.",
+    "4. Add test_null_brand_candidate_requires_privileged_role() integration test in tests/security/test_authorization.py (mark with @pytest.mark.skip initially). Verify POST /candidates/{id}/execute with candidate.brand=None and non-privileged user returns 403."
+  ],
+  "acceptance_criteria": [
+    "verify_brand_access rejects brand=None principals without super_admin or infrastructure role",
+    "Candidates with brand=None cannot be executed by regular tenant users",
+    "New unit test proves infrastructure bypass requires privileged role",
+    "Integration test skeleton exists for NULL brand candidate enforcement"
+  ],
+  "verification": [
+    "Run: pytest tests/security/test_authorization.py::TestVerifyBrandAccess::test_infrastructure_bypass_requires_privileged_role -v",
+    "Run: pytest tests/security/test_authorization.py -v --cov=app/auth/authorization --cov-report=term (all existing tests still pass + new test passes)"
+  ],
+  "blocked_reason": null,
+  "findings": "All acceptance criteria met. verify_brand_access now requires super_admin or infrastructure role for brand=None principals (prevents infrastructure bypass). Candidates with brand=None now require privileged role for execution. Unit test test_infrastructure_bypass_requires_privileged_role added and passing. Integration test skeleton test_null_brand_candidate_requires_privileged_role added. All existing security tests remain passing with 100% coverage on authorization.py."
+}

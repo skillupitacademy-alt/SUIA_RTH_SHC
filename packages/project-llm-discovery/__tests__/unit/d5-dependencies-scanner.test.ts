@@ -14,6 +14,7 @@ describe('D5 Dependencies Scanner', () => {
           version: '1.0.0',
           dependencies: [],
           exports: [],
+          evidenceId: 'evidence-types',
         },
         {
           name: '@quiz/ui',
@@ -21,6 +22,7 @@ describe('D5 Dependencies Scanner', () => {
           version: '1.0.0',
           dependencies: ['@quiz/types'],
           exports: [],
+          evidenceId: 'evidence-ui',
         },
         {
           name: '@quiz/db-tutorial',
@@ -28,6 +30,7 @@ describe('D5 Dependencies Scanner', () => {
           version: '1.0.0',
           dependencies: ['@quiz/types'],
           exports: [],
+          evidenceId: 'evidence-db-tutorial',
         },
       ] as PackageInfo[],
       services: [],
@@ -61,24 +64,54 @@ describe('D5 Dependencies Scanner', () => {
             },
           });
         }
+        if (path === 'pnpm-lock.yaml') {
+          return `
+lockfileVersion: '9.0'
+importers:
+  packages/ui:
+    dependencies:
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../types
+      react:
+        specifier: ^18.0.0
+        version: 18.2.0
+  packages/db-tutorial:
+    dependencies:
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../types
+`;
+        }
         return '{}';
       }),
-      fileExists: vi.fn().mockResolvedValue(true),
+      fileExists: vi.fn().mockImplementation(async (path: string) => {
+        return path !== 'nonexistent.json';
+      }),
       listFiles: vi.fn().mockResolvedValue([]),
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
 
-    // Verify nodes
-    expect(result.data.nodes).toHaveLength(3);
-    expect(result.data.nodes[0]?.name).toBe('@quiz/types');
-    expect(result.data.nodes[1]?.name).toBe('@quiz/ui');
-    expect(result.data.nodes[2]?.name).toBe('@quiz/db-tutorial');
+    // Verify nodes (3 workspace + 1 external)
+    expect(result.data.nodes).toHaveLength(4);
+    
+    const workspaceNodes = result.data.nodes.filter(n => n.name.startsWith('@quiz/'));
+    expect(workspaceNodes).toHaveLength(3);
+    expect(workspaceNodes[0]?.name).toBe('@quiz/types');
+    expect(workspaceNodes[1]?.name).toBe('@quiz/ui');
+    expect(workspaceNodes[2]?.name).toBe('@quiz/db-tutorial');
+    
+    // External node for react
+    const reactNode = result.data.nodes.find(n => n.name === 'react');
+    expect(reactNode).toBeDefined();
+    expect(reactNode?.version).toBe('18.2.0');
 
-    // Verify edges (only workspace dependencies)
+    // Verify edges now include ALL dependencies (workspace + external)
     expect(result.data.edges.length).toBeGreaterThan(0);
     
     const uiToTypes = result.data.edges.find(
@@ -86,9 +119,18 @@ describe('D5 Dependencies Scanner', () => {
     );
     expect(uiToTypes).toBeDefined();
     expect(uiToTypes?.kind).toBe('dependency');
+    expect(uiToTypes?.requestedVersion).toBe('workspace:*');
+    
+    // Should also track external dependencies now
+    const uiToReact = result.data.edges.find(
+      e => e.from === '@quiz/ui' && e.to === 'react'
+    );
+    expect(uiToReact).toBeDefined();
+    expect(uiToReact?.requestedVersion).toBe('^18.0.0');
+    expect(uiToReact?.resolvedVersion).toBe('18.2.0');
   });
 
-  it('should only track workspace dependencies (@quiz/*)', async () => {
+  it('should track both workspace and external dependencies', async () => {
     const structureData = {
       applications: [],
       packages: [
@@ -98,6 +140,7 @@ describe('D5 Dependencies Scanner', () => {
           version: '1.0.0',
           dependencies: [],
           exports: [],
+          evidenceId: 'evidence-ui',
         },
       ] as PackageInfo[],
       services: [],
@@ -116,6 +159,23 @@ describe('D5 Dependencies Scanner', () => {
             },
           });
         }
+        if (path === 'pnpm-lock.yaml') {
+          return `
+lockfileVersion: '9.0'
+importers:
+  packages/ui:
+    dependencies:
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../types
+      react:
+        specifier: ^18.0.0
+        version: 18.2.0
+      next:
+        specifier: ^16.0.0
+        version: 16.1.0
+`;
+        }
         return '{}';
       }),
       fileExists: vi.fn().mockResolvedValue(true),
@@ -123,13 +183,19 @@ describe('D5 Dependencies Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
 
-    // Should only have edges for @quiz/* dependencies
-    expect(result.data.edges).toHaveLength(1);
-    expect(result.data.edges[0]?.to).toBe('@quiz/types');
+    // Should have edges for ALL dependencies (workspace + external)
+    expect(result.data.edges).toHaveLength(3);
+    
+    const workspaceEdge = result.data.edges.find(e => e.to === '@quiz/types');
+    expect(workspaceEdge?.requestedVersion).toBe('workspace:*');
+    
+    const externalEdges = result.data.edges.filter(e => !e.requestedVersion?.startsWith('workspace:'));
+    expect(externalEdges).toHaveLength(2);
   });
 
   it('should distinguish between dependency types', async () => {
@@ -142,6 +208,7 @@ describe('D5 Dependencies Scanner', () => {
           version: '1.0.0',
           dependencies: [],
           exports: [],
+          evidenceId: 'evidence-ui',
         },
       ] as PackageInfo[],
       services: [],
@@ -164,6 +231,21 @@ describe('D5 Dependencies Scanner', () => {
             },
           });
         }
+        if (path === 'pnpm-lock.yaml') {
+          return `
+lockfileVersion: '9.0'
+importers:
+  packages/ui:
+    dependencies:
+      '@quiz/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@quiz/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
+`;
+        }
         return '{}';
       }),
       fileExists: vi.fn().mockResolvedValue(true),
@@ -171,6 +253,7 @@ describe('D5 Dependencies Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
@@ -197,6 +280,7 @@ describe('D5 Dependencies Scanner', () => {
           version: '1.0.0',
           dependencies: [],
           exports: [],
+          evidenceId: 'evidence-a',
         },
         {
           name: '@quiz/b',
@@ -204,6 +288,7 @@ describe('D5 Dependencies Scanner', () => {
           version: '1.0.0',
           dependencies: [],
           exports: [],
+          evidenceId: 'evidence-b',
         },
       ] as PackageInfo[],
       services: [],
@@ -223,6 +308,22 @@ describe('D5 Dependencies Scanner', () => {
             dependencies: { '@quiz/a': 'workspace:*' },
           });
         }
+        if (path === 'pnpm-lock.yaml') {
+          return `
+lockfileVersion: '9.0'
+importers:
+  packages/a:
+    dependencies:
+      '@quiz/b':
+        specifier: workspace:*
+        version: link:../b
+  packages/b:
+    dependencies:
+      '@quiz/a':
+        specifier: workspace:*
+        version: link:../a
+`;
+        }
         return '{}';
       }),
       fileExists: vi.fn().mockResolvedValue(true),
@@ -230,6 +331,7 @@ describe('D5 Dependencies Scanner', () => {
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
@@ -241,7 +343,64 @@ describe('D5 Dependencies Scanner', () => {
     expect(circularFinding?.severity).toBe('warning');
   });
 
-  it('should generate evidence for each package.json read', async () => {
+  it('should detect version conflicts', async () => {
+    const structureData = {
+      applications: [],
+      packages: [
+        {
+          name: '@quiz/ui',
+          path: 'packages/ui',
+          version: '1.0.0',
+          dependencies: [],
+          exports: [],
+          evidenceId: 'evidence-ui',
+        },
+      ] as PackageInfo[],
+      services: [],
+    };
+
+    const mockAdapter: RepositoryAdapter = {
+      readFile: vi.fn().mockImplementation(async (path: string) => {
+        if (path.includes('packages/ui')) {
+          return JSON.stringify({
+            name: '@quiz/ui',
+            version: '1.0.0',
+            dependencies: {
+              'react': '^18.0.0', // Requested v18
+            },
+          });
+        }
+        if (path === 'pnpm-lock.yaml') {
+          return `
+lockfileVersion: '9.0'
+importers:
+  packages/ui:
+    dependencies:
+      react:
+        specifier: ^18.0.0
+        version: 19.0.0  # Resolved to v19 - breaking change!
+`;
+        }
+        return '{}';
+      }),
+      fileExists: vi.fn().mockResolvedValue(true),
+      listFiles: vi.fn().mockResolvedValue([]),
+      getFileHash: vi.fn().mockResolvedValue('mockhash'),
+      getGitCommit: vi.fn().mockResolvedValue('abc123'),
+      getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
+    };
+
+    const result = await scanDependencies(mockAdapter, structureData);
+
+    const conflictFinding = result.findings.find(
+      f => f.category === 'dependencies-version-conflict'
+    );
+    expect(conflictFinding).toBeDefined();
+    expect(conflictFinding?.severity).toBe('warning');
+  });
+
+  it('should generate evidence for dependency declarations and resolutions', async () => {
     const structureData = {
       applications: [],
       packages: [
@@ -251,29 +410,48 @@ describe('D5 Dependencies Scanner', () => {
           version: '1.0.0',
           dependencies: [],
           exports: [],
+          evidenceId: 'evidence-types',
         },
       ] as PackageInfo[],
       services: [],
     };
 
     const mockAdapter: RepositoryAdapter = {
-      readFile: vi.fn().mockResolvedValue(JSON.stringify({
-        name: '@quiz/types',
-        dependencies: {},
-      })),
+      readFile: vi.fn().mockImplementation(async (path: string) => {
+        if (path.includes('packages/types')) {
+          return JSON.stringify({
+            name: '@quiz/types',
+            dependencies: {},
+          });
+        }
+        if (path === 'pnpm-lock.yaml') {
+          return `
+lockfileVersion: '9.0'
+importers:
+  packages/types:
+    dependencies: {}
+`;
+        }
+        return '{}';
+      }),
       fileExists: vi.fn().mockResolvedValue(true),
       listFiles: vi.fn().mockResolvedValue([]),
       getFileHash: vi.fn().mockResolvedValue('mockhash'),
       getGitCommit: vi.fn().mockResolvedValue('abc123'),
       getGitRoot: vi.fn().mockResolvedValue('/repo'),
+      runCommand: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 }),
     };
 
     const result = await scanDependencies(mockAdapter, structureData);
 
     expect(result.evidence.length).toBeGreaterThan(0);
     
-    const pkgEvidence = result.evidence.find(e => e.kind === 'package');
-    expect(pkgEvidence).toBeDefined();
-    expect(pkgEvidence?.claim).toContain('dependencies analyzed');
+    // Should have evidence for dependency declarations
+    const declarationEvidence = result.evidence.find(e => e.kind === 'dependency-declaration');
+    expect(declarationEvidence).toBeDefined();
+    
+    // Should have evidence for lockfile resolution
+    const resolutionEvidence = result.evidence.find(e => e.kind === 'dependency-resolution');
+    expect(resolutionEvidence).toBeDefined();
   });
 });

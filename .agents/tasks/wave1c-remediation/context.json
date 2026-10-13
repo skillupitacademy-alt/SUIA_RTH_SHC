@@ -1,0 +1,21 @@
+{
+  "project_type": "FastAPI/Python microservice with PostgreSQL persistence",
+  "language": "Python 3.11+",
+  "build_system": "pip/setuptools with pyproject.toml",
+  "test_framework": "pytest with pytest-asyncio for async tests",
+  "build_command": "pip install -e .",
+  "test_command": "pytest tests/security/ -v --cov=app/auth --cov-report=term",
+  "verification_instructions": "Run pytest with coverage for security tests. All tests must pass with >= 85% coverage on auth modules.",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "JWT_SECRET environment variable required for token validation tests. Database tests require TEST_DATABASE_URL_TUTORIAL.",
+  "contribution_requirements": "All security changes must include tests proving the fix. Self-approval prevention is critical infrastructure-level security. Brand isolation enforces tenant boundaries.",
+  "key_patterns": "AuthenticatedPrincipal TypedDict from JWT claims, verify_brand_access for tenant isolation, get_current_user guarantees user_id via JWT validation, HTTPException for auth failures",
+  "relevant_files": [
+    "services/project-ai/app/auth/authorization.py",
+    "services/project-ai/app/auth/dependencies.py",
+    "services/project-ai/app/api/routes/candidate.py",
+    "services/project-ai/app/api/routes/governance.py",
+    "services/project-ai/tests/security/test_authorization.py"
+  ],
+  "directory_structure": "services/project-ai/app/auth/ contains JWT and RBAC logic; app/api/routes/ contains route handlers; tests/security/ contains security-specific tests; tests/unit/ contains unit tests"
+}

@@ -4,21 +4,14 @@ import type { Evidence } from '../contracts/evidence.js';
 import type { ValidationError, ValidationWarning } from './validator.js';
 
 /**
- * Critical evidence kinds that must produce errors when missing
- * These represent current implementation state
- */
-const CRITICAL_KINDS: Set<Evidence['kind']> = new Set([
-  'type-definition',
-  'component',
-  'service',
-]);
-
-/**
- * Validate evidence paths exist and content hashes match
+ * Validate evidence paths exist and content hashes match using lifecycle-based severity
  * 
- * - Missing critical evidence → error
- * - Missing historical evidence → warning
- * - Content hash mismatch → warning (file changed since scan)
+ * M2.1 Lifecycle-based validation rules:
+ * - Missing path + lifecycle === 'current' → ERROR (CURRENT_EVIDENCE_PATH_NOT_FOUND)
+ * - Missing path + lifecycle !== 'current' → WARNING (HISTORICAL_EVIDENCE_PATH_NOT_FOUND)
+ * - Hash mismatch + lifecycle === 'current' → ERROR (CURRENT_EVIDENCE_CONTENT_HASH_MISMATCH)
+ * - Hash mismatch + lifecycle !== 'current' → WARNING (HISTORICAL_EVIDENCE_CONTENT_HASH_MISMATCH)
+ * - Directories (contentHash === '' or kind === 'directory') skip hash checks
  */
 export async function validateEvidencePaths(
   snapshot: RepositorySnapshot,
@@ -30,19 +23,21 @@ export async function validateEvidencePaths(
   // Check each evidence path for existence and content hash
   for (const evidence of snapshot.evidence) {
     const exists = await adapter.fileExists(evidence.path);
+    const isCurrent = evidence.lifecycle === 'current';
 
     if (!exists) {
-      // Distinguish critical vs historical evidence
-      if (CRITICAL_KINDS.has(evidence.kind)) {
+      // Path missing - severity based on lifecycle
+      if (isCurrent) {
         errors.push({
           validator: 'V3-evidence-paths',
-          code: 'CRITICAL_EVIDENCE_PATH_NOT_FOUND',
-          message: `Critical evidence path not found: ${evidence.path}`,
+          code: 'CURRENT_EVIDENCE_PATH_NOT_FOUND',
+          message: `Current evidence path not found: ${evidence.path}`,
           path: evidence.path,
           details: {
             evidenceId: evidence.evidenceId,
             scannerName: evidence.scannerName,
             kind: evidence.kind,
+            lifecycle: evidence.lifecycle,
             claim: evidence.claim,
           },
         });
@@ -56,6 +51,7 @@ export async function validateEvidencePaths(
             evidenceId: evidence.evidenceId,
             scannerName: evidence.scannerName,
             kind: evidence.kind,
+            lifecycle: evidence.lifecycle,
             claim: evidence.claim,
           },
         });
@@ -67,18 +63,36 @@ export async function validateEvidencePaths(
       if (evidence.contentHash !== '' && evidence.kind !== 'directory') {
         const currentHash = await adapter.getFileHash(evidence.path);
         if (currentHash !== evidence.contentHash) {
-          warnings.push({
-            validator: 'V3-evidence-paths',
-            code: 'EVIDENCE_CONTENT_HASH_MISMATCH',
-            message: `Evidence content hash mismatch for ${evidence.path}`,
-            path: evidence.path,
-            details: {
-              evidenceId: evidence.evidenceId,
-              scannerName: evidence.scannerName,
-              expectedHash: evidence.contentHash,
-              actualHash: currentHash,
-            },
-          });
+          // Hash mismatch - severity based on lifecycle
+          if (isCurrent) {
+            errors.push({
+              validator: 'V3-evidence-paths',
+              code: 'CURRENT_EVIDENCE_CONTENT_HASH_MISMATCH',
+              message: `Current evidence content hash mismatch for ${evidence.path}`,
+              path: evidence.path,
+              details: {
+                evidenceId: evidence.evidenceId,
+                scannerName: evidence.scannerName,
+                lifecycle: evidence.lifecycle,
+                expectedHash: evidence.contentHash,
+                actualHash: currentHash,
+              },
+            });
+          } else {
+            warnings.push({
+              validator: 'V3-evidence-paths',
+              code: 'HISTORICAL_EVIDENCE_CONTENT_HASH_MISMATCH',
+              message: `Historical evidence content hash mismatch for ${evidence.path}`,
+              path: evidence.path,
+              details: {
+                evidenceId: evidence.evidenceId,
+                scannerName: evidence.scannerName,
+                lifecycle: evidence.lifecycle,
+                expectedHash: evidence.contentHash,
+                actualHash: currentHash,
+              },
+            });
+          }
         }
       }
     }

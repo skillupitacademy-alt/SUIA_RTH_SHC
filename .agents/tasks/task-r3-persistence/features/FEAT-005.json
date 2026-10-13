@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-005",
+  "type": "docs",
+  "description": "Documentation and Final Verification: Create/update environment configuration documentation, database setup guide, update README with PostgreSQL persistence architecture, run full test suite with coverage verification, verify service starts and workflow persists across restart, and document all results. Search for existing database documentation before creating new files.",
+  "status": "pending",
+  "steps": [
+    "Search for existing database documentation: find . -name '*database*.md' -o -name '*migration*.md' -o -name '*persistence*.md' in docs/, packages/db-tutorial/, and root to determine if canonical database architecture documentation exists. If found, append Project AI persistence section to existing docs rather than creating duplicate documentation",
+    "Create services/project-ai/.env.example with environment variables: DATABASE_URL_TUTORIAL=\"postgresql://user:pass@host/tutorial_prod?sslmode=require\" (sanitized example - no real credentials), WORKSPACE_ROOT=\"E:\\\\onlinewebsites\\\\quiz-platform\" (existing variable), TEST_DATABASE_URL_TUTORIAL=\"postgresql://user:pass@host/tutorial_test\" (required for tests - no default). Add comments: (1) DATABASE_URL_TUTORIAL connects to existing tutorial_prod database shared with Tutorial content, (2) Never commit real production credentials, (3) TEST_DATABASE_URL_TUTORIAL must be explicitly configured for test execution",
+    "Create or update database setup documentation: If no existing canonical database docs found, create services/project-ai/docs/database-setup.md documenting: (1) Architecture (Project AI uses existing tutorial_prod PostgreSQL on Neon, tables namespaced with project_ai_ prefix), (2) Environment Variables (DATABASE_URL_TUTORIAL required, TEST_DATABASE_URL_TUTORIAL required for tests), (3) Migrations (document EXACT migration authority established by FEAT-000 - do NOT document both Drizzle and Alembic as alternatives, only the canonical migration mechanism), (4) Local Development (setup steps using discovered migration authority), (5) Testing (test database strategy, explicit TEST_DATABASE_URL_TUTORIAL requirement). If existing docs found, append Project AI Persistence section to them",
+    "Update services/project-ai/README.md: Add 'PostgreSQL Persistence' section after 'Architecture' documenting: database (existing tutorial_prod, NOT SQLite, NOT new database), tables (project_ai_workflows, project_ai_state_transitions, project_ai_contracts, project_ai_candidates, project_ai_manifests, project_ai_approvals), features (contract immutability, idempotency keys, optimistic locking, hash verification, restart safety). Add 'Environment Variables' subsection documenting DATABASE_URL_TUTORIAL. Update 'Testing' section to explain PostgreSQL test database. Update 'M2.8 Implementation Status' or create 'R3 Persistence Layer' section marking persistence as implemented with PostgreSQL",
+    "Run full verification suite and document results in FEAT-005 findings: (1) cd services/project-ai && pip install -e '.[dev]', (2) Based on FEAT-000 migration strategy: run migrations (Drizzle: cd packages/db-tutorial && pnpm drizzle-kit migrate, or Alembic: cd services/project-ai && alembic upgrade head), (3) pytest tests/ -v --cov=app --cov-report=html --cov-report=term, (4) Verify coverage ≥80%: pytest tests/ --cov=app --cov-fail-under=80, (5) Verify tables exist: psql $DATABASE_URL_TUTORIAL -c '\\dt project_ai_*' (should list 6 tables), (6) Start service: python -m app.main &, (7) Health check: curl http://localhost:8000/health (expect 200), (8) Create workflow: curl -X POST http://localhost:8000/workflows with JSON body, capture workflow_id, (9) Verify in database: psql $DATABASE_URL_TUTORIAL -c 'SELECT workflow_id, current_state, contract_sha256 FROM project_ai_workflows;', (10) Stop service: kill %1, (11) Restart service: python -m app.main &, (12) Retrieve workflow: curl http://localhost:8000/workflows/{workflow_id}, (13) Verify same workflow_id, same contract_sha256 after restart, (14) Stop service: kill %1. Document all verification results (pass/fail, outputs, error messages if any) in findings field"
+  ],
+  "acceptance_criteria": [
+    ".env.example exists with DATABASE_URL_TUTORIAL (NOT DATABASE_URL for SQLite)",
+    "Database documentation exists (new docs/database-setup.md OR appended to existing canonical docs)",
+    "README.md updated with PostgreSQL Persistence section (mentions tutorial_prod, NOT project_ai.db)",
+    "All verification steps completed and results documented",
+    "Full test suite passes with coverage ≥80%",
+    "Service starts successfully and logs 'Database initialized (tutorial_prod)'",
+    "All approved Project AI tables exist in tutorial_prod (verified via psql \\dt project_ai_*)",
+    "Workflow creation persists to tutorial_prod database (verified via psql SELECT)",
+    "Workflow survives service restart with identical contract_sha256 (immutability verified)",
+    "Documentation specifies ONLY the canonical migration authority from FEAT-000 (not both alternatives)",
+    "No references to SQLite, project_ai.db, or aiosqlite in any documentation"
+  ],
+  "verification": [
+    "cat services/project-ai/.env.example | grep DATABASE_URL_TUTORIAL (correct env var documented)",
+    "grep -l 'project_ai' services/project-ai/docs/*.md packages/db-tutorial/docs/*.md docs/**/*.md (database docs exist)",
+    "grep 'tutorial_prod' services/project-ai/README.md (README documents correct database)",
+    "grep -v 'sqlite\\|project_ai\\.db' services/project-ai/ (no SQLite references)",
+    "cd services/project-ai && pytest tests/ -v --cov=app --cov-fail-under=80 (all tests pass, coverage threshold met)",
+    "cd services/project-ai && python -m app.main & sleep 2 && curl http://localhost:8000/health && kill %1 (service health check passes)",
+    "psql $DATABASE_URL_TUTORIAL -c '\\dt project_ai_*' (all approved Project AI tables exist in tutorial_prod)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

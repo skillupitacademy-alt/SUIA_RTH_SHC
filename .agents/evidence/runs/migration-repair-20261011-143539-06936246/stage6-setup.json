@@ -1,0 +1,10 @@
+{
+  "step": "setup-test-env",
+  "env_file_written": true,
+  "compose_file_written": true,
+  "docker_start_exit_code": 1,
+  "docker_start_output": "WARN[0000] e:\\onlinewebsites\\quiz-platform\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion \nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.",
+  "db_ready_check": "N/A - Docker daemon not running",
+  "verdict": "BLOCKED",
+  "timestamp": "2025-01-11T14:35:39Z"
+}

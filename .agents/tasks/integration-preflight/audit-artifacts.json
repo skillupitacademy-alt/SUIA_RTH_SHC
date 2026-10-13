@@ -1,0 +1,35 @@
+{
+  "audit_files": [
+    {
+      "name": "canonical-wiring-merge-readiness.md",
+      "path": "E:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\canonical-wiring-merge-readiness.md",
+      "exists": true,
+      "size_bytes": 14519,
+      "last_modified": "2026-10-12T16:28:46.6345087+05:30"
+    },
+    {
+      "name": "foundation-branch-audit-final.md",
+      "path": "E:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\foundation-branch-audit-final.md",
+      "exists": true,
+      "size_bytes": 33616,
+      "last_modified": "2026-10-12T17:38:56.2555969+05:30"
+    },
+    {
+      "name": "e2e-branch-audit.md",
+      "path": "E:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\e2e-branch-audit.md",
+      "exists": true,
+      "size_bytes": 29388,
+      "last_modified": "2026-10-12T17:26:48.4275652+05:30"
+    },
+    {
+      "name": "gui-branch-audit.md",
+      "path": "E:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\gui-branch-audit.md",
+      "exists": true,
+      "size_bytes": 79381,
+      "last_modified": "2026-10-12T17:44:38.7990520+05:30"
+    }
+  ],
+  "e2e_commit_list_found": true,
+  "e2e_commit_list_path": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\e2e-extractable-commits.txt",
+  "preflight_dir_created": true
+}

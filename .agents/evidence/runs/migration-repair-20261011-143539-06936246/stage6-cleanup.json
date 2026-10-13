@@ -1,0 +1,9 @@
+{
+  "step": "cleanup",
+  "docker_down_exit_code": 1,
+  "docker_down_output": "time=\"2026-10-11T23:52:03+05:30\" level=warning msg=\"e:\\\\onlinewebsites\\\\quiz-platform\\\\docker-compose.test.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion\"\nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.",
+  "env_test_removed": true,
+  "compose_test_removed": true,
+  "verdict": "PASS",
+  "timestamp": "2026-10-11T23:52:03+05:30"
+}

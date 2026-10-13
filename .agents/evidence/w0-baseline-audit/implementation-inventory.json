@@ -1,0 +1,205 @@
+{
+  "audit_metadata": {
+    "audit_date": "2026-01-XX",
+    "repository": "e:\\onlinewebsites\\quiz-platform",
+    "branch": "current",
+    "audit_type": "READ_ONLY_BASELINE_DISCOVERY",
+    "capabilities_audited": 14
+  },
+  "repository_intelligence": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\packages\\project-llm-discovery\\src\\index.ts",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\project-llm-discovery\\src\\scanners\\d3-blocks-scanner.ts",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\project-llm-discovery\\src\\contracts\\snapshot.ts",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\contracts\\repository_intelligence.py (lines 1-100+)",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\project-llm\\repository-intelligence.ts"
+    ],
+    "quality": "SOLID",
+    "notes": "Complete TypeScript-based repository discovery system exists in packages/project-llm-discovery. Python agent in services/project-ai/app/contracts/repository_intelligence.py consumes TypeScript snapshot. Includes block scanner (d3-blocks-scanner.ts), snapshot generation, UBRC compliance checking, and block family documentation parsing from PROJECT_LLM_18_BLOCK_CORPUS_REGISTRY.md. Architectural boundary enforced: Python never scans repo directly, only consumes TypeScript snapshot."
+  },
+  "contract_generation": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\contracts\\repository_intelligence.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\api\\routes\\contract.py (lines 1-100+)",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\contracts\\engineering_contract.py",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\code-c1-prompt-generator.ts",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\definition-d1-prompt-generator.ts",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\integration\\test_w2_contract_generation.py"
+    ],
+    "quality": "SOLID",
+    "notes": "Engineering contract generation implemented. Python service (services/project-ai/app/contracts/) builds contracts from TypeScript snapshots. Includes RepositoryBlockContract model, ContractFieldEvidence tracking, seal_contract function, PROHIBITED_BEHAVIORS list. Integration tests verify W1A target binding and W1B repository intelligence wiring. TypeScript prompt generators exist for Code C1 and Definition D1. Contract API routes handle workflow state transitions to BRIEF_READY after contract generation."
+  },
+  "candidate_upload_validation": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\app\\(admin)\\tools\\project-llm\\candidate-upload (Next.js page artifacts)",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\orchestration\\agent_registry.py (lines 160-168, CANDIDATE_INTAKE agent)",
+      "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\projectLlmCreationBrief.ts"
+    ],
+    "quality": "PARTIAL",
+    "notes": "Candidate upload UI exists in skillhubcore-admin app at tools/project-llm/candidate-upload (Next.js compiled artifacts found). Agent registry defines CANDIDATE_INTAKE agent with capabilities: receive_upload, classify_block_family, compute_hash. Creation brief generation exists (projectLlmCreationBrief.ts) with UBRC compliance constraints. Full validation pipeline implementation not confirmed in Python backend - intake agent defined but route handlers not located in this audit."
+  },
+  "placement_planning": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\placement\\artifact_policy.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\orchestration\\agent_registry.py (lines 169-177, CANDIDATE_PLACEMENT agent)",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\test_placement_manifest.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\test_artifact_policy.py (lines 376-379, TestDuplicatePrevention)"
+    ],
+    "quality": "SOLID",
+    "notes": "Placement manifest generation with ADD/UPDATE/EXTEND/REUSE/REJECT actions implemented. artifact_policy.py includes semantic matching logic, duplicate prevention (e.g., ObjectiveBlockV2.tsx rejected when ObjectiveBlock.tsx exists), and variant handling. CANDIDATE_PLACEMENT agent registered with capabilities: compare_canonical, generate_manifest, propose_placement. Tests verify duplicate prevention and artifact policy integration. Comments indicate EXTEND for variant indicators (.variant., -variant.) and UPDATE for semantic matches."
+  },
+  "tutorial_composer_integration": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\app\\(admin)\\tools\\tutorial-block-composer (Next.js page)",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\tutorial-composer.service.ts",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\db-tutorial\\src\\services\\__tests__\\tutorial-composer.service.phase1.test.ts",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\tutorial-composer-phase2-hydration.spec.ts",
+      "e:\\onlinewebsites\\quiz-platform\\scripts\\validate-tutorial-composer-hardening.mjs",
+      "e:\\onlinewebsites\\quiz-platform\\scripts\\assurance\\tutorial-composer-prompt-architecture.assurance.mjs",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\TutorialBlockRenderer.tsx (lines 1-149)"
+    ],
+    "quality": "SOLID",
+    "notes": "Tutorial Composer exists with database service layer (tutorial-composer.service.ts), admin UI (tutorial-block-composer page in skillhubcore-admin), integration tests, and E2E browser tests. TutorialBlockRenderer handles block type routing. Assurance scripts verify composer architecture and browser rendering. Tests cover Phase 1 service integration and Phase 2 hydration. Block registration appears to be through TutorialBlockRenderer switch cases rather than a separate registry file."
+  },
+  "block_registries_schemas": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-rich-document\\registry.ts",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-rich-document\\blocks\\content.ts",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\types\\src\\tutorial-rich-document\\blocks\\content-blocks.ts (lines 214-217, 311-313, 509-511)",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\TutorialBlockRenderer.tsx (lines 89-107 - I1/C1 version enforcement)",
+      "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\projectLlmBlockCorpus.ts"
+    ],
+    "quality": "SOLID",
+    "notes": "Comprehensive block registry exists. packages/types/src/tutorial-rich-document/registry.ts defines BLOCK_REGISTRY with 20+ block types including I1 (Introduction), C1 (Code), D1 (Definition). Type definitions: IntroductionBlock = IntroductionI1Block, CodeBlockVersioned = CodeC1Block, DefinitionBlock = DefinitionD1Block. TutorialBlockRenderer enforces version requirements (I1 and C1 only). BlockFamilyReference type exists. Project LLM corpus registry (projectLlmBlockCorpus.ts) defines 18 block families with familyId, label, educational intent. No external .schema.json files found - schemas are TypeScript types."
+  },
+  "renderer_runtime_connection": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\TutorialBlockRenderer.tsx",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\blocks\\IntroductionBlock.tsx",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\blocks\\CodeC1Block.tsx",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\blocks\\DefinitionBlock.tsx",
+      "e:\\onlinewebsites\\quiz-platform\\src\\share-branding\\LearningExperience\\components\\TutorialPageShell.tsx (lines 305-410)",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\__tests__\\TutorialRendererRouting.test.tsx",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\__tests__\\TutorialRenderer.test.tsx"
+    ],
+    "quality": "SOLID",
+    "notes": "TutorialBlockRenderer is the central renderer with switch-case routing to block components (HeadingBlock, ParagraphBlock, CodeC1Block, IntroductionBlock, etc.). Enforces version requirements: I1 for introduction (lines 97-107), C1 for code (lines 83-91). RuntimeContext propagation exists (runtimeContext prop). TutorialPageShell integrates renderer within ILSProvider/ActiveBlockProvider/BlockTelemetryProvider hierarchy. Comprehensive unit tests verify routing, version enforcement, and error handling. Renderer recursion depth limiting (MAX_NESTING_DEPTH) implemented."
+  },
+  "browser_e2e_tests": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\playwright.config.ts",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\introduction-i1.browser.spec.ts",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\i2-composition.spec.ts",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\project-ai\\mix-match-composition.spec.ts",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\phase-2b18-step-1.3-instructional-completion.spec.ts",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\gate-f-zero-baseline-verification.spec.ts",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\tutorial-composer-phase2-hydration.spec.ts",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\ils-tutorial-session.spec.ts"
+    ],
+    "quality": "SOLID",
+    "notes": "Extensive Playwright E2E test suite exists covering: I1 browser rendering (introduction-i1.browser.spec.ts), I2/mix-match composition verification, Tutorial Composer Phase 2 hydration, ILS tutorial session lifecycle, instructional completion orchestration, and Gate F zero-baseline verification. Playwright config defines chromium/firefox projects with test timeout 120s. Tests verify data-block-type and data-block-version attributes, runtime error absence, block rendering, and full authoring-to-rendering path. Test helpers in tests/e2e/helpers/ provide ILS identity extraction and completion verification utilities."
+  },
+  "evidence_collection": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\evidence\\ledger.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\evidence\\canonical_evidence.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\evidence\\schemas.py",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\agent-runs.jsonl",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\evidence.jsonl",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\README.md",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\evidence\\test_ledger.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\integration\\test_migration_repair_evidence.py",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\project-llm-discovery\\src\\evidence\\collector.ts"
+    ],
+    "quality": "SOLID",
+    "notes": "Comprehensive evidence collection system. Append-only JSONL ledgers in .agents/evidence/ (agent-runs.jsonl, evidence.jsonl, test-results.jsonl, gate-results.jsonl, workflow-events.jsonl). Python ledger API with concurrency safety (fcntl on Unix, msvcrt on Windows). CanonicalEvidenceStore with SHA-256 hash chains for tamper detection (R0+). Evidence schemas (AgentRun, TestResult, EvidenceRecord). TypeScript evidence collector in project-llm-discovery. README documents append-only contract, R0+ canonical store, and structured JSON reports in .agents/tasks/. Evidence integrity verification, duplicate detection, and concurrent write testing exist."
+  },
+  "migration_repair_workflow": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\workflows\\migration_repair\\agents\\migration_audit.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\workflows\\migration_repair\\agents\\repair_planner.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\workflows\\migration_repair\\agents\\repair_implementer.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\workflows\\migration_repair\\agents\\test_reviewer.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\workflows\\migration_repair\\safety.py (line 41-43, TRUSTED_TEST_DATABASES allowlist)",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\workflows\\migration_repair\\models.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\scripts\\run-migration-repair.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\docs\\migration-repair-workflow.md",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\migration-repair-plan.md"
+    ],
+    "quality": "SOLID",
+    "notes": "Complete migration repair workflow (W1-W9) implemented with 13 specialized agents. Stage agents: migration_audit (scans SQL, detects duplicate objects, verifies journal), database_safety_audit, test_inventory, evidence_audit, repair_planner (maps findings to migrations, generates minimal corrections), repair_reviewer (rejects destructive changes), repair_implementer, static_reviewer, test_reviewer (validates duplicate-object test coverage), verification_runner, evidence_assembler, final_gate_agent, publisher_agent. Database safety with TRUSTED_TEST_DATABASES allowlist (test_tutorial, test_db_people, quiz_platform_test). MigrationFinding model includes finding_type='duplicate_object'. Idempotency controls via IF NOT EXISTS detection. Integration tests verify complete pipeline, evidence collection, concurrency safety, and fail-closed gates."
+  },
+  "ils_lsnb_rssb": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\ILSProvider.tsx",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\LearningProgressSidebar\\LearningProgressSidebar.tsx",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\LearningProgressSidebar\\index.tsx (lines 2-25 - RSSB Macro 4 documentation)",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\runtime\\ActiveBlockContext.tsx",
+      "e:\\onlinewebsites\\quiz-platform\\src\\share-branding\\LearningExperience\\components\\TutorialPageShell.tsx (lines 305-410 - ILSProvider/ActiveBlockProvider/RSSB integration)",
+      "e:\\onlinewebsites\\quiz-platform\\ILS_UI_UX\\docs\\corpus-registry-extraction.md",
+      "e:\\onlinewebsites\\quiz-platform\\ILS_UI_UX\\masteruiux\\tutorial-sidebar\\sidebar.js",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\e2e\\ils-tutorial-session.spec.ts"
+    ],
+    "quality": "SOLID",
+    "notes": "Complete ILS (Item Learning Session) + RSSB (Right Side Sidebar) + LSNB infrastructure exists. ILSProvider supplies overallProgress and activeBlockProgress via useILS() hook. LearningProgressSidebar (RSSB) is Macro 4 component consuming ILS data passively with no separate API or persistence. ActiveBlockProvider tracks active block via intersection observer. TutorialPageShell integrates hierarchy: ActiveBlockProvider → ILSProvider → BlockTelemetryProvider → InstructionalBlockCompletionOrchestrator → RSSB. LSNB references found in project-llm creation brief constraints (blocks must not embed LSNB infrastructure). ILS_UI_UX directory contains prototypes and sidebar components. E2E tests verify ILS lifecycle, block identity attributes (data-ils-block-id, data-ils-block-version), and RSSB rendering."
+  },
+  "theme_brand_system": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\apps\\realtutorialhub-quiz\\src\\components\\reports\\context\\reportThemeTokens.ts",
+      "e:\\onlinewebsites\\quiz-platform\\apps\\realtutorialhub-quiz\\src\\components\\reports\\hooks\\useReportThemeTokens.ts",
+      "e:\\onlinewebsites\\quiz-platform\\apps\\skillhub-placement\\src\\lib\\brand.ts (getPlacementTheme function)",
+      "e:\\onlinewebsites\\quiz-platform\\packages\\ui\\src\\tutorial\\TutorialBlockRenderer.tsx (theme prop required for I1/C1)",
+      "e:\\onlinewebsites\\quiz-platform\\tests\\temp-pre-refactor.tsx (themeForBrand function)",
+      "e:\\onlinewebsites\\quiz-platform\\apps\\skillhubcore-admin\\src\\lib\\project-llm\\projectLlmCreationBrief.ts (brand independence constraints)"
+    ],
+    "quality": "SOLID",
+    "notes": "Multi-brand theme system exists. reportThemeTokens.ts defines ThemeTokens interface with pageBg, cardBg, textPrimary, etc., and getThemeTokens(theme) function for dark/light modes. useReportThemeTokens hook provides tokens + theme to components. Placement brand system (getPlacementTheme) returns brand-specific themes with buttonClass. TutorialBlockRenderer requires theme prop ({ primary, secondary }) for I1/C1 blocks and validates theme.primary/theme.secondary presence (line 103-107). BrandTutorialTheme type exists. Project LLM creation brief includes brand independence and theme compatibility constraints (BRAND_INDEPENDENCE and THEME_COMPATIBILITY agents registered). CSS variable usage patterns verified through useReportThemeTokens consumption in multiple chart components."
+  },
+  "agent_registry": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\app\\orchestration\\agent_registry.py",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\tests\\test_agent_registry.py"
+    ],
+    "quality": "SOLID",
+    "notes": "Complete 28-agent registry in services/project-ai/app/orchestration/agent_registry.py. Original 15 agents: GATE_CONTROLLER, REPOSITORY_AUDITOR, TOOLCHAIN, COMPOSER, DEPENDENCY, UBRC, CANDIDATE_INTAKE, CANDIDATE_PLACEMENT, CANDIDATE_CERTIFICATION, BRAND_INDEPENDENCE, THEME_COMPATIBILITY, RUNTIME_BROWSER, COMPOSER_WORKFLOW, GOVERNANCE, DOCUMENTATION. Migration Repair 13 agents: MIGRATION_AUDIT, DATABASE_SAFETY_AUDIT, TEST_INVENTORY, EVIDENCE_AUDIT, REPAIR_PLANNER, REPAIR_REVIEWER, REPAIR_IMPLEMENTER, STATIC_REVIEWER, TEST_REVIEWER, VERIFICATION_RUNNER, EVIDENCE_ASSEMBLER, FINAL_GATE_AGENT, PUBLISHER_AGENT. AgentRegistry class with get_agent() and list_agents() methods. Agent model includes agentId, agentType (enum), name, capabilities (list), status, description. Unit tests verify registry completeness. NOTE: .kiro/agents/ directory does NOT exist - agent definitions are in Python registry, not .kiro config files."
+  },
+  "canonical_docs": {
+    "exists": true,
+    "files": [
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\README.md",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\evidence\\DATA_QUALITY.md",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\w0-architecture-freeze-report.json",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\w1a-target-binding-report.json",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\w1b-repository-intelligence-report.json",
+      "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\r0-evidence-audit.md",
+      "e:\\onlinewebsites\\quiz-platform\\services\\project-ai\\docs\\migration-repair-workflow.md",
+      "e:\\onlinewebsites\\quiz-platform\\ILS_UI_UX\\docs\\corpus-registry-extraction.md",
+      "e:\\onlinewebsites\\quiz-platform\\.kiro\\README.md",
+      "e:\\onlinewebsites\\quiz-platform\\.kiro\\specs\\tutorial-v2-legacy-eradication\\README.md",
+      "e:\\onlinewebsites\\quiz-platform\\docs\\testing\\tutorial-composer-e2e-summary.md"
+    ],
+    "quality": "SOLID",
+    "notes": "Comprehensive canonical documentation exists. .agents/evidence/README.md documents evidence system, JSONL ledgers, Python API, R0+ canonical store, and SHA-256 hash chains. .agents/tasks/ contains structured JSON reports for waves W0, W1A, W1B, W1C, W1D, W2. .agents/evidence/DATA_QUALITY.md documents known JSONL issues. services/project-ai/docs/ contains migration-repair-workflow.md. ILS_UI_UX/docs/ has corpus-registry-extraction.md. .kiro/specs/ contains multi-brand-auth-architecture and tutorial-v2-legacy-eradication specifications. docs/testing/ has tutorial-composer-e2e-summary.md. Block family specifications found in packages/types/src/tutorial-rich-document/ with TypeScript type definitions and registry. Architecture docs track evidence authority, workflow states, and canonical implementation status."
+  },
+  "summary": {
+    "total_capabilities": 14,
+    "solid": 11,
+    "partial": 1,
+    "stub": 0,
+    "absent": 0,
+    "overall_assessment": "The quiz-platform repository contains a mature, production-grade implementation of Project LLM capabilities with strong architectural boundaries, comprehensive evidence tracking, and extensive test coverage. Repository intelligence, contract generation, placement planning, renderer integration, E2E testing, evidence collection, migration repair workflow, ILS/RSSB runtime, theme/brand systems, agent registry, and canonical documentation are all SOLID implementations. Candidate upload validation UI exists but backend route handlers were not fully located (PARTIAL). All 28 specialized agents are registered. The TypeScript/Python architectural boundary is strictly enforced (Python never scans repo directly, only consumes TypeScript snapshots). Evidence system includes append-only JSONL ledgers with SHA-256 hash chains, concurrency safety, and tamper detection. Migration repair implements fail-closed safety gates with database allowlists and idempotency controls."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "stage": "V6",
+  "verdict": "BLOCKED",
+  "reason": "V5 integration tests blocked",
+  "security_test_exit_code": null,
+  "sql_injection_risks_found": 0,
+  "sql_injection_details": [],
+  "bare_except_blocks_found": 0,
+  "bare_except_details": [],
+  "parameterized_queries_confirmed": false,
+  "run_id": "migration-repair-20261011-143539-06936246"
+}

@@ -1,0 +1,25 @@
+{
+  "project_type": "Python FastAPI service + TypeScript monorepo",
+  "language": "Python 3.11+",
+  "build_system": "pnpm workspaces, pytest for Python tests, turbo for monorepo orchestration",
+  "test_framework": "pytest for Python (unit and integration tests), vitest for TypeScript",
+  "build_command": "pytest tests/ --cov=app --cov-report=html",
+  "test_command": "pytest tests/ -v",
+  "verification_instructions": "Run pytest after each wave completion. Integration tests require TEST_DATABASE_URL_TUTORIAL environment variable and Docker Compose test database on port 55432.",
+  "snapshot_or_generated_files": "None - evidence files in .agents/evidence/ are append-only and not checked into git",
+  "environment_constraints": "Integration tests skip gracefully when TEST_DATABASE_URL_TUTORIAL not configured. Never mutate production databases (tutorial_prod, neon-prod). All database operations during verification must use disposable test databases.",
+  "contribution_requirements": "Fail-closed design mandatory: BLOCKED/SKIPPED never resolve to PASS. Evidence ledger is append-only (never truncate). All agents must log to evidence ledger. Sequential execution with explicit dependencies. Hash-bound artifacts for tamper detection.",
+  "key_patterns": "Existing agent registry in app/orchestration/agent_registry.py defines 15 agents. Agent coordinator in app/orchestration/agent_coordinator.py routes execution. Evidence ledger in app/evidence/ledger.py provides append-only JSONL writers. Persistence layer in app/persistence/ uses SQLAlchemy async with optimistic locking.",
+  "relevant_files": [
+    "services/project-ai/app/orchestration/agent_registry.py",
+    "services/project-ai/app/orchestration/agent_coordinator.py",
+    "services/project-ai/app/orchestration/canonical_workflow.py",
+    "services/project-ai/app/evidence/ledger.py",
+    "services/project-ai/app/evidence/schemas.py",
+    "services/project-ai/app/persistence/models.py",
+    "services/project-ai/app/persistence/repositories.py",
+    "services/project-ai/tests/test_agent_registry.py",
+    "package.json"
+  ],
+  "directory_structure": "services/project-ai/ contains app/ (source code) and tests/ (pytest tests). app/ has orchestration/ (agent registry and coordinator), evidence/ (ledger system), persistence/ (database models), and workflows/ (task-specific modules). Evidence files live in .agents/evidence/ at repo root. Agent implementations follow async def execute_{agent_name}(context: AgentContext) -> AgentResult pattern."
+}

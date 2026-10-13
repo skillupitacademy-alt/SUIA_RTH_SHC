@@ -56,16 +56,15 @@ export async function scanRepositoryStructure(
       const contentHash = await adapter.getFileHash(pkgJsonPath);
       
       // Generate evidence for package.json
-      collector.add(
-        collector.createEvidence(
-          scannerName,
-          'package',
-          pkgJsonPath,
-          contentHash,
-          'Application package.json discovered',
-          `file:${pkgJsonPath}`
-        )
+      const evidence = collector.createEvidence(
+        scannerName,
+        'package',
+        pkgJsonPath,
+        contentHash,
+        'Application package.json discovered',
+        `file:${pkgJsonPath}`
       );
+      collector.add(evidence);
 
       try {
         const pkg: PackageJson = JSON.parse(pkgContent);
@@ -76,6 +75,7 @@ export async function scanRepositoryStructure(
           type: 'application',
           framework: detectFramework(pkg),
           entrypoint: 'src/index.ts', // Default, could be improved
+          evidenceId: evidence.evidenceId,
         });
       } catch {
         // Skip invalid package.json
@@ -108,16 +108,15 @@ export async function scanRepositoryStructure(
       const contentHash = await adapter.getFileHash(pkgJsonPath);
       
       // Generate evidence for package.json
-      collector.add(
-        collector.createEvidence(
-          scannerName,
-          'package',
-          pkgJsonPath,
-          contentHash,
-          'Package package.json discovered',
-          `file:${pkgJsonPath}`
-        )
+      const evidence = collector.createEvidence(
+        scannerName,
+        'package',
+        pkgJsonPath,
+        contentHash,
+        'Package package.json discovered',
+        `file:${pkgJsonPath}`
       );
+      collector.add(evidence);
 
       try {
         const pkg: PackageJson = JSON.parse(pkgContent);
@@ -135,6 +134,7 @@ export async function scanRepositoryStructure(
           version: pkg.version ?? '0.0.0',
           dependencies,
           exports,
+          evidenceId: evidence.evidenceId,
         });
       } catch {
         // Skip invalid package.json
@@ -167,16 +167,15 @@ export async function scanRepositoryStructure(
       const contentHash = await adapter.getFileHash(pkgJsonPath);
       
       // Generate evidence for package.json
-      collector.add(
-        collector.createEvidence(
-          scannerName,
-          'package',
-          pkgJsonPath,
-          contentHash,
-          'Service package.json discovered',
-          `file:${pkgJsonPath}`
-        )
+      const evidence = collector.createEvidence(
+        scannerName,
+        'package',
+        pkgJsonPath,
+        contentHash,
+        'Service package.json discovered',
+        `file:${pkgJsonPath}`
       );
+      collector.add(evidence);
 
       try {
         const pkg: PackageJson = JSON.parse(pkgContent);
@@ -186,6 +185,7 @@ export async function scanRepositoryStructure(
           path: servicePath,
           type: 'service',
           entrypoint: 'src/index.ts', // Default, could be improved
+          evidenceId: evidence.evidenceId,
         });
       } catch {
         // Skip invalid package.json

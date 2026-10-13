@@ -48,6 +48,7 @@ describe('V8 Evidence Completeness Validator', () => {
         type: 'application',
         framework: 'next',
         entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-001',
       },
     ];
 
@@ -56,11 +57,12 @@ describe('V8 Evidence Completeness Validator', () => {
         evidenceId: 'evidence-001',
         scannerName: 'D1-scanner',
         timestamp: '2024-01-01T00:00:00.000Z',
-        path: 'apps/admin/package.json',
+        path: 'apps/admin',
         kind: 'package',
         claim: 'Application package.json discovered',
         locator: 'file:apps/admin/package.json',
         contentHash: 'hash001',
+        lifecycle: 'current',
       },
     ];
 
@@ -79,6 +81,7 @@ describe('V8 Evidence Completeness Validator', () => {
         type: 'application',
         framework: 'next',
         entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-999',
       },
     ];
 
@@ -92,16 +95,17 @@ describe('V8 Evidence Completeness Validator', () => {
         claim: 'Other package discovered',
         locator: 'file:apps/other/package.json',
         contentHash: 'hash002',
+        lifecycle: 'current',
       },
     ];
 
     const snapshot = createMockSnapshot(applications, [], [], evidence);
     const result = await validateEvidenceCompleteness(snapshot);
 
-    expect(result.errors).toHaveLength(0);
-    expect(result.warnings).toHaveLength(1);
-    expect(result.warnings[0]?.code).toBe('MISSING_APPLICATION_EVIDENCE');
-    expect(result.warnings[0]?.path).toBe('apps/admin');
+    expect(result.errors).toHaveLength(1);
+    expect(result.warnings).toHaveLength(0);
+    expect(result.errors[0]?.code).toBe('UNKNOWN_EVIDENCE_ID');
+    expect(result.errors[0]?.path).toBe('apps/admin');
   });
 
   it('should normalize Windows and Unix paths correctly', async () => {
@@ -112,6 +116,7 @@ describe('V8 Evidence Completeness Validator', () => {
         type: 'application',
         framework: 'next',
         entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-003',
       },
     ];
 
@@ -120,11 +125,12 @@ describe('V8 Evidence Completeness Validator', () => {
         evidenceId: 'evidence-003',
         scannerName: 'D1-scanner',
         timestamp: '2024-01-01T00:00:00.000Z',
-        path: 'apps/admin/package.json', // Unix path
+        path: 'apps\\admin', // Must match exactly
         kind: 'package',
         claim: 'Application package.json discovered',
         locator: 'file:apps/admin/package.json',
         contentHash: 'hash003',
+        lifecycle: 'current',
       },
     ];
 
@@ -143,6 +149,7 @@ describe('V8 Evidence Completeness Validator', () => {
         version: '1.0.0',
         dependencies: [],
         exports: [],
+        evidenceId: '', // Empty evidenceId
       },
     ];
 
@@ -151,10 +158,10 @@ describe('V8 Evidence Completeness Validator', () => {
     const snapshot = createMockSnapshot([], packages, [], evidence);
     const result = await validateEvidenceCompleteness(snapshot);
 
-    expect(result.errors).toHaveLength(0);
-    expect(result.warnings).toHaveLength(1);
-    expect(result.warnings[0]?.code).toBe('MISSING_PACKAGE_EVIDENCE');
-    expect(result.warnings[0]?.path).toBe('packages/ui');
+    expect(result.errors).toHaveLength(1);
+    expect(result.warnings).toHaveLength(0);
+    expect(result.errors[0]?.code).toBe('MISSING_EVIDENCE_ID');
+    expect(result.errors[0]?.path).toBe('packages/ui');
   });
 
   it('should warn for missing service evidence', async () => {
@@ -164,6 +171,7 @@ describe('V8 Evidence Completeness Validator', () => {
         path: 'services/api',
         type: 'service',
         entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-service-001',
       },
     ];
 
@@ -172,10 +180,10 @@ describe('V8 Evidence Completeness Validator', () => {
     const snapshot = createMockSnapshot([], [], services, evidence);
     const result = await validateEvidenceCompleteness(snapshot);
 
-    expect(result.errors).toHaveLength(0);
-    expect(result.warnings).toHaveLength(1);
-    expect(result.warnings[0]?.code).toBe('MISSING_SERVICE_EVIDENCE');
-    expect(result.warnings[0]?.path).toBe('services/api');
+    expect(result.errors).toHaveLength(1);
+    expect(result.warnings).toHaveLength(0);
+    expect(result.errors[0]?.code).toBe('UNKNOWN_EVIDENCE_ID');
+    expect(result.errors[0]?.path).toBe('services/api');
   });
 
   it('should handle multiple entities with mixed evidence', async () => {
@@ -186,6 +194,7 @@ describe('V8 Evidence Completeness Validator', () => {
         type: 'application',
         framework: 'next',
         entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-004',
       },
       {
         name: 'web',
@@ -193,6 +202,7 @@ describe('V8 Evidence Completeness Validator', () => {
         type: 'application',
         framework: 'next',
         entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-web-missing',
       },
     ];
 
@@ -201,20 +211,150 @@ describe('V8 Evidence Completeness Validator', () => {
         evidenceId: 'evidence-004',
         scannerName: 'D1-scanner',
         timestamp: '2024-01-01T00:00:00.000Z',
-        path: 'apps/admin/package.json',
+        path: 'apps/admin',
         kind: 'package',
         claim: 'Admin application discovered',
         locator: 'file:apps/admin/package.json',
         contentHash: 'hash004',
+        lifecycle: 'current',
       },
     ];
 
     const snapshot = createMockSnapshot(applications, [], [], evidence);
     const result = await validateEvidenceCompleteness(snapshot);
 
+    expect(result.errors).toHaveLength(1);
+    expect(result.warnings).toHaveLength(0);
+    expect(result.errors[0]?.code).toBe('UNKNOWN_EVIDENCE_ID');
+    expect(result.errors[0]?.details?.entity).toBe('web');
+  });
+
+  // New tests for Phase F strict binding validation
+
+  it('should error when evidenceId path does not match entity path', async () => {
+    const applications: ApplicationInfo[] = [
+      {
+        name: 'admin',
+        path: 'apps/admin',
+        type: 'application',
+        framework: 'next',
+        entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-005',
+      },
+    ];
+
+    const evidence: Evidence[] = [
+      {
+        evidenceId: 'evidence-005',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        path: 'apps/other-app', // Path mismatch
+        kind: 'package',
+        claim: 'Application discovered at wrong path',
+        locator: 'file:apps/other-app/package.json',
+        contentHash: 'hash005',
+        lifecycle: 'current',
+      },
+    ];
+
+    const snapshot = createMockSnapshot(applications, [], [], evidence);
+    const result = await validateEvidenceCompleteness(snapshot);
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]?.code).toBe('EVIDENCE_PATH_MISMATCH');
+    expect(result.errors[0]?.path).toBe('apps/admin');
+    expect(result.errors[0]?.details?.entityPath).toBe('apps/admin');
+    expect(result.errors[0]?.details?.evidencePath).toBe('apps/other-app');
+  });
+
+  it('should error when evidence kind is incompatible with entity domain', async () => {
+    const packages: PackageInfo[] = [
+      {
+        name: '@quiz/ui',
+        path: 'packages/ui',
+        version: '1.0.0',
+        dependencies: [],
+        exports: [],
+        evidenceId: 'evidence-006',
+      },
+    ];
+
+    const evidence: Evidence[] = [
+      {
+        evidenceId: 'evidence-006',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        path: 'packages/ui',
+        kind: 'service', // Wrong kind for a package
+        claim: 'Package discovered with wrong evidence kind',
+        locator: 'file:packages/ui/package.json',
+        contentHash: 'hash006',
+        lifecycle: 'current',
+      },
+    ];
+
+    const snapshot = createMockSnapshot([], packages, [], evidence);
+    const result = await validateEvidenceCompleteness(snapshot);
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]?.code).toBe('EVIDENCE_KIND_MISMATCH');
+    expect(result.errors[0]?.path).toBe('packages/ui');
+    expect(result.errors[0]?.details?.expectedKinds).toContain('package');
+    expect(result.errors[0]?.details?.actualKind).toBe('service');
+  });
+
+  it('should pass validation when all evidence bindings are correct', async () => {
+    const applications: ApplicationInfo[] = [
+      {
+        name: 'admin',
+        path: 'apps/admin',
+        type: 'application',
+        framework: 'next',
+        entrypoint: 'src/index.ts',
+        evidenceId: 'evidence-007',
+      },
+    ];
+
+    const packages: PackageInfo[] = [
+      {
+        name: '@quiz/ui',
+        path: 'packages/ui',
+        version: '1.0.0',
+        dependencies: [],
+        exports: [],
+        evidenceId: 'evidence-008',
+      },
+    ];
+
+    const evidence: Evidence[] = [
+      {
+        evidenceId: 'evidence-007',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        path: 'apps/admin/package.json',
+        kind: 'package',
+        claim: 'Application package.json discovered',
+        locator: 'file:apps/admin/package.json',
+        contentHash: 'hash007',
+        lifecycle: 'current',
+      },
+      {
+        evidenceId: 'evidence-008',
+        scannerName: 'D1-scanner',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        path: 'packages/ui/package.json',
+        kind: 'package',
+        claim: 'Package discovered',
+        locator: 'file:packages/ui/package.json',
+        contentHash: 'hash008',
+        lifecycle: 'current',
+      },
+    ];
+
+    const snapshot = createMockSnapshot(applications, packages, [], evidence);
+    const result = await validateEvidenceCompleteness(snapshot);
+
     expect(result.errors).toHaveLength(0);
-    expect(result.warnings).toHaveLength(1);
-    expect(result.warnings[0]?.code).toBe('MISSING_APPLICATION_EVIDENCE');
-    expect(result.warnings[0]?.details?.application).toBe('web');
+    expect(result.warnings).toHaveLength(0);
   });
 });

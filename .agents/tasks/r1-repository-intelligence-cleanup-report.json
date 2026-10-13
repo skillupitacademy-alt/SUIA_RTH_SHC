@@ -1,0 +1,127 @@
+{
+  "task": "R1",
+  "status": "complete",
+  "summary": "Consolidated repository intelligence to snapshot-based architecture by removing filesystem-scanning implementation and strengthening fail-closed validation. Fixed review findings by clearing broken imports and adding runtime guards to legacy functions.",
+  "iterations": [
+    {
+      "iteration": 1,
+      "commitSha": "1aa42319576cd4ad86ccf31f0792c43c32f1a1d5",
+      "status": "review_requested",
+      "findingsCount": 2
+    },
+    {
+      "iteration": 2,
+      "commitSha": "9454ff53",
+      "status": "complete",
+      "findingsResolved": 2
+    }
+  ],
+  "filesRemoved": [
+    "services/project-ai/app/intelligence/repository_intelligence.py",
+    "services/project-ai/tests/intelligence/test_repository_intelligence.py"
+  ],
+  "filesArchived": [
+    "services/project-ai/app/intelligence/repository_intelligence.py.archived",
+    "services/project-ai/tests/intelligence/test_repository_intelligence.py.archived"
+  ],
+  "filesMigrated": [],
+  "filesModified": [
+    "services/project-ai/app/contracts/repository_intelligence.py",
+    "services/project-ai/app/api/routes/contract.py",
+    "services/project-ai/app/intelligence/__init__.py",
+    "services/project-ai/tests/unit/test_repository_intelligence.py",
+    "services/project-ai/tests/integration/test_w2_contract_generation.py"
+  ],
+  "filesCreated": [
+    ".agents/tasks/r1-audit.md",
+    ".agents/tasks/r1-migration.md",
+    ".agents/tasks/r1-fix-report.md"
+  ],
+  "testsAdded": [
+    "TestSnapshotBasedBuildContract::test_build_contract_with_valid_snapshot",
+    "TestSnapshotBasedBuildContract::test_build_contract_introduction_i1",
+    "TestSnapshotBasedBuildContract::test_build_contract_definition_d1",
+    "TestSnapshotBasedBuildContract::test_build_contract_deterministic_output",
+    "TestFailClosedBehavior::test_unknown_version_raises_blocked",
+    "TestFailClosedBehavior::test_missing_snapshot_raises_blocked",
+    "TestFailClosedBehavior::test_empty_snapshot_raises_blocked",
+    "TestFailClosedBehavior::test_snapshot_without_evidence_array_raises_blocked",
+    "TestFailClosedBehavior::test_snapshot_evidence_not_list_raises_blocked",
+    "TestFailClosedBehavior::test_missing_evidence_for_family_raises_blocked",
+    "TestFailClosedBehavior::test_evidence_missing_content_hash_raises_blocked",
+    "TestFailClosedBehavior::test_evidence_missing_evidence_id_raises_blocked",
+    "TestNoFilesystemAccess::test_build_contract_no_file_operations",
+    "TestNoFilesystemAccess::test_build_contract_with_nonexistent_path"
+  ],
+  "testResults": "34 passed, 56 warnings",
+  "testCommand": "pytest tests/unit/test_repository_intelligence.py -v",
+  "commitSha": "9454ff53d3d8e18b4276ae263b006e2f20432b25",
+  "branch": "m2-project-ai-canonical-wiring",
+  "changesSummary": {
+    "iteration1": {
+      "exceptionClassAdded": "RepositoryEvidenceBlocked",
+      "failClosedValidation": [
+        "Unknown version validation (only I1, C1, D1 allowed)",
+        "Snapshot structure validation (non-empty, has 'evidence' key)",
+        "Evidence availability validation (canonical path must exist in snapshot)",
+        "Evidence completeness validation (contentHash and evidenceId required)"
+      ],
+      "routeExceptionHandling": "Added RepositoryEvidenceBlocked handler in contract.py (HTTP 503)",
+      "architecturalCompliance": "Snapshot-based implementation only, no filesystem access in production path",
+      "legacyFunctionsPreserved": [
+        "build_contract_legacy() - for test backward compatibility",
+        "compute_sha256() - for test backward compatibility"
+      ]
+    },
+    "iteration2_fixes": {
+      "finding1_resolved": "Cleared app/intelligence/__init__.py imports to fix ModuleNotFoundError",
+      "finding2_resolved": "Added runtime guards to build_contract_legacy() and compute_sha256() to prevent production use",
+      "runtimeGuards": "Check PYTEST_CURRENT_TEST or ALLOW_LEGACY_FILESYSTEM_ACCESS, raise RuntimeError if not set",
+      "verificationPassed": "All 34 tests pass, import succeeds, legacy functions blocked in production"
+    }
+  },
+  "architecturalImpact": {
+    "before": "Two implementations: snapshot-based (correct) + filesystem-scanning (violates boundary)",
+    "after": "Single snapshot-based implementation, fail-closed validation, no filesystem access",
+    "boundaryViolationsRemoved": 1,
+    "callsitesMigrated": 0,
+    "callsitesArchived": 1
+  },
+  "riskAssessment": {
+    "level": "low",
+    "reasons": [
+      "Filesystem-scanning implementation was unused in production code",
+      "Only test file imported the removed implementation",
+      "Comprehensive test coverage added for fail-closed behavior",
+      "All tests pass after consolidation and fixes",
+      "Legacy functions now have runtime guards preventing production use",
+      "Import errors resolved with clear deprecation guidance",
+      "No breaking changes to production code"
+    ]
+  },
+  "reviewFindings": {
+    "count": 2,
+    "findings": [
+      {
+        "id": 1,
+        "issue": "Import failure in app/intelligence/__init__.py",
+        "severity": "blocking",
+        "status": "resolved",
+        "resolution": "Cleared __init__.py imports, set __all__ = [], added deprecation guidance"
+      },
+      {
+        "id": 2,
+        "issue": "build_contract_legacy() performs filesystem operations",
+        "severity": "blocking",
+        "status": "resolved",
+        "resolution": "Added runtime guards checking PYTEST_CURRENT_TEST or ALLOW_LEGACY_FILESYSTEM_ACCESS"
+      }
+    ]
+  },
+  "nextSteps": [
+    "Monitor production for any RepositoryEvidenceBlocked exceptions",
+    "Consider removing legacy functions after all tests migrated",
+    "Add stale snapshot detection if needed in future",
+    "Continue with next M2.9 tasks (R2, R3, etc.)"
+  ]
+}
