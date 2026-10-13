@@ -63,8 +63,13 @@ async def integration_db_engine():
     if not TEST_DB_URL:
         pytest.skip("DATABASE_URL_TUTORIAL not configured")
     
+    # Convert postgresql:// to postgresql+asyncpg:// for SQLAlchemy async engine
+    db_url = TEST_DB_URL
+    if db_url.startswith("postgresql://"):
+        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
     engine = create_async_engine(
-        TEST_DB_URL,
+        db_url,
         echo=False,  # Set to True for SQL debugging
         pool_pre_ping=True,  # Verify connections before using
         pool_size=5,
