@@ -1,0 +1,45 @@
+================================== test session starts ==================================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\onlinewebsites\quiz-platform\services\project-ai
+configfile: pyproject.toml
+plugins: anyio-4.12.0, dash-3.3.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 4 items                                                                        
+tests/integration/test_transaction_rollback.py::test_transaction_rollback_write [integration] URL-parsed database name: 'tutorial_prod' on host 'ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech'
+[integration] Connected to database: 'tutorial_prod', user: 'neondb_owner'
+[WRITE] Starting transaction rollback WRITE test
+ROLLBACK_VERIFICATION_ID=bd9c117f-fc42-4433-8154-8c9093f1d880
+[WRITE] Workflow bd9c117f-fc42-4433-8154-8c9093f1d880 committed. Returning now.
+[WRITE] Pytest fixture teardown will roll back the outer transaction after this function exits.
+PASSED
+tests/integration/test_transaction_rollback.py::test_transaction_rollback_verify [integration] URL-parsed database name: 'tutorial_prod' on host 'ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech'
+[integration] Connected to database: 'tutorial_prod', user: 'neondb_owner'
+[VERIFY] Starting transaction rollback VERIFY test
+[VERIFY] This test runs AFTER the WRITE test's fixture teardown completed.
+[VERIFY] Checking if workflow bd9c117f-fc42-4433-8154-8c9093f1d880 is absent...
+[VERIFY] SUCCESS: Workflow bd9c117f-fc42-4433-8154-8c9093f1d880 is ABSENT — rollback worked correctly.
+PASSED
+tests/integration/test_transaction_rollback.py::test_restart_simulation_write [integration] URL-parsed database name: 'tutorial_prod' on host 'ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech'
+[integration] Connected to database: 'tutorial_prod', user: 'neondb_owner'
+[WRITE] Starting restart simulation WRITE test
+[WRITE] Creating session 1...
+[WRITE] Session 1: workflow 5375a0f8-9ab1-43a7-84b1-d78abcd3f380 committed (SAVEPOINT)
+[WRITE] Creating session 2...
+[WRITE] Session 2: confirmed distinct from session 1
+[WRITE] Session 2: workflow 5375a0f8-9ab1-43a7-84b1-d78abcd3f380 is visible (cross-session within same outer transaction)
+[WRITE] Restart simulation complete. Workflow 5375a0f8-9ab1-43a7-84b1-d78abcd3f380 stored for verification.
+[WRITE] Returning now. Pytest fixture teardown will roll back the outer transaction.
+PASSED
+tests/integration/test_transaction_rollback.py::test_restart_simulation_verify [integration] URL-parsed database name: 'tutorial_prod' on host 'ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech'
+[integration] Connected to database: 'tutorial_prod', user: 'neondb_owner'
+[VERIFY] Starting restart simulation VERIFY test
+[VERIFY] This test runs AFTER the WRITE test's fixture teardown completed.
+[VERIFY] Checking if workflow 5375a0f8-9ab1-43a7-84b1-d78abcd3f380 is absent...
+[VERIFY] SUCCESS: Workflow 5375a0f8-9ab1-43a7-84b1-d78abcd3f380 is ABSENT — rollback worked correctly.
+[VERIFY] Restart simulation verified: two distinct sessions created, workflow visible across sessions,
+[VERIFY] but absent after fixture teardown.
+PASSED
+================================== 4 passed in 39.15s ===================================
+
+Exit Code: 0
