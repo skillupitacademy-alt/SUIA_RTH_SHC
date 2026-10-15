@@ -1,0 +1,22 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Program Files\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: E:\onlinewebsites\quiz-platform\services\project-ai
+configfile: pyproject.toml
+plugins: anyio-4.12.0, dash-3.3.0, asyncio-1.4.0, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 2 items
+
+tests/integration/test_transaction_rollback.py::test_transaction_rollback_verification [integration] URL-parsed database name: 'tutorial_prod' on host 'ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech'
+[integration] Connected to database: 'tutorial_prod', user: 'neondb_owner'
+
+ROLLBACK_VERIFICATION_ID=bd737a38-0c1f-42c2-be89-d8d05f1aa31a
+[INTERNAL VERIFICATION] Confirmed workflow bd737a38-0c1f-42c2-be89-d8d05f1aa31a is ABSENT ù rollback succeeded.
+PASSED
+tests/integration/test_transaction_rollback.py::test_restart_simulation_rollback [integration] URL-parsed database name: 'tutorial_prod' on host 'ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech'
+[integration] Connected to database: 'tutorial_prod', user: 'neondb_owner'
+
+[RESTART SIMULATION VERIFIED] Two distinct sessions created, workflow c7b3e6ce-709c-4e57-8878-55e4fdede9cc visible across sessions but ABSENT after teardown.
+PASSED
+
+============================= 2 passed in 31.04s ==============================
