@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Upload,
   CheckCircle2,
@@ -14,120 +15,97 @@ import {
   ShieldCheck,
   FileArchive,
   Clock,
+  AlertCircle,
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
+import { projectLlmClient, ProjectLlmError, ProjectLlmErrorCode } from '@/lib/project-llm/api/projectLlmClient';
+import type { CertificationStatus, CertificationGateResult } from '@/lib/project-llm/types/canonicalWorkflowState';
 
 interface CheckItem {
   id: string;
   name: string;
   category: string;
   duration: string;
-  status: 'pending' | 'running' | 'failed';
+  status: 'PASS' | 'FAIL' | 'SKIPPED' | 'PENDING';
   details: string;
 }
 
 export default function CandidateUploadPage() {
   const { state } = useProjectLlm();
+  const searchParams = useSearchParams();
+  const workflowId = searchParams.get('workflowId');
+  
   const [isValidating, setIsValidating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [certificationData, setCertificationData] = useState<CertificationStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoadingCertification, setIsLoadingCertification] = useState(false);
 
-  const checks: CheckItem[] = [
-    {
-      id: 'c1',
-      name: 'File Structure & Placement Integrity',
-      category: 'Placement Manifest',
-      duration: '42ms',
-      status: 'pending',
-      details: 'Not verified — waiting for backend candidate inspection',
-    },
-    {
-      id: 'c2',
-      name: 'ILS Instructional Learning Structure',
-      category: 'Pedagogy',
-      duration: '85ms',
-      status: 'pending',
-      details: 'Not verified — requires backend evidence',
-    },
-    {
-      id: 'c3',
-      name: 'LSNB Learning Structure & Navigation',
-      category: 'Schema',
-      duration: '63ms',
-      status: 'pending',
-      details: `Not verified — requires backend evidence for ${state.targetVersion}`,
-    },
-    {
-      id: 'c4',
-      name: 'RSSB Rendering Structure & Style',
-      category: 'Style & UI',
-      duration: '110ms',
-      status: 'pending',
-      details: 'Not verified — requires backend evidence',
-    },
-    {
-      id: 'c5',
-      name: 'Tutorial Composer Integration Contract',
-      category: 'Authoring',
-      duration: '94ms',
-      status: 'pending',
-      details: 'Not verified — requires Composer integration evidence',
-    },
-    {
-      id: 'c6',
-      name: 'Runtime Compatibility & Next.js SSR',
-      category: 'Runtime',
-      duration: '150ms',
-      status: 'pending',
-      details: 'Not verified — requires runtime test evidence',
-    },
-    {
-      id: 'c7',
-      name: 'Brand Independence Neutrality',
-      category: 'Neutrality',
-      duration: '38ms',
-      status: 'pending',
-      details: 'Not verified — requires brand-neutrality evidence',
-    },
-    {
-      id: 'c8',
-      name: 'Theme Compatibility (Light / Dark)',
-      category: 'Tokens',
-      duration: '72ms',
-      status: 'pending',
-      details: 'Not verified — requires theme/accessibility evidence',
-    },
-    {
-      id: 'c9',
-      name: 'Dependency Safety & Isolation Scan',
-      category: 'Security',
-      duration: '130ms',
-      status: 'pending',
-      details: 'Not verified — requires dependency/security scan evidence',
-    },
-    {
-      id: 'c10',
-      name: 'Automated Test Suite Execution',
-      category: 'Unit Testing',
-      duration: '420ms',
-      status: 'pending',
-      details: 'Not verified — requires actual test-run output',
-    },
-    {
-      id: 'c11',
-      name: 'Evidence Graph Manifest Cryptographic Signature',
-      category: 'Audit & Gate',
-      duration: '55ms',
-      status: 'pending',
-      details: 'Not verified — requires persisted evidence manifest',
-    },
-  ];
+  // Fetch certification status from backend on mount
+  useEffect(() => {
+    if (!workflowId) return;
 
-  const handleRerun = () => {
-    // Validation is not wired to the backend yet. Never simulate a successful run.
+    const fetchCertification = async () => {
+      setIsLoadingCertification(true);
+      setError(null);
+      try {
+        const data = await projectLlmClient.getCertificationStatus(workflowId);
+        setCertificationData(data);
+        // Calculate progress based on gates
+        const totalGates = data.gates.length;
+        const passedGates = data.gates.filter(g => g.result === 'PASS').length;
+        setProgress(totalGates > 0 ? Math.round((passedGates / totalGates) * 100) : 0);
+      } catch (err) {
+        if (err instanceof ProjectLlmError) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
+      } finally {
+        setIsLoadingCertification(false);
+      }
+    };
+
+    fetchCertification();
+  }, [workflowId]);
+
+  // Map backend gate results to UI check items
+  const checks: CheckItem[] = certificationData?.gates.map((gate, idx) => ({
+    id: `c${idx + 1}`,
+    name: gate.gate,
+    category: 'Validation Gate',
+    duration: '—',
+    status: gate.result,
+    details: gate.detail || (gate.result === 'PASS' ? 'Verified by backend' : gate.result === 'PENDING' ? 'Not yet verified' : 'Failed verification'),
+  })) || [];
+
+  const handleRerun = async () => {
+    if (!workflowId) {
+      setError('No workflow ID provided');
+      return;
+    }
+
+    setError(null);
+    setIsValidating(true);
     setProgress(0);
-    setIsValidating(false);
+
+    try {
+      const data = await projectLlmClient.getCertificationStatus(workflowId);
+      setCertificationData(data);
+      const totalGates = data.gates.length;
+      const passedGates = data.gates.filter(g => g.result === 'PASS').length;
+      setProgress(totalGates > 0 ? Math.round((passedGates / totalGates) * 100) : 0);
+    } catch (err) {
+      if (err instanceof ProjectLlmError) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
@@ -159,6 +137,36 @@ export default function CandidateUploadPage() {
 
       {/* Context Banner */}
       <ProjectLlmContextBanner />
+
+      {/* No Workflow ID Warning */}
+      {!workflowId && (
+        <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-5 shadow-sm flex items-start gap-4">
+          <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={20} />
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 font-outfit">No Workflow Selected</h4>
+            <p className="text-xs text-slate-600 mt-1">
+              Go to the dashboard to select or create a workflow. Append <span className="font-mono bg-white px-1 py-0.5 rounded">?workflowId=xxx</span> to the URL to test with a specific workflow.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Banner */}
+      {error && (
+        <div className="rounded-2xl border border-red-300 bg-red-50/90 p-5 shadow-sm flex items-start gap-4">
+          <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
+          <div className="flex-1">
+            <h4 className="text-sm font-bold text-slate-900 font-outfit">Error Loading Validation Data</h4>
+            <p className="text-xs text-slate-600 mt-1">{error}</p>
+          </div>
+          <button
+            onClick={() => handleRerun()}
+            className="text-xs font-bold text-red-700 hover:text-red-900 underline shrink-0"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Two Column Grid: Upload Package + Validation Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -311,101 +319,165 @@ export default function CandidateUploadPage() {
 
             {/* Validation Rows */}
             <div className="p-5 space-y-2.5 max-h-[460px] overflow-y-auto">
-              {checks.map((c) => (
-                <div
-                  key={c.id}
-                  className="p-3 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <Check size={13} strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900 font-outfit">
-                          {c.name}
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded">
-                          {c.category}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{c.details}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 self-end sm:self-center shrink-0">
-                    <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-                      <Clock size={11} />
-                      {c.duration}
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      PASS
-                    </span>
-                  </div>
+              {isLoadingCertification ? (
+                <div className="p-8 text-center text-sm text-slate-500">
+                  <RefreshCw size={24} className="animate-spin mx-auto mb-2 text-pink-600" />
+                  Loading validation gates...
                 </div>
-              ))}
+              ) : checks.length === 0 ? (
+                <div className="p-8 text-center text-sm text-slate-500">
+                  No validation gates available. Upload candidate files and run validation.
+                </div>
+              ) : (
+                checks.map((c) => (
+                  <div
+                    key={c.id}
+                    className="p-3 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`h-6 w-6 rounded-lg border flex items-center justify-center shrink-0 mt-0.5 ${
+                        c.status === 'PASS' ? 'bg-emerald-50 border-emerald-300 text-emerald-600' :
+                        c.status === 'FAIL' ? 'bg-red-50 border-red-300 text-red-600' :
+                        c.status === 'SKIPPED' ? 'bg-slate-50 border-slate-300 text-slate-400' :
+                        'bg-amber-50 border-amber-300 text-amber-600'
+                      }`}>
+                        {c.status === 'PASS' ? <Check size={13} strokeWidth={2.5} /> :
+                         c.status === 'FAIL' ? <AlertCircle size={13} strokeWidth={2.5} /> :
+                         c.status === 'SKIPPED' ? <Check size={13} strokeWidth={2.5} /> :
+                         <Clock size={13} strokeWidth={2.5} />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-900 font-outfit">
+                            {c.name}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded">
+                            {c.category}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">{c.details}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 self-end sm:self-center shrink-0">
+                      {c.duration !== '—' && (
+                        <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
+                          <Clock size={11} />
+                          {c.duration}
+                        </span>
+                      )}
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                        c.status === 'PASS' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
+                        c.status === 'FAIL' ? 'bg-red-100 text-red-800 border-red-200' :
+                        c.status === 'SKIPPED' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                        'bg-amber-100 text-amber-800 border-amber-200'
+                      }`}>
+                        {c.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Validation Results Summary Card */}
-      <div className="rounded-2xl border border-emerald-300 bg-gradient-to-r from-emerald-50/90 via-teal-50/50 to-white p-5 sm:p-6 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
-              <CheckCircle2 size={26} strokeWidth={2.5} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-extrabold text-slate-900 font-outfit">
-                  Validation Successful — All 11 Quality Gates Passed
-                </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900">
-                  Ready for Placement
-                </span>
+      {certificationData && checks.length > 0 && (
+        <div className={`rounded-2xl border p-5 sm:p-6 shadow-sm ${
+          checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED')
+            ? 'border-emerald-300 bg-gradient-to-r from-emerald-50/90 via-teal-50/50 to-white'
+            : checks.some(c => c.status === 'FAIL')
+            ? 'border-red-300 bg-gradient-to-r from-red-50/90 via-rose-50/50 to-white'
+            : 'border-amber-300 bg-gradient-to-r from-amber-50/90 via-yellow-50/50 to-white'
+        }`}>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="flex items-center gap-4">
+              <div className={`h-12 w-12 rounded-2xl text-white flex items-center justify-center shadow-md shrink-0 ${
+                checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED')
+                  ? 'bg-emerald-500 shadow-emerald-500/20'
+                  : checks.some(c => c.status === 'FAIL')
+                  ? 'bg-red-500 shadow-red-500/20'
+                  : 'bg-amber-500 shadow-amber-500/20'
+              }`}>
+                {checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED') ? (
+                  <CheckCircle2 size={26} strokeWidth={2.5} />
+                ) : (
+                  <AlertCircle size={26} strokeWidth={2.5} />
+                )}
               </div>
-              <p className="text-xs text-slate-600 mt-1 font-medium">
-                The candidate package for <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span> satisfies all structural, pedagogical, and runtime constraints. Zero errors or warnings detected.
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-extrabold text-slate-900 font-outfit">
+                    {checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED')
+                      ? `Validation Successful — All ${checks.length} Quality Gates Passed`
+                      : checks.some(c => c.status === 'FAIL')
+                      ? 'Validation Failed — Gate Failures Detected'
+                      : 'Validation Pending — Gates Not Yet Complete'}
+                  </h3>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED')
+                      ? 'bg-emerald-200 text-emerald-900'
+                      : checks.some(c => c.status === 'FAIL')
+                      ? 'bg-red-200 text-red-900'
+                      : 'bg-amber-200 text-amber-900'
+                  }`}>
+                    {checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED')
+                      ? 'Ready for Placement'
+                      : checks.some(c => c.status === 'FAIL')
+                      ? 'Cannot Proceed'
+                      : 'In Progress'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 mt-1 font-medium">
+                  {checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED')
+                    ? `The candidate package for ${state.familyName} ${state.targetVersion} satisfies all structural, pedagogical, and runtime constraints. Zero errors or warnings detected.`
+                    : checks.some(c => c.status === 'FAIL')
+                    ? `The candidate package has failed one or more quality gates. Review the failures above and correct the issues before proceeding.`
+                    : `The validation is still in progress. Some gates have not yet completed verification.`}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs">
+                <span className="text-slate-400 font-medium">Total: </span>
+                <span className="font-mono font-bold text-slate-800">{checks.length}</span>
+              </div>
+              <div className="px-3 py-1.5 rounded-xl bg-white border border-emerald-200 text-xs">
+                <span className="text-slate-400 font-medium">Passed: </span>
+                <span className="font-mono font-bold text-emerald-600">{checks.filter(c => c.status === 'PASS').length}</span>
+              </div>
+              <div className="px-3 py-1.5 rounded-xl bg-white border border-red-200 text-xs">
+                <span className="text-slate-400 font-medium">Failed: </span>
+                <span className="font-mono font-bold text-red-600">{checks.filter(c => c.status === 'FAIL').length}</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <div className="px-3 py-1.5 rounded-xl bg-white border border-emerald-200 text-xs">
-              <span className="text-slate-400 font-medium">Duration: </span>
-              <span className="font-mono font-bold text-slate-800">1.25s</span>
+          {/* Placement Preview Pills - only show if all passed */}
+          {checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED') && (
+            <div className="mt-4 pt-4 border-t border-emerald-200/60 flex flex-wrap items-center gap-3">
+              <span className="text-xs font-bold text-slate-500 font-mono uppercase tracking-wider">
+                Placement Manifest Preview:
+              </span>
+              <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-lg border border-emerald-200">
+                ADD (4 files)
+              </span>
+              <span className="text-xs font-mono font-bold text-blue-700 bg-blue-100/80 px-2.5 py-0.5 rounded-lg border border-blue-200">
+                UPDATE (2 files)
+              </span>
+              <span className="text-xs font-mono font-bold text-purple-700 bg-purple-100/80 px-2.5 py-0.5 rounded-lg border border-purple-200">
+                EXTEND (1 file)
+              </span>
+              <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
+                REUSE (8 shared components)
+              </span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-white border border-emerald-200 text-xs">
-              <span className="text-slate-400 font-medium">Errors: </span>
-              <span className="font-mono font-bold text-emerald-600">0</span>
-            </div>
-            <div className="px-3 py-1.5 rounded-xl bg-white border border-emerald-200 text-xs">
-              <span className="text-slate-400 font-medium">Coverage: </span>
-              <span className="font-mono font-bold text-emerald-600">100%</span>
-            </div>
-          </div>
+          )}
         </div>
-
-        {/* Placement Preview Pills */}
-        <div className="mt-4 pt-4 border-t border-emerald-200/60 flex flex-wrap items-center gap-3">
-          <span className="text-xs font-bold text-slate-500 font-mono uppercase tracking-wider">
-            Placement Manifest Preview:
-          </span>
-          <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-lg border border-emerald-200">
-            ADD (4 files)
-          </span>
-          <span className="text-xs font-mono font-bold text-blue-700 bg-blue-100/80 px-2.5 py-0.5 rounded-lg border border-blue-200">
-            UPDATE (2 files)
-          </span>
-          <span className="text-xs font-mono font-bold text-purple-700 bg-purple-100/80 px-2.5 py-0.5 rounded-lg border border-purple-200">
-            EXTEND (1 file)
-          </span>
-          <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
-            REUSE (8 shared components)
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* Next Step Callout */}
       <div className="rounded-2xl border border-pink-200/80 bg-gradient-to-r from-pink-50/80 via-rose-50/40 to-amber-50/60 p-5 sm:p-6 shadow-sm">
