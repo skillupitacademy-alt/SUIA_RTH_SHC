@@ -27,7 +27,7 @@ describe('ProjectLlmClient', () => {
         state: 'REQUESTED' as CanonicalWorkflowStateEnum,
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => mockWorkflowState,
       });
@@ -47,7 +47,7 @@ describe('ProjectLlmClient', () => {
     });
 
     it('should throw error on failed request', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 404,
         statusText: 'Not Found',
@@ -71,7 +71,7 @@ describe('ProjectLlmClient', () => {
         status: 'uploaded',
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
       });
@@ -96,7 +96,7 @@ describe('ProjectLlmClient', () => {
         workflowId: 'workflow-789',
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
       });
@@ -127,7 +127,7 @@ describe('ProjectLlmClient', () => {
         ],
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => mockCertification,
       });
