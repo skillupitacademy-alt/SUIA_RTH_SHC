@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Clock,
   Bot,
@@ -13,17 +14,73 @@ import {
   Search,
   CheckCircle2,
   Terminal,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
+import { projectLlmClient, ProjectLlmError } from '@/lib/project-llm/api/projectLlmClient';
+import type { CanonicalWorkflowState } from '@/lib/project-llm/types/canonicalWorkflowState';
 
 type DetailTab = 'timeline' | 'agents' | 'evidence' | 'snapshot' | 'diff' | 'logs';
 
 export default function WorkflowDetailsPage() {
   const { state } = useProjectLlm();
+  const searchParams = useSearchParams();
+  const workflowId = searchParams.get('workflowId');
+  
   const [activeTab, setActiveTab] = useState<DetailTab>('timeline');
   const [logFilter, setLogFilter] = useState<'all' | 'gate' | 'audit' | 'info'>('all');
   const [searchLog, setSearchLog] = useState('');
+  const [workflowState, setWorkflowState] = useState<CanonicalWorkflowState | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch workflow state from backend
+  useEffect(() => {
+    if (!workflowId) return;
+
+    const fetchWorkflowState = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await projectLlmClient.getWorkflowState(workflowId);
+        setWorkflowState(data);
+      } catch (err) {
+        if (err instanceof ProjectLlmError) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWorkflowState();
+  }, [workflowId]);
+
+  const handleRetry = () => {
+    if (workflowId) {
+      const fetchWorkflowState = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const data = await projectLlmClient.getWorkflowState(workflowId);
+          setWorkflowState(data);
+        } catch (err) {
+          if (err instanceof ProjectLlmError) {
+            setError(err.message);
+          } else {
+            setError('An unexpected error occurred');
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchWorkflowState();
+    }
+  };
 
   const timelineEvents = [
     {
@@ -193,6 +250,44 @@ export default function WorkflowDetailsPage() {
 
       {/* Context Banner */}
       <ProjectLlmContextBanner />
+
+      {/* No Workflow ID Warning */}
+      {!workflowId && (
+        <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-5 shadow-sm flex items-start gap-4">
+          <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={20} />
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 font-outfit">No Workflow Selected</h4>
+            <p className="text-xs text-slate-600 mt-1">
+              Go to the dashboard to select or create a workflow. Append <span className="font-mono bg-white px-1 py-0.5 rounded">?workflowId=xxx</span> to the URL to test with a specific workflow.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Banner */}
+      {error && (
+        <div className="rounded-2xl border border-red-300 bg-red-50/90 p-5 shadow-sm flex items-start gap-4">
+          <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
+          <div className="flex-1">
+            <h4 className="text-sm font-bold text-slate-900 font-outfit">Error Loading Workflow Data</h4>
+            <p className="text-xs text-slate-600 mt-1">{error}</p>
+          </div>
+          <button
+            onClick={handleRetry}
+            className="text-xs font-bold text-red-700 hover:text-red-900 underline shrink-0"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <RefreshCw size={32} className="animate-spin mx-auto mb-3 text-pink-600" />
+          <p className="text-sm font-medium text-slate-600">Loading workflow details...</p>
+        </div>
+      )}
 
       {/* Main Inspection Tabs */}
       <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">

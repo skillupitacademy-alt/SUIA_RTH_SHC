@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/link';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -12,16 +13,87 @@ import {
   ArrowRight,
   ArrowLeft,
   Lightbulb,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
+import { projectLlmClient, ProjectLlmError } from '@/lib/project-llm/api/projectLlmClient';
+import type { CertificationStatus, RuntimeHealthStatus, BrowserVerificationStatus } from '@/lib/project-llm/types/canonicalWorkflowState';
 
 type CertTab = 'repo' | 'tests' | 'composer' | 'runtime' | 'cert';
 
 export default function IntegrationCertificationPage() {
   const { state } = useProjectLlm();
+  const searchParams = useSearchParams();
+  const workflowId = searchParams.get('workflowId');
+  
   const [activeTab, setActiveTab] = useState<CertTab>('repo');
+  const [certificationData, setCertificationData] = useState<CertificationStatus | null>(null);
+  const [runtimeHealth, setRuntimeHealth] = useState<RuntimeHealthStatus | null>(null);
+  const [browserVerification, setBrowserVerification] = useState<BrowserVerificationStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch certification data from backend
+  useEffect(() => {
+    if (!workflowId) return;
+
+    const fetchCertificationData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Fetch all three in parallel
+        const [cert, runtime, browser] = await Promise.all([
+          projectLlmClient.getCertificationStatus(workflowId),
+          projectLlmClient.getRuntimeHealth(workflowId),
+          projectLlmClient.getBrowserVerificationStatus(workflowId),
+        ]);
+        setCertificationData(cert);
+        setRuntimeHealth(runtime);
+        setBrowserVerification(browser);
+      } catch (err) {
+        if (err instanceof ProjectLlmError) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCertificationData();
+  }, [workflowId]);
+
+  const handleRetry = () => {
+    if (workflowId) {
+      const fetchCertificationData = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const [cert, runtime, browser] = await Promise.all([
+            projectLlmClient.getCertificationStatus(workflowId),
+            projectLlmClient.getRuntimeHealth(workflowId),
+            projectLlmClient.getBrowserVerificationStatus(workflowId),
+          ]);
+          setCertificationData(cert);
+          setRuntimeHealth(runtime);
+          setBrowserVerification(browser);
+        } catch (err) {
+          if (err instanceof ProjectLlmError) {
+            setError(err.message);
+          } else {
+            setError('An unexpected error occurred');
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchCertificationData();
+    }
+  };
 
   return (
     <div className="space-y-6 pb-16">
@@ -52,6 +124,44 @@ export default function IntegrationCertificationPage() {
 
       {/* Context Banner */}
       <ProjectLlmContextBanner />
+
+      {/* No Workflow ID Warning */}
+      {!workflowId && (
+        <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-5 shadow-sm flex items-start gap-4">
+          <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={20} />
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 font-outfit">No Workflow Selected</h4>
+            <p className="text-xs text-slate-600 mt-1">
+              Go to the dashboard to select or create a workflow. Append <span className="font-mono bg-white px-1 py-0.5 rounded">?workflowId=xxx</span> to the URL to test with a specific workflow.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Banner */}
+      {error && (
+        <div className="rounded-2xl border border-red-300 bg-red-50/90 p-5 shadow-sm flex items-start gap-4">
+          <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
+          <div className="flex-1">
+            <h4 className="text-sm font-bold text-slate-900 font-outfit">Error Loading Certification Data</h4>
+            <p className="text-xs text-slate-600 mt-1">{error}</p>
+          </div>
+          <button
+            onClick={handleRetry}
+            className="text-xs font-bold text-red-700 hover:text-red-900 underline shrink-0"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <RefreshCw size={32} className="animate-spin mx-auto mb-3 text-pink-600" />
+          <p className="text-sm font-medium text-slate-600">Loading certification data...</p>
+        </div>
+      )}
 
       {/* Main Container with 5 Tabs */}
       <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
