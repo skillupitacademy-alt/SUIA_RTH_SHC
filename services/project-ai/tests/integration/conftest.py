@@ -34,6 +34,27 @@ def _get_test_db_url() -> str | None:
     return os.environ.get("DATABASE_URL_TUTORIAL")
 
 
+def _verify_database_environment(db_url: str) -> None:
+    """
+    Log database identity and guard against accidental wrong-DB runs.
+
+    tutorial_prod is approved for development testing (user-confirmed).
+    This check catches accidental misconfiguration, not production data.
+    """
+    db_name = db_url.split("/")[-1].split("?")[0]
+    at_idx = db_url.find("@")
+    slash_after_host = db_url.find("/", at_idx + 1) if at_idx >= 0 else -1
+    host = db_url[at_idx + 1 : slash_after_host] if at_idx >= 0 and slash_after_host > 0 else "unknown"
+    print(f"[integration] Targeting database '{db_name}' on host '{host}'")
+    allowed = {"tutorial_prod", "project_ai_test", "tutorial_test"}
+    if db_name not in allowed:
+        pytest.fail(
+            f"Unexpected database name '{db_name}'. "
+            f"Allowed: {', '.join(sorted(allowed))}. "
+            "Set DATABASE_URL_TUTORIAL to an approved database."
+        )
+
+
 # Pytest collection hook to skip entire module if database not configured
 def pytest_collection_modifyitems(config, items):
     """Skip all integration tests if DATABASE_URL_TUTORIAL not configured."""
@@ -59,6 +80,9 @@ async def integration_db_engine():
     db_url_raw = _get_test_db_url()
     if not db_url_raw:
         pytest.skip("DATABASE_URL_TUTORIAL not configured")
+    
+    # Verify database environment before connecting
+    _verify_database_environment(db_url_raw)
     
     # Convert postgresql:// to postgresql+asyncpg:// for SQLAlchemy async engine
     # Remove query parameters that are not compatible with asyncpg (sslmode, channel_binding)
@@ -118,27 +142,31 @@ async def integration_db_engine():
 @pytest_asyncio.fixture
 async def db_session(integration_db_engine):
     """
-    Create an async database session for integration tests.
-    
-    Tests can call session.commit() and session.flush() freely.
-    Uncommitted changes are rolled back at teardown.
-    
-    Note: Committed data persists in the test DB. Test isolation is
-    maintained by using unique deterministic IDs (via test_uuid).
-    
-    Scope: function (new session per test)
+    Create async session with connection-level transaction rollback.
+
+    ALL operations (including explicit session.commit() calls) are rolled
+    back at test completion. The session is bound to an explicit connection
+    transaction that controls the rollback boundary.
+
+    join_transaction_mode="create_savepoint" makes session.commit() issue
+    SAVEPOINT/RELEASE SAVEPOINT instead of COMMIT, so the outer connection
+    transaction can still be rolled back unconditionally at teardown.
+
+    Scope: function (new connection + transaction per test)
     """
-    async_session_factory = async_sessionmaker(
-        integration_db_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
-    
-    async with async_session_factory() as session:
-        yield session
-        # Rollback any uncommitted changes
-        if session.in_transaction():
-            await session.rollback()
+    async with integration_db_engine.connect() as connection:
+        async with connection.begin() as transaction:
+            async_session_factory = async_sessionmaker(
+                bind=connection,
+                class_=AsyncSession,
+                expire_on_commit=False,
+                join_transaction_mode="create_savepoint",
+            )
+            async with async_session_factory() as session:
+                yield session
+            # Rollback the outer connection transaction — discards ALL changes
+            # including anything the session committed as SAVEPOINTs.
+            await transaction.rollback()
 
 
 @pytest_asyncio.fixture
