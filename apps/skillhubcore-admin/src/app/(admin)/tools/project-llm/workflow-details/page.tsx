@@ -36,50 +36,33 @@ export default function WorkflowDetailsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch workflow state from backend
-  useEffect(() => {
+  // Extracted fetch function to avoid duplication
+  const fetchWorkflowState = async () => {
     if (!workflowId) return;
-
-    const fetchWorkflowState = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await projectLlmClient.getWorkflowState(workflowId);
-        setWorkflowState(data);
-      } catch (err) {
-        if (err instanceof ProjectLlmError) {
-          setError(err.message);
-        } else {
-          setError('An unexpected error occurred');
-        }
-      } finally {
-        setIsLoading(false);
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await projectLlmClient.getWorkflowState(workflowId);
+      setWorkflowState(data);
+    } catch (err) {
+      if (err instanceof ProjectLlmError) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Fetch workflow state from backend on mount
+  useEffect(() => {
     fetchWorkflowState();
   }, [workflowId]);
 
   const handleRetry = () => {
-    if (workflowId) {
-      const fetchWorkflowState = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-          const data = await projectLlmClient.getWorkflowState(workflowId);
-          setWorkflowState(data);
-        } catch (err) {
-          if (err instanceof ProjectLlmError) {
-            setError(err.message);
-          } else {
-            setError('An unexpected error occurred');
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchWorkflowState();
-    }
+    fetchWorkflowState();
   };
 
   const timelineEvents = [

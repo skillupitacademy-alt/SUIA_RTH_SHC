@@ -36,63 +36,40 @@ export default function IntegrationCertificationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch certification data from backend
-  useEffect(() => {
+  // Extracted fetch function to avoid duplication
+  const fetchCertificationData = async () => {
     if (!workflowId) return;
-
-    const fetchCertificationData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // Fetch all three in parallel
-        const [cert, runtime, browser] = await Promise.all([
-          projectLlmClient.getCertificationStatus(workflowId),
-          projectLlmClient.getRuntimeHealth(workflowId),
-          projectLlmClient.getBrowserVerificationStatus(workflowId),
-        ]);
-        setCertificationData(cert);
-        setRuntimeHealth(runtime);
-        setBrowserVerification(browser);
-      } catch (err) {
-        if (err instanceof ProjectLlmError) {
-          setError(err.message);
-        } else {
-          setError('An unexpected error occurred');
-        }
-      } finally {
-        setIsLoading(false);
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Fetch all three in parallel
+      const [cert, runtime, browser] = await Promise.all([
+        projectLlmClient.getCertificationStatus(workflowId),
+        projectLlmClient.getRuntimeHealth(workflowId),
+        projectLlmClient.getBrowserVerificationStatus(workflowId),
+      ]);
+      setCertificationData(cert);
+      setRuntimeHealth(runtime);
+      setBrowserVerification(browser);
+    } catch (err) {
+      if (err instanceof ProjectLlmError) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Fetch certification data from backend on mount
+  useEffect(() => {
     fetchCertificationData();
   }, [workflowId]);
 
   const handleRetry = () => {
-    if (workflowId) {
-      const fetchCertificationData = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-          const [cert, runtime, browser] = await Promise.all([
-            projectLlmClient.getCertificationStatus(workflowId),
-            projectLlmClient.getRuntimeHealth(workflowId),
-            projectLlmClient.getBrowserVerificationStatus(workflowId),
-          ]);
-          setCertificationData(cert);
-          setRuntimeHealth(runtime);
-          setBrowserVerification(browser);
-        } catch (err) {
-          if (err instanceof ProjectLlmError) {
-            setError(err.message);
-          } else {
-            setError('An unexpected error occurred');
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchCertificationData();
-    }
+    fetchCertificationData();
   };
 
   return (
