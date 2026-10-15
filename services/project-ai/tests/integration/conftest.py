@@ -13,6 +13,7 @@ If DATABASE_URL_TUTORIAL is not configured, tests will skip with a clear error m
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
@@ -34,18 +35,34 @@ def _get_test_db_url() -> str | None:
     return os.environ.get("DATABASE_URL_TUTORIAL")
 
 
-def _verify_database_environment(db_url: str) -> None:
+def _verify_database_environment(db_url: str) -> str:
     """
-    Log database identity and guard against accidental wrong-DB runs.
+    Parse and validate the database URL before connecting.
 
-    tutorial_prod is approved for development testing (user-confirmed).
-    This check catches accidental misconfiguration, not production data.
+    Checks:
+    - Database name is parseable from the URL.
+    - Database name is in the approved allow-list.
+
+    Does NOT check:
+    - Actual connected database identity (done in integration_db_engine after connect).
+    - Role privileges or write permissions.
+
+    This guard catches accidental misconfiguration. It does NOT enforce
+    role-based access control or prevent privilege escalation.
+
+    Returns:
+        The parsed database name for downstream identity verification.
     """
-    db_name = db_url.split("/")[-1].split("?")[0]
-    at_idx = db_url.find("@")
-    slash_after_host = db_url.find("/", at_idx + 1) if at_idx >= 0 else -1
-    host = db_url[at_idx + 1 : slash_after_host] if at_idx >= 0 and slash_after_host > 0 else "unknown"
-    print(f"[integration] Targeting database '{db_name}' on host '{host}'")
+    try:
+        parsed = urlparse(db_url)
+        # Extract database name from path (remove leading slash and query params)
+        db_name = parsed.path.lstrip("/").split("?")[0] if parsed.path else "unknown"
+        host = parsed.hostname or "unknown"
+    except Exception as e:
+        pytest.fail(f"Failed to parse DATABASE_URL_TUTORIAL: {e}")
+    
+    print(f"[integration] URL-parsed database name: '{db_name}' on host '{host}'")
+    
     allowed = {"tutorial_prod", "project_ai_test", "tutorial_test"}
     if db_name not in allowed:
         pytest.fail(
@@ -53,6 +70,8 @@ def _verify_database_environment(db_url: str) -> None:
             f"Allowed: {', '.join(sorted(allowed))}. "
             "Set DATABASE_URL_TUTORIAL to an approved database."
         )
+    
+    return db_name
 
 
 # Pytest collection hook to skip entire module if database not configured
@@ -81,8 +100,8 @@ async def integration_db_engine():
     if not db_url_raw:
         pytest.skip("DATABASE_URL_TUTORIAL not configured")
     
-    # Verify database environment before connecting
-    _verify_database_environment(db_url_raw)
+    # Verify database environment before connecting (returns parsed db name)
+    expected_db_name = _verify_database_environment(db_url_raw)
     
     # Convert postgresql:// to postgresql+asyncpg:// for SQLAlchemy async engine
     # Remove query parameters that are not compatible with asyncpg (sslmode, channel_binding)
@@ -132,6 +151,21 @@ async def integration_db_engine():
                 "Run migrations before running integration tests: "
                 "pnpm --filter @quiz/db-tutorial db:migrate"
             )
+        
+        # Verify actual connected database identity
+        result = await conn.execute(text("SELECT current_database(), current_user"))
+        actual_db, actual_user = result.fetchone()
+        
+        print(f"[integration] Connected to database: '{actual_db}', user: '{actual_user}'")
+        
+        if actual_db != expected_db_name:
+            await engine.dispose()
+            pytest.fail(
+                f"Database identity mismatch: URL says '{expected_db_name}' but "
+                f"connected to '{actual_db}'. Check DATABASE_URL_TUTORIAL."
+            )
+        # Note: This guard does NOT verify role privileges or table permissions.
+        # tutorial_prod is user-confirmed as a development database authorized for testing.
     
     yield engine
     
@@ -172,53 +206,52 @@ async def db_session(integration_db_engine):
 @pytest_asyncio.fixture
 async def db_session_factory(integration_db_engine):
     """
-    Provide a session factory for tests that need to simulate restarts.
-    
-    Returns a callable that creates new sessions, allowing tests to
-    close one session and open another to simulate application restart.
-    
-    TRANSACTION ISOLATION:
-    This fixture wraps all restart test operations in an outer transaction
-    that automatically rolls back at test completion. Individual sessions
-    created by the factory can commit their changes (making them visible
-    to subsequent sessions in the same test), but all changes are rolled
-    back when the test completes.
+    Factory for tests that simulate application restarts.
+
+    Each call to the returned factory function creates a NEW AsyncSession
+    bound to the same underlying connection and outer transaction. Callers
+    may close sessions and open new ones to simulate application restarts.
+
+    Transaction isolation:
+    - All sessions share one connection-level outer transaction.
+    - session.commit() issues a SAVEPOINT/RELEASE (not a real COMMIT) because
+      join_transaction_mode="create_savepoint".
+    - Changes committed in one session are visible to later sessions on the
+      same connection, simulating cross-restart visibility.
+    - The outer transaction is rolled back at fixture teardown, discarding
+      ALL changes regardless of how many sessions committed.
+
+    SAVEPOINT note: PostgreSQL sequence increments are NOT rolled back by
+    savepoints. Tests must only assert on row presence/absence, not on
+    sequence-derived values like serial PKs.
     
     Usage pattern:
-        async with await db_session_factory() as session1:
-            # Session 1 operations
-            await session1.commit()  # Makes changes visible to session 2
+        session1 = await db_session_factory()
+        # Session 1 operations
+        await session1.commit()  # SAVEPOINT/RELEASE (not real COMMIT)
+        await session1.close()
         
-        async with await db_session_factory() as session2:
-            # Session 2 sees session 1's committed changes
-            # but all changes roll back at test end
+        session2 = await db_session_factory()
+        # Session 2 sees session 1's committed changes
+        # but all changes roll back at test end
+        await session2.close()
     """
-    # Create outer transaction for test-level isolation
-    async_session_factory = async_sessionmaker(
-        integration_db_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
-    
-    # Start outer transaction
-    async with async_session_factory() as outer_session:
-        async with outer_session.begin():
-            # Create a savepoint for nested transaction support
-            nested_transaction = await outer_session.begin_nested()
-            
-            async def _factory():
-                """
-                Return the outer session for all restart test operations.
-                
-                This ensures all operations across multiple "sessions" (restart simulation)
-                happen within the same transaction and are rolled back at test end.
-                """
-                return outer_session
-            
+    async with integration_db_engine.connect() as connection:
+        async with connection.begin() as transaction:
+            session_factory = async_sessionmaker(
+                bind=connection,
+                class_=AsyncSession,
+                expire_on_commit=False,
+                join_transaction_mode="create_savepoint",
+            )
+
+            async def _factory() -> AsyncSession:
+                """Create and return a NEW session bound to the outer connection transaction."""
+                return session_factory()
+
             yield _factory
-            
-            # Rollback outer transaction at test end
-            await outer_session.rollback()
+
+            await transaction.rollback()
 
 
 @pytest_asyncio.fixture
