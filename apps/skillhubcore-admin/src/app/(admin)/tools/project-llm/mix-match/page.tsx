@@ -1,20 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Sparkles,
-  Layers,
   CheckCircle2,
-  AlertTriangle,
   ArrowRight,
-  ShieldCheck,
-  Split,
   Check,
   XCircle,
-  HelpCircle,
-  Info,
 } from 'lucide-react';
 import { BLOCK_CORPUS_REGISTRY } from '@/lib/project-llm';
 import type { BlockFamilyReference } from '@quiz/types';
@@ -41,7 +34,7 @@ const AVAILABLE_PATTERNS: Record<string, ComponentPatternOption[]> = {
 
 export default function MixAndMatchBuilderPage() {
   const router = useRouter();
-  const [selectedFamilyId, setSelectedFamilyId] = useState('I');
+  const [selectedFamilyId] = useState('I');
   const [targetVersionId, setTargetVersionId] = useState('I7');
   const [selectedVersions, setSelectedVersions] = useState<string[]>(['I1', 'I2', 'I5']);
   const [selectedComponents, setSelectedComponents] = useState<string[]>([

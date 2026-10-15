@@ -27,7 +27,6 @@ import {
   Info,
   Lightbulb,
   ArrowRight,
-  Sparkles,
 } from 'lucide-react';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { useProjectLlm } from '../context/ProjectLlmContext';

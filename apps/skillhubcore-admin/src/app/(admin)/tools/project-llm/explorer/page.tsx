@@ -1,23 +1,18 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
   Layers,
-  FileText,
   BadgeCheck,
   CheckCircle2,
   ShieldCheck,
-  ArrowRight,
   Sparkles,
-  ExternalLink,
-  Sliders,
   Code,
   Layout,
   Accessibility,
   Smartphone,
-  ChevronRight,
 } from 'lucide-react';
 import { BLOCK_CORPUS_REGISTRY } from '@/lib/project-llm';
 import type { BlockFamilyReference } from '@quiz/types';

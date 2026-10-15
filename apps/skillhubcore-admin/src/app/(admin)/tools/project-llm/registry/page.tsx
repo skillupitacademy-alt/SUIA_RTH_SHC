@@ -3,16 +3,9 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
-  Layers,
   Search,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
   ArrowRight,
-  ExternalLink,
-  Filter,
   Sparkles,
-  ShieldCheck,
   ChevronRight,
 } from 'lucide-react';
 import { BLOCK_CORPUS_REGISTRY } from '@/lib/project-llm';

@@ -1,26 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
-  FileText,
   ShieldCheck,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
-  Sparkles,
-  Layers,
-  Code,
-  Check,
-  XCircle,
-  FileCheck,
-  Lock,
 } from 'lucide-react';
 
 export default function SpecificationReviewPage() {
   const searchParams = useSearchParams();
-  const familyId = searchParams?.get('family') || 'I';
   const versionId = searchParams?.get('version') || 'I7';
   const sources = searchParams?.get('sources')?.split(',') || ['I1', 'I2', 'I5'];
 
@@ -85,7 +72,7 @@ export default function SpecificationReviewPage() {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveSection(tab.id as any)}
+              onClick={() => setActiveSection(tab.id as 'edu' | 'contract' | 'repo' | 'criteria')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 activeSection === tab.id
                   ? 'bg-slate-900 text-white shadow-md'

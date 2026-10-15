@@ -5,24 +5,13 @@ import Link from 'next/link';
 import {
   ShieldCheck,
   CheckCircle2,
-  Check,
   GitBranch,
-  Layers,
-  FileCode,
-  FileCheck,
   TestTube,
   Cpu,
   Workflow,
-  Sparkles,
-  ExternalLink,
   ArrowRight,
   ArrowLeft,
   Lightbulb,
-  Download,
-  Terminal,
-  Activity,
-  Globe,
-  CheckCheck,
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';

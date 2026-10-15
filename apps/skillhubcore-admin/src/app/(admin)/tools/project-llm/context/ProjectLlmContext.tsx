@@ -114,7 +114,9 @@ export function ProjectLlmProvider({ children }: { children: React.ReactNode }) 
     setState(defaultState);
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch {}
+    } catch {
+      // intentionally empty
+    }
   };
 
   return (

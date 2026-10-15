@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Code,
-  CheckCircle2,
   Copy,
   Check,
   Download,
@@ -16,15 +15,11 @@ import {
   Sparkles,
   Layers,
   ShieldCheck,
-  Eye,
-  Terminal,
-  ExternalLink,
   BookOpen,
   Layout,
   Palette,
   Workflow,
   TestTube,
-  FileCheck,
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';

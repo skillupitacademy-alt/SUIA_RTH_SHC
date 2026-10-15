@@ -3,17 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  GitBranch,
-  Layers,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  HelpCircle,
-  Split,
-  Workflow,
   Sparkles,
-  ChevronRight,
 } from 'lucide-react';
 
 interface RelationshipRule {

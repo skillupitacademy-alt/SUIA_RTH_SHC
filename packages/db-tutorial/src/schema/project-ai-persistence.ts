@@ -83,12 +83,12 @@ export const projectAiStateTransitions = pgTable('project_ai_state_transitions',
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   
   // Foreign Key to Workflow
+  
+  // Foreign Key to Workflow (1:1)
   workflowId: uuid('workflow_id')
     .notNull()
     .references(() => projectAiWorkflows.workflowId, { 
-      onDelete: 'cascade',
-      // Explicit constraint name to match SQLAlchemy convention
-      name: 'fk_state_transitions_workflow_id'
+      onDelete: 'cascade'
     }),
   
   // Transition Details
@@ -118,8 +118,7 @@ export const projectAiContracts = pgTable('project_ai_contracts', {
   workflowId: uuid('workflow_id')
     .notNull()
     .references(() => projectAiWorkflows.workflowId, { 
-      onDelete: 'cascade',
-      name: 'fk_contracts_workflow_id'
+      onDelete: 'cascade'
     }),
   
   // Immutability Verification
@@ -152,8 +151,7 @@ export const projectAiCandidates = pgTable('project_ai_candidates', {
   // Foreign Key to Workflow (optional - candidate may exist before workflow binding)
   workflowId: uuid('workflow_id')
     .references(() => projectAiWorkflows.workflowId, { 
-      onDelete: 'set null',
-      name: 'fk_candidates_workflow_id'
+      onDelete: 'set null'
     }),
   
   // Files (JSONB array of CandidateFile objects)
@@ -192,8 +190,7 @@ export const projectAiManifests = pgTable('project_ai_manifests', {
   candidateId: uuid('candidate_id')
     .notNull()
     .references(() => projectAiCandidates.candidateId, { 
-      onDelete: 'cascade',
-      name: 'fk_manifests_candidate_id'
+      onDelete: 'cascade'
     }),
   
   // Immutability Verification
@@ -233,8 +230,7 @@ export const projectAiApprovals = pgTable('project_ai_approvals', {
   workflowId: uuid('workflow_id')
     .notNull()
     .references(() => projectAiWorkflows.workflowId, { 
-      onDelete: 'cascade',
-      name: 'fk_approvals_workflow_id'
+      onDelete: 'cascade'
     }),
   
   // Hash Bindings

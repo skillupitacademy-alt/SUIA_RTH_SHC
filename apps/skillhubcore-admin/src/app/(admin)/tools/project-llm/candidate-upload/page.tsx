@@ -5,21 +5,15 @@ import Link from 'next/link';
 import {
   Upload,
   CheckCircle2,
-  FileCheck,
   Check,
-  Play,
   RefreshCw,
   ArrowRight,
   ArrowLeft,
   Lightbulb,
   FileCode,
   ShieldCheck,
-  AlertCircle,
   FileArchive,
-  Layers,
-  Sparkles,
   Clock,
-  ChevronRight,
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
@@ -317,7 +311,7 @@ export default function CandidateUploadPage() {
 
             {/* Validation Rows */}
             <div className="p-5 space-y-2.5 max-h-[460px] overflow-y-auto">
-              {checks.map((c, idx) => (
+              {checks.map((c) => (
                 <div
                   key={c.id}
                   className="p-3 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2"

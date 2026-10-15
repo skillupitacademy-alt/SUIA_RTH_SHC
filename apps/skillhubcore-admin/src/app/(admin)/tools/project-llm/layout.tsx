@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ChevronRight, Search, Bell, User } from 'lucide-react';
+import { Home, ChevronRight, Search, Bell } from 'lucide-react';
 import { ProjectLlmProvider } from './context/ProjectLlmContext';
 
 const routeTitleMap: Record<string, string> = {

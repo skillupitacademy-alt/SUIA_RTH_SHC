@@ -10,8 +10,6 @@ import {
   CheckCircle2,
   ShieldCheck,
   Check,
-  ChevronRight,
-  ArrowRight,
 } from 'lucide-react';
 
 export interface StepperProps {

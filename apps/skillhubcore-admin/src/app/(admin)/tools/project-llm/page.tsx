@@ -22,8 +22,6 @@ import {
   Upload,
   BookOpen,
   Activity,
-  Layers,
-  Sparkles,
   Target,
   Code,
   Image as ImageIcon,
@@ -32,7 +30,6 @@ import {
   Brain,
   AlertTriangle,
   Award,
-  ExternalLink,
 } from 'lucide-react';
 
 export default function ProjectLlmDashboardPage() {

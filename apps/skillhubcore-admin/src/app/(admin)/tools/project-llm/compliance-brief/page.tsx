@@ -21,7 +21,6 @@ import {
   TestTube,
   Sparkles,
   Layers,
-  ExternalLink,
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
@@ -340,7 +339,6 @@ ${req.items.map((item) => `   - [x] ${item}`).join('\n')}
             /* Checklist Linear View */
             <div className="space-y-4">
               {requirements.map((req, idx) => {
-                const Icon = req.icon;
                 return (
                   <div
                     key={req.id}
