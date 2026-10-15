@@ -1,4 +1,6 @@
 export interface DomainTheme {
+  primary: string;
+  secondary: string;
   breadcrumbBg: string;
   sidebarAccent: string;
   activeItem: string;
@@ -35,6 +37,8 @@ export interface DomainTheme {
 
 export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainTheme> = {
   indigo: {
+    primary: '#3d5a9e',
+    secondary: '#4f6aad',
     breadcrumbBg: 'linear-gradient(135deg, #3b4f7a 0%, #4f6292 50%, #6b82b5 100%)',
     sidebarAccent: '#3d5a9e',
     activeItem: '#4f6aad',
@@ -69,6 +73,8 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     blockInterviewHeader: '#c2410c',
 },
   blue: {
+    primary: '#2557a7',
+    secondary: '#3568b8',
     breadcrumbBg: 'linear-gradient(135deg, #1a3a6b 0%, #2557a7 50%, #4472c4 100%)',
     sidebarAccent: '#2557a7',
     activeItem: '#3568b8',
@@ -103,6 +109,8 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     blockInterviewHeader: '#c2410c',
 },
   teal: {
+    primary: '#2e7d72',
+    secondary: '#3d9e92',
     breadcrumbBg: 'linear-gradient(135deg, #1a5c5c 0%, #2e7d72 50%, #4caf9f 100%)',
     sidebarAccent: '#2e7d72',
     activeItem: '#3d9e92',
@@ -137,6 +145,8 @@ export const DOMAIN_THEMES: Record<'indigo' | 'blue' | 'teal' | 'steel', DomainT
     blockInterviewHeader: '#c2410c',
 },
   steel: {
+    primary: '#2e4057',
+    secondary: '#3d5470',
     breadcrumbBg: 'linear-gradient(135deg, #1c2833 0%, #2e4057 50%, #485e76 100%)',
     sidebarAccent: '#2e4057',
     activeItem: '#3d5470',
