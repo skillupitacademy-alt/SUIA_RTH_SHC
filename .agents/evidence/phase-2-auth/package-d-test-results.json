@@ -1,0 +1,257 @@
+{
+  "package": "D",
+  "commit": "6c4b8e72b7aaeae9b4aa792946a5eb96411ed8ce",
+  "test_date": "2026-01-10",
+  "environment": {
+    "backend_running": false,
+    "backend_url": "http://localhost:8000",
+    "frontend_running": false,
+    "frontend_url": "http://skillhubcore.localhost:3007",
+    "database": "tutorial_prod",
+    "database_queried": false
+  },
+  "static_analysis": {
+    "typescript_compilation": {
+      "verdict": "PASS",
+      "evidence": "TypeScript compilation completed successfully with no errors (npx tsc --noEmit)"
+    },
+    "auth_adapter_analysis": {
+      "verdict": "PASS",
+      "file": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts",
+      "cookie_names": ["accessToken", "admin_accessToken"],
+      "auth_header_format": "Bearer <token>",
+      "error_handling": {
+        "no_token": "Returns 401 Unauthorized (line 46-48)",
+        "backend_unreachable": "Returns 503 Backend service unavailable (line 82-87)",
+        "fetch_errors": "Catches all fetch errors and returns 503"
+      },
+      "missing_cases": [
+        "No explicit handling for 502 Bad Gateway if backend returns invalid response",
+        "No timeout configuration on fetch request",
+        "No retry logic for transient failures"
+      ],
+      "unverified_assumptions": [
+        "Token compatibility: Admin tokens signed with ADMIN_JWT_SECRET may not be validated by FastAPI (line 22-24)",
+        "Backend URL: PROJECT_AI_BACKEND env var not confirmed in staging (line 25-26)",
+        "Token claims: Admin token assumed to contain userId and roles FastAPI expects (line 27-29)",
+        "Role assignment: Admin users may not have contract_admin role (line 30-32)"
+      ]
+    },
+    "candidate_upload_page_analysis": {
+      "verdict": "PASS",
+      "file": "apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/candidate-upload/page.tsx",
+      "api_endpoints_called": [
+        "GET /api/project-llm/workflows/{id}/certification"
+      ],
+      "loading_state": "Uses isLoadingCertification state and progress indicator (lines 32-54)",
+      "error_handling": {
+        "401": "Displays ProjectLlmError.message: 'Session expired. Please log in again.'",
+        "403": "Displays ProjectLlmError.message: 'You do not have permission to perform this action. Contact your administrator.'",
+        "404": "Displays ProjectLlmError.message: 'Resource not found. The workflow may have been deleted.'",
+        "500": "Displays ProjectLlmError.message: 'Server error. Please try again later.'",
+        "503": "Displays ProjectLlmError.message: 'Backend service unavailable. Please try again later.'",
+        "network_error": "Displays ProjectLlmError.message: 'Unable to connect to server. Check your network connection.'",
+        "missing_workflow_id": "Shows amber banner: 'No Workflow Selected' (checked in code pattern)"
+      },
+      "retry_mechanism": "handleRerun() function refetches certification data (lines 71-90)",
+      "banner_business_logic": {
+        "location": "lines 427-430",
+        "code": "checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED') ? 'Ready for Placement' : checks.some(c => c.status === 'FAIL') ? 'Cannot Proceed' : 'In Progress'",
+        "evaluation": "CLIENT_SIDE",
+        "risk": "Banner shows 'Ready for Placement' when all gates PASS or SKIPPED, without checking backend approval flag",
+        "severity": "MEDIUM",
+        "status": "DOCUMENTED_NOT_FIXED"
+      }
+    },
+    "workflow_details_page_analysis": {
+      "verdict": "PASS",
+      "file": "apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/workflow-details/page.tsx",
+      "api_endpoints_called": [
+        "GET /api/project-llm/workflows/{id}"
+      ],
+      "loading_state": "Uses isLoading state (lines 40-56)",
+      "error_handling": {
+        "401": "Displays 'Session expired. Please log in again.'",
+        "403": "Displays 'You do not have permission to perform this action. Contact your administrator.'",
+        "404": "Displays 'Resource not found. The workflow may have been deleted.'",
+        "500": "Displays 'Server error. Please try again later.'",
+        "503": "Displays 'Backend service unavailable. Please try again later.'",
+        "network_error": "Displays 'Unable to connect to server. Check your network connection.'",
+        "missing_workflow_id": "Shows amber banner: 'No Workflow Selected' with message to append ?workflowId=xxx (line 242)"
+      },
+      "retry_mechanism": "handleRetry() function refetches workflow state (line 61)",
+      "data_source": "Most data is hardcoded demo data (timeline, agents) — only workflow metadata from backend"
+    },
+    "integration_certification_page_analysis": {
+      "verdict": "PASS",
+      "file": "apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/integration-certification/page.tsx",
+      "api_endpoints_called": [
+        "GET /api/project-llm/workflows/{id}/certification",
+        "GET /api/project-llm/workflows/{id}/runtime-health",
+        "GET /api/project-llm/workflows/{id}/browser-verification"
+      ],
+      "parallel_requests": "Uses Promise.all() to fetch all three endpoints in parallel (lines 47-51)",
+      "loading_state": "Uses isLoading state (lines 40-64)",
+      "error_handling": {
+        "401": "Displays 'Session expired. Please log in again.'",
+        "403": "Displays 'You do not have permission to perform this action. Contact your administrator.'",
+        "404": "Displays 'Resource not found. The workflow may have been deleted.'",
+        "500": "Displays 'Server error. Please try again later.'",
+        "503": "Displays 'Backend service unavailable. Please try again later.'",
+        "network_error": "Displays 'Unable to connect to server. Check your network connection.'",
+        "missing_workflow_id": "Shows amber banner: 'No Workflow Selected' (line 110)"
+      },
+      "retry_mechanism": "handleRetry() function refetches all three endpoints (line 70)",
+      "error_propagation": "If any of the three parallel requests fail, error state is set and all data is lost"
+    },
+    "api_client_analysis": {
+      "verdict": "PASS",
+      "file": "apps/skillhubcore-admin/src/lib/project-llm/api/projectLlmClient.ts",
+      "error_codes": [
+        "UNAUTHORIZED (401)",
+        "FORBIDDEN (403)",
+        "NOT_FOUND (404)",
+        "SERVER_ERROR (500)",
+        "SERVICE_UNAVAILABLE (503)",
+        "NETWORK_ERROR (fetch failure)",
+        "UNKNOWN_ERROR (other status codes)"
+      ],
+      "error_messages": {
+        "401": "Session expired. Please log in again.",
+        "403": "You do not have permission to perform this action. Contact your administrator.",
+        "404": "Resource not found. The workflow may have been deleted.",
+        "500": "Server error. Please try again later.",
+        "503": "Backend service unavailable. Please try again later.",
+        "network": "Unable to connect to server. Check your network connection."
+      },
+      "fetch_config": "Uses credentials: 'same-origin' to include cookies (lines 93, 131, etc.)",
+      "content_type": "Sets Content-Type: application/json for all requests"
+    }
+  },
+  "test_results": {
+    "auth_chain": {
+      "verdict": "BLOCKED",
+      "http_status": null,
+      "evidence": "Frontend service not running - connect ECONNREFUSED 127.0.0.1:3007"
+    },
+    "auth_chain_no_token": {
+      "verdict": "BLOCKED",
+      "http_status": null,
+      "evidence": "Frontend service not running - cannot test 401 response"
+    },
+    "auth_chain_malformed_token": {
+      "verdict": "BLOCKED",
+      "http_status": null,
+      "evidence": "Frontend service not running - cannot test token validation"
+    },
+    "candidate_upload_happy_path": {
+      "verdict": "BLOCKED",
+      "http_status": null,
+      "evidence": "Frontend service not running - cannot test page load and API call"
+    },
+    "candidate_upload_no_workflow_id": {
+      "verdict": "NOT_TESTED",
+      "evidence": "Static analysis confirms amber banner with 'No Workflow Selected' message (code verified), but not tested in browser"
+    },
+    "candidate_upload_invalid_workflow_id": {
+      "verdict": "BLOCKED",
+      "http_status": null,
+      "evidence": "Frontend service not running - cannot test 404 error handling"
+    },
+    "candidate_upload_unauthorized": {
+      "verdict": "BLOCKED",
+      "http_status": null,
+      "evidence": "Frontend service not running - cannot test 401 error handling"
+    },
+    "workflow_details_happy_path": {
+      "verdict": "BLOCKED",
+      "evidence": "Frontend service not running - cannot test page load"
+    },
+    "workflow_details_error_handling": {
+      "verdict": "BLOCKED",
+      "evidence": "Frontend service not running - cannot test error scenarios"
+    },
+    "integration_certification_happy_path": {
+      "verdict": "BLOCKED",
+      "evidence": "Frontend service not running - cannot test parallel API calls"
+    },
+    "integration_certification_parallel_requests": {
+      "verdict": "BLOCKED",
+      "evidence": "Frontend service not running - cannot verify Promise.all() execution"
+    },
+    "typescript_compilation": {
+      "verdict": "PASS",
+      "evidence": "tsc --noEmit completed successfully with exit code 0"
+    }
+  },
+  "unresolved_risks": [
+    {
+      "component": "candidate-upload",
+      "issue": "Banner infers approval from client-side gate evaluation, not backend approval flag",
+      "code_location": "apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/candidate-upload/page.tsx:427-430",
+      "code_snippet": "checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED') ? 'Ready for Placement' : checks.some(c => c.status === 'FAIL') ? 'Cannot Proceed' : 'In Progress'",
+      "severity": "medium",
+      "status": "documented_not_fixed",
+      "context": "This was flagged in Package C review but NOT fixed. Banner shows 'Ready for Placement' when all checks pass, regardless of actual backend workflow approval status."
+    },
+    {
+      "component": "auth-adapter",
+      "issue": "Token compatibility between admin JWT and FastAPI not verified",
+      "code_location": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts:22-24",
+      "code_snippet": "Token compatibility: Admin tokens signed with ADMIN_JWT_SECRET may or may not be accepted by FastAPI's JWT validation; this has not been tested end-to-end.",
+      "severity": "high",
+      "status": "cannot_verify_services_down",
+      "context": "Package A and B documentation states this is an unverified assumption. Cannot test until both services are running."
+    },
+    {
+      "component": "auth-adapter",
+      "issue": "No timeout configuration on backend fetch requests",
+      "code_location": "apps/skillhubcore-admin/src/app/api/project-llm/[...path]/route.ts:65-80",
+      "severity": "low",
+      "status": "documented_not_fixed",
+      "context": "Fetch requests to FastAPI have no explicit timeout. Long-running requests could hang indefinitely."
+    },
+    {
+      "component": "integration-certification",
+      "issue": "Parallel request failure loses all data",
+      "code_location": "apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/integration-certification/page.tsx:47-51",
+      "severity": "low",
+      "status": "documented_not_fixed",
+      "context": "If one of three parallel requests fails, error state is set and all successful responses are discarded. Should allow partial data display."
+    }
+  ],
+  "not_tested": [
+    "All browser-based tests - frontend not running",
+    "All authentication chain tests - services not running",
+    "All HTTP status code verifications - cannot make real requests",
+    "All error message UI display - cannot render pages",
+    "Retry button functionality - cannot interact with UI",
+    "403 Forbidden scenario - no non-admin user available even if services were running"
+  ],
+  "blocked_reasons": [
+    "FastAPI backend not running on http://localhost:8000 - connection timeout",
+    "Next.js frontend not running on http://skillhubcore.localhost:3007 - connection refused",
+    "Database not queried - avoiding read operations on production data without authorization"
+  ],
+  "pass_criteria_met": {
+    "typescript_compilation": true,
+    "static_code_analysis": true,
+    "auth_adapter_inspection": true,
+    "error_handling_code_review": true,
+    "banner_logic_documented": true,
+    "services_running": false,
+    "auth_chain_verified": false,
+    "page_load_tested": false,
+    "error_scenarios_tested": false
+  },
+  "overall_verdict": "BLOCKED",
+  "verdict_reason": "Both frontend and backend services are not running. Static analysis completed successfully with TypeScript compilation passing and all code patterns verified. Live authentication testing cannot proceed until services are started.",
+  "next_steps": [
+    "Start FastAPI backend: cd services/project-ai && python -m uvicorn app.main:app --reload --port 8000",
+    "Start Next.js frontend: cd apps/skillhubcore-admin && pnpm dev",
+    "Query database for test workflow IDs",
+    "Re-run authentication chain test script: node .agents/scripts/test-auth-chain.mjs",
+    "Execute manual browser tests per test plan",
+    "Optionally create Playwright automation for repeatable testing"
+  ]
+}
