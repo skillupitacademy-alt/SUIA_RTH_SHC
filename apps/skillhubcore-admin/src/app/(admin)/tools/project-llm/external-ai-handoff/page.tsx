@@ -349,7 +349,7 @@ ${JSON.stringify(engineeringContract, null, 2)}
                     {tabs.find((t) => t.key === activeTab)?.label} Specification Contract
                   </h4>
                   <div className="p-4 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 font-mono space-y-2 leading-relaxed">
-                    <p className="text-emerald-700 font-bold">// Automated Enforcement Rule</p>
+                    <p className="text-emerald-700 font-bold">{`// Automated Enforcement Rule`}</p>
                     <p>Enforced by Project AI placement engine during candidate inspection.</p>
                     <p>Refer to system compliance guidelines for mandatory schema definition.</p>
                   </div>

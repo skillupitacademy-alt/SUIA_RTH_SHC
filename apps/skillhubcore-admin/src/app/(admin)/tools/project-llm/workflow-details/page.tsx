@@ -349,8 +349,8 @@ export default function WorkflowDetailsPage() {
                 Repository Tree Snapshot Comparison
               </h3>
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-900 text-slate-200 font-mono text-xs overflow-x-auto">
-                <div className="text-slate-400">// Repository Tree Snapshot delta</div>
-                <div className="text-slate-400">Base SHA: 8f4a21e4901b  --&gt;  Certified SHA: c9b1037fe82a</div>
+                <div className="text-slate-400">{`// Repository Tree Snapshot delta`}</div>
+                <div className="text-slate-400">Base SHA: 8f4a21e4901b  {`-->`}  Certified SHA: c9b1037fe82a</div>
                 <div className="mt-2 text-emerald-400">+ apps/skillhubcore/src/components/blocks/introduction/IntroductionI7.tsx</div>
                 <div className="text-emerald-400">+ apps/skillhubcore/src/components/blocks/introduction/types/i7.ts</div>
                 <div className="text-emerald-400">+ apps/skillhubcore/src/components/blocks/introduction/__tests__/IntroductionI7.test.tsx</div>

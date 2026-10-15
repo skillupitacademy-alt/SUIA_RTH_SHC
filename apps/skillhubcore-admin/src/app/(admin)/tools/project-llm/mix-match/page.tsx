@@ -200,7 +200,10 @@ export default function MixAndMatchBuilderPage() {
                 return (
                   <div
                     key={pat.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleToggleComponent(pat.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleComponent(pat.id); } }}
                     className={`rounded-xl border p-3.5 cursor-pointer transition-all flex items-start justify-between gap-3 ${
                       isSelected
                         ? 'border-pink-500 bg-pink-50/30 shadow-sm'

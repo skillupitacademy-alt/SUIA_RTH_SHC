@@ -468,7 +468,10 @@ export default function CreateBlockPage() {
               return (
                 <div
                   key={ver.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setSelectedExistingVersion(ver.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedExistingVersion(ver.id); } }}
                   className={`rounded-xl border p-3 flex items-center justify-between gap-3 cursor-pointer transition-all ${
                     isChosen
                       ? 'border-pink-500 bg-pink-50/30 shadow-sm ring-1 ring-pink-500/20'
@@ -528,10 +531,10 @@ export default function CreateBlockPage() {
             {/* Selected Family & Version Number Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1">
+                <label htmlFor="selected-family-display" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1">
                   Selected Block Family
                 </label>
-                <div className="flex items-center gap-2 p-2.5 rounded-xl border border-pink-200 bg-pink-50/40 text-xs font-bold text-pink-700 font-outfit">
+                <div id="selected-family-display" className="flex items-center gap-2 p-2.5 rounded-xl border border-pink-200 bg-pink-50/40 text-xs font-bold text-pink-700 font-outfit">
                   <selectedFamily.icon size={15} className="text-[#e11d48]" />
                   <span>{selectedFamily.name}</span>
                 </div>
@@ -539,12 +542,13 @@ export default function CreateBlockPage() {
 
               <div>
                 <div className="flex items-center gap-1 mb-1">
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">
+                  <label htmlFor="target-version-input" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider font-mono">
                     Target Version Number *
                   </label>
                   <Info size={12} className="text-slate-400 cursor-pointer" />
                 </div>
                 <input
+                  id="target-version-input"
                   type="text"
                   value={targetVer}
                   onChange={(e) => setTargetVer(e.target.value)}
@@ -559,7 +563,7 @@ export default function CreateBlockPage() {
             {/* Purpose Textarea */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-[11px] font-bold text-slate-700 font-outfit">
+                <label htmlFor="purpose-textarea" className="block text-[11px] font-bold text-slate-700 font-outfit">
                   What is the purpose of this version? *
                 </label>
                 <span className="text-[10px] text-slate-400 font-mono">
@@ -567,6 +571,7 @@ export default function CreateBlockPage() {
                 </span>
               </div>
               <textarea
+                id="purpose-textarea"
                 rows={4}
                 maxLength={500}
                 placeholder="Describe what this new version will do, its unique value, and how it differs from existing versions..."

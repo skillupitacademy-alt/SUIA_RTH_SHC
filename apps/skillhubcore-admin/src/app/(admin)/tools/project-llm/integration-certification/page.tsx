@@ -382,7 +382,7 @@ export default function IntegrationCertificationPage() {
               </div>
 
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-900 text-slate-200 font-mono text-xs">
-                <div className="text-slate-400 text-[11px] mb-2">// Runtime Container Verification Log</div>
+                <div className="text-slate-400 text-[11px] mb-2">{`// Runtime Container Verification Log`}</div>
                 <div className="text-emerald-400">[2026-10-07 09:28:12] GET /tutorial-runtime/test-block/{state.targetVersion} 200 OK - 24ms</div>
                 <div className="text-emerald-400">[2026-10-07 09:28:12] Rendering component &lt;{state.familyName}{state.targetVersion} /&gt; ... SUCCESS</div>
                 <div className="text-emerald-400">[2026-10-07 09:28:13] Playwright visual comparison snapshot matched baseline (0% diff)</div>

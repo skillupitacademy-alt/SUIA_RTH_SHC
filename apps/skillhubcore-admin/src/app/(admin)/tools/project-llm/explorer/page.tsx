@@ -199,7 +199,10 @@ export default function FamilyVersionExplorerPage() {
               return (
                 <div
                   key={v}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setSelectedVersionId(v)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedVersionId(v); } }}
                   className={`rounded-xl border p-4 cursor-pointer transition-all ${
                     isSelected
                       ? 'border-pink-500/80 bg-white shadow-lg ring-2 ring-pink-500/15 -translate-y-0.5'
