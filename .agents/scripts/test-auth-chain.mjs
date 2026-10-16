@@ -43,7 +43,7 @@ function makeRequest(options, postData = null) {
       reject(new Error('Request timeout'));
     });
 
-    req.setTimeout(5000);
+    req.setTimeout(20000); // 20 second timeout (Next.js compilation + FastAPI can be slow on first request)
 
     if (postData) {
       req.write(postData);
@@ -125,13 +125,13 @@ async function testLogin() {
  */
 async function testAuthenticatedRequest(cookieValue) {
   console.log('\n=== TEST 3: Authenticated API Request ===');
-  console.log(`GET /api/project-llm/workflows/${TEST_WORKFLOW_ID}/certification`);
+  console.log(`GET /api/project-llm/workflows`);
   
   try {
     const response = await makeRequest({
       hostname: FRONTEND_HOST,
       port: FRONTEND_PORT,
-      path: `/api/project-llm/workflows/${TEST_WORKFLOW_ID}/certification`,
+      path: `/api/project-llm/workflows`,
       method: 'GET',
       headers: {
         'Cookie': cookieValue,
@@ -144,9 +144,6 @@ async function testAuthenticatedRequest(cookieValue) {
 
     if (response.statusCode === 200) {
       console.log(`✅ PASS: Authenticated request succeeded`);
-      return 'PASS';
-    } else if (response.statusCode === 404) {
-      console.log(`✅ PASS: Backend returned 404 (workflow not found, but auth worked)`);
       return 'PASS';
     } else if (response.statusCode === 401) {
       console.log(`❌ FAIL: Backend returned 401 (auth chain broken)`);
@@ -174,7 +171,7 @@ async function testUnauthenticatedRequest() {
     const response = await makeRequest({
       hostname: FRONTEND_HOST,
       port: FRONTEND_PORT,
-      path: `/api/project-llm/workflows/${TEST_WORKFLOW_ID}/certification`,
+      path: `/api/project-llm/workflows`,
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -198,16 +195,17 @@ async function testUnauthenticatedRequest() {
 }
 
 /**
- * Test 5: Malformed token
+ * Test 5: Malformed token (uses existing /workflows endpoint)
  */
 async function testMalformedToken() {
   console.log('\n=== TEST 5: Malformed Token ===');
+  console.log('Testing with existing /workflows endpoint');
   
   try {
     const response = await makeRequest({
       hostname: FRONTEND_HOST,
       port: FRONTEND_PORT,
-      path: `/api/project-llm/workflows/${TEST_WORKFLOW_ID}/certification`,
+      path: `/api/project-llm/workflows`,
       method: 'GET',
       headers: {
         'Cookie': 'accessToken=invalid.malformed.token',

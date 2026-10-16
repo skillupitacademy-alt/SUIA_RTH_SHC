@@ -1,0 +1,38 @@
+{
+  "package": "C",
+  "commitSha": "6c4b8e72b7aaeae9b4aa792946a5eb96411ed8ce",
+  "commitShort": "6c4b8e72",
+  "filesModified": [
+    "apps/skillhubcore-admin/src/lib/project-llm/api/projectLlmClient.ts",
+    "apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/candidate-upload/page.tsx",
+    "apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/workflow-details/page.tsx",
+    "apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/integration-certification/page.tsx"
+  ],
+  "endpointsWired": [
+    "/api/project-llm/workflows/{id}/certification",
+    "/api/project-llm/workflows/{id}",
+    "/api/project-llm/workflows/{id}/runtime-health",
+    "/api/project-llm/workflows/{id}/browser-verification"
+  ],
+  "componentsUpdated": [
+    "candidate-upload/page.tsx",
+    "workflow-details/page.tsx",
+    "integration-certification/page.tsx"
+  ],
+  "componentsMissingFutureWork": [
+    "WorkflowPanel.tsx",
+    "AgentConfig.tsx",
+    "WorkflowHistory.tsx"
+  ],
+  "errorHandling": [
+    "401",
+    "403",
+    "404",
+    "500",
+    "503",
+    "network"
+  ],
+  "typescriptClean": true,
+  "verdict": "APPROVED",
+  "reviewDoc": "e:\\onlinewebsites\\quiz-platform\\.agents\\tasks\\package-c-review.md"
+}

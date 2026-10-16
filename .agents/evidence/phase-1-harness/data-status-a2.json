@@ -1,0 +1,393 @@
+{
+  "db_name": "tutorial_prod",
+  "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+  "pg_version": "PostgreSQL 17.11 (59c914d) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+  "total_table_count": 55,
+  "tables": [
+    {
+      "schema": "drizzle",
+      "name": "__drizzle_migrations",
+      "approx_row_count": 22
+    },
+    {
+      "schema": "public",
+      "name": "ai_generation_metrics",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "ai_generation_orchestration",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "assignment_help_requests",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "assignment_progress",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "badges",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "block_learning_state",
+      "approx_row_count": 18
+    },
+    {
+      "schema": "public",
+      "name": "block_telemetry_events",
+      "approx_row_count": 688
+    },
+    {
+      "schema": "public",
+      "name": "brand_performance_metrics",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "certificates",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "content_generation_jobs",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "content_review_queue",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "deployment_cohort_metrics",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "domain_content_config",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "domains",
+      "approx_row_count": 8
+    },
+    {
+      "schema": "public",
+      "name": "educational_architecture_performance",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "educational_architectures",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "layman_audit_logs",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "layman_content_revisions",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "layman_prompt_history",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "live_session_requests",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "project_ai_approvals",
+      "approx_row_count": 96
+    },
+    {
+      "schema": "public",
+      "name": "project_ai_candidates",
+      "approx_row_count": 180
+    },
+    {
+      "schema": "public",
+      "name": "project_ai_contracts",
+      "approx_row_count": 174
+    },
+    {
+      "schema": "public",
+      "name": "project_ai_manifests",
+      "approx_row_count": 43
+    },
+    {
+      "schema": "public",
+      "name": "project_ai_state_transitions",
+      "approx_row_count": 398
+    },
+    {
+      "schema": "public",
+      "name": "project_ai_workflows",
+      "approx_row_count": 822
+    },
+    {
+      "schema": "public",
+      "name": "prompt_template_performance",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "prompt_templates",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "remediation_triggers",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "revenue_attribution_metrics",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "skills",
+      "approx_row_count": 15
+    },
+    {
+      "schema": "public",
+      "name": "student_badges",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "student_streaks",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "subjects",
+      "approx_row_count": 14
+    },
+    {
+      "schema": "public",
+      "name": "subtopic_flow_progress",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "subtopics",
+      "approx_row_count": 7
+    },
+    {
+      "schema": "public",
+      "name": "topic_skills",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "topics",
+      "approx_row_count": 10
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_assignments",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_content_audit",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_content_versions",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_domains",
+      "approx_row_count": 1
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_navigation_progress",
+      "approx_row_count": 5
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_page_content_v2",
+      "approx_row_count": 2
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_progress",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_project_submissions",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_projects",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_sections",
+      "approx_row_count": 1
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_sidebar_trees_v2",
+      "approx_row_count": 2
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_subjects",
+      "approx_row_count": 1
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_subtopics",
+      "approx_row_count": 2
+    },
+    {
+      "schema": "public",
+      "name": "tutorial_topics",
+      "approx_row_count": 2
+    },
+    {
+      "schema": "public",
+      "name": "ui_architecture_performance",
+      "approx_row_count": 0
+    },
+    {
+      "schema": "public",
+      "name": "ui_architectures",
+      "approx_row_count": 0
+    }
+  ],
+  "project_ai_tables": [
+    {
+      "table_name": "project_ai_workflows",
+      "exists_in_db": true,
+      "row_count": 822
+    },
+    {
+      "table_name": "project_ai_state_transitions",
+      "exists_in_db": true,
+      "row_count": 398
+    },
+    {
+      "table_name": "project_ai_contracts",
+      "exists_in_db": true,
+      "row_count": 174
+    },
+    {
+      "table_name": "project_ai_candidates",
+      "exists_in_db": true,
+      "row_count": 180
+    },
+    {
+      "table_name": "project_ai_manifests",
+      "exists_in_db": true,
+      "row_count": 43
+    },
+    {
+      "table_name": "project_ai_approvals",
+      "exists_in_db": true,
+      "row_count": 96
+    }
+  ],
+  "tutorial_content_tables": [
+    {
+      "table": "content_generation_jobs",
+      "rows": 0
+    },
+    {
+      "table": "content_review_queue",
+      "rows": 0
+    },
+    {
+      "table": "domain_content_config",
+      "rows": 0
+    },
+    {
+      "table": "layman_content_revisions",
+      "rows": 0
+    },
+    {
+      "table": "tutorial_assignments",
+      "rows": 0
+    },
+    {
+      "table": "tutorial_content_audit",
+      "rows": 0
+    },
+    {
+      "table": "tutorial_content_versions",
+      "rows": 0
+    },
+    {
+      "table": "tutorial_domains",
+      "rows": 1
+    },
+    {
+      "table": "tutorial_navigation_progress",
+      "rows": 5
+    },
+    {
+      "table": "tutorial_page_content_v2",
+      "rows": 2
+    },
+    {
+      "table": "tutorial_progress",
+      "rows": 0
+    },
+    {
+      "table": "tutorial_project_submissions",
+      "rows": 0
+    },
+    {
+      "table": "tutorial_projects",
+      "rows": 0
+    },
+    {
+      "table": "tutorial_sections",
+      "rows": 1
+    },
+    {
+      "table": "tutorial_sidebar_trees_v2",
+      "rows": 2
+    },
+    {
+      "table": "tutorial_subjects",
+      "rows": 1
+    },
+    {
+      "table": "tutorial_subtopics",
+      "rows": 2
+    },
+    {
+      "table": "tutorial_topics",
+      "rows": 2
+    }
+  ],
+  "shared_database_risk": "high",
+  "shared_database_risk_explanation": "Database contains both tutorial content tables (18) and Project AI tables. Testing against this database risks corrupting tutorial content data.",
+  "data_appears_to_be": "mixed",
+  "data_reasoning": "Project AI tables contain 1713 rows. Could be test data or early production."
+}

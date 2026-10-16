@@ -1,0 +1,229 @@
+{
+  "fixtures": [
+    {
+      "name": "test_db_engine",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates an in-memory SQLite database engine for unit tests. Creates all tables via Base.metadata.create_all."
+    },
+    {
+      "name": "test_db_session",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates an async database session with transaction rollback for unit tests. Uses SQLite in-memory."
+    },
+    {
+      "name": "db_session",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Alias for test_db_session for backward compatibility. Used by unit tests and overridden in integration tests."
+    },
+    {
+      "name": "mock_db_session",
+      "scope": "function",
+      "db_writes": false,
+      "db_reads": false,
+      "description": "Creates a mock database session (AsyncMock) for tests that don't need real DB interaction."
+    },
+    {
+      "name": "test_workflow_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates a PostgresWorkflowRepository with test_db_session (SQLite for unit tests)."
+    },
+    {
+      "name": "test_contract_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates a PostgresContractRepository with test_db_session (SQLite for unit tests)."
+    },
+    {
+      "name": "test_candidate_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates a PostgresCandidateRepository with test_db_session (SQLite for unit tests)."
+    },
+    {
+      "name": "test_manifest_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates a PostgresManifestRepository with test_db_session (SQLite for unit tests)."
+    },
+    {
+      "name": "test_approval_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates a PostgresApprovalRepository with test_db_session (SQLite for unit tests)."
+    },
+    {
+      "name": "test_state_transition_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates a PostgresStateTransitionRepository with test_db_session (SQLite for unit tests)."
+    },
+    {
+      "name": "test_governance_service",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates a WorkflowGovernanceService with test repositories and session."
+    },
+    {
+      "name": "workflow_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Alias for test_workflow_repo for backward compatibility."
+    },
+    {
+      "name": "approval_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Alias for test_approval_repo for backward compatibility."
+    },
+    {
+      "name": "candidate_repo",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Alias for test_candidate_repo for backward compatibility."
+    },
+    {
+      "name": "mock_jwt_config",
+      "scope": "function",
+      "db_writes": false,
+      "db_reads": false,
+      "description": "Automatically mocks JWT configuration for all tests (autouse=True). Provides test secrets without requiring environment variables."
+    },
+    {
+      "name": "mock_database_dependencies",
+      "scope": "function",
+      "db_writes": false,
+      "db_reads": false,
+      "description": "Automatically mocks database dependencies for all NON-integration tests (autouse=True). Skips mocking for tests marked with @pytest.mark.integration."
+    },
+    {
+      "name": "integration_db_engine",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates PostgreSQL database engine for integration tests using DATABASE_URL_TUTORIAL. Verifies connectivity and schema existence. Skips if DATABASE_URL_TUTORIAL not configured."
+    },
+    {
+      "name": "db_session (integration override)",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Integration-specific override of db_session fixture. Creates async session against PostgreSQL. Uncommitted changes are rolled back at teardown."
+    },
+    {
+      "name": "db_session_factory",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Provides a session factory for tests that simulate application restarts. Wraps operations in an outer transaction that rolls back at test completion."
+    },
+    {
+      "name": "workflow_repo (integration)",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates PostgresWorkflowRepository with PostgreSQL session for integration tests."
+    },
+    {
+      "name": "contract_repo (integration)",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates PostgresContractRepository with PostgreSQL session for integration tests."
+    },
+    {
+      "name": "candidate_repo (integration)",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates PostgresCandidateRepository with PostgreSQL session for integration tests."
+    },
+    {
+      "name": "manifest_repo (integration)",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates PostgresManifestRepository with PostgreSQL session for integration tests."
+    },
+    {
+      "name": "approval_repo (integration)",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates PostgresApprovalRepository with PostgreSQL session for integration tests."
+    },
+    {
+      "name": "state_transition_repo (integration)",
+      "scope": "function",
+      "db_writes": true,
+      "db_reads": true,
+      "description": "Creates PostgresStateTransitionRepository with PostgreSQL session for integration tests."
+    }
+  ],
+  "markers": [
+    {
+      "name": "integration",
+      "purpose": "Marks tests as integration tests requiring PostgreSQL database via DATABASE_URL_TUTORIAL"
+    },
+    {
+      "name": "asyncio",
+      "purpose": "Marks tests as async tests (pytest-asyncio)"
+    }
+  ],
+  "sqlite_usage": {
+    "present": true,
+    "locations": [
+      "tests/conftest.py:40 - engine = create_async_engine(\"sqlite+aiosqlite:///:memory:\", ...)",
+      "tests/conftest.py:41 - connect_args={\"check_same_thread\": False}"
+    ]
+  },
+  "postgres_fixtures": {
+    "present": true,
+    "locations": [
+      "tests/integration/conftest.py:34 - return os.environ.get(\"DATABASE_URL_TUTORIAL\")",
+      "tests/integration/conftest.py:69 - db_url = db_url.replace(\"postgresql://\", \"postgresql+asyncpg://\", 1)",
+      "tests/integration/conftest.py:78 - engine = create_async_engine(db_url, ..., connect_args={\"ssl\": \"require\"})"
+    ]
+  },
+  "env_vars_referenced": [
+    "DATABASE_URL_TUTORIAL"
+  ],
+  "pytest_config": {
+    "source": "pyproject.toml [tool.pytest.ini_options]",
+    "asyncio_mode": "auto",
+    "asyncio_default_fixture_loop_scope": "function",
+    "markers": [
+      "integration: marks tests as integration tests requiring PostgreSQL"
+    ],
+    "notes": "Windows compatibility: psycopg requires SelectorEventLoop, not ProactorEventLoop (handled in conftest.py)"
+  },
+  "integration_test_count": 103,
+  "unit_test_count": 1431,
+  "notes": [
+    "Unit tests use SQLite in-memory via test_db_session fixture",
+    "Integration tests use PostgreSQL via DATABASE_URL_TUTORIAL environment variable",
+    "mock_database_dependencies fixture automatically mocks DB for non-integration tests (autouse=True)",
+    "Integration tests skip automatically if DATABASE_URL_TUTORIAL not configured (via pytest_collection_modifyitems hook)",
+    "Integration tests verify that project_ai_workflows table exists before running",
+    "db_session fixture is aliased to test_db_session in main conftest.py and overridden in integration/conftest.py",
+    "Total test functions found: 1534 (103 integration, 1431 unit/other)",
+    "Integration tests support transaction rollback at function scope",
+    "db_session_factory fixture enables application restart simulation tests"
+  ]
+}

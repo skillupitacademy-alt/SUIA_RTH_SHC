@@ -1,0 +1,586 @@
+PROJECT AI DATABASE INSPECTION - RAW QUERY OUTPUT
+================================================================================
+
+Inspection Timestamp: 2026-10-15T13:00:02.317251
+
+CONNECTION INFO (credentials redacted):
+{
+  "protocol": "postgresql",
+  "host": "ep-solitary-hill-a1m0s7zl-pooler.ap-southeast-1.aws.neon.tech",
+  "port": null,
+  "database": "tutorial_prod",
+  "user": "neondb_owner",
+  "password": "[REDACTED]",
+  "params": "sslmode=require&channel_binding=require"
+}
+
+QUERY RESULTS:
+{
+  "database_identity": {
+    "db_name": "tutorial_prod",
+    "pg_version": "PostgreSQL 17.11 (59c914d) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+    "db_user": "neondb_owner",
+    "server_addr": "127.0.0.1",
+    "server_port": 5432
+  },
+  "all_tables": [
+    {
+      "table_schema": "drizzle",
+      "table_name": "__drizzle_migrations",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "ai_generation_metrics",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "ai_generation_orchestration",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "assignment_help_requests",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "assignment_progress",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "badges",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "block_learning_state",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "block_telemetry_events",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "brand_performance_metrics",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "certificates",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "content_generation_jobs",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "content_review_queue",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "deployment_cohort_metrics",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "domain_content_config",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "domains",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "educational_architecture_performance",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "educational_architectures",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "layman_audit_logs",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "layman_content_revisions",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "layman_prompt_history",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "live_session_requests",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "project_ai_approvals",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "project_ai_candidates",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "project_ai_contracts",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "project_ai_manifests",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "project_ai_state_transitions",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "project_ai_workflows",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "prompt_template_performance",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "prompt_templates",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "remediation_triggers",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "revenue_attribution_metrics",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "skills",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "student_badges",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "student_streaks",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "subjects",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "subtopic_flow_progress",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "subtopics",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "topic_skills",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "topics",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_assignments",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_content_audit",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_content_versions",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_domains",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_navigation_progress",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_page_content_v2",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_progress",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_project_submissions",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_projects",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_sections",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_sidebar_trees_v2",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_subjects",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_subtopics",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tutorial_topics",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "ui_architecture_performance",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "ui_architectures",
+      "table_type": "BASE TABLE"
+    }
+  ],
+  "row_counts": [
+    {
+      "schemaname": "drizzle",
+      "table_name": "__drizzle_migrations",
+      "approx_row_count": 22
+    },
+    {
+      "schemaname": "public",
+      "table_name": "ai_generation_metrics",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "ai_generation_orchestration",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "assignment_help_requests",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "assignment_progress",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "badges",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "block_learning_state",
+      "approx_row_count": 18
+    },
+    {
+      "schemaname": "public",
+      "table_name": "block_telemetry_events",
+      "approx_row_count": 688
+    },
+    {
+      "schemaname": "public",
+      "table_name": "brand_performance_metrics",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "certificates",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "content_generation_jobs",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "content_review_queue",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "deployment_cohort_metrics",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "domain_content_config",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "domains",
+      "approx_row_count": 8
+    },
+    {
+      "schemaname": "public",
+      "table_name": "educational_architecture_performance",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "educational_architectures",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "layman_audit_logs",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "layman_content_revisions",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "layman_prompt_history",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "live_session_requests",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "project_ai_approvals",
+      "approx_row_count": 96
+    },
+    {
+      "schemaname": "public",
+      "table_name": "project_ai_candidates",
+      "approx_row_count": 180
+    },
+    {
+      "schemaname": "public",
+      "table_name": "project_ai_contracts",
+      "approx_row_count": 174
+    },
+    {
+      "schemaname": "public",
+      "table_name": "project_ai_manifests",
+      "approx_row_count": 43
+    },
+    {
+      "schemaname": "public",
+      "table_name": "project_ai_state_transitions",
+      "approx_row_count": 398
+    },
+    {
+      "schemaname": "public",
+      "table_name": "project_ai_workflows",
+      "approx_row_count": 822
+    },
+    {
+      "schemaname": "public",
+      "table_name": "prompt_template_performance",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "prompt_templates",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "remediation_triggers",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "revenue_attribution_metrics",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "skills",
+      "approx_row_count": 15
+    },
+    {
+      "schemaname": "public",
+      "table_name": "student_badges",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "student_streaks",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "subjects",
+      "approx_row_count": 14
+    },
+    {
+      "schemaname": "public",
+      "table_name": "subtopic_flow_progress",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "subtopics",
+      "approx_row_count": 7
+    },
+    {
+      "schemaname": "public",
+      "table_name": "topic_skills",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "topics",
+      "approx_row_count": 10
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_assignments",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_content_audit",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_content_versions",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_domains",
+      "approx_row_count": 1
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_navigation_progress",
+      "approx_row_count": 5
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_page_content_v2",
+      "approx_row_count": 2
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_progress",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_project_submissions",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_projects",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_sections",
+      "approx_row_count": 1
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_sidebar_trees_v2",
+      "approx_row_count": 2
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_subjects",
+      "approx_row_count": 1
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_subtopics",
+      "approx_row_count": 2
+    },
+    {
+      "schemaname": "public",
+      "table_name": "tutorial_topics",
+      "approx_row_count": 2
+    },
+    {
+      "schemaname": "public",
+      "table_name": "ui_architecture_performance",
+      "approx_row_count": 0
+    },
+    {
+      "schemaname": "public",
+      "table_name": "ui_architectures",
+      "approx_row_count": 0
+    }
+  ],
+  "extensions": [
+    {
+      "extname": "plpgsql",
+      "extversion": "1.0"
+    }
+  ]
+}

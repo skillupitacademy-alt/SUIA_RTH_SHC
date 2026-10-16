@@ -117,9 +117,11 @@ def decode_access_token(token: str) -> dict:
             detail="Invalid token issuer"
         )
     
-    # Validate audience claim exists and equals "user", "admin", or "shc-admin"
+    # Validate audience claim equals "shc-admin"
+    # Project AI is only accessed from skillhubcore-admin, which generates
+    # tokens with aud="shc-admin" (see apps/api-server/src/modules/auth/shc-auth.service.ts:113)
     audience = payload.get("aud")
-    if audience not in ["user", "admin", "shc-admin"]:
+    if audience != "shc-admin":
         raise HTTPException(
             status_code=401,
             detail="Invalid token audience"
