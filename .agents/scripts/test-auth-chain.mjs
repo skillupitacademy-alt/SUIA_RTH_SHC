@@ -17,8 +17,8 @@ const FRONTEND_PORT = 3007;
 const TEST_WORKFLOW_ID = 'test-workflow-123';
 
 // Test credentials (should be from .env.local or test user)
-const ADMIN_EMAIL = 'admin@skillhubcore.com';
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_EMAIL = 'admin@skillhubcore.in';
+const ADMIN_PASSWORD = 'testing';
 
 /**
  * Make HTTP request and return response

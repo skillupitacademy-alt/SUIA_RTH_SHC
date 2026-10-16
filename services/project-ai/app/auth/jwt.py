@@ -117,9 +117,9 @@ def decode_access_token(token: str) -> dict:
             detail="Invalid token issuer"
         )
     
-    # Validate audience claim exists and equals "user" or "admin"
+    # Validate audience claim exists and equals "user", "admin", or "shc-admin"
     audience = payload.get("aud")
-    if audience not in ["user", "admin"]:
+    if audience not in ["user", "admin", "shc-admin"]:
         raise HTTPException(
             status_code=401,
             detail="Invalid token audience"
