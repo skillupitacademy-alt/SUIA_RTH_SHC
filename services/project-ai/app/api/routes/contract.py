@@ -336,40 +336,17 @@ async def create_engineering_contract(
         ]
     }
     
-    family_type_schemas = {
-        "objective": {
-            "title": "string (optional heading)",
-            "objectives": "Array<{ id: string, text: string, bloomLevel?: 'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create', completed?: boolean }>",
-            "displayMode": "'bullet' | 'checklist' | 'numbered' (optional)"
-        },
-        "introduction": {
-            "title": "string",
-            "subtitle": "string (optional)",
-            "leadParagraph": "string",
-            "keyPoints": "string[] (optional)"
-        },
-        "code": {
-            "code": "string",
-            "language": "string",
-            "fileName": "string (optional)",
-            "highlights": "number[] (optional)"
-        },
-        "definition": {
-            "term": "string",
-            "pronunciation": "string (optional)",
-            "definition": "string",
-            "examples": "string[] (optional)"
-        }
-    }
+    family_type_schemas = FAMILY_PAYLOAD_SCHEMAS
     
     learning_objectives = family_objectives.get(
         target.block_type,
         [f"Present educational content for {target.family} {target.version}"]
     )
     
+    target_payload_schema = family_type_schemas.get(target.block_type, {})
     combined_type_contract = {
         **repo_contract.type_strictness,
-        "payload_schema": family_type_schemas.get(target.block_type, {})
+        "payload_schema": target_payload_schema
     }
     
     # Generate contract ID
@@ -453,12 +430,21 @@ async def create_engineering_contract(
         # so these templates provide copyable code skeletons.
         inline_code_templates=build_inline_code_templates(
             family=target.family,
-            version=target.version
+            version=target.version,
+            payload_schema=target_payload_schema
         ),
         
         # Hash will be calculated and set below
         contract_hash=""
     )
+    
+    # Generic validation rule: verify template and schema consistency before sealing
+    is_valid, validation_errors = validate_contract_template_schema_consistency(contract)
+    if not is_valid:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Contract template-schema consistency validation failed: {'; '.join(validation_errors)}"
+        )
     
     # Calculate and set immutable hash
     contract.contract_hash = seal_contract(contract)
@@ -553,4 +539,5 @@ async def get_engineering_contract(
     # Contract hash verification is automatic in repository.get_by_workflow()
     # If we reach here, hash verification passed
     
-    # Return contract f
+    # Return contract from stored data
+    return EngineeringContract(**contract_model.contract_data)

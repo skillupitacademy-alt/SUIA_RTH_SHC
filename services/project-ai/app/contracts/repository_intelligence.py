@@ -15,7 +15,7 @@ CONTRACT:
 """
 
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple, Union
 from datetime import datetime, timezone
 import hashlib
 import re

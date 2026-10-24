@@ -22,6 +22,8 @@ from app.contracts.repository_intelligence import (
     extract_test_patterns,
     extract_test_patterns_detailed,
     build_inline_code_templates,
+    validate_contract_template_schema_consistency,
+    FAMILY_PAYLOAD_SCHEMAS,
 )
 
 
@@ -1230,6 +1232,13 @@ class TestEvidenceIdValidationAndPrecision:
         assert "ObjectiveO1BlockData" in component_code
         assert "ObjectiveO1BlockContent" in component_code
         
+        # Schema-template alignment: Objective uses 'objectives', NOT generic 'items'
+        assert "objectives: ObjectiveItem[];" in component_code
+        assert "objectives:" in test_code
+        assert "items:" not in component_code
+        assert "items?:" not in component_code
+        assert "items:" not in test_code
+        
         # Test skeleton asserts dual-brand theme independence and isolation
         assert "brandThemeA" in test_code
         assert "brandThemeB" in test_code
@@ -1243,6 +1252,78 @@ class TestEvidenceIdValidationAndPrecision:
         assert "strictly verifies dynamic theme tokens" in test_code
         assert "#10b981" in test_code
         assert "WCAG 2.1 AA" in test_code
+
+    def test_generic_contract_template_schema_consistency_validation(self):
+        """Test that validate_contract_template_schema_consistency correctly passes valid contracts and catches defects."""
+        # 1. Objective O1 valid contract
+        obj_templates = build_inline_code_templates("Objective", "O1")
+        valid_obj_contract = {
+            "type_contract": {
+                "payload_schema": FAMILY_PAYLOAD_SCHEMAS["objective"]
+            },
+            "inline_code_templates": obj_templates
+        }
+        is_valid, errors = validate_contract_template_schema_consistency(valid_obj_contract)
+        assert is_valid is True
+        assert len(errors) == 0
+
+        # 2. Other families: Introduction, Code, Definition
+        for fam, ver in [("Introduction", "I1"), ("Code", "C1"), ("Definition", "D1")]:
+            fam_lower = fam.lower()
+            templates = build_inline_code_templates(fam, ver)
+            contract = {
+                "type_contract": {
+                    "payload_schema": FAMILY_PAYLOAD_SCHEMAS[fam_lower]
+                },
+                "inline_code_templates": templates
+            }
+            is_valid, errors = validate_contract_template_schema_consistency(contract)
+            assert is_valid is True, f"Failed for family {fam}: {errors}"
+            assert len(errors) == 0
+
+        # 3. Defective contract (the O1 defect: objectives in schema, but generic items in templates)
+        defective_templates = {
+            "component_skeleton": {
+                "code": "export interface ObjectiveO1BlockContent { title?: string; items?: string[]; }"
+            },
+            "test_skeleton": {
+                "code": "const mockBlock = { content: { title: 'Test', items: ['a'] } };"
+            }
+        }
+        defective_contract = {
+            "type_contract": {
+                "payload_schema": FAMILY_PAYLOAD_SCHEMAS["objective"]
+            },
+            "inline_code_templates": defective_templates
+        }
+        is_valid, errors = validate_contract_template_schema_consistency(defective_contract)
+        assert is_valid is False
+        assert any("Component skeleton missing 'objectives'" in err for err in errors)
+        assert any("Test skeleton missing 'objectives'" in err for err in errors)
+        assert any("conflicting with 'objectives' schema" in err for err in errors)
+
+    def test_fallback_templates_for_unmapped_families(self):
+        """Test that unmapped or future block families fall back cleanly without breaking."""
+        templates = build_inline_code_templates("CustomWidget", "W1")
+        component_code = templates["component_skeleton"]["code"]
+        test_code = templates["test_skeleton"]["code"]
+        
+        assert "CustomWidgetW1BlockContent" in component_code
+        assert "items?:" in component_code
+        assert "CustomWidgetW1BlockData" in component_code
+        assert "Test CustomWidget" in test_code
+        
+        # Empty schema contract should also pass generic validation rule
+        generic_contract = {
+            "type_contract": {
+                "payload_schema": {}
+            },
+            "inline_code_templates": templates
+        }
+        is_valid, errors = validate_contract_template_schema_consistency(generic_contract)
+        assert is_valid is True
+        assert len(errors) == 0
+
 
 
 
