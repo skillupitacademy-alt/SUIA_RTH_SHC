@@ -349,7 +349,160 @@ export class ProjectLlmClient {
       );
     }
   }
+
+  /**
+   * Create a new workflow with target family + version.
+   * Maps to: POST /workflows/create
+   */
+  async createWorkflow(params: {
+    targetFamily: string;
+    targetVersion: string;
+    purpose?: string;
+    specificationId?: string;
+  }): Promise<{ workflowId: string; state: string }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/workflows/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_family: params.targetFamily,
+          target_version: params.targetVersion,
+          purpose: params.purpose || '',
+          specification_id: params.specificationId || '',
+        }),
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to connect to server. Check your network connection.'
+      );
+    }
+  }
+
+  /**
+   * Generate an engineering contract for a workflow.
+   * Maps to: POST /workflows/{workflowId}/engineering-contract
+   */
+  async generateEngineeringContract(workflowId: string): Promise<Record<string, unknown>> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/workflows/${workflowId}/engineering-contract`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+        }
+      );
+
+      if (!response.ok) {
+        handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to connect to server. Check your network connection.'
+      );
+    }
+  }
+
+  /**
+   * Get the engineering contract for a workflow.
+   * Maps to: GET /workflows/{workflowId}/engineering-contract
+   */
+  async getEngineeringContract(workflowId: string): Promise<Record<string, unknown>> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/workflows/${workflowId}/engineering-contract`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+        }
+      );
+
+      if (!response.ok) {
+        handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to connect to server. Check your network connection.'
+      );
+    }
+  }
+
+  /**
+   * List all workflows.
+   * Maps to: GET /workflows
+   */
+  async listWorkflows(): Promise<Array<Record<string, unknown>>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/workflows`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to connect to server. Check your network connection.'
+      );
+    }
+  }
+
+  /**
+   * Get live repository snapshot.
+   * Maps to: GET /snapshot
+   */
+  async getSnapshot(): Promise<Record<string, unknown>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/snapshot`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to connect to server. Check your network connection.'
+      );
+    }
+  }
 }
 
 // Singleton instance for convenience
 export const projectLlmClient = new ProjectLlmClient();
+

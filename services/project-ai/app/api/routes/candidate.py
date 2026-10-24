@@ -179,7 +179,7 @@ def get_discovery_client() -> DiscoveryClient:
     """
     workspace_root = os.environ.get(
         'WORKSPACE_ROOT',
-        'E:\\onlinewebsites\\quiz-platform'
+        str(Path(__file__).resolve().parents[3])
     )
     snapshot_path = os.path.join(
         workspace_root,

@@ -402,6 +402,259 @@ def extract_test_patterns(snapshot: dict) -> list[str]:
     return test_requirements
 
 
+def build_inline_code_templates(family: str, version: str) -> dict:
+    """
+    Build generic compliance code templates for External AI.
+    
+    These templates are the SAME patterns every block (I1, C1, D1, S1, ...)
+    follows for UBRC, theme, ILS/LSNB/RSSB compliance and Tutorial Composer
+    integration. External AI cannot access the repository, so these inline
+    templates provide the exact code skeleton needed.
+    
+    The visual/UX design INSIDE the <article> wrapper is NOT included here —
+    that is the User + External AI's creative domain.
+    
+    Args:
+        family: Block family (e.g., "Visual")
+        version: Block version (e.g., "V1")
+        
+    Returns:
+        Dictionary with 6 template keys
+    """
+    # Derive component name from family + version
+    component_name = f"{family}{version}Block"
+    block_type_lower = family.lower()
+    
+    return {
+        "interfaces": {
+            "description": (
+                "TypeScript interfaces that EVERY block must use. "
+                "These are imported from '../types' in the packages/ui layer."
+            ),
+            "BlockComponentProps": (
+                "interface BlockComponentProps<T extends TutorialBlock = TutorialBlock> {\n"
+                "  block: T;\n"
+                "  depth?: number;\n"
+                "  theme?: DomainTheme;\n"
+                "  className?: string;\n"
+                "  renderChild?: (block: TutorialBlock, depth: number) => React.ReactNode;\n"
+                "  runtimeContext?: TutorialBlockRuntimeContext;\n"
+                "}"
+            ),
+            "DomainTheme": (
+                "interface DomainTheme {\n"
+                "  primary: string;      // Brand primary color (e.g., '#e11d48')\n"
+                "  secondary: string;    // Brand secondary color (e.g., '#1e293b')\n"
+                "  primaryDark?: string;\n"
+                "  slate?: { 50?: string; 100?: string; 200?: string; 300?: string; "
+                "400?: string; 500?: string; 600?: string; 700?: string; "
+                "800?: string; 900?: string; 950?: string; };\n"
+                "  gray?: { 50?: string; /* ...through 900 */ };\n"
+                "  blue?: { 50?: string; /* ...through 900 */ };\n"
+                "  emerald?: { 50?: string; /* ...through 900 */ };\n"
+                "  amber?: { 50?: string; /* ...through 900 */ };\n"
+                "  rose?: { 50?: string; /* ...through 900 */ };\n"
+                "  teal?: { 50?: string; /* ...through 900 */ };\n"
+                "  [key: string]: any;\n"
+                "}"
+            ),
+            "TutorialBlockRuntimeContext": (
+                "interface TutorialBlockRuntimeContext {\n"
+                "  learnerId: string;\n"
+                "  navigationNodeId: string;\n"
+                "  sectionId: string | null;\n"
+                "  blockId: string;\n"
+                "  blockType: string;\n"
+                "  blockVersion: string;\n"
+                "  subtopicId: string;\n"
+                "}"
+            ),
+        },
+        "component_skeleton": {
+            "description": (
+                f"Complete component skeleton for {component_name}. "
+                "The version router and UBRC <article> wrapper are MANDATORY. "
+                "External AI fills in visual content inside the <article> tag."
+            ),
+            "code": (
+                f"import React from 'react';\n"
+                f"import type {{ BlockComponentProps, DomainTheme }} from '../types';\n"
+                f"import {{ getThemeColor, withAlpha }} from '../theme-utils';\n"
+                f"\n"
+                f"/**\n"
+                f" * {family} Block - Version Router\n"
+                f" * Routes to version-specific implementation based on block.version\n"
+                f" */\n"
+                f"export function {family}Block({{\n"
+                f"  block,\n"
+                f"  className = '',\n"
+                f"  theme,\n"
+                f"  runtimeContext,\n"
+                f"}}: BlockComponentProps) {{\n"
+                f"  switch (block.version) {{\n"
+                f"    case '{version}':\n"
+                f"      return (\n"
+                f"        <{family}{version}View\n"
+                f"          block={{block}}\n"
+                f"          theme={{theme!}}\n"
+                f"          className={{className}}\n"
+                f"          runtimeContext={{runtimeContext}}\n"
+                f"        />\n"
+                f"      );\n"
+                f"    default:\n"
+                f"      return null;\n"
+                f"  }}\n"
+                f"}}\n"
+                f"\n"
+                f"/**\n"
+                f" * {family} {version} View - Version-specific implementation\n"
+                f" */\n"
+                f"function {family}{version}View({{\n"
+                f"  block,\n"
+                f"  theme,\n"
+                f"  className = '',\n"
+                f"  runtimeContext,\n"
+                f"}}: {{\n"
+                f"  block: any;\n"
+                f"  theme: DomainTheme;\n"
+                f"  className?: string;\n"
+                f"  runtimeContext?: BlockComponentProps['runtimeContext'];\n"
+                f"}}) {{\n"
+                f"  // Theme colors — NEVER hardcode, always use theme props\n"
+                f"  const primary = theme.primary;\n"
+                f"  const secondary = theme.secondary;\n"
+                f"\n"
+                f"  // UBRC: Use runtimeContext if available, fallback to block fields\n"
+                f"  const blockId = runtimeContext?.blockId ?? block.id;\n"
+                f"  const blockType = runtimeContext?.blockType ?? '{block_type_lower}';\n"
+                f"  const blockVersion = runtimeContext?.blockVersion ?? block.version;\n"
+                f"\n"
+                f"  return (\n"
+                f"    <article\n"
+                f"      className={{`w-full bg-white dark:bg-slate-900 ${{className}}`}}\n"
+                f"      style={{{{ color: secondary }}}}\n"
+                f"      data-block-id={{blockId}}\n"
+                f"      data-block-type={{blockType}}\n"
+                f"      data-block-version={{blockVersion}}\n"
+                f"    >\n"
+                f"      {{/* YOUR VISUAL CONTENT HERE — design freely */}}\n"
+                f"    </article>\n"
+                f"  );\n"
+                f"}}"
+            ),
+        },
+        "ubrc_pattern": {
+            "description": (
+                "MANDATORY: Every block must render an <article> element with "
+                "these 3 data attributes. Without them, the block will not be "
+                "recognized by Tutorial Composer, UBRC tracking, or runtime verification."
+            ),
+            "code": (
+                f"// UBRC identity — same for EVERY block type\n"
+                f"const blockId = runtimeContext?.blockId ?? block.id;\n"
+                f"const blockType = runtimeContext?.blockType ?? '{block_type_lower}';\n"
+                f"const blockVersion = runtimeContext?.blockVersion ?? block.version;\n"
+                f"\n"
+                f"<article\n"
+                f"  data-block-id={{blockId}}\n"
+                f"  data-block-type={{blockType}}\n"
+                f"  data-block-version={{blockVersion}}\n"
+                f">\n"
+                f"  {{/* block content */}}\n"
+                f"</article>"
+            ),
+        },
+        "theme_usage": {
+            "description": (
+                "Theme colors must ALWAYS come from the theme prop. "
+                "Never hardcode hex colors — the block must render correctly "
+                "for all brands (RealTutorialHub, SkillUpITAcademy, etc.)."
+            ),
+            "correct_examples": [
+                "const primary = theme.primary;",
+                "const secondary = theme.secondary;",
+                "const slateText = theme.slate?.700 ?? '#334155';",
+                "<div style={{ borderColor: primary }}>",
+                "<div style={{ backgroundColor: withAlpha(primary, 0.1) }}>",
+            ],
+            "incorrect_examples": [
+                "// ❌ WRONG — hardcoded colors break brand independence",
+                "<div style={{ borderColor: '#e11d48' }}>",
+                "<div style={{ color: '#1e293b' }}>",
+                "// ❌ WRONG — referencing specific brand names",
+                "const color = isRTH ? '#e11d48' : '#3b82f6';",
+            ],
+        },
+        "import_paths": {
+            "description": (
+                "Exact import statements for the monorepo structure. "
+                "External AI cannot guess these paths."
+            ),
+            "required_imports": [
+                "import React from 'react';",
+                "import type { BlockComponentProps, DomainTheme } from '../types';",
+                "import { getThemeColor, withAlpha } from '../theme-utils';",
+            ],
+            "optional_imports": [
+                "import type { TutorialBlock } from '@quiz/types';",
+                "// Lucide icons (if needed for UI):",
+                "import { IconName } from 'lucide-react';",
+            ],
+        },
+        "test_skeleton": {
+            "description": (
+                "Test skeleton that verifies UBRC compliance. External AI must "
+                "include these assertions in their test file."
+            ),
+            "code": (
+                f"import {{ render }} from '@testing-library/react';\n"
+                f"import {{ {family}Block }} from '../{component_name}';\n"
+                f"\n"
+                f"describe('{component_name}', () => {{\n"
+                f"  const mockBlock = {{\n"
+                f"    id: '{block_type_lower}-001',\n"
+                f"    type: '{block_type_lower}' as const,\n"
+                f"    version: '{version}' as const,\n"
+                f"    content: {{ /* block-specific payload */ }},\n"
+                f"  }};\n"
+                f"\n"
+                f"  const mockTheme = {{\n"
+                f"    primary: '#e11d48',\n"
+                f"    secondary: '#1e293b',\n"
+                f"  }};\n"
+                f"\n"
+                f"  it('renders with UBRC data attributes', () => {{\n"
+                f"    const {{ container }} = render(\n"
+                f"      <{family}Block block={{mockBlock}} theme={{mockTheme}} />\n"
+                f"    );\n"
+                f"    const article = container.querySelector('article');\n"
+                f"    expect(article).not.toBeNull();\n"
+                f"    expect(article?.getAttribute('data-block-id')).toBe('{block_type_lower}-001');\n"
+                f"    expect(article?.getAttribute('data-block-type')).toBe('{block_type_lower}');\n"
+                f"    expect(article?.getAttribute('data-block-version')).toBe('{version}');\n"
+                f"  }});\n"
+                f"\n"
+                f"  it('uses theme colors not hardcoded values', () => {{\n"
+                f"    const {{ container }} = render(\n"
+                f"      <{family}Block block={{mockBlock}} theme={{mockTheme}} />\n"
+                f"    );\n"
+                f"    const html = container.innerHTML;\n"
+                f"    // Verify no hardcoded brand colors leaked into markup\n"
+                f"    expect(html).not.toContain('#e11d48');\n"
+                f"  }});\n"
+                f"\n"
+                f"  it('renders without console errors', () => {{\n"
+                f"    const spy = vi.spyOn(console, 'error').mockImplementation(() => {{}});\n"
+                f"    render(<{family}Block block={{mockBlock}} theme={{mockTheme}} />);\n"
+                f"    expect(spy).not.toHaveBeenCalled();\n"
+                f"    spy.mockRestore();\n"
+                f"  }});\n"
+                f"}});"
+            ),
+        },
+    }
+
+
 def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> RepositoryBlockContract:
     """
     Build a repository block contract from TypeScript snapshot evidence.

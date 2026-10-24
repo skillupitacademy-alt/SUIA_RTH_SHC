@@ -577,7 +577,7 @@ export default function IntegrationCertificationPage() {
       {/* Footer Nav */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
         <Link
-          href="/tools/project-llm/candidate-upload"
+          href={`/tools/project-llm/candidate-upload${workflowId ? `?workflowId=${workflowId}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50 hover:border-slate-400 transition-all shadow-sm"
         >
           <ArrowLeft size={16} />

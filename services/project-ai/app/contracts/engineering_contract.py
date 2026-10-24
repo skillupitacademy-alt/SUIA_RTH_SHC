@@ -134,6 +134,23 @@ class EngineeringContract(BaseModel):
         description="Behaviors that violate architectural boundaries"
     )
     
+    # Generic compliance code templates for External AI
+    # These are the SAME patterns every block (I1, C1, D1, S1, ...) follows.
+    # External AI cannot access the repository, so these inline templates
+    # provide the exact code skeleton needed for UBRC, theme, ILS/LSNB/RSSB
+    # compliance and Tutorial Composer integration.
+    inline_code_templates: dict = Field(
+        default_factory=dict,
+        description=(
+            "Self-contained code templates that External AI copies as the compliance "
+            "skeleton. Contains: TypeScript interfaces (BlockComponentProps, DomainTheme, "
+            "TutorialBlockRuntimeContext), component skeleton with UBRC <article> wrapper, "
+            "theme usage patterns, import paths, and test skeleton. "
+            "These are generic across ALL block types — only the visual content inside "
+            "the <article> wrapper changes per block."
+        )
+    )
+    
     # Immutability verification
     contract_hash: str = Field(
         default="",

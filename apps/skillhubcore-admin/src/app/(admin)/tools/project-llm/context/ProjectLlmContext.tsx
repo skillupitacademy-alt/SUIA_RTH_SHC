@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
 
 export interface ProjectLlmWorkflowState {
   currentStep: number;
@@ -15,6 +16,9 @@ export interface ProjectLlmWorkflowState {
   validationStarted: boolean;
   validationCompleted: boolean;
   certificationCompleted: boolean;
+  workflowId: string | null;
+  isCreatingWorkflow: boolean;
+  workflowError: string | null;
 }
 
 const defaultState: ProjectLlmWorkflowState = {
@@ -32,6 +36,9 @@ const defaultState: ProjectLlmWorkflowState = {
   validationStarted: false,
   validationCompleted: false,
   certificationCompleted: false,
+  workflowId: null,
+  isCreatingWorkflow: false,
+  workflowError: null,
 };
 
 interface ProjectLlmContextType {
@@ -42,6 +49,7 @@ interface ProjectLlmContextType {
   setPurpose: (purpose: string) => void;
   setStep: (step: number) => void;
   resetWorkflow: () => void;
+  createBackendWorkflow: () => Promise<string | null>;
 }
 
 const ProjectLlmContext = createContext<ProjectLlmContextType | undefined>(undefined);
@@ -119,6 +127,32 @@ export function ProjectLlmProvider({ children }: { children: React.ReactNode }) 
     }
   };
 
+  const createBackendWorkflow = useCallback(async (): Promise<string | null> => {
+    setState((prev) => ({ ...prev, isCreatingWorkflow: true, workflowError: null }));
+    try {
+      const result = await projectLlmClient.createWorkflow({
+        targetFamily: state.familyName,
+        targetVersion: state.targetVersion,
+        purpose: state.purpose,
+      });
+      const workflowId = result.workflowId;
+      setState((prev) => ({
+        ...prev,
+        workflowId,
+        isCreatingWorkflow: false,
+      }));
+      return workflowId;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create workflow';
+      setState((prev) => ({
+        ...prev,
+        isCreatingWorkflow: false,
+        workflowError: errorMsg,
+      }));
+      return null;
+    }
+  }, [state.familyName, state.targetVersion, state.purpose]);
+
   return (
     <ProjectLlmContext.Provider
       value={{
@@ -129,6 +163,7 @@ export function ProjectLlmProvider({ children }: { children: React.ReactNode }) 
         setPurpose,
         setStep,
         resetWorkflow,
+        createBackendWorkflow,
       }}
     >
       {children}

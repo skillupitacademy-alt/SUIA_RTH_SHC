@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Code,
   Copy,
@@ -24,19 +25,47 @@ import {
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
+import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
 
 type TabKey = 'summary' | 'ils' | 'lsnb' | 'rssb' | 'composer' | 'testing' | 'brand' | 'evidence';
 
 export default function ExternalAiHandoffPage() {
   const { state } = useProjectLlm();
+  const searchParams = useSearchParams();
+  const urlWorkflowId = searchParams.get('workflowId') || state.workflowId;
   const [activeTab, setActiveTab] = useState<TabKey>('summary');
   const [copiedBrief, setCopiedBrief] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [previewTab, setPreviewTab] = useState<'preview' | 'html' | 'schema'>('preview');
-  const [workflowId, setWorkflowId] = useState('');
+  const [workflowId, setWorkflowId] = useState(urlWorkflowId || '');
   const [engineeringContract, setEngineeringContract] = useState<Record<string, unknown> | null>(null);
   const [contractLoading, setContractLoading] = useState(false);
   const [contractError, setContractError] = useState<string | null>(null);
+
+  // Auto-load contract when workflowId is available from URL
+  useEffect(() => {
+    if (urlWorkflowId) {
+      setWorkflowId(urlWorkflowId);
+      loadContractById(urlWorkflowId);
+    }
+  }, [urlWorkflowId]);
+
+  const loadContractById = async (id: string) => {
+    setContractLoading(true);
+    setContractError(null);
+    setEngineeringContract(null);
+    try {
+      const payload = await projectLlmClient.getEngineeringContract(id);
+      if (!payload || typeof payload !== 'object' || typeof payload.contract_hash !== 'string' || !payload.contract_hash) {
+        throw new Error('Backend response is missing contract_hash; it cannot be treated as a canonical engineering contract.');
+      }
+      setEngineeringContract(payload);
+    } catch (error) {
+      setContractError(error instanceof Error ? error.message : 'Unable to retrieve the engineering contract.');
+    } finally {
+      setContractLoading(false);
+    }
+  };
 
   const loadEngineeringContract = async () => {
     const id = workflowId.trim();
@@ -44,33 +73,7 @@ export default function ExternalAiHandoffPage() {
       setContractError('Enter the persisted workflow ID to retrieve its canonical contract.');
       return;
     }
-
-    setContractLoading(true);
-    setContractError(null);
-    setEngineeringContract(null);
-    try {
-      const apiBase = (process.env.NEXT_PUBLIC_PROJECT_AI_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-      const response = await fetch(
-        `${apiBase}/workflows/${encodeURIComponent(id)}/engineering-contract`,
-        { method: 'GET', credentials: 'include', headers: { Accept: 'application/json' } }
-      );
-      if (!response.ok) {
-        const detail = await response.text();
-        throw new Error(`Contract request failed (${response.status}): ${detail || response.statusText}`);
-      }
-      const payload = await response.json();
-      if (!payload || typeof payload !== 'object' || typeof payload.contract_hash !== 'string' || !payload.contract_hash) {
-        throw new Error('Backend response is missing contract_hash; it cannot be treated as a canonical engineering contract.');
-      }
-      if (payload.workflow_id !== id) {
-        throw new Error('Returned contract workflow_id does not match the requested workflow.');
-      }
-      setEngineeringContract(payload as Record<string, unknown>);
-    } catch (error) {
-      setContractError(error instanceof Error ? error.message : 'Unable to retrieve the engineering contract.');
-    } finally {
-      setContractLoading(false);
-    }
+    await loadContractById(id);
   };
 
   const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
@@ -585,7 +588,7 @@ ${JSON.stringify(engineeringContract, null, 2)}
       {/* Footer Nav */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
         <Link
-          href="/tools/project-llm/compliance-brief"
+          href={`/tools/project-llm/compliance-brief${urlWorkflowId ? `?workflowId=${urlWorkflowId}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50 hover:border-slate-400 transition-all shadow-sm"
         >
           <ArrowLeft size={16} />
@@ -593,7 +596,7 @@ ${JSON.stringify(engineeringContract, null, 2)}
         </Link>
 
         <Link
-          href="/tools/project-llm/candidate-upload"
+          href={`/tools/project-llm/candidate-upload${urlWorkflowId ? `?workflowId=${urlWorkflowId}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
         >
           Continue to Upload & Validate

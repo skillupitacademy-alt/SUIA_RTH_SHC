@@ -3,6 +3,7 @@ import type { ScannerResult, Finding } from '../contracts/scanner.js';
 import type { FrameworkInfo, WorkspaceInfo, BuildSystemInfo } from '../contracts/snapshot.js';
 import { FileNotFoundError } from '../adapters/index.js';
 import { EvidenceCollector } from '../evidence/collector.js';
+import { createHash as cryptoCreateHash } from 'node:crypto';
 
 interface RuntimeData {
   frameworks: FrameworkInfo[];
@@ -446,6 +447,5 @@ function versionsMatch(declaredVersion: string, detectedVersion: string): boolea
  * Create SHA-256 hash from string content
  */
 function createHash(content: string): string {
-  const crypto = require('node:crypto');
-  return crypto.createHash('sha256').update(content, 'utf-8').digest('hex');
+  return cryptoCreateHash('sha256').update(content, 'utf-8').digest('hex');
 }

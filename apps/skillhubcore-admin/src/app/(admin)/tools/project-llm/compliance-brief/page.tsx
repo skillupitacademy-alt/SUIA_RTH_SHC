@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   FileText,
   CheckCircle2,
@@ -25,6 +26,7 @@ import {
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
+import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
 
 interface RequirementCard {
   id: string;
@@ -157,8 +159,27 @@ const requirements: RequirementCard[] = [
 
 export default function ComplianceBriefPage() {
   const { state } = useProjectLlm();
+  const searchParams = useSearchParams();
+  const workflowId = searchParams.get('workflowId') || state.workflowId;
   const [viewMode, setViewMode] = useState<'grid' | 'checklist'>('grid');
   const [copied, setCopied] = useState(false);
+  const [contract, setContract] = useState<Record<string, unknown> | null>(null);
+  const [contractLoading, setContractLoading] = useState(false);
+
+  // Load engineering contract from backend when workflowId is available
+  useEffect(() => {
+    if (!workflowId) return;
+    setContractLoading(true);
+    projectLlmClient.getEngineeringContract(workflowId)
+      .then((data: any) => {
+        setContract(data);
+      })
+      .catch(() => {
+        // Fall back to static requirements — contract may not be generated yet
+        setContract(null);
+      })
+      .finally(() => setContractLoading(false));
+  }, [workflowId]);
 
   const handleCopyBrief = () => {
     const briefText = `PROJECT LLM COMPLIANCE BRIEF
@@ -414,7 +435,7 @@ ${req.items.map((item) => `   - [x] ${item}`).join('\n')}
         </Link>
 
         <Link
-          href="/tools/project-llm/external-ai-handoff"
+          href={`/tools/project-llm/external-ai-handoff${workflowId ? `?workflowId=${workflowId}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
         >
           Proceed to External AI Handoff

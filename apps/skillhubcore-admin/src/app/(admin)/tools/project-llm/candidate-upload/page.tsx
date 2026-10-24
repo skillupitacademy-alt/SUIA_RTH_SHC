@@ -500,7 +500,7 @@ export default function CandidateUploadPage() {
       {/* Footer Nav */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
         <Link
-          href="/tools/project-llm/external-ai-handoff"
+          href={`/tools/project-llm/external-ai-handoff${workflowId ? `?workflowId=${workflowId}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50 hover:border-slate-400 transition-all shadow-sm"
         >
           <ArrowLeft size={16} />
@@ -508,7 +508,7 @@ export default function CandidateUploadPage() {
         </Link>
 
         <Link
-          href="/tools/project-llm/integration-certification"
+          href={`/tools/project-llm/integration-certification${workflowId ? `?workflowId=${workflowId}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
         >
           Proceed to Integration & Certification

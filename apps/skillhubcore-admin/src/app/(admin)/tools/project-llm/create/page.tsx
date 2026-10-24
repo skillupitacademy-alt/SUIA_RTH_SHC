@@ -300,7 +300,7 @@ const FAMILIES: FamilyItem[] = [
 
 export default function CreateBlockPage() {
   const router = useRouter();
-  const { state, setFamily, setTargetVersion, setPurpose, setStep } = useProjectLlm();
+  const { state, setFamily, setTargetVersion, setPurpose, setStep, createBackendWorkflow } = useProjectLlm();
 
   const [selectedFamilyId, setSelectedFamilyId] = useState(state.familyId || 'I');
   const [targetVer, setTargetVer] = useState(state.targetVersion || 'I7');
@@ -329,11 +329,17 @@ export default function CreateBlockPage() {
     setFamily(f.id, f.name, existingIds);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setTargetVersion(targetVer);
     setPurpose(purposeText);
-    setStep(3); // Move to Step 3: Compliance Brief
-    router.push('/tools/project-llm/compliance-brief');
+
+    // Create real backend workflow
+    const workflowId = await createBackendWorkflow();
+    if (workflowId) {
+      setStep(3); // Move to Step 3: Compliance Brief
+      router.push(`/tools/project-llm/compliance-brief?workflowId=${workflowId}`);
+    }
+    // If createBackendWorkflow returns null, error is displayed via state.workflowError
   };
 
   return (
@@ -580,6 +586,17 @@ export default function CreateBlockPage() {
               />
             </div>
 
+            {/* Error Display */}
+            {state.workflowError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 flex items-start gap-2 text-xs text-rose-700">
+                <XCircle size={14} className="shrink-0 mt-0.5 text-rose-500" />
+                <div>
+                  <p className="font-bold">Failed to create workflow</p>
+                  <p className="text-[11px] mt-0.5">{state.workflowError}</p>
+                </div>
+              </div>
+            )}
+
             {/* Next Step Info Callout Box */}
             <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-3 flex items-start gap-2.5 text-xs text-sky-900">
               <Lightbulb size={16} className="text-sky-600 shrink-0 mt-0.5" />
@@ -603,10 +620,17 @@ export default function CreateBlockPage() {
             <button
               type="button"
               onClick={handleContinue}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:scale-[1.02] active:scale-95 transition-all"
+              disabled={state.isCreatingWorkflow}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none"
             >
-              <span>Continue to Compliance Brief</span>
-              <ArrowRight size={14} />
+              <span>{state.isCreatingWorkflow ? 'Creating Workflow...' : 'Continue to Compliance Brief'}</span>
+              {!state.isCreatingWorkflow && <ArrowRight size={14} />}
+              {state.isCreatingWorkflow && (
+                <svg className="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
@@ -614,3 +638,4 @@ export default function CreateBlockPage() {
     </div>
   );
 }
+

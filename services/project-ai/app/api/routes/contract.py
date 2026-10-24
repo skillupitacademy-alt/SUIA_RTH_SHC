@@ -20,6 +20,7 @@ from app.contracts.engineering_contract import (
 )
 from app.contracts.repository_intelligence import (
     build_contract as build_repo_contract,
+    build_inline_code_templates,
     RepositoryEvidenceBlocked
 )
 from app.models.workflow_target import WorkflowTarget
@@ -365,6 +366,15 @@ async def create_engineering_contract(
         
         # Architectural boundaries (from M2 specification)
         prohibited_behaviors=PROHIBITED_BEHAVIORS,
+        
+        # Generic compliance code templates for External AI
+        # These are the same patterns I1/C1/D1/S1 follow — UBRC, theme,
+        # ILS/LSNB/RSSB compliance. External AI cannot access the repo,
+        # so these templates provide copyable code skeletons.
+        inline_code_templates=build_inline_code_templates(
+            family=target.family,
+            version=target.version
+        ),
         
         # Hash will be calculated and set below
         contract_hash=""

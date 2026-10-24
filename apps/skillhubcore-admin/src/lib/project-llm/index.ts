@@ -31,6 +31,10 @@ export { ProjectLlmClient, projectLlmClient } from './api/projectLlmClient';
 // Hooks
 export { useWorkflowState } from './hooks/useWorkflowState';
 export type { UseWorkflowStateResult } from './hooks/useWorkflowState';
+export { useRepositoryIntelligence } from './hooks/useRepositoryIntelligence';
+
+// Discovery Adapter (Phase 1: live scanner → intelligence format)
+export { transformSnapshotToIntelligence, fetchLiveIntelligence } from './discoveryAdapter';
 
 // Components
 export { CertificationBadge } from './components/CertificationBadge';

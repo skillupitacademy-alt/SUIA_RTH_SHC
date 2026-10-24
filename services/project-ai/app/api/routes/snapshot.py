@@ -16,14 +16,14 @@ def get_discovery_client() -> DiscoveryClient:
     Dependency injection for discovery client.
     
     In production, this should read the snapshot path from environment config.
-    For M2.8, we use a default path relative to the workspace root.
+    Resolves workspace root from WORKSPACE_ROOT env var or relative to this file.
     """
-    # Default path: workspace_root/packages/project-llm-discovery/output/snapshot.json
-    # TODO: Make configurable via environment variable in M3+
     import os
+    from pathlib import Path
+
     workspace_root = os.environ.get(
         'WORKSPACE_ROOT',
-        'E:\\onlinewebsites\\quiz-platform'
+        str(Path(__file__).resolve().parents[3])
     )
     snapshot_path = os.path.join(
         workspace_root,

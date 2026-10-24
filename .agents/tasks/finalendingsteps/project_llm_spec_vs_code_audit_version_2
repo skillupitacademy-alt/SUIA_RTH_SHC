@@ -1,0 +1,473 @@
+# Project LLM — Complete Implementation Roadmap
+
+> **Goal:** Bring Project LLM from ~75% to 100% spec compliance per [ProjectFlowExampleProjectLLM.md](file:///e:/onlinewebsites/quiz-platform/ILS_UI_UX/docs/ProjectFlowExampleProjectLLM.md)
+>
+> **Current State:** Runtime block architecture (I1/C1/D1) = ✅ 100%. Project LLM workflow = ⚠️ UI shells + partial backend.
+
+---
+
+## What Already Exists (Revised Assessment)
+
+After deeper investigation, the codebase has **significantly more infrastructure** than initially assessed:
+
+| Layer | What Exists | Status |
+|---|---|---|
+| **Runtime blocks** (I1/C1/D1) | Complete renderers, UBRC, theme, version routing | ✅ Done |
+| **Composer registry** | `introduction.registry.ts`, `code.registry.ts`, `definition.registry.ts`, `summary.registry.ts` | ✅ Done |
+| **ActiveBlockContext** | [ActiveBlockContext.tsx](file:///e:/onlinewebsites/quiz-platform/packages/ui/src/tutorial/runtime/ActiveBlockContext.tsx) (12.9KB) | ✅ Done |
+| **ILSProvider** | [ILSProvider.tsx](file:///e:/onlinewebsites/quiz-platform/packages/ui/src/tutorial/runtime/ILSProvider.tsx) (20.6KB) | ✅ Done |
+| **BlockTelemetryProvider** | [BlockTelemetryProvider.tsx](file:///e:/onlinewebsites/quiz-platform/packages/ui/src/tutorial/runtime/BlockTelemetryProvider.tsx) (16.3KB) | ✅ Done |
+| **Discovery scanners** | 6 scanners (structure, runtime, blocks, composer, dependencies, tests) + brand + theme | ✅ Done |
+| **Repository snapshot** | `buildSnapshot()`, `computeSnapshotHash()`, full `RepositorySnapshot` type | ✅ Done |
+| **Evidence system** | `EvidenceCollector`, `normalizeEvidence()` | ✅ Done |
+| **Verification** | `verifyRegistryRendererRuntime()` | ✅ Done |
+| **Snapshot validation** | `validateSnapshot()` with typed errors/warnings | ✅ Done |
+| **Fixture reconciliation** | `reconcileWithLegacyFixture()` | ✅ Done |
+| **Project AI backend** (Python/FastAPI) | Full app with agents, contracts, certification, intake, placement, verification, workflows, evidence, governance | ⚠️ Exists but needs verification |
+| **Frontend API client** | [projectLlmClient.ts](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/lib/project-llm/api/projectLlmClient.ts) — 7 API methods | ✅ Done |
+| **Frontend workflow pages** | 8 pages (create, compliance-brief, external-ai-handoff, candidate-upload, integration-certification, etc.) | ⚠️ UI exists, partial backend wiring |
+| **Repository intelligence fixture** | [projectLlmRepositoryIntelligence.ts](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/lib/project-llm/projectLlmRepositoryIntelligence.ts) | ⚠️ Static fixture — needs live replacement |
+
+---
+
+## Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "TRACK 1: Live Discovery"
+        T1A["P1: Wire live scanners to replace fixture"]
+        T1B["P2: Snapshot → Engineering Contract"]
+        T1C["P3: Fixture reconciliation verification"]
+    end
+
+    subgraph "TRACK 2: Backend Pipeline"
+        T2A["P4: Workflow state machine"]
+        T2B["P5: Engineering Contract API"]
+        T2C["P6: Candidate intake pipeline"]
+        T2D["P7: Placement + approval"]
+        T2E["P8: Verification + certification"]
+    end
+
+    subgraph "TRACK 3: Frontend Wiring"
+        T3A["P9: Create page → backend"]
+        T3B["P10: Compliance brief → live contract"]
+        T3C["P11: Handoff → real contract"]
+        T3D["P12: Candidate upload → real intake"]
+        T3E["P13: Certification → real gates"]
+    end
+
+    subgraph "TRACK 4: E2E + Evidence"
+        T4A["P14: Golden E2E journey"]
+        T4B["P15: Negative test suite"]
+        T4C["P16: Evidence package"]
+    end
+
+    T1A --> T1B
+    T1B --> T2B
+    T2A --> T2B
+    T2B --> T2C
+    T2C --> T2D
+    T2D --> T2E
+    T2B --> T3B
+    T2C --> T3D
+    T2E --> T3E
+    T3E --> T4A
+    T4A --> T4B
+    T4B --> T4C
+```
+
+---
+
+## Phase 1: Live Repository Discovery (Replace Fixture)
+
+> **Goal:** Replace the static `projectLlmRepositoryIntelligence.ts` fixture with live `project-llm-discovery` scanner output.
+
+### Task 1.1 — Wire Discovery Scanners into Frontend
+
+| Detail | Value |
+|---|---|
+| **Files to modify** | [`projectLlmRepositoryIntelligence.ts`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/lib/project-llm/projectLlmRepositoryIntelligence.ts) |
+| **Files to use** | [`packages/project-llm-discovery/src/scanners/`](file:///e:/onlinewebsites/quiz-platform/packages/project-llm-discovery/src/scanners) |
+| **What to do** | Create a Next.js API route `/api/project-llm/discovery/snapshot` that runs `buildSnapshot()` against the repository root and returns a `RepositorySnapshot` |
+| **Acceptance** | `GET /api/project-llm/discovery/snapshot` returns a live snapshot with real block data matching I1/C1/D1 |
+
+### Task 1.2 — Create Discovery-to-Intelligence Adapter
+
+| Detail | Value |
+|---|---|
+| **New file** | `apps/skillhubcore-admin/src/lib/project-llm/discoveryAdapter.ts` |
+| **What to do** | Transform `RepositorySnapshot.blocks.verified[]` into the intelligence format the UI pages currently consume. This bridges the old fixture shape to the live data. |
+| **Acceptance** | The Create page, Explorer, Registry pages consume live data instead of fixture |
+
+### Task 1.3 — Verify Fixture Reconciliation
+
+| Detail | Value |
+|---|---|
+| **Use** | `reconcileWithLegacyFixture()` from discovery package |
+| **What to do** | Run reconciliation between old fixture and live snapshot. Log discrepancies. Fix any scanner gaps. |
+| **Acceptance** | Zero critical discrepancies between fixture and live scan for I1/C1/D1 |
+
+---
+
+## Phase 2: Engineering Contract Generation (W2)
+
+> **Goal:** Generate the self-contained, version-specific Engineering Contract that the spec describes in §2–§19.
+
+### Task 2.1 — Define Engineering Contract Schema
+
+| Detail | Value |
+|---|---|
+| **New file** | `services/project-ai/app/contracts/engineering_contract.py` |
+| **What to do** | Define a Pydantic model `EngineeringContract` with sections: Identity, Content, UBRC, ILS, LSNB, RSSB, Theme, Renderer, Composer, Schema, Tests, Acceptance Criteria, Prohibited Behaviors, Delivery Format |
+| **Key fields** | `contract_hash`, `workflow_id`, `target_family`, `target_version`, `snapshot_hash`, `canonical_references`, `acceptance_criteria[]`, `prohibited_behaviors[]` |
+| **Acceptance** | Contract can be serialized to JSON, hashed with SHA-256, and deserialized back identically |
+
+### Task 2.2 — Build Contract Generator from Snapshot
+
+| Detail | Value |
+|---|---|
+| **New file** | `services/project-ai/app/contracts/contract_generator.py` |
+| **What to do** | Given a `RepositorySnapshot` + target family/version, derive the Engineering Contract by: (1) finding canonical reference implementations, (2) extracting their common patterns (UBRC, theme, renderer routing, Composer registry), (3) generating version-specific requirements |
+| **Key logic** | Scan `snapshot.blocks.verified` for I1/C1/D1 patterns → extract common contract → add version-specific identity |
+| **Acceptance** | For target `Introduction/I2`, generates a contract referencing I1 patterns with correct UBRC, theme, ILS, LSNB/RSSB, Composer, and prohibited behaviors |
+
+### Task 2.3 — Engineering Contract API Endpoint
+
+| Detail | Value |
+|---|---|
+| **File to modify** | `services/project-ai/app/api/` (add new router) |
+| **Endpoint** | `GET /workflows/{workflow_id}/engineering-contract` |
+| **What to do** | Returns the persisted Engineering Contract for a workflow. The handoff page already calls this endpoint (see line 53 of `external-ai-handoff/page.tsx`) |
+| **Acceptance** | Frontend handoff page successfully loads and displays the real contract |
+
+### Task 2.4 — Contract Generation on Workflow Creation
+
+| Detail | Value |
+|---|---|
+| **File to modify** | `services/project-ai/app/workflows/` |
+| **What to do** | When a user creates a workflow (selects family + version), automatically: (1) run snapshot, (2) generate Engineering Contract, (3) persist with hash |
+| **Acceptance** | After workflow creation, the contract is immediately available at the API endpoint |
+
+---
+
+## Phase 3: Candidate Intake Pipeline (W3)
+
+> **Goal:** Implement the candidate upload → intake → hash → compare → classify → placement manifest pipeline.
+
+### Task 3.1 — Candidate Intake Service
+
+| Detail | Value |
+|---|---|
+| **Directory** | `services/project-ai/app/intake/` |
+| **What to do** | Receive uploaded files, compute content hashes (SHA-256), classify each file (component, schema, renderer, registry, test), bind to target workflow |
+| **Key logic** | File classification by extension + content analysis: `.tsx` → component, `.registry.ts` → registry entry, `.test.tsx` → test |
+| **Acceptance** | Uploading a set of files returns `CandidateResponse` with per-file hashes and classifications |
+
+### Task 3.2 — Canonical Comparison Engine
+
+| Detail | Value |
+|---|---|
+| **New file** | `services/project-ai/app/intake/canonical_comparison.py` |
+| **What to do** | Compare candidate files against the Engineering Contract requirements: (1) Does it have UBRC? (2) Does it use `theme.primary/secondary`? (3) Does it have version routing? (4) Does it import ILS? (5) Does it hardcode brand? |
+| **Key checks** | Parse candidate `.tsx` files for `data-block-id`, `data-block-type`, `data-block-version` attributes; scan for ILS imports; scan for hardcoded hex colors |
+| **Acceptance** | For a correct candidate: all checks PASS. For a candidate with hardcoded SUIA colors: FAIL on brand check |
+
+### Task 3.3 — Placement Manifest Generator
+
+| Detail | Value |
+|---|---|
+| **New file** | `services/project-ai/app/placement/manifest_generator.py` |
+| **What to do** | For each classified candidate file, determine the canonical repository destination: component → `packages/ui/src/tutorial/blocks/`, registry → `apps/skillhubcore-admin/src/.../registry/entries/`, types → `packages/types/src/` |
+| **Output** | `PlacementManifest` with `{source_file, destination_path, action: ADD|UPDATE|EXTEND}` per artifact |
+| **Acceptance** | For `ObjectiveO1Block.tsx`, generates destination `packages/ui/src/tutorial/blocks/ObjectiveO1Block.tsx` with action `ADD` |
+
+---
+
+## Phase 4: Human Approval + Safe Placement (W4)
+
+### Task 4.1 — Approval Gate Enforcement
+
+| Detail | Value |
+|---|---|
+| **Directory** | `services/project-ai/app/governance/` |
+| **What to do** | Ensure placement cannot proceed without explicit human approval. Approval is bound to `manifest_hash`. |
+| **Key rule** | `approve_implementation()` must verify `manifest_hash` matches the current manifest before allowing placement |
+| **Acceptance** | Attempting placement without approval returns 403. Approval with wrong hash returns 409. |
+
+### Task 4.2 — Repository Integration (Placement Execution)
+
+| Detail | Value |
+|---|---|
+| **Directory** | `services/project-ai/app/placement/` |
+| **What to do** | After approval, execute the placement manifest: copy files to canonical destinations, update `TutorialBlockRenderer.tsx` switch statement, update registry index |
+| **Key logic** | Add new `case` to TutorialBlockRenderer for the new block type/version. Add registry entry. Update type imports. |
+| **Acceptance** | After placement of `ObjectiveO1Block`, the block is importable and routable through TutorialBlockRenderer |
+
+---
+
+## Phase 5: Verification + Certification (W5–W6)
+
+> **Goal:** Implement the multi-layer verification pipeline described in spec §11.
+
+### Task 5.1 — Schema Verification
+
+| Detail | Value |
+|---|---|
+| **What to do** | Verify that the candidate's TypeScript types are compatible with `TutorialBlock` union, `TutorialDocument`, and `BlockComponentProps` |
+| **Acceptance** | TypeScript compilation succeeds with the new block type added to the union |
+
+### Task 5.2 — Renderer Verification
+
+| Detail | Value |
+|---|---|
+| **What to do** | Verify that `TutorialBlockRenderer` correctly routes `{type, version}` to the new block component. Verify unsupported versions throw errors. |
+| **Use** | `verifyRegistryRendererRuntime()` from discovery package |
+| **Acceptance** | Verification returns `PASS` for correct routing, `FAIL` for missing route |
+
+### Task 5.3 — Composer Verification
+
+| Detail | Value |
+|---|---|
+| **What to do** | Verify that the new block appears in the Composer registry, is discoverable via `getBlockType()`, has a default payload, and can be selected |
+| **Acceptance** | `getBlockType('objective')` returns the ObjectiveO1 entry with valid default payload |
+
+### Task 5.4 — UBRC Verification
+
+| Detail | Value |
+|---|---|
+| **What to do** | Parse the candidate component and verify it renders `data-block-id`, `data-block-type`, `data-block-version` attributes |
+| **Use** | AST analysis or regex scan of the component source |
+| **Acceptance** | All three UBRC attributes present with correct values |
+
+### Task 5.5 — Theme/Brand Verification
+
+| Detail | Value |
+|---|---|
+| **What to do** | Verify candidate uses `theme.primary`/`theme.secondary` and does NOT contain hardcoded brand colors, logos, or URLs |
+| **Use** | `brand-scanner.ts` and `theme-scanner.ts` from discovery package |
+| **Acceptance** | Zero brand violations found in candidate files |
+
+### Task 5.6 — ILS Boundary Verification
+
+| Detail | Value |
+|---|---|
+| **What to do** | Verify candidate does NOT import ILS providers, does NOT call ILS APIs directly, does NOT persist learning state |
+| **Key check** | Scan imports for `ILSProvider`, `ILSService`, `trackLearning`, etc. |
+| **Acceptance** | Zero ILS direct-dependency violations |
+
+### Task 5.7 — LSNB/RSSB Boundary Verification
+
+| Detail | Value |
+|---|---|
+| **What to do** | Verify candidate does NOT create navigation components, progress bars, or page-level UI |
+| **Acceptance** | Zero LSNB/RSSB boundary violations |
+
+### Task 5.8 — Certification Gate
+
+| Detail | Value |
+|---|---|
+| **Directory** | `services/project-ai/app/certification/` |
+| **What to do** | Aggregate all verification results. Gate logic: ALL required verifications must PASS. Any FAIL → BLOCKED. Any missing verification → BLOCKED (not PASS). |
+| **Key rule** | Never fabricate PASS. Always link to evidence. |
+| **Acceptance** | Gate returns `CERTIFICATION_READY` only when all verifications pass with evidence |
+
+---
+
+## Phase 6: Frontend-Backend Wiring (W7)
+
+> **Goal:** Connect existing UI pages to real backend APIs.
+
+### Task 6.1 — Create Page → Workflow API
+
+| Detail | Value |
+|---|---|
+| **File** | [`create/page.tsx`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/create/page.tsx) |
+| **What to do** | On "Continue", call `POST /workflows/create` with `{family, version, purpose}`. Store returned `workflowId`. Pass `workflowId` to subsequent pages via URL params. |
+| **Currently** | Uses only localStorage state |
+| **Acceptance** | Clicking "Continue" creates a persisted workflow with a real ID |
+
+### Task 6.2 — Compliance Brief → Live Contract
+
+| Detail | Value |
+|---|---|
+| **File** | [`compliance-brief/page.tsx`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/compliance-brief/page.tsx) |
+| **What to do** | Replace hardcoded requirement cards with data from `GET /workflows/{id}/engineering-contract`. Display actual acceptance criteria from the contract. |
+| **Currently** | Uses hardcoded `requirements[]` array |
+| **Acceptance** | Page displays contract data loaded from backend |
+
+### Task 6.3 — External AI Handoff → Real Contract Download
+
+| Detail | Value |
+|---|---|
+| **File** | [`external-ai-handoff/page.tsx`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/external-ai-handoff/page.tsx) |
+| **What to do** | The `loadEngineeringContract()` function already calls the backend (line 41–74). Verify it works with the real endpoint. Ensure "Download Contract" exports the full JSON package. |
+| **Currently** | Has backend call but may not work without real endpoint |
+| **Acceptance** | Contract loads from backend, can be downloaded as JSON |
+
+### Task 6.4 — Candidate Upload → Real Intake
+
+| Detail | Value |
+|---|---|
+| **File** | [`candidate-upload/page.tsx`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/candidate-upload/page.tsx) |
+| **What to do** | The page already imports `projectLlmClient` and calls `getCertificationStatus()`. Wire the file upload UI to call `uploadCandidate()`. Display real validation results. |
+| **Currently** | Has API client imported, partially wired |
+| **Acceptance** | File upload triggers real backend intake. Validation results display from backend. |
+
+### Task 6.5 — Integration/Certification → Real Gates
+
+| Detail | Value |
+|---|---|
+| **File** | [`integration-certification/page.tsx`](file:///e:/onlinewebsites/quiz-platform/apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/integration-certification/page.tsx) |
+| **What to do** | Page already calls `getCertificationStatus()`, `getRuntimeHealth()`, `getBrowserVerificationStatus()` in parallel (lines 47–51). Verify these work with real endpoints. |
+| **Currently** | Has backend calls, needs real endpoint verification |
+| **Acceptance** | All certification tabs show real data from backend |
+
+---
+
+## Phase 7: Testing + Evidence (W6, W10–W11)
+
+### Task 7.1 — Golden E2E Journey Test
+
+| Detail | Value |
+|---|---|
+| **What to do** | Create a Playwright test that: (1) opens Create page, (2) selects Introduction/I2, (3) generates contract, (4) uploads a correct candidate, (5) approves placement, (6) verifies certification |
+| **Acceptance** | Test passes end-to-end with a real candidate |
+
+### Task 7.2 — Negative Test Suite
+
+| Detail | Value |
+|---|---|
+| **What to do** | Tests for: (1) candidate without UBRC → FAIL, (2) candidate with ILS import → FAIL, (3) candidate with hardcoded brand → FAIL, (4) upload without approval → 403, (5) unsupported version → error |
+| **Acceptance** | All negative cases correctly produce FAIL/BLOCKED, never PASS |
+
+### Task 7.3 — Evidence Package
+
+| Detail | Value |
+|---|---|
+| **What to do** | Collect all test results, verification outputs, gate decisions, commit SHAs into a single evidence package with hashes |
+| **Use** | `EvidenceCollector` from discovery package |
+| **Acceptance** | Evidence package is reproducible and verifiable |
+
+---
+
+## Phase 8: Final Audit + Stabilization (W8–W11)
+
+### Task 8.1 — API Contract Freeze
+
+| Detail | Value |
+|---|---|
+| **What to do** | Document all API endpoints, request/response schemas. Freeze the contract. |
+| **Acceptance** | OpenAPI spec generated and matches implementation |
+
+### Task 8.2 — Independent Backend Audit (Q01)
+
+| Detail | Value |
+|---|---|
+| **What to do** | Verify every backend endpoint returns real data, never fabricated PASS. Verify gate logic. |
+
+### Task 8.3 — Independent Frontend Audit (Q02)
+
+| Detail | Value |
+|---|---|
+| **What to do** | Verify every page consumes real backend data, never uses hardcoded fixture results. |
+
+### Task 8.4 — E2E Certification Audit (Q03)
+
+| Detail | Value |
+|---|---|
+| **What to do** | Run the golden E2E journey independently. Verify the tested SHA matches the pushed SHA. |
+
+---
+
+## Execution Order + Dependencies
+
+```
+Phase 1 (Discovery) ─────────────────────────┐
+  Task 1.1: Wire scanners                     │
+  Task 1.2: Discovery adapter                 │
+  Task 1.3: Fixture reconciliation            │
+                                              ▼
+Phase 2 (Contract) ──────────────────────────┐
+  Task 2.1: Contract schema        ◄── P1    │
+  Task 2.2: Contract generator                │
+  Task 2.3: Contract API endpoint             │
+  Task 2.4: Auto-generate on create           │
+                                              ▼
+Phase 3 (Candidate) ─────────────────────────┐
+  Task 3.1: Intake service          ◄── P2   │
+  Task 3.2: Canonical comparison              │
+  Task 3.3: Placement manifest                │
+                                              ▼
+Phase 4 (Approval) ──────────────────────────┐
+  Task 4.1: Approval gate           ◄── P3   │
+  Task 4.2: Placement execution               │
+                                              ▼
+Phase 5 (Verification) ──────────────────────┐
+  Task 5.1–5.7: All verifications    ◄── P4  │  (parallel)
+  Task 5.8: Certification gate                │
+                                              ▼
+Phase 6 (Frontend) ──────────────────────────┐
+  Task 6.1–6.5: Wire all pages      ◄── P5  │  (parallel)
+                                              ▼
+Phase 7 (Testing) ───────────────────────────┐
+  Task 7.1: Golden E2E              ◄── P6   │
+  Task 7.2: Negative tests                    │
+  Task 7.3: Evidence package                   │
+                                              ▼
+Phase 8 (Audit) ─────────────────────────────┘
+  Task 8.1–8.4: Final audits        ◄── P7
+```
+
+---
+
+## Parallelization Opportunities
+
+| Can Run In Parallel | Tasks |
+|---|---|
+| **Within Phase 1** | Task 1.1 + 1.2 (after scanners work) |
+| **Within Phase 2** | Task 2.1 + 2.2 (schema + generator) |
+| **Within Phase 3** | Task 3.1 + 3.2 (intake + comparison) |
+| **Within Phase 5** | ALL Tasks 5.1–5.7 (all verifications are independent) |
+| **Within Phase 6** | ALL Tasks 6.1–6.5 (all pages are independent) |
+| **Cross-Phase** | Phase 6 can start as soon as Phase 2 API exists (Task 6.2 only needs Task 2.3) |
+
+---
+
+## Estimated Effort
+
+| Phase | Tasks | Effort |
+|---|---|---|
+| Phase 1: Live Discovery | 3 tasks | 2–3 days |
+| Phase 2: Engineering Contract | 4 tasks | 3–4 days |
+| Phase 3: Candidate Pipeline | 3 tasks | 3–4 days |
+| Phase 4: Approval + Placement | 2 tasks | 2–3 days |
+| Phase 5: Verification | 8 tasks | 4–5 days |
+| Phase 6: Frontend Wiring | 5 tasks | 2–3 days |
+| Phase 7: Testing | 3 tasks | 2–3 days |
+| Phase 8: Audit | 4 tasks | 2–3 days |
+| **Total** | **32 tasks** | **~20–28 days** |
+
+---
+
+## What This Achieves
+
+When all phases are complete:
+
+| Spec Area | Before | After |
+|---|:---:|:---:|
+| TutorialBlockRenderer routing | ✅ 100% | ✅ 100% |
+| I1/C1/D1 canonical blocks | ✅ 100% | ✅ 100% |
+| UBRC / Theme / Brand independence | ✅ 100% | ✅ 100% |
+| Composer registry | ✅ 100% | ✅ 100% |
+| ActiveBlockContext / ILS / Telemetry | ✅ 100% | ✅ 100% |
+| **Live repository discovery** | ❌ 0% | ✅ 100% |
+| **Engineering Contract generation** | ❌ 0% | ✅ 100% |
+| **Candidate intake pipeline** | ❌ 0% | ✅ 100% |
+| **Approval + placement** | ❌ 0% | ✅ 100% |
+| **Verification (schema/renderer/Composer/UBRC/theme/ILS/LSNB/RSSB)** | ❌ 0% | ✅ 100% |
+| **Certification gate** | ❌ 0% | ✅ 100% |
+| **Frontend → live backend** | ⚠️ 50% | ✅ 100% |
+| **E2E journey + evidence** | ❌ 0% | ✅ 100% |
+
+> [!IMPORTANT]
+> **Ready to proceed?** Click "Proceed" and I'll start with **Phase 1, Task 1.1** — wiring the live discovery scanners to replace the static fixture data.
