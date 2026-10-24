@@ -21,6 +21,8 @@ from app.contracts.engineering_contract import (
 from app.contracts.repository_intelligence import (
     build_contract as build_repo_contract,
     build_inline_code_templates,
+    validate_contract_template_schema_consistency,
+    FAMILY_PAYLOAD_SCHEMAS,
     RepositoryEvidenceBlocked
 )
 from app.models.workflow_target import WorkflowTarget
@@ -186,6 +188,7 @@ async def create_engineering_contract(
     
     # Verify workflow is in correct state
     valid_states = [
+        CanonicalWorkflowState.REQUESTED,
         CanonicalWorkflowState.DISCOVERY,
         CanonicalWorkflowState.BRIEF_READY,
         CanonicalWorkflowState.AWAITING_GATE_1
@@ -196,6 +199,17 @@ async def create_engineering_contract(
             detail=f"Cannot generate contract for workflow in state '{workflow_obj.current_state.value}'. "
                    f"Valid states: {', '.join(s.value for s in valid_states)}"
         )
+    
+    # If in REQUESTED state, transition to DISCOVERY before generating contract
+    if workflow_obj.current_state == CanonicalWorkflowState.REQUESTED:
+        workflow_obj = await governance_service.transition_state(
+            workflow_id=workflow_id,
+            to_state=CanonicalWorkflowState.DISCOVERY,
+            triggered_by=user.get("user_id") or "system",
+            evidence_id=None,
+            reason="Starting discovery for contract generation"
+        )
+
     
     # Check if contract already exists (immutability enforcement)
     existing_contract_model = await contract_repo.get_by_workflow(workflow_id)
@@ -232,16 +246,6 @@ async def create_engineering_contract(
                    "Cannot generate contract without valid target identity."
         )
     
-    # Extract target from workflow's bound identity
-    target = WorkflowTarget(
-        workflow_id=workflow_id,
-        family=workflow_obj.target_family,
-        version=workflow_obj.target_version,
-        block_type=workflow_obj.target_family.lower(),  # e.g., "Introduction" -> "introduction"
-        specification_id=workflow_obj.specification_id,
-        source_snapshot_id=workflow_obj.snapshot_id or "snapshot-pending"
-    )
-    
     # Load canonical TypeScript snapshot (architectural boundary: Python consumes, never produces)
     workspace_root = os.environ.get("WORKSPACE_ROOT", os.environ.get("QUIZ_PLATFORM_REPO_ROOT"))
     if not workspace_root:
@@ -253,6 +257,24 @@ async def create_engineering_contract(
     
     # Calculate snapshot SHA-256 from actual file content
     snapshot_sha256 = calculate_snapshot_sha256(workspace_root)
+    
+    snapshot_meta = snapshot.get("metadata", {})
+    actual_snapshot_id = (
+        workflow_obj.snapshot_id 
+        or snapshot_meta.get("snapshotId") 
+        or snapshot.get("snapshot_id") 
+        or f"snapshot-{snapshot_sha256[:12]}"
+    )
+    
+    # Extract target from workflow's bound identity
+    target = WorkflowTarget(
+        workflow_id=workflow_id,
+        family=workflow_obj.target_family,
+        version=workflow_obj.target_version,
+        block_type=workflow_obj.target_family.lower(),  # e.g., "Introduction" -> "introduction"
+        specification_id=workflow_obj.specification_id,
+        source_snapshot_id=actual_snapshot_id
+    )
     
     # Build repository contract from snapshot (Wave 1 canonical implementation)
     # Fail-closed: raises RepositoryEvidenceBlocked if evidence missing/invalid
@@ -294,6 +316,62 @@ async def create_engineering_contract(
                    "Cannot generate contract without file structure evidence."
         )
     
+    # Domain educational objectives and payload types per block family
+    family_objectives = {
+        "objective": [
+            "Present clear, actionable lesson learning outcomes",
+            "Support measurable competency tracking and Bloom taxonomy cognitive tiers"
+        ],
+        "introduction": [
+            "Introduce the topic clearly with conceptual motivation",
+            "Provide learning roadmap and contextual relevance"
+        ],
+        "code": [
+            "Demonstrate executable syntax and coding patterns",
+            "Include annotations and line highlights for understanding"
+        ],
+        "definition": [
+            "Provide precise technical terminology and formal definition",
+            "Offer contextual examples and layman explanations"
+        ]
+    }
+    
+    family_type_schemas = {
+        "objective": {
+            "title": "string (optional heading)",
+            "objectives": "Array<{ id: string, text: string, bloomLevel?: 'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create', completed?: boolean }>",
+            "displayMode": "'bullet' | 'checklist' | 'numbered' (optional)"
+        },
+        "introduction": {
+            "title": "string",
+            "subtitle": "string (optional)",
+            "leadParagraph": "string",
+            "keyPoints": "string[] (optional)"
+        },
+        "code": {
+            "code": "string",
+            "language": "string",
+            "fileName": "string (optional)",
+            "highlights": "number[] (optional)"
+        },
+        "definition": {
+            "term": "string",
+            "pronunciation": "string (optional)",
+            "definition": "string",
+            "examples": "string[] (optional)"
+        }
+    }
+    
+    learning_objectives = family_objectives.get(
+        target.block_type,
+        [f"Present educational content for {target.family} {target.version}"]
+    )
+    
+    combined_type_contract = {
+        **repo_contract.type_strictness,
+        "payload_schema": family_type_schemas.get(target.block_type, {})
+    }
+    
     # Generate contract ID
     contract_id = str(uuid.uuid4())
     
@@ -303,13 +381,13 @@ async def create_engineering_contract(
         workflow_id=workflow_id,
         target=target,
         contract_version="1.0",
-        repository_snapshot_id=target.source_snapshot_id,
+        repository_snapshot_id=actual_snapshot_id,
         repository_snapshot_sha256=snapshot_sha256,
         canonical_references=repo_contract.references,
         
         # Populate contracts from repository intelligence (snapshot-derived values)
         educational_contract={
-            "learning_objectives": [],
+            "learning_objectives": learning_objectives,
             "content_type": target.block_type,
             "difficulty_level": repo_contract.difficulty_level
         },
@@ -319,13 +397,18 @@ async def create_engineering_contract(
             "style": repo_contract.style,
             "file_structure": repo_contract.file_paths
         },
-        type_contract=repo_contract.type_strictness,
+        type_contract=combined_type_contract,
         schema_contract=repo_contract.schema_contract,
         ubrc_contract={
             "required": True,
-            "props": ["ubrc"],
-            "type": "UniversalBlockRuntimeContext",
-            "validation": "strict"
+            "prop_name": "runtimeContext",
+            "type": "TutorialBlockRuntimeContext",
+            "validation": "strict",
+            "article_attributes": [
+                "data-block-id",
+                "data-block-type",
+                "data-block-version"
+            ]
         },
         renderer_contract=repo_contract.renderer_contract,
         composer_contract=repo_contract.composer_contract,
@@ -344,19 +427,16 @@ async def create_engineering_contract(
         },
         ils_contract={
             "passive_integration": True,
-            "props": ["ils"],
-            "no_direct_api_calls": True,
-            "page_level_only": True
+            "page_level_only": True,
+            "no_direct_api_calls": True
         },
         lsnb_contract={
             "page_level_only": True,
-            "no_block_level_nav": True,
-            "props": ["lsnb"]
+            "no_block_level_nav": True
         },
         rssb_contract={
             "page_level_only": True,
-            "no_block_level_status": True,
-            "props": ["rssb"]
+            "no_block_level_status": True
         },
         
         # Required deliverables
@@ -473,5 +553,4 @@ async def get_engineering_contract(
     # Contract hash verification is automatic in repository.get_by_workflow()
     # If we reach here, hash verification passed
     
-    # Return contract from stored data
-    return EngineeringContract(**contract_model.contract_data)
+    # Return contract f

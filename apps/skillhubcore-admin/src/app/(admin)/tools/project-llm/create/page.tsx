@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { useProjectLlm } from '../context/ProjectLlmContext';
+import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
 
 interface FamilyItem {
   id: string;
@@ -324,8 +325,12 @@ export default function CreateBlockPage() {
   const handleSelectFamily = (f: FamilyItem) => {
     setSelectedFamilyId(f.id);
     const existingIds = f.versions.map((v) => v.id);
-    const defaultTarget = `${f.id}${f.versions.length + 1}`;
+    const defaultTarget = f.versions.length > 0 ? f.versions[0].id : `${f.id}1`;
     setTargetVer(defaultTarget);
+    setSelectedExistingVersion(defaultTarget);
+    if (f.versions.length > 0) {
+      setPurposeText(f.versions[0].desc);
+    }
     setFamily(f.id, f.name, existingIds);
   };
 
@@ -333,14 +338,25 @@ export default function CreateBlockPage() {
     setTargetVersion(targetVer);
     setPurpose(purposeText);
 
-    // Create real backend workflow
-    const workflowId = await createBackendWorkflow();
+    // Create real backend workflow with explicit target version and family
+    const workflowId = await createBackendWorkflow({
+      targetFamily: selectedFamily.name,
+      targetVersion: targetVer,
+      purpose: purposeText,
+    });
     if (workflowId) {
+      // Pre-generate engineering contract immediately so subsequent steps have it ready
+      try {
+        await projectLlmClient.generateEngineeringContract(workflowId);
+      } catch (err) {
+        console.warn('Contract pre-generation deferred:', err);
+      }
       setStep(3); // Move to Step 3: Compliance Brief
       router.push(`/tools/project-llm/compliance-brief?workflowId=${workflowId}`);
     }
     // If createBackendWorkflow returns null, error is displayed via state.workflowError
   };
+
 
   return (
     <div className="space-y-6 pb-12">
@@ -475,8 +491,19 @@ export default function CreateBlockPage() {
                   key={ver.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => setSelectedExistingVersion(ver.id)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedExistingVersion(ver.id); } }}
+                  onClick={() => {
+                    setSelectedExistingVersion(ver.id);
+                    setTargetVer(ver.id);
+                    setPurposeText(ver.desc);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedExistingVersion(ver.id);
+                      setTargetVer(ver.id);
+                      setPurposeText(ver.desc);
+                    }
+                  }}
                   className={`rounded-xl border p-3 flex items-center justify-between gap-3 cursor-pointer transition-all ${
                     isChosen
                       ? 'border-pink-500 bg-pink-50/30 shadow-sm ring-1 ring-pink-500/20'

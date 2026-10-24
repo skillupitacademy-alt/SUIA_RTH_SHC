@@ -28,6 +28,10 @@ def get_database_url() -> str:
     
     Uses DATABASE_URL_TUTORIAL to match TypeScript convention.
     
+    Handles asyncpg compatibility:
+    - Strips `sslmode` and `channel_binding` query params (not supported by asyncpg)
+    - SSL is configured separately via connect_args in the engine
+    
     Returns:
         PostgreSQL connection URL with asyncpg driver
         
@@ -51,7 +55,26 @@ def get_database_url() -> str:
             "Expected postgresql:// or postgresql+asyncpg://"
         )
     
+    # Strip query params that asyncpg doesn't support
+    # (sslmode, channel_binding are psycopg2/Node.js conventions)
+    from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+    parsed = urlparse(database_url)
+    if parsed.query:
+        params = parse_qs(parsed.query)
+        # Remove asyncpg-incompatible params
+        for key in ['sslmode', 'channel_binding']:
+            params.pop(key, None)
+        # Rebuild URL with remaining params
+        new_query = urlencode(params, doseq=True)
+        database_url = urlunparse(parsed._replace(query=new_query))
+    
     return database_url
+
+
+def _needs_ssl() -> bool:
+    """Check if the DATABASE_URL_TUTORIAL requires SSL (has sslmode=require)."""
+    url = os.environ.get("DATABASE_URL_TUTORIAL", "")
+    return "sslmode=require" in url
 
 
 def get_engine() -> AsyncEngine:
@@ -65,12 +88,23 @@ def get_engine() -> AsyncEngine:
     
     if _engine is None:
         database_url = get_database_url()
+        
+        # Configure SSL for asyncpg if the original URL had sslmode=require
+        connect_args = {}
+        if _needs_ssl():
+            import ssl
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            connect_args["ssl"] = ssl_context
+        
         _engine = create_async_engine(
             database_url,
             echo=False,  # Set to True for SQL logging in development
             pool_pre_ping=True,  # Verify connections before using
             pool_size=5,
             max_overflow=10,
+            connect_args=connect_args,
         )
     
     return _engine

@@ -49,7 +49,7 @@ interface ProjectLlmContextType {
   setPurpose: (purpose: string) => void;
   setStep: (step: number) => void;
   resetWorkflow: () => void;
-  createBackendWorkflow: () => Promise<string | null>;
+  createBackendWorkflow: (overrides?: { targetFamily?: string; targetVersion?: string; purpose?: string }) => Promise<string | null>;
 }
 
 const ProjectLlmContext = createContext<ProjectLlmContextType | undefined>(undefined);
@@ -127,18 +127,32 @@ export function ProjectLlmProvider({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const createBackendWorkflow = useCallback(async (): Promise<string | null> => {
-    setState((prev) => ({ ...prev, isCreatingWorkflow: true, workflowError: null }));
+  const createBackendWorkflow = useCallback(async (overrides?: { targetFamily?: string; targetVersion?: string; purpose?: string }): Promise<string | null> => {
+    const familyName = overrides?.targetFamily || state.familyName;
+    const targetVersion = overrides?.targetVersion || state.targetVersion;
+    const purpose = overrides?.purpose || state.purpose;
+
+    setState((prev) => ({
+      ...prev,
+      isCreatingWorkflow: true,
+      workflowError: null,
+      familyName,
+      targetVersion,
+      purpose,
+    }));
     try {
-      const result = await projectLlmClient.createWorkflow({
-        targetFamily: state.familyName,
-        targetVersion: state.targetVersion,
-        purpose: state.purpose,
+      const result: any = await projectLlmClient.createWorkflow({
+        targetFamily: familyName,
+        targetVersion: targetVersion,
+        purpose: purpose,
       });
-      const workflowId = result.workflowId;
+      const workflowId: string = result.workflow_id || result.workflowId || '';
       setState((prev) => ({
         ...prev,
         workflowId,
+        familyName,
+        targetVersion,
+        purpose,
         isCreatingWorkflow: false,
       }));
       return workflowId;

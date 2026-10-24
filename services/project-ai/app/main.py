@@ -12,6 +12,31 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+# Auto-load environment variables from parent app's .env.local
+# This ensures DATABASE_URL_TUTORIAL is available without manual export,
+# matching how Next.js apps automatically load .env.local files.
+try:
+    from dotenv import load_dotenv
+    
+    _service_dir = Path(__file__).resolve().parent.parent
+    _workspace_root = _service_dir.parent.parent
+    
+    # Priority order (later overrides earlier):
+    # 1. services/project-ai/.env (local overrides)
+    # 2. apps/skillhubcore-admin/.env.local (shared DB credentials)
+    # 3. Root .env.local (monorepo-wide settings)
+    _env_candidates = [
+        _workspace_root / ".env.local",
+        _workspace_root / "apps" / "skillhubcore-admin" / ".env.local",
+        _service_dir / ".env",
+    ]
+    for _env_file in _env_candidates:
+        if _env_file.exists():
+            load_dotenv(_env_file, override=True)
+except ImportError:
+    # python-dotenv not installed — fall back to manual env vars
+    pass
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -34,6 +59,7 @@ async def lifespan(app: FastAPI):
         "WORKSPACE_ROOT",
         str(Path(__file__).resolve().parents[3]),
     )
+    os.environ["WORKSPACE_ROOT"] = workspace_root
     snapshot_path = Path(workspace_root) / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json'
     
     print(f"Project AI starting...")

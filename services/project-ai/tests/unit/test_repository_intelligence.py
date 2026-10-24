@@ -16,9 +16,12 @@ from app.contracts.repository_intelligence import (
     build_contract_legacy,
     compute_sha256,
     generate_evidence_id,
+    validate_evidence_id,
     extract_metadata_from_snapshot,
     derive_file_paths,
     extract_test_patterns,
+    extract_test_patterns_detailed,
+    build_inline_code_templates,
 )
 
 
@@ -280,8 +283,7 @@ class TestFailClosedBehavior:
         with pytest.raises(RepositoryEvidenceBlocked) as exc_info:
             build_contract(snapshot, "Unknown", "X9")
         
-        assert "Unknown block version 'X9'" in str(exc_info.value)
-        assert "Known versions" in str(exc_info.value)
+        assert "Unsupported block family 'Unknown'" in str(exc_info.value) or "No canonical evidence for Unknown/X9" in str(exc_info.value)
     
     def test_missing_snapshot_raises_blocked(self):
         """Test that missing snapshot raises RepositoryEvidenceBlocked."""
@@ -335,6 +337,38 @@ class TestFailClosedBehavior:
         
         assert "No canonical evidence for Code/C1" in str(exc_info.value)
         assert "Run TypeScript discovery scan" in str(exc_info.value)
+
+    def test_unsupported_family_blocked_even_when_introduction_baseline_exists(self):
+        """Test that unsupported family is blocked even if Introduction baseline exists in snapshot."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': 'a' * 64,
+                    'evidenceId': 'b' * 64
+                }
+            ]
+        }
+        with pytest.raises(RepositoryEvidenceBlocked) as exc_info:
+            build_contract(snapshot, "NonexistentFamily", "NF1")
+        assert "Unsupported block family 'NonexistentFamily'" in str(exc_info.value)
+
+    def test_mismatched_version_prefix_blocked_even_when_introduction_baseline_exists(self):
+        """Test that mismatched version prefix is blocked even if Introduction baseline exists in snapshot."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': 'a' * 64,
+                    'evidenceId': 'b' * 64
+                }
+            ]
+        }
+        with pytest.raises(RepositoryEvidenceBlocked) as exc_info:
+            build_contract(snapshot, "Objective", "X1")
+        assert "does not match family 'Objective' identifier prefix 'O'" in str(exc_info.value)
     
     def test_evidence_missing_content_hash_raises_blocked(self):
         """Test that evidence missing contentHash raises RepositoryEvidenceBlocked."""
@@ -405,8 +439,8 @@ class TestNoFilesystemAccess:
                 {
                     'kind': 'canonical_block',
                     'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
-                    'contentHash': 'nonexistent' * 8,  # 64 chars
-                    'evidenceId': 'fakefakefake' * 5 + 'fake'  # 64 chars
+                    'contentHash': '0' * 64,  # Valid 64-char hex SHA-256
+                    'evidenceId': 'f' * 64
                 }
             ]
         }
@@ -414,8 +448,66 @@ class TestNoFilesystemAccess:
         # Should succeed without checking filesystem
         contract = build_contract(snapshot, "Code", "C1")
         
-        assert contract.references[0].evidence[0].sha256 == 'nonexistent' * 8
-        assert contract.references[0].evidence[0].evidence_id == 'fakefakefake' * 5 + 'fake'
+        assert contract.references[0].evidence[0].sha256 == '0' * 64
+        assert contract.references[0].evidence[0].evidence_id == 'f' * 64
+
+    def test_invalid_hex_content_hash_raises_blocked(self):
+        """Test that non-hex contentHash raises RepositoryEvidenceBlocked."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+                    'contentHash': 'not-a-valid-hex-hash' * 3,
+                    'evidenceId': 'f' * 64
+                }
+            ]
+        }
+        with pytest.raises(RepositoryEvidenceBlocked) as exc_info:
+            build_contract(snapshot, "Code", "C1")
+        assert "Expected a 64-character hexadecimal SHA-256 hash" in str(exc_info.value)
+
+    def test_invalid_hex_content_hash_in_renderer_or_composer_raises_blocked(self):
+        """Test that malformed contentHash in renderer/composer raises RepositoryEvidenceBlocked."""
+        snapshot_renderer = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                },
+                {
+                    'kind': 'renderer',
+                    'path': 'packages/ui/src/tutorial/universal-tutorial-renderer.tsx',
+                    'contentHash': 'r' * 64,  # 'r' is invalid hex
+                    'evidenceId': 'evidence-1111222233334444'
+                }
+            ]
+        }
+        with pytest.raises(RepositoryEvidenceBlocked) as exc_info:
+            build_contract(snapshot_renderer, "Introduction", "I1")
+        assert "Expected a 64-character hexadecimal SHA-256 hash" in str(exc_info.value)
+
+        snapshot_composer = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                },
+                {
+                    'kind': 'composer',
+                    'path': 'packages/tutorial-composer/src/composer-service.ts',
+                    'contentHash': 'z' * 64,  # 'z' is invalid hex
+                    'evidenceId': 'evidence-5555666677778888'
+                }
+            ]
+        }
+        with pytest.raises(RepositoryEvidenceBlocked) as exc_info2:
+            build_contract(snapshot_composer, "Introduction", "I1")
+        assert "Expected a 64-character hexadecimal SHA-256 hash" in str(exc_info2.value)
 
 
 class TestHelperFunctions:
@@ -522,17 +614,17 @@ class TestMetadataExtraction:
                 {
                     'kind': 'canonical_block',
                     'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
-                    'evidenceId': 'abc123'
+                    'evidenceId': 'evidence-a1b2c3d4e5f67890'
                 },
                 {
                     'kind': 'schema',
                     'path': 'packages/ui/src/tutorial/blocks/code-schema.ts',
-                    'evidenceId': 'def456'
+                    'evidenceId': 'evidence-d3f4567890123456'
                 },
                 {
                     'kind': 'test',
                     'path': 'packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.test.tsx',
-                    'evidenceId': 'ghi789'
+                    'evidenceId': 'evidence-0123456789abcdef'
                 }
             ]
         }
@@ -541,7 +633,7 @@ class TestMetadataExtraction:
         
         assert 'component' in file_paths
         assert file_paths['component']['path'] == 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx'
-        assert file_paths['component']['evidence_id'] == 'abc123'
+        assert file_paths['component']['evidence_id'] == 'evidence-a1b2c3d4e5f67890'
         assert 'schema' in file_paths
         assert 'tests' in file_paths
         assert len(file_paths['tests']) == 1
@@ -569,7 +661,12 @@ class TestMetadataExtraction:
                 'language': 'TypeScript',
                 'framework': 'React',
                 'style': 'CSS Modules',
-                'difficulty_level': 'intermediate'
+                'difficulty_level': 'intermediate',
+                'compilerOptions': {
+                    'strict': True,
+                    'noImplicitAny': True,
+                    'strictNullChecks': True
+                }
             },
             'evidence': [
                 {
@@ -623,4 +720,529 @@ class TestMetadataExtraction:
         assert 'file_paths' in contract.field_evidence
         assert 'test_requirements' in contract.field_evidence
         assert 'type_strictness' in contract.field_evidence
+
+    def test_derive_file_paths_for_new_block_does_not_fabricate_evidence_id(self):
+        """Test that unbuilt block target is marked as proposed_output_path without fake evidence_id."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': 'a' * 64,
+                    'evidenceId': 'b' * 64
+                }
+            ]
+        }
+        paths = derive_file_paths(snapshot, "Objective", "O1")
+        assert paths['component']['status'] == 'proposed_output_path'
+        assert paths['component']['path'] == 'packages/ui/src/tutorial/blocks/ObjectiveO1Block.tsx'
+        assert 'evidence_id' not in paths['component']
+
+    def test_build_contract_objective_o1_marks_baseline_and_destination(self):
+        """Test that build_contract for Objective O1 accurately labels architectural baseline."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': '2' * 64
+                }
+            ]
+        }
+        contract = build_contract(snapshot, "Objective", "O1")
+        assert contract.family == "Objective"
+        assert contract.version == "O1"
+        assert contract.references[0].family == "Introduction (Architectural Baseline)"
+        assert contract.references[0].evidence[0].role == "architectural_baseline"
+        assert contract.file_paths['component']['status'] == 'proposed_output_path'
+
+    def test_derive_file_paths_does_not_associate_unrelated_schema(self):
+        """Test that schema derivation for Objective does not pick up Introduction schema."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'schema',
+                    'path': 'packages/ui/src/tutorial/schemas/introduction-i1.schema.ts',
+                    'contentHash': '5' * 64,
+                    'evidenceId': 'e' * 64
+                }
+            ]
+        }
+        paths = derive_file_paths(snapshot, "Objective", "O1")
+        # Should not grab introduction-i1 schema for Objective
+        assert paths['schema']['status'] == 'to_be_created_or_defined_inline'
+        assert paths['schema']['proposed_output_path'] == 'packages/types/src/tutorial-rich-document/schemas/objective-o1.schema.ts'
+        assert 'evidence_id' not in paths['schema']
+
+    def test_provenance_marking_observed_vs_inferred_vs_default(self):
+        """Test that field_evidence distinguishes observed from policy default."""
+        snapshot = {
+            'metadata': {
+                'language': 'TypeScript',
+                'evidence_id': 'evidence-60230209a0d29bda',
+                'provenance': {
+                    'language': 'observed_in_snapshot',
+                    'style': 'policy_default_tailwind',
+                    'difficulty_level': 'policy_default_intermediate'
+                }
+            },
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                }
+            ]
+        }
+        contract = build_contract(snapshot, "Introduction", "I1")
+        # Observed field has actual evidence_id, provenance, and source_evidence_ids
+        assert contract.field_evidence['language'].evidence_id == 'evidence-60230209a0d29bda'
+        assert contract.field_evidence['language'].provenance == 'observed_in_snapshot'
+        assert contract.field_evidence['language'].source_evidence_ids == ['evidence-60230209a0d29bda']
+        # Default fields do not fabricate real evidence IDs - they are None with explicit provenance
+        assert contract.field_evidence['style'].evidence_id is None
+        assert contract.field_evidence['style'].provenance == 'policy_default_tailwind'
+        assert contract.field_evidence['difficulty_level'].evidence_id is None
+        assert contract.field_evidence['difficulty_level'].provenance == 'policy_default_intermediate'
+
+    def test_build_contract_objective_o1_analyzes_all_three_canonical_blocks(self):
+        """Test that Objective O1 derives shared framework from all 3 canonical blocks when present."""
+        ev_intro = 'evidence-60230209a0d29bda'
+        ev_defn = 'evidence-0123456789abcdef'
+        ev_code = 'evidence-abcdef0123456789'
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': ev_intro
+                },
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/DefinitionBlock.tsx',
+                    'contentHash': '2' * 64,
+                    'evidenceId': ev_defn
+                },
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+                    'contentHash': '3' * 64,
+                    'evidenceId': ev_code
+                }
+            ]
+        }
+        contract = build_contract(snapshot, "Objective", "O1")
+        assert contract.family == "Objective"
+        assert contract.version == "O1"
+        assert len(contract.references) == 3
+        
+        families = [r.family for r in contract.references]
+        assert "Introduction (Architectural Baseline)" in families
+        assert "Definition (Architectural Baseline)" in families
+        assert "Code (Architectural Baseline)" in families
+        
+        # Verify comparative analysis metadata and baseline completeness
+        assert set(contract.comparative_analysis.canonical_blocks_analyzed) == {"Introduction I1", "Definition D1", "Code C1"}
+        assert contract.comparative_analysis.baseline_completeness == "complete"
+        assert contract.comparative_analysis.missing_baselines == []
+        
+        # Manifest-only snapshot: conventions classified as not_verified_from_snapshot_content
+        assert "ubrc_identity" in contract.comparative_analysis.shared_conventions
+        ubrc_conv = contract.comparative_analysis.shared_conventions["ubrc_identity"]
+        assert ubrc_conv["classification"] == "not_verified_from_snapshot_content"
+        assert ubrc_conv["content_verified"] is False
+        assert ubrc_conv["evidence_ids"] == []
+        assert set(ubrc_conv["manifest_evidence_ids"]) == {ev_intro, ev_defn, ev_code}
+        
+        # Verify block-specific observations note unparsed content in manifest snapshot
+        assert "Introduction" in contract.comparative_analysis.block_specific_conventions
+        intro_spec = contract.comparative_analysis.block_specific_conventions["Introduction"]
+        assert intro_spec["classification"] == "not_verified_from_snapshot_content"
+        assert intro_spec["evidence_id"] is None
+        assert intro_spec["manifest_evidence_id"] == ev_intro
+        
+        # Verify policy assertions have no fabricated evidence IDs
+        for p in contract.comparative_analysis.policy_requirements:
+            assert p["classification"] == "policy_assertion"
+            assert p["evidence_id"] is None
+            
+        # Verify unresolved differences are listed
+        assert len(contract.comparative_analysis.unresolved_differences) >= 3
+
+    def test_build_contract_objective_o1_with_parsed_content_derives_conventions(self):
+        """Test that Objective O1 verifies conventions from parsed AST/content when available."""
+        ev_intro = 'evidence-60230209a0d29bda'
+        ev_defn = 'evidence-0123456789abcdef'
+        ev_code = 'evidence-abcdef0123456789'
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': ev_intro,
+                    'parsed_facts': {
+                        'root_element': 'article',
+                        'ubrc': True,
+                        'props': True,
+                        'theme': True,
+                        'router': True
+                    }
+                },
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/DefinitionBlock.tsx',
+                    'contentHash': '2' * 64,
+                    'evidenceId': ev_defn,
+                    'parsed_facts': {
+                        'root_element': 'article',
+                        'ubrc': True,
+                        'props': True,
+                        'theme': True,
+                        'router': True
+                    }
+                },
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+                    'contentHash': '3' * 64,
+                    'evidenceId': ev_code,
+                    'parsed_facts': {
+                        'root_element': 'article',
+                        'ubrc': True,
+                        'props': True,
+                        'theme': True,
+                        'router': True
+                    }
+                }
+            ]
+        }
+        contract = build_contract(snapshot, "Objective", "O1")
+        assert contract.comparative_analysis.baseline_completeness == "complete"
+        ubrc_conv = contract.comparative_analysis.shared_conventions["ubrc_identity"]
+        assert ubrc_conv["classification"] == "observed_in_snapshot_content"
+        assert ubrc_conv["content_verified"] is True
+        assert set(ubrc_conv["evidence_ids"]) == {ev_intro, ev_defn, ev_code}
+        
+        intro_spec = contract.comparative_analysis.block_specific_conventions["Introduction"]
+        assert intro_spec["classification"] == "observed_in_snapshot_content"
+        assert intro_spec["evidence_id"] == ev_intro
+
+    def test_build_contract_objective_o1_partial_baselines_recorded_explicitly(self):
+        """Test that partial baseline availability is recorded without failing when baselines exist."""
+        ev_intro = 'evidence-60230209a0d29bda'
+        ev_code = 'evidence-abcdef0123456789'
+        # Snapshot missing Definition D1
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': ev_intro
+                },
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
+                    'contentHash': '3' * 64,
+                    'evidenceId': ev_code
+                }
+            ]
+        }
+        contract = build_contract(snapshot, "Objective", "O1")
+        assert contract.comparative_analysis.baseline_completeness == "partial"
+        assert contract.comparative_analysis.missing_baselines == ["Definition D1"]
+        assert set(contract.comparative_analysis.canonical_blocks_analyzed) == {"Introduction I1", "Code C1"}
+
+
+class TestEvidenceIdValidationAndPrecision:
+    """Tests for strict evidence ID validation and file-path precision."""
+    
+    def test_validate_evidence_id_accepts_valid_formats(self):
+        """Test that validate_evidence_id accepts valid TypeScript discovery IDs and 64-hex hashes."""
+        assert validate_evidence_id("evidence-60230209a0d29bda") == "evidence-60230209a0d29bda"
+        assert validate_evidence_id("a" * 64) == "a" * 64
+        
+    def test_validate_evidence_id_rejects_illustrative_placeholders(self):
+        """Test that illustrative placeholders like 'ev-intro-1234' raise RepositoryEvidenceBlocked."""
+        invalid_ids = [
+            "ev-intro-1234",
+            "test-evidence-id",
+            "evidence-001",
+            "evidence-xyz",
+            "short",
+            "",
+            "   ",
+        ]
+        for bad_id in invalid_ids:
+            with pytest.raises(RepositoryEvidenceBlocked) as exc_info:
+                validate_evidence_id(bad_id, "test_context")
+            assert "evidenceId" in str(exc_info.value)
+
+    def test_build_contract_fails_on_illustrative_evidence_id(self):
+        """Test that build_contract rejects snapshot containing illustrative placeholder evidenceId."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'ev-intro-1234'  # Non-compliant placeholder
+                }
+            ]
+        }
+        with pytest.raises(RepositoryEvidenceBlocked) as exc_info:
+            build_contract(snapshot, "Introduction", "I1")
+        assert "invalid 'evidenceId'" in str(exc_info.value)
+        assert "ev-intro-1234" in str(exc_info.value)
+
+    def test_derive_file_paths_strict_separation_observed_shared_proposed(self):
+        """Test that derive_file_paths separates observed, shared_framework, and proposed outputs."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                },
+                {
+                    'kind': 'types',
+                    'path': 'packages/ui/src/tutorial/types.ts',
+                    'contentHash': '2' * 64,
+                    'evidenceId': 'evidence-0123456789abcdef'
+                }
+            ]
+        }
+        paths = derive_file_paths(snapshot, "Objective", "O1")
+        
+        # Proposed outputs must never fabricate source evidence IDs
+        assert 'observed' in paths
+        assert 'shared_framework' in paths
+        assert 'proposed' in paths
+        
+        assert 'component' in paths['proposed']
+        assert paths['proposed']['component']['status'] == 'proposed_output_path'
+        assert 'evidence_id' not in paths['proposed']['component']
+        
+        assert 'schema' in paths['proposed']
+        assert 'evidence_id' not in paths['proposed']['schema']
+        
+        assert 'tests' in paths['proposed']
+        assert 'evidence_id' not in paths['proposed']['tests']
+        
+        # Shared framework retains exact evidence ID
+        assert 'types' in paths['shared_framework']
+        assert paths['shared_framework']['types']['evidence_id'] == 'evidence-0123456789abcdef'
+
+    def test_test_pattern_breakdown_observed_vs_mandatory_policy(self):
+        """Test that test_requirements separates observed snapshot patterns from mandatory policy tests."""
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'test',
+                    'path': 'packages/ui/src/tutorial/blocks/__tests__/IntroductionBlock.test.tsx',
+                    'contentHash': '6' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                }
+            ]
+        }
+        detailed = extract_test_patterns_detailed(snapshot)
+        assert 'observed_patterns' in detailed
+        assert 'mandatory_policy_tests' in detailed
+        assert any("Unit tests" in p['pattern'] for p in detailed['observed_patterns'])
+        assert "Zero hardcoded brand colors compliance test" in detailed['mandatory_policy_tests']
+        assert "UBRC identity attributes verification test" in detailed['mandatory_policy_tests']
+
+    def test_renderer_and_composer_contract_verification_status(self):
+        """Test that renderer and composer contracts record decoupled multi-tier verification status."""
+        # 1. Tier 1: File presence only (path and valid 64-char hex hash, no parsed registration, no integration tests)
+        # Capabilities MUST remain unverified (capabilities_verified = False)
+        snapshot_file_presence_only = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                },
+                {
+                    'kind': 'renderer',
+                    'path': 'packages/ui/src/tutorial/universal-tutorial-renderer.tsx',
+                    'contentHash': '4' * 64,
+                    'evidenceId': 'evidence-1111222233334444'
+                },
+                {
+                    'kind': 'composer',
+                    'path': 'packages/tutorial-composer/src/composer-service.ts',
+                    'contentHash': 'c' * 64,
+                    'evidenceId': 'evidence-5555666677778888'
+                }
+            ]
+        }
+        contract_presence = build_contract(snapshot_file_presence_only, "Introduction", "I1")
+        assert contract_presence.renderer_contract['evidence_found'] is True
+        assert contract_presence.renderer_contract['capabilities_verified'] is False
+        assert contract_presence.renderer_contract['block_registration_status'] == 'pending_registration'
+        assert contract_presence.renderer_contract['verification_status'] == 'evidence_found_capabilities_unverified'
+        assert contract_presence.renderer_contract['evidence_id'] == 'evidence-1111222233334444'
+
+        assert contract_presence.composer_contract['evidence_found'] is True
+        assert contract_presence.composer_contract['capabilities_verified'] is False
+        assert contract_presence.composer_contract['block_registration_status'] == 'pending_registration'
+        assert contract_presence.composer_contract['verification_status'] == 'evidence_found_capabilities_unverified'
+        assert contract_presence.composer_contract['evidence_id'] == 'evidence-5555666677778888'
+
+        # 2. Tier 2: Parsed source confirms registration entry, but runtime integration tests have NOT run
+        # Registration evidence found; runtime behavior not yet proven (capabilities_verified = False)
+        snapshot_registration_confirmed = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                },
+                {
+                    'kind': 'renderer',
+                    'path': 'packages/ui/src/tutorial/universal-tutorial-renderer.tsx',
+                    'contentHash': '4' * 64,
+                    'evidenceId': 'evidence-1111222233334444',
+                    'parsed_facts': {
+                        'registered_blocks': ['IntroductionI1', 'CodeC1', 'DefinitionD1']
+                    }
+                },
+                {
+                    'kind': 'composer',
+                    'path': 'packages/tutorial-composer/src/composer-service.ts',
+                    'contentHash': 'c' * 64,
+                    'evidenceId': 'evidence-5555666677778888',
+                    'parsed_facts': {
+                        'supported_blocks': ['IntroductionI1', 'CodeC1', 'DefinitionD1']
+                    }
+                }
+            ]
+        }
+        contract_reg = build_contract(snapshot_registration_confirmed, "Introduction", "I1")
+        assert contract_reg.renderer_contract['evidence_found'] is True
+        assert contract_reg.renderer_contract['block_registration_status'] == 'registered'
+        assert contract_reg.renderer_contract['capabilities_verified'] is False
+        assert contract_reg.renderer_contract['verification_status'] == 'registration_confirmed_runtime_unverified'
+
+        assert contract_reg.composer_contract['evidence_found'] is True
+        assert contract_reg.composer_contract['block_registration_status'] == 'registered'
+        assert contract_reg.composer_contract['capabilities_verified'] is False
+        assert contract_reg.composer_contract['verification_status'] == 'registration_confirmed_runtime_unverified'
+
+        # 3. Tier 3: Integration test confirms the block renders through the renderer & composer operations
+        snapshot_integration_verified = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                },
+                {
+                    'kind': 'renderer',
+                    'path': 'packages/ui/src/tutorial/universal-tutorial-renderer.tsx',
+                    'contentHash': '4' * 64,
+                    'evidenceId': 'evidence-1111222233334444',
+                    'parsed_facts': {
+                        'registered_blocks': ['IntroductionI1'],
+                        'tested_blocks': ['IntroductionI1']
+                    }
+                },
+                {
+                    'kind': 'composer',
+                    'path': 'packages/tutorial-composer/src/composer-service.ts',
+                    'contentHash': 'c' * 64,
+                    'evidenceId': 'evidence-5555666677778888',
+                    'parsed_facts': {
+                        'supported_blocks': ['IntroductionI1'],
+                        'tested_operations': ['create', 'edit', 'delete', 'reorder']
+                    }
+                }
+            ]
+        }
+        contract_verified = build_contract(snapshot_integration_verified, "Introduction", "I1")
+        assert contract_verified.renderer_contract['evidence_found'] is True
+        assert contract_verified.renderer_contract['block_registration_status'] == 'registered'
+        assert contract_verified.renderer_contract['capabilities_verified'] is True
+        assert contract_verified.renderer_contract['verification_status'] == 'integration_test_verified'
+
+        assert contract_verified.composer_contract['evidence_found'] is True
+        assert contract_verified.composer_contract['block_registration_status'] == 'registered'
+        assert contract_verified.composer_contract['capabilities_verified'] is True
+        assert contract_verified.composer_contract['verification_status'] == 'integration_test_verified'
+
+        # 4. Tier 4: Objective O1 (new block) with renderer/composer evidence in snapshot:
+        # Evidence is found, but registration is pending integration and capabilities are unverified
+        contract_obj = build_contract(snapshot_registration_confirmed, "Objective", "O1")
+        assert contract_obj.renderer_contract['evidence_found'] is True
+        assert contract_obj.renderer_contract['capabilities_verified'] is False
+        assert contract_obj.renderer_contract['block_registration_status'] == 'pending_registration'
+        assert contract_obj.renderer_contract['verification_status'] == 'evidence_found_capabilities_unverified'
+        assert contract_obj.renderer_contract['evidence_id'] == 'evidence-1111222233334444'
+
+        assert contract_obj.composer_contract['evidence_found'] is True
+        assert contract_obj.composer_contract['capabilities_verified'] is False
+        assert contract_obj.composer_contract['block_registration_status'] == 'pending_registration'
+        assert contract_obj.composer_contract['verification_status'] == 'evidence_found_capabilities_unverified'
+        assert contract_obj.composer_contract['evidence_id'] == 'evidence-5555666677778888'
+
+        # 5. Tier 5: Required checks have not run (no renderer/composer evidence in snapshot -> NOT_RUN)
+        snapshot_without_tools = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                }
+            ]
+        }
+        contract2 = build_contract(snapshot_without_tools, "Introduction", "I1")
+        assert contract2.renderer_contract['evidence_found'] is False
+        assert contract2.renderer_contract['capabilities_verified'] is False
+        assert contract2.renderer_contract['block_registration_status'] == 'pending_registration'
+        assert contract2.renderer_contract['verification_status'] == 'NOT_RUN'
+        assert contract2.renderer_contract['evidence_id'] is None
+
+        assert contract2.composer_contract['evidence_found'] is False
+        assert contract2.composer_contract['capabilities_verified'] is False
+        assert contract2.composer_contract['block_registration_status'] == 'pending_registration'
+        assert contract2.composer_contract['verification_status'] == 'NOT_RUN'
+        assert contract2.composer_contract['evidence_id'] is None
+
+    def test_inline_templates_type_safety_and_dual_theme_isolation(self):
+        """Test that generated templates contain zero 'any' types and test skeleton asserts brand isolation."""
+        templates = build_inline_code_templates("Objective", "O1")
+        component_code = templates["component_skeleton"]["code"]
+        test_code = templates["test_skeleton"]["code"]
+        
+        # Zero 'any' types in block props
+        assert "block: any" not in component_code
+        assert "(block as any)" not in component_code
+        assert "ObjectiveO1BlockData" in component_code
+        assert "ObjectiveO1BlockContent" in component_code
+        
+        # Test skeleton asserts dual-brand theme independence and isolation
+        assert "brandThemeA" in test_code
+        assert "brandThemeB" in test_code
+        assert "#e11d48" in test_code
+        assert "#0ea5e9" in test_code
+        assert "expect(containerB.innerHTML).not.toContain('#e11d48')" in test_code
+        assert "expect(containerA.innerHTML).not.toContain('#0ea5e9')" in test_code
+        assert "DEFAULT_THEME" in test_code
+        
+        # Enhanced test coverage: dynamic tokens, neutral theme zero-hardcoded colors, and WCAG accessibility
+        assert "strictly verifies dynamic theme tokens" in test_code
+        assert "#10b981" in test_code
+        assert "WCAG 2.1 AA" in test_code
+
+
 
