@@ -251,6 +251,12 @@ async def run_candidate_qualification_tests(
             rel_test_paths.append(f"src/tutorial/blocks/__tests__/{cand_test_filename}")
 
         # Run vitest
+        # Do not let a long-lived API worker's Node resolution or production mode
+        # leak into an isolated qualification run.
+        test_env = os.environ.copy()
+        test_env.pop("NODE_PATH", None)
+        test_env["NODE_ENV"] = "test"
+        test_env["CI"] = "true"
         if os.name == 'nt':
             cmd_str = f'pnpm --filter @quiz/ui exec vitest run {" ".join(rel_test_paths)} --reporter=json'
             logger.info(f"Running candidate qualification tests: {cmd_str}")
@@ -260,7 +266,8 @@ async def run_candidate_qualification_tests(
                 capture_output=True,
                 text=True,
                 timeout=timeout_seconds,
-                shell=True
+                shell=True,
+                env=test_env,
             )
         else:
             cmd = [
@@ -280,7 +287,8 @@ async def run_candidate_qualification_tests(
                 capture_output=True,
                 text=True,
                 timeout=timeout_seconds,
-                shell=False
+                shell=False,
+                env=test_env,
             )
         
         duration_ms = int((time.time() - start_time) * 1000)
@@ -302,6 +310,10 @@ async def run_candidate_qualification_tests(
             "qualification_inputs": qualification_inputs,
             "sandbox_tests": rel_test_paths,
             "sandbox_components": sorted(comp_map.values()),
+            "node_environment": {
+                "NODE_ENV": test_env["NODE_ENV"],
+                "NODE_PATH": "<cleared>",
+            },
         }
         evidence_hash = hashlib.sha256(json.dumps({
             "output": raw_output,

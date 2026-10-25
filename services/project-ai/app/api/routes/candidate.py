@@ -405,9 +405,19 @@ async def upload_candidate(
     test_result = await run_candidate_qualification_tests(package.candidateId, package.files)
     
     if not test_result["passed"]:
+        runner_metadata = test_result.get("runner_metadata", {})
+        runner_revision = runner_metadata.get("runner_revision", "unknown")
+        input_digests = ",".join(
+            f"{entry.get('filename')}:{entry.get('sha256', '')[:12]}"
+            for entry in runner_metadata.get("qualification_inputs", [])
+        )
         raise HTTPException(
             status_code=422,
-            detail=f"Candidate qualification test suite failed: {test_result['detail']}"
+            detail=(
+                f"Candidate qualification test suite failed: {test_result['detail']} "
+                f"[evidence_id={test_result['evidence_id']}; runner_revision={runner_revision}; "
+                f"input_digests={input_digests}]"
+            )
         )
     
     # Persist to PostgreSQL
