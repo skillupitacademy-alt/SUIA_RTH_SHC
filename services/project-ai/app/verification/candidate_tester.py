@@ -234,6 +234,15 @@ async def run_candidate_qualification_tests(
         duration_ms = int((time.time() - start_time) * 1000)
         stdout = process.stdout or ""
         stderr = process.stderr or ""
+        try:
+            d = json.loads(stdout)
+            for tr in d.get("testResults", []):
+                logger.info(f"Candidate test suite {tr.get('name')} status: {tr.get('status')}")
+                for ar in tr.get("assertionResults", []):
+                    if ar.get("status") == "failed":
+                        logger.warning(f"  FAILED assertion: {ar.get('fullName')}: {ar.get('failureMessages')}")
+        except Exception:
+            logger.debug(f"Candidate test raw output: {stdout[:500]}")
         raw_output = stdout if stdout.strip() else stderr
 
         evidence_hash = hashlib.sha256(raw_output.encode('utf-8')).hexdigest()

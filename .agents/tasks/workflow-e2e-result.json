@@ -1,6 +1,6 @@
 {
   "test_name": "m2_9_golden_e2e",
-  "run_timestamp": "2026-10-24T22:58:51.475652+00:00",
+  "run_timestamp": "2026-10-25T16:07:00.602411+00:00",
   "branch": "m2-project-ai-canonical-wiring",
   "steps": [
     {
@@ -30,8 +30,8 @@
     {
       "step": "CONTRACT_HASH",
       "status": "PASS",
-      "evidence_id": "729a579c8b34b0fb",
-      "notes": "Contract hash: 729a579c8b34b0fb... (immutability verified)"
+      "evidence_id": "cd6f945f5b1b84e3",
+      "notes": "Contract hash: cd6f945f5b1b84e3... (immutability verified)"
     },
     {
       "step": "CANDIDATE_UPLOAD",
