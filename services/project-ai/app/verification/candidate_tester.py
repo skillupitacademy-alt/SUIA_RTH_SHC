@@ -143,10 +143,9 @@ async def run_candidate_qualification_tests(
 
     component_files = [
         f for f in files
-        if (f.filename.endswith('.tsx') or f.filename.endswith('.ts')) and
+        if (f.filename.endswith('Block.tsx') or f.filename.endswith('Block.ts')) and
            not (f.filename.endswith('.test.tsx') or f.filename.endswith('.test.ts') or
-                f.filename.endswith('.spec.tsx') or f.filename.endswith('.spec.ts') or
-                f.filename.endswith('.schema.ts'))
+                f.filename.endswith('.spec.tsx') or f.filename.endswith('.spec.ts'))
     ]
 
     cand_short = candidate_id.replace('-', '')[:8]

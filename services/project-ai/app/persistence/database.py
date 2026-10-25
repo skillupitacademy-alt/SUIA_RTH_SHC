@@ -176,7 +176,7 @@ async def validate_database_connectivity() -> bool:
         async with engine.connect() as conn:
             result = await conn.execute(text("SELECT version()"))
             pg_version = result.scalar()
-            print(f"✓ Connected to PostgreSQL: {pg_version}")
+            print(f"[OK] Connected to PostgreSQL: {pg_version}")
     except Exception as e:
         raise ConnectionError(
             f"Failed to connect to database: {e}. "
@@ -212,7 +212,7 @@ async def validate_database_connectivity() -> bool:
             if not exists:
                 missing_tables.append(table_name)
             else:
-                print(f"✓ Table '{table_name}' exists")
+                print(f"[OK] Table '{table_name}' exists")
     
     if missing_tables:
         raise RuntimeError(
@@ -220,7 +220,7 @@ async def validate_database_connectivity() -> bool:
             f"Run Drizzle migration: pnpm --filter @quiz/db-tutorial db:migrate"
         )
     
-    print("✓ All project_ai_* tables exist")
+    print("[OK] All project_ai_* tables exist")
     return True
 
 
@@ -236,4 +236,4 @@ async def close_db() -> None:
         await _engine.dispose()
         _engine = None
         _async_session_factory = None
-        print("✓ Database connections closed")
+        print("[OK] Database connections closed")

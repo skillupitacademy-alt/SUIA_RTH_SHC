@@ -73,13 +73,13 @@ async def lifespan(app: FastAPI):
             "pnpm --filter @quiz/project-llm-discovery scan"
         )
     else:
-        print(f"✓ Snapshot file found")
+        print("[OK] Snapshot file found")
     
     # Startup: Validate database connectivity
     try:
         from app.persistence import validate_database_connectivity
         await validate_database_connectivity()
-        print("✓ Database connectivity validated")
+        print("[OK] Database connectivity validated")
     except Exception as e:
         print(f"ERROR: Database validation failed: {e}")
         raise
@@ -88,7 +88,7 @@ async def lifespan(app: FastAPI):
     try:
         from app.auth import get_jwt_config
         jwt_config = get_jwt_config()
-        print(f"✓ JWT configuration validated (algorithm: {jwt_config['algorithm']}, token expiry: {jwt_config['access_token_expire_minutes']} minutes)")
+        print(f"[OK] JWT configuration validated (algorithm: {jwt_config['algorithm']}, token expiry: {jwt_config['access_token_expire_minutes']} minutes)")
     except Exception as e:
         print(f"ERROR: JWT configuration validation failed: {e}")
         raise
