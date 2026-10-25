@@ -1,9 +1,17 @@
 """Evidence-backed canonical comparison for candidate blocks."""
 
+from pathlib import Path
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from app.models.candidate import BlockFamily, CandidateFile, PlacementDecision
+from app.models.candidate import (
+    BlockFamily,
+    CandidateFile,
+    PlacementDecision,
+    PlacementFileAction,
+    PlacementFileOperation,
+)
+from app.placement.patcher import compute_sha256
 
 
 class StructuralFeatures:
@@ -333,3 +341,173 @@ class CanonicalComparator:
         
         keywords = family_keywords.get(family, [])
         return any(keyword in block_type_lower for keyword in keywords)
+
+    def derive_file_operations(
+        self,
+        files: List[Any],
+        family: BlockFamily | str,
+        version: str,
+        workspace_root: str | Path
+    ) -> List[PlacementFileOperation]:
+        """
+        Derive granular, snapshot-backed file-level operations with pre-image hashes.
+        
+        Args:
+            files: Candidate files (list of CandidateFile models or dicts)
+            family: Target block family
+            version: Target block version code (e.g. 'O1')
+            workspace_root: Root directory of target repository
+            
+        Returns:
+            List of validated PlacementFileOperation objects
+        """
+        ws = Path(workspace_root)
+        family_name = family.value if isinstance(family, BlockFamily) else str(family)
+        family_lower = family_name.lower()
+        version_upper = version.upper()
+        
+        operations: List[PlacementFileOperation] = []
+        
+        # Target paths for canonical patched files
+        renderer_rel_path = "packages/ui/src/tutorial/TutorialBlockRenderer.tsx"
+        registry_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/index.ts"
+        types_rel_path = "packages/types/src/tutorial-page-content.types.ts"
+
+        def get_pre_hash(rel_path: str) -> Optional[str]:
+            full_path = ws / rel_path
+            if full_path.exists():
+                try:
+                    return compute_sha256(full_path.read_bytes())
+                except Exception:
+                    return None
+            return None
+
+        component_name = None
+        has_renderer_signal = False
+        has_registry_signal = False
+        has_types_signal = False
+
+        for f in files:
+            filename = f.get('filename') if isinstance(f, dict) else f.filename
+            content = f.get('content') if isinstance(f, dict) else f.content
+            source_sha = compute_sha256(content)
+            
+            # 1. Block Component
+            if filename.endswith('.tsx') and not filename.endswith('.test.tsx') and not filename.endswith('.spec.tsx') and filename != 'TutorialBlockRenderer.tsx':
+                component_name = filename[:-4] # strip .tsx
+                operations.append(PlacementFileOperation(
+                    action=PlacementFileAction.CREATE,
+                    source_filename=filename,
+                    source_sha256=source_sha,
+                    target_path=f"packages/ui/src/tutorial/blocks/{filename}",
+                    expected_pre_hash=None,
+                    patch_strategy=None,
+                    description=f"Create {family_name} {version_upper} React UI block component"
+                ))
+            
+            # 2. Block Unit Tests
+            elif filename.endswith('.test.tsx') or filename.endswith('.spec.tsx'):
+                operations.append(PlacementFileOperation(
+                    action=PlacementFileAction.CREATE,
+                    source_filename=filename,
+                    source_sha256=source_sha,
+                    target_path=f"packages/ui/src/tutorial/blocks/__tests__/{filename}",
+                    expected_pre_hash=None,
+                    patch_strategy=None,
+                    description=f"Create Jest/React unit test suite for {family_name} {version_upper}"
+                ))
+            
+            # 3. JSON Schema
+            elif filename.endswith('.schema.json'):
+                operations.append(PlacementFileOperation(
+                    action=PlacementFileAction.CREATE,
+                    source_filename=filename,
+                    source_sha256=source_sha,
+                    target_path=f"packages/ui/src/tutorial/schemas/{filename}",
+                    expected_pre_hash=None,
+                    patch_strategy=None,
+                    description=f"Create JSON schema validation contract for {family_name} {version_upper}"
+                ))
+
+            # 4. TypeScript Schema / Types
+            elif filename.endswith('.schema.ts') or filename.endswith('.types.ts'):
+                operations.append(PlacementFileOperation(
+                    action=PlacementFileAction.CREATE,
+                    source_filename=filename,
+                    source_sha256=source_sha,
+                    target_path=f"packages/ui/src/tutorial/types/{filename}",
+                    expected_pre_hash=None,
+                    patch_strategy=None,
+                    description=f"Create TypeScript types for {family_name} {version_upper}"
+                ))
+
+            # 5. Admin Composer Registry Entry
+            elif filename.lower() in ['registry.ts', f'{family_lower}.registry.ts']:
+                has_registry_signal = True
+                operations.append(PlacementFileOperation(
+                    action=PlacementFileAction.CREATE,
+                    source_filename=filename,
+                    source_sha256=source_sha,
+                    target_path=f"apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/{family_lower}.registry.ts",
+                    expected_pre_hash=None,
+                    patch_strategy=None,
+                    description=f"Create Composer registry entry for {family_name} {version_upper}"
+                ))
+
+            # 6. Renderer Signal
+            elif filename == 'TutorialBlockRenderer.tsx':
+                has_renderer_signal = True
+
+            # 7. Types Signal
+            elif filename == 'tutorial-composer.service.ts':
+                has_types_signal = True
+
+            # 8. Skip README / meta files
+            else:
+                operations.append(PlacementFileOperation(
+                    action=PlacementFileAction.SKIP,
+                    source_filename=filename,
+                    source_sha256=source_sha,
+                    target_path="",
+                    expected_pre_hash=None,
+                    patch_strategy=None,
+                    description=f"Skip {filename} from canonical repository placement (metadata/doc)"
+                ))
+
+        # Add Runtime Renderer Patch Operation if component is present
+        if component_name or has_renderer_signal:
+            comp = component_name or f"{family_name}{version_upper}Block"
+            operations.append(PlacementFileOperation(
+                action=PlacementFileAction.PATCH_RENDERER,
+                source_filename="TutorialBlockRenderer.tsx",
+                source_sha256=compute_sha256(f"patch_renderer:{comp}"),
+                target_path=renderer_rel_path,
+                expected_pre_hash=get_pre_hash(renderer_rel_path),
+                patch_strategy="DISPATCH_BRANCH",
+                description=f"Surgically register {comp} in TutorialBlockRenderer.tsx runtime dispatch"
+            ))
+
+        # Add Composer Registry Patch Operation
+        operations.append(PlacementFileOperation(
+            action=PlacementFileAction.PATCH_REGISTRY,
+            source_filename="registry.ts",
+            source_sha256=compute_sha256(f"patch_registry:{family_lower}Registry"),
+            target_path=registry_rel_path,
+            expected_pre_hash=get_pre_hash(registry_rel_path),
+            patch_strategy="REGISTER_BLOCK",
+            description=f"Surgically register {family_lower}Registry in Tutorial Composer index.ts"
+        ))
+
+        # Add Types Union Patch Operation
+        operations.append(PlacementFileOperation(
+            action=PlacementFileAction.PATCH_TYPES,
+            source_filename="tutorial-composer.service.ts" if has_types_signal else "types",
+            source_sha256=compute_sha256(f"patch_types:{family_lower}"),
+            target_path=types_rel_path,
+            expected_pre_hash=get_pre_hash(types_rel_path),
+            patch_strategy="UNION_MEMBER",
+            description=f"Surgically add '{family_lower}' to TutorialPageContentType union"
+        ))
+
+        return operations
+

@@ -8,10 +8,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from app.models.candidate import PlacementDecision, PlacementManifest
+from app.models.candidate import (
+    PlacementDecision,
+    PlacementManifest,
+    PlacementFileAction,
+)
 from app.models.implementation_approval import (
     ImplementationApproval,
     ImplementationApprovalStatus
+)
+from app.placement.patcher import (
+    compute_sha256,
+    patch_tutorial_block_renderer,
+    patch_tutorial_composer_registry,
+    patch_tutorial_page_content_types,
 )
 from app.placement.repository_adapter import RepositoryAdapter, RepositoryAdapterError
 from app.placement.worktree_manager import WorktreeManager, WorktreeError, WorktreeContext
@@ -68,7 +78,7 @@ class PlacementExecutor:
             PlacementExecutionError: If hash verification fails
         """
         # Reconstruct manifest data (same as candidate.py generation)
-        manifest_data = {
+        manifest_data: Dict[str, Any] = {
             "manifestId": manifest.manifestId,
             "candidateId": manifest.candidateId,
             "decision": manifest.decision.value,
@@ -79,6 +89,8 @@ class PlacementExecutor:
             "evidenceIds": manifest.evidenceIds,
             "createdAt": manifest.createdAt
         }
+        if manifest.fileOperations:
+            manifest_data["fileOperations"] = [op.model_dump() for op in manifest.fileOperations]
         
         # Compute hash (same algorithm as manifest generation)
         manifest_json = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
@@ -237,30 +249,110 @@ class PlacementExecutor:
             # Dry-run: use main repository adapter
             worktree_adapter = self.repository_adapter
         
-        # Write candidate files via RepositoryAdapter (path validation enforced)
+        # Write candidate files via RepositoryAdapter or granular fileOperations
         written_files = []
-        for file in candidate_files:
-            try:
-                record = worktree_adapter.write_file(
-                    source_content=file.content,
-                    target_path=manifest.targetPath,
-                    filename=file.filename,
-                    family=manifest.blockFamily.value,
-                    version=manifest.blockVersion
-                )
-                written_files.append(record.target_path)
-            except RepositoryAdapterError as e:
-                # Cleanup worktree on failure
-                if self.active_worktree and not self.dry_run:
-                    try:
-                        self.worktree_manager.cleanup_worktree(self.active_worktree, force=True)
-                    except WorktreeError:
-                        pass
-                    finally:
-                        self.active_worktree = None
-                raise PlacementExecutionError(
-                    f"Failed to write file {file.filename}: {e}"
-                )
+        try:
+            if manifest.fileOperations:
+                # Map candidate files by filename
+                files_by_name = {}
+                for f in candidate_files:
+                    fn = f.get('filename') if isinstance(f, dict) else f.filename
+                    ct = f.get('content') if isinstance(f, dict) else f.content
+                    files_by_name[fn] = ct
+
+                worktree_root = self.active_worktree.worktree_path if (self.active_worktree and not self.dry_run) else self.repository_root
+
+                for op in manifest.fileOperations:
+                    if op.action == PlacementFileAction.SKIP:
+                        continue
+
+                    target_file_path = worktree_root / op.target_path
+
+                    if op.action == PlacementFileAction.CREATE:
+                        content = files_by_name.get(op.source_filename)
+                        if content is None:
+                            raise PlacementExecutionError(f"Missing source file {op.source_filename} for CREATE operation")
+                        if not self.dry_run:
+                            target_file_path.parent.mkdir(parents=True, exist_ok=True)
+                            target_file_path.write_text(content, encoding='utf-8')
+                        written_files.append(str(target_file_path))
+
+                    elif op.action == PlacementFileAction.PATCH_RENDERER:
+                        if not target_file_path.exists():
+                            raise PlacementExecutionError(f"Target renderer file {op.target_path} does not exist")
+                        current_content = target_file_path.read_text(encoding='utf-8')
+                        current_hash = compute_sha256(current_content)
+                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                            raise PlacementExecutionError(
+                                f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                            )
+                        comp_name = f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}Block"
+                        patched = patch_tutorial_block_renderer(
+                            current_content,
+                            family=manifest.blockFamily.value,
+                            version=manifest.blockVersion,
+                            component_name=comp_name
+                        )
+                        if not self.dry_run:
+                            target_file_path.write_text(patched, encoding='utf-8')
+                        written_files.append(str(target_file_path))
+
+                    elif op.action == PlacementFileAction.PATCH_REGISTRY:
+                        if not target_file_path.exists():
+                            raise PlacementExecutionError(f"Target registry file {op.target_path} does not exist")
+                        current_content = target_file_path.read_text(encoding='utf-8')
+                        current_hash = compute_sha256(current_content)
+                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                            raise PlacementExecutionError(
+                                f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                            )
+                        reg_export = f"{manifest.blockFamily.value.lower()}Registry"
+                        patched = patch_tutorial_composer_registry(
+                            current_content,
+                            family=manifest.blockFamily.value,
+                            registry_export_name=reg_export
+                        )
+                        if not self.dry_run:
+                            target_file_path.write_text(patched, encoding='utf-8')
+                        written_files.append(str(target_file_path))
+
+                    elif op.action == PlacementFileAction.PATCH_TYPES:
+                        if not target_file_path.exists():
+                            raise PlacementExecutionError(f"Target types file {op.target_path} does not exist")
+                        current_content = target_file_path.read_text(encoding='utf-8')
+                        current_hash = compute_sha256(current_content)
+                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                            raise PlacementExecutionError(
+                                f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                            )
+                        patched = patch_tutorial_page_content_types(
+                            current_content,
+                            family_type_id=manifest.blockFamily.value.lower()
+                        )
+                        if not self.dry_run:
+                            target_file_path.write_text(patched, encoding='utf-8')
+                        written_files.append(str(target_file_path))
+            else:
+                for file in candidate_files:
+                    record = worktree_adapter.write_file(
+                        source_content=file.content if hasattr(file, 'content') else file['content'],
+                        target_path=manifest.targetPath,
+                        filename=file.filename if hasattr(file, 'filename') else file['filename'],
+                        family=manifest.blockFamily.value,
+                        version=manifest.blockVersion
+                    )
+                    written_files.append(record.target_path)
+        except Exception as e:
+            if self.active_worktree and not self.dry_run:
+                try:
+                    self.worktree_manager.cleanup_worktree(self.active_worktree, force=True)
+                except Exception:
+                    pass
+                finally:
+                    self.active_worktree = None
+            if isinstance(e, PlacementExecutionError):
+                raise
+            raise PlacementExecutionError(f"Placement file operation failed: {e}")
         
         # Commit in worktree (skip in dry-run mode)
         commit_msg = f"feat: add {manifest.blockFamily.value} block {manifest.candidateId}"

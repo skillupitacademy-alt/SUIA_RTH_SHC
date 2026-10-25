@@ -794,6 +794,15 @@ async def generate_manifest(
                    "Delete this candidate and upload again with workflow_id to bind target identity."
         )
     
+    # Derive granular file operations from canonical repository targets
+    workspace_root = os.getenv("WORKSPACE_ROOT", r"E:\onlinewebsites\quiz-platform")
+    file_operations = comparator.derive_file_operations(
+        files=package.files,
+        family=classification.detectedFamily,
+        version=target_version,
+        workspace_root=workspace_root
+    )
+
     manifest_data = {
         "manifestId": manifest_id,
         "candidateId": candidate_id,
@@ -802,6 +811,7 @@ async def generate_manifest(
         "blockFamily": classification.detectedFamily.value,
         "blockVersion": target_version,
         "requiredChanges": required_changes,
+        "fileOperations": [op.model_dump() for op in file_operations],
         "evidenceIds": evidence_ids,
         "createdAt": created_at
     }
@@ -818,6 +828,7 @@ async def generate_manifest(
         blockFamily=classification.detectedFamily,
         blockVersion=target_version,
         requiredChanges=required_changes,
+        fileOperations=file_operations,
         evidenceIds=evidence_ids,
         manifestHash=manifest_hash,
         createdAt=created_at

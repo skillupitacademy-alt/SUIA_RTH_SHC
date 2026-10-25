@@ -14,6 +14,8 @@ class BlockFamily(str, Enum):
     ASSESSMENT = "Assessment"
     MEDIA = "Media"
     SUMMARY = "Summary"
+    OBJECTIVE = "Objective"
+    CODE = "Code"
     CUSTOM = "Custom"
 
 
