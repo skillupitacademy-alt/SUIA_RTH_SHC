@@ -33,7 +33,7 @@ export interface BlockVersionRegistryEntry {
  */
 export interface BlockRegistryEntry {
   /** Block type identifier */
-  id: TutorialPageContentType;
+  id: TutorialPageContentType | string;
   
   /** Human-readable label for the block type */
   label: string;

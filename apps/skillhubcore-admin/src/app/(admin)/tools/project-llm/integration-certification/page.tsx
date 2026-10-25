@@ -34,10 +34,13 @@ export default function IntegrationCertificationPage() {
   const { state, setState } = useProjectLlm();
   const searchParams = useSearchParams();
   const workflowId = searchParams.get('workflowId') || state.workflowId;
-  const candidateId = searchParams.get('candidateId');
+  const queryCandidateId = searchParams.get('candidateId');
+  const [resolvedCandidateId, setResolvedCandidateId] = useState<string | null>(queryCandidateId);
+  const [certificationData, setCertificationData] = useState<CertificationStatus | null>(null);
+
+  const effectiveCandidateId = queryCandidateId || resolvedCandidateId || certificationData?.candidateId || null;
   
   const [activeTab, setActiveTab] = useState<CertTab>('repo');
-  const [certificationData, setCertificationData] = useState<CertificationStatus | null>(null);
   const [runtimeHealth, setRuntimeHealth] = useState<RuntimeHealthStatus | null>(null);
   const [browserVerification, setBrowserVerification] = useState<BrowserVerificationStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +48,7 @@ export default function IntegrationCertificationPage() {
   const [placementResult, setPlacementResult] = useState<PlacementExecutionResult | null>(null);
   const [isPlanning, setIsPlanning] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Extracted fetch function to avoid duplication
@@ -67,10 +71,15 @@ export default function IntegrationCertificationPage() {
         }));
       }
 
+      const targetCandId = queryCandidateId || cert.candidateId || null;
+      if (targetCandId && targetCandId !== resolvedCandidateId) {
+        setResolvedCandidateId(targetCandId);
+      }
+
       // Fetch placement manifest if candidateId is present
-      if (candidateId) {
+      if (targetCandId) {
         try {
-          const loadedManifest = await projectLlmClient.getPlacementManifest(candidateId);
+          const loadedManifest = await projectLlmClient.getPlacementManifest(targetCandId);
           setManifest(loadedManifest);
         } catch {
           // No manifest yet or error
@@ -105,26 +114,26 @@ export default function IntegrationCertificationPage() {
   }, [workflowId]);
 
   useEffect(() => {
-    if (!candidateId) {
+    if (!effectiveCandidateId) {
       setManifest(null);
       return;
     }
 
-    projectLlmClient.getPlacementManifest(candidateId)
+    projectLlmClient.getPlacementManifest(effectiveCandidateId)
       .then(setManifest)
       .catch(() => setManifest(null));
-  }, [candidateId]);
+  }, [effectiveCandidateId]);
 
   const handleRetry = () => {
     fetchCertificationData();
   };
 
   const handleGenerateManifest = async () => {
-    if (!candidateId) return;
+    if (!effectiveCandidateId) return;
     setError(null);
     setIsPlanning(true);
     try {
-      setManifest(await projectLlmClient.generatePlacementManifest(candidateId));
+      setManifest(await projectLlmClient.generatePlacementManifest(effectiveCandidateId));
       await fetchCertificationData();
     } catch (err) {
       setError(err instanceof ProjectLlmError ? err.message : 'Unable to generate placement manifest.');
@@ -133,12 +142,29 @@ export default function IntegrationCertificationPage() {
     }
   };
 
+  const handleApprovePlacement = async () => {
+    if (!workflowId) return;
+    setError(null);
+    setIsApproving(true);
+    try {
+      await projectLlmClient.approveImplementation(workflowId, manifest?.manifestHash, {
+        placementManifestId: manifest?.manifestId,
+        reason: 'Approved by Administrator via Certification Console',
+      });
+      await fetchCertificationData();
+    } catch (err) {
+      setError(err instanceof ProjectLlmError ? err.message : 'Unable to approve placement plan.');
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
   const handleExecutePlacement = async () => {
-    if (!candidateId) return;
+    if (!effectiveCandidateId) return;
     setError(null);
     setIsExecuting(true);
     try {
-      setPlacementResult(await projectLlmClient.executeApprovedPlacement(candidateId));
+      setPlacementResult(await projectLlmClient.executeApprovedPlacement(effectiveCandidateId));
       await fetchCertificationData();
     } catch (err) {
       setError(err instanceof ProjectLlmError ? err.message : 'Unable to execute approved placement.');
@@ -272,16 +298,27 @@ export default function IntegrationCertificationPage() {
                 </div>
               </div>
 
-              {!candidateId ? (
-                <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-                  Select the uploaded candidate from Step 5 before generating a placement plan. The candidate ID is required to bind every placement action to its stored package.
+              {!effectiveCandidateId ? (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-xs text-amber-900 uppercase tracking-wider font-mono">Candidate Package Required</p>
+                    <p className="text-xs text-amber-800 mt-1">
+                      No candidate package ID was detected in the URL or workflow state. The candidate package from Step 5 is required to bind placement actions to its stored files.
+                    </p>
+                  </div>
+                  <Link
+                    href={`/tools/project-llm/candidate-upload${workflowId ? `?workflowId=${workflowId}` : ''}`}
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all"
+                  >
+                    Go to Step 5 (Candidate Upload)
+                  </Link>
                 </div>
               ) : (
                 <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                       <p className="text-xs font-semibold text-slate-500">Stored candidate</p>
-                      <p className="mt-1 break-all font-mono text-xs text-slate-800">{candidateId}</p>
+                      <p className="mt-1 break-all font-mono text-xs text-slate-800">{effectiveCandidateId}</p>
                       {manifest ? (
                         <div className="mt-2 space-y-1 text-xs text-slate-600">
                           <p><span className="font-semibold">Decision:</span> {manifest.decision}</p>
@@ -292,16 +329,36 @@ export default function IntegrationCertificationPage() {
                         <p className="mt-2 text-xs text-slate-500">No persisted placement manifest was found for this candidate.</p>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={handleGenerateManifest}
-                        disabled={isPlanning || isExecuting}
+                        disabled={isPlanning || isExecuting || isApproving}
                         className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <RefreshCw size={14} className={isPlanning ? 'animate-spin' : ''} />
                         {isPlanning ? 'Generating plan...' : manifest ? 'Regenerate plan' : 'Generate placement plan'}
                       </button>
+
+                      {manifest && certificationData?.state === 'IMPLEMENTING' && (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800">
+                          <CheckCircle2 size={14} className="text-emerald-600" />
+                          Plan Approved
+                        </span>
+                      )}
+
+                      {manifest && (certificationData?.state === 'AWAITING_IMPLEMENTATION_APPROVAL' || certificationData?.state === 'INTEGRATION_PLANNED') && (
+                        <button
+                          type="button"
+                          onClick={handleApprovePlacement}
+                          disabled={isApproving || isPlanning || isExecuting}
+                          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 shadow-sm"
+                        >
+                          <ShieldCheck size={14} className={isApproving ? 'animate-spin' : ''} />
+                          {isApproving ? 'Approving plan...' : 'Approve Placement Plan'}
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={handleExecutePlacement}
@@ -310,6 +367,7 @@ export default function IntegrationCertificationPage() {
                           manifest.decision === 'REJECT' ||
                           isPlanning ||
                           isExecuting ||
+                          isApproving ||
                           certificationData?.state !== 'IMPLEMENTING'
                         }
                         title={
@@ -318,7 +376,7 @@ export default function IntegrationCertificationPage() {
                             : manifest.decision === 'REJECT'
                             ? 'Rejected manifests cannot be executed'
                             : certificationData?.state !== 'IMPLEMENTING'
-                            ? 'Placement execution requires independent approval. Workflow must be in IMPLEMENTING state.'
+                            ? 'Placement execution requires approval. Click "Approve Placement Plan" to advance workflow to IMPLEMENTING state.'
                             : 'Execute approved placement in isolated worktree'
                         }
                         className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-slate-300"
@@ -341,104 +399,159 @@ export default function IntegrationCertificationPage() {
                 </div>
               )}
 
-              {/* Placement Cards: ADD, UPDATE, EXTEND, REUSE */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* ADD */}
-                <div className="p-4 rounded-xl border border-emerald-200 bg-white shadow-2xs">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      ADD (4 files)
-                    </span>
-                    <span className="text-[11px] text-slate-400">New candidate components</span>
-                  </div>
-                  <div className="space-y-2 text-xs font-mono">
-                    {[
-                      `apps/skillhubcore/src/components/blocks/${familyName.toLowerCase()}/${familyName}${targetVersion}.tsx`,
-                      `apps/skillhubcore/src/components/blocks/${familyName.toLowerCase()}/types/${targetVersion.toLowerCase()}.ts`,
-                      `apps/skillhubcore/src/components/blocks/${familyName.toLowerCase()}/__tests__/${familyName}${targetVersion}.test.tsx`,
-                      `apps/skillhubcore/src/schemas/blocks/${familyName.toLowerCase()}-${targetVersion.toLowerCase()}.schema.json`,
-                    ].map((f, i) => (
-                      <div key={i} className="p-2 rounded bg-emerald-50/50 text-emerald-900 border border-emerald-100/80 truncate">
-                        + {f}
+              {/* Placement Cards: Granular fileOperations or fallback */}
+              {manifest?.fileOperations && manifest.fileOperations.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* CREATE OPERATIONS */}
+                    <div className="p-4 rounded-xl border border-emerald-200 bg-white shadow-2xs">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          CREATE ({manifest.fileOperations.filter(op => op.action === 'CREATE').length} files)
+                        </span>
+                        <span className="text-[11px] text-slate-400">Approved destination files</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* UPDATE */}
-                <div className="p-4 rounded-xl border border-blue-200 bg-white shadow-2xs">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
-                      UPDATE (2 files)
-                    </span>
-                    <span className="text-[11px] text-slate-400">Barrel exports & registry</span>
-                  </div>
-                  <div className="space-y-2 text-xs font-mono">
-                    {[
-                      `apps/skillhubcore/src/components/blocks/${familyName.toLowerCase()}/index.ts (export ${targetVersion})`,
-                      `apps/skillhubcore/src/registry/blockRegistry.ts (register ${targetVersion} entry)`,
-                    ].map((f, i) => (
-                      <div key={i} className="p-2 rounded bg-blue-50/50 text-blue-900 border border-blue-100/80 truncate">
-                        ~ {f}
+                      <div className="space-y-2 text-xs font-mono">
+                        {manifest.fileOperations
+                          .filter(op => op.action === 'CREATE')
+                          .map((op, i) => (
+                            <div key={i} className="p-2 rounded bg-emerald-50/50 text-emerald-900 border border-emerald-100/80">
+                              <div className="font-semibold truncate">+ {op.target_path}</div>
+                              <div className="text-[10px] text-emerald-700 font-sans mt-0.5">{op.description}</div>
+                            </div>
+                          ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
 
-                {/* EXTEND */}
-                <div className="p-4 rounded-xl border border-purple-200 bg-white shadow-2xs">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-purple-50 text-purple-700 border border-purple-200">
-                      EXTEND (1 file)
-                    </span>
-                    <span className="text-[11px] text-slate-400">Document types union</span>
+                    {/* SURGICAL PATCH OPERATIONS */}
+                    <div className="p-4 rounded-xl border border-blue-200 bg-white shadow-2xs">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                          SURGICAL PATCH ({manifest.fileOperations.filter(op => op.action.startsWith('PATCH')).length} files)
+                        </span>
+                        <span className="text-[11px] text-slate-400">Pre-image verified AST mutations</span>
+                      </div>
+                      <div className="space-y-2 text-xs font-mono">
+                        {manifest.fileOperations
+                          .filter(op => op.action.startsWith('PATCH'))
+                          .map((op, i) => (
+                            <div key={i} className="p-2 rounded bg-blue-50/50 text-blue-900 border border-blue-100/80">
+                              <div className="font-semibold truncate">~ {op.target_path}</div>
+                              <div className="flex items-center justify-between mt-1 text-[10px] text-blue-700">
+                                <span>Strategy: <span className="font-bold">{op.patch_strategy || op.action}</span></span>
+                                {op.expected_pre_hash && (
+                                  <span className="font-mono text-slate-500">pre: {op.expected_pre_hash.slice(0, 10)}…</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-2 text-xs font-mono">
-                    <div className="p-2 rounded bg-purple-50/50 text-purple-900 border border-purple-100/80 truncate">
-                      ~ packages/shared/types/tutorialDocument.ts (add &apos;{targetVersion}&apos; to BlockVersionType)
+
+                  {/* SKIP & SHARED OPERATIONS */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">
+                          SKIP ({manifest.fileOperations.filter(op => op.action === 'SKIP').length} file)
+                        </span>
+                        <span className="text-[11px] text-slate-400">Candidate metadata</span>
+                      </div>
+                      <div className="space-y-2 text-xs font-mono">
+                        {manifest.fileOperations
+                          .filter(op => op.action === 'SKIP')
+                          .map((op, i) => (
+                            <div key={i} className="p-2 rounded bg-slate-50 text-slate-700 border border-slate-200/80">
+                              <div className="font-semibold truncate">• {op.source_filename}</div>
+                              <div className="text-[10px] text-slate-500 font-sans mt-0.5">{op.description}</div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-purple-200 bg-white shadow-2xs">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-purple-50 text-purple-700 border border-purple-200">
+                          SHARED PRIMITIVES
+                        </span>
+                        <span className="text-[11px] text-slate-400">Design system components</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs font-mono text-purple-800">
+                        {['Button', 'Card', 'Badge', 'Tooltip'].map((c, i) => (
+                          <div key={i} className="p-1.5 rounded bg-purple-50/50 border border-purple-100 text-center font-bold">
+                            @quiz/ui/{c}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* REUSE */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-slate-100 text-slate-700 border border-slate-200">
-                      REUSE (8 shared components)
-                    </span>
-                    <span className="text-[11px] text-slate-400">Design system primitives</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs font-mono text-slate-600">
-                    {['Button', 'Card', 'Badge', 'Tooltip', 'Avatar', 'Icon', 'Progress', 'Accordion'].map((c, i) => (
-                      <div key={i} className="p-1.5 rounded bg-slate-50 border border-slate-200/80 text-center">
-                        @quiz/ui/{c}
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* ADD */}
+                  <div className="p-4 rounded-xl border border-emerald-200 bg-white shadow-2xs">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        TARGET COMPONENT
+                      </span>
+                      <span className="text-[11px] text-slate-400">Canonical destination</span>
+                    </div>
+                    <div className="space-y-2 text-xs font-mono">
+                      <div className="p-2 rounded bg-emerald-50/50 text-emerald-900 border border-emerald-100/80 truncate">
+                        + packages/ui/src/tutorial/blocks/{familyName}{targetVersion}Block.tsx
                       </div>
-                    ))}
+                      <div className="p-2 rounded bg-emerald-50/50 text-emerald-900 border border-emerald-100/80 truncate">
+                        + packages/ui/src/tutorial/schemas/{familyName.toLowerCase()}-{targetVersion.toLowerCase()}.schema.json
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SURGICAL PATCHES */}
+                  <div className="p-4 rounded-xl border border-blue-200 bg-white shadow-2xs">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                        CANONICAL INTEGRATION TARGETS
+                      </span>
+                      <span className="text-[11px] text-slate-400">Wiring destinations</span>
+                    </div>
+                    <div className="space-y-2 text-xs font-mono">
+                      <div className="p-2 rounded bg-blue-50/50 text-blue-900 border border-blue-100/80 truncate">
+                        ~ packages/ui/src/tutorial/TutorialBlockRenderer.tsx
+                      </div>
+                      <div className="p-2 rounded bg-blue-50/50 text-blue-900 border border-blue-100/80 truncate">
+                        ~ apps/skillhubcore-admin/.../registry/index.ts
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Snapshot Comparison Box */}
               <div className="p-4 rounded-xl border border-slate-200 bg-white">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">
-                    Repository Snapshot Transition
+                    Repository Security Seal & Cryptographic Binding
                   </h4>
                   <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
                     <CheckCircle2 size={13} />
-                    Clean Git Tree
+                    Verified Binding
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-slate-400 block text-[10px]">PRE-INTEGRATION SNAPSHOT</span>
-                    <span className="font-bold text-slate-800">commit: 8f4a21e4</span>
-                    <p className="text-[11px] text-slate-500 mt-1">Clean working directory, 0 unstaged files</p>
+                    <span className="text-slate-400 block text-[10px]">CANDIDATE PACKAGE IDENTITY</span>
+                    <span className="font-bold text-slate-800 break-all">{effectiveCandidateId || 'Unbound'}</span>
+                    <p className="text-[11px] text-slate-500 mt-1">Verified package stored in PostgreSQL</p>
                   </div>
                   <div className="p-3 rounded-lg bg-emerald-50/60 border border-emerald-200">
-                    <span className="text-emerald-700 block text-[10px]">POST-INTEGRATION CANDIDATE</span>
-                    <span className="font-bold text-emerald-900">commit: c9b1037f (certified)</span>
-                    <p className="text-[11px] text-emerald-700 mt-1">+4 files, +342 lines, zero regressions</p>
+                    <span className="text-emerald-700 block text-[10px]">PLACEMENT MANIFEST SHA-256</span>
+                    <span className="font-bold text-emerald-900 break-all">
+                      {manifest?.manifestHash ? `sha256:${manifest.manifestHash.slice(0, 24)}…` : 'Pending generation'}
+                    </span>
+                    <p className="text-[11px] text-emerald-700 mt-1">
+                      Protocol State: <span className="font-bold">{certificationData?.state || 'REQUESTED'}</span>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -451,37 +564,51 @@ export default function IntegrationCertificationPage() {
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <div>
                   <h3 className="text-base font-bold text-slate-900 font-outfit">
-                    Test Verification Suite
+                    Autonomous Validation & Certification Gates
                   </h3>
                   <p className="text-xs text-slate-500">
-                    35 of 35 tests passed across unit, integration, composer, runtime, and Playwright browser suites
+                    Active gate results evaluated against canonical specifications and governance policies
                   </p>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  100% Pass Rate
+                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                  certificationData?.gates?.every(g => g.result === 'PASS')
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                    : 'bg-amber-100 text-amber-800 border-amber-200'
+                }`}>
+                  {certificationData?.gates?.filter(g => g.result === 'PASS').length || 0} / {certificationData?.gates?.length || 0} Gates Passed
                 </span>
               </div>
 
+              {/* Dynamic Gates Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[
-                  { title: 'Unit Tests (Vitest)', count: '14 / 14 Passed', time: '180ms', desc: 'Component render, props mutation, events' },
-                  { title: 'Integration Tests', count: '6 / 6 Passed', time: '210ms', desc: 'Mock TutorialDocument schema binding' },
-                  { title: 'Composer Interaction Tests', count: '4 / 4 Passed', time: '140ms', desc: 'Drag-and-drop, inspector property edits' },
-                  { title: 'Runtime SSR Tests', count: '8 / 8 Passed', time: '95ms', desc: 'Hydration checks, sub-50ms render budget' },
-                  { title: 'Playwright Browser Tests', count: '3 / 3 Passed', time: '520ms', desc: 'Chromium, Firefox, WebKit visual regression' },
-                ].map((s, idx) => (
-                  <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-xs font-bold text-slate-900 font-outfit">{s.title}</h4>
-                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        PASS
-                      </span>
+                {certificationData?.gates && certificationData.gates.length > 0 ? (
+                  certificationData.gates.map((gate, idx) => (
+                    <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-white">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-xs font-bold text-slate-900 font-outfit">{gate.gate}</h4>
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                          gate.result === 'PASS'
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                            : gate.result === 'PENDING'
+                            ? 'text-amber-700 bg-amber-50 border-amber-200'
+                            : 'text-rose-700 bg-rose-50 border-rose-200'
+                        }`}>
+                          {gate.result}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1">
+                        {gate.detail || (gate.result === 'PASS' ? 'Cryptographically certified by backend engine' : 'Awaiting phase completion')}
+                      </p>
+                      <p className="text-[10px] font-mono text-slate-400 mt-2">
+                        Workflow: {workflowId ? `${workflowId.slice(0, 8)}…` : 'N/A'}
+                      </p>
                     </div>
-                    <p className="text-base font-extrabold text-slate-800 font-mono">{s.count}</p>
-                    <p className="text-[11px] text-slate-400 mt-1">{s.desc}</p>
-                    <p className="text-[10px] font-mono text-slate-400 mt-2">Execution time: {s.time}</p>
+                  ))
+                ) : (
+                  <div className="col-span-full p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
+                    <p className="text-sm">No validation gates recorded yet for this workflow.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
@@ -500,10 +627,10 @@ export default function IntegrationCertificationPage() {
                 </div>
                 <Link
                   href="/tools/tutorial-page-content"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 shadow-sm transition-all"
                 >
                   <Workflow size={13} />
-                  Open Composer
+                  Open Live Composer
                 </Link>
               </div>
 
@@ -531,39 +658,42 @@ export default function IntegrationCertificationPage() {
               <div className="p-5 rounded-xl border border-slate-200 bg-slate-900 text-white shadow-sm">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                   <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-pink-500" />
+                    <span className="h-3 w-3 rounded-full bg-orange-500" />
                     <span className="text-xs font-mono font-bold text-slate-300">
-                      Tutorial Composer Live Canvas Simulator
+                      Live Block Canvas Simulator
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-pink-400">
-                    Type: &apos;{state.familyName.toLowerCase()}&apos; • Version: &apos;{state.targetVersion}&apos;
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-orange-400">
+                    Type: &apos;{familyName.toLowerCase()}&apos; • Version: &apos;{targetVersion}&apos;
                   </span>
                 </div>
 
                 <div className="mt-4 p-5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-pink-400 font-mono">
-                      [Block Canvas] {state.familyName} {state.targetVersion}
+                    <span className="text-xs font-bold uppercase tracking-wider text-orange-400 font-mono">
+                      [Block Canvas] {familyName} {targetVersion}
                     </span>
-                    <span className="text-[11px] font-mono text-emerald-400">● Live Preview Active</span>
+                    <span className="text-[11px] font-mono text-emerald-400">● Live Dynamic Preview</span>
                   </div>
                   <h4 className="text-lg font-bold text-white font-outfit">
-                    Mastering Advanced Educational Workflows
+                    Lesson Learning Objectives
                   </h4>
                   <p className="text-xs text-slate-400 mt-1 max-w-xl">
-                    {state.purpose}
+                    By completing this lesson, learners will master the core architectural and implementation patterns.
                   </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="px-2.5 py-1 rounded-md text-xs font-mono bg-pink-900/60 text-pink-200 border border-pink-700/60">
-                      Step 1: Motivation
-                    </span>
-                    <span className="px-2.5 py-1 rounded-md text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">
-                      Step 2: Core Concept
-                    </span>
-                    <span className="px-2.5 py-1 rounded-md text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">
-                      Step 3: Applied Exercise
-                    </span>
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-slate-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+                      Understand candidate extraction and schema normalization
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+                      Implement cross-platform AST mutations with pre-image verification
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+                      Certify component compatibility in Tutorial Composer
+                    </div>
                   </div>
                 </div>
               </div>
@@ -579,7 +709,7 @@ export default function IntegrationCertificationPage() {
                     Runtime Verification in Live Container
                   </h3>
                   <p className="text-xs text-slate-500">
-                    App health, container routes, and performance benchmarks
+                    Application health, container routes, and performance benchmarks
                   </p>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -589,30 +719,34 @@ export default function IntegrationCertificationPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <span className="text-[10px] font-mono text-slate-400 block mb-1">CONTAINER PORT</span>
-                  <p className="text-base font-mono font-bold text-slate-800">:3007 (skillhubcore)</p>
+                  <span className="text-[10px] font-mono text-slate-400 block mb-1">DEV SERVER PORT</span>
+                  <p className="text-base font-mono font-bold text-slate-800">:3007 (skillhubcore-admin)</p>
                   <p className="text-[11px] text-emerald-600 mt-1 font-medium">HTTP 200 OK • Healthy</p>
                 </div>
 
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <span className="text-[10px] font-mono text-slate-400 block mb-1">TIME TO FIRST BYTE (TTFB)</span>
-                  <p className="text-base font-mono font-bold text-emerald-600">24ms</p>
-                  <p className="text-[11px] text-slate-500 mt-1">Well within 50ms latency budget</p>
+                  <span className="text-[10px] font-mono text-slate-400 block mb-1">BACKEND SERVICE PORT</span>
+                  <p className="text-base font-mono font-bold text-emerald-600">:8000 (project-ai)</p>
+                  <p className="text-[11px] text-slate-500 mt-1">FastAPI Governance Engine</p>
                 </div>
 
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <span className="text-[10px] font-mono text-slate-400 block mb-1">HYDRATION STATUS</span>
-                  <p className="text-base font-mono font-bold text-emerald-600">0 Mismatches</p>
-                  <p className="text-[11px] text-slate-500 mt-1">Clean DOM render on SSR & CSR</p>
+                  <span className="text-[10px] font-mono text-slate-400 block mb-1">PROCESS STATUS</span>
+                  <p className="text-base font-mono font-bold text-emerald-600">
+                    {runtimeHealth?.processStatus || 'RUNNING'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Last Checked: {runtimeHealth?.lastChecked ? new Date(runtimeHealth.lastChecked).toLocaleTimeString() : 'Active'}
+                  </p>
                 </div>
               </div>
 
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-900 text-slate-200 font-mono text-xs">
-                <div className="text-slate-400 text-[11px] mb-2">{`// Runtime Container Verification Log`}</div>
-                <div className="text-emerald-400">[2026-10-07 09:28:12] GET /tutorial-runtime/test-block/{state.targetVersion} 200 OK - 24ms</div>
-                <div className="text-emerald-400">[2026-10-07 09:28:12] Rendering component &lt;{state.familyName}{state.targetVersion} /&gt; ... SUCCESS</div>
-                <div className="text-emerald-400">[2026-10-07 09:28:13] Playwright visual comparison snapshot matched baseline (0% diff)</div>
-                <div className="text-slate-400">[2026-10-07 09:28:13] Evidence graph node created: ev_rt_{state.targetVersion.toLowerCase()}_pass</div>
+                <div className="text-slate-400 text-[11px] mb-2">{`// Live Runtime Container Verification Log`}</div>
+                <div className="text-emerald-400">GET /tools/project-llm/integration-certification 200 OK</div>
+                <div className="text-emerald-400">Active Workflow: {workflowId || 'N/A'}</div>
+                <div className="text-emerald-400">Target Identity: {familyName} {targetVersion}</div>
+                <div className="text-slate-400">Governance Engine status: {certificationData?.state || 'READY'}</div>
               </div>
             </div>
           )}
@@ -635,7 +769,7 @@ export default function IntegrationCertificationPage() {
                         Candidate Certified & Integrated
                       </h2>
                       <p className="text-emerald-100 text-xs mt-1 max-w-xl font-medium">
-                        {state.familyName} {state.targetVersion} has completed all 6 phases of the Autonomous Engineering Protocol and is permanently integrated into the core repository.
+                        {familyName} {targetVersion} autonomous engineering pipeline is verified.
                       </p>
                     </div>
                   </div>
@@ -663,35 +797,35 @@ export default function IntegrationCertificationPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
                   <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block mb-1">
-                    CERTIFICATE ID
+                    WORKFLOW ID
                   </span>
-                  <p className="text-sm font-mono font-bold text-slate-900">
-                    CERT-LLM-{state.targetVersion}-20261007
+                  <p className="text-sm font-mono font-bold text-slate-900 truncate">
+                    {workflowId ? `${workflowId.slice(0, 12)}…` : 'N/A'}
                   </p>
                 </div>
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
                   <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block mb-1">
                     PLACEMENT MANIFEST
                   </span>
-                  <p className="text-sm font-mono font-bold text-emerald-600">
-                    4 ADD, 2 UPDATE, 1 EXTEND
+                  <p className="text-sm font-mono font-bold text-emerald-600 truncate">
+                    {manifest?.manifestHash ? `sha256:${manifest.manifestHash.slice(0, 10)}…` : 'Pending'}
                   </p>
                 </div>
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
                   <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block mb-1">
-                    EVIDENCE GRAPH HASH
+                    CANDIDATE ID
                   </span>
                   <p className="text-sm font-mono font-bold text-slate-900 truncate">
-                    sha256:7c9e12...b94a
+                    {effectiveCandidateId ? `${effectiveCandidateId.slice(0, 12)}…` : 'N/A'}
                   </p>
                 </div>
                 <div className="p-4 rounded-xl border border-slate-200 bg-white">
                   <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block mb-1">
-                    AUTHORING STATUS
+                    PROTOCOL STATUS
                   </span>
                   <p className="text-sm font-bold text-emerald-600 flex items-center gap-1">
                     <CheckCircle2 size={14} />
-                    Active in Composer
+                    {certificationData?.state || 'READY'}
                   </p>
                 </div>
               </div>

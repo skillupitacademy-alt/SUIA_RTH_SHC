@@ -40,6 +40,8 @@ export type CertificationStatus = {
   certifiedAt?: string;
   targetFamily?: string;
   targetVersion?: string;
+  candidateId?: string;
+  manifestId?: string;
 };
 
 export type RuntimeHealthStatus = {

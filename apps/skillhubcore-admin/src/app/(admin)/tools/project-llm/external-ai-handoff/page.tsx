@@ -89,20 +89,159 @@ export default function ExternalAiHandoffPage() {
     { key: 'evidence', label: 'Evidence', icon: ShieldCheck },
   ];
 
+  const targetFamily = String((engineeringContract as any)?.target?.family || (engineeringContract as any)?.target_family || state.familyName || 'Block');
+  const targetVersion = String((engineeringContract as any)?.target?.version || (engineeringContract as any)?.target_version || state.targetVersion || 'V1').toUpperCase();
+  const familyLower = targetFamily.toLowerCase();
+  const versionUpper = targetVersion.toUpperCase();
+  const versionLower = targetVersion.toLowerCase();
+  const componentName = `${targetFamily}${versionUpper}Block`;
+  const registryVar = `${familyLower}Registry`;
+
   const handleCopyPrompt = () => {
     if (!engineeringContract) {
       setContractError('Load the backend-generated engineering contract before copying an implementation prompt.');
       return;
     }
-    const prompt = `Use the following immutable, backend-generated Project LLM engineering contract as the sole implementation authority. Do not invent missing requirements. If the contract conflicts with generic guidance, the contract wins.
 
-WORKFLOW ID: ${workflowId.trim()}
-CONTRACT HASH: ${String(engineeringContract.contract_hash)}
+    const prompt = `================================================================================
+PROJECT LLM — AUTONOMOUS EXTERNAL AI IMPLEMENTATION PROMPT
+================================================================================
+AUTHORITATIVE TARGET IDENTITY:
+- Target Family: ${targetFamily}
+- Target Version: ${versionUpper}
+- Block Type ID: '${familyLower}'
+- React Component Name: ${componentName}
+- Registry Export Variable: ${registryVar}
+- Workflow ID: ${workflowId.trim()}
+- Contract Hash: ${String(engineeringContract.contract_hash)}
 
-ENGINEERING CONTRACT JSON:
+--------------------------------------------------------------------------------
+CANONICAL TUTORIAL DESIGN SYSTEM & LOOK & FEEL SPECIFICATIONS
+(MUST MATCH INTRODUCTION, DEFINITION, CODE, AND SUMMARY BLOCKS)
+--------------------------------------------------------------------------------
+All tutorial blocks in the platform belong to a unified tutorial page. Your component MUST adhere to these exact styling and typography standards:
+
+1. Container & Section Shell:
+   - Outermost element MUST be an <article> element matching canonical tutorial blocks:
+     className="w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors \${className}"
+     style={{ color: secondary }}
+     data-block-id={runtimeContext?.blockId ?? block.id}
+     data-block-type="${familyLower}"
+     data-block-version="${versionUpper}"
+
+2. Typography Scale & Font Hierarchy:
+   - Eyebrow / Category Badge:
+     Class: "text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-3"
+     Style: { color: primary, backgroundColor: withAlpha(primary, '14') }
+     Icon: Relevant Lucide React icon (h-4 w-4)
+   - Block Title:
+     Class: "text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight"
+     Style: { color: secondary }
+   - Brand Accent Indicator:
+     Class: "mb-4 mt-3 h-1 w-12 rounded-full"
+     Style: { backgroundColor: primary }
+   - Intro / Subtitle / Lead Paragraph:
+     Class: "text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6"
+     Style: { color: \`\${secondary}dd\` }
+   - Item / Card Body Text:
+     Class: "text-sm sm:text-base font-medium leading-relaxed"
+     Style: { color: secondary }
+   - Monospace / Code Elements:
+     Class: "font-mono text-xs sm:text-sm"
+
+3. Cards, Panels, & Interactive Elements:
+   - Cards & List Items:
+     Class: "rounded-xl border p-4 sm:p-5 transition-all duration-200 shadow-sm hover:shadow-md"
+     Style: { backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }
+   - Icon Badges:
+     Class: "flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg"
+     Style: { backgroundColor: withAlpha(primary, '18'), color: primary }
+   - Icons:
+     MUST import from 'lucide-react' (e.g. Target, BookOpen, Check, Layers, Lightbulb, Code2, Sparkles).
+     NEVER use raw unicode symbols (✓, ★, •) or emojis (📌, 🎯).
+     Always add aria-hidden="true" to decorative icons.
+
+4. Dual-Brand Theme Independence:
+   - MUST consume 'theme ?? DEFAULT_THEME'.
+   - Derive all colors from 'theme.primary', 'theme.secondary', and 'withAlpha(primary, hexAlpha)'.
+   - ZERO hardcoded hex color codes (#e11d48, #0ea5e9, etc.).
+   - ZERO hardcoded brand strings ('SkillUpITAcademy', 'RealTutorialHub', 'SUIA', 'RTH').
+   - Both light and dark modes are supported automatically via Tailwind tokens (bg-white dark:bg-slate-900).
+
+--------------------------------------------------------------------------------
+MANDATORY PACKAGE DELIVERABLE: SINGLE ZIP ARCHIVE
+--------------------------------------------------------------------------------
+You must package your output as a single .zip archive containing EXACTLY these files at the root of the ZIP (do NOT wrap them in a subfolder):
+
+1. ${componentName}.tsx (Primary React UI Block Component)
+   - Canonical monorepo imports:
+     import React from 'react';
+     import type { BlockComponentProps, DomainTheme, TutorialBlockRuntimeContext } from '../types';
+     import { withAlpha, DEFAULT_THEME } from '../theme-utils';
+   - Mandatory UBRC Runtime Wrapping:
+     The outermost element MUST be an <article> element containing:
+       <article
+         data-block-id={runtimeContext?.blockId ?? block.id}
+         data-block-type="${familyLower}"
+         data-block-version="${versionUpper}"
+         className={\`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors \${className}\`}
+         style={{ color: secondary }}
+       >
+         ...
+       </article>
+   - Dual Named and Default Exports:
+     export function ${componentName}({ block, className, theme, runtimeContext }: BlockComponentProps) { ... }
+     export { ${componentName} as default };
+
+2. ${componentName}.test.tsx (Unit Test Suite)
+   - Standard Vitest / React Testing Library tests.
+   - Must verify:
+     a) Renders with UBRC data attributes (data-block-id, data-block-type="${familyLower}", data-block-version="${versionUpper}").
+     b) Dual-brand theme independence (proves themeA and themeB apply dynamically with zero hardcoded brand hexes).
+     c) WCAG 2.1 AA accessibility (list roles, aria-hidden icons).
+     d) Responsive container rendering (passes through custom className).
+     e) Zero console errors or warnings.
+
+3. ${familyLower}-${versionLower}.schema.json (JSON Schema Contract)
+   - Valid JSON schema representing the block's content payload.
+   - Must include "$schema": "http://json-schema.org/draft-07/schema#", "title": "${targetFamily} ${versionUpper} Block Schema".
+
+4. ${familyLower}-${versionLower}.schema.ts (TypeScript Type Contract)
+   - Export interfaces representing the block payload and content structure.
+
+5. registry.ts (Tutorial Composer Registry Entry)
+   - Must export the exact registry variable:
+     import type { BlockRegistryEntry } from '../types';
+
+     export const ${registryVar}: BlockRegistryEntry = {
+       id: '${familyLower}',
+       label: '${targetFamily}',
+       versions: [
+         {
+           id: 'v1',
+           code: '${versionUpper}',
+           label: '${versionUpper} - ${targetFamily}',
+           description: '${targetFamily} block version ${versionUpper}',
+           getDefaultPayload: () => ({
+             // Valid sample payload matching your schema
+           }),
+         },
+       ],
+     };
+
+6. preview.html (Interactive Prototype)
+   - Standalone HTML document demonstrating the visual presentation and responsiveness.
+   - Must include <article data-block-id="preview-1" data-block-type="${familyLower}" data-block-version="${versionUpper}">.
+
+7. README.md (Implementation Documentation)
+   - Brief summary of cognitive domain, design patterns, and acceptance criteria.
+
+--------------------------------------------------------------------------------
+IMMUTABLE BACKEND CONTRACT SPECIFICATION:
+--------------------------------------------------------------------------------
 ${JSON.stringify(engineeringContract, null, 2)}
+`;
 
-Implement only against this contract. Preserve family/version bindings and report unmet acceptance criteria as BLOCKED, never PASS.`;
     void navigator.clipboard.writeText(prompt).then(() => {
       setCopiedPrompt(true);
       setTimeout(() => setCopiedPrompt(false), 2000);
@@ -114,13 +253,28 @@ Implement only against this contract. Preserve family/version bindings and repor
       setContractError('Load the backend-generated engineering contract before copying a compliance brief.');
       return;
     }
-    const brief = `PROJECT LLM CANONICAL ENGINEERING CONTRACT
+    const brief = `PROJECT LLM CANONICAL COMPLIANCE BRIEF & ENGINEERING CONTRACT
 Workflow ID: ${workflowId.trim()}
 Contract SHA-256: ${String(engineeringContract.contract_hash)}
+Target Block: ${targetFamily} (${versionUpper})
+Block Type: '${familyLower}'
 
+================================================================================
+VERIFICATION GATES & COMPLIANCE ARCHITECTURE
+================================================================================
+1. UBRC Runtime Gate: <article data-block-id="..." data-block-type="${familyLower}" data-block-version="${versionUpper}">
+2. Brand Independence Gate: Consumes theme prop / DEFAULT_THEME; zero brand strings
+3. Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (2xl-4xl title, text-base/lg intro, Lucide icons)
+4. Strict Typing Gate: zero 'any' types in props or block interfaces
+5. Repository Integration Gate: ${componentName}.tsx placed in packages/ui/src/tutorial/blocks/
+6. Composer Registry Gate: ${registryVar} registered in registry/entries/${familyLower}.registry.ts
+7. Automated Tests Gate: Passing unit test suite in ${componentName}.test.tsx
+
+IMMUTABLE CONTRACT JSON:
 ${JSON.stringify(engineeringContract, null, 2)}
 
 The persisted backend contract is authoritative. Do not invent requirements or claim a gate passed without attached verification evidence.`;
+
     void navigator.clipboard.writeText(brief).then(() => {
       setCopiedBrief(true);
       setTimeout(() => setCopiedBrief(false), 2000);
@@ -136,8 +290,32 @@ The persisted backend contract is authoritative. Do not invent requirements or c
 
 - **Workflow ID:** ${workflowId.trim()}
 - **Contract SHA-256:** ${String(engineeringContract.contract_hash)}
-- **Family:** ${String(engineeringContract.target_family ?? state.familyName)}
-- **Version:** ${String(engineeringContract.target_version ?? state.targetVersion)}
+- **Family:** ${targetFamily}
+- **Version:** ${versionUpper}
+- **Component:** ${componentName}
+- **Registry Export:** ${registryVar}
+
+## Design System & Look and Feel Standards
+
+1. **Outer Shell:** \`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors\`
+2. **Typography Scale:**
+   - Eyebrow: \`text-xs font-bold uppercase tracking-wider\`
+   - Title: \`text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight\`
+   - Accent Bar: \`h-1 w-12 rounded-full\` in \`theme.primary\`
+   - Intro: \`text-base sm:text-lg font-medium leading-[1.7]\`
+   - Content: \`text-sm sm:text-base font-medium leading-relaxed\`
+3. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
+4. **Theming:** Strictly dual-brand token aware via \`theme.primary\`, \`theme.secondary\`, and \`withAlpha(primary, alpha)\`.
+
+## Mandatory File Deliverables in ZIP
+
+1. \`${componentName}.tsx\` — Primary React UI block component
+2. \`${componentName}.test.tsx\` — Vitest unit test suite
+3. \`${familyLower}-${versionLower}.schema.json\` — JSON Schema contract
+4. \`${familyLower}-${versionLower}.schema.ts\` — TypeScript schema types
+5. \`registry.ts\` — Tutorial Composer registry entry (\`export const ${registryVar}: BlockRegistryEntry\`)
+6. \`preview.html\` — Standalone HTML prototype with UBRC attributes
+7. \`README.md\` — Documentation
 
 ## Immutable Backend Contract
 
@@ -145,12 +323,13 @@ The persisted backend contract is authoritative. Do not invent requirements or c
 ${JSON.stringify(engineeringContract, null, 2)}
 \`\`\`
 
-## Implementation rules
+## Implementation Rules
 
 - Treat the persisted backend contract as the sole source of requirements.
 - Preserve workflow ID, target family/version, snapshot hash, and evidence bindings.
 - Do not claim PASS without real, persisted verification evidence.
-- Report missing requirements or unavailable integrations as BLOCKED.`;
+- Report missing requirements or unavailable integrations as BLOCKED.
+`;
     const blob = new Blob([md], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -343,7 +522,59 @@ ${JSON.stringify(engineeringContract, null, 2)}
                 </div>
               )}
 
-              {activeTab !== 'summary' && activeTab !== 'ils' && (
+              {activeTab === 'rssb' && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
+                    RSSB — Canonical Tutorial Look &amp; Feel &amp; Typography Standards
+                  </h4>
+                  <div className="p-4 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 space-y-3 font-mono">
+                    <div>
+                      <p className="text-slate-900 font-bold">1. Section Shell &amp; Outer Container</p>
+                      <p className="text-slate-600 pl-4">
+                        <code className="bg-slate-100 px-1 py-0.5 rounded text-pink-600">w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors</code>
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-900 font-bold">2. Typography Hierarchy (Outfit / Inter / Sans)</p>
+                      <ul className="text-slate-600 pl-4 space-y-1">
+                        <li>• Eyebrow: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">text-xs font-bold uppercase tracking-wider</code> + Lucide icon</li>
+                        <li>• Title: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight</code></li>
+                        <li>• Accent Bar: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">mb-4 mt-3 h-1 w-12 rounded-full (theme.primary)</code></li>
+                        <li>• Subtitle/Intro: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">text-base sm:text-lg font-medium leading-[1.7]</code></li>
+                        <li>• Card Text: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">text-sm sm:text-base font-medium leading-relaxed</code></li>
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-slate-900 font-bold">3. Iconography &amp; Accessibility</p>
+                      <p className="text-slate-600 pl-4">Exclusively lucide-react icons. Zero unicode glyphs or emojis. aria-hidden=&quot;true&quot; required.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'brand' && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
+                    Brand &amp; Theme Token Adherence (SUIA &amp; RTH Dual Theming)
+                  </h4>
+                  <div className="p-4 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 space-y-3 font-mono">
+                    <div>
+                      <p className="text-slate-900 font-bold">1. Zero Hardcoded Brand Strings</p>
+                      <p className="text-slate-600 pl-4">No &apos;SkillUpITAcademy&apos;, &apos;RealTutorialHub&apos;, &apos;SUIA&apos;, or &apos;RTH&apos; literals.</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-900 font-bold">2. Dynamic Token Derivation</p>
+                      <p className="text-slate-600 pl-4">Only consume <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">theme.primary</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">theme.secondary</code>, and <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">withAlpha(primary, alpha)</code>.</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-900 font-bold">3. Dark Mode Compliance</p>
+                      <p className="text-slate-600 pl-4">Tailwind dark tokens (e.g. <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">dark:bg-slate-900</code>, <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800">dark:text-slate-100</code>).</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab !== 'summary' && activeTab !== 'ils' && activeTab !== 'rssb' && activeTab !== 'brand' && (
                 <div className="space-y-3">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
                     {tabs.find((t) => t.key === activeTab)?.label} Specification Contract
@@ -540,17 +771,16 @@ ${JSON.stringify(engineeringContract, null, 2)}
 
             <div className="p-4 sm:p-5 space-y-3">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
-                Expected Deliverable Package
+                Expected Deliverable Package (.ZIP)
               </h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {[
-                  { file: `${state.familyName}${state.targetVersion}.tsx`, desc: 'Component' },
-                  { file: 'types.ts', desc: 'Type definitions' },
-                  { file: 'schema.json', desc: 'JSON schema' },
-                  { file: 'registry.ts', desc: 'Block registry' },
-                  { file: 'renderer.tsx', desc: 'Runtime render' },
-                  { file: 'composer.tsx', desc: 'Composer UI' },
-                  { file: '*.test.tsx', desc: 'Test suite' },
+                  { file: `${componentName}.tsx`, desc: 'Primary UI component' },
+                  { file: `${componentName}.test.tsx`, desc: 'Jest unit tests' },
+                  { file: `${familyLower}-${versionLower}.schema.json`, desc: 'JSON schema contract' },
+                  { file: `${familyLower}-${versionLower}.schema.ts`, desc: 'TypeScript schema types' },
+                  { file: 'registry.ts', desc: `Exports ${registryVar}` },
+                  { file: 'preview.html', desc: 'UBRC HTML prototype' },
                   { file: 'README.md', desc: 'Documentation' },
                 ].map((item, idx) => (
                   <div
@@ -569,20 +799,38 @@ ${JSON.stringify(engineeringContract, null, 2)}
         </div>
       </div>
 
-      {/* Next Step Callout */}
+      {/* Compliance Pass Gate Status & Next Step */}
       <div className="rounded-2xl border border-pink-200/80 bg-gradient-to-r from-pink-50/80 via-rose-50/40 to-amber-50/60 p-5 sm:p-6 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] text-white shadow-md shadow-pink-500/20 shrink-0 mt-0.5">
-            <Lightbulb size={20} />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] text-white shadow-md shadow-pink-500/20 shrink-0 mt-0.5">
+              <ShieldCheck size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-slate-900 font-outfit">
+                  Handoff Compliance Gate
+                </h4>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  engineeringContract
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                    : 'bg-amber-100 text-amber-800 border border-amber-200'
+                }`}>
+                  {engineeringContract ? '✓ GATE PASSED' : 'CONTRACT REQUIRED'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
+                {engineeringContract
+                  ? `Immutable contract verified (${String(engineeringContract.contract_hash).slice(0, 12)}...). Target block ${targetFamily} (${versionUpper}) is ready for implementation.`
+                  : 'Load or verify the backend engineering contract above to unlock transition to Candidate Upload.'}
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-bold text-slate-900 font-outfit">
-              Next Step: Candidate Upload & Validation
-            </h4>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
-              After the External AI finishes implementing the component package for{' '}
-              <span className="font-bold text-slate-900">{state.familyName} {state.targetVersion}</span>, proceed to Candidate Upload & Validation where the backend-defined quality gates will verify compliance.
-            </p>
+
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold">
+              Target: {targetFamily} {versionUpper}
+            </span>
           </div>
         </div>
       </div>
@@ -599,7 +847,7 @@ ${JSON.stringify(engineeringContract, null, 2)}
 
         <button
           type="button"
-          disabled={isNavigating}
+          disabled={isNavigating || !engineeringContract}
           onClick={async () => {
             setIsNavigating(true);
             if (urlWorkflowId) {

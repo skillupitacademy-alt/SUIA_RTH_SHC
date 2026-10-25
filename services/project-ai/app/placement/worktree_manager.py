@@ -61,7 +61,14 @@ class WorktreeManager:
             repository_root: Path to repository root directory
         """
         self.repository_root = Path(repository_root)
-        self.worktrees_root = self.repository_root / ".worktrees"
+        import os, tempfile
+        env_worktrees = os.environ.get("PROJECT_AI_WORKTREES_DIR")
+        if env_worktrees:
+            self.worktrees_root = Path(env_worktrees)
+        else:
+            # Place isolated worktrees in temp directory to prevent dev server (uvicorn WatchFiles)
+            # from detecting 8,000+ files and triggering an unexpected server reload mid-request.
+            self.worktrees_root = Path(tempfile.gettempdir()) / "project_ai_worktrees"
         
         if not self.repository_root.exists():
             raise WorktreeError(
@@ -117,6 +124,14 @@ class WorktreeManager:
                 f"Failed to get current HEAD: {e.stderr}"
             )
         
+        # Ensure clean branch from base_commit (remove any stale candidate branch from aborted runs)
+        subprocess.run(
+            ['git', 'branch', '-D', branch_name],
+            cwd=self.repository_root,
+            capture_output=True,
+            text=True
+        )
+
         # Create worktree
         try:
             subprocess.run(
@@ -127,19 +142,9 @@ class WorktreeManager:
                 text=True
             )
         except subprocess.CalledProcessError as e:
-            # If branch already exists, try without -b
-            try:
-                subprocess.run(
-                    ['git', 'worktree', 'add', str(worktree_path), branch_name],
-                    cwd=self.repository_root,
-                    check=True,
-                    capture_output=True,
-                    text=True
-                )
-            except subprocess.CalledProcessError as e2:
-                raise WorktreeError(
-                    f"Failed to create worktree: {e2.stderr}"
-                )
+            raise WorktreeError(
+                f"Failed to create worktree: {e.stderr}"
+            )
         
         created_at = datetime.now(timezone.utc).isoformat()
         

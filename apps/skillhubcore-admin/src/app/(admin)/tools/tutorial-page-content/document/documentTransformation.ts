@@ -295,11 +295,26 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
       );
     }
 
+    case 'custom' as any:
+    case 'objective' as any: {
+      return {
+        id: instance.id,
+        type: instance.type as any,
+        version: instance.versionCode || instance.version || 'O1',
+        content: instance.payload as any,
+        expectedTimeSec: instance.expectedTimeSec,
+      } as TutorialBlock;
+    }
+
     default: {
-      const exhaustiveCheck: never = instance.type;
-      throw new Error(
-        `Unsupported tutorial block type: ${exhaustiveCheck}`
-      );
+      const blockType = (instance as any).type;
+      return {
+        id: instance.id,
+        type: blockType,
+        version: instance.versionCode || instance.version || '1',
+        content: instance.payload as any,
+        expectedTimeSec: instance.expectedTimeSec,
+      } as TutorialBlock;
     }
   }
 }

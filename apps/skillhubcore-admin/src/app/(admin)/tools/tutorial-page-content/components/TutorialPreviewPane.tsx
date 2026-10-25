@@ -96,43 +96,18 @@ export function TutorialPreviewPane({
               <span>Active Editor Preview</span>
               <span>{activeBlockVersion} Block</span>
             </div>
-            {activeBlockType === 'definition' && (
-              <TutorialBlockRenderer
-                block={{
-                  id: 'preview',
-                  type: 'definition',
-                  version: activeBlockVersion,
-                  content: activeBlockPreview as DefinitionD1AuthorContent,
-                } as TutorialBlock}
-                theme={theme}
-                depth={0}
-              />
-            )}
-            {activeBlockType === 'code' && (
-              <TutorialBlockRenderer
-                block={{
-                  id: 'preview',
-                  type: 'code',
-                  version: activeBlockVersion,
-                  content: activeBlockPreview,
-                } as TutorialBlock}
-                theme={theme}
-                depth={0}
-              />
-            )}
-            {activeBlockType === 'summary' && (
+            {activeBlockType === 'summary' ? (
               <TutorialSummaryContent 
                 payload={activeBlockPreview as TutorialSummaryPayload} 
                 theme={theme} 
               />
-            )}
-            {activeBlockType === 'introduction' && (
+            ) : (
               <TutorialBlockRenderer
                 block={{
                   id: 'preview',
-                  type: 'introduction',
+                  type: activeBlockType as any,
                   version: activeBlockVersion,
-                  content: activeBlockPreview as IntroductionI1AuthorContent,
+                  content: activeBlockPreview as any,
                 } as TutorialBlock}
                 theme={theme}
                 depth={0}
@@ -154,42 +129,15 @@ export function TutorialPreviewPane({
                 >
                   {idx > 0 && <div className="my-8 border-t border-dashed border-slate-200" />}
                   
-                  {instance.type === 'definition' && (
-                    <div data-tutorial-block-type="definition">
-                      <TutorialBlockRenderer
-                        block={{
-                          id: instance.id,
-                          type: 'definition',
-                          version: instance.versionCode,
-                          content: instance.payload as DefinitionD1AuthorContent,
-                        } as TutorialBlock}
-                        theme={theme}
-                        depth={0}
-                      />
-                    </div>
-                  )}
-                  
-                  {instance.type === 'code' && (
-                    <div data-tutorial-block-type="code">
-                      <TutorialBlockRenderer
-                        block={toTutorialBlock(instance)}
-                        theme={theme}
-                        depth={0}
-                      />
-                    </div>
-                  )}
-                  
-                  {instance.type === 'summary' && (
+                  {instance.type === 'summary' ? (
                     <div data-tutorial-block-type="summary">
                       <TutorialSummaryContent 
                         payload={instance.payload as TutorialSummaryPayload} 
                         theme={theme} 
                       />
                     </div>
-                  )}
-                  
-                  {instance.type === 'introduction' && (
-                    <div data-tutorial-block-type="introduction">
+                  ) : (
+                    <div data-tutorial-block-type={instance.type}>
                       <TutorialBlockRenderer
                         block={toTutorialBlock(instance)}
                         theme={theme}

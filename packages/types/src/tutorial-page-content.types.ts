@@ -198,6 +198,7 @@ export type TutorialContentPayloadByType = {
   code: TutorialCodePayload;
   summary: TutorialSummaryPayload;
   introduction: TutorialIntroductionPayload;
+  [key: string]: any;
 };
 
 export interface TutorialPageContentRecord<T extends TutorialPageContentType = TutorialPageContentType> {

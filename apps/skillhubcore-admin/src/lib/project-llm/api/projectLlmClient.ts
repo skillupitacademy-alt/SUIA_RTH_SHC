@@ -229,6 +229,9 @@ export class ProjectLlmClient {
         uploadedBy: 'admin',
       };
 
+      // Ensure workflow is transitioned through canonical states to CANDIDATE_REQUESTED before uploading
+      await this.ensureCandidateRequested(workflowId);
+
       let response = await fetch(`${this.baseUrl}/candidates/upload`, {
         method: 'POST',
         headers: {
@@ -238,8 +241,7 @@ export class ProjectLlmClient {
         credentials: 'same-origin',
       });
 
-      // If workflow state conflict (e.g. workflow still in BRIEF_READY / AWAITING_GATE_1 / GUI_APPROVED),
-      // auto-advance workflow through required canonical states to CANDIDATE_REQUESTED and retry!
+      // If workflow state conflict (e.g. race condition), retry once with state advancement
       if (response.status === 409) {
         await this.ensureCandidateRequested(workflowId);
         response = await fetch(`${this.baseUrl}/candidates/upload`, {
@@ -337,7 +339,13 @@ export class ProjectLlmClient {
    */
   async approveImplementation(
     workflowId: string,
-    manifestHash: string
+    manifestHash?: string,
+    details?: {
+      contractHash?: string;
+      candidateSha256?: string;
+      placementManifestId?: string;
+      reason?: string;
+    }
   ): Promise<ApprovalResponse> {
     try {
       const response = await fetch(
@@ -349,12 +357,12 @@ export class ProjectLlmClient {
           },
           body: JSON.stringify({
             workflow_id: workflowId,
-            manifest_hash: manifestHash,
-            contract_hash: manifestHash,
-            candidate_sha256: manifestHash,
-            placement_manifest_id: manifestHash,
+            ...(manifestHash ? { manifest_hash: manifestHash } : {}),
+            ...(details?.contractHash ? { contract_hash: details.contractHash } : {}),
+            ...(details?.candidateSha256 ? { candidate_sha256: details.candidateSha256 } : {}),
+            ...(details?.placementManifestId ? { placement_manifest_id: details.placementManifestId } : {}),
             approved: true,
-            reason: 'Approved via admin UI',
+            reason: details?.reason || 'Approved by Administrator via Certification Console',
           }),
           credentials: 'same-origin',
         }
@@ -429,6 +437,8 @@ export class ProjectLlmClient {
         certifiedAt: data.updated_at || undefined,
         targetFamily: data.target?.family,
         targetVersion: data.target?.version,
+        candidateId: data.artifacts?.candidate?.id || data.artifacts?.candidate?.artifact_id || undefined,
+        manifestId: data.artifacts?.manifest?.id || data.artifacts?.manifest?.artifact_id || undefined,
       };
     } catch (error) {
       if (error instanceof ProjectLlmError) {
@@ -487,9 +497,8 @@ export class ProjectLlmClient {
    */
   async ensureCandidateRequested(workflowId: string): Promise<void> {
     try {
-      const wf = await this.getWorkflowState(workflowId);
-      let currentState: string =
-        (wf as any).state?.current_state || wf.state || (wf as any).current_state || '';
+      const cert = await this.getCertificationStatus(workflowId);
+      let currentState: string = cert.state || '';
 
       if (currentState === 'REQUESTED') {
         await this.transitionWorkflow(workflowId, 'DISCOVERY', 'Auto-advance to discovery');

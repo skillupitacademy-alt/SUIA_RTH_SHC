@@ -169,6 +169,15 @@ export const BLOCK_REGISTRY: Record<BlockType, BlockRegistryEntry> = {
     supportsChildren: false,
     tags: ['introduction', 'overview', 'roadmap', 'learning-path'],
   },
+  objective: {
+    type: 'objective',
+    label: 'Objective',
+    description: 'Topic introduction with clear learning roadmap and outcomes',
+    category: 'educational',
+    icon: 'Target',
+    supportsChildren: false,
+    tags: ['objective', 'learning', 'roadmap', 'goals'],
+  },
   summary: {
     type: 'summary',
     label: 'Summary',

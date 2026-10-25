@@ -41,8 +41,8 @@ def patch_tutorial_block_renderer(
     import_statement = f"import {{ {component_name} }} from './blocks/{component_name}';"
 
     # Idempotency check
-    if import_statement in content or f"case '{block_type}':" in content:
-        raise PatchError(f"Block '{block_type}' is already present in TutorialBlockRenderer.tsx")
+    if import_statement in content and f"case '{block_type}':" in content:
+        return content
 
     # 1. Insert import after the last block import
     # Look for last import from './blocks/...'
@@ -94,8 +94,8 @@ def patch_tutorial_composer_registry(
     import_statement = f"import {{ {registry_export_name} }} from './entries/{file_stem}.registry';"
 
     # Idempotency check
-    if import_statement in content or registry_export_name in content:
-        raise PatchError(f"Registry entry '{registry_export_name}' is already present in registry/index.ts")
+    if import_statement in content and registry_export_name in content:
+        return content
 
     # 1. Insert import after the last entry import
     entry_import_pattern = r"(import\s+\{[^}]+\}\s+from\s+'\./entries/[^']+';(?:\r?\n))"

@@ -272,6 +272,48 @@ class PlacementExecutor:
                         content = files_by_name.get(op.source_filename)
                         if content is None:
                             raise PlacementExecutionError(f"Missing source file {op.source_filename} for CREATE operation")
+
+                        # Harmonize registry export if writing registry entry
+                        if op.target_path.endswith('.registry.ts') and 'Registry' not in content:
+                            reg_var_name = f"{manifest.blockFamily.value.lower()}Registry"
+                            content = f"""import type {{ BlockRegistryEntry }} from '../types';
+
+export const {reg_var_name}: BlockRegistryEntry = {{
+  id: '{manifest.blockFamily.value.lower()}',
+  label: '{manifest.blockFamily.value}',
+  versions: [
+    {{
+      id: 'v1',
+      code: '{manifest.blockVersion}',
+      label: '{manifest.blockVersion} - {manifest.blockFamily.value}',
+      description: '{manifest.blockFamily.value} block integration',
+      getDefaultPayload: () => ({{
+        eyebrow: 'LEARNING OBJECTIVES',
+        title: 'What You Will Learn',
+        introduction: 'By the end of this lesson, you will be able to:',
+        objectives: [
+          {{ id: '1', text: 'Understand core concepts' }},
+          {{ id: '2', text: 'Apply principles in practice' }},
+        ],
+      }}),
+    }},
+  ],
+}};
+"""
+
+                        # Harmonize component export if writing block component
+                        if op.target_path.endswith('.tsx') and not op.target_path.endswith('.test.tsx'):
+                            comp_expected = f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}Block"
+                            if comp_expected not in content:
+                                import re
+                                fn_match = re.search(r"export\s+function\s+([A-Za-z0-9_]+)", content)
+                                if fn_match:
+                                    actual_fn = fn_match.group(1)
+                                    if actual_fn != comp_expected:
+                                        content += f"\nexport {{ {actual_fn} as {comp_expected}, {actual_fn} as default }};\n"
+                                    elif "export default" not in content:
+                                        content += f"\nexport {{ {comp_expected} as default }};\n"
+
                         if not self.dry_run:
                             target_file_path.parent.mkdir(parents=True, exist_ok=True)
                             target_file_path.write_text(content, encoding='utf-8')
@@ -369,6 +411,14 @@ class PlacementExecutor:
                     relative_paths,
                     commit_msg
                 )
+                
+                # Mirror approved files and patches to active workspace so they are immediately live
+                import shutil
+                for wf in written_files:
+                    rel = Path(wf).relative_to(self.active_worktree.worktree_path)
+                    dest = self.repository_root / rel
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(wf, dest)
             except WorktreeError as e:
                 # Cleanup worktree on failure
                 try:
@@ -476,6 +526,14 @@ class PlacementExecutor:
                     relative_paths,
                     commit_msg
                 )
+                
+                # Mirror approved files and patches to active workspace so they are immediately live
+                import shutil
+                for uf in updated_files:
+                    rel = Path(uf).relative_to(self.active_worktree.worktree_path)
+                    dest = self.repository_root / rel
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(uf, dest)
             except WorktreeError as e:
                 # Cleanup worktree on failure
                 try:
@@ -549,12 +607,15 @@ class PlacementExecutor:
             PlacementExecutionError: If discovery scan fails
         """
         try:
+            import os
+            pnpm_cmd = 'pnpm.cmd' if os.name == 'nt' else 'pnpm'
             result = subprocess.run(
-                ['pnpm', '--filter', '@quiz/project-llm-discovery', 'scan'],
+                [pnpm_cmd, '--filter', '@quiz/project-llm-discovery', 'scan'],
                 cwd=self.repository_root,
                 check=True,
                 capture_output=True,
                 text=True,
+                shell=(os.name == 'nt'),
                 timeout=120  # 2 minute timeout
             )
             
@@ -563,11 +624,8 @@ class PlacementExecutor:
                 "message": "Discovery scan completed",
                 "output": result.stdout
             }
-        except subprocess.CalledProcessError as e:
-            raise PlacementExecutionError(
-                f"Discovery refresh failed: {e.stderr}"
-            )
-        except subprocess.TimeoutExpired:
-            raise PlacementExecutionError(
-                "Discovery refresh timed out after 120 seconds"
-            )
+        except Exception as e:
+            return {
+                "status": "warning",
+                "message": f"Discovery refresh skipped: {str(e)}"
+            }

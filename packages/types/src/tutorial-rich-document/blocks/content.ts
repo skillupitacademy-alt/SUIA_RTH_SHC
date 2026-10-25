@@ -279,6 +279,19 @@ export interface ComparisonFeature {
   values: string[]; // One value per entity
 }
 
+export interface ObjectiveBlock extends BaseBlock {
+  type: 'objective';
+  version: 'O1' | string;
+  content: {
+    eyebrow?: string;
+    title: string;
+    introduction?: string;
+    objectives: Array<{ id?: string | number; text: string }>;
+  };
+}
+
+export type ObjectiveO1BlockData = ObjectiveBlock;
+
 /**
  * Union type for all content blocks
  */
@@ -296,7 +309,8 @@ export type ContentBlock =
   | QuoteBlock
   | SummaryBlock
   | DiagramBlock
-  | ComparisonBlock;
+  | ComparisonBlock
+  | ObjectiveBlock;
 
 // Import versioned blocks from content-blocks
 import type { CodeBlockVersioned, IntroductionBlock, SummaryBlock } from './content-blocks';

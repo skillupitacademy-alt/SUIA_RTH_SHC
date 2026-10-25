@@ -483,7 +483,19 @@ async def classify_candidate(
         )
     
     package = model_to_candidate(candidate_model)
-    
+
+    # 1. Authoritative identity from bound workflow / candidate model
+    target_family_raw = getattr(candidate_model, 'target_family', None) or getattr(package, 'targetFamily', None)
+    if target_family_raw:
+        for fam in BlockFamily:
+            if fam.value.lower() == target_family_raw.lower() or fam.name.lower() == target_family_raw.lower():
+                return ClassificationResult(
+                    candidateId=candidate_id,
+                    detectedFamily=fam,
+                    confidence=1.0,
+                    reasoning=f"Authoritatively classified from workflow target family: {fam.value}"
+                )
+
     # Find HTML files for structural analysis
     html_files = [f for f in package.files if f.contentType == "text/html"]
     
@@ -492,7 +504,7 @@ async def classify_candidate(
             candidateId=candidate_id,
             detectedFamily=BlockFamily.CUSTOM,
             confidence=0.5,
-            reasoning="No HTML files found; defaulting to Custom family"
+            reasoning="No target family specified and no HTML prototype files found; defaulting to Custom family"
         )
     
     # Analyze first HTML file for classification signals
@@ -777,9 +789,9 @@ async def generate_manifest(
                     if 'evidenceId' in block:
                         evidence_ids.append(block['evidenceId'])
     
-    # Create manifest
-    manifest_id = f"manifest-{candidate_id}-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
-    created_at = datetime.now(timezone.utc).isoformat()
+    # Create manifest with native UUID and normalized ISO timestamp
+    manifest_id = str(uuid4())
+    created_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     
     # B07 fix: Extract target version from workflow binding (Wave 1A)
     # Candidate packages now carry target_version from workflow at upload
@@ -1135,7 +1147,7 @@ async def execute_placement(
         try:
             refresh_result = executor.trigger_discovery_refresh()
             result['discoveryRefresh'] = refresh_result
-        except PlacementExecutionError as e:
+        except Exception as e:
             result['discoveryRefresh'] = {
                 'status': 'warning',
                 'message': f'Placement succeeded but discovery refresh failed: {str(e)}'

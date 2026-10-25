@@ -30,6 +30,7 @@ const steps = [
 export function ProjectLlmStepper({ currentStep, workflowId: propWorkflowId }: StepperProps) {
   const searchParams = useSearchParams();
   const workflowId = propWorkflowId || searchParams.get('workflowId');
+  const candidateId = searchParams.get('candidateId');
 
   return (
     <div className="flex items-center gap-1.5 sm:gap-2.5 overflow-x-auto py-1 no-scrollbar shrink-0">
@@ -37,7 +38,10 @@ export function ProjectLlmStepper({ currentStep, workflowId: propWorkflowId }: S
         const isCompleted = step.id < currentStep;
         const isCurrent = step.id === currentStep;
         const Icon = step.icon;
-        const href = workflowId ? `${step.href}?workflowId=${workflowId}` : step.href;
+        let href = step.href;
+        if (workflowId) {
+          href = `${step.href}?workflowId=${workflowId}${candidateId ? `&candidateId=${candidateId}` : ''}`;
+        }
 
         return (
           <React.Fragment key={step.id}>

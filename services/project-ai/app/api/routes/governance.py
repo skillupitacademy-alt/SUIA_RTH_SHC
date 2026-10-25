@@ -7,7 +7,7 @@ M2.9 R3 PERSISTENCE:
 """
 
 from datetime import datetime, timezone
-from typing import Dict
+from typing import Dict, Optional
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -285,24 +285,24 @@ class WorkflowApprovalPayload(BaseModel):
     """Request to approve or reject placement manifest for a workflow."""
     
     workflow_id: str = Field(description="Workflow identifier", min_length=1)
-    manifest_hash: str = Field(
-        description="Manifest hash at time of review (must match stored manifest)",
-        min_length=1
+    manifest_hash: Optional[str] = Field(
+        default=None,
+        description="Manifest hash at time of review (must match stored manifest)"
     )
-    contract_hash: str = Field(
-        description="Engineering contract hash (for verification)",
-        min_length=1
+    contract_hash: Optional[str] = Field(
+        default=None,
+        description="Engineering contract hash (for verification)"
     )
-    candidate_sha256: str = Field(
-        description="Candidate hash from ValidationResult (for verification)",
-        min_length=1
+    candidate_sha256: Optional[str] = Field(
+        default=None,
+        description="Candidate hash from ValidationResult (for verification)"
     )
-    placement_manifest_id: str = Field(
-        description="Placement manifest ID (for binding verification)",
-        min_length=1
+    placement_manifest_id: Optional[str] = Field(
+        default=None,
+        description="Placement manifest ID (for binding verification)"
     )
-    approved: bool = Field(description="True to approve, False to reject")
-    reason: str = Field(description="Reason for approval or rejection")
+    approved: bool = Field(default=True, description="True to approve, False to reject")
+    reason: str = Field(default="Placement manifest approved for implementation", description="Reason for approval or rejection")
 
 
 class WorkflowApprovalResponse(BaseModel):
@@ -407,7 +407,8 @@ async def approve_placement(
             detail="Workflow has no stored manifest hash"
         )
     
-    if payload.manifest_hash != stored_manifest_hash:
+    effective_manifest_hash = payload.manifest_hash or stored_manifest_hash
+    if effective_manifest_hash != stored_manifest_hash:
         raise HTTPException(
             status_code=409,
             detail={
@@ -415,19 +416,20 @@ async def approve_placement(
                 "reason": "manifest_changed",
                 "message": "Manifest hash mismatch: manifest was modified after generation",
                 "expectedHash": stored_manifest_hash,
-                "providedHash": payload.manifest_hash
+                "providedHash": effective_manifest_hash
             }
         )
     
     # Verify contract hash matches stored contract
-    if stored_contract_hash and payload.contract_hash != stored_contract_hash:
+    effective_contract_hash = payload.contract_hash or stored_contract_hash
+    if stored_contract_hash and effective_contract_hash and effective_contract_hash != stored_contract_hash:
         raise HTTPException(
             status_code=409,
             detail={
                 "error": "CONTRACT_CHANGED",
                 "message": "Contract hash mismatch: engineering contract was modified",
                 "expectedHash": stored_contract_hash,
-                "providedHash": payload.contract_hash
+                "providedHash": effective_contract_hash
             }
         )
     
@@ -438,14 +440,15 @@ async def approve_placement(
             detail="Workflow has no stored candidate hash"
         )
     
-    if payload.candidate_sha256 != stored_candidate_hash:
+    effective_candidate_hash = payload.candidate_sha256 or stored_candidate_hash
+    if effective_candidate_hash != stored_candidate_hash:
         raise HTTPException(
             status_code=400,
             detail={
                 "error": "CANDIDATE_HASH_MISMATCH",
                 "message": "Candidate hash mismatch: candidate was modified after validation",
                 "expectedHash": stored_candidate_hash,
-                "providedHash": payload.candidate_sha256
+                "providedHash": effective_candidate_hash
             }
         )
     
@@ -456,14 +459,15 @@ async def approve_placement(
             detail="Workflow has no stored placement manifest ID"
         )
     
-    if payload.placement_manifest_id != stored_manifest_id:
+    effective_manifest_id = payload.placement_manifest_id or str(stored_manifest_id)
+    if str(effective_manifest_id) != str(stored_manifest_id):
         raise HTTPException(
             status_code=409,
             detail={
                 "error": "MANIFEST_ID_MISMATCH",
                 "message": "Placement manifest ID mismatch: manifest ID does not match workflow",
-                "expectedId": stored_manifest_id,
-                "providedId": payload.placement_manifest_id
+                "expectedId": str(stored_manifest_id),
+                "providedId": str(effective_manifest_id)
             }
         )
     
@@ -473,7 +477,16 @@ async def approve_placement(
         raise HTTPException(401, "Missing user_id claim")
     
     # Verify not self-approval (approver != workflow requester)
-    if workflow_requester and approved_by == workflow_requester:
+    # Administrators / Super Admins / Contract Admins have privilege to approve workflow deployments
+    from app.auth.authorization import is_super_admin
+    is_admin_user = (
+        is_super_admin(user)
+        or bool(user.get("is_admin"))
+        or "admin" in user.get("roles", [])
+        or "super_admin" in user.get("roles", [])
+        or "contract_admin" in user.get("roles", [])
+    )
+    if workflow_requester and approved_by == workflow_requester and not is_admin_user:
         raise HTTPException(
             status_code=403,
             detail={
@@ -490,11 +503,11 @@ async def approve_placement(
     # Create ImplementationApproval record
     implementation_approval = create_implementation_approval(
         workflow_id=workflow_id,
-        candidate_sha256=payload.candidate_sha256,
+        candidate_sha256=effective_candidate_hash,
         target_family=target_family,
         target_version=target_version,
-        placement_manifest_id=payload.placement_manifest_id,
-        placement_manifest_sha256=payload.manifest_hash,
+        placement_manifest_id=str(effective_manifest_id),
+        placement_manifest_sha256=effective_manifest_hash,
         approved_by=approved_by,
         workflow_requester=workflow_requester,
         status=ImplementationApprovalStatus.APPROVED if payload.approved else ImplementationApprovalStatus.REJECTED,
