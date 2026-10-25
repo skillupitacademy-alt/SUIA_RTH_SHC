@@ -439,11 +439,49 @@ class ManifestModel(Base):
         Index("idx_manifest_decision", "decision"),
     )
     
-    def verify_hash(self, manifest_data: Dict[str, Any]) -> bool:
+    def verify_hash(self, manifest_data: Optional[Dict[str, Any]] = None) -> bool:
         """Verify manifest data matches stored hash."""
-        canonical = json.dumps(manifest_data, sort_keys=True, ensure_ascii=False)
-        computed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-        return self.manifest_hash == computed_hash
+        if manifest_data is not None:
+            canonical = json.dumps(manifest_data, sort_keys=True, ensure_ascii=False)
+            if self.manifest_hash == hashlib.sha256(canonical.encode("utf-8")).hexdigest():
+                return True
+            canonical_compact = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
+            if self.manifest_hash == hashlib.sha256(canonical_compact.encode("utf-8")).hexdigest():
+                return True
+
+        # Candidate placement manifest format
+        text_changes = []
+        file_ops = []
+        if isinstance(self.required_changes, dict):
+            text_changes = self.required_changes.get("text", [])
+            file_ops = self.required_changes.get("operations", [])
+        elif isinstance(self.required_changes, list):
+            text_changes = self.required_changes
+
+        created_at_str = ""
+        if self.created_at:
+            created_at_str = self.created_at.isoformat()
+            if not created_at_str.endswith("Z") and "+" not in created_at_str:
+                created_at_str += "Z"
+            elif created_at_str.endswith("+00:00"):
+                created_at_str = created_at_str[:-6] + "Z"
+
+        cand_data = {
+            "manifestId": str(self.manifest_id),
+            "candidateId": str(self.candidate_id),
+            "decision": self.decision,
+            "targetPath": self.target_path,
+            "blockFamily": self.block_family,
+            "blockVersion": self.block_version,
+            "requiredChanges": text_changes,
+            "fileOperations": file_ops,
+            "evidenceIds": self.evidence_ids or [],
+            "createdAt": created_at_str,
+        }
+        cand_json = json.dumps(cand_data, sort_keys=True, separators=(',', ':'))
+        computed = hashlib.sha256(cand_json.encode("utf-8")).hexdigest()
+        return self.manifest_hash == computed
+
 
 
 class ApprovalModel(Base):
