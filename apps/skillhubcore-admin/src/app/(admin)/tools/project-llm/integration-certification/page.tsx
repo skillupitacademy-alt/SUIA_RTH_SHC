@@ -305,8 +305,22 @@ export default function IntegrationCertificationPage() {
                       <button
                         type="button"
                         onClick={handleExecutePlacement}
-                        disabled={!manifest || manifest.decision === 'REJECT' || isPlanning || isExecuting}
-                        title={!manifest ? 'Generate a placement manifest first' : manifest.decision === 'REJECT' ? 'Rejected manifests cannot be executed' : 'The backend will reject this action until independent approval is recorded'}
+                        disabled={
+                          !manifest ||
+                          manifest.decision === 'REJECT' ||
+                          isPlanning ||
+                          isExecuting ||
+                          certificationData?.state !== 'IMPLEMENTING'
+                        }
+                        title={
+                          !manifest
+                            ? 'Generate a placement manifest first'
+                            : manifest.decision === 'REJECT'
+                            ? 'Rejected manifests cannot be executed'
+                            : certificationData?.state !== 'IMPLEMENTING'
+                            ? 'Placement execution requires independent approval. Workflow must be in IMPLEMENTING state.'
+                            : 'Execute approved placement in isolated worktree'
+                        }
                         className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                       >
                         <GitBranch size={14} />
@@ -485,7 +499,7 @@ export default function IntegrationCertificationPage() {
                   </p>
                 </div>
                 <Link
-                  href="/tools/block-composer"
+                  href="/tools/tutorial-page-content"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 shadow-sm"
                 >
                   <Workflow size={13} />
@@ -628,7 +642,7 @@ export default function IntegrationCertificationPage() {
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
                     <Link
-                      href="/tools/block-composer"
+                      href="/tools/tutorial-page-content"
                       className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-emerald-900 font-bold text-xs hover:bg-emerald-50 transition-all shadow-md active:scale-95"
                     >
                       <Workflow size={16} />
@@ -700,7 +714,7 @@ export default function IntegrationCertificationPage() {
               </h4>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
                 <span className="font-bold text-slate-900">{familyName} {targetVersion}</span> is certified! You can now compose tutorials using this new block family version directly inside the{' '}
-                <Link href="/tools/block-composer" className="text-pink-600 font-bold underline hover:text-pink-700">
+                <Link href="/tools/tutorial-page-content" className="text-pink-600 font-bold underline hover:text-pink-700">
                   Tutorial Composer
                 </Link>
                 , or review the complete immutable audit trail in{' '}
@@ -748,7 +762,7 @@ export default function IntegrationCertificationPage() {
           </Link>
 
           <Link
-            href="/tools/block-composer"
+            href="/tools/tutorial-page-content"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
           >
             Launch Tutorial Composer

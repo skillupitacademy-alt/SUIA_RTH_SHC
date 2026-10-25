@@ -60,6 +60,16 @@ export type CandidateResponse = {
   status: string;
 };
 
+export type PlacementFileOperation = {
+  action: 'CREATE' | 'PATCH_RENDERER' | 'PATCH_REGISTRY' | 'PATCH_TYPES' | 'SKIP';
+  source_filename: string;
+  source_sha256: string;
+  target_path: string;
+  expected_pre_hash?: string | null;
+  patch_strategy?: string | null;
+  description: string;
+};
+
 export type PlacementManifest = {
   manifestId: string;
   candidateId: string;
@@ -68,6 +78,7 @@ export type PlacementManifest = {
   blockFamily: string;
   blockVersion: string;
   requiredChanges: string[];
+  fileOperations?: PlacementFileOperation[];
   evidenceIds: string[];
   manifestHash: string;
   createdAt: string;

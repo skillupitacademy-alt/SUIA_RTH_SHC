@@ -31,6 +31,8 @@ from app.models.candidate import (
     ClassificationResult,
     PlacementDecision,
     PlacementManifest,
+    PlacementFileAction,
+    PlacementFileOperation,
 )
 from app.models.implementation_approval import ImplementationApproval
 from app.placement.approval_enforcer import ApprovalEnforcer
@@ -114,6 +116,13 @@ def parse_iso_datetime(val: str | datetime) -> datetime:
 
 def manifest_to_model(manifest: PlacementManifest, candidate_id: str) -> ManifestModel:
     """Convert domain PlacementManifest to ORM ManifestModel."""
+    required_changes_data: Any = manifest.requiredChanges
+    if manifest.fileOperations:
+        required_changes_data = {
+            "text": manifest.requiredChanges,
+            "operations": [op.model_dump() for op in manifest.fileOperations]
+        }
+
     return ManifestModel(
         manifest_id=manifest.manifestId,
         candidate_id=candidate_id,
@@ -122,7 +131,7 @@ def manifest_to_model(manifest: PlacementManifest, candidate_id: str) -> Manifes
         target_path=manifest.targetPath,
         block_family=manifest.blockFamily.value,
         block_version=manifest.blockVersion,
-        required_changes=manifest.requiredChanges,
+        required_changes=required_changes_data,
         evidence_ids=manifest.evidenceIds,
         created_at=parse_iso_datetime(manifest.createdAt)
     )
@@ -134,6 +143,15 @@ def model_to_manifest(model: ManifestModel) -> PlacementManifest:
     if not created_at_str.endswith('Z'):
         created_at_str += 'Z'
     
+    text_changes = []
+    file_ops = []
+    if isinstance(model.required_changes, dict):
+        text_changes = model.required_changes.get("text", [])
+        raw_ops = model.required_changes.get("operations", [])
+        file_ops = [PlacementFileOperation(**op) for op in raw_ops]
+    elif isinstance(model.required_changes, list):
+        text_changes = model.required_changes
+
     return PlacementManifest(
         manifestId=str(model.manifest_id),
         candidateId=str(model.candidate_id),
@@ -141,7 +159,8 @@ def model_to_manifest(model: ManifestModel) -> PlacementManifest:
         targetPath=model.target_path,
         blockFamily=BlockFamily(model.block_family),
         blockVersion=model.block_version,
-        requiredChanges=model.required_changes,
+        requiredChanges=text_changes,
+        fileOperations=file_ops,
         evidenceIds=model.evidence_ids,
         manifestHash=model.manifest_hash,
         createdAt=created_at_str

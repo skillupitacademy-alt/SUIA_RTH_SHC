@@ -326,7 +326,7 @@ export default function ProjectLlmDashboardPage() {
               { label: 'Create Block', icon: Box, iconColor: 'text-pink-600', href: '/tools/project-llm/create' },
               { label: 'View Compliance Checklist', icon: FileText, iconColor: 'text-blue-600', href: '/tools/project-llm/compliance-brief' },
               { label: 'Upload Candidate', icon: Upload, iconColor: 'text-purple-600', href: '/tools/project-llm/candidate-upload' },
-              { label: 'Open Tutorial Composer', icon: BookOpen, iconColor: 'text-indigo-600', href: '/tools/tutorial-block-composer' },
+              { label: 'Open Tutorial Composer', icon: BookOpen, iconColor: 'text-indigo-600', href: '/tools/tutorial-page-content' },
             ].map((qa, i) => {
               const Icon = qa.icon;
               return (

@@ -99,6 +99,26 @@ class CanonicalComparison(BaseModel):
     differences: list[str] = Field(..., description="List of identified differences")
 
 
+class PlacementFileAction(str, Enum):
+    """Action to take on a candidate or repository file."""
+    CREATE = "CREATE"
+    PATCH_RENDERER = "PATCH_RENDERER"
+    PATCH_REGISTRY = "PATCH_REGISTRY"
+    PATCH_TYPES = "PATCH_TYPES"
+    SKIP = "SKIP"
+
+
+class PlacementFileOperation(BaseModel):
+    """Explicit, snapshot-derived file-level operation with pre-image verification."""
+    action: PlacementFileAction = Field(..., description="Action to perform on target")
+    source_filename: str = Field(..., description="Name of file in candidate package")
+    source_sha256: str = Field(..., description="SHA-256 hash of candidate file")
+    target_path: str = Field(..., description="Approved relative destination in workspace")
+    expected_pre_hash: Optional[str] = Field(None, description="SHA-256 of target file before patch (pre-image verification)")
+    patch_strategy: Optional[str] = Field(None, description="Semantic patch strategy (e.g. DISPATCH_BRANCH, REGISTRY_ENTRY)")
+    description: str = Field(..., description="Human-readable explanation of operation")
+
+
 class PlacementManifest(BaseModel):
     """Placement manifest defining how to integrate a candidate block."""
     
@@ -109,6 +129,11 @@ class PlacementManifest(BaseModel):
     blockFamily: BlockFamily = Field(..., description="Block family classification")
     blockVersion: str = Field(..., description="Block version (UBRC compliant)")
     requiredChanges: list[str] = Field(..., description="Changes required for placement")
+    fileOperations: list[PlacementFileOperation] = Field(
+        default_factory=list,
+        description="Explicit, snapshot-derived file-level operations"
+    )
     evidenceIds: list[str] = Field(..., description="Evidence IDs supporting this decision")
     manifestHash: str = Field(..., description="SHA-256 hash of manifest content")
     createdAt: str = Field(..., description="ISO 8601 timestamp of manifest creation")
+

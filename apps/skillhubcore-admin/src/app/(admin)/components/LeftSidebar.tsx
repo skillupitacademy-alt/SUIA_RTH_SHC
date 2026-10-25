@@ -109,16 +109,18 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2 whitespace-nowrap">Engines (Core Services)</h2>
             <nav className="space-y-1">
               {[
-                { icon: BookOpen, label: 'Tutorial Engine', color: 'text-pink-400' },
-                { icon: ClipboardList, label: 'Exam Engine', color: 'text-orange-400' },
-                { icon: Briefcase, label: 'Placement Engine', color: 'text-pink-400' },
-                { icon: Users, label: 'Faculty Engine', color: 'text-orange-400' },
-                { icon: Briefcase, label: 'Internship Engine', color: 'text-pink-400' },
+                { icon: BookOpen, label: 'Tutorial Engine', href: '/tools/tutorial-page-content', color: 'text-pink-400' },
+                { icon: ClipboardList, label: 'Exam Engine', href: '#', color: 'text-orange-400' },
+                { icon: Briefcase, label: 'Placement Engine', href: '#', color: 'text-pink-400' },
+                { icon: Users, label: 'Faculty Engine', href: '#', color: 'text-orange-400' },
+                { icon: Briefcase, label: 'Internship Engine', href: '#', color: 'text-pink-400' },
               ].map((item, i) => (
                 <Link
                   key={i}
-                  href="#"
-                  className="flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none"
+                  href={item.href || '#'}
+                  className={`flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
+                    item.href !== '#' && pathname === item.href ? 'bg-slate-800 text-white font-bold' : ''
+                  }`}
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className={`p-1 rounded bg-slate-800/50 shrink-0 ${item.color}`}><item.icon size={14} /></div>
@@ -244,9 +246,9 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
               </div>
 
               <Link
-                href="/tools/tutorial-block-composer"
+                href="/tools/tutorial-page-content"
                 className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors focus:ring-2 focus:ring-pink-500 outline-none ${
-                  pathname === '/tools/tutorial-block-composer'
+                  pathname === '/tools/tutorial-page-content' || pathname === '/tools/tutorial-block-composer'
                     ? 'bg-slate-800 text-white font-bold'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800'
                 }`}
@@ -255,7 +257,7 @@ export function LeftSidebar({ isLeftSidebarOpen, setIsLeftSidebarOpen, pathname 
                   <div className="p-1 rounded bg-slate-800/50 shrink-0 text-rose-400">
                     <Layers size={14} />
                   </div>
-                  <span className="whitespace-nowrap truncate">Tutorial Block Composer</span>
+                  <span className="whitespace-nowrap truncate">Tutorial Composer</span>
                 </div>
                 <ChevronRight size={14} className="text-slate-500 shrink-0" />
               </Link>

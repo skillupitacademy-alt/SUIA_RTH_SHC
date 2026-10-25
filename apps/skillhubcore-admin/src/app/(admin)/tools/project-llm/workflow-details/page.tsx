@@ -221,7 +221,7 @@ export default function WorkflowDetailsPage() {
             </Link>
 
             <Link
-              href="/tools/block-composer"
+              href="/tools/tutorial-page-content"
               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-600 to-rose-600 rounded-xl shadow-sm shadow-pink-500/20 hover:from-pink-700 hover:to-rose-700"
             >
               Open Composer
