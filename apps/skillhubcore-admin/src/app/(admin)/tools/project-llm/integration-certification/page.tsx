@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -15,6 +15,10 @@ import {
   Lightbulb,
   AlertCircle,
   RefreshCw,
+  Play,
+  XCircle,
+  Terminal,
+  Lock,
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
@@ -31,6 +35,7 @@ import type {
 type CertTab = 'repo' | 'tests' | 'composer' | 'runtime' | 'cert';
 
 export default function IntegrationCertificationPage() {
+  const router = useRouter();
   const { state, setState } = useProjectLlm();
   const searchParams = useSearchParams();
   const workflowId = searchParams.get('workflowId') || state.workflowId;
@@ -50,6 +55,9 @@ export default function IntegrationCertificationPage() {
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isQualifying, setIsQualifying] = useState(false);
+  const [isVerifyingComposer, setIsVerifyingComposer] = useState(false);
+  const [isSuperseding, setIsSuperseding] = useState(false);
+  const [composerVerification, setComposerVerification] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Extracted fetch function to avoid duplication
@@ -62,6 +70,10 @@ export default function IntegrationCertificationPage() {
       // Primary: Fetch certification status and workflow identity
       const cert = await projectLlmClient.getCertificationStatus(workflowId);
       setCertificationData(cert);
+
+      if (cert.rawGateResults?.composer) {
+        setComposerVerification(cert.rawGateResults.composer);
+      }
 
       if (cert.targetFamily && cert.targetVersion) {
         setState((prev) => ({
@@ -188,6 +200,42 @@ export default function IntegrationCertificationPage() {
       setError(err instanceof ProjectLlmError ? err.message : 'Unable to execute approved placement.');
     } finally {
       setIsExecuting(false);
+    }
+  };
+
+  const handleVerifyComposer = async () => {
+    if (!workflowId) return;
+    setError(null);
+    setIsVerifyingComposer(true);
+    try {
+      const res = await projectLlmClient.verifyComposerWorktree(workflowId);
+      setComposerVerification(res);
+      await fetchCertificationData();
+    } catch (err) {
+      setError(err instanceof ProjectLlmError ? err.message : 'Composer verification failed on isolated worktree preview.');
+    } finally {
+      setIsVerifyingComposer(false);
+    }
+  };
+
+  const handleSupersedeWorkflow = async () => {
+    if (!workflowId) return;
+    const confirmed = window.confirm(
+      'Are you sure you want to supersede this placement plan? This will preserve the current workflow in the immutable audit log and create a linked replacement workflow requiring fresh candidate upload and qualification.'
+    );
+    if (!confirmed) return;
+
+    setError(null);
+    setIsSuperseding(true);
+    try {
+      const res = await projectLlmClient.supersedeWorkflow(
+        workflowId,
+        'Placement plan superseded by new candidate revision via GUI'
+      );
+      router.push(`/tools/project-llm/candidate-upload?workflowId=${res.new_workflow_id}`);
+    } catch (err) {
+      setError(err instanceof ProjectLlmError ? err.message : 'Failed to supersede workflow.');
+      setIsSuperseding(false);
     }
   };
 
@@ -356,6 +404,17 @@ export default function IntegrationCertificationPage() {
                       >
                         <RefreshCw size={14} className={isPlanning ? 'animate-spin' : ''} />
                         {isPlanning ? 'Generating plan...' : manifest ? 'Regenerate plan' : 'Generate placement plan'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleSupersedeWorkflow}
+                        disabled={isSuperseding || isPlanning || isExecuting}
+                        title="Archive stale or unapproved plan and create clean replacement workflow"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100 disabled:opacity-50"
+                      >
+                        <RefreshCw size={13} className={isSuperseding ? 'animate-spin' : ''} />
+                        {isSuperseding ? 'Superseding...' : 'Supersede Placement Plan'}
                       </button>
 
                       {manifest && certificationData?.state === 'IMPLEMENTING' && (
@@ -645,86 +704,247 @@ export default function IntegrationCertificationPage() {
           {/* TAB C: TUTORIAL COMPOSER VERIFICATION */}
           {activeTab === 'composer' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 font-outfit">
-                    Tutorial Composer Registry Verification
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200">
+                      Isolated Worktree Preview Gate
+                    </span>
+                    {composerVerification?.status === 'PASS' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                        <CheckCircle2 size={12} className="text-emerald-600" />
+                        COMPOSER VERIFIED (PASS)
+                      </span>
+                    ) : composerVerification?.status === 'FAIL' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-300">
+                        <XCircle size={12} className="text-rose-600" />
+                        VERIFICATION FAILED
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300">
+                        <AlertCircle size={12} className="text-amber-600" />
+                        VERIFICATION PENDING
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 font-outfit">
+                    Tutorial Composer Post-Placement Verification
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Confirmed registration in Tutorial Composer block registry with live interactive preview
+                    Runs Playwright browser automation on an isolated ephemeral preview checked out at the exact placement commit.
                   </p>
                 </div>
-                <Link
-                  href="/tools/tutorial-page-content"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 shadow-sm transition-all"
-                >
-                  <Workflow size={13} />
-                  Open Live Composer
-                </Link>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleVerifyComposer}
+                    disabled={
+                      isVerifyingComposer ||
+                      !['IMPLEMENTED', 'VERIFYING', 'CERTIFICATION_READY', 'AWAITING_GATE_2', 'CERTIFIED'].includes(certificationData?.state || '')
+                    }
+                    title={
+                      !['IMPLEMENTED', 'VERIFYING', 'CERTIFICATION_READY', 'AWAITING_GATE_2', 'CERTIFIED'].includes(certificationData?.state || '')
+                        ? 'Placement must be executed before Composer verification can run'
+                        : 'Execute headless Playwright checks against isolated worktree preview'
+                    }
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-pink-600 hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-slate-300 shadow-sm transition-all"
+                  >
+                    <Play size={13} className={isVerifyingComposer ? 'animate-spin' : ''} />
+                    {isVerifyingComposer ? 'Verifying on Worktree Preview...' : 'Run Isolated Worktree Verification'}
+                  </button>
+
+                  <Link
+                    href="/tools/tutorial-page-content"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 shadow-sm transition-all"
+                  >
+                    <Workflow size={13} />
+                    Open Live Composer
+                  </Link>
+                </div>
               </div>
 
-              {/* Verification Badges */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {[
-                  { label: 'Registry Registration', val: 'Registered & Indexed', status: 'pass' },
-                  { label: 'Renderer Integration', val: 'Linked to Runtime', status: 'pass' },
-                  { label: 'Palette Availability', val: 'Selectable in UI', status: 'pass' },
-                  { label: 'TutorialDocument', val: 'JSON Schema Compliant', status: 'pass' },
-                ].map((item, i) => (
-                  <div key={i} className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 font-mono block mb-1">
-                      {item.label}
-                    </span>
-                    <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                      <CheckCircle2 size={13} className="text-emerald-600" />
-                      {item.val}
-                    </p>
+              {/* In-Progress Notification */}
+              {isVerifyingComposer && (
+                <div className="rounded-xl border border-pink-200 bg-gradient-to-r from-pink-50 to-rose-50 p-4 shadow-sm animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <RefreshCw size={20} className="animate-spin text-pink-600 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-pink-900 font-outfit">
+                        Executing Post-Placement Composer Verification Engine
+                      </p>
+                      <p className="text-[11px] text-pink-700 mt-0.5">
+                        Creating isolated git worktree at placement commit, starting ephemeral Next.js preview on an isolated dynamic port, and executing Playwright browser assertions...
+                      </p>
+                    </div>
                   </div>
-                ))}
+                </div>
+              )}
+
+              {/* Verification Diagnostic Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className={`p-3.5 rounded-xl border ${
+                  composerVerification?.findings?.some((f: string) => f.includes('discoverable in Composer dropdown')) || composerVerification?.runner_metadata?.dropdown_registered
+                    ? 'border-emerald-200 bg-emerald-50/50'
+                    : composerVerification?.status === 'FAIL'
+                    ? 'border-rose-200 bg-rose-50/50'
+                    : 'border-slate-200 bg-slate-50/50'
+                }`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono block mb-1">
+                    Registry Discovery
+                  </span>
+                  <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    {composerVerification?.findings?.some((f: string) => f.includes('discoverable in Composer dropdown')) || composerVerification?.runner_metadata?.dropdown_registered ? (
+                      <>
+                        <CheckCircle2 size={14} className="text-emerald-600" />
+                        Dropdown Option Present
+                      </>
+                    ) : composerVerification?.status === 'FAIL' ? (
+                      <>
+                        <XCircle size={14} className="text-rose-600" />
+                        Dropdown Option Missing
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle size={14} className="text-amber-500" />
+                        Awaiting Verification
+                      </>
+                    )}
+                  </p>
+                  <p className="text-[10px] font-mono text-slate-400 mt-1">
+                    Type: &apos;{familyName.toLowerCase()}&apos;
+                  </p>
+                </div>
+
+                <div className={`p-3.5 rounded-xl border ${
+                  composerVerification?.findings?.some((f: string) => f.includes('successfully rendered')) || composerVerification?.runner_metadata?.rendered_dom
+                    ? 'border-emerald-200 bg-emerald-50/50'
+                    : composerVerification?.status === 'FAIL'
+                    ? 'border-rose-200 bg-rose-50/50'
+                    : 'border-slate-200 bg-slate-50/50'
+                }`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono block mb-1">
+                    Preview Pane DOM
+                  </span>
+                  <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    {composerVerification?.findings?.some((f: string) => f.includes('successfully rendered')) || composerVerification?.runner_metadata?.rendered_dom ? (
+                      <>
+                        <CheckCircle2 size={14} className="text-emerald-600" />
+                        DOM Attributes Verified
+                      </>
+                    ) : composerVerification?.status === 'FAIL' ? (
+                      <>
+                        <XCircle size={14} className="text-rose-600" />
+                        Render Failed / Attributes Missing
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle size={14} className="text-amber-500" />
+                        Awaiting Verification
+                      </>
+                    )}
+                  </p>
+                  <p className="text-[10px] font-mono text-slate-400 mt-1">
+                    data-block-type=&quot;{familyName.toLowerCase()}&quot;
+                  </p>
+                </div>
+
+                <div className={`p-3.5 rounded-xl border ${
+                  composerVerification && !composerVerification?.findings?.some((f: string) => f.includes('Console errors detected'))
+                    ? 'border-emerald-200 bg-emerald-50/50'
+                    : composerVerification?.status === 'FAIL'
+                    ? 'border-rose-200 bg-rose-50/50'
+                    : 'border-slate-200 bg-slate-50/50'
+                }`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono block mb-1">
+                    Console Error Audit
+                  </span>
+                  <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    {composerVerification && !composerVerification?.findings?.some((f: string) => f.includes('Console errors detected')) ? (
+                      <>
+                        <CheckCircle2 size={14} className="text-emerald-600" />
+                        0 Unhandled Errors
+                      </>
+                    ) : composerVerification?.status === 'FAIL' ? (
+                      <>
+                        <XCircle size={14} className="text-rose-600" />
+                        Console Errors Detected
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle size={14} className="text-amber-500" />
+                        Awaiting Execution
+                      </>
+                    )}
+                  </p>
+                  <p className="text-[10px] font-mono text-slate-400 mt-1">
+                    Browser Console / Page Errors
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono block mb-1">
+                    Placement Commit
+                  </span>
+                  <p className="text-xs font-mono font-bold text-slate-900 truncate">
+                    {composerVerification?.verified_commit ? `${composerVerification.verified_commit.slice(0, 10)}…` : 'Pending Placement'}
+                  </p>
+                  <p className="text-[10px] font-mono text-slate-400 mt-1">
+                    Port: {composerVerification?.runner_metadata?.port || 'Dynamic'}
+                  </p>
+                </div>
               </div>
 
-              {/* Interactive Mini Composer Sandbox Preview */}
-              <div className="p-5 rounded-xl border border-slate-200 bg-slate-900 text-white shadow-sm">
+              {/* Verified & Hash-Bound Evidence Box */}
+              <div className="p-5 rounded-xl border border-slate-200 bg-slate-900 text-white shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                   <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-orange-500" />
-                    <span className="text-xs font-mono font-bold text-slate-300">
-                      Live Block Canvas Simulator
+                    <span className="h-2.5 w-2.5 rounded-full bg-pink-500" />
+                    <span className="text-xs font-mono font-bold text-slate-200">
+                      Authoritative Hash-Bound Evidence Ledger
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-orange-400">
-                    Type: &apos;{familyName.toLowerCase()}&apos; • Version: &apos;{targetVersion}&apos;
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-pink-400">
+                    Engine: Playwright Chromium (Subprocess)
                   </span>
                 </div>
 
-                <div className="mt-4 p-5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-orange-400 font-mono">
-                      [Block Canvas] {familyName} {targetVersion}
-                    </span>
-                    <span className="text-[11px] font-mono text-emerald-400">● Live Dynamic Preview</span>
+                {composerVerification ? (
+                  <div className="space-y-3 font-mono text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="p-3 rounded-lg bg-slate-950 border border-slate-800">
+                        <span className="text-[10px] uppercase text-slate-500 block mb-1">EVIDENCE SHA-256 HASH</span>
+                        <span className="text-emerald-400 break-all text-[11px]">{composerVerification.evidence_hash}</span>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-950 border border-slate-800">
+                        <span className="text-[10px] uppercase text-slate-500 block mb-1">VERIFIED COMMIT SHA</span>
+                        <span className="text-indigo-400 break-all text-[11px]">{composerVerification.verified_commit || 'HEAD'}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+                      <span className="text-[10px] uppercase text-slate-500 block mb-1">VERIFICATION FINDINGS & EVIDENCE AUDIT</span>
+                      {composerVerification.findings && composerVerification.findings.length > 0 ? (
+                        composerVerification.findings.map((f: string, idx: number) => (
+                          <div key={idx} className="flex items-start gap-2 text-[11px] text-slate-300">
+                            <span className="text-emerald-400 font-bold">✓</span>
+                            <span>{f}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-slate-400 text-[11px]">{composerVerification.reason || 'Verification record active.'}</p>
+                      )}
+                    </div>
                   </div>
-                  <h4 className="text-lg font-bold text-white font-outfit">
-                    Lesson Learning Objectives
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xl">
-                    By completing this lesson, learners will master the core architectural and implementation patterns.
-                  </p>
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center gap-2 text-xs text-slate-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
-                      Understand candidate extraction and schema normalization
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
-                      Implement cross-platform AST mutations with pre-image verification
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
-                      Certify component compatibility in Tutorial Composer
-                    </div>
+                ) : (
+                  <div className="p-4 rounded-lg bg-slate-950 border border-slate-800 text-center text-slate-400 text-xs">
+                    <Terminal size={24} className="mx-auto mb-2 text-slate-600" />
+                    <p className="font-semibold text-slate-300">No Post-Placement Composer Verification Record Found</p>
+                    <p className="text-[11px] text-slate-500 mt-1 max-w-md mx-auto">
+                      Execute approved placement in Step 6 Tab A first, then click &apos;Run Isolated Worktree Verification&apos; above to verify candidate inclusion in Tutorial Composer.
+                    </p>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -783,6 +1003,19 @@ export default function IntegrationCertificationPage() {
           {/* TAB E: FINAL CERTIFICATION */}
           {activeTab === 'cert' && (
             <div className="space-y-6">
+              {/* Composer Verification Lock Alert */}
+              {composerVerification?.status !== 'PASS' && (
+                <div className="p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 flex items-start gap-3">
+                  <Lock size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                  <div className="text-xs">
+                    <p className="font-bold">Final Certification Gate Locked</p>
+                    <p className="mt-0.5 text-amber-800">
+                      Autonomous engineering policy requires Tutorial Composer verification to pass on the isolated placement commit before final certification can be signed off. Click the &apos;Tutorial Composer&apos; tab to execute isolated worktree verification.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Grand Banner */}
               <div className="p-6 rounded-2xl border border-emerald-300 bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 text-white shadow-lg shadow-emerald-500/20">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -792,10 +1025,10 @@ export default function IntegrationCertificationPage() {
                     </div>
                     <div>
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white border border-white/30 uppercase tracking-wider font-mono">
-                        Cryptographically Sealed
+                        Verified &amp; Hash-Bound Evidence
                       </span>
                       <h2 className="text-2xl font-black font-outfit mt-1">
-                        Candidate Certified & Integrated
+                        Candidate Certified &amp; Integrated
                       </h2>
                       <p className="text-emerald-100 text-xs mt-1 max-w-xl font-medium">
                         {familyName} {targetVersion} autonomous engineering pipeline is verified.

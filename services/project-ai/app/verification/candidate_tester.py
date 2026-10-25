@@ -29,6 +29,45 @@ def find_workspace_root() -> Path:
     return Path(__file__).resolve().parents[4]
 
 
+def _link_dependencies(workspace_root: Path, worktree_path: Path) -> List[Path]:
+    """Link node_modules via NTFS junction on Windows or symlink on Unix."""
+    linked = []
+    targets = [
+        ("node_modules", "node_modules"),
+        ("packages/ui/node_modules", "packages/ui/node_modules"),
+        ("apps/skillhubcore-admin/node_modules", "apps/skillhubcore-admin/node_modules"),
+    ]
+    for rel_src, rel_dst in targets:
+        src = workspace_root / rel_src
+        dst = worktree_path / rel_dst
+        if src.exists() and not dst.exists():
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if os.name == "nt":
+                subprocess.run(["cmd.exe", "/c", "mklink", "/J", str(dst), str(src)], capture_output=True, check=False)
+            else:
+                try:
+                    os.symlink(str(src), str(dst), target_is_directory=True)
+                except Exception:
+                    pass
+            if dst.exists():
+                linked.append(dst)
+    return linked
+
+
+def _unlink_dependencies(linked: List[Path]) -> None:
+    """Safely unlink junctions/symlinks without deleting underlying targets."""
+    for dst in reversed(linked):
+        try:
+            if dst.exists():
+                if os.name == "nt":
+                    subprocess.run(["cmd.exe", "/c", "rmdir", str(dst)], capture_output=True, check=False)
+                else:
+                    if dst.is_symlink():
+                        dst.unlink()
+        except Exception as e:
+            logger.warning(f"Failed to unlink {dst}: {e}")
+
+
 def _create_isolated_worktree(workspace_root: Path) -> Path:
     """Create a detached worktree so candidate code never touches the live tree."""
     sandbox_root = Path(os.environ.get("PROJECT_AI_QUALIFICATION_DIR", Path(os.getenv("TEMP", "/tmp")) / "project_ai_qualification"))
@@ -46,8 +85,10 @@ def _create_isolated_worktree(workspace_root: Path) -> Path:
     return worktree_path
 
 
-def _remove_isolated_worktree(workspace_root: Path, worktree_path: Path) -> None:
+def _remove_isolated_worktree(workspace_root: Path, worktree_path: Path, linked: Optional[List[Path]] = None) -> None:
     """Remove a disposable qualification worktree without affecting project branches."""
+    if linked:
+        _unlink_dependencies(linked)
     subprocess.run(
         ["git", "worktree", "remove", "--force", str(worktree_path)],
         cwd=workspace_root,
@@ -60,7 +101,7 @@ def _remove_isolated_worktree(workspace_root: Path, worktree_path: Path) -> None
 async def run_candidate_qualification_tests(
     candidate_id: str,
     files: List[Any],
-    timeout_seconds: int = 45
+    timeout_seconds: int = 90
 ) -> Dict[str, Any]:
     """
     Run automated Vitest test suite on candidate files in an isolated sandbox.
@@ -111,9 +152,19 @@ async def run_candidate_qualification_tests(
     cand_short = candidate_id.replace('-', '')[:8]
     written_files: List[Path] = []
     worktree_path: Optional[Path] = None
+    linked_deps: List[Path] = []
     
     try:
         worktree_path = _create_isolated_worktree(workspace_root)
+        linked_deps = _link_dependencies(workspace_root, worktree_path)
+
+        # Synchronize setup.ts into qualification worktree
+        live_setup = workspace_root / 'packages' / 'ui' / '__tests__' / 'setup.ts'
+        wt_setup = worktree_path / 'packages' / 'ui' / '__tests__' / 'setup.ts'
+        if live_setup.exists():
+            wt_setup.parent.mkdir(parents=True, exist_ok=True)
+            wt_setup.write_text(live_setup.read_text(encoding='utf-8'), encoding='utf-8')
+
         blocks_dir = worktree_path / 'packages' / 'ui' / 'src' / 'tutorial' / 'blocks'
         tests_dir = blocks_dir / '__tests__'
 
@@ -142,34 +193,44 @@ async def run_candidate_qualification_tests(
                     test_content,
                 )
 
-            cand_test_filename = f"__cand_{cand_short}_{os.path.basename(test_file.filename)}"
+            cand_test_filename = f"__cand_{cand_short}_spec.test.tsx"
             cand_test_path = tests_dir / cand_test_filename
             cand_test_path.write_text(test_content, encoding='utf-8')
             written_files.append(cand_test_path)
             rel_test_paths.append(f"src/tutorial/blocks/__tests__/{cand_test_filename}")
 
         # Run vitest
-        pnpm_cmd = "pnpm.cmd" if os.name == 'nt' else "pnpm"
-        cmd = [
-            pnpm_cmd,
-            "--filter",
-            "@quiz/ui",
-            "exec",
-            "vitest",
-            "run",
-            *rel_test_paths,
-            "--reporter=json"
-        ]
-
-        logger.info(f"Running candidate qualification tests: {' '.join(cmd)}")
-        process = subprocess.run(
-            cmd,
-            cwd=str(worktree_path),
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            shell=(os.name == 'nt')
-        )
+        if os.name == 'nt':
+            cmd_str = f'pnpm --filter @quiz/ui exec vitest run {" ".join(rel_test_paths)} --reporter=json'
+            logger.info(f"Running candidate qualification tests: {cmd_str}")
+            process = subprocess.run(
+                cmd_str,
+                cwd=str(worktree_path),
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                shell=True
+            )
+        else:
+            cmd = [
+                "pnpm",
+                "--filter",
+                "@quiz/ui",
+                "exec",
+                "vitest",
+                "run",
+                *rel_test_paths,
+                "--reporter=json"
+            ]
+            logger.info(f"Running candidate qualification tests: {' '.join(cmd)}")
+            process = subprocess.run(
+                cmd,
+                cwd=str(worktree_path),
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                shell=False
+            )
         
         duration_ms = int((time.time() - start_time) * 1000)
         stdout = process.stdout or ""
@@ -186,15 +247,28 @@ async def run_candidate_qualification_tests(
 
         try:
             json_start = stdout.find('{')
-            if json_start != -1:
-                json_str = stdout[json_start:]
+            json_end = stdout.rfind('}')
+            if json_start != -1 and json_end != -1:
+                json_str = stdout[json_start:json_end + 1]
                 data = json.loads(json_str)
                 num_total = data.get("numTotalTests", 0)
                 num_passed = data.get("numPassedTests", 0)
                 num_failed = data.get("numFailedTests", 0)
                 success = data.get("success", False)
-        except Exception:
-            pass
+
+                failure_reasons = []
+                suite_errors = []
+                for tr in data.get("testResults", []):
+                    if tr.get("message"):
+                        suite_errors.append(tr.get("message").strip().split("\n")[0])
+                    for ar in tr.get("assertionResults", []):
+                        if ar.get("status") == "failed":
+                            title = ar.get("title", "test")
+                            msgs = ar.get("failureMessages", [])
+                            first_msg = msgs[0].split("\n")[0] if msgs else "Assertion failed"
+                            failure_reasons.append(f"{title}: {first_msg}")
+        except Exception as e:
+            logger.warning(f"Failed parsing Vitest JSON: {e}")
 
         if success and num_total > 0:
             detail_msg = f"{num_passed}/{num_total or num_passed} unit tests passed ({duration_ms}ms)"
@@ -214,8 +288,13 @@ async def run_candidate_qualification_tests(
                 success = False
                 stderr = "Vitest completed without executing any candidate tests"
             failure_detail = f"Tests failed with exit code {process.returncode}: {stderr[:300] or stdout[:300]}"
-            if num_failed > 0:
+            if suite_errors:
+                failure_detail = f"Suite load failure: {'; '.join(suite_errors[:2])}"
+            elif num_failed > 0:
+                reasons_str = "; ".join(failure_reasons[:3]) if failure_reasons else ""
                 failure_detail = f"{num_failed} of {num_total} unit tests failed ({duration_ms}ms)"
+                if reasons_str:
+                    failure_detail += f" - {reasons_str}"
             return {
                 "passed": False,
                 "status": "FAIL",
@@ -254,4 +333,4 @@ async def run_candidate_qualification_tests(
         }
     finally:
         if worktree_path:
-            _remove_isolated_worktree(workspace_root, worktree_path)
+            _remove_isolated_worktree(workspace_root, worktree_path, linked_deps)

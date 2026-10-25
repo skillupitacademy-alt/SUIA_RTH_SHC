@@ -439,6 +439,7 @@ export class ProjectLlmClient {
         targetVersion: data.target?.version,
         candidateId: data.artifacts?.candidate?.id || data.artifacts?.candidate?.artifact_id || undefined,
         manifestId: data.artifacts?.manifest?.id || data.artifacts?.manifest?.artifact_id || undefined,
+        rawGateResults: rawGates,
       };
     } catch (error) {
       if (error instanceof ProjectLlmError) {
@@ -840,6 +841,70 @@ export class ProjectLlmClient {
         ProjectLlmErrorCode.NETWORK_ERROR,
         null,
         'Unable to connect to server. Check your network connection.'
+      );
+    }
+  }
+
+  /**
+   * Run post-placement Composer verification in an isolated worktree preview.
+   * Maps to: POST /workflows/{workflowId}/verify-composer
+   */
+  async verifyComposerWorktree(workflowId: string): Promise<Record<string, unknown>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/verify-composer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        await handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to run Composer verification. Check network connection.'
+      );
+    }
+  }
+
+  /**
+   * Supersede stale or unapproved placement plan with a fresh revision.
+   * Maps to: POST /workflows/{workflowId}/supersede
+   */
+  async supersedeWorkflow(
+    workflowId: string,
+    reason: string = 'Placement plan superseded by new candidate revision'
+  ): Promise<{
+    old_workflow_id: string;
+    new_workflow_id: string;
+    previous_state: string;
+    current_state: string;
+    reason: string;
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/supersede`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ reason }),
+      });
+
+      if (!response.ok) {
+        await handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to supersede workflow. Check network connection.'
       );
     }
   }

@@ -42,7 +42,9 @@ export type CertificationStatus = {
   targetVersion?: string;
   candidateId?: string;
   manifestId?: string;
+  rawGateResults?: Record<string, any>;
 };
+
 
 export type RuntimeHealthStatus = {
   workflowId: string;

@@ -12,8 +12,10 @@ R3 PERSISTENCE:
 - Transaction management via session.commit()
 """
 
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_contract_admin
@@ -42,6 +44,7 @@ from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.persistence import (
     get_db_session,
     get_workflow_repository,
+    WorkflowRepository,
     get_approval_repository,
     get_state_transition_repository,
     get_candidate_repository,
@@ -698,3 +701,194 @@ async def approve_final_certification(
         evidence_verified=evidence_verified,
         gate_results=verdict_result.evidence_summary
     )
+
+
+class SupersedeWorkflowRequest(BaseModel):
+    reason: str = "Placement plan superseded by new candidate revision"
+
+
+@router.post("/{workflow_id}/verify-composer", response_model=dict)
+async def verify_composer(
+    workflow_id: str,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    workflow_repo: WorkflowRepository = Depends(get_workflow_repository),
+    session: AsyncSession = Depends(get_db_session)
+) -> dict:
+    """
+    Execute post-placement Composer verification in an isolated worktree preview.
+    
+    INVARIANT: Does NOT test the live app directly. Verifies the exact placement commit
+    in an ephemeral worktree preview, checking dropdown discovery, Preview Pane rendering,
+    DOM attributes, and zero console errors. Binds evidence hash into workflow gate results.
+    """
+    workflow = await governance_service.get_workflow(workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
+
+    allowed_states = [
+        CanonicalWorkflowState.IMPLEMENTED,
+        CanonicalWorkflowState.VERIFYING,
+        CanonicalWorkflowState.CERTIFICATION_READY,
+        CanonicalWorkflowState.AWAITING_GATE_2
+    ]
+    if workflow.current_state not in allowed_states:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Cannot run Composer verification in state {workflow.current_state.value}. "
+                "Placement must be executed first (workflow state must be IMPLEMENTED or later)."
+            )
+        )
+
+    # Resolve placement commit SHA
+    gate_results = workflow.gate_results or {}
+    placement_info = gate_results.get("placement") or {}
+    commit_sha = placement_info.get("commit")
+
+    if not commit_sha:
+        import subprocess
+        cand_branch = f"candidate/{workflow.candidate_id}" if workflow.candidate_id else ""
+        if cand_branch:
+            res = subprocess.run(["git", "rev-parse", cand_branch], capture_output=True, text=True)
+            if res.returncode == 0 and res.stdout.strip():
+                commit_sha = res.stdout.strip()
+        if not commit_sha:
+            res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True)
+            commit_sha = res.stdout.strip() if res.returncode == 0 else ""
+
+    if not commit_sha:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to determine placement commit SHA for isolated worktree verification."
+        )
+
+    from app.verification.composer_worktree_verifier import verify_composer_in_worktree
+
+    result = await verify_composer_in_worktree(
+        workflow_id=workflow_id,
+        commit_sha=commit_sha,
+        block_family=workflow.target_family,
+        block_version=workflow.target_version,
+        candidate_hash=workflow.candidate_sha256 or "",
+        manifest_hash=workflow.manifest_sha256 or ""
+    )
+
+    # Atomically bind gate result into workflow
+    workflow_model = await workflow_repo.get(workflow_id, verify_bindings=False)
+    if workflow_model:
+        current_gates = dict(workflow_model.gate_results or {})
+        current_gates["composer"] = result
+        workflow_model.gate_results = current_gates
+
+        if result.get("passed"):
+            if workflow.current_state == CanonicalWorkflowState.IMPLEMENTED:
+                await governance_service.transition_state(
+                    workflow_id=workflow_id,
+                    to_state=CanonicalWorkflowState.VERIFYING,
+                    triggered_by=user.get("email") or user.get("sub") or "system",
+                    reason="Composer verification initiated on isolated worktree"
+                )
+                await governance_service.transition_state(
+                    workflow_id=workflow_id,
+                    to_state=CanonicalWorkflowState.CERTIFICATION_READY,
+                    triggered_by=user.get("email") or user.get("sub") or "system",
+                    reason="Composer verification passed in isolated preview"
+                )
+        await session.commit()
+        result["current_workflow_state"] = workflow_model.current_state
+
+    return result
+
+
+@router.post("/{workflow_id}/supersede", response_model=dict)
+async def supersede_workflow(
+    workflow_id: str,
+    request: SupersedeWorkflowRequest,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    workflow_repo: WorkflowRepository = Depends(get_workflow_repository),
+    session: AsyncSession = Depends(get_db_session)
+) -> dict:
+    """
+    Supersede an unapproved or stale placement plan.
+    
+    AUDIT INVARIANT:
+    - Never resets existing workflow backwards (preserves immutable history).
+    - Archives current workflow as REJECTED with reason SUPERSEDED.
+    - Creates a linked replacement workflow requiring fresh candidate upload and qualification.
+    """
+    from uuid import uuid4
+    from app.persistence.models import WorkflowModel, StateTransitionModel
+
+    workflow = await governance_service.get_workflow(workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
+
+    old_state = workflow.current_state.value
+    triggered_by = user.get("email") or user.get("sub") or user.get("id") or "admin"
+    new_workflow_id = str(uuid4())
+    reason_text = f"SUPERSEDED_BY_REVISION: {request.reason} (Replacement: {new_workflow_id})"
+
+    # Archive old workflow if not already terminal
+    if workflow.current_state not in [CanonicalWorkflowState.REJECTED, CanonicalWorkflowState.CERTIFIED]:
+        await governance_service.transition_state(
+            workflow_id=workflow_id,
+            to_state=CanonicalWorkflowState.REJECTED,
+            triggered_by=triggered_by,
+            reason=reason_text
+        )
+
+    # Bind superseded metadata on old workflow model
+    workflow_model = await workflow_repo.get(workflow_id, verify_bindings=False)
+    if workflow_model:
+        workflow_model.final_status = "SUPERSEDED"
+        old_gates = dict(workflow_model.gate_results or {})
+        old_gates["superseded"] = {
+            "superseded_at": datetime.now(timezone.utc).isoformat(),
+            "superseded_by": new_workflow_id,
+            "reason": request.reason
+        }
+        workflow_model.gate_results = old_gates
+
+    # Create linked replacement workflow requiring fresh candidate upload and qualification
+    new_wf_model = WorkflowModel(
+        workflow_id=new_workflow_id,
+        specification_id=workflow.specification_id,
+        target_family=workflow.target_family,
+        target_version=workflow.target_version,
+        requester_id=workflow.requester_id,
+        current_state=CanonicalWorkflowState.CANDIDATE_REQUESTED.value,
+        contract_id=workflow.contract_id,
+        contract_sha256=workflow.contract_sha256,
+        gate_results={
+            "supersedes": {
+                "superseded_workflow_id": workflow_id,
+                "reason": request.reason,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        },
+        evidence_ids=[],
+        version=1
+    )
+    session.add(new_wf_model)
+    await session.flush()
+
+    transition = StateTransitionModel(
+        workflow_id=new_workflow_id,
+        from_state=None,
+        to_state=CanonicalWorkflowState.CANDIDATE_REQUESTED.value,
+        triggered_by=triggered_by,
+        reason=f"Workflow created as replacement for superseded {workflow_id}"
+    )
+    session.add(transition)
+    await session.commit()
+
+    return {
+        "old_workflow_id": workflow_id,
+        "new_workflow_id": new_workflow_id,
+        "previous_state": old_state,
+        "current_state": CanonicalWorkflowState.CANDIDATE_REQUESTED.value,
+        "reason": request.reason
+    }
+

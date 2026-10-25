@@ -1,4 +1,8 @@
+// @vitest-environment jsdom
+import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { ObjectiveBlock } from '../ObjectiveO1Block';
 import { DEFAULT_THEME } from '../../theme-utils';
 
@@ -29,7 +33,7 @@ describe('ObjectiveO1Block', () => {
 
   it('renders with UBRC data attributes', () => {
     const { container } = render(
-      <ObjectiveBlock block={mockBlock} theme={brandThemeA} />
+      <ObjectiveBlock block={mockBlock as any} theme={brandThemeA} />
     );
     const article = container.querySelector('article');
     expect(article).not.toBeNull();
@@ -40,10 +44,10 @@ describe('ObjectiveO1Block', () => {
 
   it('proves dual-brand theme independence', () => {
     const { container: containerA } = render(
-      <ObjectiveBlock block={mockBlock} theme={brandThemeA} />
+      <ObjectiveBlock block={mockBlock as any} theme={brandThemeA} />
     );
     const { container: containerB } = render(
-      <ObjectiveBlock block={mockBlock} theme={brandThemeB} />
+      <ObjectiveBlock block={mockBlock as any} theme={brandThemeB} />
     );
 
     expect(containerB.innerHTML).not.toContain('#e11d48');
@@ -52,7 +56,7 @@ describe('ObjectiveO1Block', () => {
 
   it('meets WCAG 2.1 AA accessibility standards (ARIA roles & hidden checkmarks)', () => {
     const { container } = render(
-      <ObjectiveBlock block={mockBlock} theme={DEFAULT_THEME} />
+      <ObjectiveBlock block={mockBlock as any} theme={DEFAULT_THEME} />
     );
     const list = container.querySelector('ul');
     expect(list?.getAttribute('role')).toBe('list');
@@ -63,7 +67,7 @@ describe('ObjectiveO1Block', () => {
 
   it('verifies responsive container rendering', () => {
     const { container } = render(
-      <ObjectiveBlock block={mockBlock} theme={DEFAULT_THEME} className="w-full md:w-1/2" />
+      <ObjectiveBlock block={mockBlock as any} theme={DEFAULT_THEME} className="w-full md:w-1/2" />
     );
     const article = container.querySelector('article');
     expect(article?.className).toContain('w-full');
@@ -72,7 +76,7 @@ describe('ObjectiveO1Block', () => {
 
   it('renders without console errors or warnings', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    render(<ObjectiveBlock block={mockBlock} theme={brandThemeA} />);
+    render(<ObjectiveBlock block={mockBlock as any} theme={brandThemeA} />);
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
   });
