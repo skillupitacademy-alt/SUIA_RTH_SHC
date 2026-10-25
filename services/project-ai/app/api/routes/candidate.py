@@ -42,9 +42,11 @@ from app.persistence import (
     get_candidate_repository,
     get_manifest_repository,
     get_approval_repository,
+    get_workflow_repository,
     CandidateRepository,
     ManifestRepository,
     ApprovalRepository,
+    WorkflowRepository,
     CandidateModel,
     ManifestModel,
     ApprovalModel,
@@ -397,6 +399,16 @@ async def upload_candidate(
             detail=f"Package validation failed: {str(e)}"
         )
     package.contract_sha256 = candidate_sha256
+
+    # Automated Qualification Gate: Run candidate unit tests in isolated sandbox
+    from app.verification.candidate_tester import run_candidate_qualification_tests
+    test_result = await run_candidate_qualification_tests(package.candidateId, package.files)
+    
+    if not test_result["passed"]:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Candidate qualification test suite failed: {test_result['detail']}"
+        )
     
     # Persist to PostgreSQL
     try:
@@ -415,13 +427,41 @@ async def upload_candidate(
                 artifact_sha256=candidate_sha256
             )
             
+            # Record Unit Test Suite and Candidate Hash evidence on workflow gate results
+            workflow_repo = await get_workflow_repository(session)
+            wf_model = await workflow_repo.get(package.workflow_id)
+            if wf_model:
+                current_gates = dict(wf_model.gate_results or {})
+                current_gates["Unit Test Suite"] = {
+                    "gate": "Unit Test Suite",
+                    "status": "PASS",
+                    "result": "PASS",
+                    "verdict": "PASS",
+                    "detail": test_result["detail"],
+                    "evidence_id": test_result["evidence_id"],
+                    "evidence_hash": test_result["evidence_hash"],
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "total_tests": test_result["total_tests"],
+                    "passed_tests": test_result["passed_tests"],
+                }
+                current_gates["candidate_hash"] = {
+                    "gate": "candidate_hash",
+                    "status": "PASS",
+                    "result": "PASS",
+                    "verdict": "PASS",
+                    "detail": f"Candidate SHA-256 verified: {candidate_sha256[:16]}...",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+                wf_model.gate_results = current_gates
+                await workflow_repo.upsert(wf_model)
+
             # Wave 3A: Transition workflow state to CANDIDATE_RECEIVED
             await governance_service.transition_state(
                 workflow_id=package.workflow_id,
                 to_state=CanonicalWorkflowState.CANDIDATE_RECEIVED,
                 triggered_by=user.get("user_id", "unknown"),
                 evidence_id=str(uuid5(NAMESPACE_DNS, f"upload-{package.candidateId}")),
-                reason=f"Candidate package uploaded: {len(package.files)} files, SHA-256: {candidate_sha256[:16]}..."
+                reason=f"Candidate package uploaded & qualified: {len(package.files)} files, {test_result['detail']}, SHA-256: {candidate_sha256[:16]}..."
             )
         except Exception as transition_error:
             # Rollback the entire transaction including bind_artifact
@@ -450,7 +490,14 @@ async def upload_candidate(
         "target_version": package.target_version,
         "contract_sha256": candidate_sha256,
         "filesCount": len(package.files),
-        "uploadedAt": package.uploadedAt
+        "uploadedAt": package.uploadedAt,
+        "testResults": {
+            "passed": test_result["passed"],
+            "detail": test_result["detail"],
+            "evidence_id": test_result["evidence_id"],
+            "total_tests": test_result["total_tests"],
+            "passed_tests": test_result["passed_tests"],
+        }
     }
 
 
