@@ -1286,6 +1286,8 @@ async def execute_placement(
                 "branch": result.get("branch"),
                 "targetPath": result.get("targetPath"),
                 "filesWritten": result.get("filesWritten"),
+                "candidate_sha256": candidate_sha256,
+                "manifest_sha256": manifest.manifestHash,
                 "executed_at": datetime.now(timezone.utc).isoformat()
             }
             wf_model.gate_results = current_gates

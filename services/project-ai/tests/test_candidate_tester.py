@@ -42,7 +42,7 @@ def test_qualification_runs_only_in_disposable_worktree(tmp_path, monkeypatch):
         (sandbox / "packages" / "ui" / "src" / "tutorial" / "blocks" / "__tests__").mkdir(parents=True)
         return sandbox
 
-    def remove_worktree(_: Path, worktree_path: Path) -> None:
+    def remove_worktree(_: Path, worktree_path: Path, _linked=None) -> None:
         removed.append(worktree_path)
 
     def fake_run(command, **kwargs):

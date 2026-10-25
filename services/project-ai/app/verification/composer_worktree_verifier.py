@@ -138,6 +138,32 @@ def _kill_process_tree(pid: int) -> None:
         logger.warning(f"Error terminating process tree {pid}: {e}")
 
 
+def _sha256_file(path: Path) -> Optional[str]:
+    """Return the hash for a captured artifact when it exists."""
+    if not path.exists():
+        return None
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _pnpm_command() -> str:
+    return "pnpm.cmd" if os.name == "nt" else "pnpm"
+
+
+def _build_admin_preview(worktree_path: Path, timeout_seconds: int) -> None:
+    """Build the exact placed commit before serving it for browser verification."""
+    result = subprocess.run(
+        [_pnpm_command(), "--filter", "@quiz/skillhubcore-admin", "build"],
+        cwd=worktree_path,
+        capture_output=True,
+        text=True,
+        timeout=timeout_seconds,
+        check=False,
+    )
+    if result.returncode != 0:
+        output = (result.stderr or result.stdout).strip()
+        raise RuntimeError(f"Admin production build failed: {output[-1200:]}")
+
+
 def _generate_playwright_script(
     preview_url: str,
     block_family: str,
@@ -164,6 +190,7 @@ const fs = require('fs');
         dom_block_version: null,
         console_errors: [],
         page_errors: [],
+        network_errors: [],
         screenshot: '{screenshot_escaped}',
         error_message: null
     }};
@@ -186,11 +213,17 @@ const fs = require('fs');
             result.page_errors.push(err.message || String(err));
         }});
 
+        page.on('response', response => {{
+            if (response.url().startsWith('{preview_url}') && response.status() >= 400) {{
+                result.network_errors.push(`${{response.status()}} ${{response.url()}}`);
+            }}
+        }});
+
         const targetUrl = '{preview_url}/tools/tutorial-page-content';
         const response = await page.goto(targetUrl, {{ waitUntil: 'domcontentloaded', timeout: 30000 }});
 
         if (!response || response.status() >= 400) {{
-            throw new Error(`Failed to load ${{targetUrl}} (status: ${{response ? response.status() : 'no response'}}`);
+            throw new Error(`Failed to load ${{targetUrl}} (status: ${{response ? response.status() : 'no response'}})`);
         }}
 
         // Wait for Tutorial Composer elements
@@ -219,6 +252,32 @@ const fs = require('fs');
                 selected = true;
                 break;
             }}
+        }}
+        if (!selected) {{
+            throw new Error(`Unable to select block family '{target_family_lower}'`);
+        }}
+
+        // Select the requested version from the Composer's version selector.
+        let versionSelected = false;
+        for (const sel of selects) {{
+            const hasVersion = await sel.$$eval('option', (opts, version) =>
+                opts.some(o => o.value.toUpperCase() === version || (o.textContent || '').toUpperCase().includes(version)),
+                '{target_version_upper}'
+            );
+            if (hasVersion) {{
+                const value = await sel.$$eval('option', (opts, version) => {{
+                    const option = opts.find(o => o.value.toUpperCase() === version || (o.textContent || '').toUpperCase().includes(version));
+                    return option ? option.value : null;
+                }}, '{target_version_upper}');
+                if (value) {{
+                    await sel.selectOption({{ value }});
+                    versionSelected = true;
+                    break;
+                }}
+            }}
+        }}
+        if (!versionSelected) {{
+            throw new Error(`Unable to select block version '{target_version_upper}'`);
         }}
 
         // Wait for preview pane update
@@ -256,12 +315,17 @@ const fs = require('fs');
             // Non-fatal if screenshot directory writing fails
         }}
 
-        if (result.dropdown_registered && result.rendered_dom && result.console_errors.length === 0 && result.page_errors.length === 0) {{
+        const versionMatches = result.dom_block_version === '{target_version_upper}';
+        if (result.dropdown_registered && result.rendered_dom && versionMatches && result.console_errors.length === 0 && result.page_errors.length === 0 && result.network_errors.length === 0) {{
             result.passed = true;
         }} else if (!result.rendered_dom) {{
             result.error_message = `Block family '{target_family_lower}' registered in dropdown but did not render matching [data-block-type="{target_family_lower}"] in Preview Pane`;
         }} else if (result.console_errors.length > 0 || result.page_errors.length > 0) {{
             result.error_message = `Browser encountered console/page errors during render: ${{result.console_errors.concat(result.page_errors).join('; ')}}`;
+        }} else if (result.network_errors.length > 0) {{
+            result.error_message = `Browser encountered failed HTTP responses during render: ${{result.network_errors.join('; ')}}`;
+        }} else if (!versionMatches) {{
+            result.error_message = `Preview Pane rendered version '${{result.dom_block_version}}', expected '{target_version_upper}'`;
         }}
 
         console.log(JSON.stringify(result));
@@ -311,6 +375,8 @@ async def verify_composer_in_worktree(
         worktree_path = _create_verification_worktree(workspace_root, commit_sha)
         linked_deps = _link_dependencies(workspace_root, worktree_path)
 
+        _build_admin_preview(worktree_path, timeout_seconds)
+
         admin_app_dir = worktree_path / "apps" / "skillhubcore-admin"
         if not admin_app_dir.exists():
             return {
@@ -329,15 +395,11 @@ async def verify_composer_in_worktree(
 
         # Step 2: Start isolated preview server on ephemeral port
         logger.info(f"Starting ephemeral Next.js preview server on port {port}...")
-        server_cmd = (
-            f"npx next dev -p {port} -H 127.0.0.1"
-            if os.name == "nt"
-            else f"npx next dev -p {port} -H 127.0.0.1"
-        )
+        server_cmd = [_pnpm_command(), "--filter", "@quiz/skillhubcore-admin", "exec", "next", "start", "-p", str(port), "-H", "127.0.0.1"]
         server_process = subprocess.Popen(
             server_cmd,
-            cwd=str(admin_app_dir),
-            shell=True,
+            cwd=str(worktree_path),
+            shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
@@ -429,7 +491,15 @@ async def verify_composer_in_worktree(
             findings.append(f"Console errors detected ({len(console_errors)}): {'; '.join(console_errors[:3])}")
 
         # Compute deterministic evidence hash from verification result
-        raw_payload = json.dumps(parsed_result, sort_keys=True, separators=(",", ":"))
+        screenshot_hash = _sha256_file(screenshot_path)
+        evidence_payload = {
+            "verification": parsed_result,
+            "verified_commit": commit_sha,
+            "candidate_hash": candidate_hash,
+            "manifest_hash": manifest_hash,
+            "screenshot_sha256": screenshot_hash,
+        }
+        raw_payload = json.dumps(evidence_payload, sort_keys=True, separators=(",", ":"))
         evidence_hash = hashlib.sha256(raw_payload.encode("utf-8")).hexdigest()
         evidence_id = f"composer-ev-{uuid4().hex[:12]}"
 
@@ -457,6 +527,7 @@ async def verify_composer_in_worktree(
                 "duration_ms": duration_ms,
                 "screenshot_captured": screenshot_path.exists(),
                 "screenshot_path": str(screenshot_path) if screenshot_path.exists() else None,
+                "screenshot_sha256": screenshot_hash,
                 "dom_block_type": parsed_result.get("dom_block_type"),
                 "dom_block_version": parsed_result.get("dom_block_version"),
             }

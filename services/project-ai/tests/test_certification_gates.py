@@ -597,7 +597,10 @@ class TestWave3UBRCIntegration:
     @pytest.fixture
     def test_manifest(self):
         """Create a test PlacementManifest with valid hash."""
-        evidence_ids = ["ev-impl-001", "ev-render-001", "ev-registry-001"]
+        # Every non-empty Composer snapshot in this suite contains this
+        # canonical registry evidence. Scenario-specific evidence is validated
+        # by the Composer verifier itself, after manifest validation.
+        evidence_ids = ["ev-registry-001"]
         
         manifest = PlacementManifest(
             manifestId="manifest-test-001",
@@ -764,7 +767,7 @@ class TestWave4ComposerVerification:
     @pytest.fixture
     def test_manifest(self):
         """Create a test PlacementManifest with valid hash."""
-        evidence_ids = ["ev-impl-001", "ev-render-001", "ev-registry-001"]
+        evidence_ids = ["ev-registry-001"]
         
         manifest = PlacementManifest(
             manifestId="manifest-test-001",
@@ -891,7 +894,15 @@ class TestWave4ComposerVerification:
                     }
                 ]
             },
-            'evidence': [],
+            'evidence': [
+                {
+                    'evidenceId': 'ev-registry-001',
+                    'kind': 'ubrc-verification',
+                    'path': 'packages/types/src/tutorial-rich-document/registry.ts',
+                    'contentHash': 'registry-newblock',
+                    'description': 'Block registry'
+                }
+            ],
             'findings': []
         }
     

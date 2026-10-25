@@ -952,10 +952,10 @@ class CertificationGateExecutor:
                 evidence_ids=[],
                 blockers=errors
             )
-        
+
         evidence_ids: List[str] = []
         blockers: List[str] = []
-        
+
         # Get block verification data
         blocks_data = self.snapshot.get('blocks', {})
         verified_blocks = blocks_data.get('verified', [])
@@ -1159,19 +1159,6 @@ class CertificationGateExecutor:
         Returns:
             GateExecutionResult with PASS/FAIL/BLOCKED status
         """
-        # Validate manifest (now required - Finding #1)
-        valid, errors = self._validate_manifest(manifest)
-        if not valid:
-            return GateExecutionResult(
-                status=CertificationGateStatus.BLOCKED,
-                message="Manifest validation failed",
-                evidence_ids=[],
-                blockers=errors
-            )
-        
-        evidence_ids: List[str] = []
-        blockers: List[str] = []
-        
         # Get block verification data
         blocks_data = self.snapshot.get('blocks', {})
         verified_blocks = blocks_data.get('verified', [])
@@ -1183,6 +1170,21 @@ class CertificationGateExecutor:
                 evidence_ids=[],
                 blockers=["Run TypeScript discovery scan to generate block verification data"]
             )
+
+        # Validate the manifest only after confirming discovery evidence exists.
+        # This preserves the actionable "discovery unavailable" result instead of
+        # reporting a secondary missing-evidence manifest failure.
+        valid, errors = self._validate_manifest(manifest)
+        if not valid:
+            return GateExecutionResult(
+                status=CertificationGateStatus.BLOCKED,
+                message="Manifest validation failed",
+                evidence_ids=[],
+                blockers=errors
+            )
+
+        evidence_ids: List[str] = []
+        blockers: List[str] = []
         
         # Check each candidate block
         for candidate_block in candidate_blocks:

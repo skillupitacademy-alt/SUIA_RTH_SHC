@@ -14,7 +14,8 @@ R3 PERSISTENCE:
 
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
-from typing import List
+from typing import Any, List
+import re
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -56,6 +57,26 @@ from app.placement.matcher import CandidateManifestMatcher
 
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
+
+
+def _get_verified_placement_commit(
+    gate_results: dict[str, Any],
+    candidate_sha256: str,
+    manifest_sha256: str,
+) -> str:
+    """Return the immutable placement commit only when all bindings match."""
+    placement = gate_results.get("placement")
+    if not isinstance(placement, dict):
+        raise ValueError("Placement evidence is missing")
+
+    commit = placement.get("commit")
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{7,64}", commit):
+        raise ValueError("Placement evidence does not contain a valid commit SHA")
+    if placement.get("candidate_sha256") != candidate_sha256:
+        raise ValueError("Placement evidence candidate hash does not match the workflow")
+    if placement.get("manifest_sha256") != manifest_sha256:
+        raise ValueError("Placement evidence manifest hash does not match the workflow")
+    return commit
 
 
 async def get_governance_service(
@@ -741,27 +762,14 @@ async def verify_composer(
             )
         )
 
-    # Resolve placement commit SHA
-    gate_results = workflow.gate_results or {}
-    placement_info = gate_results.get("placement") or {}
-    commit_sha = placement_info.get("commit")
-
-    if not commit_sha:
-        import subprocess
-        cand_branch = f"candidate/{workflow.candidate_id}" if workflow.candidate_id else ""
-        if cand_branch:
-            res = subprocess.run(["git", "rev-parse", cand_branch], capture_output=True, text=True)
-            if res.returncode == 0 and res.stdout.strip():
-                commit_sha = res.stdout.strip()
-        if not commit_sha:
-            res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True)
-            commit_sha = res.stdout.strip() if res.returncode == 0 else ""
-
-    if not commit_sha:
-        raise HTTPException(
-            status_code=400,
-            detail="Unable to determine placement commit SHA for isolated worktree verification."
+    try:
+        commit_sha = _get_verified_placement_commit(
+            workflow.gate_results or {},
+            workflow.candidate_sha256 or "",
+            workflow.manifest_sha256 or "",
         )
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error))
 
     from app.verification.composer_worktree_verifier import verify_composer_in_worktree
 
