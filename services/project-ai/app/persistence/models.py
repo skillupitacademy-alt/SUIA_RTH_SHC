@@ -368,13 +368,22 @@ class CandidateModel(Base):
         """
         Compute SHA-256 hash of candidate files for tamper detection.
         
-        Uses deterministic JSON serialization (sorted keys) to ensure consistent hashing.
+        Matches Wave 3A deterministic sorted file digest concatenation.
         
         Returns:
-            SHA-256 hex digest of files JSON
+            SHA-256 hex digest of sorted file digests
         """
-        canonical = json.dumps(self.files, sort_keys=True, ensure_ascii=False)
-        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        sha256_hash = hashlib.sha256()
+        sorted_files = sorted(
+            self.files or [],
+            key=lambda f: f.get("filename", "") if isinstance(f, dict) else getattr(f, "filename", "")
+        )
+        for f in sorted_files:
+            content = f.get("content", "") if isinstance(f, dict) else getattr(f, "content", "")
+            content_bytes = content.encode("utf-8") if isinstance(content, str) else (content or b"")
+            file_hash = hashlib.sha256(content_bytes)
+            sha256_hash.update(file_hash.digest())
+        return sha256_hash.hexdigest()
     
     def verify_hash(self) -> bool:
         """

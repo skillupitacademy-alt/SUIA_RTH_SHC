@@ -231,3 +231,5 @@ Here is the exact live status checked from PostgreSQL:
 Once clicked, Phase 1 will execute, generate the manifest, and move the workflow state to `AWAITING_IMPLEMENTATION_APPROVAL`.
 
 So now you audit code of Objectrive Block exists in project against Project LLM stepper does all required implementation exists so that Project LLM will be able to do it through its GUI way without your involvement to manually edit from backend in code please check does prompt provided to External AI will be able to match all expectation in creating new blocks same in line with Objective , Introduction , Code , Summary which already exists and Test Suite Tab is still pending for Project LLM to implement and testing is job of Project LLM not of Exterbal AI right and do the implementation before creating placement plan , implementing execution of placement plan and then only approved the plan if all test created for block to qualift and all these has to be generic not specific to any block right?
+
+

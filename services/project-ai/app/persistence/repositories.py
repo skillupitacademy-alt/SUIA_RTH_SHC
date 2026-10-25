@@ -643,8 +643,9 @@ class PostgresCandidateRepository:
         Automatically computes candidate_sha256 from files before storage.
         """
         _normalize_uuid_fields(candidate, "candidate_id", "workflow_id")
-        # Compute hash from files for tamper detection
-        candidate.candidate_sha256 = candidate.compute_hash()
+        # Compute hash from files for tamper detection if not already set
+        if not candidate.candidate_sha256:
+            candidate.candidate_sha256 = candidate.compute_hash()
         
         stmt = insert(CandidateModel).values(
             candidate_id=candidate.candidate_id,
