@@ -1291,7 +1291,7 @@ async def execute_placement(
                 'message': f'Placement succeeded but discovery refresh failed: {str(e)}'
             }
 
-        wf_repo = get_workflow_repository(session)
+        wf_repo = await get_workflow_repository(session)
         wf_model = await wf_repo.get(package.workflow_id, verify_bindings=False)
         if wf_model:
             current_gates = dict(wf_model.gate_results or {})
