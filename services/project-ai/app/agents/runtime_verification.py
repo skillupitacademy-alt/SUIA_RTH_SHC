@@ -12,13 +12,15 @@ Orchestrates complete runtime verification workflow:
 Returns AgentResult with evidence binding to run_id, commit_sha, snapshot_hash.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from enum import Enum
 import json
+import hashlib
 
+from app.contracts.policy import get_framework_compliance_policy
 from app.verification.runtime import (
     ApplicationProcess,
     RuntimeVerification,
@@ -47,6 +49,7 @@ class AgentContext:
     prior_agent_outputs: Dict[str, Any]
     repository_root: Path
     timestamp: datetime
+    governing_policy: str = field(default_factory=get_framework_compliance_policy)
 
 
 @dataclass
@@ -176,6 +179,11 @@ class RuntimeVerificationAgent:
             # Step 5: Network failures - delegated to browser verification  
             outputs['network_errors'] = 'deferred_to_browser_verification'
             
+            # Runtime verification scope and deferred checks declaration
+            outputs['verification_scope'] = 'startup_and_health_check_only'
+            outputs['deferred_checks'] = ['route_navigation', 'console_errors', 'network_errors']
+            outputs['is_complete_runtime_verification'] = False
+            
             # Step 6: Graceful cleanup
             shutdown_success = app_process.stop(timeout=10)
             outputs['shutdown'] = 'success' if shutdown_success else 'forced_kill'
@@ -191,9 +199,15 @@ class RuntimeVerificationAgent:
                     if 'evidenceId' in toolchain:
                         evidence_ids.append(toolchain['evidenceId'])
             
-            # Generate evidence file for R6 wave
+            # Derive deterministic, run-bound evidence ID conforming to EVIDENCE_ID_PATTERN (evidence-<16 hex chars>)
+            runtime_evidence_token = f"{run_id}:{commit_sha}:{snapshot_hash}:runtime"
+            evidence_hex = hashlib.sha256(runtime_evidence_token.encode('utf-8')).hexdigest()[:16]
+            runtime_evidence_id = f"evidence-{evidence_hex}"
+            evidence_ids.append(runtime_evidence_id)
+            
+            # Generate evidence record for this specific run
             evidence_record = {
-                'evidenceId': 'ev-runtime-001',
+                'evidenceId': runtime_evidence_id,
                 'waveId': 'R6',
                 'title': 'Runtime Verification Agent',
                 'timestamp': datetime.now(timezone.utc).isoformat(),
@@ -212,16 +226,23 @@ class RuntimeVerificationAgent:
                 'verification': {
                     'applicationStartup': outputs['startup'] == 'success',
                     'healthCheck': outputs['health_check'] == 'passed',
-                    'gracefulShutdown': outputs['shutdown'] == 'success'
+                    'gracefulShutdown': outputs['shutdown'] == 'success',
+                    'verificationScope': outputs['verification_scope'],
+                    'deferredChecks': outputs['deferred_checks'],
+                    'isCompleteRuntimeVerification': False
                 },
                 'outputs': outputs
             }
             
-            # Write evidence file
-            evidence_dir = ctx.repository_root / '.project-ai' / 'runs' / 'r6-setup'
+            # Write evidence to run-isolated directory
+            run_dir_path = ctx.workflow_state.get('run_dir')
+            if run_dir_path:
+                evidence_dir = Path(run_dir_path)
+            else:
+                evidence_dir = ctx.repository_root / '.project-ai' / 'runs' / run_id
             evidence_dir.mkdir(parents=True, exist_ok=True)
-            evidence_file = evidence_dir / 'evidence.json'
-            evidence_file.write_text(json.dumps(evidence_record, indent=2))
+            evidence_file = evidence_dir / 'runtime-evidence.json'
+            evidence_file.write_text(json.dumps(evidence_record, indent=2), encoding='utf-8')
             
             return AgentResult(
                 agent_id=self.agent_id,

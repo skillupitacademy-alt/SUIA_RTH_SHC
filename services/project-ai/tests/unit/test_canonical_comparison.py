@@ -40,7 +40,6 @@ def sample_contract():
         block_type="introduction_i7",
         references=[reference],
         required_artifacts=[
-            "HTML/CSS/JS prototype",
             "React/TypeScript implementation",
             "Type definitions",
             "Unit tests"
@@ -53,10 +52,9 @@ def sample_contract():
 def sample_artifacts():
     """Sample candidate artifacts."""
     return [
-        {"name": "prototype.html", "sha256": "hash1"},
-        {"name": "implementation.tsx", "sha256": "hash2"},
-        {"name": "types.ts", "sha256": "hash3"},
-        {"name": "test.spec.ts", "sha256": "hash4"},
+        {"name": "IntroductionI7Block.tsx", "sha256": "hash1"},
+        {"name": "types.ts", "sha256": "hash2"},
+        {"name": "IntroductionI7Block.test.tsx", "sha256": "hash3"},
     ]
 
 
@@ -103,9 +101,8 @@ class TestCanonicalComparator:
         
         # Missing "Unit tests" artifact
         incomplete_artifacts = [
-            {"name": "prototype.html", "sha256": "hash1"},
-            {"name": "implementation.tsx", "sha256": "hash2"},
-            {"name": "types.ts", "sha256": "hash3"},
+            {"name": "IntroductionI7Block.tsx", "sha256": "hash1"},
+            {"name": "types.ts", "sha256": "hash2"},
             # Missing test file
         ]
         
@@ -160,11 +157,10 @@ class TestCanonicalComparator:
         
         # Add an unexpected artifact
         artifacts_with_extra = [
-            {"name": "prototype.html", "sha256": "hash1"},
-            {"name": "implementation.tsx", "sha256": "hash2"},
-            {"name": "types.ts", "sha256": "hash3"},
-            {"name": "test.spec.ts", "sha256": "hash4"},
-            {"name": "unrelated-data.xml", "sha256": "hash5"},  # Extra file that doesn't match any keywords
+            {"name": "IntroductionI7Block.tsx", "sha256": "hash1"},
+            {"name": "types.ts", "sha256": "hash2"},
+            {"name": "IntroductionI7Block.test.tsx", "sha256": "hash3"},
+            {"name": "unrelated-data.xml", "sha256": "hash4"},  # Extra file that doesn't match any keywords
         ]
         
         result = comparator.compare(

@@ -21,6 +21,7 @@ from typing import Dict, Any, List, Optional, Literal
 from pathlib import Path
 import subprocess
 import json
+import hashlib
 from pydantic import BaseModel
 
 
@@ -95,6 +96,28 @@ class FinalGateController:
                 reason=f"missing_required_evidence: {missing}",
             )
         
+        # Check for malformed or non-structured required evidence
+        VALID_EVIDENCE_STATUSES = {"PASS", "SUCCESS", "FAIL", "BLOCKED"}
+        malformed = []
+        for k in REQUIRED_EVIDENCE_KEYS:
+            rec = evidence[k]
+            if not isinstance(rec, dict):
+                malformed.append(f"{k} (expected dict record, got {type(rec).__name__})")
+            elif "status" not in rec or rec.get("status") not in VALID_EVIDENCE_STATUSES:
+                status_val = rec.get("status") if isinstance(rec, dict) else None
+                malformed.append(f"{k} (invalid or missing status '{status_val}')")
+        
+        if malformed:
+            return FinalGateResult(
+                workflow_id=workflow_id,
+                verdict="BLOCKED",
+                evidence_summary=evidence,
+                missing_evidence=[],
+                failed_gates=[],
+                blocked_gates=[],
+                reason=f"malformed_required_evidence: {malformed}",
+            )
+        
         # Identify failed and blocked gates
         failed = [
             k for k, v in evidence.items() 
@@ -104,6 +127,23 @@ class FinalGateController:
             k for k, v in evidence.items() 
             if isinstance(v, dict) and v.get('status') == 'BLOCKED'
         ]
+        
+        # Check if runtime verification contains deferred checks without passing browser verification
+        rv_evidence = evidence.get("runtime_verification")
+        has_unverified_deferred = False
+        if isinstance(rv_evidence, dict):
+            deferred = (
+                rv_evidence.get("deferred_checks")
+                or (isinstance(rv_evidence.get("outputs"), dict) and rv_evidence.get("outputs", {}).get("deferred_checks"))
+                or (isinstance(rv_evidence.get("verification"), dict) and rv_evidence.get("verification", {}).get("deferredChecks"))
+            )
+            if deferred:
+                browser_ev = evidence.get("browser_verification") or evidence.get("playwright_verification")
+                browser_passed = isinstance(browser_ev, dict) and browser_ev.get("status") in ("PASS", "SUCCESS")
+                if not browser_passed:
+                    has_unverified_deferred = True
+                    if "runtime_verification" not in blocked:
+                        blocked.append("runtime_verification")
         
         # FAIL takes precedence
         if failed:
@@ -119,6 +159,9 @@ class FinalGateController:
         
         # BLOCKED is next priority
         if blocked:
+            reason = f"gates_blocked: {blocked}"
+            if has_unverified_deferred:
+                reason += " (runtime_verification_incomplete: deferred checks require browser verification)"
             return FinalGateResult(
                 workflow_id=workflow_id, 
                 verdict="BLOCKED",
@@ -126,7 +169,7 @@ class FinalGateController:
                 missing_evidence=[],
                 failed_gates=[], 
                 blocked_gates=blocked,
-                reason=f"gates_blocked: {blocked}",
+                reason=reason,
             )
         
         # All gates passed → CERTIFICATION_READY (NOT CERTIFIED)
@@ -214,16 +257,19 @@ class FinalGateAgent:
         evidence_ids: List[str],
         snapshot: Dict[str, Any],
         commit_sha: str,
-        snapshot_hash: str
+        snapshot_hash: str,
+        run_id: Optional[str] = None
     ) -> tuple[bool, List[str]]:
         """
-        Verify all evidence records bind to same commit_sha and snapshot_hash.
+        Verify all evidence records bind to same commit_sha and snapshot_hash,
+        and optionally run_id.
         
         Args:
             evidence_ids: List of evidence IDs to verify
             snapshot: Repository snapshot
             commit_sha: Expected commit SHA
             snapshot_hash: Expected snapshot hash
+            run_id: Optional expected run ID
             
         Returns:
             Tuple of (valid, errors)
@@ -239,13 +285,31 @@ class FinalGateAgent:
         if snapshot_hash_actual != snapshot_hash:
             errors.append(f"Snapshot hash mismatch: {snapshot_hash_actual} != {snapshot_hash}")
         
-        # Verify all evidence IDs exist in snapshot
+        # Build index of evidence records in snapshot
         evidence_list = snapshot.get('evidence', [])
-        snapshot_evidence_ids = {e['evidenceId'] for e in evidence_list}
+        evidence_by_id = {
+            e.get('evidenceId'): e 
+            for e in evidence_list 
+            if isinstance(e, dict) and 'evidenceId' in e
+        }
         
         for eid in evidence_ids:
-            if eid not in snapshot_evidence_ids:
+            if eid not in evidence_by_id:
                 errors.append(f"Evidence ID {eid} not found in snapshot")
+                continue
+            
+            rec = evidence_by_id[eid]
+            rec_commit = rec.get('commitSha') or rec.get('commit_sha')
+            if rec_commit and rec_commit != commit_sha:
+                errors.append(f"Evidence {eid} commit SHA mismatch: {rec_commit} != {commit_sha}")
+            
+            rec_hash = rec.get('snapshotHash') or rec.get('snapshot_hash')
+            if rec_hash and rec_hash != snapshot_hash:
+                errors.append(f"Evidence {eid} snapshot hash mismatch: {rec_hash} != {snapshot_hash}")
+                
+            rec_run = rec.get('runId') or rec.get('run_id')
+            if run_id and rec_run and rec_run != run_id:
+                errors.append(f"Evidence {eid} run ID mismatch: {rec_run} != {run_id}")
         
         return (len(errors) == 0, errors)
     
@@ -278,9 +342,9 @@ class FinalGateAgent:
                 with open(gate_file, 'r', encoding='utf-8') as f:
                     gate_data = json.load(f)
                     gate_results.append({
-                        'gate_name': gate_data.get('gateId', gate_file.stem),
-                        'verdict': gate_data.get('status', 'UNKNOWN'),
-                        'evidence_ids': gate_data.get('evidenceIds', [])
+                        'gate_name': gate_data.get('gateId', gate_data.get('gate_name', gate_file.stem)),
+                        'verdict': gate_data.get('status', gate_data.get('verdict', 'UNKNOWN')),
+                        'evidence_ids': gate_data.get('evidenceIds', gate_data.get('evidence_ids', []))
                     })
             except Exception:
                 # Skip invalid gate files
@@ -292,32 +356,39 @@ class FinalGateAgent:
         """
         Calculate final verdict from gate results.
         
+        INVARIANT:
+        - Explicit FAIL takes precedence over BLOCKED
+        - Any BLOCKED → BLOCKED (when no explicit FAIL)
+        - Empty gates → BLOCKED (fail closed)
+        - All PASS → CERTIFICATION_READY (awaiting Human Gate 2)
+        - Mixed results or unhandled states → BLOCKED
+        
         Args:
             gate_results: List of gate result dictionaries
             
         Returns:
-            Verdict string: 'CERTIFICATION_READY' | 'BLOCKED' | 'FAIL' | 'PASS'
+            Verdict string: 'CERTIFICATION_READY' | 'BLOCKED' | 'FAIL'
         """
         if not gate_results:
-            return 'PASS'  # No gates to verify
+            return 'BLOCKED'  # Fail closed: no gates to verify results in BLOCKED
         
-        # Check for BLOCKED verdicts
-        blocked_gates = [g for g in gate_results if g['verdict'] == 'BLOCKED']
-        if blocked_gates:
-            return 'BLOCKED'
-        
-        # Check for FAIL verdicts
+        # Check for FAIL verdicts first (explicit failure takes precedence over unresolved/blocked)
         failed_gates = [g for g in gate_results if g['verdict'] == 'FAIL']
         if failed_gates:
             return 'FAIL'
+        
+        # Check for BLOCKED verdicts next
+        blocked_gates = [g for g in gate_results if g['verdict'] == 'BLOCKED']
+        if blocked_gates:
+            return 'BLOCKED'
         
         # All gates passed
         passed_gates = [g for g in gate_results if g['verdict'] == 'PASS']
         if len(passed_gates) == len(gate_results):
             return 'CERTIFICATION_READY'
         
-        # Mixed results (shouldn't happen but handle gracefully)
-        return 'PASS'
+        # Mixed results / unhandled states fail closed
+        return 'BLOCKED'
     
     def append_to_canonical_backlog(
         self,
@@ -409,16 +480,33 @@ class FinalGateAgent:
         # Remove duplicates
         all_evidence_ids = list(set(all_evidence_ids))
         
-        # Verify evidence binding
+        # Verify evidence binding with run isolation
         evidence_binding_valid, binding_errors = self.verify_evidence_binding(
             all_evidence_ids,
             snapshot,
             commit_sha,
-            snapshot_hash
+            snapshot_hash,
+            run_id=run_id
         )
         
-        # Calculate verdict
-        verdict = self.calculate_verdict(gate_results)
+        # Check if runtime verification deferred browser checks without passing browser verification
+        for gate in gate_results:
+            if 'runtime' in gate.get('gate_name', '').lower():
+                if gate.get('deferred_checks') or gate.get('deferredChecks'):
+                    browser_passed = any(
+                        bg.get('verdict') in ('PASS', 'SUCCESS') 
+                        for bg in gate_results 
+                        if 'browser' in bg.get('gate_name', '').lower() or 'playwright' in bg.get('gate_name', '').lower()
+                    )
+                    if not browser_passed:
+                        gate['verdict'] = 'BLOCKED'
+        
+        # Calculate verdict (invalid evidence binding forces fail-closed BLOCKED/FAIL)
+        if not evidence_binding_valid:
+            has_failed = any(g.get('verdict') == 'FAIL' for g in gate_results)
+            verdict = 'FAIL' if has_failed else 'BLOCKED'
+        else:
+            verdict = self.calculate_verdict(gate_results)
         
         # Generate final verdict
         final_verdict = FinalVerdict(
@@ -450,12 +538,13 @@ class FinalGateAgent:
         
         verdict_file.write_text(json.dumps(verdict_dict, indent=2), encoding='utf-8')
         
-        # Generate evidence record
-        evidence_dir = self.repository_root / '.project-ai' / 'runs' / 'r9-setup'
-        evidence_dir.mkdir(parents=True, exist_ok=True)
+        # Generate evidence record with deterministic run-bound evidence ID
+        gate_token = f"{run_id}:{commit_sha}:{snapshot_hash}:final-gate"
+        final_evidence_hex = hashlib.sha256(gate_token.encode('utf-8')).hexdigest()[:16]
+        final_evidence_id = f"evidence-{final_evidence_hex}"
         
         evidence_record = {
-            'evidenceId': 'ev-final-001',
+            'evidenceId': final_evidence_id,
             'waveId': 'R9',
             'title': 'Final Gate Metadata',
             'timestamp': datetime.now(timezone.utc).isoformat(),
@@ -486,8 +575,8 @@ class FinalGateAgent:
             'finalVerdict': verdict_dict
         }
         
-        evidence_file = evidence_dir / 'evidence.json'
-        evidence_file.write_text(json.dumps(evidence_record, indent=2), encoding='utf-8')
+        # Write strictly to run directory for run isolation (no fixed r9-setup path or ev-final-001)
+        (run_dir / 'final-evidence.json').write_text(json.dumps(evidence_record, indent=2), encoding='utf-8')
         
         return final_verdict
 

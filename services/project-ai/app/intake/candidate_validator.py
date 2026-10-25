@@ -17,9 +17,13 @@ ARCHITECTURAL BOUNDARIES:
 """
 
 import hashlib
+import zipfile
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple, Optional, Union, Set
+
+from app.contracts.policy import get_framework_compliance_policy
 
 
 class ValidationError(Exception):
@@ -131,11 +135,19 @@ class CandidateValidator:
                 f"SHA-256 mismatch: expected {expected_sha256}, got {actual_sha256}"
             )
         
-        # Validate artifact structure
-        artifact_errors = self._validate_artifact_structure(
+        # Extract contract-driven required_artifacts if present in metadata or contract
+        required_artifacts = upload_meta.get("required_artifacts")
+        if not required_artifacts and isinstance(upload_meta.get("contract"), dict):
+            required_artifacts = upload_meta.get("contract", {}).get("required_artifacts")
+        elif not required_artifacts and hasattr(upload_meta.get("contract"), "required_artifacts"):
+            required_artifacts = getattr(upload_meta.get("contract"), "required_artifacts")
+        
+        # Validate artifact structure (contract-driven if required_artifacts provided)
+        artifact_errors, artifact_evidence = self._validate_artifact_structure(
             candidate_path_obj,
             target_family,
-            target_version
+            target_version,
+            required_artifacts=required_artifacts
         )
         errors.extend(artifact_errors)
         
@@ -152,6 +164,11 @@ class CandidateValidator:
             "workflow_id": workflow_id,
             "artifact_count": self._count_artifacts(candidate_path_obj),
             "validation_timestamp": self._get_timestamp(),
+            "governing_policy": get_framework_compliance_policy(),
+            "contract_driven": artifact_evidence.get("contract_driven", False),
+            "required_artifacts": artifact_evidence.get("required_artifacts", []),
+            "matched_artifacts": artifact_evidence.get("matched_artifacts", []),
+            "missing_artifacts": artifact_evidence.get("missing_artifacts", []),
         }
         
         # Validation passes only if no errors
@@ -208,76 +225,269 @@ class CandidateValidator:
         else:
             raise ValidationError(f"Invalid candidate path: {candidate_path}")
     
+    def _extract_candidate_files(self, candidate_path: Path) -> Tuple[Dict[str, bytes], Optional[str]]:
+        """
+        Extract file relative paths and byte contents from candidate package.
+        Safely inspects zip archives without full disk extraction.
+        """
+        if candidate_path.is_file():
+            if candidate_path.suffix.lower() == '.zip':
+                try:
+                    files_data = {}
+                    with zipfile.ZipFile(candidate_path, 'r') as zf:
+                        for n in zf.namelist():
+                            if not n.endswith('/') and not n.startswith('__MACOSX'):
+                                files_data[Path(n).as_posix()] = zf.read(n)
+                    return files_data, None
+                except Exception as e:
+                    return {}, f"Invalid or corrupted zip archive: {str(e)}"
+            else:
+                return {candidate_path.name: candidate_path.read_bytes()}, None
+        elif candidate_path.is_dir():
+            files_data = {}
+            for f in candidate_path.rglob("*"):
+                if f.is_file():
+                    rel = f.relative_to(candidate_path).as_posix()
+                    files_data[rel] = f.read_bytes()
+            return files_data, None
+        return {}, f"Invalid candidate path: {candidate_path}"
+
+    def _verify_implementation(self, file_path: str, content: bytes) -> Tuple[bool, Optional[str]]:
+        """
+        Verify that an artifact contains a non-empty, valid implementation.
+        Rejects empty files, whitespace-only files, or empty stubs.
+        """
+        if not content or len(content.strip()) == 0:
+            return False, f"Artifact '{file_path}' is empty (0 bytes)"
+        
+        try:
+            text = content.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                text = content.decode('latin-1')
+            except Exception:
+                return True, None  # Binary asset
+        
+        stripped = text.strip()
+        if not stripped:
+            return False, f"Artifact '{file_path}' contains only whitespace"
+        
+        lower_path = file_path.lower()
+        if lower_path.endswith(('.ts', '.tsx', '.js', '.jsx')):
+            # Must not be only comments
+            code_lines = [
+                line.strip() for line in stripped.splitlines() 
+                if line.strip() 
+                and not line.strip().startswith('//') 
+                and not line.strip().startswith('/*') 
+                and not line.strip().startswith('*')
+            ]
+            if not code_lines:
+                return False, f"Artifact '{file_path}' contains only comments or stubs without implementation"
+            
+            # Must contain at least one recognized definition/keyword
+            keywords = ("export", "function", "const", "class", "interface", "type", "import", "describe", "test", "it")
+            if not any(kw in stripped for kw in keywords):
+                return False, f"Artifact '{file_path}' lacks valid implementation code or exports"
+        elif lower_path.endswith('.json'):
+            try:
+                json.loads(stripped)
+            except Exception as e:
+                return False, f"Artifact '{file_path}' contains invalid JSON: {str(e)}"
+        
+        return True, None
+
+    def _find_matching_file(
+        self,
+        req: str,
+        available_files: Set[str],
+        valid_component_names: Set[str],
+        valid_schema_names: Set[str],
+        target_family: str,
+        target_version: str
+    ) -> Optional[str]:
+        """
+        Find candidate file satisfying a single contract requirement.
+        Preserves directory structure: path-qualified requirements must match path,
+        not just basename.
+        """
+        req_norm = Path(req).as_posix()
+        req_name = Path(req).name
+        req_lower = req.lower()
+        has_dir = '/' in req_norm
+
+        # 1. Exact path match
+        if req_norm in available_files:
+            return req_norm
+        
+        # Suffix path match if req has directory parts
+        if has_dir:
+            for f in available_files:
+                if f.endswith(f"/{req_norm}") or f == req_norm:
+                    return f
+            # If requirement specifies a path, do NOT allow matching an arbitrary file in another path
+            return None
+
+        # 2. Exact basename match when req has no directory component
+        for f in available_files:
+            if Path(f).name == req_name:
+                return f
+
+        # 3. Descriptive test requirements
+        if any(u in req_lower for u in ["test", "spec"]):
+            for f in available_files:
+                name = Path(f).name
+                if name.endswith(('.test.tsx', '.test.ts', '.spec.tsx', '.spec.ts')):
+                    return f
+            return None
+
+        # 4. Descriptive schema requirements
+        if "schema" in req_lower:
+            for f in available_files:
+                name = Path(f).name
+                if name in valid_schema_names:
+                    return f
+            return None
+
+        # 5. Descriptive type definition requirements
+        if any(t in req_lower for t in ["type definition", "types", "index.d.ts"]):
+            valid_types = {
+                "types.ts", "index.d.ts", f"{target_family}Types.ts", f"{target_family}{target_version}Types.ts"
+            }
+            for f in available_files:
+                name = Path(f).name
+                if name in valid_types:
+                    return f
+            return None
+
+        # 6. Descriptive component requirements
+        if any(c in req_lower for c in ["react", "component", "implementation", "block"]):
+            for f in available_files:
+                name = Path(f).name
+                if name in valid_component_names:
+                    return f
+            return None
+
+        return None
+
     def _validate_artifact_structure(
         self,
         candidate_path: Path,
         target_family: str,
-        target_version: str
-    ) -> List[str]:
+        target_version: str,
+        required_artifacts: Optional[List[str]] = None
+    ) -> Tuple[List[str], Dict[str, Any]]:
         """
         Validate that candidate contains expected artifact structure.
         
-        Expected artifacts (from EngineeringContract):
-        - Component file: {Family}{Version}Block.tsx (e.g., IntroductionI7Block.tsx)
-        - Schema file: {Family}{Version}Schema.ts (e.g., IntroductionI7Schema.ts)
-        - Type definitions: types.ts or index.d.ts
-        - Tests: *.test.tsx or *.spec.tsx
-        
-        Args:
-            candidate_path: Path to candidate package
-            target_family: Target block family
-            target_version: Target block version
-            
-        Returns:
-            List of validation errors (empty if structure is valid)
+        If required_artifacts is provided (contract-driven), matches candidate artifacts
+        against the contract requirements independently with 1-to-1 claiming and valid implementation checks.
+        If a zip archive is supplied, its contents are inspected safely.
         """
         errors: List[str] = []
         
-        # Expected file patterns
-        component_pattern = f"{target_family}{target_version}Block.tsx"
-        schema_pattern = f"{target_family}{target_version}Schema.ts"
+        valid_component_names = {
+            f"{target_family}{target_version}Block.tsx",
+            f"{target_family}Block.tsx",
+        }
+        valid_schema_names = {
+            f"{target_family}{target_version}Schema.ts",
+            f"{target_family}Schema.ts",
+            f"{target_family.lower()}-{target_version.lower()}.schema.ts",
+            f"{target_family.lower()}.schema.ts",
+        }
         
-        if candidate_path.is_file():
-            # Single file upload: must be the component or a zip
-            if not (candidate_path.name == component_pattern or candidate_path.suffix == '.zip'):
-                errors.append(
-                    f"Single file upload must be {component_pattern} or a .zip archive"
+        matched_artifacts: List[str] = []
+        missing_artifacts: List[str] = []
+        contract_driven = required_artifacts is not None and len(required_artifacts) > 0
+        
+        files_data, archive_error = self._extract_candidate_files(candidate_path)
+        if archive_error:
+            errors.append(archive_error)
+            return errors, {
+                "contract_driven": contract_driven,
+                "required_artifacts": required_artifacts if contract_driven else list(valid_component_names | valid_schema_names),
+                "matched_artifacts": [],
+                "missing_artifacts": required_artifacts if contract_driven else list(valid_component_names | valid_schema_names),
+            }
+
+        available_files = set(files_data.keys())
+
+        if contract_driven:
+            for req in (required_artifacts or []):
+                matched_file = self._find_matching_file(
+                    req, available_files, valid_component_names, valid_schema_names, target_family, target_version
                 )
+                if matched_file:
+                    is_valid, impl_error = self._verify_implementation(matched_file, files_data[matched_file])
+                    if is_valid:
+                        matched_artifacts.append(req)
+                        available_files.remove(matched_file)  # Claimed 1-to-1
+                    else:
+                        missing_artifacts.append(req)
+                        errors.append(impl_error)
+                else:
+                    missing_artifacts.append(req)
+                    errors.append(f"Missing contract-required artifact: '{req}'")
+        else:
+            # Fallback checking when contract does not specify required_artifacts
+            if candidate_path.is_file() and candidate_path.suffix.lower() != '.zip':
+                # Single non-zip file: must be a recognized component file with valid implementation
+                if candidate_path.name in valid_component_names:
+                    is_valid, impl_error = self._verify_implementation(candidate_path.name, files_data[candidate_path.name])
+                    if is_valid:
+                        matched_artifacts.append(candidate_path.name)
+                    else:
+                        errors.append(impl_error)
+                else:
+                    errors.append(
+                        f"Single file upload must be one of {sorted(valid_component_names)} or a .zip archive"
+                    )
+            else:
+                # Directory or zip archive in fallback mode: check component and schema
+                matched_comp = None
+                for f in sorted(available_files):
+                    if Path(f).name in valid_component_names:
+                        is_valid, impl_error = self._verify_implementation(f, files_data[f])
+                        if is_valid:
+                            matched_comp = f
+                            matched_artifacts.append(Path(f).name)
+                            break
+                        else:
+                            errors.append(impl_error)
+                if not matched_comp and not any("contains only" in e or "is empty" in e for e in errors):
+                    errors.append(f"Missing required component file: expected one of {sorted(valid_component_names)}")
+                    missing_artifacts.append(f"Component ({'/'.join(sorted(valid_component_names))})")
+                
+                matched_schema = None
+                for f in sorted(available_files):
+                    if f != matched_comp and Path(f).name in valid_schema_names:
+                        is_valid, impl_error = self._verify_implementation(f, files_data[f])
+                        if is_valid:
+                            matched_schema = f
+                            matched_artifacts.append(Path(f).name)
+                            break
+                        else:
+                            errors.append(impl_error)
+                if not matched_schema and not any("contains only" in e or "is empty" in e for e in errors):
+                    errors.append(f"Missing required schema file: expected one of {sorted(valid_schema_names)}")
+                    missing_artifacts.append(f"Schema ({'/'.join(sorted(valid_schema_names))})")
         
-        elif candidate_path.is_dir():
-            # Directory: check for required files
-            files = list(candidate_path.rglob("*"))
-            file_names = [f.name for f in files if f.is_file()]
-            
-            # Check for component file
-            if component_pattern not in file_names:
-                errors.append(f"Missing required component file: {component_pattern}")
-            
-            # Check for schema file
-            if schema_pattern not in file_names:
-                errors.append(f"Missing required schema file: {schema_pattern}")
-            
-            # Check for type definitions (optional but recommended)
-            # Note: These are not added to errors since they're optional
+        artifact_evidence = {
+            "contract_driven": contract_driven,
+            "required_artifacts": required_artifacts if contract_driven else list(valid_component_names | valid_schema_names),
+            "matched_artifacts": matched_artifacts,
+            "missing_artifacts": missing_artifacts,
+        }
         
-        return errors
+        return errors, artifact_evidence
     
     def _count_artifacts(self, candidate_path: Path) -> int:
-        """
-        Count artifacts in candidate package.
-        
-        Args:
-            candidate_path: Path to candidate package
-            
-        Returns:
-            Number of files in candidate
-        """
-        if candidate_path.is_file():
-            return 1
-        elif candidate_path.is_dir():
-            files = [f for f in candidate_path.rglob("*") if f.is_file()]
-            return len(files)
-        return 0
+        """Count artifacts in candidate package (including files inside zip archives)."""
+        files_data, archive_error = self._extract_candidate_files(candidate_path)
+        if archive_error:
+            return 0
+        return len(files_data)
     
     def _get_timestamp(self) -> str:
         """

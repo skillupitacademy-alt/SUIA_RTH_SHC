@@ -454,7 +454,7 @@ async def create_engineering_contract(
         contract_id=contract.contract_id,
         workflow_id=workflow_id,
         contract_hash=contract.contract_hash,
-        contract_data=contract.dict(),
+        contract_data=contract.model_dump(),
         created_at=datetime.now(timezone.utc),
         contract_version=contract.contract_version
     )

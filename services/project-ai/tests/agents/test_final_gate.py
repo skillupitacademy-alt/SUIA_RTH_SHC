@@ -281,8 +281,83 @@ This is existing content that must be preserved.
         assert valid is False
         assert any('mismatch' in e.lower() for e in errors)
     
+    def test_verify_evidence_binding_record_commit_mismatch(self):
+        """Evidence binding fails when individual evidence record commit SHA mismatches."""
+        agent = FinalGateAgent(Path('/test/repo'))
+        snapshot = {
+            'canonicalHash': 'hash123',
+            'repository': {'commitSha': 'commit456'},
+            'evidence': [
+                {
+                    'evidenceId': 'ev-001',
+                    'commitSha': 'commit-wrong',
+                    'snapshotHash': 'hash123',
+                    'runId': 'test-run'
+                }
+            ]
+        }
+        valid, errors = agent.verify_evidence_binding(
+            ['ev-001'],
+            snapshot,
+            'commit456',
+            'hash123',
+            run_id='test-run'
+        )
+        assert valid is False
+        assert any('commit SHA mismatch' in e for e in errors)
+
+    def test_verify_evidence_binding_record_snapshot_mismatch(self):
+        """Evidence binding fails when individual evidence record snapshot hash mismatches."""
+        agent = FinalGateAgent(Path('/test/repo'))
+        snapshot = {
+            'canonicalHash': 'hash123',
+            'repository': {'commitSha': 'commit456'},
+            'evidence': [
+                {
+                    'evidenceId': 'ev-001',
+                    'commitSha': 'commit456',
+                    'snapshotHash': 'hash-wrong',
+                    'runId': 'test-run'
+                }
+            ]
+        }
+        valid, errors = agent.verify_evidence_binding(
+            ['ev-001'],
+            snapshot,
+            'commit456',
+            'hash123',
+            run_id='test-run'
+        )
+        assert valid is False
+        assert any('snapshot hash mismatch' in e for e in errors)
+
+    def test_verify_evidence_binding_record_run_mismatch(self):
+        """Evidence binding fails when individual evidence record run ID mismatches."""
+        agent = FinalGateAgent(Path('/test/repo'))
+        snapshot = {
+            'canonicalHash': 'hash123',
+            'repository': {'commitSha': 'commit456'},
+            'evidence': [
+                {
+                    'evidenceId': 'ev-001',
+                    'commitSha': 'commit456',
+                    'snapshotHash': 'hash123',
+                    'runId': 'run-different'
+                }
+            ]
+        }
+        valid, errors = agent.verify_evidence_binding(
+            ['ev-001'],
+            snapshot,
+            'commit456',
+            'hash123',
+            run_id='test-run'
+        )
+        assert valid is False
+        assert any('run ID mismatch' in e for e in errors)
+
     def test_execute_generates_evidence(self):
-        """Execute generates evidence file for R9."""
+        """Execute generates isolated evidence file for run, avoiding fixed r9-setup path."""
         with tempfile.TemporaryDirectory() as tmpdir:
             repo_root = Path(tmpdir)
             run_dir = repo_root / '.project-ai' / 'runs' / 'test-run'
@@ -306,24 +381,29 @@ This is existing content that must be preserved.
             with patch.object(agent, 'derive_commit_sha', return_value='commit456'):
                 verdict = agent.execute(snapshot, run_dir, 'test-run')
             
-            # Verify evidence file created
-            evidence_dir = repo_root / '.project-ai' / 'runs' / 'r9-setup'
-            evidence_file = evidence_dir / 'evidence.json'
+            # Verify evidence file created in isolated run_dir
+            evidence_file = run_dir / 'final-evidence.json'
             assert evidence_file.exists()
             
             evidence_data = json.loads(evidence_file.read_text())
-            assert evidence_data['evidenceId'] == 'ev-final-001'
+            assert evidence_data['evidenceId'].startswith('evidence-')
             assert evidence_data['waveId'] == 'R9'
+            assert evidence_data['runId'] == 'test-run'
+            assert evidence_data['commitSha'] == 'commit456'
+            assert evidence_data['snapshotHash'] == 'hash123'
+            
+            # Ensure fixed legacy r9-setup is NOT created
+            assert not (repo_root / '.project-ai' / 'runs' / 'r9-setup').exists()
 
 
 class TestVerdictCalculation:
     """Test verdict calculation logic."""
     
     def test_empty_gate_results(self):
-        """No gates → PASS."""
+        """No gates → fail closed to BLOCKED."""
         agent = FinalGateAgent(Path('/test/repo'))
         verdict = agent.calculate_verdict([])
-        assert verdict == 'PASS'
+        assert verdict == 'BLOCKED'
     
     def test_all_pass(self):
         """All PASS → CERTIFICATION_READY."""
@@ -335,12 +415,57 @@ class TestVerdictCalculation:
         verdict = agent.calculate_verdict(gate_results)
         assert verdict == 'CERTIFICATION_READY'
     
-    def test_blocked_takes_precedence(self):
-        """BLOCKED takes precedence over FAIL."""
+    def test_fail_takes_precedence_over_blocked(self):
+        """FAIL takes precedence over BLOCKED: FAIL + BLOCKED → FAIL."""
         agent = FinalGateAgent(Path('/test/repo'))
         gate_results = [
             {'gate_name': 'gate1', 'verdict': 'BLOCKED', 'evidence_ids': []},
             {'gate_name': 'gate2', 'verdict': 'FAIL', 'evidence_ids': []},
         ]
         verdict = agent.calculate_verdict(gate_results)
+        assert verdict == 'FAIL'
+
+    def test_blocked_takes_precedence_over_pass(self):
+        """BLOCKED takes precedence over PASS: PASS + BLOCKED → BLOCKED."""
+        agent = FinalGateAgent(Path('/test/repo'))
+        gate_results = [
+            {'gate_name': 'gate1', 'verdict': 'PASS', 'evidence_ids': []},
+            {'gate_name': 'gate2', 'verdict': 'BLOCKED', 'evidence_ids': []},
+        ]
+        verdict = agent.calculate_verdict(gate_results)
         assert verdict == 'BLOCKED'
+
+    def test_invalid_evidence_binding_blocks_execution_verdict(self):
+        """Invalid evidence binding in execute() forces BLOCKED verdict."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            run_dir = repo_root / '.project-ai' / 'runs' / 'test-run'
+            run_dir.mkdir(parents=True)
+            gates_dir = run_dir / 'gates'
+            gates_dir.mkdir(parents=True)
+            
+            # Write a PASS gate result
+            (gates_dir / 'gate1.json').write_text(json.dumps({
+                'gate_name': 'gate1',
+                'verdict': 'PASS',
+                'evidence_ids': ['ev-missing']
+            }))
+            
+            agents_dir = repo_root / '.agents' / 'tasks'
+            agents_dir.mkdir(parents=True)
+            (agents_dir / 'm1-m2-backlog.md').write_text('# Backlog\n')
+            
+            # Snapshot without ev-missing => binding invalid
+            snapshot = {
+                'canonicalHash': 'hash123',
+                'repository': {'commitSha': 'commit456'},
+                'evidence': []
+            }
+            
+            agent = FinalGateAgent(repo_root)
+            with patch.object(agent, 'derive_commit_sha', return_value='commit456'):
+                verdict = agent.execute(snapshot, run_dir, 'test-run')
+            
+            assert verdict.evidence_binding_valid is False
+            assert verdict.verdict == 'BLOCKED'
+

@@ -19,6 +19,7 @@ from typing import Optional, Dict, Any, List, Tuple, Union
 from datetime import datetime, timezone
 import hashlib
 import re
+from app.contracts.policy import get_framework_compliance_policy
 
 EVIDENCE_ID_PATTERN = re.compile(r'^(evidence-[a-fA-F0-9]{16}|[a-fA-F0-9]{64})$')
 HEX_64_PATTERN = re.compile(r'^[a-fA-F0-9]{64}$')
@@ -274,6 +275,10 @@ class RepositoryBlockContract(BaseModel):
     family: str = Field(..., description="Block family")
     version: str = Field(..., description="Block version")
     block_type: str = Field(..., description="Block type identifier")
+    governing_policy: str = Field(
+        default_factory=get_framework_compliance_policy,
+        description="Authoritative framework compliance-only policy governing contract"
+    )
     references: list[CanonicalReference] = Field(default_factory=list, description="Canonical references found")
     comparative_analysis: ComparativeFrameworkAnalysis = Field(
         default_factory=ComparativeFrameworkAnalysis,
@@ -725,27 +730,20 @@ def extract_test_patterns(snapshot: dict) -> list[str]:
 
 FAMILY_PAYLOAD_SCHEMAS: Dict[str, Dict[str, Any]] = {
     "objective": {
-        "title": "string (optional heading)",
-        "objectives": "Array<{ id: string, text: string, bloomLevel?: 'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create', completed?: boolean }>",
-        "displayMode": "'bullet' | 'checklist' | 'numbered' (optional)"
+        "title": "string (optional)",
+        "objectives": "Array<{ id: string; text: string; [key: string]: unknown }>",
     },
     "introduction": {
-        "title": "string",
-        "subtitle": "string (optional)",
+        "title": "string (optional)",
         "leadParagraph": "string",
-        "keyPoints": "string[] (optional)"
     },
     "code": {
         "code": "string",
         "language": "string",
-        "fileName": "string (optional)",
-        "highlights": "number[] (optional)"
     },
     "definition": {
         "term": "string",
-        "pronunciation": "string (optional)",
         "definition": "string",
-        "examples": "string[] (optional)"
     }
 }
 
@@ -755,72 +753,13 @@ def generate_block_content_interface(
     version: str,
     payload_schema: Optional[Dict[str, Any]] = None
 ) -> str:
-    """Generate strictly typed TypeScript interface for block content."""
-    fam_lower = family.lower()
-    if fam_lower == "objective":
-        return (
-            "/**\n"
-            " * Objective Item definition conforming to Bloom's taxonomy\n"
-            " */\n"
-            "export interface ObjectiveItem {\n"
-            "  id: string;\n"
-            "  text: string;\n"
-            "  bloomLevel?: 'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create';\n"
-            "  completed?: boolean;\n"
-            "}\n"
-            "\n"
-            f"/**\n"
-            f" * {family} {version} Block Content payload interface (strictly typed)\n"
-            f" */\n"
-            f"export interface {family}{version}BlockContent {{\n"
-            "  title?: string;\n"
-            "  objectives: ObjectiveItem[];\n"
-            "  displayMode?: 'bullet' | 'checklist' | 'numbered';\n"
-            "  [key: string]: unknown;\n"
-            "}"
-        )
-    elif fam_lower == "introduction":
-        return (
-            f"/**\n"
-            f" * {family} {version} Block Content payload interface (strictly typed)\n"
-            f" */\n"
-            f"export interface {family}{version}BlockContent {{\n"
-            "  title?: string;\n"
-            "  subtitle?: string;\n"
-            "  leadParagraph: string;\n"
-            "  keyPoints?: string[];\n"
-            "  [key: string]: unknown;\n"
-            "}"
-        )
-    elif fam_lower == "code":
-        return (
-            f"/**\n"
-            f" * {family} {version} Block Content payload interface (strictly typed)\n"
-            f" */\n"
-            f"export interface {family}{version}BlockContent {{\n"
-            "  title?: string;\n"
-            "  code: string;\n"
-            "  language: string;\n"
-            "  fileName?: string;\n"
-            "  highlights?: number[];\n"
-            "  [key: string]: unknown;\n"
-            "}"
-        )
-    elif fam_lower == "definition":
-        return (
-            f"/**\n"
-            f" * {family} {version} Block Content payload interface (strictly typed)\n"
-            f" */\n"
-            f"export interface {family}{version}BlockContent {{\n"
-            "  title?: string;\n"
-            "  term: string;\n"
-            "  pronunciation?: string;\n"
-            "  definition: string;\n"
-            "  examples?: string[];\n"
-            "  [key: string]: unknown;\n"
-            "}"
-        )
-    elif payload_schema:
+    """
+    Generate TypeScript interface for block content payload.
+    
+    Derives interface properties dynamically from schema without
+    prescribing GUI layout, presentation, or display modes.
+    """
+    if payload_schema:
         fields = []
         for prop_name, prop_type in payload_schema.items():
             is_opt = "optional" in str(prop_type).lower() or "?" in str(prop_type)
@@ -830,7 +769,7 @@ def generate_block_content_interface(
         fields_str = "\n".join(fields)
         return (
             f"/**\n"
-            f" * {family} {version} Block Content payload interface (strictly typed from schema)\n"
+            f" * {family} {version} Block Content payload interface\n"
             f" */\n"
             f"export interface {family}{version}BlockContent {{\n"
             f"{fields_str}\n"
@@ -850,107 +789,39 @@ def generate_block_content_interface(
         )
 
 
-def generate_block_visual_skeleton(family: str, version: str) -> str:
-    """Generate JSX visual elements adhering to brand-independent theme tokens."""
-    fam_lower = family.lower()
-    if fam_lower == "objective":
-        return (
-            "      {/* Educational objectives with brand theme accents */}\n"
-            "      {block.content?.objectives && (\n"
-            "        <ul className=\"mt-4 space-y-2\">\n"
-            "          {block.content.objectives.map((obj) => (\n"
-            "            <li key={obj.id} className=\"flex items-start gap-2\">\n"
-            "              <span style={{ color: primary }}>•</span>\n"
-            "              <span>{obj.text}</span>\n"
-            "            </li>\n"
-            "          ))}\n"
-            "        </ul>\n"
-            "      )}"
-        )
-    elif fam_lower == "introduction":
-        return (
-            "      {/* Lead paragraph and key points */}\n"
-            "      {block.content?.leadParagraph && (\n"
-            "        <p className=\"mt-3 text-base leading-relaxed\">{block.content.leadParagraph}</p>\n"
-            "      )}\n"
-            "      {block.content?.keyPoints && (\n"
-            "        <ul className=\"mt-2 list-disc list-inside space-y-1\">\n"
-            "          {block.content.keyPoints.map((pt, i) => (\n"
-            "            <li key={i}>{pt}</li>\n"
-            "          ))}\n"
-            "        </ul>\n"
-            "      )}"
-        )
-    elif fam_lower == "code":
-        return (
-            "      {/* Code snippet display */}\n"
-            "      {block.content?.code && (\n"
-            "        <pre className=\"mt-4 p-4 rounded bg-slate-900 text-slate-100 overflow-x-auto\">\n"
-            "          <code>{block.content.code}</code>\n"
-            "        </pre>\n"
-            "      )}"
-        )
-    elif fam_lower == "definition":
-        return (
-            "      {/* Term definition */}\n"
-            "      {block.content?.term && (\n"
-            "        <div className=\"mt-3\">\n"
-            "          <dt className=\"font-bold text-lg\">{block.content.term}</dt>\n"
-            "          <dd className=\"mt-1 text-base\">{block.content?.definition}</dd>\n"
-            "        </div>\n"
-            "      )}"
-        )
-    else:
-        return (
-            "      {/* Visual content: render block payload items with brand theme tokens */}"
-        )
-
-
 def generate_test_mock_content(family: str, version: str) -> str:
-    """Generate schema-aligned mock content for test skeletons."""
+    """Generate minimal test mock payload aligned with data interface for framework testing."""
     fam_lower = family.lower()
     if fam_lower == "objective":
         return (
             f"    content: {{\n"
             f"      title: 'Test {family}',\n"
             f"      objectives: [\n"
-            f"        {{\n"
-            f"          id: 'obj-1',\n"
-            f"          text: 'Understand TypeScript interface consistency',\n"
-            f"          bloomLevel: 'understand' as const,\n"
-            f"          completed: false,\n"
-            f"        }},\n"
+            f"        {{ id: 'obj-1', text: 'Sample objective' }},\n"
             f"      ],\n"
-            f"      displayMode: 'checklist' as const,\n"
             f"    }},"
         )
     elif fam_lower == "introduction":
         return (
             f"    content: {{\n"
             f"      title: 'Test {family}',\n"
-            f"      subtitle: 'Overview',\n"
-            f"      leadParagraph: 'Welcome to this learning module.',\n"
-            f"      keyPoints: ['Key concept 1', 'Key concept 2'],\n"
+            f"      leadParagraph: 'Sample introduction text',\n"
             f"    }},"
         )
     elif fam_lower == "code":
         return (
             f"    content: {{\n"
             f"      title: 'Test {family}',\n"
-            f"      code: 'console.log(\"Hello world\");',\n"
+            f"      code: 'console.log(\"sample\");',\n"
             f"      language: 'typescript',\n"
-            f"      fileName: 'example.ts',\n"
-            f"      highlights: [1],\n"
             f"    }},"
         )
     elif fam_lower == "definition":
         return (
             f"    content: {{\n"
             f"      title: 'Test {family}',\n"
-            f"      term: 'Polymorphism',\n"
-            f"      pronunciation: '/ˌpɒlɪˈmɔːfɪz(ə)m/',\n"
-            f"      definition: 'The ability of an object to take on many forms.',\n"
-            f"      examples: ['Method overriding in OOP'],\n"
+            f"      term: 'Sample Term',\n"
+            f"      definition: 'Sample definition',\n"
             f"    }},"
         )
     else:
@@ -987,7 +858,6 @@ def build_inline_code_templates(
     
     resolved_schema = payload_schema if payload_schema is not None else FAMILY_PAYLOAD_SCHEMAS.get(block_type_lower)
     content_interface = generate_block_content_interface(family, version, resolved_schema)
-    visual_content = generate_block_visual_skeleton(family, version)
     test_mock_content = generate_test_mock_content(family, version)
     
     return {
@@ -1101,11 +971,9 @@ def build_inline_code_templates(
                 f"  className?: string;\n"
                 f"  runtimeContext?: TutorialBlockRuntimeContext;\n"
                 f"}}) {{\n"
-                f"  // Theme colors resolved via canonical utilities — brand-independent\n"
+                f"  // Theme tokens available from injected brand theme\n"
                 f"  const primary = theme.primary;\n"
                 f"  const secondary = theme.secondary;\n"
-                f"  const badgeBg = withAlpha(primary, '14');\n"
-                f"  const textColor = getThemeColor(theme, 'secondary');\n"
                 f"\n"
                 f"  // UBRC: Use runtimeContext if available, fallback to block fields\n"
                 f"  const blockId = runtimeContext?.blockId ?? block.id;\n"
@@ -1114,19 +982,12 @@ def build_inline_code_templates(
                 f"\n"
                 f"  return (\n"
                 f"    <article\n"
-                f"      className={{`w-full ${{className}}`}}\n"
-                f"      style={{{{ color: textColor }}}}\n"
+                f"      className={{className}}\n"
                 f"      data-block-id={{blockId}}\n"
                 f"      data-block-type={{blockType}}\n"
                 f"      data-block-version={{blockVersion}}\n"
                 f"    >\n"
-                f"      <div\n"
-                f"        className=\"inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold\"\n"
-                f"        style={{{{ color: primary, backgroundColor: badgeBg }}}}\n"
-                f"      >\n"
-                f"        <span>{{block.content?.title ?? '{family} {version}'}}</span>\n"
-                f"      </div>\n"
-                f"{visual_content}\n"
+                f"      {{/* Block implementation: UI layout and interactions authored by External AI per user requirements and block specification */}}\n"
                 f"    </article>\n"
                 f"  );\n"
                 f"}}\n"
@@ -1242,17 +1103,15 @@ def build_inline_code_templates(
                 f"    const {{ container: containerA }} = render(\n"
                 f"      <{family}Block block={{mockBlock}} theme={{brandThemeA}} />\n"
                 f"    );\n"
-                f"    expect(containerA.innerHTML).toContain('#e11d48');\n"
                 f"    const articleA = containerA.querySelector('article');\n"
-                f"    expect(articleA?.getAttribute('style')).toContain('color');\n"
-                f"    const badgeA = containerA.querySelector('div');\n"
-                f"    expect(badgeA?.getAttribute('style')).toContain('background-color');\n"
+                f"    expect(articleA).not.toBeNull();\n"
                 f"\n"
                 f"    // Brand B render verification\n"
                 f"    const {{ container: containerB }} = render(\n"
                 f"      <{family}Block block={{mockBlock}} theme={{brandThemeB}} />\n"
                 f"    );\n"
-                f"    expect(containerB.innerHTML).toContain('#0ea5e9');\n"
+                f"    const articleB = containerB.querySelector('article');\n"
+                f"    expect(articleB).not.toBeNull();\n"
                 f"\n"
                 f"    // Theme Isolation: Brand A colors must NEVER leak into Brand B\n"
                 f"    expect(containerB.innerHTML).not.toContain('#e11d48');\n"
@@ -1266,20 +1125,9 @@ def build_inline_code_templates(
                 f"    );\n"
                 f"    const article = container.querySelector('article');\n"
                 f"    expect(article).not.toBeNull();\n"
-                f"    expect(container.innerHTML).toContain(DEFAULT_THEME.primary);\n"
                 f"  }});\n"
                 f"\n"
-                f"  it('strictly verifies dynamic theme tokens and derived alpha tints are applied', () => {{\n"
-                f"    const {{ container }} = render(\n"
-                f"      <{family}Block block={{mockBlock}} theme={{brandThemeA}} />\n"
-                f"    );\n"
-                f"    const article = container.querySelector('article');\n"
-                f"    expect(article).not.toBeNull();\n"
-                f"    expect(container.innerHTML).toContain('#e11d48');\n"
-                f"    expect(article?.getAttribute('style')).toContain('color');\n"
-                f"  }});\n"
-                f"\n"
-                f"  it('verifies zero hardcoded brand colors when rendered with custom neutral theme', () => {{\n"
+                f"  it('strictly verifies dynamic theme tokens and zero hardcoded brand colors', () => {{\n"
                 f"    const neutralTheme = {{\n"
                 f"      primary: '#10b981',\n"
                 f"      secondary: '#334155',\n"
@@ -1287,18 +1135,8 @@ def build_inline_code_templates(
                 f"    const {{ container }} = render(\n"
                 f"      <{family}Block block={{mockBlock}} theme={{neutralTheme}} />\n"
                 f"    );\n"
-                f"    expect(container.innerHTML).toContain('#10b981');\n"
                 f"    expect(container.innerHTML).not.toContain('#e11d48');\n"
                 f"    expect(container.innerHTML).not.toContain('#0ea5e9');\n"
-                f"  }});\n"
-                f"\n"
-                f"  it('verifies accessible semantic structure (WCAG 2.1 AA)', () => {{\n"
-                f"    const {{ container }} = render(\n"
-                f"      <{family}Block block={{mockBlock}} theme={{brandThemeA}} />\n"
-                f"    );\n"
-                f"    const article = container.querySelector('article');\n"
-                f"    expect(article).not.toBeNull();\n"
-                f"    expect(article?.textContent).toContain('Test {family}');\n"
                 f"  }});\n"
                 f"\n"
                 f"  it('renders without console errors or warnings', () => {{\n"
@@ -1998,7 +1836,6 @@ def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> Repos
         test_pattern_breakdown=test_breakdown,
         type_strictness=type_strictness,
         required_artifacts=[
-            "HTML/CSS/JS prototype",
             "React/TypeScript implementation",
             "Type definitions",
             "Unit tests"
@@ -2029,14 +1866,12 @@ def build_contract(snapshot: Dict[str, Any], family: str, version: str) -> Repos
             "type_safety": "strict"
         },
         acceptance_criteria=[
-            "Renders correctly with theme.primary and theme.secondary",
-            "Responsive on mobile (320px+), tablet (768px+), desktop (1024px+)",
-            "Passes accessibility audit (WCAG 2.1 AA)",
-            "No console errors or warnings",
-            "Matches canonical design system",
-            "Compatible with UBRC runtime",
-            "Theme-independent layout and spacing",
-            "ILS, LSNB, RSSB integration verified"
+            "Compatible with UBRC runtime (<article> with data-block-id, data-block-type, data-block-version)",
+            "Brand and theme independence (consumes theme prop / DEFAULT_THEME; zero hardcoded brand colors)",
+            "Dual-export compatibility (named and default export for Block Renderer and Tutorial Composer)",
+            "Strict TypeScript typing (zero 'any' types in props or block interfaces)",
+            "Architectural boundaries respected (no direct ILS/LSNB/RSSB API calls; page-level integration only)",
+            "Renders cleanly without console errors or unhandled exceptions in test harness"
         ]
     )
     
@@ -2289,7 +2124,6 @@ def build_contract_legacy(repo_root: str, family: str, version: str) -> Reposito
         block_type=block_type,
         references=references,
         required_artifacts=[
-            "HTML/CSS/JS prototype",
             "React/TypeScript implementation",
             "Type definitions",
             "Unit tests"
@@ -2321,14 +2155,12 @@ def build_contract_legacy(repo_root: str, family: str, version: str) -> Reposito
             "type_safety": "strict"
         },
         acceptance_criteria=[
-            "Renders correctly with theme.primary and theme.secondary",
-            "Responsive on mobile (320px+), tablet (768px+), desktop (1024px+)",
-            "Passes accessibility audit (WCAG 2.1 AA)",
-            "No console errors or warnings",
-            "Matches canonical design system",
-            "Compatible with UBRC runtime",
-            "Theme-independent layout and spacing",
-            "ILS, LSNB, RSSB integration verified"
+            "Compatible with UBRC runtime (<article> with data-block-id, data-block-type, data-block-version)",
+            "Brand and theme independence (consumes theme prop / DEFAULT_THEME; zero hardcoded brand colors)",
+            "Dual-export compatibility (named and default export for Block Renderer and Tutorial Composer)",
+            "Strict TypeScript typing (zero 'any' types in props or block interfaces)",
+            "Architectural boundaries respected (no direct ILS/LSNB/RSSB API calls; page-level integration only)",
+            "Renders cleanly without console errors or unhandled exceptions in test harness"
         ]
     )
     

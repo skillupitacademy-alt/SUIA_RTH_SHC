@@ -381,10 +381,9 @@ class TestAgentCoordinator:
         sample_context.workflow_state = {
             "candidate": {
                 "files": [
-                    {"name": "prototype.html", "sha256": "hash1"},
-                    {"name": "implementation.tsx", "sha256": "hash2"},
+                    {"name": "IntroductionI7Block.tsx", "sha256": "hash2"},
                     {"name": "types.ts", "sha256": "hash3"},
-                    {"name": "test.spec.ts", "sha256": "hash4"},
+                    {"name": "IntroductionI7Block.test.tsx", "sha256": "hash4"},
                 ]
             },
             "target": {
@@ -410,7 +409,6 @@ class TestAgentCoordinator:
                     }
                 ],
                 "required_artifacts": [
-                    "HTML/CSS/JS prototype",
                     "React/TypeScript implementation",
                     "Type definitions",
                     "Unit tests"
@@ -511,7 +509,7 @@ class TestAgentCoordinator:
                         ]
                     }
                 ],
-                "required_artifacts": ["HTML/CSS/JS prototype"],
+                "required_artifacts": ["React/TypeScript implementation"],
                 "runtime": {
                     "entry_point": "IntroductionBlock",
                     "dependencies": []

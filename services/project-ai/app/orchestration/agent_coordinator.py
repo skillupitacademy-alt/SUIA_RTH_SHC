@@ -15,6 +15,7 @@ from collections import defaultdict
 
 from app.orchestration.agent_registry import Agent, AgentType, AgentRegistry
 from app.verification import brand, theme, composer, runtime, browser
+from app.contracts.policy import get_framework_compliance_policy
 
 
 class AgentStatus(str, Enum):
@@ -40,6 +41,7 @@ class AgentContext:
     prior_agent_outputs: Dict[str, 'AgentResult']
     repository_root: Path
     timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
+    governing_policy: str = field(default_factory=get_framework_compliance_policy)
 
 
 @dataclass

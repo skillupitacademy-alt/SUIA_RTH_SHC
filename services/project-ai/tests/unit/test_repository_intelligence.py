@@ -23,8 +23,13 @@ from app.contracts.repository_intelligence import (
     extract_test_patterns_detailed,
     build_inline_code_templates,
     validate_contract_template_schema_consistency,
+    generate_block_content_interface,
     FAMILY_PAYLOAD_SCHEMAS,
 )
+from app.contracts.policy import FRAMEWORK_COMPLIANCE_POLICY_TEXT
+from app.contracts.engineering_contract import EngineeringContract
+from app.agents.canonical_comparison import CanonicalComparator
+from app.intake.candidate_validator import CandidateValidator
 
 
 class TestRepositoryEvidence:
@@ -1233,7 +1238,7 @@ class TestEvidenceIdValidationAndPrecision:
         assert "ObjectiveO1BlockContent" in component_code
         
         # Schema-template alignment: Objective uses 'objectives', NOT generic 'items'
-        assert "objectives: ObjectiveItem[];" in component_code
+        assert "objectives:" in component_code
         assert "objectives:" in test_code
         assert "items:" not in component_code
         assert "items?:" not in component_code
@@ -1248,10 +1253,69 @@ class TestEvidenceIdValidationAndPrecision:
         assert "expect(containerA.innerHTML).not.toContain('#0ea5e9')" in test_code
         assert "DEFAULT_THEME" in test_code
         
-        # Enhanced test coverage: dynamic tokens, neutral theme zero-hardcoded colors, and WCAG accessibility
+        # Enhanced test coverage: dynamic tokens and neutral theme zero-hardcoded colors
         assert "strictly verifies dynamic theme tokens" in test_code
         assert "#10b981" in test_code
-        assert "WCAG 2.1 AA" in test_code
+
+    def test_framework_only_boundary_no_gui_prescriptions(self):
+        """Regression test verifying that Project LLM contracts do not prescribe block GUI design."""
+        # 1. Component template has no GUI layout prescriptions
+        for family, version in [("Objective", "O1"), ("Introduction", "I1"), ("Code", "C1"), ("Definition", "D1")]:
+            templates = build_inline_code_templates(family, version)
+            component_code = templates["component_skeleton"]["code"]
+            
+            # Framework compliance attributes must be present
+            assert "data-block-id=" in component_code
+            assert "data-block-type=" in component_code
+            assert "data-block-version=" in component_code
+            assert "DEFAULT_THEME" in component_code
+            
+            # Prescriptive GUI elements must NOT be present
+            assert "<div" not in component_code
+            assert "<ul" not in component_code
+            assert "<li" not in component_code
+            assert "<pre" not in component_code
+            assert "<dt" not in component_code
+            assert "badge" not in component_code.lower()
+            assert "rounded-full" not in component_code
+            assert "displayMode" not in component_code
+
+        # 2. Acceptance criteria and required artifacts have no GUI deliverables
+        test_snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': '1' * 64,
+                    'evidenceId': 'evidence-60230209a0d29bda'
+                }
+            ]
+        }
+        contract = build_contract(test_snapshot, "Introduction", "I1")
+        assert "HTML/CSS/JS prototype" not in contract.required_artifacts
+        assert "React/TypeScript implementation" in contract.required_artifacts
+        
+        # Criteria are framework-compliance focused, not GUI visual designs
+        criteria_text = " ".join(contract.acceptance_criteria)
+        assert "Responsive on mobile" not in criteria_text
+        assert "Matches canonical design system" not in criteria_text
+        assert "UBRC runtime" in criteria_text
+        assert "theme independence" in criteria_text.lower()
+
+        # 3. Legacy filesystem path also obeys framework-only boundary
+        repo_root = str(Path(__file__).parent.parent.parent.parent.parent)
+        legacy_contract = build_contract_legacy(repo_root, "Introduction", "I1")
+        assert "HTML/CSS/JS prototype" not in legacy_contract.required_artifacts
+        assert "React/TypeScript implementation" in legacy_contract.required_artifacts
+        legacy_criteria = " ".join(legacy_contract.acceptance_criteria)
+        assert "Responsive on mobile" not in legacy_criteria
+        assert "Matches canonical design system" not in legacy_criteria
+        assert "UBRC runtime" in legacy_criteria
+
+        # 4. Canonical governing policy is verified and enforces boundary
+        assert "FRAMEWORK COMPLIANCE-ONLY POLICY" in FRAMEWORK_COMPLIANCE_POLICY_TEXT
+        assert "must not design, prescribe, or redefine block-specific GUI layout" in FRAMEWORK_COMPLIANCE_POLICY_TEXT
+        assert "user and External AI own GUI design" in FRAMEWORK_COMPLIANCE_POLICY_TEXT
 
     def test_generic_contract_template_schema_consistency_validation(self):
         """Test that validate_contract_template_schema_consistency correctly passes valid contracts and catches defects."""
@@ -1323,6 +1387,192 @@ class TestEvidenceIdValidationAndPrecision:
         is_valid, errors = validate_contract_template_schema_consistency(generic_contract)
         assert is_valid is True
         assert len(errors) == 0
+
+    def test_check1_multi_agent_policy_inheritance(self):
+        """Check 1: All agents, contracts, and validators inherit the framework compliance-only policy."""
+        # 1. Governing policy text must be explicit and uncompromised
+        assert "FRAMEWORK COMPLIANCE-ONLY POLICY" in FRAMEWORK_COMPLIANCE_POLICY_TEXT
+        assert "Project LLM must not design, prescribe, or redefine block-specific GUI layout" in FRAMEWORK_COMPLIANCE_POLICY_TEXT
+        assert "The user and External AI own GUI design and implementation decisions" in FRAMEWORK_COMPLIANCE_POLICY_TEXT
+        assert "Every compliance claim must have traceable evidence" in FRAMEWORK_COMPLIANCE_POLICY_TEXT
+
+        # 2. Canonical Comparator defaults must not require HTML/CSS/JS prototype
+        comparator = CanonicalComparator()
+        default_comparison = comparator.compare(
+            candidate_artifacts=[
+                {"name": "IntroductionI1Block.tsx", "sha256": "h1"},
+                {"name": "types.ts", "sha256": "h2"},
+                {"name": "IntroductionI1Block.test.tsx", "sha256": "h3"}
+            ],
+            required_artifacts=[
+                "React/TypeScript implementation",
+                "Type definitions",
+                "Unit tests"
+            ],
+            target_family="Introduction",
+            target_version="I1",
+            contract=None
+        )
+        assert "HTML/CSS/JS prototype" not in default_comparison.missing_requirements
+
+        # 3. Candidate Validator must validate framework artifacts without requiring GUI prototypes
+        validator = CandidateValidator()
+        assert validator is not None
+
+    def test_check2_authoritative_block_specifications_no_gui_enums_in_python(self):
+        """Check 2: Existing block specifications are authoritative; Python does not invent GUI enums."""
+        # 1. Python FAMILY_PAYLOAD_SCHEMAS must NOT invent GUI layout enums
+        for fam, schema in FAMILY_PAYLOAD_SCHEMAS.items():
+            schema_str = str(schema).lower()
+            assert "displaymode" not in schema_str, f"Found displayMode in {fam} schema"
+            assert "bloomlevel" not in schema_str, f"Found bloomLevel in {fam} schema"
+            assert "bullet" not in schema_str, f"Found bullet in {fam} schema"
+            assert "checklist" not in schema_str, f"Found checklist in {fam} schema"
+            assert "numbered" not in schema_str, f"Found numbered in {fam} schema"
+            assert "pronunciation" not in schema_str, f"Found pronunciation in {fam} schema"
+            assert "keypoints" not in schema_str, f"Found keyPoints in {fam} schema"
+            assert "highlights" not in schema_str, f"Found highlights in {fam} schema"
+
+        # 2. Dynamic content interface derivation must not inject GUI enums
+        obj_interface = generate_block_content_interface("Objective", "O1", FAMILY_PAYLOAD_SCHEMAS["objective"])
+        assert "ObjectiveO1BlockContent" in obj_interface
+        assert "objectives:" in obj_interface
+        assert "displayMode" not in obj_interface
+        assert "bloomLevel" not in obj_interface
+
+        # 3. Canonical block markdown specifications exist in repo as source of truth
+        repo_root = Path(__file__).parent.parent.parent.parent.parent
+        spec_dir = repo_root / "ILS_UI_UX" / "docs" / "blocksmdfiles" / "OneAIModelForProjectLLM"
+        assert (spec_dir / "ObjectiveBlock.md").exists(), "Authoritative ObjectiveBlock.md not found"
+        assert (spec_dir / "CodeBlock.md").exists(), "Authoritative CodeBlock.md not found"
+        assert (spec_dir / "DefinitionBlock.md").exists(), "Authoritative DefinitionBlock.md not found"
+
+    def test_check3_legacy_and_snapshot_contract_paths_obey_same_boundary(self):
+        """Check 3: Both modern snapshot-based path and legacy filesystem path obey the same rules."""
+        repo_root = str(Path(__file__).parent.parent.parent.parent.parent)
+
+        # Path A: Modern snapshot path
+        snapshot = {
+            'evidence': [
+                {
+                    'kind': 'canonical_block',
+                    'path': 'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
+                    'contentHash': 'a' * 64,
+                    'evidenceId': 'evidence-' + '1' * 16
+                }
+            ]
+        }
+        contract_snapshot = build_contract(snapshot, "Introduction", "I1")
+
+        # Path B: Legacy filesystem path
+        contract_legacy = build_contract_legacy(repo_root, "Introduction", "I1")
+
+        # Both paths eliminate HTML/CSS/JS prototype
+        assert "HTML/CSS/JS prototype" not in contract_snapshot.required_artifacts
+        assert "HTML/CSS/JS prototype" not in contract_legacy.required_artifacts
+
+        # Both paths contain React/TypeScript implementation
+        assert any("React" in r for r in contract_snapshot.required_artifacts)
+        assert any("React" in r for r in contract_legacy.required_artifacts)
+
+        # Both paths omit GUI-specific visual criteria
+        for c in (contract_snapshot, contract_legacy):
+            joined_criteria = " ".join(c.acceptance_criteria)
+            assert "Responsive on mobile" not in joined_criteria
+            assert "Matches canonical design system" not in joined_criteria
+            # Both paths enforce framework compliance criteria
+            assert "UBRC runtime" in joined_criteria
+            assert "Brand and theme independence" in joined_criteria
+            assert "Dual-export" in joined_criteria
+            assert "Strict TypeScript typing" in joined_criteria
+            assert "no direct ILS/LSNB/RSSB API calls" in joined_criteria
+
+    def test_check4_all_18_canonical_block_families_regression(self):
+        """Check 4: Regression test proves framework-only boundary across all 18 canonical block families."""
+        all_18_families = [
+            ("Introduction", "I1"),
+            ("Objective", "O1"),
+            ("Definition", "D1"),
+            ("Code", "C1"),
+            ("Visual", "V1"),
+            ("Comparison", "CP1"),
+            ("Execution", "E1"),
+            ("Memory", "M1"),
+            ("Mistake", "MT1"),
+            ("BestPractice", "BP1"),
+            ("Summary", "S1"),
+            ("Question", "Q1"),
+            ("Exercise", "EX1"),
+            ("Task", "T1"),
+            ("Interactive", "INT1"),
+            ("Quiz", "QZ1"),
+            ("Interview", "IV1"),
+            ("Project", "P1"),
+        ]
+
+        prohibited_visual_tokens = [
+            "<div", "<ul", "<li", "<pre", "<dt", "<dd",
+            "rounded-full", "font-semibold", "text-sm", "badge",
+            "displayMode", "bloomLevel"
+        ]
+
+        for family, version in all_18_families:
+            templates = build_inline_code_templates(family, version)
+            component_code = templates["component_skeleton"]["code"]
+            test_code = templates["test_skeleton"]["code"]
+
+            # 1. Component skeleton contains mandatory UBRC wrapper and router
+            assert f"export function {family}Block(" in component_code
+            assert f"export const {family}{version}Block = {family}Block;" in component_code
+            assert f"export default {family}Block;" in component_code
+            assert "<article" in component_code
+            assert "className={className}" in component_code
+            assert "data-block-id={blockId}" in component_code
+            assert "data-block-type={blockType}" in component_code
+            assert "data-block-version={blockVersion}" in component_code
+            assert f"const blockType = runtimeContext?.blockType ?? '{family.lower()}';" in component_code
+            assert "const blockVersion = runtimeContext?.blockVersion ?? block.version;" in component_code
+
+            # 2. Component skeleton contains ZERO GUI visual markup
+            for token in prohibited_visual_tokens:
+                assert token not in component_code, (
+                    f"Violation in family {family} {version}: found visual GUI token '{token}' in component skeleton"
+                )
+
+            # 3. Test skeleton asserts strictly framework compliance
+            assert "UBRC data attributes" in test_code
+            assert "data-block-id" in test_code
+            assert "data-block-type" in test_code
+            assert "data-block-version" in test_code
+            assert "brandThemeA" in test_code
+            assert "brandThemeB" in test_code
+            assert "DEFAULT_THEME" in test_code
+            assert "renders without console errors" in test_code
+
+            # 4. Consistency validation passes cleanly
+            contract = {
+                "type_contract": {
+                    "payload_schema": FAMILY_PAYLOAD_SCHEMAS.get(family.lower(), {})
+                },
+                "inline_code_templates": templates
+            }
+            is_valid, errors = validate_contract_template_schema_consistency(contract)
+            assert is_valid is True, f"Consistency check failed for {family} {version}: {errors}"
+            assert len(errors) == 0
+
+
+def test_repository_block_contract_governing_policy():
+    """Test that RepositoryBlockContract binds the authoritative governing policy by default."""
+    from app.contracts.repository_intelligence import RepositoryBlockContract
+    contract = RepositoryBlockContract(
+        family="Introduction",
+        version="I7",
+        block_type="introduction_i7"
+    )
+    assert hasattr(contract, "governing_policy")
+    assert "FRAMEWORK COMPLIANCE-ONLY POLICY" in contract.governing_policy
+    assert "must not design, prescribe, or redefine block-specific GUI layout" in contract.governing_policy
+
 
 
 

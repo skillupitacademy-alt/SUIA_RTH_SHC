@@ -201,10 +201,10 @@ class TestFinalGateController:
         assert result.evidence_summary == evidence
         assert result.evidence_summary["certification_gates"]["details"] == "ok"
     
-    def test_non_dict_evidence_values_not_checked_for_status(self):
+    def test_malformed_non_dict_evidence_values_evaluated_as_blocked(self):
         """
-        Non-dict evidence values (strings, lists, etc.) are not checked
-        for status, so they don't trigger FAIL/BLOCKED.
+        Non-dict evidence values (strings, lists, etc.) or records with missing/invalid status
+        for mandatory gates are rejected as BLOCKED (fail closed).
         """
         controller = FinalGateController()
         
@@ -217,10 +217,26 @@ class TestFinalGateController:
         
         result = controller.compute_verdict('wf-011', evidence)
         
-        # Non-dict values are present (not missing) but don't have status
-        # So no FAIL/BLOCKED from status checks
-        assert result.verdict == "CERTIFICATION_READY"
-        assert result.missing_evidence == []
+        assert result.verdict == "BLOCKED"
+        assert "malformed_required_evidence" in result.reason
+
+    def test_missing_or_invalid_status_evaluated_as_blocked(self):
+        """
+        Mandatory evidence records with missing or unknown status are rejected as BLOCKED.
+        """
+        controller = FinalGateController()
+        
+        evidence = {
+            "certification_gates": {"status": "UNKNOWN"},
+            "runtime_verification": {"status": "PASS"},
+            "canonical_comparison": {"status": "PASS"},
+            "placement_approval": {"status": "PASS"},
+        }
+        
+        result = controller.compute_verdict('wf-011b', evidence)
+        assert result.verdict == "BLOCKED"
+        assert "malformed_required_evidence" in result.reason
+
     
     def test_extra_evidence_keys_ignored(self):
         """Extra evidence keys beyond required ones are safely ignored."""
@@ -347,3 +363,56 @@ class TestInvariantEnforcement:
         # Maximum verdict is CERTIFICATION_READY, not CERTIFIED
         assert result.verdict == "CERTIFICATION_READY"
         assert 'awaiting_human_gate_2' in result.reason.lower()
+
+    def test_runtime_verification_deferred_checks_blocks_without_browser_verification(self):
+        """Deferred runtime checks (route, console, network) block when browser verification is absent."""
+        controller = FinalGateController()
+        evidence = {
+            "certification_gates": {"status": "PASS"},
+            "runtime_verification": {
+                "status": "PASS",
+                "deferred_checks": ["route_navigation", "console_errors", "network_errors"]
+            },
+            "canonical_comparison": {"status": "PASS"},
+            "placement_approval": {"status": "PASS"},
+        }
+        result = controller.compute_verdict('wf-deferred-1', evidence)
+        assert result.verdict == "BLOCKED"
+        assert "runtime_verification" in result.blocked_gates
+        assert "runtime_verification_incomplete" in result.reason
+
+    def test_runtime_verification_deferred_checks_passes_with_browser_verification(self):
+        """Deferred runtime checks are unblocked when browser verification passes."""
+        controller = FinalGateController()
+        evidence = {
+            "certification_gates": {"status": "PASS"},
+            "runtime_verification": {
+                "status": "PASS",
+                "deferred_checks": ["route_navigation", "console_errors", "network_errors"]
+            },
+            "browser_verification": {"status": "PASS"},
+            "canonical_comparison": {"status": "PASS"},
+            "placement_approval": {"status": "PASS"},
+        }
+        result = controller.compute_verdict('wf-deferred-2', evidence)
+        assert result.verdict == "CERTIFICATION_READY"
+        assert result.blocked_gates == []
+
+
+class TestFinalGateAgentFailClosed:
+    """Test FinalGateAgent fail-closed behavior."""
+
+    def test_calculate_verdict_empty_gates_returns_blocked(self, tmp_path):
+        """Empty gate results must fail closed to BLOCKED, never PASS."""
+        from app.agents.final_gate import FinalGateAgent
+        agent = FinalGateAgent(tmp_path)
+        verdict = agent.calculate_verdict([])
+        assert verdict == "BLOCKED"
+
+    def test_calculate_verdict_mixed_unhandled_returns_blocked(self, tmp_path):
+        """Mixed or unhandled gate results must fail closed to BLOCKED."""
+        from app.agents.final_gate import FinalGateAgent
+        agent = FinalGateAgent(tmp_path)
+        verdict = agent.calculate_verdict([{"gate": "g1", "verdict": "UNKNOWN"}])
+        assert verdict == "BLOCKED"
+

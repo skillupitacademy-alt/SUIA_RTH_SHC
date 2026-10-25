@@ -11,6 +11,10 @@ from .repository_intelligence import (
     RepositoryBlockContract,
     build_contract,
 )
+from .policy import (
+    FRAMEWORK_COMPLIANCE_POLICY_TEXT,
+    get_framework_compliance_policy,
+)
 
 __all__ = [
     "RepositoryEvidence",
@@ -18,4 +22,6 @@ __all__ = [
     "RuntimeContract",
     "RepositoryBlockContract",
     "build_contract",
+    "FRAMEWORK_COMPLIANCE_POLICY_TEXT",
+    "get_framework_compliance_policy",
 ]

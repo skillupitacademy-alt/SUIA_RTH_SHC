@@ -21,6 +21,7 @@ import hashlib
 from pydantic import BaseModel, Field
 from typing import Optional
 from .repository_intelligence import CanonicalReference, RuntimeContract
+from .policy import get_framework_compliance_policy
 from ..models.workflow_target import WorkflowTarget
 
 
@@ -149,6 +150,12 @@ class EngineeringContract(BaseModel):
             "These are generic across ALL block types — only the visual content inside "
             "the <article> wrapper changes per block."
         )
+    )
+    
+    # Canonical governing policy
+    governing_policy: str = Field(
+        default_factory=get_framework_compliance_policy,
+        description="Project LLM framework compliance-only policy governing contract scope"
     )
     
     # Immutability verification

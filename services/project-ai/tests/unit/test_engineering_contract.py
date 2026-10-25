@@ -75,7 +75,7 @@ def sample_engineering_contract(sample_workflow_target, sample_canonical_referen
         ils_contract={"passive_integration": True},
         lsnb_contract={"page_level_only": True},
         rssb_contract={"page_level_only": True},
-        required_artifacts=["HTML/CSS/JS prototype", "React/TypeScript implementation"],
+        required_artifacts=["React/TypeScript implementation", "Type definitions", "Unit tests"],
         tests_required=["Unit tests", "Accessibility tests"],
         acceptance_criteria=["Renders correctly", "No console errors"],
         prohibited_behaviors=PROHIBITED_BEHAVIORS,
@@ -97,6 +97,9 @@ class TestEngineeringContractConstruction:
         assert contract.contract_version == "1.0"
         assert len(contract.canonical_references) == 1
         assert contract.canonical_references[0].family == "Introduction"
+        assert "FRAMEWORK COMPLIANCE-ONLY POLICY" in contract.governing_policy
+        assert "must not design, prescribe, or redefine block-specific GUI layout" in contract.governing_policy
+        assert "user and External AI own GUI design" in contract.governing_policy
     
     def test_engineering_contract_with_defaults(self, sample_workflow_target):
         """Test that EngineeringContract uses default values correctly."""
@@ -119,6 +122,7 @@ class TestEngineeringContractConstruction:
         assert contract.prohibited_behaviors == []
         assert contract.contract_hash == ""
         assert isinstance(contract.runtime_contract, RuntimeContract)
+        assert "FRAMEWORK COMPLIANCE-ONLY POLICY" in contract.governing_policy
     
     def test_engineering_contract_missing_required_field(self, sample_workflow_target):
         """Test that EngineeringContract requires all mandatory fields."""

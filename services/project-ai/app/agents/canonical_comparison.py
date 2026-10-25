@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from app.orchestration.agent_coordinator import AgentContext, AgentResult, AgentStatus
 from app.contracts.repository_intelligence import RepositoryBlockContract
+from app.contracts.policy import get_framework_compliance_policy
 from app.models.workflow_target import WorkflowTarget
 
 
@@ -216,20 +217,16 @@ class CanonicalComparator:
         requirement_lower = requirement.lower()
         
         # Map requirements to file-related keywords
-        if "html" in requirement_lower:
-            keywords.extend(["html", ".html", "prototype"])
-        if "css" in requirement_lower:
-            keywords.extend(["css", ".css", "style"])
-        if "js" in requirement_lower or "javascript" in requirement_lower:
-            keywords.extend(["js", ".js", "script"])
-        if "prototype" in requirement_lower:
-            keywords.extend(["prototype", "html"])
-        if "react" in requirement_lower or "typescript" in requirement_lower:
+        if "react" in requirement_lower or "typescript" in requirement_lower or "component" in requirement_lower:
             keywords.extend(["tsx", ".tsx", "ts", ".ts", "react", "component", "implementation"])
         if "type" in requirement_lower and "definition" in requirement_lower:
             keywords.extend(["type", ".ts", "types", ".d.ts"])
+        if "schema" in requirement_lower:
+            keywords.extend(["schema", ".ts", "schema.ts"])
         if "test" in requirement_lower or "unit" in requirement_lower:
             keywords.extend(["test", ".test", ".spec", "spec"])
+        if "doc" in requirement_lower:
+            keywords.extend(["doc", "docs", "readme", ".md"])
         
         return keywords if keywords else [requirement_lower]
     
@@ -306,9 +303,8 @@ async def execute_canonical_comparison(context: AgentContext) -> AgentResult:
         if contract:
             required_artifacts = contract.required_artifacts
         else:
-            # Default required artifacts
+            # Default required artifacts (framework compliance only)
             required_artifacts = [
-                "HTML/CSS/JS prototype",
                 "React/TypeScript implementation",
                 "Type definitions",
                 "Unit tests"

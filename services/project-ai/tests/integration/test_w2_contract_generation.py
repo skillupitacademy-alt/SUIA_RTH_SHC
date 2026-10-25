@@ -73,19 +73,19 @@ def mock_snapshot():
                 "kind": "canonical_block",
                 "path": "packages/ui/src/tutorial/blocks/IntroductionBlock.tsx",
                 "contentHash": "a" * 64,
-                "evidenceId": "evidence-intro-001",
+                "evidenceId": "evidence-" + "a" * 16,
             },
             {
                 "kind": "test",
                 "path": "packages/ui/src/tutorial/blocks/__tests__/IntroductionBlock.test.tsx",
                 "contentHash": "b" * 64,
-                "evidenceId": "evidence-intro-test-001",
+                "evidenceId": "evidence-" + "b" * 16,
             },
             {
                 "kind": "config",
                 "path": "tsconfig.json",
                 "contentHash": "c" * 64,
-                "evidenceId": "evidence-tsconfig-001",
+                "evidenceId": "evidence-" + "c" * 16,
             },
         ],
     }
