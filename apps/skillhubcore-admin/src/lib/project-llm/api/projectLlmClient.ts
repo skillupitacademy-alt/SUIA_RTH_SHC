@@ -11,6 +11,8 @@
 import type {
   CanonicalWorkflowState,
   CandidateResponse,
+  PlacementExecutionResult,
+  PlacementManifest,
   ApprovalResponse,
   CertificationStatus,
   RuntimeVerificationResponse,
@@ -259,6 +261,64 @@ export class ProjectLlmClient {
         candidateId: res.candidateId || payload.candidateId,
         status: res.status || 'uploaded',
       };
+    } catch (error) {
+      if (error instanceof ProjectLlmError) {
+        throw error;
+      }
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to connect to server. Check your network connection.'
+      );
+    }
+  }
+
+  /** Retrieve a persisted, server-generated placement manifest. */
+  async getPlacementManifest(candidateId: string): Promise<PlacementManifest> {
+    return this.requestJson<PlacementManifest>(
+      `/candidates/${encodeURIComponent(candidateId)}/manifest`,
+      { method: 'GET' }
+    );
+  }
+
+  /**
+   * Generate a manifest from the stored candidate and canonical repository snapshot.
+   * This does not approve or execute repository mutations.
+   */
+  async generatePlacementManifest(candidateId: string): Promise<PlacementManifest> {
+    return this.requestJson<PlacementManifest>(
+      `/candidates/${encodeURIComponent(candidateId)}/manifest`,
+      { method: 'POST' }
+    );
+  }
+
+  /**
+   * Execute a placement that the backend has already independently approved.
+   * The backend verifies approval and all candidate/manifest bindings again.
+   */
+  async executeApprovedPlacement(candidateId: string): Promise<PlacementExecutionResult> {
+    return this.requestJson<PlacementExecutionResult>(
+      `/candidates/${encodeURIComponent(candidateId)}/execute`,
+      { method: 'POST' }
+    );
+  }
+
+  private async requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(init.headers || {}),
+        },
+        credentials: 'same-origin',
+        ...init,
+      });
+
+      if (!response.ok) {
+        await handleFetchError(response);
+      }
+
+      return response.json() as Promise<T>;
     } catch (error) {
       if (error instanceof ProjectLlmError) {
         throw error;

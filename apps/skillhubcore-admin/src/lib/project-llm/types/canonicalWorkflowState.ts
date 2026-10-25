@@ -60,6 +60,28 @@ export type CandidateResponse = {
   status: string;
 };
 
+export type PlacementManifest = {
+  manifestId: string;
+  candidateId: string;
+  decision: 'ADD' | 'UPDATE' | 'EXTEND' | 'REUSE' | 'REJECT';
+  targetPath: string;
+  blockFamily: string;
+  blockVersion: string;
+  requiredChanges: string[];
+  evidenceIds: string[];
+  manifestHash: string;
+  createdAt: string;
+};
+
+export type PlacementExecutionResult = {
+  status: string;
+  action: string;
+  targetPath: string;
+  branch?: string;
+  commit?: string;
+  [key: string]: unknown;
+};
+
 export type ApprovalResponse = {
   approved: boolean;
   workflowId: string;

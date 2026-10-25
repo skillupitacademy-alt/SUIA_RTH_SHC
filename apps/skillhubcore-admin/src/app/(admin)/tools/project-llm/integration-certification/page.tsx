@@ -20,7 +20,13 @@ import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
 import { projectLlmClient, ProjectLlmError } from '@/lib/project-llm/api/projectLlmClient';
-import type { CertificationStatus, RuntimeHealthStatus, BrowserVerificationStatus } from '@/lib/project-llm/types/canonicalWorkflowState';
+import type {
+  CertificationStatus,
+  RuntimeHealthStatus,
+  BrowserVerificationStatus,
+  PlacementExecutionResult,
+  PlacementManifest,
+} from '@/lib/project-llm/types/canonicalWorkflowState';
 
 type CertTab = 'repo' | 'tests' | 'composer' | 'runtime' | 'cert';
 
@@ -28,12 +34,17 @@ export default function IntegrationCertificationPage() {
   const { state } = useProjectLlm();
   const searchParams = useSearchParams();
   const workflowId = searchParams.get('workflowId') || state.workflowId;
+  const candidateId = searchParams.get('candidateId');
   
   const [activeTab, setActiveTab] = useState<CertTab>('repo');
   const [certificationData, setCertificationData] = useState<CertificationStatus | null>(null);
   const [runtimeHealth, setRuntimeHealth] = useState<RuntimeHealthStatus | null>(null);
   const [browserVerification, setBrowserVerification] = useState<BrowserVerificationStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [manifest, setManifest] = useState<PlacementManifest | null>(null);
+  const [placementResult, setPlacementResult] = useState<PlacementExecutionResult | null>(null);
+  const [isPlanning, setIsPlanning] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Extracted fetch function to avoid duplication
@@ -68,8 +79,47 @@ export default function IntegrationCertificationPage() {
     fetchCertificationData();
   }, [workflowId]);
 
+  useEffect(() => {
+    if (!candidateId) {
+      setManifest(null);
+      return;
+    }
+
+    projectLlmClient.getPlacementManifest(candidateId)
+      .then(setManifest)
+      .catch(() => setManifest(null));
+  }, [candidateId]);
+
   const handleRetry = () => {
     fetchCertificationData();
+  };
+
+  const handleGenerateManifest = async () => {
+    if (!candidateId) return;
+    setError(null);
+    setIsPlanning(true);
+    try {
+      setManifest(await projectLlmClient.generatePlacementManifest(candidateId));
+      await fetchCertificationData();
+    } catch (err) {
+      setError(err instanceof ProjectLlmError ? err.message : 'Unable to generate placement manifest.');
+    } finally {
+      setIsPlanning(false);
+    }
+  };
+
+  const handleExecutePlacement = async () => {
+    if (!candidateId) return;
+    setError(null);
+    setIsExecuting(true);
+    try {
+      setPlacementResult(await projectLlmClient.executeApprovedPlacement(candidateId));
+      await fetchCertificationData();
+    } catch (err) {
+      setError(err instanceof ProjectLlmError ? err.message : 'Unable to execute approved placement.');
+    } finally {
+      setIsExecuting(false);
+    }
   };
 
   const familyName = certificationData?.targetFamily || state.familyName || 'Introduction';
@@ -193,6 +243,61 @@ export default function IntegrationCertificationPage() {
                   </span>
                 </div>
               </div>
+
+              {!candidateId ? (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+                  Select the uploaded candidate from Step 5 before generating a placement plan. The candidate ID is required to bind every placement action to its stored package.
+                </div>
+              ) : (
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500">Stored candidate</p>
+                      <p className="mt-1 break-all font-mono text-xs text-slate-800">{candidateId}</p>
+                      {manifest ? (
+                        <div className="mt-2 space-y-1 text-xs text-slate-600">
+                          <p><span className="font-semibold">Decision:</span> {manifest.decision}</p>
+                          <p><span className="font-semibold">Target:</span> <span className="font-mono">{manifest.targetPath}</span></p>
+                          <p><span className="font-semibold">Manifest:</span> <span className="font-mono">{manifest.manifestHash}</span></p>
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-slate-500">No persisted placement manifest was found for this candidate.</p>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={handleGenerateManifest}
+                        disabled={isPlanning || isExecuting}
+                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <RefreshCw size={14} className={isPlanning ? 'animate-spin' : ''} />
+                        {isPlanning ? 'Generating plan...' : manifest ? 'Regenerate plan' : 'Generate placement plan'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleExecutePlacement}
+                        disabled={!manifest || manifest.decision === 'REJECT' || isPlanning || isExecuting}
+                        title={!manifest ? 'Generate a placement manifest first' : manifest.decision === 'REJECT' ? 'Rejected manifests cannot be executed' : 'The backend will reject this action until independent approval is recorded'}
+                        className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                      >
+                        <GitBranch size={14} />
+                        {isExecuting ? 'Executing placement...' : 'Execute approved placement'}
+                      </button>
+                    </div>
+                  </div>
+                  {placementResult && (
+                    <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-950">
+                      <p className="font-bold">Placement completed: {placementResult.action || placementResult.status}</p>
+                      <p className="mt-1 break-all font-mono">{placementResult.targetPath}</p>
+                      {typeof placementResult.commit === 'string' && <p className="mt-1 font-mono">Commit: {placementResult.commit}</p>}
+                    </div>
+                  )}
+                  <p className="mt-3 text-xs text-slate-500">
+                    Execution is fail-closed: the backend verifies the candidate hash, manifest hash, workflow binding, and an independent approval before it creates a worktree.
+                  </p>
+                </div>
+              )}
 
               {/* Placement Cards: ADD, UPDATE, EXTEND, REUSE */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

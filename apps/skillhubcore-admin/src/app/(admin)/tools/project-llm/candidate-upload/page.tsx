@@ -712,7 +712,7 @@ export default function CandidateUploadPage() {
         </Link>
 
         <Link
-          href={`/tools/project-llm/integration-certification${activeWorkflowId ? `?workflowId=${activeWorkflowId}` : ''}`}
+          href={`/tools/project-llm/integration-certification${activeWorkflowId ? `?workflowId=${activeWorkflowId}${uploadResult ? `&candidateId=${uploadResult.candidateId}` : ''}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
         >
           Proceed to Integration & Certification

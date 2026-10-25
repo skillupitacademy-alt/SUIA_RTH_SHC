@@ -171,4 +171,39 @@ describe('ProjectLlmClient', () => {
       });
     });
   });
+
+  describe('placement execution', () => {
+    it('gets a persisted placement manifest for the selected candidate', async () => {
+      const manifest = {
+        manifestId: 'manifest-1',
+        candidateId: 'candidate-1',
+        decision: 'ADD',
+        targetPath: 'packages/ui/src/tutorial/blocks/ObjectiveO1Block.tsx',
+        blockFamily: 'CUSTOM',
+        blockVersion: 'O1',
+        requiredChanges: [],
+        evidenceIds: [],
+        manifestHash: 'abc123',
+        createdAt: '2026-10-25T00:00:00Z',
+      };
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: true, json: async () => manifest });
+
+      await expect(client.getPlacementManifest('candidate-1')).resolves.toEqual(manifest);
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/project-llm/candidates/candidate-1/manifest',
+        expect.objectContaining({ method: 'GET' })
+      );
+    });
+
+    it('executes only through the backend-approved placement endpoint', async () => {
+      const result = { status: 'executed', action: 'ADD', targetPath: 'packages/ui/src/tutorial/blocks/ObjectiveO1Block.tsx' };
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: true, json: async () => result });
+
+      await expect(client.executeApprovedPlacement('candidate-1')).resolves.toEqual(result);
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/project-llm/candidates/candidate-1/execute',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+  });
 });
