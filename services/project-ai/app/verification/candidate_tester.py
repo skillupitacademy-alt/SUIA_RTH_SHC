@@ -16,6 +16,18 @@ from uuid import uuid4
 logger = logging.getLogger(__name__)
 
 
+def _content_sha256(content: Any) -> str:
+    """Return a stable digest without retaining candidate source in evidence."""
+    if isinstance(content, bytes):
+        return hashlib.sha256(content).hexdigest()
+    return hashlib.sha256(str(content).encode("utf-8")).hexdigest()
+
+
+def _runner_revision() -> str:
+    """Identify the exact qualification runner that produced the evidence."""
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
 def find_workspace_root() -> Path:
     """Find monorepo workspace root containing packages/ui."""
     env_root = os.environ.get('WORKSPACE_ROOT')
@@ -148,7 +160,24 @@ async def run_candidate_qualification_tests(
                 f.filename.endswith('.spec.tsx') or f.filename.endswith('.spec.ts'))
     ]
 
+    if not component_files:
+        return {
+            "passed": False,
+            "status": "FAIL",
+            "detail": "Candidate package missing a block component (*Block.tsx or *Block.ts)",
+            "evidence_id": f"test-evidence-{candidate_id}",
+            "evidence_hash": "",
+            "total_tests": 0,
+            "passed_tests": 0,
+            "failed_tests": 0,
+        }
+
     cand_short = candidate_id.replace('-', '')[:8]
+    qualification_inputs = [
+        {"filename": file.filename, "sha256": _content_sha256(file.content)}
+        for file in files
+    ]
+    runner_revision = _runner_revision()
     written_files: List[Path] = []
     worktree_path: Optional[Path] = None
     linked_deps: List[Path] = []
@@ -185,14 +214,37 @@ async def run_candidate_qualification_tests(
             test_content = test_file.content if isinstance(test_file.content, str) else test_file.content.decode('utf-8', errors='replace')
 
             # Tests run from blocks/__tests__; keep their component imports inside the sandbox.
+            import_rewrites = 0
             for orig_base, cand_base in comp_map.items():
-                test_content = re.sub(
+                test_content, replacements = re.subn(
                     rf"(['\"])(?:\.\.?/){re.escape(orig_base)}(['\"])",
                     rf"\1../{cand_base}\2",
                     test_content,
                 )
+                import_rewrites += replacements
 
-            cand_test_filename = f"__cand_{cand_short}_spec.test.tsx"
+            if import_rewrites == 0:
+                return {
+                    "passed": False,
+                    "status": "FAIL",
+                    "detail": (
+                        f"Candidate test '{test_file.filename}' must import a submitted block component "
+                        "using a relative path so qualification can run the submitted source."
+                    ),
+                    "evidence_id": str(uuid4()),
+                    "evidence_hash": "",
+                    "total_tests": 0,
+                    "passed_tests": 0,
+                    "failed_tests": 0,
+                    "runner_metadata": {
+                        "runner_revision": runner_revision,
+                        "qualification_inputs": qualification_inputs,
+                    },
+                }
+
+            test_stem = re.sub(r"\.(?:test|spec)$", "", Path(test_file.filename).stem)
+            test_stem = re.sub(r"[^A-Za-z0-9_-]+", "_", test_stem)
+            cand_test_filename = f"__cand_{cand_short}_{test_stem}.test.tsx"
             cand_test_path = tests_dir / cand_test_filename
             cand_test_path.write_text(test_content, encoding='utf-8')
             written_files.append(cand_test_path)
@@ -245,7 +297,16 @@ async def run_candidate_qualification_tests(
             logger.debug(f"Candidate test raw output: {stdout[:500]}")
         raw_output = stdout if stdout.strip() else stderr
 
-        evidence_hash = hashlib.sha256(raw_output.encode('utf-8')).hexdigest()
+        runner_metadata = {
+            "runner_revision": runner_revision,
+            "qualification_inputs": qualification_inputs,
+            "sandbox_tests": rel_test_paths,
+            "sandbox_components": sorted(comp_map.values()),
+        }
+        evidence_hash = hashlib.sha256(json.dumps({
+            "output": raw_output,
+            "runner_metadata": runner_metadata,
+        }, sort_keys=True).encode('utf-8')).hexdigest()
         evidence_id = str(uuid4())
 
         num_total = 0
@@ -289,7 +350,8 @@ async def run_candidate_qualification_tests(
                 "total_tests": num_total,
                 "passed_tests": num_passed,
                 "failed_tests": num_failed,
-                "duration_ms": duration_ms
+                "duration_ms": duration_ms,
+                "runner_metadata": runner_metadata,
             }
         else:
             if success and num_total == 0:
@@ -313,7 +375,8 @@ async def run_candidate_qualification_tests(
                 "passed_tests": num_passed,
                 "failed_tests": num_failed,
                 "duration_ms": duration_ms,
-                "output": raw_output[:1000]
+                "output": raw_output[:1000],
+                "runner_metadata": runner_metadata,
             }
 
     except subprocess.TimeoutExpired:

@@ -496,8 +496,10 @@ async def upload_candidate(
             "passed": test_result["passed"],
             "detail": test_result["detail"],
             "evidence_id": test_result["evidence_id"],
+            "evidence_hash": test_result["evidence_hash"],
             "total_tests": test_result["total_tests"],
             "passed_tests": test_result["passed_tests"],
+            "runner_metadata": test_result.get("runner_metadata"),
         }
     }
 
@@ -540,6 +542,7 @@ async def qualify_candidate(
         "passed_tests": test_result["passed_tests"],
         "failed_tests": test_result["failed_tests"],
         "duration_ms": test_result.get("duration_ms"),
+        "runner_metadata": test_result.get("runner_metadata"),
     }
     workflow_model.gate_results = current_gates
     await workflow_repo.upsert(workflow_model)
@@ -557,6 +560,7 @@ async def qualify_candidate(
         "passedTests": test_result["passed_tests"],
         "failedTests": test_result["failed_tests"],
         "durationMs": test_result.get("duration_ms"),
+        "runnerMetadata": test_result.get("runner_metadata"),
     }
 
 
