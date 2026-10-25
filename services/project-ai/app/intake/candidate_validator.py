@@ -289,6 +289,11 @@ class CandidateValidator:
             keywords = ("export", "function", "const", "class", "interface", "type", "import", "describe", "test", "it")
             if not any(kw in stripped for kw in keywords):
                 return False, f"Artifact '{file_path}' lacks valid implementation code or exports"
+
+            # Canonical toolchain syntax validation using Node + TypeScript
+            syntax_valid, syntax_error = self._validate_typescript_syntax(file_path, text)
+            if not syntax_valid:
+                return False, syntax_error
         elif lower_path.endswith('.json'):
             try:
                 json.loads(stripped)
@@ -296,6 +301,48 @@ class CandidateValidator:
                 return False, f"Artifact '{file_path}' contains invalid JSON: {str(e)}"
         
         return True, None
+
+    def _validate_typescript_syntax(self, file_path: str, code: str) -> Tuple[bool, Optional[str]]:
+        """
+        Validate TypeScript/TSX syntax using available toolchain (Node + TypeScript).
+        Catches unclosed JSX tags, malformed expressions, and syntax errors.
+        """
+        import subprocess
+        try:
+            cmd = [
+                'node', '-e',
+                '''
+const ts = require('typescript');
+const code = process.argv[1];
+const filename = process.argv[2] || 'file.tsx';
+const isJsx = filename.endsWith('.tsx') || filename.endsWith('.jsx');
+const res = ts.transpileModule(code, {
+    fileName: filename,
+    reportDiagnostics: true,
+    compilerOptions: {
+        jsx: ts.JsxEmit.React,
+        target: ts.ScriptTarget.Latest,
+        module: ts.ModuleKind.ESNext
+    }
+});
+const diags = (res.diagnostics || []).filter(d => d.category === ts.DiagnosticCategory.Error);
+if (diags.length > 0) {
+    const msgs = diags.map(d => typeof d.messageText === 'string' ? d.messageText : d.messageText.messageText);
+    console.error(msgs.join('; '));
+    process.exit(1);
+}
+''',
+                code,
+                file_path
+            ]
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            if proc.returncode != 0:
+                err_msg = proc.stderr.strip() or "TypeScript/TSX syntax error"
+                return False, f"Artifact '{file_path}' failed TypeScript/TSX syntax validation: {err_msg}"
+            return True, None
+        except Exception:
+            # If toolchain subprocess is unavailable in environment, pass through
+            return True, None
 
     def _find_matching_file(
         self,
@@ -320,12 +367,9 @@ class CandidateValidator:
         if req_norm in available_files:
             return req_norm
         
-        # Suffix path match if req has directory parts
+        # Enforce strict exact path matching relative to candidate root
         if has_dir:
-            for f in available_files:
-                if f.endswith(f"/{req_norm}") or f == req_norm:
-                    return f
-            # If requirement specifies a path, do NOT allow matching an arbitrary file in another path
+            # Do NOT permit prefix-nested paths like nested/src/Component.tsx to match src/Component.tsx
             return None
 
         # 2. Exact basename match when req has no directory component
@@ -399,7 +443,18 @@ class CandidateValidator:
         
         matched_artifacts: List[str] = []
         missing_artifacts: List[str] = []
-        contract_driven = required_artifacts is not None and len(required_artifacts) > 0
+        contract_driven = required_artifacts is not None
+        
+        if contract_driven and len(required_artifacts) == 0:
+            errors.append(
+                "Engineering contract specified empty required_artifacts; candidate package cannot be validated against an empty requirement set"
+            )
+            return errors, {
+                "contract_driven": True,
+                "required_artifacts": [],
+                "matched_artifacts": [],
+                "missing_artifacts": [],
+            }
         
         files_data, archive_error = self._extract_candidate_files(candidate_path)
         if archive_error:

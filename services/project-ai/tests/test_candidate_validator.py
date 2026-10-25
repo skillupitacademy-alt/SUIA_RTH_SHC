@@ -626,5 +626,77 @@ def test_validate_json_artifact_invalid(validator, temp_candidate_dir):
     assert any("contains invalid JSON" in err for err in result.errors)
 
 
+def test_validate_prefix_nested_path_rejected(validator, temp_candidate_dir):
+    """Prefix-nested path like nested/src/Component.tsx cannot satisfy requirement for src/Component.tsx."""
+    import hashlib
+
+    nested_dir = temp_candidate_dir / "nested" / "src"
+    nested_dir.mkdir(parents=True, exist_ok=True)
+    comp_file = nested_dir / "IntroductionI7Block.tsx"
+    comp_file.write_text("export function IntroductionI7Block() { return <div>hello</div>; }")
+
+    actual_hash = hashlib.sha256()
+    with open(comp_file, "rb") as f:
+        file_hash = hashlib.sha256(f.read())
+        actual_hash.update(file_hash.digest())
+
+    upload_meta = {
+        "target_family": "Introduction",
+        "target_version": "I7",
+        "sha256": actual_hash.hexdigest(),
+        "workflow_id": "test-workflow",
+        "required_artifacts": [
+            "src/IntroductionI7Block.tsx"
+        ]
+    }
+
+    result = validator.validate(str(temp_candidate_dir), upload_meta)
+    assert result.valid is False
+    assert "src/IntroductionI7Block.tsx" in result.evidence["missing_artifacts"]
+
+
+def test_validate_empty_contract_required_artifacts_fails(validator, temp_candidate_dir):
+    """Present contract with empty required_artifacts list fails explicitly without falling back."""
+    import hashlib
+
+    comp_file = temp_candidate_dir / "IntroductionI7Block.tsx"
+    comp_file.write_text("export function IntroductionI7Block() { return <div>hello</div>; }")
+    actual_hash = hashlib.sha256(comp_file.read_bytes()).hexdigest()
+
+    upload_meta = {
+        "target_family": "Introduction",
+        "target_version": "I7",
+        "sha256": actual_hash,
+        "workflow_id": "test-workflow",
+        "required_artifacts": []  # Contract present but empty
+    }
+
+    result = validator.validate(str(comp_file), upload_meta)
+    assert result.valid is False
+    assert any("empty required_artifacts" in err for err in result.errors)
+
+
+def test_validate_tsx_syntax_error_fails(validator, temp_candidate_dir):
+    """TypeScript/TSX artifact with syntax errors (unclosed tag) is caught by toolchain validation."""
+    import hashlib
+
+    bad_tsx = temp_candidate_dir / "IntroductionI7Block.tsx"
+    bad_tsx.write_text("export function IntroductionI7Block() { return <div>unclosed tag; }")
+    actual_hash = hashlib.sha256(bad_tsx.read_bytes()).hexdigest()
+
+    upload_meta = {
+        "target_family": "Introduction",
+        "target_version": "I7",
+        "sha256": actual_hash,
+        "workflow_id": "test-workflow",
+        "required_artifacts": ["IntroductionI7Block.tsx"]
+    }
+
+    result = validator.validate(str(bad_tsx), upload_meta)
+    assert result.valid is False
+    assert any("failed TypeScript/TSX syntax validation" in err for err in result.errors)
+
+
+
 
 

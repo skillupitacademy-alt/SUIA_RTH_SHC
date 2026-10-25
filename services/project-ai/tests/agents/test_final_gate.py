@@ -210,7 +210,7 @@ This is existing content that must be preserved.
             assert any(g['gate_name'] == 'brand-independence' for g in gate_results)
     
     def test_verify_evidence_binding_valid(self):
-        """Evidence binding validation succeeds."""
+        """Evidence binding validation succeeds when all records contain valid mandatory metadata."""
         agent = FinalGateAgent(Path('/test/repo'))
         
         snapshot = {
@@ -219,8 +219,8 @@ This is existing content that must be preserved.
                 'commitSha': 'commit456'
             },
             'evidence': [
-                {'evidenceId': 'ev-001'},
-                {'evidenceId': 'ev-002'}
+                {'evidenceId': 'ev-001', 'commitSha': 'commit456', 'snapshotHash': 'hash123', 'runId': 'test-run'},
+                {'evidenceId': 'ev-002', 'commitSha': 'commit456', 'snapshotHash': 'hash123', 'runId': 'test-run'}
             ]
         }
         
@@ -228,11 +228,54 @@ This is existing content that must be preserved.
             ['ev-001', 'ev-002'],
             snapshot,
             'commit456',
-            'hash123'
+            'hash123',
+            run_id='test-run'
         )
         
         assert valid is True
         assert len(errors) == 0
+
+    def test_verify_evidence_binding_missing_mandatory_commit_sha(self):
+        """Evidence record missing commitSha is rejected as fail-closed."""
+        agent = FinalGateAgent(Path('/test/repo'))
+        snapshot = {
+            'canonicalHash': 'hash123',
+            'repository': {'commitSha': 'commit456'},
+            'evidence': [
+                {'evidenceId': 'ev-001', 'snapshotHash': 'hash123', 'runId': 'test-run'}
+            ]
+        }
+        valid, errors = agent.verify_evidence_binding(['ev-001'], snapshot, 'commit456', 'hash123', run_id='test-run')
+        assert valid is False
+        assert any('missing mandatory commitSha' in e for e in errors)
+
+    def test_verify_evidence_binding_missing_mandatory_snapshot_hash(self):
+        """Evidence record missing snapshotHash is rejected as fail-closed."""
+        agent = FinalGateAgent(Path('/test/repo'))
+        snapshot = {
+            'canonicalHash': 'hash123',
+            'repository': {'commitSha': 'commit456'},
+            'evidence': [
+                {'evidenceId': 'ev-001', 'commitSha': 'commit456', 'runId': 'test-run'}
+            ]
+        }
+        valid, errors = agent.verify_evidence_binding(['ev-001'], snapshot, 'commit456', 'hash123', run_id='test-run')
+        assert valid is False
+        assert any('missing mandatory snapshotHash' in e for e in errors)
+
+    def test_verify_evidence_binding_missing_mandatory_run_id(self):
+        """Evidence record missing runId when run_id is verified is rejected as fail-closed."""
+        agent = FinalGateAgent(Path('/test/repo'))
+        snapshot = {
+            'canonicalHash': 'hash123',
+            'repository': {'commitSha': 'commit456'},
+            'evidence': [
+                {'evidenceId': 'ev-001', 'commitSha': 'commit456', 'snapshotHash': 'hash123'}
+            ]
+        }
+        valid, errors = agent.verify_evidence_binding(['ev-001'], snapshot, 'commit456', 'hash123', run_id='test-run')
+        assert valid is False
+        assert any('missing mandatory runId' in e for e in errors)
     
     def test_verify_evidence_binding_missing_id(self):
         """Evidence binding fails with missing evidence ID."""
@@ -244,7 +287,7 @@ This is existing content that must be preserved.
                 'commitSha': 'commit456'
             },
             'evidence': [
-                {'evidenceId': 'ev-001'}
+                {'evidenceId': 'ev-001', 'commitSha': 'commit456', 'snapshotHash': 'hash123', 'runId': 'test-run'}
             ]
         }
         
@@ -252,7 +295,8 @@ This is existing content that must be preserved.
             ['ev-001', 'ev-missing'],
             snapshot,
             'commit456',
-            'hash123'
+            'hash123',
+            run_id='test-run'
         )
         
         assert valid is False
@@ -468,4 +512,43 @@ class TestVerdictCalculation:
             
             assert verdict.evidence_binding_valid is False
             assert verdict.verdict == 'BLOCKED'
+
+    def test_deferred_runtime_checks_survive_aggregation_and_blocks_execute(self):
+        """Deferred checks in gate JSON survive aggregation and block execution verdict."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            run_dir = repo_root / '.project-ai' / 'runs' / 'test-run'
+            run_dir.mkdir(parents=True)
+            gates_dir = run_dir / 'gates'
+            gates_dir.mkdir(parents=True)
+            
+            # Runtime verification gate reports PASS on startup/health, but specifies deferred_checks
+            (gates_dir / 'runtime.json').write_text(json.dumps({
+                'gateId': 'runtime-verification',
+                'status': 'PASS',
+                'evidenceIds': ['ev-runtime'],
+                'deferred_checks': ['route_navigation', 'console_errors', 'network_errors']
+            }))
+            
+            agents_dir = repo_root / '.agents' / 'tasks'
+            agents_dir.mkdir(parents=True)
+            (agents_dir / 'm1-m2-backlog.md').write_text('# Backlog\n')
+            
+            snapshot = {
+                'canonicalHash': 'hash123',
+                'repository': {'commitSha': 'commit456'},
+                'evidence': [
+                    {'evidenceId': 'ev-runtime', 'commitSha': 'commit456', 'snapshotHash': 'hash123', 'runId': 'test-run'}
+                ]
+            }
+            
+            agent = FinalGateAgent(repo_root)
+            with patch.object(agent, 'derive_commit_sha', return_value='commit456'):
+                verdict = agent.execute(snapshot, run_dir, 'test-run')
+            
+            # Runtime gate must be forced to BLOCKED due to unverified deferred checks
+            assert verdict.verdict == 'BLOCKED'
+            assert any(g['gate_name'] == 'runtime-verification' and g['verdict'] == 'BLOCKED' for g in verdict.gate_results)
+            assert any(g.get('deferred_checks') == ['route_navigation', 'console_errors', 'network_errors'] for g in verdict.gate_results)
+
 

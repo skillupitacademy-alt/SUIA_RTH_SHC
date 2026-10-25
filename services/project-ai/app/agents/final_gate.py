@@ -300,16 +300,23 @@ class FinalGateAgent:
             
             rec = evidence_by_id[eid]
             rec_commit = rec.get('commitSha') or rec.get('commit_sha')
-            if rec_commit and rec_commit != commit_sha:
+            if not rec_commit:
+                errors.append(f"Evidence record {eid} missing mandatory commitSha binding")
+            elif rec_commit != commit_sha:
                 errors.append(f"Evidence {eid} commit SHA mismatch: {rec_commit} != {commit_sha}")
             
             rec_hash = rec.get('snapshotHash') or rec.get('snapshot_hash')
-            if rec_hash and rec_hash != snapshot_hash:
+            if not rec_hash:
+                errors.append(f"Evidence record {eid} missing mandatory snapshotHash binding")
+            elif rec_hash != snapshot_hash:
                 errors.append(f"Evidence {eid} snapshot hash mismatch: {rec_hash} != {snapshot_hash}")
                 
             rec_run = rec.get('runId') or rec.get('run_id')
-            if run_id and rec_run and rec_run != run_id:
-                errors.append(f"Evidence {eid} run ID mismatch: {rec_run} != {run_id}")
+            if run_id:
+                if not rec_run:
+                    errors.append(f"Evidence record {eid} missing mandatory runId binding")
+                elif rec_run != run_id:
+                    errors.append(f"Evidence {eid} run ID mismatch: {rec_run} != {run_id}")
         
         return (len(errors) == 0, errors)
     
@@ -341,10 +348,12 @@ class FinalGateAgent:
             try:
                 with open(gate_file, 'r', encoding='utf-8') as f:
                     gate_data = json.load(f)
+                    deferred = gate_data.get('deferred_checks') or gate_data.get('deferredChecks') or []
                     gate_results.append({
                         'gate_name': gate_data.get('gateId', gate_data.get('gate_name', gate_file.stem)),
                         'verdict': gate_data.get('status', gate_data.get('verdict', 'UNKNOWN')),
-                        'evidence_ids': gate_data.get('evidenceIds', gate_data.get('evidence_ids', []))
+                        'evidence_ids': gate_data.get('evidenceIds', gate_data.get('evidence_ids', [])),
+                        'deferred_checks': deferred
                     })
             except Exception:
                 # Skip invalid gate files

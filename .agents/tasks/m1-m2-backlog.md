@@ -666,22 +666,25 @@ The Project AI M2 foundation successfully eliminates placeholders, preserves arc
 
 - **Sealed Contract Hash:** `governing_policy` bound to `EngineeringContract` and sealed in SHA-256 `contract_hash`.
 - **Fail-Closed Gates & Consistent Precedence:** In both `FinalGateController.compute_verdict` and `FinalGateAgent.calculate_verdict`, explicit `FAIL` takes precedence over `BLOCKED`, and `BLOCKED` takes precedence over `PASS`. Empty gate results return `BLOCKED`.
-- **Strict Evidence Binding Verification:** `FinalGateAgent.verify_evidence_binding` verifies `commitSha`, `snapshotHash`, and `runId` for every referenced evidence record in the snapshot, blocking execution if any individual record is unbound or mismatched.
+- **Strict Mandatory Evidence Binding (P0):** `FinalGateAgent.verify_evidence_binding` mandates that every evidence record in the snapshot contains non-empty `commitSha`, `snapshotHash`, and `runId`. Records missing any of these mandatory fields or containing mismatched values fail closed as `BLOCKED`.
+- **Preserved Deferred Runtime Checks (P0):** `FinalGateAgent.aggregate_gate_results` preserves `deferred_checks` from logged gate JSON files. In `FinalGateAgent.execute`, any gate with deferred checks without passing browser verification is forced to `BLOCKED`, preventing premature certification readiness.
+- **Strict Exact Path Matching (P0):** `CandidateValidator._find_matching_file` strictly enforces exact path matching relative to the candidate root for all path-qualified requirements, rejecting prefix-nested paths (e.g., `nested/src/Component.tsx` cannot satisfy `src/Component.tsx`).
+- **Invalid/Empty Contract Requirement Rejection (P1):** `CandidateValidator._validate_artifact_structure` distinguishes absent contracts from present but empty contracts (`required_artifacts=[]`). Empty or malformed contract requirements fail closed with explicit validation errors instead of silently dropping into filename fallback mode.
+- **Canonical Toolchain Implementation Validation (P1):** `CandidateValidator._validate_typescript_syntax` verifies TypeScript/TSX syntax using Node and the TypeScript compiler toolchain (`ts.transpileModule`), catching unclosed JSX elements, syntax errors, and malformed statements in addition to comments-only stub rejection and JSON validation.
 - **Run Isolation & Zero Hardcoded Evidence IDs:** Fixed directory paths (`r9-setup`, `r6-setup`) and hardcoded IDs (`ev-final-001`, `ev-runtime-001`) have been completely eliminated. All evidence and verdicts write exclusively to isolated run directories (`run_dir`) using deterministic `evidence-<16-hex>` IDs bound to `(run_id, commit_sha, snapshot_hash)`.
-- **Deferred Runtime Checks:** `FinalGateController.compute_verdict` and `FinalGateAgent.execute` evaluate to `BLOCKED` whenever deferred checks (`route_navigation`, `console_errors`, `network_errors`) are present without passing browser verification evidence. Agent execution success (`AgentStatus.SUCCESS`) is preserved for process lifecycle without falsely claiming whole-workflow compliance.
-- **Contract-Driven Candidate Validation:** `CandidateValidator` enforces path-sensitive matching (preventing directory mismatches), 1-to-1 candidate file claiming (preventing one file from satisfying multiple requirements), and non-empty/non-stub implementation verification.
 
-### 3. Verification Test Results (236 Total Passing)
+### 3. Verification Test Results (245 Total Passing)
 
 - `tests/unit/test_repository_intelligence.py`: 60 passed
 - `tests/unit/test_canonical_comparison.py`: 12 passed
 - `tests/unit/test_engineering_contract.py`: 19 passed
 - `tests/test_agent_coordinator.py`: 21 passed
-- `tests/test_candidate_validator.py`: 21 passed (includes 1-to-1 claiming, path matching, stub rejection)
-- `tests/unit/test_final_gate.py`: 22 passed (includes structured evidence verification & deferred check blocking)
-- `tests/agents/test_final_gate.py`: 20 passed (includes individual record binding, FAIL precedence, run isolation)
+- `tests/test_candidate_validator.py`: 26 passed (exact path matching, 1-to-1 claiming, empty contract rejection, TSX/TS syntax validation, JSON parsing)
+- `tests/unit/test_final_gate.py`: 22 passed (structured evidence verification & deferred check blocking)
+- `tests/agents/test_final_gate.py`: 24 passed (mandatory commitSha/snapshotHash/runId binding, deferred checks preservation through aggregation, fail precedence, run isolation)
 - `tests/unit/test_contract_serialization.py`: 5 passed
 - `tests/verification/`: 46 passed (browser, runtime, runtime_verifier)
 - `tests/integration/test_w2_contract_generation.py`: 10 passed (PostgreSQL end-to-end integration)
+
 
 
