@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -35,23 +35,36 @@ interface CheckItem {
 export default function CandidateUploadPage() {
   const { state } = useProjectLlm();
   const searchParams = useSearchParams();
-  const workflowId = searchParams.get('workflowId');
-  
+  const searchWorkflowId = searchParams.get('workflowId');
+  const activeWorkflowId = searchWorkflowId || state.workflowId;
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadResult, setUploadResult] = useState<{
+    candidateId: string;
+    status: string;
+    count: number;
+    totalSize: string;
+  } | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const [isValidating, setIsValidating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [certificationData, setCertificationData] = useState<CertificationStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingCertification, setIsLoadingCertification] = useState(false);
 
-  // Fetch certification status from backend on mount
+  // Fetch certification status from backend on mount or when active workflow changes
   useEffect(() => {
-    if (!workflowId) return;
+    if (!activeWorkflowId) return;
 
     const fetchCertification = async () => {
       setIsLoadingCertification(true);
       setError(null);
       try {
-        const data = await projectLlmClient.getCertificationStatus(workflowId);
+        const data = await projectLlmClient.getCertificationStatus(activeWorkflowId);
         setCertificationData(data);
         // Calculate progress based on gates
         const totalGates = data.gates.length;
@@ -69,7 +82,7 @@ export default function CandidateUploadPage() {
     };
 
     fetchCertification();
-  }, [workflowId]);
+  }, [activeWorkflowId]);
 
   // Map backend gate results to UI check items
   const checks: CheckItem[] = certificationData?.gates.map((gate, idx) => ({
@@ -81,8 +94,84 @@ export default function CandidateUploadPage() {
     details: gate.detail || (gate.result === 'PASS' ? 'Verified by backend' : gate.result === 'PENDING' ? 'Not yet verified' : 'Failed verification'),
   })) || [];
 
+  const handleFiles = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    if (fileArray.length === 0) return;
+
+    if (!activeWorkflowId) {
+      setUploadError('Please select or specify a Workflow ID before uploading candidate files.');
+      return;
+    }
+
+    setUploadError(null);
+    setIsUploading(true);
+
+    try {
+      const totalBytes = fileArray.reduce((acc, f) => acc + f.size, 0);
+      const formattedSize =
+        totalBytes > 1024 * 1024
+          ? `${(totalBytes / (1024 * 1024)).toFixed(1)} MB`
+          : `${(totalBytes / 1024).toFixed(1)} KB`;
+
+      const result = await projectLlmClient.uploadCandidate(activeWorkflowId, fileArray);
+      setUploadedFiles(fileArray);
+      setUploadResult({
+        candidateId: result.candidateId,
+        status: result.status,
+        count: fileArray.length,
+        totalSize: formattedSize,
+      });
+
+      // Automatically refresh certification / validation gates for this workflow
+      try {
+        const certData = await projectLlmClient.getCertificationStatus(activeWorkflowId);
+        setCertificationData(certData);
+        const totalGates = certData.gates.length;
+        const passedGates = certData.gates.filter(g => g.result === 'PASS').length;
+        setProgress(totalGates > 0 ? Math.round((passedGates / totalGates) * 100) : 0);
+      } catch {
+        // Certification might not be immediately available
+      }
+    } catch (err: any) {
+      if (err instanceof ProjectLlmError) {
+        setUploadError(err.message);
+      } else {
+        setUploadError(err?.message || 'Failed to upload candidate files');
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+  };
+
   const handleRerun = async () => {
-    if (!workflowId) {
+    if (!activeWorkflowId) {
       setError('No workflow ID provided');
       return;
     }
@@ -92,7 +181,7 @@ export default function CandidateUploadPage() {
     setProgress(0);
 
     try {
-      const data = await projectLlmClient.getCertificationStatus(workflowId);
+      const data = await projectLlmClient.getCertificationStatus(activeWorkflowId);
       setCertificationData(data);
       const totalGates = data.gates.length;
       const passedGates = data.gates.filter(g => g.result === 'PASS').length;
@@ -107,6 +196,28 @@ export default function CandidateUploadPage() {
       setIsValidating(false);
     }
   };
+
+  const targetFamily = certificationData?.targetFamily || state.familyName || 'Introduction';
+  const targetVersion = certificationData?.targetVersion || state.targetVersion || 'I1';
+
+  const expectedFiles = [
+    { name: `${targetFamily}${targetVersion}Block.tsx`, desc: 'Component', icon: FileCode },
+    { name: 'types.ts', desc: 'Type Definitions', icon: FileCode },
+    { name: 'schema.json', desc: 'JSON Schema', icon: FileCode },
+    { name: 'registry.ts', desc: 'Registry Registration', icon: FileCode },
+    { name: 'renderer.tsx', desc: 'Tutorial Renderer', icon: FileCode },
+    { name: 'composer.tsx', desc: 'Tutorial Composer UI', icon: FileCode },
+    { name: `${targetFamily}${targetVersion}.test.tsx`, desc: 'Unit Tests', icon: FileCode },
+    { name: 'README.md', desc: 'Documentation & Notes', icon: FileCode },
+  ];
+
+  const detectedFilesCount = expectedFiles.filter(f =>
+    uploadedFiles.some(u =>
+      u.name.toLowerCase() === f.name.toLowerCase() ||
+      u.name.toLowerCase().endsWith(f.name.toLowerCase()) ||
+      f.name.toLowerCase().includes(u.name.toLowerCase())
+    )
+  ).length;
 
   return (
     <div className="space-y-6 pb-16">
@@ -127,7 +238,7 @@ export default function CandidateUploadPage() {
             </h1>
             <p className="text-sm text-slate-500 mt-1 max-w-2xl font-medium">
               Inspect candidate package for{' '}
-              <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span>. Validation results are unavailable until the backend runs the repository-defined gates. This screen must not infer passing results from local UI state.
+              <span className="font-bold text-slate-800">{targetFamily} {targetVersion}</span>. Validation results are unavailable until the backend runs the repository-defined gates. This screen must not infer passing results from local UI state.
             </p>
           </div>
 
@@ -139,7 +250,7 @@ export default function CandidateUploadPage() {
       <ProjectLlmContextBanner />
 
       {/* No Workflow ID Warning */}
-      {!workflowId && (
+      {!activeWorkflowId && (
         <div className="rounded-2xl border border-amber-300 bg-amber-50/90 p-5 shadow-sm flex items-start gap-4">
           <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={20} />
           <div>
@@ -191,44 +302,118 @@ export default function CandidateUploadPage() {
             </div>
 
             <div className="p-5 space-y-4">
+              {/* Hidden File Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".zip,.tar.gz,.tsx,.ts,.json,.md,.css"
+                className="hidden"
+                onChange={onFileInputChange}
+              />
+
               {/* Dropzone */}
-              <div className="border-2 border-dashed border-pink-300 bg-pink-50/30 hover:bg-pink-50/60 rounded-xl p-6 text-center transition-all cursor-pointer group">
+              <div
+                onClick={() => !isUploading && fileInputRef.current?.click()}
+                onDragOver={onDragOver}
+                onDragEnter={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                className={`border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer group ${
+                  isDragging
+                    ? 'border-pink-500 bg-pink-100/50 scale-[1.01]'
+                    : 'border-pink-300 bg-pink-50/30 hover:bg-pink-50/60'
+                }`}
+              >
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-pink-200 text-pink-600 shadow-sm mx-auto mb-3 group-hover:scale-105 transition-transform">
-                  <FileArchive size={24} />
+                  {isUploading ? (
+                    <RefreshCw size={24} className="animate-spin text-pink-600" />
+                  ) : (
+                    <FileArchive size={24} />
+                  )}
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 font-outfit">
-                  Drop candidate archive here
+                  {isUploading ? 'Uploading candidate package...' : 'Drop candidate archive or files here'}
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  Supports <span className="font-mono font-medium">.zip</span>, <span className="font-mono font-medium">.tar.gz</span>, or raw <span className="font-mono font-medium">.tsx</span> files (Max 50MB)
+                  Supports <span className="font-mono font-medium">.zip</span>, <span className="font-mono font-medium">.tar.gz</span>, or raw <span className="font-mono font-medium">.tsx / .ts</span> files (Max 50MB)
                 </p>
                 <div className="mt-3">
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-pink-700 bg-white border border-pink-300 shadow-2xs hover:bg-pink-50">
-                    Browse Files
-                  </span>
+                  <button
+                    type="button"
+                    disabled={isUploading}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-pink-700 bg-white border border-pink-300 shadow-2xs hover:bg-pink-50 disabled:opacity-50"
+                  >
+                    <Upload size={13} />
+                    {isUploading ? 'Uploading...' : 'Browse Files'}
+                  </button>
                 </div>
               </div>
 
-              {/* Active Uploaded File Pill */}
-              <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                    <FileArchive size={18} />
+              {/* Upload Error Banner */}
+              {uploadError && (
+                <div className="p-3.5 rounded-xl border border-red-300 bg-red-50 text-red-800 text-xs flex items-start gap-2.5">
+                  <AlertCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-bold">Upload Failed</p>
+                    <p className="mt-0.5 text-red-700">{uploadError}</p>
                   </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-900 font-mono">
-                      {state.familyName.toLowerCase()}_{state.targetVersion.toLowerCase()}_candidate_v1.zip
-                    </h5>
-                    <p className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 mt-0.5">
-                      <CheckCircle2 size={11} />
-                      3.4 MB • Package Verified & Extracted
-                    </p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setUploadError(null)}
+                    className="text-red-500 hover:text-red-700 text-xs font-bold"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
-                  Ready
-                </span>
-              </div>
+              )}
+
+              {/* Active Uploaded File Pill */}
+              {uploadResult ? (
+                <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <FileArchive size={18} />
+                    </div>
+                    <div className="overflow-hidden">
+                      <h5 className="text-xs font-bold text-slate-900 font-mono truncate max-w-[200px] sm:max-w-[280px]">
+                        {uploadedFiles[0]?.name}
+                        {uploadedFiles.length > 1 && ` (+${uploadedFiles.length - 1} more)`}
+                      </h5>
+                      <p className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 mt-0.5">
+                        <CheckCircle2 size={11} />
+                        {uploadResult.totalSize} • {uploadResult.count} {uploadResult.count === 1 ? 'file' : 'files'} uploaded & bound
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded shrink-0">
+                    Uploaded
+                  </span>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 flex items-center justify-between text-slate-500">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                      <FileArchive size={18} />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-semibold text-slate-600">
+                        No Candidate Package Uploaded
+                      </h5>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Click Browse Files or drop candidate archive above
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                    Pending
+                  </span>
+                </div>
+              )}
 
               {/* Required Files Checklist */}
               <div>
@@ -236,37 +421,56 @@ export default function CandidateUploadPage() {
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">
                     Required Files Checklist
                   </span>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    8 of 8 Detected
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
+                    detectedFilesCount === expectedFiles.length
+                      ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
+                      : detectedFilesCount > 0
+                      ? 'text-amber-600 bg-amber-50 border-amber-200'
+                      : 'text-slate-500 bg-slate-100 border-slate-200'
+                  }`}>
+                    {detectedFilesCount} of {expectedFiles.length} Detected
                   </span>
                 </div>
 
                 <div className="space-y-1.5 text-xs">
-                  {[
-                    { name: `${state.familyName}${state.targetVersion}.tsx`, desc: 'Component', icon: FileCode },
-                    { name: 'types.ts', desc: 'Type Definitions', icon: FileCode },
-                    { name: 'schema.json', desc: 'JSON Schema', icon: FileCode },
-                    { name: 'registry.ts', desc: 'Registry Registration', icon: FileCode },
-                    { name: 'renderer.tsx', desc: 'Tutorial Renderer', icon: FileCode },
-                    { name: 'composer.tsx', desc: 'Tutorial Composer UI', icon: FileCode },
-                    { name: `${state.familyName}${state.targetVersion}.test.tsx`, desc: 'Unit Tests', icon: FileCode },
-                    { name: 'README.md', desc: 'Documentation & Notes', icon: FileCode },
-                  ].map((f, i) => (
-                    <div
-                      key={i}
-                      className="p-2.5 rounded-lg bg-slate-50/80 border border-slate-200/80 flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="h-4 w-4 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-600 flex items-center justify-center shrink-0">
-                          <Check size={10} strokeWidth={3} />
+                  {expectedFiles.map((f, i) => {
+                    const isDetected = uploadedFiles.some(
+                      u =>
+                        u.name.toLowerCase() === f.name.toLowerCase() ||
+                        u.name.toLowerCase().endsWith(f.name.toLowerCase()) ||
+                        f.name.toLowerCase().includes(u.name.toLowerCase())
+                    );
+                    return (
+                      <div
+                        key={i}
+                        className={`p-2.5 rounded-lg border flex items-center justify-between transition-colors ${
+                          isDetected
+                            ? 'bg-emerald-50/40 border-emerald-200/80'
+                            : 'bg-slate-50/80 border-slate-200/80'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`h-4 w-4 rounded-full flex items-center justify-center shrink-0 border ${
+                            isDetected
+                              ? 'bg-emerald-100 border-emerald-300 text-emerald-600'
+                              : 'bg-slate-100 border-slate-300 text-slate-400'
+                          }`}>
+                            {isDetected ? (
+                              <Check size={10} strokeWidth={3} />
+                            ) : (
+                              <Clock size={9} />
+                            )}
+                          </div>
+                          <span className={`font-mono font-bold text-[11px] ${
+                            isDetected ? 'text-slate-900' : 'text-slate-500'
+                          }`}>
+                            {f.name}
+                          </span>
                         </div>
-                        <span className="font-mono text-slate-800 font-bold text-[11px]">
-                          {f.name}
-                        </span>
+                        <span className="text-[11px] text-slate-400 font-medium">{f.desc}</span>
                       </div>
-                      <span className="text-[11px] text-slate-400 font-medium">{f.desc}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -491,7 +695,7 @@ export default function CandidateUploadPage() {
             </h4>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
               Validation is complete! Proceed to Integration & Certification to review the exact repository placement manifest, execute runtime verification in live containers, and certify{' '}
-              <span className="font-bold text-slate-900">{state.familyName} {state.targetVersion}</span> for immediate use in the Tutorial Composer.
+              <span className="font-bold text-slate-900">{targetFamily} {targetVersion}</span> for immediate use in the Tutorial Composer.
             </p>
           </div>
         </div>
@@ -500,7 +704,7 @@ export default function CandidateUploadPage() {
       {/* Footer Nav */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
         <Link
-          href={`/tools/project-llm/external-ai-handoff${workflowId ? `?workflowId=${workflowId}` : ''}`}
+          href={`/tools/project-llm/external-ai-handoff${activeWorkflowId ? `?workflowId=${activeWorkflowId}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50 hover:border-slate-400 transition-all shadow-sm"
         >
           <ArrowLeft size={16} />
@@ -508,7 +712,7 @@ export default function CandidateUploadPage() {
         </Link>
 
         <Link
-          href={`/tools/project-llm/integration-certification${workflowId ? `?workflowId=${workflowId}` : ''}`}
+          href={`/tools/project-llm/integration-certification${activeWorkflowId ? `?workflowId=${activeWorkflowId}` : ''}`}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
         >
           Proceed to Integration & Certification

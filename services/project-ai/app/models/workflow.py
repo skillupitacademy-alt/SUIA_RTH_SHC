@@ -46,7 +46,7 @@ class StateTransition:
             "to_state": self.to_state.value,
             "timestamp": self.timestamp.isoformat(),
             "triggered_by": self.triggered_by,
-            "evidence_id": self.evidence_id,
+            "evidence_id": str(self.evidence_id) if self.evidence_id is not None else None,
             "reason": self.reason
         }
 

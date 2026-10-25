@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Layers,
   FileText,
@@ -14,6 +15,7 @@ import {
 
 export interface StepperProps {
   currentStep: number; // 1 to 6
+  workflowId?: string;
 }
 
 const steps = [
@@ -25,18 +27,22 @@ const steps = [
   { id: 6, label: 'Integrate & Certify', icon: ShieldCheck, href: '/tools/project-llm/integration-certification' },
 ];
 
-export function ProjectLlmStepper({ currentStep }: StepperProps) {
+export function ProjectLlmStepper({ currentStep, workflowId: propWorkflowId }: StepperProps) {
+  const searchParams = useSearchParams();
+  const workflowId = propWorkflowId || searchParams.get('workflowId');
+
   return (
     <div className="flex items-center gap-1.5 sm:gap-2.5 overflow-x-auto py-1 no-scrollbar shrink-0">
       {steps.map((step, idx) => {
         const isCompleted = step.id < currentStep;
         const isCurrent = step.id === currentStep;
         const Icon = step.icon;
+        const href = workflowId ? `${step.href}?workflowId=${workflowId}` : step.href;
 
         return (
           <React.Fragment key={step.id}>
             <Link
-              href={step.href}
+              href={href}
               className={`flex flex-col items-center gap-1 group text-center cursor-pointer transition-all ${
                 isCurrent
                   ? 'opacity-100 scale-105'

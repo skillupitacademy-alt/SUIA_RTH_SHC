@@ -24,7 +24,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from typing import List, Optional, Protocol, Dict, Any
-from uuid import UUID as PythonUUID
+from uuid import UUID as PythonUUID, uuid5, NAMESPACE_DNS
 
 from sqlalchemy import select, update, delete
 from sqlalchemy.dialects.postgresql import insert
@@ -44,7 +44,16 @@ def _coerce_uuid(value: Any) -> Optional[PythonUUID]:
     """Convert string UUID inputs to UUID objects for SQLAlchemy UUID columns."""
     if value is None or isinstance(value, PythonUUID):
         return value
-    return PythonUUID(str(value))
+    val_str = str(value).strip()
+    if not val_str:
+        return None
+    try:
+        return PythonUUID(val_str)
+    except (ValueError, AttributeError):
+        try:
+            return uuid5(NAMESPACE_DNS, val_str)
+        except Exception:
+            return None
 
 
 def _normalize_uuid_fields(model: Any, *field_names: str) -> Any:

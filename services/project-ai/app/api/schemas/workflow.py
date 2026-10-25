@@ -7,8 +7,9 @@ These schemas define the shape of requests and responses for workflow
 management endpoints, ensuring type safety and validation.
 """
 
-from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Any
+from uuid import UUID
+from pydantic import BaseModel, Field, field_validator
+from typing import Dict, List, Optional, Any, Union
 
 
 class WorkflowArtifact(BaseModel):
@@ -67,12 +68,17 @@ class StateTransitionInfo(BaseModel):
     Documents a single state transition with audit trail information.
     """
     
-    from_state: Optional[str] = Field(description="Previous state (None for initial transition)")
+    from_state: Optional[str] = Field(default=None, description="Previous state (None for initial transition)")
     to_state: str = Field(description="New state after transition")
     timestamp: str = Field(description="ISO 8601 timestamp")
     triggered_by: str = Field(description="User ID or system component")
-    evidence_id: Optional[str] = Field(default=None, description="Optional evidence ID")
+    evidence_id: Optional[Union[str, UUID]] = Field(default=None, description="Optional evidence ID")
     reason: Optional[str] = Field(default=None, description="Optional reason for transition")
+
+    @field_validator("evidence_id", mode="before")
+    @classmethod
+    def serialize_evidence_id(cls, v):
+        return str(v) if v is not None else None
 
 
 class WorkflowResponse(BaseModel):

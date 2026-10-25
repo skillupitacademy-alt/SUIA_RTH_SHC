@@ -116,9 +116,19 @@ def _workflow_to_response(workflow) -> WorkflowResponse:
             snapshot=WorkflowArtifact(**workflow_dict["artifacts"]["snapshot"])
         ),
         approval_id=workflow_dict["approval_id"],
-        gate_results=workflow_dict["gate_results"],
-        evidence_ids=workflow_dict["evidence_ids"],
-        state_history=[StateTransitionInfo(**t) for t in workflow_dict["state_history"]],
+        gate_results=workflow_dict.get("gate_results") or {},
+        evidence_ids=[str(e) for e in (workflow_dict.get("evidence_ids") or [])],
+        state_history=[
+            StateTransitionInfo(
+                from_state=t.get("from_state"),
+                to_state=t["to_state"],
+                timestamp=t["timestamp"],
+                triggered_by=t["triggered_by"],
+                evidence_id=str(t["evidence_id"]) if t.get("evidence_id") is not None else None,
+                reason=t.get("reason"),
+            )
+            for t in (workflow_dict.get("state_history") or [])
+        ],
         created_at=workflow_dict["created_at"],
         updated_at=workflow_dict["updated_at"],
         final_status=workflow_dict["final_status"]

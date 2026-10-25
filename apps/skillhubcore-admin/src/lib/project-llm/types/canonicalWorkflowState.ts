@@ -38,6 +38,8 @@ export type CertificationStatus = {
   state: CanonicalWorkflowStateEnum;
   gates: CertificationGateResult[];
   certifiedAt?: string;
+  targetFamily?: string;
+  targetVersion?: string;
 };
 
 export type RuntimeHealthStatus = {

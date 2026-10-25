@@ -7,14 +7,17 @@ M2.9 R3 PERSISTENCE:
 - All operations async with proper transaction management
 """
 
+import base64
 import hashlib
+import io
 import json
 import logging
 import os
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
-from uuid import uuid4
+from uuid import uuid4, uuid5, NAMESPACE_DNS
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -217,6 +220,14 @@ async def upload_candidate(
         409: If workflow not in CANDIDATE_REQUESTED state
         422: If target family/version mismatch
     """
+    # Coerce candidate ID safely to valid UUID string
+    from app.persistence.repositories import _coerce_uuid
+    coerced_candidate_id = _coerce_uuid(package.candidateId)
+    if coerced_candidate_id:
+        package.candidateId = str(coerced_candidate_id)
+    else:
+        package.candidateId = str(uuid4())
+
     # Check if candidate already exists
     existing = await candidate_repo.get(package.candidateId)
     if existing:
@@ -233,6 +244,52 @@ async def upload_candidate(
                    "Candidates must be bound to a workflow for target identity."
         )
     
+    # Support uploading zip archives (unpack in memory so individual files are validated and stored)
+    from app.models.candidate import CandidateFile
+    expanded_files = []
+    for f in package.files:
+        if f.filename.lower().endswith(".zip"):
+            zip_bytes = None
+            try:
+                clean_b64 = f.content
+                if "," in clean_b64:
+                    clean_b64 = clean_b64.split(",", 1)[1]
+                zip_bytes = base64.b64decode(clean_b64)
+                zf = zipfile.ZipFile(io.BytesIO(zip_bytes))
+            except Exception:
+                try:
+                    zip_bytes = f.content.encode('latin-1')
+                    zf = zipfile.ZipFile(io.BytesIO(zip_bytes))
+                except Exception:
+                    zf = None
+            
+            if zf:
+                for name in zf.namelist():
+                    if not name.endswith('/') and not name.startswith('__MACOSX') and '/.' not in name:
+                        try:
+                            raw = zf.read(name)
+                            try:
+                                text_content = raw.decode('utf-8')
+                            except UnicodeDecodeError:
+                                text_content = raw.decode('latin-1', errors='replace')
+                            file_hash = hashlib.sha256(text_content.encode('utf-8')).hexdigest()
+                            base_name = os.path.basename(name)
+                            expanded_files.append(CandidateFile(
+                                filename=base_name,
+                                content=text_content,
+                                contentType="text/plain",
+                                hash=file_hash
+                            ))
+                        except Exception as zerr:
+                            logger.warning(f"Failed extracting {name} from zip: {zerr}")
+            else:
+                expanded_files.append(f)
+        else:
+            expanded_files.append(f)
+    
+    if expanded_files:
+        package.files = expanded_files
+
     # Retrieve workflow to get target binding
     from app.api.routes.workflows import get_governance_service
     from app.orchestration.canonical_workflow import CanonicalWorkflowState
@@ -327,7 +384,7 @@ async def upload_candidate(
                 workflow_id=package.workflow_id,
                 to_state=CanonicalWorkflowState.CANDIDATE_RECEIVED,
                 triggered_by=user.get("user_id", "unknown"),
-                evidence_id=f"upload-{package.candidateId}",
+                evidence_id=str(uuid5(NAMESPACE_DNS, f"upload-{package.candidateId}")),
                 reason=f"Candidate package uploaded: {len(package.files)} files, SHA-256: {candidate_sha256[:16]}..."
             )
         except Exception as transition_error:

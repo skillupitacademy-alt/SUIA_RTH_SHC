@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Code,
   Copy,
@@ -30,6 +30,7 @@ import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
 type TabKey = 'summary' | 'ils' | 'lsnb' | 'rssb' | 'composer' | 'testing' | 'brand' | 'evidence';
 
 export default function ExternalAiHandoffPage() {
+  const router = useRouter();
   const { state } = useProjectLlm();
   const searchParams = useSearchParams();
   const urlWorkflowId = searchParams.get('workflowId') || state.workflowId;
@@ -38,6 +39,7 @@ export default function ExternalAiHandoffPage() {
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [previewTab, setPreviewTab] = useState<'preview' | 'html' | 'schema'>('preview');
   const [workflowId, setWorkflowId] = useState(urlWorkflowId || '');
+  const [isNavigating, setIsNavigating] = useState(false);
   const [engineeringContract, setEngineeringContract] = useState<Record<string, unknown> | null>(null);
   const [contractLoading, setContractLoading] = useState(false);
   const [contractError, setContractError] = useState<string | null>(null);
@@ -595,13 +597,21 @@ ${JSON.stringify(engineeringContract, null, 2)}
           Back to Compliance Brief
         </Link>
 
-        <Link
-          href={`/tools/project-llm/candidate-upload${urlWorkflowId ? `?workflowId=${urlWorkflowId}` : ''}`}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
+        <button
+          type="button"
+          disabled={isNavigating}
+          onClick={async () => {
+            setIsNavigating(true);
+            if (urlWorkflowId) {
+              await projectLlmClient.ensureCandidateRequested(urlWorkflowId);
+            }
+            router.push(`/tools/project-llm/candidate-upload${urlWorkflowId ? `?workflowId=${urlWorkflowId}` : ''}`);
+          }}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95 disabled:opacity-50"
         >
-          Continue to Upload & Validate
+          {isNavigating ? 'Transitioning...' : 'Continue to Upload & Validate'}
           <ArrowRight size={16} />
-        </Link>
+        </button>
       </div>
     </div>
   );

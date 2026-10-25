@@ -27,7 +27,7 @@ type CertTab = 'repo' | 'tests' | 'composer' | 'runtime' | 'cert';
 export default function IntegrationCertificationPage() {
   const { state } = useProjectLlm();
   const searchParams = useSearchParams();
-  const workflowId = searchParams.get('workflowId');
+  const workflowId = searchParams.get('workflowId') || state.workflowId;
   
   const [activeTab, setActiveTab] = useState<CertTab>('repo');
   const [certificationData, setCertificationData] = useState<CertificationStatus | null>(null);
@@ -72,6 +72,9 @@ export default function IntegrationCertificationPage() {
     fetchCertificationData();
   };
 
+  const familyName = certificationData?.targetFamily || state.familyName || 'Introduction';
+  const targetVersion = certificationData?.targetVersion || state.targetVersion || 'I1';
+
   return (
     <div className="space-y-6 pb-16">
       {/* Top Header Card with Stepper */}
@@ -91,7 +94,7 @@ export default function IntegrationCertificationPage() {
             </h1>
             <p className="text-sm text-slate-500 mt-1 max-w-2xl font-medium">
               Verify placement manifests, inspect test suites, execute live runtime verification, and certify{' '}
-              <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span> for downstream authoring in the Tutorial Composer.
+              <span className="font-bold text-slate-800">{familyName} {targetVersion}</span> for downstream authoring in the Tutorial Composer.
             </p>
           </div>
 
@@ -500,7 +503,7 @@ export default function IntegrationCertificationPage() {
                     </Link>
 
                     <Link
-                      href="/tools/project-llm/workflow-details"
+                      href={`/tools/project-llm/workflow-details${workflowId ? `?workflowId=${workflowId}` : ''}`}
                       className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-800/80 hover:bg-emerald-800 text-white font-bold text-xs border border-white/20 transition-all"
                     >
                       View Evidence Graph
@@ -561,12 +564,12 @@ export default function IntegrationCertificationPage() {
               Workflow Complete: Downstream Authoring Ready
             </h4>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
-              <span className="font-bold text-slate-900">{state.familyName} {state.targetVersion}</span> is certified! You can now compose tutorials using this new block family version directly inside the{' '}
+              <span className="font-bold text-slate-900">{familyName} {targetVersion}</span> is certified! You can now compose tutorials using this new block family version directly inside the{' '}
               <Link href="/tools/block-composer" className="text-pink-600 font-bold underline hover:text-pink-700">
                 Tutorial Composer
               </Link>
               , or review the complete immutable audit trail in{' '}
-              <Link href="/tools/project-llm/workflow-details" className="text-pink-600 font-bold underline hover:text-pink-700">
+              <Link href={`/tools/project-llm/workflow-details${workflowId ? `?workflowId=${workflowId}` : ''}`} className="text-pink-600 font-bold underline hover:text-pink-700">
                 Workflow & Evidence Details
               </Link>.
             </p>
@@ -586,7 +589,7 @@ export default function IntegrationCertificationPage() {
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Link
-            href="/tools/project-llm/workflow-details"
+            href={`/tools/project-llm/workflow-details${workflowId ? `?workflowId=${workflowId}` : ''}`}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50 transition-all shadow-sm"
           >
             Inspect Evidence Graph

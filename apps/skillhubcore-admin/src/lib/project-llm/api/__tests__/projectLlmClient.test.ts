@@ -1,8 +1,8 @@
 /**
  * Tests for ProjectLlmClient
  *
- * Verifies that the API client correctly calls backend endpoints
- * and never fabricates data.
+ * Verifies that the API client correctly calls backend endpoints,
+ * computes SHA-256 for file uploads, and never fabricates data.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -51,16 +51,20 @@ describe('ProjectLlmClient', () => {
         ok: false,
         status: 404,
         statusText: 'Not Found',
+        clone: () => ({
+          json: async () => ({ detail: 'Workflow test not found' }),
+          text: async () => 'Workflow test not found',
+        }),
       });
 
       await expect(client.getWorkflowState('nonexistent')).rejects.toThrow(
-        'Failed to fetch workflow state: 404 Not Found'
+        /Resource not found/i
       );
     });
   });
 
   describe('uploadCandidate', () => {
-    it('should upload files using multipart/form-data', async () => {
+    it('should upload files using CandidatePackage JSON payload with computed SHA-256 hashes', async () => {
       const mockFiles = [
         new File(['content1'], 'file1.tsx', { type: 'text/plain' }),
         new File(['content2'], 'file2.tsx', { type: 'text/plain' }),
@@ -82,18 +86,32 @@ describe('ProjectLlmClient', () => {
         '/api/project-llm/candidates/upload',
         expect.objectContaining({
           method: 'POST',
-          body: expect.any(FormData),
+          headers: {
+            'Content-Type': 'application/json',
+          },
         })
       );
+
+      const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const parsedBody = JSON.parse(callArgs[1].body);
+
+      expect(parsedBody.workflow_id).toBe('workflow-123');
+      expect(parsedBody.files).toHaveLength(2);
+      expect(parsedBody.files[0].filename).toBe('file1.tsx');
+      expect(parsedBody.files[0].content).toBe('content1');
+      // Verify SHA-256 hash was computed for each candidate file
+      expect(parsedBody.files[0].hash).toMatch(/^[a-f0-9]{64}$/);
+      expect(parsedBody.files[1].hash).toMatch(/^[a-f0-9]{64}$/);
+
       expect(result).toEqual(mockResponse);
     });
   });
 
   describe('triggerRuntimeVerification', () => {
-    it('should trigger runtime verification for a workflow', async () => {
+    it('should trigger runtime verification transition for a workflow', async () => {
       const mockResponse = {
-        triggered: true,
-        workflowId: 'workflow-789',
+        workflow_id: 'workflow-789',
+        current_state: 'VERIFYING',
       };
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -104,40 +122,53 @@ describe('ProjectLlmClient', () => {
       const result = await client.triggerRuntimeVerification('workflow-789');
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/project-llm/workflows/workflow-789/runtime-verification',
+        '/api/project-llm/workflows/workflow-789/transition',
         expect.objectContaining({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: expect.stringContaining('"to_state":"VERIFYING"'),
         })
       );
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual({
+        triggered: true,
+        workflowId: 'workflow-789',
+      });
     });
   });
 
   describe('getCertificationStatus', () => {
     it('should fetch certification status without fabricating PASS', async () => {
-      const mockCertification = {
-        workflowId: 'workflow-999',
-        state: 'CERTIFICATION_READY' as CanonicalWorkflowStateEnum,
-        gates: [
-          { gate: 'UBRC', result: 'PASS' as const, detail: 'All checks passed' },
-          { gate: 'Brand', result: 'PENDING' as const },
-        ],
+      const mockBackendWorkflow = {
+        workflow_id: 'workflow-999',
+        current_state: 'CERTIFICATION_READY',
+        gate_results: {
+          UBRC: { status: 'PASS', detail: 'All checks passed' },
+          Brand: 'PENDING',
+        },
       };
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
-        json: async () => mockCertification,
+        json: async () => mockBackendWorkflow,
       });
 
       const result = await client.getCertificationStatus('workflow-999');
 
-      expect(result).toEqual(mockCertification);
-      // Verify that the client doesn't modify gate results
-      expect(result.gates[0].result).toBe('PASS');
-      expect(result.gates[1].result).toBe('PENDING');
+      expect(result.workflowId).toBe('workflow-999');
+      expect(result.state).toBe('CERTIFICATION_READY');
+      expect(result.gates).toHaveLength(2);
+      expect(result.gates[0]).toEqual({
+        gate: 'UBRC',
+        result: 'PASS',
+        detail: 'All checks passed',
+      });
+      expect(result.gates[1]).toEqual({
+        gate: 'Brand',
+        result: 'PENDING',
+        detail: '',
+      });
     });
   });
 });

@@ -61,7 +61,7 @@ def _workflow_model_to_domain(model: WorkflowModel) -> ProjectLLMWorkflow:
             to_state=CanonicalWorkflowState(t.to_state),
             timestamp=t.timestamp,
             triggered_by=t.triggered_by,
-            evidence_id=t.evidence_id,
+            evidence_id=_str_or_none(t.evidence_id),
             reason=t.reason
         )
         for t in (model.state_transitions or [])

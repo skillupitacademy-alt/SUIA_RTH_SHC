@@ -27,7 +27,7 @@ type DetailTab = 'timeline' | 'agents' | 'evidence' | 'snapshot' | 'diff' | 'log
 export default function WorkflowDetailsPage() {
   const { state } = useProjectLlm();
   const searchParams = useSearchParams();
-  const workflowId = searchParams.get('workflowId');
+  const workflowId = searchParams.get('workflowId') || state.workflowId;
   
   const [activeTab, setActiveTab] = useState<DetailTab>('timeline');
   const [logFilter, setLogFilter] = useState<'all' | 'gate' | 'audit' | 'info'>('all');
@@ -213,7 +213,7 @@ export default function WorkflowDetailsPage() {
 
           <div className="flex items-center gap-2 shrink-0">
             <Link
-              href="/tools/project-llm/integration-certification"
+              href={`/tools/project-llm/integration-certification${workflowId ? `?workflowId=${workflowId}` : ''}`}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm"
             >
               <ArrowLeft size={14} />
