@@ -18,6 +18,7 @@ import type {
   TutorialCodePayload,
   TutorialSummaryPayload,
   TutorialIntroductionPayload,
+  TutorialObjectivePayload,
   TutorialPageContentType,
 } from '@quiz/types/tutorial-page-content.types';
 import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
@@ -31,7 +32,7 @@ export interface BlockInstance {
   version: string;
   versionCode: string;
   title: string;
-  payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | TutorialIntroductionPayload | CodeC1AuthorContent;
+  payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | TutorialIntroductionPayload | TutorialObjectivePayload | CodeC1AuthorContent;
   payloadFormat: 'legacy' | 'canonical';
   sourceFormat: 'json' | 'markdown';
   sourceContent: string;
@@ -51,6 +52,7 @@ export function extractBlockTitle(payload: unknown, type: TutorialPageContentTyp
   if (type === 'code') return p.code?.language ? `${p.code.language} Example` : 'Code Example';
   if (type === 'summary') return 'Revision Summary';
   if (type === 'introduction') return p.page?.title || 'Introduction';
+  if (type === 'objective') return p.title || 'Learning Objectives';
   return 'Block Instance';
 }
 
@@ -67,7 +69,7 @@ export function tutorialBlocksToInstances(
   blocks: TutorialBlock[]
 ): BlockInstance[] {
   return blocks.map((block) => {
-    let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | TutorialIntroductionPayload | CodeC1AuthorContent;
+    let payload: TutorialDefinitionPayload | TutorialCodePayload | TutorialSummaryPayload | TutorialIntroductionPayload | TutorialObjectivePayload | CodeC1AuthorContent;
     let sourceContent: string;
 
     switch (block.type) {
@@ -147,6 +149,23 @@ export function tutorialBlocksToInstances(
           title: extractBlockTitle(payload, 'introduction'),
           payload,
           payloadFormat: 'legacy', // Introduction blocks use legacy format (matches TutorialIntroductionPayload)
+          sourceFormat: 'json',
+          sourceContent,
+          expectedTimeSec: block.expectedTimeSec,
+        };
+
+      case 'objective':
+        payload = block.content as TutorialObjectivePayload;
+        sourceContent = JSON.stringify(payload, null, 2);
+
+        return {
+          id: block.id,
+          type: 'objective',
+          version: 'v1',
+          versionCode: ('version' in block && block.version) ? block.version : 'O1',
+          title: extractBlockTitle(payload, 'objective'),
+          payload,
+          payloadFormat: 'canonical',
           sourceFormat: 'json',
           sourceContent,
           expectedTimeSec: block.expectedTimeSec,
@@ -295,8 +314,22 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
       );
     }
 
-    case 'custom' as any:
-    case 'objective' as any: {
+    case 'objective': {
+      if (instance.versionCode !== 'O1') {
+        throw new Error(
+          `Unsupported objective version: ${instance.versionCode}. Only O1 is currently supported.`
+        );
+      }
+      return {
+        id: instance.id,
+        type: 'objective',
+        version: 'O1',
+        content: instance.payload as TutorialObjectivePayload,
+        expectedTimeSec: instance.expectedTimeSec,
+      } as TutorialBlock;
+    }
+
+    case 'custom' as any: {
       return {
         id: instance.id,
         type: instance.type as any,

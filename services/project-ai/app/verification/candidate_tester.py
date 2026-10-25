@@ -4,7 +4,6 @@ Candidate Sandbox Test Runner & Qualification Engine
 
 import os
 import re
-import shutil
 import json
 import logging
 import hashlib
@@ -28,6 +27,34 @@ def find_workspace_root() -> Path:
             return parent
 
     return Path(__file__).resolve().parents[4]
+
+
+def _create_isolated_worktree(workspace_root: Path) -> Path:
+    """Create a detached worktree so candidate code never touches the live tree."""
+    sandbox_root = Path(os.environ.get("PROJECT_AI_QUALIFICATION_DIR", Path(os.getenv("TEMP", "/tmp")) / "project_ai_qualification"))
+    sandbox_root.mkdir(parents=True, exist_ok=True)
+    worktree_path = sandbox_root / f"candidate-{uuid4().hex}"
+    result = subprocess.run(
+        ["git", "worktree", "add", "--detach", str(worktree_path), "HEAD"],
+        cwd=workspace_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"Unable to create qualification worktree: {result.stderr.strip()}")
+    return worktree_path
+
+
+def _remove_isolated_worktree(workspace_root: Path, worktree_path: Path) -> None:
+    """Remove a disposable qualification worktree without affecting project branches."""
+    subprocess.run(
+        ["git", "worktree", "remove", "--force", str(worktree_path)],
+        cwd=workspace_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
 
 
 async def run_candidate_qualification_tests(
@@ -82,12 +109,14 @@ async def run_candidate_qualification_tests(
     ]
 
     cand_short = candidate_id.replace('-', '')[:8]
-    blocks_dir = ui_package_dir / 'src' / 'tutorial' / 'blocks'
-    tests_dir = blocks_dir / '__tests__'
-    
     written_files: List[Path] = []
+    worktree_path: Optional[Path] = None
     
     try:
+        worktree_path = _create_isolated_worktree(workspace_root)
+        blocks_dir = worktree_path / 'packages' / 'ui' / 'src' / 'tutorial' / 'blocks'
+        tests_dir = blocks_dir / '__tests__'
+
         # Write candidate component files with prefix
         comp_map = {}
         for comp in component_files:
@@ -101,25 +130,25 @@ async def run_candidate_qualification_tests(
             written_files.append(cand_comp_path)
             comp_map[orig_base] = cand_comp_base
 
-        # Write candidate test file into blocks/__tests__/
-        test_file = test_files[0]
-        test_content = test_file.content if isinstance(test_file.content, str) else test_file.content.decode('utf-8', errors='replace')
-        
-        # Rewire import from '../OriginalComponent' to '../__cand_short_OriginalComponent'
-        for orig_base, cand_base in comp_map.items():
-            test_content = re.sub(
-                rf"(['\"])(\.\.?/){re.escape(orig_base)}(['\"])",
-                rf"\1../{cand_base}\3",
-                test_content
-            )
+        rel_test_paths: List[str] = []
+        for test_file in test_files:
+            test_content = test_file.content if isinstance(test_file.content, str) else test_file.content.decode('utf-8', errors='replace')
 
-        cand_test_filename = f"__cand_{cand_short}_{os.path.basename(test_file.filename)}"
-        cand_test_path = tests_dir / cand_test_filename
-        cand_test_path.write_text(test_content, encoding='utf-8')
-        written_files.append(cand_test_path)
+            # Tests run from blocks/__tests__; keep their component imports inside the sandbox.
+            for orig_base, cand_base in comp_map.items():
+                test_content = re.sub(
+                    rf"(['\"])(?:\.\.?/){re.escape(orig_base)}(['\"])",
+                    rf"\1../{cand_base}\2",
+                    test_content,
+                )
+
+            cand_test_filename = f"__cand_{cand_short}_{os.path.basename(test_file.filename)}"
+            cand_test_path = tests_dir / cand_test_filename
+            cand_test_path.write_text(test_content, encoding='utf-8')
+            written_files.append(cand_test_path)
+            rel_test_paths.append(f"src/tutorial/blocks/__tests__/{cand_test_filename}")
 
         # Run vitest
-        rel_test_path = f"src/tutorial/blocks/__tests__/{cand_test_filename}"
         pnpm_cmd = "pnpm.cmd" if os.name == 'nt' else "pnpm"
         cmd = [
             pnpm_cmd,
@@ -128,14 +157,14 @@ async def run_candidate_qualification_tests(
             "exec",
             "vitest",
             "run",
-            rel_test_path,
+            *rel_test_paths,
             "--reporter=json"
         ]
 
         logger.info(f"Running candidate qualification tests: {' '.join(cmd)}")
         process = subprocess.run(
             cmd,
-            cwd=str(workspace_root),
+            cwd=str(worktree_path),
             capture_output=True,
             text=True,
             timeout=timeout_seconds,
@@ -167,7 +196,7 @@ async def run_candidate_qualification_tests(
         except Exception:
             pass
 
-        if success:
+        if success and num_total > 0:
             detail_msg = f"{num_passed}/{num_total or num_passed} unit tests passed ({duration_ms}ms)"
             return {
                 "passed": True,
@@ -181,6 +210,9 @@ async def run_candidate_qualification_tests(
                 "duration_ms": duration_ms
             }
         else:
+            if success and num_total == 0:
+                success = False
+                stderr = "Vitest completed without executing any candidate tests"
             failure_detail = f"Tests failed with exit code {process.returncode}: {stderr[:300] or stdout[:300]}"
             if num_failed > 0:
                 failure_detail = f"{num_failed} of {num_total} unit tests failed ({duration_ms}ms)"
@@ -221,10 +253,5 @@ async def run_candidate_qualification_tests(
             "failed_tests": 0,
         }
     finally:
-        # Clean up any temporary files written
-        for p in written_files:
-            try:
-                if p.exists():
-                    p.unlink()
-            except Exception as clean_err:
-                logger.warning(f"Failed deleting temporary candidate file {p}: {clean_err}")
+        if worktree_path:
+            _remove_isolated_worktree(workspace_root, worktree_path)

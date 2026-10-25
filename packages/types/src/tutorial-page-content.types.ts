@@ -1,7 +1,7 @@
 import type { BrandTutorialTheme, TutorialNavigationTree, TutorialSidebarBrandId } from './tutorial-sidebar.types';
 import type { TutorialBlock, IntroductionIconKey } from './tutorial-rich-document/blocks';
 
-export type TutorialPageContentType = 'definition' | 'code' | 'summary' | 'introduction';
+export type TutorialPageContentType = 'definition' | 'code' | 'summary' | 'introduction' | 'objective';
 export type TutorialContentSourceFormat = 'json' | 'markdown';
 export type TutorialContentStatus = 'draft' | 'published';
 
@@ -193,11 +193,22 @@ export interface TutorialIntroductionPayload {
   };
 }
 
+export interface TutorialObjectivePayload {
+  eyebrow?: string;
+  title: string;
+  introduction?: string;
+  objectives: Array<{
+    id?: string | number;
+    text: string;
+  }>;
+}
+
 export type TutorialContentPayloadByType = {
   definition: TutorialDefinitionPayload;
   code: TutorialCodePayload;
   summary: TutorialSummaryPayload;
   introduction: TutorialIntroductionPayload;
+  objective: TutorialObjectivePayload;
   [key: string]: any;
 };
 

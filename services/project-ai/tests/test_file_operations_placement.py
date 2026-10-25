@@ -106,9 +106,8 @@ def test_patch_tutorial_block_renderer():
     assert "case 'objective':" in patched
     assert "ObjectiveO1Block" in patched
 
-    # Idempotency check: patching again should raise PatchError
-    with pytest.raises(PatchError):
-        patch_tutorial_block_renderer(patched, "Objective", "O1", "ObjectiveO1Block")
+    # Idempotency check: applying the same operation must not duplicate changes.
+    assert patch_tutorial_block_renderer(patched, "Objective", "O1", "ObjectiveO1Block") == patched
 
 
 def test_patch_tutorial_composer_registry():
@@ -130,9 +129,8 @@ def test_patch_tutorial_composer_registry():
     assert "import { objectiveRegistry } from './entries/objective.registry';" in patched
     assert "objectiveRegistry," in patched
 
-    # Idempotency check
-    with pytest.raises(PatchError):
-        patch_tutorial_composer_registry(patched, "Objective", "objectiveRegistry")
+    # Idempotency check: applying the same operation must not duplicate changes.
+    assert patch_tutorial_composer_registry(patched, "Objective", "objectiveRegistry") == patched
 
 
 def test_patch_tutorial_page_content_types():

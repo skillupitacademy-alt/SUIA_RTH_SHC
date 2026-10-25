@@ -33,7 +33,13 @@ from app.models.implementation_approval import (
 from app.orchestration.canonical_workflow import CanonicalWorkflowState, is_valid_transition
 from app.orchestration.workflow_governance import WorkflowGovernanceService
 from app.api.routes.workflows import get_governance_service
-from app.persistence import get_db_session, get_approval_repository, ApprovalRepository
+from app.persistence import (
+    get_db_session,
+    get_approval_repository,
+    get_manifest_repository,
+    ApprovalRepository,
+    ManifestRepository,
+)
 
 router = APIRouter(prefix="/approvals", tags=["governance"])
 
@@ -328,6 +334,7 @@ async def approve_placement(
     user: AuthenticatedPrincipal = Depends(require_contract_admin),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
     approval_repo: ApprovalRepository = Depends(get_approval_repository),
+    manifest_repo: ManifestRepository = Depends(get_manifest_repository),
     session: AsyncSession = Depends(get_db_session)
 ):
     """
@@ -399,6 +406,22 @@ async def approve_placement(
     workflow_requester = workflow.requester_id
     target_family = workflow.target_family
     target_version = workflow.target_version
+
+    qualification = (workflow.gate_results or {}).get("Unit Test Suite")
+    if (
+        not isinstance(qualification, dict)
+        or qualification.get("result") != "PASS"
+        or not qualification.get("evidence_id")
+        or not qualification.get("evidence_hash")
+        or qualification.get("candidate_sha256") != stored_candidate_hash
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "QUALIFICATION_EVIDENCE_REQUIRED",
+                "message": "Approval is blocked until Project LLM records passing unit-test evidence for the bound candidate hash.",
+            },
+        )
     
     # Verify manifest hash matches stored manifest
     if not stored_manifest_hash:
@@ -457,6 +480,21 @@ async def approve_placement(
         raise HTTPException(
             status_code=500,
             detail="Workflow has no stored placement manifest ID"
+        )
+
+    stored_manifest = await manifest_repo.get(str(stored_manifest_id))
+    manifest_operations = (
+        stored_manifest.required_changes.get("operations", [])
+        if stored_manifest and isinstance(stored_manifest.required_changes, dict)
+        else []
+    )
+    if not manifest_operations:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "FILE_OPERATION_MANIFEST_REQUIRED",
+                "message": "Approval is blocked until the manifest contains explicit, snapshot-derived file operations. Generate a new Project LLM placement plan.",
+            },
         )
     
     effective_manifest_id = payload.placement_manifest_id or str(stored_manifest_id)

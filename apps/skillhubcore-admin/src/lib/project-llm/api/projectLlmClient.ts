@@ -452,6 +452,37 @@ export class ProjectLlmClient {
     }
   }
 
+  /** Run Project LLM's isolated qualification suite for a candidate package. */
+  async qualifyCandidate(candidateId: string): Promise<{
+    passed: boolean;
+    status: 'PASS' | 'FAIL';
+    detail: string;
+    totalTests: number;
+    passedTests: number;
+    failedTests: number;
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/candidates/${candidateId}/qualify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+      });
+      if (!response.ok) {
+        await handleFetchError(response);
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) {
+        throw error;
+      }
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to run candidate qualification tests.'
+      );
+    }
+  }
+
   /**
    * Transition workflow state through canonical state machine.
    */

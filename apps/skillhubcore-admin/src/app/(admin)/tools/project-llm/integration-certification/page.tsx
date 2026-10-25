@@ -49,6 +49,7 @@ export default function IntegrationCertificationPage() {
   const [isPlanning, setIsPlanning] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [isQualifying, setIsQualifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Extracted fetch function to avoid duplication
@@ -139,6 +140,23 @@ export default function IntegrationCertificationPage() {
       setError(err instanceof ProjectLlmError ? err.message : 'Unable to generate placement manifest.');
     } finally {
       setIsPlanning(false);
+    }
+  };
+
+  const handleRunQualification = async () => {
+    if (!effectiveCandidateId) return;
+    setError(null);
+    setIsQualifying(true);
+    try {
+      const result = await projectLlmClient.qualifyCandidate(effectiveCandidateId);
+      if (!result.passed) {
+        setError(result.detail);
+      }
+      await fetchCertificationData();
+    } catch (err) {
+      setError(err instanceof ProjectLlmError ? err.message : 'Unable to run the candidate test suite.');
+    } finally {
+      setIsQualifying(false);
     }
   };
 
@@ -570,13 +588,24 @@ export default function IntegrationCertificationPage() {
                     Active gate results evaluated against canonical specifications and governance policies
                   </p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                  certificationData?.gates?.every(g => g.result === 'PASS')
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                    : 'bg-amber-100 text-amber-800 border-amber-200'
-                }`}>
-                  {certificationData?.gates?.filter(g => g.result === 'PASS').length || 0} / {certificationData?.gates?.length || 0} Gates Passed
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleRunQualification}
+                    disabled={!effectiveCandidateId || isQualifying}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    <TestTube size={13} />
+                    {isQualifying ? 'Running tests...' : 'Run qualification'}
+                  </button>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                    certificationData?.gates?.every(g => g.result === 'PASS')
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                      : 'bg-amber-100 text-amber-800 border-amber-200'
+                  }`}>
+                    {certificationData?.gates?.filter(g => g.result === 'PASS').length || 0} / {certificationData?.gates?.length || 0} Gates Passed
+                  </span>
+                </div>
               </div>
 
               {/* Dynamic Gates Grid */}

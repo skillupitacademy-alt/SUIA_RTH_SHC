@@ -77,6 +77,13 @@ describe('ProjectLlmClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
+        json: async () => ({
+          workflow_id: 'workflow-123',
+          current_state: 'CANDIDATE_REQUESTED',
+          gate_results: {},
+        }),
+      }).mockResolvedValueOnce({
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -92,7 +99,7 @@ describe('ProjectLlmClient', () => {
         })
       );
 
-      const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[1];
       const parsedBody = JSON.parse(callArgs[1].body);
 
       expect(parsedBody.workflow_id).toBe('workflow-123');

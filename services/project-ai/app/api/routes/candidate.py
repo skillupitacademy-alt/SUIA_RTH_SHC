@@ -440,6 +440,7 @@ async def upload_candidate(
                     "detail": test_result["detail"],
                     "evidence_id": test_result["evidence_id"],
                     "evidence_hash": test_result["evidence_hash"],
+                    "candidate_sha256": candidate_sha256,
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                     "total_tests": test_result["total_tests"],
                     "passed_tests": test_result["passed_tests"],
@@ -498,6 +499,64 @@ async def upload_candidate(
             "total_tests": test_result["total_tests"],
             "passed_tests": test_result["passed_tests"],
         }
+    }
+
+
+@router.post("/{candidate_id}/qualify")
+async def qualify_candidate(
+    candidate_id: str,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repository),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Run Project LLM's independent candidate test suite and persist its evidence."""
+    candidate_model = await candidate_repo.get(candidate_id)
+    if not candidate_model:
+        raise HTTPException(status_code=404, detail=f"Candidate {candidate_id} not found")
+    if not candidate_model.workflow_id:
+        raise HTTPException(status_code=409, detail="Candidate is not bound to a workflow")
+
+    package = model_to_candidate(candidate_model)
+    from app.verification.candidate_tester import run_candidate_qualification_tests
+
+    test_result = await run_candidate_qualification_tests(package.candidateId, package.files)
+    workflow_repo = await get_workflow_repository(session)
+    workflow_model = await workflow_repo.get(str(candidate_model.workflow_id))
+    if not workflow_model:
+        raise HTTPException(status_code=404, detail=f"Workflow {candidate_model.workflow_id} not found")
+
+    current_gates = dict(workflow_model.gate_results or {})
+    current_gates["Unit Test Suite"] = {
+        "gate": "Unit Test Suite",
+        "status": test_result["status"],
+        "result": test_result["status"],
+        "verdict": test_result["status"],
+        "detail": test_result["detail"],
+        "evidence_id": test_result["evidence_id"],
+        "evidence_hash": test_result["evidence_hash"],
+        "candidate_sha256": candidate_model.candidate_sha256,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "total_tests": test_result["total_tests"],
+        "passed_tests": test_result["passed_tests"],
+        "failed_tests": test_result["failed_tests"],
+        "duration_ms": test_result.get("duration_ms"),
+    }
+    workflow_model.gate_results = current_gates
+    await workflow_repo.upsert(workflow_model)
+    await session.commit()
+
+    return {
+        "candidateId": candidate_id,
+        "workflowId": str(candidate_model.workflow_id),
+        "passed": test_result["passed"],
+        "status": test_result["status"],
+        "detail": test_result["detail"],
+        "evidenceId": test_result["evidence_id"],
+        "evidenceHash": test_result["evidence_hash"],
+        "totalTests": test_result["total_tests"],
+        "passedTests": test_result["passed_tests"],
+        "failedTests": test_result["failed_tests"],
+        "durationMs": test_result.get("duration_ms"),
     }
 
 
@@ -745,6 +804,24 @@ async def generate_manifest(
         )
     
     package = model_to_candidate(candidate_model)
+
+    # A placement manifest is only valid for a candidate independently qualified
+    # by Project LLM. This evidence is generated during GUI intake, not supplied
+    # by the external AI as an assertion of success.
+    workflow_repo = await get_workflow_repository(session)
+    workflow_model = await workflow_repo.get(str(candidate_model.workflow_id)) if candidate_model.workflow_id else None
+    qualification = (workflow_model.gate_results or {}).get("Unit Test Suite") if workflow_model else None
+    if (
+        not isinstance(qualification, dict)
+        or qualification.get("result") != "PASS"
+        or not qualification.get("evidence_id")
+        or not qualification.get("evidence_hash")
+        or qualification.get("candidate_sha256") != candidate_model.candidate_sha256
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Candidate qualification evidence is missing, failed, or does not match this candidate. Run the Project LLM Test Suite before generating a placement manifest.",
+        )
     
     # Get classification and comparison
     classification = await classify_candidate(
