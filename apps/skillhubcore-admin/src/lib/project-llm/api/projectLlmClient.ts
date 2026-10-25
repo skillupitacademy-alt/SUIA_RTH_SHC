@@ -424,7 +424,7 @@ export class ProjectLlmClient {
 
       return {
         workflowId: data.workflow_id || workflowId,
-        state: data.state?.current_state || data.current_state || 'REQUESTED',
+        state: data.state?.current || data.state?.current_state || data.current_state || 'REQUESTED',
         gates,
         certifiedAt: data.updated_at || undefined,
         targetFamily: data.target?.family,

@@ -21,10 +21,14 @@ def get_discovery_client() -> DiscoveryClient:
     import os
     from pathlib import Path
 
-    workspace_root = os.environ.get(
-        'WORKSPACE_ROOT',
-        str(Path(__file__).resolve().parents[3])
-    )
+    workspace_root = os.environ.get('WORKSPACE_ROOT')
+    if not workspace_root or not (Path(workspace_root) / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json').exists():
+        for parent in Path(__file__).resolve().parents:
+            if (parent / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json').exists():
+                workspace_root = str(parent)
+                break
+        else:
+            workspace_root = str(Path(__file__).resolve().parents[4])
     snapshot_path = os.path.join(
         workspace_root,
         'packages',

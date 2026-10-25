@@ -92,6 +92,10 @@ async function handleRequest(
       responseData = responseText;
     }
 
+    if (response.status >= 400) {
+      console.error(`[PROJECT_LLM_ADAPTER] Upstream ${request.method} ${targetUrl} failed with ${response.status}:`, responseText);
+    }
+
     return NextResponse.json(responseData, { status: response.status });
   } catch (error) {
     // Network or fetch error (backend unreachable)

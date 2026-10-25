@@ -64,7 +64,8 @@ def candidate_to_model(package: CandidatePackage) -> CandidateModel:
         files=[{
             "filename": f.filename,
             "content": f.content,
-            "contentType": f.contentType
+            "contentType": f.contentType,
+            "hash": f.hash,
         } for f in package.files],
         uploaded_at=datetime.fromisoformat(package.uploadedAt.replace('Z', '+00:00')) if isinstance(package.uploadedAt, str) else package.uploadedAt,
         uploaded_by=package.uploadedBy,
@@ -81,7 +82,8 @@ def model_to_candidate(model: CandidateModel) -> CandidatePackage:
     files = [CandidateFile(
         filename=f["filename"],
         content=f["content"],
-        contentType=f["contentType"]
+        contentType=f["contentType"],
+        hash=f.get("hash") or hashlib.sha256(f["content"].encode("utf-8")).hexdigest()
     ) for f in model.files]
     
     uploaded_at_str = model.uploaded_at.isoformat()
@@ -89,14 +91,25 @@ def model_to_candidate(model: CandidateModel) -> CandidatePackage:
         uploaded_at_str += 'Z'
     
     return CandidatePackage(
-        candidateId=model.candidate_id,
+        candidateId=str(model.candidate_id),
         files=files,
         uploadedAt=uploaded_at_str,
         uploadedBy=model.uploaded_by,
-        workflow_id=model.workflow_id,
+        workflow_id=str(model.workflow_id) if model.workflow_id else None,
         target_family=model.target_family,
         target_version=model.target_version,
     )
+
+
+def parse_iso_datetime(val: str | datetime) -> datetime:
+    if isinstance(val, datetime):
+        return val
+    cleaned = val
+    if cleaned.endswith('Z'):
+        cleaned = cleaned[:-1]
+    if not ('+' in cleaned or '-' in cleaned[10:]):
+        cleaned += '+00:00'
+    return datetime.fromisoformat(cleaned)
 
 
 def manifest_to_model(manifest: PlacementManifest, candidate_id: str) -> ManifestModel:
@@ -111,7 +124,7 @@ def manifest_to_model(manifest: PlacementManifest, candidate_id: str) -> Manifes
         block_version=manifest.blockVersion,
         required_changes=manifest.requiredChanges,
         evidence_ids=manifest.evidenceIds,
-        created_at=datetime.fromisoformat(manifest.createdAt.replace('Z', '+00:00')) if isinstance(manifest.createdAt, str) else manifest.createdAt
+        created_at=parse_iso_datetime(manifest.createdAt)
     )
 
 
@@ -122,8 +135,8 @@ def model_to_manifest(model: ManifestModel) -> PlacementManifest:
         created_at_str += 'Z'
     
     return PlacementManifest(
-        manifestId=model.manifest_id,
-        candidateId=model.candidate_id,
+        manifestId=str(model.manifest_id),
+        candidateId=str(model.candidate_id),
         decision=PlacementDecision(model.decision),
         targetPath=model.target_path,
         blockFamily=BlockFamily(model.block_family),
@@ -159,10 +172,10 @@ def model_to_approval(model: ApprovalModel) -> ImplementationApproval:
     from app.models.implementation_approval import ImplementationApprovalStatus
     
     return ImplementationApproval(
-        approval_id=model.approval_id,
-        workflow_id=model.workflow_id,
+        approval_id=str(model.approval_id),
+        workflow_id=str(model.workflow_id),
         candidate_sha256=model.candidate_sha256,
-        placement_manifest_id=model.placement_manifest_id,
+        placement_manifest_id=str(model.placement_manifest_id) if model.placement_manifest_id else "",
         placement_manifest_sha256=model.placement_manifest_sha256,
         target_family=model.target_family,
         target_version=model.target_version,
@@ -180,10 +193,14 @@ def get_discovery_client() -> DiscoveryClient:
     
     Reads TypeScript-generated snapshot for canonical comparison.
     """
-    workspace_root = os.environ.get(
-        'WORKSPACE_ROOT',
-        str(Path(__file__).resolve().parents[3])
-    )
+    workspace_root = os.environ.get('WORKSPACE_ROOT')
+    if not workspace_root or not (Path(workspace_root) / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json').exists():
+        for parent in Path(__file__).resolve().parents:
+            if (parent / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json').exists():
+                workspace_root = str(parent)
+                break
+        else:
+            workspace_root = str(Path(__file__).resolve().parents[4])
     snapshot_path = os.path.join(
         workspace_root,
         'packages',
@@ -421,8 +438,8 @@ async def upload_candidate(
 @router.post("/{candidate_id}/classify", response_model=ClassificationResult)
 async def classify_candidate(
     candidate_id: str,
-    user: AuthenticatedPrincipal = Depends(require_contract_admin),
-    candidate_repo: CandidateRepository = Depends(get_candidate_repository)
+    candidate_repo: CandidateRepository = Depends(get_candidate_repository),
+    user: AuthenticatedPrincipal = Depends(require_contract_admin)
 ):
     """
     Classify candidate block family based on structural analysis.
@@ -541,10 +558,10 @@ async def classify_candidate(
 @router.post("/{candidate_id}/compare", response_model=CanonicalComparison)
 async def compare_candidate(
     candidate_id: str,
-    user: AuthenticatedPrincipal = Depends(get_current_user),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     session: AsyncSession = Depends(get_db_session),
-    client: DiscoveryClient = Depends(get_discovery_client)
+    client: DiscoveryClient = Depends(get_discovery_client),
+    user: AuthenticatedPrincipal = Depends(get_current_user)
 ):
     """
     Compare candidate against canonical repository blocks.
@@ -581,7 +598,11 @@ async def compare_candidate(
         )
     
     # Get classification for candidate
-    classification = await classify_candidate(candidate_id, candidate_repo)
+    classification = await classify_candidate(
+        candidate_id=candidate_id,
+        candidate_repo=candidate_repo,
+        user=user
+    )
     
     # Use evidence-backed comparator (Wave 2)
     from app.placement.comparator import CanonicalComparator
@@ -648,8 +669,18 @@ async def generate_manifest(
     package = model_to_candidate(candidate_model)
     
     # Get classification and comparison
-    classification = await classify_candidate(candidate_id, candidate_repo)
-    comparison = await compare_candidate(candidate_id, candidate_repo, session, client)
+    classification = await classify_candidate(
+        candidate_id=candidate_id,
+        candidate_repo=candidate_repo,
+        user=user
+    )
+    comparison = await compare_candidate(
+        candidate_id=candidate_id,
+        candidate_repo=candidate_repo,
+        session=session,
+        client=client,
+        user=user
+    )
     
     # Use evidence-backed comparator for placement decision (Wave 2)
     from app.placement.comparator import CanonicalComparator
@@ -729,7 +760,7 @@ async def generate_manifest(
     
     # Create manifest
     manifest_id = f"manifest-{candidate_id}-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
-    created_at = datetime.now(timezone.utc).isoformat() + "Z"
+    created_at = datetime.now(timezone.utc).isoformat()
     
     # B07 fix: Extract target version from workflow binding (Wave 1A)
     # Candidate packages now carry target_version from workflow at upload
@@ -777,7 +808,86 @@ async def generate_manifest(
     try:
         manifest_model = manifest_to_model(manifest, candidate_id)
         await manifest_repo.upsert(manifest_model)
+
+        # A manifest is not only a database record: it must be bound to the
+        # workflow before a human can approve its exact hash. Keep this sequence
+        # server-side so a UI cannot skip the canonical approval gate.
+        if package.workflow_id:
+            from app.api.routes.workflows import get_governance_service
+            from app.orchestration.canonical_workflow import CanonicalWorkflowState
+
+            governance_service = await get_governance_service(session)
+            workflow = await governance_service.get_workflow(package.workflow_id)
+            if not workflow:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Workflow {package.workflow_id} not found"
+                )
+
+            allowed_states = {
+                CanonicalWorkflowState.CANDIDATE_RECEIVED,
+                CanonicalWorkflowState.CANDIDATE_AUDIT,
+                CanonicalWorkflowState.PLACEMENT,
+                CanonicalWorkflowState.INTEGRATION_PLANNED,
+            }
+            if workflow.current_state not in allowed_states:
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "Cannot generate a new placement manifest after the approval gate. "
+                        f"Workflow is in {workflow.current_state.value}."
+                    )
+                )
+
+            if workflow.current_state == CanonicalWorkflowState.CANDIDATE_RECEIVED:
+                workflow = await governance_service.transition_state(
+                    package.workflow_id,
+                    CanonicalWorkflowState.CANDIDATE_AUDIT,
+                    triggered_by=user.get("user_id", "unknown"),
+                    reason="Candidate manifest generation started"
+                )
+
+            await governance_service.bind_artifact(
+                workflow_id=package.workflow_id,
+                artifact_type="manifest",
+                artifact_id=manifest.manifestId,
+                artifact_sha256=manifest.manifestHash
+            )
+
+            if decision == PlacementDecision.REJECT:
+                await governance_service.transition_state(
+                    package.workflow_id,
+                    CanonicalWorkflowState.REJECTED,
+                    triggered_by=user.get("user_id", "unknown"),
+                    reason="Placement comparison rejected the candidate"
+                )
+            else:
+                if workflow.current_state == CanonicalWorkflowState.CANDIDATE_AUDIT:
+                    workflow = await governance_service.transition_state(
+                        package.workflow_id,
+                        CanonicalWorkflowState.PLACEMENT,
+                        triggered_by=user.get("user_id", "unknown"),
+                        reason="Candidate audit completed; placement planned"
+                    )
+                if workflow.current_state == CanonicalWorkflowState.PLACEMENT:
+                    workflow = await governance_service.transition_state(
+                        package.workflow_id,
+                        CanonicalWorkflowState.INTEGRATION_PLANNED,
+                        triggered_by=user.get("user_id", "unknown"),
+                        reason=f"Placement manifest {manifest.manifestId} generated"
+                    )
+                if workflow.current_state == CanonicalWorkflowState.INTEGRATION_PLANNED:
+                    await governance_service.transition_state(
+                        package.workflow_id,
+                        CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL,
+                        triggered_by=user.get("user_id", "unknown"),
+                        reason="Placement manifest is ready for independent approval"
+                    )
+
         await session.commit()
+    except HTTPException:
+        await session.rollback()
+        raise
     except Exception as e:
         await session.rollback()
         raise HTTPException(
@@ -857,7 +967,8 @@ async def execute_placement(
     user: AuthenticatedPrincipal = Depends(require_contract_admin),
     candidate_repo: CandidateRepository = Depends(get_candidate_repository),
     manifest_repo: ManifestRepository = Depends(get_manifest_repository),
-    approval_repo: ApprovalRepository = Depends(get_approval_repository)
+    approval_repo: ApprovalRepository = Depends(get_approval_repository),
+    session: AsyncSession = Depends(get_db_session)
 ):
     """
     Execute approved placement manifest for candidate block.
@@ -892,6 +1003,25 @@ async def execute_placement(
         )
     
     package = model_to_candidate(candidate_model)
+
+    from app.api.routes.workflows import get_governance_service
+    from app.orchestration.canonical_workflow import CanonicalWorkflowState
+
+    if not package.workflow_id:
+        raise HTTPException(status_code=400, detail="Candidate is missing its workflow binding")
+
+    governance_service = await get_governance_service(session)
+    workflow = await governance_service.get_workflow(package.workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail=f"Workflow {package.workflow_id} not found")
+    if workflow.current_state != CanonicalWorkflowState.IMPLEMENTING:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Placement execution requires an approved workflow in IMPLEMENTING state. "
+                f"Current state: {workflow.current_state.value}"
+            )
+        )
     
     manifests = await manifest_repo.list_by_candidate(candidate_id)
     if not manifests:
@@ -980,6 +1110,15 @@ async def execute_placement(
                 'status': 'warning',
                 'message': f'Placement succeeded but discovery refresh failed: {str(e)}'
             }
+
+        await governance_service.transition_state(
+            workflow_id=package.workflow_id,
+            to_state=CanonicalWorkflowState.IMPLEMENTED,
+            triggered_by=user.get("user_id", "unknown"),
+            reason=f"Approved placement executed for candidate {candidate_id}"
+        )
+        await session.commit()
+        result['workflowState'] = CanonicalWorkflowState.IMPLEMENTED.value
         
         return result
         

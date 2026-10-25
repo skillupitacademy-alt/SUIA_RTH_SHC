@@ -95,6 +95,31 @@ export function ProjectLlmProvider({ children }: { children: React.ReactNode }) 
     }
   }, [state, isLoaded]);
 
+  // Synchronize context state with backend when workflowId is present in URL
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeWfId = urlParams.get('workflowId');
+    if (!activeWfId) return;
+
+    projectLlmClient.getCertificationStatus(activeWfId)
+      .then((cert) => {
+        if (cert.targetFamily && cert.targetVersion) {
+          setState((prev) => ({
+            ...prev,
+            workflowId: activeWfId,
+            familyName: cert.targetFamily!,
+            targetVersion: cert.targetVersion!,
+            familyId: cert.targetFamily!.charAt(0).toUpperCase(),
+            existingVersions: cert.targetFamily === 'Objective' ? [] : prev.existingVersions,
+          }));
+        }
+      })
+      .catch((err) => {
+        console.warn('[ProjectLlmContext] Auto-sync note:', err);
+      });
+  }, []);
+
   const setFamily = (familyId: string, familyName: string, existingVersions: string[]) => {
     const nextVer = `${familyId}${existingVersions.length + 1}`;
     setState((prev) => ({

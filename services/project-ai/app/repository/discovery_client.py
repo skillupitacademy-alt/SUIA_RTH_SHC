@@ -55,20 +55,14 @@ class DiscoveryClient:
         with open(self.snapshot_path, 'r', encoding='utf-8') as f:
             snapshot = json.load(f)
         
-        # Validate required top-level keys
-        required_keys = [
-            'metadata',
-            'applications',
-            'packages',
-            'services',
-            'evidence',
-            'findings'
-        ]
+        # Validate snapshot format (supports both v1.0 legacy top-level keys and v1.1 structure-nested keys)
+        has_evidence = 'evidence' in snapshot
+        has_findings = 'findings' in snapshot
+        has_structure = 'structure' in snapshot or all(k in snapshot for k in ['applications', 'packages', 'services'])
         
-        missing_keys = [key for key in required_keys if key not in snapshot]
-        if missing_keys:
+        if not (has_evidence and has_findings and has_structure):
             raise ValueError(
-                f"Invalid snapshot: missing required keys: {missing_keys}. "
+                "Invalid snapshot: missing required sections ('evidence', 'findings', or structure). "
                 "The snapshot may be from an outdated scanner version."
             )
         
@@ -112,7 +106,7 @@ class DiscoveryClient:
             Snapshot metadata
         """
         snapshot = self.load_snapshot()
-        return snapshot.get('metadata', {})
+        return snapshot.get('metadata') or snapshot.get('repository', {})
     
     def clear_cache(self):
         """Clear cached snapshot data to force reload on next access."""

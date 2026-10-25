@@ -31,7 +31,7 @@ import type {
 type CertTab = 'repo' | 'tests' | 'composer' | 'runtime' | 'cert';
 
 export default function IntegrationCertificationPage() {
-  const { state } = useProjectLlm();
+  const { state, setState } = useProjectLlm();
   const searchParams = useSearchParams();
   const workflowId = searchParams.get('workflowId') || state.workflowId;
   const candidateId = searchParams.get('candidateId');
@@ -54,15 +54,40 @@ export default function IntegrationCertificationPage() {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch all three in parallel
-      const [cert, runtime, browser] = await Promise.all([
-        projectLlmClient.getCertificationStatus(workflowId),
-        projectLlmClient.getRuntimeHealth(workflowId),
-        projectLlmClient.getBrowserVerificationStatus(workflowId),
-      ]);
+      // Primary: Fetch certification status and workflow identity
+      const cert = await projectLlmClient.getCertificationStatus(workflowId);
       setCertificationData(cert);
-      setRuntimeHealth(runtime);
-      setBrowserVerification(browser);
+
+      if (cert.targetFamily && cert.targetVersion) {
+        setState((prev) => ({
+          ...prev,
+          familyName: cert.targetFamily!,
+          targetVersion: cert.targetVersion!,
+          familyId: cert.targetFamily!.charAt(0).toUpperCase(),
+        }));
+      }
+
+      // Fetch placement manifest if candidateId is present
+      if (candidateId) {
+        try {
+          const loadedManifest = await projectLlmClient.getPlacementManifest(candidateId);
+          setManifest(loadedManifest);
+        } catch {
+          // No manifest yet or error
+        }
+      }
+
+      // Secondary: Best-effort telemetry loading
+      try {
+        const [runtime, browser] = await Promise.all([
+          projectLlmClient.getRuntimeHealth(workflowId),
+          projectLlmClient.getBrowserVerificationStatus(workflowId),
+        ]);
+        setRuntimeHealth(runtime);
+        setBrowserVerification(browser);
+      } catch (telemetryErr) {
+        console.warn('[IntegrationCertification] Telemetry loading note:', telemetryErr);
+      }
     } catch (err) {
       if (err instanceof ProjectLlmError) {
         setError(err.message);
@@ -153,7 +178,10 @@ export default function IntegrationCertificationPage() {
       </div>
 
       {/* Context Banner */}
-      <ProjectLlmContextBanner />
+      <ProjectLlmContextBanner
+        familyName={familyName}
+        targetVersion={targetVersion}
+      />
 
       {/* No Workflow ID Warning */}
       {!workflowId && (
@@ -311,10 +339,10 @@ export default function IntegrationCertificationPage() {
                   </div>
                   <div className="space-y-2 text-xs font-mono">
                     {[
-                      `apps/skillhubcore/src/components/blocks/${state.familyName.toLowerCase()}/${state.familyName}${state.targetVersion}.tsx`,
-                      `apps/skillhubcore/src/components/blocks/${state.familyName.toLowerCase()}/types/${state.targetVersion.toLowerCase()}.ts`,
-                      `apps/skillhubcore/src/components/blocks/${state.familyName.toLowerCase()}/__tests__/${state.familyName}${state.targetVersion}.test.tsx`,
-                      `apps/skillhubcore/src/schemas/blocks/${state.familyName.toLowerCase()}-${state.targetVersion.toLowerCase()}.schema.json`,
+                      `apps/skillhubcore/src/components/blocks/${familyName.toLowerCase()}/${familyName}${targetVersion}.tsx`,
+                      `apps/skillhubcore/src/components/blocks/${familyName.toLowerCase()}/types/${targetVersion.toLowerCase()}.ts`,
+                      `apps/skillhubcore/src/components/blocks/${familyName.toLowerCase()}/__tests__/${familyName}${targetVersion}.test.tsx`,
+                      `apps/skillhubcore/src/schemas/blocks/${familyName.toLowerCase()}-${targetVersion.toLowerCase()}.schema.json`,
                     ].map((f, i) => (
                       <div key={i} className="p-2 rounded bg-emerald-50/50 text-emerald-900 border border-emerald-100/80 truncate">
                         + {f}
@@ -333,8 +361,8 @@ export default function IntegrationCertificationPage() {
                   </div>
                   <div className="space-y-2 text-xs font-mono">
                     {[
-                      `apps/skillhubcore/src/components/blocks/${state.familyName.toLowerCase()}/index.ts (export ${state.targetVersion})`,
-                      `apps/skillhubcore/src/registry/blockRegistry.ts (register ${state.targetVersion} entry)`,
+                      `apps/skillhubcore/src/components/blocks/${familyName.toLowerCase()}/index.ts (export ${targetVersion})`,
+                      `apps/skillhubcore/src/registry/blockRegistry.ts (register ${targetVersion} entry)`,
                     ].map((f, i) => (
                       <div key={i} className="p-2 rounded bg-blue-50/50 text-blue-900 border border-blue-100/80 truncate">
                         ~ {f}
@@ -353,7 +381,7 @@ export default function IntegrationCertificationPage() {
                   </div>
                   <div className="space-y-2 text-xs font-mono">
                     <div className="p-2 rounded bg-purple-50/50 text-purple-900 border border-purple-100/80 truncate">
-                      ~ packages/shared/types/tutorialDocument.ts (add &apos;{state.targetVersion}&apos; to BlockVersionType)
+                      ~ packages/shared/types/tutorialDocument.ts (add &apos;{targetVersion}&apos; to BlockVersionType)
                     </div>
                   </div>
                 </div>
@@ -659,28 +687,47 @@ export default function IntegrationCertificationPage() {
       </div>
 
       {/* Next Step Callout */}
-      <div className="rounded-2xl border border-pink-200/80 bg-gradient-to-r from-pink-50/80 via-rose-50/40 to-amber-50/60 p-5 sm:p-6 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] text-white shadow-md shadow-pink-500/20 shrink-0 mt-0.5">
-            <Lightbulb size={20} />
-          </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-bold text-slate-900 font-outfit">
-              Workflow Complete: Downstream Authoring Ready
-            </h4>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
-              <span className="font-bold text-slate-900">{familyName} {targetVersion}</span> is certified! You can now compose tutorials using this new block family version directly inside the{' '}
-              <Link href="/tools/block-composer" className="text-pink-600 font-bold underline hover:text-pink-700">
-                Tutorial Composer
-              </Link>
-              , or review the complete immutable audit trail in{' '}
-              <Link href={`/tools/project-llm/workflow-details${workflowId ? `?workflowId=${workflowId}` : ''}`} className="text-pink-600 font-bold underline hover:text-pink-700">
-                Workflow & Evidence Details
-              </Link>.
-            </p>
+      {/* Workflow Status Banner */}
+      {certificationData?.state === 'CERTIFIED' ? (
+        <div className="rounded-2xl border border-pink-200/80 bg-gradient-to-r from-pink-50/80 via-rose-50/40 to-amber-50/60 p-5 sm:p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] text-white shadow-md shadow-pink-500/20 shrink-0 mt-0.5">
+              <Lightbulb size={20} />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-slate-900 font-outfit">
+                Workflow Complete: Downstream Authoring Ready
+              </h4>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
+                <span className="font-bold text-slate-900">{familyName} {targetVersion}</span> is certified! You can now compose tutorials using this new block family version directly inside the{' '}
+                <Link href="/tools/block-composer" className="text-pink-600 font-bold underline hover:text-pink-700">
+                  Tutorial Composer
+                </Link>
+                , or review the complete immutable audit trail in{' '}
+                <Link href={`/tools/project-llm/workflow-details${workflowId ? `?workflowId=${workflowId}` : ''}`} className="text-pink-600 font-bold underline hover:text-pink-700">
+                  Workflow & Evidence Details
+                </Link>.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-2xl border border-blue-200/80 bg-gradient-to-r from-blue-50/80 via-indigo-50/40 to-slate-50/60 p-5 sm:p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/20 shrink-0 mt-0.5">
+              <ShieldCheck size={20} />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-slate-900 font-outfit">
+                Current Protocol State: {certificationData?.state || 'AWAITING_IMPLEMENTATION_APPROVAL'}
+              </h4>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
+                Placement manifest for <span className="font-bold text-slate-900">{familyName} {targetVersion}</span> has been calculated and stored. The pipeline requires an independent human approval gate before repository mutations are executed.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer Nav */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">

@@ -420,11 +420,11 @@ export default function WorkflowDetailsPage() {
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-900 text-slate-200 font-mono text-xs overflow-x-auto">
                 <div className="text-slate-400">{`// Repository Tree Snapshot delta`}</div>
                 <div className="text-slate-400">Base SHA: 8f4a21e4901b  {`-->`}  Certified SHA: c9b1037fe82a</div>
-                <div className="mt-2 text-emerald-400">+ apps/skillhubcore/src/components/blocks/introduction/IntroductionI7.tsx</div>
-                <div className="text-emerald-400">+ apps/skillhubcore/src/components/blocks/introduction/types/i7.ts</div>
-                <div className="text-emerald-400">+ apps/skillhubcore/src/components/blocks/introduction/__tests__/IntroductionI7.test.tsx</div>
-                <div className="text-emerald-400">+ apps/skillhubcore/src/schemas/blocks/introduction-i7.schema.json</div>
-                <div className="text-blue-400">~ apps/skillhubcore/src/components/blocks/introduction/index.ts (1 line added)</div>
+                <div className="mt-2 text-emerald-400">+ apps/skillhubcore/src/components/blocks/{state.familyName.toLowerCase()}/{state.familyName}{state.targetVersion}.tsx</div>
+                <div className="text-emerald-400">+ apps/skillhubcore/src/components/blocks/{state.familyName.toLowerCase()}/types/{state.targetVersion.toLowerCase()}.ts</div>
+                <div className="text-emerald-400">+ apps/skillhubcore/src/components/blocks/{state.familyName.toLowerCase()}/__tests__/{state.familyName}{state.targetVersion}.test.tsx</div>
+                <div className="text-emerald-400">+ apps/skillhubcore/src/schemas/blocks/{state.familyName.toLowerCase()}-{state.targetVersion.toLowerCase()}.schema.json</div>
+                <div className="text-blue-400">~ apps/skillhubcore/src/components/blocks/{state.familyName.toLowerCase()}/index.ts (1 line added)</div>
                 <div className="text-blue-400">~ apps/skillhubcore/src/registry/blockRegistry.ts (3 lines added)</div>
                 <div className="text-purple-400">~ packages/shared/types/tutorialDocument.ts (1 union member added)</div>
               </div>
@@ -446,7 +446,7 @@ export default function WorkflowDetailsPage() {
                   <div className="text-slate-500">@@ -14,6 +14,9 @@ export const blockRegistry = [</div>
                   <div className="text-slate-400">   &#123; id: &apos;I5&apos;, name: &apos;Introduction I5&apos;, component: IntroductionI5 &#125;,</div>
                   <div className="text-slate-400">   &#123; id: &apos;I6&apos;, name: &apos;Introduction I6&apos;, component: IntroductionI6 &#125;,</div>
-                  <div className="text-emerald-400 bg-emerald-950/40">+  &#123; id: &apos;I7&apos;, name: &apos;Introduction I7 - Enhanced Motivation&apos;, component: IntroductionI7 &#125;,</div>
+                  <div className="text-emerald-400 bg-emerald-950/40">+  &#123; id: &apos;{state.targetVersion}&apos;, name: &apos;{state.familyName} {state.targetVersion}&apos;, component: {state.familyName}{state.targetVersion} &#125;,</div>
                   <div className="text-slate-400">   &#123; id: &apos;O1&apos;, name: &apos;Objective O1&apos;, component: ObjectiveO1 &#125;,</div>
                 </div>
               </div>
