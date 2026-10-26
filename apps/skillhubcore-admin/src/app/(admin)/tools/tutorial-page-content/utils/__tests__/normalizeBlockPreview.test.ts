@@ -164,11 +164,11 @@ describe('normalizeBlockPreview', () => {
 
       const result = normalizeBlockPreview(definitionPayload, 'definition', 'D1');
 
-      expect(result.content).toBe(definitionPayload);
+      expect(result.content).toEqual(definitionPayload);
       expect(result.memoryModelWarning).toBe('');
     });
 
-    it('should pass through I1 introduction block unchanged', () => {
+    it('should normalize I1 introduction drafts for safe rendering', () => {
       const introPayload = {
         page: {
           badge: 'Python',
@@ -188,8 +188,30 @@ describe('normalizeBlockPreview', () => {
 
       const result = normalizeBlockPreview(introPayload, 'introduction', 'I1');
 
-      expect(result.content).toBe(introPayload);
+      expect(result.content).toEqual(introPayload);
       expect(result.memoryModelWarning).toBe('');
+    });
+
+    it('should provide required I1 preview defaults for an incomplete draft', () => {
+      const result = normalizeBlockPreview({ page: { title: 'Draft' } }, 'introduction', 'I1');
+
+      expect(result.content).toMatchObject({
+        page: {
+          title: 'Draft',
+          motto: { lines: expect.any(Array) },
+        },
+      });
+    });
+
+    it('should provide required D1 preview defaults for an incomplete draft', () => {
+      const result = normalizeBlockPreview({ title: 'Draft' }, 'definition', 'D1');
+
+      expect(result.content).toMatchObject({
+        page: {
+          characteristics: expect.any(Array),
+          explanation: expect.any(Array),
+        },
+      });
     });
 
     it('should pass through S1 summary block unchanged', () => {
@@ -298,7 +320,7 @@ describe('normalizeBlockPreview', () => {
       const result1 = normalizeBlockPreview(payload, 'definition', 'D1');
       const result2 = normalizeBlockPreview(payload, 'definition', 'D1');
 
-      expect(result1.content).toBe(result2.content);
+      expect(result1.content).toEqual(result2.content);
       expect(result1.memoryModelWarning).toBe(result2.memoryModelWarning);
     });
 

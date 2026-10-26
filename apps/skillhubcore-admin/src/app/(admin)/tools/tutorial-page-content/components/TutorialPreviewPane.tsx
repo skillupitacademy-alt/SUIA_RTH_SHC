@@ -7,6 +7,7 @@
  */
 
 import { TutorialBlockRenderer } from '@quiz/ui';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { TutorialSummaryContent } from '@/share-branding/LearningExperience/components/TutorialSummaryContent';
 import type {
   BrandTutorialTheme,
@@ -41,6 +42,145 @@ interface TutorialPreviewPaneProps {
   
   // Rendering dependencies
   brandId: TutorialSidebarBrandId;
+}
+
+interface PreviewErrorBoundaryProps {
+  children: ReactNode;
+  resetKey: string;
+}
+
+interface PreviewErrorBoundaryState {
+  error: Error | null;
+}
+
+class PreviewErrorBoundary extends Component<PreviewErrorBoundaryProps, PreviewErrorBoundaryState> {
+  state: PreviewErrorBoundaryState = { error: null };
+
+  static getDerivedStateFromError(error: Error): PreviewErrorBoundaryState {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('[TutorialPreviewPane] Block preview failed:', error, errorInfo);
+  }
+
+  componentDidUpdate(previousProps: PreviewErrorBoundaryProps) {
+    if (previousProps.resetKey !== this.props.resetKey && this.state.error) {
+      this.setState({ error: null });
+    }
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div role="alert" className="rounded-md border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          This block cannot be previewed until its content is corrected: {this.state.error.message}
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+function getEffectiveBlockInfo(
+  defaultType: TutorialPageContentType,
+  defaultVersion: string,
+  payload: any
+): { type: TutorialPageContentType; version: string } {
+  const detectedType = payload?.page?.type || payload?.type;
+  if (detectedType && ['objective', 'definition', 'code', 'summary', 'introduction'].includes(detectedType)) {
+    const defaultCodes: Record<string, string> = {
+      introduction: 'I1',
+      definition: 'D1',
+      code: 'C1',
+      summary: 'S1',
+      objective: 'O1',
+    };
+    const version = detectedType === 'objective'
+      ? (defaultVersion === 'O2' ? 'O2' : 'O1')
+      : (detectedType === defaultType && defaultVersion !== 'v1' ? defaultVersion : defaultCodes[detectedType] || 'v1');
+    return { type: detectedType as TutorialPageContentType, version };
+  }
+  return { type: defaultType, version: defaultVersion };
+}
+
+function getPreviewResetKey(id: string, type: string, version: string, payload: unknown): string {
+  try {
+    return `${id}:${type}:${version}:${JSON.stringify(payload)}`;
+  } catch {
+    return `${id}:${type}:${version}`;
+  }
+}
+
+function renderBlockContent(
+  blockInfo: {
+    id: string;
+    type: TutorialPageContentType;
+    version?: string;
+    versionCode?: string;
+    payload: any;
+    expectedTimeSec?: number;
+  },
+  theme: BrandTutorialTheme
+) {
+  const payload = blockInfo.payload;
+  if (!payload) return null;
+
+  const rawVersion = blockInfo.versionCode || blockInfo.version || 'v1';
+
+  const { type: effectiveType, version: effectiveVersion } = getEffectiveBlockInfo(
+    blockInfo.type,
+    rawVersion,
+    payload
+  );
+
+  try {
+    const resetKey = getPreviewResetKey(blockInfo.id, effectiveType, effectiveVersion, payload);
+
+    // If payload is a rich S1 revision table summary, render TutorialSummaryContent.
+    if (effectiveType === 'summary' && (payload.revisionTable || payload.summary)) {
+      return (
+        <PreviewErrorBoundary resetKey={resetKey}>
+          <TutorialSummaryContent
+            payload={payload as TutorialSummaryPayload}
+            theme={theme}
+          />
+        </PreviewErrorBoundary>
+      );
+    }
+
+    // Canonical TutorialBlockRenderer for all blocks.
+    const tutorialBlock = toTutorialBlock({
+      id: blockInfo.id,
+      type: effectiveType,
+      version: effectiveVersion,
+      versionCode: effectiveVersion,
+      title: '',
+      payload,
+      payloadFormat: 'legacy',
+      sourceFormat: 'json',
+      sourceContent: '',
+      expectedTimeSec: blockInfo.expectedTimeSec,
+    });
+
+    return (
+      <PreviewErrorBoundary resetKey={resetKey}>
+        <TutorialBlockRenderer
+          block={tutorialBlock}
+          theme={theme}
+          depth={0}
+        />
+      </PreviewErrorBoundary>
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown preview error';
+    return (
+      <div role="alert" className="rounded-md border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+        This block cannot be previewed until its content is corrected: {message}
+      </div>
+    );
+  }
 }
 
 export function TutorialPreviewPane({
@@ -96,22 +236,15 @@ export function TutorialPreviewPane({
               <span>Active Editor Preview</span>
               <span>{activeBlockVersion} Block</span>
             </div>
-            {activeBlockType === 'summary' ? (
-              <TutorialSummaryContent 
-                payload={activeBlockPreview as TutorialSummaryPayload} 
-                theme={theme} 
-              />
-            ) : (
-              <TutorialBlockRenderer
-                block={{
-                  id: 'preview',
-                  type: activeBlockType as any,
-                  version: activeBlockVersion,
-                  content: activeBlockPreview as any,
-                } as TutorialBlock}
-                theme={theme}
-                depth={0}
-              />
+            {renderBlockContent(
+              {
+                id: 'preview',
+                type: activeBlockType,
+                version: activeBlockVersion,
+                versionCode: activeBlockVersion,
+                payload: activeBlockPreview,
+              },
+              theme
             )}
           </div>
         ) : (
@@ -128,23 +261,9 @@ export function TutorialPreviewPane({
                   data-tutorial-block-id={instance.id}
                 >
                   {idx > 0 && <div className="my-8 border-t border-dashed border-slate-200" />}
-                  
-                  {instance.type === 'summary' ? (
-                    <div data-tutorial-block-type="summary">
-                      <TutorialSummaryContent 
-                        payload={instance.payload as TutorialSummaryPayload} 
-                        theme={theme} 
-                      />
-                    </div>
-                  ) : (
-                    <div data-tutorial-block-type={instance.type}>
-                      <TutorialBlockRenderer
-                        block={toTutorialBlock(instance)}
-                        theme={theme}
-                        depth={0}
-                      />
-                    </div>
-                  )}
+                  <div data-tutorial-block-type={instance.type}>
+                    {renderBlockContent(instance, theme)}
+                  </div>
                 </div>
               ))}
             </>

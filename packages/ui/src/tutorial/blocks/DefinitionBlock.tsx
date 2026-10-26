@@ -55,7 +55,7 @@ function DefinitionD1View({
   className?: string;
   runtimeContext?: BlockComponentProps<IDefinitionBlock>['runtimeContext'];
 }) {
-  const page = block.content.page;
+  const page = block.content?.page ?? ({} as IDefinitionBlock['content']['page']);
   
   const characteristics = Array.isArray(page.characteristics) ? page.characteristics : [];
   const explanation = Array.isArray(page.explanation) ? page.explanation : [];

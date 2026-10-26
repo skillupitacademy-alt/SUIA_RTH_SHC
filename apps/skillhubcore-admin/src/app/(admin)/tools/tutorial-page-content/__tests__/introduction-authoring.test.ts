@@ -12,7 +12,13 @@
 import { describe, it, expect } from 'vitest';
 import { getBlockTypes, getBlockType, getVersions } from '../registry';
 import { parseSource } from '../document/sourceParser';
-import { toTutorialBlock, tutorialBlocksToInstances, extractBlockTitle } from '../document/documentTransformation';
+import {
+  normalizeDefinitionD1Payload,
+  normalizeIntroductionI1Payload,
+  toTutorialBlock,
+  tutorialBlocksToInstances,
+  extractBlockTitle,
+} from '../document/documentTransformation';
 import type { TutorialIntroductionPayload, TutorialBlock } from '@quiz/types';
 
 describe('Introduction Block Authoring Pipeline', () => {
@@ -250,6 +256,27 @@ Functions are reusable code blocks.`;
   });
 
   describe('Stage 6: Document Transformation - toTutorialBlock', () => {
+    it('normalizes an incomplete D1 draft without mutating the author payload', () => {
+      const draft = { title: 'Draft definition' };
+
+      const normalized = normalizeDefinitionD1Payload(draft);
+
+      expect(normalized.page.title).toBe('Draft definition');
+      expect(normalized.page.characteristics).toBeDefined();
+      expect(draft).toEqual({ title: 'Draft definition' });
+    });
+
+    it('normalizes an incomplete I1 draft without mutating the author payload', () => {
+      const draft = { page: { title: 'Draft introduction' } };
+
+      const normalized = normalizeIntroductionI1Payload(draft);
+
+      expect(normalized.page.title).toBe('Draft introduction');
+      expect(normalized.page.motto.lines).toHaveLength(4);
+      expect(normalized.page.whereFit.flowCards.length).toBeGreaterThan(0);
+      expect(draft).toEqual({ page: { title: 'Draft introduction' } });
+    });
+
     it('converts I1 BlockInstance to TutorialBlock', () => {
       const blockInstance = {
         id: 'test-id',

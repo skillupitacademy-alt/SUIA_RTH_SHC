@@ -157,10 +157,10 @@ function IntroductionI1View({
               {/* Handwritten Motto */}
               <div className="absolute top-3 left-4 z-10">
                 <div className="font-hand text-xl font-bold leading-tight" style={{ color: secondary, fontFamily: 'Caveat, cursive' }}>
-                  {page.motto.lines.map((line: string, index: number) => (
+                  {(page.motto?.lines ?? []).map((line: string, index: number) => (
                     <React.Fragment key={index}>
                       {line}
-                      {index < page.motto.lines.length - 1 && <br />}
+                      {index < (page.motto?.lines.length ?? 0) - 1 && <br />}
                     </React.Fragment>
                   ))}
                 </div>
