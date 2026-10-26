@@ -5,6 +5,7 @@ import {
   normalizeBlockPreviewPayload,
   prepareBlockForStorage,
   parseBlockMarkdown,
+  canonicalizeBlockInstance,
 } from '../blockVersionDefinitions';
 
 describe('blockVersionDefinitions', () => {
@@ -56,5 +57,32 @@ describe('blockVersionDefinitions', () => {
     expect(() => parseBlockMarkdown('# Objective', 'objective', 'O1')).toThrow(
       'Markdown authoring is not available for objective O1; use JSON authoring instead.'
     );
+  });
+
+  it('preserves rich S1 data when converting the editor instance to a canonical block', () => {
+    const block = canonicalizeBlockInstance({
+      id: 'summary-s1',
+      type: 'summary',
+      version: 'v1',
+      versionCode: 'S1',
+      title: 'Revision',
+      payloadFormat: 'legacy',
+      sourceFormat: 'json',
+      sourceContent: '{}',
+      payload: {
+        page: { title: 'Revision', introduction: 'Review' },
+        summary: [{ text: 'Key point' }],
+        revisionTable: {
+          columns: [{ id: 'concept', title: 'Concept' }],
+          rows: [{ concept: { name: 'Function' } }],
+        },
+      },
+    });
+
+    expect(block).toMatchObject({
+      type: 'summary',
+      version: 'S1',
+      content: { revisionTable: { columns: [{ id: 'concept' }] } },
+    });
   });
 });

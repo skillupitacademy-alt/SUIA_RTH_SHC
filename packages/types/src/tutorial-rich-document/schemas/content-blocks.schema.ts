@@ -172,16 +172,40 @@ export const SummaryS1RichContentSchema = z.object({
     badge: z.string().optional(),
     badgeIcon: z.string().optional(),
     title: z.string().min(1),
-    introduction: z.string().optional(),
-  }).passthrough(),
-  summary: z.array(z.object({ text: z.string() })).optional(),
+    introduction: z.string(),
+  }).strict(),
+  summary: z.array(z.object({ text: z.string().min(1) }).strict()),
   revisionTable: z.object({
-    columns: z.array(z.any()),
-    rows: z.array(z.any()),
-  }).optional(),
-  quickTips: z.array(z.any()).optional(),
-  finalTip: z.any().optional(),
-}).passthrough();
+    columns: z.array(z.object({
+      id: z.string().min(1),
+      title: z.string().min(1),
+      icon: z.string().optional(),
+    }).strict()).min(1).max(4),
+    rows: z.array(z.object({
+      concept: z.object({
+        name: z.string().min(1),
+        icon: z.string().optional(),
+      }).strict().optional(),
+      keyPoint: z.object({
+        title: z.string().min(1),
+        description: z.string().min(1),
+        code: z.string().optional(),
+      }).strict().optional(),
+      example: z.object({
+        code: z.string().min(1),
+      }).strict().optional(),
+      remember: z.object({
+        title: z.string().min(1),
+        description: z.string().min(1),
+      }).strict().optional(),
+    }).strict()).min(1),
+  }).strict().optional(),
+  quickTips: z.array(z.object({ text: z.string().min(1) }).strict()).optional(),
+  finalTip: z.object({
+    title: z.string().min(1),
+    text: z.string().min(1),
+  }).strict().optional(),
+}).strict();
 
 /**
  * Summary S1 - Author Content Schema

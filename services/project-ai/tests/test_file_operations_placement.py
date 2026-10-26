@@ -29,13 +29,20 @@ def test_compute_sha256_newline_normalization():
 
 def test_derive_file_operations_resolution(tmp_path):
     # Setup mock workspace
-    renderer_rel = "packages/ui/src/tutorial/TutorialBlockRenderer.tsx"
+    renderer_rel = "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
     registry_rel = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/index.ts"
     types_rel = "packages/types/src/tutorial-page-content.types.ts"
 
     renderer_file = tmp_path / renderer_rel
     renderer_file.parent.mkdir(parents=True, exist_ok=True)
-    renderer_file.write_text("import { A } from './blocks/A';\nswitch(block.type) {\n  default: {}\n}", encoding='utf-8')
+    renderer_file.write_text(
+        "import type React from 'react';\n"
+        "export interface GeneratedBlockRenderer {}\n"
+        "export const GENERATED_BLOCK_RENDERERS = [\n"
+        "  // PROJECT_LLM_GENERATED_RENDERERS\n"
+        "];\n",
+        encoding='utf-8',
+    )
 
     registry_file = tmp_path / registry_rel
     registry_file.parent.mkdir(parents=True, exist_ok=True)
@@ -98,17 +105,11 @@ def test_derive_file_operations_rejects_incomplete_portable_contract(tmp_path):
 
 def test_patch_tutorial_block_renderer():
     content = (
-        "import React from 'react';\n"
-        "import { HeadingBlock } from './blocks/HeadingBlock';\n\n"
-        "export function TutorialBlockRenderer(props) {\n"
-        "  switch (block.type) {\n"
-        "    case 'heading':\n"
-        "      return <HeadingBlock />;\n"
-        "    default: {\n"
-        "      return null;\n"
-        "    }\n"
-        "  }\n"
-        "}\n"
+        "import type React from 'react';\n"
+        "export interface GeneratedBlockRenderer {}\n"
+        "export const GENERATED_BLOCK_RENDERERS = [\n"
+        "  // PROJECT_LLM_GENERATED_RENDERERS\n"
+        "];\n"
     )
 
     patched = patch_tutorial_block_renderer(
@@ -119,8 +120,7 @@ def test_patch_tutorial_block_renderer():
     )
 
     assert "import { ObjectiveO1Block } from './blocks/ObjectiveO1Block';" in patched
-    assert "case 'objective':" in patched
-    assert "ObjectiveO1Block" in patched
+    assert "{ family: 'objective', version: 'O1', component: ObjectiveO1Block }," in patched
 
     # Idempotency check: applying the same operation must not duplicate changes.
     assert patch_tutorial_block_renderer(patched, "Objective", "O1", "ObjectiveO1Block") == patched
@@ -129,30 +129,26 @@ def test_patch_tutorial_block_renderer():
 def test_patch_tutorial_block_renderer_preserves_existing_family_versions():
     content = (
         "import { ObjectiveO1Block } from './blocks/ObjectiveO1Block';\n\n"
-        "switch (block.type) {\n"
-        "  case 'objective': {\n"
-        "    if (!('version' in block) || (block as any).version !== 'O1') {\n"
-        "      throw new Error('unsupported');\n"
-        "    }\n"
-        "    return <ObjectiveO1Block block={block as any} />;\n"
-        "  }\n"
-        "  default: { return null; }\n"
-        "}\n"
+        "export interface GeneratedBlockRenderer {}\n"
+        "export const GENERATED_BLOCK_RENDERERS = [\n"
+        "  { family: 'objective', version: 'O1', component: ObjectiveO1Block },\n"
+        "  // PROJECT_LLM_GENERATED_RENDERERS\n"
+        "];\n"
     )
 
     patched = patch_tutorial_block_renderer(content, "Objective", "O2", "ObjectiveO2Block")
 
     assert "import { ObjectiveO2Block } from './blocks/ObjectiveO2Block';" in patched
-    assert "case 'O1':" in patched
-    assert "case 'O2':" in patched
-    assert patched.count("case 'objective':") == 1
+    assert "version: 'O1'" in patched
+    assert "version: 'O2'" in patched
+    assert patched.count("family: 'objective'") == 2
 
     patched = patch_tutorial_block_renderer(patched, "Objective", "O3", "ObjectiveO3Block")
     assert "import { ObjectiveO3Block } from './blocks/ObjectiveO3Block';" in patched
-    assert "case 'O1':" in patched
-    assert "case 'O2':" in patched
-    assert "case 'O3':" in patched
-    assert patched.count("case 'objective':") == 1
+    assert "version: 'O1'" in patched
+    assert "version: 'O2'" in patched
+    assert "version: 'O3'" in patched
+    assert patched.count("family: 'objective'") == 3
 
 
 def test_patch_family_registry_appends_version_without_removing_existing_versions():

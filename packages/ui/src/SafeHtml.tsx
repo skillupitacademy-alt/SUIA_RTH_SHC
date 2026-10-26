@@ -6,6 +6,8 @@ import DOMPurify from 'dompurify';
 interface SafeHtmlProps {
     html: string;
     className?: string;
+    style?: React.CSSProperties;
+    as?: 'div' | 'span' | 'p' | 'li';
 }
 
 /**
@@ -16,10 +18,10 @@ interface SafeHtmlProps {
  * Note: Uses client-only DOMPurify (not isomorphic-dompurify) to avoid
  * pulling jsdom into the SSR bundle, which causes ESM/CJS conflicts on Vercel.
  */
-export function SafeHtml({ html, className }: SafeHtmlProps) {
+export function SafeHtml({ html, className, style, as: Element = 'div' }: SafeHtmlProps) {
     if (typeof window === 'undefined') {
-        // Server-side fallback: return empty div (content rendered on client hydration)
-        return <div className={className} />;
+        // Preserve readable content during SSR without evaluating untrusted markup.
+        return <Element className={className} style={style}>{html.replace(/<[^>]*>/g, '')}</Element>;
     }
 
     const clean = DOMPurify.sanitize(html, {
@@ -35,8 +37,10 @@ export function SafeHtml({ html, className }: SafeHtmlProps) {
     });
 
     return (
-        <div
+        <Element
             className={className}
+            style={style}
+            suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: clean as unknown as string }}
         />
     );

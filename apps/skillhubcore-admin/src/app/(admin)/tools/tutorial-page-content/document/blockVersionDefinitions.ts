@@ -13,8 +13,8 @@ import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import {
   normalizeDefinitionD1Payload,
   normalizeIntroductionI1Payload,
-  type BlockInstance,
-} from './documentTransformation';
+} from './blockPayloadNormalizers';
+import type { BlockInstance } from './documentTransformation';
 import { GENERATED_BLOCK_VERSION_DEFINITIONS } from './generatedBlockVersionDefinitions';
 
 export interface PreviewNormalizationResult {

@@ -22,6 +22,40 @@ import { CardGridBlock } from './blocks/CardGridBlock';
 import { TimelineBlock } from './blocks/TimelineBlock';
 import { ObjectiveO1Block } from './blocks/ObjectiveO1Block';
 import { ObjectiveO2Block } from './blocks/ObjectiveO2Block';
+import { GENERATED_BLOCK_RENDERERS } from './generatedBlockRenderers';
+
+type VersionedRenderer = React.ComponentType<BlockComponentProps<any>>;
+interface VersionedRendererEntry {
+  component: VersionedRenderer;
+  requiresTheme?: boolean;
+}
+
+const STATIC_VERSIONED_RENDERERS: Record<string, Record<string, VersionedRendererEntry>> = {
+  code: { C1: { component: CodeC1Block } },
+  definition: { D1: { component: DefinitionBlock } },
+  introduction: { I1: { component: IntroductionBlock, requiresTheme: true } },
+  summary: { S1: { component: SummaryBlock } },
+  objective: { O1: { component: ObjectiveO1Block }, O2: { component: ObjectiveO2Block } },
+};
+
+const DEFAULT_VERSION_BY_FAMILY: Record<string, string> = {
+  definition: 'D1',
+  summary: 'S1',
+};
+
+function getVersionedRenderer(block: TutorialBlock): VersionedRendererEntry | undefined {
+  const family = block.type;
+  const version = ('version' in block && block.version) || DEFAULT_VERSION_BY_FAMILY[family];
+  if (!version) return undefined;
+
+  return STATIC_VERSIONED_RENDERERS[family]?.[version]
+    ?? GENERATED_BLOCK_RENDERERS.find((entry) => entry.family === family && entry.version === version);
+}
+
+function isVersionedFamily(family: string): boolean {
+  return family in STATIC_VERSIONED_RENDERERS
+    || GENERATED_BLOCK_RENDERERS.some((entry) => entry.family === family);
+}
 
 function UnknownBlockState({ type }: { type: string }) {
   return (
@@ -67,6 +101,20 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '',
   );
 
   try {
+    const rendererEntry = getVersionedRenderer(block);
+    if (rendererEntry) {
+      if (rendererEntry.requiresTheme && (!theme?.primary || !theme?.secondary)) {
+        throw new Error(`Missing required brand theme for ${block.type} ${('version' in block && block.version) || ''} block ${block.id}`);
+      }
+      const VersionedBlock = rendererEntry.component;
+      return <VersionedBlock block={block as any} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
+    }
+
+    if (isVersionedFamily(block.type)) {
+      const version = ('version' in block && block.version) || 'no version';
+      throw new Error(`Unsupported ${block.type} version: ${String(version)}`);
+    }
+
     switch (block.type) {
       case 'heading':
         return <HeadingBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
@@ -74,48 +122,16 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '',
         return <ParagraphBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'list':
         return <ListBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-      case 'code': {
-        // Code C1 is the only supported version
-        if (!('version' in block) || block.version !== 'C1') {
-          throw new Error(
-            `Unsupported code block version. Code C1 is required. Received: ${('version' in block) ? (block as any).version : 'no version'}`
-          );
-        }
-        
-        // CodeC1Block - use versioned renderer
-        return <CodeC1Block block={block as any} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-      }
       case 'table':
         return <TableBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'image':
         return <ImageBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'callout':
         return <CalloutBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-      case 'definition':
-        return <DefinitionBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-      case 'introduction': {
-        // Introduction I1 is the only supported version
-        if (!('version' in block) || block.version !== 'I1') {
-          throw new Error(
-            `Unsupported Introduction version. I1 is required. Received: ${('version' in block) ? (block as any).version : 'no version'}`
-          );
-        }
-
-        // Theme is required for canonical locked I1 renderer
-        if (!theme?.primary || !theme?.secondary) {
-          throw new Error(
-            `Missing required brand theme for Introduction I1 block ${block.id}`
-          );
-        }
-
-        return <IntroductionBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-      }
       case 'example':
         return <ExampleBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'quote':
         return <QuoteBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-      case 'summary':
-        return <SummaryBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'diagram':
         return <DiagramBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'comparison':
@@ -128,21 +144,8 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '',
         return <CardGridBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'timeline':
         return <TimelineBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-      case 'objective': {
-        const objectiveVersion = 'version' in block ? (block as any).version : undefined;
-        switch (objectiveVersion) {
-          case 'O1':
-            return <ObjectiveO1Block block={block as any} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-          case 'O2':
-            return <ObjectiveO2Block block={block as any} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
-          default:
-            throw new Error(`Unsupported Objective version: ${String(objectiveVersion)}`);
-        }
-      }
-
       default: {
-        const _exhaustiveCheck: never = block;
-        return <UnknownBlockState type={(_exhaustiveCheck as any)?.type || 'unknown'} />;
+        return <UnknownBlockState type={block.type || 'unknown'} />;
       }
     }
   } catch (err) {

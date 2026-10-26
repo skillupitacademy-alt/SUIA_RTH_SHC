@@ -370,7 +370,7 @@ class CanonicalComparator:
         operations: List[PlacementFileOperation] = []
         
         # Target paths for canonical patched files
-        renderer_rel_path = "packages/ui/src/tutorial/TutorialBlockRenderer.tsx"
+        renderer_rel_path = "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
         registry_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/index.ts"
         types_rel_path = "packages/types/src/tutorial-page-content.types.ts"
         composer_definitions_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/generatedBlockVersionDefinitions.ts"
@@ -546,7 +546,7 @@ class CanonicalComparator:
                 target_path=renderer_rel_path,
                 expected_pre_hash=get_pre_hash(renderer_rel_path),
                 patch_strategy="DISPATCH_BRANCH",
-                description=f"Surgically register {comp} in TutorialBlockRenderer.tsx runtime dispatch"
+                description=f"Register {comp} in the generated runtime renderer table"
             ))
 
         family_registry_rel_path = f"apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/{family_lower}.registry.ts"

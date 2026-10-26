@@ -2,10 +2,7 @@ import React from 'react';
 import { BookOpen, Check, FileText, Lightbulb, Star, Table2 } from 'lucide-react';
 import type { ISummaryBlock, BlockComponentProps } from '../types';
 import type { TutorialSummaryPayload } from '@quiz/types';
-
-function html(value: string) {
-  return { __html: value };
-}
+import { SafeHtml } from '../../SafeHtml';
 
 function withAlpha(hex: string, alphaHex: string) {
   return `${hex}${alphaHex}`;
@@ -62,7 +59,7 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
                   <span className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-extrabold text-white" style={{ backgroundColor: primary }}>
                     <Check className="h-3 w-3 stroke-[4]" />
                   </span>
-                  <div className="text-[15px] font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: secondary }} dangerouslySetInnerHTML={html(item.text || '')} />
+                  <SafeHtml as="div" html={item.text || ''} className="text-[15px] font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: secondary }} />
                 </div>
               ))}
             </div>
@@ -98,7 +95,7 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
                     </div>
                     <div className="min-w-0 border-r border-[#e5eaf1] dark:border-slate-700 px-4 py-[18px] text-sm leading-[1.65]" style={{ color: secondary }}>
                       <h3 className="mb-[5px] text-sm font-extrabold leading-snug">{row.keyPoint?.title ?? ''}</h3>
-                      <p className="font-medium" dangerouslySetInnerHTML={html(row.keyPoint?.description ?? '')} />
+                      <SafeHtml as="p" html={row.keyPoint?.description ?? ''} className="font-medium" />
                       {row.keyPoint?.code && <code className="mt-2 inline-block rounded bg-[#f7f9fc] dark:bg-slate-900 px-2 py-1 font-mono text-[13px] font-bold" style={{ color: primaryDark }}>{row.keyPoint.code}</code>}
                     </div>
                     <div className="flex min-w-0 items-center border-r border-[#e5eaf1] dark:border-slate-700 px-4 py-[18px]">
@@ -106,7 +103,7 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
                     </div>
                     <div className="min-w-0 px-4 py-[18px] text-sm leading-[1.65]" style={{ color: secondary }}>
                       <h3 className="mb-[5px] text-sm font-extrabold leading-snug" style={{ color: primaryDark }}>{row.remember?.title ?? ''}</h3>
-                      <p className="font-medium [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" dangerouslySetInnerHTML={html(row.remember?.description ?? '')} />
+                      <SafeHtml as="p" html={row.remember?.description ?? ''} className="font-medium [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" />
                     </div>
                   </div>
                 ))}
@@ -127,7 +124,7 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
                   <span className="mt-px flex h-[25px] w-[25px] items-center justify-center rounded-full bg-[#124fd6] text-white">
                     <Check className="h-3.5 w-3.5 stroke-[4]" />
                   </span>
-                  <span className="[&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" dangerouslySetInnerHTML={html(tip.text || '')} />
+                  <SafeHtml as="span" html={tip.text || ''} className="[&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" />
                 </div>
               ))}
             </div>
