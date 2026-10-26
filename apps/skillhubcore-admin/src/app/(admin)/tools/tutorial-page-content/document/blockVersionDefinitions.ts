@@ -197,8 +197,18 @@ const definitions: BlockVersionDefinition[] = [
     prepareForStorage: legacyStorage,
     parseMarkdown: parseSummaryMarkdown,
     toCanonicalBlock: (instance: BlockInstance): TutorialBlock => {
-      const summaryPayload = instance.payload as TutorialSummaryPayload;
+      const raw = instance.payload as any;
+      const unwrapped = raw?.content && typeof raw.content === 'object' && !raw.page && !raw.revisionTable
+        ? raw.content
+        : raw;
+
+      const summaryPayload = unwrapped as TutorialSummaryPayload;
       const points: string[] = [];
+      if (Array.isArray((summaryPayload as any).points)) {
+        (summaryPayload as any).points.forEach((p: unknown) => {
+          if (typeof p === 'string' && p) points.push(p);
+        });
+      }
       if (summaryPayload.summary) {
         summaryPayload.summary.forEach((item) => {
           if (item.text) {
@@ -226,7 +236,7 @@ const definitions: BlockVersionDefinition[] = [
         content: (isRichSummary
           ? summaryPayload
           : {
-              title: summaryPayload.page?.title,
+              title: summaryPayload.page?.title || (summaryPayload as any).title || 'Summary',
               points: points.length > 0 ? points : ['Summary content'],
             }) as any,
         expectedTimeSec: instance.expectedTimeSec,

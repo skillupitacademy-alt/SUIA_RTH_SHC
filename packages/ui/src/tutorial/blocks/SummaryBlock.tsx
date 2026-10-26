@@ -150,8 +150,12 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
   }
 
   // Legacy fallback: simple bullet point card
-  const title = content?.title;
-  const points: string[] = Array.isArray(content?.points) ? content.points : [];
+  const title = content?.title || content?.page?.title;
+  const points: string[] = Array.isArray(content?.points)
+    ? content.points
+    : Array.isArray(content?.summary)
+    ? content.summary.map((item: any) => item?.text || String(item)).filter(Boolean)
+    : [];
 
   return (
     <section

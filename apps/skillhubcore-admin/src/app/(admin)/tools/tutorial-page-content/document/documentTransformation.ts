@@ -190,6 +190,7 @@ export function extractBlockTitle(payload: unknown, type: TutorialPageContentTyp
   if (!p) return 'Untitled Block';
   if (p.page?.title) return p.page.title;
   if (p.title) return p.title;
+  if (p.content?.title) return p.content.title;
   if (type === 'definition') return p.page?.intro || 'Concept Definition';
   if (type === 'code') return p.code?.language ? `${p.code.language} Example` : 'Code Example';
   if (type === 'summary') return 'Revision Summary';
