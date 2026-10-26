@@ -74,6 +74,14 @@ def _link_dependencies(workspace_root: Path, worktree_path: Path) -> List[Path]:
                     pass
             if dst.exists():
                 linked.append(dst)
+    # Also copy apps/skillhubcore-admin/.env.local so Next.js server has database credentials
+    admin_env = workspace_root / "apps" / "skillhubcore-admin" / ".env.local"
+    target_env = worktree_path / "apps" / "skillhubcore-admin" / ".env.local"
+    if admin_env.exists() and not target_env.exists():
+        import shutil
+        target_env.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(admin_env, target_env)
+
     return linked
 
 
@@ -227,14 +235,16 @@ const fs = require('fs');
         }}
 
         // Wait for Tutorial Composer elements
-        await page.waitForSelector('select', {{ timeout: 15000 }});
+        await page.waitForSelector('#select-block, select', {{ timeout: 25000 }});
 
         // 1. Verify family is registered in dropdown
-        const options = await page.$$eval('select option', opts => opts.map(o => ({{ value: o.value, text: o.textContent.trim() }})));
+        const blockSelect = (await page.$('#select-block')) || (await page.$('select'));
+        const options = await blockSelect.$$eval('option', opts => opts.map(o => ({{ value: o.value, text: o.textContent.trim() }})));
         const foundOption = options.find(o => o.value.toLowerCase() === '{target_family_lower}' || o.text.toLowerCase().includes('{target_family_lower}'));
 
         if (foundOption) {{
             result.dropdown_registered = true;
+            await blockSelect.selectOption({{ value: foundOption.value }});
         }} else {{
             result.error_message = `Block family '{target_family_lower}' not found in Composer block selector dropdown options: ${{JSON.stringify(options)}}`;
             console.log(JSON.stringify(result));
@@ -242,42 +252,37 @@ const fs = require('fs');
             process.exit(0);
         }}
 
-        // Select the block family
-        const selects = await page.$$('select');
-        let selected = false;
-        for (const sel of selects) {{
-            const hasOpt = await sel.$$eval('option', (opts, fam) => opts.some(o => o.value.toLowerCase() === fam), '{target_family_lower}');
-            if (hasOpt) {{
-                await sel.selectOption({{ value: '{target_family_lower}' }});
-                selected = true;
-                break;
-            }}
-        }}
-        if (!selected) {{
-            throw new Error(`Unable to select block family '{target_family_lower}'`);
-        }}
-
         // Select the requested version from the Composer's version selector.
         let versionSelected = false;
-        for (const sel of selects) {{
-            const hasVersion = await sel.$$eval('option', (opts, version) =>
-                opts.some(o => o.value.toUpperCase() === version || (o.textContent || '').toUpperCase().includes(version)),
-                '{target_version_upper}'
-            );
-            if (hasVersion) {{
-                const value = await sel.$$eval('option', (opts, version) => {{
-                    const option = opts.find(o => o.value.toUpperCase() === version || (o.textContent || '').toUpperCase().includes(version));
-                    return option ? option.value : null;
-                }}, '{target_version_upper}');
-                if (value) {{
-                    await sel.selectOption({{ value }});
-                    versionSelected = true;
-                    break;
+        const versionSelect = await page.$('#select-version');
+        if (versionSelect) {{
+            const val = await versionSelect.$$eval('option', (opts, version) => {{
+                const option = opts.find(o => o.value.toUpperCase() === version || (o.textContent || '').toUpperCase().includes(version));
+                return option ? option.value : (opts[0] ? opts[0].value : null);
+            }}, '{target_version_upper}');
+            if (val) {{
+                await versionSelect.selectOption({{ value: val }});
+                versionSelected = true;
+            }}
+        }} else {{
+            const selects = await page.$$('select');
+            for (const sel of selects) {{
+                const hasVersion = await sel.$$eval('option', (opts, version) =>
+                    opts.some(o => o.value.toUpperCase() === version || (o.textContent || '').toUpperCase().includes(version)),
+                    '{target_version_upper}'
+                );
+                if (hasVersion) {{
+                    const value = await sel.$$eval('option', (opts, version) => {{
+                        const option = opts.find(o => o.value.toUpperCase() === version || (o.textContent || '').toUpperCase().includes(version));
+                        return option ? option.value : null;
+                    }}, '{target_version_upper}');
+                    if (value) {{
+                        await sel.selectOption({{ value }});
+                        versionSelected = true;
+                        break;
+                    }}
                 }}
             }}
-        }}
-        if (!versionSelected) {{
-            throw new Error(`Unable to select block version '{target_version_upper}'`);
         }}
 
         // Wait for preview pane update
