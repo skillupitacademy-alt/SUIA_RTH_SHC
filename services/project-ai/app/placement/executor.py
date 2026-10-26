@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import subprocess
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -34,6 +35,29 @@ from app.placement.worktree_manager import WorktreeManager, WorktreeError, Workt
 class PlacementExecutionError(Exception):
     """Error during placement execution."""
     pass
+
+
+# Controls how placed files are mirrored from the isolated worktree into the
+# live workspace (which a running Next.js dev server watches):
+#   immediate (default) - copy synchronously; block is live as soon as placement returns
+#   deferred            - copy after PROJECT_AI_WORKSPACE_MIRROR_DELAY_SECONDS (default 5),
+#                         so the HTTP response reaches the UI before HMR recompiles
+#   off                 - never copy; changes stay in the worktree commit/branch only
+WORKSPACE_MIRROR_ENV = "PROJECT_AI_WORKSPACE_MIRROR"
+WORKSPACE_MIRROR_DELAY_ENV = "PROJECT_AI_WORKSPACE_MIRROR_DELAY_SECONDS"
+_VALID_MIRROR_MODES = {"immediate", "deferred", "off"}
+
+
+def get_workspace_mirror_mode() -> str:
+    mode = os.environ.get(WORKSPACE_MIRROR_ENV, "immediate").strip().lower()
+    return mode if mode in _VALID_MIRROR_MODES else "immediate"
+
+
+def get_workspace_mirror_delay() -> float:
+    try:
+        return max(0.0, float(os.environ.get(WORKSPACE_MIRROR_DELAY_ENV, "5")))
+    except ValueError:
+        return 5.0
 
 
 class PlacementExecutor:
@@ -68,6 +92,36 @@ class PlacementExecutor:
                 f"Repository root does not exist: {repository_root}"
             )
     
+    def _mirror_to_workspace(self, worktree_files: List[str]) -> Dict[str, Any]:
+        """
+        Mirror committed worktree files into the live workspace according to
+        PROJECT_AI_WORKSPACE_MIRROR. File bytes are snapshotted now so deferred
+        mode is unaffected by later worktree cleanup.
+        """
+        mode = get_workspace_mirror_mode()
+        if mode == "off" or not self.active_worktree:
+            return {"mode": "off", "files": 0}
+
+        snapshot: List[tuple[Path, bytes]] = []
+        for wf in worktree_files:
+            rel = Path(wf).relative_to(self.active_worktree.worktree_path)
+            snapshot.append((self.repository_root / rel, Path(wf).read_bytes()))
+
+        def _write() -> None:
+            for dest, data in snapshot:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_bytes(data)
+
+        if mode == "deferred":
+            delay = get_workspace_mirror_delay()
+            timer = threading.Timer(delay, _write)
+            timer.daemon = True
+            timer.start()
+            return {"mode": "deferred", "files": len(snapshot), "delaySeconds": delay}
+
+        _write()
+        return {"mode": "immediate", "files": len(snapshot)}
+
     def verify_manifest_hash(self, manifest: PlacementManifest) -> bool:
         """
         Verify manifest hash hasn't been tampered with.
@@ -518,13 +572,8 @@ export const {reg_var_name}: BlockRegistryEntry = {{
                     commit_msg
                 )
                 
-                # Mirror approved files and patches to active workspace so they are immediately live
-                import shutil
-                for wf in written_files:
-                    rel = Path(wf).relative_to(self.active_worktree.worktree_path)
-                    dest = self.repository_root / rel
-                    dest.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(wf, dest)
+                # Mirror approved files and patches to the live workspace (configurable)
+                mirror_result = self._mirror_to_workspace(written_files)
             except WorktreeError as e:
                 # Cleanup worktree on failure
                 try:
@@ -537,10 +586,12 @@ export const {reg_var_name}: BlockRegistryEntry = {{
         else:
             # Dry-run: simulate git operations
             commit_hash = "dry-run-commit-hash"
+            mirror_result = {"mode": "dry-run", "files": 0}
         
         return {
             "status": "executed",
             "action": "ADD",
+            "workspaceMirror": mirror_result,
             "targetPath": manifest.targetPath,
             "filesWritten": len(written_files),
             "branch": branch_name,
@@ -633,13 +684,8 @@ export const {reg_var_name}: BlockRegistryEntry = {{
                     commit_msg
                 )
                 
-                # Mirror approved files and patches to active workspace so they are immediately live
-                import shutil
-                for uf in updated_files:
-                    rel = Path(uf).relative_to(self.active_worktree.worktree_path)
-                    dest = self.repository_root / rel
-                    dest.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(uf, dest)
+                # Mirror approved files and patches to the live workspace (configurable)
+                mirror_result = self._mirror_to_workspace(updated_files)
             except WorktreeError as e:
                 # Cleanup worktree on failure
                 try:
@@ -652,10 +698,12 @@ export const {reg_var_name}: BlockRegistryEntry = {{
         else:
             # Dry-run: simulate git operations
             commit_hash = "dry-run-commit-hash"
+            mirror_result = {"mode": "dry-run", "files": 0}
         
         return {
             "status": "executed",
             "action": "UPDATE",
+            "workspaceMirror": mirror_result,
             "targetPath": manifest.targetPath,
             "filesUpdated": len(updated_files),
             "branch": branch_name,
