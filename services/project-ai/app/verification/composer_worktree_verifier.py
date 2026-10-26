@@ -95,7 +95,7 @@ def _create_verification_worktree(workspace_root: Path, commit_sha: str) -> Path
     """Create an isolated git worktree checked out at the placement commit."""
     worktrees_dir = Path(os.environ.get(
         "PROJECT_AI_WORKTREES_DIR",
-        Path(tempfile.gettempdir()) / "project_ai_verification"
+        workspace_root / ".worktrees" / "verification"
     ))
     worktrees_dir.mkdir(parents=True, exist_ok=True)
     worktree_path = worktrees_dir / f"verify-{uuid4().hex[:12]}"
@@ -152,7 +152,7 @@ def _pnpm_command() -> str:
 def _build_admin_preview(worktree_path: Path, timeout_seconds: int) -> None:
     """Build the exact placed commit before serving it for browser verification."""
     result = subprocess.run(
-        [_pnpm_command(), "--filter", "@quiz/skillhubcore-admin", "build"],
+        [_pnpm_command(), "--filter", "@quiz/skillhubcore-admin", "exec", "next", "build", "--webpack"],
         cwd=worktree_path,
         capture_output=True,
         text=True,
@@ -348,7 +348,7 @@ async def verify_composer_in_worktree(
     block_version: str,
     candidate_hash: str,
     manifest_hash: str,
-    timeout_seconds: int = 90
+    timeout_seconds: int = 180
 ) -> Dict[str, Any]:
     """
     Execute full Composer verification on an isolated git worktree checked out at commit_sha.
