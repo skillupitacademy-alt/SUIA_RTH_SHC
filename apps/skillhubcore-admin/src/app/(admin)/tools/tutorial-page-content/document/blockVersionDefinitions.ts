@@ -1,8 +1,19 @@
 import type { TutorialPageContentType } from '@quiz/types';
+import type {
+  TutorialBlock,
+  DefinitionD1AuthorContent,
+  CodeC1AuthorContent,
+  IntroductionI1AuthorContent,
+} from '@quiz/types/tutorial-rich-document';
+import type {
+  TutorialObjectivePayload,
+  TutorialSummaryPayload,
+} from '@quiz/types/tutorial-page-content.types';
 import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import {
   normalizeDefinitionD1Payload,
   normalizeIntroductionI1Payload,
+  type BlockInstance,
 } from './documentTransformation';
 import { GENERATED_BLOCK_VERSION_DEFINITIONS } from './generatedBlockVersionDefinitions';
 
@@ -23,6 +34,7 @@ export interface BlockVersionDefinition {
   normalizePreview: (payload: unknown) => PreviewNormalizationResult;
   prepareForStorage: (payload: unknown) => StoragePreparationResult;
   parseMarkdown?: (source: string) => unknown;
+  toCanonicalBlock?: (instance: BlockInstance) => TutorialBlock;
 }
 
 const identityPreview = (payload: unknown): PreviewNormalizationResult => ({
@@ -139,28 +151,137 @@ function parseCodeMarkdown(source: string): unknown {
 
 const definitions: BlockVersionDefinition[] = [
   {
-    type: 'definition', version: 'D1',
+    type: 'definition',
+    version: 'D1',
     normalizePreview: (payload) => ({ content: normalizeDefinitionD1Payload(payload), memoryModelWarning: '' }),
     prepareForStorage: (payload) => ({ content: normalizeDefinitionD1Payload(payload), payloadFormat: 'legacy', memoryModelWarning: '' }),
     parseMarkdown: parseDefinitionMarkdown,
+    toCanonicalBlock: (instance: BlockInstance): TutorialBlock => ({
+      id: instance.id,
+      type: 'definition',
+      version: 'D1',
+      content: normalizeDefinitionD1Payload(instance.payload) as unknown as DefinitionD1AuthorContent,
+      expectedTimeSec: instance.expectedTimeSec,
+    }),
   },
-  { type: 'code', version: 'C1', normalizePreview: normalizeCodeC1Preview, prepareForStorage: prepareCodeC1Storage, parseMarkdown: parseCodeMarkdown },
-  { type: 'summary', version: 'S1', normalizePreview: identityPreview, prepareForStorage: legacyStorage, parseMarkdown: parseSummaryMarkdown },
   {
-    type: 'introduction', version: 'I1',
+    type: 'code',
+    version: 'C1',
+    normalizePreview: normalizeCodeC1Preview,
+    prepareForStorage: prepareCodeC1Storage,
+    parseMarkdown: parseCodeMarkdown,
+    toCanonicalBlock: (instance: BlockInstance): TutorialBlock => {
+      if (instance.payloadFormat === 'canonical') {
+        return {
+          id: instance.id,
+          type: 'code',
+          version: 'C1',
+          content: instance.payload as CodeC1AuthorContent,
+          expectedTimeSec: instance.expectedTimeSec,
+        };
+      }
+      const result = toCanonicalCodeC1(instance.payload);
+      return {
+        id: instance.id,
+        type: 'code',
+        version: 'C1',
+        content: result.content,
+        expectedTimeSec: instance.expectedTimeSec,
+      };
+    },
+  },
+  {
+    type: 'summary',
+    version: 'S1',
+    normalizePreview: identityPreview,
+    prepareForStorage: legacyStorage,
+    parseMarkdown: parseSummaryMarkdown,
+    toCanonicalBlock: (instance: BlockInstance): TutorialBlock => {
+      const summaryPayload = instance.payload as TutorialSummaryPayload;
+      const points: string[] = [];
+      if (summaryPayload.summary) {
+        summaryPayload.summary.forEach((item) => {
+          if (item.text) {
+            points.push(item.text);
+          }
+        });
+      }
+      if (summaryPayload.revisionTable?.rows) {
+        summaryPayload.revisionTable.rows.forEach((row) => {
+          if (row.keyPoint?.title) {
+            points.push(row.keyPoint.title);
+          }
+        });
+      }
+      const isRichSummary = Boolean(
+        (summaryPayload as any)?.revisionTable ||
+        (summaryPayload as any)?.summary ||
+        (summaryPayload as any)?.page?.badge
+      );
+
+      return {
+        id: instance.id,
+        type: 'summary',
+        version: 'S1',
+        content: (isRichSummary
+          ? summaryPayload
+          : {
+              title: summaryPayload.page?.title,
+              points: points.length > 0 ? points : ['Summary content'],
+            }) as any,
+        expectedTimeSec: instance.expectedTimeSec,
+      };
+    },
+  },
+  {
+    type: 'introduction',
+    version: 'I1',
     normalizePreview: (payload) => ({ content: normalizeIntroductionI1Payload(payload), memoryModelWarning: '' }),
     prepareForStorage: (payload) => ({ content: normalizeIntroductionI1Payload(payload), payloadFormat: 'legacy', memoryModelWarning: '' }),
     parseMarkdown: parseIntroductionMarkdown,
+    toCanonicalBlock: (instance: BlockInstance): TutorialBlock => ({
+      id: instance.id,
+      type: 'introduction',
+      version: 'I1',
+      content: normalizeIntroductionI1Payload(instance.payload) as unknown as IntroductionI1AuthorContent,
+      expectedTimeSec: instance.expectedTimeSec,
+    }),
   },
   {
-    type: 'objective', version: 'O1',
+    type: 'objective',
+    version: 'O1',
     normalizePreview: normalizeObjectivePreview,
     prepareForStorage: (payload) => ({ ...normalizeObjectivePreview(payload), payloadFormat: 'canonical' }),
+    toCanonicalBlock: (instance: BlockInstance): TutorialBlock => {
+      const raw = instance.payload as any;
+      const content = (raw?.page && typeof raw.page === 'object') ? { ...raw.page } : { ...raw };
+      if ('expectedTimeSec' in content) delete content.expectedTimeSec;
+      return {
+        id: instance.id,
+        type: 'objective',
+        version: 'O1',
+        content: content as TutorialObjectivePayload,
+        expectedTimeSec: instance.expectedTimeSec ?? raw?.expectedTimeSec,
+      } as TutorialBlock;
+    },
   },
   {
-    type: 'objective', version: 'O2',
+    type: 'objective',
+    version: 'O2',
     normalizePreview: normalizeObjectivePreview,
     prepareForStorage: (payload) => ({ ...normalizeObjectivePreview(payload), payloadFormat: 'canonical' }),
+    toCanonicalBlock: (instance: BlockInstance): TutorialBlock => {
+      const raw = instance.payload as any;
+      const content = (raw?.page && typeof raw.page === 'object') ? { ...raw.page } : { ...raw };
+      if ('expectedTimeSec' in content) delete content.expectedTimeSec;
+      return {
+        id: instance.id,
+        type: 'objective',
+        version: 'O2',
+        content: content as TutorialObjectivePayload,
+        expectedTimeSec: instance.expectedTimeSec ?? raw?.expectedTimeSec,
+      } as TutorialBlock;
+    },
   },
   ...GENERATED_BLOCK_VERSION_DEFINITIONS.map((definition) => ({
     type: definition.type,
@@ -170,6 +291,13 @@ const definitions: BlockVersionDefinition[] = [
       content: payload,
       payloadFormat: definition.payloadFormat,
       memoryModelWarning: '',
+    }),
+    toCanonicalBlock: (instance: BlockInstance): TutorialBlock => ({
+      id: instance.id,
+      type: definition.type as any,
+      version: definition.version,
+      content: instance.payload as any,
+      expectedTimeSec: instance.expectedTimeSec,
     }),
   })),
 ];
@@ -185,6 +313,41 @@ const defaultVersionByType: Record<TutorialPageContentType, string> = {
 export function getBlockVersionDefinition(type: TutorialPageContentType, version: string): BlockVersionDefinition | undefined {
   const effectiveVersion = version === 'v1' || !version ? defaultVersionByType[type] : version;
   return definitions.find((definition) => definition.type === type && definition.version === effectiveVersion);
+}
+
+export function canonicalizeBlockInstance(instance: BlockInstance): TutorialBlock {
+  const version = instance.versionCode || instance.version || 'v1';
+  const definition = getBlockVersionDefinition(instance.type, version);
+  if (definition?.toCanonicalBlock) {
+    return definition.toCanonicalBlock(instance);
+  }
+
+  if (instance.type === 'definition' && version !== 'D1' && version !== 'v1') {
+    throw new Error(
+      `Unsupported definition version: ${instance.versionCode}. Only D1 is currently supported.`
+    );
+  }
+  if (instance.type === 'code' && version !== 'C1' && version !== 'v1') {
+    throw new Error(
+      `Unsupported code version: ${instance.versionCode}. Only C1 is currently supported.`
+    );
+  }
+  if (instance.type === 'summary' && version !== 'S1' && version !== 'v1') {
+    throw new Error(`Unsupported summary version: ${instance.versionCode}`);
+  }
+  if (instance.type === 'introduction' && version !== 'I1' && version !== 'v1') {
+    throw new Error(
+      `Unsupported introduction version: ${instance.versionCode}. Only I1 is currently supported.`
+    );
+  }
+
+  return {
+    id: instance.id,
+    type: instance.type as any,
+    version,
+    content: instance.payload as any,
+    expectedTimeSec: instance.expectedTimeSec,
+  } as TutorialBlock;
 }
 
 export function normalizeBlockPreviewPayload(payload: unknown, type: TutorialPageContentType, version: string): PreviewNormalizationResult {

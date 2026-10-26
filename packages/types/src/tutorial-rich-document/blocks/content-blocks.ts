@@ -7,6 +7,7 @@
  */
 
 import { PresentationConfig } from '../presentation';
+import type { TutorialSummaryPayload } from '../../tutorial-page-content.types';
 
 /**
  * Learning Progress Role
@@ -344,10 +345,14 @@ export interface QuoteBlock extends BaseBlock {
  * 
  * Summary S1 - Author Content
  */
-export interface SummaryS1AuthorContent {
+export interface SummaryS1BulletContent {
   title?: string;
   points: string[];
 }
+
+export type SummaryS1AuthorContent =
+  | SummaryS1BulletContent
+  | TutorialSummaryPayload;
 
 /**
  * Summary S1 Block

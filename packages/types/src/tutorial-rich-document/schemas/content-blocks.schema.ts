@@ -162,13 +162,34 @@ export const QuoteBlockSchema = z.object({
   presentation: PresentationConfigSchema,
 });
 
+export const SummaryS1BulletContentSchema = z.object({
+  title: z.string().max(200).optional(),
+  points: z.array(z.string().min(1)).min(1).max(20),
+});
+
+export const SummaryS1RichContentSchema = z.object({
+  page: z.object({
+    badge: z.string().optional(),
+    badgeIcon: z.string().optional(),
+    title: z.string().min(1),
+    introduction: z.string().optional(),
+  }).passthrough(),
+  summary: z.array(z.object({ text: z.string() })).optional(),
+  revisionTable: z.object({
+    columns: z.array(z.any()),
+    rows: z.array(z.any()),
+  }).optional(),
+  quickTips: z.array(z.any()).optional(),
+  finalTip: z.any().optional(),
+}).passthrough();
+
 /**
  * Summary S1 - Author Content Schema
  */
-export const SummaryS1AuthorContentSchema = z.object({
-  title: z.string().max(200).optional(),
-  points: z.array(z.string().min(1)).min(1).max(20),
-}).strict();
+export const SummaryS1AuthorContentSchema = z.union([
+  SummaryS1BulletContentSchema,
+  SummaryS1RichContentSchema,
+]);
 
 /**
  * Summary S1 Block Schema
