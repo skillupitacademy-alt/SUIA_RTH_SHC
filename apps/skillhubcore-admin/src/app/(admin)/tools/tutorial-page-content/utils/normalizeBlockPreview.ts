@@ -36,10 +36,15 @@ export function normalizeBlockPreview(
   blockType: TutorialPageContentType,
   versionCode: string
 ): NormalizedBlockPreview {
+  const raw = typeof payload === 'object' && payload !== null ? { ...(payload as any) } : payload;
+  if (typeof raw === 'object' && raw !== null && 'expectedTimeSec' in raw) {
+    delete raw.expectedTimeSec;
+  }
+
   // C1 blocks require canonicalization
   if (blockType === 'code' && versionCode === 'C1') {
     try {
-      const result = toCanonicalCodeC1(payload);
+      const result = toCanonicalCodeC1(raw);
       return {
         content: result.content,
         memoryModelWarning: result.memoryModelWarning || '',
@@ -48,15 +53,24 @@ export function normalizeBlockPreview(
       // Fallback to raw payload if conversion fails
       console.error('[C1 Normalization] Failed to convert to canonical:', error);
       return {
-        content: payload,
+        content: raw,
         memoryModelWarning: '',
       };
     }
   }
+
+  // Objective blocks: unwrap page wrapper if provided by external AI
+  const isObjective = blockType === 'objective' || (typeof raw === 'object' && raw !== null && (raw as any).page?.type === 'objective');
+  if (isObjective && typeof raw === 'object' && raw !== null && (raw as any).page) {
+    return {
+      content: { ...(raw as any).page },
+      memoryModelWarning: '',
+    };
+  }
   
   // All other block types pass through unchanged
   return {
-    content: payload,
+    content: raw,
     memoryModelWarning: '',
   };
 }

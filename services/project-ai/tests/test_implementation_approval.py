@@ -374,3 +374,60 @@ def test_is_valid_for_implementation_fails_missing_requester():
     
     assert is_valid is False
 
+
+def test_admin_override_permits_self_approval():
+    """Verify administrator override permits approval when approver matches workflow requester."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="3410ac33-9513-44d8-aca4-89bcfcf63c00",
+        workflow_requester="3410ac33-9513-44d8-aca4-89bcfcf63c00",
+        evidence={"admin_override": True, "approved_by_role": "admin"}
+    )
+    
+    assert approval.verify_not_self_approved("3410ac33-9513-44d8-aca4-89bcfcf63c00") is True
+
+
+def test_admin_override_nested_evidence_permits_self_approval():
+    """Verify admin override is detected even after evidence dictionary is serialized by to_evidence_dict()."""
+    approval = create_implementation_approval(
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="3410ac33-9513-44d8-aca4-89bcfcf63c00",
+        workflow_requester="3410ac33-9513-44d8-aca4-89bcfcf63c00",
+        evidence={"admin_override": True, "approved_by_role": "admin"}
+    )
+    
+    # Simulate DB persistence and reload
+    evidence_dict = approval.to_evidence_dict()
+    reloaded_approval = ImplementationApproval(
+        approval_id="test-id",
+        workflow_id="wf-123",
+        candidate_sha256="abc123",
+        target_family="Introduction",
+        target_version="I7",
+        placement_manifest_id="manifest-456",
+        placement_manifest_sha256="def456",
+        approved_by="3410ac33-9513-44d8-aca4-89bcfcf63c00",
+        approval_timestamp=datetime.now(timezone.utc).isoformat(),
+        status=ImplementationApprovalStatus.APPROVED,
+        workflow_requester="3410ac33-9513-44d8-aca4-89bcfcf63c00",
+        evidence=evidence_dict
+    )
+    
+    assert reloaded_approval.verify_not_self_approved("3410ac33-9513-44d8-aca4-89bcfcf63c00") is True
+    assert reloaded_approval.is_valid_for_implementation(
+        requester_id="3410ac33-9513-44d8-aca4-89bcfcf63c00",
+        candidate_sha256="abc123",
+        manifest_id="manifest-456",
+        manifest_sha256="def456",
+    ) is True
+

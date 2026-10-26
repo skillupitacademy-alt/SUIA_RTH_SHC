@@ -711,29 +711,33 @@ export default function CandidateUploadPage() {
           Back to External AI Handoff
         </Link>
 
-        {uploadResult?.candidateId && (checks.length === 0 || checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED')) ? (
-          <Link
-            href={`/tools/project-llm/integration-certification${activeWorkflowId ? `?workflowId=${activeWorkflowId}${uploadResult ? `&candidateId=${uploadResult.candidateId}` : ''}` : ''}`}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
-          >
-            Proceed to Integration & Certification
-            <ArrowRight size={16} />
-          </Link>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-200 text-slate-400 text-sm font-bold cursor-not-allowed shadow-none"
-            title={
-              !uploadResult?.candidateId
-                ? 'Upload and validate a candidate package to unlock Integration & Certification'
-                : 'All validation gates must pass before proceeding to Integration & Certification'
-            }
-          >
-            Proceed to Integration & Certification (Locked)
-            <ArrowRight size={16} />
-          </button>
-        )}
+        {(() => {
+          const activeCandidateId = uploadResult?.candidateId || certificationData?.candidateId;
+          const allGatesPassed = checks.length > 0 && checks.every(c => c.status === 'PASS' || c.status === 'SKIPPED');
+          return activeCandidateId && allGatesPassed ? (
+            <Link
+              href={`/tools/project-llm/integration-certification${activeWorkflowId ? `?workflowId=${activeWorkflowId}&candidateId=${activeCandidateId}` : ''}`}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition-all shadow-md shadow-pink-500/20 active:scale-95"
+            >
+              Proceed to Integration & Certification
+              <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-200 text-slate-400 text-sm font-bold cursor-not-allowed shadow-none"
+              title={
+                !activeCandidateId
+                  ? 'Upload and validate a candidate package to unlock Integration & Certification'
+                  : 'All validation gates must pass before proceeding to Integration & Certification'
+              }
+            >
+              Proceed to Integration & Certification (Locked)
+              <ArrowRight size={16} />
+            </button>
+          );
+        })()}
       </div>
     </div>
   );

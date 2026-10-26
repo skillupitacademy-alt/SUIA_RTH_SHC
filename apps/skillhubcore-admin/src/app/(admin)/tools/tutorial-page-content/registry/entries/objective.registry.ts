@@ -25,5 +25,15 @@ export const objectiveRegistry: BlockRegistryEntry = {
         ],
       }),
     },
+    {
+      id: 'o2',
+      code: 'O2',
+      label: "O2 - Objective",
+      description: "Organizes lesson learning outcomes into a three-tier cognitive progression: Know, Understand, and Apply.",
+      getDefaultPayload: () => ({
+        "title": "Example",
+        "objectives": []
+}),
+    },
   ],
 };

@@ -315,17 +315,16 @@ export function toTutorialBlock(instance: BlockInstance): TutorialBlock {
     }
 
     case 'objective': {
-      if (instance.versionCode !== 'O1') {
-        throw new Error(
-          `Unsupported objective version: ${instance.versionCode}. Only O1 is currently supported.`
-        );
-      }
+      const raw = instance.payload as any;
+      const content = (raw?.page && typeof raw.page === 'object') ? { ...raw.page } : { ...raw };
+      if ('expectedTimeSec' in content) delete content.expectedTimeSec;
+      const version = instance.versionCode === 'O2' ? 'O2' : 'O1';
       return {
         id: instance.id,
         type: 'objective',
-        version: 'O1',
-        content: instance.payload as TutorialObjectivePayload,
-        expectedTimeSec: instance.expectedTimeSec,
+        version,
+        content: content as TutorialObjectivePayload,
+        expectedTimeSec: instance.expectedTimeSec ?? raw?.expectedTimeSec,
       } as TutorialBlock;
     }
 

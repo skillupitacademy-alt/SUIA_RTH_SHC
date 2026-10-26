@@ -21,6 +21,7 @@ import { ThreeColumnBlock } from './blocks/ThreeColumnBlock';
 import { CardGridBlock } from './blocks/CardGridBlock';
 import { TimelineBlock } from './blocks/TimelineBlock';
 import { ObjectiveO1Block } from './blocks/ObjectiveO1Block';
+import { ObjectiveO2Block } from './blocks/ObjectiveO2Block';
 
 function UnknownBlockState({ type }: { type: string }) {
   return (
@@ -128,12 +129,15 @@ export function TutorialBlockRenderer({ block, depth = 0, theme, className = '',
       case 'timeline':
         return <TimelineBlock block={block} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       case 'objective': {
-        if (!('version' in block) || (block as any).version !== 'O1') {
-          throw new Error(
-            `Unsupported Objective version. O1 is required. Received: ${('version' in block) ? (block as any).version : 'no version'}`
-          );
+        const objectiveVersion = 'version' in block ? (block as any).version : undefined;
+        switch (objectiveVersion) {
+          case 'O1':
+            return <ObjectiveO1Block block={block as any} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
+          case 'O2':
+            return <ObjectiveO2Block block={block as any} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
+          default:
+            throw new Error(`Unsupported Objective version: ${String(objectiveVersion)}`);
         }
-        return <ObjectiveO1Block block={block as any} depth={depth} theme={theme} className={className} runtimeContext={runtimeContext} renderChild={renderChild} />;
       }
 
       default: {

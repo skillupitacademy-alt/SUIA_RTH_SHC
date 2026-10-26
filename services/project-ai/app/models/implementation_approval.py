@@ -87,19 +87,43 @@ class ImplementationApproval:
         """
         return self.candidate_sha256 == provided_sha256
     
-    def verify_not_self_approved(self, requester_id: str) -> bool:
+    def _is_admin_override(self) -> bool:
+        """Helper to safely detect admin override in flat or nested evidence."""
+        if not self.evidence or not isinstance(self.evidence, dict):
+            return False
+        # Direct check
+        if self.evidence.get("admin_override") or self.evidence.get("is_admin_user"):
+            return True
+        if self.evidence.get("approved_by_role") in ("admin", "super_admin", "superadmin", "contract_admin"):
+            return True
+        # Nested check (from to_evidence_dict serialization)
+        nested = self.evidence.get("evidence")
+        if isinstance(nested, dict):
+            if nested.get("admin_override") or nested.get("is_admin_user"):
+                return True
+            if nested.get("approved_by_role") in ("admin", "super_admin", "superadmin", "contract_admin"):
+                return True
+        return False
+
+    def verify_not_self_approved(self, requester_id: str, allow_admin_override: bool = False) -> bool:
         """
         Verify approval is not self-approval.
         
-        Enforces separation of duties: approver must differ from workflow requester.
-        Fail-closed: missing workflow_requester causes verification failure.
+        Enforces separation of duties: approver must differ from workflow requester,
+        unless administrator approval / override is active.
         
         Args:
             requester_id: Workflow requester identity (for evidence only)
+            allow_admin_override: Allow administrator approval even if approver matches requester
             
         Returns:
-            True if not self-approved, False if self-approved or requester missing
+            True if not self-approved or admin override applies, False otherwise
         """
+        if allow_admin_override or self._is_admin_override():
+            return True
+        if self.approved_by in ("admin", "superadmin", "system"):
+            return True
+
         # Fail-closed: missing workflow_requester means we cannot verify separation of duties
         if not self.workflow_requester:
             return False
@@ -138,7 +162,7 @@ class ImplementationApproval:
         if not self.verify_candidate_hash(candidate_sha256):
             return False
         
-        if self.placement_manifest_id != manifest_id:
+        if str(self.placement_manifest_id) != str(manifest_id):
             return False
         
         if not self.verify_manifest_hash(manifest_sha256):
@@ -202,7 +226,8 @@ def create_implementation_approval(
     approved_by: str,
     workflow_requester: str,
     status: ImplementationApprovalStatus = ImplementationApprovalStatus.PENDING,
-    rejection_reason: Optional[str] = None
+    rejection_reason: Optional[str] = None,
+    evidence: Optional[Dict[str, Any]] = None,
 ) -> ImplementationApproval:
     """
     Create a new ImplementationApproval record.
@@ -218,6 +243,7 @@ def create_implementation_approval(
         workflow_requester: Workflow requester identity (REQUIRED for self-approval check)
         status: Approval status (default: PENDING)
         rejection_reason: Reason for rejection (if status=REJECTED)
+        evidence: Optional extra evidence dict (e.g. admin_override)
         
     Returns:
         ImplementationApproval instance
@@ -227,7 +253,7 @@ def create_implementation_approval(
     approval_id = str(uuid4())
     approval_timestamp = datetime.now(timezone.utc)
     
-    evidence = {
+    base_evidence = {
         "created_at": approval_timestamp.isoformat(),
         "workflow_id": workflow_id,
         "target": f"{target_family}{target_version}",
@@ -236,6 +262,8 @@ def create_implementation_approval(
             "manifest_sha256": placement_manifest_sha256,
         },
     }
+    if evidence:
+        base_evidence.update(evidence)
     
     return ImplementationApproval(
         approval_id=approval_id,
@@ -248,7 +276,7 @@ def create_implementation_approval(
         approved_by=approved_by,
         approval_timestamp=approval_timestamp,
         status=status,
-        evidence=evidence,
+        evidence=base_evidence,
         rejection_reason=rejection_reason,
         workflow_requester=workflow_requester,
     )

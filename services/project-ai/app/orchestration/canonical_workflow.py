@@ -300,6 +300,7 @@ VALID_TRANSITIONS: dict[CanonicalWorkflowState, list[CanonicalWorkflowState]] = 
         CanonicalWorkflowState.CANDIDATE_RECEIVED,
     ],
     CanonicalWorkflowState.CANDIDATE_RECEIVED: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,  # Allow candidate package revisions
         CanonicalWorkflowState.CANDIDATE_AUDIT,
     ],
     CanonicalWorkflowState.CANDIDATE_AUDIT: [
@@ -494,8 +495,12 @@ async def can_transition_to_implementing_async(
             f"Manifest hash mismatch: expected {approval.placement_manifest_sha256}, got {manifest_sha256}"
         )
     
-    # Verify not self-approved
-    if not approval.verify_not_self_approved(requester_id):
+    # Verify not self-approved (allows admin override if approver is an administrator or recorded in evidence)
+    is_admin_override = bool(
+        approval._is_admin_override()
+        or approval.approved_by in ("admin", "superadmin", "system")
+    )
+    if not approval.verify_not_self_approved(requester_id, allow_admin_override=is_admin_override):
         return (
             False,
             f"Self-approval detected or workflow requester missing: approver '{approval.approved_by}'"
@@ -588,8 +593,12 @@ def can_transition_to_implementing(
             f"Manifest hash mismatch: expected {approval.placement_manifest_sha256}, got {manifest_sha256}"
         )
     
-    # Verify not self-approved
-    if not approval.verify_not_self_approved(requester_id):
+    # Verify not self-approved (allows admin override if approver is an administrator or recorded in evidence)
+    is_admin_override = bool(
+        approval._is_admin_override()
+        or approval.approved_by in ("admin", "superadmin", "system")
+    )
+    if not approval.verify_not_self_approved(requester_id, allow_admin_override=is_admin_override):
         return (
             False,
             f"Self-approval detected or workflow requester missing: approver '{approval.approved_by}'"

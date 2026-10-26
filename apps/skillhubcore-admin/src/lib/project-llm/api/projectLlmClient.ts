@@ -412,23 +412,26 @@ export class ProjectLlmClient {
 
       const data: any = await response.json();
       const rawGates = data.gate_results || {};
-      const gates: any[] = Object.entries(rawGates).map(([gateName, gateVal]: [string, any]) => {
-        let result: 'PASS' | 'FAIL' | 'SKIPPED' | 'PENDING' = 'PENDING';
-        let detail = '';
-        if (typeof gateVal === 'string') {
-          const upper = gateVal.toUpperCase();
-          result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(upper) ? upper : 'PENDING') as any;
-        } else if (typeof gateVal === 'object' && gateVal !== null) {
-          const status = (gateVal.status || gateVal.verdict || gateVal.result || 'PENDING').toUpperCase();
-          result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(status) ? status : 'PENDING') as any;
-          detail = gateVal.detail || gateVal.reason || gateVal.message || '';
-        }
-        return {
-          gate: gateName,
-          result,
-          detail,
-        };
-      });
+      const nonGateKeys = new Set(['purpose', 'supersedes', 'superseded']);
+      const gates: any[] = Object.entries(rawGates)
+        .filter(([gateName]) => !nonGateKeys.has(gateName))
+        .map(([gateName, gateVal]: [string, any]) => {
+          let result: 'PASS' | 'FAIL' | 'SKIPPED' | 'PENDING' = 'PENDING';
+          let detail = '';
+          if (typeof gateVal === 'string') {
+            const upper = gateVal.toUpperCase();
+            result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(upper) ? upper : 'PENDING') as any;
+          } else if (typeof gateVal === 'object' && gateVal !== null) {
+            const status = (gateVal.status || gateVal.verdict || gateVal.result || 'PENDING').toUpperCase();
+            result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(status) ? status : 'PENDING') as any;
+            detail = gateVal.detail || gateVal.reason || gateVal.message || '';
+          }
+          return {
+            gate: gateName,
+            result,
+            detail,
+          };
+        });
 
       return {
         workflowId: data.workflow_id || workflowId,
@@ -437,8 +440,8 @@ export class ProjectLlmClient {
         certifiedAt: data.updated_at || undefined,
         targetFamily: data.target?.family,
         targetVersion: data.target?.version,
-        candidateId: data.artifacts?.candidate?.id || data.artifacts?.candidate?.artifact_id || undefined,
-        manifestId: data.artifacts?.manifest?.id || data.artifacts?.manifest?.artifact_id || undefined,
+        candidateId: data.artifacts?.candidate?.id || data.artifacts?.candidate?.artifact_id || data.candidate_sha256 || undefined,
+        manifestId: data.artifacts?.manifest?.id || data.artifacts?.manifest?.artifact_id || data.manifest_sha256 || undefined,
         rawGateResults: rawGates,
       };
     } catch (error) {

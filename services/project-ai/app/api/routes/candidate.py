@@ -192,6 +192,12 @@ def model_to_approval(model: ApprovalModel) -> ImplementationApproval:
     """Convert ORM ApprovalModel to domain ImplementationApproval."""
     from app.models.implementation_approval import ImplementationApprovalStatus
     
+    evidence_dict = dict(model.evidence or {})
+    if "evidence" in evidence_dict and isinstance(evidence_dict["evidence"], dict):
+        for k, v in evidence_dict["evidence"].items():
+            if k not in evidence_dict:
+                evidence_dict[k] = v
+
     return ImplementationApproval(
         approval_id=str(model.approval_id),
         workflow_id=str(model.workflow_id),
@@ -204,6 +210,7 @@ def model_to_approval(model: ApprovalModel) -> ImplementationApproval:
         approval_timestamp=model.approval_timestamp,
         status=ImplementationApprovalStatus(model.status),
         workflow_requester=model.workflow_requester,
+        evidence=evidence_dict,
         rejection_reason=model.rejection_reason
     )
 
@@ -340,11 +347,15 @@ async def upload_candidate(
             detail=f"Workflow not found: {package.workflow_id}"
         )
     
-    # Wave 3A: Verify workflow state is CANDIDATE_REQUESTED
-    if workflow.current_state != CanonicalWorkflowState.CANDIDATE_REQUESTED:
+    # Verify workflow state allows candidate upload or revision
+    allowed_upload_states = [
+        CanonicalWorkflowState.CANDIDATE_REQUESTED,
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
+    ]
+    if workflow.current_state not in allowed_upload_states:
         raise HTTPException(
             status_code=409,
-            detail=f"Workflow state must be CANDIDATE_REQUESTED for upload. "
+            detail=f"Workflow state must be CANDIDATE_REQUESTED or CANDIDATE_RECEIVED for upload. "
                    f"Current state: {workflow.current_state.value}"
         )
     
@@ -466,13 +477,13 @@ async def upload_candidate(
                 wf_model.gate_results = current_gates
                 await workflow_repo.upsert(wf_model)
 
-            # Wave 3A: Transition workflow state to CANDIDATE_RECEIVED
+            action_desc = "revision uploaded & re-qualified" if workflow.current_state == CanonicalWorkflowState.CANDIDATE_RECEIVED else "uploaded & qualified"
             await governance_service.transition_state(
                 workflow_id=package.workflow_id,
                 to_state=CanonicalWorkflowState.CANDIDATE_RECEIVED,
                 triggered_by=user.get("user_id", "unknown"),
                 evidence_id=str(uuid5(NAMESPACE_DNS, f"upload-{package.candidateId}")),
-                reason=f"Candidate package uploaded & qualified: {len(package.files)} files, {test_result['detail']}, SHA-256: {candidate_sha256[:16]}..."
+                reason=f"Candidate package {action_desc}: {len(package.files)} files, {test_result['detail']}, SHA-256: {candidate_sha256[:16]}..."
             )
         except Exception as transition_error:
             # Rollback the entire transaction including bind_artifact
