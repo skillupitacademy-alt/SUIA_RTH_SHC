@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Objective O3 Block Schema",
+  "description": "JSON Schema contract for ObjectiveBlock version O3 (Skill-Based Objectives: Skill -> Action -> Expected Result).",
+  "type": "object",
+  "required": [
+    "title",
+    "objectives"
+  ],
+  "properties": {
+    "eyebrow": {
+      "type": "string",
+      "description": "Optional uppercase category badge label.",
+      "default": "SKILL-BASED OBJECTIVES"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Main heading for the Objective O3 block.",
+      "default": "What You Will Be Able To Do"
+    },
+    "introduction": {
+      "type": "string",
+      "description": "Introductory lead paragraph explaining the observable skills."
+    },
+    "objectives": {
+      "type": "array",
+      "minItems": 1,
+      "description": "List of observable skill-based learning objectives.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "text"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "description": "Controlled action verb label (e.g., Create, Access, Modify, Debug)."
+          },
+          "verb": {
+            "type": "string",
+            "description": "Optional action verb alias."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Observable skill description."
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional alias for observable skill description."
+          },
+          "expectedResult": {
+            "type": "string",
+            "description": "Observable expected result demonstrating mastery of the skill."
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "skills": {
+      "type": "array",
+      "description": "Optional structured skills array for O3 skill items.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expectedResult": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

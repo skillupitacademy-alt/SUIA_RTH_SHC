@@ -182,25 +182,45 @@ export default function ComplianceBriefPage() {
   }, [workflowId]);
 
   const handleCopyBrief = () => {
-    const briefText = `PROJECT LLM COMPLIANCE BRIEF
-Block Family: ${state.familyName} (${state.familyId})
-Target Version: ${state.targetVersion}
-Purpose: ${state.purpose}
-Based on Existing Versions: ${state.existingVersions.join(', ')}
+    const contractJson = contract ? JSON.stringify(contract, null, 2) : 'Backend contract not loaded.';
+    const targetFamily = String((contract as any)?.target?.family || state.familyName || 'Block');
+    const targetVersion = String((contract as any)?.target?.version || state.targetVersion || 'V1').toUpperCase();
+    const typeId = targetFamily.toLowerCase();
+    const componentName = `${targetFamily}${targetVersion}Block`;
+    const briefText = `PROJECT LLM CANONICAL COMPLIANCE BRIEF & ENGINEERING CONTRACT
+Workflow ID: ${workflowId || 'not supplied'}
+Contract SHA-256: ${String((contract as any)?.contract_hash || 'not available')}
+Target Block: ${targetFamily} (${targetVersion})
+Block Type ID: '${typeId}'
 
-==============================
-ENGINEERING COMPLIANCE REQUIREMENTS:
-==============================
-${requirements
-  .map(
-    (req, idx) => `
-${idx + 1}. [${req.code}] ${req.title} (${req.category})
-${req.items.map((item) => `   - [x] ${item}`).join('\n')}
-`
-  )
-  .join('\n')}
-`;
-    navigator.clipboard.writeText(briefText);
+The External AI must deliver a portable candidate ZIP only. It must not edit or include
+shared registry, renderer, Composer, type-union, navigation, status, or API files.
+Project LLM owns controlled placement into generatedBlockRegistries.ts,
+generatedBlockRenderers.tsx, and generatedBlockVersionDefinitions.ts, while preserving
+all existing families and versions.
+
+REQUIRED CANDIDATE ARTIFACTS
+1. ${componentName}.tsx
+2. ${componentName}.test.tsx
+3. ${typeId}-${targetVersion.toLowerCase()}.schema.json
+4. ${typeId}-${targetVersion.toLowerCase()}.schema.ts
+5. block.integration.json with component/test/schema references and a complete,
+   non-empty defaultPayload valid against the supplied JSON schema
+6. README.md
+
+REQUIRED VERIFICATION EVIDENCE
+- UBRC data-block-id, data-block-type, and data-block-version attributes
+- Theme and brand independence through runtime props
+- Accessibility and responsive rendering tests
+- Candidate qualification, placement, and isolated Composer verification performed
+  by Project LLM; no certification claim may be made from this brief alone
+
+IMMUTABLE BACKEND CONTRACT JSON:
+${contractJson}
+
+The persisted backend contract is authoritative. Do not invent requirements or claim
+that any gate passed without attached verification evidence.`;
+    void navigator.clipboard.writeText(briefText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

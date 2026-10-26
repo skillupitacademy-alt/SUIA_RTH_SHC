@@ -169,7 +169,7 @@ All tutorial blocks in the platform belong to a unified tutorial page. Your comp
 --------------------------------------------------------------------------------
 MANDATORY PACKAGE DELIVERABLE: SINGLE ZIP ARCHIVE
 --------------------------------------------------------------------------------
-You must package your output as a single .zip archive containing the six required files below at the root of the ZIP (do NOT wrap them in a subfolder). preview.html is optional.
+You must package your output as a single .zip archive containing the six required implementation files below at the root of the ZIP (do NOT wrap them in a subfolder). preview.html is optional and is not placed.
 
 1. ${componentName}.tsx (Primary React UI Block Component)
    - Canonical monorepo imports:
@@ -242,7 +242,7 @@ You are creating a portable candidate package, not modifying this repository.
 
 - Do NOT include registry.ts, TutorialBlockRenderer.tsx, tutorial-composer.service.ts, shared type-union files, navigation files, progress/status files, or API clients.
 - Do NOT replace, remove, or redefine existing versions in the '${familyLower}' family.
-- Project LLM alone merges this version into the family registry, extends renderer dispatch, preserves existing versions, and runs all placement and Composer verification.
+   - Project LLM alone merges this version into the generated block registry and renderer catalogs, preserves existing families and versions, and runs all placement and isolated Composer verification.
 - Your package must work without repository access: use only the imports, contract fields, and file names specified in this prompt.
 
 --------------------------------------------------------------------------------
@@ -276,7 +276,7 @@ VERIFICATION GATES & COMPLIANCE ARCHITECTURE
 3. Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (2xl-4xl title, text-base/lg intro, Lucide icons)
 4. Strict Typing Gate: zero 'any' types in props or block interfaces
 5. Repository Integration Gate: ${componentName}.tsx placed in packages/ui/src/tutorial/blocks/
-6. Composer Registry Gate: Project LLM merges ${versionUpper} into the existing ${familyLower} registry without removing other versions
+6. Composer Registry Gate: Project LLM adds ${versionUpper} to the generated block catalog and renderer dispatch without removing other families or versions
 7. Portable Package Gate: block.integration.json names the component, test, both schemas, and a complete schema-valid defaultPayload
 8. Automated Tests Gate: Passing unit test suite in ${componentName}.test.tsx
 

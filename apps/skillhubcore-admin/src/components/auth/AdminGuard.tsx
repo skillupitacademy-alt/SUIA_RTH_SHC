@@ -1,6 +1,6 @@
 'use client';
 
-import { apiClient } from '@quiz/api-client';
+import { apiClient, ApiRequestError } from '@quiz/api-client';
 import { recordCounter } from '@quiz/observability';
 import { useAuthSync } from '@quiz/ui';
 import { Network } from 'lucide-react';
@@ -16,6 +16,21 @@ const isAdminEquivalentRole = (value: string | null | undefined) => {
   const role = normalizeRole(value);
   return role === 'admin' || role === 'super_admin' || role === 'infrastructure';
 };
+
+function isExplicitAuthError(err: unknown): boolean {
+  if (err instanceof ApiRequestError) {
+    return err.status === 401 || err.status === 403;
+  }
+  if (err && typeof err === 'object') {
+    const status = (err as { status?: unknown }).status;
+    if (status === 401 || status === 403) return true;
+    const message = (err as { message?: unknown }).message;
+    if (typeof message === 'string' && (message.includes('401') || message.includes('403') || message === 'Unauthorized')) {
+      return true;
+    }
+  }
+  return false;
+}
 
 apiClient.client.setPortalIdentity('admin');
 
@@ -40,6 +55,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   );
   const pathname = usePathname();
   const [isCheckingSession, setIsCheckingSession] = useState(pathname !== '/login');
+  const [revalidateError, setRevalidateError] = useState<string | null>(null);
 
   const isSameAuthSession = useCallback((currentUser: typeof user, nextUser: typeof user) => {
     if (currentUser === null || currentUser === undefined || nextUser === null || nextUser === undefined) {
@@ -112,8 +128,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const revalidate = async () => {
+    const revalidate = async (retryCount = 0) => {
       setIsCheckingSession(true);
+      setRevalidateError(null);
       try {
         const { user: validatedUser } = await apiClient.auth.getAdminSession();
         const validatedHasAdminRole = isAdminEquivalentRole(validatedUser?.role);
@@ -131,15 +148,46 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         if (isSameAuthSession(user, validatedUser) === false) {
           login(validatedUser);
         }
+        setIsCheckingSession(false);
       } catch (err: unknown) {
-        clientLogger.error('Session revalidation failed', { error: err instanceof Error ? err.message : 'unknown' });
-        recordCounter('admin.ui.auth.revalidate_failed', 1, {
-          route: pathname,
-          reason: err instanceof Error ? err.message : 'unknown',
+        const isAuthError = isExplicitAuthError(err);
+
+        if (isAuthError) {
+          clientLogger.error('Session authentication failed (401/403)', {
+            error: err instanceof Error ? err.message : 'unknown',
+          });
+          recordCounter('admin.ui.auth.revalidate_failed', 1, {
+            route: pathname,
+            reason: 'unauthorized',
+          });
+          setIsCheckingSession(false);
+          // Redirect to login - no legacy query params
+          window.location.href = '/login';
+          return;
+        }
+
+        // Transient network or server reload error (e.g. during HMR recompilation)
+        if (retryCount < 2) {
+          const delay = (retryCount + 1) * 800;
+          clientLogger.warn(`Transient session check error, retrying in ${delay}ms...`, {
+            error: err instanceof Error ? err.message : 'unknown',
+            retryCount,
+          });
+          setTimeout(() => {
+            void revalidate(retryCount + 1);
+          }, delay);
+          return;
+        }
+
+        // If exhausted retries on network/recompilation error, do NOT redirect to /login
+        clientLogger.error('Session revalidation network failure after retries', {
+          error: err instanceof Error ? err.message : 'unknown',
         });
-        // Redirect to login - no legacy query params
-        window.location.href = '/login';
-      } finally {
+        recordCounter('admin.ui.auth.revalidate_network_error', 1, {
+          route: pathname,
+          reason: err instanceof Error ? err.message : 'network_error',
+        });
+        setRevalidateError('Unable to reach server. The application server or dev compiler may be reloading.');
         setIsCheckingSession(false);
       }
     };
@@ -175,6 +223,63 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
             <Network size={32} className="text-white" />
           </div>
           <p className="text-sm font-semibold text-slate-600">Loading SkillHubCore Admin...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If transient connection error occurred after retries, offer Retry instead of kicking to /login
+  if (revalidateError) {
+    return (
+      <div className="h-screen w-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-4 max-w-md text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 shadow-sm">
+            <Network size={28} />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900">Connection Interrupted</h2>
+          <p className="text-sm text-slate-600">
+            {revalidateError}
+          </p>
+          <div className="flex items-center gap-3 mt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsCheckingSession(true);
+                setRevalidateError(null);
+                const hasRole = isAdminEquivalentRole(user?.role);
+                if (isAuthenticated === true && hasRole === true && user !== null) {
+                  setIsCheckingSession(false);
+                  return;
+                }
+                apiClient.auth.getAdminSession()
+                  .then(({ user: valUser }) => {
+                    if (valUser && isAdminEquivalentRole(valUser.role)) {
+                      login(valUser);
+                    } else {
+                      window.location.href = '/login';
+                    }
+                  })
+                  .catch((err) => {
+                    if (isExplicitAuthError(err)) {
+                      window.location.href = '/login';
+                    } else {
+                      setRevalidateError('Still unable to connect. Please try again.');
+                    }
+                  })
+                  .finally(() => setIsCheckingSession(false));
+              }}
+              className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition"
+            >
+              Retry Connection
+            </button>
+            <button
+              type="button"
+              onClick={() => { window.location.href = '/login'; }}
+              className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+            >
+              Go to Login
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -1,4 +1,5 @@
-import { FetchClient } from './core/fetch-client';
+import { FetchClient, ApiRequestError } from './core/fetch-client';
+export { ApiRequestError };
 import { AuthClient } from './modules/auth-client';
 import { QuizClient } from './modules/quiz-client';
 import { TutorialClient } from './modules/tutorial-client';

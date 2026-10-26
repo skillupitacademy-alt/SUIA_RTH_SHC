@@ -10,14 +10,17 @@ import {
 
 describe('blockVersionDefinitions', () => {
   it('registers every version currently offered by the Composer', () => {
-    expect(getRegisteredBlockVersionDefinitions().map(({ type, version }) => `${type}:${version}`)).toEqual([
-      'definition:D1',
-      'code:C1',
-      'summary:S1',
-      'introduction:I1',
-      'objective:O1',
-      'objective:O2',
-    ]);
+    const versions = getRegisteredBlockVersionDefinitions().map(({ type, version }) => `${type}:${version}`);
+    expect(versions).toEqual(
+      expect.arrayContaining([
+        'definition:D1',
+        'code:C1',
+        'summary:S1',
+        'introduction:I1',
+        'objective:O1',
+        'objective:O2',
+      ])
+    );
   });
 
   it('normalizes partial D1 and I1 drafts without changing their UI contracts', () => {

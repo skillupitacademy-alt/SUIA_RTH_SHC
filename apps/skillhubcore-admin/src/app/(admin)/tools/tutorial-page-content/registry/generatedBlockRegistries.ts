@@ -7,5 +7,48 @@ import type { BlockRegistryEntry } from './types';
  * here as hash-bound operations, avoiding edits to registry/index.ts.
  */
 export const GENERATED_BLOCK_REGISTRIES: readonly BlockRegistryEntry[] = [
+  {
+    id: 'objective',
+    label: "Objective",
+    versions: [
+      {
+        id: "o3",
+        code: 'O3',
+        label: "O3 - Objective",
+        description: "Presents observable, action-oriented skill objectives structured by Skill Verb, Action Description, and Expected Result.",
+        getDefaultPayload: () => ({
+          "eyebrow": "SKILL-BASED OBJECTIVES",
+          "title": "What You Will Be Able To Do",
+          "introduction": "By the end of this lesson, you will be able to demonstrate the following practical skills.",
+          "objectives": [
+                    {
+                              "id": "skill-create",
+                              "label": "Create",
+                              "text": "Create Python lists containing multiple values.",
+                              "expectedResult": "A valid list containing the required values."
+                    },
+                    {
+                              "id": "skill-access",
+                              "label": "Access",
+                              "text": "Access list elements using positive and negative indexing.",
+                              "expectedResult": "Correct elements are retrieved from the list."
+                    },
+                    {
+                              "id": "skill-modify",
+                              "label": "Modify",
+                              "text": "Modify list contents using indexing, slicing, and built-in methods.",
+                              "expectedResult": "The list contains the intended updated values."
+                    },
+                    {
+                              "id": "skill-debug",
+                              "label": "Debug",
+                              "text": "Identify and correct common list-indexing errors.",
+                              "expectedResult": "The corrected program executes without IndexError exceptions."
+                    }
+          ]
+}),
+      },
+    ],
+  },
   // PROJECT_LLM_GENERATED_REGISTRIES
 ];
