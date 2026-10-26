@@ -289,8 +289,6 @@ describe('ApplySuggestionResponseSchema', () => {
       section: {
         id: '123e4567-e89b-12d3-a456-426614174000',
         subtopicId: '223e4567-e89b-12d3-a456-426614174000',
-        sectionType: 'notes' as const,
-        difficulty: 'intermediate' as const,
         orderIndex: 1,
         content: {
           schemaVersion: 1,
@@ -350,8 +348,6 @@ describe('ApplySuggestionResponseSchema', () => {
       section: {
         id: '123e4567-e89b-12d3-a456-426614174000',
         subtopicId: '223e4567-e89b-12d3-a456-426614174000',
-        sectionType: 'notes' as const,
-        difficulty: 'intermediate' as const,
         orderIndex: 1,
         content: {
           schemaVersion: 1,
