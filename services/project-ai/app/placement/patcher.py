@@ -236,3 +236,45 @@ def patch_generated_block_version_definitions(
         f"payloadFormat: '{payload_format}' }},\n"
     )
     return content.replace(marker, entry + marker, 1)
+
+
+def patch_generated_block_registry(
+    content: str,
+    family: str,
+    version: str,
+    metadata: dict,
+) -> str:
+    """Append generated Composer metadata to its dedicated, marker-based catalog."""
+    family_lower = family.lower()
+    version_upper = version.upper()
+    payload = metadata.get("defaultPayload", {})
+    if not isinstance(payload, dict) or not payload:
+        raise PatchError("block.integration.json defaultPayload must be a non-empty object")
+
+    existing_pattern = (
+        rf"id:\s*['\"]{re.escape(family_lower)}['\"][\s\S]*?"
+        rf"code:\s*['\"]{re.escape(version_upper)}['\"]"
+    )
+    if re.search(existing_pattern, content):
+        return content
+
+    marker = "  // PROJECT_LLM_GENERATED_REGISTRIES"
+    if marker not in content:
+        raise PatchError("Cannot find Project LLM generated-registry marker")
+
+    payload_json = json.dumps(payload, indent=10, ensure_ascii=True)
+    entry = f'''  {{
+    id: '{family_lower}',
+    label: {json.dumps(metadata.get("familyLabel") or family)},
+    versions: [
+      {{
+        id: {json.dumps(metadata.get("registryVersionId") or version_upper.lower())},
+        code: '{version_upper}',
+        label: {json.dumps(metadata.get("label") or f"{version_upper} - {family}")},
+        description: {json.dumps(metadata.get("description") or f"{family} block version {version_upper}")},
+        getDefaultPayload: () => ({payload_json}),
+      }},
+    ],
+  }},
+'''
+    return content.replace(marker, entry + marker, 1)

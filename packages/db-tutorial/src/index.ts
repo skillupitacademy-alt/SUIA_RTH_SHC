@@ -27,6 +27,7 @@ export type { SuggestionContext } from './services/block-suggestion.service';
 // Tutorial Suggestion Application - NEW architecture (Prompt 08)
 export { suggestionApplicationService, SuggestionApplicationService } from './services/suggestion-application.service';
 export type { ApplySuggestionInput, ApplySuggestionResult } from './services/suggestion-application.service';
+export { fingerprintSuggestion } from './services/suggestion-fingerprint.service';
 
 // Tutorial Delivery - V2 Architecture
 export { tutorialDeliveryService, TutorialDeliveryService } from './services/tutorial-delivery.service';

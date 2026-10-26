@@ -17,6 +17,7 @@ from app.placement.patcher import (
     patch_tutorial_composer_registry,
     patch_tutorial_page_content_types,
     patch_generated_block_version_definitions,
+    patch_generated_block_registry,
     PatchError,
 )
 
@@ -30,8 +31,7 @@ def test_compute_sha256_newline_normalization():
 def test_derive_file_operations_resolution(tmp_path):
     # Setup mock workspace
     renderer_rel = "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
-    registry_rel = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/index.ts"
-    types_rel = "packages/types/src/tutorial-page-content.types.ts"
+    generated_registry_rel = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/generatedBlockRegistries.ts"
 
     renderer_file = tmp_path / renderer_rel
     renderer_file.parent.mkdir(parents=True, exist_ok=True)
@@ -44,13 +44,14 @@ def test_derive_file_operations_resolution(tmp_path):
         encoding='utf-8',
     )
 
-    registry_file = tmp_path / registry_rel
-    registry_file.parent.mkdir(parents=True, exist_ok=True)
-    registry_file.write_text("export function getBlockTypes() { return []; }", encoding='utf-8')
-
-    types_file = tmp_path / types_rel
-    types_file.parent.mkdir(parents=True, exist_ok=True)
-    types_file.write_text("export type TutorialPageContentType = 'intro';", encoding='utf-8')
+    generated_registry_file = tmp_path / generated_registry_rel
+    generated_registry_file.parent.mkdir(parents=True, exist_ok=True)
+    generated_registry_file.write_text(
+        "export const GENERATED_BLOCK_REGISTRIES = [\n"
+        "  // PROJECT_LLM_GENERATED_REGISTRIES\n"
+        "];\n",
+        encoding='utf-8',
+    )
 
     comparator = CanonicalComparator(snapshot={})
     mock_files = [
@@ -78,15 +79,18 @@ def test_derive_file_operations_resolution(tmp_path):
 
     patch_actions = {op.action for op in ops}
     assert PlacementFileAction.PATCH_RENDERER in patch_actions
-    assert PlacementFileAction.PATCH_FAMILY_REGISTRY in patch_actions
-    assert PlacementFileAction.PATCH_REGISTRY in patch_actions
-    assert PlacementFileAction.PATCH_TYPES in patch_actions
+    assert PlacementFileAction.PATCH_GENERATED_REGISTRY in patch_actions
+    assert PlacementFileAction.PATCH_FAMILY_REGISTRY not in patch_actions
+    assert PlacementFileAction.PATCH_REGISTRY not in patch_actions
+    assert PlacementFileAction.PATCH_TYPES not in patch_actions
     assert PlacementFileAction.PATCH_COMPOSER_DEFINITION in patch_actions
     assert PlacementFileAction.SKIP in patch_actions
 
     # Pre-hashes must be computed for patched files
     renderer_op = next(op for op in ops if op.action == PlacementFileAction.PATCH_RENDERER)
     assert renderer_op.expected_pre_hash == compute_sha256(renderer_file.read_text(encoding='utf-8'))
+    generated_registry_op = next(op for op in ops if op.action == PlacementFileAction.PATCH_GENERATED_REGISTRY)
+    assert generated_registry_op.expected_pre_hash == compute_sha256(generated_registry_file.read_text(encoding='utf-8'))
 
 
 def test_derive_file_operations_rejects_incomplete_portable_contract(tmp_path):
@@ -202,6 +206,26 @@ def test_patch_tutorial_page_content_types():
 
     patched = patch_tutorial_page_content_types(content, "objective")
     assert " | 'objective'" in patched
+
+
+def test_patch_generated_block_registry_appends_metadata_idempotently():
+    content = """import type { BlockRegistryEntry } from './types';
+
+export const GENERATED_BLOCK_REGISTRIES: readonly BlockRegistryEntry[] = [
+  // PROJECT_LLM_GENERATED_REGISTRIES
+];
+"""
+    metadata = {
+        "defaultPayload": {"title": "Example", "items": []},
+        "label": "O3 - Objective",
+        "description": "Third objective version",
+    }
+
+    patched = patch_generated_block_registry(content, "Objective", "O3", metadata)
+    assert "id: 'objective'" in patched
+    assert "code: 'O3'" in patched
+    assert "getDefaultPayload" in patched
+    assert patch_generated_block_registry(patched, "Objective", "O3", metadata) == patched
 
 
 def test_patch_generated_block_version_definitions():

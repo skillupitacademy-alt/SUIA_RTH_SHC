@@ -371,8 +371,7 @@ class CanonicalComparator:
         
         # Target paths for canonical patched files
         renderer_rel_path = "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
-        registry_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/index.ts"
-        types_rel_path = "packages/types/src/tutorial-page-content.types.ts"
+        generated_registry_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/generatedBlockRegistries.ts"
         composer_definitions_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/generatedBlockVersionDefinitions.ts"
 
         def get_pre_hash(rel_path: str) -> Optional[str]:
@@ -549,40 +548,15 @@ class CanonicalComparator:
                 description=f"Register {comp} in the generated runtime renderer table"
             ))
 
-        family_registry_rel_path = f"apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/{family_lower}.registry.ts"
-        family_registry_exists = (ws / family_registry_rel_path).exists()
         operations.append(PlacementFileOperation(
-            action=PlacementFileAction.PATCH_FAMILY_REGISTRY,
+            action=PlacementFileAction.PATCH_GENERATED_REGISTRY,
             source_filename=integration_filename,
             source_sha256=compute_sha256(json.dumps(integration_metadata, sort_keys=True)),
-            target_path=family_registry_rel_path,
-            expected_pre_hash=get_pre_hash(family_registry_rel_path),
-            patch_strategy="APPEND_VERSION" if family_registry_exists else "CREATE_FAMILY_REGISTRY",
-            description=f"Safely add {family_name} {version_upper} without replacing existing family versions"
+            target_path=generated_registry_rel_path,
+            expected_pre_hash=get_pre_hash(generated_registry_rel_path),
+            patch_strategy="APPEND_GENERATED_REGISTRY",
+            description=f"Register {family_name} {version_upper} in the append-only Composer catalog"
         ))
-
-        if not family_registry_exists:
-            operations.append(PlacementFileOperation(
-                action=PlacementFileAction.PATCH_REGISTRY,
-                source_filename=integration_filename,
-                source_sha256=compute_sha256(f"patch_registry:{family_lower}Registry"),
-                target_path=registry_rel_path,
-                expected_pre_hash=get_pre_hash(registry_rel_path),
-                patch_strategy="REGISTER_BLOCK",
-                description=f"Register new {family_lower} family in Tutorial Composer index.ts"
-            ))
-
-        # Add Types Union Patch Operation
-        if f"'{family_lower}'" not in (ws / types_rel_path).read_text(encoding='utf-8'):
-            operations.append(PlacementFileOperation(
-                action=PlacementFileAction.PATCH_TYPES,
-                source_filename=integration_filename,
-                source_sha256=compute_sha256(f"patch_types:{family_lower}"),
-                target_path=types_rel_path,
-                expected_pre_hash=get_pre_hash(types_rel_path),
-                patch_strategy="UNION_MEMBER",
-                description=f"Surgically add '{family_lower}' to TutorialPageContentType union"
-            ))
 
         operations.append(PlacementFileOperation(
             action=PlacementFileAction.PATCH_COMPOSER_DEFINITION,

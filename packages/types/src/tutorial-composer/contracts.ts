@@ -151,8 +151,6 @@ export const TutorialSectionResponseSchema = z
   .object({
     id: z.string().uuid(),
     subtopicId: z.string().uuid(),
-    sectionType: SectionTypeSchema,
-    difficulty: TutorialDifficultySchema,
     orderIndex: z.number().int(),
     content: TutorialDocumentSchema,
     version: z.number().int().min(1),

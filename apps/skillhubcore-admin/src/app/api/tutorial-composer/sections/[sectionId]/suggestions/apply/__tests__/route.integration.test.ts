@@ -45,11 +45,14 @@
 
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
+import { randomUUID } from 'node:crypto';
 import { POST } from '../route';
 import {
   db,
   tutorialSections,
-  suggestionApplicationService,
+  blockSuggestionService,
+  contentAnalysisService,
+  fingerprintSuggestion,
 } from '@quiz/db-tutorial';
 import { eq, sql } from 'drizzle-orm';
 import { TutorialDocumentSchema, type TutorialDocument } from '@quiz/types';
@@ -98,6 +101,22 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
   let testSuggestionId: string;
   let testFingerprint: string;
 
+  function getGeneratedSuggestion(document: TutorialDocument, blockType: string) {
+    const analysis = contentAnalysisService.analyzeDocument(document);
+    const suggestion = blockSuggestionService
+      .generateSuggestions(document, analysis, {
+        subtopicId: testSubtopicId,
+        brandId: 'realtutorialhub',
+      })
+      .blocks
+      .find((candidate) => candidate.blockType === blockType);
+
+    if (!suggestion) {
+      throw new Error(`Fixture did not generate the required ${blockType} suggestion`);
+    }
+    return suggestion;
+  }
+
   beforeAll(async () => {
     // Get test subtopic - query directly to avoid import issues
     const result = await db.execute(sql`
@@ -114,6 +133,12 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
   });
 
   beforeEach(async () => {
+    // Never reuse the identity protected by uq_tutorial_v2_identity_active.
+    // These tests may run repeatedly against a shared integration database.
+    testSectionId = '';
+    testSuggestionId = '';
+    testFingerprint = '';
+
     // Skip all tests if no subtopic available
     if (!testSubtopicId) {
       return;
@@ -131,7 +156,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
       .insert(tutorialSections)
       .values([{
         subtopicId: testSubtopicId,
-        navigationNodeId: 'test-navigation-node', // Phase 1: Required field
+        navigationNodeId: `integration-test-navigation-${randomUUID()}`,
         orderIndex: 1,
         content: {
           schemaVersion: 1,
@@ -139,7 +164,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
             {
               id: 'block_1',
               type: 'paragraph',
-              content: { text: 'Original paragraph content.' },
+              content: { text: Array.from({ length: 520 }, () => 'learning').join(' ') },
             },
           ],
         } as unknown as TutorialDocument, // Type assertion needed for test fixture
@@ -155,46 +180,14 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
     const section = sections[0];
     testSectionId = section.id;
 
-    // Create a test suggestion via raw SQL (blockSuggestions table not exported from schema)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing private method for testing
-    const generateFingerprint = (suggestionApplicationService as any).generateFingerprint
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing private method for testing
-      ? (suggestionApplicationService as any).generateFingerprint.bind(suggestionApplicationService)
-      : async () => 'a'.repeat(64); // fallback fingerprint
-
-    const fingerprint = await generateFingerprint({
-      type: 'summary',
-      suggestedContent: {
-        id: 'summary_block',
-        type: 'summary',
-        content: 'This is a comprehensive summary of the section.',
-      },
-      confidence: 0.9,
-      reasoning: 'Section would benefit from a summary',
-    });
-
-    const suggestionResult = await db.execute(sql`
-      INSERT INTO block_suggestions (section_id, suggestion_type, suggested_content, confidence, reasoning, fingerprint, status)
-      VALUES (
-        ${testSectionId},
-        'summary',
-        ${JSON.stringify({ id: 'summary_block', type: 'summary', content: 'This is a comprehensive summary of the section.' })}::jsonb,
-        0.9,
-        'Section would benefit from a summary',
-        ${fingerprint},
-        'pending'
-      )
-      RETURNING id, fingerprint
-    `);
-
-    testSuggestionId = (suggestionResult.rows[0] as { id: string }).id;
-    testFingerprint = (suggestionResult.rows[0] as { fingerprint: string }).fingerprint;
+    const generatedSuggestion = getGeneratedSuggestion(section.content as TutorialDocument, 'summary');
+    testSuggestionId = generatedSuggestion.id;
+    testFingerprint = fingerprintSuggestion(generatedSuggestion);
   });
 
   afterEach(async () => {
-    // Cleanup test section and suggestions
+    // The runtime suggestion model is regenerated from the section document.
     if (testSectionId) {
-      await db.execute(sql`DELETE FROM block_suggestions WHERE section_id = ${testSectionId}`);
       await db.delete(tutorialSections).where(eq(tutorialSections.id, testSectionId));
     }
     vi.clearAllMocks();
@@ -237,14 +230,6 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
       const validationResult = TutorialDocumentSchema.safeParse(persistedSection.content);
       expect(validationResult.success).toBe(true);
 
-      // Verify suggestion status updated
-      const updatedSuggestionResult = await db.execute(
-        sql`SELECT status, applied_at FROM block_suggestions WHERE id = ${testSuggestionId}`
-      );
-      const updatedSuggestion = updatedSuggestionResult.rows[0] as { status: string; applied_at: string | null };
-
-      expect(updatedSuggestion.status).toBe('applied');
-      expect(updatedSuggestion.applied_at).not.toBeNull();
     });
 
     it('should invalidate cache after successful application', async () => {
@@ -467,43 +452,20 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
 
   describe('concept-cards → card-grid transformation', () => {
     it('should transform concept-cards suggestion into card-grid block', async () => {
-      // Create concept-cards suggestion
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const conceptCardsSuggestion = {
-        type: 'concept-cards',
-        suggestedContent: {
-          id: 'cards_block',
-          type: 'concept-cards',
-          cards: [
-            { title: 'Concept 1', description: 'Description 1' },
-            { title: 'Concept 2', description: 'Description 2' },
-          ],
-        },
-        confidence: 0.85,
-        reasoning: 'Key concepts identified',
+      const conceptDocument: TutorialDocument = {
+        schemaVersion: 1,
+        blocks: [
+          { id: 'concept-1', type: 'heading', content: { text: 'Concept 1', level: 3 } },
+          { id: 'concept-2', type: 'heading', content: { text: 'Concept 2', level: 3 } },
+          { id: 'concept-3', type: 'heading', content: { text: 'Concept 3', level: 3 } },
+        ],
       };
+      await db
+        .update(tutorialSections)
+        .set({ content: conceptDocument })
+        .where(eq(tutorialSections.id, testSectionId));
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing private method for testing
-      const generateFp = (suggestionApplicationService as any).generateFingerprint
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing private method for testing
-        ? (suggestionApplicationService as any).generateFingerprint.bind(suggestionApplicationService)
-        : async () => 'b'.repeat(64);
-      const fingerprint = await generateFp(conceptCardsSuggestion);
-
-      const suggestionResult = await db.execute(sql`
-        INSERT INTO block_suggestions (section_id, suggestion_type, suggested_content, confidence, reasoning, fingerprint, status)
-        VALUES (
-          ${testSectionId},
-          'concept-cards',
-          ${JSON.stringify(conceptCardsSuggestion.suggestedContent)}::jsonb,
-          ${conceptCardsSuggestion.confidence},
-          ${conceptCardsSuggestion.reasoning},
-          ${fingerprint},
-          'pending'
-        )
-        RETURNING id, fingerprint
-      `);
-      const suggestion = suggestionResult.rows[0] as { id: string; fingerprint: string };
+      const suggestion = getGeneratedSuggestion(conceptDocument, 'concept-cards');
 
       const request = new NextRequest(
         `http://localhost:3000/api/tutorial-composer/sections/${testSectionId}/suggestions/apply`,
@@ -511,7 +473,7 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
           method: 'POST',
           body: JSON.stringify({
             suggestionId: suggestion.id,
-            suggestionFingerprint: suggestion.fingerprint,
+            suggestionFingerprint: fingerprintSuggestion(suggestion),
             expectedVersion: 1,
           }),
         }
@@ -528,11 +490,11 @@ describe('POST /api/tutorial-composer/sections/:sectionId/suggestions/apply - IN
 
       const addedBlock = (persistedSection.content as AnyContent).blocks.find(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (b: any) => b.id === 'cards_block'
+        (b: any) => b.type === 'card-grid'
       );
       expect(addedBlock).toBeDefined();
       expect(addedBlock.type).toBe('card-grid'); // Transformed!
-      expect(addedBlock.cards).toHaveLength(2);
+      expect(addedBlock.content.cards).toHaveLength(3);
 
       // Verify schema validity after transformation
       const validationResult = TutorialDocumentSchema.safeParse(persistedSection.content);

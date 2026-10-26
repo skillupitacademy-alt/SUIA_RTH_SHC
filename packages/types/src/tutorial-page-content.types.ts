@@ -1,7 +1,14 @@
 import type { BrandTutorialTheme, TutorialNavigationTree, TutorialSidebarBrandId } from './tutorial-sidebar.types';
 import type { TutorialBlock, IntroductionIconKey } from './tutorial-rich-document/blocks';
 
-export type TutorialPageContentType = 'definition' | 'code' | 'summary' | 'introduction' | 'objective';
+export type KnownTutorialPageContentType = 'definition' | 'code' | 'summary' | 'introduction' | 'objective';
+
+/**
+ * A Composer family is intentionally extensible. Project LLM registers approved
+ * families at placement time, so this must retain completions for known families
+ * without requiring a source edit for every future family.
+ */
+export type TutorialPageContentType = KnownTutorialPageContentType | (string & {});
 export type TutorialContentSourceFormat = 'json' | 'markdown';
 export type TutorialContentStatus = 'draft' | 'published';
 
