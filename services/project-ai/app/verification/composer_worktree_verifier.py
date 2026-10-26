@@ -436,14 +436,18 @@ async def verify_composer_in_worktree(
             block_version=block_version,
             screenshot_path=screenshot_path
         )
-        temp_dir = Path(tempfile.gettempdir())
-        runner_script_path = temp_dir / f"verify_composer_{uuid4().hex[:8]}.js"
+        scripts_dir = workspace_root / ".evidence" / "scripts"
+        scripts_dir.mkdir(parents=True, exist_ok=True)
+        runner_script_path = scripts_dir / f"verify_composer_{uuid4().hex[:8]}.js"
         runner_script_path.write_text(script_content, encoding="utf-8")
 
+        node_env = os.environ.copy()
+        node_env["NODE_PATH"] = str(workspace_root / "node_modules")
         node_cmd = ["node", str(runner_script_path)]
         playwright_res = subprocess.run(
             node_cmd,
             cwd=str(workspace_root),
+            env=node_env,
             capture_output=True,
             text=True,
             timeout=timeout_seconds,
