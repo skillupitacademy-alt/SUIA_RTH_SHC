@@ -1194,11 +1194,15 @@ async def execute_placement(
     workflow = await governance_service.get_workflow(package.workflow_id)
     if not workflow:
         raise HTTPException(status_code=404, detail=f"Workflow {package.workflow_id} not found")
-    if workflow.current_state != CanonicalWorkflowState.IMPLEMENTING:
+    allowed_placement_states = {
+        CanonicalWorkflowState.IMPLEMENTING,
+        CanonicalWorkflowState.IMPLEMENTED,
+    }
+    if workflow.current_state not in allowed_placement_states:
         raise HTTPException(
             status_code=409,
             detail=(
-                "Placement execution requires an approved workflow in IMPLEMENTING state. "
+                "Placement execution requires an approved workflow in IMPLEMENTING or IMPLEMENTED state. "
                 f"Current state: {workflow.current_state.value}"
             )
         )
@@ -1306,12 +1310,13 @@ async def execute_placement(
             }
             wf_model.gate_results = current_gates
 
-        await governance_service.transition_state(
-            workflow_id=package.workflow_id,
-            to_state=CanonicalWorkflowState.IMPLEMENTED,
-            triggered_by=user.get("user_id", "unknown"),
-            reason=f"Approved placement executed for candidate {candidate_id}"
-        )
+        if workflow.current_state != CanonicalWorkflowState.IMPLEMENTED:
+            await governance_service.transition_state(
+                workflow_id=package.workflow_id,
+                to_state=CanonicalWorkflowState.IMPLEMENTED,
+                triggered_by=user.get("user_id", "unknown"),
+                reason=f"Approved placement executed for candidate {candidate_id}"
+            )
         await session.commit()
         result['workflowState'] = CanonicalWorkflowState.IMPLEMENTED.value
         
