@@ -404,11 +404,36 @@ class CanonicalComparator:
                     raise ValueError("block.integration.json typeId must match the workflow target")
                 if not integration_metadata.get("componentFile") or not integration_metadata.get("componentExport"):
                     raise ValueError("block.integration.json must declare componentFile and componentExport")
+                required_contract_fields = ("testFile", "jsonSchemaFile", "typeSchemaFile", "defaultPayload")
+                missing_contract_fields = [
+                    field for field in required_contract_fields if not integration_metadata.get(field)
+                ]
+                if missing_contract_fields:
+                    raise ValueError(
+                        "block.integration.json missing required portable contract fields: "
+                        + ", ".join(missing_contract_fields)
+                    )
+                if not isinstance(integration_metadata["defaultPayload"], dict):
+                    raise ValueError("block.integration.json defaultPayload must be an object")
+                if not integration_metadata["defaultPayload"]:
+                    raise ValueError("block.integration.json defaultPayload must not be empty")
                 integration_filename = filename
+                component_name = str(integration_metadata["componentExport"])
                 break
 
         if integration_metadata is None:
             raise ValueError("Candidate package missing required block.integration.json")
+
+        candidate_filenames = {
+            (f.get('filename') if isinstance(f, dict) else f.filename)
+            for f in files
+        }
+        for metadata_key in ("componentFile", "testFile", "jsonSchemaFile", "typeSchemaFile"):
+            referenced_file = integration_metadata[metadata_key]
+            if referenced_file not in candidate_filenames:
+                raise ValueError(
+                    f"block.integration.json {metadata_key} '{referenced_file}' is not in the candidate package"
+                )
 
         for f in files:
             filename = f.get('filename') if isinstance(f, dict) else f.filename
@@ -428,7 +453,6 @@ class CanonicalComparator:
                         f"Component file '{filename}' does not export the declared "
                         f"componentExport '{integration_metadata['componentExport']}'"
                     )
-                component_name = filename[:-4] # strip .tsx
                 operations.append(PlacementFileOperation(
                     action=PlacementFileAction.CREATE,
                     source_filename=filename,

@@ -352,19 +352,6 @@ export const {reg_var_name}: BlockRegistryEntry = {{
 }};
 """
 
-                        # Harmonize component export if writing block component
-                        if op.target_path.endswith('.tsx') and not op.target_path.endswith('.test.tsx'):
-                            comp_expected = f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}Block"
-                            if comp_expected not in content:
-                                import re
-                                fn_match = re.search(r"export\s+function\s+([A-Za-z0-9_]+)", content)
-                                if fn_match:
-                                    actual_fn = fn_match.group(1)
-                                    if actual_fn != comp_expected:
-                                        content += f"\nexport {{ {actual_fn} as {comp_expected}, {actual_fn} as default }};\n"
-                                    elif "export default" not in content:
-                                        content += f"\nexport {{ {comp_expected} as default }};\n"
-
                         if not self.dry_run:
                             target_file_path.parent.mkdir(parents=True, exist_ok=True)
                             target_file_path.write_text(content, encoding='utf-8')
@@ -404,7 +391,10 @@ export const {reg_var_name}: BlockRegistryEntry = {{
                             raise PlacementExecutionError(
                                 f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
                             )
-                        comp_name = f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}Block"
+                        comp_name = integration_metadata.get(
+                            "componentExport",
+                            f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}Block",
+                        )
                         patched = patch_tutorial_block_renderer(
                             current_content,
                             family=manifest.blockFamily.value,

@@ -14,11 +14,7 @@
  */
 
 import type { TutorialPageContentType } from '@quiz/types';
-import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
-import {
-  normalizeDefinitionD1Payload,
-  normalizeIntroductionI1Payload,
-} from '../document/documentTransformation';
+import { normalizeBlockPreviewPayload } from '../document/blockVersionDefinitions';
 
 export interface NormalizedBlockPreview {
   /**
@@ -40,41 +36,5 @@ export function normalizeBlockPreview(
   blockType: TutorialPageContentType,
   versionCode: string
 ): NormalizedBlockPreview {
-  // C1 blocks require canonicalization
-  if (blockType === 'code' && versionCode === 'C1') {
-    try {
-      const result = toCanonicalCodeC1(payload);
-      return {
-        content: result.content,
-        memoryModelWarning: result.memoryModelWarning || '',
-      };
-    } catch (error) {
-      // Fallback to raw payload if conversion fails
-      console.error('[C1 Normalization] Failed to convert to canonical:', error);
-      return {
-        content: payload,
-        memoryModelWarning: '',
-      };
-    }
-  }
-
-  if (blockType === 'introduction' && versionCode === 'I1') {
-    return {
-      content: normalizeIntroductionI1Payload(payload),
-      memoryModelWarning: '',
-    };
-  }
-
-  if (blockType === 'definition' && versionCode === 'D1') {
-    return {
-      content: normalizeDefinitionD1Payload(payload),
-      memoryModelWarning: '',
-    };
-  }
-  
-  // All other block types pass through unchanged
-  return {
-    content: payload,
-    memoryModelWarning: '',
-  };
+  return normalizeBlockPreviewPayload(payload, blockType, versionCode);
 }

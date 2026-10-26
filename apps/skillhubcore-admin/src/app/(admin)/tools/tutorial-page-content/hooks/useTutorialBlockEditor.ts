@@ -50,7 +50,12 @@ export function useTutorialBlockEditor(
    */
   const handlePreviewCurrent = useCallback(() => {
     try {
-      const parsed = parseSource(sourceFormat, sourceContent, formState.blockType);
+      const parsed = parseSource(
+        sourceFormat,
+        sourceContent,
+        formState.blockType,
+        formState.versionCode
+      );
       const normalized = normalizeBlockPreview(parsed, formState.blockType, formState.versionCode);
       setActiveBlockPreview(normalized.content);
       setMemoryModelWarning(normalized.memoryModelWarning);
@@ -66,7 +71,12 @@ export function useTutorialBlockEditor(
    */
   const handleAddBlockInstance = useCallback(() => {
     try {
-      const parsed = parseSource(sourceFormat, sourceContent, formState.blockType) as
+      const parsed = parseSource(
+        sourceFormat,
+        sourceContent,
+        formState.blockType,
+        formState.versionCode
+      ) as
         | TutorialDefinitionPayload
         | TutorialCodePayload
         | TutorialSummaryPayload

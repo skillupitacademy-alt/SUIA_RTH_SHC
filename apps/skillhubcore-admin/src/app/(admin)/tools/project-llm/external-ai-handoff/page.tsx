@@ -218,12 +218,17 @@ You must package your output as a single .zip archive containing the six require
        "typeId": "${familyLower}",
        "componentFile": "${componentName}.tsx",
        "componentExport": "${componentName}",
+       "testFile": "${componentName}.test.tsx",
+       "jsonSchemaFile": "${familyLower}-${versionLower}.schema.json",
+       "typeSchemaFile": "${familyLower}-${versionLower}.schema.ts",
        "registryVersionId": "${versionLower}",
        "label": "${versionUpper} - ${targetFamily}",
        "description": "Short user-facing description",
-       "defaultPayload": { "title": "Example", "objectives": [] }
+       "defaultPayload": {
+         "title": "Replace this example with a complete payload that validates against your schema"
+       }
      }
-   - defaultPayload MUST satisfy your supplied schema.
+   - Replace the illustrated defaultPayload with a non-empty, complete payload that satisfies your supplied schema.
 
 6. README.md (Implementation Documentation)
    - Brief summary of cognitive domain, design patterns, and acceptance criteria.

@@ -51,7 +51,7 @@ def test_derive_file_operations_resolution(tmp_path):
         {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
         {"filename": "objective-o1.schema.json", "content": "{}"},
         {"filename": "objective-o1.schema.ts", "content": "export const schema = {};"},
-        {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","defaultPayload":{"title":"Example","objectives":[]}}'},
+        {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
     ]
 
     ops = comparator.derive_file_operations(
@@ -78,6 +78,20 @@ def test_derive_file_operations_resolution(tmp_path):
     # Pre-hashes must be computed for patched files
     renderer_op = next(op for op in ops if op.action == PlacementFileAction.PATCH_RENDERER)
     assert renderer_op.expected_pre_hash == compute_sha256(renderer_file.read_text(encoding='utf-8'))
+
+
+def test_derive_file_operations_rejects_incomplete_portable_contract(tmp_path):
+    comparator = CanonicalComparator(snapshot={})
+    with pytest.raises(ValueError, match="missing required portable contract fields"):
+        comparator.derive_file_operations(
+            files=[
+                {"filename": "ExampleBlock.tsx", "content": "export function ExampleBlock() {}"},
+                {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ExampleBlock.tsx","componentExport":"ExampleBlock","defaultPayload":{}}'},
+            ],
+            family=BlockFamily.OBJECTIVE,
+            version="O1",
+            workspace_root=tmp_path,
+        )
 
 
 def test_patch_tutorial_block_renderer():
