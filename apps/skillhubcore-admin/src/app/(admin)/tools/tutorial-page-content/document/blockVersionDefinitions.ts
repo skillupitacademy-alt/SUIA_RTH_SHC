@@ -4,9 +4,16 @@ import {
   normalizeDefinitionD1Payload,
   normalizeIntroductionI1Payload,
 } from './documentTransformation';
+import { GENERATED_BLOCK_VERSION_DEFINITIONS } from './generatedBlockVersionDefinitions';
 
 export interface PreviewNormalizationResult {
   content: unknown;
+  memoryModelWarning: string;
+}
+
+export interface StoragePreparationResult {
+  content: unknown;
+  payloadFormat: 'legacy' | 'canonical';
   memoryModelWarning: string;
 }
 
@@ -14,11 +21,18 @@ export interface BlockVersionDefinition {
   type: TutorialPageContentType;
   version: string;
   normalizePreview: (payload: unknown) => PreviewNormalizationResult;
+  prepareForStorage: (payload: unknown) => StoragePreparationResult;
   parseMarkdown?: (source: string) => unknown;
 }
 
 const identityPreview = (payload: unknown): PreviewNormalizationResult => ({
   content: payload,
+  memoryModelWarning: '',
+});
+
+const legacyStorage = (payload: unknown): StoragePreparationResult => ({
+  content: payload,
+  payloadFormat: 'legacy',
   memoryModelWarning: '',
 });
 
@@ -33,6 +47,15 @@ function normalizeCodeC1Preview(payload: unknown): PreviewNormalizationResult {
     console.error('[C1 Normalization] Failed to convert to canonical:', error);
     return identityPreview(payload);
   }
+}
+
+function prepareCodeC1Storage(payload: unknown): StoragePreparationResult {
+  const result = toCanonicalCodeC1(payload);
+  return {
+    content: result.content,
+    payloadFormat: 'canonical',
+    memoryModelWarning: result.memoryModelWarning || '',
+  };
 }
 
 function normalizeObjectivePreview(payload: unknown): PreviewNormalizationResult {
@@ -115,12 +138,40 @@ function parseCodeMarkdown(source: string): unknown {
 }
 
 const definitions: BlockVersionDefinition[] = [
-  { type: 'definition', version: 'D1', normalizePreview: (payload) => ({ content: normalizeDefinitionD1Payload(payload), memoryModelWarning: '' }), parseMarkdown: parseDefinitionMarkdown },
-  { type: 'code', version: 'C1', normalizePreview: normalizeCodeC1Preview, parseMarkdown: parseCodeMarkdown },
-  { type: 'summary', version: 'S1', normalizePreview: identityPreview, parseMarkdown: parseSummaryMarkdown },
-  { type: 'introduction', version: 'I1', normalizePreview: (payload) => ({ content: normalizeIntroductionI1Payload(payload), memoryModelWarning: '' }), parseMarkdown: parseIntroductionMarkdown },
-  { type: 'objective', version: 'O1', normalizePreview: normalizeObjectivePreview },
-  { type: 'objective', version: 'O2', normalizePreview: normalizeObjectivePreview },
+  {
+    type: 'definition', version: 'D1',
+    normalizePreview: (payload) => ({ content: normalizeDefinitionD1Payload(payload), memoryModelWarning: '' }),
+    prepareForStorage: (payload) => ({ content: normalizeDefinitionD1Payload(payload), payloadFormat: 'legacy', memoryModelWarning: '' }),
+    parseMarkdown: parseDefinitionMarkdown,
+  },
+  { type: 'code', version: 'C1', normalizePreview: normalizeCodeC1Preview, prepareForStorage: prepareCodeC1Storage, parseMarkdown: parseCodeMarkdown },
+  { type: 'summary', version: 'S1', normalizePreview: identityPreview, prepareForStorage: legacyStorage, parseMarkdown: parseSummaryMarkdown },
+  {
+    type: 'introduction', version: 'I1',
+    normalizePreview: (payload) => ({ content: normalizeIntroductionI1Payload(payload), memoryModelWarning: '' }),
+    prepareForStorage: (payload) => ({ content: normalizeIntroductionI1Payload(payload), payloadFormat: 'legacy', memoryModelWarning: '' }),
+    parseMarkdown: parseIntroductionMarkdown,
+  },
+  {
+    type: 'objective', version: 'O1',
+    normalizePreview: normalizeObjectivePreview,
+    prepareForStorage: (payload) => ({ ...normalizeObjectivePreview(payload), payloadFormat: 'canonical' }),
+  },
+  {
+    type: 'objective', version: 'O2',
+    normalizePreview: normalizeObjectivePreview,
+    prepareForStorage: (payload) => ({ ...normalizeObjectivePreview(payload), payloadFormat: 'canonical' }),
+  },
+  ...GENERATED_BLOCK_VERSION_DEFINITIONS.map((definition) => ({
+    type: definition.type,
+    version: definition.version,
+    normalizePreview: identityPreview,
+    prepareForStorage: (payload: unknown) => ({
+      content: payload,
+      payloadFormat: definition.payloadFormat,
+      memoryModelWarning: '',
+    }),
+  })),
 ];
 
 const defaultVersionByType: Record<TutorialPageContentType, string> = {
@@ -140,8 +191,17 @@ export function normalizeBlockPreviewPayload(payload: unknown, type: TutorialPag
   return getBlockVersionDefinition(type, version)?.normalizePreview(payload) ?? identityPreview(payload);
 }
 
+export function prepareBlockForStorage(payload: unknown, type: TutorialPageContentType, version: string): StoragePreparationResult {
+  return getBlockVersionDefinition(type, version)?.prepareForStorage(payload) ?? legacyStorage(payload);
+}
+
 export function parseBlockMarkdown(source: string, type: TutorialPageContentType, version = ''): unknown {
-  return getBlockVersionDefinition(type, version)?.parseMarkdown?.(source) ?? parseCodeMarkdown(source);
+  const definition = getBlockVersionDefinition(type, version);
+  if (!definition?.parseMarkdown) {
+    const effectiveVersion = version || defaultVersionByType[type];
+    throw new Error(`Markdown authoring is not available for ${type} ${effectiveVersion}; use JSON authoring instead.`);
+  }
+  return definition.parseMarkdown(source);
 }
 
 export function getRegisteredBlockVersionDefinitions(): readonly BlockVersionDefinition[] {

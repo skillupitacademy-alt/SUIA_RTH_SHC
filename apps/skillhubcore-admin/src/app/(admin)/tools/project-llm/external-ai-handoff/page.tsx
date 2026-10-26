@@ -95,7 +95,6 @@ export default function ExternalAiHandoffPage() {
   const versionUpper = targetVersion.toUpperCase();
   const versionLower = targetVersion.toLowerCase();
   const componentName = `${targetFamily}${versionUpper}Block`;
-  const registryVar = `${familyLower}Registry`;
 
   const handleCopyPrompt = () => {
     if (!engineeringContract) {
@@ -111,7 +110,6 @@ AUTHORITATIVE TARGET IDENTITY:
 - Target Version: ${versionUpper}
 - Block Type ID: '${familyLower}'
 - React Component Name: ${componentName}
-- Registry Export Variable: ${registryVar}
 - Workflow ID: ${workflowId.trim()}
 - Contract Hash: ${String(engineeringContract.contract_hash)}
 
@@ -279,7 +277,8 @@ VERIFICATION GATES & COMPLIANCE ARCHITECTURE
 4. Strict Typing Gate: zero 'any' types in props or block interfaces
 5. Repository Integration Gate: ${componentName}.tsx placed in packages/ui/src/tutorial/blocks/
 6. Composer Registry Gate: Project LLM merges ${versionUpper} into the existing ${familyLower} registry without removing other versions
-7. Automated Tests Gate: Passing unit test suite in ${componentName}.test.tsx
+7. Portable Package Gate: block.integration.json names the component, test, both schemas, and a complete schema-valid defaultPayload
+8. Automated Tests Gate: Passing unit test suite in ${componentName}.test.tsx
 
 IMMUTABLE CONTRACT JSON:
 ${JSON.stringify(engineeringContract, null, 2)}
@@ -304,7 +303,6 @@ The persisted backend contract is authoritative. Do not invent requirements or c
 - **Family:** ${targetFamily}
 - **Version:** ${versionUpper}
 - **Component:** ${componentName}
-- **Registry Export:** ${registryVar}
 
 ## Design System & Look and Feel Standards
 
@@ -324,9 +322,15 @@ The persisted backend contract is authoritative. Do not invent requirements or c
 2. \`${componentName}.test.tsx\` — Vitest unit test suite
 3. \`${familyLower}-${versionLower}.schema.json\` — JSON Schema contract
 4. \`${familyLower}-${versionLower}.schema.ts\` — TypeScript schema types
-5. \`registry.ts\` — Tutorial Composer registry entry (\`export const ${registryVar}: BlockRegistryEntry\`)
-6. \`preview.html\` — Standalone HTML prototype with UBRC attributes
-7. \`README.md\` — Documentation
+5. \`block.integration.json\` — Portable metadata naming the component, test, schemas, and complete default payload
+6. \`README.md\` — Documentation
+7. \`preview.html\` — Optional review-only prototype with UBRC attributes
+
+## Shared Integration Boundary
+
+- Do **not** include \`registry.ts\`, \`TutorialBlockRenderer.tsx\`, Composer files, shared type unions, navigation/status files, or API clients.
+- Project LLM owns the controlled registry, renderer, and type-union patches. It preserves existing family versions and verifies the candidate in an isolated Composer worktree.
+- \`block.integration.json\` must include \`componentFile\`, \`componentExport\`, \`testFile\`, \`jsonSchemaFile\`, \`typeSchemaFile\`, and a non-empty \`defaultPayload\` that satisfies the supplied schema.
 
 ## Immutable Backend Contract
 
@@ -369,7 +373,7 @@ ${JSON.stringify(engineeringContract, null, 2)}
             </h1>
             <p className="text-sm text-slate-500 mt-1 max-w-2xl font-medium">
               Export instructions and specifications for External AI models to implement{' '}
-              <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span>. Supports both Design Phase prototypes and final TypeScript component packages.
+              <span className="font-bold text-slate-800">{state.familyName} {state.targetVersion}</span>. Deliver one portable TypeScript candidate package; a visual prototype is optional.
             </p>
           </div>
 
@@ -646,9 +650,9 @@ ${JSON.stringify(engineeringContract, null, 2)}
           </div>
         </div>
 
-        {/* Right Column: Design & Implementation Phases (5 cols) */}
+        {/* Right Column: Portable package and controlled integration (5 cols) */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Phase 1: Design Phase */}
+          {/* External AI package requirements */}
           <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
             <div className="p-4 sm:p-5 border-b border-slate-200/80 bg-amber-50/50 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -657,15 +661,15 @@ ${JSON.stringify(engineeringContract, null, 2)}
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 font-outfit">
-                    Design Phase (HTML / CSS / JS / JSON)
+                    Portable Candidate Package
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    Rapid prototyping & visual approval cycle
+                    External AI delivers files; Project LLM integrates them
                   </p>
                 </div>
               </div>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                Phase 1
+                Required
               </span>
             </div>
 
@@ -673,12 +677,12 @@ ${JSON.stringify(engineeringContract, null, 2)}
               {/* Checklist */}
               <div className="space-y-2">
                 {[
-                  '1. Create independent HTML structure with semantic tags',
-                  '2. Implement responsive CSS using standard styling tokens',
-                  '3. Add interactive vanilla JS for learner engagement',
-                  '4. Produce sample JSON data schema representing block state',
-                  '5. Submit prototype files for interactive review',
-                  '6. Human reviewer verifies and approves prototype design',
+                  '1. Create the React / TypeScript block component',
+                  '2. Create a Vitest unit test for the component',
+                  '3. Create JSON and TypeScript schemas',
+                  '4. Create block.integration.json with a schema-valid default payload',
+                  '5. Include README documentation',
+                  '6. Include preview.html only when visual review helps',
                 ].map((step, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-xs text-slate-700">
                     <div className="h-4 w-4 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-600 flex items-center justify-center shrink-0">
@@ -759,7 +763,7 @@ ${JSON.stringify(engineeringContract, null, 2)}
             </div>
           </div>
 
-          {/* Phase 2: Implementation Phase */}
+          {/* Project LLM controlled integration */}
           <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
             <div className="p-4 sm:p-5 border-b border-slate-200/80 bg-purple-50/50 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -768,15 +772,15 @@ ${JSON.stringify(engineeringContract, null, 2)}
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 font-outfit">
-                    Implementation Phase (React / TypeScript)
+                    Project LLM Controlled Integration
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    Production code delivery according to placement manifest
+                    Qualification, placement, Composer verification, and certification
                   </p>
                 </div>
               </div>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
-                Phase 2
+                Project LLM
               </span>
             </div>
 
@@ -787,11 +791,11 @@ ${JSON.stringify(engineeringContract, null, 2)}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {[
                   { file: `${componentName}.tsx`, desc: 'Primary UI component' },
-                  { file: `${componentName}.test.tsx`, desc: 'Jest unit tests' },
+                  { file: `${componentName}.test.tsx`, desc: 'Vitest unit tests' },
                   { file: `${familyLower}-${versionLower}.schema.json`, desc: 'JSON schema contract' },
                   { file: `${familyLower}-${versionLower}.schema.ts`, desc: 'TypeScript schema types' },
-                  { file: 'registry.ts', desc: `Exports ${registryVar}` },
-                  { file: 'preview.html', desc: 'UBRC HTML prototype' },
+                  { file: 'block.integration.json', desc: 'Portable integration metadata' },
+                  { file: 'preview.html', desc: 'Optional UBRC prototype' },
                   { file: 'README.md', desc: 'Documentation' },
                 ].map((item, idx) => (
                   <div

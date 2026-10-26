@@ -1,5 +1,6 @@
 import type { BlockRegistryEntry } from '../types';
 import { codeC1Example } from '../../blocks/code/C1/codeC1.examples';
+import { getCodeC1Prompt } from '../../blocks/code/C1/codeC1.prompt';
 
 /**
  * Code Block Registry
@@ -16,6 +17,7 @@ export const codeRegistry: BlockRegistryEntry = {
       label: 'C1 - Basic Example',
       description: 'Step-by-step code explanation with optional output and practice hint',
       getDefaultPayload: () => codeC1Example,
+      getAiPrompt: getCodeC1Prompt,
     },
   ],
 };

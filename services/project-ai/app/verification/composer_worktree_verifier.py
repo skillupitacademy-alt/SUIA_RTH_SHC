@@ -265,7 +265,10 @@ const fs = require('fs');
 
         // Navigate to Composer if not already there
         if (!page.url().includes('/tools/tutorial-page-content')) {{
-            await page.goto(targetUrl, {{ waitUntil: 'domcontentloaded', timeout: 30000 }});
+            const response = await page.goto(targetUrl, {{ waitUntil: 'domcontentloaded', timeout: 30000 }});
+            if (!response || !response.ok()) {{
+                throw new Error(`Failed to load ${{targetUrl}} (status: ${{response ? response.status() : 'no response'}})`);
+            }}
         }}
 
         // Reset errors captured during initial login transition
@@ -293,15 +296,18 @@ const fs = require('fs');
 
         // Select the requested version from the Composer's version selector.
         let versionSelected = false;
+        let versionSelectionError = '';
         const versionSelect = await page.$('#select-version');
         if (versionSelect) {{
             const val = await versionSelect.$$eval('option', (opts, version) => {{
                 const option = opts.find(o => o.value.toUpperCase() === version || (o.textContent || '').toUpperCase().includes(version));
-                return option ? option.value : (opts[0] ? opts[0].value : null);
+                return option ? option.value : null;
             }}, '{target_version_upper}');
             if (val) {{
                 await versionSelect.selectOption({{ value: val }});
                 versionSelected = true;
+            }} else {{
+                versionSelectionError = "Unable to select block version '{target_version_upper}'";
             }}
         }} else {{
             const selects = await page.$$('select');
@@ -322,6 +328,13 @@ const fs = require('fs');
                     }}
                 }}
             }}
+        }}
+
+        if (versionSelectionError) {{
+            result.error_message = versionSelectionError;
+            console.log(JSON.stringify(result));
+            await browser.close();
+            process.exit(0);
         }}
 
         // Wait for preview pane update

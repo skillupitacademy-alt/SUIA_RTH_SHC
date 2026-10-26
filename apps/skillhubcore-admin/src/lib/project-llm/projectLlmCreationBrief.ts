@@ -43,22 +43,16 @@ export function assertRepositoryIntelligenceIntegrity(): void {
     );
   }
 
-  if (runtime.status.verifiedImplementations !== 3) {
-    throw new Error(
-      `Agent E STOP: runtime.status.verifiedImplementations is ${runtime.status.verifiedImplementations} but expected 3. Repository intelligence integrity compromised.`
-    );
+  if (runtime.status.verifiedImplementations !== runtime.verifiedImplementations.length) {
+    throw new Error('Agent E STOP: verified implementation count does not match runtime evidence.');
   }
 
-  if (runtime.status.incompleteImplementations !== 1) {
-    throw new Error(
-      `Agent E STOP: runtime.status.incompleteImplementations is ${runtime.status.incompleteImplementations} but expected 1. Repository intelligence integrity compromised.`
-    );
+  if (runtime.status.incompleteImplementations !== runtime.incompleteImplementations.length) {
+    throw new Error('Agent E STOP: incomplete implementation count does not match runtime evidence.');
   }
 
-  if (runtime.status.plannedFamilies !== 14) {
-    throw new Error(
-      `Agent E STOP: runtime.status.plannedFamilies is ${runtime.status.plannedFamilies} but expected 14. Repository intelligence integrity compromised.`
-    );
+  if (runtime.status.plannedFamilies !== runtime.plannedFamilyIds.length) {
+    throw new Error('Agent E STOP: planned family count does not match runtime evidence.');
   }
 }
 
@@ -117,16 +111,16 @@ export function buildConstraints(): CreationBriefConstraint[] {
     {
       id: 'E-001',
       severity: 'MANDATORY',
-      title: 'Prototype First',
+      title: 'Portable Candidate Package',
       instruction:
-        'Create HTML/CSS/JS/JSON prototype before any React/TypeScript code.',
+        'Deliver one portable ZIP containing the React/TypeScript component, Vitest test, JSON schema, TypeScript schema, README, and block.integration.json.',
     },
     {
       id: 'E-002',
       severity: 'MANDATORY',
-      title: 'Human GUI Approval Required',
+      title: 'No Shared Integration Files',
       instruction:
-        'STOP after prototype delivery; wait for explicit human approval before proceeding to React/TypeScript.',
+        'Do not include or modify registry, TutorialBlockRenderer, Tutorial Composer, shared type unions, navigation/status files, or API clients. Project LLM performs controlled integration.',
     },
     {
       id: 'E-003',
@@ -154,7 +148,7 @@ export function buildConstraints(): CreationBriefConstraint[] {
       severity: 'REQUIRED',
       title: 'Composer Compatibility',
       instruction:
-        'Block must be renderable by TutorialBlockRenderer and authorable via Tutorial Composer.',
+        'Block must expose its component and schema details through block.integration.json so Project LLM can register it in TutorialBlockRenderer and Tutorial Composer.',
     },
     {
       id: 'E-007',
@@ -198,7 +192,7 @@ export function buildRuntimeRequirements(): string[] {
  */
 export function buildValidationChecklist(): string[] {
   return [
-    '[ ] GUI prototype complete and reviewed before React/TypeScript conversion',
+    '[ ] Portable package contains the component, Vitest test, both schemas, block.integration.json, and README',
     '[ ] Block family identity preserved (familyId, versionId, familyName match corpus)',
     '[ ] Educational intent and pedagogical structure preserved',
     '[ ] Reference implementation patterns (I1, C1, D1) considered',
@@ -206,10 +200,10 @@ export function buildValidationChecklist(): string[] {
     '[ ] No ILS API calls present',
     '[ ] No LSNB (navigation sidebar) infrastructure embedded',
     '[ ] No RSSB (reactive session state bridge) infrastructure embedded',
-    '[ ] Composer (Tutorial Block Composer) compatibility verified',
-    '[ ] TutorialDocument rendering pipeline compatibility verified',
-    '[ ] No platform architecture changes introduced',
-    '[ ] Human GUI approval recorded before React candidate submission',
+    '[ ] block.integration.json declares the component, test, schemas, and a schema-valid defaultPayload',
+    '[ ] Package can be integrated by the TutorialDocument rendering pipeline',
+    '[ ] No registry, renderer, Composer, shared type-union, or platform architecture files included',
+    '[ ] Package is ready for Project LLM qualification, controlled placement, and Composer verification',
   ];
 }
 
@@ -222,10 +216,10 @@ export function buildExternalAiWorkflow(): string[] {
     'Step 2: Acknowledge the target block family, version, and learning intent.',
     'Step 3: Study the reference implementation section — understand the patterns to follow.',
     'Step 4: Review all MANDATORY and REQUIRED constraints before proceeding.',
-    'Step 5: Create the GUI prototype artifacts (HTML, CSS, JavaScript, JSON content spec).',
-    'Step 6: STOP. Deliver the prototype artifacts for human GUI review. Do NOT proceed to React/TypeScript until you receive explicit written approval.',
-    'Step 7: After receiving human approval, create the React/TypeScript candidate component.',
-    'Step 8: Verify all validation checklist items before delivering the candidate.',
+    'Step 5: Create the React/TypeScript component, Vitest test, JSON schema, TypeScript schema, README, and block.integration.json.',
+    'Step 6: Use the supplied contract to make defaultPayload complete and schema-valid; an optional preview.html may support visual review.',
+    'Step 7: Do not include or edit registry, renderer, Composer, shared type-union, navigation, status, API, or other platform files.',
+    'Step 8: Verify all validation checklist items and deliver one portable ZIP package.',
     'Step 9: Deliver the candidate artifacts. Do not claim certification or integration — that is a separate process.',
   ];
 }
@@ -235,13 +229,13 @@ export function buildExternalAiWorkflow(): string[] {
  */
 export function buildHumanApprovalGate(): string[] {
   return [
-    'The human reviewer will evaluate the GUI prototype visually.',
-    'Review criteria: visual fidelity to design intent, educational clarity, structural correctness.',
+    'The human reviewer will evaluate the portable candidate package and optional preview.',
+    'Review criteria: visual fidelity to design intent, educational clarity, structural correctness, and package completeness.',
     'The reviewer will respond with one of: APPROVED, REJECTED, or NEEDS_CORRECTION.',
-    'APPROVED: Proceed to React/TypeScript candidate creation (Step 7).',
-    'REJECTED: Discard prototype. Request clarification and restart from Step 5.',
-    'NEEDS_CORRECTION: Apply specified corrections to prototype, resubmit for review.',
-    'GUI approval does NOT equal integration, certification, or deployment approval.',
+    'APPROVED: Submit the ZIP to Project LLM qualification; approval does not bypass governance gates.',
+    'REJECTED: Discard the package. Request clarification and restart from Step 5.',
+    'NEEDS_CORRECTION: Apply specified corrections to the package, then resubmit for review.',
+    'Human review does NOT equal integration, certification, or deployment approval.',
   ];
 }
 
@@ -256,7 +250,7 @@ export function buildProhibitedActions(): string[] {
     'Do not integrate OpenAI, Anthropic, Gemini, or any other LLM provider.',
     'Do not store, reference, or request provider API credentials (such as provider API keys).',
     'Do not modify ILS (Item Learning Session), LSNB, or RSSB infrastructure.',
-    'Do not modify TutorialBlockRenderer unless an approved implementation plan explicitly requires it.',
+    'Do not include or modify TutorialBlockRenderer, Composer, registry, or shared type-union files; Project LLM owns controlled platform patches.',
     'Do not modify TutorialDocument structure or Composer architecture.',
     'Do not deploy to production or any staging environment.',
     'Do not commit or push to any repository.',
@@ -285,7 +279,7 @@ export function buildObjectives(
   }
 
   objectives.push(
-    'Create a GUI prototype (HTML/CSS/JS/JSON) that is visually reviewable by a human before any React code is written.'
+    'Deliver a portable, reviewable React/TypeScript candidate package with schemas, tests, metadata, and an optional preview.'
   );
 
   return objectives;
@@ -321,7 +315,7 @@ export function buildPrompt(
   sections.push('## TARGET');
   sections.push(`Family: ${request.targetFamilyId} — ${familyName}`);
   sections.push(`Version: ${request.targetVersionId}`);
-  sections.push('Stage: GUI_PROTOTYPE (Phase 1)');
+  sections.push('Stage: PORTABLE_CANDIDATE_PACKAGE');
   sections.push('---');
 
   // Objectives
@@ -362,9 +356,8 @@ export function buildPrompt(
   });
   sections.push('');
   sections.push(
-    'IMPORTANT: STOP at Step 6 and wait for explicit human GUI approval before proceeding.'
+    'IMPORTANT: Deliver the complete portable ZIP. Project LLM, not the external author, performs qualification, placement, and Composer verification.'
   );
-  sections.push('Only after approval, create the React/TypeScript candidate.');
   sections.push('---');
 
   // Constraints
@@ -496,9 +489,9 @@ export function generateCreationBrief(request: CreationBriefRequest): CreationBr
   const repositoryFacts = [
     'Total families in corpus: 18',
     'Total documented versions: 133',
-    'Verified runtime implementations: 3 (I1, C1, D1)',
-    'Incomplete implementations: 1 (S1)',
-    'Planned families: 14',
+    `Verified runtime implementations: ${PROJECT_LLM_REPOSITORY_INTELLIGENCE.runtime.status.verifiedImplementations}`,
+    `Incomplete implementations: ${PROJECT_LLM_REPOSITORY_INTELLIGENCE.runtime.status.incompleteImplementations}`,
+    `Planned families: ${PROJECT_LLM_REPOSITORY_INTELLIGENCE.runtime.status.plannedFamilies}`,
     'Implementation primitives available: 15',
   ];
 
@@ -515,8 +508,9 @@ export function generateCreationBrief(request: CreationBriefRequest): CreationBr
   const briefId = `brief-${request.targetFamilyId}${request.targetVersionId}-${Date.now()}`;
   const generatedAt = new Date().toISOString();
 
-  // Required artifacts for GUI prototype stage
-  const requiredArtifacts: CreationBriefArtifact[] = ['HTML', 'CSS', 'JAVASCRIPT', 'JSON'];
+  // React/TypeScript is the candidate; JSON carries schemas and integration metadata.
+  // HTML/CSS/JavaScript remain optional preview artifacts and are not required.
+  const requiredArtifacts: CreationBriefArtifact[] = ['REACT_TYPESCRIPT', 'JSON'];
 
   // Build prompt text
   const promptText = buildPrompt(

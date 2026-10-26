@@ -11,14 +11,11 @@ import {
   S1WarningRecord,
   ProjectLlmRuntimeRegistry,
   ImplementationPrimitive,
-  RUNTIME_VERIFIED_COUNT,
-  RUNTIME_INCOMPLETE_COUNT,
-  RUNTIME_PLANNED_FAMILIES_COUNT,
 } from '@quiz/types';
 import { BLOCK_CORPUS_REGISTRY } from './projectLlmBlockCorpus';
 import { REFERENCE_PATTERNS } from './projectLlmReferencePatterns';
 
-// Verified runtime implementations (I1, C1, D1)
+// Runtime implementations backed by their current component, registry, and renderer paths.
 const VERIFIED_IMPLEMENTATIONS: BlockVersionImplementationStatus[] = [
   {
     versionId: 'I1',
@@ -59,6 +56,32 @@ const VERIFIED_IMPLEMENTATIONS: BlockVersionImplementationStatus[] = [
     ],
     notes: 'Theme validation, component-level version routing',
   },
+  {
+    versionId: 'O1',
+    familyId: 'O',
+    lifecycleStatus: 'RUNTIME_INTEGRATED',
+    ubrcCompliance: 'FULL',
+    versionRoutingPresent: true,
+    implementationEvidence: [
+      'packages/ui/src/tutorial/blocks/ObjectiveO1Block.tsx',
+      'packages/ui/src/tutorial/TutorialBlockRenderer.tsx',
+      'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/objective.registry.ts',
+    ],
+    notes: 'Project LLM-certified Objective version with Composer registration.',
+  },
+  {
+    versionId: 'O2',
+    familyId: 'O',
+    lifecycleStatus: 'RUNTIME_INTEGRATED',
+    ubrcCompliance: 'FULL',
+    versionRoutingPresent: true,
+    implementationEvidence: [
+      'packages/ui/src/tutorial/blocks/ObjectiveO2Block.tsx',
+      'packages/ui/src/tutorial/blocks/__tests__/ObjectiveO2Block.test.tsx',
+      'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/objective.registry.ts',
+    ],
+    notes: 'Objective version registered in Composer and routed by TutorialBlockRenderer.',
+  },
 ];
 
 // Incomplete implementations (S1)
@@ -77,8 +100,9 @@ const INCOMPLETE_IMPLEMENTATIONS: BlockVersionImplementationStatus[] = [
   },
 ];
 
-// Planned families (14 families not yet implemented)
-const PLANNED_FAMILY_IDS = ['O', 'V', 'CP', 'E', 'M', 'MT', 'BP', 'Q', 'EX', 'T', 'INT', 'QZ', 'IV', 'P'];
+const ALL_PLANNED_FAMILY_IDS = ['O', 'V', 'CP', 'E', 'M', 'MT', 'BP', 'Q', 'EX', 'T', 'INT', 'QZ', 'IV', 'P'];
+const IMPLEMENTED_FAMILY_IDS = new Set(VERIFIED_IMPLEMENTATIONS.map((item) => item.familyId));
+const PLANNED_FAMILY_IDS = ALL_PLANNED_FAMILY_IDS.filter((id) => !IMPLEMENTED_FAMILY_IDS.has(id));
 
 // 15 implementation primitives (building blocks, NOT educational families)
 const IMPLEMENTATION_PRIMITIVES: ImplementationPrimitive[] = [
@@ -99,25 +123,6 @@ const IMPLEMENTATION_PRIMITIVES: ImplementationPrimitive[] = [
   { name: 'timeline', description: 'Timeline visualization' },
 ];
 
-// Compile-time validation
-if (VERIFIED_IMPLEMENTATIONS.length !== RUNTIME_VERIFIED_COUNT) {
-  throw new Error(
-    `Runtime invariant violation: Expected ${RUNTIME_VERIFIED_COUNT} verified implementations, got ${VERIFIED_IMPLEMENTATIONS.length}`
-  );
-}
-
-if (INCOMPLETE_IMPLEMENTATIONS.length !== RUNTIME_INCOMPLETE_COUNT) {
-  throw new Error(
-    `Runtime invariant violation: Expected ${RUNTIME_INCOMPLETE_COUNT} incomplete implementations, got ${INCOMPLETE_IMPLEMENTATIONS.length}`
-  );
-}
-
-if (PLANNED_FAMILY_IDS.length !== RUNTIME_PLANNED_FAMILIES_COUNT) {
-  throw new Error(
-    `Runtime invariant violation: Expected ${RUNTIME_PLANNED_FAMILIES_COUNT} planned families, got ${PLANNED_FAMILY_IDS.length}`
-  );
-}
-
 if (IMPLEMENTATION_PRIMITIVES.length !== 15) {
   throw new Error(
     `Primitives invariant violation: Expected 15 implementation primitives, got ${IMPLEMENTATION_PRIMITIVES.length}`
@@ -127,9 +132,9 @@ if (IMPLEMENTATION_PRIMITIVES.length !== 15) {
 // Runtime registry
 const RUNTIME_REGISTRY: ProjectLlmRuntimeRegistry = {
   status: {
-    verifiedImplementations: 3,
-    incompleteImplementations: 1,
-    plannedFamilies: 14,
+    verifiedImplementations: VERIFIED_IMPLEMENTATIONS.length,
+    incompleteImplementations: INCOMPLETE_IMPLEMENTATIONS.length,
+    plannedFamilies: PLANNED_FAMILY_IDS.length,
   },
   verifiedImplementations: VERIFIED_IMPLEMENTATIONS,
   incompleteImplementations: INCOMPLETE_IMPLEMENTATIONS,

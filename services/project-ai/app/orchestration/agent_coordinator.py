@@ -444,7 +444,7 @@ class AgentCoordinator:
         context: AgentContext,
         result: AgentResult
     ) -> None:
-        """Execute composer integration verification capabilities."""
+        """Execute advisory snapshot Composer preflight capabilities."""
         try:
             # Get block types to verify
             block_types = context.workflow_state.get('block_types', [])
@@ -482,7 +482,9 @@ class AgentCoordinator:
             result.outputs["summary"] = {
                 "passed": passed_count,
                 "failed": total_count - passed_count,
-                "total": total_count
+                "total": total_count,
+                "authoritative": False,
+                "next_step": "Run isolated worktree Composer verification after placement",
             }
             
             if passed_count < total_count:

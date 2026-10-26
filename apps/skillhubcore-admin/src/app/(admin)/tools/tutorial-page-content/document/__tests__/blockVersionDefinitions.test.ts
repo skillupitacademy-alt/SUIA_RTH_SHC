@@ -3,6 +3,7 @@ import {
   getBlockVersionDefinition,
   getRegisteredBlockVersionDefinitions,
   normalizeBlockPreviewPayload,
+  prepareBlockForStorage,
   parseBlockMarkdown,
 } from '../blockVersionDefinitions';
 
@@ -35,9 +36,25 @@ describe('blockVersionDefinitions', () => {
     });
   });
 
+  it('uses version-owned storage preparation without editor-specific C1 branching', () => {
+    const prepared = prepareBlockForStorage({
+      page: { type: 'CODE + EXPLANATION', title: 'Example', introduction: 'Intro' },
+      code: { language: 'typescript', source: 'const answer = 42;' },
+    }, 'code', 'C1');
+
+    expect(prepared.payloadFormat).toBe('canonical');
+    expect(prepared.content).toMatchObject({ page: { type: 'code', language: 'typescript' } });
+  });
+
   it('preserves safe fallback behavior for unsupported future versions', () => {
     expect(getBlockVersionDefinition('code', 'C99')).toBeUndefined();
     const payload = { page: { title: 'Future block' } };
     expect(normalizeBlockPreviewPayload(payload, 'code', 'C99').content).toBe(payload);
+  });
+
+  it('does not turn Markdown into an unrelated Code payload for versions without a parser', () => {
+    expect(() => parseBlockMarkdown('# Objective', 'objective', 'O1')).toThrow(
+      'Markdown authoring is not available for objective O1; use JSON authoring instead.'
+    );
   });
 });

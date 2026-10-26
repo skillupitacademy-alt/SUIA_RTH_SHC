@@ -1134,7 +1134,13 @@ class CertificationGateExecutor:
     
     def execute_composer_verification_gate(self, candidate_blocks: List[str], manifest: PlacementManifest) -> GateExecutionResult:
         """
-        Execute Composer integration verification gate.
+        Run Composer integration preflight against the repository snapshot.
+
+        This legacy snapshot check is advisory only. It must never provide the
+        authoritative PASS used for certification because it does not verify
+        the recorded placement commit in an isolated worktree or browser.
+        Authoritative Composer evidence is created by the workflow endpoint
+        POST /workflows/{workflow_id}/verify-composer.
         
         Verifies the complete Composer workflow for each candidate block:
         1. Block is registered in BLOCK_REGISTRY
@@ -1225,10 +1231,10 @@ class CertificationGateExecutor:
             )
         
         return GateExecutionResult(
-            status=CertificationGateStatus.PASS,
-            message=f"Composer verification passed for {len(candidate_blocks)} block(s)",
+            status=CertificationGateStatus.BLOCKED,
+            message=f"Composer preflight passed for {len(candidate_blocks)} block(s), but isolated worktree verification is required for certification",
             evidence_ids=evidence_ids,
-            blockers=[]
+            blockers=["Run POST /workflows/{workflow_id}/verify-composer against the approved placement commit"]
         )
     
     def execute_theme_compatibility_gate(

@@ -24,6 +24,7 @@ from app.placement.patcher import (
     patch_tutorial_block_renderer,
     patch_tutorial_composer_registry,
     patch_tutorial_page_content_types,
+    patch_generated_block_version_definitions,
 )
 from app.placement.repository_adapter import RepositoryAdapter, RepositoryAdapterError
 from app.placement.worktree_manager import WorktreeManager, WorktreeError, WorktreeContext
@@ -436,6 +437,25 @@ export const {reg_var_name}: BlockRegistryEntry = {{
                         patched = patch_tutorial_page_content_types(
                             current_content,
                             family_type_id=manifest.blockFamily.value.lower()
+                        )
+                        if not self.dry_run:
+                            target_file_path.write_text(patched, encoding='utf-8')
+                        written_files.append(str(target_file_path))
+
+                    elif op.action == PlacementFileAction.PATCH_COMPOSER_DEFINITION:
+                        if not target_file_path.exists():
+                            raise PlacementExecutionError(f"Target Composer definitions file {op.target_path} does not exist")
+                        current_content = target_file_path.read_text(encoding='utf-8')
+                        current_hash = compute_sha256(current_content)
+                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                            raise PlacementExecutionError(
+                                f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                            )
+                        patched = patch_generated_block_version_definitions(
+                            current_content,
+                            family_type_id=integration_metadata.get("typeId", manifest.blockFamily.value.lower()),
+                            version=manifest.blockVersion,
+                            payload_format=integration_metadata.get("payloadFormat", "canonical"),
                         )
                         if not self.dry_run:
                             target_file_path.write_text(patched, encoding='utf-8')

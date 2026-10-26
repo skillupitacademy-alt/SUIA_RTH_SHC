@@ -1228,16 +1228,16 @@ class TestWave4ComposerVerification:
             'findings': []
         }
     
-    def test_composer_gate_passes_with_fully_integrated_block(self, mock_snapshot_composer_valid, test_manifest):
-        """Composer gate passes when block is fully integrated into Composer workflow."""
+    def test_composer_gate_blocks_certification_without_worktree_evidence(self, mock_snapshot_composer_valid, test_manifest):
+        """Snapshot Composer checks are preflight only, never final certification proof."""
         executor = CertificationGateExecutor(mock_snapshot_composer_valid, Path('.'))
         
         result = executor.execute_composer_verification_gate(['I1'], test_manifest)
         
-        assert result.status == CertificationGateStatus.PASS
+        assert result.status == CertificationGateStatus.BLOCKED
         assert len(result.evidence_ids) > 0
-        assert len(result.blockers) == 0
-        assert 'composer verification passed' in result.message.lower()
+        assert result.blockers
+        assert 'isolated worktree verification' in result.message.lower()
     
     def test_composer_gate_fails_with_not_registered_error(self, mock_snapshot_not_registered, test_manifest):
         """Composer gate fails with COMPOSER_NOT_REGISTERED when block not in registry."""
@@ -1322,7 +1322,7 @@ class TestWave4ComposerVerification:
         
         result = executor.execute_composer_verification_gate(['I1'], test_manifest)
         
-        assert result.status == CertificationGateStatus.PASS
+        assert result.status == CertificationGateStatus.BLOCKED
         assert len(result.evidence_ids) >= 3  # Registry, implementation, renderer
         
         # Verify evidence IDs are real (not synthetic)
@@ -1389,8 +1389,8 @@ class TestWave4ComposerVerification:
         
         result = executor.execute_composer_verification_gate(['I1', 'C1'], test_manifest)
         
-        assert result.status == CertificationGateStatus.PASS
-        assert 'passed for 2 block(s)' in result.message.lower() or 'verified for 2 block(s)' in result.message.lower()
+        assert result.status == CertificationGateStatus.BLOCKED
+        assert 'isolated worktree verification' in result.message.lower()
 
 
 class TestWave5RuntimeVerification:

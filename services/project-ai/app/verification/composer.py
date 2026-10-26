@@ -1,5 +1,5 @@
 """
-Composer Integration Verification Module.
+Composer Integration Snapshot Preflight Module.
 
 ARCHITECTURAL RULE:
 - This module verifies candidate blocks work in the Tutorial Composer workflow
@@ -77,7 +77,11 @@ def verify_composer_integration(
     repository_root: Path
 ) -> ComposerVerificationResult:
     """
-    Verify that a block is fully integrated into the Tutorial Composer workflow.
+    Preflight discovery evidence for a block's Tutorial Composer integration.
+
+    This synchronous snapshot check is advisory. The authoritative
+    post-placement verification is ``verify_composer_in_worktree`` and must
+    run against the recorded placement commit in an isolated worktree.
     
     This function performs a complete end-to-end verification of block integration:
     1. Block is registered in BLOCK_REGISTRY

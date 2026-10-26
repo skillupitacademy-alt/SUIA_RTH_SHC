@@ -7,8 +7,8 @@ import type {
   TutorialSummaryPayload,
   CodeC1AuthorContent,
 } from '@quiz/types';
-import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import { extractBlockTitle, type BlockInstance } from '../document/documentTransformation';
+import { prepareBlockForStorage } from '../document/blockVersionDefinitions';
 import { parseSource, type SourceFormat } from '../document/sourceParser';
 import { normalizeBlockPreview } from '../utils/normalizeBlockPreview';
 
@@ -95,26 +95,21 @@ export function useTutorialBlockEditor(
         delete normalizedParsed.expectedTimeSec;
       }
 
-      // Canonicalize C1 blocks immediately upon Add/Update
-      let payload:
+      const prepared = prepareBlockForStorage(
+        normalizedParsed,
+        formState.blockType,
+        formState.versionCode
+      );
+      const payload = prepared.content as
         | TutorialDefinitionPayload
         | TutorialCodePayload
         | TutorialSummaryPayload
         | TutorialIntroductionPayload
-        | CodeC1AuthorContent = normalizedParsed;
-      let payloadFormat: 'legacy' | 'canonical' = 'legacy';
+        | CodeC1AuthorContent;
+      const payloadFormat = prepared.payloadFormat;
 
-      if (formState.blockType === 'code' && formState.versionCode === 'C1') {
-        const result = toCanonicalCodeC1(parsed);
-
-        // Store canonical content, not legacy
-        payload = result.content;
-        payloadFormat = 'canonical';
-
-        // Surface memoryModel warning if present
-        if (result.memoryModelWarning) {
-          setMemoryModelWarning(result.memoryModelWarning);
-        }
+      if (prepared.memoryModelWarning) {
+        setMemoryModelWarning(prepared.memoryModelWarning);
       }
 
       const title = extractBlockTitle(payload, formState.blockType);

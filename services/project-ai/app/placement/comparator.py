@@ -373,6 +373,7 @@ class CanonicalComparator:
         renderer_rel_path = "packages/ui/src/tutorial/TutorialBlockRenderer.tsx"
         registry_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/index.ts"
         types_rel_path = "packages/types/src/tutorial-page-content.types.ts"
+        composer_definitions_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/generatedBlockVersionDefinitions.ts"
 
         def get_pre_hash(rel_path: str) -> Optional[str]:
             full_path = ws / rel_path
@@ -582,6 +583,16 @@ class CanonicalComparator:
                 patch_strategy="UNION_MEMBER",
                 description=f"Surgically add '{family_lower}' to TutorialPageContentType union"
             ))
+
+        operations.append(PlacementFileOperation(
+            action=PlacementFileAction.PATCH_COMPOSER_DEFINITION,
+            source_filename=integration_filename,
+            source_sha256=compute_sha256(json.dumps(integration_metadata, sort_keys=True)),
+            target_path=composer_definitions_rel_path,
+            expected_pre_hash=get_pre_hash(composer_definitions_rel_path),
+            patch_strategy="REGISTER_VERSION_ADAPTER",
+            description=f"Register {family_name} {version_upper} with the generic Composer payload adapter"
+        ))
 
         return operations
 

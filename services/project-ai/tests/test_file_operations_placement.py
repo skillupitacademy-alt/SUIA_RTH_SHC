@@ -16,6 +16,7 @@ from app.placement.patcher import (
     patch_family_registry,
     patch_tutorial_composer_registry,
     patch_tutorial_page_content_types,
+    patch_generated_block_version_definitions,
     PatchError,
 )
 
@@ -73,6 +74,7 @@ def test_derive_file_operations_resolution(tmp_path):
     assert PlacementFileAction.PATCH_FAMILY_REGISTRY in patch_actions
     assert PlacementFileAction.PATCH_REGISTRY in patch_actions
     assert PlacementFileAction.PATCH_TYPES in patch_actions
+    assert PlacementFileAction.PATCH_COMPOSER_DEFINITION in patch_actions
     assert PlacementFileAction.SKIP in patch_actions
 
     # Pre-hashes must be computed for patched files
@@ -204,6 +206,22 @@ def test_patch_tutorial_page_content_types():
 
     patched = patch_tutorial_page_content_types(content, "objective")
     assert " | 'objective'" in patched
+
+
+def test_patch_generated_block_version_definitions():
+    content = """import type { TutorialPageContentType } from '@quiz/types';
+
+export type TutorialPageContentType = 'definition';
+
+export const GENERATED_BLOCK_VERSION_DEFINITIONS = [
+  // PROJECT_LLM_GENERATED_DEFINITIONS
+];
+"""
+
+    patched = patch_generated_block_version_definitions(content, "objective", "O3")
+    assert "{ type: 'objective', version: 'O3', payloadFormat: 'canonical' }," in patched
+    assert patch_generated_block_version_definitions(patched, "objective", "O3") == patched
+    patched = patch_tutorial_page_content_types(patched, "objective")
 
     # Calling again should be idempotent and not duplicate
     reこと = patch_tutorial_page_content_types(patched, "objective")

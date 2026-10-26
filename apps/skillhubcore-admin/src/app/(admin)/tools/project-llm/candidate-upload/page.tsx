@@ -199,15 +199,15 @@ export default function CandidateUploadPage() {
 
   const targetFamily = certificationData?.targetFamily || state.familyName || 'Introduction';
   const targetVersion = certificationData?.targetVersion || state.targetVersion || 'I1';
+  const componentName = `${targetFamily}${targetVersion}Block`;
+  const schemaStem = `${targetFamily.toLowerCase()}-${targetVersion.toLowerCase()}`;
 
   const expectedFiles = [
-    { name: `${targetFamily}${targetVersion}Block.tsx`, desc: 'Component', icon: FileCode },
-    { name: 'types.ts', desc: 'Type Definitions', icon: FileCode },
-    { name: 'schema.json', desc: 'JSON Schema', icon: FileCode },
-    { name: 'registry.ts', desc: 'Registry Registration', icon: FileCode },
-    { name: 'renderer.tsx', desc: 'Tutorial Renderer', icon: FileCode },
-    { name: 'composer.tsx', desc: 'Tutorial Composer UI', icon: FileCode },
-    { name: `${targetFamily}${targetVersion}.test.tsx`, desc: 'Unit Tests', icon: FileCode },
+    { name: `${componentName}.tsx`, desc: 'Component', icon: FileCode },
+    { name: `${componentName}.test.tsx`, desc: 'Vitest unit tests', icon: FileCode },
+    { name: `${schemaStem}.schema.json`, desc: 'JSON Schema', icon: FileCode },
+    { name: `${schemaStem}.schema.ts`, desc: 'TypeScript schema', icon: FileCode },
+    { name: 'block.integration.json', desc: 'Portable integration metadata', icon: FileCode },
     { name: 'README.md', desc: 'Documentation & Notes', icon: FileCode },
   ];
 

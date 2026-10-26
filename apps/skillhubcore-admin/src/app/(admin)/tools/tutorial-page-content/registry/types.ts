@@ -1,4 +1,5 @@
 import type { TutorialPageContentType } from '@quiz/types';
+import type { TutorialPromptContext } from '../prompts/tutorialPromptContext';
 
 /**
  * Registry Type Definitions
@@ -25,6 +26,12 @@ export interface BlockVersionRegistryEntry {
   
   /** Function that returns the default/example payload for authoring */
   getDefaultPayload: () => unknown;
+
+  /** Optional version-owned AI prompt generator. Generic guidance is used when omitted. */
+  getAiPrompt?: (context: TutorialPromptContext) => string;
+
+  /** Optional version-owned authoring rules shown alongside AI guidance. */
+  authoringRules?: readonly string[];
 }
 
 /**

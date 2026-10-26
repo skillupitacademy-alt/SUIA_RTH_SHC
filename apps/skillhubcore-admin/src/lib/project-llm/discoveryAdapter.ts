@@ -208,14 +208,12 @@ export function transformSnapshotToIntelligence(
     (id: string) => !discoveredFamilyIds.has(id)
   );
 
-  // Runtime registry — use type assertions for literal type constraints.
-  // The type definitions use readonly literal types (e.g., `readonly verifiedImplementations: 3`)
-  // but live discovery produces dynamic counts, so we assert compatibility.
+  // Runtime counts are derived from the discovery snapshot.
   const runtime = {
     status: {
-      verifiedImplementations: verifiedImplementations.length as 3,
-      incompleteImplementations: incompleteImplementations.length as 1,
-      plannedFamilies: plannedFamilyIds.length as 14,
+      verifiedImplementations: verifiedImplementations.length,
+      incompleteImplementations: incompleteImplementations.length,
+      plannedFamilies: plannedFamilyIds.length,
     },
     verifiedImplementations,
     incompleteImplementations,

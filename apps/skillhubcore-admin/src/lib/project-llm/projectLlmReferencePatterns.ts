@@ -15,8 +15,7 @@ export const I1_REFERENCE_PATTERN: ReferenceImplementationPattern = {
   keyFiles: [
     'packages/ui/src/tutorial/blocks/IntroductionBlock.tsx',
     'packages/ui/src/tutorial/TutorialBlockRenderer.tsx',
-    'packages/types/src/tutorial-rich-document/registries/introduction-versions.ts',
-    'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/introduction.registry.ts',
+    'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/introduction.registry.ts',
   ],
   description:
     'I1 (Basic Topic Introduction) — 9-section canonical structure with version routing, 3/3 UBRC attributes, theme-aware rendering. Component-level version routing.',
@@ -32,7 +31,7 @@ export const C1_REFERENCE_PATTERN: ReferenceImplementationPattern = {
     'packages/ui/src/tutorial/blocks/CodeC1Block.tsx',
     'packages/ui/src/tutorial/TutorialBlockRenderer.tsx',
     'packages/types/src/tutorial-rich-document/registries/code-versions.ts',
-    'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/code.registry.ts',
+    'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/code.registry.ts',
     'packages/ui/src/tutorial/blocks/__tests__/CodeC1Block.test.tsx',
   ],
   description:
@@ -49,7 +48,7 @@ export const D1_REFERENCE_PATTERN: ReferenceImplementationPattern = {
     'packages/ui/src/tutorial/blocks/DefinitionBlock.tsx',
     'packages/ui/src/tutorial/TutorialBlockRenderer.tsx',
     'packages/types/src/tutorial-rich-document/registries/definition-versions.ts',
-    'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/definition.registry.ts',
+    'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/definition.registry.ts',
   ],
   description:
     'D1 (Classic Definition) — Theme validation, 3/3 UBRC attributes, component-level version routing.',

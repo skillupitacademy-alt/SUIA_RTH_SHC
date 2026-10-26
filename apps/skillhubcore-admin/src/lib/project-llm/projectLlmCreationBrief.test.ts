@@ -98,23 +98,24 @@ describe('projectLlmCreationBrief', () => {
       expect(constraints).toHaveLength(8);
     });
 
-    it('includes E-001 Prototype First constraint with correct instruction', () => {
+    it('requires a complete portable candidate package', () => {
       const constraints = buildConstraints();
       const e001 = constraints.find((c) => c.id === 'E-001');
       expect(e001).toBeDefined();
       expect(e001?.severity).toBe('MANDATORY');
-      expect(e001?.title).toBe('Prototype First');
-      expect(e001?.instruction).toContain('HTML/CSS/JS/JSON prototype');
-      expect(e001?.instruction).toContain('before any React/TypeScript');
+      expect(e001?.title).toBe('Portable Candidate Package');
+      expect(e001?.instruction).toContain('Vitest test');
+      expect(e001?.instruction).toContain('block.integration.json');
     });
 
-    it('includes E-002 Human GUI Approval Required constraint with STOP instruction', () => {
+    it('forbids shared integration files in external candidate packages', () => {
       const constraints = buildConstraints();
       const e002 = constraints.find((c) => c.id === 'E-002');
       expect(e002).toBeDefined();
       expect(e002?.severity).toBe('MANDATORY');
-      expect(e002?.instruction).toContain('STOP');
-      expect(e002?.instruction).toContain('explicit human approval');
+      expect(e002?.title).toBe('No Shared Integration Files');
+      expect(e002?.instruction).toContain('TutorialBlockRenderer');
+      expect(e002?.instruction).toContain('Project LLM');
     });
 
     it('includes UBRC Compatibility constraint with DOM attribute requirements', () => {
@@ -183,11 +184,11 @@ describe('projectLlmCreationBrief', () => {
       expect(checklist).toHaveLength(12);
     });
 
-    it('includes GUI prototype review item with approval gate reference', () => {
+    it('includes the portable package metadata gate', () => {
       const checklist = buildValidationChecklist();
-      const gui = checklist.find((item) => item.includes('GUI prototype'));
-      expect(gui).toBeDefined();
-      expect(gui).toContain('before React/TypeScript');
+      const metadata = checklist.find((item) => item.includes('defaultPayload'));
+      expect(metadata).toBeDefined();
+      expect(metadata).toContain('defaultPayload');
     });
 
     it('includes platform safety checklist items', () => {
@@ -207,21 +208,20 @@ describe('projectLlmCreationBrief', () => {
       expect(workflow).toHaveLength(9);
     });
 
-    it('includes STOP instruction at step 6 with explicit approval gate', () => {
+    it('instructs the external author to build a portable package', () => {
       const workflow = buildExternalAiWorkflow();
       const step6 = workflow.find((step) => step.includes('Step 6'));
       expect(step6).toBeDefined();
-      expect(step6).toContain('STOP');
-      expect(step6).toContain('Do NOT proceed');
-      expect(step6).toContain('explicit written approval');
+      expect(step6).toContain('defaultPayload');
+      expect(step6).toContain('schema-valid');
     });
 
-    it('includes React/TypeScript candidate creation only after approval', () => {
+    it('keeps platform integration out of the external package', () => {
       const workflow = buildExternalAiWorkflow();
       const step7 = workflow.find((step) => step.includes('Step 7'));
       expect(step7).toBeDefined();
-      expect(step7).toContain('After receiving human approval');
-      expect(step7).toContain('React/TypeScript candidate');
+      expect(step7).toContain('registry');
+      expect(step7).toContain('Composer');
     });
   });
 
@@ -236,9 +236,9 @@ describe('projectLlmCreationBrief', () => {
       const combined = gate.join(' ');
       
       expect(combined).toContain('APPROVED');
-      expect(combined).toContain('Proceed to React/TypeScript');
+      expect(combined).toContain('Submit the ZIP to Project LLM qualification');
       expect(combined).toContain('REJECTED');
-      expect(combined).toContain('Discard prototype');
+      expect(combined).toContain('Discard the package');
       expect(combined).toContain('NEEDS_CORRECTION');
       expect(combined).toContain('Apply specified corrections');
     });
@@ -419,7 +419,7 @@ describe('projectLlmCreationBrief', () => {
       expect(() => generateCreationBrief(request)).toThrow('Phase 1 only supports GUI_PROTOTYPE');
     });
 
-    it('contains mandatory human approval gate text in promptText', () => {
+    it('contains portable package and Project LLM governance text in promptText', () => {
       const request: CreationBriefRequest = {
         requestId: 'test-1',
         targetFamilyId: 'I',
@@ -430,9 +430,9 @@ describe('projectLlmCreationBrief', () => {
 
       const brief = generateCreationBrief(request);
 
-      expect(brief.promptText).toContain('STOP');
-      expect(brief.promptText).toContain('wait for explicit human GUI approval');
-      expect(brief.promptText).toContain('Only after approval');
+      expect(brief.promptText).toContain('PORTABLE_CANDIDATE_PACKAGE');
+      expect(brief.promptText).toContain('block.integration.json');
+      expect(brief.promptText).toContain('Project LLM, not the external author');
     });
 
     it('contains passive runtime restrictions in promptText', () => {

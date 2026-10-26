@@ -12,10 +12,7 @@ import { Bot, Check, ChevronDown, ChevronUp, Copy, Sparkles } from 'lucide-react
 import type { TutorialPageContentType } from '@quiz/types';
 import type { TutorialPromptContext } from '../prompts/tutorialPromptContext';
 import { buildTutorialPrompt } from '../prompts/tutorialPrompt.shared';
-import { getDefinitionD1Prompt } from '../blocks/definition/D1/definitionD1.prompt';
-import { getCodeC1Prompt } from '../blocks/code/C1/codeC1.prompt';
-import { getSummaryS1Prompt } from '../blocks/summary/S1/summaryS1.prompt';
-import { getIntroductionI1Prompt } from '../blocks/introduction/I1/introductionI1.prompt';
+import { getVersions } from '../registry';
 
 interface AiInstructionContainerProps {
   domainName: string;
@@ -42,6 +39,10 @@ export function AiInstructionContainer({
 }: AiInstructionContainerProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [copied, setCopied] = useState(false);
+  const selectedVersion = useMemo(
+    () => getVersions(blockType).find((version) => version.id === versionId),
+    [blockType, versionId]
+  );
 
   const promptText = useMemo(() => {
     const context: TutorialPromptContext = {
@@ -55,21 +56,7 @@ export function AiInstructionContainer({
       versionId,
     };
 
-    if (blockType === 'definition') {
-      return getDefinitionD1Prompt(context);
-    }
-    
-    if (blockType === 'code') {
-      return getCodeC1Prompt(context);
-    }
-    
-    if (blockType === 'summary') {
-      return getSummaryS1Prompt(context);
-    }
-    
-    if (blockType === 'introduction') {
-      return getIntroductionI1Prompt(context);
-    }
+    if (selectedVersion?.getAiPrompt) return selectedVersion.getAiPrompt(context);
 
     // Fallback using shared infrastructure
     return buildTutorialPrompt(
@@ -82,7 +69,7 @@ Return valid JSON only.
 
 Do not include markdown code fences.`
     );
-  }, [domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName, blockType, versionId]);
+  }, [domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName, blockType, versionId, selectedVersion]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(promptText);
@@ -181,22 +168,9 @@ Do not include markdown code fences.`
               <Sparkles size={13} className="text-indigo-600" />
               {blockName} {versionName} Visual & Content Rules
             </h4>
-            {blockType === 'definition' ? (
+            {selectedVersion?.authoringRules?.length ? (
               <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
-                <li><strong>2 to 4 cards:</strong> Generate 2–4 genuinely distinct properties.</li>
-                <li><strong>Short titles:</strong> Keep titles to 2–6 words (e.g., &ldquo;Named Reference&rdquo;, &ldquo;Mutable&rdquo;).</li>
-                <li><strong>Focused descriptions:</strong> 1–3 clear sentences explaining that single property.</li>
-                <li><strong>Responsive presentation:</strong> UI automatically handles 1 col (mobile), 2 col (tablet), 3–4 col (desktop). <em>Do NOT add UI layout metadata to the JSON.</em></li>
-                <li><strong>Strict JSON only:</strong> Return pure JSON matching the D1 schema with no markdown code blocks or system metadata.</li>
-              </ul>
-            ) : blockType === 'introduction' ? (
-              <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 leading-relaxed">
-                <li><strong>9 required sections:</strong> Hero, Learning Goal, Topic, Where Fit, Solution, Where Used, Roadmap, Why Matters, Key Takeaway.</li>
-                <li><strong>Controlled icons:</strong> Use ONLY approved Lucide icons (book-open, target, code, rocket, globe, etc.). Do NOT invent icon names.</li>
-                <li><strong>Highlight cards:</strong> Mark 1-2 cards with <code>&quot;highlight&quot;: true</code> in flowCards and useCases for visual emphasis.</li>
-                <li><strong>Motto format:</strong> Exactly 4 short lines forming inspirational statement (e.g., &quot;Know / Your Path. / Learn with / Purpose.&quot;).</li>
-                <li><strong>Runnable code:</strong> Solution code must be complete and executable, not pseudo-code.</li>
-                <li><strong>Strict JSON only:</strong> Return pure JSON matching the I1 schema with no markdown code blocks or system metadata.</li>
+                {selectedVersion.authoringRules.map((rule) => <li key={rule}>{rule}</li>)}
               </ul>
             ) : (
               <p className="text-[11px] text-slate-600">

@@ -10,12 +10,12 @@ import { ProjectLlmLifecycleStatus } from './lifecycle';
  * Runtime implementation status — separate from corpus/architectural taxonomy
  */
 export interface ProjectLlmRuntimeStatus {
-  /** Number of block versions with full verified runtime implementations (I1, C1, D1) */
-  readonly verifiedImplementations: 3;
+  /** Number of block versions with full verified runtime implementations. */
+  readonly verifiedImplementations: number;
   /** Number of incomplete runtime implementations (S1) */
-  readonly incompleteImplementations: 1;
-  /** Number of planned educational families not yet implemented (14: O,V,CP,E,M,MT,BP,Q,EX,T,INT,QZ,IV,P) */
-  readonly plannedFamilies: 14;
+  readonly incompleteImplementations: number;
+  /** Number of planned educational families not yet implemented. */
+  readonly plannedFamilies: number;
 }
 
 export type UbrcComplianceLevel = 'FULL' | 'PARTIAL' | 'NONE';
@@ -45,8 +45,3 @@ export interface ProjectLlmRuntimeRegistry {
   /** Family IDs of families planned but not yet implemented */
   plannedFamilyIds: string[];
 }
-
-/** Compile-time constants for runtime counts */
-export const RUNTIME_VERIFIED_COUNT = 3 as const;
-export const RUNTIME_INCOMPLETE_COUNT = 1 as const;
-export const RUNTIME_PLANNED_FAMILIES_COUNT = 14 as const;

@@ -22,6 +22,7 @@ import type {
 import { themeForBrand } from '../theme/brandTheme';
 import type { BlockInstance } from '../document/documentTransformation';
 import { toTutorialBlock } from '../document/documentTransformation';
+import { getBlockType } from '../registry';
 
 interface TutorialPreviewPaneProps {
   // Header
@@ -89,18 +90,15 @@ function getEffectiveBlockInfo(
   payload: any
 ): { type: TutorialPageContentType; version: string } {
   const detectedType = payload?.page?.type || payload?.type;
-  if (detectedType && ['objective', 'definition', 'code', 'summary', 'introduction'].includes(detectedType)) {
-    const defaultCodes: Record<string, string> = {
-      introduction: 'I1',
-      definition: 'D1',
-      code: 'C1',
-      summary: 'S1',
-      objective: 'O1',
-    };
-    const version = detectedType === 'objective'
-      ? (defaultVersion === 'O2' ? 'O2' : 'O1')
-      : (detectedType === defaultType && defaultVersion !== 'v1' ? defaultVersion : defaultCodes[detectedType] || 'v1');
-    return { type: detectedType as TutorialPageContentType, version };
+  if (typeof detectedType === 'string') {
+    const registryEntry = getBlockType(detectedType as TutorialPageContentType);
+    if (registryEntry) {
+      const preferredVersion = detectedType === defaultType ? defaultVersion : '';
+      const version = registryEntry.versions.find(
+        (candidate) => candidate.code === preferredVersion || candidate.id === preferredVersion
+      )?.code ?? registryEntry.versions[0]?.code ?? defaultVersion;
+      return { type: detectedType as TutorialPageContentType, version };
+    }
   }
   return { type: defaultType, version: defaultVersion };
 }

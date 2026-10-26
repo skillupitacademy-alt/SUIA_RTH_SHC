@@ -1,5 +1,6 @@
 import type { BlockRegistryEntry } from '../types';
 import { summaryS1Example } from '../../blocks/summary/S1/summaryS1.examples';
+import { getSummaryS1Prompt } from '../../blocks/summary/S1/summaryS1.prompt';
 
 /**
  * Summary Block Registry
@@ -16,6 +17,7 @@ export const summaryRegistry: BlockRegistryEntry = {
       label: 'S1 - Revision Table',
       description: 'Quick revision table with key points, remember cards and takeaways',
       getDefaultPayload: () => summaryS1Example,
+      getAiPrompt: getSummaryS1Prompt,
     },
   ],
 };

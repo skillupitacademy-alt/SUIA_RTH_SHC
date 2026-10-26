@@ -275,3 +275,31 @@ def patch_tutorial_page_content_types(
 
     new_union = current_union.strip() + f" | {quoted_id}"
     return content[:match.start()] + match.group(1) + new_union + match.group(3) + content[match.end():]
+
+
+def patch_generated_block_version_definitions(
+    content: str,
+    family_type_id: str,
+    version: str,
+    payload_format: str = "canonical",
+) -> str:
+    """Append an approved family/version to the Composer adapter registry."""
+    if payload_format not in {"legacy", "canonical"}:
+        raise PatchError("payloadFormat must be either 'legacy' or 'canonical'")
+
+    version_upper = version.upper()
+    if re.search(
+        rf"type:\s*['\"]{re.escape(family_type_id.lower())}['\"].*?version:\s*['\"]{re.escape(version_upper)}['\"]",
+        content,
+        re.DOTALL,
+    ):
+        return content
+
+    marker = "  // PROJECT_LLM_GENERATED_DEFINITIONS"
+    if marker not in content:
+        raise PatchError("Cannot find Project LLM generated-definition marker")
+    entry = (
+        f"  {{ type: '{family_type_id.lower()}', version: '{version_upper}', "
+        f"payloadFormat: '{payload_format}' }},\n"
+    )
+    return content.replace(marker, entry + marker, 1)

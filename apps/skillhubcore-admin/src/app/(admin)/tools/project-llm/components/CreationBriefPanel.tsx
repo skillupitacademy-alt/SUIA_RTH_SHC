@@ -66,7 +66,7 @@ export function CreationBriefPanel() {
 
           {/* Badge */}
           <div className="inline-flex items-center gap-1.5 rounded-md bg-pink-50 border border-pink-200 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-pink-700">
-            GUI Prototype First
+            Portable Candidate Package
           </div>
 
           {/* Description */}
@@ -159,7 +159,7 @@ export function CreationBriefPanel() {
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                     Stage
                   </p>
-                  <p className="mt-1 text-sm font-bold text-slate-800">GUI Prototype</p>
+                  <p className="mt-1 text-sm font-bold text-slate-800">Portable Package</p>
                 </div>
                 <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
