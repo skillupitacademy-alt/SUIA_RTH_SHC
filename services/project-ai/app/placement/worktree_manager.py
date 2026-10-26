@@ -201,9 +201,25 @@ class WorktreeManager:
                 text=True
             )
         except subprocess.CalledProcessError as e:
-            raise WorktreeError(
-                f"Failed to commit in worktree: {e.stderr}"
+            # Check if nothing changed because placed files already match HEAD
+            status_proc = subprocess.run(
+                ['git', 'status', '--porcelain'],
+                cwd=context.worktree_path,
+                capture_output=True,
+                text=True
             )
+            if not status_proc.stdout.strip():
+                subprocess.run(
+                    ['git', 'commit', '--allow-empty', '-m', commit_message],
+                    cwd=context.worktree_path,
+                    check=True,
+                    capture_output=True,
+                    text=True
+                )
+            else:
+                raise WorktreeError(
+                    f"Failed to commit in worktree: {e.stderr}"
+                )
         
         # Get commit SHA
         try:
