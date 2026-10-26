@@ -209,7 +209,10 @@ export function TutorialPageContentBuilderClient() {
               onContentChange={handleContentChange}
               onAddBlock={handleAddBlockInstance}
               onStartNewBlock={() => handleStartNewBlock(getDefaultPayload(form.blockType, form.versionId))}
-              onPreviewBlock={handlePreviewCurrent}
+              onPreviewBlock={() => {
+                handlePreviewCurrent();
+                setPreviewMode('active-block');
+              }}
               onSaveDraft={() => save('draft', {
                 domains: hierarchy.domains,
                 subjects,
