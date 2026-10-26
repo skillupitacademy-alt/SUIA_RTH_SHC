@@ -640,13 +640,91 @@ async def approve_final_certification(
     is_candidate_pipeline = "composer" in gate_results
 
     if is_candidate_pipeline:
+        # 1. Placement Gate verification
+        placement_gate = gate_results.get("placement")
+        if not placement_gate or not isinstance(placement_gate, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Placement gate record missing from workflow gate_results"
+            )
+        placement_commit = placement_gate.get("commit")
+        if not placement_commit:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Placement commit SHA missing from placement gate"
+            )
+        # Verify placement commit has non-empty diff in git
+        from app.verification.composer_worktree_verifier import find_workspace_root
+        workspace_root = find_workspace_root()
+        import subprocess
+        try:
+            diff_proc = subprocess.run(
+                ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", placement_commit],
+                cwd=workspace_root,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            changed_files = [f for f in diff_proc.stdout.strip().splitlines() if f.strip()]
+            if not changed_files:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Placement commit {placement_commit} is an empty commit with 0 changed files. Production certification requires a non-empty placement diff."
+                )
+        except Exception as e:
+            if isinstance(e, HTTPException):
+                raise
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Failed to verify placement commit diff in git: {e}"
+            )
+
+        # 2. Candidate & Manifest cryptographic binding
+        if workflow.candidate_sha256 and placement_gate.get("candidate_sha256"):
+            if workflow.candidate_sha256 != placement_gate.get("candidate_sha256"):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Candidate SHA mismatch between workflow and placement gate"
+                )
+        if workflow.manifest_sha256 and placement_gate.get("manifest_sha256"):
+            if workflow.manifest_sha256 != placement_gate.get("manifest_sha256"):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Manifest SHA mismatch between workflow and placement gate"
+                )
+
+        # 3. Qualification Gate verification
+        unit_test_gate = gate_results.get("Unit Test Suite") or gate_results.get("qualification")
+        if not unit_test_gate or not isinstance(unit_test_gate, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Qualification unit test suite gate record missing"
+            )
+        if unit_test_gate.get("status") not in ("PASS", "SUCCESS") and unit_test_gate.get("result") not in ("PASS", "SUCCESS"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Qualification unit test suite gate did not pass: {unit_test_gate}"
+            )
+
+        # 4. Composer Verification Gate
         composer_gate = gate_results.get("composer") or {}
-        evidence_verified = bool(composer_gate.get("passed") and composer_gate.get("status") == "PASS")
-        if not evidence_verified:
+        if not composer_gate.get("passed") or composer_gate.get("status") != "PASS":
             raise HTTPException(
                 status_code=400,
                 detail=f"Cannot approve: Composer verification gate failed or incomplete: {composer_gate.get('reason')}"
             )
+        if not composer_gate.get("evidence_hash"):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing cryptographic evidence_hash"
+            )
+        if not composer_gate.get("runner_metadata", {}).get("screenshot_captured"):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing visual screenshot evidence"
+            )
+
+        evidence_verified = True
         evidence_summary = gate_results
     else:
         # W7 Evidence Policy Enforcement - validate evidence before FinalGateController

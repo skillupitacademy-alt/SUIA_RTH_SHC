@@ -201,25 +201,11 @@ class WorktreeManager:
                 text=True
             )
         except subprocess.CalledProcessError as e:
-            # Check if nothing changed because placed files already match HEAD
-            status_proc = subprocess.run(
-                ['git', 'status', '--porcelain'],
-                cwd=context.worktree_path,
-                capture_output=True,
-                text=True
+            raise WorktreeError(
+                f"Empty placement commit rejected: {e.stderr}. "
+                "Staged candidate files produced zero git diff against HEAD. "
+                "Placement must introduce real, verifiable file additions or modifications."
             )
-            if not status_proc.stdout.strip():
-                subprocess.run(
-                    ['git', 'commit', '--allow-empty', '-m', commit_message],
-                    cwd=context.worktree_path,
-                    check=True,
-                    capture_output=True,
-                    text=True
-                )
-            else:
-                raise WorktreeError(
-                    f"Failed to commit in worktree: {e.stderr}"
-                )
         
         # Get commit SHA
         try:
@@ -230,11 +216,31 @@ class WorktreeManager:
                 capture_output=True,
                 text=True
             )
-            return result.stdout.strip()
+            commit_sha = result.stdout.strip()
         except subprocess.CalledProcessError as e:
             raise WorktreeError(
                 f"Failed to get commit SHA: {e.stderr}"
             )
+
+        # Invariant: Verify commit tree is non-empty against its parent
+        try:
+            diff_proc = subprocess.run(
+                ['git', 'diff-tree', '--no-commit-id', '--name-only', '-r', commit_sha],
+                cwd=context.worktree_path,
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            changed_files = [f for f in diff_proc.stdout.strip().splitlines() if f.strip()]
+            if not changed_files:
+                raise WorktreeError(
+                    f"Empty placement commit {commit_sha} rejected: commit tree is identical to parent. "
+                    "Placement must introduce real file additions or modifications into git."
+                )
+        except subprocess.CalledProcessError as e:
+            raise WorktreeError(f"Failed to inspect placement commit tree diff: {e.stderr}")
+
+        return commit_sha
     
     def generate_diff(
         self,
