@@ -19,6 +19,8 @@ from app.models.implementation_approval import (
 )
 from app.placement.patcher import (
     compute_sha256,
+    create_family_registry,
+    patch_family_registry,
     patch_tutorial_block_renderer,
     patch_tutorial_composer_registry,
     patch_tutorial_page_content_types,
@@ -260,6 +262,14 @@ class PlacementExecutor:
                     ct = f.get('content') if isinstance(f, dict) else f.content
                     files_by_name[fn] = ct
 
+                integration_source = files_by_name.get("block.integration.json")
+                if integration_source is None:
+                    raise PlacementExecutionError("Candidate package missing required block.integration.json")
+                try:
+                    integration_metadata = json.loads(integration_source)
+                except (TypeError, json.JSONDecodeError) as error:
+                    raise PlacementExecutionError(f"Invalid block.integration.json: {error}") from error
+
                 worktree_root = self.active_worktree.worktree_path if (self.active_worktree and not self.dry_run) else self.repository_root
 
                 for op in manifest.fileOperations:
@@ -272,6 +282,12 @@ class PlacementExecutor:
                         content = files_by_name.get(op.source_filename)
                         if content is None:
                             raise PlacementExecutionError(f"Missing source file {op.source_filename} for CREATE operation")
+
+                        if target_file_path.exists():
+                            raise PlacementExecutionError(
+                                f"CREATE operation would overwrite existing file {op.target_path}. "
+                                "Use a controlled patch operation instead."
+                            )
 
                         # Harmonize registry export if writing registry entry
                         if op.target_path.endswith('.registry.ts'):
@@ -348,6 +364,31 @@ export const {reg_var_name}: BlockRegistryEntry = {{
                         if not self.dry_run:
                             target_file_path.parent.mkdir(parents=True, exist_ok=True)
                             target_file_path.write_text(content, encoding='utf-8')
+                        written_files.append(str(target_file_path))
+
+                    elif op.action == PlacementFileAction.PATCH_FAMILY_REGISTRY:
+                        if target_file_path.exists():
+                            current_content = target_file_path.read_text(encoding='utf-8')
+                            current_hash = compute_sha256(current_content)
+                            if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                                raise PlacementExecutionError(
+                                    f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                                )
+                            patched = patch_family_registry(
+                                current_content,
+                                family=manifest.blockFamily.value,
+                                version=manifest.blockVersion,
+                                metadata=integration_metadata,
+                            )
+                        else:
+                            patched = create_family_registry(
+                                family=manifest.blockFamily.value,
+                                version=manifest.blockVersion,
+                                metadata=integration_metadata,
+                            )
+                        if not self.dry_run:
+                            target_file_path.parent.mkdir(parents=True, exist_ok=True)
+                            target_file_path.write_text(patched, encoding='utf-8')
                         written_files.append(str(target_file_path))
 
                     elif op.action == PlacementFileAction.PATCH_RENDERER:

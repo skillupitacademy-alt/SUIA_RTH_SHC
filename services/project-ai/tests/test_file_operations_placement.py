@@ -13,6 +13,7 @@ from app.placement.comparator import CanonicalComparator
 from app.placement.patcher import (
     compute_sha256,
     patch_tutorial_block_renderer,
+    patch_family_registry,
     patch_tutorial_composer_registry,
     patch_tutorial_page_content_types,
     PatchError,
@@ -50,9 +51,7 @@ def test_derive_file_operations_resolution(tmp_path):
         {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
         {"filename": "objective-o1.schema.json", "content": "{}"},
         {"filename": "objective-o1.schema.ts", "content": "export const schema = {};"},
-        {"filename": "registry.ts", "content": "export const objectiveRegistry = {};"},
-        {"filename": "TutorialBlockRenderer.tsx", "content": "switch(b){}"},
-        {"filename": "tutorial-composer.service.ts", "content": "service snippet"},
+        {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","defaultPayload":{"title":"Example","objectives":[]}}'},
     ]
 
     ops = comparator.derive_file_operations(
@@ -67,10 +66,11 @@ def test_derive_file_operations_resolution(tmp_path):
     assert "packages/ui/src/tutorial/blocks/__tests__/ObjectiveO1Block.test.tsx" in create_targets
     assert "packages/ui/src/tutorial/schemas/objective-o1.schema.json" in create_targets
     assert "packages/ui/src/tutorial/types/objective-o1.schema.ts" in create_targets
-    assert "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/objective.registry.ts" in create_targets
+    assert "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/objective.registry.ts" not in create_targets
 
     patch_actions = {op.action for op in ops}
     assert PlacementFileAction.PATCH_RENDERER in patch_actions
+    assert PlacementFileAction.PATCH_FAMILY_REGISTRY in patch_actions
     assert PlacementFileAction.PATCH_REGISTRY in patch_actions
     assert PlacementFileAction.PATCH_TYPES in patch_actions
     assert PlacementFileAction.SKIP in patch_actions
@@ -108,6 +108,58 @@ def test_patch_tutorial_block_renderer():
 
     # Idempotency check: applying the same operation must not duplicate changes.
     assert patch_tutorial_block_renderer(patched, "Objective", "O1", "ObjectiveO1Block") == patched
+
+
+def test_patch_tutorial_block_renderer_preserves_existing_family_versions():
+    content = (
+        "import { ObjectiveO1Block } from './blocks/ObjectiveO1Block';\n\n"
+        "switch (block.type) {\n"
+        "  case 'objective': {\n"
+        "    if (!('version' in block) || (block as any).version !== 'O1') {\n"
+        "      throw new Error('unsupported');\n"
+        "    }\n"
+        "    return <ObjectiveO1Block block={block as any} />;\n"
+        "  }\n"
+        "  default: { return null; }\n"
+        "}\n"
+    )
+
+    patched = patch_tutorial_block_renderer(content, "Objective", "O2", "ObjectiveO2Block")
+
+    assert "import { ObjectiveO2Block } from './blocks/ObjectiveO2Block';" in patched
+    assert "case 'O1':" in patched
+    assert "case 'O2':" in patched
+    assert patched.count("case 'objective':") == 1
+
+    patched = patch_tutorial_block_renderer(patched, "Objective", "O3", "ObjectiveO3Block")
+    assert "import { ObjectiveO3Block } from './blocks/ObjectiveO3Block';" in patched
+    assert "case 'O1':" in patched
+    assert "case 'O2':" in patched
+    assert "case 'O3':" in patched
+    assert patched.count("case 'objective':") == 1
+
+
+def test_patch_family_registry_appends_version_without_removing_existing_versions():
+    content = """import type { BlockRegistryEntry } from '../types';
+
+export const objectiveRegistry: BlockRegistryEntry = {
+  id: 'objective',
+  label: 'Objective',
+  versions: [
+    { id: 'v1', code: 'O1', label: 'O1 - Objective', description: 'Existing', getDefaultPayload: () => ({ title: 'O1' }) },
+  ],
+};
+"""
+    metadata = {
+        "defaultPayload": {"title": "O2", "objectives": []},
+        "label": "O2 - Objective",
+        "description": "Second objective version",
+    }
+
+    patched = patch_family_registry(content, "Objective", "O2", metadata)
+    assert "code: 'O1'" in patched
+    assert "code: 'O2'" in patched
+    assert patch_family_registry(patched, "Objective", "O2", metadata) == patched
 
 
 def test_patch_tutorial_composer_registry():

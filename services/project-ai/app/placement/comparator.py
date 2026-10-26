@@ -1,6 +1,7 @@
 """Evidence-backed canonical comparison for candidate blocks."""
 
 from pathlib import Path
+import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -384,8 +385,30 @@ class CanonicalComparator:
 
         component_name = None
         has_renderer_signal = False
-        has_registry_signal = False
-        has_types_signal = False
+        integration_filename = None
+        integration_metadata = None
+
+        for f in files:
+            filename = f.get('filename') if isinstance(f, dict) else f.filename
+            content = f.get('content') if isinstance(f, dict) else f.content
+            if filename == "block.integration.json":
+                try:
+                    integration_metadata = json.loads(content)
+                except (TypeError, json.JSONDecodeError) as error:
+                    raise ValueError(f"block.integration.json must be valid JSON: {error}")
+                if integration_metadata.get("family", "").lower() != family_lower:
+                    raise ValueError("block.integration.json family must match the workflow target")
+                if str(integration_metadata.get("version", "")).upper() != version_upper:
+                    raise ValueError("block.integration.json version must match the workflow target")
+                if integration_metadata.get("typeId", "").lower() != family_lower:
+                    raise ValueError("block.integration.json typeId must match the workflow target")
+                if not integration_metadata.get("componentFile") or not integration_metadata.get("componentExport"):
+                    raise ValueError("block.integration.json must declare componentFile and componentExport")
+                integration_filename = filename
+                break
+
+        if integration_metadata is None:
+            raise ValueError("Candidate package missing required block.integration.json")
 
         for f in files:
             filename = f.get('filename') if isinstance(f, dict) else f.filename
@@ -394,6 +417,17 @@ class CanonicalComparator:
             
             # 1. Block Component
             if filename.endswith('.tsx') and not filename.endswith('.test.tsx') and not filename.endswith('.spec.tsx') and filename != 'TutorialBlockRenderer.tsx':
+                if filename != integration_metadata["componentFile"]:
+                    raise ValueError(
+                        f"Component file '{filename}' does not match block.integration.json componentFile "
+                        f"'{integration_metadata['componentFile']}'"
+                    )
+                component_export = re.escape(str(integration_metadata["componentExport"]))
+                if not re.search(rf"export\s+(?:function|const|class)\s+{component_export}\b|\bas\s+{component_export}\b", content):
+                    raise ValueError(
+                        f"Component file '{filename}' does not export the declared "
+                        f"componentExport '{integration_metadata['componentExport']}'"
+                    )
                 component_name = filename[:-4] # strip .tsx
                 operations.append(PlacementFileOperation(
                     action=PlacementFileAction.CREATE,
@@ -442,27 +476,30 @@ class CanonicalComparator:
                 ))
 
             # 5. Admin Composer Registry Entry
-            elif filename.lower() in ['registry.ts', f'{family_lower}.registry.ts']:
-                has_registry_signal = True
+            elif filename == "block.integration.json":
                 operations.append(PlacementFileOperation(
-                    action=PlacementFileAction.CREATE,
+                    action=PlacementFileAction.SKIP,
                     source_filename=filename,
                     source_sha256=source_sha,
-                    target_path=f"apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/{family_lower}.registry.ts",
+                    target_path="",
                     expected_pre_hash=None,
                     patch_strategy=None,
-                    description=f"Create Composer registry entry for {family_name} {version_upper}"
+                    description="Use portable integration metadata to generate controlled shared-file patches"
                 ))
 
-            # 6. Renderer Signal
-            elif filename == 'TutorialBlockRenderer.tsx':
-                has_renderer_signal = True
+            # Legacy shared integration files are deliberately never copied into the repository.
+            elif filename.lower() in ['registry.ts', f'{family_lower}.registry.ts', 'tutorialblockrenderer.tsx', 'tutorial-composer.service.ts']:
+                operations.append(PlacementFileOperation(
+                    action=PlacementFileAction.SKIP,
+                    source_filename=filename,
+                    source_sha256=source_sha,
+                    target_path="",
+                    expected_pre_hash=None,
+                    patch_strategy=None,
+                    description=f"Project LLM owns shared integration; skip legacy shared file {filename}"
+                ))
 
-            # 7. Types Signal
-            elif filename == 'tutorial-composer.service.ts':
-                has_types_signal = True
-
-            # 8. Skip README / meta files
+            # 7. Skip README / meta files
             else:
                 operations.append(PlacementFileOperation(
                     action=PlacementFileAction.SKIP,
@@ -487,27 +524,40 @@ class CanonicalComparator:
                 description=f"Surgically register {comp} in TutorialBlockRenderer.tsx runtime dispatch"
             ))
 
-        # Add Composer Registry Patch Operation
+        family_registry_rel_path = f"apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/{family_lower}.registry.ts"
+        family_registry_exists = (ws / family_registry_rel_path).exists()
         operations.append(PlacementFileOperation(
-            action=PlacementFileAction.PATCH_REGISTRY,
-            source_filename="registry.ts",
-            source_sha256=compute_sha256(f"patch_registry:{family_lower}Registry"),
-            target_path=registry_rel_path,
-            expected_pre_hash=get_pre_hash(registry_rel_path),
-            patch_strategy="REGISTER_BLOCK",
-            description=f"Surgically register {family_lower}Registry in Tutorial Composer index.ts"
+            action=PlacementFileAction.PATCH_FAMILY_REGISTRY,
+            source_filename=integration_filename,
+            source_sha256=compute_sha256(json.dumps(integration_metadata, sort_keys=True)),
+            target_path=family_registry_rel_path,
+            expected_pre_hash=get_pre_hash(family_registry_rel_path),
+            patch_strategy="APPEND_VERSION" if family_registry_exists else "CREATE_FAMILY_REGISTRY",
+            description=f"Safely add {family_name} {version_upper} without replacing existing family versions"
         ))
 
+        if not family_registry_exists:
+            operations.append(PlacementFileOperation(
+                action=PlacementFileAction.PATCH_REGISTRY,
+                source_filename=integration_filename,
+                source_sha256=compute_sha256(f"patch_registry:{family_lower}Registry"),
+                target_path=registry_rel_path,
+                expected_pre_hash=get_pre_hash(registry_rel_path),
+                patch_strategy="REGISTER_BLOCK",
+                description=f"Register new {family_lower} family in Tutorial Composer index.ts"
+            ))
+
         # Add Types Union Patch Operation
-        operations.append(PlacementFileOperation(
-            action=PlacementFileAction.PATCH_TYPES,
-            source_filename="tutorial-composer.service.ts" if has_types_signal else "types",
-            source_sha256=compute_sha256(f"patch_types:{family_lower}"),
-            target_path=types_rel_path,
-            expected_pre_hash=get_pre_hash(types_rel_path),
-            patch_strategy="UNION_MEMBER",
-            description=f"Surgically add '{family_lower}' to TutorialPageContentType union"
-        ))
+        if f"'{family_lower}'" not in (ws / types_rel_path).read_text(encoding='utf-8'):
+            operations.append(PlacementFileOperation(
+                action=PlacementFileAction.PATCH_TYPES,
+                source_filename=integration_filename,
+                source_sha256=compute_sha256(f"patch_types:{family_lower}"),
+                target_path=types_rel_path,
+                expected_pre_hash=get_pre_hash(types_rel_path),
+                patch_strategy="UNION_MEMBER",
+                description=f"Surgically add '{family_lower}' to TutorialPageContentType union"
+            ))
 
         return operations
 

@@ -5,6 +5,7 @@ and fail-closed invariants.
 """
 
 import hashlib
+import json
 import re
 from typing import Tuple
 
@@ -40,10 +41,6 @@ def patch_tutorial_block_renderer(
     version_upper = version.upper()
     import_statement = f"import {{ {component_name} }} from './blocks/{component_name}';"
 
-    # Idempotency check
-    if import_statement in content and f"case '{block_type}':" in content:
-        return content
-
     # 1. Insert import after the last block import
     # Look for last import from './blocks/...'
     block_import_pattern = r"(import\s+\{[^}]+\}\s+from\s+'\./blocks/[^']+';(?:\r?\n))"
@@ -51,9 +48,70 @@ def patch_tutorial_block_renderer(
     if not matches:
         raise PatchError("Cannot find block import section in TutorialBlockRenderer.tsx")
     
-    last_match = matches[-1]
-    insert_pos = last_match.end()
-    patched_content = content[:insert_pos] + import_statement + "\n" + content[insert_pos:]
+    if import_statement in content:
+        patched_content = content
+    else:
+        last_match = matches[-1]
+        insert_pos = last_match.end()
+        patched_content = content[:insert_pos] + import_statement + "\n" + content[insert_pos:]
+
+    case_match = re.search(
+        rf"(?P<indent>[ \t]*)case\s+'{re.escape(block_type)}':\s*\{{",
+        patched_content,
+    )
+    if case_match:
+        # Locate the full family branch by balancing braces. A regex ending at the
+        # outer switch's `default` breaks after the second version introduces its
+        # own nested switch/default branch.
+        opening_brace = patched_content.find("{", case_match.start(), case_match.end())
+        depth = 0
+        closing_brace = None
+        for index in range(opening_brace, len(patched_content)):
+            if patched_content[index] == "{":
+                depth += 1
+            elif patched_content[index] == "}":
+                depth -= 1
+                if depth == 0:
+                    closing_brace = index
+                    break
+        if closing_brace is None:
+            raise PatchError(f"Cannot find the end of the existing {family} renderer branch")
+
+        body = patched_content[opening_brace + 1:closing_brace]
+        existing_versions = re.findall(
+            r"case\s+'([^']+)':\s*\n\s*return\s+<([A-Za-z0-9_]+)\s+block=",
+            body,
+        )
+        if not existing_versions:
+            prior_version = re.search(r"version\s*!==\s*['\"]([^'\"]+)['\"]", body)
+            prior_component = re.search(r"return\s+<([A-Za-z0-9_]+)\s+block=", body)
+            if not prior_version or not prior_component:
+                raise PatchError(
+                    f"Cannot safely extend existing {family} renderer branch; expected a version guard and component return"
+                )
+            existing_versions = [(prior_version.group(1), prior_component.group(1))]
+
+        if any(existing_version == version_upper for existing_version, _ in existing_versions):
+            return patched_content
+        existing_versions.append((version_upper, component_name))
+
+        indent = case_match.group("indent")
+        version_cases = "".join(
+            f"{indent}    case '{existing_version}':\n"
+            f"{indent}      return <{existing_component} block={{block as any}} depth={{depth}} theme={{theme}} className={{className}} runtimeContext={{runtimeContext}} renderChild={{renderChild}} />;\n"
+            for existing_version, existing_component in existing_versions
+        )
+        branch = (
+            f"{indent}case '{block_type}': {{\n"
+            f"{indent}  const {block_type}Version = 'version' in block ? (block as any).version : undefined;\n"
+            f"{indent}  switch ({block_type}Version) {{\n"
+            f"{version_cases}"
+            f"{indent}    default:\n"
+            f"{indent}      throw new Error(`Unsupported {family} version: ${{String({block_type}Version)}}`);\n"
+            f"{indent}  }}\n"
+            f"{indent}}}"
+        )
+        return patched_content[:case_match.start()] + branch + patched_content[closing_brace + 1:]
 
     # 2. Insert switch case before 'default:'
     switch_branch = (
@@ -123,6 +181,73 @@ def patch_tutorial_composer_registry(
     
     final_content = patched_content[:match.start()] + replacement + patched_content[match.end():]
     return final_content
+
+
+def patch_family_registry(
+    content: str,
+    family: str,
+    version: str,
+    metadata: dict,
+) -> str:
+    """Append one version to a family registry without replacing existing versions."""
+    version_upper = version.upper()
+    if re.search(rf"\bcode:\s*['\"]{re.escape(version_upper)}['\"]", content):
+        return content
+
+    versions_match = re.search(r"versions\s*:\s*\[", content)
+    if not versions_match:
+        raise PatchError("Cannot find versions array in family registry")
+
+    depth = 1
+    index = versions_match.end()
+    while index < len(content) and depth:
+        if content[index] == "[":
+            depth += 1
+        elif content[index] == "]":
+            depth -= 1
+        index += 1
+    if depth:
+        raise PatchError("Cannot find end of versions array in family registry")
+
+    payload = metadata.get("defaultPayload", {})
+    if not isinstance(payload, dict):
+        raise PatchError("block.integration.json defaultPayload must be an object")
+    payload_json = json.dumps(payload, indent=8, ensure_ascii=True)
+    entry = f"""
+    {{
+      id: '{metadata.get('registryVersionId') or version_upper.lower()}',
+      code: '{version_upper}',
+      label: {json.dumps(metadata.get('label') or f'{version_upper} - {family}')},
+      description: {json.dumps(metadata.get('description') or f'{family} block version {version_upper}')},
+      getDefaultPayload: () => ({payload_json}),
+    }},"""
+    return content[:index - 1].rstrip() + entry + "\n  " + content[index - 1:]
+
+
+def create_family_registry(family: str, version: str, metadata: dict) -> str:
+    """Create a registry only when the block family is genuinely new."""
+    family_lower = family.lower()
+    registry_name = f"{family_lower}Registry"
+    payload = metadata.get("defaultPayload", {})
+    if not isinstance(payload, dict):
+        raise PatchError("block.integration.json defaultPayload must be an object")
+    payload_json = json.dumps(payload, indent=8, ensure_ascii=True)
+    return f"""import type {{ BlockRegistryEntry }} from '../types';
+
+export const {registry_name}: BlockRegistryEntry = {{
+  id: '{family_lower}',
+  label: {json.dumps(family)},
+  versions: [
+    {{
+      id: '{metadata.get('registryVersionId') or version.lower()}',
+      code: '{version.upper()}',
+      label: {json.dumps(metadata.get('label') or f'{version.upper()} - {family}')},
+      description: {json.dumps(metadata.get('description') or f'{family} block version {version.upper()}')},
+      getDefaultPayload: () => ({payload_json}),
+    }},
+  ],
+}};
+"""
 
 
 def patch_tutorial_page_content_types(

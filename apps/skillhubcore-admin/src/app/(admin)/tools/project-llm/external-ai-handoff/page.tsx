@@ -171,7 +171,7 @@ All tutorial blocks in the platform belong to a unified tutorial page. Your comp
 --------------------------------------------------------------------------------
 MANDATORY PACKAGE DELIVERABLE: SINGLE ZIP ARCHIVE
 --------------------------------------------------------------------------------
-You must package your output as a single .zip archive containing EXACTLY these files at the root of the ZIP (do NOT wrap them in a subfolder):
+You must package your output as a single .zip archive containing the six required files below at the root of the ZIP (do NOT wrap them in a subfolder). preview.html is optional.
 
 1. ${componentName}.tsx (Primary React UI Block Component)
    - Canonical monorepo imports:
@@ -209,32 +209,38 @@ You must package your output as a single .zip archive containing EXACTLY these f
 4. ${familyLower}-${versionLower}.schema.ts (TypeScript Type Contract)
    - Export interfaces representing the block payload and content structure.
 
-5. registry.ts (Tutorial Composer Registry Entry)
-   - Must export the exact registry variable:
-     import type { BlockRegistryEntry } from '../types';
+5. block.integration.json (Portable Integration Metadata)
+   - This is the ONLY integration artifact. Do not provide registry, renderer, Composer, or shared type files.
+   - It MUST be valid JSON with this exact shape:
+     {
+       "family": "${targetFamily}",
+       "version": "${versionUpper}",
+       "typeId": "${familyLower}",
+       "componentFile": "${componentName}.tsx",
+       "componentExport": "${componentName}",
+       "registryVersionId": "${versionLower}",
+       "label": "${versionUpper} - ${targetFamily}",
+       "description": "Short user-facing description",
+       "defaultPayload": { "title": "Example", "objectives": [] }
+     }
+   - defaultPayload MUST satisfy your supplied schema.
 
-     export const ${registryVar}: BlockRegistryEntry = {
-       id: '${familyLower}',
-       label: '${targetFamily}',
-       versions: [
-         {
-           id: 'v1',
-           code: '${versionUpper}',
-           label: '${versionUpper} - ${targetFamily}',
-           description: '${targetFamily} block version ${versionUpper}',
-           getDefaultPayload: () => ({
-             // Valid sample payload matching your schema
-           }),
-         },
-       ],
-     };
-
-6. preview.html (Interactive Prototype)
-   - Standalone HTML document demonstrating the visual presentation and responsiveness.
-   - Must include <article data-block-id="preview-1" data-block-type="${familyLower}" data-block-version="${versionUpper}">.
-
-7. README.md (Implementation Documentation)
+6. README.md (Implementation Documentation)
    - Brief summary of cognitive domain, design patterns, and acceptance criteria.
+
+7. preview.html (Optional review-only prototype)
+   - This file is optional and is never placed into the application.
+   - If included, it must include <article data-block-id="preview-1" data-block-type="${familyLower}" data-block-version="${versionUpper}">.
+
+--------------------------------------------------------------------------------
+SHARED-INTEGRATION BOUNDARY (NON-NEGOTIABLE)
+--------------------------------------------------------------------------------
+You are creating a portable candidate package, not modifying this repository.
+
+- Do NOT include registry.ts, TutorialBlockRenderer.tsx, tutorial-composer.service.ts, shared type-union files, navigation files, progress/status files, or API clients.
+- Do NOT replace, remove, or redefine existing versions in the '${familyLower}' family.
+- Project LLM alone merges this version into the family registry, extends renderer dispatch, preserves existing versions, and runs all placement and Composer verification.
+- Your package must work without repository access: use only the imports, contract fields, and file names specified in this prompt.
 
 --------------------------------------------------------------------------------
 IMMUTABLE BACKEND CONTRACT SPECIFICATION:
@@ -267,7 +273,7 @@ VERIFICATION GATES & COMPLIANCE ARCHITECTURE
 3. Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (2xl-4xl title, text-base/lg intro, Lucide icons)
 4. Strict Typing Gate: zero 'any' types in props or block interfaces
 5. Repository Integration Gate: ${componentName}.tsx placed in packages/ui/src/tutorial/blocks/
-6. Composer Registry Gate: ${registryVar} registered in registry/entries/${familyLower}.registry.ts
+6. Composer Registry Gate: Project LLM merges ${versionUpper} into the existing ${familyLower} registry without removing other versions
 7. Automated Tests Gate: Passing unit test suite in ${componentName}.test.tsx
 
 IMMUTABLE CONTRACT JSON:

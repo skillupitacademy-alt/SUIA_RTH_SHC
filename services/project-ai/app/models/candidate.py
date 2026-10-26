@@ -120,6 +120,7 @@ class PlacementFileAction(str, Enum):
     """Action to take on a candidate or repository file."""
     CREATE = "CREATE"
     PATCH_RENDERER = "PATCH_RENDERER"
+    PATCH_FAMILY_REGISTRY = "PATCH_FAMILY_REGISTRY"
     PATCH_REGISTRY = "PATCH_REGISTRY"
     PATCH_TYPES = "PATCH_TYPES"
     SKIP = "SKIP"
