@@ -30,109 +30,42 @@ def patch_tutorial_block_renderer(
     component_name: str
 ) -> str:
     """
-    Surgically insert a component import and switch-case branch into TutorialBlockRenderer.tsx.
-    
-    Invariants:
-    1. If the block component is already imported or handled, fail or keep idempotent.
-    2. Import is added with other block imports (before helper functions).
-    3. Switch-case is inserted before the `default:` branch.
+    Register a generated component in the declarative renderer table.
+
+    The target is generatedBlockRenderers.tsx, deliberately kept as an append-only
+    Project LLM patch surface. This avoids parsing or rewriting the runtime renderer.
     """
     block_type = family.lower()
     version_upper = version.upper()
     import_statement = f"import {{ {component_name} }} from './blocks/{component_name}';"
+    entry = (
+        f"  {{ family: '{block_type}', version: '{version_upper}', component: {component_name} }},"
+    )
 
-    # 1. Insert import after the last block import
-    # Look for last import from './blocks/...'
+    if entry in content:
+        return content
+
+    # Keep imports deterministic and adjacent to the generated renderer contract.
     block_import_pattern = r"(import\s+\{[^}]+\}\s+from\s+'\./blocks/[^']+';(?:\r?\n))"
     matches = list(re.finditer(block_import_pattern, content))
-    if not matches:
-        raise PatchError("Cannot find block import section in TutorialBlockRenderer.tsx")
-    
-    if import_statement in content:
-        patched_content = content
+    if matches:
+        if import_statement in content:
+            patched_content = content
+        else:
+            insert_pos = matches[-1].end()
+            patched_content = content[:insert_pos] + import_statement + "\n" + content[insert_pos:]
     else:
-        last_match = matches[-1]
-        insert_pos = last_match.end()
-        patched_content = content[:insert_pos] + import_statement + "\n" + content[insert_pos:]
+        # The generated file starts with type-only imports, so insert the first
+        # value import immediately before the exported registration interface.
+        interface_match = re.search(r"export\s+interface\s+GeneratedBlockRenderer", content)
+        if not interface_match:
+            raise PatchError("Cannot find GeneratedBlockRenderer declaration")
+        patched_content = content[:interface_match.start()] + import_statement + "\n" + content[interface_match.start():]
 
-    case_match = re.search(
-        rf"(?P<indent>[ \t]*)case\s+'{re.escape(block_type)}':\s*\{{",
-        patched_content,
-    )
-    if case_match:
-        # Locate the full family branch by balancing braces. A regex ending at the
-        # outer switch's `default` breaks after the second version introduces its
-        # own nested switch/default branch.
-        opening_brace = patched_content.find("{", case_match.start(), case_match.end())
-        depth = 0
-        closing_brace = None
-        for index in range(opening_brace, len(patched_content)):
-            if patched_content[index] == "{":
-                depth += 1
-            elif patched_content[index] == "}":
-                depth -= 1
-                if depth == 0:
-                    closing_brace = index
-                    break
-        if closing_brace is None:
-            raise PatchError(f"Cannot find the end of the existing {family} renderer branch")
-
-        body = patched_content[opening_brace + 1:closing_brace]
-        existing_versions = re.findall(
-            r"case\s+'([^']+)':\s*\n\s*return\s+<([A-Za-z0-9_]+)\s+block=",
-            body,
-        )
-        if not existing_versions:
-            prior_version = re.search(r"version\s*!==\s*['\"]([^'\"]+)['\"]", body)
-            prior_component = re.search(r"return\s+<([A-Za-z0-9_]+)\s+block=", body)
-            if not prior_version or not prior_component:
-                raise PatchError(
-                    f"Cannot safely extend existing {family} renderer branch; expected a version guard and component return"
-                )
-            existing_versions = [(prior_version.group(1), prior_component.group(1))]
-
-        if any(existing_version == version_upper for existing_version, _ in existing_versions):
-            return patched_content
-        existing_versions.append((version_upper, component_name))
-
-        indent = case_match.group("indent")
-        version_cases = "".join(
-            f"{indent}    case '{existing_version}':\n"
-            f"{indent}      return <{existing_component} block={{block as any}} depth={{depth}} theme={{theme}} className={{className}} runtimeContext={{runtimeContext}} renderChild={{renderChild}} />;\n"
-            for existing_version, existing_component in existing_versions
-        )
-        branch = (
-            f"{indent}case '{block_type}': {{\n"
-            f"{indent}  const {block_type}Version = 'version' in block ? (block as any).version : undefined;\n"
-            f"{indent}  switch ({block_type}Version) {{\n"
-            f"{version_cases}"
-            f"{indent}    default:\n"
-            f"{indent}      throw new Error(`Unsupported {family} version: ${{String({block_type}Version)}}`);\n"
-            f"{indent}  }}\n"
-            f"{indent}}}"
-        )
-        return patched_content[:case_match.start()] + branch + patched_content[closing_brace + 1:]
-
-    # 2. Insert switch case before 'default:'
-    switch_branch = (
-        f"      case '{block_type}': {{\n"
-        f"        if (!('version' in block) || (block as any).version !== '{version_upper}') {{\n"
-        f"          throw new Error(\n"
-        f"            `Unsupported {family} version. {version_upper} is required. Received: ${{('version' in block) ? (block as any).version : 'no version'}}`\n"
-        f"          );\n"
-        f"        }}\n"
-        f"        return <{component_name} block={{block as any}} depth={{depth}} theme={{theme}} className={{className}} runtimeContext={{runtimeContext}} renderChild={{renderChild}} />;\n"
-        f"      }}\n"
-    )
-
-    default_case_pattern = r"(\r?\n\s+default:\s*\{)"
-    default_match = re.search(default_case_pattern, patched_content)
-    if not default_match:
-        raise PatchError("Cannot find 'default:' branch in TutorialBlockRenderer.tsx switch statement")
-    
-    insert_pos_switch = default_match.start()
-    final_content = patched_content[:insert_pos_switch] + "\n" + switch_branch + patched_content[insert_pos_switch:]
-    return final_content
+    marker = "  // PROJECT_LLM_GENERATED_RENDERERS"
+    if marker not in patched_content:
+        raise PatchError("Cannot find PROJECT_LLM_GENERATED_RENDERERS marker")
+    return patched_content.replace(marker, f"{entry}\n{marker}", 1)
 
 
 def patch_tutorial_composer_registry(

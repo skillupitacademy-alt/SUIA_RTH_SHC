@@ -8,15 +8,11 @@
 
 import { TutorialBlockRenderer } from '@quiz/ui';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { TutorialSummaryContent } from '@/share-branding/LearningExperience/components/TutorialSummaryContent';
 import type {
   BrandTutorialTheme,
   TutorialPageContentType,
   TutorialSidebarBrandId,
-  TutorialSummaryPayload,
   TutorialBlock,
-  DefinitionD1AuthorContent,
-  IntroductionI1AuthorContent,
 } from '@quiz/types';
 
 import { themeForBrand } from '../theme/brandTheme';
@@ -135,18 +131,6 @@ function renderBlockContent(
 
   try {
     const resetKey = getPreviewResetKey(blockInfo.id, effectiveType, effectiveVersion, payload);
-
-    // If payload is a rich S1 revision table summary, render TutorialSummaryContent.
-    if (effectiveType === 'summary' && (payload.revisionTable || payload.summary)) {
-      return (
-        <PreviewErrorBoundary resetKey={resetKey}>
-          <TutorialSummaryContent
-            payload={payload as TutorialSummaryPayload}
-            theme={theme}
-          />
-        </PreviewErrorBoundary>
-      );
-    }
 
     // Canonical TutorialBlockRenderer for all blocks.
     const tutorialBlock = toTutorialBlock({

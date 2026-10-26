@@ -13,6 +13,7 @@ import { Code2, Copy, Lightbulb, MessageCircle, Monitor, Star, Terminal, Check, 
 import type { BlockComponentProps } from '../types';
 import type { CodeC1Block as CodeC1BlockType } from '@quiz/types';
 import { getThemeColor, withAlpha, DEFAULT_THEME } from '../theme-utils';
+import { SafeHtml } from '../../SafeHtml';
 
 export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: BlockComponentProps<CodeC1BlockType>) {
   const page = block.content.page;
@@ -24,10 +25,6 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
   const blockId = runtimeContext?.blockId ?? block.id;
   const blockType = runtimeContext?.blockType ?? 'code';
   const blockVersion = runtimeContext?.blockVersion ?? 'C1';
-
-  function html(value: string) {
-    return { __html: value };
-  }
 
   function variantStyles(variant: string | undefined) {
     if (variant === 'value') {
@@ -140,7 +137,7 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
                 <code className="inline-flex max-w-full justify-self-start rounded-md px-2.5 py-1.5 font-mono text-sm font-bold leading-snug" style={{ color: theme.primaryDark, backgroundColor: withAlpha(theme.primary, '14') }}>
                   {step.focus}
                 </code>
-                <div className="px-5 py-[17px] pl-2.5 text-base font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }} dangerouslySetInnerHTML={html(step.description)} />
+                <SafeHtml as="div" html={step.description} className="px-5 py-[17px] pl-2.5 text-base font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }} />
               </div>
             ))}
           </div>
@@ -207,7 +204,7 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
           </div>
           <ul className="flex list-disc flex-col gap-2 pl-5 text-[15px] font-medium leading-[1.55] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }}>
             {takeawayItems.map((item, index) => (
-              <li key={index} dangerouslySetInnerHTML={html(item)} />
+              <SafeHtml as="li" key={index} html={item} />
             ))}
           </ul>
           <Lightbulb className="absolute bottom-[18px] right-[25px] h-12 w-12" style={{ color: getThemeColor(theme, 'amber', 500) }} />
