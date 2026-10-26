@@ -274,9 +274,40 @@ class PlacementExecutor:
                             raise PlacementExecutionError(f"Missing source file {op.source_filename} for CREATE operation")
 
                         # Harmonize registry export if writing registry entry
-                        if op.target_path.endswith('.registry.ts') and 'Registry' not in content:
+                        if op.target_path.endswith('.registry.ts'):
                             reg_var_name = f"{manifest.blockFamily.value.lower()}Registry"
-                            content = f"""import type {{ BlockRegistryEntry }} from '../types';
+                            if 'BlockRegistryEntry' not in content or reg_var_name not in content:
+                                if target_file_path.exists():
+                                    existing = target_file_path.read_text(encoding='utf-8')
+                                    if 'BlockRegistryEntry' in existing and reg_var_name in existing:
+                                        content = existing
+                                    else:
+                                        content = f"""import type {{ BlockRegistryEntry }} from '../types';
+
+export const {reg_var_name}: BlockRegistryEntry = {{
+  id: '{manifest.blockFamily.value.lower()}',
+  label: '{manifest.blockFamily.value}',
+  versions: [
+    {{
+      id: 'v1',
+      code: '{manifest.blockVersion}',
+      label: '{manifest.blockVersion} - {manifest.blockFamily.value}',
+      description: '{manifest.blockFamily.value} block integration',
+      getDefaultPayload: () => ({{
+        eyebrow: 'LEARNING OBJECTIVES',
+        title: 'What You Will Learn',
+        introduction: 'By the end of this lesson, you will be able to:',
+        objectives: [
+          {{ id: '1', text: 'Understand core concepts' }},
+          {{ id: '2', text: 'Apply principles in practice' }},
+        ],
+      }}),
+    }},
+  ],
+}};
+"""
+                                else:
+                                    content = f"""import type {{ BlockRegistryEntry }} from '../types';
 
 export const {reg_var_name}: BlockRegistryEntry = {{
   id: '{manifest.blockFamily.value.lower()}',
