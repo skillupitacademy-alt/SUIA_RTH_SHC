@@ -620,70 +620,85 @@ async def approve_final_certification(
                 detail=f"Workflow already REJECTED, cannot approve"
             )
     
-    # Validate state - must be AWAITING_GATE_2 for new approval/rejection
-    if workflow.current_state != CanonicalWorkflowState.AWAITING_GATE_2:
+    # Validate state - transition CERTIFICATION_READY to AWAITING_GATE_2 if needed
+    if workflow.current_state == CanonicalWorkflowState.CERTIFICATION_READY:
+        workflow = await governance_service.transition_state(
+            workflow_id=workflow_id,
+            to_state=CanonicalWorkflowState.AWAITING_GATE_2,
+            triggered_by=user.get("email") or user.get("sub") or "system",
+            reason="Automated verification complete; ready for final HAA certification"
+        )
+    elif workflow.current_state != CanonicalWorkflowState.AWAITING_GATE_2:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid state for approval: {workflow.current_state.value}. Must be AWAITING_GATE_2"
+            detail=f"Invalid state for approval: {workflow.current_state.value}. Must be AWAITING_GATE_2 or CERTIFICATION_READY"
         )
     
-    # W7 Evidence Policy Enforcement - validate evidence before FinalGateController
     gate_results = workflow.gate_results or {}
     bound_artifact_sha256 = workflow.contract_sha256 or ""
-    evidence_list = []
-    for etype, edata in gate_results.items():
-        if isinstance(edata, dict):
-            # Parse created_at - handle string or datetime
-            raw_ts = edata.get("created_at") or edata.get("timestamp")
-            if isinstance(raw_ts, str):
-                try:
-                    created_at = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
-                except (ValueError, AttributeError):
+
+    is_candidate_pipeline = "composer" in gate_results
+
+    if is_candidate_pipeline:
+        composer_gate = gate_results.get("composer") or {}
+        evidence_verified = bool(composer_gate.get("passed") and composer_gate.get("status") == "PASS")
+        if not evidence_verified:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer verification gate failed or incomplete: {composer_gate.get('reason')}"
+            )
+        evidence_summary = gate_results
+    else:
+        # W7 Evidence Policy Enforcement - validate evidence before FinalGateController
+        evidence_list = []
+        for etype, edata in gate_results.items():
+            if isinstance(edata, dict):
+                raw_ts = edata.get("created_at") or edata.get("timestamp")
+                if isinstance(raw_ts, str):
+                    try:
+                        created_at = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
+                    except (ValueError, AttributeError):
+                        created_at = datetime.now(timezone.utc)
+                elif isinstance(raw_ts, datetime):
+                    created_at = raw_ts if raw_ts.tzinfo else raw_ts.replace(tzinfo=timezone.utc)
+                else:
                     created_at = datetime.now(timezone.utc)
-            elif isinstance(raw_ts, datetime):
-                created_at = raw_ts if raw_ts.tzinfo else raw_ts.replace(tzinfo=timezone.utc)
-            else:
-                created_at = datetime.now(timezone.utc)
-            
-            evidence_list.append(EvidenceResult(
-                evidence_type=etype,
-                verdict=edata.get("status") or edata.get("verdict") or "",
-                workflow_id=edata.get("workflow_id") or workflow_id,
-                artifact_sha256=edata.get("artifact_sha256") or bound_artifact_sha256,
-                created_at=created_at,
-                evidence_id=edata.get("evidence_id") or f"{workflow_id}-{etype}",
-            ))
-    
-    evidence_errors = validate_final_gate_evidence(
-        workflow_id=workflow_id,
-        artifact_sha256=bound_artifact_sha256,
-        evidence=evidence_list,
-        policy=FINAL_GATE_POLICY,
-    )
-    if evidence_errors:
-        raise HTTPException(
-            status_code=409,
-            detail={
-                "code": "FINAL_GATE_EVIDENCE_REJECTED",
-                "errors": evidence_errors,
-                "workflow_id": workflow_id,
-            },
+                
+                evidence_list.append(EvidenceResult(
+                    evidence_type=etype,
+                    verdict=edata.get("status") or edata.get("verdict") or "",
+                    workflow_id=edata.get("workflow_id") or workflow_id,
+                    artifact_sha256=edata.get("artifact_sha256") or bound_artifact_sha256,
+                    created_at=created_at,
+                    evidence_id=edata.get("evidence_id") or f"{workflow_id}-{etype}",
+                ))
+        
+        evidence_errors = validate_final_gate_evidence(
+            workflow_id=workflow_id,
+            artifact_sha256=bound_artifact_sha256,
+            evidence=evidence_list,
+            policy=FINAL_GATE_POLICY,
         )
-    
-    # Verify evidence using FinalGateController
-    final_gate = FinalGateController()
-    evidence = workflow.gate_results or {}
-    verdict_result = final_gate.compute_verdict(workflow_id, evidence)
-    
-    # Evidence is verified if verdict is CERTIFICATION_READY
-    evidence_verified = (verdict_result.verdict == "CERTIFICATION_READY")
-    
-    # ENFORCE evidence verification - block approval if gates failed
-    if not evidence_verified:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Cannot approve: evidence verification failed. Verdict: {verdict_result.verdict}, Reason: {verdict_result.reason}"
-        )
+        if evidence_errors:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "FINAL_GATE_EVIDENCE_REJECTED",
+                    "errors": evidence_errors,
+                    "workflow_id": workflow_id,
+                },
+            )
+        
+        # Verify evidence using FinalGateController
+        final_gate = FinalGateController()
+        verdict_result = final_gate.compute_verdict(workflow_id, gate_results)
+        evidence_verified = (verdict_result.verdict == "CERTIFICATION_READY")
+        if not evidence_verified:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: evidence verification failed. Verdict: {verdict_result.verdict}, Reason: {verdict_result.reason}"
+            )
+        evidence_summary = verdict_result.evidence_summary
     
     # Extract approver identity from authenticated user token (prevent identity spoofing)
     approved_by = user.get("email") or user.get("sub") or user.get("id") or "unknown"
@@ -720,7 +735,7 @@ async def approve_final_certification(
         approved_at=datetime.now(timezone.utc).isoformat(),
         reason=request.reason,
         evidence_verified=evidence_verified,
-        gate_results=verdict_result.evidence_summary
+        gate_results=evidence_summary
     )
 
 

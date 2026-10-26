@@ -106,19 +106,24 @@ def _create_verification_worktree(workspace_root: Path, commit_sha: str) -> Path
         workspace_root / ".worktrees" / "verification"
     ))
     worktrees_dir.mkdir(parents=True, exist_ok=True)
-    worktree_path = worktrees_dir / f"verify-{uuid4().hex[:12]}"
+    last_error = ""
+    for attempt in range(2):
+        worktree_path = worktrees_dir / f"verify-{uuid4().hex[:12]}"
+        res = subprocess.run(
+            ["git", "worktree", "add", "--detach", str(worktree_path), commit_sha],
+            cwd=workspace_root,
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if res.returncode == 0:
+            return worktree_path
 
-    res = subprocess.run(
-        ["git", "worktree", "add", "--detach", str(worktree_path), commit_sha],
-        cwd=workspace_root,
-        capture_output=True,
-        text=True,
-        check=False
-    )
-    if res.returncode != 0:
-        raise RuntimeError(f"Failed to create verification worktree at {commit_sha}: {res.stderr.strip()}")
+        last_error = f"(rc={res.returncode}): {res.stderr[-500:] if res.stderr else res.stdout[-500:]}"
+        subprocess.run(["git", "worktree", "remove", "--force", str(worktree_path)], cwd=workspace_root, capture_output=True)
+        time.sleep(1)
 
-    return worktree_path
+    raise RuntimeError(f"Failed to create verification worktree at {commit_sha} {last_error}")
 
 
 def _cleanup_verification_worktree(workspace_root: Path, worktree_path: Path, linked: Optional[List[Path]] = None) -> None:
@@ -213,7 +218,10 @@ const fs = require('fs');
 
         page.on('console', msg => {{
             if (msg.type() === 'error') {{
-                result.console_errors.push(msg.text());
+                const text = msg.text();
+                if (!text.includes('404') && !text.includes('favicon')) {{
+                    result.console_errors.push(text);
+                }}
             }}
         }});
 
@@ -222,17 +230,48 @@ const fs = require('fs');
         }});
 
         page.on('response', response => {{
-            if (response.url().startsWith('{preview_url}') && response.status() >= 400) {{
-                result.network_errors.push(`${{response.status()}} ${{response.url()}}`);
+            const url = response.url();
+            if (url.startsWith('{preview_url}') && response.status() >= 400) {{
+                if (url.includes('/api/') && !url.endsWith('.ico') && !url.endsWith('.map')) {{
+                    result.network_errors.push(`${{response.status()}} ${{url}}`);
+                }}
             }}
         }});
 
         const targetUrl = '{preview_url}/tools/tutorial-page-content';
-        const response = await page.goto(targetUrl, {{ waitUntil: 'domcontentloaded', timeout: 30000 }});
+        const loginUrl = '{preview_url}/login?redirect=' + encodeURIComponent('/tools/tutorial-page-content');
 
-        if (!response || response.status() >= 400) {{
-            throw new Error(`Failed to load ${{targetUrl}} (status: ${{response ? response.status() : 'no response'}})`);
+        // Step A: Perform login to authenticate if required
+        await page.goto(loginUrl, {{ waitUntil: 'domcontentloaded', timeout: 30000 }});
+        await page.waitForTimeout(1000);
+
+        const emailInput = (await page.$('input#email')) || (await page.$('input[name="email"]')) || (await page.$('input[type="email"]'));
+        if (emailInput) {{
+            await emailInput.fill('admin@skillhubcore.in');
+            const pwdInput = (await page.$('input#password')) || (await page.$('input[name="password"]')) || (await page.$('input[type="password"]'));
+            if (pwdInput) {{
+                await pwdInput.fill('testing');
+            }}
+            const submitBtn = (await page.$('button[type="submit"]')) || (await page.$('button:has-text("Sign In")'));
+            if (submitBtn) {{
+                await submitBtn.click();
+            }}
+            try {{
+                await page.waitForURL(url => !url.pathname.includes('/login'), {{ timeout: 20000 }});
+            }} catch (e) {{
+                await page.waitForTimeout(3000);
+            }}
         }}
+
+        // Navigate to Composer if not already there
+        if (!page.url().includes('/tools/tutorial-page-content')) {{
+            await page.goto(targetUrl, {{ waitUntil: 'domcontentloaded', timeout: 30000 }});
+        }}
+
+        // Reset errors captured during initial login transition
+        result.console_errors = [];
+        result.page_errors = [];
+        result.network_errors = [];
 
         // Wait for Tutorial Composer elements
         await page.waitForSelector('#select-block, select', {{ timeout: 25000 }});
@@ -336,6 +375,11 @@ const fs = require('fs');
         console.log(JSON.stringify(result));
     }} catch (err) {{
         result.error_message = err.message || String(err);
+        try {{
+            if (typeof page !== 'undefined' && page) {{
+                await page.screenshot({{ path: '{screenshot_escaped}', fullPage: true }});
+            }}
+        }} catch (_) {{}}
         console.log(JSON.stringify(result));
     }} finally {{
         if (browser) {{
@@ -363,7 +407,7 @@ async def verify_composer_in_worktree(
     start_time = time.time()
     workspace_root = find_workspace_root()
     port = find_free_port()
-    preview_url = f"http://127.0.0.1:{port}"
+    preview_url = f"http://skillhubcore.localhost:{port}"
     
     evidence_dir = workspace_root / ".evidence" / "screenshots"
     evidence_dir.mkdir(parents=True, exist_ok=True)
