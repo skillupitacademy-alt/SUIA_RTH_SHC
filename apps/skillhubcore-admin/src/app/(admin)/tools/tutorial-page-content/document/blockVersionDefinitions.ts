@@ -312,7 +312,7 @@ const definitions: BlockVersionDefinition[] = [
   })),
 ];
 
-const defaultVersionByType: Record<TutorialPageContentType, string> = {
+const defaultVersionByType: Record<string, string> = {
   definition: 'D1',
   code: 'C1',
   summary: 'S1',

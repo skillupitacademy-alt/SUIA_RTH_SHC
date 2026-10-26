@@ -330,34 +330,26 @@ class TestRollbackCapture:
 class TestTargetValidation:
     """Tests for target family/version validation."""
     
-    def test_validates_canonical_introduction_targets(self, temp_repo):
-        """Accept canonical Introduction targets."""
+    def test_accepts_valid_extensible_block_targets(self, temp_repo):
+        """Approved new families and versions are not blocked by a stale static catalog."""
         adapter = RepositoryAdapter(temp_repo, dry_run=True)
-        
-        for version in ["I1", "I2", "I3", "I4", "I5", "I6", "I7"]:
-            adapter.validate_target("Introduction", version)  # Should not raise
+        adapter.validate_target("Objective", "O2")
+        adapter.validate_target("Interactive-Exercise", "X12")
     
-    def test_validates_canonical_tutorial_targets(self, temp_repo):
-        """Accept canonical Tutorial targets."""
-        adapter = RepositoryAdapter(temp_repo, dry_run=True)
-        
-        for version in ["T1", "T2", "T3", "T4", "T5"]:
-            adapter.validate_target("Tutorial", version)  # Should not raise
-    
-    def test_rejects_unknown_family(self, temp_repo):
-        """Reject unknown block families."""
+    def test_rejects_invalid_family(self, temp_repo):
+        """Reject unsafe/non-identifier family names."""
         adapter = RepositoryAdapter(temp_repo, dry_run=True)
         
         with pytest.raises(RepositoryAdapterError) as exc_info:
-            adapter.validate_target("UnknownFamily", "X1")
+            adapter.validate_target("../UnknownFamily", "X1")
         assert "family" in str(exc_info.value).lower() or "invalid" in str(exc_info.value).lower()
     
-    def test_rejects_unknown_version(self, temp_repo):
-        """Reject unknown block versions."""
+    def test_rejects_invalid_version(self, temp_repo):
+        """Reject unsafe/non-identifier version names."""
         adapter = RepositoryAdapter(temp_repo, dry_run=True)
         
         with pytest.raises(RepositoryAdapterError) as exc_info:
-            adapter.validate_target("Introduction", "I99")
+            adapter.validate_target("Introduction", "I 99")
         assert "version" in str(exc_info.value).lower() or "invalid" in str(exc_info.value).lower()
 
 

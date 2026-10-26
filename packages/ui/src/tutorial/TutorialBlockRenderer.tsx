@@ -52,6 +52,14 @@ function getVersionedRenderer(block: TutorialBlock): VersionedRendererEntry | un
     ?? GENERATED_BLOCK_RENDERERS.find((entry) => entry.family === family && entry.version === version);
 }
 
+/** True when a family/version has a registered runtime component. */
+export function hasRegisteredBlockRenderer(family: string, version: string): boolean {
+  return Boolean(
+    STATIC_VERSIONED_RENDERERS[family]?.[version]
+    ?? GENERATED_BLOCK_RENDERERS.find((entry) => entry.family === family && entry.version === version)
+  );
+}
+
 function isVersionedFamily(family: string): boolean {
   return family in STATIC_VERSIONED_RENDERERS
     || GENERATED_BLOCK_RENDERERS.some((entry) => entry.family === family);

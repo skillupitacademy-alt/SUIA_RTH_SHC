@@ -103,16 +103,6 @@ class RepositoryAdapter:
     # Allowed file extensions
     ALLOWED_EXTENSIONS = [".ts", ".tsx", ".json", ".css", ".md"]
     
-    # Canonical M2.9 target families and versions
-    CANONICAL_TARGETS = {
-        "Introduction": ["I1", "I2", "I3", "I4", "I5", "I6", "I7"],
-        "Tutorial": ["T1", "T2", "T3", "T4", "T5"],
-        "Assessment": ["A1", "Q1"],
-        "Media": ["M1"],
-        "Summary": ["S1"],
-        "Custom": ["C1"],
-    }
-    
     def __init__(self, repository_root: str | Path, dry_run: bool = False):
         """
         Initialize repository adapter.
@@ -210,7 +200,7 @@ class RepositoryAdapter:
     
     def validate_target(self, family: str, version: str) -> None:
         """
-        Validate target family/version against canonical M2.9 targets.
+        Validate a generic block family/version identifier.
         
         Args:
             family: Block family (e.g., "Introduction")
@@ -219,16 +209,15 @@ class RepositoryAdapter:
         Raises:
             RepositoryAdapterError: If target is invalid
         """
-        if family not in self.CANONICAL_TARGETS:
+        normalized_family = family.strip()
+        normalized_version = version.strip().upper()
+        if not normalized_family or not normalized_family.replace("_", "").replace("-", "").isalnum():
             raise RepositoryAdapterError(
-                f"Unknown block family: {family}. "
-                f"Canonical families: {', '.join(self.CANONICAL_TARGETS.keys())}"
+                f"Invalid block family: {family!r}. Families must be non-empty alphanumeric identifiers."
             )
-        
-        if version not in self.CANONICAL_TARGETS[family]:
+        if not normalized_version or not normalized_version.replace("_", "").replace("-", "").isalnum():
             raise RepositoryAdapterError(
-                f"Invalid version {version} for family {family}. "
-                f"Canonical versions: {', '.join(self.CANONICAL_TARGETS[family])}"
+                f"Invalid block version: {version!r}. Versions must be non-empty alphanumeric identifiers."
             )
     
     def compute_file_hash(self, content: str) -> str:

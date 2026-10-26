@@ -14,43 +14,19 @@ import type {
   TutorialBlockRuntimeContext,
 } from '../types';
 import { withAlpha, DEFAULT_THEME } from '../theme-utils';
+import type {
+  ObjectiveO2BlockData,
+  ObjectiveO2ContentPayload,
+  ObjectiveO2Item,
+  ObjectiveO2StageKey,
+} from '../types/objective-o2.schema';
 
-export type ObjectiveO2StageKey = 'know' | 'understand' | 'apply';
-
-export interface ObjectiveO2Item {
-  id: string;
-  text: string;
-  stage?: ObjectiveO2StageKey;
-  verb?: string;
-  [key: string]: unknown;
-}
-
-export interface ObjectiveO2Stage {
-  label?: string;
-  description?: string;
-  items: Array<string | ObjectiveO2Item>;
-}
-
-export interface ObjectiveO2BlockContent {
-  eyebrow?: string;
-  title?: string;
-  introduction?: string;
-  stages?: {
-    know?: ObjectiveO2Stage;
-    understand?: ObjectiveO2Stage;
-    apply?: ObjectiveO2Stage;
-  };
-  objectives?: Array<ObjectiveO2Item>;
-  [key: string]: unknown;
-}
-
-export interface ObjectiveO2BlockData {
-  id: string;
-  type: string;
-  version: string;
-  content?: ObjectiveO2BlockContent;
-  [key: string]: unknown;
-}
+export type {
+  ObjectiveO2BlockData,
+  ObjectiveO2ContentPayload as ObjectiveO2BlockContent,
+  ObjectiveO2Item,
+  ObjectiveO2StageKey,
+} from '../types/objective-o2.schema';
 
 interface NormalizedStageItem {
   id: string;
@@ -87,7 +63,7 @@ const DEFAULT_STAGE_META: Record<
   },
 };
 
-function normalizeO2Stages(content?: ObjectiveO2BlockContent): NormalizedStage[] {
+function normalizeO2Stages(content?: ObjectiveO2ContentPayload): NormalizedStage[] {
   const keys: ObjectiveO2StageKey[] = ['know', 'understand', 'apply'];
 
   const hasExplicitStages =
