@@ -239,7 +239,7 @@ function IntroductionI1View({
             return (
               <React.Fragment key={index}>
                 <div
-                  className={`flex-1 w-full rounded-2xl p-4 text-center space-y-2 border-2 border-t border-white/80 dark:border-white/10 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 transition-all duration-300 backdrop-blur-md cursor-pointer ${
+                  className={`flex-1 w-full rounded-2xl p-4 text-center space-y-2 border-2 border-t border-white/80 dark:border-white/10 shadow-xl hover:shadow-2xl motion-safe:transition-all motion-safe:duration-300 motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
                     card.highlight ? 'ring-2 ring-offset-2' : ''
                   }`}
                   style={

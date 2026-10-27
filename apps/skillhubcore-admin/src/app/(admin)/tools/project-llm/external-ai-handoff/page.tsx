@@ -147,14 +147,26 @@ All tutorial blocks in the platform belong to a unified tutorial page. Your comp
    - Monospace / Code Elements:
      Class: "font-mono text-xs sm:text-sm"
 
-3. Cards, Panels, & Elevated Containers:
-   - Elevated Card Standard:
-     Class: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 transition-all duration-300 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 backdrop-blur-md cursor-pointer"
-     Style: { backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }
-     Composition: Candidates should compose CardSurface from '@quiz/ui' (defaulting to dashboard elevation).
-   - NO LEFT-SIDE BORDER ALLOWED:
-     Asymmetrical left borders ('border-l-*' or 'borderLeftColor') are STRICTLY PROHIBITED for callouts, takeaways, quotes, and tips.
-     Always use symmetric, elevated rounded card containers ('rounded-2xl border border-t border-white/80 ... shadow-xl hover:shadow-2xl').
+3. Cards, Panels, & Elevated Containers (3-Tier WCAG Standard):
+   - Tier 1: Interactive & Progression Modules (elevation="dashboard")
+     * Use case: Clickable cards, flow cards, practice items, stage progression.
+     * Classes: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl hover:shadow-2xl motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+     * Style: { backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }
+     * Accessibility: Must include visible keyboard focus ring and motion-safe hover guards (WCAG 2.3.3 & 2.4.7).
+   - Tier 2: Static Editorial Highlights & Takeaways (elevation="elevated")
+     * Use case: CalloutBanner takeaways, hero definitions, key insights.
+     * Classes: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl backdrop-blur-md motion-safe:-translate-y-0.5 motion-safe:transition-all"
+     * Rule: Do NOT add misleading cursor-pointer or aggressive hover jumps to static non-clickable text (WCAG 1.4.1).
+   - Tier 3: Dense Content & Code (elevation="subtle" or "flat")
+     * Use case: TerminalWindow code blocks, dense tables, long continuous prose.
+     * Rule: Keep flat or subtle border (shadow-sm or flat) to prevent cognitive fatigue and optical clutter.
+   - WCAG Non-Text Contrast (SC 1.4.11):
+     * NEVER rely on drop shadows alone to define boundaries; always pair with an explicit perimeter border.
+   - Strict Ban on Left-Side Borders:
+     * Asymmetrical left borders ('border-l-*' or 'borderLeftColor') are STRICTLY PROHIBITED for callouts, takeaways, quotes, and tips.
+     * Always use symmetric, elevated rounded card containers ('rounded-2xl border border-t border-white/80 ... shadow-xl').
+   - Composition:
+     * Candidates should compose CardSurface, CalloutBanner, and BlockShell from '@quiz/ui'.
    - Icon Badges:
      Class: "flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-xl"
      Style: { backgroundColor: withAlpha(primary, '18'), color: primary }
@@ -329,15 +341,13 @@ The persisted backend contract is authoritative. Do not invent requirements or c
    - Accent Bar: \`h-1 w-12 rounded-full\` in \`theme.primary\`
    - Intro: \`text-base sm:text-lg font-medium leading-[1.7]\`
    - Content: \`text-sm sm:text-base font-medium leading-relaxed\`
-4. **Elevated Containers & Scoped Ban on Left-Side Borders:**
+4. **Elevated Containers & 3-Tier WCAG Standards:**
    - **NO LEFT-SIDE BORDER (\`border-l-*\`) ON CONTAINERS**: Asymmetrical left-side accent borders are strictly prohibited on all callout, card, tip, takeaway, and quote containers.
-   - **Platform Dashboard Card Elevation Standard**: All card and callout containers must follow the generic elevated card architecture (as seen on the Admin Dashboard):
-     - Composed via \`@quiz/ui\` \`CardSurface\` (or matching styling).
-     - Symmetric curvature: \`rounded-xl\` or \`rounded-2xl\`.
-     - Depth & Elevation: Rich multi-layered shadows (\`shadow-xl hover:shadow-2xl\`).
-     - Rim Lighting: Subtle top rim border (\`border-t border-white/80 dark:border-white/10\`).
-     - Surface Tactility: Translucent glassmorphism (\`backdrop-blur-md\` with \`bg-white/85 dark:bg-slate-900/85\` or brand alpha tint).
-     - Micro-interaction Lift: Smooth hover elevation (\`-translate-y-1 hover:-translate-y-2.5 transition-all duration-300 ease-out cursor-pointer\`).
+   - **3-Tier WCAG Elevation Decision Matrix**:
+     * **Tier 1: Interactive & Progression Modules (\`elevation="dashboard"\`)**: Clickable cards, flow cards, practice items, and stage progression. Use rich multi-layered shadows (\`shadow-xl hover:shadow-2xl\`), rim lighting (\`border-t border-white/80 dark:border-white/10\`), glassmorphism (\`backdrop-blur-md\`), and motion-safe hover lift (\`motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none\`). Must provide accessible keyboard focus rings (\`focus-visible:ring-2\`) and \`cursor-pointer\` (WCAG 2.3.3 & 2.4.7).
+     * **Tier 2: Static Editorial Highlights & Takeaways (\`elevation="elevated"\`)**: Core definitions and takeaway banners. Elevated for cognitive chunking with resting depth (\`shadow-xl backdrop-blur-md border-t border-white/80\`), but strictly without misleading click cursor or aggressive hover jumps (WCAG 1.4.1).
+     * **Tier 3: Dense Content & Code (\`elevation="subtle"\` or \`"flat"\`)**: Code editors and long continuous prose. Keep flat or subtle border (\`shadow-sm\` or flat) to prevent visual clutter and cognitive fatigue.
+   - **Non-Text Boundary Contrast (WCAG SC 1.4.11)**: Never rely on drop shadow alone; always pair with a distinct perimeter border (\`border border-slate-200/80\` or brand alpha) so containers remain visible on low-contrast screens and in High Contrast Mode.
    - *(Note: Chronological vertical timeline rails / connector axes, such as in TimelineBlock, are connector lines and not card containers).*
 5. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
 6. **Dual-Brand 4-Color Tokens:**

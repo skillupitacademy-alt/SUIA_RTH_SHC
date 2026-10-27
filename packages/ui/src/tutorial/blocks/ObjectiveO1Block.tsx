@@ -77,7 +77,7 @@ function ObjectiveO1View({
         {objectives.map((obj, index) => (
           <li 
             key={obj.id ?? index}
-            className="flex items-start gap-3.5 p-4 sm:p-5 rounded-xl border border-t border-white/80 dark:border-white/10 transition-all duration-300 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 backdrop-blur-md cursor-pointer"
+            className="flex items-start gap-3.5 p-4 sm:p-5 rounded-xl border border-t border-white/80 dark:border-white/10 motion-safe:transition-all motion-safe:duration-300 motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none shadow-xl hover:shadow-2xl backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             style={{ 
               backgroundColor: withAlpha(primary, '08'),
               borderColor: withAlpha(primary, '25') 

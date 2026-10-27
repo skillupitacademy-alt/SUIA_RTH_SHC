@@ -132,9 +132,9 @@ export function buildConstraints(): CreationBriefConstraint[] {
     {
       id: 'E-004',
       severity: 'REQUIRED',
-      title: 'UBRC Compatibility',
+      title: 'UBRC & UBA Look-and-Feel Standards',
       instruction:
-        'Block must implement UBRC DOM identity attributes (data-block-type, data-block-version, data-block-id).',
+        'Block must implement UBRC DOM identity attributes (data-block-type, data-block-version, data-block-id) and adhere to UBA 3-tier WCAG elevation standards (Tier 1 interactive dashboard elevation with motion-safe hover lift and visible focus ring; Tier 2 static focal elevation without misleading click cursor; Tier 3 flat/subtle for dense code/tables; no asymmetrical left borders).',
     },
     {
       id: 'E-005',
@@ -179,7 +179,7 @@ export function buildRuntimeRequirements(): string[] {
     'Block must consume existing runtime context passively via props only.',
     'Block must be compatible with TutorialDocument block rendering pipeline.',
     'Block must be routable by TutorialBlockRenderer version routing.',
-    'Block must not hard-code SkillUp or RealTutorialHub brand-specific runtime behavior.',
+    'Block must not hard-code SkillUp or RealTutorialHub brand-specific runtime behavior and must satisfy UBA 3-tier WCAG elevation matrix with motion-safe guards.',
   ];
 }
 
@@ -196,7 +196,7 @@ export function buildValidationChecklist(): string[] {
     '[ ] Block family identity preserved (familyId, versionId, familyName match corpus)',
     '[ ] Educational intent and pedagogical structure preserved',
     '[ ] Reference implementation patterns (I1, C1, D1) considered',
-    '[ ] UBRC DOM identity requirements accounted for',
+    '[ ] UBRC DOM identity and UBA 3-tier WCAG elevation standards (motion-safe, no left borders) accounted for',
     '[ ] No ILS API calls present',
     '[ ] No LSNB (navigation sidebar) infrastructure embedded',
     '[ ] No RSSB (reactive session state bridge) infrastructure embedded',
