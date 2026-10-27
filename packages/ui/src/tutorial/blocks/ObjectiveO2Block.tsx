@@ -156,6 +156,8 @@ function StageIcon({ stageKey }: { stageKey: ObjectiveO2StageKey }) {
   }
 }
 
+import { BlockShell, BlockHeader } from '../primitives';
+
 function ObjectiveO2View({
   block,
   theme,
@@ -184,45 +186,22 @@ function ObjectiveO2View({
   const stages = normalizeO2Stages(content);
 
   return (
-    <article
-      data-block-id={blockId}
-      data-block-type={blockType}
-      data-block-version={blockVersion}
-      className={`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors ${className}`.trim()}
-      style={{ color: secondary }}
+    <BlockShell
+      blockId={blockId}
+      blockType={blockType}
+      blockVersion={blockVersion}
+      theme={theme}
+      className={className}
     >
-      <header className="mb-6">
-        <div
-          className="text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-3"
-          style={{
-            color: primary,
-            backgroundColor: withAlpha(primary, '14'),
-          }}
-        >
-          <Target aria-hidden="true" className="h-4 w-4" />
-          <span>{eyebrow}</span>
-        </div>
-
-        <h2
-          className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight"
-          style={{ color: secondary }}
-        >
-          {title}
-        </h2>
-
-        <div
-          className="mb-4 mt-3 h-1 w-12 rounded-full"
-          style={{ backgroundColor: primary }}
-          aria-hidden="true"
-        />
-
-        <p
-          className="text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6"
-          style={{ color: `${secondary}dd` }}
-        >
-          {introduction}
-        </p>
-      </header>
+      <BlockHeader
+        eyebrow={eyebrow}
+        icon={Target}
+        title={title}
+        headingLevel="h2"
+        titleScale="standard"
+        introduction={introduction}
+        theme={theme}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 items-stretch">
         {stages.map((stage, index) => (
@@ -332,7 +311,7 @@ function ObjectiveO2View({
           </React.Fragment>
         ))}
       </div>
-    </article>
+    </BlockShell>
   );
 }
 

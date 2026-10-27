@@ -28,6 +28,8 @@ export function ObjectiveBlock({
   }
 }
 
+import { BlockShell, BlockHeader } from '../primitives';
+
 function ObjectiveO1View({
   block,
   theme,
@@ -45,7 +47,7 @@ function ObjectiveO1View({
   // UBRC: Runtime context fallback
   const blockId = runtimeContext?.blockId ?? block.id;
   const blockType = runtimeContext?.blockType ?? 'objective';
-  const blockVersion = runtimeContext?.blockVersion ?? block.version;
+  const blockVersion = runtimeContext?.blockVersion ?? block.version ?? 'O1';
 
   const content = block.content;
   const eyebrow = content?.eyebrow ?? 'LEARNING OBJECTIVES';
@@ -54,47 +56,22 @@ function ObjectiveO1View({
   const objectives = content?.objectives ?? [];
 
   return (
-    <article
-      className={`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors ${className}`}
-      data-block-id={blockId}
-      data-block-type={blockType}
-      data-block-version={blockVersion}
-      style={{ color: secondary }}
+    <BlockShell
+      blockId={blockId}
+      blockType={blockType}
+      blockVersion={blockVersion}
+      theme={theme}
+      className={className}
     >
-      <header className="mb-6">
-        {eyebrow && (
-          <div 
-            className="mb-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
-            style={{ 
-              color: primary, 
-              backgroundColor: withAlpha(primary, '14') 
-            }}
-          >
-            <Target className="h-4 w-4" />
-            <span>{eyebrow}</span>
-          </div>
-        )}
-        {title && (
-          <h2 
-            className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight"
-            style={{ color: secondary }}
-          >
-            {title}
-          </h2>
-        )}
-        <div 
-          className="mb-4 mt-3 h-1 w-12 rounded-full" 
-          style={{ backgroundColor: primary }} 
-        />
-        {introduction && (
-          <p 
-            className="text-base sm:text-lg font-medium leading-[1.7] max-w-3xl"
-            style={{ color: `${secondary}dd` }}
-          >
-            {introduction}
-          </p>
-        )}
-      </header>
+      <BlockHeader
+        eyebrow={eyebrow}
+        icon={Target}
+        title={title}
+        headingLevel="h2"
+        titleScale="standard"
+        introduction={introduction}
+        theme={theme}
+      />
 
       <ul className="grid grid-cols-1 md:grid-cols-2 gap-4" role="list">
         {objectives.map((obj, index) => (
@@ -125,7 +102,7 @@ function ObjectiveO1View({
           </li>
         ))}
       </ul>
-    </article>
+    </BlockShell>
   );
 }
 

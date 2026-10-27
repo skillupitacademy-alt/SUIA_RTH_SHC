@@ -84,6 +84,8 @@ function SkillIcon({ label }: { label: string }) {
   return <Sparkles aria-hidden="true" className="h-4 w-4" />;
 }
 
+import { BlockShell, BlockHeader } from '../primitives';
+
 function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
   block: ObjectiveO3BlockData;
   theme: DomainTheme;
@@ -100,18 +102,24 @@ function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
   const title = content?.title || 'What You Will Be Able To Do';
   const introduction = content?.introduction || 'By the end of this lesson, you will be able to demonstrate the following practical skills.';
   const skills = normalizeO3Skills(content);
-  const outerClass = ['w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors', className].filter(Boolean).join(' ');
 
   return (
-    <article data-block-id={blockId} data-block-type={blockType} data-block-version={blockVersion} className={outerClass} style={{ color: secondary }}>
-      <header className="mb-6">
-        <div className="text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-3" style={{ color: primary, backgroundColor: withAlpha(primary, '14') }}>
-          <Target aria-hidden="true" className="h-4 w-4" /><span>{eyebrow}</span>
-        </div>
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight" style={{ color: secondary }}>{title}</h2>
-        <div className="mb-4 mt-3 h-1 w-12 rounded-full" style={{ backgroundColor: primary }} aria-hidden="true" />
-        <p className="text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6" style={{ color: withAlpha(secondary, 'dd') }}>{introduction}</p>
-      </header>
+    <BlockShell
+      blockId={blockId}
+      blockType={blockType}
+      blockVersion={blockVersion}
+      theme={theme}
+      className={className}
+    >
+      <BlockHeader
+        eyebrow={eyebrow}
+        icon={Target}
+        title={title}
+        headingLevel="h2"
+        titleScale="standard"
+        introduction={introduction}
+        theme={theme}
+      />
       {skills.length > 0 ? (
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5" role="list">
           {skills.map((skill) => (
@@ -134,7 +142,7 @@ function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
           ))}
         </ul>
       ) : <ul className="space-y-2.5" role="list"><li className="rounded-xl border p-4 sm:p-5 text-sm sm:text-base font-medium leading-relaxed" style={{ backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25'), color: secondary }}>No skill objectives configured for this lesson.</li></ul>}
-    </article>
+    </BlockShell>
   );
 }
 
