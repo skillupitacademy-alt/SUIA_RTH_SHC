@@ -179,7 +179,7 @@ async def run_candidate_qualification_tests(
     ]
     runner_revision = _runner_revision()
 
-    # UBA Design & Accessibility Rule: Asymmetrical left borders prohibited
+    # UBA Design & Accessibility Rule 1: Asymmetrical left borders prohibited
     for comp in component_files:
         comp_text = comp.content if isinstance(comp.content, str) else comp.content.decode('utf-8', errors='replace')
         if re.search(r'\bborder-l(?:-[0-9]+|-[a-z]+|\s|"|\')', comp_text) or re.search(r'borderLeft(?:Width|Color)?\s*:', comp_text) or re.search(r'border-left\s*:', comp_text):
@@ -201,6 +201,51 @@ async def run_candidate_qualification_tests(
                     "qualification_inputs": qualification_inputs,
                 },
             }
+
+        # UBA Accessibility Rule 2: Motion Safety (WCAG SC 2.3.3)
+        # Any hover transform translation must be guarded by motion-safe: and motion-reduce:
+        if re.search(r'(?<!motion-safe:)hover:[-\w]*translate', comp_text):
+            return {
+                "passed": False,
+                "status": "FAIL",
+                "detail": (
+                    f"Candidate component '{comp.filename}' violates UBA motion safety standards (WCAG SC 2.3.3): "
+                    "hover translate movements must be prefixed with `motion-safe:` and paired with `motion-reduce:transform-none` "
+                    "(or compose CardSurface with hoverable={true})."
+                ),
+                "evidence_id": f"test-evidence-{candidate_id}",
+                "evidence_hash": "",
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "runner_metadata": {
+                    "runner_revision": runner_revision,
+                    "qualification_inputs": qualification_inputs,
+                },
+            }
+
+        # UBA Accessibility Rule 3: Keyboard semantics for interactive elements (WCAG SC 2.1.1, 4.1.2)
+        # Raw cursor-pointer on plain containers without CardSurface or tabIndex/role/onClick
+        if "cursor-pointer" in comp_text and "CardSurface" not in comp_text:
+            if not ("tabIndex" in comp_text or "role=" in comp_text or "onClick" in comp_text):
+                return {
+                    "passed": False,
+                    "status": "FAIL",
+                    "detail": (
+                        f"Candidate component '{comp.filename}' violates UBA keyboard semantics (WCAG SC 2.1.1, 4.1.2): "
+                        "`cursor-pointer` cannot be applied to static containers without keyboard accessibility. "
+                        "Compose CardSurface or provide tabIndex, role, and onKeyDown handlers."
+                    ),
+                    "evidence_id": f"test-evidence-{candidate_id}",
+                    "evidence_hash": "",
+                    "total_tests": 0,
+                    "passed_tests": 0,
+                    "failed_tests": 0,
+                    "runner_metadata": {
+                        "runner_revision": runner_revision,
+                        "qualification_inputs": qualification_inputs,
+                    },
+                }
 
     written_files: List[Path] = []
     worktree_path: Optional[Path] = None

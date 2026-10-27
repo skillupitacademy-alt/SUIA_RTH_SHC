@@ -3,7 +3,7 @@ import { BookOpen, Check, FileText, Lightbulb, Star, Table2 } from 'lucide-react
 import type { ISummaryBlock, BlockComponentProps } from '../types';
 import type { TutorialSummaryPayload } from '@quiz/types';
 import { SafeHtml } from '../../SafeHtml';
-import { BlockShell, BlockHeader, CalloutBanner } from '../primitives';
+import { BlockShell, BlockHeader, CalloutBanner, CardSurface } from '../primitives';
 
 function withAlpha(hex: string, alphaHex: string) {
   return `${hex}${alphaHex}`;
@@ -75,7 +75,13 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
             <FileText className="h-[23px] w-[23px]" style={{ color: primary }} />
             <h2 className="text-2xl font-extrabold leading-snug" style={{ color: secondary }}>Summary</h2>
           </div>
-          <div className="w-full overflow-hidden rounded-[10px] border bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgba(11,27,61,0.05)]" style={{ borderColor: withAlpha(primary, '66') }}>
+          <CardSurface
+            theme={{ primary, secondary, primaryDark }}
+            elevation="subtle"
+            hoverable={false}
+            className="w-full overflow-hidden p-0"
+            style={{ borderColor: withAlpha(primary, '66') }}
+          >
             {summaryItems.map((item, index: number) => (
               <div key={index} className="grid min-h-[58px] grid-cols-[42px_minmax(0,1fr)] items-center border-b px-4 py-2.5 last:border-b-0 dark:border-slate-700" style={{ borderColor: withAlpha(primary, '33') }}>
                 <span className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-extrabold text-white" style={{ backgroundColor: primary }}>
@@ -84,7 +90,7 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
                 <SafeHtml as="div" html={item.text || ''} className="text-[15px] font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: secondary }} />
               </div>
             ))}
-          </div>
+          </CardSurface>
         </section>
       )}
 
@@ -94,7 +100,13 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
             <Table2 className="h-[23px] w-[23px]" style={{ color: primary }} />
             <h2 className="text-2xl font-extrabold leading-snug" style={{ color: secondary }}>Revision Table</h2>
           </div>
-          <div className="w-full overflow-x-auto rounded-[10px] border bg-white dark:bg-slate-800 shadow-[0_4px_16px_rgba(11,27,61,0.05)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ borderColor: '#d9e0ea' }}>
+          <CardSurface
+            theme={{ primary, secondary, primaryDark }}
+            elevation="subtle"
+            hoverable={false}
+            className="w-full overflow-x-auto p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            style={{ borderColor: '#d9e0ea' }}
+          >
             <div className="min-w-[920px] bg-white dark:bg-slate-800">
               <div className="grid min-h-[62px] grid-cols-[1.05fr_2fr_1.1fr_1.55fr] bg-[#0b1b3d] text-white">
                 {columns.slice(0, 4).map((column: any) => (
@@ -130,7 +142,7 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
                 </div>
               ))}
             </div>
-          </div>
+          </CardSurface>
         </section>
       )}
 
@@ -140,7 +152,13 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
             <Lightbulb className="h-[23px] w-[23px]" style={{ color: primary }} />
             <h2 className="text-2xl font-extrabold leading-snug" style={{ color: secondary }}>Quick Tips</h2>
           </div>
-          <div className="w-full rounded-[10px] border border-[#d2dcf0] bg-[#f4f7ff] dark:bg-slate-800 px-4 py-3 shadow-[0_4px_16px_rgba(11,27,61,0.05)]">
+          <CardSurface
+            theme={{ primary, secondary, primaryDark }}
+            elevation="subtle"
+            hoverable={false}
+            className="w-full px-4 py-3"
+            style={{ backgroundColor: '#f4f7ff', borderColor: '#d2dcf0' }}
+          >
             {quickTips.map((tip: any, index: number) => (
               <div key={index} className="grid min-h-[42px] grid-cols-[28px_minmax(0,1fr)] items-start gap-2.5 border-b border-[#d2dcf0]/75 dark:border-slate-700 py-2 text-sm font-medium leading-[1.65] last:border-b-0" style={{ color: secondary }}>
                 <span className="mt-px flex h-[25px] w-[25px] items-center justify-center rounded-full bg-[#124fd6] text-white">
@@ -149,7 +167,7 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
                 <SafeHtml as="span" html={tip.text || ''} className="[&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" />
               </div>
             ))}
-          </div>
+          </CardSurface>
         </section>
       )}
 

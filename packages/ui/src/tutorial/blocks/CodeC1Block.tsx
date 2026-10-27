@@ -14,7 +14,7 @@ import type { BlockComponentProps } from '../types';
 import type { CodeC1Block as CodeC1BlockType } from '@quiz/types';
 import { getThemeColor, withAlpha, DEFAULT_THEME } from '../theme-utils';
 import { SafeHtml } from '../../SafeHtml';
-import { BlockShell, BlockHeader, StepBadge, SyntaxPill, TerminalWindow, CalloutBanner } from '../primitives';
+import { BlockShell, BlockHeader, StepBadge, SyntaxPill, TerminalWindow, CalloutBanner, CardSurface } from '../primitives';
 
 export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: BlockComponentProps<CodeC1BlockType>) {
   const page = block.content.page;
@@ -88,7 +88,13 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
             <MessageCircle className="h-[25px] w-[25px]" style={{ color: theme.primary }} />
             <h2 className="text-[21px] font-extrabold leading-snug" style={{ color: theme.secondary }}>Explanation</h2>
           </div>
-          <div className="w-full overflow-hidden rounded-2xl border border-t border-white/80 dark:border-white/10 bg-white/90 dark:bg-slate-800/90 shadow-xl backdrop-blur-md transition-all duration-300" style={{ borderColor: withAlpha(theme.primary, '66') }}>
+          <CardSurface
+            theme={theme}
+            elevation="dashboard"
+            hoverable={false}
+            className="w-full overflow-hidden p-0"
+            style={{ borderColor: withAlpha(theme.primary, '66') }}
+          >
             {explanationSteps.map((step, index) => (
               <div key={`${index}-${step.focus}`} className="grid min-h-20 w-full grid-cols-[48px_minmax(150px,250px)_minmax(0,1fr)] items-center border-b last:border-b-0 dark:border-slate-700" style={{ borderColor: withAlpha(theme.primary, '33') }}>
                 <StepBadge step={index + 1} size="md" theme={theme} className="ml-3" />
@@ -96,7 +102,7 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
                 <SafeHtml as="div" html={step.description} className="px-5 py-[17px] pl-2.5 text-base font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }} />
               </div>
             ))}
-          </div>
+          </CardSurface>
         </section>
       )}
 
@@ -125,7 +131,13 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
           </div>
           {memory.description && <p className="mb-4 text-base font-medium leading-[1.65]" style={{ color: theme.secondary }}>{memory.description}</p>}
           {columns.length > 0 && nodes.length > 0 && (
-            <div className="w-full overflow-x-auto rounded-2xl border border-t border-white/80 dark:border-white/10 bg-white/90 dark:bg-slate-800/90 shadow-xl backdrop-blur-md p-[22px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden transition-all duration-300" style={{ borderColor: withAlpha(theme.primary, '66') }}>
+            <CardSurface
+              theme={theme}
+              elevation="dashboard"
+              hoverable={false}
+              className="w-full overflow-x-auto p-[22px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              style={{ borderColor: withAlpha(theme.primary, '66') }}
+            >
               <div className="grid min-w-[760px] items-center justify-center gap-x-[26px] gap-y-[18px]" style={{ gridTemplateColumns: columns.map((column) => column.width ?? 'minmax(160px,1fr)').join(' ') }}>
                 {columns.map((column) => (
                   <div key={column.id} className="min-h-[25px] text-base font-extrabold leading-snug" style={{ color: theme.primaryDark }}>{column.title}</div>
@@ -143,7 +155,7 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
                   );
                 }))}
               </div>
-            </div>
+            </CardSurface>
           )}
           {memory.note && <div className="mt-3 rounded-[7px] border px-[13px] py-2.5 text-[13px] font-semibold leading-[1.55]" style={{ color: theme.secondary, borderColor: getThemeColor(theme, 'blue', 200), backgroundColor: getThemeColor(theme, 'blue', 50) }}>{memory.note}</div>}
         </section>
