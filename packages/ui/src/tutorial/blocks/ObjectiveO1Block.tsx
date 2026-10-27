@@ -2,9 +2,10 @@ import React from 'react';
 import { Target, Check } from 'lucide-react';
 import type { BlockComponentProps, DomainTheme, TutorialBlockRuntimeContext } from '../types';
 import { withAlpha, DEFAULT_THEME } from '../theme-utils';
+import { BlockShell, BlockHeader, CardSurface } from '../primitives';
 import type { ObjectiveO1BlockData } from '@quiz/types';
 
-export function ObjectiveO1Block({
+export function ObjectiveBlock({
   block,
   className = '',
   theme,
@@ -27,11 +28,6 @@ export function ObjectiveO1Block({
       throw new Error(`[ObjectiveBlock] Unsupported block version: ${String(version)}`);
   }
 }
-
-export const ObjectiveBlock = ObjectiveO1Block;
-export { ObjectiveO1Block as default };
-
-import { BlockShell, BlockHeader, CardSurface } from '../primitives';
 
 function ObjectiveO1View({
   block,
