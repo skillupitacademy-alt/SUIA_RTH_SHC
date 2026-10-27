@@ -273,7 +273,7 @@ VERIFICATION GATES & COMPLIANCE ARCHITECTURE
 ================================================================================
 1. UBRC Runtime Gate: <article data-block-id="..." data-block-type="${familyLower}" data-block-version="${versionUpper}">
 2. Brand Independence Gate: Consumes theme prop / DEFAULT_THEME; zero brand strings
-3. Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (2xl-4xl title, text-base/lg intro, Lucide icons)
+3. Universal Block Architecture (UBA) Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (hero clamp 34px-52px or standard 2xl-4xl title, text-base/lg intro, Lucide icons with aria-hidden='true'). Candidates should compose @quiz/ui primitives (BlockShell, BlockHeader, CardSurface, StepBadge, SyntaxPill, CalloutBanner, TerminalWindow)
 4. Strict Typing Gate: zero 'any' types in props or block interfaces
 5. Repository Integration Gate: ${componentName}.tsx placed in packages/ui/src/tutorial/blocks/
 6. Composer Registry Gate: Project LLM adds ${versionUpper} to the generated block catalog and renderer dispatch without removing other families or versions
@@ -304,17 +304,19 @@ The persisted backend contract is authoritative. Do not invent requirements or c
 - **Version:** ${versionUpper}
 - **Component:** ${componentName}
 
-## Design System & Look and Feel Standards
+## Universal Block Architecture (UBA) & Look and Feel Standards
 
-1. **Outer Shell:** \`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors\`
-2. **Typography Scale:**
+1. **UBA Primitives Library:**
+   Candidates should import and compose universal primitives from \`@quiz/ui\` (\`BlockShell\`, \`BlockHeader\`, \`CardSurface\`, \`StepBadge\`, \`SyntaxPill\`, \`CalloutBanner\`, \`TerminalWindow\`) to ensure design consistency and avoid redundant HTML recreation.
+2. **Outer Shell:** Standardized via \`BlockShell\` with \`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors\` and UBRC data attributes (\`data-block-id\`, \`data-block-type\`, \`data-block-version\`).
+3. **Typography Scale (via \`BlockHeader\`):**
    - Eyebrow: \`text-xs font-bold uppercase tracking-wider\`
-   - Title: \`text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight\`
+   - Title: \`text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]\` (\`titleScale="hero"\`) or \`text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight\` (\`titleScale="standard"\`)
    - Accent Bar: \`h-1 w-12 rounded-full\` in \`theme.primary\`
    - Intro: \`text-base sm:text-lg font-medium leading-[1.7]\`
    - Content: \`text-sm sm:text-base font-medium leading-relaxed\`
-3. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
-4. **Theming:** Strictly dual-brand token aware via \`theme.primary\`, \`theme.secondary\`, and \`withAlpha(primary, alpha)\`.
+4. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
+5. **Theming:** Strictly dual-brand token aware via \`theme.primary\`, \`theme.secondary\`, and \`withAlpha(primary, alpha)\`.
 
 ## Mandatory File Deliverables in ZIP
 
