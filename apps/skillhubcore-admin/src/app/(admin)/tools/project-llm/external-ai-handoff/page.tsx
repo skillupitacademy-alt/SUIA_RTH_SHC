@@ -147,22 +147,35 @@ All tutorial blocks in the platform belong to a unified tutorial page. Your comp
    - Monospace / Code Elements:
      Class: "font-mono text-xs sm:text-sm"
 
-3. Cards, Panels, & Interactive Elements:
-   - Cards & List Items:
-     Class: "rounded-xl border p-4 sm:p-5 transition-all duration-200 shadow-sm hover:shadow-md"
+3. Cards, Panels, & Elevated Containers:
+   - Elevated Card Standard:
+     Class: "rounded-2xl border p-5 sm:p-6 transition-all duration-200 shadow-sm hover:shadow-md"
      Style: { backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }
+   - NO LEFT-SIDE BORDER ALLOWED:
+     Asymmetrical left borders ('border-l-*' or 'borderLeftColor') are STRICTLY PROHIBITED for callouts, takeaways, quotes, and tips.
+     Always use symmetric, elevated rounded card containers ('rounded-2xl border ... shadow-sm').
    - Icon Badges:
-     Class: "flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg"
+     Class: "flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-xl"
      Style: { backgroundColor: withAlpha(primary, '18'), color: primary }
    - Icons:
      MUST import from 'lucide-react' (e.g. Target, BookOpen, Check, Layers, Lightbulb, Code2, Sparkles).
      NEVER use raw unicode symbols (✓, ★, •) or emojis (📌, 🎯).
      Always add aria-hidden="true" to decorative icons.
 
-4. Dual-Brand Theme Independence:
+4. Dual-Brand 4-Color Token Architecture:
    - MUST consume 'theme ?? DEFAULT_THEME'.
-   - Derive all colors from 'theme.primary', 'theme.secondary', and 'withAlpha(primary, hexAlpha)'.
-   - ZERO hardcoded hex color codes (#e11d48, #0ea5e9, etc.).
+   - Each brand defines 4 harmonized tokens:
+     * SkillUp IT Academy (SUIA):
+       - Primary (Brand Base): Navy (#0B1B3D)
+       - Secondary (Text / Shell): Magenta Pink (#F54A8D)
+       - Accent 1 (Interactive / Info): Sky Cyan (#0284C7)
+       - Accent 2 (Success / Highlight): Emerald Green (#10B981)
+     * Real Tutorial Hub (RTH):
+       - Primary (Brand Base): Rose (#E11D48)
+       - Secondary (Text / Shell): Slate Navy (#1E293B)
+       - Accent 1 (Interactive / Info): Indigo Blue (#6366F1)
+       - Accent 2 (Success / Highlight): Amber Warm (#F59E0B)
+   - ZERO hardcoded hex color codes (#e11d48, #0b1b3d, etc.).
    - ZERO hardcoded brand strings ('SkillUpITAcademy', 'RealTutorialHub', 'SUIA', 'RTH').
    - Both light and dark modes are supported automatically via Tailwind tokens (bg-white dark:bg-slate-900).
 
@@ -315,8 +328,14 @@ The persisted backend contract is authoritative. Do not invent requirements or c
    - Accent Bar: \`h-1 w-12 rounded-full\` in \`theme.primary\`
    - Intro: \`text-base sm:text-lg font-medium leading-[1.7]\`
    - Content: \`text-sm sm:text-base font-medium leading-relaxed\`
-4. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
-5. **Theming:** Strictly dual-brand token aware via \`theme.primary\`, \`theme.secondary\`, and \`withAlpha(primary, alpha)\`.
+4. **Elevated Containers & Ban on Left-Side Borders:**
+   - **NO LEFT-SIDE BORDER (\`border-l-*\`)**: Left-side accent borders are strictly prohibited for takeaways, callouts, and tips.
+   - All callout and takeaway cards must use symmetric, elevated rounded cards: \`rounded-2xl border p-5 sm:p-6 shadow-sm hover:shadow-md transition-all\`.
+5. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
+6. **Dual-Brand 4-Color Tokens:**
+   - SUIA: Primary \`#0B1B3D\` (Navy), Secondary \`#F54A8D\` (Magenta Pink), Accent 1 \`#0284C7\` (Sky Cyan), Accent 2 \`#10B981\` (Emerald Green).
+   - RTH: Primary \`#E11D48\` (Rose), Secondary \`#1E293B\` (Slate Navy), Accent 1 \`#6366F1\` (Indigo Blue), Accent 2 \`#F59E0B\` (Amber Warm).
+   - Consume dynamically via \`theme.primary\`, \`theme.secondary\`, \`theme.accent1\`, \`theme.accent2\`, and \`withAlpha\`.
 
 ## Mandatory File Deliverables in ZIP
 

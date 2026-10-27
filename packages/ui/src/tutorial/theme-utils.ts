@@ -145,6 +145,8 @@ export const DEFAULT_THEME: DomainTheme = {
   primary: TAILWIND_COLORS.blue[500],
   primaryDark: TAILWIND_COLORS.blue[800],
   secondary: TAILWIND_COLORS.slate[900],
+  accent1: '#0284C7', // Sky Cyan fallback
+  accent2: '#10B981', // Emerald Green fallback
   slate: TAILWIND_COLORS.slate,
   gray: TAILWIND_COLORS.gray,
   blue: TAILWIND_COLORS.blue,
@@ -153,3 +155,40 @@ export const DEFAULT_THEME: DomainTheme = {
   rose: TAILWIND_COLORS.rose,
   teal: TAILWIND_COLORS.teal,
 };
+
+/**
+ * SkillUp IT Academy (SUIA) Canonical 4-Color Brand Theme
+ */
+export const SUIA_BRAND_THEME: DomainTheme = {
+  primary: '#0B1B3D',      // Brand Base (Navy)
+  secondary: '#F54A8D',    // Text / Shell (Magenta Pink)
+  accent1: '#0284C7',      // Interactive / Info (Sky Cyan)
+  accent2: '#10B981',      // Success / Highlight (Emerald Green)
+  primaryDark: '#071228',
+  slate: TAILWIND_COLORS.slate,
+  gray: TAILWIND_COLORS.gray,
+  blue: TAILWIND_COLORS.blue,
+  emerald: TAILWIND_COLORS.emerald,
+  amber: TAILWIND_COLORS.amber,
+  rose: TAILWIND_COLORS.rose,
+  teal: TAILWIND_COLORS.teal,
+};
+
+/**
+ * Real Tutorial Hub (RTH) Canonical 4-Color Brand Theme
+ */
+export const RTH_BRAND_THEME: DomainTheme = {
+  primary: '#E11D48',      // Brand Base (Rose)
+  secondary: '#1E293B',    // Text / Shell (Slate Navy)
+  accent1: '#6366F1',      // Interactive / Info (Indigo Blue)
+  accent2: '#F59E0B',      // Success / Highlight (Amber Warm)
+  primaryDark: '#BE123C',
+  slate: TAILWIND_COLORS.slate,
+  gray: TAILWIND_COLORS.gray,
+  blue: TAILWIND_COLORS.blue,
+  emerald: TAILWIND_COLORS.emerald,
+  amber: TAILWIND_COLORS.amber,
+  rose: TAILWIND_COLORS.rose,
+  teal: TAILWIND_COLORS.teal,
+};
+

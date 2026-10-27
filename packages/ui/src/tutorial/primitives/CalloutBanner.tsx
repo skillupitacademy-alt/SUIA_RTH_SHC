@@ -16,8 +16,13 @@ export interface CalloutBannerProps extends Omit<React.HTMLAttributes<HTMLDivEle
 /**
  * Universal Callout Banner - Generic UBA Takeaway & Highlight Primitive
  * 
- * Standardizes key takeaways, revision callouts, and important notices
- * with a prominent left accent border and harmonized surface background.
+ * DESIGN SYSTEM RULE (NO LEFT-SIDE BORDER ALLOWED):
+ * Key takeaways, tips, and callout containers must NEVER use an asymmetrical left-side border (`border-l-*`).
+ * Instead, they MUST use an elevated, symmetric card container:
+ * - Uniform corner radius (`rounded-2xl`)
+ * - Subtle perimeter border (`border`)
+ * - Soft elevation (`shadow-sm hover:shadow-md transition-all`)
+ * - 4-color brand token consumption (`primary`, `secondary`, `accent1`, `accent2`)
  */
 export function CalloutBanner({
   children,
@@ -33,6 +38,8 @@ export function CalloutBanner({
   const activeTheme = theme ?? DEFAULT_THEME;
   const primary = activeTheme.primary;
   const secondary = activeTheme.secondary;
+  const accent1 = activeTheme.accent1 || '#0284c7';
+  const accent2 = activeTheme.accent2 || '#10b981';
 
   const resolvedVariant = tone ?? variant ?? 'takeaway';
 
@@ -48,41 +55,55 @@ export function CalloutBanner({
   const variantStyles = {
     takeaway: {
       backgroundColor: withAlpha(primary, '08'),
-      borderLeftColor: primary,
+      borderColor: withAlpha(primary, '2e'),
+      iconColor: primary,
     },
     info: {
-      backgroundColor: '#f0f9ff',
-      borderLeftColor: '#0284c7',
+      backgroundColor: withAlpha(accent1, '0a'),
+      borderColor: withAlpha(accent1, '33'),
+      iconColor: accent1,
     },
     warning: {
-      backgroundColor: '#fffbeb',
-      borderLeftColor: '#f59e0b',
+      backgroundColor: withAlpha(activeTheme.accent2 ? activeTheme.accent2 : '#f59e0b', '0e'),
+      borderColor: withAlpha(activeTheme.accent2 ? activeTheme.accent2 : '#f59e0b', '3d'),
+      iconColor: activeTheme.accent2 ? activeTheme.accent2 : '#d97706',
     },
     success: {
-      backgroundColor: '#f0fdf4',
-      borderLeftColor: '#10b981',
+      backgroundColor: withAlpha(accent2, '0c'),
+      borderColor: withAlpha(accent2, '38'),
+      iconColor: accent2,
     },
   }[resolvedVariant];
 
   const combinedClass = [
-    'rounded-xl border border-slate-200/80 border-l-4 p-4 sm:p-5 shadow-sm dark:bg-slate-800/80 dark:border-slate-700 flex items-start gap-3.5',
+    'rounded-2xl border p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 dark:bg-slate-800/90 flex items-start gap-3.5 sm:gap-4',
     className,
   ].filter(Boolean).join(' ');
 
   return (
     <div
       className={combinedClass}
-      style={{ ...variantStyles, ...style }}
+      style={{
+        backgroundColor: variantStyles.backgroundColor,
+        borderColor: variantStyles.borderColor,
+        ...style,
+      }}
       {...rest}
     >
       {IconComponent && (
-        <span className="shrink-0 mt-0.5" style={{ color: resolvedVariant === 'takeaway' ? primary : undefined }}>
-          <IconComponent className="h-5 w-5" aria-hidden="true" />
+        <span
+          className="shrink-0 flex items-center justify-center w-8 h-8 rounded-xl shadow-xs mt-0.5"
+          style={{
+            backgroundColor: withAlpha(variantStyles.iconColor, '18'),
+            color: variantStyles.iconColor,
+          }}
+        >
+          <IconComponent className="h-4 w-4" aria-hidden="true" />
         </span>
       )}
       <div className="min-w-0 flex-1">
         {title && (
-          <h4 className="text-sm sm:text-base font-bold mb-1" style={{ color: secondary }}>
+          <h4 className="text-base sm:text-lg font-bold mb-1.5 leading-snug" style={{ color: secondary }}>
             {title}
           </h4>
         )}

@@ -65,7 +65,7 @@ export function CalloutBlock({ block, className = '', runtimeContext }: BlockCom
       data-block-type={blockType}
       role="note"
       aria-label={title || defaultTitle}
-      className={`my-4 p-4 rounded-lg border-l-4 border ${container} shadow-sm ${className}`}
+      className={`my-6 p-5 sm:p-6 rounded-2xl border ${container} shadow-sm ${className}`}
     >
       <div className="flex items-center gap-2 mb-1.5 font-semibold text-sm">
         <span aria-hidden="true">{icon}</span>

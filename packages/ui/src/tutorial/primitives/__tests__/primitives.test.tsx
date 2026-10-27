@@ -138,8 +138,8 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
   });
 
   describe('CalloutBanner', () => {
-    it('renders takeaway box with left-accent border', () => {
-      render(
+    it('renders elevated takeaway card without left-side border', () => {
+      const { container } = render(
         <CalloutBanner
           title="Key Takeaway"
           theme={mockTheme}
@@ -151,6 +151,35 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
 
       expect(screen.getByText('Key Takeaway')).toBeTruthy();
       expect(screen.getByText('Remember to always close database connections.')).toBeTruthy();
+
+      const banner = container.firstElementChild as HTMLElement;
+      expect(banner.className).toContain('rounded-2xl');
+      expect(banner.className).toContain('shadow-sm');
+      // Strict rule: No asymmetrical left-side border
+      expect(banner.className).not.toContain('border-l-4');
+      expect(banner.className).not.toContain('border-l-');
+    });
+
+    it('consumes 4-color brand tokens for SUIA and RTH', () => {
+      const suiaTheme = {
+        primary: '#0B1B3D',
+        secondary: '#F54A8D',
+        accent1: '#0284C7',
+        accent2: '#10B981',
+      };
+      const { container } = render(
+        <CalloutBanner
+          title="Info Banner"
+          theme={suiaTheme}
+          variant="info"
+        >
+          Using Sky Cyan interactive token.
+        </CalloutBanner>
+      );
+
+      const banner = container.firstElementChild as HTMLElement;
+      expect(banner.className).toContain('rounded-2xl');
+      expect(banner.className).not.toContain('border-l-');
     });
   });
 });

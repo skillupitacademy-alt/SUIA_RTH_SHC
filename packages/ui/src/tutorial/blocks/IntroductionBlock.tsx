@@ -208,12 +208,16 @@ function IntroductionI1View({
         <p className="text-base leading-relaxed mb-3" style={{ color: secondary }}>
           {page.topic.description}
         </p>
-        <blockquote
-          className="border-l-4 pl-4 py-2 text-base font-semibold italic"
-          style={{ borderColor: primary, color: `${secondary}cc` }}
+        <div
+          className="rounded-2xl border p-5 sm:p-6 text-base font-semibold italic shadow-sm"
+          style={{
+            borderColor: withAlpha(primary, '25'),
+            backgroundColor: withAlpha(primary, '06'),
+            color: `${secondary}dd`,
+          }}
         >
-          {page.topic.quote}
-        </blockquote>
+          "{page.topic.quote}"
+        </div>
       </section>
 
       {/* SECTION 2: WHERE DOES IT FIT? */}
