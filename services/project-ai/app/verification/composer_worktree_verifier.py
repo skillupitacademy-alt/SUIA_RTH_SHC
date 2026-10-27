@@ -492,19 +492,21 @@ async def verify_composer_in_worktree(
         logger.info(f"Preview server ready at {preview_url}. Launching Playwright browser verification...")
 
         # Step 4: Execute versioned Node runner from inside the detached worktree
-        import shutil
         runner_script_in_worktree = worktree_path / "scripts" / "verification" / "composer-worktree-runner.cjs"
         if not runner_script_in_worktree.exists():
-            runner_script_in_worktree.parent.mkdir(parents=True, exist_ok=True)
-            versioned_source = workspace_root / "scripts" / "verification" / "composer-worktree-runner.cjs"
-            if versioned_source.exists():
-                shutil.copy2(versioned_source, runner_script_in_worktree)
-            else:
-                # Fallback to generating script if versioned file is missing
-                runner_script_in_worktree.write_text(
-                    _generate_playwright_script(preview_url, block_family, block_version, screenshot_path),
-                    encoding="utf-8"
-                )
+            return {
+                "status": "FAIL",
+                "gate_id": "composer",
+                "passed": False,
+                "verified_commit": commit_sha,
+                "candidate_hash": candidate_hash,
+                "manifest_hash": manifest_hash,
+                "reason": "Missing versioned verification runner in placed commit worktree: scripts/verification/composer-worktree-runner.cjs",
+                "findings": ["scripts/verification/composer-worktree-runner.cjs not found in placed commit worktree. Failing closed without copying from live workspace."],
+                "evidence_ids": [],
+                "evidence_hash": "",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
 
         runner_script_path = runner_script_in_worktree
 

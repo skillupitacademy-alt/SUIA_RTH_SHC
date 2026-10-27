@@ -28,13 +28,13 @@ function parseArgs() {
   };
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--preview-url' && args[i + 1]) {
+    if ((args[i] === '--preview-url' || args[i] === '--url') && args[i + 1]) {
       params.previewUrl = args[++i];
-    } else if (args[i] === '--block-family' && args[i + 1]) {
+    } else if ((args[i] === '--block-family' || args[i] === '--family') && args[i + 1]) {
       params.blockFamily = args[++i];
-    } else if (args[i] === '--block-version' && args[i + 1]) {
+    } else if ((args[i] === '--block-version' || args[i] === '--version') && args[i + 1]) {
       params.blockVersion = args[++i];
-    } else if (args[i] === '--screenshot' && args[i + 1]) {
+    } else if ((args[i] === '--screenshot' || args[i] === '--screenshot-path') && args[i + 1]) {
       params.screenshotPath = args[++i];
     }
   }
@@ -323,11 +323,10 @@ function parseArgs() {
       ];
     } else if (result.rendered_dom) {
       try {
-        // Tag WCAG standards + enable color-contrast rule explicitly
+        // Run full WCAG 2.0 and 2.1 A and AA standards (including color-contrast)
         const axeResults = await new AxeBuilder({ page })
           .include(blockSelector)
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-          .withRules(['color-contrast'])
           .analyze();
 
         result.accessibility.violations_count = axeResults.violations.length;
@@ -404,10 +403,17 @@ function parseArgs() {
               };
             }, blockSelector);
 
-            if (focusInfo.isFocused) {
+            if (focusInfo.isFocused && focusInfo.hasVisibleFocus) {
               result.modality_checks.keyboard_navigation = {
                 status: 'PASS',
-                details: `Focused control "${focusInfo.role}" (visible focus outline/shadow: ${focusInfo.hasVisibleFocus})`,
+                details: `Focused control "${focusInfo.role}" with verified visible focus outline or box-shadow`,
+                focusable_count: focusables.length,
+                active_element_role: focusInfo.role,
+              };
+            } else if (focusInfo.isFocused && !focusInfo.hasVisibleFocus) {
+              result.modality_checks.keyboard_navigation = {
+                status: 'FAIL',
+                details: `Focused control "${focusInfo.role}" lacks visible focus outline or box-shadow (fails WCAG 2.4.7 Focus Visible)`,
                 focusable_count: focusables.length,
                 active_element_role: focusInfo.role,
               };
@@ -484,16 +490,26 @@ function parseArgs() {
         await page.emulateMedia({ forcedColors: 'active' });
         const forcedColorsCheck = await page.evaluate((selector) => {
           const block = document.querySelector(selector);
-          if (!block) return { hasBorder: true };
-          const style = window.getComputedStyle(block);
-          const hasBorder = style.borderStyle !== 'none' || style.outlineStyle !== 'none';
-          return { hasBorder };
+          if (!block) return { hasBorder: false };
+          const elementsToCheck = [block, ...block.querySelectorAll('*')];
+          const hasPreservedBorder = elementsToCheck.some((el) => {
+            const s = window.getComputedStyle(el);
+            const bWidth = parseFloat(s.borderWidth) || parseFloat(s.borderTopWidth) || 0;
+            const bStyle = s.borderStyle || s.borderTopStyle;
+            const oWidth = parseFloat(s.outlineWidth) || 0;
+            const oStyle = s.outlineStyle;
+            return (bStyle !== 'none' && bWidth > 0) || (oStyle !== 'none' && oWidth > 0);
+          });
+          return { hasBorder: hasPreservedBorder };
         }, blockSelector);
         await page.emulateMedia({ forcedColors: 'none' });
 
+        const forcedColorsStatus = forcedColorsCheck.hasBorder ? 'PASS' : 'FAIL';
         result.modality_checks.forced_colors = {
-          status: 'PASS',
-          details: 'forced-colors: active evaluated; high contrast color tokens and borders preserved',
+          status: forcedColorsStatus,
+          details: forcedColorsCheck.hasBorder
+            ? 'forced-colors: active evaluated; high contrast outline or border preserved'
+            : 'forced-colors: active evaluated; block container lacks high contrast outline or border (fails forced-colors preservation)',
           high_contrast_outline_or_border: forcedColorsCheck.hasBorder,
         };
       } catch (fcErr) {

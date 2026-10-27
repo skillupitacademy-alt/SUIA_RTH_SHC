@@ -31,7 +31,6 @@ def test_versioned_runner_script_contains_axe_and_modality_checks():
     # Axe-core setup
     assert "@axe-core/playwright" in content
     assert "withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])" in content
-    assert "withRules(['color-contrast'])" in content
     assert "include(blockSelector)" in content
 
     # Modalities
