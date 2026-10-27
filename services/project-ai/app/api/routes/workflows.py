@@ -740,12 +740,39 @@ async def approve_final_certification(
                 status_code=400,
                 detail=f"Cannot approve: Composer verification failed browser-level accessibility audit with {violations_count} violation(s): {violation_summary}"
             )
-        modality_checks = runner_metadata.get("modality_checks", {})
-        for modality_name, mod_result in modality_checks.items():
-            if isinstance(mod_result, dict) and mod_result.get("status") == "FAIL":
+        if accessibility_evidence.get("passes_count", 0) <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification accessibility evidence reports 0 passes (audit was unexecuted or non-evaluative)"
+            )
+
+        modality_checks = runner_metadata.get("modality_checks")
+        if not modality_checks or not isinstance(modality_checks, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing required modality_checks object"
+            )
+
+        REQUIRED_MODALITIES = {"keyboard_navigation", "reduced_motion", "forced_colors", "responsive_viewports"}
+        missing_modalities = REQUIRED_MODALITIES - set(modality_checks.keys())
+        if missing_modalities:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer verification modality_checks missing required modalities: {sorted(list(missing_modalities))}"
+            )
+
+        for modality_name in sorted(list(REQUIRED_MODALITIES)):
+            mod_result = modality_checks.get(modality_name)
+            if not isinstance(mod_result, dict):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Cannot approve: Composer verification failed {modality_name} modality check: {mod_result.get('details', 'check failed')}"
+                    detail=f"Cannot approve: Composer verification {modality_name} modality result is malformed or missing"
+                )
+            mod_status = mod_result.get("status")
+            if mod_status not in ("PASS", "NOT_APPLICABLE"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Composer verification failed {modality_name} modality check (status: {mod_status}): {mod_result.get('details', 'check failed')}"
                 )
 
         evidence_verified = True
@@ -896,7 +923,8 @@ async def verify_composer(
         block_family=workflow.target_family,
         block_version=workflow.target_version,
         candidate_hash=workflow.candidate_sha256 or "",
-        manifest_hash=workflow.manifest_sha256 or ""
+        manifest_hash=workflow.manifest_sha256 or "",
+        timeout_seconds=600
     )
 
     if result.get("passed"):

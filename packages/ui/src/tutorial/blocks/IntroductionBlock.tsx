@@ -302,7 +302,10 @@ function IntroductionI1View({
 
         {/* Code Editor Box with TerminalWindow primitive */}
         <TerminalWindow title={page.solution.code.language} copySource={page.solution.code.code} theme={theme}>
-          <div className="bg-[#0B132B] dark:bg-slate-950 p-5 overflow-x-auto">
+          <div
+            className="p-5 overflow-x-auto"
+            style={{ backgroundColor: getThemeColor(theme, 'slate', 950) }}
+          >
             <pre className="font-mono text-sm leading-relaxed text-slate-200">
               <code>{page.solution.code.code}</code>
             </pre>

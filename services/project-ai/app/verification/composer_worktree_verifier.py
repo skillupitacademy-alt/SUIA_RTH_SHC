@@ -410,7 +410,7 @@ async def verify_composer_in_worktree(
     block_version: str,
     candidate_hash: str,
     manifest_hash: str,
-    timeout_seconds: int = 180
+    timeout_seconds: int = 600
 ) -> Dict[str, Any]:
     """
     Execute full Composer verification on an isolated git worktree checked out at commit_sha.
@@ -470,7 +470,7 @@ async def verify_composer_in_worktree(
         # Step 3: Wait for preview server to be responsive
         import urllib.request
         server_ready = False
-        health_deadline = time.time() + 45
+        health_deadline = time.time() + 90
         target_check_url = f"{preview_url}/tools/tutorial-page-content"
 
         while time.time() < health_deadline:

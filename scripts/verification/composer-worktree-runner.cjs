@@ -436,44 +436,60 @@ function parseArgs() {
         };
       }
 
-      // Modality B: Reduced Motion
+      // Modality B: Reduced Motion (prefers-reduced-motion: reduce)
       try {
         await page.emulateMedia({ reducedMotion: 'reduce' });
         const motionCheck = await page.evaluate((selector) => {
           const block = document.querySelector(selector);
-          if (!block) return { animatedCount: 0, unguardedCount: 0 };
+          if (!block) return { animatedCount: 0, unguardedAnimations: 0, unguardedTransitions: 0 };
           const elements = [block, ...block.querySelectorAll('*')];
           let animatedCount = 0;
-          let unguardedCount = 0;
+          let unguardedAnimations = 0;
+          let unguardedTransitions = 0;
+
           for (const el of elements) {
             const style = window.getComputedStyle(el);
+            // 1. Check CSS keyframe animations
             const animName = style.animationName;
             if (animName && animName !== 'none') {
               animatedCount++;
               const durSec = parseFloat(style.animationDuration) || 0;
-              if (durSec > 0.05) unguardedCount++;
+              if (durSec > 0.05) unguardedAnimations++;
+            }
+
+            // 2. Check CSS transitions on moving/transforming elements
+            const transProp = style.transitionProperty || '';
+            const transDur = parseFloat(style.transitionDuration) || 0;
+            if (transDur > 0.05 && (transProp.includes('transform') || transProp.includes('all'))) {
+              const isMotionReduceSuppressed = el.classList.contains('motion-reduce:transform-none')
+                || el.classList.contains('motion-reduce:transition-none')
+                || style.transform === 'none';
+              if (!isMotionReduceSuppressed) {
+                unguardedTransitions++;
+              }
             }
           }
-          return { animatedCount, unguardedCount };
+          return { animatedCount, unguardedAnimations, unguardedTransitions };
         }, blockSelector);
         await page.emulateMedia({ reducedMotion: 'no-preference' });
 
-        if (motionCheck.animatedCount === 0) {
+        const totalUnguarded = motionCheck.unguardedAnimations + motionCheck.unguardedTransitions;
+        if (motionCheck.animatedCount === 0 && totalUnguarded === 0) {
           result.modality_checks.reduced_motion = {
             status: 'NOT_APPLICABLE',
-            details: 'No continuous animations declared in rendered block',
+            details: 'No continuous animations or unguarded motion transitions declared in rendered block',
             suppressed_animations: true,
           };
-        } else if (motionCheck.unguardedCount === 0) {
+        } else if (totalUnguarded === 0) {
           result.modality_checks.reduced_motion = {
             status: 'PASS',
-            details: 'prefers-reduced-motion active: all continuous animations suppressed',
+            details: 'prefers-reduced-motion active: all continuous animations and transform transitions suppressed',
             suppressed_animations: true,
           };
         } else {
           result.modality_checks.reduced_motion = {
             status: 'FAIL',
-            details: `${motionCheck.unguardedCount} animation(s) not suppressed under prefers-reduced-motion`,
+            details: `${motionCheck.unguardedAnimations} animation(s) and ${motionCheck.unguardedTransitions} transition(s) not suppressed under prefers-reduced-motion`,
             suppressed_animations: false,
           };
         }
@@ -486,31 +502,53 @@ function parseArgs() {
       }
 
       // Modality C: Forced Colors (Windows High Contrast Mode)
+      // Must verify that EVERY rendered card surface and container preserves visible borders/outlines
       try {
         await page.emulateMedia({ forcedColors: 'active' });
         const forcedColorsCheck = await page.evaluate((selector) => {
           const block = document.querySelector(selector);
-          if (!block) return { hasBorder: false };
-          const elementsToCheck = [block, ...block.querySelectorAll('*')];
-          const hasPreservedBorder = elementsToCheck.some((el) => {
+          if (!block) return { totalSurfaces: 0, preservedSurfaces: 0, missingBorderElements: [] };
+          
+          const surfaces = Array.from(block.querySelectorAll(
+            '[data-testid="card-surface"], [class*="rounded-xl"], [class*="rounded-2xl"], section > div[class*="border"], [role="region"]'
+          ));
+          
+          const candidateSurfaces = surfaces.length > 0 ? surfaces : [block];
+          const missingBorderElements = [];
+          let preservedSurfaces = 0;
+
+          for (const [idx, el] of candidateSurfaces.entries()) {
             const s = window.getComputedStyle(el);
-            const bWidth = parseFloat(s.borderWidth) || parseFloat(s.borderTopWidth) || 0;
-            const bStyle = s.borderStyle || s.borderTopStyle;
+            const bWidth = parseFloat(s.borderTopWidth) || parseFloat(s.borderWidth) || 0;
+            const bStyle = s.borderTopStyle || s.borderStyle;
             const oWidth = parseFloat(s.outlineWidth) || 0;
             const oStyle = s.outlineStyle;
-            return (bStyle !== 'none' && bWidth > 0) || (oStyle !== 'none' && oWidth > 0);
-          });
-          return { hasBorder: hasPreservedBorder };
+
+            const hasVisiblePerimeter = (bStyle && bStyle !== 'none' && bWidth > 0) || (oStyle && oStyle !== 'none' && oWidth > 0);
+            if (hasVisiblePerimeter) {
+              preservedSurfaces++;
+            } else {
+              missingBorderElements.push(`surface-${idx}:${el.tagName.toLowerCase()}.${el.className.slice(0, 30)}`);
+            }
+          }
+
+          return {
+            totalSurfaces: candidateSurfaces.length,
+            preservedSurfaces,
+            missingBorderElements,
+          };
         }, blockSelector);
         await page.emulateMedia({ forcedColors: 'none' });
 
-        const forcedColorsStatus = forcedColorsCheck.hasBorder ? 'PASS' : 'FAIL';
+        const fcAllPreserved = forcedColorsCheck.totalSurfaces > 0 && forcedColorsCheck.missingBorderElements.length === 0;
         result.modality_checks.forced_colors = {
-          status: forcedColorsStatus,
-          details: forcedColorsCheck.hasBorder
-            ? 'forced-colors: active evaluated; high contrast outline or border preserved'
-            : 'forced-colors: active evaluated; block container lacks high contrast outline or border (fails forced-colors preservation)',
-          high_contrast_outline_or_border: forcedColorsCheck.hasBorder,
+          status: fcAllPreserved ? 'PASS' : 'FAIL',
+          details: fcAllPreserved
+            ? `forced-colors: active evaluated; all ${forcedColorsCheck.totalSurfaces} card surface(s) preserve high contrast border/outline`
+            : `forced-colors: active evaluated; ${forcedColorsCheck.missingBorderElements.length} of ${forcedColorsCheck.totalSurfaces} surface(s) lack visible border: ${forcedColorsCheck.missingBorderElements.join(', ')}`,
+          total_surfaces: forcedColorsCheck.totalSurfaces,
+          preserved_surfaces: forcedColorsCheck.preservedSurfaces,
+          high_contrast_outline_or_border: fcAllPreserved,
         };
       } catch (fcErr) {
         result.modality_checks.forced_colors = {

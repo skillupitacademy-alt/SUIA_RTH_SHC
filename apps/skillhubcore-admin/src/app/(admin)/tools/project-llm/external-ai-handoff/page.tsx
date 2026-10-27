@@ -122,13 +122,24 @@ All tutorial blocks in the platform belong to a unified tutorial page. Your comp
 
 ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
 
-1. Container & Section Shell:
-   - Outermost element MUST be an <article> element matching canonical tutorial blocks:
-     className="w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors \${className}"
-     style={{ color: secondary }}
-     data-block-id={runtimeContext?.blockId ?? block.id}
-     data-block-type="${familyLower}"
-     data-block-version="${versionUpper}"
+1. Container & Section Shell (Generic BlockShell Composition):
+   - Outermost element MUST compose the generic BlockShell primitive:
+     import { BlockShell, BlockHeader, CardSurface, CalloutBanner } from '../primitives';
+     
+     <BlockShell
+       theme={theme}
+       runtimeContext={runtimeContext}
+       blockId={block.id}
+       blockType="${familyLower}"
+       blockVersion="${versionUpper}"
+       className={className}
+     >
+       ...
+     </BlockShell>
+   - Do NOT hand-roll a raw <article> wrapper with hardcoded classes. BlockShell automatically enforces:
+     * Canonical outer padding ("w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors")
+     * Dual-brand secondary color binding
+     * UBRC DOM identity data attributes (data-block-id, data-block-type, data-block-version)
 
 2. Typography Scale & Font Hierarchy:
    - Eyebrow / Category Badge:

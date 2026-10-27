@@ -161,12 +161,16 @@ async def test_approve_final_rejects_failed_modality_checks():
                     "passed": True,
                     "violations_count": 0,
                     "violations": [],
+                    "passes_count": 12,
                 },
                 "modality_checks": {
+                    "keyboard_navigation": {"status": "PASS"},
                     "reduced_motion": {
                         "status": "FAIL",
                         "details": "Unguarded CSS animation detected under prefers-reduced-motion"
-                    }
+                    },
+                    "forced_colors": {"status": "PASS"},
+                    "responsive_viewports": {"status": "PASS"},
                 }
             },
         },
@@ -189,6 +193,56 @@ async def test_approve_final_rejects_failed_modality_checks():
 
         assert exc_info.value.status_code == 400
         assert "failed reduced_motion modality check" in exc_info.value.detail
+
+
+@pytest.mark.asyncio
+async def test_approve_final_rejects_missing_modalities_object():
+    """Final approval fails closed when modality_checks is missing or empty."""
+    mock_workflow = MagicMock()
+    mock_workflow.current_state = CanonicalWorkflowState.AWAITING_GATE_2
+    mock_workflow.candidate_sha256 = "c" * 64
+    mock_workflow.manifest_sha256 = "m" * 64
+    mock_workflow.gate_results = {
+        "placement": {
+            "commit": "a" * 40,
+            "candidate_sha256": "c" * 64,
+            "manifest_sha256": "m" * 64,
+        },
+        "qualification": {"status": "PASS"},
+        "composer": {
+            "status": "PASS",
+            "passed": True,
+            "evidence_hash": "e" * 64,
+            "runner_metadata": {
+                "screenshot_captured": True,
+                "accessibility": {
+                    "passed": True,
+                    "violations_count": 0,
+                    "violations": [],
+                    "passes_count": 10,
+                },
+                "modality_checks": {},
+            },
+        },
+    }
+
+    mock_gov = MagicMock()
+    mock_gov.get_workflow = AsyncMock(return_value=mock_workflow)
+
+    with patch("subprocess.run") as mock_sub:
+        mock_sub.return_value = MagicMock(returncode=0, stdout="packages/ui/some-file.tsx\n")
+
+        with pytest.raises(HTTPException) as exc_info:
+            await approve_final_certification(
+                workflow_id="wf-test-missing-mod",
+                request=FinalApprovalRequest(approved=True, reason="Testing"),
+                user={"email": "admin@skillhubcore.in"},
+                governance_service=mock_gov,
+                session=MagicMock(),
+            )
+
+        assert exc_info.value.status_code == 400
+        assert "missing required modality_checks object" in exc_info.value.detail
 
 
 @pytest.mark.asyncio
