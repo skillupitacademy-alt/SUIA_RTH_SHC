@@ -238,8 +238,11 @@ function IntroductionI1View({
             const IconComponent = getIcon(card.icon);
             return (
               <React.Fragment key={index}>
-                <div
-                  className={`flex-1 w-full rounded-2xl p-4 text-center space-y-2 border-2 border-t border-white/80 dark:border-white/10 shadow-xl hover:shadow-2xl motion-safe:transition-all motion-safe:duration-300 motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                <CardSurface
+                  theme={theme}
+                  elevation="dashboard"
+                  hoverable={false}
+                  className={`flex-1 w-full text-center space-y-2 p-4 border-2 ${
                     card.highlight ? 'ring-2 ring-offset-2' : ''
                   }`}
                   style={
@@ -267,7 +270,7 @@ function IntroductionI1View({
                   <p className="text-xs leading-tight" style={{ color: getThemeColor(theme, 'gray', 500) }}>
                     {card.subtitle}
                   </p>
-                </div>
+                </CardSurface>
                 {index < page.whereFit.flowCards.length - 1 && (
                   <div className="flex items-center justify-center text-lg" style={{ color: primary }}>
                     <ArrowRight className="hidden lg:block h-5 w-5" />

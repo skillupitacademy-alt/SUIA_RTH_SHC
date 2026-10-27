@@ -28,7 +28,7 @@ export function ObjectiveBlock({
   }
 }
 
-import { BlockShell, BlockHeader } from '../primitives';
+import { BlockShell, BlockHeader, CardSurface } from '../primitives';
 
 function ObjectiveO1View({
   block,
@@ -75,13 +75,14 @@ function ObjectiveO1View({
 
       <ul className="grid grid-cols-1 md:grid-cols-2 gap-4" role="list">
         {objectives.map((obj, index) => (
-          <li 
+          <CardSurface
+            as="li"
             key={obj.id ?? index}
-            className="flex items-start gap-3.5 p-4 sm:p-5 rounded-xl border border-t border-white/80 dark:border-white/10 motion-safe:transition-all motion-safe:duration-300 motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none shadow-xl hover:shadow-2xl backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            style={{ 
-              backgroundColor: withAlpha(primary, '08'),
-              borderColor: withAlpha(primary, '25') 
-            }}
+            theme={theme}
+            variant="accent"
+            elevation="dashboard"
+            hoverable={false}
+            className="flex items-start gap-3.5 p-4 sm:p-5"
           >
             <span
               className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg mt-0.5"
@@ -99,7 +100,7 @@ function ObjectiveO1View({
             >
               {obj.text}
             </span>
-          </li>
+          </CardSurface>
         ))}
       </ul>
     </BlockShell>

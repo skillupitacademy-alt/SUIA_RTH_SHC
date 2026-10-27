@@ -156,7 +156,7 @@ function StageIcon({ stageKey }: { stageKey: ObjectiveO2StageKey }) {
   }
 }
 
-import { BlockShell, BlockHeader } from '../primitives';
+import { BlockShell, BlockHeader, CardSurface } from '../primitives';
 
 function ObjectiveO2View({
   block,
@@ -206,13 +206,13 @@ function ObjectiveO2View({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 items-stretch">
         {stages.map((stage, index) => (
           <React.Fragment key={stage.key}>
-            <div
+            <CardSurface
               data-stage={stage.key}
-              className={`objective-stage objective-${stage.key} rounded-xl border border-t border-white/80 dark:border-white/10 p-4 sm:p-5 motion-safe:transition-all motion-safe:duration-300 motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none shadow-xl hover:shadow-2xl backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex flex-col justify-between`}
-              style={{
-                backgroundColor: withAlpha(primary, '08'),
-                borderColor: withAlpha(primary, '25'),
-              }}
+              theme={theme}
+              variant="accent"
+              elevation="dashboard"
+              hoverable={false}
+              className={`objective-stage objective-${stage.key} p-4 sm:p-5 flex flex-col justify-between`}
             >
               <div>
                 <div className="flex items-center justify-between gap-3 mb-3">
@@ -307,7 +307,7 @@ function ObjectiveO2View({
                   />
                 </div>
               )}
-            </div>
+            </CardSurface>
           </React.Fragment>
         ))}
       </div>

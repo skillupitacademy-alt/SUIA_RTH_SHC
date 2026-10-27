@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ICardGridBlock, BlockComponentProps, TutorialBlock } from '../types';
 import { TutorialBlockRenderer } from '../TutorialBlockRenderer';
+import { CardSurface } from '../primitives';
 
 export function CardGridBlock({
   block,
@@ -46,9 +47,12 @@ export function CardGridBlock({
       {cards.map((card, cIdx) => {
         const cardBlocks = Array.isArray(card?.blocks) ? card.blocks : [];
         return (
-          <div
+          <CardSurface
             key={card.id || `card-${cIdx}`}
-            className="flex flex-col rounded-2xl border border-slate-200/80 dark:border-slate-800 border-t border-white/80 dark:border-white/10 bg-white/90 dark:bg-slate-900/85 p-5 shadow-xl hover:shadow-2xl motion-safe:transition-all motion-safe:duration-300 motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            theme={theme}
+            elevation="dashboard"
+            hoverable={false}
+            className="flex flex-col p-5"
           >
             {card.title && (
               <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-2 pb-1.5 border-b border-slate-100 dark:border-slate-800">
@@ -58,7 +62,7 @@ export function CardGridBlock({
             <div className="flex flex-col space-y-2 flex-1 min-w-0">
               {cardBlocks.map((childBlock, bIdx) => renderBlockItem(childBlock, cIdx, bIdx))}
             </div>
-          </div>
+          </CardSurface>
         );
       })}
     </div>

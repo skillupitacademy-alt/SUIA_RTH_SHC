@@ -21,7 +21,7 @@ export interface CalloutBannerProps extends Omit<React.HTMLAttributes<HTMLDivEle
  * Instead, they MUST use an elevated, symmetric card container:
  * - Uniform corner radius (`rounded-2xl`)
  * - Subtle perimeter border (`border`)
- * - Soft elevation (`shadow-sm hover:shadow-md transition-all`)
+ * - Stable resting elevation (Tier 2 focal container with shadow-xl backdrop-blur-md, without misleading hover jumps)
  * - 4-color brand token consumption (`primary`, `secondary`, `accent1`, `accent2`)
  */
 export function CalloutBanner({

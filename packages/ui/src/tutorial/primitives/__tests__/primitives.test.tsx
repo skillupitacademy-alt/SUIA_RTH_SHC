@@ -154,6 +154,42 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
       expect(card.getAttribute('tabindex')).toBe('0');
       expect(card.className).toContain('focus-visible:ring-2');
     });
+
+    it('provides role="button", tabIndex={0}, and triggers onClick on Enter and Space keydown', () => {
+      let clickedCount = 0;
+      const handleClick = () => {
+        clickedCount++;
+      };
+
+      const { container } = render(
+        <CardSurface theme={mockTheme} onClick={handleClick}>
+          <span>Clickable Card</span>
+        </CardSurface>
+      );
+
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.getAttribute('role')).toBe('button');
+      expect(card.getAttribute('tabindex')).toBe('0');
+
+      // Enter keydown
+      card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      expect(clickedCount).toBe(1);
+
+      // Space keydown
+      card.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      expect(clickedCount).toBe(2);
+    });
+
+    it('includes forced-colors:border-[ButtonBorder] for Windows High Contrast Mode', () => {
+      const { container } = render(
+        <CardSurface theme={mockTheme}>
+          <span>High Contrast Card</span>
+        </CardSurface>
+      );
+
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.className).toContain('forced-colors:border-[ButtonBorder]');
+    });
   });
 
   describe('StepBadge', () => {

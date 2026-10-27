@@ -84,7 +84,7 @@ function SkillIcon({ label }: { label: string }) {
   return <Sparkles aria-hidden="true" className="h-4 w-4" />;
 }
 
-import { BlockShell, BlockHeader } from '../primitives';
+import { BlockShell, BlockHeader, CardSurface } from '../primitives';
 
 function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
   block: ObjectiveO3BlockData;
@@ -123,7 +123,16 @@ function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
       {skills.length > 0 ? (
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5" role="list">
           {skills.map((skill) => (
-            <li key={skill.id} data-skill-id={skill.id} className="skill-item rounded-xl border border-t border-white/80 dark:border-white/10 p-4 sm:p-5 motion-safe:transition-all motion-safe:duration-300 motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none shadow-xl hover:shadow-2xl backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex flex-col justify-between" style={{ backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }}>
+            <CardSurface
+              as="li"
+              key={skill.id}
+              data-skill-id={skill.id}
+              theme={theme}
+              variant="accent"
+              elevation="dashboard"
+              hoverable={false}
+              className="skill-item p-4 sm:p-5 flex flex-col justify-between"
+            >
               <div>
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2.5">
@@ -138,10 +147,10 @@ function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
                 <span className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-md mt-0.5" style={{ backgroundColor: withAlpha(primary, '18'), color: primary }} aria-hidden="true"><Check aria-hidden="true" className="h-3.5 w-3.5" /></span>
                 <div><strong className="font-semibold mr-1.5" style={{ color: secondary }}>Expected:</strong><span style={{ color: withAlpha(secondary, 'dd') }}>{skill.expectedResult}</span></div>
               </div>}
-            </li>
+            </CardSurface>
           ))}
         </ul>
-      ) : <ul className="space-y-2.5" role="list"><li className="rounded-xl border p-4 sm:p-5 text-sm sm:text-base font-medium leading-relaxed" style={{ backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25'), color: secondary }}>No skill objectives configured for this lesson.</li></ul>}
+      ) : <ul className="space-y-2.5" role="list"><CardSurface as="li" theme={theme} variant="accent" elevation="dashboard" hoverable={false} className="p-4 sm:p-5 text-sm sm:text-base font-medium leading-relaxed" style={{ color: secondary }}>No skill objectives configured for this lesson.</CardSurface></ul>}
     </BlockShell>
   );
 }

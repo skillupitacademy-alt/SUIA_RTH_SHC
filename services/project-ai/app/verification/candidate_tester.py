@@ -178,6 +178,30 @@ async def run_candidate_qualification_tests(
         for file in files
     ]
     runner_revision = _runner_revision()
+
+    # UBA Design & Accessibility Rule: Asymmetrical left borders prohibited
+    for comp in component_files:
+        comp_text = comp.content if isinstance(comp.content, str) else comp.content.decode('utf-8', errors='replace')
+        if re.search(r'\bborder-l(?:-[0-9]+|-[a-z]+|\s|"|\')', comp_text) or re.search(r'borderLeft(?:Width|Color)?\s*:', comp_text) or re.search(r'border-left\s*:', comp_text):
+            return {
+                "passed": False,
+                "status": "FAIL",
+                "detail": (
+                    f"Candidate component '{comp.filename}' violates UBA design standards: "
+                    "asymmetrical left-side borders (`border-l-*` or `border-left`) are strictly prohibited. "
+                    "Callouts and elevated cards must use symmetric perimeter borders with CardSurface or CalloutBanner."
+                ),
+                "evidence_id": f"test-evidence-{candidate_id}",
+                "evidence_hash": "",
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "runner_metadata": {
+                    "runner_revision": runner_revision,
+                    "qualification_inputs": qualification_inputs,
+                },
+            }
+
     written_files: List[Path] = []
     worktree_path: Optional[Path] = None
     linked_deps: List[Path] = []
