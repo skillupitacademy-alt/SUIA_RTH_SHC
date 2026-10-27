@@ -160,6 +160,30 @@ def test_qualification_rejects_unguarded_hover_transforms(tmp_path, monkeypatch)
     assert "motion safety standards" in result["detail"]
 
 
+def test_qualification_rejects_motion_safe_hover_transforms_without_motion_reduce(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    (workspace / "packages" / "ui").mkdir(parents=True)
+    monkeypatch.setattr(candidate_tester, "find_workspace_root", lambda: workspace)
+
+    result = asyncio.run(candidate_tester.run_candidate_qualification_tests(
+        "aabbccdd-eeff-0011-2233-445566778899",
+        [
+            _candidate_file(
+                "ExampleBlock.tsx",
+                'export function ExampleBlock() { return <div className="motion-safe:hover:-translate-y-2">Card</div>; }'
+            ),
+            _candidate_file(
+                "ExampleBlock.test.tsx",
+                "import { ExampleBlock } from '../ExampleBlock'; test('renders', () => { ExampleBlock(); });",
+            ),
+        ],
+    ))
+
+    assert result["passed"] is False
+    assert result["status"] == "FAIL"
+    assert "motion safety standards" in result["detail"]
+
+
 def test_qualification_rejects_cursor_pointer_without_keyboard_semantics(tmp_path, monkeypatch):
     workspace = tmp_path / "workspace"
     (workspace / "packages" / "ui").mkdir(parents=True)

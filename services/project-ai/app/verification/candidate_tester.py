@@ -203,26 +203,30 @@ async def run_candidate_qualification_tests(
             }
 
         # UBA Accessibility Rule 2: Motion Safety (WCAG SC 2.3.3)
-        # Any hover transform translation must be guarded by motion-safe: and motion-reduce:
-        if re.search(r'(?<!motion-safe:)hover:[-\w]*translate', comp_text):
-            return {
-                "passed": False,
-                "status": "FAIL",
-                "detail": (
-                    f"Candidate component '{comp.filename}' violates UBA motion safety standards (WCAG SC 2.3.3): "
-                    "hover translate movements must be prefixed with `motion-safe:` and paired with `motion-reduce:transform-none` "
-                    "(or compose CardSurface with hoverable={true})."
-                ),
-                "evidence_id": f"test-evidence-{candidate_id}",
-                "evidence_hash": "",
-                "total_tests": 0,
-                "passed_tests": 0,
-                "failed_tests": 0,
-                "runner_metadata": {
-                    "runner_revision": runner_revision,
-                    "qualification_inputs": qualification_inputs,
-                },
-            }
+        # Any hover transform translation must be guarded by motion-safe: AND accompanied by motion-reduce:transform-none
+        has_hover_translate = bool(re.search(r'hover:[-\w]*translate', comp_text))
+        if has_hover_translate and "CardSurface" not in comp_text:
+            has_motion_safe = not bool(re.search(r'(?<!motion-safe:)hover:[-\w]*translate', comp_text))
+            has_motion_reduce = "motion-reduce:transform-none" in comp_text or "motion-reduce:transition-none" in comp_text
+            if not (has_motion_safe and has_motion_reduce):
+                return {
+                    "passed": False,
+                    "status": "FAIL",
+                    "detail": (
+                        f"Candidate component '{comp.filename}' violates UBA motion safety standards (WCAG SC 2.3.3): "
+                        "hover translate movements must be prefixed with `motion-safe:` AND accompanied by `motion-reduce:transform-none` "
+                        "(or compose CardSurface with hoverable={true})."
+                    ),
+                    "evidence_id": f"test-evidence-{candidate_id}",
+                    "evidence_hash": "",
+                    "total_tests": 0,
+                    "passed_tests": 0,
+                    "failed_tests": 0,
+                    "runner_metadata": {
+                        "runner_revision": runner_revision,
+                        "qualification_inputs": qualification_inputs,
+                    },
+                }
 
         # UBA Accessibility Rule 3: Keyboard semantics for interactive elements (WCAG SC 2.1.1, 4.1.2)
         # Raw cursor-pointer on plain containers without CardSurface or tabIndex/role/onClick

@@ -76,7 +76,7 @@ export function CardSurface({
     flat: 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
   };
 
-  const isInteractive = hoverable || Boolean(rest.onClick);
+  const isInteractive = Boolean(hoverable || rest.onClick);
   const activeRestingClass = restingElevationClasses[elevation] ?? restingElevationClasses.dashboard;
   const activeInteractiveClass = isInteractive
     ? (interactiveElevationClasses[elevation] ?? interactiveElevationClasses.dashboard)
@@ -89,7 +89,7 @@ export function CardSurface({
     className,
   ].filter(Boolean).join(' ');
 
-  const effectiveRole = rest.role ?? (rest.onClick ? 'button' : undefined);
+  const effectiveRole = rest.role ?? (isInteractive ? 'button' : undefined);
   const effectiveTabIndex = isInteractive && tabIndex === undefined ? 0 : tabIndex;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -97,9 +97,11 @@ export function CardSurface({
       rest.onKeyDown(e);
       if (e.defaultPrevented) return;
     }
-    if (rest.onClick && (e.key === 'Enter' || e.key === ' ')) {
+    if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
-      (rest.onClick as unknown as (e: React.SyntheticEvent) => void)(e);
+      if (rest.onClick) {
+        (rest.onClick as unknown as (e: React.SyntheticEvent) => void)(e);
+      }
     }
   };
 

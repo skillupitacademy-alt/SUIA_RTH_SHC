@@ -326,7 +326,7 @@ function IntroductionI1View({
             return (
               <CardSurface
                 key={index}
-                hoverable
+                hoverable={false}
                 theme={theme}
                 className="p-6 text-center space-y-3"
                 style={
@@ -412,7 +412,7 @@ function IntroductionI1View({
             return (
               <CardSurface
                 key={index}
-                hoverable
+                hoverable={false}
                 theme={theme}
                 className="p-5 text-center space-y-3"
               >

@@ -143,7 +143,7 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
       expect(card.getAttribute('tabindex')).toBeNull();
     });
 
-    it('adds tabIndex and focus-visible classes when hoverable is true', () => {
+    it('adds tabIndex, role="button", and focus-visible classes when hoverable is true', () => {
       const { container } = render(
         <CardSurface theme={mockTheme} variant="default" hoverable={true}>
           <span>Interactive Card</span>
@@ -152,6 +152,7 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
 
       const card = container.firstElementChild as HTMLElement;
       expect(card.getAttribute('tabindex')).toBe('0');
+      expect(card.getAttribute('role')).toBe('button');
       expect(card.className).toContain('focus-visible:ring-2');
     });
 
