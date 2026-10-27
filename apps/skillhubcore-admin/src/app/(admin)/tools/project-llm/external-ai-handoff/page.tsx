@@ -26,6 +26,7 @@ import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
 import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
+import { DESIGN_SYSTEM_CONTRACT_MARKDOWN } from '@/lib/project-llm/designSystemContract';
 
 type TabKey = 'summary' | 'ils' | 'lsnb' | 'rssb' | 'composer' | 'testing' | 'brand' | 'evidence';
 
@@ -117,7 +118,9 @@ AUTHORITATIVE TARGET IDENTITY:
 CANONICAL TUTORIAL DESIGN SYSTEM & LOOK & FEEL SPECIFICATIONS
 (MUST MATCH INTRODUCTION, DEFINITION, CODE, AND SUMMARY BLOCKS)
 --------------------------------------------------------------------------------
-All tutorial blocks in the platform belong to a unified tutorial page. Your component MUST adhere to these exact styling and typography standards:
+All tutorial blocks in the platform belong to a unified tutorial page. Your component MUST satisfy these shared invariants while preserving the target family's own content-specific composition:
+
+${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
 
 1. Container & Section Shell:
    - Outermost element MUST be an <article> element matching canonical tutorial blocks:
@@ -155,8 +158,8 @@ All tutorial blocks in the platform belong to a unified tutorial page. Your comp
      * Accessibility: Must include visible keyboard focus ring and motion-safe hover guards (WCAG 2.3.3 & 2.4.7).
    - Tier 2: Static Editorial Highlights & Takeaways (elevation="elevated")
      * Use case: CalloutBanner takeaways, hero definitions, key insights.
-     * Classes: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl backdrop-blur-md motion-safe:-translate-y-0.5 motion-safe:transition-all"
-     * Rule: Do NOT add misleading cursor-pointer or aggressive hover jumps to static non-clickable text (WCAG 1.4.1).
+     * Classes: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl backdrop-blur-md"
+     * Rule: Do NOT add cursor-pointer, hover transforms, or hover shadow changes to static non-clickable text (WCAG 1.4.1).
    - Tier 3: Dense Content & Code (elevation="subtle" or "flat")
      * Use case: TerminalWindow code blocks, dense tables, long continuous prose.
      * Rule: Keep flat or subtle border (shadow-sm or flat) to prevent cognitive fatigue and optical clutter.
@@ -299,7 +302,8 @@ VERIFICATION GATES & COMPLIANCE ARCHITECTURE
 ================================================================================
 1. UBRC Runtime Gate: <article data-block-id="..." data-block-type="${familyLower}" data-block-version="${versionUpper}">
 2. Brand Independence Gate: Consumes theme prop / DEFAULT_THEME; zero brand strings
-3. Universal Block Architecture (UBA) Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (hero clamp 34px-52px or standard 2xl-4xl title, text-base/lg intro, Lucide icons with aria-hidden='true'). Candidates should compose @quiz/ui primitives (BlockShell, BlockHeader, CardSurface, StepBadge, SyntaxPill, CalloutBanner, TerminalWindow) with generic dashboard-style elevated cards (rounded-xl/rounded-2xl, multi-layer shadow-xl/shadow-2xl, subtle top rim border-t border-white/80, backdrop-blur-md, and smooth lift transition -translate-y-1 hover:-translate-y-2.5)
+3. Universal Block Architecture (UBA) Look & Feel Gate: Apply the shared 12-parameter Tutorial Design System Contract below while preserving this family/version's own composition. Use @quiz/ui primitives where their semantics fit; do not claim full WCAG certification without browser evidence.
+${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
 4. Strict Typing Gate: zero 'any' types in props or block interfaces
 5. Repository Integration Gate: ${componentName}.tsx placed in packages/ui/src/tutorial/blocks/
 6. Composer Registry Gate: Project LLM adds ${versionUpper} to the generated block catalog and renderer dispatch without removing other families or versions
