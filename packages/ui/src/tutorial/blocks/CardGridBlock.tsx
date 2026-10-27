@@ -48,7 +48,7 @@ export function CardGridBlock({
         return (
           <div
             key={card.id || `card-${cIdx}`}
-            className="flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-sm"
+            className="flex flex-col rounded-2xl border border-slate-200/80 dark:border-slate-800 border-t border-white/80 dark:border-white/10 bg-white/90 dark:bg-slate-900/85 p-5 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 transition-all duration-300 backdrop-blur-md cursor-pointer"
           >
             {card.title && (
               <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-2 pb-1.5 border-b border-slate-100 dark:border-slate-800">

@@ -149,11 +149,12 @@ All tutorial blocks in the platform belong to a unified tutorial page. Your comp
 
 3. Cards, Panels, & Elevated Containers:
    - Elevated Card Standard:
-     Class: "rounded-2xl border p-5 sm:p-6 transition-all duration-200 shadow-sm hover:shadow-md"
+     Class: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 transition-all duration-300 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 backdrop-blur-md cursor-pointer"
      Style: { backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }
+     Composition: Candidates should compose CardSurface from '@quiz/ui' (defaulting to dashboard elevation).
    - NO LEFT-SIDE BORDER ALLOWED:
      Asymmetrical left borders ('border-l-*' or 'borderLeftColor') are STRICTLY PROHIBITED for callouts, takeaways, quotes, and tips.
-     Always use symmetric, elevated rounded card containers ('rounded-2xl border ... shadow-sm').
+     Always use symmetric, elevated rounded card containers ('rounded-2xl border border-t border-white/80 ... shadow-xl hover:shadow-2xl').
    - Icon Badges:
      Class: "flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-xl"
      Style: { backgroundColor: withAlpha(primary, '18'), color: primary }
@@ -286,7 +287,7 @@ VERIFICATION GATES & COMPLIANCE ARCHITECTURE
 ================================================================================
 1. UBRC Runtime Gate: <article data-block-id="..." data-block-type="${familyLower}" data-block-version="${versionUpper}">
 2. Brand Independence Gate: Consumes theme prop / DEFAULT_THEME; zero brand strings
-3. Universal Block Architecture (UBA) Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (hero clamp 34px-52px or standard 2xl-4xl title, text-base/lg intro, Lucide icons with aria-hidden='true'). Candidates should compose @quiz/ui primitives (BlockShell, BlockHeader, CardSurface, StepBadge, SyntaxPill, CalloutBanner, TerminalWindow)
+3. Universal Block Architecture (UBA) Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (hero clamp 34px-52px or standard 2xl-4xl title, text-base/lg intro, Lucide icons with aria-hidden='true'). Candidates should compose @quiz/ui primitives (BlockShell, BlockHeader, CardSurface, StepBadge, SyntaxPill, CalloutBanner, TerminalWindow) with generic dashboard-style elevated cards (rounded-xl/rounded-2xl, multi-layer shadow-xl/shadow-2xl, subtle top rim border-t border-white/80, backdrop-blur-md, and smooth lift transition -translate-y-1 hover:-translate-y-2.5)
 4. Strict Typing Gate: zero 'any' types in props or block interfaces
 5. Repository Integration Gate: ${componentName}.tsx placed in packages/ui/src/tutorial/blocks/
 6. Composer Registry Gate: Project LLM adds ${versionUpper} to the generated block catalog and renderer dispatch without removing other families or versions
@@ -330,7 +331,13 @@ The persisted backend contract is authoritative. Do not invent requirements or c
    - Content: \`text-sm sm:text-base font-medium leading-relaxed\`
 4. **Elevated Containers & Scoped Ban on Left-Side Borders:**
    - **NO LEFT-SIDE BORDER (\`border-l-*\`) ON CONTAINERS**: Asymmetrical left-side accent borders are strictly prohibited on all callout, card, tip, takeaway, and quote containers.
-   - All callout, tip, and takeaway containers must use symmetric, elevated rounded cards: \`rounded-2xl border p-5 sm:p-6 shadow-sm hover:shadow-md transition-all\`.
+   - **Platform Dashboard Card Elevation Standard**: All card and callout containers must follow the generic elevated card architecture (as seen on the Admin Dashboard):
+     - Composed via \`@quiz/ui\` \`CardSurface\` (or matching styling).
+     - Symmetric curvature: \`rounded-xl\` or \`rounded-2xl\`.
+     - Depth & Elevation: Rich multi-layered shadows (\`shadow-xl hover:shadow-2xl\`).
+     - Rim Lighting: Subtle top rim border (\`border-t border-white/80 dark:border-white/10\`).
+     - Surface Tactility: Translucent glassmorphism (\`backdrop-blur-md\` with \`bg-white/85 dark:bg-slate-900/85\` or brand alpha tint).
+     - Micro-interaction Lift: Smooth hover elevation (\`-translate-y-1 hover:-translate-y-2.5 transition-all duration-300 ease-out cursor-pointer\`).
    - *(Note: Chronological vertical timeline rails / connector axes, such as in TimelineBlock, are connector lines and not card containers).*
 5. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
 6. **Dual-Brand 4-Color Tokens:**

@@ -77,7 +77,7 @@ function ObjectiveO1View({
         {objectives.map((obj, index) => (
           <li 
             key={obj.id ?? index}
-            className="flex items-start gap-3.5 p-4 sm:p-5 rounded-xl border transition-all duration-200 shadow-sm hover:shadow-md"
+            className="flex items-start gap-3.5 p-4 sm:p-5 rounded-xl border border-t border-white/80 dark:border-white/10 transition-all duration-300 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 backdrop-blur-md cursor-pointer"
             style={{ 
               backgroundColor: withAlpha(primary, '08'),
               borderColor: withAlpha(primary, '25') 

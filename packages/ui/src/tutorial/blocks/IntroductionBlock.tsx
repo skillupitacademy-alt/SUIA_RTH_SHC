@@ -150,7 +150,7 @@ function IntroductionI1View({
           {/* Right: Mountain Roadmap Illustration with Motto */}
           <div className="lg:col-span-6 relative flex justify-center">
             <div
-              className="w-full max-w-[480px] h-[220px] rounded-3xl p-4 relative overflow-hidden shadow-sm border"
+              className="w-full max-w-[480px] h-[220px] rounded-3xl p-4 relative overflow-hidden shadow-xl border border-t border-white/80 dark:border-white/10 backdrop-blur-md"
               style={{
                 background: `linear-gradient(135deg, ${withAlpha(primary, '0d')}, ${withAlpha(primary, '1a')})`,
                 borderColor: withAlpha(primary, '33'),
@@ -209,7 +209,7 @@ function IntroductionI1View({
           {page.topic.description}
         </p>
         <div
-          className="rounded-2xl border p-5 sm:p-6 text-base font-semibold italic shadow-sm"
+          className="rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 text-base font-semibold italic shadow-xl backdrop-blur-md -translate-y-0.5 transition-all duration-300"
           style={{
             borderColor: withAlpha(primary, '25'),
             backgroundColor: withAlpha(primary, '06'),
@@ -239,8 +239,8 @@ function IntroductionI1View({
             return (
               <React.Fragment key={index}>
                 <div
-                  className={`flex-1 w-full rounded-2xl p-4 text-center space-y-2 border-2 ${
-                    card.highlight ? 'shadow-sm' : ''
+                  className={`flex-1 w-full rounded-2xl p-4 text-center space-y-2 border-2 border-t border-white/80 dark:border-white/10 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 transition-all duration-300 backdrop-blur-md cursor-pointer ${
+                    card.highlight ? 'ring-2 ring-offset-2' : ''
                   }`}
                   style={
                     card.highlight

@@ -6,6 +6,7 @@ export interface CardSurfaceProps extends React.HTMLAttributes<HTMLElement> {
   children: React.ReactNode;
   theme?: DomainTheme;
   variant?: 'default' | 'muted' | 'accent' | 'highlight';
+  elevation?: 'dashboard' | 'elevated' | 'subtle' | 'flat';
   hoverable?: boolean;
   className?: string;
   as?: 'div' | 'section' | 'article' | 'li';
@@ -16,11 +17,18 @@ export interface CardSurfaceProps extends React.HTMLAttributes<HTMLElement> {
  * 
  * Provides consistent rounded-2xl boundaries, borders, elevation,
  * and dual-brand subtle surface backgrounds.
+ * 
+ * Inspired by the elevated platform dashboard aesthetic:
+ * - Layered elevation shadows (shadow-xl / shadow-2xl)
+ * - Subtle top rim highlight (border-t border-white/80 dark:border-white/10)
+ * - Translucent glassmorphism (backdrop-blur-md)
+ * - Micro-interaction lift transform (-translate-y-1 hover:-translate-y-2.5 transition-all duration-300)
  */
 export function CardSurface({
   children,
   theme,
   variant = 'default',
+  elevation = 'dashboard',
   hoverable = false,
   className = '',
   style,
@@ -33,7 +41,6 @@ export function CardSurface({
 
   const variantStyles: Record<string, React.CSSProperties> = {
     default: {
-      backgroundColor: '#ffffff',
       borderColor: '#e2e8f0',
     },
     muted: {
@@ -50,12 +57,19 @@ export function CardSurface({
     },
   };
 
-  const hoverClass = hoverable
-    ? 'hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200'
-    : '';
+  const elevationClasses: Record<string, string> = {
+    dashboard: 'shadow-xl hover:shadow-2xl border-t border-white/80 dark:border-white/10 -translate-y-1 hover:-translate-y-2.5 transition-all duration-300 ease-out backdrop-blur-md bg-white/85 dark:bg-slate-900/85',
+    elevated: 'shadow-md hover:shadow-xl border-t border-white/60 dark:border-white/10 -translate-y-0.5 hover:-translate-y-1.5 transition-all duration-300 ease-out backdrop-blur-sm bg-white/90 dark:bg-slate-900/90',
+    subtle: 'shadow-sm hover:shadow-md transition-all duration-200 bg-white dark:bg-slate-800',
+    flat: 'shadow-none bg-white dark:bg-slate-800',
+  };
+
+  const activeElevationClass = elevationClasses[elevation] ?? elevationClasses.dashboard;
+  const hoverClass = hoverable ? 'cursor-pointer' : '';
 
   const combinedClass = [
-    'rounded-2xl border p-5 sm:p-6 shadow-sm dark:bg-slate-800 dark:border-slate-700',
+    'rounded-2xl border p-5 sm:p-6 dark:border-slate-700',
+    activeElevationClass,
     hoverClass,
     className,
   ].filter(Boolean).join(' ');

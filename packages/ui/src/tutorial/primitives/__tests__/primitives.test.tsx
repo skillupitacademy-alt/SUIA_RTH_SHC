@@ -103,7 +103,7 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
   });
 
   describe('CardSurface', () => {
-    it('renders with rounded-2xl boundaries and shadow-sm', () => {
+    it('renders with rounded-2xl boundaries and elevated dashboard styling by default', () => {
       const { container } = render(
         <CardSurface theme={mockTheme} variant="default" hoverable={true}>
           <span>Card Body</span>
@@ -113,6 +113,19 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
       const card = container.firstElementChild as HTMLElement;
       expect(card.className).toContain('rounded-2xl');
       expect(card.className).toContain('border');
+      expect(card.className).toContain('shadow-xl');
+      expect(card.className).toContain('-translate-y-1');
+      expect(card.className).toContain('backdrop-blur-md');
+    });
+
+    it('supports subtle elevation mode', () => {
+      const { container } = render(
+        <CardSurface theme={mockTheme} elevation="subtle" hoverable={true}>
+          <span>Card Body</span>
+        </CardSurface>
+      );
+
+      const card = container.firstElementChild as HTMLElement;
       expect(card.className).toContain('shadow-sm');
       expect(card.className).toContain('hover:shadow-md');
     });
@@ -154,7 +167,7 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
 
       const banner = container.firstElementChild as HTMLElement;
       expect(banner.className).toContain('rounded-2xl');
-      expect(banner.className).toContain('shadow-sm');
+      expect(banner.className).toContain('shadow-xl');
       // Strict rule: No asymmetrical left-side border
       expect(banner.className).not.toContain('border-l-4');
       expect(banner.className).not.toContain('border-l-');

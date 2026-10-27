@@ -40,7 +40,7 @@ Validate only requirements supported by canonical architecture, repository evide
 - Theme injection and brand independence.
 - Repository placement, dependency boundaries, and approved-file changes.
 - Required automated tests and evidence-backed certification.
-- Approved Universal Block Architecture (UBA) framework contracts: platform-wide Design System tokens (@quiz/ui), dual-brand palettes, outer shell container boundaries (w-full px-[5%] py-8 sm:py-10), symmetric elevated card styling, and prohibition of asymmetrical left-side borders on callout, tip, and takeaway containers.
+- Approved Universal Block Architecture (UBA) framework contracts: platform-wide Design System tokens (@quiz/ui), dual-brand palettes, outer shell container boundaries (w-full px-[5%] py-8 sm:py-10), generic dashboard-style elevated card styling (rounded-xl/2xl, multi-layer shadow-xl/2xl, top rim highlight border-t border-white/80, backdrop-blur, lift transform), and prohibition of asymmetrical left-side borders on callout, tip, and takeaway containers.
 
 Do not dictate arbitrary visual presentation or interaction design outside approved framework contracts.
 

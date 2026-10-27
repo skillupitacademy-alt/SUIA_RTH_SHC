@@ -123,7 +123,7 @@ function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
       {skills.length > 0 ? (
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5" role="list">
           {skills.map((skill) => (
-            <li key={skill.id} data-skill-id={skill.id} className="skill-item rounded-xl border p-4 sm:p-5 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between" style={{ backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }}>
+            <li key={skill.id} data-skill-id={skill.id} className="skill-item rounded-xl border border-t border-white/80 dark:border-white/10 p-4 sm:p-5 transition-all duration-300 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 backdrop-blur-md cursor-pointer flex flex-col justify-between" style={{ backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }}>
               <div>
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2.5">

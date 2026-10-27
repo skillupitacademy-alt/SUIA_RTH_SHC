@@ -76,7 +76,7 @@ export function CalloutBanner({
   }[resolvedVariant];
 
   const combinedClass = [
-    'rounded-2xl border p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 dark:bg-slate-800/90 flex items-start gap-3.5 sm:gap-4',
+    'rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl hover:shadow-2xl -translate-y-0.5 hover:-translate-y-1.5 backdrop-blur-md transition-all duration-300 dark:bg-slate-800/90 flex items-start gap-3.5 sm:gap-4',
     className,
   ].filter(Boolean).join(' ');
 

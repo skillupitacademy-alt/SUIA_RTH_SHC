@@ -208,7 +208,7 @@ function ObjectiveO2View({
           <React.Fragment key={stage.key}>
             <div
               data-stage={stage.key}
-              className={`objective-stage objective-${stage.key} rounded-xl border p-4 sm:p-5 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between`}
+              className={`objective-stage objective-${stage.key} rounded-xl border border-t border-white/80 dark:border-white/10 p-4 sm:p-5 transition-all duration-300 shadow-xl hover:shadow-2xl -translate-y-1 hover:-translate-y-2.5 backdrop-blur-md cursor-pointer flex flex-col justify-between`}
               style={{
                 backgroundColor: withAlpha(primary, '08'),
                 borderColor: withAlpha(primary, '25'),
