@@ -724,6 +724,30 @@ async def approve_final_certification(
                 detail="Cannot approve: Composer verification gate is missing visual screenshot evidence"
             )
 
+        # 5. Accessibility & Modality Verification Gate
+        runner_metadata = composer_gate.get("runner_metadata", {})
+        accessibility_evidence = runner_metadata.get("accessibility")
+        if not accessibility_evidence or not isinstance(accessibility_evidence, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing required browser-level accessibility evidence"
+            )
+        if not accessibility_evidence.get("passed") or accessibility_evidence.get("violations_count", 0) > 0:
+            violations_count = accessibility_evidence.get("violations_count", 0)
+            violations_list = accessibility_evidence.get("violations", [])
+            violation_summary = "; ".join([f"{v.get('id')}: {v.get('help')}" for v in violations_list[:3]]) if violations_list else "unspecified"
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer verification failed browser-level accessibility audit with {violations_count} violation(s): {violation_summary}"
+            )
+        modality_checks = runner_metadata.get("modality_checks", {})
+        for modality_name, mod_result in modality_checks.items():
+            if isinstance(mod_result, dict) and mod_result.get("status") == "FAIL":
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Composer verification failed {modality_name} modality check: {mod_result.get('details', 'check failed')}"
+                )
+
         evidence_verified = True
         evidence_summary = gate_results
     else:

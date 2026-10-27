@@ -57,9 +57,11 @@
     "node": "20.x"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@types/pg": "^8.11.10",
     "@types/qrcode": "^1.5.5",
     "@vitest/coverage-v8": "^4.0.18",
+    "playwright": "^1.59.1",
     "vite": "^6.0.11",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.0.18"
