@@ -155,7 +155,17 @@ const RUNTIME_REGISTRY: ProjectLlmRuntimeRegistry = {
   plannedFamilyIds: PLANNED_FAMILY_IDS,
 };
 
-// S1 warning record (historical canonical fixture)
+/**
+ * S1 Warning Record (Historical Canonical Fixture)
+ * 
+ * NOTE ON HISTORICAL VS ACTIVE RUNTIME STATUS:
+ * - Historical Record: S1 was originally recorded with missing version-routing (2/3 UBRC attributes)
+ *   in the initial Project LLM baseline audit, captured by this S1WarningRecord type.
+ * - Current Active Runtime: Summary S1 has been upgraded and unified with BlockShell (full 3/3 UBRC
+ *   attributes: data-block-id, data-block-type, data-block-version), cards, action items, and chips
+ *   as tracked in VERIFIED_IMPLEMENTATIONS above with 10 passing unit tests.
+ * - This constant is preserved for contract backwards compatibility with S1WarningRecord consumers.
+ */
 export const S1_WARNING: S1WarningRecord = {
   versionId: 'S1',
   familyId: 'S',
