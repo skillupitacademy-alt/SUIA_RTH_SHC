@@ -148,11 +148,7 @@ export interface DomainTheme {
     600?: string;
     700?: string;
     800?: string;
-    900?: string;
   };
-  
-  // Allow additional properties for extensibility
-  [key: string]: any;
 }
 
 export interface TutorialRendererProps {

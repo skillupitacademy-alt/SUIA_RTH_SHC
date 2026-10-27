@@ -82,23 +82,37 @@ const VERIFIED_IMPLEMENTATIONS: BlockVersionImplementationStatus[] = [
     ],
     notes: 'Objective version registered in Composer and routed by TutorialBlockRenderer.',
   },
-];
-
-// Incomplete implementations (S1)
-const INCOMPLETE_IMPLEMENTATIONS: BlockVersionImplementationStatus[] = [
+  {
+    versionId: 'O3',
+    familyId: 'O',
+    lifecycleStatus: 'RUNTIME_INTEGRATED',
+    ubrcCompliance: 'FULL',
+    versionRoutingPresent: true,
+    implementationEvidence: [
+      'packages/ui/src/tutorial/blocks/ObjectiveO3Block.tsx',
+      'packages/ui/src/tutorial/blocks/__tests__/ObjectiveO3Block.test.tsx',
+      'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/generatedBlockRegistries.ts',
+      'packages/ui/src/tutorial/generatedBlockRenderers.tsx',
+    ],
+    notes: 'Skill-based Objective version placed in generated catalogs via Project LLM.',
+  },
   {
     versionId: 'S1',
     familyId: 'S',
-    lifecycleStatus: 'IMPLEMENTED',
-    ubrcCompliance: 'PARTIAL',
-    versionRoutingPresent: false,
+    lifecycleStatus: 'RUNTIME_INTEGRATED',
+    ubrcCompliance: 'FULL',
+    versionRoutingPresent: true,
     implementationEvidence: [
-      'packages/ui/src/tutorial/blocks/SummaryBlock.tsx (34 lines, functional)',
-      'packages/ui/src/tutorial/__tests__/BlockDOMIdentity.test.tsx (lines 154-171: confirms missing version attribute)',
+      'packages/ui/src/tutorial/blocks/SummaryBlock.tsx (BlockShell with 3/3 UBRC attributes)',
+      'packages/ui/src/tutorial/blocks/__tests__/UbaRefactoredBlocks.test.tsx (10 passing unit tests)',
+      'apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/summary.registry.ts',
     ],
-    notes: 'Missing data-block-version attribute (2/3 UBRC), no version routing — not reference-quality',
+    notes: 'Unified UBA Summary renderer with cards, action items, chips, and 3/3 UBRC attributes.',
   },
 ];
+
+// Incomplete implementations (empty as S1 was promoted to full UBA and 3/3 UBRC)
+const INCOMPLETE_IMPLEMENTATIONS: BlockVersionImplementationStatus[] = [];
 
 const ALL_PLANNED_FAMILY_IDS = ['O', 'V', 'CP', 'E', 'M', 'MT', 'BP', 'Q', 'EX', 'T', 'INT', 'QZ', 'IV', 'P'];
 const IMPLEMENTED_FAMILY_IDS = new Set(VERIFIED_IMPLEMENTATIONS.map((item) => item.familyId));
@@ -141,7 +155,7 @@ const RUNTIME_REGISTRY: ProjectLlmRuntimeRegistry = {
   plannedFamilyIds: PLANNED_FAMILY_IDS,
 };
 
-// S1 warning record
+// S1 warning record (historical canonical fixture)
 export const S1_WARNING: S1WarningRecord = {
   versionId: 'S1',
   familyId: 'S',

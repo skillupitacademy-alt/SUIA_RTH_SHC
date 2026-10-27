@@ -24,6 +24,13 @@ import { ObjectiveO1Block } from './blocks/ObjectiveO1Block';
 import { ObjectiveO2Block } from './blocks/ObjectiveO2Block';
 import { GENERATED_BLOCK_RENDERERS } from './generatedBlockRenderers';
 
+/**
+ * Deliberate polymorphic boundary for dynamic block rendering:
+ * Each versioned block component expects its specific typed payload (e.g. CodeC1Block,
+ * DefinitionD1Block). Because React component prop types are contravariant, a heterogeneous
+ * versioned dispatch dictionary requires this polymorphic prop generic at the router boundary.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type VersionedRenderer = React.ComponentType<BlockComponentProps<any>>;
 interface VersionedRendererEntry {
   component: VersionedRenderer;

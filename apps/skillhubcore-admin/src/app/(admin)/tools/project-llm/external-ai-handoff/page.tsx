@@ -328,9 +328,10 @@ The persisted backend contract is authoritative. Do not invent requirements or c
    - Accent Bar: \`h-1 w-12 rounded-full\` in \`theme.primary\`
    - Intro: \`text-base sm:text-lg font-medium leading-[1.7]\`
    - Content: \`text-sm sm:text-base font-medium leading-relaxed\`
-4. **Elevated Containers & Ban on Left-Side Borders:**
-   - **NO LEFT-SIDE BORDER (\`border-l-*\`)**: Left-side accent borders are strictly prohibited for takeaways, callouts, and tips.
-   - All callout and takeaway cards must use symmetric, elevated rounded cards: \`rounded-2xl border p-5 sm:p-6 shadow-sm hover:shadow-md transition-all\`.
+4. **Elevated Containers & Scoped Ban on Left-Side Borders:**
+   - **NO LEFT-SIDE BORDER (\`border-l-*\`) ON CONTAINERS**: Asymmetrical left-side accent borders are strictly prohibited on all callout, card, tip, takeaway, and quote containers.
+   - All callout, tip, and takeaway containers must use symmetric, elevated rounded cards: \`rounded-2xl border p-5 sm:p-6 shadow-sm hover:shadow-md transition-all\`.
+   - *(Note: Chronological vertical timeline rails / connector axes, such as in TimelineBlock, are connector lines and not card containers).*
 5. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
 6. **Dual-Brand 4-Color Tokens:**
    - SUIA: Primary \`#0B1B3D\` (Navy), Secondary \`#F54A8D\` (Magenta Pink), Accent 1 \`#0284C7\` (Sky Cyan), Accent 2 \`#10B981\` (Emerald Green).

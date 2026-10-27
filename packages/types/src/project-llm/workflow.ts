@@ -54,14 +54,14 @@ export type StopReason =
   | 'UNKNOWN_REQUIREMENT';
 
 /** Terminal states where the workflow cannot proceed further. */
-export const TERMINAL_STATES: ReadonlySet<ProjectLlmWorkflowState> = new Set([
+export const TERMINAL_STATES: ReadonlySet<ProjectLlmWorkflowState> = new Set<ProjectLlmWorkflowState>([
   'CERTIFIED',
   'REJECTED',
   'STOPPED',
 ]);
 
 /** Authority-required states where the workflow must pause and wait for a human or HAA decision. */
-export const AUTHORITY_REQUIRED_STATES: ReadonlySet<ProjectLlmWorkflowState> = new Set([
+export const AUTHORITY_REQUIRED_STATES: ReadonlySet<ProjectLlmWorkflowState> = new Set<ProjectLlmWorkflowState>([
   'AWAITING_GUI_APPROVAL',
   'AWAITING_IMPLEMENTATION_APPROVAL',
   'CERTIFICATION_READY',
