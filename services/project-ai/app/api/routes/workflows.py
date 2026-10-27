@@ -899,27 +899,28 @@ async def verify_composer(
         manifest_hash=workflow.manifest_sha256 or ""
     )
 
+    if result.get("passed"):
+        if workflow.current_state == CanonicalWorkflowState.IMPLEMENTED:
+            await governance_service.transition_state(
+                workflow_id=workflow_id,
+                to_state=CanonicalWorkflowState.VERIFYING,
+                triggered_by=user.get("email") or user.get("sub") or "system",
+                reason="Composer verification initiated on isolated worktree"
+            )
+            await governance_service.transition_state(
+                workflow_id=workflow_id,
+                to_state=CanonicalWorkflowState.CERTIFICATION_READY,
+                triggered_by=user.get("email") or user.get("sub") or "system",
+                reason="Composer verification passed in isolated preview"
+            )
+
     # Atomically bind gate result into workflow
     workflow_model = await workflow_repo.get(workflow_id, verify_bindings=False)
     if workflow_model:
         current_gates = dict(workflow_model.gate_results or {})
         current_gates["composer"] = result
         workflow_model.gate_results = current_gates
-
-        if result.get("passed"):
-            if workflow.current_state == CanonicalWorkflowState.IMPLEMENTED:
-                await governance_service.transition_state(
-                    workflow_id=workflow_id,
-                    to_state=CanonicalWorkflowState.VERIFYING,
-                    triggered_by=user.get("email") or user.get("sub") or "system",
-                    reason="Composer verification initiated on isolated worktree"
-                )
-                await governance_service.transition_state(
-                    workflow_id=workflow_id,
-                    to_state=CanonicalWorkflowState.CERTIFICATION_READY,
-                    triggered_by=user.get("email") or user.get("sub") or "system",
-                    reason="Composer verification passed in isolated preview"
-                )
+        await workflow_repo.upsert(workflow_model)
         await session.commit()
         result["current_workflow_state"] = workflow_model.current_state
 
