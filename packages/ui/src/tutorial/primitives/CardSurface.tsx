@@ -38,6 +38,7 @@ export function CardSurface({
   style,
   as = 'div',
   tabIndex,
+  onKeyDown,
   ...rest
 }: CardSurfaceProps) {
   const Component = as as React.ElementType;
@@ -93,8 +94,8 @@ export function CardSurface({
   const effectiveTabIndex = isInteractive && tabIndex === undefined ? 0 : tabIndex;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (rest.onKeyDown) {
-      rest.onKeyDown(e);
+    if (onKeyDown) {
+      onKeyDown(e);
       if (e.defaultPrevented) return;
     }
     if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
@@ -107,12 +108,12 @@ export function CardSurface({
 
   return (
     <Component
+      {...rest}
       role={effectiveRole}
       className={combinedClass}
       style={{ ...variantStyles[variant], ...style }}
       tabIndex={effectiveTabIndex}
       onKeyDown={handleKeyDown}
-      {...rest}
     >
       {children}
     </Component>

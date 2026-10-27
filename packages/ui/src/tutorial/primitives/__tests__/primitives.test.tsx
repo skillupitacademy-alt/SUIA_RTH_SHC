@@ -181,6 +181,52 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
       expect(clickedCount).toBe(2);
     });
 
+    it('preserves consumer onKeyDown while still activating onClick on Enter/Space', () => {
+      let consumerKeyDown = false;
+      let clicked = false;
+
+      const { container } = render(
+        <CardSurface
+          theme={mockTheme}
+          onClick={() => {
+            clicked = true;
+          }}
+          onKeyDown={() => {
+            consumerKeyDown = true;
+          }}
+        >
+          <span>Card</span>
+        </CardSurface>
+      );
+
+      const card = container.firstElementChild as HTMLElement;
+      card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      expect(consumerKeyDown).toBe(true);
+      expect(clicked).toBe(true);
+    });
+
+    it('respects consumer e.preventDefault() inside onKeyDown', () => {
+      let clicked = false;
+
+      const { container } = render(
+        <CardSurface
+          theme={mockTheme}
+          onClick={() => {
+            clicked = true;
+          }}
+          onKeyDown={(e) => {
+            e.preventDefault();
+          }}
+        >
+          <span>Card</span>
+        </CardSurface>
+      );
+
+      const card = container.firstElementChild as HTMLElement;
+      card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      expect(clicked).toBe(false);
+    });
+
     it('includes forced-colors:border-[ButtonBorder] for Windows High Contrast Mode', () => {
       const { container } = render(
         <CardSurface theme={mockTheme}>
