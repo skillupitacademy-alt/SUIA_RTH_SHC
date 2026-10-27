@@ -338,6 +338,11 @@ function parseArgs() {
           help: v.help,
           helpUrl: v.helpUrl,
           nodes_count: v.nodes ? v.nodes.length : 0,
+          nodes: (v.nodes || []).map((n) => ({
+            target: n.target,
+            html: (n.html || '').slice(0, 300),
+            failureSummary: n.failureSummary,
+          })),
         }));
         result.accessibility.incomplete_count = axeResults.incomplete ? axeResults.incomplete.length : 0;
         result.accessibility.incomplete = (axeResults.incomplete || []).map((inc) => ({

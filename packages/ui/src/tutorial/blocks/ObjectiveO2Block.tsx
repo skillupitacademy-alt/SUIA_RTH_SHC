@@ -13,7 +13,7 @@ import type {
   DomainTheme,
   TutorialBlockRuntimeContext,
 } from '../types';
-import { withAlpha, DEFAULT_THEME } from '../theme-utils';
+import { withAlpha, DEFAULT_THEME, getAccessibleBadgeColor } from '../theme-utils';
 import type {
   ObjectiveO2BlockData,
   ObjectiveO2ContentPayload,
@@ -221,7 +221,7 @@ function ObjectiveO2View({
                       className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg font-mono text-xs sm:text-sm font-bold"
                       style={{
                         backgroundColor: withAlpha(primary, '18'),
-                        color: primary,
+                        color: getAccessibleBadgeColor(primary, withAlpha(primary, '18')),
                       }}
                       aria-hidden="true"
                     >
@@ -230,7 +230,7 @@ function ObjectiveO2View({
 
                     <h3
                       className="text-lg sm:text-xl font-bold tracking-tight"
-                      style={{ color: primary }}
+                      style={{ color: getAccessibleBadgeColor(primary) }}
                     >
                       {stage.label}
                     </h3>
@@ -280,7 +280,7 @@ function ObjectiveO2View({
                 ) : (
                   <p
                     className="text-xs sm:text-sm italic"
-                    style={{ color: `${secondary}99` }}
+                    style={{ color: `${secondary}dd` }}
                   >
                     No objectives specified for this stage.
                   </p>
@@ -292,7 +292,7 @@ function ObjectiveO2View({
                   className="mt-4 pt-3 border-t flex items-center justify-end gap-1.5 text-xs font-semibold uppercase tracking-wider"
                   style={{
                     borderColor: withAlpha(primary, '18'),
-                    color: primary,
+                    color: getAccessibleBadgeColor(primary),
                   }}
                   aria-hidden="true"
                 >

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Target, Code2, Wrench, Bug, Layers, Sparkles, Check, Terminal, Cpu } from 'lucide-react';
 import type { BlockComponentProps, DomainTheme, TutorialBlockRuntimeContext } from '../types';
-import { withAlpha, DEFAULT_THEME } from '../theme-utils';
+import { withAlpha, DEFAULT_THEME, getAccessibleBadgeColor } from '../theme-utils';
 
 export type ObjectiveO3SkillVerb = 'Identify' | 'Explain' | 'Compare' | 'Create' | 'Implement' | 'Use' | 'Modify' | 'Debug' | 'Analyze' | 'Optimize' | 'Design' | 'Test' | 'Evaluate' | 'Integrate' | 'Deploy' | 'Access' | string;
 
@@ -136,8 +136,8 @@ function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
               <div>
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2.5">
-                    <span className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg font-mono text-xs sm:text-sm font-bold" style={{ backgroundColor: withAlpha(primary, '18'), color: primary }} aria-hidden="true">{skill.number}</span>
-                    <h3 className="text-base sm:text-lg font-bold uppercase tracking-wide" style={{ color: primary }}>{skill.label}</h3>
+                    <span className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg font-mono text-xs sm:text-sm font-bold" style={{ backgroundColor: withAlpha(primary, '18'), color: getAccessibleBadgeColor(primary, withAlpha(primary, '18')) }} aria-hidden="true">{skill.number}</span>
+                    <h3 className="text-base sm:text-lg font-bold uppercase tracking-wide" style={{ color: getAccessibleBadgeColor(primary) }}>{skill.label}</h3>
                   </div>
                   <span className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg" style={{ backgroundColor: withAlpha(primary, '18'), color: primary }} aria-hidden="true"><SkillIcon label={skill.label} /></span>
                 </div>

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import type { IIntroductionBlock, BlockComponentProps, DomainTheme } from '../types';
 import type { IntroductionIconKey } from '@quiz/types';
-import { getThemeColor, withAlpha } from '../theme-utils';
+import { getThemeColor, withAlpha, getAccessibleBadgeColor } from '../theme-utils';
 import { BlockShell, StepBadge, TerminalWindow, CardSurface, CalloutBanner } from '../primitives';
 
 /**
@@ -126,7 +126,10 @@ function IntroductionI1View({
           <div className="lg:col-span-6 space-y-4">
             <div
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold"
-              style={{ color: primary, backgroundColor: withAlpha(primary, '14') }}
+              style={{
+                color: getAccessibleBadgeColor(primary, withAlpha(primary, '14')),
+                backgroundColor: withAlpha(primary, '14'),
+              }}
             >
               <BookOpen className="h-4 w-4" />
               <span>{page.badge}</span>

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DomainTheme } from '../types';
-import { withAlpha, DEFAULT_THEME } from '../theme-utils';
+import { withAlpha, DEFAULT_THEME, getAccessibleBadgeColor } from '../theme-utils';
 
 export interface BlockHeaderProps {
   eyebrow?: React.ReactNode;
@@ -56,7 +56,7 @@ export function BlockHeader({
             <div
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
               style={{
-                color: primary,
+                color: getAccessibleBadgeColor(primary, withAlpha(primary, '14')),
                 backgroundColor: withAlpha(primary, '14'),
               }}
             >
@@ -67,7 +67,7 @@ export function BlockHeader({
             <div
               className="inline-flex items-center gap-2.5 rounded-md px-2.5 py-1 text-sm font-extrabold leading-snug"
               style={{
-                color: primary,
+                color: getAccessibleBadgeColor(primary, withAlpha(primary, '14')),
                 backgroundColor: withAlpha(primary, '14'),
               }}
             >
