@@ -116,7 +116,7 @@ function ObjectiveO3View({ block, theme, className = '', runtimeContext }: {
         icon={Target}
         title={title}
         headingLevel="h2"
-        titleScale="standard"
+        titleScale="hero"
         introduction={introduction}
         theme={theme}
       />

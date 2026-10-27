@@ -68,7 +68,7 @@ function ObjectiveO1View({
         icon={Target}
         title={title}
         headingLevel="h2"
-        titleScale="standard"
+        titleScale="hero"
         introduction={introduction}
         theme={theme}
       />
