@@ -64,6 +64,17 @@ describe('UBA Refactored Blocks Suite', () => {
       expect(screen.getByText(/Functions are the fundamental/)).toBeDefined();
     });
 
+    it('renders TerminalWindow for example and CalloutBanner for takeaway', () => {
+      const { container } = render(<DefinitionBlock block={mockDefBlock} theme={themeA} />);
+      expect(screen.getByText('Example (javascript)')).toBeDefined();
+      expect(screen.getByText('function add(a, b) { return a + b; }')).toBeDefined();
+      expect(screen.getByText('Key Takeaway')).toBeDefined();
+      expect(screen.getByText('Mastering functions is essential for mastering programming.')).toBeDefined();
+      // TerminalWindow has terminal control dots
+      const terminalDots = container.querySelector('[data-testid="terminal-control-dots"]');
+      expect(terminalDots).not.toBeNull();
+    });
+
     it('proves dual-brand theme independence', () => {
       const { container: containerA } = render(
         <DefinitionBlock block={mockDefBlock} theme={themeA} />
@@ -131,6 +142,42 @@ describe('UBA Refactored Blocks Suite', () => {
       expect(screen.getByRole('heading', { level: 1, name: 'JavaScript Fundamentals Summary' })).toBeDefined();
       expect(screen.getByText('Pro Tip:')).toBeDefined();
       expect(screen.getByText('Practice writing functions every day.')).toBeDefined();
+    });
+
+    it('normalizes legacy summary payload into unified UBA renderer without legacy purple card', () => {
+      const legacySummaryBlock = {
+        id: 'sum-legacy-1',
+        type: 'summary',
+        content: {
+          title: 'Core Takeaways',
+          points: [
+            'First takeaway point',
+            'Second takeaway point',
+          ],
+        },
+      } as unknown as ISummaryBlock;
+
+      const { container } = render(
+        <SummaryBlock block={legacySummaryBlock} theme={themeA} />
+      );
+
+      // Verifies rendered inside BlockShell article with UBRC attributes
+      const shell = container.querySelector('article');
+      expect(shell).not.toBeNull();
+      expect(shell?.getAttribute('data-block-id')).toBe('sum-legacy-1');
+      expect(shell?.getAttribute('data-block-type')).toBe('summary');
+      expect(shell?.getAttribute('data-block-version')).toBe('S1');
+
+      // Verifies rendered inside BlockHeader with Hero title
+      expect(screen.getByRole('heading', { level: 1, name: 'Core Takeaways' })).toBeDefined();
+
+      // Verifies points are normalized into canonical summary checklist
+      expect(screen.getByText('First takeaway point')).toBeDefined();
+      expect(screen.getByText('Second takeaway point')).toBeDefined();
+
+      // Proves there is NO legacy purple/indigo card or raw emoji pin
+      expect(container.querySelector('.bg-indigo-50\\/50')).toBeNull();
+      expect(container.textContent).not.toContain('📌');
     });
   });
 
@@ -209,6 +256,17 @@ describe('UBA Refactored Blocks Suite', () => {
       expect(screen.getByText('GETTING STARTED')).toBeDefined();
       expect(screen.getByRole('heading', { level: 1, name: 'Introduction to Web Architecture' })).toBeDefined();
       expect(screen.getByText(/Dream Big/)).toBeDefined();
+    });
+
+    it('renders StepBadge, TerminalWindow for solution, and CalloutBanner for takeaway', () => {
+      const { container } = render(<IntroductionBlock block={mockIntroBlock} theme={themeA} />);
+      expect(screen.getByText('The Clean Solution')).toBeDefined();
+      expect(screen.getByText('export interface Block {}')).toBeDefined();
+      expect(screen.getByText('Key Takeaway')).toBeDefined();
+      expect(screen.getByText('Universal Block Architecture unifies UX and reduces redundancy.')).toBeDefined();
+      // StepBadge elements exist
+      const badges = container.querySelectorAll('.rounded-full');
+      expect(badges.length).toBeGreaterThan(0);
     });
   });
 });

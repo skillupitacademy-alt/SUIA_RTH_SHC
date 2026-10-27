@@ -45,6 +45,7 @@ export function TerminalWindow({
 
   return (
     <div
+      data-testid="terminal-window"
       className={`w-full overflow-hidden rounded-[11px] border shadow-[0_8px_24px_rgba(7,20,47,0.12)] ${className}`.trim()}
       style={{
         borderColor: getThemeColor(activeTheme, 'slate', 800),
@@ -59,7 +60,7 @@ export function TerminalWindow({
           color: getThemeColor(activeTheme, 'slate', 50),
         }}
       >
-        <div className="flex items-center gap-[7px]" aria-hidden="true">
+        <div data-testid="terminal-control-dots" className="flex items-center gap-[7px]" aria-hidden="true">
           <span
             className="h-3 w-3 rounded-full"
             style={{ backgroundColor: getThemeColor(activeTheme, 'rose', 500) }}
