@@ -129,6 +129,31 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
       expect(card.className).toContain('shadow-sm');
       expect(card.className).toContain('hover:shadow-md');
     });
+
+    it('omits hover movement and keyboard tabIndex when hoverable is false', () => {
+      const { container } = render(
+        <CardSurface theme={mockTheme} variant="default" hoverable={false}>
+          <span>Static Card</span>
+        </CardSurface>
+      );
+
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.className).not.toContain('hover:-translate-y');
+      expect(card.className).not.toContain('cursor-pointer');
+      expect(card.getAttribute('tabindex')).toBeNull();
+    });
+
+    it('adds tabIndex and focus-visible classes when hoverable is true', () => {
+      const { container } = render(
+        <CardSurface theme={mockTheme} variant="default" hoverable={true}>
+          <span>Interactive Card</span>
+        </CardSurface>
+      );
+
+      const card = container.firstElementChild as HTMLElement;
+      expect(card.getAttribute('tabindex')).toBe('0');
+      expect(card.className).toContain('focus-visible:ring-2');
+    });
   });
 
   describe('StepBadge', () => {

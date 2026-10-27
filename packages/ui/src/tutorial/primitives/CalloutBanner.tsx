@@ -76,7 +76,7 @@ export function CalloutBanner({
   }[resolvedVariant];
 
   const combinedClass = [
-    'rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl hover:shadow-2xl motion-safe:-translate-y-0.5 motion-safe:hover:-translate-y-1.5 motion-reduce:transform-none backdrop-blur-md motion-safe:transition-all motion-safe:duration-300 dark:bg-slate-800/90 flex items-start gap-3.5 sm:gap-4',
+    'rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl backdrop-blur-md dark:bg-slate-800/90 flex items-start gap-3.5 sm:gap-4 forced-colors:border-[ButtonBorder]',
     className,
   ].filter(Boolean).join(' ');
 

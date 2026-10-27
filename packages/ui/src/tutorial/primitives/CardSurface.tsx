@@ -18,11 +18,15 @@ export interface CardSurfaceProps extends React.HTMLAttributes<HTMLElement> {
  * Provides consistent rounded-2xl boundaries, borders, elevation,
  * and dual-brand subtle surface backgrounds.
  * 
- * Inspired by the elevated platform dashboard aesthetic:
- * - Layered elevation shadows (shadow-xl / shadow-2xl)
- * - Subtle top rim highlight (border-t border-white/80 dark:border-white/10)
- * - Translucent glassmorphism (backdrop-blur-md)
- * - Micro-interaction lift transform (-translate-y-1 hover:-translate-y-2.5 transition-all duration-300)
+ * 3-Tier Elevation Contract:
+ * - Tier 1: Interactive modules (hoverable=true): hover lift, deeper shadow, cursor-pointer, tabIndex=0
+ * - Tier 2: Static editorial highlights (hoverable=false): resting elevation, no misleading hover movement
+ * - Tier 3: Subtle/flat containers (elevation="subtle" | "flat"): minimal or no shadow
+ * 
+ * Accessibility Guidelines:
+ * - Non-text contrast (SC 1.4.11 Level AA): explicit perimeter border + forced-colors support
+ * - Motion safety (SC 2.3.3 Level AAA): motion-safe transitions and motion-reduce:transform-none / transition-none
+ * - Focus visible (SC 2.4.7 Level AA): tabIndex=0 and focus-visible ring on interactive cards
  */
 export function CardSurface({
   children,
@@ -33,6 +37,7 @@ export function CardSurface({
   className = '',
   style,
   as = 'div',
+  tabIndex,
   ...rest
 }: CardSurfaceProps) {
   const Component = as as React.ElementType;
@@ -57,29 +62,39 @@ export function CardSurface({
     },
   };
 
-  const elevationClasses: Record<string, string> = {
-    dashboard: 'shadow-xl hover:shadow-2xl border-t border-white/80 dark:border-white/10 motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none transition-all duration-300 ease-out backdrop-blur-md bg-white/85 dark:bg-slate-900/85',
-    elevated: 'shadow-md hover:shadow-xl border-t border-white/60 dark:border-white/10 motion-safe:-translate-y-0.5 motion-safe:hover:-translate-y-1.5 motion-reduce:transform-none transition-all duration-300 ease-out backdrop-blur-sm bg-white/90 dark:bg-slate-900/90',
-    subtle: 'shadow-sm hover:shadow-md transition-all duration-200 bg-white dark:bg-slate-800',
+  const restingElevationClasses: Record<string, string> = {
+    dashboard: 'shadow-xl border-t border-white/80 dark:border-white/10 backdrop-blur-md bg-white/85 dark:bg-slate-900/85',
+    elevated: 'shadow-md border-t border-white/60 dark:border-white/10 backdrop-blur-sm bg-white/90 dark:bg-slate-900/90',
+    subtle: 'shadow-sm bg-white dark:bg-slate-800',
     flat: 'shadow-none bg-white dark:bg-slate-800',
   };
 
-  const activeElevationClass = elevationClasses[elevation] ?? elevationClasses.dashboard;
-  const hoverClass = hoverable
-    ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
+  const interactiveElevationClasses: Record<string, string> = {
+    dashboard: 'hover:shadow-2xl motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none motion-reduce:transition-none transition-all duration-300 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+    elevated: 'hover:shadow-xl motion-safe:-translate-y-0.5 motion-safe:hover:-translate-y-1.5 motion-reduce:transform-none motion-reduce:transition-none transition-all duration-300 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+    subtle: 'hover:shadow-md motion-reduce:transition-none transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+    flat: 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+  };
+
+  const activeRestingClass = restingElevationClasses[elevation] ?? restingElevationClasses.dashboard;
+  const activeInteractiveClass = hoverable
+    ? (interactiveElevationClasses[elevation] ?? interactiveElevationClasses.dashboard)
     : '';
 
   const combinedClass = [
-    'rounded-2xl border p-5 sm:p-6 dark:border-slate-700',
-    activeElevationClass,
-    hoverClass,
+    'rounded-2xl border p-5 sm:p-6 dark:border-slate-700 forced-colors:border-[ButtonBorder]',
+    activeRestingClass,
+    activeInteractiveClass,
     className,
   ].filter(Boolean).join(' ');
+
+  const effectiveTabIndex = hoverable && tabIndex === undefined ? 0 : tabIndex;
 
   return (
     <Component
       className={combinedClass}
       style={{ ...variantStyles[variant], ...style }}
+      tabIndex={effectiveTabIndex}
       {...rest}
     >
       {children}

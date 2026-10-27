@@ -91,7 +91,7 @@ function DefinitionD1View({
         className="mb-[26px]"
       />
 
-      <section className="my-6 grid min-h-[175px] w-full grid-cols-[86px_1px_minmax(0,1fr)] items-center gap-6 rounded-2xl border border-t border-white/80 dark:border-white/10 px-9 py-[30px] shadow-2xl backdrop-blur-md -translate-y-1 transition-all duration-300" style={{ backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '66') }}>
+      <section className="my-6 grid min-h-[175px] w-full grid-cols-[86px_1px_minmax(0,1fr)] items-center gap-6 rounded-2xl border border-t border-white/80 dark:border-white/10 px-9 py-[30px] shadow-2xl backdrop-blur-md -translate-y-1 motion-reduce:transform-none transition-all duration-300 forced-colors:border-[ButtonBorder]" style={{ backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '66') }}>
         <div className="m-auto flex h-[70px] w-[70px] items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: primary }}>
           <FileText className="h-8 w-8" />
         </div>
