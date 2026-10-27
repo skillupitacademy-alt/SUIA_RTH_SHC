@@ -4,7 +4,7 @@ import type { BlockComponentProps, DomainTheme, TutorialBlockRuntimeContext } fr
 import { withAlpha, DEFAULT_THEME } from '../theme-utils';
 import type { ObjectiveO1BlockData } from '@quiz/types';
 
-export function ObjectiveBlock({
+export function ObjectiveO1Block({
   block,
   className = '',
   theme,
@@ -27,6 +27,9 @@ export function ObjectiveBlock({
       throw new Error(`[ObjectiveBlock] Unsupported block version: ${String(version)}`);
   }
 }
+
+export const ObjectiveBlock = ObjectiveO1Block;
+export { ObjectiveO1Block as default };
 
 import { BlockShell, BlockHeader, CardSurface } from '../primitives';
 

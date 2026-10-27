@@ -290,10 +290,12 @@ class PlacementExecutor:
                             raise PlacementExecutionError(f"Missing source file {op.source_filename} for CREATE operation")
 
                         if target_file_path.exists():
-                            raise PlacementExecutionError(
-                                f"CREATE operation would overwrite existing file {op.target_path}. "
-                                "Use a controlled patch operation instead."
-                            )
+                            existing_content = target_file_path.read_text(encoding='utf-8')
+                            if existing_content != content:
+                                raise PlacementExecutionError(
+                                    f"CREATE operation would overwrite existing file {op.target_path}. "
+                                    "Use a controlled patch operation instead."
+                                )
 
                         # Harmonize registry export if writing registry entry
                         if op.target_path.endswith('.registry.ts'):

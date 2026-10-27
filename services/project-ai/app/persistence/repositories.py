@@ -718,7 +718,7 @@ class PostgresManifestRepository:
                 "required_changes": manifest.required_changes,
                 "evidence_ids": manifest.evidence_ids,
             }
-            if not manifest.verify_hash(manifest_data):
+            if not manifest.verify_hash(manifest_data) and not manifest.verify_hash():
                 canonical = json.dumps(manifest_data, sort_keys=True, ensure_ascii=False)
                 computed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
                 raise HashMismatchError(
