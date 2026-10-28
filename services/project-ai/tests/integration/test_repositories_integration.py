@@ -558,6 +558,92 @@ async def test_manifest_upsert_and_get(db_session, manifest_repo, workflow_repo,
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+async def test_revision_safe_manifest_orm_persistence_and_executor_hash_verification(db_session, manifest_repo, workflow_repo, candidate_repo):
+    """
+    Test real PostgreSQL database roundtrip for revision-safe manifest:
+    PlacementManifest -> manifest_to_model -> real DB upsert and commit ->
+    real DB get -> model_to_manifest -> PlacementExecutor.verify_manifest_hash.
+    """
+    import tempfile
+    from sqlalchemy import text as sql_text
+    from app.models.candidate import (
+        PlacementManifest,
+        PlacementDecision,
+        BlockFamily,
+        IdentityStatus,
+        UpdateEligibility,
+        ReferenceSummary,
+        RevisionStrategy,
+        PlacementFileAction,
+        PlacementFileOperation,
+        compute_canonical_manifest_hash,
+    )
+    from app.api.routes.candidate import manifest_to_model, model_to_manifest
+    from app.placement.executor import PlacementExecutor
+
+    await _ensure_parent_candidate(db_session, workflow_repo, candidate_repo, "cand_rev_safe_001", "wf_test_001")
+    man_id = test_uuid_str("man_rev_safe_001")
+    cand_id = test_uuid_str("cand_rev_safe_001")
+
+    # Clean stale manifests from prior runs
+    await db_session.execute(sql_text("DELETE FROM project_ai_manifests WHERE manifest_id = :mid"), {"mid": man_id})
+    await db_session.commit()
+
+    file_op = PlacementFileOperation(
+        action=PlacementFileAction.UPDATE,
+        source_filename="summary-v1.tsx",
+        source_sha256="abc1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc",
+        target_path="packages/ui/src/tutorial/blocks/summary-v1.tsx",
+        expected_pre_hash="1111222233334444555566667777888899990000aaaabbbbccccddddeeeeffff",
+        description="Update existing block in place"
+    )
+
+    created_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    manifest = PlacementManifest(
+        manifestId=man_id,
+        candidateId=cand_id,
+        decision=PlacementDecision.UPDATE,
+        targetPath="packages/ui/src/tutorial/blocks",
+        blockFamily=BlockFamily.SUMMARY,
+        blockVersion="V1",
+        requiredChanges=["Controlled in-place UPDATE of unused version candidate"],
+        fileOperations=[file_op],
+        evidenceIds=["ev-rev-1"],
+        createdAt=created_at,
+        identityStatus=IdentityStatus.EXISTING_UNUSED,
+        updateEligibility=UpdateEligibility.ALLOWED,
+        referenceSummary=ReferenceSummary(count=0, publication_states={}, sample_ids=[]),
+        revisionStrategy=RevisionStrategy.UPDATE_IN_PLACE,
+        manifestHash="temp"
+    )
+    manifest.manifestHash = compute_canonical_manifest_hash(manifest)
+
+    # Clean stale manifests with same hash
+    await db_session.execute(sql_text("DELETE FROM project_ai_manifests WHERE manifest_hash = :h"), {"h": manifest.manifestHash})
+    await db_session.commit()
+
+    # Map to ORM model and persist to PostgreSQL
+    orm_model = manifest_to_model(manifest, cand_id)
+    await manifest_repo.upsert(orm_model)
+    await db_session.commit()
+
+    # Retrieve from PostgreSQL database
+    retrieved_orm = await manifest_repo.get(man_id)
+    assert retrieved_orm is not None
+    assert retrieved_orm.manifest_hash == manifest.manifestHash
+
+    # Map back to domain PlacementManifest
+    reloaded_manifest = model_to_manifest(retrieved_orm)
+    assert reloaded_manifest.manifestHash == manifest.manifestHash
+
+    # Verify PlacementExecutor hash verification passes against reloaded model
+    with tempfile.TemporaryDirectory() as tmpdir:
+        executor = PlacementExecutor(tmpdir, dry_run=True)
+        assert executor.verify_manifest_hash(reloaded_manifest) is True
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
 async def test_manifest_hash_drift_detection(db_session, manifest_repo, workflow_repo, candidate_repo):
     """Test that corrupted manifest hash is detected on read."""
     await _ensure_parent_candidate(db_session, workflow_repo, candidate_repo, "cand_drift_001", "wf_test_001")
