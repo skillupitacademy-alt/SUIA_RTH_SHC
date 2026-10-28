@@ -262,6 +262,9 @@ export class ProjectLlmClient {
       return {
         candidateId: res.candidateId || payload.candidateId,
         status: res.status || 'uploaded',
+        contractSha256: res.contract_sha256 || res.contractSha256,
+        filesCount: res.filesCount,
+        testResults: res.testResults,
       };
     } catch (error) {
       if (error instanceof ProjectLlmError) {
@@ -426,10 +429,38 @@ export class ProjectLlmClient {
             result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(status) ? status : 'PENDING') as any;
             detail = gateVal.detail || gateVal.reason || gateVal.message || '';
           }
+          const lowerGate = gateName.toLowerCase();
+          const category =
+            lowerGate.includes('test') || lowerGate.includes('qualif')
+              ? 'Isolated Test & Qualification'
+              : lowerGate.includes('hash') || lowerGate.includes('contract')
+              ? 'Cryptographic Contract Integrity'
+              : lowerGate.includes('placement') || lowerGate.includes('manifest')
+              ? 'Repository Placement & AST Safety'
+              : lowerGate.includes('composer') || lowerGate.includes('browser')
+              ? 'WCAG 2.1 AA & 6-Width Browser Gate'
+              : 'Governance Compliance Gate';
+          const evidenceId = typeof gateVal === 'object' && gateVal ? (gateVal.evidence_id || gateVal.evidenceId || (Array.isArray(gateVal.evidence_ids) ? gateVal.evidence_ids[0] : undefined)) : undefined;
+          const evidenceHash = typeof gateVal === 'object' && gateVal ? (gateVal.evidence_hash || gateVal.evidenceHash || gateVal.candidate_sha256 || gateVal.commit) : undefined;
+          const timestamp = typeof gateVal === 'object' && gateVal ? (gateVal.timestamp || gateVal.created_at) : undefined;
+          const totalTests = typeof gateVal === 'object' && gateVal ? (gateVal.total_tests ?? gateVal.totalTests) : undefined;
+          const passedTests = typeof gateVal === 'object' && gateVal ? (gateVal.passed_tests ?? gateVal.passedTests) : undefined;
+          if (!detail && typeof gateVal === 'object' && gateVal && Array.isArray(gateVal.findings) && gateVal.findings.length > 0) {
+            detail = gateVal.findings.join(' • ');
+          }
+          if (!detail && typeof gateVal === 'object' && gateVal && gateVal.commit) {
+            detail = `Isolated placement commit ${String(gateVal.commit).slice(0, 12)} verified on ${gateVal.branch || 'candidate branch'}`;
+          }
           return {
             gate: gateName,
             result,
             detail,
+            category,
+            evidenceId,
+            evidenceHash,
+            timestamp,
+            totalTests,
+            passedTests,
           };
         });
 
@@ -441,7 +472,11 @@ export class ProjectLlmClient {
         targetFamily: data.target?.family,
         targetVersion: data.target?.version,
         candidateId: data.artifacts?.candidate?.id || data.artifacts?.candidate?.artifact_id || data.candidate_sha256 || undefined,
+        candidateSha256: data.candidate_sha256 || data.artifacts?.candidate?.sha256 || undefined,
         manifestId: data.artifacts?.manifest?.id || data.artifacts?.manifest?.artifact_id || data.manifest_sha256 || undefined,
+        manifestSha256: data.manifest_sha256 || data.artifacts?.manifest?.sha256 || undefined,
+        contractSha256: data.contract_sha256 || data.artifacts?.contract?.sha256 || undefined,
+        finalStatus: data.final_status || undefined,
         rawGateResults: rawGates,
       };
     } catch (error) {
@@ -852,7 +887,7 @@ export class ProjectLlmClient {
    * Run post-placement Composer verification in an isolated worktree preview.
    * Maps to: POST /workflows/{workflowId}/verify-composer
    */
-  async verifyComposerWorktree(workflowId: string): Promise<Record<string, unknown>> {
+  async verifyComposerWorktree(workflowId: string): Promise<Record<string, any>> {
     try {
       const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/verify-composer`, {
         method: 'POST',
@@ -908,6 +943,46 @@ export class ProjectLlmClient {
         ProjectLlmErrorCode.NETWORK_ERROR,
         null,
         'Unable to supersede workflow. Check network connection.'
+      );
+    }
+  }
+
+  /**
+   * Execute final certification approval (Human Gate 3).
+   * Maps to: POST /workflows/{workflowId}/approve-final
+   */
+  async approveFinalCertification(
+    workflowId: string,
+    reason: string = 'All gates passed with hash-bound evidence, 6-width responsive boundary checks, and 0 WCAG accessibility violations.'
+  ): Promise<{
+    approved: boolean;
+    workflow_id: string;
+    new_state: string;
+    evidence_verified?: boolean;
+    evidence_summary?: Record<string, any>;
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/approve-final`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          approved: true,
+          reason,
+        }),
+      });
+
+      if (!response.ok) {
+        await handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to approve final certification. Check network connection.'
       );
     }
   }
