@@ -775,6 +775,42 @@ async def approve_final_certification(
                     detail=f"Cannot approve: Composer verification failed {modality_name} modality check (status: {mod_status}): {mod_result.get('details', 'check failed')}"
                 )
 
+        responsive_mod = modality_checks.get("responsive_viewports") or {}
+        viewports_tested = responsive_mod.get("viewports_tested")
+        if not isinstance(viewports_tested, list):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer responsive_viewports is missing viewports_tested list"
+            )
+        REQUIRED_VIEWPORT_WIDTHS = {375, 640, 768, 1024, 1280, 1536}
+        tested_widths = {vp.get("width") for vp in viewports_tested if isinstance(vp, dict)}
+        missing_widths = REQUIRED_VIEWPORT_WIDTHS - tested_widths
+        if missing_widths:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer responsive_viewports missing required six-breakpoint widths: {sorted(list(missing_widths))}"
+            )
+        for vp in viewports_tested:
+            if not isinstance(vp, dict) or not vp.get("passed"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Viewport {vp.get('name') if isinstance(vp, dict) else vp} failed responsive verification"
+                )
+            if (
+                vp.get("document_overflow_x") is not False
+                or vp.get("block_overflow_x") is not False
+                or vp.get("child_boundary_overflow") is not False
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Cannot approve: Viewport {vp.get('name')} missing or failing boundary flags "
+                        f"(document_overflow_x={vp.get('document_overflow_x')}, "
+                        f"block_overflow_x={vp.get('block_overflow_x')}, "
+                        f"child_boundary_overflow={vp.get('child_boundary_overflow')})"
+                    )
+                )
+
         # 6. Cryptographic Evidence Hash Revalidation
         from app.verification.composer_worktree_verifier import compute_composer_evidence_hash
         import hashlib
@@ -818,22 +854,31 @@ async def approve_final_certification(
 
         screenshot_path_str = runner_metadata.get("screenshot_path")
         expected_screenshot_sha = evidence_payload.get("screenshot_sha256")
-        if screenshot_path_str:
-            screenshot_file = Path(screenshot_path_str)
-            if not screenshot_file.exists():
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Cannot approve: Composer screenshot evidence file missing on disk: {screenshot_path_str}"
+        if not screenshot_path_str or not expected_screenshot_sha:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing screenshot_path or screenshot_sha256 for on-disk verification"
+            )
+        if runner_metadata.get("screenshot_sha256") and runner_metadata.get("screenshot_sha256") != expected_screenshot_sha:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer runner_metadata screenshot_sha256 does not match signed evidence_payload"
+            )
+        screenshot_file = Path(screenshot_path_str)
+        if not screenshot_file.exists():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer screenshot evidence file missing on disk: {screenshot_path_str}"
+            )
+        actual_screenshot_sha = hashlib.sha256(screenshot_file.read_bytes()).hexdigest()
+        if actual_screenshot_sha != expected_screenshot_sha:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Cannot approve: Composer screenshot SHA-256 mismatch "
+                    f"(on-disk {actual_screenshot_sha} != signed {expected_screenshot_sha})"
                 )
-            actual_screenshot_sha = hashlib.sha256(screenshot_file.read_bytes()).hexdigest()
-            if actual_screenshot_sha != expected_screenshot_sha:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        f"Cannot approve: Composer screenshot SHA-256 mismatch "
-                        f"(on-disk {actual_screenshot_sha} != signed {expected_screenshot_sha})"
-                    )
-                )
+            )
 
         recomputed_evidence_hash = compute_composer_evidence_hash(evidence_payload)
         stored_evidence_hash = composer_gate.get("evidence_hash")
@@ -1079,10 +1124,21 @@ async def supersede_workflow(
             triggered_by=triggered_by,
             reason=reason_text
         )
+    elif workflow.current_state == CanonicalWorkflowState.CERTIFIED:
+        session.add(
+            StateTransitionModel(
+                workflow_id=workflow_id,
+                from_state=CanonicalWorkflowState.CERTIFIED.value,
+                to_state=CanonicalWorkflowState.REJECTED.value,
+                triggered_by=triggered_by,
+                reason=reason_text,
+            )
+        )
 
-    # Bind superseded metadata on old workflow model
+    # Bind superseded metadata on old workflow model and revoke active CERTIFIED state
     workflow_model = await workflow_repo.get(workflow_id, verify_bindings=False)
     if workflow_model:
+        workflow_model.current_state = CanonicalWorkflowState.REJECTED.value
         workflow_model.final_status = "SUPERSEDED"
         old_gates = dict(workflow_model.gate_results or {})
         old_gates["superseded"] = {
@@ -1091,6 +1147,7 @@ async def supersede_workflow(
             "reason": request.reason
         }
         workflow_model.gate_results = old_gates
+        await workflow_repo.upsert(workflow_model)
 
     # Create linked replacement workflow requiring fresh candidate upload and qualification
     new_wf_model = WorkflowModel(

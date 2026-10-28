@@ -253,9 +253,32 @@ async def test_approve_final_rejects_missing_modalities_object():
         assert "missing required modality_checks object" in exc_info.value.detail
 
 
+def _six_passing_viewports():
+    return [
+        {
+            "name": name,
+            "width": width,
+            "height": 900,
+            "passed": True,
+            "block_found": True,
+            "document_overflow_x": False,
+            "block_overflow_x": False,
+            "child_boundary_overflow": False,
+        }
+        for name, width in [
+            ("mobile-375", 375),
+            ("mobile-640", 640),
+            ("tablet-768", 768),
+            ("laptop-1024", 1024),
+            ("desktop-1280", 1280),
+            ("wide-1536", 1536),
+        ]
+    ]
+
+
 @pytest.mark.asyncio
-async def test_approve_final_rejects_tampered_evidence_hash():
-    """Final approval must fail closed when recomputed evidence_hash does not match stored evidence_hash."""
+async def test_approve_final_rejects_incomplete_six_width_viewports():
+    """Final approval must fail closed when responsive_viewports only contains legacy 3 widths."""
     a11y_data = {
         "passed": True,
         "violations_count": 0,
@@ -266,17 +289,14 @@ async def test_approve_final_rejects_tampered_evidence_hash():
         "keyboard_navigation": {"status": "PASS", "details": "Focused interactive element"},
         "reduced_motion": {"status": "PASS", "details": "All animations suppressed"},
         "forced_colors": {"status": "PASS", "details": "Borders preserved"},
-        "responsive_viewports": {"status": "PASS", "viewports_tested": []},
-    }
-    evidence_payload = {
-        "verification": {"passed": True},
-        "accessibility": a11y_data,
-        "modality_checks": modality_data,
-        "browser_metadata": {"browser_name": "chromium"},
-        "verified_commit": "a" * 40,
-        "candidate_hash": "c" * 64,
-        "manifest_hash": "m" * 64,
-        "screenshot_sha256": "f" * 64,
+        "responsive_viewports": {
+            "status": "PASS",
+            "viewports_tested": [
+                {"name": "mobile-375", "width": 375, "passed": True, "overflow_x": False},
+                {"name": "tablet-768", "width": 768, "passed": True, "overflow_x": False},
+                {"name": "desktop-1280", "width": 1280, "passed": True, "overflow_x": False},
+            ],
+        },
     }
 
     mock_workflow = MagicMock()
@@ -293,8 +313,7 @@ async def test_approve_final_rejects_tampered_evidence_hash():
         "composer": {
             "status": "PASS",
             "passed": True,
-            "evidence_hash": "0" * 64,  # Tampered hash!
-            "evidence_payload": evidence_payload,
+            "evidence_hash": "e" * 64,
             "runner_metadata": {
                 "screenshot_captured": True,
                 "accessibility": a11y_data,
@@ -311,31 +330,31 @@ async def test_approve_final_rejects_tampered_evidence_hash():
 
         with pytest.raises(HTTPException) as exc_info:
             await approve_final_certification(
-                workflow_id="wf-test-tampered",
-                request=FinalApprovalRequest(approved=True, reason="Testing tamper rejection"),
+                workflow_id="wf-test-legacy-3-widths",
+                request=FinalApprovalRequest(approved=True, reason="Testing legacy 3 widths rejection"),
                 user={"email": "admin@skillhubcore.in"},
                 governance_service=mock_gov,
                 session=AsyncMock(),
             )
 
         assert exc_info.value.status_code == 400
-        assert "evidence_hash cryptographic verification failed" in exc_info.value.detail
+        assert "missing required six-breakpoint widths" in exc_info.value.detail
 
 
 @pytest.mark.asyncio
-async def test_approve_final_passes_with_clean_accessibility_and_modalities():
-    """Final approval succeeds when accessibility passed with 0 violations, modalities are clean, and evidence_hash matches."""
+async def test_approve_final_rejects_missing_screenshot_path():
+    """Final approval must fail closed when screenshot_captured is True but screenshot_path is missing."""
     a11y_data = {
         "passed": True,
         "violations_count": 0,
         "violations": [],
-        "passes_count": 28,
+        "passes_count": 8,
     }
     modality_data = {
         "keyboard_navigation": {"status": "PASS", "details": "Focused interactive element"},
         "reduced_motion": {"status": "PASS", "details": "All animations suppressed"},
         "forced_colors": {"status": "PASS", "details": "Borders preserved"},
-        "responsive_viewports": {"status": "PASS", "viewports_tested": []},
+        "responsive_viewports": {"status": "PASS", "viewports_tested": _six_passing_viewports()},
     }
     evidence_payload = {
         "verification": {"passed": True},
@@ -367,6 +386,160 @@ async def test_approve_final_passes_with_clean_accessibility_and_modalities():
             "evidence_payload": evidence_payload,
             "runner_metadata": {
                 "screenshot_captured": True,
+                # Missing screenshot_path!
+                "accessibility": a11y_data,
+                "modality_checks": modality_data,
+            },
+        },
+    }
+
+    mock_gov = MagicMock()
+    mock_gov.get_workflow = AsyncMock(return_value=mock_workflow)
+
+    with patch("subprocess.run") as mock_sub:
+        mock_sub.return_value = MagicMock(returncode=0, stdout="packages/ui/some-file.tsx\n")
+
+        with pytest.raises(HTTPException) as exc_info:
+            await approve_final_certification(
+                workflow_id="wf-test-missing-screenshot-path",
+                request=FinalApprovalRequest(approved=True, reason="Testing missing screenshot path"),
+                user={"email": "admin@skillhubcore.in"},
+                governance_service=mock_gov,
+                session=AsyncMock(),
+            )
+
+        assert exc_info.value.status_code == 400
+        assert "missing screenshot_path or screenshot_sha256" in exc_info.value.detail
+
+
+@pytest.mark.asyncio
+async def test_approve_final_rejects_tampered_evidence_hash(tmp_path):
+    """Final approval must fail closed when recomputed evidence_hash does not match stored evidence_hash."""
+    import hashlib
+    screenshot_file = tmp_path / "verify_screenshot.png"
+    screenshot_file.write_bytes(b"fake-png-content")
+    screenshot_sha = hashlib.sha256(screenshot_file.read_bytes()).hexdigest()
+
+    a11y_data = {
+        "passed": True,
+        "violations_count": 0,
+        "violations": [],
+        "passes_count": 8,
+    }
+    modality_data = {
+        "keyboard_navigation": {"status": "PASS", "details": "Focused interactive element"},
+        "reduced_motion": {"status": "PASS", "details": "All animations suppressed"},
+        "forced_colors": {"status": "PASS", "details": "Borders preserved"},
+        "responsive_viewports": {"status": "PASS", "viewports_tested": _six_passing_viewports()},
+    }
+    evidence_payload = {
+        "verification": {"passed": True},
+        "accessibility": a11y_data,
+        "modality_checks": modality_data,
+        "browser_metadata": {"browser_name": "chromium"},
+        "verified_commit": "a" * 40,
+        "candidate_hash": "c" * 64,
+        "manifest_hash": "m" * 64,
+        "screenshot_sha256": screenshot_sha,
+    }
+
+    mock_workflow = MagicMock()
+    mock_workflow.current_state = CanonicalWorkflowState.AWAITING_GATE_2
+    mock_workflow.candidate_sha256 = "c" * 64
+    mock_workflow.manifest_sha256 = "m" * 64
+    mock_workflow.gate_results = {
+        "placement": {
+            "commit": "a" * 40,
+            "candidate_sha256": "c" * 64,
+            "manifest_sha256": "m" * 64,
+        },
+        "qualification": {"status": "PASS"},
+        "composer": {
+            "status": "PASS",
+            "passed": True,
+            "evidence_hash": "0" * 64,  # Tampered hash!
+            "evidence_payload": evidence_payload,
+            "runner_metadata": {
+                "screenshot_captured": True,
+                "screenshot_path": str(screenshot_file),
+                "screenshot_sha256": screenshot_sha,
+                "accessibility": a11y_data,
+                "modality_checks": modality_data,
+            },
+        },
+    }
+
+    mock_gov = MagicMock()
+    mock_gov.get_workflow = AsyncMock(return_value=mock_workflow)
+
+    with patch("subprocess.run") as mock_sub:
+        mock_sub.return_value = MagicMock(returncode=0, stdout="packages/ui/some-file.tsx\n")
+
+        with pytest.raises(HTTPException) as exc_info:
+            await approve_final_certification(
+                workflow_id="wf-test-tampered",
+                request=FinalApprovalRequest(approved=True, reason="Testing tamper rejection"),
+                user={"email": "admin@skillhubcore.in"},
+                governance_service=mock_gov,
+                session=AsyncMock(),
+            )
+
+        assert exc_info.value.status_code == 400
+        assert "evidence_hash cryptographic verification failed" in exc_info.value.detail
+
+
+@pytest.mark.asyncio
+async def test_approve_final_passes_with_clean_accessibility_and_modalities(tmp_path):
+    """Final approval succeeds when accessibility passed with 0 violations, modalities are clean, and evidence_hash matches."""
+    import hashlib
+    screenshot_file = tmp_path / "verify_screenshot_valid.png"
+    screenshot_file.write_bytes(b"valid-png-content")
+    screenshot_sha = hashlib.sha256(screenshot_file.read_bytes()).hexdigest()
+
+    a11y_data = {
+        "passed": True,
+        "violations_count": 0,
+        "violations": [],
+        "passes_count": 28,
+    }
+    modality_data = {
+        "keyboard_navigation": {"status": "PASS", "details": "Focused interactive element"},
+        "reduced_motion": {"status": "PASS", "details": "All animations suppressed"},
+        "forced_colors": {"status": "PASS", "details": "Borders preserved"},
+        "responsive_viewports": {"status": "PASS", "viewports_tested": _six_passing_viewports()},
+    }
+    evidence_payload = {
+        "verification": {"passed": True},
+        "accessibility": a11y_data,
+        "modality_checks": modality_data,
+        "browser_metadata": {"browser_name": "chromium"},
+        "verified_commit": "a" * 40,
+        "candidate_hash": "c" * 64,
+        "manifest_hash": "m" * 64,
+        "screenshot_sha256": screenshot_sha,
+    }
+    valid_hash = compute_composer_evidence_hash(evidence_payload)
+
+    mock_workflow = MagicMock()
+    mock_workflow.current_state = CanonicalWorkflowState.AWAITING_GATE_2
+    mock_workflow.candidate_sha256 = "c" * 64
+    mock_workflow.manifest_sha256 = "m" * 64
+    mock_workflow.gate_results = {
+        "placement": {
+            "commit": "a" * 40,
+            "candidate_sha256": "c" * 64,
+            "manifest_sha256": "m" * 64,
+        },
+        "qualification": {"status": "PASS"},
+        "composer": {
+            "status": "PASS",
+            "passed": True,
+            "evidence_hash": valid_hash,
+            "evidence_payload": evidence_payload,
+            "runner_metadata": {
+                "screenshot_captured": True,
+                "screenshot_path": str(screenshot_file),
+                "screenshot_sha256": screenshot_sha,
                 "accessibility": a11y_data,
                 "modality_checks": modality_data,
             },
