@@ -986,42 +986,58 @@ async def verify_composer(
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error))
 
+    target_family = workflow.target_family
+    target_version = workflow.target_version
+    candidate_sha = workflow.candidate_sha256 or ""
+    manifest_sha = workflow.manifest_sha256 or ""
+    initial_state = workflow.current_state
+
+    # Release initial DB connection before long-running worktree build + browser run
+    # so pooled connections (e.g. Neon PgBouncer) do not time out while idle in transaction.
+    await session.close()
+
     from app.verification.composer_worktree_verifier import verify_composer_in_worktree
+    from app.persistence.database import get_session_factory
 
     result = await verify_composer_in_worktree(
         workflow_id=workflow_id,
         commit_sha=commit_sha,
-        block_family=workflow.target_family,
-        block_version=workflow.target_version,
-        candidate_hash=workflow.candidate_sha256 or "",
-        manifest_hash=workflow.manifest_sha256 or "",
+        block_family=target_family,
+        block_version=target_version,
+        candidate_hash=candidate_sha,
+        manifest_hash=manifest_sha,
         timeout_seconds=600
     )
 
-    if result.get("passed"):
-        if workflow.current_state == CanonicalWorkflowState.IMPLEMENTED:
-            await governance_service.transition_state(
-                workflow_id=workflow_id,
-                to_state=CanonicalWorkflowState.VERIFYING,
-                triggered_by=user.get("email") or user.get("sub") or "system",
-                reason="Composer verification initiated on isolated worktree"
-            )
-            await governance_service.transition_state(
-                workflow_id=workflow_id,
-                to_state=CanonicalWorkflowState.CERTIFICATION_READY,
-                triggered_by=user.get("email") or user.get("sub") or "system",
-                reason="Composer verification passed in isolated preview"
-            )
+    session_factory = get_session_factory()
+    async with session_factory() as write_session:
+        fresh_gov = await get_governance_service(write_session)
+        fresh_repo = await get_workflow_repository(write_session)
 
-    # Atomically bind gate result into workflow
-    workflow_model = await workflow_repo.get(workflow_id, verify_bindings=False)
-    if workflow_model:
-        current_gates = dict(workflow_model.gate_results or {})
-        current_gates["composer"] = result
-        workflow_model.gate_results = current_gates
-        await workflow_repo.upsert(workflow_model)
-        await session.commit()
-        result["current_workflow_state"] = workflow_model.current_state
+        if result.get("passed"):
+            if initial_state == CanonicalWorkflowState.IMPLEMENTED:
+                await fresh_gov.transition_state(
+                    workflow_id=workflow_id,
+                    to_state=CanonicalWorkflowState.VERIFYING,
+                    triggered_by=user.get("email") or user.get("sub") or "system",
+                    reason="Composer verification initiated on isolated worktree"
+                )
+                await fresh_gov.transition_state(
+                    workflow_id=workflow_id,
+                    to_state=CanonicalWorkflowState.CERTIFICATION_READY,
+                    triggered_by=user.get("email") or user.get("sub") or "system",
+                    reason="Composer verification passed in isolated preview"
+                )
+
+        # Atomically bind gate result into workflow
+        workflow_model = await fresh_repo.get(workflow_id, verify_bindings=False)
+        if workflow_model:
+            current_gates = dict(workflow_model.gate_results or {})
+            current_gates["composer"] = result
+            workflow_model.gate_results = current_gates
+            await fresh_repo.upsert(workflow_model)
+            await write_session.commit()
+            result["current_workflow_state"] = workflow_model.current_state
 
     return result
 
