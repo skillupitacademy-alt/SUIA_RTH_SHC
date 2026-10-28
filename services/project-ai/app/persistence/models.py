@@ -440,7 +440,22 @@ class ManifestModel(Base):
     )
     
     def verify_hash(self, manifest_data: Optional[Dict[str, Any]] = None) -> bool:
-        """Verify manifest data matches stored hash."""
+        """
+        Verify manifest data matches stored hash.
+        Supports canonical revision-safe manifests and historical legacy formats.
+        """
+        # 1. Canonical revision-safe manifest verification
+        try:
+            from app.api.routes.candidate import model_to_manifest
+            from app.models.candidate import compute_canonical_manifest_hash
+            domain_manifest = model_to_manifest(self)
+            canonical_hash = compute_canonical_manifest_hash(domain_manifest)
+            if self.manifest_hash == canonical_hash:
+                return True
+        except Exception:
+            pass
+
+        # 2. Legacy caller-provided manifest_data format (FEAT-004 integration tests)
         if manifest_data is not None:
             canonical = json.dumps(manifest_data, sort_keys=True, ensure_ascii=False)
             if self.manifest_hash == hashlib.sha256(canonical.encode("utf-8")).hexdigest():
