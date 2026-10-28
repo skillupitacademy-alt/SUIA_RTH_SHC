@@ -251,6 +251,47 @@ async def run_candidate_qualification_tests(
                     },
                 }
 
+        # UBA Rule 4: Mandatory BlockShell Composition (prohibits hand-rolled raw <article>)
+        if "<article" in comp_text and "BlockShell" not in comp_text:
+            return {
+                "passed": False,
+                "status": "FAIL",
+                "detail": (
+                    f"Candidate component '{comp.filename}' violates UBA architecture standards: "
+                    "hand-rolling a raw `<article>` outer shell is prohibited. "
+                    "Candidates must compose the generic BlockShell primitive from '../primitives' or '@quiz/ui'."
+                ),
+                "evidence_id": f"test-evidence-{candidate_id}",
+                "evidence_hash": "",
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "runner_metadata": {
+                    "runner_revision": runner_revision,
+                    "qualification_inputs": qualification_inputs,
+                },
+            }
+
+        # UBA Rule 5: Buttons require visible focus state (WCAG SC 2.4.7)
+        if "<button" in comp_text and "focus" not in comp_text:
+            return {
+                "passed": False,
+                "status": "FAIL",
+                "detail": (
+                    f"Candidate component '{comp.filename}' violates UBA keyboard accessibility standards (WCAG SC 2.4.7): "
+                    "custom button elements must declare a visible focus ring (e.g. `focus:ring-2` or `focus-visible:ring-2`)."
+                ),
+                "evidence_id": f"test-evidence-{candidate_id}",
+                "evidence_hash": "",
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "runner_metadata": {
+                    "runner_revision": runner_revision,
+                    "qualification_inputs": qualification_inputs,
+                },
+            }
+
     written_files: List[Path] = []
     worktree_path: Optional[Path] = None
     linked_deps: List[Path] = []

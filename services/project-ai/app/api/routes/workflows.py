@@ -775,6 +775,77 @@ async def approve_final_certification(
                     detail=f"Cannot approve: Composer verification failed {modality_name} modality check (status: {mod_status}): {mod_result.get('details', 'check failed')}"
                 )
 
+        # 6. Cryptographic Evidence Hash Revalidation
+        from app.verification.composer_worktree_verifier import compute_composer_evidence_hash
+        import hashlib
+        from pathlib import Path
+
+        evidence_payload = composer_gate.get("evidence_payload")
+        if not evidence_payload or not isinstance(evidence_payload, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing cryptographic evidence_payload for hash revalidation"
+            )
+
+        if evidence_payload.get("verified_commit") != placement_commit:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Cannot approve: Composer evidence_payload verified_commit mismatch "
+                    f"({evidence_payload.get('verified_commit')} != {placement_commit})"
+                )
+            )
+        if workflow.candidate_sha256 and evidence_payload.get("candidate_hash") != workflow.candidate_sha256:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer evidence_payload candidate_hash mismatch"
+            )
+        if workflow.manifest_sha256 and evidence_payload.get("manifest_hash") != workflow.manifest_sha256:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer evidence_payload manifest_hash mismatch"
+            )
+        if evidence_payload.get("accessibility") != accessibility_evidence:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer accessibility metadata does not match signed evidence_payload"
+            )
+        if evidence_payload.get("modality_checks") != modality_checks:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer modality_checks metadata does not match signed evidence_payload"
+            )
+
+        screenshot_path_str = runner_metadata.get("screenshot_path")
+        expected_screenshot_sha = evidence_payload.get("screenshot_sha256")
+        if screenshot_path_str:
+            screenshot_file = Path(screenshot_path_str)
+            if not screenshot_file.exists():
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Composer screenshot evidence file missing on disk: {screenshot_path_str}"
+                )
+            actual_screenshot_sha = hashlib.sha256(screenshot_file.read_bytes()).hexdigest()
+            if actual_screenshot_sha != expected_screenshot_sha:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Cannot approve: Composer screenshot SHA-256 mismatch "
+                        f"(on-disk {actual_screenshot_sha} != signed {expected_screenshot_sha})"
+                    )
+                )
+
+        recomputed_evidence_hash = compute_composer_evidence_hash(evidence_payload)
+        stored_evidence_hash = composer_gate.get("evidence_hash")
+        if recomputed_evidence_hash != stored_evidence_hash:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Cannot approve: Composer evidence_hash cryptographic verification failed "
+                    f"(recomputed {recomputed_evidence_hash} != stored {stored_evidence_hash})"
+                )
+            )
+
         evidence_verified = True
         evidence_summary = gate_results
     else:

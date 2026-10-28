@@ -158,6 +158,12 @@ def _sha256_file(path: Path) -> Optional[str]:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def compute_composer_evidence_hash(evidence_payload: Dict[str, Any]) -> str:
+    """Deterministically serialize and hash a Composer verification evidence payload."""
+    raw_payload = json.dumps(evidence_payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw_payload.encode("utf-8")).hexdigest()
+
+
 def _pnpm_command() -> str:
     return "pnpm.cmd" if os.name == "nt" else "pnpm"
 
@@ -622,8 +628,7 @@ async def verify_composer_in_worktree(
             "manifest_hash": manifest_hash,
             "screenshot_sha256": screenshot_hash,
         }
-        raw_payload = json.dumps(evidence_payload, sort_keys=True, separators=(",", ":"))
-        evidence_hash = hashlib.sha256(raw_payload.encode("utf-8")).hexdigest()
+        evidence_hash = compute_composer_evidence_hash(evidence_payload)
         evidence_id = f"composer-ev-{uuid4().hex[:12]}"
 
         duration_ms = int((time.time() - start_time) * 1000)
@@ -636,6 +641,7 @@ async def verify_composer_in_worktree(
             "candidate_hash": candidate_hash,
             "manifest_hash": manifest_hash,
             "evidence_hash": evidence_hash,
+            "evidence_payload": evidence_payload,
             "evidence_ids": [evidence_id],
             "reason": (
                 f"Composer verification passed on isolated preview with 0 axe violations and 0 console errors"
