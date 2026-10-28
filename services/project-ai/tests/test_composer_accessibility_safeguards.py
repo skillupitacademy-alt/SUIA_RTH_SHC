@@ -565,3 +565,66 @@ async def test_approve_final_passes_with_clean_accessibility_and_modalities(tmp_
 
         assert resp.approved is True
         assert resp.new_state == CanonicalWorkflowState.CERTIFIED.value
+
+
+@pytest.mark.asyncio
+async def test_supersede_workflow_revokes_certified_state_and_reconciles_ancestors():
+    """Superseding a CERTIFIED workflow transitions it and any stale CERTIFIED ancestors to REJECTED (SUPERSEDED)."""
+    from app.api.routes.workflows import supersede_workflow, SupersedeWorkflowRequest
+
+    mock_workflow = MagicMock()
+    mock_workflow.current_state = CanonicalWorkflowState.CERTIFIED
+    mock_workflow.specification_id = "spec-1"
+    mock_workflow.target_family = "Objective"
+    mock_workflow.target_version = "O1"
+    mock_workflow.requester_id = "req-1"
+    mock_workflow.contract_id = "con-1"
+    mock_workflow.contract_sha256 = "b" * 64
+
+    mock_wf_model = MagicMock()
+    mock_wf_model.current_state = CanonicalWorkflowState.CERTIFIED.value
+    mock_wf_model.final_status = "CERTIFIED"
+    mock_wf_model.gate_results = {
+        "supersedes": {"superseded_workflow_id": "wf-ancestor-1"}
+    }
+
+    mock_ancestor_model = MagicMock()
+    mock_ancestor_model.current_state = CanonicalWorkflowState.CERTIFIED.value
+    mock_ancestor_model.final_status = "SUPERSEDED"
+    mock_ancestor_model.gate_results = {
+        "superseded": {"superseded_by": "wf-current-1"}
+    }
+
+    async def _repo_get(wf_id, verify_bindings=False):
+        if wf_id == "wf-current-1":
+            return mock_wf_model
+        if wf_id == "wf-ancestor-1":
+            return mock_ancestor_model
+        return None
+
+    mock_repo = MagicMock()
+    mock_repo.get = AsyncMock(side_effect=_repo_get)
+    mock_repo.upsert = AsyncMock()
+
+    mock_gov = MagicMock()
+    mock_gov.get_workflow = AsyncMock(return_value=mock_workflow)
+
+    mock_session = AsyncMock()
+    mock_session.add = MagicMock()
+
+    res = await supersede_workflow(
+        workflow_id="wf-current-1",
+        request=SupersedeWorkflowRequest(reason="Re-certify against 6-width boundary gate"),
+        user={"email": "admin@skillhubcore.in"},
+        governance_service=mock_gov,
+        workflow_repo=mock_repo,
+        session=mock_session,
+    )
+
+    assert res["old_workflow_id"] == "wf-current-1"
+    assert res["current_state"] == CanonicalWorkflowState.CANDIDATE_REQUESTED.value
+    assert mock_wf_model.current_state == CanonicalWorkflowState.REJECTED.value
+    assert mock_wf_model.final_status == "SUPERSEDED"
+    assert mock_ancestor_model.current_state == CanonicalWorkflowState.REJECTED.value
+    assert mock_ancestor_model.final_status == "SUPERSEDED"
+    assert mock_repo.upsert.await_count == 2
