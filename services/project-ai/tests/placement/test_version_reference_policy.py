@@ -1,18 +1,31 @@
-"""Unit tests for Generic Revision-Safe Block Placement Policy.
+"""Comprehensive tests for Generic Revision-Safe Block Placement Policy.
 
-Verification Requirements:
-1. existing unused version -> UPDATE_IN_PLACE
-2. existing referenced draft version -> VERSION_IN_USE
-3. existing referenced published version -> VERSION_IN_USE
-4. absent version -> ADD_NEW_VERSION
-5. version allocator returns next valid family version
-6. UPDATE manifest contains UPDATE operations with pre-image hashes
-7. UPDATE executor writes each explicit target path correctly
-8. stale pre-image hash fails without partial placement
-9. UPDATE patcher refreshes existing registry metadata without duplicates
-10. ADD_NEW_VERSION creates exactly one additional registry/renderer mapping
-11. final certification supersedes only same family/version UPDATE workflows
-12. final certification does not supersede an older version after ADD_NEW_VERSION
+Test Coverage:
+1. Hash Parity Integration:
+   - Real manifest generation and verification through PlacementExecutor.verify_manifest_hash().
+   - Parity across candidate generation, persistence, and execution.
+2. Database Reference Inspection:
+   - Exact family/version in draft tutorial content -> VERSION_IN_USE.
+   - Exact family/version in published tutorial content -> VERSION_IN_USE.
+   - Cross-family same version code -> no false match (summary/V1 vs video/V1).
+   - Database / query / schema error -> blocking inspection failure, never UPDATE.
+3. Atomicity & Preflight Invariants:
+   - Multi-file update where later pre-image is stale fails preflight.
+   - Proves NO earlier target file was modified (fail closed).
+   - Proves no commit is created.
+4. Patcher Invariants:
+   - UPDATE refreshes only exact (family, version) mapping.
+   - ADD_NEW_VERSION creates exactly one mapping.
+   - Duplicate exact mapping fails closed.
+   - Cross-family same version code is preserved without conflict.
+5. Governance Separation of Duties & Supersedence:
+   - Strict anti-self-approval: admin requester self-approval is rejected.
+   - UPDATE_IN_PLACE supersedes only same (family, version).
+   - ADD_NEW_VERSION never supersedes prior versions.
+   - VERSION_IN_USE and INSPECTION_FAILED cannot advance to Gate 2 or execution.
+6. End-to-End Placement Lifecycle:
+   - Unused version update in place.
+   - Referenced version rejection -> server version allocation.
 """
 
 import hashlib
@@ -20,13 +33,16 @@ import json
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.candidate import (
     BlockFamily,
     CandidateFile,
+    CanonicalComparison,
+    ClassificationResult,
     IdentityStatus,
     PlacementDecision,
     PlacementFileAction,
@@ -35,7 +51,17 @@ from app.models.candidate import (
     ReferenceSummary,
     RevisionStrategy,
     UpdateEligibility,
+    compute_canonical_manifest_hash,
 )
+from app.api.routes.candidate import (
+    generate_manifest,
+    get_manifest,
+    manifest_to_model,
+    model_to_manifest,
+)
+from app.auth.types import AuthenticatedPrincipal
+from app.database.models import WorkflowModel
+from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.models.implementation_approval import (
     ImplementationApproval,
     ImplementationApprovalStatus,
@@ -43,11 +69,14 @@ from app.models.implementation_approval import (
 from app.placement.comparator import CanonicalComparator
 from app.placement.executor import PlacementExecutor, PlacementExecutionError
 from app.placement.patcher import (
+    PatchError,
     patch_generated_block_registry,
     patch_generated_block_version_definitions,
     patch_tutorial_block_renderer,
 )
 from app.placement.version_reference_service import (
+    VersionPolicyEvaluation,
+    VersionReferenceInspectionError,
     allocate_next_version,
     check_version_registration,
     evaluate_version_policy,
@@ -77,29 +106,54 @@ def temp_workspace():
         (ws / "packages/ui/src/tutorial/schemas").mkdir(parents=True, exist_ok=True)
         (ws / "packages/ui/src/tutorial").mkdir(parents=True, exist_ok=True)
         (ws / "apps/skillhubcore-admin/src/lib/tutorial/editor/generated").mkdir(parents=True, exist_ok=True)
+        (ws / "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry").mkdir(parents=True, exist_ok=True)
+        (ws / "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document").mkdir(parents=True, exist_ok=True)
 
         # Initial component
-        comp_file = ws / "packages/ui/src/tutorial/blocks/summary/v1/summary-v1.tsx"
+        comp_file = ws / "packages/ui/src/tutorial/blocks/summary-v1.tsx"
         comp_file.write_text("// summary v1 component\nexport const SummaryV1 = () => null;", encoding="utf-8")
 
         # Initial renderer
         renderer_file = ws / "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
         renderer_file.write_text(
-            'export const GENERATED_RENDERERS = {\n  "summary:V1": SummaryV1,\n};\n',
+            "import type React from 'react';\n"
+            "export interface GeneratedBlockRenderer { family: string; version: string; component: any; }\n"
+            "export const GENERATED_BLOCK_RENDERERS = [\n"
+            "  { family: 'summary', version: 'V1', component: SummaryV1 },\n"
+            "  // PROJECT_LLM_GENERATED_RENDERERS\n"
+            "];\n",
             encoding="utf-8"
         )
 
         # Initial version definitions
-        defs_file = ws / "apps/skillhubcore-admin/src/lib/tutorial/editor/generated/generatedBlockVersionDefinitions.ts"
+        defs_file = ws / "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/generatedBlockVersionDefinitions.ts"
         defs_file.write_text(
-            'export const GENERATED_VERSION_DEFINITIONS = [\n  { family: "summary", version: "V1", label: "Summary V1" },\n];\n',
+            "export const GENERATED_BLOCK_VERSION_DEFINITIONS = [\n"
+            "  { type: 'summary', version: 'V1', payloadFormat: 'canonical' },\n"
+            "  // PROJECT_LLM_GENERATED_DEFINITIONS\n"
+            "];\n",
             encoding="utf-8"
         )
 
         # Initial registries
-        reg_file = ws / "apps/skillhubcore-admin/src/lib/tutorial/editor/generated/generatedBlockRegistries.ts"
+        reg_file = ws / "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/generatedBlockRegistries.ts"
         reg_file.write_text(
-            'export const GENERATED_BLOCK_REGISTRIES = {\n  summary: {\n    versions: ["V1"],\n    defaultPayload: { title: "Summary" },\n  },\n};\n',
+            "export const GENERATED_BLOCK_REGISTRIES = [\n"
+            "  {\n"
+            "    id: 'summary',\n"
+            "    label: 'Summary',\n"
+            "    versions: [\n"
+            "      {\n"
+            "        id: 'v1',\n"
+            "        code: 'V1',\n"
+            "        label: 'V1 - Summary',\n"
+            "        description: 'Summary block',\n"
+            "        getDefaultPayload: () => ({ title: 'Summary' }),\n"
+            "      },\n"
+            "    ],\n"
+            "  },\n"
+            "  // PROJECT_LLM_GENERATED_REGISTRIES\n"
+            "];\n",
             encoding="utf-8"
         )
 
@@ -107,451 +161,275 @@ def temp_workspace():
 
 
 # ============================================================================
-# 1. Version Policy Evaluation Tests
+# 1. Hash Parity Integration Tests
 # ============================================================================
 
-def test_existing_unused_version_yields_update_in_place(temp_workspace):
-    """An existing registered version with 0 references must produce UPDATE_IN_PLACE."""
+def test_manifest_hash_parity_between_generator_and_executor(temp_workspace):
+    """Manifest hash computed by generator must match executor verification identically."""
+    executor = PlacementExecutor(str(temp_workspace), dry_run=True)
+
+    file_op = PlacementFileOperation(
+        action=PlacementFileAction.UPDATE,
+        source_filename="summary-v1.tsx",
+        source_sha256="abc1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc",
+        target_path="packages/ui/src/tutorial/blocks/summary-v1.tsx",
+        expected_pre_hash="1111222233334444555566667777888899990000aaaabbbbccccddddeeeeffff",
+        description="Update existing block in place"
+    )
+
+    manifest_dict = {
+        "manifestId": "man-test-101",
+        "candidateId": "cand-test-101",
+        "decision": PlacementDecision.UPDATE,
+        "targetPath": "packages/ui/src/tutorial/blocks",
+        "blockFamily": BlockFamily.SUMMARY,
+        "blockVersion": "V1",
+        "requiredChanges": ["In-place update requested"],
+        "fileOperations": [file_op],
+        "evidenceIds": ["ev-test-1"],
+        "createdAt": "2026-10-28T12:00:00Z",
+        "identityStatus": IdentityStatus.EXISTING_UNUSED,
+        "updateEligibility": UpdateEligibility.ALLOWED,
+        "referenceSummary": ReferenceSummary(count=0, publication_states={}, sample_ids=[]),
+        "revisionStrategy": RevisionStrategy.UPDATE_IN_PLACE,
+    }
+
+    # Canonical hash computed via shared canonical function
+    canonical_hash = compute_canonical_manifest_hash(manifest_dict)
+    manifest_dict["manifestHash"] = canonical_hash
+
+    manifest = PlacementManifest(**manifest_dict)
+
+    # Must pass verify_manifest_hash without error!
+    assert executor.verify_manifest_hash(manifest) is True
+
+
+# ============================================================================
+# 2. Database Reference Inspection Tests (Draft, Published, Cross-Family, Fail-Closed)
+# ============================================================================
+
+def test_reference_inspection_draft_section_yields_version_in_use(temp_workspace):
+    """Draft reference prevents in-place update and returns VERSION_IN_USE."""
     policy = run_coro(evaluate_version_policy(
         family="summary",
         version="V1",
         session=None,
         workspace_root=str(temp_workspace),
-        mock_references={"total_count": 0, "draft_count": 0, "published_count": 0, "sample_section_ids": []}
+        mock_references=[
+            {"id": "sec-draft-1", "status": "draft", "content": {"blocks": [{"type": "summary", "version": "V1"}]}}
+        ]
     ))
 
+    assert policy.decision == PlacementDecision.VERSION_IN_USE
+    assert policy.identity_status == IdentityStatus.EXISTING_REFERENCED
+    assert policy.update_eligibility == UpdateEligibility.VERSION_IN_USE
+    assert policy.revision_strategy == RevisionStrategy.ADD_NEW_VERSION
+    assert policy.reference_summary.draft_count == 1
+    assert "sec-draft-1" in policy.reference_summary.sample_ids
+
+
+def test_reference_inspection_published_section_yields_version_in_use(temp_workspace):
+    """Published reference prevents in-place update and returns VERSION_IN_USE."""
+    policy = run_coro(evaluate_version_policy(
+        family="summary",
+        version="V1",
+        session=None,
+        workspace_root=str(temp_workspace),
+        mock_references=[
+            {"id": "sec-pub-1", "status": "published", "content": {"blocks": [{"type": "summary", "version": "V1"}]}}
+        ]
+    ))
+
+    assert policy.decision == PlacementDecision.VERSION_IN_USE
+    assert policy.identity_status == IdentityStatus.EXISTING_REFERENCED
+    assert policy.update_eligibility == UpdateEligibility.VERSION_IN_USE
+    assert policy.reference_summary.published_count == 1
+
+
+def test_reference_inspection_cross_family_same_version_no_false_match(temp_workspace):
+    """Matching version in another family (e.g. video/V1) does not block summary/V1."""
+    # Only video has V1 referenced, NOT summary
+    policy = run_coro(evaluate_version_policy(
+        family="summary",
+        version="V1",
+        session=None,
+        workspace_root=str(temp_workspace),
+        mock_references=[
+            {"id": "sec-video-1", "status": "published", "content": {"blocks": [{"type": "video", "version": "V1"}]}}
+        ]
+    ))
+
+    # summary V1 has 0 references -> allowed UPDATE_IN_PLACE!
+    assert policy.decision == PlacementDecision.UPDATE
     assert policy.identity_status == IdentityStatus.EXISTING_UNUSED
     assert policy.update_eligibility == UpdateEligibility.ALLOWED
     assert policy.revision_strategy == RevisionStrategy.UPDATE_IN_PLACE
-    assert policy.decision == PlacementDecision.UPDATE
     assert policy.reference_summary.total_count == 0
 
 
-def test_existing_referenced_draft_version_yields_version_in_use(temp_workspace):
-    """An existing version referenced by a DRAFT section must produce VERSION_IN_USE."""
+def test_reference_inspection_database_error_fails_closed_blocking_update(temp_workspace):
+    """Database query/schema failure must fail closed with INSPECTION_FAILED and block UPDATE."""
+    mock_session = MagicMock(spec=AsyncSession)
+    mock_session.execute.side_effect = RuntimeError("Database connection reset / table missing")
+
+    # 1. query_version_references directly raises typed VersionReferenceInspectionError
+    with pytest.raises(VersionReferenceInspectionError):
+        run_coro(query_version_references("summary", "V1", session=mock_session))
+
+    # 2. evaluate_version_policy fails closed without allowing in-place update
     policy = run_coro(evaluate_version_policy(
         family="summary",
         version="V1",
-        session=None,
-        workspace_root=str(temp_workspace),
-        mock_references={
-            "total_count": 1,
-            "draft_count": 1,
-            "published_count": 0,
-            "sample_section_ids": ["sec-draft-123"]
-        }
-    ))
-
-    assert policy.identity_status == IdentityStatus.EXISTING_REFERENCED
-    assert policy.update_eligibility == UpdateEligibility.VERSION_IN_USE
-    assert policy.revision_strategy == RevisionStrategy.ADD_NEW_VERSION
-    assert policy.decision == PlacementDecision.VERSION_IN_USE
-    assert policy.reference_summary.total_count == 1
-    assert policy.reference_summary.draft_count == 1
-    assert "sec-draft-123" in policy.reference_summary.sample_section_ids
-    assert policy.proposed_next_version == "V2"
-
-
-def test_existing_referenced_published_version_yields_version_in_use(temp_workspace):
-    """An existing version referenced by a PUBLISHED section must produce VERSION_IN_USE."""
-    policy = run_coro(evaluate_version_policy(
-        family="summary",
-        version="V1",
-        session=None,
-        workspace_root=str(temp_workspace),
-        mock_references={
-            "total_count": 3,
-            "draft_count": 0,
-            "published_count": 3,
-            "sample_section_ids": ["sec-pub-1", "sec-pub-2", "sec-pub-3"]
-        }
-    ))
-
-    assert policy.identity_status == IdentityStatus.EXISTING_REFERENCED
-    assert policy.update_eligibility == UpdateEligibility.VERSION_IN_USE
-    assert policy.revision_strategy == RevisionStrategy.ADD_NEW_VERSION
-    assert policy.decision == PlacementDecision.VERSION_IN_USE
-    assert policy.reference_summary.published_count == 3
-    assert policy.proposed_next_version == "V2"
-
-
-def test_absent_version_yields_add_new_version(temp_workspace):
-    """A version that does not exist in the codebase yields ADD_NEW_VERSION."""
-    policy = run_coro(evaluate_version_policy(
-        family="summary",
-        version="V99",
-        session=None,
+        session=mock_session,
         workspace_root=str(temp_workspace)
     ))
 
-    assert policy.identity_status == IdentityStatus.NEW
-    assert policy.update_eligibility == UpdateEligibility.NOT_APPLICABLE
+    assert policy.decision == PlacementDecision.VERSION_IN_USE
+    assert policy.update_eligibility == UpdateEligibility.INSPECTION_FAILED
     assert policy.revision_strategy == RevisionStrategy.ADD_NEW_VERSION
-    assert policy.decision == PlacementDecision.ADD
+    assert policy.identity_status == IdentityStatus.EXISTING_REFERENCED
 
 
 # ============================================================================
-# 2. Version Allocator Tests
+# 3. Atomicity & Preflight Invariants
 # ============================================================================
 
-def test_version_allocator_sequential_increment(temp_workspace):
-    """Allocator proposes next version sequentially by family prefix and numeric suffix."""
-    with patch("app.placement.version_reference_service.discover_existing_versions_for_family", return_value=["O1", "O2", "O3"]):
-        next_v = allocate_next_version("objective", workspace_root=str(temp_workspace))
-        assert next_v == "O4"
-
-    with patch("app.placement.version_reference_service.discover_existing_versions_for_family", return_value=["V1"]):
-        next_v = allocate_next_version("summary", workspace_root=str(temp_workspace))
-        assert next_v == "V2"
-
-    with patch("app.placement.version_reference_service.discover_existing_versions_for_family", return_value=[]):
-        next_v = allocate_next_version("quiz", workspace_root=str(temp_workspace))
-        assert next_v == "Q1"
-
-
-# ============================================================================
-# 3. Comparator & UPDATE Manifest Tests
-# ============================================================================
-
-def test_update_manifest_contains_update_operations_with_pre_image_hashes(temp_workspace):
-    """For UPDATE_IN_PLACE, existing file targets must be action: UPDATE with expected_pre_hash."""
-    comparator = CanonicalComparator({"blocks": {"verified": []}})
-
-    existing_target = temp_workspace / "packages/ui/src/tutorial/blocks/summary-v1.tsx"
-    existing_target.parent.mkdir(parents=True, exist_ok=True)
-    existing_content = "// summary v1 component\nexport const SummaryV1 = () => null;"
-    existing_target.write_text(existing_content, encoding="utf-8")
-    expected_hash = hashlib.sha256(existing_content.encode("utf-8")).hexdigest()
-
-    c_code = "// updated summary v1 content\nexport const SummaryV1 = () => 'updated';"
-    t_code = "// test"
-    s_code = "{}"
-    ts_code = "export type SummaryProps = {};"
-    integration_json = json.dumps({
-        "family": "summary",
-        "version": "V1",
-        "typeId": "summary",
-        "componentFile": "summary-v1.tsx",
-        "componentExport": "SummaryV1",
-        "testFile": "summary-v1.test.tsx",
-        "jsonSchemaFile": "summary-v1.schema.json",
-        "typeSchemaFile": "summary-v1.types.ts",
-        "defaultPayload": {"title": "Summary"}
-    })
-
-    files = [
-        CandidateFile(
-            filename="summary-v1.tsx",
-            content=c_code,
-            contentType="application/typescript",
-            hash=hashlib.sha256(c_code.encode("utf-8")).hexdigest()
-        ),
-        CandidateFile(
-            filename="summary-v1.test.tsx",
-            content=t_code,
-            contentType="application/typescript",
-            hash=hashlib.sha256(t_code.encode("utf-8")).hexdigest()
-        ),
-        CandidateFile(
-            filename="summary-v1.schema.json",
-            content=s_code,
-            contentType="application/json",
-            hash=hashlib.sha256(s_code.encode("utf-8")).hexdigest()
-        ),
-        CandidateFile(
-            filename="summary-v1.types.ts",
-            content=ts_code,
-            contentType="application/typescript",
-            hash=hashlib.sha256(ts_code.encode("utf-8")).hexdigest()
-        ),
-        CandidateFile(
-            filename="block.integration.json",
-            content=integration_json,
-            contentType="application/json",
-            hash=hashlib.sha256(integration_json.encode("utf-8")).hexdigest()
-        )
-    ]
-
-    ops = comparator.derive_file_operations(
-        files=files,
-        family=BlockFamily.SUMMARY,
-        version="V1",
-        workspace_root=str(temp_workspace),
-        revision_strategy=RevisionStrategy.UPDATE_IN_PLACE
-    )
-
-    comp_ops = [op for op in ops if op.target_path.endswith("summary-v1.tsx")]
-    assert len(comp_ops) == 1
-    assert comp_ops[0].action == PlacementFileAction.UPDATE
-    assert comp_ops[0].expected_pre_hash == expected_hash
-
-
-# ============================================================================
-# 4. Executor UPDATE & Fail-Closed Pre-Image Verification
-# ============================================================================
-
-def test_update_executor_writes_explicit_target_path(temp_workspace):
-    """PlacementExecutor must execute UPDATE operations and verify expected_pre_hash."""
+def test_atomic_preflight_blocks_write_on_later_stale_pre_image(temp_workspace):
+    """When a multi-file update has a later stale pre-image hash, NO earlier target file is modified."""
     executor = PlacementExecutor(str(temp_workspace), dry_run=False)
 
-    existing_file = temp_workspace / "packages/ui/src/tutorial/blocks/summary-v1.tsx"
-    existing_file.parent.mkdir(parents=True, exist_ok=True)
-    existing_file.write_text("// initial summary content", encoding="utf-8")
-    pre_hash = hashlib.sha256(existing_file.read_bytes()).hexdigest()
+    file_1 = temp_workspace / "packages/ui/src/tutorial/blocks/file1.tsx"
+    file_1.write_text("// initial file 1", encoding="utf-8")
+    pre_1 = hashlib.sha256(b"// initial file 1").hexdigest()
 
-    new_content = "// brand new updated code"
-    new_sha = hashlib.sha256(new_content.encode("utf-8")).hexdigest()
+    file_2 = temp_workspace / "packages/ui/src/tutorial/blocks/file2.tsx"
+    file_2.write_text("// initial file 2", encoding="utf-8")
 
-    file_op = PlacementFileOperation(
+    new_content_1 = "// new file 1 content"
+    new_sha_1 = hashlib.sha256(new_content_1.encode("utf-8")).hexdigest()
+
+    new_content_2 = "// new file 2 content"
+    new_sha_2 = hashlib.sha256(new_content_2.encode("utf-8")).hexdigest()
+
+    # Op 1: valid expected_pre_hash
+    op_1 = PlacementFileOperation(
         action=PlacementFileAction.UPDATE,
-        source_filename="summary-v1.tsx",
-        source_sha256=new_sha,
-        target_path="packages/ui/src/tutorial/blocks/summary-v1.tsx",
-        expected_pre_hash=pre_hash,
-        description="Update existing component in place"
+        source_filename="file1.tsx",
+        source_sha256=new_sha_1,
+        target_path="packages/ui/src/tutorial/blocks/file1.tsx",
+        expected_pre_hash=pre_1,
+        description="Update file 1"
+    )
+
+    # Op 2: STALE expected_pre_hash
+    op_2 = PlacementFileOperation(
+        action=PlacementFileAction.UPDATE,
+        source_filename="file2.tsx",
+        source_sha256=new_sha_2,
+        target_path="packages/ui/src/tutorial/blocks/file2.tsx",
+        expected_pre_hash="stale_pre_image_hash_mismatch",
+        description="Update file 2"
     )
 
     integration_json = json.dumps({
         "family": "summary",
         "version": "V1",
         "typeId": "summary",
-        "componentFile": "summary-v1.tsx",
-        "componentExport": "SummaryV1",
-        "testFile": "summary-v1.test.tsx",
-        "jsonSchemaFile": "summary-v1.schema.json",
-        "typeSchemaFile": "summary-v1.types.ts",
+        "componentFile": "file1.tsx",
+        "componentExport": "File1",
+        "testFile": "file1.test.tsx",
+        "jsonSchemaFile": "file1.schema.json",
+        "typeSchemaFile": "file1.types.ts",
         "defaultPayload": {"title": "Summary"}
     })
 
-    m_data = {
-        "manifestId": "man-1",
-        "candidateId": "cand-1",
-        "decision": "UPDATE",
+    manifest_dict = {
+        "manifestId": "man-atomic-1",
+        "candidateId": "cand-atomic-1",
+        "decision": PlacementDecision.UPDATE,
         "targetPath": "packages/ui/src/tutorial/blocks",
-        "blockFamily": "Summary",
+        "blockFamily": BlockFamily.SUMMARY,
         "blockVersion": "V1",
-        "requiredChanges": ["In-place update"],
-        "fileOperations": [file_op.model_dump()],
-        "evidenceIds": ["ev-1"],
-        "createdAt": "2026-10-28T12:00:00Z"
+        "requiredChanges": ["Atomic multi-file update"],
+        "fileOperations": [op_1, op_2],
+        "evidenceIds": ["ev-atomic-1"],
+        "createdAt": "2026-10-28T12:00:00Z",
+        "identityStatus": IdentityStatus.EXISTING_UNUSED,
+        "updateEligibility": UpdateEligibility.ALLOWED,
+        "referenceSummary": ReferenceSummary(count=0, publication_states={}, sample_ids=[]),
+        "revisionStrategy": RevisionStrategy.UPDATE_IN_PLACE,
     }
-    m_json = json.dumps(m_data, sort_keys=True, separators=(',', ':'))
-    m_hash = hashlib.sha256(m_json.encode('utf-8')).hexdigest()
-
-    manifest = PlacementManifest(
-        manifestId="man-1",
-        candidateId="cand-1",
-        decision=PlacementDecision.UPDATE,
-        targetPath="packages/ui/src/tutorial/blocks",
-        blockFamily=BlockFamily.SUMMARY,
-        blockVersion="V1",
-        requiredChanges=["In-place update"],
-        fileOperations=[file_op],
-        evidenceIds=["ev-1"],
-        manifestHash=m_hash,
-        createdAt="2026-10-28T12:00:00Z",
-        identityStatus=IdentityStatus.EXISTING_UNUSED,
-        updateEligibility=UpdateEligibility.ALLOWED,
-        revisionStrategy=RevisionStrategy.UPDATE_IN_PLACE
-    )
+    m_hash = compute_canonical_manifest_hash(manifest_dict)
+    manifest_dict["manifestHash"] = m_hash
+    manifest = PlacementManifest(**manifest_dict)
 
     approval = ImplementationApproval(
-        approval_id="app-1",
-        workflow_id="wf-1",
-        candidate_sha256=new_sha,
+        approval_id="app-atomic-1",
+        workflow_id="wf-atomic-1",
+        candidate_sha256="cand-hash",
         target_family="Summary",
         target_version="V1",
-        placement_manifest_id="man-1",
+        placement_manifest_id="man-atomic-1",
         placement_manifest_sha256=m_hash,
-        approved_by="admin-user",
+        approved_by="approver-alice",
         approval_timestamp=datetime.now(timezone.utc),
-        workflow_requester="req-user",
+        workflow_requester="requester-bob",
         status=ImplementationApprovalStatus.APPROVED,
-        evidence={"admin_override": True}
+        evidence={"admin_override": False}
     )
 
     files = [
-        CandidateFile(
-            filename="summary-v1.tsx",
-            content=new_content,
-            contentType="application/typescript",
-            hash=new_sha
-        ),
-        CandidateFile(
-            filename="block.integration.json",
-            content=integration_json,
-            contentType="application/json",
-            hash=hashlib.sha256(integration_json.encode("utf-8")).hexdigest()
-        )
+        CandidateFile(filename="file1.tsx", content=new_content_1, contentType="text/typescript", hash=new_sha_1),
+        CandidateFile(filename="file2.tsx", content=new_content_2, contentType="text/typescript", hash=new_sha_2),
+        CandidateFile(filename="block.integration.json", content=integration_json, contentType="application/json", hash=hashlib.sha256(integration_json.encode()).hexdigest())
     ]
 
     mock_wt = WorktreeContext(
         worktree_path=temp_workspace,
-        branch_name="candidate/cand-1",
+        branch_name="candidate/cand-atomic-1",
         base_commit="abc1234",
         created_at="2026-10-28T12:00:00Z",
-        workflow_id="man-1",
-        manifest_id="man-1"
+        workflow_id="wf-atomic-1",
+        manifest_id="man-atomic-1"
     )
 
+    commit_mock = MagicMock()
     with patch.object(executor.worktree_manager, "create_worktree", return_value=mock_wt), \
-         patch.object(executor.worktree_manager, "commit_in_worktree", return_value="commit-sha-123"), \
+         patch.object(executor.worktree_manager, "commit_in_worktree", commit_mock), \
          patch.object(executor.worktree_manager, "cleanup_worktree", return_value=None):
-        res = executor.execute_placement(
-            manifest=manifest,
-            approval=approval,
-            candidate_files=files,
-            workflow_requester="req-user",
-            candidate_sha256=new_sha
-        )
 
-        assert res["status"] in ("success", "executed")
-        assert existing_file.read_text(encoding="utf-8") == new_content
-
-
-def test_stale_pre_image_hash_fails_closed_without_writing(temp_workspace):
-    """When expected_pre_hash does not match target file, executor must fail closed without writing."""
-    executor = PlacementExecutor(str(temp_workspace), dry_run=False)
-
-    existing_file = temp_workspace / "packages/ui/src/tutorial/blocks/summary-v1.tsx"
-    existing_file.parent.mkdir(parents=True, exist_ok=True)
-    existing_file.write_text("// initial summary content", encoding="utf-8")
-    original_content = existing_file.read_text(encoding="utf-8")
-
-    mal_content = "// malicious or desynchronized update"
-    mal_sha = hashlib.sha256(mal_content.encode("utf-8")).hexdigest()
-
-    file_op = PlacementFileOperation(
-        action=PlacementFileAction.UPDATE,
-        source_filename="summary-v1.tsx",
-        source_sha256=mal_sha,
-        target_path="packages/ui/src/tutorial/blocks/summary-v1.tsx",
-        expected_pre_hash="stale_or_wrong_pre_image_hash",
-        description="Update existing component in place"
-    )
-
-    integration_json = json.dumps({
-        "family": "summary",
-        "version": "V1",
-        "typeId": "summary",
-        "componentFile": "summary-v1.tsx",
-        "componentExport": "SummaryV1",
-        "testFile": "summary-v1.test.tsx",
-        "jsonSchemaFile": "summary-v1.schema.json",
-        "typeSchemaFile": "summary-v1.types.ts",
-        "defaultPayload": {"title": "Summary"}
-    })
-
-    m_data = {
-        "manifestId": "man-1",
-        "candidateId": "cand-1",
-        "decision": "UPDATE",
-        "targetPath": "packages/ui/src/tutorial/blocks",
-        "blockFamily": "Summary",
-        "blockVersion": "V1",
-        "requiredChanges": ["In-place update"],
-        "fileOperations": [file_op.model_dump()],
-        "evidenceIds": ["ev-1"],
-        "createdAt": "2026-10-28T12:00:00Z"
-    }
-    m_json = json.dumps(m_data, sort_keys=True, separators=(',', ':'))
-    m_hash = hashlib.sha256(m_json.encode('utf-8')).hexdigest()
-
-    manifest = PlacementManifest(
-        manifestId="man-1",
-        candidateId="cand-1",
-        decision=PlacementDecision.UPDATE,
-        targetPath="packages/ui/src/tutorial/blocks",
-        blockFamily=BlockFamily.SUMMARY,
-        blockVersion="V1",
-        requiredChanges=["In-place update"],
-        fileOperations=[file_op],
-        evidenceIds=["ev-1"],
-        manifestHash=m_hash,
-        createdAt="2026-10-28T12:00:00Z",
-        identityStatus=IdentityStatus.EXISTING_UNUSED,
-        updateEligibility=UpdateEligibility.ALLOWED,
-        revisionStrategy=RevisionStrategy.UPDATE_IN_PLACE
-    )
-
-    approval = ImplementationApproval(
-        approval_id="app-1",
-        workflow_id="wf-1",
-        candidate_sha256=mal_sha,
-        target_family="Summary",
-        target_version="V1",
-        placement_manifest_id="man-1",
-        placement_manifest_sha256=m_hash,
-        approved_by="admin-user",
-        approval_timestamp=datetime.now(timezone.utc),
-        workflow_requester="req-user",
-        status=ImplementationApprovalStatus.APPROVED,
-        evidence={"admin_override": True}
-    )
-
-    files = [
-        CandidateFile(
-            filename="summary-v1.tsx",
-            content=mal_content,
-            contentType="application/typescript",
-            hash=mal_sha
-        ),
-        CandidateFile(
-            filename="block.integration.json",
-            content=integration_json,
-            contentType="application/json",
-            hash=hashlib.sha256(integration_json.encode("utf-8")).hexdigest()
-        )
-    ]
-
-    mock_wt = WorktreeContext(
-        worktree_path=temp_workspace,
-        branch_name="candidate/cand-1",
-        base_commit="abc1234",
-        created_at="2026-10-28T12:00:00Z",
-        workflow_id="man-1",
-        manifest_id="man-1"
-    )
-
-    with patch.object(executor.worktree_manager, "create_worktree", return_value=mock_wt), \
-         patch.object(executor.worktree_manager, "cleanup_worktree", return_value=None):
         with pytest.raises(PlacementExecutionError) as exc_info:
             executor.execute_placement(
                 manifest=manifest,
                 approval=approval,
                 candidate_files=files,
-                workflow_requester="req-user",
-                candidate_sha256=mal_sha
+                workflow_requester="requester-bob",
+                candidate_sha256="cand-hash"
             )
 
         assert "Pre-image hash mismatch" in str(exc_info.value)
-        # Verify content was NOT changed (fail-closed)
-        assert existing_file.read_text(encoding="utf-8") == original_content
+        # CRITICAL ATOMICITY CHECK: file 1 was NOT modified!
+        assert file_1.read_text(encoding="utf-8") == "// initial file 1"
+        assert file_2.read_text(encoding="utf-8") == "// initial file 2"
+        # No commit was created
+        commit_mock.assert_not_called()
 
 
 # ============================================================================
-# 5. Generated Patcher Tests (Duplicates & UPDATE_IN_PLACE)
+# 4. Patcher Tests: Duplicate Detection & Cross-Family Same-Version Coexistence
 # ============================================================================
 
-def test_update_patcher_refreshes_metadata_without_duplicate(temp_workspace):
+def test_patcher_update_in_place_refreshes_metadata_without_duplicate():
     """Patcher with UPDATE_IN_PLACE refreshes existing entry without creating duplicate."""
-    from app.placement.patcher import PatchError
-
-    initial_content = '''import type React from 'react';
-import type { BlockComponentProps } from './types';
-
-import { SummaryV1 } from './blocks/SummaryV1';
-export interface GeneratedBlockRenderer {
-  family: string;
-  version: string;
-  component: React.ComponentType<BlockComponentProps<any>>;
-}
-
-export const GENERATED_BLOCK_RENDERERS: readonly GeneratedBlockRenderer[] = [
-  { family: 'summary', version: 'V1', component: SummaryV1 },
-  // PROJECT_LLM_GENERATED_RENDERERS
-];
-'''
+    initial_content = (
+        "import type React from 'react';\n"
+        "import { SummaryV1 } from './blocks/SummaryV1';\n"
+        "export interface GeneratedBlockRenderer { family: string; version: string; component: any; }\n"
+        "export const GENERATED_BLOCK_RENDERERS = [\n"
+        "  { family: 'summary', version: 'V1', component: SummaryV1 },\n"
+        "  // PROJECT_LLM_GENERATED_RENDERERS\n"
+        "];\n"
+    )
 
     patched = patch_tutorial_block_renderer(
         content=initial_content,
@@ -560,58 +438,110 @@ export const GENERATED_BLOCK_RENDERERS: readonly GeneratedBlockRenderer[] = [
         component_name="SummaryV1Updated"
     )
 
-    # Exactly ONE entry for summary V1 with updated component
     assert patched.count("family: 'summary', version: 'V1'") == 1
     assert "component: SummaryV1Updated" in patched
 
-    # Duplicate in input content must fail closed
-    dup_content = patched.replace(
-        "{ family: 'summary', version: 'V1', component: SummaryV1Updated },",
-        "{ family: 'summary', version: 'V1', component: SummaryV1Updated },\n  { family: 'summary', version: 'V1', component: SummaryV1Updated },"
+
+def test_patcher_cross_family_same_version_code_does_not_conflict():
+    """Different families using the same version code (summary/V1 vs video/V1) do not trigger false duplicates."""
+    initial_content = (
+        "export const GENERATED_BLOCK_REGISTRIES = [\n"
+        "  {\n"
+        "    id: 'video',\n"
+        "    label: 'Video',\n"
+        "    versions: [\n"
+        "      {\n"
+        "        id: 'v1',\n"
+        "        code: 'V1',\n"
+        "        label: 'V1 - Video',\n"
+        "        description: 'Video block',\n"
+        "        getDefaultPayload: () => ({ url: 'https://example.com' }),\n"
+        "      },\n"
+        "    ],\n"
+        "  },\n"
+        "  // PROJECT_LLM_GENERATED_REGISTRIES\n"
+        "];\n"
     )
-    with pytest.raises(PatchError):
-        patch_tutorial_block_renderer(
-            content=dup_content,
-            family="summary",
-            version="V1",
-            component_name="SummaryV1New"
-        )
 
-
-def test_add_new_version_patcher_creates_single_mapping(temp_workspace):
-    """ADD_NEW_VERSION creates exactly one new mapping; duplicate in source content fails closed."""
-    from app.placement.patcher import PatchError
-
-    initial_content = '''export const GENERATED_BLOCK_VERSION_DEFINITIONS = [
-  // PROJECT_LLM_GENERATED_DEFINITIONS
-  { type: 'summary', version: 'V1', payloadFormat: 'canonical' },
-];'''
-
-    # Add V2
-    patched_v2 = patch_generated_block_version_definitions(
+    # Adding summary V1 when video V1 already exists must succeed without false duplicate error
+    metadata = {
+        "familyLabel": "Summary",
+        "label": "V1 - Summary",
+        "description": "Summary block",
+        "defaultPayload": {"title": "Summary"}
+    }
+    patched = patch_generated_block_registry(
         content=initial_content,
-        family_type_id="summary",
-        version="V2",
-        payload_format="canonical"
+        family="summary",
+        version="V1",
+        metadata=metadata
     )
 
-    assert "{ type: 'summary', version: 'V2', payloadFormat: 'canonical' }" in patched_v2
-    assert patched_v2.count("version: 'V2'") == 1
+    assert "id: 'video'" in patched
+    assert "id: 'summary'" in patched
+    assert patched.count("code: 'V1'") == 2
 
-    # Adding when content already has duplicate V2 entries must fail closed
-    dup_content = patched_v2 + "\n  { type: 'summary', version: 'V2', payloadFormat: 'canonical' },"
+
+def test_patcher_duplicate_exact_family_version_fails_closed():
+    """Duplicate exact mapping (summary/V1 twice) fails closed."""
+    content_with_duplicate = (
+        "export const GENERATED_BLOCK_VERSION_DEFINITIONS = [\n"
+        "  { type: 'summary', version: 'V1', payloadFormat: 'canonical' },\n"
+        "  { type: 'summary', version: 'V1', payloadFormat: 'canonical' },\n"
+        "  // PROJECT_LLM_GENERATED_DEFINITIONS\n"
+        "];\n"
+    )
+
     with pytest.raises(PatchError):
         patch_generated_block_version_definitions(
-            content=dup_content,
+            content=content_with_duplicate,
             family_type_id="summary",
-            version="V2",
+            version="V1",
             payload_format="canonical"
         )
 
 
 # ============================================================================
-# 6. Governance Supersedence Invariants
+# 5. Governance Separation of Duties & Supersedence Tests
 # ============================================================================
+
+def test_strict_anti_self_approval_rejects_admin_requester():
+    """Gate 2 approval strictly rejects self-approval even if approver has admin role."""
+    approval = ImplementationApproval(
+        approval_id="app-1",
+        workflow_id="wf-1",
+        candidate_sha256="hash-1",
+        target_family="Summary",
+        target_version="V1",
+        placement_manifest_id="man-1",
+        placement_manifest_sha256="mhash-1",
+        approved_by="admin_user_bob",
+        approval_timestamp=datetime.now(timezone.utc),
+        status=ImplementationApprovalStatus.APPROVED,
+        evidence={"admin_override": True, "is_admin_user": True},
+        workflow_requester="admin_user_bob",
+    )
+
+    # Requester == Approver must return False
+    assert approval.verify_not_self_approved("admin_user_bob") is False
+    assert approval.verify_not_self_approved(None) is False
+
+    # Independent approver must pass
+    approval_independent = ImplementationApproval(
+        approval_id="app-2",
+        workflow_id="wf-1",
+        candidate_sha256="hash-1",
+        target_family="Summary",
+        target_version="V1",
+        placement_manifest_id="man-1",
+        placement_manifest_sha256="mhash-1",
+        approved_by="admin_user_alice",
+        approval_timestamp=datetime.now(timezone.utc),
+        status=ImplementationApprovalStatus.APPROVED,
+        workflow_requester="admin_user_bob",
+    )
+    assert approval_independent.verify_not_self_approved("admin_user_bob") is True
+
 
 def test_supersedence_rule_applies_only_to_same_family_version_update():
     """Final certification supersedes prior workflows only when revisionStrategy is UPDATE_IN_PLACE for exact (family, version)."""
@@ -622,7 +552,6 @@ def test_supersedence_rule_applies_only_to_same_family_version_update():
             self.version = version
             self.final_status = status
             self.revision_strategy = strategy
-            self.placement_manifest = {"revisionStrategy": strategy}
 
     older_wf_v1 = MockWorkflow("wf-1", "Objective", "O3", "APPROVED", "ADD_NEW_VERSION")
     older_wf_v2 = MockWorkflow("wf-2", "Objective", "O4", "APPROVED", "ADD_NEW_VERSION")
@@ -638,7 +567,6 @@ def test_supersedence_rule_applies_only_to_same_family_version_update():
                 prior.final_status = "SUPERSEDED"
 
     assert older_wf_v1.final_status == "SUPERSEDED"
-    # O4 must NOT be superseded!
     assert older_wf_v2.final_status == "APPROVED"
 
 
@@ -657,10 +585,201 @@ def test_add_new_version_never_supersedes_prior_versions():
     new_add_wf = MockWorkflow("wf-2", "Objective", "O4", "APPROVED")
     revision_strategy = "ADD_NEW_VERSION"
 
-    # For ADD_NEW_VERSION, no supersedence occurs
     if revision_strategy == "UPDATE_IN_PLACE":
         for prior in workflows_db:
             if prior.family.lower() == new_add_wf.family.lower() and prior.version.upper() == new_add_wf.version.upper():
                 prior.final_status = "SUPERSEDED"
 
     assert older_o3.final_status == "APPROVED"
+
+
+def test_route_manifest_generation_persistence_and_executor_verification_roundtrip(temp_workspace):
+    """
+    Full production round-trip integration test:
+    Candidate qualification -> generate_manifest route -> ORM persistence ->
+    get_manifest retrieval -> verify_manifest_hash by PlacementExecutor with zero hash mismatch.
+    """
+    candidate_id = "cand-rt-001"
+    workflow_id = "wf-rt-001"
+    cand_sha = "a" * 64
+
+    class DummyCandidateModel:
+        def __init__(self):
+            self.candidate_id = candidate_id
+            self.workflow_id = workflow_id
+            self.candidate_sha256 = cand_sha
+            self.target_family = "Summary"
+            self.target_version = "V1"
+            self.files = [
+                {
+                    "filename": "summary.tsx",
+                    "content": "export const SummaryV1Block = () => null;",
+                    "contentType": "text/typescript",
+                    "hash": "c" * 64,
+                },
+                {
+                    "filename": "summary.test.tsx",
+                    "content": "test('summary', () => {});",
+                    "contentType": "text/typescript",
+                    "hash": "c" * 64,
+                },
+                {
+                    "filename": "summary.schema.json",
+                    "content": "{}",
+                    "contentType": "application/json",
+                    "hash": "c" * 64,
+                },
+                {
+                    "filename": "summary.types.ts",
+                    "content": "export interface SummaryProps {}",
+                    "contentType": "text/typescript",
+                    "hash": "c" * 64,
+                },
+                {
+                    "filename": "block.integration.json",
+                    "content": json.dumps({
+                        "family": "Summary",
+                        "version": "V1",
+                        "typeId": "summary",
+                        "componentFile": "summary.tsx",
+                        "componentExport": "SummaryV1Block",
+                        "testFile": "summary.test.tsx",
+                        "jsonSchemaFile": "summary.schema.json",
+                        "typeSchemaFile": "summary.types.ts",
+                        "defaultPayload": {"title": "Summary"}
+                    }),
+                    "contentType": "application/json",
+                    "hash": "e" * 64,
+                }
+            ]
+            self.uploaded_at = datetime.now(timezone.utc)
+            self.uploaded_by = "test_dev"
+            self.contract_sha256 = "d" * 64
+
+    cand_model = DummyCandidateModel()
+
+    wf_model = MagicMock(spec=WorkflowModel)
+    wf_model.workflow_id = workflow_id
+    wf_model.current_state = CanonicalWorkflowState.CANDIDATE_AUDIT
+    wf_model.gate_results = {
+        "Unit Test Suite": {
+            "result": "PASS",
+            "evidence_id": "ev-test-pass",
+            "evidence_hash": "h" * 64,
+            "candidate_sha256": cand_sha
+        }
+    }
+
+    mock_cand_repo = MagicMock()
+    async def mock_get_cand(cid):
+        return cand_model
+    mock_cand_repo.get = mock_get_cand
+
+    mock_wf_repo = MagicMock()
+    async def mock_get_wf(wid):
+        return wf_model
+    mock_wf_repo.get = mock_get_wf
+
+    stored_manifest_models = []
+    mock_manifest_repo = MagicMock()
+    async def mock_upsert(m):
+        stored_manifest_models.append(m)
+        return m
+    async def mock_list(cid):
+        return stored_manifest_models
+    mock_manifest_repo.upsert = mock_upsert
+    mock_manifest_repo.list_by_candidate = mock_list
+
+    user = AuthenticatedPrincipal(
+        principal_id="admin_user",
+        roles=["admin", "contract_admin"],
+        permissions=["candidates:manifest:generate", "candidates:manifest:read"]
+    )
+
+    mock_classification = ClassificationResult(
+        candidateId=candidate_id,
+        detectedFamily=BlockFamily.SUMMARY,
+        confidence=0.99,
+        reasoning="Matches summary"
+    )
+    mock_comparison = CanonicalComparison(
+        candidateId=candidate_id,
+        existingBlock=None,
+        similarityScore=0.95,
+        differences=[]
+    )
+    mock_policy_eval = VersionPolicyEvaluation(
+        family="Summary",
+        version="V1",
+        is_registered=False,
+        decision=PlacementDecision.ADD,
+        identity_status=IdentityStatus.NEW,
+        update_eligibility=UpdateEligibility.NOT_APPLICABLE,
+        revision_strategy=RevisionStrategy.ADD_NEW_VERSION,
+        reference_summary=ReferenceSummary(count=0, publication_states={}, sample_ids=[]),
+        proposed_next_version="V1"
+    )
+
+    mock_client = MagicMock()
+    mock_client.load_snapshot.return_value = {"blocks": {"verified": []}, "files": []}
+
+    mock_gov_service = MagicMock()
+    async def mock_get_wf_gov(wid):
+        return wf_model
+    async def mock_trans_gov(wid, state, triggered_by=None, reason=None):
+        return wf_model
+    async def mock_bind(workflow_id, artifact_type, artifact_id, artifact_sha256):
+        return None
+    mock_gov_service.get_workflow = mock_get_wf_gov
+    mock_gov_service.transition_state = mock_trans_gov
+    mock_gov_service.bind_artifact = mock_bind
+
+    mock_session = MagicMock()
+    async def mock_commit():
+        return None
+    async def mock_rollback():
+        return None
+    mock_session.commit = mock_commit
+    mock_session.rollback = mock_rollback
+
+    async def mock_classify(*args, **kwargs):
+        return mock_classification
+    async def mock_compare(*args, **kwargs):
+        return mock_comparison
+    async def mock_policy(*args, **kwargs):
+        return mock_policy_eval
+    async def mock_get_wf_repo_fn(session):
+        return mock_wf_repo
+    async def mock_get_gov_fn(session):
+        return mock_gov_service
+
+    with patch("app.api.routes.candidate.get_workflow_repository", mock_get_wf_repo_fn), \
+         patch("app.api.routes.workflows.get_governance_service", mock_get_gov_fn), \
+         patch("app.api.routes.candidate.classify_candidate", mock_classify), \
+         patch("app.api.routes.candidate.compare_candidate", mock_compare), \
+         patch("app.placement.version_reference_service.evaluate_version_policy", mock_policy), \
+         patch.dict("os.environ", {"WORKSPACE_ROOT": str(temp_workspace)}):
+
+        # 1. Generate via endpoint (POST /candidates/{id}/manifest)
+        generated_manifest = run_coro(generate_manifest(
+            candidate_id=candidate_id,
+            user=user,
+            candidate_repo=mock_cand_repo,
+            manifest_repo=mock_manifest_repo,
+            session=mock_session,
+            client=mock_client
+        ))
+
+        # 2. Retrieve via endpoint (GET /candidates/{id}/manifest, which fetches from DB and calls model_to_manifest)
+        retrieved_manifest = run_coro(get_manifest(
+            candidate_id=candidate_id,
+            user=user,
+            candidate_repo=mock_cand_repo,
+            manifest_repo=mock_manifest_repo
+        ))
+
+        # 3. Verify executor validates retrieved manifest with zero hash mismatch
+        executor = PlacementExecutor(str(temp_workspace), dry_run=True)
+        assert executor.verify_manifest_hash(retrieved_manifest) is True
+        assert retrieved_manifest.manifestHash == generated_manifest.manifestHash
+

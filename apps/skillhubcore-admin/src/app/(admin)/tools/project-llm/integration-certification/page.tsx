@@ -174,7 +174,12 @@ export default function IntegrationCertificationPage() {
   }, [effectiveCandidateId]);
 
   useEffect(() => {
-    if (manifest && (manifest.decision === 'VERSION_IN_USE' || manifest.updateEligibility === 'VERSION_IN_USE')) {
+    if (
+      manifest &&
+      (manifest.decision === 'VERSION_IN_USE' ||
+        manifest.updateEligibility === 'VERSION_IN_USE' ||
+        manifest.updateEligibility === 'INSPECTION_FAILED')
+    ) {
       projectLlmClient
         .getNextVersion(manifest.blockFamily)
         .then((res) => setProposedNextVersion(res.proposedNextVersion))
@@ -901,7 +906,12 @@ export default function IntegrationCertificationPage() {
                         <div className="mt-2 space-y-1.5 text-xs text-slate-600">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold">Decision:</span>
-                            {manifest.decision === 'VERSION_IN_USE' || manifest.updateEligibility === 'VERSION_IN_USE' ? (
+                            {manifest.updateEligibility === 'INSPECTION_FAILED' ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-900 border border-rose-300">
+                                <AlertCircle size={12} className="text-rose-700" />
+                                INSPECTION FAILED (In-Place Update Blocked)
+                              </span>
+                            ) : manifest.decision === 'VERSION_IN_USE' || manifest.updateEligibility === 'VERSION_IN_USE' ? (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                                 <AlertCircle size={12} className="text-amber-700" />
                                 VERSION IN USE (In-Place Update Prohibited)
@@ -965,6 +975,7 @@ export default function IntegrationCertificationPage() {
                       {manifest &&
                         manifest.decision !== 'VERSION_IN_USE' &&
                         manifest.updateEligibility !== 'VERSION_IN_USE' &&
+                        manifest.updateEligibility !== 'INSPECTION_FAILED' &&
                         (certificationData?.state === 'AWAITING_IMPLEMENTATION_APPROVAL' ||
                           certificationData?.state === 'INTEGRATION_PLANNED') && (
                           <button
@@ -986,6 +997,7 @@ export default function IntegrationCertificationPage() {
                           manifest.decision === 'REJECT' ||
                           manifest.decision === 'VERSION_IN_USE' ||
                           manifest.updateEligibility === 'VERSION_IN_USE' ||
+                          manifest.updateEligibility === 'INSPECTION_FAILED' ||
                           isPlanning ||
                           isExecuting ||
                           isApproving ||
@@ -998,6 +1010,8 @@ export default function IntegrationCertificationPage() {
                             ? 'Rejected manifests cannot be executed'
                             : manifest.decision === 'VERSION_IN_USE'
                             ? 'Version is referenced by tutorial content: in-place placement is prohibited'
+                            : manifest.updateEligibility === 'INSPECTION_FAILED'
+                            ? 'Reference inspection failed: in-place placement is strictly blocked'
                             : certificationData?.state !== 'IMPLEMENTING'
                             ? 'Placement execution requires approval. Click "Approve Placement Plan" to advance workflow to IMPLEMENTING state.'
                             : 'Execute approved placement in isolated worktree'
@@ -1023,6 +1037,34 @@ export default function IntegrationCertificationPage() {
                   <p className="mt-3 text-xs text-slate-500">
                     Execution is fail-closed: the backend verifies the candidate hash, manifest hash, workflow binding, and an independent approval before it creates a worktree.
                   </p>
+
+                  {manifest && manifest.updateEligibility === 'INSPECTION_FAILED' && (
+                    <div className="mt-4 rounded-xl border border-rose-300 bg-rose-50/90 p-4 shadow-2xs">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-rose-900 flex items-center gap-1.5">
+                            <AlertCircle size={15} className="text-rose-700" />
+                            Revision Safety Policy: Reference Inspection Failed
+                          </h4>
+                          <p className="text-xs text-rose-800">
+                            The system could not verify whether target version <span className="font-mono font-bold">{manifest.blockVersion}</span> is currently referenced by tutorial content.
+                          </p>
+                          <p className="text-xs text-rose-900 font-medium pt-1">
+                            In-place update is strictly blocked to protect authored tutorial content. A replacement workflow must be created with a new version or database connectivity restored. Gate 2 approval and execution are blocked.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleCreateReplacementWorkflow}
+                          disabled={isCreatingReplacement || !proposedNextVersion}
+                          className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-rose-700 hover:bg-rose-800 text-white px-3.5 py-2 text-xs font-bold shadow-sm disabled:opacity-50"
+                        >
+                          <RefreshCw size={13} className={isCreatingReplacement ? 'animate-spin' : ''} />
+                          {isCreatingReplacement ? 'Creating...' : ('Create Workflow with ' + (proposedNextVersion || 'Next Version'))}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {manifest && (manifest.decision === 'VERSION_IN_USE' || manifest.updateEligibility === 'VERSION_IN_USE') && (
                     <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50/90 p-4 shadow-2xs">

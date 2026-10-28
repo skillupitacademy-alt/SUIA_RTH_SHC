@@ -85,7 +85,7 @@ export type CandidateResponse = {
 };
 
 export type IdentityStatus = 'NEW' | 'EXISTING_UNUSED' | 'EXISTING_REFERENCED';
-export type UpdateEligibility = 'ALLOWED' | 'VERSION_IN_USE' | 'NOT_APPLICABLE';
+export type UpdateEligibility = 'ALLOWED' | 'VERSION_IN_USE' | 'NOT_APPLICABLE' | 'INSPECTION_FAILED';
 export type RevisionStrategy = 'ADD_NEW_VERSION' | 'UPDATE_IN_PLACE';
 
 export type ReferenceSummary = {

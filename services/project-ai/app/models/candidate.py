@@ -1,7 +1,10 @@
 """Candidate Block models for intake and placement workflow."""
 
+import hashlib
+import json
+from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -62,6 +65,7 @@ class IdentityStatus(str, Enum):
 class UpdateEligibility(str, Enum):
     ALLOWED = "ALLOWED"
     VERSION_IN_USE = "VERSION_IN_USE"
+    INSPECTION_FAILED = "INSPECTION_FAILED"
     NOT_APPLICABLE = "NOT_APPLICABLE"
 
 
@@ -202,4 +206,84 @@ class PlacementManifest(BaseModel):
     evidenceIds: list[str] = Field(..., description="Evidence IDs supporting this decision")
     manifestHash: str = Field(..., description="SHA-256 hash of manifest content")
     createdAt: str = Field(..., description="ISO 8601 timestamp of manifest creation")
+
+    def compute_hash(self) -> str:
+        """Compute the deterministic canonical SHA-256 hash for this manifest."""
+        return compute_canonical_manifest_hash(self)
+
+
+def _normalize_iso_timestamp(ts: Any) -> str:
+    """Normalize ISO timestamp into UTC string with trailing 'Z'."""
+    if isinstance(ts, datetime):
+        dt = ts
+    else:
+        s = str(ts).strip()
+        if s.endswith("Z") or s.endswith("z"):
+            s = s[:-1] + "+00:00"
+        try:
+            dt = datetime.fromisoformat(s)
+        except Exception:
+            return str(ts)
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc)
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def serialize_canonical_manifest(manifest: Union[PlacementManifest, Dict[str, Any]]) -> Dict[str, Any]:
+    """Serialize manifest into canonical integrity dictionary with sorted keys."""
+    if isinstance(manifest, BaseModel):
+        data = manifest.model_dump()
+    elif isinstance(manifest, dict):
+        data = manifest
+    else:
+        raise TypeError(f"Unsupported manifest type: {type(manifest)}")
+
+    file_ops = data.get("fileOperations") or []
+    normalized_file_ops = []
+    for op in file_ops:
+        if isinstance(op, BaseModel):
+            normalized_file_ops.append(op.model_dump())
+        elif isinstance(op, dict):
+            act = op.get("action")
+            act_val = act.value if hasattr(act, "value") else str(act)
+            op_copy = dict(op)
+            op_copy["action"] = act_val
+            normalized_file_ops.append(op_copy)
+        else:
+            normalized_file_ops.append(dict(op))
+
+    ref_sum = data.get("referenceSummary") or {}
+    if isinstance(ref_sum, BaseModel):
+        ref_sum = ref_sum.model_dump()
+    elif not isinstance(ref_sum, dict):
+        ref_sum = dict(ref_sum)
+
+    def _val(x, default=""):
+        if x is None:
+            return default
+        return x.value if hasattr(x, "value") else str(x)
+
+    return {
+        "manifestId": str(data["manifestId"]),
+        "candidateId": str(data["candidateId"]),
+        "decision": _val(data["decision"]),
+        "targetPath": str(data.get("targetPath", "")),
+        "blockFamily": _val(data["blockFamily"]),
+        "blockVersion": str(data["blockVersion"]),
+        "requiredChanges": list(data.get("requiredChanges") or []),
+        "fileOperations": normalized_file_ops,
+        "identityStatus": _val(data.get("identityStatus"), "NEW"),
+        "updateEligibility": _val(data.get("updateEligibility"), "NOT_APPLICABLE"),
+        "referenceSummary": ref_sum,
+        "revisionStrategy": _val(data.get("revisionStrategy"), "ADD_NEW_VERSION"),
+        "evidenceIds": list(data.get("evidenceIds") or []),
+        "createdAt": _normalize_iso_timestamp(data["createdAt"]),
+    }
+
+
+def compute_canonical_manifest_hash(manifest: Union[PlacementManifest, Dict[str, Any]]) -> str:
+    """Compute deterministic SHA-256 hash across all integrity-relevant manifest fields."""
+    canonical_dict = serialize_canonical_manifest(manifest)
+    manifest_json = json.dumps(canonical_dict, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(manifest_json.encode("utf-8")).hexdigest()
 

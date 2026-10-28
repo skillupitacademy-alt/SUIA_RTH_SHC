@@ -285,11 +285,7 @@ def patch_generated_block_registry(
     version_label = metadata.get("label") or f"{version_upper} - {family}"
     version_desc = metadata.get("description") or f"{family} block version {version_upper}"
 
-    # Check for duplicate version entries across the catalog
     version_pattern = rf"code:\s*['\"]{re.escape(version_upper)}['\"]"
-    matches = list(re.finditer(version_pattern, content, re.IGNORECASE))
-    if len(matches) > 1:
-        raise PatchError(f"Duplicate registry version entry detected for version {version_upper}")
 
     version_object_code = f"""      {{
         id: {json.dumps(version_id)},
@@ -299,14 +295,22 @@ def patch_generated_block_registry(
         getDefaultPayload: () => ({payload_json}),
       }},"""
 
-    # Check if this exact (family, version) exists
+    # Check if this exact family exists, scoping duplicate check to exact (family, version)
     family_block_pattern = rf"id:\s*['\"]{re.escape(family_lower)}['\"][\s\S]*?versions:\s*\[([\s\S]*?)\]"
-    family_match = re.search(family_block_pattern, content, re.IGNORECASE)
+    family_matches = list(re.finditer(family_block_pattern, content, re.IGNORECASE))
+    if len(family_matches) > 1:
+        raise PatchError(f"Duplicate family entry detected for family {family_lower}")
 
-    if family_match:
+    if family_matches:
+        family_match = family_matches[0]
         versions_inner = family_match.group(1)
+        # Check for duplicate version entries ONLY within this family
+        version_matches = list(re.finditer(version_pattern, versions_inner, re.IGNORECASE))
+        if len(version_matches) > 1:
+            raise PatchError(f"Duplicate registry version entry detected for ({family_lower}, {version_upper})")
+
         # Check if version exists inside this family
-        if re.search(version_pattern, versions_inner, re.IGNORECASE):
+        if len(version_matches) == 1:
             # UPDATE_IN_PLACE: replace version object inside versions array
             ver_obj_regex = r"\{\s*id:\s*['\"][^'\"]+['\"],\s*code:\s*['\"]" + re.escape(version_upper) + r"['\"][\s\S]*?getDefaultPayload:\s*\(\)\s*=>\s*\([\s\S]*?\),\s*\},"
             if re.search(ver_obj_regex, content):

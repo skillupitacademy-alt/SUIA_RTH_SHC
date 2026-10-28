@@ -5,12 +5,20 @@ Implements server-owned, generic version allocation and reference inspection
 across all block families and versions without hardcoding any specific family.
 """
 
+import logging
 import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
+
+
+class VersionReferenceInspectionError(Exception):
+    """Raised when tutorial version reference inspection cannot be completed reliably."""
+    pass
 
 from app.models.candidate import (
     IdentityStatus,
@@ -143,8 +151,12 @@ async def query_version_references(
                         sample_ids.append(sec_id)
 
         except Exception as db_err:
-            # Table might not exist in an isolated local test harness; fall through to 0
-            pass
+            logger.error(f"Tutorial reference query failed on PostgreSQL for ({family_norm}, {version_norm}): {db_err}")
+            raise VersionReferenceInspectionError(f"Database query failed for tutorial_sections: {db_err}") from db_err
+    elif mock_references is None:
+        raise VersionReferenceInspectionError(
+            f"Reference inspection unavailable for ({family_norm}, {version_norm}): database session or mock references required"
+        )
 
     return ReferenceSummary(
         count=count,
@@ -213,9 +225,10 @@ def check_version_registration(
         if defs_file.exists():
             try:
                 content = defs_file.read_text(encoding="utf-8")
-                p = r'version:\s*[\'"]' + re.escape(version_norm) + r'[\'"]'
-                p_pair = r'family:\s*[\'"]' + re.escape(family_norm) + r'[\'"].*?version:\s*[\'"]' + re.escape(version_norm) + r'[\'"]'
-                if re.search(p_pair, content, re.IGNORECASE | re.DOTALL) or re.search(p, content, re.IGNORECASE):
+                # Must match exact normalized pair (family, version)
+                p_type_first = r"\{\s*(?:type|family):\s*['\"]" + re.escape(family_norm) + r"['\"],\s*version:\s*['\"]" + re.escape(version_norm) + r"['\"]"
+                p_ver_first = r"\{\s*version:\s*['\"]" + re.escape(version_norm) + r"['\"],\s*(?:type|family):\s*['\"]" + re.escape(family_norm) + r"['\"]"
+                if re.search(p_type_first, content, re.IGNORECASE) or re.search(p_ver_first, content, re.IGNORECASE):
                     return True
             except Exception:
                 pass
@@ -224,10 +237,13 @@ def check_version_registration(
     entries_dir = ws / "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries"
     if entries_dir.exists():
         for file in entries_dir.glob("*.ts"):
-            if family_norm in file.name.lower():
+            fname = file.name.lower()
+            if fname == f"{family_norm}.registry.ts" or fname == f"{family_norm}.ts":
                 try:
                     content = file.read_text(encoding="utf-8")
-                    if re.search(r"\bcode:\s*['\"]" + re.escape(version_norm) + r'[\'"]', content, re.IGNORECASE):
+                    has_fam = re.search(r"id:\s*['\"]" + re.escape(family_norm) + r"['\"]", content, re.IGNORECASE)
+                    has_ver = re.search(r"\bcode:\s*['\"]" + re.escape(version_norm) + r"['\"]", content, re.IGNORECASE)
+                    if has_fam and has_ver:
                         return True
                 except Exception:
                     pass
@@ -409,6 +425,7 @@ async def evaluate_version_policy(
     session: Optional[AsyncSession] = None,
     workspace_root: Optional[Path] = None,
     mock_references: Optional[List[Dict[str, Any]]] = None,
+    raise_on_error: bool = False,
 ) -> VersionPolicyEvaluation:
     """
     Comprehensive evaluation of version placement safety.
@@ -429,15 +446,51 @@ async def evaluate_version_policy(
        - identity_status: NEW
        - update_eligibility: NOT_APPLICABLE
        - revision_strategy: ADD_NEW_VERSION
+    4. If reference inspection fails on an existing registered version:
+       - Fails closed: update_eligibility = INSPECTION_FAILED, decision = VERSION_IN_USE
+       - In-place update is strictly blocked.
     """
     family_norm = family.strip().lower()
     version_norm = version.strip().upper()
 
     ws = Path(workspace_root) if workspace_root else get_default_workspace_root()
     is_registered = check_version_registration(family_norm, version_norm, ws)
-    ref_summary = await query_version_references(family_norm, version_norm, session, mock_references)
     proposed_version = allocate_next_version(family_norm, ws)
 
+    # 1. If absent from repository: always ADD_NEW_VERSION
+    if not is_registered:
+        return VersionPolicyEvaluation(
+            family=family_norm,
+            version=version_norm,
+            is_registered=False,
+            identity_status=IdentityStatus.NEW,
+            update_eligibility=UpdateEligibility.NOT_APPLICABLE,
+            revision_strategy=RevisionStrategy.ADD_NEW_VERSION,
+            decision=PlacementDecision.ADD,
+            reference_summary=ReferenceSummary(count=0, publication_states={}, sample_ids=[]),
+            proposed_next_version=proposed_version,
+        )
+
+    # 2. For an existing registered version, reference inspection is mandatory
+    try:
+        ref_summary = await query_version_references(family_norm, version_norm, session, mock_references)
+    except VersionReferenceInspectionError as err:
+        if raise_on_error:
+            raise
+        logger.error(f"Failing closed: reference inspection failed for registered version ({family_norm}, {version_norm}): {err}")
+        return VersionPolicyEvaluation(
+            family=family_norm,
+            version=version_norm,
+            is_registered=True,
+            identity_status=IdentityStatus.EXISTING_REFERENCED,
+            update_eligibility=UpdateEligibility.INSPECTION_FAILED,
+            revision_strategy=RevisionStrategy.ADD_NEW_VERSION,
+            decision=PlacementDecision.VERSION_IN_USE,
+            reference_summary=ReferenceSummary(count=-1, publication_states={"inspection_failed": 1}, sample_ids=["INSPECTION_FAILED"]),
+            proposed_next_version=proposed_version,
+        )
+
+    # 3. Referenced version: reject in-place update
     if ref_summary.count > 0:
         return VersionPolicyEvaluation(
             family=family_norm,
@@ -451,27 +504,15 @@ async def evaluate_version_policy(
             proposed_next_version=proposed_version,
         )
 
-    if is_registered:
-        return VersionPolicyEvaluation(
-            family=family_norm,
-            version=version_norm,
-            is_registered=True,
-            identity_status=IdentityStatus.EXISTING_UNUSED,
-            update_eligibility=UpdateEligibility.ALLOWED,
-            revision_strategy=RevisionStrategy.UPDATE_IN_PLACE,
-            decision=PlacementDecision.UPDATE,
-            reference_summary=ref_summary,
-            proposed_next_version=proposed_version,
-        )
-
+    # 4. Registered but 0 references: allow controlled UPDATE_IN_PLACE
     return VersionPolicyEvaluation(
         family=family_norm,
         version=version_norm,
-        is_registered=False,
-        identity_status=IdentityStatus.NEW,
-        update_eligibility=UpdateEligibility.NOT_APPLICABLE,
-        revision_strategy=RevisionStrategy.ADD_NEW_VERSION,
-        decision=PlacementDecision.ADD,
+        is_registered=True,
+        identity_status=IdentityStatus.EXISTING_UNUSED,
+        update_eligibility=UpdateEligibility.ALLOWED,
+        revision_strategy=RevisionStrategy.UPDATE_IN_PLACE,
+        decision=PlacementDecision.UPDATE,
         reference_summary=ref_summary,
         proposed_next_version=proposed_version,
     )

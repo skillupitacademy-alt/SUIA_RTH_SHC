@@ -37,6 +37,7 @@ from app.models.candidate import (
     UpdateEligibility,
     RevisionStrategy,
     ReferenceSummary,
+    compute_canonical_manifest_hash,
 )
 from app.models.implementation_approval import ImplementationApproval
 from app.placement.approval_enforcer import ApprovalEnforcer
@@ -151,9 +152,10 @@ def manifest_to_model(manifest: PlacementManifest, candidate_id: str) -> Manifes
 
 def model_to_manifest(model: ManifestModel) -> PlacementManifest:
     """Convert ORM ManifestModel to domain PlacementManifest."""
-    created_at_str = model.created_at.isoformat()
-    if not created_at_str.endswith('Z'):
-        created_at_str += 'Z'
+    dt = model.created_at
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc)
+    created_at_str = dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     
     text_changes = []
     file_ops = []
@@ -1049,9 +1051,8 @@ async def generate_manifest(
         "revisionStrategy": revision_strategy.value
     }
 
-    # Compute SHA-256 hash of manifest content (sorted keys, no whitespace)
-    manifest_json = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
-    manifest_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
+    # Compute SHA-256 hash using the canonical manifest serializer
+    manifest_hash = compute_canonical_manifest_hash(manifest_data)
 
     manifest = PlacementManifest(
         manifestId=manifest_id,

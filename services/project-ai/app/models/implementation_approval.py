@@ -105,30 +105,28 @@ class ImplementationApproval:
                 return True
         return False
 
-    def verify_not_self_approved(self, requester_id: str, allow_admin_override: bool = False) -> bool:
+    def verify_not_self_approved(self, requester_id: Optional[str] = None, allow_admin_override: bool = False) -> bool:
         """
         Verify approval is not self-approval.
         
-        Enforces separation of duties: approver must differ from workflow requester,
-        unless administrator approval / override is active.
+        Enforces strict separation of duties: approver must differ from workflow requester.
+        Administrative role does NOT bypass this rule.
         
         Args:
-            requester_id: Workflow requester identity (for evidence only)
-            allow_admin_override: Allow administrator approval even if approver matches requester
+            requester_id: Workflow requester identity
+            allow_admin_override: Ignored to preserve strict separation of duties
             
         Returns:
-            True if not self-approved or admin override applies, False otherwise
+            True if not self-approved, False otherwise
         """
-        if allow_admin_override or self._is_admin_override():
-            return True
-        if self.approved_by in ("admin", "superadmin", "system"):
-            return True
+        effective_requester = (requester_id or self.workflow_requester or "").strip().lower()
+        effective_approver = (self.approved_by or "").strip().lower()
 
-        # Fail-closed: missing workflow_requester means we cannot verify separation of duties
-        if not self.workflow_requester:
+        # Fail-closed: missing identities means we cannot verify separation of duties
+        if not effective_requester or not effective_approver:
             return False
-        
-        return self.approved_by != self.workflow_requester
+
+        return effective_approver != effective_requester
     
     def is_valid_for_implementation(
         self,

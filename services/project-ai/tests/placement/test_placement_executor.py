@@ -18,6 +18,9 @@ from app.models.candidate import (
     CandidateFile,
     PlacementDecision,
     PlacementManifest,
+    PlacementFileOperation,
+    PlacementFileAction,
+    compute_canonical_manifest_hash,
 )
 from app.models.implementation_approval import (
     ImplementationApproval,
@@ -49,22 +52,7 @@ def temp_repo():
 @pytest.fixture
 def valid_placement_manifest():
     """Create valid placement manifest."""
-    manifest_data = {
-        "manifestId": "manifest-123",
-        "candidateId": "candidate-456",
-        "decision": "ADD",
-        "targetPath": "packages/ui/src/tutorial/blocks/Introduction/I7",
-        "blockFamily": "Introduction",
-        "blockVersion": "I7",
-        "requiredChanges": [],
-        "evidenceIds": ["ev-001"],
-        "createdAt": datetime.now(timezone.utc).isoformat()
-    }
-    
-    manifest_json = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
-    manifest_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
-    
-    return PlacementManifest(
+    manifest = PlacementManifest(
         manifestId="manifest-123",
         candidateId="candidate-456",
         decision=PlacementDecision.ADD,
@@ -72,10 +60,21 @@ def valid_placement_manifest():
         blockFamily=BlockFamily.INTRODUCTION,
         blockVersion="I7",
         requiredChanges=[],
+        fileOperations=[
+            PlacementFileOperation(
+                action=PlacementFileAction.CREATE,
+                source_filename="index.tsx",
+                source_sha256="5f067229e0c6f561e210efd7cfb457df36ae1e87f5628e4cac912c9ef3753bf3",
+                target_path="packages/ui/src/tutorial/blocks/Introduction/I7/index.tsx",
+                description="Create Introduction I7 block"
+            )
+        ],
         evidenceIds=["ev-001"],
-        createdAt=manifest_data["createdAt"],
-        manifestHash=manifest_hash
+        createdAt=datetime.now(timezone.utc).isoformat(),
+        manifestHash="temp"
     )
+    manifest.manifestHash = compute_canonical_manifest_hash(manifest)
+    return manifest
 
 
 @pytest.fixture
@@ -86,7 +85,7 @@ def valid_candidate_files():
             filename="index.tsx",
             content="export const IntroBlock = () => <div>Introduction I7</div>;",
             contentType="text/typescript",
-            hash="abc123"
+            hash="5f067229e0c6f561e210efd7cfb457df36ae1e87f5628e4cac912c9ef3753bf3"
         )
     ]
 
@@ -336,7 +335,7 @@ class TestAuthorizationChecks:
 class TestDryRunBeforeMutation:
     """Tests for dry-run validation before actual mutation."""
     
-    @patch.object(PlacementExecutor, '_execute_add')
+    @patch.object(PlacementExecutor, '_execute_manifest_operations')
     def test_dry_run_called_before_execute(self, mock_execute, temp_repo, valid_placement_manifest, valid_candidate_files, valid_approval):
         """Verify dry-run executed before actual mutation."""
         executor = PlacementExecutor(temp_repo, dry_run=False)

@@ -6,12 +6,14 @@ import os
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from app.models.candidate import (
     PlacementDecision,
     PlacementManifest,
     PlacementFileAction,
+    UpdateEligibility,
+    compute_canonical_manifest_hash,
 )
 from app.models.implementation_approval import (
     ImplementationApproval,
@@ -81,25 +83,7 @@ class PlacementExecutor:
         Raises:
             PlacementExecutionError: If hash verification fails
         """
-        # Reconstruct manifest data (same as candidate.py generation)
-        manifest_data: Dict[str, Any] = {
-            "manifestId": manifest.manifestId,
-            "candidateId": manifest.candidateId,
-            "decision": manifest.decision.value,
-            "targetPath": manifest.targetPath,
-            "blockFamily": manifest.blockFamily.value,
-            "blockVersion": manifest.blockVersion,
-            "requiredChanges": manifest.requiredChanges,
-            "evidenceIds": manifest.evidenceIds,
-            "createdAt": manifest.createdAt
-        }
-        if manifest.fileOperations:
-            manifest_data["fileOperations"] = [op.model_dump() for op in manifest.fileOperations]
-        
-        # Compute hash (same algorithm as manifest generation)
-        manifest_json = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
-        computed_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
-        
+        computed_hash = compute_canonical_manifest_hash(manifest)
         if computed_hash != manifest.manifestHash:
             raise PlacementExecutionError(
                 f"Manifest hash verification failed. "
@@ -107,7 +91,6 @@ class PlacementExecutor:
                 f"Computed: {computed_hash}. "
                 f"Manifest has been tampered with."
             )
-        
         return True
     
     def execute_placement(
@@ -165,15 +148,12 @@ class PlacementExecutor:
                 f"Manifest has been tampered with after approval."
             )
         
-        # Safety: Verify not self-approved (allows admin override)
-        is_admin_override = bool(
-            approval._is_admin_override()
-            or approval.approved_by in ("admin", "superadmin", "system")
-        )
-        if not approval.verify_not_self_approved(workflow_requester, allow_admin_override=is_admin_override):
+        # Safety: Verify not self-approved (strict separation of duties, administrative role does not bypass)
+        if not approval.verify_not_self_approved(workflow_requester, allow_admin_override=False):
             raise PlacementExecutionError(
                 f"Self-approval detected. "
-                f"Approver ({approval.approved_by}) must differ from requester ({workflow_requester})."
+                f"Approver ({approval.approved_by}) must differ from requester ({workflow_requester}). "
+                f"Strict separation of duties required."
             )
         
         # Safety: Verify manifest hash internally
@@ -181,11 +161,11 @@ class PlacementExecutor:
         
         # Execute placement in isolated worktree (unless dry-run)
         try:
-            if manifest.decision == PlacementDecision.VERSION_IN_USE:
+            if manifest.decision == PlacementDecision.VERSION_IN_USE or getattr(manifest, "updateEligibility", None) in (UpdateEligibility.VERSION_IN_USE, UpdateEligibility.INSPECTION_FAILED):
                 raise PlacementExecutionError(
-                    f"Cannot execute placement for VERSION_IN_USE decision. "
-                    f"Target block version {manifest.blockVersion} is referenced by tutorial content. "
-                    f"Create a new version to proceed."
+                    f"Cannot execute placement for {manifest.decision} / {getattr(manifest, 'updateEligibility', '')}. "
+                    f"Target block version {manifest.blockVersion} is referenced by tutorial content or reference inspection failed. "
+                    f"In-place placement is strictly blocked."
                 )
             elif manifest.decision in (PlacementDecision.ADD, PlacementDecision.UPDATE):
                 result = self._execute_manifest_operations(manifest, candidate_files)
@@ -261,266 +241,220 @@ class PlacementExecutor:
             # Dry-run: use main repository adapter
             worktree_adapter = self.repository_adapter
         
-        # Write candidate files via RepositoryAdapter or granular fileOperations
+        # Preflight all file operations atomically before performing any disk mutations
         written_files = []
         try:
-            if manifest.fileOperations:
-                # Map candidate files by filename
-                files_by_name = {}
-                for f in candidate_files:
-                    fn = f.get('filename') if isinstance(f, dict) else f.filename
-                    ct = f.get('content') if isinstance(f, dict) else f.content
-                    files_by_name[fn] = ct
+            if not manifest.fileOperations:
+                raise PlacementExecutionError("Placement requires explicit, snapshot-derived fileOperations in manifest")
 
+            # Map candidate files by filename
+            files_by_name = {}
+            for f in candidate_files:
+                fn = f.get('filename') if isinstance(f, dict) else f.filename
+                ct = f.get('content') if isinstance(f, dict) else f.content
+                files_by_name[fn] = ct
+
+            patch_actions = (
+                PlacementFileAction.PATCH_FAMILY_REGISTRY,
+                PlacementFileAction.PATCH_RENDERER,
+                PlacementFileAction.PATCH_TYPES,
+                PlacementFileAction.PATCH_COMPOSER_DEFINITION,
+                PlacementFileAction.PATCH_GENERATED_REGISTRY,
+            )
+            needs_integration_meta = any(op.action in patch_actions for op in manifest.fileOperations)
+
+            integration_metadata = {}
+            if needs_integration_meta:
                 integration_source = files_by_name.get("block.integration.json")
                 if integration_source is None:
-                    raise PlacementExecutionError("Candidate package missing required block.integration.json")
+                    raise PlacementExecutionError("Candidate package missing required block.integration.json for patch operations")
                 try:
                     integration_metadata = json.loads(integration_source)
                 except (TypeError, json.JSONDecodeError) as error:
                     raise PlacementExecutionError(f"Invalid block.integration.json: {error}") from error
+            elif "block.integration.json" in files_by_name:
+                try:
+                    integration_metadata = json.loads(files_by_name["block.integration.json"])
+                except Exception:
+                    integration_metadata = {}
 
-                worktree_root = self.active_worktree.worktree_path if (self.active_worktree and not self.dry_run) else self.repository_root
+            worktree_root = self.active_worktree.worktree_path if (self.active_worktree and not self.dry_run) else self.repository_root
 
-                for op in manifest.fileOperations:
-                    if op.action == PlacementFileAction.SKIP:
-                        continue
+            # ================================================================
+            # Phase 1: Atomic Preflight Validation (ZERO writes permitted)
+            # ================================================================
+            staged_writes: List[Tuple[Path, str]] = []
 
-                    target_file_path = worktree_root / op.target_path
+            for op in manifest.fileOperations:
+                if op.action == PlacementFileAction.SKIP:
+                    continue
 
-                    if op.action == PlacementFileAction.CREATE:
-                        content = files_by_name.get(op.source_filename)
-                        if content is None:
-                            raise PlacementExecutionError(f"Missing source file {op.source_filename} for CREATE operation")
+                target_file_path = worktree_root / op.target_path
 
-                        if target_file_path.exists():
-                            existing_content = target_file_path.read_text(encoding='utf-8')
-                            if existing_content != content:
-                                raise PlacementExecutionError(
-                                    f"CREATE operation would overwrite existing file {op.target_path}. "
-                                    "Use a controlled patch or UPDATE operation instead."
-                                )
-
-                    elif op.action == PlacementFileAction.UPDATE:
-                        content = files_by_name.get(op.source_filename)
-                        if content is None:
-                            raise PlacementExecutionError(f"Missing source file {op.source_filename} for UPDATE operation")
-
-                        if not target_file_path.exists():
+                if op.action == PlacementFileAction.CREATE:
+                    content = files_by_name.get(op.source_filename)
+                    if content is None:
+                        raise PlacementExecutionError(f"Preflight failed: Missing source file '{op.source_filename}' for CREATE operation")
+                    if op.source_sha256:
+                        actual_sha = compute_sha256(content)
+                        if actual_sha != op.source_sha256:
                             raise PlacementExecutionError(
-                                f"UPDATE operation target file does not exist: {op.target_path}. "
-                                "Cannot update non-existent target in place."
+                                f"Preflight failed: Source SHA-256 mismatch for '{op.source_filename}'. Expected {op.source_sha256}, got {actual_sha}"
                             )
 
-                        current_content = target_file_path.read_text(encoding='utf-8')
-                        current_hash = compute_sha256(current_content)
-                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                    if target_file_path.exists():
+                        existing_content = target_file_path.read_text(encoding='utf-8')
+                        if existing_content != content:
                             raise PlacementExecutionError(
-                                f"Pre-image hash mismatch on UPDATE operation for {op.target_path}: "
-                                f"expected {op.expected_pre_hash}, got {current_hash}. Placement aborted."
+                                f"Preflight failed: CREATE operation would overwrite existing file '{op.target_path}'. "
+                                "Use a controlled patch or UPDATE operation instead."
+                            )
+                    staged_writes.append((target_file_path, content))
+
+                elif op.action == PlacementFileAction.UPDATE:
+                    content = files_by_name.get(op.source_filename)
+                    if content is None:
+                        raise PlacementExecutionError(f"Preflight failed: Missing source file '{op.source_filename}' for UPDATE operation")
+                    if op.source_sha256:
+                        actual_sha = compute_sha256(content)
+                        if actual_sha != op.source_sha256:
+                            raise PlacementExecutionError(
+                                f"Preflight failed: Source SHA-256 mismatch for '{op.source_filename}'. Expected {op.source_sha256}, got {actual_sha}"
                             )
 
-                        if not self.dry_run:
-                            target_file_path.parent.mkdir(parents=True, exist_ok=True)
-                            target_file_path.write_text(content, encoding='utf-8')
-                        written_files.append(str(target_file_path))
-                        continue
+                    if not target_file_path.exists():
+                        raise PlacementExecutionError(
+                            f"Preflight failed: UPDATE operation target file does not exist: '{op.target_path}'. "
+                            "Cannot update non-existent target in place."
+                        )
 
-                        # Harmonize registry export if writing registry entry
-                        if op.target_path.endswith('.registry.ts'):
-                            reg_var_name = f"{manifest.blockFamily.value.lower()}Registry"
-                            if 'BlockRegistryEntry' not in content or reg_var_name not in content:
-                                if target_file_path.exists():
-                                    existing = target_file_path.read_text(encoding='utf-8')
-                                    if 'BlockRegistryEntry' in existing and reg_var_name in existing:
-                                        content = existing
-                                    else:
-                                        content = f"""import type {{ BlockRegistryEntry }} from '../types';
+                    current_content = target_file_path.read_text(encoding='utf-8')
+                    current_hash = compute_sha256(current_content)
+                    if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                        raise PlacementExecutionError(
+                            f"Pre-image hash mismatch on UPDATE operation for {op.target_path}: "
+                            f"expected {op.expected_pre_hash}, got {current_hash}. Placement aborted."
+                        )
+                    staged_writes.append((target_file_path, content))
 
-export const {reg_var_name}: BlockRegistryEntry = {{
-  id: '{manifest.blockFamily.value.lower()}',
-  label: '{manifest.blockFamily.value}',
-  versions: [
-    {{
-      id: 'v1',
-      code: '{manifest.blockVersion}',
-      label: '{manifest.blockVersion} - {manifest.blockFamily.value}',
-      description: '{manifest.blockFamily.value} block integration',
-      getDefaultPayload: () => ({{
-        eyebrow: 'LEARNING OBJECTIVES',
-        title: 'What You Will Learn',
-        introduction: 'By the end of this lesson, you will be able to:',
-        objectives: [
-          {{ id: '1', text: 'Understand core concepts' }},
-          {{ id: '2', text: 'Apply principles in practice' }},
-        ],
-      }}),
-    }},
-  ],
-}};
-"""
-                                else:
-                                    content = f"""import type {{ BlockRegistryEntry }} from '../types';
-
-export const {reg_var_name}: BlockRegistryEntry = {{
-  id: '{manifest.blockFamily.value.lower()}',
-  label: '{manifest.blockFamily.value}',
-  versions: [
-    {{
-      id: 'v1',
-      code: '{manifest.blockVersion}',
-      label: '{manifest.blockVersion} - {manifest.blockFamily.value}',
-      description: '{manifest.blockFamily.value} block integration',
-      getDefaultPayload: () => ({{
-        eyebrow: 'LEARNING OBJECTIVES',
-        title: 'What You Will Learn',
-        introduction: 'By the end of this lesson, you will be able to:',
-        objectives: [
-          {{ id: '1', text: 'Understand core concepts' }},
-          {{ id: '2', text: 'Apply principles in practice' }},
-        ],
-      }}),
-    }},
-  ],
-}};
-"""
-
-                        if not self.dry_run:
-                            target_file_path.parent.mkdir(parents=True, exist_ok=True)
-                            target_file_path.write_text(content, encoding='utf-8')
-                        written_files.append(str(target_file_path))
-
-                    elif op.action == PlacementFileAction.PATCH_FAMILY_REGISTRY:
-                        if target_file_path.exists():
-                            current_content = target_file_path.read_text(encoding='utf-8')
-                            current_hash = compute_sha256(current_content)
-                            if op.expected_pre_hash and current_hash != op.expected_pre_hash:
-                                raise PlacementExecutionError(
-                                    f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
-                                )
-                            patched = patch_family_registry(
-                                current_content,
-                                family=manifest.blockFamily.value,
-                                version=manifest.blockVersion,
-                                metadata=integration_metadata,
-                            )
-                        else:
-                            patched = create_family_registry(
-                                family=manifest.blockFamily.value,
-                                version=manifest.blockVersion,
-                                metadata=integration_metadata,
-                            )
-                        if not self.dry_run:
-                            target_file_path.parent.mkdir(parents=True, exist_ok=True)
-                            target_file_path.write_text(patched, encoding='utf-8')
-                        written_files.append(str(target_file_path))
-
-                    elif op.action == PlacementFileAction.PATCH_RENDERER:
-                        if not target_file_path.exists():
-                            raise PlacementExecutionError(f"Target renderer file {op.target_path} does not exist")
+                elif op.action == PlacementFileAction.PATCH_FAMILY_REGISTRY:
+                    if target_file_path.exists():
                         current_content = target_file_path.read_text(encoding='utf-8')
                         current_hash = compute_sha256(current_content)
                         if op.expected_pre_hash and current_hash != op.expected_pre_hash:
                             raise PlacementExecutionError(
                                 f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
                             )
-                        comp_name = integration_metadata.get(
-                            "componentExport",
-                            f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}Block",
-                        )
-                        patched = patch_tutorial_block_renderer(
-                            current_content,
-                            family=manifest.blockFamily.value,
-                            version=manifest.blockVersion,
-                            component_name=comp_name
-                        )
-                        if not self.dry_run:
-                            target_file_path.write_text(patched, encoding='utf-8')
-                        written_files.append(str(target_file_path))
-
-                    elif op.action == PlacementFileAction.PATCH_REGISTRY:
-                        if not target_file_path.exists():
-                            raise PlacementExecutionError(f"Target registry file {op.target_path} does not exist")
-                        current_content = target_file_path.read_text(encoding='utf-8')
-                        current_hash = compute_sha256(current_content)
-                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
-                            raise PlacementExecutionError(
-                                f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
-                            )
-                        reg_export = f"{manifest.blockFamily.value.lower()}Registry"
-                        patched = patch_tutorial_composer_registry(
-                            current_content,
-                            family=manifest.blockFamily.value,
-                            registry_export_name=reg_export
-                        )
-                        if not self.dry_run:
-                            target_file_path.write_text(patched, encoding='utf-8')
-                        written_files.append(str(target_file_path))
-
-                    elif op.action == PlacementFileAction.PATCH_TYPES:
-                        if not target_file_path.exists():
-                            raise PlacementExecutionError(f"Target types file {op.target_path} does not exist")
-                        current_content = target_file_path.read_text(encoding='utf-8')
-                        current_hash = compute_sha256(current_content)
-                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
-                            raise PlacementExecutionError(
-                                f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
-                            )
-                        patched = patch_tutorial_page_content_types(
-                            current_content,
-                            family_type_id=manifest.blockFamily.value.lower()
-                        )
-                        if not self.dry_run:
-                            target_file_path.write_text(patched, encoding='utf-8')
-                        written_files.append(str(target_file_path))
-
-                    elif op.action == PlacementFileAction.PATCH_GENERATED_REGISTRY:
-                        if not target_file_path.exists():
-                            raise PlacementExecutionError(f"Generated Composer registry {op.target_path} does not exist")
-                        current_content = target_file_path.read_text(encoding='utf-8')
-                        current_hash = compute_sha256(current_content)
-                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
-                            raise PlacementExecutionError(
-                                f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
-                            )
-                        patched = patch_generated_block_registry(
+                        patched = patch_family_registry(
                             current_content,
                             family=manifest.blockFamily.value,
                             version=manifest.blockVersion,
                             metadata=integration_metadata,
                         )
-                        if not self.dry_run:
-                            target_file_path.write_text(patched, encoding='utf-8')
-                        written_files.append(str(target_file_path))
-
-                    elif op.action == PlacementFileAction.PATCH_COMPOSER_DEFINITION:
-                        if not target_file_path.exists():
-                            raise PlacementExecutionError(f"Target Composer definitions file {op.target_path} does not exist")
-                        current_content = target_file_path.read_text(encoding='utf-8')
-                        current_hash = compute_sha256(current_content)
-                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
-                            raise PlacementExecutionError(
-                                f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
-                            )
-                        patched = patch_generated_block_version_definitions(
-                            current_content,
-                            family_type_id=integration_metadata.get("typeId", manifest.blockFamily.value.lower()),
+                    else:
+                        patched = create_family_registry(
+                            family=manifest.blockFamily.value,
                             version=manifest.blockVersion,
-                            payload_format=integration_metadata.get("payloadFormat", "canonical"),
+                            metadata=integration_metadata,
                         )
-                        if not self.dry_run:
-                            target_file_path.write_text(patched, encoding='utf-8')
-                        written_files.append(str(target_file_path))
-            else:
-                for file in candidate_files:
-                    record = worktree_adapter.write_file(
-                        source_content=file.content if hasattr(file, 'content') else file['content'],
-                        target_path=manifest.targetPath,
-                        filename=file.filename if hasattr(file, 'filename') else file['filename'],
-                        family=manifest.blockFamily.value,
-                        version=manifest.blockVersion
+                    staged_writes.append((target_file_path, patched))
+
+                elif op.action == PlacementFileAction.PATCH_RENDERER:
+                    if not target_file_path.exists():
+                        raise PlacementExecutionError(f"Preflight failed: Target renderer file '{op.target_path}' does not exist")
+                    current_content = target_file_path.read_text(encoding='utf-8')
+                    current_hash = compute_sha256(current_content)
+                    if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                        raise PlacementExecutionError(
+                            f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                        )
+                    comp_name = integration_metadata.get(
+                        "componentExport",
+                        f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}Block",
                     )
-                    written_files.append(record.target_path)
+                    patched = patch_tutorial_block_renderer(
+                        current_content,
+                        family=manifest.blockFamily.value,
+                        version=manifest.blockVersion,
+                        component_name=comp_name
+                    )
+                    staged_writes.append((target_file_path, patched))
+
+                elif op.action == PlacementFileAction.PATCH_REGISTRY:
+                    if not target_file_path.exists():
+                        raise PlacementExecutionError(f"Preflight failed: Target registry file '{op.target_path}' does not exist")
+                    current_content = target_file_path.read_text(encoding='utf-8')
+                    current_hash = compute_sha256(current_content)
+                    if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                        raise PlacementExecutionError(
+                            f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                        )
+                    reg_export = f"{manifest.blockFamily.value.lower()}Registry"
+                    patched = patch_tutorial_composer_registry(
+                        current_content,
+                        family=manifest.blockFamily.value,
+                        registry_export_name=reg_export
+                    )
+                    staged_writes.append((target_file_path, patched))
+
+                elif op.action == PlacementFileAction.PATCH_TYPES:
+                    if not target_file_path.exists():
+                        raise PlacementExecutionError(f"Preflight failed: Target types file '{op.target_path}' does not exist")
+                    current_content = target_file_path.read_text(encoding='utf-8')
+                    current_hash = compute_sha256(current_content)
+                    if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                        raise PlacementExecutionError(
+                            f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                        )
+                    patched = patch_tutorial_page_content_types(
+                        current_content,
+                        family_type_id=manifest.blockFamily.value.lower()
+                    )
+                    staged_writes.append((target_file_path, patched))
+
+                elif op.action == PlacementFileAction.PATCH_GENERATED_REGISTRY:
+                    if not target_file_path.exists():
+                        raise PlacementExecutionError(f"Preflight failed: Generated Composer registry '{op.target_path}' does not exist")
+                    current_content = target_file_path.read_text(encoding='utf-8')
+                    current_hash = compute_sha256(current_content)
+                    if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                        raise PlacementExecutionError(
+                            f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                        )
+                    patched = patch_generated_block_registry(
+                        current_content,
+                        family=manifest.blockFamily.value,
+                        version=manifest.blockVersion,
+                        metadata=integration_metadata,
+                    )
+                    staged_writes.append((target_file_path, patched))
+
+                elif op.action == PlacementFileAction.PATCH_COMPOSER_DEFINITION:
+                    if not target_file_path.exists():
+                        raise PlacementExecutionError(f"Preflight failed: Target Composer definitions file '{op.target_path}' does not exist")
+                    current_content = target_file_path.read_text(encoding='utf-8')
+                    current_hash = compute_sha256(current_content)
+                    if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                        raise PlacementExecutionError(
+                            f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                        )
+                    patched = patch_generated_block_version_definitions(
+                        current_content,
+                        family_type_id=integration_metadata.get("typeId", manifest.blockFamily.value.lower()),
+                        version=manifest.blockVersion,
+                        payload_format=integration_metadata.get("payloadFormat", "canonical"),
+                    )
+                    staged_writes.append((target_file_path, patched))
+
+            # ================================================================
+            # Phase 2: Execution (ONLY executed after 100% of preflights pass)
+            # ================================================================
+            for dest_path, dest_content in staged_writes:
+                if not self.dry_run:
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                    dest_path.write_text(dest_content, encoding='utf-8')
+                written_files.append(str(dest_path))
+
         except Exception as e:
             if self.active_worktree and not self.dry_run:
                 try:

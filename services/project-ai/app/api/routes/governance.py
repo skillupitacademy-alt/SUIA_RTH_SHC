@@ -483,17 +483,19 @@ async def approve_placement(
         )
 
     stored_manifest = await manifest_repo.get(str(stored_manifest_id))
-    if stored_manifest and (
-        stored_manifest.decision == "VERSION_IN_USE"
-        or (isinstance(stored_manifest.required_changes, dict) and stored_manifest.required_changes.get("updateEligibility") == "VERSION_IN_USE")
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail={
-                "error": "VERSION_IN_USE",
-                "message": f"Version {stored_manifest.block_version} of family {stored_manifest.block_family} is referenced by existing tutorial content and cannot be approved for in-place placement. A replacement workflow must be created with a newly allocated version.",
-            }
-        )
+    if stored_manifest:
+        req_changes = stored_manifest.required_changes if isinstance(stored_manifest.required_changes, dict) else {}
+        is_in_use = (stored_manifest.decision == "VERSION_IN_USE" or req_changes.get("updateEligibility") == "VERSION_IN_USE")
+        is_insp_failed = (req_changes.get("updateEligibility") == "INSPECTION_FAILED")
+        if is_in_use or is_insp_failed:
+            err_code = "INSPECTION_FAILED" if is_insp_failed else "VERSION_IN_USE"
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": err_code,
+                    "message": f"Version {stored_manifest.block_version} of family {stored_manifest.block_family} cannot be approved for in-place placement ({err_code}). A replacement workflow must be created with a newly allocated version.",
+                }
+            )
     manifest_operations = (
         stored_manifest.required_changes.get("operations", [])
         if stored_manifest and isinstance(stored_manifest.required_changes, dict)
@@ -525,8 +527,22 @@ async def approve_placement(
     if not (approved_by := user.get("user_id")):
         raise HTTPException(401, "Missing user_id claim")
     
-    # Verify not self-approval (approver != workflow requester)
-    # Administrators / Super Admins / Contract Admins have privilege to approve workflow deployments
+    # Verify strict separation of duties (approver != workflow requester)
+    # Administrative role does NOT bypass this rule.
+    effective_requester = workflow_requester or getattr(workflow, "created_by", None)
+    if effective_requester and str(approved_by).strip().lower() == str(effective_requester).strip().lower():
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "SELF_APPROVAL_REJECTED",
+                "message": f"Self-approval rejected. User '{approved_by}' cannot approve their own workflow. Strict separation of duties required.",
+                "workflowRequester": str(effective_requester),
+                "attemptedApprover": str(approved_by)
+            }
+        )
+    
+    # All verification passed - process approval decision
+    now = datetime.now(timezone.utc)
     from app.auth.authorization import is_super_admin
     is_admin_user = (
         is_super_admin(user)
@@ -535,19 +551,6 @@ async def approve_placement(
         or "super_admin" in user.get("roles", [])
         or "contract_admin" in user.get("roles", [])
     )
-    if workflow_requester and approved_by == workflow_requester and not is_admin_user:
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "error": "SELF_APPROVAL_REJECTED",
-                "message": f"Self-approval rejected. User '{approved_by}' cannot approve their own workflow. Separation of duties required.",
-                "workflowRequester": workflow_requester,
-                "attemptedApprover": approved_by
-            }
-        )
-    
-    # All verification passed - process approval decision
-    now = datetime.now(timezone.utc)
     
     # Create ImplementationApproval record
     implementation_approval = create_implementation_approval(
