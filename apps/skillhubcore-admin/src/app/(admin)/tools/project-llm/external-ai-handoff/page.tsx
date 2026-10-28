@@ -26,6 +26,7 @@ import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
 import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
+import { DESIGN_SYSTEM_CONTRACT_MARKDOWN } from '@/lib/project-llm/designSystemContract';
 
 type TabKey = 'summary' | 'ils' | 'lsnb' | 'rssb' | 'composer' | 'testing' | 'brand' | 'evidence';
 
@@ -117,15 +118,28 @@ AUTHORITATIVE TARGET IDENTITY:
 CANONICAL TUTORIAL DESIGN SYSTEM & LOOK & FEEL SPECIFICATIONS
 (MUST MATCH INTRODUCTION, DEFINITION, CODE, AND SUMMARY BLOCKS)
 --------------------------------------------------------------------------------
-All tutorial blocks in the platform belong to a unified tutorial page. Your component MUST adhere to these exact styling and typography standards:
+All tutorial blocks in the platform belong to a unified tutorial page. Your component MUST satisfy these shared invariants while preserving the target family's own content-specific composition:
 
-1. Container & Section Shell:
-   - Outermost element MUST be an <article> element matching canonical tutorial blocks:
-     className="w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors \${className}"
-     style={{ color: secondary }}
-     data-block-id={runtimeContext?.blockId ?? block.id}
-     data-block-type="${familyLower}"
-     data-block-version="${versionUpper}"
+${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
+
+1. Container & Section Shell (Generic BlockShell Composition):
+   - Outermost element MUST compose the generic BlockShell primitive:
+     import { BlockShell, BlockHeader, CardSurface, CalloutBanner } from '../primitives';
+     
+     <BlockShell
+       theme={theme}
+       runtimeContext={runtimeContext}
+       blockId={block.id}
+       blockType="${familyLower}"
+       blockVersion="${versionUpper}"
+       className={className}
+     >
+       ...
+     </BlockShell>
+   - Do NOT hand-roll a raw <article> wrapper with hardcoded classes. BlockShell automatically enforces:
+     * Canonical outer padding ("w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors")
+     * Dual-brand secondary color binding
+     * UBRC DOM identity data attributes (data-block-id, data-block-type, data-block-version)
 
 2. Typography Scale & Font Hierarchy:
    - Eyebrow / Category Badge:
@@ -147,22 +161,48 @@ All tutorial blocks in the platform belong to a unified tutorial page. Your comp
    - Monospace / Code Elements:
      Class: "font-mono text-xs sm:text-sm"
 
-3. Cards, Panels, & Interactive Elements:
-   - Cards & List Items:
-     Class: "rounded-xl border p-4 sm:p-5 transition-all duration-200 shadow-sm hover:shadow-md"
-     Style: { backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }
+3. Cards, Panels, & Elevated Containers (3-Tier WCAG Standard):
+   - Tier 1: Interactive & Progression Modules (elevation="dashboard")
+     * Use case: Clickable cards, flow cards, practice items, stage progression.
+     * Classes: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl hover:shadow-2xl motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+     * Style: { backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }
+     * Accessibility: Must include visible keyboard focus ring and motion-safe hover guards (WCAG 2.3.3 & 2.4.7).
+   - Tier 2: Static Editorial Highlights & Takeaways (elevation="elevated")
+     * Use case: CalloutBanner takeaways, hero definitions, key insights.
+     * Classes: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl backdrop-blur-md"
+     * Rule: Do NOT add cursor-pointer, hover transforms, or hover shadow changes to static non-clickable text (WCAG 1.4.1).
+   - Tier 3: Dense Content & Code (elevation="subtle" or "flat")
+     * Use case: TerminalWindow code blocks, dense tables, long continuous prose.
+     * Rule: Keep flat or subtle border (shadow-sm or flat) to prevent cognitive fatigue and optical clutter.
+   - WCAG Non-Text Contrast (SC 1.4.11):
+     * NEVER rely on drop shadows alone to define boundaries; always pair with an explicit perimeter border.
+   - Strict Ban on Left-Side Borders:
+     * Asymmetrical left borders ('border-l-*' or 'borderLeftColor') are STRICTLY PROHIBITED for callouts, takeaways, quotes, and tips.
+     * Always use symmetric, elevated rounded card containers ('rounded-2xl border border-t border-white/80 ... shadow-xl').
+   - Composition:
+     * Candidates should compose CardSurface, CalloutBanner, and BlockShell from '@quiz/ui'.
    - Icon Badges:
-     Class: "flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg"
+     Class: "flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-xl"
      Style: { backgroundColor: withAlpha(primary, '18'), color: primary }
    - Icons:
      MUST import from 'lucide-react' (e.g. Target, BookOpen, Check, Layers, Lightbulb, Code2, Sparkles).
      NEVER use raw unicode symbols (✓, ★, •) or emojis (📌, 🎯).
      Always add aria-hidden="true" to decorative icons.
 
-4. Dual-Brand Theme Independence:
+4. Dual-Brand 4-Color Token Architecture:
    - MUST consume 'theme ?? DEFAULT_THEME'.
-   - Derive all colors from 'theme.primary', 'theme.secondary', and 'withAlpha(primary, hexAlpha)'.
-   - ZERO hardcoded hex color codes (#e11d48, #0ea5e9, etc.).
+   - Each brand defines 4 harmonized tokens:
+     * SkillUp IT Academy (SUIA):
+       - Primary (Brand Base): Navy (#0B1B3D)
+       - Secondary (Text / Shell): Magenta Pink (#F54A8D)
+       - Accent 1 (Interactive / Info): Sky Cyan (#0284C7)
+       - Accent 2 (Success / Highlight): Emerald Green (#10B981)
+     * Real Tutorial Hub (RTH):
+       - Primary (Brand Base): Rose (#E11D48)
+       - Secondary (Text / Shell): Slate Navy (#1E293B)
+       - Accent 1 (Interactive / Info): Indigo Blue (#6366F1)
+       - Accent 2 (Success / Highlight): Amber Warm (#F59E0B)
+   - ZERO hardcoded hex color codes (#e11d48, #0b1b3d, etc.).
    - ZERO hardcoded brand strings ('SkillUpITAcademy', 'RealTutorialHub', 'SUIA', 'RTH').
    - Both light and dark modes are supported automatically via Tailwind tokens (bg-white dark:bg-slate-900).
 
@@ -198,7 +238,9 @@ You must package your output as a single .zip archive containing the six require
      b) Dual-brand theme independence (proves themeA and themeB apply dynamically with zero hardcoded brand hexes).
      c) WCAG 2.1 AA accessibility (list roles, aria-hidden icons).
      d) Responsive container rendering (passes through custom className).
-     e) Zero console errors or warnings.
+     e) Long-content boundary safety: flex/grid text children use min-w-0 where needed; no card/control/content crosses its parent boundary; only explicitly bounded code/data regions may scroll horizontally.
+     f) Zero console errors or warnings.
+   - The test suite is focused evidence only. Project LLM, not External AI, runs the authoritative isolated-browser gate across 375, 640, 768, 1024, 1280, and 1536 CSS-pixel viewports after placement.
 
 3. ${familyLower}-${versionLower}.schema.json (JSON Schema Contract)
    - Valid JSON schema representing the block's content payload.
@@ -273,7 +315,8 @@ VERIFICATION GATES & COMPLIANCE ARCHITECTURE
 ================================================================================
 1. UBRC Runtime Gate: <article data-block-id="..." data-block-type="${familyLower}" data-block-version="${versionUpper}">
 2. Brand Independence Gate: Consumes theme prop / DEFAULT_THEME; zero brand strings
-3. Look & Feel Gate: Outer shell w-full px-[5%] py-8 sm:py-10, canonical typography hierarchy (2xl-4xl title, text-base/lg intro, Lucide icons)
+3. Universal Block Architecture (UBA) Look & Feel Gate: Apply the shared 12-parameter Tutorial Design System Contract below while preserving this family/version's own composition. Use @quiz/ui primitives where their semantics fit; do not claim full WCAG certification without browser evidence.
+${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
 4. Strict Typing Gate: zero 'any' types in props or block interfaces
 5. Repository Integration Gate: ${componentName}.tsx placed in packages/ui/src/tutorial/blocks/
 6. Composer Registry Gate: Project LLM adds ${versionUpper} to the generated block catalog and renderer dispatch without removing other families or versions
@@ -304,17 +347,30 @@ The persisted backend contract is authoritative. Do not invent requirements or c
 - **Version:** ${versionUpper}
 - **Component:** ${componentName}
 
-## Design System & Look and Feel Standards
+## Universal Block Architecture (UBA) & Look and Feel Standards
 
-1. **Outer Shell:** \`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors\`
-2. **Typography Scale:**
+1. **UBA Primitives Library:**
+   Candidates should import and compose universal primitives from \`@quiz/ui\` (\`BlockShell\`, \`BlockHeader\`, \`CardSurface\`, \`StepBadge\`, \`SyntaxPill\`, \`CalloutBanner\`, \`TerminalWindow\`) to ensure design consistency and avoid redundant HTML recreation.
+2. **Outer Shell:** Standardized via \`BlockShell\` with \`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors\` and UBRC data attributes (\`data-block-id\`, \`data-block-type\`, \`data-block-version\`).
+3. **Typography Scale (via \`BlockHeader\`):**
    - Eyebrow: \`text-xs font-bold uppercase tracking-wider\`
-   - Title: \`text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight\`
+   - Title: \`text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]\` (\`titleScale="hero"\`) or \`text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight\` (\`titleScale="standard"\`)
    - Accent Bar: \`h-1 w-12 rounded-full\` in \`theme.primary\`
    - Intro: \`text-base sm:text-lg font-medium leading-[1.7]\`
    - Content: \`text-sm sm:text-base font-medium leading-relaxed\`
-3. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
-4. **Theming:** Strictly dual-brand token aware via \`theme.primary\`, \`theme.secondary\`, and \`withAlpha(primary, alpha)\`.
+4. **Elevated Containers & 3-Tier WCAG Standards:**
+   - **NO LEFT-SIDE BORDER (\`border-l-*\`) ON CONTAINERS**: Asymmetrical left-side accent borders are strictly prohibited on all callout, card, tip, takeaway, and quote containers.
+   - **3-Tier WCAG Elevation Decision Matrix**:
+     * **Tier 1: Interactive & Progression Modules (\`elevation="dashboard"\`)**: Clickable cards, flow cards, practice items, and stage progression. Use rich multi-layered shadows (\`shadow-xl hover:shadow-2xl\`), rim lighting (\`border-t border-white/80 dark:border-white/10\`), glassmorphism (\`backdrop-blur-md\`), and motion-safe hover lift (\`motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none\`). Must provide accessible keyboard focus rings (\`focus-visible:ring-2\`) and \`cursor-pointer\` (WCAG 2.3.3 & 2.4.7).
+     * **Tier 2: Static Editorial Highlights & Takeaways (\`elevation="elevated"\`)**: Core definitions and takeaway banners. Elevated for cognitive chunking with resting depth (\`shadow-xl backdrop-blur-md border-t border-white/80\`), but strictly without misleading click cursor or aggressive hover jumps (WCAG 1.4.1).
+     * **Tier 3: Dense Content & Code (\`elevation="subtle"\` or \`"flat"\`)**: Code editors and long continuous prose. Keep flat or subtle border (\`shadow-sm\` or flat) to prevent visual clutter and cognitive fatigue.
+   - **Non-Text Boundary Contrast (WCAG SC 1.4.11)**: Never rely on drop shadow alone; always pair with a distinct perimeter border (\`border border-slate-200/80\` or brand alpha) so containers remain visible on low-contrast screens and in High Contrast Mode.
+   - *(Note: Chronological vertical timeline rails / connector axes, such as in TimelineBlock, are connector lines and not card containers).*
+5. **Icons:** Exclusively \`lucide-react\` components with \`aria-hidden="true"\`. Zero raw emojis or unicode glyphs.
+6. **Dual-Brand 4-Color Tokens:**
+   - SUIA: Primary \`#0B1B3D\` (Navy), Secondary \`#F54A8D\` (Magenta Pink), Accent 1 \`#0284C7\` (Sky Cyan), Accent 2 \`#10B981\` (Emerald Green).
+   - RTH: Primary \`#E11D48\` (Rose), Secondary \`#1E293B\` (Slate Navy), Accent 1 \`#6366F1\` (Indigo Blue), Accent 2 \`#F59E0B\` (Amber Warm).
+   - Consume dynamically via \`theme.primary\`, \`theme.secondary\`, \`theme.accent1\`, \`theme.accent2\`, and \`withAlpha\`.
 
 ## Mandatory File Deliverables in ZIP
 

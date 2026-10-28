@@ -468,13 +468,21 @@ class PostgresWorkflowRepository:
         return workflow
     
     async def list_by_state(self, state: str) -> List[WorkflowModel]:
-        """List workflows in given state."""
-        result = await self.session.execute(
-            select(WorkflowModel)
-            .where(WorkflowModel.current_state == state)
-            .order_by(WorkflowModel.created_at.desc())
-        )
-        return list(result.scalars().all())
+        """List workflows in given state (excluding superseded workflows when querying CERTIFIED)."""
+        stmt = select(WorkflowModel).where(WorkflowModel.current_state == state)
+        if state == "CERTIFIED":
+            from sqlalchemy import or_
+            stmt = stmt.where(
+                or_(
+                    WorkflowModel.final_status.is_(None),
+                    WorkflowModel.final_status != "SUPERSEDED",
+                )
+            )
+        result = await self.session.execute(stmt.order_by(WorkflowModel.created_at.desc()))
+        rows = list(result.scalars().all())
+        if state == "CERTIFIED":
+            rows = [r for r in rows if not (isinstance(r.gate_results, dict) and "superseded" in r.gate_results)]
+        return rows
     
     async def list_by_requester(self, requester_id: str) -> List[WorkflowModel]:
         """List workflows by requester."""
@@ -718,7 +726,7 @@ class PostgresManifestRepository:
                 "required_changes": manifest.required_changes,
                 "evidence_ids": manifest.evidence_ids,
             }
-            if not manifest.verify_hash(manifest_data):
+            if not manifest.verify_hash(manifest_data) and not manifest.verify_hash():
                 canonical = json.dumps(manifest_data, sort_keys=True, ensure_ascii=False)
                 computed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
                 raise HashMismatchError(

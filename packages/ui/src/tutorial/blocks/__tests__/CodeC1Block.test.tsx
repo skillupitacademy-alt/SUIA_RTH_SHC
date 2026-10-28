@@ -232,8 +232,7 @@ describe('Phase 2D - Code C1 Renderer', () => {
       const block = createC1Block(validC1Content);
       const { container } = render(<CodeC1Block block={block} />);
       
-      // Explanation items are grid rows with 3-column layout
-      const explanationItems = container.querySelectorAll('.grid.grid-cols-\\[48px_minmax\\(150px\\,250px\\)_minmax\\(0\\,1fr\\)\\]');
+      const explanationItems = container.querySelectorAll('[data-testid="code-c1-explanation-row"]');
       expect(explanationItems).toHaveLength(2);
     });
 
@@ -254,8 +253,7 @@ describe('Phase 2D - Code C1 Renderer', () => {
       const block = createC1Block(contentWith6Explanations);
       const { container } = render(<CodeC1Block block={block} />);
       
-      // Explanation items are grid rows with 3-column layout
-      const explanationItems = container.querySelectorAll('.grid.grid-cols-\\[48px_minmax\\(150px\\,250px\\)_minmax\\(0\\,1fr\\)\\]');
+      const explanationItems = container.querySelectorAll('[data-testid="code-c1-explanation-row"]');
       expect(explanationItems).toHaveLength(6);
       
       expect(screen.getByText('Item 1')).toBeInTheDocument();

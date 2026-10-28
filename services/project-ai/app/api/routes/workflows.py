@@ -724,6 +724,173 @@ async def approve_final_certification(
                 detail="Cannot approve: Composer verification gate is missing visual screenshot evidence"
             )
 
+        # 5. Accessibility & Modality Verification Gate
+        runner_metadata = composer_gate.get("runner_metadata", {})
+        accessibility_evidence = runner_metadata.get("accessibility")
+        if not accessibility_evidence or not isinstance(accessibility_evidence, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing required browser-level accessibility evidence"
+            )
+        if not accessibility_evidence.get("passed") or accessibility_evidence.get("violations_count", 0) > 0:
+            violations_count = accessibility_evidence.get("violations_count", 0)
+            violations_list = accessibility_evidence.get("violations", [])
+            violation_summary = "; ".join([f"{v.get('id')}: {v.get('help')}" for v in violations_list[:3]]) if violations_list else "unspecified"
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer verification failed browser-level accessibility audit with {violations_count} violation(s): {violation_summary}"
+            )
+        if accessibility_evidence.get("passes_count", 0) <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification accessibility evidence reports 0 passes (audit was unexecuted or non-evaluative)"
+            )
+
+        modality_checks = runner_metadata.get("modality_checks")
+        if not modality_checks or not isinstance(modality_checks, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing required modality_checks object"
+            )
+
+        REQUIRED_MODALITIES = {"keyboard_navigation", "reduced_motion", "forced_colors", "responsive_viewports"}
+        missing_modalities = REQUIRED_MODALITIES - set(modality_checks.keys())
+        if missing_modalities:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer verification modality_checks missing required modalities: {sorted(list(missing_modalities))}"
+            )
+
+        for modality_name in sorted(list(REQUIRED_MODALITIES)):
+            mod_result = modality_checks.get(modality_name)
+            if not isinstance(mod_result, dict):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Composer verification {modality_name} modality result is malformed or missing"
+                )
+            mod_status = mod_result.get("status")
+            if mod_status not in ("PASS", "NOT_APPLICABLE"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Composer verification failed {modality_name} modality check (status: {mod_status}): {mod_result.get('details', 'check failed')}"
+                )
+
+        responsive_mod = modality_checks.get("responsive_viewports") or {}
+        viewports_tested = responsive_mod.get("viewports_tested")
+        if not isinstance(viewports_tested, list):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer responsive_viewports is missing viewports_tested list"
+            )
+        REQUIRED_VIEWPORT_WIDTHS = {375, 640, 768, 1024, 1280, 1536}
+        tested_widths = {vp.get("width") for vp in viewports_tested if isinstance(vp, dict)}
+        missing_widths = REQUIRED_VIEWPORT_WIDTHS - tested_widths
+        if missing_widths:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer responsive_viewports missing required six-breakpoint widths: {sorted(list(missing_widths))}"
+            )
+        for vp in viewports_tested:
+            if not isinstance(vp, dict) or not vp.get("passed"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Viewport {vp.get('name') if isinstance(vp, dict) else vp} failed responsive verification"
+                )
+            if (
+                vp.get("document_overflow_x") is not False
+                or vp.get("block_overflow_x") is not False
+                or vp.get("child_boundary_overflow") is not False
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Cannot approve: Viewport {vp.get('name')} missing or failing boundary flags "
+                        f"(document_overflow_x={vp.get('document_overflow_x')}, "
+                        f"block_overflow_x={vp.get('block_overflow_x')}, "
+                        f"child_boundary_overflow={vp.get('child_boundary_overflow')})"
+                    )
+                )
+
+        # 6. Cryptographic Evidence Hash Revalidation
+        from app.verification.composer_worktree_verifier import compute_composer_evidence_hash
+        import hashlib
+        from pathlib import Path
+
+        evidence_payload = composer_gate.get("evidence_payload")
+        if not evidence_payload or not isinstance(evidence_payload, dict):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing cryptographic evidence_payload for hash revalidation"
+            )
+
+        if evidence_payload.get("verified_commit") != placement_commit:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Cannot approve: Composer evidence_payload verified_commit mismatch "
+                    f"({evidence_payload.get('verified_commit')} != {placement_commit})"
+                )
+            )
+        if workflow.candidate_sha256 and evidence_payload.get("candidate_hash") != workflow.candidate_sha256:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer evidence_payload candidate_hash mismatch"
+            )
+        if workflow.manifest_sha256 and evidence_payload.get("manifest_hash") != workflow.manifest_sha256:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer evidence_payload manifest_hash mismatch"
+            )
+        if evidence_payload.get("accessibility") != accessibility_evidence:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer accessibility metadata does not match signed evidence_payload"
+            )
+        if evidence_payload.get("modality_checks") != modality_checks:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer modality_checks metadata does not match signed evidence_payload"
+            )
+
+        screenshot_path_str = runner_metadata.get("screenshot_path")
+        expected_screenshot_sha = evidence_payload.get("screenshot_sha256")
+        if not screenshot_path_str or not expected_screenshot_sha:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer verification gate is missing screenshot_path or screenshot_sha256 for on-disk verification"
+            )
+        if runner_metadata.get("screenshot_sha256") and runner_metadata.get("screenshot_sha256") != expected_screenshot_sha:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Composer runner_metadata screenshot_sha256 does not match signed evidence_payload"
+            )
+        screenshot_file = Path(screenshot_path_str)
+        if not screenshot_file.exists():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Composer screenshot evidence file missing on disk: {screenshot_path_str}"
+            )
+        actual_screenshot_sha = hashlib.sha256(screenshot_file.read_bytes()).hexdigest()
+        if actual_screenshot_sha != expected_screenshot_sha:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Cannot approve: Composer screenshot SHA-256 mismatch "
+                    f"(on-disk {actual_screenshot_sha} != signed {expected_screenshot_sha})"
+                )
+            )
+
+        recomputed_evidence_hash = compute_composer_evidence_hash(evidence_payload)
+        stored_evidence_hash = composer_gate.get("evidence_hash")
+        if recomputed_evidence_hash != stored_evidence_hash:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Cannot approve: Composer evidence_hash cryptographic verification failed "
+                    f"(recomputed {recomputed_evidence_hash} != stored {stored_evidence_hash})"
+                )
+            )
+
         evidence_verified = True
         evidence_summary = gate_results
     else:
@@ -864,40 +1031,58 @@ async def verify_composer(
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error))
 
+    target_family = workflow.target_family
+    target_version = workflow.target_version
+    candidate_sha = workflow.candidate_sha256 or ""
+    manifest_sha = workflow.manifest_sha256 or ""
+    initial_state = workflow.current_state
+
+    # Release initial DB connection before long-running worktree build + browser run
+    # so pooled connections (e.g. Neon PgBouncer) do not time out while idle in transaction.
+    await session.close()
+
     from app.verification.composer_worktree_verifier import verify_composer_in_worktree
+    from app.persistence.database import get_session_factory
 
     result = await verify_composer_in_worktree(
         workflow_id=workflow_id,
         commit_sha=commit_sha,
-        block_family=workflow.target_family,
-        block_version=workflow.target_version,
-        candidate_hash=workflow.candidate_sha256 or "",
-        manifest_hash=workflow.manifest_sha256 or ""
+        block_family=target_family,
+        block_version=target_version,
+        candidate_hash=candidate_sha,
+        manifest_hash=manifest_sha,
+        timeout_seconds=600
     )
 
-    # Atomically bind gate result into workflow
-    workflow_model = await workflow_repo.get(workflow_id, verify_bindings=False)
-    if workflow_model:
-        current_gates = dict(workflow_model.gate_results or {})
-        current_gates["composer"] = result
-        workflow_model.gate_results = current_gates
+    session_factory = get_session_factory()
+    async with session_factory() as write_session:
+        fresh_gov = await get_governance_service(write_session)
+        fresh_repo = await get_workflow_repository(write_session)
 
         if result.get("passed"):
-            if workflow.current_state == CanonicalWorkflowState.IMPLEMENTED:
-                await governance_service.transition_state(
+            if initial_state == CanonicalWorkflowState.IMPLEMENTED:
+                await fresh_gov.transition_state(
                     workflow_id=workflow_id,
                     to_state=CanonicalWorkflowState.VERIFYING,
                     triggered_by=user.get("email") or user.get("sub") or "system",
                     reason="Composer verification initiated on isolated worktree"
                 )
-                await governance_service.transition_state(
+                await fresh_gov.transition_state(
                     workflow_id=workflow_id,
                     to_state=CanonicalWorkflowState.CERTIFICATION_READY,
                     triggered_by=user.get("email") or user.get("sub") or "system",
                     reason="Composer verification passed in isolated preview"
                 )
-        await session.commit()
-        result["current_workflow_state"] = workflow_model.current_state
+
+        # Atomically bind gate result into workflow
+        workflow_model = await fresh_repo.get(workflow_id, verify_bindings=False)
+        if workflow_model:
+            current_gates = dict(workflow_model.gate_results or {})
+            current_gates["composer"] = result
+            workflow_model.gate_results = current_gates
+            await fresh_repo.upsert(workflow_model)
+            await write_session.commit()
+            result["current_workflow_state"] = workflow_model.current_state
 
     return result
 
@@ -939,11 +1124,47 @@ async def supersede_workflow(
             triggered_by=triggered_by,
             reason=reason_text
         )
+    elif workflow.current_state == CanonicalWorkflowState.CERTIFIED:
+        session.add(
+            StateTransitionModel(
+                workflow_id=workflow_id,
+                from_state=CanonicalWorkflowState.CERTIFIED.value,
+                to_state=CanonicalWorkflowState.REJECTED.value,
+                triggered_by=triggered_by,
+                reason=reason_text,
+            )
+        )
 
-    # Bind superseded metadata on old workflow model
+    # Bind superseded metadata on old workflow model and revoke active CERTIFIED state
     workflow_model = await workflow_repo.get(workflow_id, verify_bindings=False)
     if workflow_model:
+        workflow_model.current_state = CanonicalWorkflowState.REJECTED.value
         workflow_model.final_status = "SUPERSEDED"
+        # Reconcile any historical ancestor in the supersedes chain that carries 'superseded'
+        # metadata but remained in CERTIFIED state prior to terminal SUPERSEDED state enforcement.
+        ancestor_id = dict(workflow_model.gate_results or {}).get("supersedes", {}).get("superseded_workflow_id")
+        visited_ancestors = set()
+        while ancestor_id and ancestor_id not in visited_ancestors:
+            visited_ancestors.add(ancestor_id)
+            ancestor_model = await workflow_repo.get(ancestor_id, verify_bindings=False)
+            if not ancestor_model:
+                break
+            ancestor_gates = dict(ancestor_model.gate_results or {})
+            if "superseded" in ancestor_gates and ancestor_model.current_state == CanonicalWorkflowState.CERTIFIED.value:
+                existing_rep = ancestor_gates["superseded"].get("superseded_by", workflow_id)
+                ancestor_model.current_state = CanonicalWorkflowState.REJECTED.value
+                ancestor_model.final_status = "SUPERSEDED"
+                session.add(
+                    StateTransitionModel(
+                        workflow_id=ancestor_id,
+                        from_state=CanonicalWorkflowState.CERTIFIED.value,
+                        to_state=CanonicalWorkflowState.REJECTED.value,
+                        triggered_by=triggered_by,
+                        reason=f"SUPERSEDED_BY_REVISION_RECONCILED (Replacement: {existing_rep})",
+                    )
+                )
+                await workflow_repo.upsert(ancestor_model)
+            ancestor_id = ancestor_gates.get("supersedes", {}).get("superseded_workflow_id")
         old_gates = dict(workflow_model.gate_results or {})
         old_gates["superseded"] = {
             "superseded_at": datetime.now(timezone.utc).isoformat(),
@@ -951,6 +1172,7 @@ async def supersede_workflow(
             "reason": request.reason
         }
         workflow_model.gate_results = old_gates
+        await workflow_repo.upsert(workflow_model)
 
     # Create linked replacement workflow requiring fresh candidate upload and qualification
     new_wf_model = WorkflowModel(

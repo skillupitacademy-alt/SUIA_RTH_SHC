@@ -61,6 +61,8 @@ export interface DomainTheme {
   primary: string;
   secondary: string;
   primaryDark?: string;
+  accent1?: string; // Interactive / Info (Sky Cyan for SUIA, Indigo Blue for RTH)
+  accent2?: string; // Success / Highlight (Emerald Green for SUIA, Amber Warm for RTH)
   
   // Semantic color scales (Tailwind-compatible)
   slate?: {
@@ -146,11 +148,7 @@ export interface DomainTheme {
     600?: string;
     700?: string;
     800?: string;
-    900?: string;
   };
-  
-  // Allow additional properties for extensibility
-  [key: string]: any;
 }
 
 export interface TutorialRendererProps {

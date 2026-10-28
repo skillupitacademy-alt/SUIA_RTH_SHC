@@ -1,7 +1,8 @@
 import React from 'react';
-import { BookOpen, FileText, Code2, Star, Sparkles } from 'lucide-react';
+import { BookOpen, FileText, Star, Sparkles } from 'lucide-react';
 import type { IDefinitionBlock, BlockComponentProps, DomainTheme } from '../types';
-import { getThemeColor, withAlpha } from '../theme-utils';
+import { withAlpha } from '../theme-utils';
+import { BlockShell, BlockHeader, CardSurface, CalloutBanner, TerminalWindow } from '../primitives';
 
 /**
  * Definition Block - Version Router
@@ -35,14 +36,8 @@ export function DefinitionBlock({
  * Definition D1 View - CANONICAL LOCKED UI
  * 
  * This is the single authoritative Definition D1 renderer for ALL brands.
- * Layout, typography, spacing, icons, cards, borders, and responsive behavior are FIXED.
+ * Composes UBA primitives: BlockShell, BlockHeader, TerminalWindow, CardSurface, CalloutBanner.
  * Only theme.primary and theme.secondary vary by brand.
- * 
- * Used by:
- * - Composer Preview
- * - SUIA Student Page
- * - RTH Student Page
- * - All other brand learner pages
  */
 function DefinitionD1View({ 
   block, 
@@ -76,37 +71,43 @@ function DefinitionD1View({
   const blockVersion = runtimeContext?.blockVersion ?? block.version;
 
   return (
-    <article 
-      className={`w-full bg-white dark:bg-slate-900 px-[5%] py-10 ${className}`} 
-      style={{ color: secondary }}
-      data-block-id={blockId}
-      data-block-type={blockType}
-      data-block-version={blockVersion}
+    <BlockShell
+      className={className}
+      theme={theme}
+      runtimeContext={runtimeContext}
+      blockId={blockId}
+      blockType={blockType}
+      blockVersion={blockVersion}
     >
-      <header className="mb-[26px]">
-        <div className="mb-[14px] flex items-center gap-2.5 text-base font-extrabold leading-snug" style={{ color: primary }}>
-          <span className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border-2" style={{ borderColor: primary }}>
-            <BookOpen className="h-4 w-4" />
-          </span>
-          <span>{page.category ?? 'Definition'}</span>
-        </div>
-        <h1 className="text-[clamp(38px,6.9vw,55px)] font-extrabold leading-[1.08] tracking-[-1.4px]" style={{ color: secondary }}>
-          {page.title ?? 'Untitled Definition'}
-        </h1>
-        <div className="mb-[17px] mt-4 h-1 w-12 rounded-full" style={{ backgroundColor: primary }} />
-        {page.intro && <p className="text-lg font-medium leading-[1.7]" style={{ color: secondary }}>{page.intro}</p>}
-      </header>
+      <BlockHeader
+        eyebrow={page.category ?? 'Definition'}
+        icon={BookOpen}
+        badgeStyle="box"
+        title={page.title ?? 'Untitled Definition'}
+        headingLevel="h1"
+        titleScale="hero"
+        introduction={page.intro}
+        theme={theme}
+        className="mb-[26px]"
+      />
 
-      <section className="my-6 grid min-h-[175px] w-full grid-cols-[86px_1px_minmax(0,1fr)] items-center gap-6 rounded-[11px] border px-9 py-[30px]" style={{ backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '66') }}>
+      <CardSurface
+        as="section"
+        theme={theme}
+        elevation="dashboard"
+        hoverable={false}
+        className="my-6 grid min-h-[175px] w-full grid-cols-1 items-center gap-4 px-5 py-6 sm:grid-cols-[86px_1px_minmax(0,1fr)] sm:gap-6 sm:px-9 sm:py-[30px]"
+        style={{ backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '66') }}
+      >
         <div className="m-auto flex h-[70px] w-[70px] items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: primary }}>
           <FileText className="h-8 w-8" />
         </div>
-        <div className="h-[92px] w-px" style={{ backgroundColor: withAlpha(primary, '73') }} />
+        <div className="hidden h-[92px] w-px sm:block" style={{ backgroundColor: withAlpha(primary, '73') }} />
         <div className="min-w-0">
           <h2 className="mb-2.5 text-xl font-extrabold leading-snug" style={{ color: primary }}>Definition</h2>
           <p className="text-[19px] font-semibold leading-[1.65]" style={{ color: secondary }}>{page.definition}</p>
         </div>
-      </section>
+      </CardSurface>
 
       {explanation.length > 0 && (
         <section className="my-7">
@@ -123,15 +124,19 @@ function DefinitionD1View({
       )}
 
       {page.example && (
-        <section className="my-[26px] rounded-[10px] border px-[26px] pb-[23px] pt-5" style={{ backgroundColor: getThemeColor(theme, 'blue', 50), borderColor: getThemeColor(theme, 'blue', 200) }}>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-extrabold leading-snug" style={{ color: secondary }}>Example</h2>
-            <Code2 className="h-[17px] w-[17px]" style={{ color: primary }} />
-          </div>
-          <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-base font-medium leading-[1.85]" style={{ color: secondary }}>
-            <code>{page.example.code}</code>
-          </pre>
-        </section>
+        <div className="my-[26px]">
+          <TerminalWindow
+            title={page.example.language ? `Example (${page.example.language})` : 'Example'}
+            copySource={page.example.code}
+            theme={theme}
+          >
+            <div className="p-4 sm:p-5 overflow-x-auto">
+              <pre className="whitespace-pre-wrap font-mono text-base font-medium leading-[1.85] text-slate-200">
+                <code>{page.example.code}</code>
+              </pre>
+            </div>
+          </TerminalWindow>
+        </div>
       )}
 
       {characteristics.length > 0 && (
@@ -142,10 +147,12 @@ function DefinitionD1View({
           </div>
           <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {characteristics.map((item, index) => (
-              <div 
+              <CardSurface 
                 key={item.title || index} 
-                className="flex flex-col rounded-xl border bg-white dark:bg-slate-800 p-5 text-center transition hover:-translate-y-0.5 hover:shadow-md" 
-                style={{ borderColor: getThemeColor(theme, 'gray', 200) }}
+                hoverable={false}
+                elevation="dashboard"
+                className="flex flex-col p-5 text-center" 
+                theme={theme}
               >
                 <div 
                   className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border text-xl font-bold shrink-0" 
@@ -156,27 +163,27 @@ function DefinitionD1View({
                 <h3 className="mb-2 text-base font-extrabold leading-snug tracking-[-0.1px] break-words" style={{ color: secondary }}>
                   {item.title}
                 </h3>
-                <p className="text-sm font-medium leading-[1.65] text-slate-600 break-words flex-1">
+                <p className="text-sm font-medium leading-[1.65] text-slate-600 dark:text-slate-400 break-words flex-1">
                   {item.description}
                 </p>
-              </div>
+              </CardSurface>
             ))}
           </div>
         </section>
       )}
 
       {page.takeaway && (
-        <section className="relative mt-8 overflow-hidden rounded-[10px] border py-[23px] pl-6 pr-[100px]" style={{ backgroundColor: getThemeColor(theme, 'amber', 50), borderColor: getThemeColor(theme, 'amber', 200) }}>
-          <div className="mb-3 flex items-center gap-[11px]">
-            <span className="inline-flex h-[29px] w-[29px] shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: getThemeColor(theme, 'amber', 500), color: 'white' }}>
-              <Star className="h-[15px] w-[15px] fill-current" />
-            </span>
-            <h2 className="text-[19px] font-extrabold leading-snug" style={{ color: getThemeColor(theme, 'amber', 600) }}>Key Takeaway</h2>
-          </div>
-          <p className="text-base font-medium leading-[1.7]" style={{ color: secondary }}>{page.takeaway}</p>
-          <Sparkles className="absolute bottom-[15px] right-[22px] h-12 w-12" style={{ color: getThemeColor(theme, 'amber', 500) }} />
-        </section>
+        <CalloutBanner
+          variant="takeaway"
+          theme={theme}
+          title="Key Takeaway"
+          className="mt-8"
+        >
+          <p className="text-base font-medium leading-[1.7]" style={{ color: secondary }}>
+            {page.takeaway}
+          </p>
+        </CalloutBanner>
       )}
-    </article>
+    </BlockShell>
   );
 }

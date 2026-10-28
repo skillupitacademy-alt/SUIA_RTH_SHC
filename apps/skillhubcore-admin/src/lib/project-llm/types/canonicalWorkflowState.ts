@@ -31,6 +31,12 @@ export type CertificationGateResult = {
   gate: string;
   result: 'PASS' | 'FAIL' | 'SKIPPED' | 'PENDING';
   detail?: string;
+  category?: string;
+  evidenceId?: string;
+  evidenceHash?: string;
+  timestamp?: string;
+  totalTests?: number;
+  passedTests?: number;
 };
 
 export type CertificationStatus = {
@@ -41,10 +47,13 @@ export type CertificationStatus = {
   targetFamily?: string;
   targetVersion?: string;
   candidateId?: string;
+  candidateSha256?: string;
   manifestId?: string;
+  manifestSha256?: string;
+  contractSha256?: string;
+  finalStatus?: string;
   rawGateResults?: Record<string, any>;
 };
-
 
 export type RuntimeHealthStatus = {
   workflowId: string;
@@ -62,6 +71,17 @@ export type BrowserVerificationStatus = {
 export type CandidateResponse = {
   candidateId: string;
   status: string;
+  contractSha256?: string;
+  filesCount?: number;
+  testResults?: {
+    passed: boolean;
+    detail: string;
+    evidence_id?: string;
+    evidence_hash?: string;
+    total_tests?: number;
+    passed_tests?: number;
+    runner_metadata?: Record<string, any>;
+  };
 };
 
 export type PlacementFileOperation = {
@@ -100,6 +120,7 @@ export type PlacementExecutionResult = {
 export type ApprovalResponse = {
   approved: boolean;
   workflowId: string;
+  newState?: string;
 };
 
 export type RuntimeVerificationResponse = {

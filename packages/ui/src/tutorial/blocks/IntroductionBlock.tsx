@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import type { IIntroductionBlock, BlockComponentProps, DomainTheme } from '../types';
 import type { IntroductionIconKey } from '@quiz/types';
-import { getThemeColor, withAlpha } from '../theme-utils';
+import { getThemeColor, withAlpha, getAccessibleBadgeColor } from '../theme-utils';
+import { BlockShell, StepBadge, TerminalWindow, CardSurface, CalloutBanner } from '../primitives';
 
 /**
  * Introduction Block - Version Router
@@ -73,19 +74,19 @@ function getIcon(iconKey: IntroductionIconKey): React.ComponentType<{ className?
  * Introduction I1 View - CANONICAL LOCKED UI
  * 
  * This is the single authoritative Introduction I1 renderer for ALL brands.
- * Layout, typography, spacing, icons, sections, and responsive behavior are FIXED.
+ * Composes UBA primitives: BlockShell, StepBadge, TerminalWindow, CardSurface, CalloutBanner.
  * Only theme.primary and theme.secondary vary by brand.
  * 
- * 9-section structure from approved prototype:
+ * 9-section structure:
  * 1. Hero (badge, title, subtitle, motto with mountain illustration)
  * 2. Learning Goal
  * 3. The Topic
  * 4. Where Does It Fit? (flow cards)
- * 5. The Solution (code example)
- * 6. Where Is It Used? (use cases)
+ * 5. The Solution (code example with TerminalWindow)
+ * 6. Where Is It Used? (use cases with CardSurface)
  * 7. What Will You Learn? (roadmap)
- * 8. Why This Matters (benefits)
- * 9. Key Takeaway
+ * 8. Why This Matters (benefits with CardSurface)
+ * 9. Key Takeaway (CalloutBanner)
  */
 function IntroductionI1View({
   block,
@@ -110,12 +111,13 @@ function IntroductionI1View({
   const blockVersion = runtimeContext?.blockVersion ?? block.version;
 
   return (
-    <article
-      className={`w-full bg-white dark:bg-slate-900 px-[5%] py-10 ${className}`}
-      style={{ color: secondary }}
-      data-block-id={blockId}
-      data-block-type={blockType}
-      data-block-version={blockVersion}
+    <BlockShell
+      className={className}
+      theme={theme}
+      runtimeContext={runtimeContext}
+      blockId={blockId}
+      blockType={blockType}
+      blockVersion={blockVersion}
     >
       {/* HERO SECTION */}
       <header className="mb-10">
@@ -124,7 +126,10 @@ function IntroductionI1View({
           <div className="lg:col-span-6 space-y-4">
             <div
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold"
-              style={{ color: primary, backgroundColor: withAlpha(primary, '14') }}
+              style={{
+                color: getAccessibleBadgeColor(primary, withAlpha(primary, '14')),
+                backgroundColor: withAlpha(primary, '14'),
+              }}
             >
               <BookOpen className="h-4 w-4" />
               <span>{page.badge}</span>
@@ -148,7 +153,7 @@ function IntroductionI1View({
           {/* Right: Mountain Roadmap Illustration with Motto */}
           <div className="lg:col-span-6 relative flex justify-center">
             <div
-              className="w-full max-w-[480px] h-[220px] rounded-3xl p-4 relative overflow-hidden shadow-sm border"
+              className="w-full max-w-[480px] h-[220px] rounded-3xl p-4 relative overflow-hidden shadow-xl border border-t border-white/80 dark:border-white/10 backdrop-blur-md"
               style={{
                 background: `linear-gradient(135deg, ${withAlpha(primary, '0d')}, ${withAlpha(primary, '1a')})`,
                 borderColor: withAlpha(primary, '33'),
@@ -198,12 +203,7 @@ function IntroductionI1View({
       {/* SECTION 1: THE TOPIC */}
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow-md"
-            style={{ backgroundColor: primary }}
-          >
-            1
-          </span>
+          <StepBadge step={1} size="md" theme={theme} />
           <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
             {page.topic.title}
           </h2>
@@ -211,23 +211,22 @@ function IntroductionI1View({
         <p className="text-base leading-relaxed mb-3" style={{ color: secondary }}>
           {page.topic.description}
         </p>
-        <blockquote
-          className="border-l-4 pl-4 py-2 text-base font-semibold italic"
-          style={{ borderColor: primary, color: `${secondary}cc` }}
+        <div
+          className="rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 text-base font-semibold italic shadow-xl backdrop-blur-md -translate-y-0.5 transition-all duration-300"
+          style={{
+            borderColor: withAlpha(primary, '25'),
+            backgroundColor: withAlpha(primary, '06'),
+            color: `${secondary}dd`,
+          }}
         >
-          {page.topic.quote}
-        </blockquote>
+          "{page.topic.quote}"
+        </div>
       </section>
 
       {/* SECTION 2: WHERE DOES IT FIT? */}
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow-md"
-            style={{ backgroundColor: primary }}
-          >
-            2
-          </span>
+          <StepBadge step={2} size="md" theme={theme} />
           <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
             {page.whereFit.title}
           </h2>
@@ -237,14 +236,17 @@ function IntroductionI1View({
         </p>
 
         {/* Flow Cards Container */}
-        <div className="flex flex-col lg:flex-row items-center gap-2">
+        <div className="flex flex-col min-[1600px]:flex-row items-center gap-2">
           {page.whereFit.flowCards.map((card, index: number) => {
             const IconComponent = getIcon(card.icon);
             return (
               <React.Fragment key={index}>
-                <div
-                  className={`flex-1 w-full rounded-2xl p-4 text-center space-y-2 border-2 ${
-                    card.highlight ? 'shadow-sm' : ''
+                <CardSurface
+                  theme={theme}
+                  elevation="dashboard"
+                  hoverable={false}
+                  className={`flex-1 w-full text-center space-y-2 p-4 border-2 ${
+                    card.highlight ? 'ring-2 ring-offset-2' : ''
                   }`}
                   style={
                     card.highlight
@@ -271,11 +273,11 @@ function IntroductionI1View({
                   <p className="text-xs leading-tight" style={{ color: getThemeColor(theme, 'gray', 500) }}>
                     {card.subtitle}
                   </p>
-                </div>
+                </CardSurface>
                 {index < page.whereFit.flowCards.length - 1 && (
                   <div className="flex items-center justify-center text-lg" style={{ color: primary }}>
-                    <ArrowRight className="hidden lg:block h-5 w-5" />
-                    <div className="block lg:hidden">
+                    <ArrowRight className="hidden min-[1600px]:block h-5 w-5" />
+                    <div className="block min-[1600px]:hidden">
                       <ArrowRight className="h-5 w-5 rotate-90" />
                     </div>
                   </div>
@@ -289,12 +291,7 @@ function IntroductionI1View({
       {/* SECTION 3: THE SOLUTION */}
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow-md"
-            style={{ backgroundColor: primary }}
-          >
-            3
-          </span>
+          <StepBadge step={3} size="md" theme={theme} />
           <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
             {page.solution.title}
           </h2>
@@ -303,33 +300,23 @@ function IntroductionI1View({
           {page.solution.description}
         </p>
 
-        {/* Code Editor Box */}
-        <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-800">
-          <div className="bg-slate-900/90 px-5 py-3 flex items-center justify-between border-b border-slate-800 dark:bg-slate-950">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-rose-500" />
-              <span className="w-3 h-3 rounded-full bg-amber-500" />
-              <span className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span className="text-slate-300 font-bold text-xs ml-2">{page.solution.code.language}</span>
-            </div>
-          </div>
-          <div className="bg-[#0B132B] dark:bg-slate-950 p-5 overflow-x-auto">
+        {/* Code Editor Box with TerminalWindow primitive */}
+        <TerminalWindow title={page.solution.code.language} copySource={page.solution.code.code} theme={theme}>
+          <div
+            className="p-5 overflow-x-auto"
+            style={{ backgroundColor: getThemeColor(theme, 'slate', 950) }}
+          >
             <pre className="font-mono text-sm leading-relaxed text-slate-200">
               <code>{page.solution.code.code}</code>
             </pre>
           </div>
-        </div>
+        </TerminalWindow>
       </section>
 
       {/* SECTION 4: WHERE IS IT USED? */}
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow-md"
-            style={{ backgroundColor: primary }}
-          >
-            4
-          </span>
+          <StepBadge step={4} size="md" theme={theme} />
           <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
             {page.whereUsed.title}
           </h2>
@@ -338,18 +325,20 @@ function IntroductionI1View({
           {page.whereUsed.description}
         </p>
 
-        {/* Use Cases Grid */}
+        {/* Use Cases Grid with CardSurface */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {page.whereUsed.useCases.map((useCase, index: number) => {
             const IconComponent = getIcon(useCase.icon);
             return (
-              <div
+              <CardSurface
                 key={index}
-                className="rounded-2xl p-6 text-center space-y-3 border shadow-sm"
+                hoverable={false}
+                theme={theme}
+                className="p-6 text-center space-y-3"
                 style={
                   useCase.highlight
                     ? { backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '33') }
-                    : { backgroundColor: 'white', borderColor: getThemeColor(theme, 'gray', 200) }
+                    : undefined
                 }
               >
                 <div
@@ -364,7 +353,7 @@ function IntroductionI1View({
                 <p className="text-sm" style={{ color: getThemeColor(theme, 'gray', 500) }}>
                   {useCase.description}
                 </p>
-              </div>
+              </CardSurface>
             );
           })}
         </div>
@@ -373,12 +362,7 @@ function IntroductionI1View({
       {/* SECTION 5: WHAT WILL YOU LEARN? (ROADMAP) */}
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow-md"
-            style={{ backgroundColor: primary }}
-          >
-            5
-          </span>
+          <StepBadge step={5} size="md" theme={theme} />
           <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
             {page.roadmap.title}
           </h2>
@@ -388,7 +372,7 @@ function IntroductionI1View({
         </p>
 
         {/* Roadmap Steps Flow */}
-        <div className="flex flex-col lg:flex-row items-center gap-2 overflow-x-auto">
+        <div className="flex flex-col min-[1600px]:flex-row items-center gap-2">
           {page.roadmap.steps.map((step, index: number) => (
             <React.Fragment key={index}>
               <div className="flex-1 w-full bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-center space-y-2">
@@ -407,8 +391,8 @@ function IntroductionI1View({
               </div>
               {index < page.roadmap.steps.length - 1 && (
                 <div className="flex items-center justify-center" style={{ color: primary }}>
-                  <ArrowRight className="hidden lg:block h-4 w-4" />
-                  <div className="block lg:hidden">
+                  <ArrowRight className="hidden min-[1600px]:block h-4 w-4" />
+                  <div className="block min-[1600px]:hidden">
                     <ArrowRight className="h-4 w-4 rotate-90" />
                   </div>
                 </div>
@@ -421,26 +405,22 @@ function IntroductionI1View({
       {/* SECTION 6: WHY THIS MATTERS */}
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-          <span
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold text-sm shadow-md"
-            style={{ backgroundColor: primary }}
-          >
-            6
-          </span>
+          <StepBadge step={6} size="md" theme={theme} />
           <h2 className="text-xl sm:text-2xl font-bold" style={{ color: secondary }}>
             {page.whyMatters.title}
           </h2>
         </div>
 
-        {/* Benefits Grid */}
+        {/* Benefits Grid with CardSurface */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {page.whyMatters.benefits.map((benefit, index: number) => {
             const IconComponent = getIcon(benefit.icon);
             return (
-              <div
+              <CardSurface
                 key={index}
-                className="rounded-xl border p-5 text-center space-y-3 shadow-sm hover:-translate-y-0.5 transition"
-                style={{ backgroundColor: 'white', borderColor: getThemeColor(theme, 'gray', 200) }}
+                hoverable={false}
+                theme={theme}
+                className="p-5 text-center space-y-3"
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center mx-auto"
@@ -454,28 +434,23 @@ function IntroductionI1View({
                 <p className="text-sm" style={{ color: getThemeColor(theme, 'gray', 500) }}>
                   {benefit.subtitle}
                 </p>
-              </div>
+              </CardSurface>
             );
           })}
         </div>
       </section>
 
-      {/* KEY TAKEAWAY */}
-      <section
-        className="rounded-xl border p-6 relative overflow-hidden"
-        style={{ backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }}
+      {/* KEY TAKEAWAY with CalloutBanner primitive */}
+      <CalloutBanner
+        variant="takeaway"
+        theme={theme}
+        title="Key Takeaway"
+        className="rounded-xl p-6"
       >
-        <div className="flex items-center gap-3 mb-3">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-white">
-            <Star className="h-4 w-4 fill-current" />
-          </span>
-          <h2 className="text-lg font-extrabold text-emerald-700">Key Takeaway</h2>
-        </div>
         <p className="text-base leading-relaxed" style={{ color: secondary }}>
           {page.keyTakeaway}
         </p>
-        <Lightbulb className="absolute bottom-4 right-6 h-12 w-12 text-emerald-400 opacity-40" />
-      </section>
-    </article>
+      </CalloutBanner>
+    </BlockShell>
   );
 }

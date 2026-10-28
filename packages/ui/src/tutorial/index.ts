@@ -4,6 +4,8 @@
  */
 
 export * from './types';
+export * from './theme-utils';
+export * from './primitives';
 export * from './TutorialRenderer';
 export * from './TutorialBlockRenderer';
 

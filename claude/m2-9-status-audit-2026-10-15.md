@@ -1125,8 +1125,8 @@ ADMIN_JWT_SECRET: NOT LOADED in current PowerShell session
 
 **Configuration Source**: `.env.local` file (HEAD f4a4a14471317da6fadb79abf28b5a1b3b0c4a83)
 ```bash
-JWT_SECRET="a53ce3b12a7ad0c7a93f08f101090b009b87dc775c0199ab74da94f2beb6b6a5ec214e4f9fcbd402688329fded49509e960e494f47c0354b2e0402352584c26c"
-ADMIN_JWT_SECRET="8bb477946b350ff8e45aabab534305fdd0df4bc404d0dc6d967c64aec81f089d92712f3be7929126906d273348da69c2c4ac63bbaab70c8b5a8b48bfb4961a2a"
+JWT_SECRET="[REDACTED_ROTATED]"
+ADMIN_JWT_SECRET="[REDACTED_ROTATED]"
 ```
 
 **FastAPI JWT Config** (`services/project-ai/app/auth/config.py:27-51`):

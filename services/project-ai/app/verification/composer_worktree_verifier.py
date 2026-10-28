@@ -158,6 +158,12 @@ def _sha256_file(path: Path) -> Optional[str]:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def compute_composer_evidence_hash(evidence_payload: Dict[str, Any]) -> str:
+    """Deterministically serialize and hash a Composer verification evidence payload."""
+    raw_payload = json.dumps(evidence_payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw_payload.encode("utf-8")).hexdigest()
+
+
 def _pnpm_command() -> str:
     return "pnpm.cmd" if os.name == "nt" else "pnpm"
 
@@ -410,7 +416,7 @@ async def verify_composer_in_worktree(
     block_version: str,
     candidate_hash: str,
     manifest_hash: str,
-    timeout_seconds: int = 180
+    timeout_seconds: int = 600
 ) -> Dict[str, Any]:
     """
     Execute full Composer verification on an isolated git worktree checked out at commit_sha.
@@ -470,7 +476,7 @@ async def verify_composer_in_worktree(
         # Step 3: Wait for preview server to be responsive
         import urllib.request
         server_ready = False
-        health_deadline = time.time() + 45
+        health_deadline = time.time() + 90
         target_check_url = f"{preview_url}/tools/tutorial-page-content"
 
         while time.time() < health_deadline:
@@ -491,24 +497,38 @@ async def verify_composer_in_worktree(
 
         logger.info(f"Preview server ready at {preview_url}. Launching Playwright browser verification...")
 
-        # Step 4: Run Playwright script
-        script_content = _generate_playwright_script(
-            preview_url=preview_url,
-            block_family=block_family,
-            block_version=block_version,
-            screenshot_path=screenshot_path
-        )
-        scripts_dir = workspace_root / ".evidence" / "scripts"
-        scripts_dir.mkdir(parents=True, exist_ok=True)
-        runner_script_path = scripts_dir / f"verify_composer_{uuid4().hex[:8]}.js"
-        runner_script_path.write_text(script_content, encoding="utf-8")
+        # Step 4: Execute versioned Node runner from inside the detached worktree
+        runner_script_in_worktree = worktree_path / "scripts" / "verification" / "composer-worktree-runner.cjs"
+        if not runner_script_in_worktree.exists():
+            return {
+                "status": "FAIL",
+                "gate_id": "composer",
+                "passed": False,
+                "verified_commit": commit_sha,
+                "candidate_hash": candidate_hash,
+                "manifest_hash": manifest_hash,
+                "reason": "Missing versioned verification runner in placed commit worktree: scripts/verification/composer-worktree-runner.cjs",
+                "findings": ["scripts/verification/composer-worktree-runner.cjs not found in placed commit worktree. Failing closed without copying from live workspace."],
+                "evidence_ids": [],
+                "evidence_hash": "",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+
+        runner_script_path = runner_script_in_worktree
 
         node_env = os.environ.copy()
-        node_env["NODE_PATH"] = str(workspace_root / "node_modules")
-        node_cmd = ["node", str(runner_script_path)]
+        node_env["NODE_PATH"] = f"{worktree_path / 'node_modules'}{os.pathsep}{worktree_path / 'apps' / 'skillhubcore-admin' / 'node_modules'}"
+        node_cmd = [
+            "node",
+            str(runner_script_in_worktree),
+            "--preview-url", preview_url,
+            "--block-family", block_family,
+            "--block-version", block_version,
+            "--screenshot", str(screenshot_path)
+        ]
         playwright_res = subprocess.run(
             node_cmd,
-            cwd=str(workspace_root),
+            cwd=str(worktree_path),
             env=node_env,
             capture_output=True,
             text=True,
@@ -536,8 +556,25 @@ async def verify_composer_in_worktree(
                 "dropdown_registered": False,
                 "rendered_dom": False,
                 "error_message": f"Playwright runner produced no parseable JSON output. Stdout: {stdout}. Stderr: {stderr}",
-                "console_errors": [stderr] if stderr else []
+                "console_errors": [stderr] if stderr else [],
+                "accessibility": {
+                    "passed": False,
+                    "violations_count": 1,
+                    "violations": [{"id": "runner-output-unparseable", "impact": "critical", "description": "No parseable JSON from runner"}]
+                },
+                "modality_checks": {}
             }
+
+        # Accessibility and Modality evaluation
+        a11y = parsed_result.get("accessibility") or {}
+        a11y_violations = a11y.get("violations_count", 0)
+        a11y_passed = bool(a11y.get("passed", False))
+
+        modality = parsed_result.get("modality_checks") or {}
+        failed_modalities = [
+            mod_name for mod_name, mod_data in modality.items()
+            if isinstance(mod_data, dict) and mod_data.get("status") == "FAIL"
+        ]
 
         passed = bool(parsed_result.get("passed", False))
         findings: List[str] = []
@@ -552,21 +589,46 @@ async def verify_composer_in_worktree(
         else:
             findings.append(f"Preview Pane failed to render DOM attributes for {block_family} {block_version}")
 
+        # Fail closed on accessibility audit failure or missing evidence
+        if not a11y or "violations_count" not in a11y:
+            passed = False
+            findings.append("Accessibility verification evidence is missing from runner output")
+        elif a11y_violations > 0 or not a11y_passed:
+            passed = False
+            findings.append(f"Axe accessibility audit failed with {a11y_violations} WCAG violation(s)")
+            for v in a11y.get("violations", [])[:5]:
+                findings.append(f"  - [{v.get('id')}] ({v.get('impact')}): {v.get('help')} ({v.get('helpUrl')})")
+        else:
+            findings.append(f"Axe accessibility audit passed with 0 violations ({a11y.get('passes_count', 0)} rules verified)")
+
+        # Fail closed on applicable modality check failures
+        if failed_modalities:
+            passed = False
+            findings.append(f"Modality checks failed: {', '.join(failed_modalities)}")
+        else:
+            passing_modalities = [
+                f"{k}: {v.get('status')}" for k, v in modality.items() if isinstance(v, dict)
+            ]
+            if passing_modalities:
+                findings.append(f"Modality checks passed ({'; '.join(passing_modalities)})")
+
         console_errors = parsed_result.get("console_errors", [])
         if console_errors:
             findings.append(f"Console errors detected ({len(console_errors)}): {'; '.join(console_errors[:3])}")
 
-        # Compute deterministic evidence hash from verification result
+        # Compute deterministic evidence hash including accessibility and modality results
         screenshot_hash = _sha256_file(screenshot_path)
         evidence_payload = {
             "verification": parsed_result,
+            "accessibility": a11y,
+            "modality_checks": modality,
+            "browser_metadata": parsed_result.get("browser_metadata"),
             "verified_commit": commit_sha,
             "candidate_hash": candidate_hash,
             "manifest_hash": manifest_hash,
             "screenshot_sha256": screenshot_hash,
         }
-        raw_payload = json.dumps(evidence_payload, sort_keys=True, separators=(",", ":"))
-        evidence_hash = hashlib.sha256(raw_payload.encode("utf-8")).hexdigest()
+        evidence_hash = compute_composer_evidence_hash(evidence_payload)
         evidence_id = f"composer-ev-{uuid4().hex[:12]}"
 
         duration_ms = int((time.time() - start_time) * 1000)
@@ -579,10 +641,11 @@ async def verify_composer_in_worktree(
             "candidate_hash": candidate_hash,
             "manifest_hash": manifest_hash,
             "evidence_hash": evidence_hash,
+            "evidence_payload": evidence_payload,
             "evidence_ids": [evidence_id],
             "reason": (
-                f"Composer verification passed on isolated preview: registered in dropdown, rendered in Preview Pane with 0 console errors"
-                if passed else (parsed_result.get("error_message") or "Composer verification failed")
+                f"Composer verification passed on isolated preview with 0 axe violations and 0 console errors"
+                if passed else (parsed_result.get("error_message") or "; ".join(findings))
             ),
             "findings": findings,
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -596,6 +659,9 @@ async def verify_composer_in_worktree(
                 "screenshot_sha256": screenshot_hash,
                 "dom_block_type": parsed_result.get("dom_block_type"),
                 "dom_block_version": parsed_result.get("dom_block_version"),
+                "accessibility": a11y,
+                "modality_checks": modality,
+                "browser_metadata": parsed_result.get("browser_metadata"),
             }
         }
 

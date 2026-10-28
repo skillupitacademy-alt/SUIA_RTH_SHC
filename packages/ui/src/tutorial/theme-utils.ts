@@ -145,6 +145,8 @@ export const DEFAULT_THEME: DomainTheme = {
   primary: TAILWIND_COLORS.blue[500],
   primaryDark: TAILWIND_COLORS.blue[800],
   secondary: TAILWIND_COLORS.slate[900],
+  accent1: '#0284C7', // Sky Cyan fallback
+  accent2: '#10B981', // Emerald Green fallback
   slate: TAILWIND_COLORS.slate,
   gray: TAILWIND_COLORS.gray,
   blue: TAILWIND_COLORS.blue,
@@ -153,3 +155,96 @@ export const DEFAULT_THEME: DomainTheme = {
   rose: TAILWIND_COLORS.rose,
   teal: TAILWIND_COLORS.teal,
 };
+
+/**
+ * SkillUp IT Academy (SUIA) Canonical 4-Color Brand Theme
+ */
+export const SUIA_BRAND_THEME: DomainTheme = {
+  primary: '#0B1B3D',      // Brand Base (Navy)
+  secondary: '#F54A8D',    // Text / Shell (Magenta Pink)
+  accent1: '#0284C7',      // Interactive / Info (Sky Cyan)
+  accent2: '#10B981',      // Success / Highlight (Emerald Green)
+  primaryDark: '#071228',
+  slate: TAILWIND_COLORS.slate,
+  gray: TAILWIND_COLORS.gray,
+  blue: TAILWIND_COLORS.blue,
+  emerald: TAILWIND_COLORS.emerald,
+  amber: TAILWIND_COLORS.amber,
+  rose: TAILWIND_COLORS.rose,
+  teal: TAILWIND_COLORS.teal,
+};
+
+/**
+ * Real Tutorial Hub (RTH) Canonical 4-Color Brand Theme
+ */
+export const RTH_BRAND_THEME: DomainTheme = {
+  primary: '#E11D48',      // Brand Base (Rose)
+  secondary: '#1E293B',    // Text / Shell (Slate Navy)
+  accent1: '#6366F1',      // Interactive / Info (Indigo Blue)
+  accent2: '#F59E0B',      // Success / Highlight (Amber Warm)
+  primaryDark: '#BE123C',
+  slate: TAILWIND_COLORS.slate,
+  gray: TAILWIND_COLORS.gray,
+  blue: TAILWIND_COLORS.blue,
+  emerald: TAILWIND_COLORS.emerald,
+  amber: TAILWIND_COLORS.amber,
+  rose: TAILWIND_COLORS.rose,
+  teal: TAILWIND_COLORS.teal,
+};
+
+/**
+ * Calculate relative luminance of a hex color according to WCAG 2.1
+ */
+export function getLuminance(hex: string): number {
+  const clean = hex.replace('#', '').slice(0, 6);
+  if (clean.length < 6) return 0.5;
+  const r = parseInt(clean.substring(0, 2), 16) / 255;
+  const g = parseInt(clean.substring(2, 4), 16) / 255;
+  const b = parseInt(clean.substring(4, 6), 16) / 255;
+
+  const a = [r, g, b].map((v) => {
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+
+  return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+}
+
+/**
+ * Calculate contrast ratio between two hex colors according to WCAG 2.1
+ */
+export function getContrastRatio(hex1: string, hex2: string): number {
+  const l1 = getLuminance(hex1);
+  const l2 = getLuminance(hex2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * Returns a high-contrast text color (>= 4.5:1) for badge or pill container
+ */
+export function getAccessibleBadgeColor(primaryHex: string, bgHex: string = '#ffffff'): string {
+  if (!primaryHex) return '#0f172a';
+  // Use 4.8:1 target to ensure margin of safety against slightly off-white backgrounds (e.g. #fffafc)
+  if (getContrastRatio(primaryHex, bgHex) >= 4.8) {
+    return primaryHex;
+  }
+  const clean = primaryHex.replace('#', '').slice(0, 6);
+  if (clean.length < 6) return '#0f172a';
+  let r = parseInt(clean.substring(0, 2), 16);
+  let g = parseInt(clean.substring(2, 4), 16);
+  let b = parseInt(clean.substring(4, 6), 16);
+
+  for (let step = 0; step < 10; step++) {
+    r = Math.floor(r * 0.85);
+    g = Math.floor(g * 0.85);
+    b = Math.floor(b * 0.85);
+    const candidate = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    if (getContrastRatio(candidate, bgHex) >= 4.8) {
+      return candidate;
+    }
+  }
+
+  return '#0f172a';
+}
+

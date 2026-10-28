@@ -13,7 +13,7 @@ import type {
   DomainTheme,
   TutorialBlockRuntimeContext,
 } from '../types';
-import { withAlpha, DEFAULT_THEME } from '../theme-utils';
+import { withAlpha, DEFAULT_THEME, getAccessibleBadgeColor } from '../theme-utils';
 import type {
   ObjectiveO2BlockData,
   ObjectiveO2ContentPayload,
@@ -156,6 +156,8 @@ function StageIcon({ stageKey }: { stageKey: ObjectiveO2StageKey }) {
   }
 }
 
+import { BlockShell, BlockHeader, CardSurface } from '../primitives';
+
 function ObjectiveO2View({
   block,
   theme,
@@ -184,56 +186,33 @@ function ObjectiveO2View({
   const stages = normalizeO2Stages(content);
 
   return (
-    <article
-      data-block-id={blockId}
-      data-block-type={blockType}
-      data-block-version={blockVersion}
-      className={`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors ${className}`.trim()}
-      style={{ color: secondary }}
+    <BlockShell
+      blockId={blockId}
+      blockType={blockType}
+      blockVersion={blockVersion}
+      theme={theme}
+      className={className}
     >
-      <header className="mb-6">
-        <div
-          className="text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-3"
-          style={{
-            color: primary,
-            backgroundColor: withAlpha(primary, '14'),
-          }}
-        >
-          <Target aria-hidden="true" className="h-4 w-4" />
-          <span>{eyebrow}</span>
-        </div>
-
-        <h2
-          className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight"
-          style={{ color: secondary }}
-        >
-          {title}
-        </h2>
-
-        <div
-          className="mb-4 mt-3 h-1 w-12 rounded-full"
-          style={{ backgroundColor: primary }}
-          aria-hidden="true"
-        />
-
-        <p
-          className="text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6"
-          style={{ color: `${secondary}dd` }}
-        >
-          {introduction}
-        </p>
-      </header>
+      <BlockHeader
+        eyebrow={eyebrow}
+        icon={Target}
+        title={title}
+        headingLevel="h2"
+        titleScale="hero"
+        introduction={introduction}
+        theme={theme}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 items-stretch">
         {stages.map((stage, index) => (
           <React.Fragment key={stage.key}>
-            <div
+            <CardSurface
               data-stage={stage.key}
-              className={`objective-stage objective-${stage.key} rounded-xl border p-4 sm:p-5 transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between`}
-              style={{
-                backgroundColor: withAlpha(primary, '08'),
-                borderColor: withAlpha(primary, '25'),
-              }}
+              theme={theme}
+              variant="accent"
+              elevation="dashboard"
+              hoverable={false}
+              className={`objective-stage objective-${stage.key} p-4 sm:p-5 flex flex-col justify-between`}
             >
               <div>
                 <div className="flex items-center justify-between gap-3 mb-3">
@@ -242,7 +221,7 @@ function ObjectiveO2View({
                       className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg font-mono text-xs sm:text-sm font-bold"
                       style={{
                         backgroundColor: withAlpha(primary, '18'),
-                        color: primary,
+                        color: getAccessibleBadgeColor(primary, withAlpha(primary, '18')),
                       }}
                       aria-hidden="true"
                     >
@@ -251,7 +230,7 @@ function ObjectiveO2View({
 
                     <h3
                       className="text-lg sm:text-xl font-bold tracking-tight"
-                      style={{ color: primary }}
+                      style={{ color: getAccessibleBadgeColor(primary) }}
                     >
                       {stage.label}
                     </h3>
@@ -301,7 +280,7 @@ function ObjectiveO2View({
                 ) : (
                   <p
                     className="text-xs sm:text-sm italic"
-                    style={{ color: `${secondary}99` }}
+                    style={{ color: `${secondary}dd` }}
                   >
                     No objectives specified for this stage.
                   </p>
@@ -313,7 +292,7 @@ function ObjectiveO2View({
                   className="mt-4 pt-3 border-t flex items-center justify-end gap-1.5 text-xs font-semibold uppercase tracking-wider"
                   style={{
                     borderColor: withAlpha(primary, '18'),
-                    color: primary,
+                    color: getAccessibleBadgeColor(primary),
                   }}
                   aria-hidden="true"
                 >
@@ -328,11 +307,11 @@ function ObjectiveO2View({
                   />
                 </div>
               )}
-            </div>
+            </CardSurface>
           </React.Fragment>
         ))}
       </div>
-    </article>
+    </BlockShell>
   );
 }
 

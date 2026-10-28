@@ -113,7 +113,7 @@ def _remove_isolated_worktree(workspace_root: Path, worktree_path: Path, linked:
 async def run_candidate_qualification_tests(
     candidate_id: str,
     files: List[Any],
-    timeout_seconds: int = 90
+    timeout_seconds: int = 240
 ) -> Dict[str, Any]:
     """
     Run automated Vitest test suite on candidate files in an isolated sandbox.
@@ -178,6 +178,120 @@ async def run_candidate_qualification_tests(
         for file in files
     ]
     runner_revision = _runner_revision()
+
+    # UBA Design & Accessibility Rule 1: Asymmetrical left borders prohibited
+    for comp in component_files:
+        comp_text = comp.content if isinstance(comp.content, str) else comp.content.decode('utf-8', errors='replace')
+        if re.search(r'\bborder-l(?:-[0-9]+|-[a-z]+|\s|"|\')', comp_text) or re.search(r'borderLeft(?:Width|Color)?\s*:', comp_text) or re.search(r'border-left\s*:', comp_text):
+            return {
+                "passed": False,
+                "status": "FAIL",
+                "detail": (
+                    f"Candidate component '{comp.filename}' violates UBA design standards: "
+                    "asymmetrical left-side borders (`border-l-*` or `border-left`) are strictly prohibited. "
+                    "Callouts and elevated cards must use symmetric perimeter borders with CardSurface or CalloutBanner."
+                ),
+                "evidence_id": f"test-evidence-{candidate_id}",
+                "evidence_hash": "",
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "runner_metadata": {
+                    "runner_revision": runner_revision,
+                    "qualification_inputs": qualification_inputs,
+                },
+            }
+
+        # UBA Accessibility Rule 2: Motion Safety (WCAG SC 2.3.3)
+        # Any hover transform translation must be guarded by motion-safe: AND accompanied by motion-reduce:transform-none
+        has_hover_translate = bool(re.search(r'hover:[-\w]*translate', comp_text))
+        if has_hover_translate and "CardSurface" not in comp_text:
+            has_motion_safe = not bool(re.search(r'(?<!motion-safe:)hover:[-\w]*translate', comp_text))
+            has_motion_reduce = "motion-reduce:transform-none" in comp_text or "motion-reduce:transition-none" in comp_text
+            if not (has_motion_safe and has_motion_reduce):
+                return {
+                    "passed": False,
+                    "status": "FAIL",
+                    "detail": (
+                        f"Candidate component '{comp.filename}' violates UBA motion safety standards (WCAG SC 2.3.3): "
+                        "hover translate movements must be prefixed with `motion-safe:` AND accompanied by `motion-reduce:transform-none` "
+                        "(or compose CardSurface with hoverable={true})."
+                    ),
+                    "evidence_id": f"test-evidence-{candidate_id}",
+                    "evidence_hash": "",
+                    "total_tests": 0,
+                    "passed_tests": 0,
+                    "failed_tests": 0,
+                    "runner_metadata": {
+                        "runner_revision": runner_revision,
+                        "qualification_inputs": qualification_inputs,
+                    },
+                }
+
+        # UBA Accessibility Rule 3: Keyboard semantics for interactive elements (WCAG SC 2.1.1, 4.1.2)
+        # Raw cursor-pointer on plain containers without CardSurface or tabIndex/role/onClick
+        if "cursor-pointer" in comp_text and "CardSurface" not in comp_text:
+            if not ("tabIndex" in comp_text or "role=" in comp_text or "onClick" in comp_text):
+                return {
+                    "passed": False,
+                    "status": "FAIL",
+                    "detail": (
+                        f"Candidate component '{comp.filename}' violates UBA keyboard semantics (WCAG SC 2.1.1, 4.1.2): "
+                        "`cursor-pointer` cannot be applied to static containers without keyboard accessibility. "
+                        "Compose CardSurface or provide tabIndex, role, and onKeyDown handlers."
+                    ),
+                    "evidence_id": f"test-evidence-{candidate_id}",
+                    "evidence_hash": "",
+                    "total_tests": 0,
+                    "passed_tests": 0,
+                    "failed_tests": 0,
+                    "runner_metadata": {
+                        "runner_revision": runner_revision,
+                        "qualification_inputs": qualification_inputs,
+                    },
+                }
+
+        # UBA Rule 4: Mandatory BlockShell Composition (prohibits hand-rolled raw <article>)
+        if "<article" in comp_text and "BlockShell" not in comp_text:
+            return {
+                "passed": False,
+                "status": "FAIL",
+                "detail": (
+                    f"Candidate component '{comp.filename}' violates UBA architecture standards: "
+                    "hand-rolling a raw `<article>` outer shell is prohibited. "
+                    "Candidates must compose the generic BlockShell primitive from '../primitives' or '@quiz/ui'."
+                ),
+                "evidence_id": f"test-evidence-{candidate_id}",
+                "evidence_hash": "",
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "runner_metadata": {
+                    "runner_revision": runner_revision,
+                    "qualification_inputs": qualification_inputs,
+                },
+            }
+
+        # UBA Rule 5: Buttons require visible focus state (WCAG SC 2.4.7)
+        if "<button" in comp_text and "focus" not in comp_text:
+            return {
+                "passed": False,
+                "status": "FAIL",
+                "detail": (
+                    f"Candidate component '{comp.filename}' violates UBA keyboard accessibility standards (WCAG SC 2.4.7): "
+                    "custom button elements must declare a visible focus ring (e.g. `focus:ring-2` or `focus-visible:ring-2`)."
+                ),
+                "evidence_id": f"test-evidence-{candidate_id}",
+                "evidence_hash": "",
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "runner_metadata": {
+                    "runner_revision": runner_revision,
+                    "qualification_inputs": qualification_inputs,
+                },
+            }
+
     written_files: List[Path] = []
     worktree_path: Optional[Path] = None
     linked_deps: List[Path] = []

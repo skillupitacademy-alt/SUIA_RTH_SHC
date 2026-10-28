@@ -2,6 +2,7 @@ import React from 'react';
 import { Target, Check } from 'lucide-react';
 import type { BlockComponentProps, DomainTheme, TutorialBlockRuntimeContext } from '../types';
 import { withAlpha, DEFAULT_THEME } from '../theme-utils';
+import { BlockShell, BlockHeader, CardSurface } from '../primitives';
 import type { ObjectiveO1BlockData } from '@quiz/types';
 
 export function ObjectiveBlock({
@@ -45,7 +46,7 @@ function ObjectiveO1View({
   // UBRC: Runtime context fallback
   const blockId = runtimeContext?.blockId ?? block.id;
   const blockType = runtimeContext?.blockType ?? 'objective';
-  const blockVersion = runtimeContext?.blockVersion ?? block.version;
+  const blockVersion = runtimeContext?.blockVersion ?? block.version ?? 'O1';
 
   const content = block.content;
   const eyebrow = content?.eyebrow ?? 'LEARNING OBJECTIVES';
@@ -54,57 +55,33 @@ function ObjectiveO1View({
   const objectives = content?.objectives ?? [];
 
   return (
-    <article
-      className={`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors ${className}`}
-      data-block-id={blockId}
-      data-block-type={blockType}
-      data-block-version={blockVersion}
-      style={{ color: secondary }}
+    <BlockShell
+      blockId={blockId}
+      blockType={blockType}
+      blockVersion={blockVersion}
+      theme={theme}
+      className={className}
     >
-      <header className="mb-6">
-        {eyebrow && (
-          <div 
-            className="mb-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
-            style={{ 
-              color: primary, 
-              backgroundColor: withAlpha(primary, '14') 
-            }}
-          >
-            <Target className="h-4 w-4" />
-            <span>{eyebrow}</span>
-          </div>
-        )}
-        {title && (
-          <h2 
-            className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight"
-            style={{ color: secondary }}
-          >
-            {title}
-          </h2>
-        )}
-        <div 
-          className="mb-4 mt-3 h-1 w-12 rounded-full" 
-          style={{ backgroundColor: primary }} 
-        />
-        {introduction && (
-          <p 
-            className="text-base sm:text-lg font-medium leading-[1.7] max-w-3xl"
-            style={{ color: `${secondary}dd` }}
-          >
-            {introduction}
-          </p>
-        )}
-      </header>
+      <BlockHeader
+        eyebrow={eyebrow}
+        icon={Target}
+        title={title}
+        headingLevel="h2"
+        titleScale="hero"
+        introduction={introduction}
+        theme={theme}
+      />
 
       <ul className="grid grid-cols-1 md:grid-cols-2 gap-4" role="list">
         {objectives.map((obj, index) => (
-          <li 
+          <CardSurface
+            as="li"
             key={obj.id ?? index}
-            className="flex items-start gap-3.5 p-4 sm:p-5 rounded-xl border transition-all duration-200 shadow-sm hover:shadow-md"
-            style={{ 
-              backgroundColor: withAlpha(primary, '08'),
-              borderColor: withAlpha(primary, '25') 
-            }}
+            theme={theme}
+            variant="accent"
+            elevation="dashboard"
+            hoverable={false}
+            className="flex items-start gap-3.5 p-4 sm:p-5"
           >
             <span
               className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg mt-0.5"
@@ -122,10 +99,10 @@ function ObjectiveO1View({
             >
               {obj.text}
             </span>
-          </li>
+          </CardSurface>
         ))}
       </ul>
-    </article>
+    </BlockShell>
   );
 }
 

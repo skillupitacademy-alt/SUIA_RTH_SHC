@@ -21,6 +21,10 @@ import {
 } from '@quiz/types';
 import { PROJECT_LLM_REPOSITORY_INTELLIGENCE } from './projectLlmRepositoryIntelligence';
 import { REFERENCE_PATTERNS } from './projectLlmReferencePatterns';
+import {
+  DESIGN_SYSTEM_CONTRACT_MARKDOWN,
+  DESIGN_SYSTEM_PARAMETER_COUNT,
+} from './designSystemContract';
 
 /**
  * Validate repository intelligence integrity before brief generation.
@@ -132,9 +136,9 @@ export function buildConstraints(): CreationBriefConstraint[] {
     {
       id: 'E-004',
       severity: 'REQUIRED',
-      title: 'UBRC Compatibility',
+      title: 'UBRC & UBA Look-and-Feel Standards',
       instruction:
-        'Block must implement UBRC DOM identity attributes (data-block-type, data-block-version, data-block-id).',
+        `Block must implement UBRC DOM identity attributes (data-block-type, data-block-version, data-block-id) and satisfy the ${DESIGN_SYSTEM_PARAMETER_COUNT}-parameter Tutorial Design System Contract. Preserve the target family's own UI composition; use UBA primitives where their semantics fit. The contract covers typography, color, spacing, shape/elevation, components, layout, icons, interaction states, responsive behavior, accessibility, data/status conventions, and shared tokens. The block must remain inside its parent content boundary and avoid document/block horizontal overflow at 375, 640, 768, 1024, 1280, and 1536 CSS-pixel widths.`,
     },
     {
       id: 'E-005',
@@ -179,7 +183,7 @@ export function buildRuntimeRequirements(): string[] {
     'Block must consume existing runtime context passively via props only.',
     'Block must be compatible with TutorialDocument block rendering pipeline.',
     'Block must be routable by TutorialBlockRenderer version routing.',
-    'Block must not hard-code SkillUp or RealTutorialHub brand-specific runtime behavior.',
+    `Block must not hard-code SkillUp or RealTutorialHub brand-specific runtime behavior and must satisfy the ${DESIGN_SYSTEM_PARAMETER_COUNT}-parameter Tutorial Design System Contract with UBA 3-tier elevation and motion-safe guards.`,
   ];
 }
 
@@ -196,7 +200,7 @@ export function buildValidationChecklist(): string[] {
     '[ ] Block family identity preserved (familyId, versionId, familyName match corpus)',
     '[ ] Educational intent and pedagogical structure preserved',
     '[ ] Reference implementation patterns (I1, C1, D1) considered',
-    '[ ] UBRC DOM identity requirements accounted for',
+    `[ ] UBRC DOM identity and the ${DESIGN_SYSTEM_PARAMETER_COUNT}-parameter Tutorial Design System Contract are accounted for`,
     '[ ] No ILS API calls present',
     '[ ] No LSNB (navigation sidebar) infrastructure embedded',
     '[ ] No RSSB (reactive session state bridge) infrastructure embedded',
@@ -216,7 +220,7 @@ export function buildExternalAiWorkflow(): string[] {
     'Step 2: Acknowledge the target block family, version, and learning intent.',
     'Step 3: Study the reference implementation section — understand the patterns to follow.',
     'Step 4: Review all MANDATORY and REQUIRED constraints before proceeding.',
-    'Step 5: Create the React/TypeScript component, Vitest test, JSON schema, TypeScript schema, README, and block.integration.json.',
+    `Step 5: Apply the ${DESIGN_SYSTEM_PARAMETER_COUNT}-parameter Tutorial Design System Contract while preserving the target version's own UI composition, then create the React/TypeScript component, Vitest test, JSON schema, TypeScript schema, README, and block.integration.json.`,
     'Step 6: Use the supplied contract to make defaultPayload complete and schema-valid; an optional preview.html may support visual review.',
     'Step 7: Do not include or edit registry, renderer, Composer, shared type-union, navigation, status, API, or other platform files.',
     'Step 8: Verify all validation checklist items and deliver one portable ZIP package.',
@@ -316,6 +320,9 @@ export function buildPrompt(
   sections.push(`Family: ${request.targetFamilyId} — ${familyName}`);
   sections.push(`Version: ${request.targetVersionId}`);
   sections.push('Stage: PORTABLE_CANDIDATE_PACKAGE');
+  sections.push('---');
+
+  sections.push(DESIGN_SYSTEM_CONTRACT_MARKDOWN.trim());
   sections.push('---');
 
   // Objectives

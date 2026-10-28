@@ -387,7 +387,7 @@ export function TutorialLeftSidebar({ tree, activeUrl, activeNavigationNodeId, c
   return (
     <aside
       aria-label="Tutorial navigation"
-      className="sticky top-[71px] z-10 flex h-[calc(100dvh-71px)] max-h-[calc(100dvh-71px)] w-[404px] shrink-0 flex-col overflow-hidden border-r border-[#e5eaf1] bg-white text-[#071f63] shadow-sm"
+      className="fixed inset-x-0 bottom-0 left-0 top-[71px] z-30 flex h-[calc(100dvh-71px)] max-h-[calc(100dvh-71px)] w-[min(404px,calc(100vw-1rem))] flex-col overflow-hidden border-r border-[#e5eaf1] bg-white text-[#071f63] shadow-sm xl:sticky xl:top-[71px] xl:z-10 xl:w-[404px] xl:shrink-0"
       style={{
         top: '71px',
         height: 'calc(100dvh - 71px)',

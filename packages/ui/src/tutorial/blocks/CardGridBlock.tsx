@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ICardGridBlock, BlockComponentProps, TutorialBlock } from '../types';
 import { TutorialBlockRenderer } from '../TutorialBlockRenderer';
+import { CardSurface } from '../primitives';
 
 export function CardGridBlock({
   block,
@@ -46,9 +47,12 @@ export function CardGridBlock({
       {cards.map((card, cIdx) => {
         const cardBlocks = Array.isArray(card?.blocks) ? card.blocks : [];
         return (
-          <div
+          <CardSurface
             key={card.id || `card-${cIdx}`}
-            className="flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-sm"
+            theme={theme}
+            elevation="dashboard"
+            hoverable={false}
+            className="flex flex-col p-5"
           >
             {card.title && (
               <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-2 pb-1.5 border-b border-slate-100 dark:border-slate-800">
@@ -58,7 +62,7 @@ export function CardGridBlock({
             <div className="flex flex-col space-y-2 flex-1 min-w-0">
               {cardBlocks.map((childBlock, bIdx) => renderBlockItem(childBlock, cIdx, bIdx))}
             </div>
-          </div>
+          </CardSurface>
         );
       })}
     </div>

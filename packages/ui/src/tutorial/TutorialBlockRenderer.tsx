@@ -24,19 +24,38 @@ import { ObjectiveO1Block } from './blocks/ObjectiveO1Block';
 import { ObjectiveO2Block } from './blocks/ObjectiveO2Block';
 import { GENERATED_BLOCK_RENDERERS } from './generatedBlockRenderers';
 
+/**
+ * Deliberate polymorphic boundary for dynamic block rendering:
+ * Each versioned block component expects its specific typed payload (e.g. CodeC1Block,
+ * DefinitionD1Block). Because React component prop types are contravariant, a heterogeneous
+ * versioned dispatch dictionary requires this polymorphic prop generic at the router boundary.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type VersionedRenderer = React.ComponentType<BlockComponentProps<any>>;
-interface VersionedRendererEntry {
+export interface VersionedRendererEntry {
+  family: string;
+  version: string;
   component: VersionedRenderer;
   requiresTheme?: boolean;
 }
 
-const STATIC_VERSIONED_RENDERERS: Record<string, Record<string, VersionedRendererEntry>> = {
-  code: { C1: { component: CodeC1Block } },
-  definition: { D1: { component: DefinitionBlock } },
-  introduction: { I1: { component: IntroductionBlock, requiresTheme: true } },
-  summary: { S1: { component: SummaryBlock } },
-  objective: { O1: { component: ObjectiveO1Block }, O2: { component: ObjectiveO2Block } },
-};
+const CANONICAL_VERSIONED_RENDERERS: readonly VersionedRendererEntry[] = [
+  { family: 'code', version: 'C1', component: CodeC1Block },
+  { family: 'definition', version: 'D1', component: DefinitionBlock },
+  { family: 'introduction', version: 'I1', component: IntroductionBlock, requiresTheme: true },
+  { family: 'summary', version: 'S1', component: SummaryBlock },
+  { family: 'objective', version: 'O1', component: ObjectiveO1Block },
+  { family: 'objective', version: 'O2', component: ObjectiveO2Block },
+];
+
+/**
+ * Unified runtime block registry merging canonical and Project LLM-generated renderers
+ * into a single generic polymorphic resolution catalog.
+ */
+export const ALL_VERSIONED_RENDERERS: readonly VersionedRendererEntry[] = [
+  ...CANONICAL_VERSIONED_RENDERERS,
+  ...GENERATED_BLOCK_RENDERERS,
+];
 
 const DEFAULT_VERSION_BY_FAMILY: Record<string, string> = {
   definition: 'D1',
@@ -48,21 +67,20 @@ function getVersionedRenderer(block: TutorialBlock): VersionedRendererEntry | un
   const version = ('version' in block && block.version) || DEFAULT_VERSION_BY_FAMILY[family];
   if (!version) return undefined;
 
-  return STATIC_VERSIONED_RENDERERS[family]?.[version]
-    ?? GENERATED_BLOCK_RENDERERS.find((entry) => entry.family === family && entry.version === version);
+  return ALL_VERSIONED_RENDERERS.find(
+    (entry) => entry.family === family && entry.version === version
+  );
 }
 
 /** True when a family/version has a registered runtime component. */
 export function hasRegisteredBlockRenderer(family: string, version: string): boolean {
-  return Boolean(
-    STATIC_VERSIONED_RENDERERS[family]?.[version]
-    ?? GENERATED_BLOCK_RENDERERS.find((entry) => entry.family === family && entry.version === version)
+  return ALL_VERSIONED_RENDERERS.some(
+    (entry) => entry.family === family && entry.version === version
   );
 }
 
 function isVersionedFamily(family: string): boolean {
-  return family in STATIC_VERSIONED_RENDERERS
-    || GENERATED_BLOCK_RENDERERS.some((entry) => entry.family === family);
+  return ALL_VERSIONED_RENDERERS.some((entry) => entry.family === family);
 }
 
 function UnknownBlockState({ type }: { type: string }) {
