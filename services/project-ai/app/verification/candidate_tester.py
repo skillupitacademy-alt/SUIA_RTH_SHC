@@ -113,7 +113,7 @@ def _remove_isolated_worktree(workspace_root: Path, worktree_path: Path, linked:
 async def run_candidate_qualification_tests(
     candidate_id: str,
     files: List[Any],
-    timeout_seconds: int = 90
+    timeout_seconds: int = 240
 ) -> Dict[str, Any]:
     """
     Run automated Vitest test suite on candidate files in an isolated sandbox.
