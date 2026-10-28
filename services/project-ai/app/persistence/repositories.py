@@ -717,8 +717,23 @@ class PostgresManifestRepository:
         
         if manifest is not None:
             # Always verify hash for manifest integrity
-            if not manifest.verify_hash():
-                # Check legacy dictionary format if present
+            if manifest.is_canonical_revision_shape():
+                # Canonical revision-safe records must verify strictly with zero legacy fallback
+                if not manifest.verify_hash():
+                    try:
+                        from app.api.routes.candidate import model_to_manifest
+                        from app.models.candidate import compute_canonical_manifest_hash
+                        computed_hash = compute_canonical_manifest_hash(model_to_manifest(manifest))
+                    except Exception:
+                        computed_hash = "CANONICAL_CONVERSION_FAILED"
+                    raise HashMismatchError(
+                        "Manifest",
+                        manifest_id,
+                        manifest.manifest_hash,
+                        computed_hash
+                    )
+            else:
+                # Historical legacy records only
                 manifest_data = {
                     "decision": manifest.decision,
                     "target_path": manifest.target_path,
@@ -727,14 +742,9 @@ class PostgresManifestRepository:
                     "required_changes": manifest.required_changes,
                     "evidence_ids": manifest.evidence_ids,
                 }
-                if not manifest.verify_hash(manifest_data):
-                    try:
-                        from app.api.routes.candidate import model_to_manifest
-                        from app.models.candidate import compute_canonical_manifest_hash
-                        computed_hash = compute_canonical_manifest_hash(model_to_manifest(manifest))
-                    except Exception:
-                        canonical = json.dumps(manifest_data, sort_keys=True, ensure_ascii=False)
-                        computed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+                if not manifest.verify_hash(manifest_data) and not manifest.verify_hash():
+                    canonical = json.dumps(manifest_data, sort_keys=True, ensure_ascii=False)
+                    computed_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
                     raise HashMismatchError(
                         "Manifest",
                         manifest_id,

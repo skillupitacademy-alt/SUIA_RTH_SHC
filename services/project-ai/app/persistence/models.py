@@ -439,23 +439,32 @@ class ManifestModel(Base):
         Index("idx_manifest_decision", "decision"),
     )
     
+    def is_canonical_revision_shape(self) -> bool:
+        """Check if record contains canonical revision-safe manifest metadata."""
+        if not isinstance(self.required_changes, dict):
+            return False
+        canonical_keys = {"operations", "identityStatus", "updateEligibility", "referenceSummary", "revisionStrategy"}
+        return any(k in self.required_changes for k in canonical_keys)
+
     def verify_hash(self, manifest_data: Optional[Dict[str, Any]] = None) -> bool:
         """
         Verify manifest data matches stored hash.
-        Supports canonical revision-safe manifests and historical legacy formats.
+        Enforces strict fail-closed canonical verification for revision-safe manifests;
+        legacy fallbacks are strictly restricted to identifiable historical record shapes.
         """
-        # 1. Canonical revision-safe manifest verification
-        try:
-            from app.api.routes.candidate import model_to_manifest
-            from app.models.candidate import compute_canonical_manifest_hash
-            domain_manifest = model_to_manifest(self)
-            canonical_hash = compute_canonical_manifest_hash(domain_manifest)
-            if self.manifest_hash == canonical_hash:
-                return True
-        except Exception:
-            pass
+        # 1. Canonical revision-safe manifests: strict fail-closed verification (zero legacy fallback)
+        if self.is_canonical_revision_shape():
+            try:
+                from app.api.routes.candidate import model_to_manifest
+                from app.models.candidate import compute_canonical_manifest_hash
+                domain_manifest = model_to_manifest(self)
+                canonical_hash = compute_canonical_manifest_hash(domain_manifest)
+                return self.manifest_hash == canonical_hash
+            except Exception:
+                # Strictly reject on canonical mapping or deserialization errors
+                return False
 
-        # 2. Legacy caller-provided manifest_data format (FEAT-004 integration tests)
+        # 2. Historical legacy records only: caller-provided manifest_data format
         if manifest_data is not None:
             canonical = json.dumps(manifest_data, sort_keys=True, ensure_ascii=False)
             if self.manifest_hash == hashlib.sha256(canonical.encode("utf-8")).hexdigest():
@@ -464,7 +473,7 @@ class ManifestModel(Base):
             if self.manifest_hash == hashlib.sha256(canonical_compact.encode("utf-8")).hexdigest():
                 return True
 
-        # Candidate placement manifest format
+        # 3. Historical legacy records only: pre-revision Candidate placement format
         text_changes = []
         file_ops = []
         if isinstance(self.required_changes, dict):
