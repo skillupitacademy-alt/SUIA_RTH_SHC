@@ -74,6 +74,8 @@ export default function IntegrationCertificationPage() {
   const [isVerifyingComposer, setIsVerifyingComposer] = useState(false);
   const [isApprovingFinal, setIsApprovingFinal] = useState(false);
   const [isSuperseding, setIsSuperseding] = useState(false);
+  const [proposedNextVersion, setProposedNextVersion] = useState<string | null>(null);
+  const [isCreatingReplacement, setIsCreatingReplacement] = useState(false);
   const [composerVerification, setComposerVerification] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -170,6 +172,44 @@ export default function IntegrationCertificationPage() {
       .then(setManifest)
       .catch(() => setManifest(null));
   }, [effectiveCandidateId]);
+
+  useEffect(() => {
+    if (manifest && (manifest.decision === 'VERSION_IN_USE' || manifest.updateEligibility === 'VERSION_IN_USE')) {
+      projectLlmClient
+        .getNextVersion(manifest.blockFamily)
+        .then((res) => setProposedNextVersion(res.proposedNextVersion))
+        .catch(() => setProposedNextVersion(null));
+    } else {
+      setProposedNextVersion(null);
+    }
+  }, [manifest]);
+
+  const handleCreateReplacementWorkflow = async () => {
+    if (!manifest) return;
+    const nextVer = proposedNextVersion || 'next sequential version';
+    const confirmed = window.confirm(
+      'Confirm creation of replacement workflow targeting ' + manifest.blockFamily.toUpperCase() + ' ' + nextVer + '?'
+    );
+    if (!confirmed) return;
+
+    setIsCreatingReplacement(true);
+    setError(null);
+    try {
+      const newWorkflow = await projectLlmClient.createWorkflow({
+        targetFamily: manifest.blockFamily.toLowerCase(),
+        targetVersion: nextVer,
+      });
+      setLiveStatusAnnouncement(
+        'Replacement workflow created: ' + newWorkflow.workflow_id + ' targeting ' + manifest.blockFamily.toUpperCase() + ' ' + nextVer
+      );
+      router.push('/tools/project-llm/candidate-upload?workflowId=' + newWorkflow.workflow_id);
+    } catch (err) {
+      const msg = err instanceof ProjectLlmError ? err.message : 'Unable to create replacement workflow.';
+      setError(msg);
+    } finally {
+      setIsCreatingReplacement(false);
+    }
+  };
 
   const handleRetry = () => {
     fetchCertificationData();
@@ -858,10 +898,26 @@ export default function IntegrationCertificationPage() {
                       <p className="text-xs font-semibold text-slate-500">Stored candidate</p>
                       <p className="mt-1 break-all font-mono text-xs text-slate-800">{effectiveCandidateId}</p>
                       {manifest ? (
-                        <div className="mt-2 space-y-1 text-xs text-slate-600">
-                          <p>
-                            <span className="font-semibold">Decision:</span> {manifest.decision}
-                          </p>
+                        <div className="mt-2 space-y-1.5 text-xs text-slate-600">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">Decision:</span>
+                            {manifest.decision === 'VERSION_IN_USE' || manifest.updateEligibility === 'VERSION_IN_USE' ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                                <AlertCircle size={12} className="text-amber-700" />
+                                VERSION IN USE (In-Place Update Prohibited)
+                              </span>
+                            ) : manifest.decision === 'UPDATE' || manifest.revisionStrategy === 'UPDATE_IN_PLACE' ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-900 border border-blue-300">
+                                <RefreshCw size={12} className="text-blue-700" />
+                                UPDATE IN PLACE
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                                <CheckCircle2 size={12} className="text-emerald-700" />
+                                ADD NEW VERSION
+                              </span>
+                            )}
+                          </div>
                           <p>
                             <span className="font-semibold">Target:</span>{' '}
                             <span className="font-mono">{manifest.targetPath}</span>
@@ -907,6 +963,8 @@ export default function IntegrationCertificationPage() {
                       )}
 
                       {manifest &&
+                        manifest.decision !== 'VERSION_IN_USE' &&
+                        manifest.updateEligibility !== 'VERSION_IN_USE' &&
                         (certificationData?.state === 'AWAITING_IMPLEMENTATION_APPROVAL' ||
                           certificationData?.state === 'INTEGRATION_PLANNED') && (
                           <button
@@ -926,6 +984,8 @@ export default function IntegrationCertificationPage() {
                         disabled={
                           !manifest ||
                           manifest.decision === 'REJECT' ||
+                          manifest.decision === 'VERSION_IN_USE' ||
+                          manifest.updateEligibility === 'VERSION_IN_USE' ||
                           isPlanning ||
                           isExecuting ||
                           isApproving ||
@@ -936,6 +996,8 @@ export default function IntegrationCertificationPage() {
                             ? 'Generate a placement manifest first'
                             : manifest.decision === 'REJECT'
                             ? 'Rejected manifests cannot be executed'
+                            : manifest.decision === 'VERSION_IN_USE'
+                            ? 'Version is referenced by tutorial content: in-place placement is prohibited'
                             : certificationData?.state !== 'IMPLEMENTING'
                             ? 'Placement execution requires approval. Click "Approve Placement Plan" to advance workflow to IMPLEMENTING state.'
                             : 'Execute approved placement in isolated worktree'
@@ -961,6 +1023,41 @@ export default function IntegrationCertificationPage() {
                   <p className="mt-3 text-xs text-slate-500">
                     Execution is fail-closed: the backend verifies the candidate hash, manifest hash, workflow binding, and an independent approval before it creates a worktree.
                   </p>
+
+                  {manifest && (manifest.decision === 'VERSION_IN_USE' || manifest.updateEligibility === 'VERSION_IN_USE') && (
+                    <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50/90 p-4 shadow-2xs">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                            <AlertCircle size={15} className="text-amber-700" />
+                            Revision Safety Policy: Version In Active Use
+                          </h4>
+                          <p className="text-xs text-amber-800">
+                            Target version <span className="font-mono font-bold">{manifest.blockVersion}</span> is currently referenced by{' '}
+                            <span className="font-bold">{manifest.referenceSummary?.totalCount ?? 'multiple'}</span> tutorial content section(s)
+                            ({manifest.referenceSummary?.draftCount ?? 0} draft, {manifest.referenceSummary?.publishedCount ?? 0} published).
+                          </p>
+                          {manifest.referenceSummary?.sampleSectionIds && manifest.referenceSummary.sampleSectionIds.length > 0 && (
+                            <p className="text-[11px] text-amber-700 font-mono">
+                              Sample affected IDs: {manifest.referenceSummary.sampleSectionIds.slice(0, 5).join(', ')}
+                            </p>
+                          )}
+                          <p className="text-xs text-amber-900 font-medium pt-1">
+                            In-place update is prohibited to protect authored tutorial content. Gate 2 approval and execution are blocked.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleCreateReplacementWorkflow}
+                          disabled={isCreatingReplacement || !proposedNextVersion}
+                          className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-amber-700 hover:bg-amber-800 text-white px-3.5 py-2 text-xs font-bold shadow-sm disabled:opacity-50"
+                        >
+                          <RefreshCw size={13} className={isCreatingReplacement ? 'animate-spin' : ''} />
+                          {isCreatingReplacement ? 'Creating...' : ('Create Workflow with ' + (proposedNextVersion || 'Next Version'))}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -990,6 +1087,38 @@ export default function IntegrationCertificationPage() {
                           ))}
                       </div>
                     </div>
+
+                    {/* UPDATE OPERATIONS */}
+                    {manifest.fileOperations.some((op) => op.action === 'UPDATE') && (
+                      <div className="p-4 rounded-xl border border-indigo-200 bg-white shadow-2xs">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            UPDATE ({manifest.fileOperations.filter((op) => op.action === 'UPDATE').length} files)
+                          </span>
+                          <span className="text-[11px] text-slate-400">Pre-image verified replacement</span>
+                        </div>
+                        <div className="space-y-2 text-xs font-mono">
+                          {manifest.fileOperations
+                            .filter((op) => op.action === 'UPDATE')
+                            .map((op, i) => (
+                              <div
+                                key={i}
+                                className="p-2 rounded bg-indigo-50/50 text-indigo-900 border border-indigo-100/80"
+                              >
+                                <div className="font-semibold truncate">~ {op.target_path}</div>
+                                <div className="flex items-center justify-between mt-1 text-[10px] text-indigo-700">
+                                  <span className="text-slate-500 font-sans">{op.description}</span>
+                                  {op.expected_pre_hash && (
+                                    <span className="font-mono text-slate-500">
+                                      pre: {op.expected_pre_hash.slice(0, 10)}...
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* SURGICAL PATCH OPERATIONS */}
                     <div className="p-4 rounded-xl border border-blue-200 bg-white shadow-2xs">

@@ -965,6 +965,50 @@ async def approve_final_certification(
             evidence_id=None,
             reason=request.reason
         )
+
+        if target_state == CanonicalWorkflowState.CERTIFIED and workflow.manifest_id:
+            from app.persistence import get_manifest_repository
+            from app.persistence.models import StateTransitionModel, WorkflowModel
+            from sqlalchemy import select, func
+            manifest_repo = await get_manifest_repository(session)
+            curr_manifest = await manifest_repo.get(str(workflow.manifest_id))
+            is_update_in_place = False
+            if curr_manifest and isinstance(curr_manifest.required_changes, dict):
+                is_update_in_place = curr_manifest.required_changes.get("revisionStrategy") == "UPDATE_IN_PLACE"
+
+            if is_update_in_place:
+                target_fam = (workflow.target_family or "").strip().lower()
+                target_ver = (workflow.target_version or "").strip().upper()
+                if target_fam and target_ver:
+                    stmt = select(WorkflowModel).where(
+                        func.lower(WorkflowModel.target_family) == target_fam,
+                        func.upper(WorkflowModel.target_version) == target_ver,
+                        WorkflowModel.current_state == CanonicalWorkflowState.CERTIFIED.value,
+                        WorkflowModel.workflow_id != workflow.workflow_id
+                    )
+                    res = await session.execute(stmt)
+                    prior_workflows = res.scalars().all()
+                    for prior_wf in prior_workflows:
+                        prior_wf.current_state = CanonicalWorkflowState.REJECTED.value
+                        prior_wf.final_status = "SUPERSEDED"
+                        prior_gates = dict(prior_wf.gate_results or {})
+                        prior_gates["superseded"] = {
+                            "superseded_at": datetime.now(timezone.utc).isoformat(),
+                            "superseded_by": str(workflow.workflow_id),
+                            "reason": f"Superseded by certified in-place update workflow {workflow.workflow_id} for {target_fam}/{target_ver}"
+                        }
+                        prior_wf.gate_results = prior_gates
+                        session.add(
+                            StateTransitionModel(
+                                workflow_id=str(prior_wf.workflow_id),
+                                from_state=CanonicalWorkflowState.CERTIFIED.value,
+                                to_state=CanonicalWorkflowState.REJECTED.value,
+                                triggered_by=approved_by,
+                                reason=f"SUPERSEDED_BY_IN_PLACE_UPDATE: Superseded by workflow {workflow.workflow_id}",
+                            )
+                        )
+                        await workflow_repo.upsert(prior_wf)
+
         await session.commit()
     except ValueError as e:
         await session.rollback()

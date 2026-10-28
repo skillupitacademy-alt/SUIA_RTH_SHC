@@ -18,6 +18,7 @@ import type {
   RuntimeVerificationResponse,
   RuntimeHealthStatus,
   BrowserVerificationStatus,
+  VersionInspectionResponse,
 } from '../types/canonicalWorkflowState';
 
 /**
@@ -985,6 +986,16 @@ export class ProjectLlmClient {
         'Unable to approve final certification. Check network connection.'
       );
     }
+  }
+
+  async inspectVersion(family: string, version: string): Promise<VersionInspectionResponse> {
+    const params = new URLSearchParams({ family, version });
+    return this.requestJson<VersionInspectionResponse>(`/candidates/versions/inspect?${params.toString()}`);
+  }
+
+  async getNextVersion(family: string): Promise<{ family: string; proposedNextVersion: string }> {
+    const params = new URLSearchParams({ family });
+    return this.requestJson<{ family: string; proposedNextVersion: string }>(`/candidates/versions/next?${params.toString()}`);
   }
 }
 

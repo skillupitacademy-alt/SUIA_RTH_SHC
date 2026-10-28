@@ -483,6 +483,17 @@ async def approve_placement(
         )
 
     stored_manifest = await manifest_repo.get(str(stored_manifest_id))
+    if stored_manifest and (
+        stored_manifest.decision == "VERSION_IN_USE"
+        or (isinstance(stored_manifest.required_changes, dict) and stored_manifest.required_changes.get("updateEligibility") == "VERSION_IN_USE")
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "VERSION_IN_USE",
+                "message": f"Version {stored_manifest.block_version} of family {stored_manifest.block_family} is referenced by existing tutorial content and cannot be approved for in-place placement. A replacement workflow must be created with a newly allocated version.",
+            }
+        )
     manifest_operations = (
         stored_manifest.required_changes.get("operations", [])
         if stored_manifest and isinstance(stored_manifest.required_changes, dict)
@@ -550,7 +561,14 @@ async def approve_placement(
         workflow_requester=workflow_requester,
         status=ImplementationApprovalStatus.APPROVED if payload.approved else ImplementationApprovalStatus.REJECTED,
         rejection_reason=None if payload.approved else payload.reason,
-        evidence={"admin_override": is_admin_user, "is_admin_user": is_admin_user, "approved_by_role": "admin" if is_admin_user else "user"},
+        evidence={
+            "admin_override": is_admin_user,
+            "is_admin_user": is_admin_user,
+            "approved_by_role": "admin" if is_admin_user else "user",
+            "revision_strategy": (stored_manifest.required_changes.get("revisionStrategy") if stored_manifest and isinstance(stored_manifest.required_changes, dict) else None),
+            "reference_summary": (stored_manifest.required_changes.get("referenceSummary") if stored_manifest and isinstance(stored_manifest.required_changes, dict) else None),
+            "identity_status": (stored_manifest.required_changes.get("identityStatus") if stored_manifest and isinstance(stored_manifest.required_changes, dict) else None),
+        },
     )
     
     # Persist approval to PostgreSQL

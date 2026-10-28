@@ -11,6 +11,7 @@ from app.models.candidate import (
     PlacementDecision,
     PlacementFileAction,
     PlacementFileOperation,
+    RevisionStrategy,
 )
 from app.placement.patcher import compute_sha256
 
@@ -348,7 +349,8 @@ class CanonicalComparator:
         files: List[Any],
         family: BlockFamily | str,
         version: str,
-        workspace_root: str | Path
+        workspace_root: str | Path,
+        revision_strategy: RevisionStrategy = RevisionStrategy.ADD_NEW_VERSION
     ) -> List[PlacementFileOperation]:
         """
         Derive granular, snapshot-backed file-level operations with pre-image hashes.
@@ -366,6 +368,34 @@ class CanonicalComparator:
         family_name = family.value if isinstance(family, BlockFamily) else str(family)
         family_lower = family_name.lower()
         version_upper = version.upper()
+        is_update_in_place = (revision_strategy == RevisionStrategy.UPDATE_IN_PLACE)
+
+
+        def resolve_file_action(target_rel_path: str, item_name: str) -> Tuple[PlacementFileAction, Optional[str], str]:
+            full = ws / target_rel_path
+            if is_update_in_place and full.exists():
+                return (
+                    PlacementFileAction.UPDATE,
+                    get_pre_hash(target_rel_path),
+                    f"Update {family_name} {version_upper} {item_name} in place",
+                )
+            return (
+                PlacementFileAction.CREATE,
+                None,
+                f"Create {family_name} {version_upper} {item_name}",
+            )
+
+        def make_candidate_file_op(filename: str, source_sha: str, target_path: str, item_name: str) -> PlacementFileOperation:
+            act, pre_h, desc = resolve_file_action(target_path, item_name)
+            return PlacementFileOperation(
+                action=act,
+                source_filename=filename,
+                source_sha256=source_sha,
+                target_path=target_path,
+                expected_pre_hash=pre_h,
+                patch_strategy=None,
+                description=desc
+            )
         
         operations: List[PlacementFileOperation] = []
         
@@ -453,50 +483,26 @@ class CanonicalComparator:
                         f"Component file '{filename}' does not export the declared "
                         f"componentExport '{integration_metadata['componentExport']}'"
                     )
-                operations.append(PlacementFileOperation(
-                    action=PlacementFileAction.CREATE,
-                    source_filename=filename,
-                    source_sha256=source_sha,
-                    target_path=f"packages/ui/src/tutorial/blocks/{filename}",
-                    expected_pre_hash=None,
-                    patch_strategy=None,
-                    description=f"Create {family_name} {version_upper} React UI block component"
+                operations.append(make_candidate_file_op(
+                    filename, source_sha, f"packages/ui/src/tutorial/blocks/{filename}", "React UI block component"
                 ))
             
             # 2. Block Unit Tests
             elif filename.endswith('.test.tsx') or filename.endswith('.spec.tsx'):
-                operations.append(PlacementFileOperation(
-                    action=PlacementFileAction.CREATE,
-                    source_filename=filename,
-                    source_sha256=source_sha,
-                    target_path=f"packages/ui/src/tutorial/blocks/__tests__/{filename}",
-                    expected_pre_hash=None,
-                    patch_strategy=None,
-                    description=f"Create Jest/React unit test suite for {family_name} {version_upper}"
+                operations.append(make_candidate_file_op(
+                    filename, source_sha, f"packages/ui/src/tutorial/blocks/__tests__/{filename}", "Jest/React unit test suite"
                 ))
             
             # 3. JSON Schema
             elif filename.endswith('.schema.json'):
-                operations.append(PlacementFileOperation(
-                    action=PlacementFileAction.CREATE,
-                    source_filename=filename,
-                    source_sha256=source_sha,
-                    target_path=f"packages/ui/src/tutorial/schemas/{filename}",
-                    expected_pre_hash=None,
-                    patch_strategy=None,
-                    description=f"Create JSON schema validation contract for {family_name} {version_upper}"
+                operations.append(make_candidate_file_op(
+                    filename, source_sha, f"packages/ui/src/tutorial/schemas/{filename}", "JSON schema validation contract"
                 ))
 
             # 4. TypeScript Schema / Types
             elif filename.endswith('.schema.ts') or filename.endswith('.types.ts'):
-                operations.append(PlacementFileOperation(
-                    action=PlacementFileAction.CREATE,
-                    source_filename=filename,
-                    source_sha256=source_sha,
-                    target_path=f"packages/ui/src/tutorial/types/{filename}",
-                    expected_pre_hash=None,
-                    patch_strategy=None,
-                    description=f"Create TypeScript types for {family_name} {version_upper}"
+                operations.append(make_candidate_file_op(
+                    filename, source_sha, f"packages/ui/src/tutorial/types/{filename}", "TypeScript types"
                 ))
 
             # 5. Admin Composer Registry Entry

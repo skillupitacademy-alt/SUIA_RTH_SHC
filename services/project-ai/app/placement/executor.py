@@ -181,10 +181,14 @@ class PlacementExecutor:
         
         # Execute placement in isolated worktree (unless dry-run)
         try:
-            if manifest.decision == PlacementDecision.ADD:
-                result = self._execute_add(manifest, candidate_files)
-            elif manifest.decision == PlacementDecision.UPDATE:
-                result = self._execute_update(manifest, candidate_files)
+            if manifest.decision == PlacementDecision.VERSION_IN_USE:
+                raise PlacementExecutionError(
+                    f"Cannot execute placement for VERSION_IN_USE decision. "
+                    f"Target block version {manifest.blockVersion} is referenced by tutorial content. "
+                    f"Create a new version to proceed."
+                )
+            elif manifest.decision in (PlacementDecision.ADD, PlacementDecision.UPDATE):
+                result = self._execute_manifest_operations(manifest, candidate_files)
             elif manifest.decision == PlacementDecision.EXTEND:
                 result = self._execute_extend(manifest, candidate_files)
             elif manifest.decision == PlacementDecision.REUSE:
@@ -221,17 +225,17 @@ class PlacementExecutor:
                 finally:
                     self.active_worktree = None
     
-    def _execute_add(
+    def _execute_manifest_operations(
         self,
         manifest: PlacementManifest,
         candidate_files: List[Any]
     ) -> Dict[str, Any]:
         """
-        Execute ADD placement: create new block in isolated worktree.
+        Execute manifest file operations in an isolated worktree for ADD or UPDATE decisions.
         
         Args:
             manifest: Placement manifest
-            candidate_files: Files to add
+            candidate_files: Candidate files
             
         Returns:
             Execution result
@@ -294,8 +298,33 @@ class PlacementExecutor:
                             if existing_content != content:
                                 raise PlacementExecutionError(
                                     f"CREATE operation would overwrite existing file {op.target_path}. "
-                                    "Use a controlled patch operation instead."
+                                    "Use a controlled patch or UPDATE operation instead."
                                 )
+
+                    elif op.action == PlacementFileAction.UPDATE:
+                        content = files_by_name.get(op.source_filename)
+                        if content is None:
+                            raise PlacementExecutionError(f"Missing source file {op.source_filename} for UPDATE operation")
+
+                        if not target_file_path.exists():
+                            raise PlacementExecutionError(
+                                f"UPDATE operation target file does not exist: {op.target_path}. "
+                                "Cannot update non-existent target in place."
+                            )
+
+                        current_content = target_file_path.read_text(encoding='utf-8')
+                        current_hash = compute_sha256(current_content)
+                        if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                            raise PlacementExecutionError(
+                                f"Pre-image hash mismatch on UPDATE operation for {op.target_path}: "
+                                f"expected {op.expected_pre_hash}, got {current_hash}. Placement aborted."
+                            )
+
+                        if not self.dry_run:
+                            target_file_path.parent.mkdir(parents=True, exist_ok=True)
+                            target_file_path.write_text(content, encoding='utf-8')
+                        written_files.append(str(target_file_path))
+                        continue
 
                         # Harmonize registry export if writing registry entry
                         if op.target_path.endswith('.registry.ts'):
@@ -505,7 +534,8 @@ export const {reg_var_name}: BlockRegistryEntry = {{
             raise PlacementExecutionError(f"Placement file operation failed: {e}")
         
         # Commit in worktree (skip in dry-run mode)
-        commit_msg = f"feat: add {manifest.blockFamily.value} block {manifest.candidateId}"
+        action_verb = "update" if manifest.decision == PlacementDecision.UPDATE else "add"
+        commit_msg = f"feat: {action_verb} {manifest.blockFamily.value} block {manifest.candidateId}"
         
         if not self.dry_run and self.active_worktree:
             try:
@@ -539,128 +569,16 @@ export const {reg_var_name}: BlockRegistryEntry = {{
         
         return {
             "status": "executed",
-            "action": "ADD",
+            "action": manifest.decision.value,
             "workspaceMirror": mirror_result,
             "targetPath": manifest.targetPath,
             "filesWritten": len(written_files),
             "branch": branch_name,
             "commit": commit_hash,
             "worktree_path": str(self.active_worktree.worktree_path) if self.active_worktree else None,
-            "message": f"Created new {manifest.blockFamily.value} block at {manifest.targetPath}"
+            "message": f"{manifest.decision.value.capitalize()}ed {manifest.blockFamily.value} block {manifest.candidateId}"
         }
     
-    def _execute_update(
-        self,
-        manifest: PlacementManifest,
-        candidate_files: List[Any]
-    ) -> Dict[str, Any]:
-        """
-        Execute UPDATE placement: update existing block in isolated worktree.
-        
-        Args:
-            manifest: Placement manifest
-            candidate_files: Files to update
-            
-        Returns:
-            Execution result
-        """
-        target_dir = self.repository_root / manifest.targetPath
-        
-        if not target_dir.exists():
-            raise PlacementExecutionError(
-                f"Cannot update non-existent path: {manifest.targetPath}"
-            )
-        
-        branch_name = f"candidate/{manifest.candidateId}"
-        
-        # Create isolated worktree (skip in dry-run mode)
-        if not self.dry_run:
-            try:
-                self.active_worktree = self.worktree_manager.create_worktree(
-                    workflow_id=manifest.manifestId,
-                    manifest_id=manifest.manifestId,
-                    branch_name=branch_name
-                )
-                # Use worktree path as repository root for adapter
-                worktree_adapter = RepositoryAdapter(
-                    self.active_worktree.worktree_path,
-                    dry_run=False
-                )
-            except WorktreeError as e:
-                raise PlacementExecutionError(f"Failed to create worktree: {e}")
-        else:
-            # Dry-run: use main repository adapter
-            worktree_adapter = self.repository_adapter
-        
-        # Update candidate files via RepositoryAdapter
-        updated_files = []
-        for file in candidate_files:
-            try:
-                record = worktree_adapter.write_file(
-                    source_content=file.content,
-                    target_path=manifest.targetPath,
-                    filename=file.filename,
-                    family=manifest.blockFamily.value,
-                    version=manifest.blockVersion
-                )
-                updated_files.append(record.target_path)
-            except RepositoryAdapterError as e:
-                # Cleanup worktree on failure
-                if self.active_worktree and not self.dry_run:
-                    try:
-                        self.worktree_manager.cleanup_worktree(self.active_worktree, force=True)
-                    except WorktreeError:
-                        pass
-                    finally:
-                        self.active_worktree = None
-                raise PlacementExecutionError(
-                    f"Failed to update file {file.filename}: {e}"
-                )
-        
-        # Commit in worktree (skip in dry-run mode)
-        commit_msg = f"feat: update {manifest.blockFamily.value} block at {manifest.targetPath}"
-        
-        if not self.dry_run and self.active_worktree:
-            try:
-                # Get relative paths for git add
-                relative_paths = [
-                    str(Path(f).relative_to(self.active_worktree.worktree_path))
-                    for f in updated_files
-                ]
-                commit_hash = self.worktree_manager.commit_in_worktree(
-                    self.active_worktree,
-                    relative_paths,
-                    commit_msg
-                )
-                
-                # Production invariant: promotion is performed by CI/release flow,
-                # never by copying an isolated candidate worktree over this checkout.
-                mirror_result = {"mode": "disabled", "files": 0}
-            except WorktreeError as e:
-                # Cleanup worktree on failure
-                try:
-                    self.worktree_manager.cleanup_worktree(self.active_worktree, force=True)
-                except WorktreeError:
-                    pass
-                finally:
-                    self.active_worktree = None
-                raise PlacementExecutionError(f"Git operation failed: {e}")
-        else:
-            # Dry-run: simulate git operations
-            commit_hash = "dry-run-commit-hash"
-            mirror_result = {"mode": "dry-run", "files": 0}
-        
-        return {
-            "status": "executed",
-            "action": "UPDATE",
-            "workspaceMirror": mirror_result,
-            "targetPath": manifest.targetPath,
-            "filesUpdated": len(updated_files),
-            "branch": branch_name,
-            "commit": commit_hash,
-            "worktree_path": str(self.active_worktree.worktree_path) if self.active_worktree else None,
-            "message": f"Updated {manifest.blockFamily.value} block at {manifest.targetPath}"
-        }
     
     def _execute_extend(
         self,
@@ -733,3 +651,10 @@ export const {reg_var_name}: BlockRegistryEntry = {{
                 "status": "warning",
                 "message": f"Discovery refresh skipped: {str(e)}"
             }
+
+    # Backwards compatibility alias
+    def _execute_add(self, manifest: PlacementManifest, candidate_files: List[Any]) -> Dict[str, Any]:
+        return self._execute_manifest_operations(manifest, candidate_files)
+
+    def _execute_update(self, manifest: PlacementManifest, candidate_files: List[Any]) -> Dict[str, Any]:
+        return self._execute_manifest_operations(manifest, candidate_files)

@@ -33,6 +33,10 @@ from app.models.candidate import (
     PlacementManifest,
     PlacementFileAction,
     PlacementFileOperation,
+    IdentityStatus,
+    UpdateEligibility,
+    RevisionStrategy,
+    ReferenceSummary,
 )
 from app.models.implementation_approval import ImplementationApproval
 from app.placement.approval_enforcer import ApprovalEnforcer
@@ -118,12 +122,18 @@ def parse_iso_datetime(val: str | datetime) -> datetime:
 
 def manifest_to_model(manifest: PlacementManifest, candidate_id: str) -> ManifestModel:
     """Convert domain PlacementManifest to ORM ManifestModel."""
-    required_changes_data: Any = manifest.requiredChanges
-    if manifest.fileOperations:
-        required_changes_data = {
-            "text": manifest.requiredChanges,
-            "operations": [op.model_dump() for op in manifest.fileOperations]
-        }
+    data_dict: Dict[str, Any] = {
+        "text": manifest.requiredChanges,
+        "operations": [op.model_dump() for op in (manifest.fileOperations or [])]
+    }
+    if manifest.identityStatus:
+        data_dict["identityStatus"] = manifest.identityStatus.value
+    if manifest.updateEligibility:
+        data_dict["updateEligibility"] = manifest.updateEligibility.value
+    if manifest.referenceSummary:
+        data_dict["referenceSummary"] = manifest.referenceSummary.model_dump()
+    if manifest.revisionStrategy:
+        data_dict["revisionStrategy"] = manifest.revisionStrategy.value
 
     return ManifestModel(
         manifest_id=manifest.manifestId,
@@ -133,7 +143,7 @@ def manifest_to_model(manifest: PlacementManifest, candidate_id: str) -> Manifes
         target_path=manifest.targetPath,
         block_family=manifest.blockFamily.value,
         block_version=manifest.blockVersion,
-        required_changes=required_changes_data,
+        required_changes=data_dict,
         evidence_ids=manifest.evidenceIds,
         created_at=parse_iso_datetime(manifest.createdAt)
     )
@@ -147,10 +157,23 @@ def model_to_manifest(model: ManifestModel) -> PlacementManifest:
     
     text_changes = []
     file_ops = []
+    identity_status = None
+    update_eligibility = None
+    reference_summary = None
+    revision_strategy = None
+
     if isinstance(model.required_changes, dict):
         text_changes = model.required_changes.get("text", [])
         raw_ops = model.required_changes.get("operations", [])
         file_ops = [PlacementFileOperation(**op) for op in raw_ops]
+        if model.required_changes.get("identityStatus"):
+            identity_status = IdentityStatus(model.required_changes["identityStatus"])
+        if model.required_changes.get("updateEligibility"):
+            update_eligibility = UpdateEligibility(model.required_changes["updateEligibility"])
+        if model.required_changes.get("referenceSummary"):
+            reference_summary = ReferenceSummary(**model.required_changes["referenceSummary"])
+        if model.required_changes.get("revisionStrategy"):
+            revision_strategy = RevisionStrategy(model.required_changes["revisionStrategy"])
     elif isinstance(model.required_changes, list):
         text_changes = model.required_changes
 
@@ -165,7 +188,11 @@ def model_to_manifest(model: ManifestModel) -> PlacementManifest:
         fileOperations=file_ops,
         evidenceIds=model.evidence_ids,
         manifestHash=model.manifest_hash,
-        createdAt=created_at_str
+        createdAt=created_at_str,
+        identityStatus=identity_status,
+        updateEligibility=update_eligibility,
+        referenceSummary=reference_summary,
+        revisionStrategy=revision_strategy,
     )
 
 
@@ -585,6 +612,39 @@ async def qualify_candidate(
     }
 
 
+@router.get("/versions/inspect")
+async def inspect_version(
+    family: str,
+    version: str,
+    session: AsyncSession = Depends(get_db_session),
+    user: AuthenticatedPrincipal = Depends(get_current_user),
+):
+    """Inspect version registration status, usage in tutorials, and update eligibility."""
+    from app.placement.version_reference_service import evaluate_version_policy
+    workspace_root = os.getenv("WORKSPACE_ROOT", r"E:\onlinewebsites\quiz-platform")
+    eval_result = await evaluate_version_policy(
+        family=family,
+        version=version,
+        session=session,
+        workspace_root=workspace_root
+    )
+    return eval_result.to_dict()
+
+
+@router.get("/versions/next")
+async def get_next_version(
+    family: str,
+    user: AuthenticatedPrincipal = Depends(get_current_user),
+):
+    """Propose next valid sequential version for block family (server-controlled)."""
+    from app.placement.version_reference_service import allocate_next_version
+    workspace_root = os.getenv("WORKSPACE_ROOT", r"E:\onlinewebsites\quiz-platform")
+    next_ver = allocate_next_version(family=family, workspace_root=workspace_root)
+    return {
+        "family": family.strip().lower(),
+        "proposedNextVersion": next_ver
+    }
+
 @router.post("/{candidate_id}/classify", response_model=ClassificationResult)
 async def classify_candidate(
     candidate_id: str,
@@ -875,13 +935,45 @@ async def generate_manifest(
     
     comparator = CanonicalComparator(snapshot)
     
-    # Determine placement action based on evidence-backed similarity
-    decision = comparator.determine_placement_action(
+    # B07 fix: Extract target version from workflow binding (Wave 1A)
+    target_version = package.target_version
+    if not target_version or target_version == '':
+        raise HTTPException(
+            status_code=400,
+            detail=f"Candidate {candidate_id} missing target_version binding. "
+                   "Delete this candidate and upload again with workflow_id to bind target identity."
+        )
+
+    # Core Version Policy Evaluation (revision-safe, tutorial-referencing check)
+    from app.placement.version_reference_service import evaluate_version_policy
+    workspace_root = os.getenv("WORKSPACE_ROOT", r"E:\onlinewebsites\quiz-platform")
+    version_eval = await evaluate_version_policy(
+        family=classification.detectedFamily.value,
+        version=target_version,
+        session=session,
+        workspace_root=workspace_root
+    )
+
+    # Determine placement action based on evidence-backed similarity & version policy
+    similarity_decision = comparator.determine_placement_action(
         comparison.similarityScore,
         comparison.existingBlock,
         classification.detectedFamily
     )
-    
+
+    if similarity_decision == PlacementDecision.REJECT:
+        decision = PlacementDecision.REJECT
+        revision_strategy = RevisionStrategy.ADD_NEW_VERSION
+    elif version_eval.decision == PlacementDecision.VERSION_IN_USE:
+        decision = PlacementDecision.VERSION_IN_USE
+        revision_strategy = RevisionStrategy.ADD_NEW_VERSION
+    elif version_eval.decision == PlacementDecision.UPDATE:
+        decision = PlacementDecision.UPDATE
+        revision_strategy = RevisionStrategy.UPDATE_IN_PLACE
+    else:
+        decision = PlacementDecision.ADD
+        revision_strategy = RevisionStrategy.ADD_NEW_VERSION
+
     # Determine target path from evidence
     target_path = comparator.determine_target_path(
         decision,
@@ -889,80 +981,56 @@ async def generate_manifest(
         candidate_id,
         comparison.existingBlock
     )
-    
+
+    # Derive granular file operations
+    if decision == PlacementDecision.VERSION_IN_USE or decision == PlacementDecision.REJECT:
+        file_operations = []
+    else:
+        file_operations = comparator.derive_file_operations(
+            files=package.files,
+            family=classification.detectedFamily,
+            version=target_version,
+            workspace_root=workspace_root,
+            revision_strategy=revision_strategy
+        )
+
     # Build required changes based on decision
-    if decision == PlacementDecision.UPDATE:
+    if decision == PlacementDecision.VERSION_IN_USE:
         required_changes = [
-            "Review structural differences",
-            "Update version metadata",
-            "Run UBRC verification",
-            "Update tests"
+            f"Target version {target_version.upper()} is referenced by {version_eval.reference_summary.total_count} tutorial section(s) ({version_eval.reference_summary.draft_count} draft, {version_eval.reference_summary.published_count} published).",
+            "In-place UPDATE is prohibited to preserve live and draft tutorial content compatibility.",
+            f"A replacement workflow must be created with newly allocated version: {version_eval.proposed_next_version}"
         ]
-    elif decision == PlacementDecision.EXTEND:
+    elif decision == PlacementDecision.UPDATE:
         required_changes = [
-            "Create new variant in family",
-            "Link to family taxonomy",
-            "Add UBRC metadata (data-block-version)",
-            "Register in block registry",
-            "Add to TutorialBlockRenderer dispatch"
+            "Controlled in-place UPDATE of unused version candidate",
+            "Verify expected pre-image hashes across existing targets",
+            "Update component, schemas, and test targets in place",
+            "Refresh generated registry metadata without duplicating dropdown or renderer mappings"
         ]
     elif decision == PlacementDecision.ADD:
         required_changes = [
-            "Create new block package",
-            "Add UBRC metadata (data-block-version, data-block-type)",
-            "Register in block registry",
-            "Add to TutorialBlockRenderer dispatch",
-            "Add unit tests",
-            "Add to ILS taxonomy"
+            "Create new block package and canonical version files",
+            "Register single new version in TutorialBlockRenderer dispatch",
+            "Add version definition and Composer registry mapping"
         ]
     elif decision == PlacementDecision.REJECT:
         required_changes = [
-            "Candidate rejected due to low similarity",
-            "Review structural differences",
-            "Consider refactoring candidate"
+            "Candidate rejected due to structural differences or qualification mismatch",
+            "Review structural differences and refactor candidate"
         ]
     else:
         required_changes = ["No changes required"]
-    
-    # Use REAL evidence IDs from comparison (Wave 2 fix)
-    # Get evidence IDs from stored comparison result
+
     evidence_ids = getattr(package, '_comparison_evidence_ids', [])
-    
-    if not evidence_ids:
-        # Fallback: try to find evidence from snapshot
-        evidence_ids = []
-        if comparison.existingBlock:
-            blocks = snapshot.get('blocks', {}).get('verified', [])
-            for block in blocks:
-                if block.get('blockId') == comparison.existingBlock:
-                    if 'evidenceId' in block:
-                        evidence_ids.append(block['evidenceId'])
-    
-    # Create manifest with native UUID and normalized ISO timestamp
+    if not evidence_ids and comparison.existingBlock:
+        blocks = snapshot.get('blocks', {}).get('verified', [])
+        for block in blocks:
+            if block.get('blockId') == comparison.existingBlock and 'evidenceId' in block:
+                evidence_ids.append(block['evidenceId'])
+
     manifest_id = str(uuid4())
     created_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    
-    # B07 fix: Extract target version from workflow binding (Wave 1A)
-    # Candidate packages now carry target_version from workflow at upload
-    target_version = package.target_version
-    
-    if not target_version or target_version == '':
-        # Missing version indicates upload occurred before Wave 1A workflow binding
-        raise HTTPException(
-            status_code=400,
-            detail=f"Candidate {candidate_id} missing target_version binding. "
-                   "This candidate was uploaded before workflow binding was implemented. "
-                   "Delete this candidate and upload again with workflow_id to bind target identity."
-        )
-    
-    # Derive granular file operations from canonical repository targets
-    workspace_root = os.getenv("WORKSPACE_ROOT", r"E:\onlinewebsites\quiz-platform")
-    file_operations = comparator.derive_file_operations(
-        files=package.files,
-        family=classification.detectedFamily,
-        version=target_version,
-        workspace_root=workspace_root
-    )
 
     manifest_data = {
         "manifestId": manifest_id,
@@ -974,13 +1042,17 @@ async def generate_manifest(
         "requiredChanges": required_changes,
         "fileOperations": [op.model_dump() for op in file_operations],
         "evidenceIds": evidence_ids,
-        "createdAt": created_at
+        "createdAt": created_at,
+        "identityStatus": version_eval.identity_status.value,
+        "updateEligibility": version_eval.update_eligibility.value,
+        "referenceSummary": version_eval.reference_summary.model_dump(),
+        "revisionStrategy": revision_strategy.value
     }
-    
+
     # Compute SHA-256 hash of manifest content (sorted keys, no whitespace)
     manifest_json = json.dumps(manifest_data, sort_keys=True, separators=(',', ':'))
     manifest_hash = hashlib.sha256(manifest_json.encode('utf-8')).hexdigest()
-    
+
     manifest = PlacementManifest(
         manifestId=manifest_id,
         candidateId=candidate_id,
@@ -992,7 +1064,11 @@ async def generate_manifest(
         fileOperations=file_operations,
         evidenceIds=evidence_ids,
         manifestHash=manifest_hash,
-        createdAt=created_at
+        createdAt=created_at,
+        identityStatus=version_eval.identity_status,
+        updateEligibility=version_eval.update_eligibility,
+        referenceSummary=version_eval.reference_summary,
+        revisionStrategy=revision_strategy
     )
     
     # Persist manifest to PostgreSQL
@@ -1052,6 +1128,22 @@ async def generate_manifest(
                     triggered_by=user.get("user_id", "unknown"),
                     reason="Placement comparison rejected the candidate"
                 )
+            elif decision == PlacementDecision.VERSION_IN_USE:
+                # Do NOT advance to Gate 2 (AWAITING_IMPLEMENTATION_APPROVAL)
+                if workflow.current_state == CanonicalWorkflowState.CANDIDATE_AUDIT:
+                    workflow = await governance_service.transition_state(
+                        package.workflow_id,
+                        CanonicalWorkflowState.PLACEMENT,
+                        triggered_by=user.get("user_id", "unknown"),
+                        reason="Candidate audit completed; placement evaluated"
+                    )
+                if workflow.current_state == CanonicalWorkflowState.PLACEMENT:
+                    await governance_service.transition_state(
+                        package.workflow_id,
+                        CanonicalWorkflowState.INTEGRATION_PLANNED,
+                        triggered_by=user.get("user_id", "unknown"),
+                        reason=f"Placement evaluated: version {target_version} is in use; Gate 2 blocked."
+                    )
             else:
                 if workflow.current_state == CanonicalWorkflowState.CANDIDATE_AUDIT:
                     workflow = await governance_service.transition_state(
@@ -1227,6 +1319,11 @@ async def execute_placement(
     
     manifest_model = manifests[0]  # Most recent
     manifest = model_to_manifest(manifest_model)
+    if manifest.decision == PlacementDecision.VERSION_IN_USE:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Placement execution rejected: version {manifest.blockVersion} is in active use by tutorial content."
+        )
     
     # Import executor
     from app.placement.executor import PlacementExecutor, PlacementExecutionError

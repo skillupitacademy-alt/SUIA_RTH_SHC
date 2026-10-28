@@ -84,8 +84,32 @@ export type CandidateResponse = {
   };
 };
 
+export type IdentityStatus = 'NEW' | 'EXISTING_UNUSED' | 'EXISTING_REFERENCED';
+export type UpdateEligibility = 'ALLOWED' | 'VERSION_IN_USE' | 'NOT_APPLICABLE';
+export type RevisionStrategy = 'ADD_NEW_VERSION' | 'UPDATE_IN_PLACE';
+
+export type ReferenceSummary = {
+  totalCount: number;
+  draftCount: number;
+  publishedCount: number;
+  otherCount: number;
+  sampleSectionIds: string[];
+};
+
+export type VersionInspectionResponse = {
+  family: string;
+  version: string;
+  isRegistered: boolean;
+  identityStatus: IdentityStatus;
+  updateEligibility: UpdateEligibility;
+  revisionStrategy: RevisionStrategy;
+  decision: 'ADD' | 'UPDATE' | 'VERSION_IN_USE';
+  referenceSummary: ReferenceSummary;
+  proposedNextVersion?: string | null;
+};
+
 export type PlacementFileOperation = {
-  action: 'CREATE' | 'PATCH_RENDERER' | 'PATCH_REGISTRY' | 'PATCH_TYPES' | 'SKIP';
+  action: 'CREATE' | 'UPDATE' | 'PATCH_RENDERER' | 'PATCH_REGISTRY' | 'PATCH_TYPES' | 'SKIP';
   source_filename: string;
   source_sha256: string;
   target_path: string;
@@ -97,7 +121,7 @@ export type PlacementFileOperation = {
 export type PlacementManifest = {
   manifestId: string;
   candidateId: string;
-  decision: 'ADD' | 'UPDATE' | 'EXTEND' | 'REUSE' | 'REJECT';
+  decision: 'ADD' | 'UPDATE' | 'EXTEND' | 'REUSE' | 'REJECT' | 'VERSION_IN_USE';
   targetPath: string;
   blockFamily: string;
   blockVersion: string;
@@ -106,6 +130,10 @@ export type PlacementManifest = {
   evidenceIds: string[];
   manifestHash: string;
   createdAt: string;
+  identityStatus?: IdentityStatus;
+  updateEligibility?: UpdateEligibility;
+  referenceSummary?: ReferenceSummary;
+  revisionStrategy?: RevisionStrategy;
 };
 
 export type PlacementExecutionResult = {

@@ -1,7 +1,7 @@
 """Safe, deterministic TypeScript code patchers for canonical repository targets.
 
 All patchers operate with strict pre-condition checks, idempotent guarantees,
-and fail-closed invariants.
+duplicate detection, and fail-closed invariants.
 """
 
 import hashlib
@@ -32,36 +32,46 @@ def patch_tutorial_block_renderer(
     """
     Register a generated component in the declarative renderer table.
 
-    The target is generatedBlockRenderers.tsx, deliberately kept as an append-only
-    Project LLM patch surface. This avoids parsing or rewriting the runtime renderer.
+    Keyed by normalized pair (family, version).
+    - If duplicate entries exist for (family, version), fails closed.
+    - If 1 entry exists (UPDATE_IN_PLACE), updates component binding in place.
+    - If 0 entries exist (ADD_NEW_VERSION), appends exactly one new entry.
     """
-    block_type = family.lower()
-    version_upper = version.upper()
+    block_type = family.lower().strip()
+    version_upper = version.upper().strip()
     import_statement = f"import {{ {component_name} }} from './blocks/{component_name}';"
     entry = (
         f"  {{ family: '{block_type}', version: '{version_upper}', component: {component_name} }},"
     )
 
-    if entry in content:
-        return content
-
-    # Keep imports deterministic and adjacent to the generated renderer contract.
-    block_import_pattern = r"(import\s+\{[^}]+\}\s+from\s+'\./blocks/[^']+';(?:\r?\n))"
-    matches = list(re.finditer(block_import_pattern, content))
-    if matches:
-        if import_statement in content:
-            patched_content = content
-        else:
+    # Ensure component import is present
+    patched_content = content
+    if import_statement not in patched_content:
+        block_import_pattern = r"(import\s+\{[^}]+\}\s+from\s+'\./blocks/[^']+';(?:\r?\n))"
+        matches = list(re.finditer(block_import_pattern, patched_content))
+        if matches:
             insert_pos = matches[-1].end()
-            patched_content = content[:insert_pos] + import_statement + "\n" + content[insert_pos:]
-    else:
-        # The generated file starts with type-only imports, so insert the first
-        # value import immediately before the exported registration interface.
-        interface_match = re.search(r"export\s+interface\s+GeneratedBlockRenderer", content)
-        if not interface_match:
-            raise PatchError("Cannot find GeneratedBlockRenderer declaration")
-        patched_content = content[:interface_match.start()] + import_statement + "\n" + content[interface_match.start():]
+            patched_content = patched_content[:insert_pos] + import_statement + "\n" + patched_content[insert_pos:]
+        else:
+            interface_match = re.search(r"export\s+interface\s+GeneratedBlockRenderer", patched_content)
+            if not interface_match:
+                raise PatchError("Cannot find GeneratedBlockRenderer declaration")
+            patched_content = patched_content[:interface_match.start()] + import_statement + "\n" + patched_content[interface_match.start():]
 
+    # Detect duplicates on updated content
+    existing_pattern = r"\{\s*family:\s*['\"]" + re.escape(block_type) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}"
+    existing_matches = list(re.finditer(existing_pattern, patched_content, re.IGNORECASE))
+    if len(existing_matches) > 1:
+        raise PatchError(f"Duplicate renderer entry detected for ({block_type}, {version_upper})")
+
+    # If exactly 1 entry exists, update it in place
+    if len(existing_matches) == 1:
+        m = existing_matches[0]
+        if m.group(0).strip() == entry.strip():
+            return patched_content
+        return patched_content[:m.start()] + entry + patched_content[m.end():]
+
+    # If 0 entries exist, append before marker
     marker = "  // PROJECT_LLM_GENERATED_RENDERERS"
     if marker not in patched_content:
         raise PatchError("Cannot find PROJECT_LLM_GENERATED_RENDERERS marker")
@@ -77,7 +87,7 @@ def patch_tutorial_composer_registry(
     Surgically insert registry entry import and getBlockTypes() registration into registry/index.ts.
     
     Invariants:
-    1. If registry is already registered, fail or keep idempotent.
+    1. If registry is already registered, keep idempotent.
     2. Import is added with other entry imports.
     3. Entry is added to getBlockTypes() array.
     """
@@ -148,13 +158,16 @@ def patch_family_registry(
     payload_json = json.dumps(payload, indent=8, ensure_ascii=True)
     entry = f"""
     {{
-      id: '{metadata.get('registryVersionId') or version_upper.lower()}',
+      id: '{version_upper.lower()}',
       code: '{version_upper}',
-      label: {json.dumps(metadata.get('label') or f'{version_upper} - {family}')},
-      description: {json.dumps(metadata.get('description') or f'{family} block version {version_upper}')},
+      label: '{version_upper} - {family}',
+      description: '{family} block version {version_upper}',
       getDefaultPayload: () => ({payload_json}),
     }},"""
-    return content[:index - 1].rstrip() + entry + "\n  " + content[index - 1:]
+    insert_at = index - 1
+    return content[:insert_at] + entry + "\n  " + content[insert_at:]
+
+
 
 
 def create_family_registry(family: str, version: str, metadata: dict) -> str:
@@ -182,18 +195,15 @@ export const {registry_name}: BlockRegistryEntry = {{
 }};
 """
 
-
 def patch_tutorial_page_content_types(
     content: str,
     family_type_id: str
 ) -> str:
     """
-    Surgically append family_type_id to TutorialPageContentType union in tutorial-page-content.types.ts.
+    Add new family type to TutorialPageContentType union in tutorial-page-content.types.ts.
     
-    Example:
-    export type TutorialPageContentType = 'definition' | 'code' | 'summary' | 'introduction';
-    ->
-    export type TutorialPageContentType = 'definition' | 'code' | 'summary' | 'introduction' | 'objective';
+    Pattern:
+    export type TutorialPageContentType = 'definition' | 'code' | ... ;
     """
     pattern = r"(export\s+type\s+TutorialPageContentType\s*=\s*)([^;]+)(;)"
     match = re.search(pattern, content)
@@ -203,7 +213,6 @@ def patch_tutorial_page_content_types(
     current_union = match.group(2)
     quoted_id = f"'{family_type_id.lower()}'"
     if quoted_id in current_union:
-        # Already included
         return content
 
     new_union = current_union.strip() + f" | {quoted_id}"
@@ -216,26 +225,38 @@ def patch_generated_block_version_definitions(
     version: str,
     payload_format: str = "canonical",
 ) -> str:
-    """Append an approved family/version to the Composer adapter registry."""
+    """
+    Append or update an approved family/version in the Composer adapter registry.
+
+    Keyed by normalized pair (family, version).
+    - If duplicate entries exist, fails closed.
+    - If 1 entry exists (UPDATE_IN_PLACE), updates payloadFormat in place.
+    - If 0 entries exist (ADD_NEW_VERSION), appends exactly one new entry.
+    """
     if payload_format not in {"legacy", "canonical"}:
         raise PatchError("payloadFormat must be either 'legacy' or 'canonical'")
 
-    version_upper = version.upper()
-    if re.search(
-        rf"type:\s*['\"]{re.escape(family_type_id.lower())}['\"].*?version:\s*['\"]{re.escape(version_upper)}['\"]",
-        content,
-        re.DOTALL,
-    ):
-        return content
+    type_norm = family_type_id.lower().strip()
+    version_upper = version.upper().strip()
+
+    pattern = r"\{\s*type:\s*['\"]" + re.escape(type_norm) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}"
+    existing_matches = list(re.finditer(pattern, content, re.IGNORECASE))
+    if len(existing_matches) > 1:
+        raise PatchError(f"Duplicate block version definition detected for ({type_norm}, {version_upper})")
+
+    entry = (
+        f"  {{ type: '{type_norm}', version: '{version_upper}', "
+        f"payloadFormat: '{payload_format}' }},"
+    )
+
+    if len(existing_matches) == 1:
+        m = existing_matches[0]
+        return content[:m.start()] + entry + content[m.end():]
 
     marker = "  // PROJECT_LLM_GENERATED_DEFINITIONS"
     if marker not in content:
         raise PatchError("Cannot find Project LLM generated-definition marker")
-    entry = (
-        f"  {{ type: '{family_type_id.lower()}', version: '{version_upper}', "
-        f"payloadFormat: '{payload_format}' }},\n"
-    )
-    return content.replace(marker, entry + marker, 1)
+    return content.replace(marker, f"{entry}\n{marker}", 1)
 
 
 def patch_generated_block_registry(
@@ -244,36 +265,70 @@ def patch_generated_block_registry(
     version: str,
     metadata: dict,
 ) -> str:
-    """Append generated Composer metadata to its dedicated, marker-based catalog."""
-    family_lower = family.lower()
-    version_upper = version.upper()
+    """
+    Append or update generated Composer metadata in its dedicated catalog.
+
+    Keyed by normalized pair (family, version).
+    - If duplicate entries exist for (family, version), fails closed.
+    - If version exists in family (UPDATE_IN_PLACE), updates label, description, and payload in place.
+    - If family exists but version does not, appends version to family's versions array.
+    - If family does not exist, appends whole family with version before marker.
+    """
+    family_lower = family.lower().strip()
+    version_upper = version.upper().strip()
     payload = metadata.get("defaultPayload", {})
     if not isinstance(payload, dict) or not payload:
         raise PatchError("block.integration.json defaultPayload must be a non-empty object")
 
-    existing_pattern = (
-        rf"id:\s*['\"]{re.escape(family_lower)}['\"][\s\S]*?"
-        rf"code:\s*['\"]{re.escape(version_upper)}['\"]"
-    )
-    if re.search(existing_pattern, content):
-        return content
+    payload_json = json.dumps(payload, indent=10, ensure_ascii=True)
+    version_id = metadata.get("registryVersionId") or version_upper.lower()
+    version_label = metadata.get("label") or f"{version_upper} - {family}"
+    version_desc = metadata.get("description") or f"{family} block version {version_upper}"
 
+    # Check for duplicate version entries across the catalog
+    version_pattern = rf"code:\s*['\"]{re.escape(version_upper)}['\"]"
+    matches = list(re.finditer(version_pattern, content, re.IGNORECASE))
+    if len(matches) > 1:
+        raise PatchError(f"Duplicate registry version entry detected for version {version_upper}")
+
+    version_object_code = f"""      {{
+        id: {json.dumps(version_id)},
+        code: '{version_upper}',
+        label: {json.dumps(version_label)},
+        description: {json.dumps(version_desc)},
+        getDefaultPayload: () => ({payload_json}),
+      }},"""
+
+    # Check if this exact (family, version) exists
+    family_block_pattern = rf"id:\s*['\"]{re.escape(family_lower)}['\"][\s\S]*?versions:\s*\[([\s\S]*?)\]"
+    family_match = re.search(family_block_pattern, content, re.IGNORECASE)
+
+    if family_match:
+        versions_inner = family_match.group(1)
+        # Check if version exists inside this family
+        if re.search(version_pattern, versions_inner, re.IGNORECASE):
+            # UPDATE_IN_PLACE: replace version object inside versions array
+            ver_obj_regex = r"\{\s*id:\s*['\"][^'\"]+['\"],\s*code:\s*['\"]" + re.escape(version_upper) + r"['\"][\s\S]*?getDefaultPayload:\s*\(\)\s*=>\s*\([\s\S]*?\),\s*\},"
+            if re.search(ver_obj_regex, content):
+                return re.sub(ver_obj_regex, version_object_code.strip(), content, count=1)
+            # If formatting differs, return content idempotently
+            return content
+
+        # Family exists, but version does not: append version into family's versions array
+        insert_idx = family_match.end(1)
+        new_versions_inner = versions_inner.rstrip() + "\n" + version_object_code + "\n    "
+        return content[:family_match.start(1)] + new_versions_inner + content[family_match.end(1):]
+
+    # Family does not exist in generated registries: create family block with this version
     marker = "  // PROJECT_LLM_GENERATED_REGISTRIES"
     if marker not in content:
         raise PatchError("Cannot find Project LLM generated-registry marker")
 
-    payload_json = json.dumps(payload, indent=10, ensure_ascii=True)
     entry = f'''  {{
     id: '{family_lower}',
     label: {json.dumps(metadata.get("familyLabel") or family)},
     versions: [
-      {{
-        id: {json.dumps(metadata.get("registryVersionId") or version_upper.lower())},
-        code: '{version_upper}',
-        label: {json.dumps(metadata.get("label") or f"{version_upper} - {family}")},
-        description: {json.dumps(metadata.get("description") or f"{family} block version {version_upper}")},
-        getDefaultPayload: () => ({payload_json}),
-      }},
+{version_object_code}
     ],
   }},
 '''
