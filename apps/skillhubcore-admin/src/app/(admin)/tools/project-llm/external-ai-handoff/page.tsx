@@ -238,7 +238,9 @@ You must package your output as a single .zip archive containing the six require
      b) Dual-brand theme independence (proves themeA and themeB apply dynamically with zero hardcoded brand hexes).
      c) WCAG 2.1 AA accessibility (list roles, aria-hidden icons).
      d) Responsive container rendering (passes through custom className).
-     e) Zero console errors or warnings.
+     e) Long-content boundary safety: flex/grid text children use min-w-0 where needed; no card/control/content crosses its parent boundary; only explicitly bounded code/data regions may scroll horizontally.
+     f) Zero console errors or warnings.
+   - The test suite is focused evidence only. Project LLM, not External AI, runs the authoritative isolated-browser gate across 375, 640, 768, 1024, 1280, and 1536 CSS-pixel viewports after placement.
 
 3. ${familyLower}-${versionLower}.schema.json (JSON Schema Contract)
    - Valid JSON schema representing the block's content payload.

@@ -96,10 +96,10 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
             style={{ borderColor: withAlpha(theme.primary, '66') }}
           >
             {explanationSteps.map((step, index) => (
-              <div key={`${index}-${step.focus}`} className="grid min-h-20 w-full grid-cols-[48px_minmax(150px,250px)_minmax(0,1fr)] items-center border-b last:border-b-0 dark:border-slate-700" style={{ borderColor: withAlpha(theme.primary, '33') }}>
+              <div key={`${index}-${step.focus}`} data-testid="code-c1-explanation-row" className="grid min-h-20 w-full grid-cols-[48px_minmax(0,1fr)] items-center border-b last:border-b-0 sm:grid-cols-[48px_minmax(150px,250px)_minmax(0,1fr)] dark:border-slate-700" style={{ borderColor: withAlpha(theme.primary, '33') }}>
                 <StepBadge step={index + 1} size="md" theme={theme} className="ml-3" />
-                <SyntaxPill text={step.focus} theme={theme} className="justify-self-start" />
-                <SafeHtml as="div" html={step.description} className="px-5 py-[17px] pl-2.5 text-base font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }} />
+                <div className="min-w-0 py-3 sm:py-0"><SyntaxPill text={step.focus} theme={theme} className="justify-self-start" /></div>
+                <SafeHtml as="div" html={step.description} className="col-span-2 px-5 pb-[17px] pl-[22px] text-base font-medium leading-[1.65] sm:col-span-1 sm:px-5 sm:py-[17px] sm:pl-2.5 [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" style={{ color: theme.secondary }} />
               </div>
             ))}
           </CardSurface>

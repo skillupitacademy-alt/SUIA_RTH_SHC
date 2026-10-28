@@ -96,13 +96,13 @@ function DefinitionD1View({
         theme={theme}
         elevation="dashboard"
         hoverable={false}
-        className="my-6 grid min-h-[175px] w-full grid-cols-[86px_1px_minmax(0,1fr)] items-center gap-6 px-9 py-[30px]"
+        className="my-6 grid min-h-[175px] w-full grid-cols-1 items-center gap-4 px-5 py-6 sm:grid-cols-[86px_1px_minmax(0,1fr)] sm:gap-6 sm:px-9 sm:py-[30px]"
         style={{ backgroundColor: withAlpha(primary, '0d'), borderColor: withAlpha(primary, '66') }}
       >
         <div className="m-auto flex h-[70px] w-[70px] items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: primary }}>
           <FileText className="h-8 w-8" />
         </div>
-        <div className="h-[92px] w-px" style={{ backgroundColor: withAlpha(primary, '73') }} />
+        <div className="hidden h-[92px] w-px sm:block" style={{ backgroundColor: withAlpha(primary, '73') }} />
         <div className="min-w-0">
           <h2 className="mb-2.5 text-xl font-extrabold leading-snug" style={{ color: primary }}>Definition</h2>
           <p className="text-[19px] font-semibold leading-[1.65]" style={{ color: secondary }}>{page.definition}</p>

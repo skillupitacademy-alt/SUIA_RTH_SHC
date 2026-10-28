@@ -236,7 +236,7 @@ function IntroductionI1View({
         </p>
 
         {/* Flow Cards Container */}
-        <div className="flex flex-col lg:flex-row items-center gap-2">
+        <div className="flex flex-col min-[1600px]:flex-row items-center gap-2">
           {page.whereFit.flowCards.map((card, index: number) => {
             const IconComponent = getIcon(card.icon);
             return (
@@ -276,8 +276,8 @@ function IntroductionI1View({
                 </CardSurface>
                 {index < page.whereFit.flowCards.length - 1 && (
                   <div className="flex items-center justify-center text-lg" style={{ color: primary }}>
-                    <ArrowRight className="hidden lg:block h-5 w-5" />
-                    <div className="block lg:hidden">
+                    <ArrowRight className="hidden min-[1600px]:block h-5 w-5" />
+                    <div className="block min-[1600px]:hidden">
                       <ArrowRight className="h-5 w-5 rotate-90" />
                     </div>
                   </div>
@@ -372,7 +372,7 @@ function IntroductionI1View({
         </p>
 
         {/* Roadmap Steps Flow */}
-        <div className="flex flex-col lg:flex-row items-center gap-2 overflow-x-auto">
+        <div className="flex flex-col min-[1600px]:flex-row items-center gap-2">
           {page.roadmap.steps.map((step, index: number) => (
             <React.Fragment key={index}>
               <div className="flex-1 w-full bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-center space-y-2">
@@ -391,8 +391,8 @@ function IntroductionI1View({
               </div>
               {index < page.roadmap.steps.length - 1 && (
                 <div className="flex items-center justify-center" style={{ color: primary }}>
-                  <ArrowRight className="hidden lg:block h-4 w-4" />
-                  <div className="block lg:hidden">
+                  <ArrowRight className="hidden min-[1600px]:block h-4 w-4" />
+                  <div className="block min-[1600px]:hidden">
                     <ArrowRight className="h-4 w-4 rotate-90" />
                   </div>
                 </div>

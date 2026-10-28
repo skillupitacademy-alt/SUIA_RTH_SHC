@@ -98,8 +98,15 @@ interface TutorialPageShellProps {
 }
 
 export function TutorialPageShell({ payload, runtimeContext }: TutorialPageShellProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProgressSidebarOpen, setIsProgressSidebarOpen] = useState(false); // Macro 4: RSSB state
+
+  useEffect(() => {
+    const syncSidebarMode = () => setIsSidebarOpen(window.innerWidth >= 1280);
+    syncSidebarMode();
+    window.addEventListener('resize', syncSidebarMode);
+    return () => window.removeEventListener('resize', syncSidebarMode);
+  }, []);
   const [completedUrls, setCompletedUrls] = useState<Set<string> | undefined>(undefined);
   const [tutorialSessionId, setTutorialSessionId] = useState<string | null>(null);
 

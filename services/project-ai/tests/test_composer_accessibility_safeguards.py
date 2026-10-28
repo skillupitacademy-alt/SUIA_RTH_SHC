@@ -42,6 +42,11 @@ def test_versioned_runner_script_contains_axe_and_modality_checks():
     assert "forced_colors" in content
     assert "responsive_viewports" in content
     assert "NOT_APPLICABLE" in content
+    assert "mobile-640" in content
+    assert "laptop-1024" in content
+    assert "wide-1536" in content
+    assert "documentOverflow" in content
+    assert "childBoundaryOverflow" in content
 
 
 @pytest.mark.asyncio

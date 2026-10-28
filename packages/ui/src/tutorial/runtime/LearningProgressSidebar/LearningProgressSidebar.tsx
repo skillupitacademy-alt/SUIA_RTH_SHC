@@ -58,20 +58,21 @@ export function LearningProgressSidebar({ isOpen, brand }: LearningProgressSideb
   return (
     <aside
       aria-label="Your Progress"
-      className={`sticky top-[71px] z-10 flex h-[calc(100dvh-71px)] max-h-[calc(100dvh-71px)] shrink-0 flex-col overflow-hidden bg-white text-[#1e293b] transition-all duration-300 ease-in-out ${
-        isOpen ? 'w-[440px] border-l border-[#edf2f7] opacity-100' : 'w-0 border-none opacity-0 pointer-events-none'
+      className={`fixed right-0 top-[71px] z-30 flex h-[calc(100dvh-71px)] max-h-[calc(100dvh-71px)] w-[min(440px,100vw)] flex-col overflow-hidden bg-white text-[#1e293b] transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0 border-l border-[#edf2f7]' : 'translate-x-full border-none pointer-events-none'
       }`}
       style={{
         top: '71px',
         height: 'calc(100dvh - 71px)',
         maxHeight: 'calc(100dvh - 71px)',
-        width: isOpen ? '440px' : '0px',
-        minWidth: isOpen ? '440px' : '0px',
-        maxWidth: isOpen ? '440px' : '0px',
+        width: 'min(440px, 100vw)',
+        minWidth: 'min(440px, 100vw)',
+        maxWidth: 'min(440px, 100vw)',
         borderLeft: isOpen ? '1px solid #edf2f7' : 'none',
+        transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
       }}
     >
-      <div className="flex h-full w-[440px] flex-col overflow-hidden" style={{ width: '440px' }}>
+      <div className="flex h-full w-full flex-col overflow-hidden">
         {/* Header - ILS_UI_UX/style.css line 59-72 */}
         <header
           className="flex shrink-0 items-center justify-between border-b border-[#edf2f7] bg-white px-[28px] py-[22px]"

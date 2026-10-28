@@ -138,7 +138,7 @@ export function buildConstraints(): CreationBriefConstraint[] {
       severity: 'REQUIRED',
       title: 'UBRC & UBA Look-and-Feel Standards',
       instruction:
-        `Block must implement UBRC DOM identity attributes (data-block-type, data-block-version, data-block-id) and satisfy the ${DESIGN_SYSTEM_PARAMETER_COUNT}-parameter Tutorial Design System Contract. Preserve the target family's own UI composition; use UBA primitives where their semantics fit. The contract covers typography, color, spacing, shape/elevation, components, layout, icons, interaction states, responsive behavior, accessibility, data/status conventions, and shared tokens.`,
+        `Block must implement UBRC DOM identity attributes (data-block-type, data-block-version, data-block-id) and satisfy the ${DESIGN_SYSTEM_PARAMETER_COUNT}-parameter Tutorial Design System Contract. Preserve the target family's own UI composition; use UBA primitives where their semantics fit. The contract covers typography, color, spacing, shape/elevation, components, layout, icons, interaction states, responsive behavior, accessibility, data/status conventions, and shared tokens. The block must remain inside its parent content boundary and avoid document/block horizontal overflow at 375, 640, 768, 1024, 1280, and 1536 CSS-pixel widths.`,
     },
     {
       id: 'E-005',

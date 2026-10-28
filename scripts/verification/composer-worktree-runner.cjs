@@ -7,7 +7,7 @@
  * - Runs Playwright and @axe-core/playwright against the isolated placement commit.
  * - Emits one structured JSON result on stdout containing:
  *   1. Dropdown registration and DOM identity verification
- *   2. Axe-core accessibility audit (WCAG tags + withRules(['color-contrast']))
+ *   2. Axe-core accessibility audit (WCAG A/AA tags, including color contrast)
  *   3. Modality checks: keyboard navigation, reduced motion, forced colors, responsive viewports
  *   4. Console, page, and network error tracking
  *   5. Browser metadata and visual screenshot capture
@@ -558,12 +558,16 @@ function parseArgs() {
         };
       }
 
-      // Modality D: Responsive Viewports (375px mobile, 768px tablet, 1280px desktop)
+      // Modality D: Responsive layout and parent-child boundary checks.
+      // This runs only in the isolated placement worktree and is generic for every block family.
       try {
         const viewportsToTest = [
           { name: 'mobile-375', width: 375, height: 667 },
+          { name: 'mobile-640', width: 640, height: 900 },
           { name: 'tablet-768', width: 768, height: 1024 },
+          { name: 'laptop-1024', width: 1024, height: 900 },
           { name: 'desktop-1280', width: 1280, height: 900 },
+          { name: 'wide-1536', width: 1536, height: 960 },
         ];
         let allViewportsPassed = true;
         result.modality_checks.responsive_viewports.viewports_tested = [];
@@ -572,20 +576,39 @@ function parseArgs() {
           await page.setViewportSize({ width: vp.width, height: vp.height });
           await page.waitForTimeout(250);
 
-          const overflow = await page.evaluate((selector) => {
+          const layout = await page.evaluate((selector) => {
             const block = document.querySelector(selector);
-            if (!block) return false;
-            return block.scrollWidth > window.innerWidth + 2;
+            if (!block) {
+              return { blockFound: false, documentOverflow: true, blockOverflow: true, childBoundaryOverflow: true };
+            }
+
+            const tolerance = 2;
+            const blockRect = block.getBoundingClientRect();
+            const blockOverflow = block.scrollWidth > block.clientWidth + tolerance ||
+              blockRect.left < -tolerance || blockRect.right > window.innerWidth + tolerance;
+            const documentOverflow = document.documentElement.scrollWidth > window.innerWidth + tolerance;
+            const children = Array.from(block.querySelectorAll('*'));
+            const childBoundaryOverflow = children.some((child) => {
+              const style = window.getComputedStyle(child);
+              if (style.display === 'none' || style.visibility === 'hidden' || style.position === 'fixed') return false;
+              const rect = child.getBoundingClientRect();
+              return rect.left < blockRect.left - tolerance || rect.right > blockRect.right + tolerance;
+            });
+
+            return { blockFound: true, documentOverflow, blockOverflow, childBoundaryOverflow };
           }, blockSelector);
 
-          const passed = !overflow;
+          const passed = layout.blockFound && !layout.documentOverflow && !layout.blockOverflow && !layout.childBoundaryOverflow;
           if (!passed) allViewportsPassed = false;
           result.modality_checks.responsive_viewports.viewports_tested.push({
             name: vp.name,
             width: vp.width,
             height: vp.height,
             passed,
-            overflow_x: overflow,
+            block_found: layout.blockFound,
+            document_overflow_x: layout.documentOverflow,
+            block_overflow_x: layout.blockOverflow,
+            child_boundary_overflow: layout.childBoundaryOverflow,
           });
         }
 
