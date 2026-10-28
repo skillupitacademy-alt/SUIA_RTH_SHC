@@ -1140,6 +1140,31 @@ async def supersede_workflow(
     if workflow_model:
         workflow_model.current_state = CanonicalWorkflowState.REJECTED.value
         workflow_model.final_status = "SUPERSEDED"
+        # Reconcile any historical ancestor in the supersedes chain that carries 'superseded'
+        # metadata but remained in CERTIFIED state prior to terminal SUPERSEDED state enforcement.
+        ancestor_id = dict(workflow_model.gate_results or {}).get("supersedes", {}).get("superseded_workflow_id")
+        visited_ancestors = set()
+        while ancestor_id and ancestor_id not in visited_ancestors:
+            visited_ancestors.add(ancestor_id)
+            ancestor_model = await workflow_repo.get(ancestor_id, verify_bindings=False)
+            if not ancestor_model:
+                break
+            ancestor_gates = dict(ancestor_model.gate_results or {})
+            if "superseded" in ancestor_gates and ancestor_model.current_state == CanonicalWorkflowState.CERTIFIED.value:
+                existing_rep = ancestor_gates["superseded"].get("superseded_by", workflow_id)
+                ancestor_model.current_state = CanonicalWorkflowState.REJECTED.value
+                ancestor_model.final_status = "SUPERSEDED"
+                session.add(
+                    StateTransitionModel(
+                        workflow_id=ancestor_id,
+                        from_state=CanonicalWorkflowState.CERTIFIED.value,
+                        to_state=CanonicalWorkflowState.REJECTED.value,
+                        triggered_by=triggered_by,
+                        reason=f"SUPERSEDED_BY_REVISION_RECONCILED (Replacement: {existing_rep})",
+                    )
+                )
+                await workflow_repo.upsert(ancestor_model)
+            ancestor_id = ancestor_gates.get("supersedes", {}).get("superseded_workflow_id")
         old_gates = dict(workflow_model.gate_results or {})
         old_gates["superseded"] = {
             "superseded_at": datetime.now(timezone.utc).isoformat(),
