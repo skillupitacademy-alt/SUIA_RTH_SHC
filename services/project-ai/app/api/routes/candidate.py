@@ -61,6 +61,34 @@ router = APIRouter(tags=["candidates"])
 logger = logging.getLogger(__name__)
 
 
+def _accessibility_preflight_gate(test_result: Dict[str, Any], candidate_sha256: str) -> Dict[str, Any]:
+    """Map isolated source-level preflight evidence into a workflow gate record."""
+    preflight = test_result.get("accessibility_preflight") or test_result.get("runner_metadata", {}).get("accessibility_preflight")
+    if not isinstance(preflight, dict):
+        return {
+            "gate": "Accessibility Preflight",
+            "status": "PENDING",
+            "result": "PENDING",
+            "verdict": "PENDING",
+            "detail": "Accessibility preflight evidence was not produced by the qualification runner.",
+            "candidate_sha256": candidate_sha256,
+        }
+    status = preflight.get("status", "FAIL")
+    return {
+        "gate": "Accessibility Preflight",
+        "status": status,
+        "result": status,
+        "verdict": status,
+        "detail": preflight.get("detail", "Accessibility preflight completed."),
+        "findings": preflight.get("findings", []),
+        "checks_run": preflight.get("checks_run", 0),
+        "evidence_id": test_result.get("evidence_id"),
+        "evidence_hash": test_result.get("evidence_hash"),
+        "candidate_sha256": candidate_sha256,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 # ============================================================================
 # Domain Model <-> ORM Mappers
 # ============================================================================
@@ -454,6 +482,16 @@ async def upload_candidate(
     test_result = await run_candidate_qualification_tests(package.candidateId, package.files)
     
     if not test_result["passed"]:
+        # Preserve source-level accessibility feedback for the existing workflow
+        # even though the rejected package itself is not persisted.
+        workflow_repo = await get_workflow_repository(session)
+        wf_model = await workflow_repo.get(package.workflow_id, verify_bindings=False)
+        if wf_model:
+            current_gates = dict(wf_model.gate_results or {})
+            current_gates["Accessibility Preflight"] = _accessibility_preflight_gate(test_result, candidate_sha256)
+            wf_model.gate_results = current_gates
+            await workflow_repo.upsert(wf_model)
+            await session.commit()
         runner_metadata = test_result.get("runner_metadata", {})
         runner_revision = runner_metadata.get("runner_revision", "unknown")
         input_digests = ",".join(
@@ -507,6 +545,7 @@ async def upload_candidate(
                     "total_tests": test_result["total_tests"],
                     "passed_tests": test_result["passed_tests"],
                 }
+                current_gates["Accessibility Preflight"] = _accessibility_preflight_gate(test_result, candidate_sha256)
                 current_gates["candidate_hash"] = {
                     "gate": "candidate_hash",
                     "status": "PASS",
@@ -609,6 +648,9 @@ async def qualify_candidate(
         "duration_ms": test_result.get("duration_ms"),
         "runner_metadata": test_result.get("runner_metadata"),
     }
+    current_gates["Accessibility Preflight"] = _accessibility_preflight_gate(
+        test_result, candidate_model.candidate_sha256
+    )
     workflow_model.gate_results = current_gates
     await workflow_repo.upsert(workflow_model)
     await session.commit()
@@ -913,16 +955,20 @@ async def generate_manifest(
     workflow_repo = await get_workflow_repository(session)
     workflow_model = await workflow_repo.get(str(candidate_model.workflow_id)) if candidate_model.workflow_id else None
     qualification = (workflow_model.gate_results or {}).get("Unit Test Suite") if workflow_model else None
+    accessibility_preflight = (workflow_model.gate_results or {}).get("Accessibility Preflight") if workflow_model else None
     if (
         not isinstance(qualification, dict)
         or qualification.get("result") != "PASS"
         or not qualification.get("evidence_id")
         or not qualification.get("evidence_hash")
         or qualification.get("candidate_sha256") != candidate_model.candidate_sha256
+        or not isinstance(accessibility_preflight, dict)
+        or accessibility_preflight.get("result") != "PASS"
+        or accessibility_preflight.get("candidate_sha256") != candidate_model.candidate_sha256
     ):
         raise HTTPException(
             status_code=409,
-            detail="Candidate qualification evidence is missing, failed, or does not match this candidate. Run the Project LLM Test Suite before generating a placement manifest.",
+            detail="Candidate qualification or accessibility preflight evidence is missing, failed, or does not match this candidate. Run the Project LLM Test Suite before generating a placement manifest.",
         )
     
     # Get classification and comparison

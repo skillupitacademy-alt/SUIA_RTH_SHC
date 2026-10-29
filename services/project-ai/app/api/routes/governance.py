@@ -408,18 +408,22 @@ async def approve_placement(
     target_version = workflow.target_version
 
     qualification = (workflow.gate_results or {}).get("Unit Test Suite")
+    accessibility_preflight = (workflow.gate_results or {}).get("Accessibility Preflight")
     if (
         not isinstance(qualification, dict)
         or qualification.get("result") != "PASS"
         or not qualification.get("evidence_id")
         or not qualification.get("evidence_hash")
         or qualification.get("candidate_sha256") != stored_candidate_hash
+        or not isinstance(accessibility_preflight, dict)
+        or accessibility_preflight.get("result") != "PASS"
+        or accessibility_preflight.get("candidate_sha256") != stored_candidate_hash
     ):
         raise HTTPException(
             status_code=409,
             detail={
                 "error": "QUALIFICATION_EVIDENCE_REQUIRED",
-                "message": "Approval is blocked until Project LLM records passing unit-test evidence for the bound candidate hash.",
+                "message": "Approval is blocked until Project LLM records passing unit-test and accessibility-preflight evidence for the bound candidate hash.",
             },
         )
     

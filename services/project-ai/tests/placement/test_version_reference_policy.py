@@ -707,6 +707,12 @@ def test_route_manifest_generation_persistence_and_executor_verification_roundtr
             "evidence_id": "ev-test-pass",
             "evidence_hash": "h" * 64,
             "candidate_sha256": cand_sha
+            },
+            "Accessibility Preflight": {
+                "result": "PASS",
+                "evidence_id": "ev-a11y-preflight-pass",
+                "evidence_hash": "p" * 64,
+                "candidate_sha256": cand_sha
         }
     }
 

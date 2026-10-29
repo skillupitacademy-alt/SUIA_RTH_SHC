@@ -28,6 +28,58 @@ def _runner_revision() -> str:
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
+def _accessibility_preflight(component_files: List[Any]) -> Dict[str, Any]:
+    """Catch deterministic accessibility defects before placement or browser verification.
+
+    This is intentionally a narrow source-level preflight. It prevents patterns
+    that cannot meet the platform contract while leaving browser-dependent checks
+    to Stage 6.5.
+    """
+    findings: List[str] = []
+    checks_run = 3
+
+    for comp in component_files:
+        source = comp.content if isinstance(comp.content, str) else comp.content.decode("utf-8", errors="replace")
+
+        if re.search(r"\bborderColor\s*:\s*withAlpha\s*\(", source):
+            findings.append(
+                f"{comp.filename}: alpha-only inline borderColor is not allowed on candidate surfaces; "
+                "use a solid semantic border and retain a forced-colors border."
+            )
+
+        if re.search(r"\bcolor\s*:\s*(?:theme\s*\.\s*)?(?:primary|secondary|accent1|accent2)\b", source):
+            findings.append(
+                f"{comp.filename}: direct brand-token foreground text color is not allowed because it cannot "
+                "prove AA contrast on every supported surface; use a semantic high-contrast text class instead."
+            )
+
+        # Shared CardSurface and CalloutBanner supply forced-colors fallbacks.
+        # Candidate-authored rounded bordered wrappers must do the same explicitly.
+        class_values = [first or second for first, second in re.findall(
+            r"className\s*=\s*(?:\"([^\"]*)\"|'([^']*)')", source
+        )]
+        for class_value in class_values:
+            has_rounded = bool(re.search(r"(?:^|\s)rounded(?:-[\w]+)?(?:\s|$)", class_value))
+            has_perimeter_border = bool(re.search(r"(?:^|\s)border(?:-\d+)?(?:\s|$)", class_value))
+            if has_rounded and has_perimeter_border and "forced-colors:" not in class_value:
+                findings.append(
+                    f"{comp.filename}: a rounded bordered surface is missing a forced-colors border or outline; "
+                    "use forced-colors:border-[ButtonText] or compose a shared UBA primitive."
+                )
+                break
+
+    return {
+        "status": "FAIL" if findings else "PASS",
+        "checks_run": checks_run,
+        "findings": findings,
+        "detail": (
+            f"{checks_run}/{checks_run} static accessibility preflight checks passed"
+            if not findings
+            else "; ".join(findings)
+        ),
+    }
+
+
 def find_workspace_root() -> Path:
     """Find monorepo workspace root containing packages/ui."""
     env_root = os.environ.get('WORKSPACE_ROOT')
@@ -178,6 +230,25 @@ async def run_candidate_qualification_tests(
         for file in files
     ]
     runner_revision = _runner_revision()
+    accessibility_preflight = _accessibility_preflight(component_files)
+
+    if accessibility_preflight["status"] != "PASS":
+        return {
+            "passed": False,
+            "status": "FAIL",
+            "detail": f"Accessibility preflight failed: {accessibility_preflight['detail']}",
+            "evidence_id": f"test-evidence-{candidate_id}",
+            "evidence_hash": "",
+            "total_tests": 0,
+            "passed_tests": 0,
+            "failed_tests": 0,
+            "accessibility_preflight": accessibility_preflight,
+            "runner_metadata": {
+                "runner_revision": runner_revision,
+                "qualification_inputs": qualification_inputs,
+                "accessibility_preflight": accessibility_preflight,
+            },
+        }
 
     # UBA Design & Accessibility Rule 1: Asymmetrical left borders prohibited
     for comp in component_files:
@@ -428,6 +499,7 @@ async def run_candidate_qualification_tests(
                 "NODE_ENV": test_env["NODE_ENV"],
                 "NODE_PATH": "<cleared>",
             },
+            "accessibility_preflight": accessibility_preflight,
         }
         evidence_hash = hashlib.sha256(json.dumps({
             "output": raw_output,
@@ -477,6 +549,7 @@ async def run_candidate_qualification_tests(
                 "passed_tests": num_passed,
                 "failed_tests": num_failed,
                 "duration_ms": duration_ms,
+                "accessibility_preflight": accessibility_preflight,
                 "runner_metadata": runner_metadata,
             }
         else:
@@ -502,6 +575,7 @@ async def run_candidate_qualification_tests(
                 "failed_tests": num_failed,
                 "duration_ms": duration_ms,
                 "output": raw_output[:1000],
+                "accessibility_preflight": accessibility_preflight,
                 "runner_metadata": runner_metadata,
             }
 

@@ -442,7 +442,9 @@ export class ProjectLlmClient {
           }
           const lowerGate = gateName.toLowerCase();
           const category =
-            lowerGate.includes('test') || lowerGate.includes('qualif')
+            lowerGate.includes('accessibility') || lowerGate.includes('a11y')
+              ? 'Upload Accessibility Preflight'
+              : lowerGate.includes('test') || lowerGate.includes('qualif')
               ? 'Isolated Test & Qualification'
               : lowerGate.includes('hash') || lowerGate.includes('contract')
               ? 'Cryptographic Contract Integrity'
@@ -480,10 +482,11 @@ export class ProjectLlmClient {
           const stageOrder = (name: string): number => {
             const lower = name.toLowerCase();
             if (lower.includes('qualif') || lower.includes('test')) return 1;
-            if (lower.includes('hash') || lower.includes('contract')) return 2;
-            if (lower.includes('manifest') || lower.includes('placement')) return 3;
-            if (lower.includes('composer') || lower.includes('browser')) return 4;
-            return 5;
+            if (lower.includes('accessibility') || lower.includes('a11y')) return 2;
+            if (lower.includes('hash') || lower.includes('contract')) return 3;
+            if (lower.includes('manifest') || lower.includes('placement')) return 4;
+            if (lower.includes('composer') || lower.includes('browser')) return 5;
+            return 6;
           };
           return stageOrder(a.gate) - stageOrder(b.gate);
         });

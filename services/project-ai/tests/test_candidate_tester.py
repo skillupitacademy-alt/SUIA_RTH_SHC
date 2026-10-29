@@ -208,3 +208,50 @@ def test_qualification_rejects_cursor_pointer_without_keyboard_semantics(tmp_pat
     assert "keyboard semantics" in result["detail"]
 
 
+def test_qualification_rejects_alpha_only_candidate_surface_borders(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    (workspace / "packages" / "ui").mkdir(parents=True)
+    monkeypatch.setattr(candidate_tester, "find_workspace_root", lambda: workspace)
+
+    result = asyncio.run(candidate_tester.run_candidate_qualification_tests(
+        "aabbccdd-eeff-0011-2233-445566778899",
+        [
+            _candidate_file(
+                "ExampleBlock.tsx",
+                "export function ExampleBlock() { return <div style={{ borderColor: withAlpha(primary, '35') }} />; }",
+            ),
+            _candidate_file(
+                "ExampleBlock.test.tsx",
+                "import { ExampleBlock } from '../ExampleBlock'; test('renders', () => { ExampleBlock(); });",
+            ),
+        ],
+    ))
+
+    assert result["passed"] is False
+    assert result["accessibility_preflight"]["status"] == "FAIL"
+    assert "alpha-only inline borderColor" in result["detail"]
+
+
+def test_qualification_rejects_rounded_bordered_surface_without_forced_colors(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    (workspace / "packages" / "ui").mkdir(parents=True)
+    monkeypatch.setattr(candidate_tester, "find_workspace_root", lambda: workspace)
+
+    result = asyncio.run(candidate_tester.run_candidate_qualification_tests(
+        "aabbccdd-eeff-0011-2233-445566778899",
+        [
+            _candidate_file(
+                "ExampleBlock.tsx",
+                'export function ExampleBlock() { return <div className="rounded-xl border border-slate-500" />; }',
+            ),
+            _candidate_file(
+                "ExampleBlock.test.tsx",
+                "import { ExampleBlock } from '../ExampleBlock'; test('renders', () => { ExampleBlock(); });",
+            ),
+        ],
+    ))
+
+    assert result["passed"] is False
+    assert "missing a forced-colors border or outline" in result["detail"]
+
+
