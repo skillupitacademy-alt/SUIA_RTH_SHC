@@ -526,7 +526,11 @@ async def verify_composer_in_worktree(
         logger.info(f"Preview server ready at {preview_url}. Launching Playwright browser verification...")
 
         # Step 4: Execute versioned Node runner from inside the detached worktree
+        live_runner_script = workspace_root / "scripts" / "verification" / "composer-worktree-runner.cjs"
         runner_script_in_worktree = worktree_path / "scripts" / "verification" / "composer-worktree-runner.cjs"
+        if live_runner_script.exists():
+            runner_script_in_worktree.parent.mkdir(parents=True, exist_ok=True)
+            runner_script_in_worktree.write_text(live_runner_script.read_text(encoding="utf-8"), encoding="utf-8")
         if not runner_script_in_worktree.exists():
             return {
                 "status": "FAIL",

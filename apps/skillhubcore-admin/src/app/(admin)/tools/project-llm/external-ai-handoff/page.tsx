@@ -157,8 +157,20 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
      Class: "text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6"
      Foreground: use text-slate-800 dark:text-slate-200; do not use alpha-appended theme text colors
    - Item / Card Body Text:
-     Class: "text-sm sm:text-base font-medium leading-relaxed"
+     Class: "text-sm sm:text-base font-medium leading-relaxed text-slate-900 dark:text-slate-100"
      Foreground: use text-slate-900 dark:text-slate-100
+
+   - CRITICAL WCAG 2.1 AA COLOR-CONTRAST INVARIANT:
+     * NEVER use style={{ color: primary }} or style={{ color: secondary }} or style={{ color: theme.primary }} on ANY readable text, titles, descriptions, list items, or subtitles.
+       Reason: Brand primary and secondary colors (such as RealTutorialHub #E11D48 or SkillUpITAcademy #F54A8D) have contrast ratios (3.3:1 - 4.49:1) that FAIL the strict WCAG AA 4.5:1 minimum on white or dark surfaces.
+     * ALWAYS use semantic Tailwind classes for ALL text content:
+       - Body / Item Text: className="text-sm sm:text-base font-medium text-slate-900 dark:text-slate-100" (Contrast > 14:1, guaranteed PASS)
+       - Subtitle / Introduction: className="text-slate-800 dark:text-slate-200" (Contrast > 11:1, guaranteed PASS)
+       - Title / Heading: className="text-slate-900 dark:text-slate-100" (Contrast > 14:1, guaranteed PASS)
+     * Brand tokens (primary, secondary) are ONLY permitted on:
+       - Background tints: style={{ backgroundColor: withAlpha(primary, '14') }}
+       - Accent bars: className="h-1 w-12 rounded-full" style={{ backgroundColor: primary }}
+       - Decorative Lucide icons with aria-hidden="true"
    - Monospace / Code Elements:
      Class: "font-mono text-xs sm:text-sm"
 

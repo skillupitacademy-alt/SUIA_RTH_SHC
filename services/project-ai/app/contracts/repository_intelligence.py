@@ -1027,16 +1027,19 @@ def build_inline_code_templates(
             "correct_examples": [
                 "const primary = theme.primary;",
                 "const secondary = theme.secondary;",
-                "const slateText = theme.slate?.700 ?? getThemeColor(theme, 'slate', 700);",
-                "<div style={{ borderColor: primary }}>",
+                "// Semantic high-contrast text classes guaranteeing WCAG 2.1 AA (Contrast > 14:1):",
+                "<p className=\"text-slate-900 dark:text-slate-100\">{item.text}</p>",
+                "// Accent bars and background tints with brand tokens:",
+                "<div className=\"h-1 w-12 rounded-full\" style={{ backgroundColor: primary }} />",
                 "<div style={{ backgroundColor: withAlpha(primary, '14') }}>",
             ],
             "incorrect_examples": [
+                "// ❌ WRONG — Brand tokens on readable text fail WCAG AA 4.5:1 contrast",
+                "<p style={{ color: primary }}>{item.text}</p>",
+                "<span style={{ color: secondary }}>{item.text}</span>",
                 "// ❌ WRONG — hardcoded colors break brand independence",
                 "<div style={{ borderColor: '#e11d48' }}>",
                 "<div style={{ color: '#1e293b' }}>",
-                "// ❌ WRONG — referencing specific brand names",
-                "const color = isRTH ? '#e11d48' : '#3b82f6';",
             ],
         },
         "import_paths": {
