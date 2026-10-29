@@ -40,10 +40,13 @@ and Composer chrome.
 
 ### Accessibility Acceptance Contract
 
-- Meet WCAG 2.1 AA color contrast for text, meaningful icons, badges, controls, and non-text UI boundaries. Validate the intended light and dark surfaces for both injected brands; a change that only passes the default Composer theme is incomplete.
-- STRICT WCAG 2.1 AA COLOR-CONTRAST INVARIANT: NEVER use style={{ color: primary }} or style={{ color: secondary }} on any readable text. Brand primary (#E11D48) and secondary tokens do not meet the 4.5:1 threshold against white/dark surfaces.
-- ALL readable text MUST use semantic Tailwind classes: 'text-slate-900 dark:text-slate-100' for titles, body, and list items; 'text-slate-800 dark:text-slate-200' for subtitles.
-- Brand tokens belong exclusively in backgrounds ('backgroundColor: withAlpha(primary, "14")'), accent lines ('backgroundColor: primary'), borders, or decorative icons with 'aria-hidden="true"'. Use semantic high-contrast foreground classes for readable text, such as text-slate-900 dark:text-slate-100. Brand tokens belong in borders, decorative icons, backgrounds, and text decoration unless their contrast is known to be sufficient.
+- Meet WCAG 2.1 AA color contrast for text, meaningful icons, badges, controls, and non-text UI boundaries across both injected brand themes (SkillUp India Academy / SUIA and RealTutorialHub / RTH). Validate the intended light and dark surfaces for both injected brands; a change that only passes the default Composer theme is incomplete.
+- STRICT WCAG 2.1 AA COLOR-CONTRAST INVARIANT: NEVER use raw brand tokens directly as thin readable body or subtitle text. Brand primary (#E11D48) and secondary tokens do not meet the 4.5:1 threshold against white/dark surfaces.
+- Consistent Frame & Expressive Core: Maintain platform uniformity by using BlockShell, standard card radius ('rounded-2xl'), and high-contrast semantic body copy ('text-slate-900 dark:text-slate-100' for titles and 'text-slate-700 dark:text-slate-300' for descriptions).
+- Vibrant, Contrast-Safe Badges & Accents:
+  - Numbered step badges MUST use filled circle backgrounds mapped dynamically from the domain theme with bold white text ('text-white font-extrabold') and forced-colors borders.
+  - Category and taxonomy pills MUST use soft pastel tinted backgrounds paired with deep, contrast-safe text (e.g., deep rose '#9f1239' on soft rose, deep blue '#1e3a8a' on soft blue, deep emerald '#064e3b' on soft green) to guarantee >= 4.5:1 contrast.
+  - Decorative icons and outline wrappers MUST include 'aria-hidden="true"' and retain visible perimeters in forced-colors mode.
 - Every meaningful rounded card, callout, badge, pill, panel, or icon wrapper must retain a real visible perimeter in forced-colors active mode. Use an explicit class-based border or outline and forced-colors:!border-[ButtonText] (or a shared primitive that supplies it). Never use shadow, blur, tint, an alpha-only border, or inline borderColor as the sole boundary; inline borderColor can override the forced-colors utility.
 - Only genuine controls may be keyboard-focusable. Do not add tabIndex, role="button", pointer cursors, hover affordances, or keyboard handlers to static editorial content just to satisfy a test.
 - A block with no genuine controls is expected to report keyboard navigation as NOT_APPLICABLE in Project LLM browser evidence. A block with controls must provide native semantics (or an equivalent accessible role), keyboard operation, and a visible focus-visible indicator.
