@@ -53,6 +53,15 @@ def test_derive_file_operations_resolution(tmp_path):
         encoding='utf-8',
     )
 
+    blocks_schema_rel = "packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts"
+    blocks_schema_file = tmp_path / blocks_schema_rel
+    blocks_schema_file.parent.mkdir(parents=True, exist_ok=True)
+    blocks_schema_file.write_text(
+        "import { z } from 'zod';\n"
+        "export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() => z.union([]));\n",
+        encoding='utf-8',
+    )
+
     comparator = CanonicalComparator(snapshot={})
     mock_files = [
         {"filename": "README.md", "content": "# Objective Block"},
@@ -92,6 +101,8 @@ def test_derive_file_operations_resolution(tmp_path):
     assert renderer_op.expected_pre_hash == compute_sha256(renderer_file.read_text(encoding='utf-8'))
     generated_registry_op = next(op for op in ops if op.action == PlacementFileAction.PATCH_GENERATED_REGISTRY)
     assert generated_registry_op.expected_pre_hash == compute_sha256(generated_registry_file.read_text(encoding='utf-8'))
+    blocks_schema_op = next(op for op in ops if op.action == PlacementFileAction.PATCH_BLOCKS_SCHEMA)
+    assert blocks_schema_op.expected_pre_hash == compute_sha256(blocks_schema_file.read_text(encoding='utf-8'))
 
 
 def test_derive_file_operations_rejects_incomplete_portable_contract(tmp_path):
