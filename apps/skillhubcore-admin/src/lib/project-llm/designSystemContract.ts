@@ -45,6 +45,7 @@ and Composer chrome.
 - Only genuine controls may be keyboard-focusable. Do not add tabIndex, role="button", pointer cursors, hover affordances, or keyboard handlers to static editorial content just to satisfy a test.
 - A block with no genuine controls is expected to report keyboard navigation as NOT_APPLICABLE in Project LLM browser evidence. A block with controls must provide native semantics (or an equivalent accessible role), keyboard operation, and a visible focus-visible indicator.
 - Include focused unit coverage for semantic structure, accessible names where controls exist, contrast-safe token usage, visible boundaries, reduced motion, and responsive containment. Project LLM remains the authority for isolated browser, forced-colors, keyboard, axe-core, and six-width gates.
+- Do not label a candidate, README, test, or preview as Stage 6.5 verified, WCAG certified, or guaranteed to meet a specific contrast ratio before Project LLM attaches browser evidence. Candidate tests may assert intended semantics and token usage, but they must not present class-name checks as browser accessibility proof.
 
 ### Evidence and Ownership
 
