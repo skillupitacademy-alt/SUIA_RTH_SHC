@@ -11,28 +11,23 @@ export interface StepBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 /**
- * Resolves the step circle color strictly from the 4 brand tokens:
- * - Steps 1, 4, 7... -> Brand Accent (Magenta Pink #be123c on SUIA / Rose Red #e11d48 on RTH)
- * - Steps 2, 5, 8... -> Info Accent (Sky Cyan #0284c7 on SUIA / Indigo Blue #4f46e5 on RTH)
- * - Steps 3, 6, 9... -> Success Accent (Emerald Green #059669 on SUIA / Amber Warm #d97706 on RTH)
- * Provides 100% uniform numbering across I1, C1, D1, S1, and O1 blocks!
+ * Resolves each step from the active theme's semantic accent tokens. The
+ * fallback chain keeps older callers functional without identifying a brand
+ * from a particular hex value.
  */
 export function getStepBrandColor(theme: DomainTheme, stepValue: number | string): string {
-  const isRth = (theme.primary || '').toLowerCase() === '#e11d48';
   const num = typeof stepValue === 'number' ? stepValue : parseInt(String(stepValue), 10);
+  const accentCycle = [
+    theme.stepAccent1 ?? theme.secondary,
+    theme.stepAccent2 ?? theme.accent1 ?? theme.primary,
+    theme.stepAccent3 ?? theme.accent2 ?? theme.primaryDark ?? theme.primary,
+  ];
 
   if (isNaN(num) || num <= 0) {
-    return isRth ? theme.primary : '#be123c';
+    return accentCycle[0];
   }
 
-  const cycleIndex = (num - 1) % 3;
-  if (cycleIndex === 0) {
-    return isRth ? '#e11d48' : '#be123c';
-  } else if (cycleIndex === 1) {
-    return isRth ? '#4f46e5' : '#0284c7';
-  } else {
-    return isRth ? '#d97706' : '#059669';
-  }
+  return accentCycle[(num - 1) % accentCycle.length];
 }
 
 /**

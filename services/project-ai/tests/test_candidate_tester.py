@@ -208,7 +208,7 @@ def test_qualification_rejects_cursor_pointer_without_keyboard_semantics(tmp_pat
     assert "keyboard semantics" in result["detail"]
 
 
-def test_accessibility_preflight_allows_theme_border_and_color_tokens():
+def test_accessibility_preflight_rejects_unsafe_inline_theme_styles():
     files = [
         _candidate_file(
             "ExampleBlock.tsx",
@@ -216,6 +216,35 @@ def test_accessibility_preflight_allows_theme_border_and_color_tokens():
         )
     ]
     preflight = candidate_tester._accessibility_preflight(files)
+    assert preflight["status"] == "FAIL"
+    assert "inline borderColor" in preflight["detail"]
+
+
+def test_accessibility_preflight_rejects_raw_hex_and_missing_forced_colors():
+    files = [
+        _candidate_file(
+            "ExampleBlock.tsx",
+            'export function ExampleBlock() { return <div className="rounded-xl border" style={{ backgroundColor: "#ff00aa" }}>Card</div>; }',
+        )
+    ]
+
+    preflight = candidate_tester._accessibility_preflight(files)
+
+    assert preflight["status"] == "FAIL"
+    assert "raw hex color" in preflight["detail"]
+    assert "forced-colors" in preflight["detail"]
+
+
+def test_accessibility_preflight_allows_shared_surface_with_semantic_text():
+    files = [
+        _candidate_file(
+            "ExampleBlock.tsx",
+            "import { CardSurface } from '../primitives'; export function ExampleBlock() { return <CardSurface className=\"w-full\"><p className=\"text-slate-900 dark:text-slate-100\">Card</p></CardSurface>; }",
+        )
+    ]
+
+    preflight = candidate_tester._accessibility_preflight(files)
+
     assert preflight["status"] == "PASS"
 
 

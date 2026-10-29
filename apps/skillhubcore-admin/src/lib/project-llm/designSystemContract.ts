@@ -15,7 +15,7 @@ its own family/version-specific UI and pedagogical composition:
 2. Color palette: consume the injected theme and semantic tokens; do not hard-code brand names or brand-specific runtime behavior.
 3. Spacing: use the existing responsive spacing rhythm and shared primitive padding/gap conventions.
 4. Shape, borders, and elevation: use shared radius, perimeter borders, and the CardSurface elevation tiers; never use shadow alone as a boundary.
-5. Components: compose BlockShell, BlockHeader, CardSurface, CalloutBanner, TerminalWindow, StepBadge, and SyntaxPill where their semantics fit; do not recreate them unnecessarily.
+5. Components: compose BlockShell, BlockHeader, CardSurface, CalloutBanner, TerminalWindow, StepBadge, and SyntaxPill where their semantics fit; do not recreate them unnecessarily. A version may retain a legitimate custom educational layout when a shared primitive does not fit.
 6. Layout and grid: use responsive, content-safe layouts that preserve alignment and avoid overflow at supported breakpoints.
 7. Iconography: use lucide-react icons for interface meaning and mark decorative icons aria-hidden="true"; do not use emoji as UI controls.
 8. Interaction states: interactive elements need a real semantic role, keyboard operation, visible focus state, disabled/loading states where applicable, and must not imply clickability when static.
@@ -27,10 +27,11 @@ its own family/version-specific UI and pedagogical composition:
 ### Strict 4-Color Brand Palette Enforcement (SUIA & RTH)
 
 All tutorial blocks belong to a single cohesive tutorial page. Every block MUST strictly adhere to the 4 canonical brand tokens without introducing unapproved rainbow hues:
-- Token 1 (primary): Deep Navy #0B1B3D on SUIA / Rose Red #E11D48 on RTH. Used for structural text, major headings, card titles, and dark console containers.
+- Token 1 (primary): Deep Navy #0B1B3D on SUIA / Rose Red #E11D48 on RTH. Used for structural accents and dark console containers; normal readable text uses semantic high-contrast foreground classes.
 - Token 2 (secondary): Magenta Pink #F54A8D on SUIA / Slate Navy #1E293B on RTH. Used for eyebrow pills, block version badges, and Step 1 brand accents.
 - Token 3 (accent1): Sky Cyan #0284C7 on SUIA / Indigo Blue #6366F1 on RTH. Used for technical information, code focus, Step 2 accents, and informational callout notes.
 - Token 4 (accent2): Emerald Green #10B981 on SUIA / Amber Warm #F59E0B on RTH. Used for success checkmarks, completed outcomes, and Step 3 mastery accents.
+- StepBadge backgrounds use optional contrast-safe 'stepAccent1', 'stepAccent2', and 'stepAccent3' tokens derived from the same brand roles. Do not infer a brand from a hex value and do not assume a base accent has sufficient contrast with white text.
 - STRICT BAN ON UNAPPROVED COLORS: Do NOT introduce arbitrary orange, purple, yellow, red, or rainbow gradients. Multi-card grids (such as 6-step layouts) MUST cycle through the 3 functional accents (secondary, accent1, accent2) or differentiate via Lucide icons and semantic badges, NEVER by inventing rainbow colors.
 - STRICT BAN ON 3D / CARTOON DECORATIONS: Production tutorial blocks must not include 3D floating graphics, mascot cartoons, or marketing illustrations. All visuals must be functional SVG icons from lucide-react.
 
@@ -54,7 +55,7 @@ Every list component (ordered \`<ol>\` or unordered \`<ul>\`) rendered across an
 ### 3-Tier Elevation and Surface Invariant (Matching I1, C1, D1, S1)
 
 To ensure seamless visual continuity across Introduction (I1), Code (C1), Definition (D1), and Summary (S1) blocks:
-- Header Consistency: MUST compose \`<BlockHeader />\` with eyebrow pill, relevant Lucide icon, headingLevel="h1", titleScale="hero" (text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]), and showAccentBar={true} (rendering the signature w-12 h-1 rounded-full brand accent bar in primary theme color). Never hand-roll an asymmetrical header, never omit the accent bar, and never downgrade to titleScale="standard" for primary block titles.
+- Header Consistency: For a primary block title, compose \`<BlockHeader />\` where the version's educational composition permits it, with an eyebrow pill, relevant Lucide icon, headingLevel="h1", an appropriate title scale, and showAccentBar={true} (the signature w-12 h-1 rounded-full brand accent bar). A custom hero may retain its own structure only when it preserves the same hierarchy, accent-bar treatment, and responsive boundaries.
 - CardSurface Resting Elevation: Compose CardSurface with elevation="dashboard" for primary cards:
   * Resting: shadow-xl border-t border-white/80 dark:border-white/10 backdrop-blur-md bg-white/85 dark:bg-slate-900/85
   * Border: subtle perimeter border border-slate-200 dark:border-slate-800

@@ -75,7 +75,7 @@ describe('UBA Refactored Blocks Suite', () => {
       expect(terminalDots).not.toBeNull();
     });
 
-    it('proves dual-brand theme independence', () => {
+    it('keeps shell identity theme-independent without injecting a foreground color', () => {
       const { container: containerA } = render(
         <DefinitionBlock block={mockDefBlock} theme={themeA} />
       );
@@ -85,8 +85,10 @@ describe('UBA Refactored Blocks Suite', () => {
 
       const articleA = containerA.querySelector('article');
       const articleB = containerB.querySelector('article');
-      expect(articleA?.style.color).toBe('rgb(15, 23, 42)');
-      expect(articleB?.style.color).toBe('rgb(30, 41, 59)');
+      expect(articleA?.getAttribute('data-block-type')).toBe('definition');
+      expect(articleB?.getAttribute('data-block-type')).toBe('definition');
+      expect(articleA?.style.color).toBe('');
+      expect(articleB?.style.color).toBe('');
     });
   });
 

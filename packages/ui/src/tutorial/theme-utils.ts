@@ -147,6 +147,9 @@ export const DEFAULT_THEME: DomainTheme = {
   secondary: TAILWIND_COLORS.slate[900],
   accent1: '#0284C7', // Sky Cyan fallback
   accent2: '#10B981', // Emerald Green fallback
+  stepAccent1: '#0f172a',
+  stepAccent2: '#0369a1',
+  stepAccent3: '#047857',
   slate: TAILWIND_COLORS.slate,
   gray: TAILWIND_COLORS.gray,
   blue: TAILWIND_COLORS.blue,
@@ -164,6 +167,9 @@ export const SUIA_BRAND_THEME: DomainTheme = {
   secondary: '#F54A8D',    // Text / Shell (Magenta Pink)
   accent1: '#0284C7',      // Interactive / Info (Sky Cyan)
   accent2: '#10B981',      // Success / Highlight (Emerald Green)
+  stepAccent1: '#BE123C',  // Deep rose supports white step text
+  stepAccent2: '#0369A1',  // Deep sky supports white step text
+  stepAccent3: '#047857',  // Deep emerald supports white step text
   primaryDark: '#071228',
   slate: TAILWIND_COLORS.slate,
   gray: TAILWIND_COLORS.gray,
@@ -182,6 +188,9 @@ export const RTH_BRAND_THEME: DomainTheme = {
   secondary: '#1E293B',    // Text / Shell (Slate Navy)
   accent1: '#6366F1',      // Interactive / Info (Indigo Blue)
   accent2: '#F59E0B',      // Success / Highlight (Amber Warm)
+  stepAccent1: '#E11D48',  // Rose supports white step text
+  stepAccent2: '#4F46E5',  // Deep indigo supports white step text
+  stepAccent3: '#B45309',  // Deep amber supports white step text
   primaryDark: '#BE123C',
   slate: TAILWIND_COLORS.slate,
   gray: TAILWIND_COLORS.gray,

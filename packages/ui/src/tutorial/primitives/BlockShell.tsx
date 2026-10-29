@@ -1,6 +1,5 @@
 import React from 'react';
 import type { DomainTheme, TutorialBlockRuntimeContext } from '../types';
-import { DEFAULT_THEME } from '../theme-utils';
 
 export interface BlockShellProps extends React.HTMLAttributes<HTMLElement> {
   blockId?: string;
@@ -19,24 +18,19 @@ export interface BlockShellProps extends React.HTMLAttributes<HTMLElement> {
  * Enforces:
  * 1. UBRC DOM identity attributes (data-block-id, data-block-type, data-block-version)
  * 2. Canonical outer padding: w-full px-[5%] py-8 sm:py-10
- * 3. Dual-brand theme secondary color binding
- * 4. Smooth dark-mode & responsive container support
+ * 3. Smooth dark-mode & responsive container support
  */
 export function BlockShell({
   blockId,
   blockType,
   blockVersion,
   runtimeContext,
-  theme,
   children,
   className = '',
   style,
   as: Component = 'article',
   ...rest
 }: BlockShellProps) {
-  const activeTheme = theme ?? DEFAULT_THEME;
-  const secondary = activeTheme.secondary;
-
   const effectiveBlockId = runtimeContext?.blockId ?? blockId ?? 'unknown-block';
   const effectiveBlockType = runtimeContext?.blockType ?? blockType ?? 'generic';
   const effectiveBlockVersion = runtimeContext?.blockVersion ?? blockVersion ?? '1.0';
@@ -52,7 +46,7 @@ export function BlockShell({
       data-block-type={effectiveBlockType}
       data-block-version={effectiveBlockVersion}
       className={combinedClass}
-      style={{ color: secondary, ...style }}
+      style={style}
       {...rest}
     >
       {children}

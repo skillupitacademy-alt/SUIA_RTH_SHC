@@ -31,12 +31,47 @@ def _runner_revision() -> str:
 def _accessibility_preflight(component_files: List[Any]) -> Dict[str, Any]:
     """Catch deterministic structural defects before placement or browser verification."""
     findings: List[str] = []
-    checks_run = 1
+    checks_run = 5
+
+    readable_text_tag = re.compile(
+        r"<(?:p|h[1-6]|span|div|li|strong|em)\b[^>]*style=\{\{[^}]*\bcolor\s*:\s*"
+        r"(?:theme\.)?(?:primary|secondary|accent1|accent2)\b",
+        re.IGNORECASE,
+    )
+    raw_hex_color = re.compile(r"#[0-9a-fA-F]{3,8}\b")
+    inline_border_color = re.compile(r"\bborderColor\s*:")
+    rounded_bordered_surface = re.compile(r"className=[\"'][^\"']*\brounded(?:-[\w\[\]]+)?[^\"']*\bborder(?:\b|-[\w\[\]]+)", re.IGNORECASE)
 
     for comp in component_files:
         source = comp.content if isinstance(comp.content, str) else comp.content.decode("utf-8", errors="replace")
         if not source.strip():
             findings.append(f"{comp.filename}: component file is empty.")
+            continue
+
+        if raw_hex_color.search(source):
+            findings.append(
+                f"{comp.filename}: raw hex color values are not allowed in candidate components; "
+                "use injected theme tokens, semantic Tailwind classes, or a shared primitive."
+            )
+
+        if inline_border_color.search(source):
+            findings.append(
+                f"{comp.filename}: inline borderColor is not allowed on candidate surfaces because it can override "
+                "forced-colors perimeters; use an explicit class-based border instead."
+            )
+
+        if readable_text_tag.search(source):
+            findings.append(
+                f"{comp.filename}: theme tokens cannot be used as inline foreground color on readable text; "
+                "use semantic high-contrast text classes instead."
+            )
+
+        uses_shared_surface = any(primitive in source for primitive in ("CardSurface", "CalloutBanner", "StepBadge", "TerminalWindow"))
+        if rounded_bordered_surface.search(source) and not uses_shared_surface and "forced-colors:" not in source:
+            findings.append(
+                f"{comp.filename}: a hand-built rounded bordered surface needs an explicit forced-colors border or "
+                "must compose CardSurface/CalloutBanner."
+            )
 
     return {
         "status": "FAIL" if findings else "PASS",

@@ -165,9 +165,9 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
      * NEVER use style={{ color: primary }} or style={{ color: secondary }} or style={{ color: theme.primary }} on ANY readable text, titles, descriptions, list items, or subtitles.
        Reason: Brand primary and secondary colors (such as RealTutorialHub #E11D48 or SkillUpITAcademy #F54A8D) have contrast ratios (3.3:1 - 4.49:1) that FAIL the strict WCAG AA 4.5:1 minimum on white or dark surfaces.
      * ALWAYS use semantic Tailwind classes for ALL text content:
-       - Body / Item Text: className="text-sm sm:text-base font-medium text-slate-900 dark:text-slate-100" (Contrast > 14:1, guaranteed PASS)
-       - Subtitle / Introduction: className="text-slate-800 dark:text-slate-200" (Contrast > 11:1, guaranteed PASS)
-       - Title / Heading: className="text-slate-900 dark:text-slate-100" (Contrast > 14:1, guaranteed PASS)
+        - Body / Item Text: className="text-sm sm:text-base font-medium text-slate-900 dark:text-slate-100" (intended high-contrast foreground; browser evidence remains authoritative)
+        - Subtitle / Introduction: className="text-slate-800 dark:text-slate-200" (intended high-contrast foreground; browser evidence remains authoritative)
+        - Title / Heading: className="text-slate-900 dark:text-slate-100" (intended high-contrast foreground; browser evidence remains authoritative)
      * Brand tokens (primary, secondary) are ONLY permitted on:
        - Background tints: style={{ backgroundColor: withAlpha(primary, '14') }}
        - Accent bars: className="h-1 w-12 rounded-full" style={{ backgroundColor: primary }}
@@ -238,7 +238,7 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
        - Action / emphasis bullets -> Magenta Pink on SUIA / Rose Red on RTH
        - Outcome / validation checkmarks -> Emerald Green on SUIA / Amber Warm on RTH
        - Generic multi-item bulleted lists -> Cycle predictably through the 3 brand accents (1: Brand, 2: Info, 3: Success, repeating).
-     * This guarantees 100% color, bullet marker, and typography uniformity across all blocks on the entire tutorial page!
+     * This standardizes the intended color and marker behavior for applicable lists; Project LLM browser evidence remains authoritative for the rendered result.
 
 --------------------------------------------------------------------------------
 MANDATORY PACKAGE DELIVERABLE: SINGLE ZIP ARCHIVE
@@ -837,7 +837,7 @@ ${JSON.stringify(engineeringContract, null, 2)}
                             3 Milestones
                           </span>
                           <span className="px-1.5 py-0.5 rounded bg-emerald-900/60 text-emerald-200 text-[9px]">
-                            100% WCAG
+                            Browser WCAG gate
                           </span>
                         </div>
                       </div>

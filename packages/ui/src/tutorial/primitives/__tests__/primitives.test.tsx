@@ -6,7 +6,7 @@ import { Target, Sparkles } from 'lucide-react';
 import { BlockShell } from '../BlockShell';
 import { BlockHeader } from '../BlockHeader';
 import { CardSurface } from '../CardSurface';
-import { StepBadge } from '../StepBadge';
+import { getStepBrandColor, StepBadge } from '../StepBadge';
 import { SyntaxPill } from '../SyntaxPill';
 import { CalloutBanner } from '../CalloutBanner';
 
@@ -15,6 +15,11 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
     primary: '#0B1B3D',
     secondary: '#F54A8D',
     primaryDark: '#071228',
+    accent1: '#0284C7',
+    accent2: '#10B981',
+    stepAccent1: '#BE123C',
+    stepAccent2: '#0369A1',
+    stepAccent3: '#047857',
   };
 
   describe('BlockShell', () => {
@@ -240,11 +245,31 @@ describe('Universal Block Architecture (UBA) Primitives', () => {
   });
 
   describe('StepBadge', () => {
-    it('renders circular number badge with theme primary color', () => {
+    it('renders circular number badge with theme accent cycle', () => {
       render(<StepBadge step="01" theme={mockTheme} size="md" />);
       const badge = screen.getByText('01');
       expect(badge).toBeTruthy();
       expect(badge.className).toContain('rounded-full');
+      expect(getStepBrandColor(mockTheme, 1)).toBe(mockTheme.stepAccent1);
+      expect(getStepBrandColor(mockTheme, 2)).toBe(mockTheme.stepAccent2);
+      expect(getStepBrandColor(mockTheme, 3)).toBe(mockTheme.stepAccent3);
+    });
+
+    it('does not infer a brand from a specific primary hex value', () => {
+      const customTheme = {
+        ...mockTheme,
+        primary: '#123456',
+        secondary: '#AA0000',
+        accent1: '#00AA88',
+        accent2: '#7744CC',
+        stepAccent1: '#770000',
+        stepAccent2: '#007755',
+        stepAccent3: '#553399',
+      };
+
+      expect(getStepBrandColor(customTheme, 1)).toBe('#770000');
+      expect(getStepBrandColor(customTheme, 2)).toBe('#007755');
+      expect(getStepBrandColor(customTheme, 3)).toBe('#553399');
     });
   });
 

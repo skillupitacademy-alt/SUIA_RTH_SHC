@@ -63,6 +63,9 @@ export interface DomainTheme {
   primaryDark?: string;
   accent1?: string; // Interactive / Info (Sky Cyan for SUIA, Indigo Blue for RTH)
   accent2?: string; // Success / Highlight (Emerald Green for SUIA, Amber Warm for RTH)
+  stepAccent1?: string; // Contrast-safe brand step badge background
+  stepAccent2?: string; // Contrast-safe information step badge background
+  stepAccent3?: string; // Contrast-safe mastery step badge background
   
   // Semantic color scales (Tailwind-compatible)
   slate?: {
