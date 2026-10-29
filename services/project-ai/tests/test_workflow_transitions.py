@@ -349,3 +349,40 @@ def test_transition_blocked_missing_manifest_sha256():
     assert can_transition is False
     assert "Missing required parameter: manifest_sha256" in reason
 
+
+def test_candidate_revision_reupload_transitions_allowed_before_certification():
+    """Pre-certification Step 6 states allow re-uploading a revised candidate package."""
+    from app.orchestration.canonical_workflow import (
+        CanonicalWorkflowState,
+        is_valid_transition,
+    )
+
+    reuploadable_states = [
+        CanonicalWorkflowState.CANDIDATE_REQUESTED,
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
+        CanonicalWorkflowState.CANDIDATE_AUDIT,
+        CanonicalWorkflowState.PLACEMENT,
+        CanonicalWorkflowState.INTEGRATION_PLANNED,
+        CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL,
+        CanonicalWorkflowState.IMPLEMENTING,
+        CanonicalWorkflowState.IMPLEMENTED,
+        CanonicalWorkflowState.VERIFYING,
+        CanonicalWorkflowState.CERTIFICATION_READY,
+        CanonicalWorkflowState.AWAITING_GATE_2,
+    ]
+    for state in reuploadable_states:
+        valid = is_valid_transition(
+            state, CanonicalWorkflowState.CANDIDATE_RECEIVED
+        )
+        assert valid is True, f"Expected {state.value} -> CANDIDATE_RECEIVED to be valid"
+
+    for terminal_state in [
+        CanonicalWorkflowState.CERTIFIED,
+        CanonicalWorkflowState.REJECTED,
+    ]:
+        valid = is_valid_transition(
+            terminal_state, CanonicalWorkflowState.CANDIDATE_RECEIVED
+        )
+        assert valid is False
+
+

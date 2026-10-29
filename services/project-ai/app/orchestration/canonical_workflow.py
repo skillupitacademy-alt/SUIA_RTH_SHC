@@ -304,35 +304,44 @@ VALID_TRANSITIONS: dict[CanonicalWorkflowState, list[CanonicalWorkflowState]] = 
         CanonicalWorkflowState.CANDIDATE_AUDIT,
     ],
     CanonicalWorkflowState.CANDIDATE_AUDIT: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.PLACEMENT,
         CanonicalWorkflowState.REJECTED,
     ],
     CanonicalWorkflowState.PLACEMENT: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.INTEGRATION_PLANNED,
         CanonicalWorkflowState.REJECTED,
     ],
     CanonicalWorkflowState.INTEGRATION_PLANNED: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL,
     ],
     CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.IMPLEMENTING,
         CanonicalWorkflowState.REJECTED,
     ],
     CanonicalWorkflowState.IMPLEMENTING: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.IMPLEMENTED,
         CanonicalWorkflowState.REJECTED,
     ],
     CanonicalWorkflowState.IMPLEMENTED: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.VERIFYING,
     ],
     CanonicalWorkflowState.VERIFYING: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.CERTIFICATION_READY,
         CanonicalWorkflowState.REJECTED,
     ],
     CanonicalWorkflowState.CERTIFICATION_READY: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.AWAITING_GATE_2,
     ],
     CanonicalWorkflowState.AWAITING_GATE_2: [
+        CanonicalWorkflowState.CANDIDATE_RECEIVED,
         CanonicalWorkflowState.CERTIFIED,
         CanonicalWorkflowState.REJECTED,
     ],

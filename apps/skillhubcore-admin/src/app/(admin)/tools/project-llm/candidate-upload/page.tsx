@@ -1100,7 +1100,7 @@ export default function CandidateUploadPage() {
               Next Step: Stepper 6 — Integration &amp; Certification
             </h4>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
-              Proceed to Integration &amp; Certification to generate the repository placement manifest, obtain Independent Admin Gate 2 approval, execute isolated placement, run the 6-width WCAG 2.1 AA Playwright browser verifier, and complete Gate 3 Final Certification for{' '}
+              Proceed to Integration &amp; Certification to generate the repository placement manifest, obtain Authorized Admin Gate 2 hash-bound approval, execute isolated placement, run the 6-width WCAG 2.1 AA Playwright browser verifier, and complete Gate 3 Final Certification for{' '}
               <span className="font-bold text-slate-900">
                 {targetFamily} {targetVersion}
               </span>

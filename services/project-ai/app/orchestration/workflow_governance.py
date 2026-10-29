@@ -491,6 +491,16 @@ class WorkflowGovernanceService:
             workflow_model.contract_id = artifact_id
             workflow_model.contract_sha256 = artifact_sha256
         elif artifact_type == "candidate":
+            if (
+                workflow_model.candidate_id is not None
+                and str(workflow_model.candidate_id) != str(artifact_id)
+            ) or (
+                workflow_model.candidate_sha256 is not None
+                and workflow_model.candidate_sha256 != artifact_sha256
+            ):
+                workflow_model.manifest_id = None
+                workflow_model.manifest_sha256 = None
+                workflow_model.approval_id = None
             workflow_model.candidate_id = artifact_id
             workflow_model.candidate_sha256 = artifact_sha256
         elif artifact_type == "manifest":

@@ -376,15 +376,24 @@ async def upload_candidate(
             detail=f"Workflow not found: {package.workflow_id}"
         )
     
-    # Verify workflow state allows candidate upload or revision
+    # Verify workflow state allows candidate upload or revision (any pre-certification state after Gate 1)
     allowed_upload_states = [
         CanonicalWorkflowState.CANDIDATE_REQUESTED,
         CanonicalWorkflowState.CANDIDATE_RECEIVED,
+        CanonicalWorkflowState.CANDIDATE_AUDIT,
+        CanonicalWorkflowState.PLACEMENT,
+        CanonicalWorkflowState.INTEGRATION_PLANNED,
+        CanonicalWorkflowState.AWAITING_IMPLEMENTATION_APPROVAL,
+        CanonicalWorkflowState.IMPLEMENTING,
+        CanonicalWorkflowState.IMPLEMENTED,
+        CanonicalWorkflowState.VERIFYING,
+        CanonicalWorkflowState.CERTIFICATION_READY,
+        CanonicalWorkflowState.AWAITING_GATE_2,
     ]
     if workflow.current_state not in allowed_upload_states:
         raise HTTPException(
             status_code=409,
-            detail=f"Workflow state must be CANDIDATE_REQUESTED or CANDIDATE_RECEIVED for upload. "
+            detail=f"Workflow state does not permit candidate upload or revision. "
                    f"Current state: {workflow.current_state.value}"
         )
     
@@ -477,11 +486,14 @@ async def upload_candidate(
                 artifact_sha256=candidate_sha256
             )
             
-            # Record Unit Test Suite and Candidate Hash evidence on workflow gate results
+            # Record Unit Test Suite and Candidate Hash evidence on workflow gate results,
+            # and clear stale downstream Step 6 gates/bindings from any prior candidate revision.
             workflow_repo = await get_workflow_repository(session)
-            wf_model = await workflow_repo.get(package.workflow_id)
+            wf_model = await workflow_repo.get(package.workflow_id, verify_bindings=False)
             if wf_model:
                 current_gates = dict(wf_model.gate_results or {})
+                current_gates.pop("placement", None)
+                current_gates.pop("composer", None)
                 current_gates["Unit Test Suite"] = {
                     "gate": "Unit Test Suite",
                     "status": "PASS",
@@ -504,9 +516,12 @@ async def upload_candidate(
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
                 wf_model.gate_results = current_gates
+                wf_model.manifest_id = None
+                wf_model.manifest_sha256 = None
+                wf_model.approval_id = None
                 await workflow_repo.upsert(wf_model)
 
-            action_desc = "revision uploaded & re-qualified" if workflow.current_state == CanonicalWorkflowState.CANDIDATE_RECEIVED else "uploaded & qualified"
+            action_desc = "uploaded & qualified" if workflow.current_state == CanonicalWorkflowState.CANDIDATE_REQUESTED else "revision uploaded & re-qualified"
             await governance_service.transition_state(
                 workflow_id=package.workflow_id,
                 to_state=CanonicalWorkflowState.CANDIDATE_RECEIVED,
