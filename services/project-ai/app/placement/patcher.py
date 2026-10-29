@@ -7,7 +7,7 @@ duplicate detection, and fail-closed invariants.
 import hashlib
 import json
 import re
-from typing import Tuple
+from typing import Optional
 
 
 class PatchError(Exception):
@@ -259,6 +259,48 @@ def patch_generated_block_version_definitions(
     return content.replace(marker, f"{entry}\n{marker}", 1)
 
 
+def _find_matching_delimiter(text: str, open_idx: int, open_ch: str, close_ch: str) -> int:
+    """Find the index of the balanced closing delimiter, ignoring delimiters inside string literals."""
+    depth = 0
+    in_str: Optional[str] = None
+    escaped = False
+    for idx in range(open_idx, len(text)):
+        ch = text[idx]
+        if in_str:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == in_str:
+                in_str = None
+            continue
+        if ch in ("'", '"', "`"):
+            in_str = ch
+            continue
+        if ch == open_ch:
+            depth += 1
+        elif ch == close_ch:
+            depth -= 1
+            if depth == 0:
+                return idx
+    raise PatchError(f"Unbalanced delimiter '{open_ch}{close_ch}' starting at index {open_idx}")
+
+
+def _find_family_versions_spans(content: str, family_lower: str) -> list[tuple[int, int]]:
+    """
+    Return (inner_start, inner_end) spans for `versions: [ ... ]` of the given family.
+    Uses balanced bracket scanning so inner arrays in getDefaultPayload do not truncate the match.
+    """
+    spans: list[tuple[int, int]] = []
+    # Match family-level `id: '<family>'` followed shortly by `label:` and `versions: [`
+    family_header_pattern = rf"id:\s*['\"]{re.escape(family_lower)}['\"]\s*,\s*label:\s*[^\n]+,\s*versions:\s*\["
+    for m in re.finditer(family_header_pattern, content, re.IGNORECASE):
+        open_bracket_idx = m.end() - 1
+        close_bracket_idx = _find_matching_delimiter(content, open_bracket_idx, "[", "]")
+        spans.append((open_bracket_idx + 1, close_bracket_idx))
+    return spans
+
+
 def patch_generated_block_registry(
     content: str,
     family: str,
@@ -295,15 +337,14 @@ def patch_generated_block_registry(
         getDefaultPayload: () => ({payload_json}),
       }},"""
 
-    # Check if this exact family exists, scoping duplicate check to exact (family, version)
-    family_block_pattern = rf"id:\s*['\"]{re.escape(family_lower)}['\"][\s\S]*?versions:\s*\[([\s\S]*?)\]"
-    family_matches = list(re.finditer(family_block_pattern, content, re.IGNORECASE))
-    if len(family_matches) > 1:
+    # Check if this exact family exists, using balanced brackets for `versions: [...]`
+    family_spans = _find_family_versions_spans(content, family_lower)
+    if len(family_spans) > 1:
         raise PatchError(f"Duplicate family entry detected for family {family_lower}")
 
-    if family_matches:
-        family_match = family_matches[0]
-        versions_inner = family_match.group(1)
+    if family_spans:
+        v_start, v_end = family_spans[0]
+        versions_inner = content[v_start:v_end]
         # Check for duplicate version entries ONLY within this family
         version_matches = list(re.finditer(version_pattern, versions_inner, re.IGNORECASE))
         if len(version_matches) > 1:
@@ -311,17 +352,31 @@ def patch_generated_block_registry(
 
         # Check if version exists inside this family
         if len(version_matches) == 1:
-            # UPDATE_IN_PLACE: replace version object inside versions array
-            ver_obj_regex = r"\{\s*id:\s*['\"][^'\"]+['\"],\s*code:\s*['\"]" + re.escape(version_upper) + r"['\"][\s\S]*?getDefaultPayload:\s*\(\)\s*=>\s*\([\s\S]*?\),\s*\},"
-            if re.search(ver_obj_regex, content):
-                return re.sub(ver_obj_regex, version_object_code.strip(), content, count=1)
-            # If formatting differs, return content idempotently
+            # UPDATE_IN_PLACE: find the enclosing `{ ... },` of this version entry inside versions_inner
+            match_pos = version_matches[0].start()
+            obj_open = versions_inner.rfind("{", 0, match_pos)
+            if obj_open != -1:
+                obj_close = _find_matching_delimiter(versions_inner, obj_open, "{", "}")
+                # Include trailing comma if present
+                after_close = obj_close + 1
+                while after_close < len(versions_inner) and versions_inner[after_close] in (" ", "\t"):
+                    after_close += 1
+                if after_close < len(versions_inner) and versions_inner[after_close] == ",":
+                    after_close += 1
+                updated_inner = (
+                    versions_inner[:obj_open]
+                    + version_object_code.strip()
+                    + versions_inner[after_close:]
+                )
+                return content[:v_start] + updated_inner + content[v_end:]
             return content
 
         # Family exists, but version does not: append version into family's versions array
-        insert_idx = family_match.end(1)
-        new_versions_inner = versions_inner.rstrip() + "\n" + version_object_code + "\n    "
-        return content[:family_match.start(1)] + new_versions_inner + content[family_match.end(1):]
+        stripped_inner = versions_inner.rstrip()
+        if stripped_inner and not stripped_inner.endswith(","):
+            stripped_inner += ","
+        new_versions_inner = stripped_inner + "\n" + version_object_code + "\n    "
+        return content[:v_start] + new_versions_inner + content[v_end:]
 
     # Family does not exist in generated registries: create family block with this version
     marker = "  // PROJECT_LLM_GENERATED_REGISTRIES"

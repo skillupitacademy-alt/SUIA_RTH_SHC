@@ -1408,7 +1408,14 @@ async def execute_placement(
         wf_model = await wf_repo.get(package.workflow_id, verify_bindings=False)
         if wf_model:
             current_gates = dict(wf_model.gate_results or {})
+            # Clear any stale composer verification from an earlier placement commit so Stage 6.4 precedes Stage 6.5
+            current_gates.pop("composer", None)
+            commit_str = str(result.get("commit") or "")
+            branch_str = str(result.get("branch") or "candidate branch")
             current_gates["placement"] = {
+                "status": "PASS",
+                "verdict": "PASS",
+                "detail": f"Isolated placement commit {commit_str[:12]} verified on {branch_str}",
                 "commit": result.get("commit"),
                 "branch": result.get("branch"),
                 "targetPath": result.get("targetPath"),

@@ -108,6 +108,8 @@ export default function IntegrationCertificationPage() {
 
       if (cert.rawGateResults?.composer) {
         setComposerVerification(cert.rawGateResults.composer);
+      } else {
+        setComposerVerification(null);
       }
 
       if (cert.targetFamily && cert.targetVersion) {
@@ -273,7 +275,7 @@ export default function IntegrationCertificationPage() {
     setError(null);
     setIsApproving(true);
     setLiveStatusAnnouncement(
-      'Stage 6.3 in progress: Recording independent administrator Gate 2 placement approval and verifying separation of duties.'
+      'Stage 6.3 in progress: Recording authorized administrator Gate 2 hash-bound placement approval.'
     );
     try {
       await projectLlmClient.approveImplementation(workflowId, manifest?.manifestHash, {
@@ -301,6 +303,7 @@ export default function IntegrationCertificationPage() {
     try {
       const res = await projectLlmClient.executeApprovedPlacement(effectiveCandidateId);
       setPlacementResult(res);
+      setComposerVerification(null);
       await fetchCertificationData();
       setLiveStatusAnnouncement(
         `Stage 6.4 complete: Placement committed at ${typeof res.commit === 'string' ? res.commit.slice(0, 10) : 'isolated branch'}. Ready for Stage 6.5 Composer verification.`
@@ -464,7 +467,7 @@ export default function IntegrationCertificationPage() {
     {
       id: '6.3',
       title: 'Gate 2 Admin Approval',
-      subtitle: 'Separation-of-Duties Placement Sign-Off',
+      subtitle: 'Authorized Admin Hash-Bound Sign-Off',
       status: isApproving ? 'RUNNING' : isGate2Approved ? 'PASS' : 'PENDING',
       feedbackType: isApproving
         ? 'RUNNING • Active'
@@ -687,7 +690,7 @@ export default function IntegrationCertificationPage() {
                   <p className="text-xs font-bold text-slate-900 font-outfit">
                     {isQualifying && 'Executing Stage 6.1: Isolated Worktree Candidate Qualification Suite'}
                     {isPlanning && 'Executing Stage 6.2: Autonomous Placement Manifest & Pre-Image Hash Calculation'}
-                    {isApproving && 'Executing Stage 6.3: Recording Independent Admin Gate 2 Approval'}
+                    {isApproving && 'Executing Stage 6.3: Recording Authorized Admin Gate 2 Hash-Bound Approval'}
                     {isExecuting && 'Executing Stage 6.4: Isolated Git Worktree Creation & Surgical AST Placement'}
                     {isVerifyingComposer &&
                       'Executing Stage 6.5: Isolated Worktree Composer, WCAG 2.1 AA & 6-Width Responsive Verification'}
@@ -1001,7 +1004,7 @@ export default function IntegrationCertificationPage() {
                           isPlanning ||
                           isExecuting ||
                           isApproving ||
-                          certificationData?.state !== 'IMPLEMENTING'
+                          !['IMPLEMENTING', 'IMPLEMENTED'].includes(certificationData?.state || '')
                         }
                         title={
                           !manifest
@@ -1012,7 +1015,7 @@ export default function IntegrationCertificationPage() {
                             ? 'Version is referenced by tutorial content: in-place placement is prohibited'
                             : manifest.updateEligibility === 'INSPECTION_FAILED'
                             ? 'Reference inspection failed: in-place placement is strictly blocked'
-                            : certificationData?.state !== 'IMPLEMENTING'
+                            : !['IMPLEMENTING', 'IMPLEMENTED'].includes(certificationData?.state || '')
                             ? 'Placement execution requires approval. Click "Approve Placement Plan" to advance workflow to IMPLEMENTING state.'
                             : 'Execute approved placement in isolated worktree'
                         }
@@ -1035,7 +1038,7 @@ export default function IntegrationCertificationPage() {
                     </div>
                   )}
                   <p className="mt-3 text-xs text-slate-500">
-                    Execution is fail-closed: the backend verifies the candidate hash, manifest hash, workflow binding, and an independent approval before it creates a worktree.
+                    Administrator approval required: the authenticated authorized administrator may approve the hash-bound placement manifest, including a manifest they uploaded. The approval record retains uploader ID, approver ID, timestamp, role claims, candidate hash, and manifest hash.
                   </p>
 
                   {manifest && manifest.updateEligibility === 'INSPECTION_FAILED' && (
@@ -2365,7 +2368,7 @@ export default function IntegrationCertificationPage() {
                 <span className="font-bold text-slate-900">
                   {familyName} {targetVersion}
                 </span>{' '}
-                has been calculated and stored. The pipeline requires independent human approval gates and 6-width isolated Composer verification before final certification.
+                has been calculated and stored. Administrator approval is required for the hash-bound placement manifest, followed by 6-width isolated Composer verification before final certification.
               </p>
             </div>
           </div>

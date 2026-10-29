@@ -79,7 +79,12 @@ async function handleFetchError(response: Response): Promise<never> {
   try {
     const data = await response.clone().json();
     if (data && typeof data === 'object') {
-      detail = data.detail || data.error || data.message || '';
+      const rawDetail = data.detail || data.error || data.message || '';
+      if (typeof rawDetail === 'string') {
+        detail = rawDetail;
+      } else if (rawDetail && typeof rawDetail === 'object') {
+        detail = rawDetail.message || rawDetail.error || JSON.stringify(rawDetail);
+      }
     }
   } catch {
     try {
@@ -426,7 +431,12 @@ export class ProjectLlmClient {
             const upper = gateVal.toUpperCase();
             result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(upper) ? upper : 'PENDING') as any;
           } else if (typeof gateVal === 'object' && gateVal !== null) {
-            const status = (gateVal.status || gateVal.verdict || gateVal.result || 'PENDING').toUpperCase();
+            const rawStatus =
+              gateVal.status ||
+              gateVal.verdict ||
+              gateVal.result ||
+              (gateName.toLowerCase().includes('placement') && gateVal.commit ? 'PASS' : 'PENDING');
+            const status = String(rawStatus).toUpperCase();
             result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(status) ? status : 'PENDING') as any;
             detail = gateVal.detail || gateVal.reason || gateVal.message || '';
           }
@@ -463,6 +473,19 @@ export class ProjectLlmClient {
             totalTests,
             passedTests,
           };
+        })
+        .sort((a, b) => {
+          // Preserve strict pipeline stage order (6.1 Qualification/Hash -> 6.4 Placement -> 6.5 Composer)
+          // instead of PostgreSQL JSONB key-length order.
+          const stageOrder = (name: string): number => {
+            const lower = name.toLowerCase();
+            if (lower.includes('qualif') || lower.includes('test')) return 1;
+            if (lower.includes('hash') || lower.includes('contract')) return 2;
+            if (lower.includes('manifest') || lower.includes('placement')) return 3;
+            if (lower.includes('composer') || lower.includes('browser')) return 4;
+            return 5;
+          };
+          return stageOrder(a.gate) - stageOrder(b.gate);
         });
 
       return {

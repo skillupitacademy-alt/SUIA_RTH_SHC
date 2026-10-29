@@ -15,11 +15,22 @@ ARCHITECTURAL CONSTRAINTS:
 - Evidence dict always populated (follows W3 pattern)
 """
 
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Any, Optional
 from uuid import UUID
+
+
+def strict_separation_of_duties_enabled() -> bool:
+    """
+    Return True when administrator self-approval must be rejected.
+
+    Default (unset/false): verified administrators may approve workflows they
+    created; the override is recorded in approval evidence (admin_override=True).
+    """
+    return os.environ.get("PROJECT_AI_STRICT_SEPARATION_OF_DUTIES", "false").strip().lower() in ("1", "true", "yes", "on")
 
 
 class ImplementationApprovalStatus(str, Enum):
@@ -109,22 +120,27 @@ class ImplementationApproval:
         """
         Verify approval is not self-approval.
         
-        Enforces strict separation of duties: approver must differ from workflow requester.
-        Administrative role does NOT bypass this rule.
+        Enforces separation of duties: approver must differ from workflow requester,
+        unless a verified administrator approved it (admin override). Admin override
+        evidence is written server-side from the JWT-verified identity at approval time.
+        Set PROJECT_AI_STRICT_SEPARATION_OF_DUTIES=true to disable admin override.
         
         Args:
             requester_id: Workflow requester identity
-            allow_admin_override: Ignored to preserve strict separation of duties
+            allow_admin_override: Allow administrator approval even if approver matches requester
             
         Returns:
-            True if not self-approved, False otherwise
+            True if not self-approved or admin override applies, False otherwise
         """
-        effective_requester = (requester_id or self.workflow_requester or "").strip().lower()
+        effective_requester = (self.workflow_requester or "").strip().lower()
         effective_approver = (self.approved_by or "").strip().lower()
 
-        # Fail-closed: missing identities means we cannot verify separation of duties
+        # Fail-closed: missing identities means we cannot verify uploader or approver identity
         if not effective_requester or not effective_approver:
             return False
+
+        if not strict_separation_of_duties_enabled() and (allow_admin_override or self._is_admin_override()):
+            return True
 
         return effective_approver != effective_requester
     

@@ -505,8 +505,28 @@ def test_patcher_duplicate_exact_family_version_fails_closed():
 # 5. Governance Separation of Duties & Supersedence Tests
 # ============================================================================
 
-def test_strict_anti_self_approval_rejects_admin_requester():
-    """Gate 2 approval strictly rejects self-approval even if approver has admin role."""
+def test_strict_anti_self_approval_rejects_admin_requester(monkeypatch):
+    """Gate 2 approval rejects non-admin self-approval, allows verified admin override by default, and rejects admin self-approval when strict mode is enabled."""
+    # Non-admin self-approval must always return False
+    non_admin_approval = ImplementationApproval(
+        approval_id="app-non-admin",
+        workflow_id="wf-1",
+        candidate_sha256="hash-1",
+        target_family="Summary",
+        target_version="V1",
+        placement_manifest_id="man-1",
+        placement_manifest_sha256="mhash-1",
+        approved_by="user_bob",
+        approval_timestamp=datetime.now(timezone.utc),
+        status=ImplementationApprovalStatus.APPROVED,
+        evidence={"admin_override": False, "is_admin_user": False, "approved_by_role": "user"},
+        workflow_requester="user_bob",
+    )
+    assert non_admin_approval.verify_not_self_approved("user_bob") is False
+    assert non_admin_approval.verify_not_self_approved(None) is False
+
+    # Verified admin self-approval is permitted by default (single-admin workflow),
+    # provided both uploader (workflow_requester) and approver identities are recorded.
     approval = ImplementationApproval(
         approval_id="app-1",
         workflow_id="wf-1",
@@ -518,13 +538,33 @@ def test_strict_anti_self_approval_rejects_admin_requester():
         approved_by="admin_user_bob",
         approval_timestamp=datetime.now(timezone.utc),
         status=ImplementationApprovalStatus.APPROVED,
-        evidence={"admin_override": True, "is_admin_user": True},
+        evidence={"admin_override": True, "is_admin_user": True, "approved_by_role": "admin"},
         workflow_requester="admin_user_bob",
     )
+    assert approval.verify_not_self_approved("admin_user_bob") is True
 
-    # Requester == Approver must return False
+    # Missing uploader identity must fail closed even when admin_override=True
+    approval_missing_requester = ImplementationApproval(
+        approval_id="app-missing-req",
+        workflow_id="wf-1",
+        candidate_sha256="hash-1",
+        target_family="Summary",
+        target_version="V1",
+        placement_manifest_id="man-1",
+        placement_manifest_sha256="mhash-1",
+        approved_by="admin_user_bob",
+        approval_timestamp=datetime.now(timezone.utc),
+        status=ImplementationApprovalStatus.APPROVED,
+        evidence={"admin_override": True, "is_admin_user": True, "approved_by_role": "admin"},
+        workflow_requester=None,
+    )
+    assert approval_missing_requester.verify_not_self_approved("admin_user_bob") is False
+
+    # When strict separation of duties is explicitly enabled, even admin self-approval is rejected
+    monkeypatch.setenv("PROJECT_AI_STRICT_SEPARATION_OF_DUTIES", "true")
     assert approval.verify_not_self_approved("admin_user_bob") is False
     assert approval.verify_not_self_approved(None) is False
+    monkeypatch.delenv("PROJECT_AI_STRICT_SEPARATION_OF_DUTIES", raising=False)
 
     # Independent approver must pass
     approval_independent = ImplementationApproval(
@@ -782,4 +822,59 @@ def test_route_manifest_generation_persistence_and_executor_verification_roundtr
         executor = PlacementExecutor(str(temp_workspace), dry_run=True)
         assert executor.verify_manifest_hash(retrieved_manifest) is True
         assert retrieved_manifest.manifestHash == generated_manifest.manifestHash
+
+
+def test_patch_generated_block_registry_handles_nested_payload_arrays():
+    """Verify patch_generated_block_registry does not truncate on inner `[` `]` arrays inside getDefaultPayload."""
+    from app.placement.patcher import patch_generated_block_registry
+
+    initial_registry = """import type { BlockRegistryEntry } from './types';
+
+export const GENERATED_BLOCK_REGISTRIES: readonly BlockRegistryEntry[] = [
+  {
+    id: 'objective',
+    label: "Objective",
+    versions: [
+      {
+        id: "o3",
+        code: 'O3',
+        label: "O3 - Objective",
+        description: "Skill objectives",
+        getDefaultPayload: () => ({
+          "title": "What You Will Be Able To Do",
+          "objectives": [
+            {
+              "id": "skill-debug",
+              "text": "Identify and correct common list-indexing errors."
+            }
+          ]
+        }),
+      },
+    ],
+  },
+  // PROJECT_LLM_GENERATED_REGISTRIES
+];
+"""
+    patched = patch_generated_block_registry(
+        initial_registry,
+        "Objective",
+        "O1",
+        {"defaultPayload": {"title": "Goals", "objectives": [{"id": "1", "text": "Goal 1"}]}},
+    )
+    # O3's inner objectives array must remain properly closed before O1's version entry starts
+    assert '"text": "Identify and correct common list-indexing errors."\n            }\n          ]\n        }),\n      },\n      {\n        id: "o1",' in patched
+    assert patched.count("code: 'O3'") == 1
+    assert patched.count("code: 'O1'") == 1
+
+    # Updating O1 in place must replace O1's entry without duplicating or corrupting brackets
+    updated = patch_generated_block_registry(
+        patched,
+        "Objective",
+        "O1",
+        {"defaultPayload": {"title": "Updated Goals", "objectives": [{"id": "1", "text": "Updated Goal 1"}]}},
+    )
+    assert "Updated Goals" in updated
+    assert updated.count("code: 'O3'") == 1
+    assert updated.count("code: 'O1'") == 1
+
 

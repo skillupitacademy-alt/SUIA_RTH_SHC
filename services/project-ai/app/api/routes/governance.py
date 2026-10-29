@@ -527,23 +527,12 @@ async def approve_placement(
     if not (approved_by := user.get("user_id")):
         raise HTTPException(401, "Missing user_id claim")
     
-    # Verify strict separation of duties (approver != workflow requester)
-    # Administrative role does NOT bypass this rule.
-    effective_requester = workflow_requester or getattr(workflow, "created_by", None)
-    if effective_requester and str(approved_by).strip().lower() == str(effective_requester).strip().lower():
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "error": "SELF_APPROVAL_REJECTED",
-                "message": f"Self-approval rejected. User '{approved_by}' cannot approve their own workflow. Strict separation of duties required.",
-                "workflowRequester": str(effective_requester),
-                "attemptedApprover": str(approved_by)
-            }
-        )
-    
-    # All verification passed - process approval decision
-    now = datetime.now(timezone.utc)
+    # Administrator approval required: the authenticated authorized administrator
+    # may approve the hash-bound placement manifest, including a manifest they
+    # uploaded. The approval record retains uploader ID, approver ID, timestamp,
+    # role claims, candidate hash, and manifest hash.
     from app.auth.authorization import is_super_admin
+    from app.models.implementation_approval import strict_separation_of_duties_enabled
     is_admin_user = (
         is_super_admin(user)
         or bool(user.get("is_admin"))
@@ -551,6 +540,29 @@ async def approve_placement(
         or "super_admin" in user.get("roles", [])
         or "contract_admin" in user.get("roles", [])
     )
+    effective_requester = workflow_requester or getattr(workflow, "created_by", None)
+    if not effective_requester or not str(effective_requester).strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Workflow requester (uploader) identity is required to record implementation approval",
+        )
+    is_self_approval = (
+        str(approved_by).strip().lower() == str(effective_requester).strip().lower()
+    )
+    admin_override_applied = is_self_approval and is_admin_user and not strict_separation_of_duties_enabled()
+    if is_self_approval and not admin_override_applied:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "SELF_APPROVAL_REJECTED",
+                "message": f"Self-approval rejected. User '{approved_by}' is not an authorized administrator permitted to approve their own workflow.",
+                "workflowRequester": str(effective_requester),
+                "attemptedApprover": str(approved_by)
+            }
+        )
+    
+    # All verification passed - process approval decision
+    now = datetime.now(timezone.utc)
     
     # Create ImplementationApproval record
     implementation_approval = create_implementation_approval(
@@ -561,13 +573,20 @@ async def approve_placement(
         placement_manifest_id=str(effective_manifest_id),
         placement_manifest_sha256=effective_manifest_hash,
         approved_by=approved_by,
-        workflow_requester=workflow_requester,
+        workflow_requester=str(effective_requester),
         status=ImplementationApprovalStatus.APPROVED if payload.approved else ImplementationApprovalStatus.REJECTED,
         rejection_reason=None if payload.approved else payload.reason,
         evidence={
-            "admin_override": is_admin_user,
+            "admin_override": admin_override_applied,
+            "self_approval": is_self_approval,
             "is_admin_user": is_admin_user,
             "approved_by_role": "admin" if is_admin_user else "user",
+            "role_claims": list(user.get("roles", [])),
+            "uploader_id": str(effective_requester),
+            "approver_id": str(approved_by),
+            "approved_at": now.isoformat(),
+            "candidate_sha256": effective_candidate_hash,
+            "manifest_sha256": effective_manifest_hash,
             "revision_strategy": (stored_manifest.required_changes.get("revisionStrategy") if stored_manifest and isinstance(stored_manifest.required_changes, dict) else None),
             "reference_summary": (stored_manifest.required_changes.get("referenceSummary") if stored_manifest and isinstance(stored_manifest.required_changes, dict) else None),
             "identity_status": (stored_manifest.required_changes.get("identityStatus") if stored_manifest and isinstance(stored_manifest.required_changes, dict) else None),
