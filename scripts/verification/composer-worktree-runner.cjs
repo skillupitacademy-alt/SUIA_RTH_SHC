@@ -509,9 +509,14 @@ function parseArgs() {
           const block = document.querySelector(selector);
           if (!block) return { totalSurfaces: 0, preservedSurfaces: 0, missingBorderElements: [] };
           
-          const surfaces = Array.from(block.querySelectorAll(
+          const rawSurfaces = Array.from(block.querySelectorAll(
             '[data-testid="card-surface"], [class*="rounded-xl"], [class*="rounded-2xl"], section > div[class*="border"], [role="region"]'
           ));
+          // Filter to card surfaces and containers (ignore tiny inline icon badges and pills)
+          const surfaces = rawSurfaces.filter((el) => {
+            const rect = el.getBoundingClientRect();
+            return rect.width >= 48 && rect.height >= 40;
+          });
           
           const candidateSurfaces = surfaces.length > 0 ? surfaces : [block];
           const missingBorderElements = [];
