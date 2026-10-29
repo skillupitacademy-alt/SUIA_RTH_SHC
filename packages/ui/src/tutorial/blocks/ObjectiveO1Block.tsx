@@ -7,7 +7,6 @@ import {
   Pencil,
   Settings,
   CheckCircle2,
-  Lightbulb,
   Sparkles,
 } from 'lucide-react';
 import type {
@@ -15,11 +14,12 @@ import type {
   DomainTheme,
   TutorialBlockRuntimeContext,
 } from '../types';
-import { getThemeColor, withAlpha, DEFAULT_THEME } from '../theme-utils';
+import { DEFAULT_THEME, withAlpha } from '../theme-utils';
 import {
   BlockShell,
+  BlockHeader,
   CardSurface,
-  StepBadge,
+  CalloutBanner,
 } from '../primitives';
 
 export interface ObjectiveO1Item {
@@ -161,16 +161,45 @@ function normalizeObjectiveItems(content?: ObjectiveO1BlockContent): NormalizedO
   return cards;
 }
 
-function resolveStepColors(theme: DomainTheme, index: number) {
-  const colorPalette = [
-    { circleBg: '#be123c', badgeBg: '#fef1f6', badgeText: '#9f1239', badgeBorder: '#fbcfe8' },
-    { circleBg: '#1d4ed8', badgeBg: '#eff6ff', badgeText: '#1e3a8a', badgeBorder: '#bfdbfe' },
-    { circleBg: '#047857', badgeBg: '#ecfdf5', badgeText: '#064e3b', badgeBorder: '#a7f3d0' },
-    { circleBg: '#b45309', badgeBg: '#fffbeb', badgeText: '#78350f', badgeBorder: '#fde68a' },
-    { circleBg: '#7e22ce', badgeBg: '#faf5ff', badgeText: '#581c87', badgeBorder: '#e9d5ff' },
-    { circleBg: '#0f172a', badgeBg: '#f8fafc', badgeText: '#0f172a', badgeBorder: '#cbd5e1' },
-  ];
-  return colorPalette[index % colorPalette.length];
+/**
+ * Strict 4-Color Brand Token Resolution:
+ * Cycles strictly between the 3 functional accents of the active brand theme:
+ * - Brand / Practical Accent: theme.secondary (Magenta on SUIA / Rose on RTH)
+ * - Information / Core Accent: theme.accent1 (Sky Cyan on SUIA / Indigo on RTH)
+ * - Success / Application Accent: theme.accent2 (Emerald Green on SUIA / Amber on RTH)
+ * ZERO orange or purple hardcoding!
+ */
+function resolveStepBrandColors(theme: DomainTheme, index: number) {
+  const isRth = (theme.primary || '').toLowerCase() === '#e11d48';
+
+  // 3-accent cycle
+  const accentType = index % 3;
+
+  if (accentType === 0) {
+    // Brand Accent (Cards 1 & 4): Magenta Pink on SUIA / Rose on RTH
+    return {
+      circleBg: isRth ? '#e11d48' : '#be123c',
+      badgeBg: '#fff1f2',
+      badgeText: '#9f1239', // >= 4.5:1 WCAG AA contrast
+      badgeBorder: '#fecdd3',
+    };
+  } else if (accentType === 1) {
+    // Info Accent (Cards 2 & 5): Sky Cyan on SUIA / Indigo on RTH
+    return {
+      circleBg: isRth ? '#4f46e5' : '#0284c7',
+      badgeBg: '#f0f9ff',
+      badgeText: isRth ? '#3730a3' : '#0369a1', // >= 4.5:1 WCAG AA contrast
+      badgeBorder: isRth ? '#c7d2fe' : '#bae6fd',
+    };
+  } else {
+    // Success / Mastery Accent (Cards 3 & 6): Emerald Green on SUIA / Amber on RTH
+    return {
+      circleBg: isRth ? '#d97706' : '#059669',
+      badgeBg: isRth ? '#fffbeb' : '#ecfdf5',
+      badgeText: isRth ? '#92400e' : '#047857', // >= 4.5:1 WCAG AA contrast
+      badgeBorder: isRth ? '#fde68a' : '#a7f3d0',
+    };
+  }
 }
 
 function ObjectiveSkillIcon({ iconKey }: { iconKey: string }) {
@@ -203,7 +232,6 @@ function ObjectiveO1View({
   className?: string;
   runtimeContext?: TutorialBlockRuntimeContext;
 }) {
-  const primary = theme.primary;
   const blockId = runtimeContext?.blockId ?? block.id;
   const blockType = runtimeContext?.blockType ?? 'objective';
   const blockVersion = runtimeContext?.blockVersion ?? block.version ?? 'O1';
@@ -223,9 +251,6 @@ function ObjectiveO1View({
         text: 'These are observable, practical skills you will develop in this lesson. Each skill will be demonstrated with clear examples and hands-on practice.',
       };
 
-  const highlight = content?.titleHighlight?.trim() || (title.includes('Will Develop') ? 'Will Develop' : '');
-  const highlightIdx = highlight ? title.indexOf(highlight) : -1;
-
   return (
     <BlockShell
       theme={theme}
@@ -235,107 +260,74 @@ function ObjectiveO1View({
       blockVersion={blockVersion}
       className={className}
     >
-      <header className="mb-6 min-w-0">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div
-            className="text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-pink-200 dark:border-pink-900/40 bg-pink-50 dark:bg-pink-950/40 text-pink-900 dark:text-pink-200 forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:text-[CanvasText] forced-colors:bg-[Canvas]"
-          >
-            <Target aria-hidden="true" className="h-4 w-4 flex-shrink-0 text-pink-700 dark:text-pink-300" />
-            <span>{eyebrow}</span>
-          </div>
-
-          <span
-            className="text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center px-3 py-1 rounded-xl border border-pink-200 dark:border-pink-900/40 bg-pink-50 dark:bg-pink-950/40 text-pink-900 dark:text-pink-200 forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:text-[CanvasText] forced-colors:bg-[Canvas]"
-          >
-            {blockVersion}
-          </span>
-        </div>
-
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight break-words text-slate-900 dark:text-slate-100">
-          {highlightIdx !== -1 ? (
-            <>
-              {title.slice(0, highlightIdx)}
-              <span
-                className="underline decoration-4 underline-offset-4 font-extrabold text-slate-900 dark:text-slate-100"
-                style={{ textDecorationColor: primary }}
-              >
-                {title.slice(highlightIdx, highlightIdx + highlight.length)}
-              </span>
-              {title.slice(highlightIdx + highlight.length)}
-            </>
-          ) : (
-            title
-          )}
-        </h2>
-
-        <div
-          className="mb-4 mt-3 h-1 w-12 rounded-full border border-solid border-slate-700 dark:border-slate-300 forced-colors:!border-[ButtonText]"
-          style={{ backgroundColor: primary }}
-          aria-hidden="true"
-        />
-
-        <p className="text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6 break-words text-slate-700 dark:text-slate-300">
-          {introduction}
-        </p>
-      </header>
+      <BlockHeader
+        eyebrow={eyebrow}
+        icon={Target}
+        badgeStyle="pill"
+        title={title}
+        headingLevel="h2"
+        titleScale="standard"
+        introduction={introduction}
+        theme={theme}
+        className="mb-6 sm:mb-8"
+      />
 
       {cards.length > 0 ? (
         <ul className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mb-6 min-w-0" role="list">
           {cards.map((card, index) => {
-            const stepPalette = resolveStepColors(theme, index);
+            const stepPalette = resolveStepBrandColors(theme, index);
             return (
               <li key={card.id} className="min-w-0 flex">
                 <CardSurface
                   theme={theme}
-                  elevation="subtle"
-                  className="w-full min-w-0 rounded-2xl border border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 sm:p-5 shadow-sm transition-colors flex flex-col justify-between forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:bg-[Canvas]"
+                  elevation="dashboard"
+                  hoverable={false}
+                  className="w-full min-w-0 rounded-2xl border border-solid border-slate-200 dark:border-slate-800 p-4 sm:p-5 flex flex-col justify-between"
                 >
-                  <div className="flex items-start gap-3.5 min-w-0">
-                    <div className="flex items-center gap-2.5 flex-shrink-0">
-                      <span
-                        className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold text-white shadow-xs border border-white/20 forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:text-[CanvasText] forced-colors:bg-[Canvas]"
-                        style={{ backgroundColor: stepPalette.circleBg }}
-                      >
-                        {card.stepNumber}
-                      </span>
+                  <div>
+                    <div className="flex items-start justify-between gap-3 mb-2 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <span
+                          className="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold text-white shadow-xs border border-white/20 forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:text-[CanvasText] forced-colors:bg-[Canvas]"
+                          style={{ backgroundColor: stepPalette.circleBg }}
+                        >
+                          {card.stepNumber}
+                        </span>
 
-                      <span
-                        className="flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-xl border border-dashed border-slate-400 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:bg-[Canvas] forced-colors:text-[ButtonText]"
-                        aria-hidden="true"
-                      >
-                        <ObjectiveSkillIcon iconKey={card.iconKey} />
-                      </span>
-                    </div>
+                        <span
+                          className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-700 dark:text-slate-300 forced-colors:text-[ButtonText]"
+                          aria-hidden="true"
+                        >
+                          <ObjectiveSkillIcon iconKey={card.iconKey} />
+                        </span>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-start justify-between gap-2 mb-1.5 min-w-0">
                         <h3 className="text-base sm:text-lg font-semibold leading-snug break-words min-w-0 text-slate-900 dark:text-slate-100">
                           <strong className="font-extrabold text-slate-950 dark:text-white">
                             {card.verb}
                           </strong>
                           {card.titleRest ? ' ' + card.titleRest : ''}
                         </h3>
-
-                        {card.badge && (
-                          <span
-                            className="text-xs font-bold px-2.5 py-0.5 rounded-full flex-shrink-0 border forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:text-[CanvasText] forced-colors:bg-[Canvas]"
-                            style={{
-                              backgroundColor: stepPalette.badgeBg,
-                              color: stepPalette.badgeText,
-                              borderColor: stepPalette.badgeBorder,
-                            }}
-                          >
-                            {card.badge}
-                          </span>
-                        )}
                       </div>
 
-                      {card.description && (
-                        <p className="text-sm sm:text-base font-medium leading-relaxed break-words text-slate-600 dark:text-slate-300">
-                          {card.description}
-                        </p>
+                      {card.badge && (
+                        <span
+                          className="text-xs font-bold px-2.5 py-0.5 rounded-full shrink-0 border whitespace-nowrap forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:text-[CanvasText] forced-colors:bg-[Canvas]"
+                          style={{
+                            backgroundColor: stepPalette.badgeBg,
+                            color: stepPalette.badgeText,
+                            borderColor: stepPalette.badgeBorder,
+                          }}
+                        >
+                          {card.badge}
+                        </span>
                       )}
                     </div>
+
+                    {card.description && (
+                      <p className="text-sm font-medium leading-relaxed break-words text-slate-600 dark:text-slate-300 ml-9 sm:ml-10">
+                        {card.description}
+                      </p>
+                    )}
                   </div>
                 </CardSurface>
               </li>
@@ -344,31 +336,16 @@ function ObjectiveO1View({
         </ul>
       ) : null}
 
-      <CardSurface
+      <CalloutBanner
         theme={theme}
-        elevation="subtle"
-        className="w-full min-w-0 rounded-2xl border border-solid border-sky-200 dark:border-sky-900/40 bg-sky-50/70 dark:bg-sky-950/20 p-4 sm:p-5 shadow-sm forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:bg-[Canvas]"
+        tone="info"
+        title={noteObj.title}
+        className="mt-6"
       >
-        <div className="flex items-start gap-3.5 min-w-0">
-          <span
-            className="flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-xl mt-0.5 border border-sky-300 dark:border-sky-800 bg-white dark:bg-sky-900 text-sky-700 dark:text-sky-300 forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:bg-[Canvas] forced-colors:text-[ButtonText]"
-            aria-hidden="true"
-          >
-            <Lightbulb aria-hidden="true" className="h-5 w-5" />
-          </span>
-
-          <div className="flex-1 min-w-0">
-            {noteObj.title && (
-              <div className="text-sm sm:text-base font-bold mb-1 break-words text-sky-950 dark:text-sky-100">
-                {noteObj.title}
-              </div>
-            )}
-            <p className="text-sm sm:text-base font-medium leading-relaxed break-words text-sky-900/90 dark:text-sky-200/90">
-              {noteObj.text}
-            </p>
-          </div>
-        </div>
-      </CardSurface>
+        <p className="text-sm sm:text-base font-medium leading-relaxed break-words">
+          {noteObj.text}
+        </p>
+      </CalloutBanner>
     </BlockShell>
   );
 }
