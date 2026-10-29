@@ -266,8 +266,8 @@ function ObjectiveO1View({
         icon={Target}
         badgeStyle="pill"
         title={title}
-        headingLevel="h2"
-        titleScale="standard"
+        headingLevel="h1"
+        titleScale="hero"
         introduction={introduction}
         theme={theme}
         className="mb-6 sm:mb-8"

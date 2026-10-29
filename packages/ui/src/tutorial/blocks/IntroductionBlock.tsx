@@ -19,7 +19,7 @@ import {
 import type { IIntroductionBlock, BlockComponentProps, DomainTheme } from '../types';
 import type { IntroductionIconKey } from '@quiz/types';
 import { getThemeColor, withAlpha, getAccessibleBadgeColor } from '../theme-utils';
-import { BlockShell, StepBadge, TerminalWindow, CardSurface, CalloutBanner } from '../primitives';
+import { BlockShell, StepBadge, getStepBrandColor, TerminalWindow, CardSurface, CalloutBanner } from '../primitives';
 
 /**
  * Introduction Block - Version Router
@@ -136,15 +136,22 @@ function IntroductionI1View({
             </div>
 
             <h1
-              className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight"
+              className="text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]"
               style={{ color: secondary }}
             >
               {page.title}
             </h1>
 
+            <div
+              data-testid="block-header-divider"
+              className="mb-4 mt-3 h-1 w-12 rounded-full"
+              style={{ backgroundColor: primary }}
+              aria-hidden="true"
+            />
+
             <p
-              className="text-sm sm:text-base leading-relaxed max-w-xl"
-              style={{ color: `${secondary}cc` }}
+              className="text-base sm:text-lg font-medium leading-[1.7] max-w-xl"
+              style={{ color: withAlpha(secondary, 'dd') }}
             >
               {page.subtitle}
             </p>
@@ -376,12 +383,7 @@ function IntroductionI1View({
           {page.roadmap.steps.map((step, index: number) => (
             <React.Fragment key={index}>
               <div className="flex-1 w-full bg-slate-50/80 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-center space-y-2">
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white font-extrabold text-xs shadow-sm mx-auto"
-                  style={{ backgroundColor: primary }}
-                >
-                  {index + 1}
-                </div>
+                <StepBadge step={index + 1} size="md" theme={theme} className="mx-auto" />
                 <h4 className="font-bold text-xs sm:text-sm leading-snug" style={{ color: secondary }}>
                   {step.title}
                 </h4>
@@ -390,7 +392,7 @@ function IntroductionI1View({
                 </p>
               </div>
               {index < page.roadmap.steps.length - 1 && (
-                <div className="flex items-center justify-center" style={{ color: primary }}>
+                <div className="flex items-center justify-center" style={{ color: getStepBrandColor(theme, index + 1) }}>
                   <ArrowRight className="hidden min-[1600px]:block h-4 w-4" />
                   <div className="block min-[1600px]:hidden">
                     <ArrowRight className="h-4 w-4 rotate-90" />
