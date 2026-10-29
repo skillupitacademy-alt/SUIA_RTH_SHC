@@ -24,6 +24,25 @@ its own family/version-specific UI and pedagogical composition:
 11. Data/status conventions: use existing semantic status meanings and accessible text/labels; do not invent conflicting success, warning, error, or progress meanings.
 12. Tokens and naming: keep visual values in shared primitives, theme utilities, or documented tokens; avoid duplicated magic values and legacy styling branches.
 
+### Strict 4-Color Brand Palette Enforcement (SUIA & RTH)
+
+All tutorial blocks belong to a single cohesive tutorial page. Every block MUST strictly adhere to the 4 canonical brand tokens without introducing unapproved rainbow hues:
+- Token 1 (primary): Deep Navy #0B1B3D on SUIA / Rose Red #E11D48 on RTH. Used for structural text, major headings, card titles, and dark console containers.
+- Token 2 (secondary): Magenta Pink #F54A8D on SUIA / Slate Navy #1E293B on RTH. Used for eyebrow pills, block version badges, and Step 1 brand accents.
+- Token 3 (accent1): Sky Cyan #0284C7 on SUIA / Indigo Blue #6366F1 on RTH. Used for technical information, code focus, Step 2 accents, and informational callout notes.
+- Token 4 (accent2): Emerald Green #10B981 on SUIA / Amber Warm #F59E0B on RTH. Used for success checkmarks, completed outcomes, and Step 3 mastery accents.
+- STRICT BAN ON UNAPPROVED COLORS: Do NOT introduce arbitrary orange, purple, yellow, red, or rainbow gradients. Multi-card grids (such as 6-step layouts) MUST cycle through the 3 functional accents (secondary, accent1, accent2) or differentiate via Lucide icons and semantic badges, NEVER by inventing rainbow colors.
+- STRICT BAN ON 3D / CARTOON DECORATIONS: Production tutorial blocks must not include 3D floating graphics, mascot cartoons, or marketing illustrations. All visuals must be functional SVG icons from lucide-react.
+
+### 3-Tier Elevation and Surface Invariant (Matching I1, C1, D1, S1)
+
+To ensure seamless visual continuity across Introduction (I1), Code (C1), Definition (D1), and Summary (S1) blocks:
+- Header Consistency: Compose BlockHeader with eyebrow pill, Target/BookOpen icon, standard titleScale, and showAccentBar. Never hand-roll an asymmetrical underlined header.
+- CardSurface Resting Elevation: Compose CardSurface with elevation="dashboard" for primary cards:
+  * Resting: shadow-xl border-t border-white/80 dark:border-white/10 backdrop-blur-md bg-white/85 dark:bg-slate-900/85
+  * Border: subtle perimeter border border-slate-200 dark:border-slate-800
+- Callout Uniformity: Compose CalloutBanner (tone="info" | "takeaway") for all bottom notes, tips, and takeaways. Asymmetrical left-side borders (border-l-*) are strictly prohibited.
+
 ### Responsive Layout and Boundary Contract
 
 This contract applies to every block family and version. It governs the block's
