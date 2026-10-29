@@ -550,6 +550,8 @@ async def test_approve_final_passes_with_clean_accessibility_and_modalities(tmp_
     mock_gov.get_workflow = AsyncMock(return_value=mock_workflow)
     transitioned_workflow = MagicMock()
     transitioned_workflow.current_state = CanonicalWorkflowState.CERTIFIED
+    # This case exercises browser-evidence approval, not revision supersedence.
+    transitioned_workflow.manifest_id = None
     mock_gov.transition_state = AsyncMock(return_value=transitioned_workflow)
 
     with patch("subprocess.run") as mock_sub:

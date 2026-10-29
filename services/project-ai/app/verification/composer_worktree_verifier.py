@@ -99,12 +99,33 @@ def _unlink_dependencies(linked: List[Path]) -> None:
             logger.warning(f"Failed to unlink {dst}: {e}")
 
 
+def _verification_worktrees_dir(workspace_root: Path) -> Path:
+    """Return a verification-worktree root that cannot be watched as source code."""
+    configured = os.environ.get("PROJECT_AI_VERIFICATION_WORKTREES_DIR") or os.environ.get(
+        "PROJECT_AI_WORKTREES_DIR"
+    )
+    default_dir = Path(tempfile.gettempdir()) / "project_ai_worktrees" / "verification"
+
+    if not configured:
+        return default_dir
+
+    configured_dir = Path(configured).resolve()
+    try:
+        configured_dir.relative_to(workspace_root.resolve())
+    except ValueError:
+        return configured_dir
+
+    logger.warning(
+        "Ignoring in-repository verification worktree directory %s; using %s to avoid dev-server reloads",
+        configured_dir,
+        default_dir,
+    )
+    return default_dir
+
+
 def _create_verification_worktree(workspace_root: Path, commit_sha: str) -> Path:
     """Create an isolated git worktree checked out at the placement commit."""
-    worktrees_dir = Path(os.environ.get(
-        "PROJECT_AI_WORKTREES_DIR",
-        workspace_root / ".worktrees" / "verification"
-    ))
+    worktrees_dir = _verification_worktrees_dir(workspace_root)
     worktrees_dir.mkdir(parents=True, exist_ok=True)
     last_error = ""
     for attempt in range(2):

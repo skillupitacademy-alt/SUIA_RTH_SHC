@@ -5,7 +5,10 @@ from pathlib import Path
 import pytest
 
 from app.api.routes.workflows import _get_verified_placement_commit
-from app.verification.composer_worktree_verifier import _generate_playwright_script
+from app.verification.composer_worktree_verifier import (
+    _generate_playwright_script,
+    _verification_worktrees_dir,
+)
 
 
 def test_placement_commit_requires_exact_hash_bindings():
@@ -39,3 +42,15 @@ def test_playwright_runner_requires_exact_version_and_clean_network():
     assert "const versionMatches = result.dom_block_version === 'O1';" in script
     assert "Unable to select block version 'O1'" in script
     assert "result.network_errors.length === 0" in script
+
+
+def test_verification_worktree_inside_workspace_is_redirected_to_temp(monkeypatch, tmp_path):
+    """A watched repository path must never host a long-running verification worktree."""
+    workspace = tmp_path / "workspace"
+    configured = workspace / ".worktrees" / "verification"
+    monkeypatch.setenv("PROJECT_AI_WORKTREES_DIR", str(configured))
+
+    resolved = _verification_worktrees_dir(workspace)
+
+    assert resolved != configured
+    assert not resolved.is_relative_to(workspace)
