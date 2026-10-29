@@ -52,28 +52,24 @@ def find_free_port() -> int:
         return s.getsockname()[1]
 
 
-def _link_dependencies(workspace_root: Path, worktree_path: Path) -> List[Path]:
-    """Link node_modules via NTFS junction on Windows or symlink on Unix."""
-    linked = []
-    targets = [
-        ("node_modules", "node_modules"),
-        ("packages/ui/node_modules", "packages/ui/node_modules"),
-        ("apps/skillhubcore-admin/node_modules", "apps/skillhubcore-admin/node_modules"),
-    ]
-    for rel_src, rel_dst in targets:
-        src = workspace_root / rel_src
-        dst = worktree_path / rel_dst
-        if src.exists() and not dst.exists():
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            if os.name == "nt":
-                subprocess.run(["cmd.exe", "/c", "mklink", "/J", str(dst), str(src)], capture_output=True, check=False)
-            else:
-                try:
-                    os.symlink(str(src), str(dst), target_is_directory=True)
-                except Exception:
-                    pass
-            if dst.exists():
-                linked.append(dst)
+def _prepare_dependencies(workspace_root: Path, worktree_path: Path, timeout_seconds: int) -> List[Path]:
+    """Create a worktree-local, lockfile-verified dependency layout for Next.js."""
+    result = subprocess.run(
+        [
+            _pnpm_command(),
+            "install",
+            "--offline",
+            "--frozen-lockfile",
+            "--ignore-scripts",
+        ],
+        cwd=worktree_path,
+        capture_output=True,
+        text=True,
+        timeout=timeout_seconds,
+    )
+    if result.returncode != 0:
+        output = (result.stdout or "") + "\n" + (result.stderr or "")
+        raise RuntimeError(f"Worktree dependency preparation failed: {output[-1200:]}")
     # Also copy apps/skillhubcore-admin/.env.local so Next.js server has database credentials
     admin_env = workspace_root / "apps" / "skillhubcore-admin" / ".env.local"
     target_env = worktree_path / "apps" / "skillhubcore-admin" / ".env.local"
@@ -82,7 +78,8 @@ def _link_dependencies(workspace_root: Path, worktree_path: Path) -> List[Path]:
         target_env.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(admin_env, target_env)
 
-    return linked
+    # Worktree removal cleans its local node_modules; no external junctions were created.
+    return []
 
 
 def _unlink_dependencies(linked: List[Path]) -> None:
@@ -462,7 +459,7 @@ async def verify_composer_in_worktree(
         # Step 1: Create isolated worktree at placed commit
         logger.info(f"Creating verification worktree for commit {commit_sha}...")
         worktree_path = _create_verification_worktree(workspace_root, commit_sha)
-        linked_deps = _link_dependencies(workspace_root, worktree_path)
+        linked_deps = _prepare_dependencies(workspace_root, worktree_path, timeout_seconds)
 
         _build_admin_preview(worktree_path, timeout_seconds)
 

@@ -1,12 +1,14 @@
 """Focused tests for isolated Composer verification safety invariants."""
 
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from app.api.routes.workflows import _get_verified_placement_commit
 from app.verification.composer_worktree_verifier import (
     _generate_playwright_script,
+    _prepare_dependencies,
     _verification_worktrees_dir,
 )
 
@@ -54,3 +56,24 @@ def test_verification_worktree_inside_workspace_is_redirected_to_temp(monkeypatc
 
     assert resolved != configured
     assert not resolved.is_relative_to(workspace)
+
+
+def test_verification_prepares_local_lockfile_dependencies_without_junctions(tmp_path):
+    """Cross-volume worktrees must use pnpm, never junction the source checkout node_modules."""
+    workspace = tmp_path / "workspace"
+    worktree = tmp_path / "verification" / "worktree"
+    admin_env = workspace / "apps" / "skillhubcore-admin" / ".env.local"
+    admin_env.parent.mkdir(parents=True)
+    admin_env.write_text("DATABASE_URL=test", encoding="utf-8")
+    worktree.mkdir(parents=True)
+
+    with patch("app.verification.composer_worktree_verifier._pnpm_command", return_value="pnpm"), patch(
+        "app.verification.composer_worktree_verifier.subprocess.run",
+        return_value=MagicMock(returncode=0, stdout="", stderr=""),
+    ) as run:
+        assert _prepare_dependencies(workspace, worktree, 60) == []
+
+    assert run.call_args.args[0] == [
+        "pnpm", "install", "--offline", "--frozen-lockfile", "--ignore-scripts"
+    ]
+    assert (worktree / "apps" / "skillhubcore-admin" / ".env.local").read_text(encoding="utf-8") == "DATABASE_URL=test"
