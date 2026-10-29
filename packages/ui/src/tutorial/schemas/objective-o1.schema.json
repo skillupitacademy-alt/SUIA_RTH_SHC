@@ -1,57 +1,57 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "ObjectiveO1BlockData",
+  "title": "Objective O1 Block Schema",
   "type": "object",
   "required": [
-    "id",
-    "type",
-    "version"
+    "title",
+    "objectives"
   ],
   "properties": {
-    "id": {
+    "eyebrow": {
       "type": "string"
     },
-    "type": {
-      "type": "string",
-      "const": "objective"
+    "title": {
+      "type": "string"
     },
-    "version": {
-      "type": "string",
-      "const": "O1"
+    "titleHighlight": {
+      "type": "string"
     },
-    "content": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "eyebrow": {
-          "type": "string"
-        },
-        "introduction": {
-          "type": "string"
-        },
-        "objectives": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [
-              "id",
-              "text"
-            ],
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": true
+    "introduction": {
+      "type": "string"
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "text"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "verb": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "badge": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
           }
-        }
-      },
-      "additionalProperties": true
+        },
+        "additionalProperties": true
+      }
+    },
+    "note": {
+      "type": "object"
     }
   },
   "additionalProperties": true
