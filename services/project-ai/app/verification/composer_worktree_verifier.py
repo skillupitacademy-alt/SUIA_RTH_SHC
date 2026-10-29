@@ -54,7 +54,9 @@ def find_free_port() -> int:
 
 def _prepare_dependencies(workspace_root: Path, worktree_path: Path, timeout_seconds: int) -> List[Path]:
     """Create a worktree-local, lockfile-verified dependency layout for Next.js."""
-    install_command = [_pnpm_command(), "install", "--frozen-lockfile", "--ignore-scripts"]
+    # Next's production type-check reads root test configuration, so devDependencies
+    # such as Vitest must be present even when the service process has NODE_ENV=production.
+    install_command = [_pnpm_command(), "install", "--frozen-lockfile", "--prod=false", "--ignore-scripts"]
     result = subprocess.run(
         [*install_command, "--offline"],
         cwd=worktree_path,

@@ -74,7 +74,7 @@ def test_verification_prepares_local_lockfile_dependencies_without_junctions(tmp
         assert _prepare_dependencies(workspace, worktree, 60) == []
 
     assert run.call_args.args[0] == [
-        "pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--offline"
+        "pnpm", "install", "--frozen-lockfile", "--prod=false", "--ignore-scripts", "--offline"
     ]
     assert (worktree / "apps" / "skillhubcore-admin" / ".env.local").read_text(encoding="utf-8") == "DATABASE_URL=test"
 
@@ -97,3 +97,4 @@ def test_verification_retries_online_only_when_offline_store_is_incomplete(tmp_p
     assert "--offline" in run.call_args_list[0].args[0]
     assert "--offline" not in run.call_args_list[1].args[0]
     assert "--frozen-lockfile" in run.call_args_list[1].args[0]
+    assert "--prod=false" in run.call_args_list[1].args[0]
