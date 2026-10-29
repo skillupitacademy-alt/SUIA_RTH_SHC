@@ -541,6 +541,7 @@ async def approve_final_certification(
     request: FinalApprovalRequest,
     user: AuthenticatedPrincipal = Depends(require_contract_admin),
     governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    workflow_repo: WorkflowRepository = Depends(get_workflow_repository),
     session: AsyncSession = Depends(get_db_session)
 ) -> FinalApprovalResponse:
     """
@@ -967,7 +968,7 @@ async def approve_final_certification(
         )
 
         if target_state == CanonicalWorkflowState.CERTIFIED and workflow.manifest_id:
-            from app.persistence import get_manifest_repository
+            from app.persistence import get_manifest_repository, get_workflow_repository
             from app.persistence.models import StateTransitionModel, WorkflowModel
             from sqlalchemy import select, func
             manifest_repo = await get_manifest_repository(session)
