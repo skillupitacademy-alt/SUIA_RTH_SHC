@@ -74,7 +74,7 @@ def test_derive_file_operations_resolution(tmp_path):
     assert "packages/ui/src/tutorial/blocks/ObjectiveO1Block.tsx" in create_targets
     assert "packages/ui/src/tutorial/blocks/__tests__/ObjectiveO1Block.test.tsx" in create_targets
     assert "packages/ui/src/tutorial/schemas/objective-o1.schema.json" in create_targets
-    assert "packages/ui/src/tutorial/types/objective-o1.schema.ts" in create_targets
+    assert "packages/types/src/tutorial-rich-document/schemas/objective-o1.schema.ts" in create_targets
     assert "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/entries/objective.registry.ts" not in create_targets
 
     patch_actions = {op.action for op in ops}
@@ -84,6 +84,7 @@ def test_derive_file_operations_resolution(tmp_path):
     assert PlacementFileAction.PATCH_REGISTRY not in patch_actions
     assert PlacementFileAction.PATCH_TYPES not in patch_actions
     assert PlacementFileAction.PATCH_COMPOSER_DEFINITION in patch_actions
+    assert PlacementFileAction.PATCH_BLOCKS_SCHEMA in patch_actions
     assert PlacementFileAction.SKIP in patch_actions
 
     # Pre-hashes must be computed for patched files

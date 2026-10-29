@@ -403,6 +403,7 @@ class CanonicalComparator:
         renderer_rel_path = "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
         generated_registry_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/generatedBlockRegistries.ts"
         composer_definitions_rel_path = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/generatedBlockVersionDefinitions.ts"
+        blocks_schema_rel_path = "packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts"
 
         def get_pre_hash(rel_path: str) -> Optional[str]:
             full_path = ws / rel_path
@@ -502,7 +503,7 @@ class CanonicalComparator:
             # 4. TypeScript Schema / Types
             elif filename.endswith('.schema.ts') or filename.endswith('.types.ts'):
                 operations.append(make_candidate_file_op(
-                    filename, source_sha, f"packages/ui/src/tutorial/types/{filename}", "TypeScript types"
+                    filename, source_sha, f"packages/types/src/tutorial-rich-document/schemas/{filename}", "TypeScript Zod schema"
                 ))
 
             # 5. Admin Composer Registry Entry
@@ -572,6 +573,17 @@ class CanonicalComparator:
             expected_pre_hash=get_pre_hash(composer_definitions_rel_path),
             patch_strategy="REGISTER_VERSION_ADAPTER",
             description=f"Register {family_name} {version_upper} with the generic Composer payload adapter"
+        ))
+
+        # Add PATCH_BLOCKS_SCHEMA operation for canonical schema union registration
+        operations.append(PlacementFileOperation(
+            action=PlacementFileAction.PATCH_BLOCKS_SCHEMA,
+            source_filename=integration_filename,
+            source_sha256=compute_sha256(json.dumps(integration_metadata, sort_keys=True)),
+            target_path=blocks_schema_rel_path,
+            expected_pre_hash=get_pre_hash(blocks_schema_rel_path),
+            patch_strategy="UNION_MEMBER",
+            description=f"Register {family_name}{version_upper}BlockSchema in TutorialBlockSchema Zod union"
         ))
 
         return operations

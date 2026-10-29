@@ -28,6 +28,7 @@ from app.placement.patcher import (
     patch_tutorial_page_content_types,
     patch_generated_block_registry,
     patch_generated_block_version_definitions,
+    patch_blocks_schema,
 )
 from app.placement.repository_adapter import RepositoryAdapter, RepositoryAdapterError
 from app.placement.worktree_manager import WorktreeManager, WorktreeError, WorktreeContext
@@ -260,6 +261,7 @@ class PlacementExecutor:
                 PlacementFileAction.PATCH_TYPES,
                 PlacementFileAction.PATCH_COMPOSER_DEFINITION,
                 PlacementFileAction.PATCH_GENERATED_REGISTRY,
+                PlacementFileAction.PATCH_BLOCKS_SCHEMA,
             )
             needs_integration_meta = any(op.action in patch_actions for op in manifest.fileOperations)
 
@@ -443,6 +445,31 @@ class PlacementExecutor:
                         family_type_id=integration_metadata.get("typeId", manifest.blockFamily.value.lower()),
                         version=manifest.blockVersion,
                         payload_format=integration_metadata.get("payloadFormat", "canonical"),
+                    )
+                    staged_writes.append((target_file_path, patched))
+
+                elif op.action == PlacementFileAction.PATCH_BLOCKS_SCHEMA:
+                    if not target_file_path.exists():
+                        raise PlacementExecutionError(f"Preflight failed: Target blocks.schema.ts file '{op.target_path}' does not exist")
+                    current_content = target_file_path.read_text(encoding='utf-8')
+                    current_hash = compute_sha256(current_content)
+                    if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                        raise PlacementExecutionError(
+                            f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                        )
+                    # Get schema filename and export name from integration metadata
+                    schema_filename = integration_metadata.get(
+                        "schemaFilename",
+                        f"{manifest.blockFamily.value.lower()}-{manifest.blockVersion.lower()}.schema.ts"
+                    )
+                    schema_export_name = integration_metadata.get(
+                        "schemaExportName",
+                        f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}BlockSchema"
+                    )
+                    patched = patch_blocks_schema(
+                        current_content,
+                        schema_filename=schema_filename,
+                        schema_export_name=schema_export_name,
                     )
                     staged_writes.append((target_file_path, patched))
 

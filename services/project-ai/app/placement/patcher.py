@@ -392,3 +392,111 @@ def patch_generated_block_registry(
   }},
 '''
     return content.replace(marker, entry + marker, 1)
+
+
+def patch_blocks_schema(
+    content: str,
+    schema_filename: str,
+    schema_export_name: str,
+) -> str:
+    """
+    Register a block schema in TutorialBlockSchema Zod union.
+    
+    Operations:
+    1. Add import if missing: import { SchemaName } from './filename';
+    2. Add re-export if missing: export * from './filename';
+    3. Add to z.union([...]) if missing
+    
+    Idempotent, fail-closed, duplicate-detecting.
+    
+    Target file: packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts
+    
+    Args:
+        content: Current content of blocks.schema.ts
+        schema_filename: Schema filename (e.g., "objective-o1.schema.ts")
+        schema_export_name: Schema export name (e.g., "ObjectiveO1BlockSchema")
+    
+    Returns:
+        Patched content with schema registered in union
+    
+    Raises:
+        PatchError: If structure is ambiguous or unsafe to patch
+    """
+    # Validate export name using JavaScript identifier pattern
+    if not re.match(r"^[A-Za-z_$][A-Za-z0-9_$]*$", schema_export_name):
+        raise PatchError(f"Invalid schema export name: {schema_export_name}")
+    
+    # Extract module name: remove .schema.ts or .ts extension
+    schema_module = schema_filename
+    if schema_module.endswith(".schema.ts"):
+        schema_module = schema_module[:-10]  # Remove .schema.ts
+    elif schema_module.endswith(".ts"):
+        schema_module = schema_module[:-3]  # Remove .ts
+    
+    # Build import and export statements
+    import_statement = f"import {{ {schema_export_name} }} from './{schema_module}.schema';"
+    export_statement = f"export * from './{schema_module}.schema';"
+    
+    # Check idempotency: if import exists and schema is in union, return unchanged
+    if import_statement in content:
+        # Check if schema is already in union
+        union_pattern = r"export\s+const\s+TutorialBlockSchema[^=]+=\s*z\.lazy\(\(\s*\)\s*=>\s*z\.union\(\[([\s\S]*?)\]\s*\)\s*\);"
+        union_match = re.search(union_pattern, content)
+        if union_match and schema_export_name in union_match.group(1):
+            return content  # Already patched - idempotent
+    
+    patched_content = content
+    
+    # Step 1: Add import if missing
+    if import_statement not in patched_content:
+        # Find last schema import line - look for imports from relative paths
+        schema_import_pattern = r"(import\s+\{[^}]+\}\s+from\s+'\.[^']+';(?:\r?\n))"
+        matches = list(re.finditer(schema_import_pattern, patched_content))
+        if not matches:
+            raise PatchError("Cannot find schema import section in blocks.schema.ts")
+        
+        # Insert after last schema import
+        last_match = matches[-1]
+        insert_pos = last_match.end()
+        patched_content = patched_content[:insert_pos] + import_statement + "\n" + patched_content[insert_pos:]
+    
+    # Step 2: Add re-export if missing
+    if export_statement not in patched_content:
+        # Find last re-export line
+        export_pattern = r"(export\s+\*\s+from\s+'\.[^']+';(?:\r?\n))"
+        matches = list(re.finditer(export_pattern, patched_content))
+        if not matches:
+            raise PatchError("Cannot find re-export section in blocks.schema.ts")
+        
+        # Insert after last re-export
+        last_match = matches[-1]
+        insert_pos = last_match.end()
+        patched_content = patched_content[:insert_pos] + export_statement + "\n" + patched_content[insert_pos:]
+    
+    # Step 3: Find TutorialBlockSchema declaration and add to union
+    union_pattern = r"(export\s+const\s+TutorialBlockSchema[^=]+=\s*z\.lazy\(\(\s*\)\s*=>\s*z\.union\(\[)([\s\S]*?)(\]\s*\)\s*\);)"
+    union_match = re.search(union_pattern, patched_content)
+    if not union_match:
+        raise PatchError("Cannot find TutorialBlockSchema union structure in blocks.schema.ts")
+    
+    prefix = union_match.group(1)
+    union_body = union_match.group(2)
+    suffix = union_match.group(3)
+    
+    # Check if schema already in union (additional safety check)
+    if schema_export_name in union_body:
+        return patched_content  # Already in union - idempotent
+    
+    # Add schema to union with proper indentation (4 spaces based on existing file)
+    # Insert before closing bracket, maintaining existing structure
+    union_body_stripped = union_body.rstrip()
+    if union_body_stripped and not union_body_stripped.endswith(","):
+        union_body_stripped += ","
+    
+    new_union_body = union_body_stripped + f"\n    {schema_export_name},"
+    
+    # Reconstruct with updated union
+    replacement = prefix + new_union_body + "\n  " + suffix
+    patched_content = patched_content[:union_match.start()] + replacement + patched_content[union_match.end():]
+    
+    return patched_content
