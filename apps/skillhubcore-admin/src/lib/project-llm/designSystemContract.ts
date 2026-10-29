@@ -34,10 +34,27 @@ All tutorial blocks belong to a single cohesive tutorial page. Every block MUST 
 - STRICT BAN ON UNAPPROVED COLORS: Do NOT introduce arbitrary orange, purple, yellow, red, or rainbow gradients. Multi-card grids (such as 6-step layouts) MUST cycle through the 3 functional accents (secondary, accent1, accent2) or differentiate via Lucide icons and semantic badges, NEVER by inventing rainbow colors.
 - STRICT BAN ON 3D / CARTOON DECORATIONS: Production tutorial blocks must not include 3D floating graphics, mascot cartoons, or marketing illustrations. All visuals must be functional SVG icons from lucide-react.
 
+### Bullet & List Numbering GUI Component Standards (Ordered & Unordered)
+
+Every list component (ordered \`<ol>\` or unordered \`<ul>\`) rendered across any tutorial block MUST adhere to the unified 3-accent color system:
+1. Ordered Lists & Stepper Numbers (\`<ol>\`):
+   - Numbered step badges / counters MUST compose \`<StepBadge />\` or match its 3-accent cycle:
+     * Steps 1, 4, 7... -> Brand Accent (Magenta Pink on SUIA / Rose Red on RTH)
+     * Steps 2, 5, 8... -> Info Accent (Sky Cyan on SUIA / Indigo Blue on RTH)
+     * Steps 3, 6, 9... -> Success Accent (Emerald Green on SUIA / Amber Warm on RTH)
+   - Number badges must be filled circles with bold white text achieving WCAG AAA contrast and high-contrast system borders.
+2. Unordered Lists & Bullet GUI Markers (\`<ul>\`):
+   - Bullets must NEVER use default unstyled browser dots or arbitrary rainbow colors.
+   - Bullet GUI markers (dots, checkmarks, dashes, or icon discs) must strictly use the harmonized brand token system:
+     * Informational / detail bullets: Info Accent (Sky Cyan on SUIA / Indigo Blue on RTH)
+     * Action / emphasis bullets: Brand Accent (Magenta Pink on SUIA / Rose Red on RTH)
+     * Validation / outcome checkmarks: Success Accent (Emerald Green on SUIA / Amber Warm on RTH)
+     * Multi-item generic bulleted lists: Cycle bullet marker colors predictably through the 3 brand accents (1: Brand, 2: Info, 3: Success, repeating) to establish visual cadence and harmony across all blocks.
+
 ### 3-Tier Elevation and Surface Invariant (Matching I1, C1, D1, S1)
 
 To ensure seamless visual continuity across Introduction (I1), Code (C1), Definition (D1), and Summary (S1) blocks:
-- Header Consistency: Compose BlockHeader with eyebrow pill, Target/BookOpen icon, standard titleScale, and showAccentBar. Never hand-roll an asymmetrical underlined header.
+- Header Consistency: MUST compose \`<BlockHeader />\` with eyebrow pill, relevant Lucide icon, headingLevel="h1", titleScale="hero" (text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]), and showAccentBar={true} (rendering the signature w-12 h-1 rounded-full brand accent bar in primary theme color). Never hand-roll an asymmetrical header, never omit the accent bar, and never downgrade to titleScale="standard" for primary block titles.
 - CardSurface Resting Elevation: Compose CardSurface with elevation="dashboard" for primary cards:
   * Resting: shadow-xl border-t border-white/80 dark:border-white/10 backdrop-blur-md bg-white/85 dark:bg-slate-900/85
   * Border: subtle perimeter border border-slate-200 dark:border-slate-800

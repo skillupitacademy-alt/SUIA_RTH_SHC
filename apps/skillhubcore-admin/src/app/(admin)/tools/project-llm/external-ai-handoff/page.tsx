@@ -147,12 +147,13 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
      Style: { backgroundColor: withAlpha(primary, '14') }
      Foreground: use a semantic high-contrast class such as text-slate-900 dark:text-slate-100
      Icon: Relevant Lucide React icon (h-4 w-4)
-   - Block Title:
-     Class: "text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight"
-     Foreground: use text-slate-900 dark:text-slate-100; do not use theme tokens as normal-sized text color
-   - Brand Accent Indicator:
-     Class: "mb-4 mt-3 h-1 w-12 rounded-full"
-     Style: { backgroundColor: primary }
+    - Block Title (Hero Scale Invariant):
+      Class: "text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]"
+      Rule: MUST compose <BlockHeader titleScale="hero" headingLevel="h1" showAccentBar={true} />
+      Foreground: use text-slate-900 dark:text-slate-100; do not downgrade to standard (2xl/3xl) scale.
+    - Brand Accent Divider Bar (Signature Dash):
+      Class: "mb-4 mt-3 h-1 w-12 rounded-full"
+      Style: { backgroundColor: primary } (automatically rendered by BlockHeader with showAccentBar={true})
    - Intro / Subtitle / Lead Paragraph:
      Class: "text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6"
      Foreground: use text-slate-800 dark:text-slate-200; do not use alpha-appended theme text colors
@@ -220,7 +221,7 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
    - ZERO hardcoded brand strings ('SkillUpITAcademy', 'RealTutorialHub', 'SUIA', 'RTH').
    - Both light and dark modes are supported automatically via Tailwind tokens (bg-white dark:bg-slate-900).
 
-5. Universal Numbering & Step Badges (StepBadge Primitive):
+5. Universal Numbering, Step Badges & Bullet GUI Components:
    - For ANY numbered cards, process flows, steps (1..N), or stage progressions (used across I1, C1, D1, S1, and O1):
      * MUST compose the shared StepBadge primitive:
        import { StepBadge } from '../primitives';
@@ -230,7 +231,14 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
        - Steps 1, 4, 7... -> Brand Accent (Magenta Pink on SUIA / Rose Red on RTH)
        - Steps 2, 5, 8... -> Info Accent (Sky Cyan on SUIA / Indigo Blue on RTH)
        - Steps 3, 6, 9... -> Mastery Accent (Emerald Green on SUIA / Amber Warm on RTH)
-     * This guarantees 100% color and typography uniformity across all blocks on the entire tutorial page!
+   - For Ordered & Unordered Bullet GUI Components:
+     * Ordered lists (<ol>): Follow the exact 3-accent cycle above for all step/numbered badges.
+     * Unordered lists (<ul>): Bullet markers (dots, checkmarks, dashes, or icon discs) must strictly use the harmonized brand token system:
+       - Info bullets -> Sky Cyan on SUIA / Indigo Blue on RTH
+       - Action / emphasis bullets -> Magenta Pink on SUIA / Rose Red on RTH
+       - Outcome / validation checkmarks -> Emerald Green on SUIA / Amber Warm on RTH
+       - Generic multi-item bulleted lists -> Cycle predictably through the 3 brand accents (1: Brand, 2: Info, 3: Success, repeating).
+     * This guarantees 100% color, bullet marker, and typography uniformity across all blocks on the entire tutorial page!
 
 --------------------------------------------------------------------------------
 MANDATORY PACKAGE DELIVERABLE: SINGLE ZIP ARCHIVE

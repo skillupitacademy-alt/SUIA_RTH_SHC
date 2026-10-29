@@ -125,7 +125,7 @@ function normalizeObjectiveItems(content?: ObjectiveO1BlockContent): NormalizedO
       typeof entry.title === 'string' && entry.title.trim().length > 0
         ? entry.title.trim()
         : typeof entry.text === 'string' && entry.text.trim().length > 0
-        ? entry.text.trim() : '';
+          ? entry.text.trim() : '';
 
     if (!rawHeading) return;
 
@@ -133,7 +133,7 @@ function normalizeObjectiveItems(content?: ObjectiveO1BlockContent): NormalizedO
       typeof entry.description === 'string' && entry.description.trim().length > 0
         ? entry.description.trim()
         : typeof entry.title === 'string' && typeof entry.text === 'string' && entry.title.trim() !== entry.text.trim()
-        ? entry.text.trim() : '';
+          ? entry.text.trim() : '';
 
     const parts = splitVerbAndRest(rawHeading, typeof entry.verb === 'string' ? entry.verb : undefined);
 
@@ -141,7 +141,7 @@ function normalizeObjectiveItems(content?: ObjectiveO1BlockContent): NormalizedO
       typeof entry.badge === 'string' && entry.badge.trim().length > 0
         ? entry.badge.trim()
         : typeof entry.category === 'string' && entry.category.trim().length > 0
-        ? entry.category.trim() : DEFAULT_BADGES[idx % DEFAULT_BADGES.length];
+          ? entry.category.trim() : DEFAULT_BADGES[idx % DEFAULT_BADGES.length];
 
     const iconKey =
       typeof entry.icon === 'string' && entry.icon.trim().length > 0
@@ -246,8 +246,8 @@ function ObjectiveO1View({
   const noteObj: ObjectiveO1Note = typeof content?.note === 'string' && content.note.trim().length > 0
     ? { title: 'Note', text: content.note.trim() }
     : content?.note && typeof content.note === 'object' && typeof content.note.text === 'string' && content.note.text.trim().length > 0
-    ? { title: content.note.title?.trim() || 'Note', text: content.note.text.trim() }
-    : {
+      ? { title: content.note.title?.trim() || 'Note', text: content.note.text.trim() }
+      : {
         title: 'Note',
         text: 'These are observable, practical skills you will develop in this lesson. Each skill will be demonstrated with clear examples and hands-on practice.',
       };

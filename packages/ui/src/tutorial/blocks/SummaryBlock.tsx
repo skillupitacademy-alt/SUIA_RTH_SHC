@@ -3,7 +3,7 @@ import { BookOpen, Check, FileText, Lightbulb, Star, Table2 } from 'lucide-react
 import type { ISummaryBlock, BlockComponentProps } from '../types';
 import type { TutorialSummaryPayload } from '@quiz/types';
 import { SafeHtml } from '../../SafeHtml';
-import { BlockShell, BlockHeader, CalloutBanner, CardSurface } from '../primitives';
+import { BlockShell, BlockHeader, CalloutBanner, CardSurface, getStepBrandColor } from '../primitives';
 import { DEFAULT_THEME, getThemeColor, withAlpha } from '../theme-utils';
 
 interface LegacySummaryContent {
@@ -89,23 +89,29 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
             className="w-full overflow-hidden p-0"
             style={{ borderColor: withAlpha(primary, '66') }}
           >
-            {summaryItems.map((item, index: number) => (
-              <div
-                key={index}
-                className="grid min-h-[58px] grid-cols-[42px_minmax(0,1fr)] items-center border-b px-4 py-2.5 last:border-b-0 dark:border-slate-700"
-                style={{ borderColor: withAlpha(primary, '33') }}
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-extrabold text-white" style={{ backgroundColor: primary }}>
-                  <Check className="h-3 w-3 stroke-[4]" />
-                </span>
+            {summaryItems.map((item, index: number) => {
+              const bulletColor = getStepBrandColor(activeTheme, index + 1);
+              return (
+                <div
+                  key={index}
+                  className="grid min-h-[58px] grid-cols-[42px_minmax(0,1fr)] items-center border-b px-4 py-2.5 last:border-b-0 dark:border-slate-700"
+                  style={{ borderColor: withAlpha(primary, '33') }}
+                >
+                  <span
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-extrabold text-white shadow-xs border border-white/20 forced-colors:!border-2 forced-colors:!border-[ButtonText]"
+                    style={{ backgroundColor: bulletColor }}
+                  >
+                    <Check className="h-3 w-3 stroke-[4]" />
+                  </span>
                 <SafeHtml
                   as="div"
                   html={item.text || ''}
                   className="text-[15px] font-medium leading-[1.65] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold"
                   style={{ color: secondary }}
                 />
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </CardSurface>
         </section>
       )}
@@ -196,18 +202,24 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
             className="w-full px-4 py-3"
             style={{ backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }}
           >
-            {quickTips.map((tip, index: number) => (
-              <div
-                key={index}
-                className="grid min-h-[42px] grid-cols-[28px_minmax(0,1fr)] items-start gap-2.5 border-b py-2 text-sm font-medium leading-[1.65] last:border-b-0"
-                style={{ borderColor: withAlpha(primary, '20'), color: secondary }}
-              >
-                <span className="mt-px flex h-[25px] w-[25px] items-center justify-center rounded-full text-white" style={{ backgroundColor: primary }}>
-                  <Check className="h-3.5 w-3.5 stroke-[4]" />
-                </span>
+            {quickTips.map((tip, index: number) => {
+              const tipColor = getStepBrandColor(activeTheme, index + 1);
+              return (
+                <div
+                  key={index}
+                  className="grid min-h-[42px] grid-cols-[28px_minmax(0,1fr)] items-start gap-2.5 border-b py-2 text-sm font-medium leading-[1.65] last:border-b-0"
+                  style={{ borderColor: withAlpha(primary, '20'), color: secondary }}
+                >
+                  <span
+                    className="mt-px flex h-[25px] w-[25px] items-center justify-center rounded-full text-white shadow-xs border border-white/20 forced-colors:!border-2 forced-colors:!border-[ButtonText]"
+                    style={{ backgroundColor: tipColor }}
+                  >
+                    <Check className="h-3.5 w-3.5 stroke-[4]" />
+                  </span>
                 <SafeHtml as="span" html={tip.text || ''} className="[&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" />
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </CardSurface>
         </section>
       )}

@@ -91,6 +91,7 @@ export function TutorialPageContentBuilderClient() {
     setSourceFormat,
     handlePreviewCurrent,
     handleAddBlockInstance,
+    handleReorderBlocks,
     handleRemoveBlockInstance,
     handleLoadBlock,
     handleStartNewBlock,
@@ -249,6 +250,7 @@ export function TutorialPageContentBuilderClient() {
               documentBlocks={documentBlocks}
               onLoadBlock={(block, index) => handleLoadBlock(block, index, (updates) => setForm((prev) => ({ ...prev, ...updates })))}
               onRemoveBlock={handleRemoveBlockInstance}
+              onReorderBlocks={handleReorderBlocks}
             />
           </section>
 

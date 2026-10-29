@@ -175,6 +175,25 @@ export function useTutorialBlockEditor(
   ]);
 
   /**
+   * Reorder block instances in the document (Drag and Drop / Move Up / Move Down)
+   */
+  const handleReorderBlocks = useCallback(
+    (sourceIndex: number, targetIndex: number) => {
+      if (sourceIndex === targetIndex || sourceIndex < 0 || targetIndex < 0) return;
+      deps.hasUnsavedLocalChangesRef.current = true;
+      deps.setDocumentBlocks((prev) => {
+        if (sourceIndex >= prev.length || targetIndex >= prev.length) return prev;
+        const next = [...prev];
+        const [moved] = next.splice(sourceIndex, 1);
+        next.splice(targetIndex, 0, moved);
+        return next;
+      });
+      deps.setMessage('Updated document block order.');
+    },
+    [deps]
+  );
+
+  /**
    * Remove a block instance from the document
    */
   const handleRemoveBlockInstance = useCallback(
@@ -262,6 +281,7 @@ export function useTutorialBlockEditor(
     // Handlers
     handlePreviewCurrent,
     handleAddBlockInstance,
+    handleReorderBlocks,
     handleRemoveBlockInstance,
     handleLoadBlock,
     handleStartNewBlock,
