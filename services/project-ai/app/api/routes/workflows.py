@@ -637,6 +637,7 @@ async def approve_final_certification(
     
     gate_results = workflow.gate_results or {}
     bound_artifact_sha256 = workflow.contract_sha256 or ""
+    placement_commit = None
 
     is_candidate_pipeline = "composer" in gate_results
 
@@ -1011,6 +1012,39 @@ async def approve_final_certification(
                         await workflow_repo.upsert(prior_wf)
 
         await session.commit()
+
+        # Local development auto-promotion: merge certified placement commit into main workspace
+        if target_state == CanonicalWorkflowState.CERTIFIED and placement_commit:
+            import subprocess
+            import logging
+            from app.verification.composer_worktree_verifier import find_workspace_root
+            _logger = logging.getLogger(__name__)
+            try:
+                ws_root = find_workspace_root()
+                is_ancestor = subprocess.run(
+                    ["git", "merge-base", "--is-ancestor", str(placement_commit), "HEAD"],
+                    cwd=ws_root,
+                    capture_output=True
+                ).returncode == 0
+
+                if not is_ancestor:
+                    c_prefix = str(placement_commit)[:10]
+                    c_id = str(workflow.candidate_id or "")
+                    merge_msg = f"chore(project-ai): auto-promote certified candidate {c_id} ({c_prefix})"
+                    merge_proc = subprocess.run(
+                        ["git", "merge", str(placement_commit), "--no-edit", "-m", merge_msg],
+                        cwd=ws_root,
+                        capture_output=True,
+                        text=True
+                    )
+                    if merge_proc.returncode == 0:
+                        _logger.info(f"Successfully auto-promoted certified candidate commit {placement_commit} to main workspace.")
+                    else:
+                        _logger.warning(f"Auto-promotion merge warning for commit {placement_commit}: {merge_proc.stderr or merge_proc.stdout}")
+                else:
+                    _logger.info(f"Placement commit {placement_commit} is already an ancestor of HEAD; skipping redundant merge.")
+            except Exception as auto_promote_err:
+                _logger.warning(f"Auto-promotion skipped due to non-fatal error: {auto_promote_err}")
     except ValueError as e:
         await session.rollback()
         raise HTTPException(status_code=400, detail=str(e))
