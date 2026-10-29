@@ -12,7 +12,7 @@ import { Bot, Check, ChevronDown, ChevronUp, Copy, Sparkles } from 'lucide-react
 import type { TutorialPageContentType } from '@quiz/types';
 import type { TutorialPromptContext } from '../prompts/tutorialPromptContext';
 import { buildTutorialPrompt } from '../prompts/tutorialPrompt.shared';
-import { getVersions } from '../registry';
+import { getVersions, getDefaultPayload } from '../registry';
 
 interface AiInstructionContainerProps {
   domainName: string;
@@ -58,16 +58,33 @@ export function AiInstructionContainer({
 
     if (selectedVersion?.getAiPrompt) return selectedVersion.getAiPrompt(context);
 
-    // Fallback using shared infrastructure
+    // Universal dynamic schema extraction directly from the selected block's getDefaultPayload():
+    const rawPayload = selectedVersion?.getDefaultPayload?.() ?? getDefaultPayload(blockType, versionId);
+    const payloadWithMetadata = {
+      expectedTimeSec: '<AI-estimated-value>',
+      ...(typeof rawPayload === 'object' && rawPayload !== null ? rawPayload : { content: rawPayload }),
+    };
+
+    const formattedPayload = JSON.stringify(payloadWithMetadata, null, 2);
+
     return buildTutorialPrompt(
       context,
       `# OUTPUT REQUIREMENTS
 
-Generate valid, production-ready ${blockType} content conforming strictly to the official platform schema.
+Generate valid, production-ready ${blockName.toLowerCase()} content conforming strictly to the official platform schema for ${versionName}.
 
 Return valid JSON only.
 
-Do not include markdown code fences.`
+Do not include markdown code fences.
+
+# REQUIRED STRUCTURE
+
+${formattedPayload}
+
+# expectedTimeSec Estimation for ${versionName} Blocks
+
+After generating the complete ${blockName.toLowerCase()} content above, estimate expectedTimeSec as a positive integer (seconds).
+See the GLOBAL BLOCK METADATA section for complete estimation guidelines.`
     );
   }, [domainName, subjectName, topicName, subtopicName, navigationNodeName, blockName, versionName, blockType, versionId, selectedVersion]);
 

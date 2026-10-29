@@ -86,7 +86,7 @@ export function getDefaultPayload(
   const versions = getVersions(blockTypeId);
   
   if (versionId) {
-    const version = versions.find(v => v.id === versionId);
+    const version = versions.find(v => v.id === versionId || v.code.toUpperCase() === versionId.toUpperCase());
     if (version) {
       return version.getDefaultPayload();
     }
