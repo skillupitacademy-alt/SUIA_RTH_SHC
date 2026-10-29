@@ -40,11 +40,12 @@ and Composer chrome.
 
 ### Accessibility Acceptance Contract
 
-- Meet WCAG 2.1 AA color contrast for text, meaningful icons, badges, controls, and non-text UI boundaries. Use the injected theme and approved semantic token pairs; do not assume a translucent brand color remains legible over every surface.
-- Every meaningful card, callout, badge, panel, or other surface must retain a visible perimeter in forced-colors active mode. Prefer shared primitives and their forced-colors utilities. Never use shadow, blur, or background tint as the only boundary.
+- Meet WCAG 2.1 AA color contrast for text, meaningful icons, badges, controls, and non-text UI boundaries. Validate the intended light and dark surfaces for both injected brands; a change that only passes the default Composer theme is incomplete.
+- Do not use theme.primary, theme.secondary, accent1, or accent2 as normal-sized foreground text unless the candidate can demonstrate a 4.5:1 contrast ratio against every supported light and dark surface. Use semantic high-contrast foreground classes for readable text, such as text-slate-900 dark:text-slate-100. Brand tokens belong in borders, decorative icons, backgrounds, and text decoration unless their contrast is known to be sufficient.
+- Every meaningful rounded card, callout, badge, pill, panel, or icon wrapper must retain a real visible perimeter in forced-colors active mode. Use an explicit border or outline and forced-colors:border-[ButtonText] (or a shared primitive that supplies it). Never use shadow, blur, tint, or an alpha-only border as the sole boundary.
 - Only genuine controls may be keyboard-focusable. Do not add tabIndex, role="button", pointer cursors, hover affordances, or keyboard handlers to static editorial content just to satisfy a test.
 - A block with no genuine controls is expected to report keyboard navigation as NOT_APPLICABLE in Project LLM browser evidence. A block with controls must provide native semantics (or an equivalent accessible role), keyboard operation, and a visible focus-visible indicator.
-- Include focused unit coverage for semantic structure, accessible names where controls exist, contrast-safe token usage, visible boundaries, reduced motion, and responsive containment. Project LLM remains the authority for isolated browser, forced-colors, keyboard, axe-core, and six-width gates.
+- Include focused unit coverage for semantic structure, accessible names where controls exist, contrast-safe foreground choices, visible boundaries, reduced motion, and responsive containment. Check both supplied brand themes and light/dark class behavior in unit evidence. Project LLM remains the authority for isolated browser, forced-colors, keyboard, axe-core, and six-width gates.
 - Do not label a candidate, README, test, or preview as Stage 6.5 verified, WCAG certified, or guaranteed to meet a specific contrast ratio before Project LLM attaches browser evidence. Candidate tests may assert intended semantics and token usage, but they must not present class-name checks as browser accessibility proof.
 
 ### Evidence and Ownership
