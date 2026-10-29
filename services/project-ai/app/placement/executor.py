@@ -450,22 +450,36 @@ class PlacementExecutor:
 
                 elif op.action == PlacementFileAction.PATCH_BLOCKS_SCHEMA:
                     if not target_file_path.exists():
-                        raise PlacementExecutionError(f"Preflight failed: Target blocks.schema.ts file '{op.target_path}' does not exist")
+                        raise PlacementExecutionError(
+                            f"Preflight failed: Canonical blocks schema does not exist: '{op.target_path}'"
+                        )
                     current_content = target_file_path.read_text(encoding='utf-8')
                     current_hash = compute_sha256(current_content)
-                    if op.expected_pre_hash and current_hash != op.expected_pre_hash:
+                    
+                    # MANDATORY pre-image hash check for canonical shared file
+                    if not op.expected_pre_hash:
                         raise PlacementExecutionError(
-                            f"Pre-image hash mismatch on {op.target_path}: expected {op.expected_pre_hash}, got {current_hash}"
+                            f"Preflight failed: Missing expected pre-image hash for canonical schema '{op.target_path}'"
                         )
-                    # Get schema filename and export name from integration metadata
-                    schema_filename = integration_metadata.get(
-                        "schemaFilename",
-                        f"{manifest.blockFamily.value.lower()}-{manifest.blockVersion.lower()}.schema.ts"
-                    )
-                    schema_export_name = integration_metadata.get(
-                        "schemaExportName",
-                        f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}BlockSchema"
-                    )
+                    if current_hash != op.expected_pre_hash:
+                        raise PlacementExecutionError(
+                            f"Pre-image hash mismatch on {op.target_path}: "
+                            f"expected {op.expected_pre_hash}, got {current_hash}. "
+                            f"Canonical schema has changed - placement blocked."
+                        )
+                    
+                    # Extract validated schema metadata
+                    schema_filename = integration_metadata.get("typeSchemaFile")
+                    if not schema_filename:
+                        raise PlacementExecutionError(
+                            "Missing typeSchemaFile in block.integration.json"
+                        )
+                    
+                    # Derive schema export name from family/version
+                    # Per Phase 1 audit: ObjectiveO1BlockSchema pattern
+                    schema_export_name = f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}BlockSchema"
+                    
+                    # Apply patch with validated parameters
                     patched = patch_blocks_schema(
                         current_content,
                         schema_filename=schema_filename,
