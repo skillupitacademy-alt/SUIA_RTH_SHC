@@ -232,6 +232,30 @@ def test_qualification_rejects_alpha_only_candidate_surface_borders(tmp_path, mo
     assert "alpha-only inline borderColor" in result["detail"]
 
 
+def test_qualification_rejects_solid_inline_surface_borders(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    (workspace / "packages" / "ui").mkdir(parents=True)
+    monkeypatch.setattr(candidate_tester, "find_workspace_root", lambda: workspace)
+
+    result = asyncio.run(candidate_tester.run_candidate_qualification_tests(
+        "aabbccdd-eeff-0011-2233-445566778899",
+        [
+            _candidate_file(
+                "ExampleBlock.tsx",
+                'export function ExampleBlock() { return <div className="rounded-xl border forced-colors:border-[ButtonText]" style={{ borderColor: primary }}>Card</div>; }'
+            ),
+            _candidate_file(
+                "ExampleBlock.test.tsx",
+                "import { ExampleBlock } from '../ExampleBlock'; test('renders', () => { ExampleBlock(); });",
+            ),
+        ],
+    ))
+
+    assert result["passed"] is False
+    assert result["status"] == "FAIL"
+    assert "inline borderColor is not allowed" in result["detail"]
+
+
 def test_qualification_rejects_rounded_bordered_surface_without_forced_colors(tmp_path, monkeypatch):
     workspace = tmp_path / "workspace"
     (workspace / "packages" / "ui").mkdir(parents=True)

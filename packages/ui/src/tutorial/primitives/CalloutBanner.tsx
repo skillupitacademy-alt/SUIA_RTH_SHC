@@ -76,7 +76,7 @@ export function CalloutBanner({
   }[resolvedVariant];
 
   const combinedClass = [
-    'rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl backdrop-blur-md dark:bg-slate-800/90 flex items-start gap-3.5 sm:gap-4 forced-colors:border-[ButtonBorder]',
+    'rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl backdrop-blur-md dark:bg-slate-800/90 flex items-start gap-3.5 sm:gap-4 forced-colors:!border-[ButtonText]',
     className,
   ].filter(Boolean).join(' ');
 
@@ -92,7 +92,7 @@ export function CalloutBanner({
     >
       {IconComponent && (
         <span
-          className="shrink-0 flex items-center justify-center w-8 h-8 rounded-xl shadow-xs mt-0.5"
+          className="shrink-0 flex items-center justify-center w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs mt-0.5 forced-colors:!border-[ButtonText]"
           style={{
             backgroundColor: withAlpha(variantStyles.iconColor, '18'),
             color: variantStyles.iconColor,

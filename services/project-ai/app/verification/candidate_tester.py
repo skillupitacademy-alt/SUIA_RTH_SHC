@@ -36,7 +36,7 @@ def _accessibility_preflight(component_files: List[Any]) -> Dict[str, Any]:
     to Stage 6.5.
     """
     findings: List[str] = []
-    checks_run = 3
+    checks_run = 4
 
     for comp in component_files:
         source = comp.content if isinstance(comp.content, str) else comp.content.decode("utf-8", errors="replace")
@@ -45,6 +45,15 @@ def _accessibility_preflight(component_files: List[Any]) -> Dict[str, Any]:
             findings.append(
                 f"{comp.filename}: alpha-only inline borderColor is not allowed on candidate surfaces; "
                 "use a solid semantic border and retain a forced-colors border."
+            )
+
+        # Inline borderColor wins over utility-class precedence in forced-colors mode.
+        # Require candidate surfaces to express their perimeter through classes or UBA primitives.
+        if re.search(r"\bborderColor\s*:", source):
+            findings.append(
+                f"{comp.filename}: inline borderColor is not allowed on candidate surfaces; "
+                "use a class-based solid border with forced-colors:!border-[ButtonText], "
+                "or compose a shared UBA primitive."
             )
 
         if re.search(r"\bcolor\s*:\s*(?:theme\s*\.\s*)?(?:primary|secondary|accent1|accent2)\b", source):

@@ -380,6 +380,7 @@ The rules below supersede any older example in this brief:
 
 - Do not write inline \`color: primary\`, \`color: secondary\`, \`color: accent1\`, or \`color: accent2\` for normal text or icon foregrounds. Use semantic high-contrast Tailwind foreground classes.
 - Do not use \`borderColor: withAlpha(...)\` as the perimeter of a card, callout, panel, badge, pill, or icon wrapper. Use a solid border and a \`forced-colors:border-[ButtonText]\` fallback.
+- Do not use inline \`borderColor:\` at all on candidate surfaces, even with a solid token. Inline styles can override forced-colors utility precedence. Use class-based solid borders with \`forced-colors:!border-[ButtonText]\`, or compose a shared UBA primitive.
 - Rounded bordered surfaces authored directly in the candidate must include an explicit forced-colors border/outline. Shared UBA primitives may be used because they provide the fallback.
 - These upload checks are an early static preflight only. They do not prove axe-core, computed contrast, forced-colors rendering, keyboard behavior, or responsive containment. Project LLM Stage 6.5 remains authoritative for those checks.
 
