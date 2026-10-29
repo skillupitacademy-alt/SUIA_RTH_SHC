@@ -20,6 +20,7 @@ import {
   BlockHeader,
   CardSurface,
   CalloutBanner,
+  StepBadge,
 } from '../primitives';
 
 export interface ObjectiveO1Item {
@@ -287,12 +288,7 @@ function ObjectiveO1View({
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-2 min-w-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <span
-                          className="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold text-white shadow-xs border border-white/20 forced-colors:!border-2 forced-colors:!border-solid forced-colors:!border-[ButtonText] forced-colors:text-[CanvasText] forced-colors:bg-[Canvas]"
-                          style={{ backgroundColor: stepPalette.circleBg }}
-                        >
-                          {card.stepNumber}
-                        </span>
+                        <StepBadge step={card.stepNumber} theme={theme} size="md" />
 
                         <span
                           className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-700 dark:text-slate-300 forced-colors:text-[ButtonText]"

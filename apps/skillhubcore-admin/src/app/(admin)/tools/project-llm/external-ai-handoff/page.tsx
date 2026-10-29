@@ -220,6 +220,18 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
    - ZERO hardcoded brand strings ('SkillUpITAcademy', 'RealTutorialHub', 'SUIA', 'RTH').
    - Both light and dark modes are supported automatically via Tailwind tokens (bg-white dark:bg-slate-900).
 
+5. Universal Numbering & Step Badges (StepBadge Primitive):
+   - For ANY numbered cards, process flows, steps (1..N), or stage progressions (used across I1, C1, D1, S1, and O1):
+     * MUST compose the shared StepBadge primitive:
+       import { StepBadge } from '../primitives';
+       <StepBadge step={stepNumber} theme={theme} size="md" />
+     * NEVER hand-code inline number circles or hardcode random rainbow colors.
+     * StepBadge automatically enforces the universal 3-accent brand cycle with AAA contrast white text:
+       - Steps 1, 4, 7... -> Brand Accent (Magenta Pink on SUIA / Rose Red on RTH)
+       - Steps 2, 5, 8... -> Info Accent (Sky Cyan on SUIA / Indigo Blue on RTH)
+       - Steps 3, 6, 9... -> Mastery Accent (Emerald Green on SUIA / Amber Warm on RTH)
+     * This guarantees 100% color and typography uniformity across all blocks on the entire tutorial page!
+
 --------------------------------------------------------------------------------
 MANDATORY PACKAGE DELIVERABLE: SINGLE ZIP ARCHIVE
 --------------------------------------------------------------------------------
