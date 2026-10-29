@@ -54,14 +54,9 @@ def find_free_port() -> int:
 
 def _prepare_dependencies(workspace_root: Path, worktree_path: Path, timeout_seconds: int) -> List[Path]:
     """Create a worktree-local, lockfile-verified dependency layout for Next.js."""
+    install_command = [_pnpm_command(), "install", "--frozen-lockfile", "--ignore-scripts"]
     result = subprocess.run(
-        [
-            _pnpm_command(),
-            "install",
-            "--offline",
-            "--frozen-lockfile",
-            "--ignore-scripts",
-        ],
+        [*install_command, "--offline"],
         cwd=worktree_path,
         capture_output=True,
         text=True,
@@ -69,7 +64,20 @@ def _prepare_dependencies(workspace_root: Path, worktree_path: Path, timeout_sec
     )
     if result.returncode != 0:
         output = (result.stdout or "") + "\n" + (result.stderr or "")
-        raise RuntimeError(f"Worktree dependency preparation failed: {output[-1200:]}")
+        if "ERR_PNPM_NO_OFFLINE_TARBALL" in output:
+            logger.info("pnpm store is incomplete; retrying frozen-lockfile install with registry access")
+            result = subprocess.run(
+                install_command,
+                cwd=worktree_path,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+            )
+            output = (result.stdout or "") + "\n" + (result.stderr or "")
+        if result.returncode == 0:
+            output = ""
+        else:
+            raise RuntimeError(f"Worktree dependency preparation failed: {output[-1200:]}")
     # Also copy apps/skillhubcore-admin/.env.local so Next.js server has database credentials
     admin_env = workspace_root / "apps" / "skillhubcore-admin" / ".env.local"
     target_env = worktree_path / "apps" / "skillhubcore-admin" / ".env.local"

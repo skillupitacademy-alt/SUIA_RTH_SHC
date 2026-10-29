@@ -74,6 +74,26 @@ def test_verification_prepares_local_lockfile_dependencies_without_junctions(tmp
         assert _prepare_dependencies(workspace, worktree, 60) == []
 
     assert run.call_args.args[0] == [
-        "pnpm", "install", "--offline", "--frozen-lockfile", "--ignore-scripts"
+        "pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--offline"
     ]
     assert (worktree / "apps" / "skillhubcore-admin" / ".env.local").read_text(encoding="utf-8") == "DATABASE_URL=test"
+
+
+def test_verification_retries_online_only_when_offline_store_is_incomplete(tmp_path):
+    workspace = tmp_path / "workspace"
+    worktree = tmp_path / "verification" / "worktree"
+    workspace.mkdir()
+    worktree.mkdir(parents=True)
+    offline_miss = MagicMock(returncode=1, stdout="", stderr="ERR_PNPM_NO_OFFLINE_TARBALL")
+    online_success = MagicMock(returncode=0, stdout="", stderr="")
+
+    with patch("app.verification.composer_worktree_verifier._pnpm_command", return_value="pnpm"), patch(
+        "app.verification.composer_worktree_verifier.subprocess.run",
+        side_effect=[offline_miss, online_success],
+    ) as run:
+        assert _prepare_dependencies(workspace, worktree, 60) == []
+
+    assert run.call_count == 2
+    assert "--offline" in run.call_args_list[0].args[0]
+    assert "--offline" not in run.call_args_list[1].args[0]
+    assert "--frozen-lockfile" in run.call_args_list[1].args[0]
