@@ -48,6 +48,32 @@ export const GENERATED_BLOCK_REGISTRIES: readonly BlockRegistryEntry[] = [
           ]
 }),
       },
+      {
+        id: "o1",
+        code: 'O1',
+        label: "O1 - Objective",
+        description: "Presents learning objectives with numbered step badges and category pills.",
+        getDefaultPayload: () => ({
+          "eyebrow": "LEARNING OBJECTIVES",
+          "title": "Skills You Will Develop in This Lesson",
+          "titleHighlight": "Will Develop",
+          "introduction": "By the end of this lesson, you will have the following practical skills:",
+          "objectives": [
+                    {
+                              "id": "obj-1",
+                              "verb": "Create",
+                              "title": "Create and initialize lists",
+                              "text": "Create Python lists using different methods and initialize them with values.",
+                              "badge": "Practical Skill",
+                              "icon": "create"
+                    }
+          ],
+          "note": {
+                    "title": "Note",
+                    "text": "These are observable, practical skills you will develop in this lesson."
+          }
+}),
+      },
     ],
   },
   // PROJECT_LLM_GENERATED_REGISTRIES
