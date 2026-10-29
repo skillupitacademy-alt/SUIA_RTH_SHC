@@ -21,6 +21,13 @@ export interface BrandTutorialTheme {
   primary: string;
   primaryDark: string;
   secondary: string;
+  /** Informational and success accents consumed by shared tutorial blocks. */
+  accent1?: string;
+  accent2?: string;
+  /** Contrast-safe step marker backgrounds for the shared StepBadge primitive. */
+  stepAccent1?: string;
+  stepAccent2?: string;
+  stepAccent3?: string;
   activeBackground: string;
   completed: string;
 }
