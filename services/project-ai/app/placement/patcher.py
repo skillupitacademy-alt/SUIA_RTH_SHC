@@ -442,7 +442,8 @@ def patch_blocks_schema(
         # Check if schema is already in union
         union_pattern = r"export\s+const\s+TutorialBlockSchema[^=]+=\s*z\.lazy\(\(\s*\)\s*=>\s*z\.union\(\[([\s\S]*?)\]\s*\)\s*\);"
         union_match = re.search(union_pattern, content)
-        if union_match and schema_export_name in union_match.group(1):
+        # Use word-boundary regex to prevent false positives from substring matches
+        if union_match and re.search(r'\b' + re.escape(schema_export_name) + r'\b', union_match.group(1)):
             return content  # Already patched - idempotent
     
     patched_content = content
@@ -484,7 +485,8 @@ def patch_blocks_schema(
     suffix = union_match.group(3)
     
     # Check if schema already in union (additional safety check)
-    if schema_export_name in union_body:
+    # Use word-boundary regex to prevent false positives from substring matches
+    if re.search(r'\b' + re.escape(schema_export_name) + r'\b', union_body):
         return patched_content  # Already in union - idempotent
     
     # Add schema to union with proper indentation (4 spaces based on existing file)
