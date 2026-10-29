@@ -144,20 +144,21 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
 2. Typography Scale & Font Hierarchy:
    - Eyebrow / Category Badge:
      Class: "text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-3"
-     Style: { color: primary, backgroundColor: withAlpha(primary, '14') }
+     Style: { backgroundColor: withAlpha(primary, '14') }
+     Foreground: use a semantic high-contrast class such as text-slate-900 dark:text-slate-100
      Icon: Relevant Lucide React icon (h-4 w-4)
    - Block Title:
      Class: "text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight"
-     Style: { color: secondary }
+     Foreground: use text-slate-900 dark:text-slate-100; do not use theme tokens as normal-sized text color
    - Brand Accent Indicator:
      Class: "mb-4 mt-3 h-1 w-12 rounded-full"
      Style: { backgroundColor: primary }
    - Intro / Subtitle / Lead Paragraph:
      Class: "text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6"
-     Style: { color: \`\${secondary}dd\` }
+     Foreground: use text-slate-800 dark:text-slate-200; do not use alpha-appended theme text colors
    - Item / Card Body Text:
      Class: "text-sm sm:text-base font-medium leading-relaxed"
-     Style: { color: secondary }
+     Foreground: use text-slate-900 dark:text-slate-100
    - Monospace / Code Elements:
      Class: "font-mono text-xs sm:text-sm"
 
@@ -165,7 +166,7 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
    - Tier 1: Interactive & Progression Modules (elevation="dashboard")
      * Use case: Clickable cards, flow cards, practice items, stage progression.
      * Classes: "rounded-2xl border border-t border-white/80 dark:border-white/10 p-5 sm:p-6 shadow-xl hover:shadow-2xl motion-safe:-translate-y-1 motion-safe:hover:-translate-y-2.5 motion-reduce:transform-none backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-     * Style: { backgroundColor: withAlpha(primary, '08'), borderColor: withAlpha(primary, '25') }
+     * Style: { backgroundColor: withAlpha(primary, '08') } only; use a solid border class such as \`border border-slate-500 dark:border-slate-400\` and \`forced-colors:border-[ButtonText]\`
      * Accessibility: Must include visible keyboard focus ring and motion-safe hover guards (WCAG 2.3.3 & 2.4.7).
    - Tier 2: Static Editorial Highlights & Takeaways (elevation="elevated")
      * Use case: CalloutBanner takeaways, hero definitions, key insights.
@@ -183,7 +184,8 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
      * Candidates should compose CardSurface, CalloutBanner, and BlockShell from '@quiz/ui'.
    - Icon Badges:
      Class: "flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-xl"
-     Style: { backgroundColor: withAlpha(primary, '18'), color: primary }
+     Style: { backgroundColor: withAlpha(primary, '18') }
+     Foreground: use text-slate-900 dark:text-slate-100 and \`forced-colors:text-[ButtonText]\`
    - Icons:
      MUST import from 'lucide-react' (e.g. Target, BookOpen, Check, Layers, Lightbulb, Code2, Sparkles).
      NEVER use raw unicode symbols (✓, ★, •) or emojis (📌, 🎯).
@@ -223,7 +225,7 @@ You must package your output as a single .zip archive containing the six require
          data-block-type="${familyLower}"
          data-block-version="${versionUpper}"
          className={\`w-full bg-white dark:bg-slate-900 px-[5%] py-8 sm:py-10 transition-colors \${className}\`}
-         style={{ color: secondary }}
+         // Keep foreground text semantic so the block passes both light and dark theme contrast checks.
        >
          ...
        </article>
@@ -370,7 +372,16 @@ The persisted backend contract is authoritative. Do not invent requirements or c
 6. **Dual-Brand 4-Color Tokens:**
    - SUIA: Primary \`#0B1B3D\` (Navy), Secondary \`#F54A8D\` (Magenta Pink), Accent 1 \`#0284C7\` (Sky Cyan), Accent 2 \`#10B981\` (Emerald Green).
    - RTH: Primary \`#E11D48\` (Rose), Secondary \`#1E293B\` (Slate Navy), Accent 1 \`#6366F1\` (Indigo Blue), Accent 2 \`#F59E0B\` (Amber Warm).
-   - Consume dynamically via \`theme.primary\`, \`theme.secondary\`, \`theme.accent1\`, \`theme.accent2\`, and \`withAlpha\`.
+   - Consume dynamically via \`theme.primary\`, \`theme.secondary\`, \`theme.accent1\`, \`theme.accent2\`, and \`withAlpha\`; never use a brand token as normal-sized foreground text without verified contrast.
+
+## Accessibility Preflight Precedence
+
+The rules below supersede any older example in this brief:
+
+- Do not write inline \`color: primary\`, \`color: secondary\`, \`color: accent1\`, or \`color: accent2\` for normal text or icon foregrounds. Use semantic high-contrast Tailwind foreground classes.
+- Do not use \`borderColor: withAlpha(...)\` as the perimeter of a card, callout, panel, badge, pill, or icon wrapper. Use a solid border and a \`forced-colors:border-[ButtonText]\` fallback.
+- Rounded bordered surfaces authored directly in the candidate must include an explicit forced-colors border/outline. Shared UBA primitives may be used because they provide the fallback.
+- These upload checks are an early static preflight only. They do not prove axe-core, computed contrast, forced-colors rendering, keyboard behavior, or responsive containment. Project LLM Stage 6.5 remains authoritative for those checks.
 
 ## Mandatory File Deliverables in ZIP
 
