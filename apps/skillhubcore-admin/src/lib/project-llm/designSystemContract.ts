@@ -68,7 +68,7 @@ and Composer chrome.
 
 - Compose the outer block with BlockShell, use w-full and min-w-0 on flex/grid children that contain text, and let text wrap or break rather than expand the page.
 - A parent owns its padding, gap, width, and overflow. No child card, icon, control, image, code sample, table, or long string may touch, clip through, or extend beyond its parent border.
-- Never use page-level horizontal scrolling to solve a block layout. Horizontal scrolling is allowed only inside a clearly bounded, keyboard-accessible code or data region that genuinely needs it.
+- Never use page-level horizontal scrolling to solve a block layout. Ordinary instructional tables, comparisons, revision matrices, timelines, and card grids MUST reflow into labelled stacked records/cards below their usable breakpoint rather than relying on a scrollbar. Horizontal scrolling is allowed only inside a clearly bounded, keyboard-accessible code/source region or a genuinely non-reflowable data surface.
 - Use fluid grids and stacking layouts. Do not use fixed/minimum widths that assume the viewport has no host navigation or progress sidebar.
 - Keep display text readable and controls usable from 375, 640, 768, 1024, 1280, and 1536 CSS-pixel widths. Test normal, long, and sparse content; do not depend on a single example payload.
 - Keep typography, spacing, card boundaries, focus indicators, and touch targets intact at every supported width. Decorative transforms must not create clipping and must respect reduced-motion preferences.

@@ -126,62 +126,52 @@ export function SummaryBlock({ block, className = '', theme, runtimeContext }: B
             theme={activeTheme}
             elevation="subtle"
             hoverable={false}
-            className="w-full overflow-x-auto p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="w-full overflow-hidden p-0"
             style={{ borderColor }}
           >
-            <div className="min-w-[920px] bg-white dark:bg-slate-800">
-              <div
-                className="grid min-h-[62px] grid-cols-[1.05fr_2fr_1.1fr_1.55fr] text-white"
-                style={{ backgroundColor: secondary }}
-              >
+            <div className="bg-white dark:bg-slate-800 lg:hidden">
+              {rows.map((row, index: number) => {
+                return (
+                  <article key={index} className="border-b p-4 last:border-b-0" style={{ borderColor }}>
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm" style={{ borderColor: primary, backgroundColor: withAlpha(primary, '0d'), color: primary }}>
+                        <BookOpen className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <strong className="min-w-0 break-words text-[15px] font-extrabold leading-snug text-slate-900 dark:text-slate-100">{row.concept?.name ?? ''}</strong>
+                    </div>
+                    <dl className="space-y-3">
+                      <div className="min-w-0">
+                        <dt className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{columns[1]?.title ?? 'Key point'}</dt>
+                        <dd className="mt-1 break-words text-sm leading-relaxed text-slate-700 dark:text-slate-300"><strong>{row.keyPoint?.title ?? '—'}</strong>{row.keyPoint?.description && <SafeHtml as="span" html={` ${row.keyPoint.description}`} />}{row.keyPoint?.code && <code className="mt-2 block max-w-full whitespace-pre-wrap break-words rounded bg-slate-100 px-2 py-1 font-mono text-[13px] font-bold dark:bg-slate-900" style={{ color: primaryDark }}>{row.keyPoint.code}</code>}</dd>
+                      </div>
+                      <div className="min-w-0">
+                        <dt className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{columns[2]?.title ?? 'Example'}</dt>
+                        <dd className="mt-1 break-words text-sm leading-relaxed text-slate-700 dark:text-slate-300">{row.example?.code ? <code className="block max-w-full whitespace-pre-wrap break-words rounded bg-slate-100 px-2 py-1 font-mono text-[13px] font-bold dark:bg-slate-900" style={{ color: primaryDark }}>{row.example.code}</code> : '—'}</dd>
+                      </div>
+                      <div className="min-w-0">
+                        <dt className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{columns[3]?.title ?? 'Remember'}</dt>
+                        <dd className="mt-1 break-words text-sm leading-relaxed text-slate-700 dark:text-slate-300"><strong>{row.remember?.title ?? '—'}</strong>{row.remember?.description && <SafeHtml as="span" html={` ${row.remember.description}`} />}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                );
+              })}
+            </div>
+            <div className="hidden overflow-hidden bg-white dark:bg-slate-800 lg:block">
+              <div className="grid min-h-[62px] grid-cols-[1.05fr_2fr_1.1fr_1.55fr] text-white" style={{ backgroundColor: secondary }}>
                 {columns.slice(0, 4).map((column) => (
-                  <div key={column.id} className="flex items-center gap-2.5 border-r border-white/20 px-4 py-3 text-[15px] font-bold leading-snug last:border-r-0">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white" style={{ backgroundColor: primary }}>
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                    </span>
-                    <span>{column.title}</span>
+                  <div key={column.id} className="flex min-w-0 items-center gap-2.5 border-r border-white/20 px-4 py-3 text-[15px] font-bold leading-snug last:border-r-0">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white" style={{ backgroundColor: primary }}><Star className="h-3.5 w-3.5 fill-current" aria-hidden="true" /></span>
+                    <span className="break-words">{column.title}</span>
                   </div>
                 ))}
               </div>
-
               {rows.map((row, index: number) => (
-                <div
-                  key={index}
-                  className="grid min-h-[105px] grid-cols-[1.05fr_2fr_1.1fr_1.55fr] border-b bg-white dark:bg-slate-800 last:border-b-0"
-                  style={{ borderColor }}
-                >
-                  <div className="flex min-w-0 items-center gap-3 border-r px-4 py-[18px]" style={{ borderColor }}>
-                    <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border-2 text-sm" style={{ borderColor: primary, backgroundColor: withAlpha(primary, '0d'), color: primary }}>
-                      <BookOpen className="h-4 w-4" />
-                    </span>
-                    <strong className="text-[15px] font-extrabold leading-snug" style={{ color: secondary }}>{row.concept?.name ?? ''}</strong>
-                  </div>
-                  <div className="min-w-0 border-r px-4 py-[18px] text-sm leading-[1.65]" style={{ borderColor, color: secondary }}>
-                    <h3 className="mb-[5px] text-sm font-extrabold leading-snug">{row.keyPoint?.title ?? ''}</h3>
-                    <SafeHtml as="p" html={row.keyPoint?.description ?? ''} className="font-medium" />
-                    {row.keyPoint?.code && (
-                      <code
-                        className="mt-2 inline-block rounded px-2 py-1 font-mono text-[13px] font-bold dark:bg-slate-900"
-                        style={{ backgroundColor: codeBgColor, color: primaryDark }}
-                      >
-                        {row.keyPoint.code}
-                      </code>
-                    )}
-                  </div>
-                  <div className="flex min-w-0 items-center border-r px-4 py-[18px]" style={{ borderColor }}>
-                    {row.example?.code && (
-                      <code
-                        className="inline-block max-w-full whitespace-pre-wrap rounded-md border px-[11px] py-[7px] font-mono text-[13px] font-bold leading-normal dark:bg-slate-900"
-                        style={{ backgroundColor: codeBgColor, borderColor, color: primary }}
-                      >
-                        {row.example.code}
-                      </code>
-                    )}
-                  </div>
-                  <div className="min-w-0 px-4 py-[18px] text-sm leading-[1.65]" style={{ color: secondary }}>
-                    <h3 className="mb-[5px] text-sm font-extrabold leading-snug" style={{ color: primaryDark }}>{row.remember?.title ?? ''}</h3>
-                    <SafeHtml as="p" html={row.remember?.description ?? ''} className="font-medium [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" />
-                  </div>
+                <div key={index} className="grid min-h-[105px] grid-cols-[1.05fr_2fr_1.1fr_1.55fr] border-b bg-white last:border-b-0 dark:bg-slate-800" style={{ borderColor }}>
+                  <div className="flex min-w-0 items-center gap-3 border-r px-4 py-[18px]" style={{ borderColor }}><strong className="break-words text-[15px] font-extrabold leading-snug text-slate-900 dark:text-slate-100">{row.concept?.name ?? ''}</strong></div>
+                  <div className="min-w-0 border-r px-4 py-[18px] text-sm leading-[1.65]" style={{ borderColor }}><h3 className="mb-[5px] break-words text-sm font-extrabold leading-snug text-slate-900 dark:text-slate-100">{row.keyPoint?.title ?? ''}</h3><SafeHtml as="p" html={row.keyPoint?.description ?? ''} className="break-words font-medium text-slate-700 dark:text-slate-300" />{row.keyPoint?.code && <code className="mt-2 inline-block max-w-full whitespace-pre-wrap break-words rounded px-2 py-1 font-mono text-[13px] font-bold dark:bg-slate-900" style={{ backgroundColor: codeBgColor, color: primaryDark }}>{row.keyPoint.code}</code>}</div>
+                  <div className="flex min-w-0 items-center border-r px-4 py-[18px]" style={{ borderColor }}>{row.example?.code && <code className="inline-block max-w-full whitespace-pre-wrap break-words rounded-md border px-[11px] py-[7px] font-mono text-[13px] font-bold leading-normal dark:bg-slate-900" style={{ backgroundColor: codeBgColor, borderColor, color: primary }}>{row.example.code}</code>}</div>
+                  <div className="min-w-0 px-4 py-[18px] text-sm leading-[1.65] text-slate-700 dark:text-slate-300"><h3 className="mb-[5px] break-words text-sm font-extrabold leading-snug" style={{ color: primaryDark }}>{row.remember?.title ?? ''}</h3><SafeHtml as="p" html={row.remember?.description ?? ''} className="break-words font-medium [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:font-bold" /></div>
                 </div>
               ))}
             </div>

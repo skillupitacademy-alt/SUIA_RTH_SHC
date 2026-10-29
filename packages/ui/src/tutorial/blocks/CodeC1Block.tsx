@@ -135,10 +135,27 @@ export function CodeC1Block({ block, theme: providedTheme, runtimeContext }: Blo
               theme={theme}
               elevation="dashboard"
               hoverable={false}
-              className="w-full overflow-x-auto p-[22px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="w-full overflow-hidden p-4 sm:p-[22px]"
               style={{ borderColor: withAlpha(theme.primary, '66') }}
             >
-              <div className="grid min-w-[760px] items-center justify-center gap-x-[26px] gap-y-[18px]" style={{ gridTemplateColumns: columns.map((column) => column.width ?? 'minmax(160px,1fr)').join(' ') }}>
+              <div className="space-y-3 md:hidden">
+                {rows.map((row) => (
+                  <article key={row} className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                    <dl className="space-y-3">
+                      {columns.map((column) => {
+                        const node = nodes.find((item) => item.row === row && item.column === column.id);
+                        return (
+                          <div key={column.id} className="min-w-0">
+                            <dt className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{column.title}</dt>
+                            <dd className="mt-1 break-words text-sm font-medium text-slate-700 dark:text-slate-300">{node?.label ?? '—'}</dd>
+                          </div>
+                        );
+                      })}
+                    </dl>
+                  </article>
+                ))}
+              </div>
+              <div className="hidden grid-cols-1 items-center justify-center gap-x-[26px] gap-y-[18px] md:grid" style={{ gridTemplateColumns: columns.map((column) => column.width ?? 'minmax(160px,1fr)').join(' ') }}>
                 {columns.map((column) => (
                   <div key={column.id} className="min-h-[25px] text-base font-extrabold leading-snug" style={{ color: theme.primaryDark }}>{column.title}</div>
                 ))}

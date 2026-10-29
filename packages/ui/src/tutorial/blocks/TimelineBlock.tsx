@@ -35,13 +35,13 @@ export function TimelineBlock({
         id={blockId}
         data-block-id={blockId}
         data-block-type={blockType}
-        className={`my-6 overflow-x-auto pb-4 ${className}`}
+          className={`my-6 ${className}`}
       >
-        <div className="flex items-start gap-6 min-w-max">
+          <div className="flex flex-col items-stretch gap-6 md:flex-row md:items-start">
           {items.map((item, idx) => {
             const itemBlocks = Array.isArray(item?.blocks) ? item.blocks : [];
             return (
-              <div key={item.id || `timeline-${idx}`} className="flex flex-col w-64 shrink-0">
+                <div key={item.id || `timeline-${idx}`} className="flex min-w-0 flex-col md:w-64 md:shrink-0">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-3 h-3 rounded-full bg-indigo-500 ring-4 ring-indigo-100 dark:ring-indigo-950" />
                   {item.date && (
