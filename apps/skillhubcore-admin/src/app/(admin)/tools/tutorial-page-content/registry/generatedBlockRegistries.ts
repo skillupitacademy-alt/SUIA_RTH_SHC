@@ -1,3 +1,4 @@
+import { getObjectiveO1Prompt } from '../blocks/objective/O1/objectiveO1.prompt';
 import type { BlockRegistryEntry } from './types';
 
 /**
@@ -53,6 +54,7 @@ export const GENERATED_BLOCK_REGISTRIES: readonly BlockRegistryEntry[] = [
         code: 'O1',
         label: "O1 - Objective",
         description: "Presents learning objectives with numbered step badges and category pills.",
+        getAiPrompt: getObjectiveO1Prompt,
         getDefaultPayload: () => ({
           "eyebrow": "LEARNING OBJECTIVES",
           "title": "Skills You Will Develop in This Lesson",

@@ -40,7 +40,7 @@ export function AiInstructionContainer({
   const [isOpen, setIsOpen] = useState(true);
   const [copied, setCopied] = useState(false);
   const selectedVersion = useMemo(
-    () => getVersions(blockType).find((version) => version.id === versionId),
+    () => getVersions(blockType).find((version) => version.id === versionId || version.code === versionId),
     [blockType, versionId]
   );
 

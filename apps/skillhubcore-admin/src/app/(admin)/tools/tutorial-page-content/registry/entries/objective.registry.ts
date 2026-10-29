@@ -1,4 +1,5 @@
 import type { BlockRegistryEntry } from '../types';
+import { getObjectiveO1Prompt } from '../../blocks/objective/O1/objectiveO1.prompt';
 
 /**
  * Objective Block Registry
@@ -14,6 +15,7 @@ export const objectiveRegistry: BlockRegistryEntry = {
       code: 'O1',
       label: 'O1 - Learning Objectives',
       description: 'Topic introduction with clear motivation, learning roadmap, and outcomes',
+      getAiPrompt: getObjectiveO1Prompt,
       getDefaultPayload: () => ({
         eyebrow: 'LEARNING OBJECTIVES',
         title: 'Skills You Will Develop in This Lesson',

@@ -78,6 +78,13 @@ export function buildExpectedTimeSecContract(): string {
 - Overall complexity
 - **Typical range:** 60-180 seconds
 
+### O1 Objective Blocks
+- Eyebrow + title reading time (~10-20 sec)
+- Introduction reading (~15-30 sec)
+- Objective cards comprehension (~20-40 sec per objective)
+- Note / synthesis reading (~15-20 sec)
+- **Typical range:** 120-240 seconds
+
 ## Estimation Guidelines (NOT Constraints)
 
 These ranges are guidance for AI estimation. Base your estimate on:
