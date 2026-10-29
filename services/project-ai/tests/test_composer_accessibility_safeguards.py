@@ -42,6 +42,7 @@ def test_versioned_runner_script_contains_axe_and_modality_checks():
     assert "forced_colors" in content
     assert "responsive_viewports" in content
     assert "NOT_APPLICABLE" in content
+    assert "No interactive controls present in block preview" in content
     assert "mobile-640" in content
     assert "laptop-1024" in content
     assert "wide-1536" in content
@@ -286,7 +287,11 @@ async def test_approve_final_rejects_incomplete_six_width_viewports():
         "passes_count": 8,
     }
     modality_data = {
-        "keyboard_navigation": {"status": "PASS", "details": "Focused interactive element"},
+        "keyboard_navigation": {
+            "status": "NOT_APPLICABLE",
+            "details": "No interactive controls present in block preview",
+            "focusable_count": 0,
+        },
         "reduced_motion": {"status": "PASS", "details": "All animations suppressed"},
         "forced_colors": {"status": "PASS", "details": "Borders preserved"},
         "responsive_viewports": {
@@ -490,7 +495,7 @@ async def test_approve_final_rejects_tampered_evidence_hash(tmp_path):
 
 @pytest.mark.asyncio
 async def test_approve_final_passes_with_clean_accessibility_and_modalities(tmp_path):
-    """Final approval succeeds when accessibility passed with 0 violations, modalities are clean, and evidence_hash matches."""
+    """Final approval accepts an applicable static-block exemption with clean evidence."""
     import hashlib
     screenshot_file = tmp_path / "verify_screenshot_valid.png"
     screenshot_file.write_bytes(b"valid-png-content")
@@ -503,7 +508,11 @@ async def test_approve_final_passes_with_clean_accessibility_and_modalities(tmp_
         "passes_count": 28,
     }
     modality_data = {
-        "keyboard_navigation": {"status": "PASS", "details": "Focused interactive element"},
+        "keyboard_navigation": {
+            "status": "NOT_APPLICABLE",
+            "details": "No interactive controls present in block preview",
+            "focusable_count": 0,
+        },
         "reduced_motion": {"status": "PASS", "details": "All animations suppressed"},
         "forced_colors": {"status": "PASS", "details": "Borders preserved"},
         "responsive_viewports": {"status": "PASS", "viewports_tested": _six_passing_viewports()},

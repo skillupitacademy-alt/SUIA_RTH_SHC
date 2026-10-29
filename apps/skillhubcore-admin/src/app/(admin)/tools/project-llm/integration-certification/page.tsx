@@ -1706,6 +1706,8 @@ export default function IntegrationCertificationPage() {
                     className={`p-3.5 rounded-xl border ${
                       keyboardCheck?.status === 'PASS'
                         ? 'border-emerald-200 bg-emerald-50/40'
+                        : keyboardCheck?.status === 'NOT_APPLICABLE'
+                        ? 'border-slate-300 bg-slate-50'
                         : keyboardCheck?.status === 'FAIL'
                         ? 'border-rose-200 bg-rose-50/40'
                         : 'border-slate-200 bg-slate-50/50'
@@ -1716,9 +1718,11 @@ export default function IntegrationCertificationPage() {
                         2. Keyboard Navigation
                       </span>
                       <span
-                        className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+                        className={`inline-flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${
                           keyboardCheck?.status === 'PASS'
                             ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : keyboardCheck?.status === 'NOT_APPLICABLE'
+                            ? 'bg-slate-200 text-slate-800 border-slate-300'
                             : keyboardCheck?.status === 'FAIL'
                             ? 'bg-rose-100 text-rose-800 border-rose-300'
                             : 'bg-slate-100 text-slate-600 border-slate-200'
@@ -1726,6 +1730,8 @@ export default function IntegrationCertificationPage() {
                       >
                         {keyboardCheck?.status === 'PASS'
                           ? 'PASS • Verified'
+                          : keyboardCheck?.status === 'NOT_APPLICABLE'
+                          ? 'EXEMPT - Static Block'
                           : keyboardCheck?.status === 'FAIL'
                           ? 'FAIL • Trap/Focus'
                           : 'PENDING'}

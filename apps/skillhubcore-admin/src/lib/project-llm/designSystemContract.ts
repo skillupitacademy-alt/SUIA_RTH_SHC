@@ -38,6 +38,14 @@ and Composer chrome.
 - Keep typography, spacing, card boundaries, focus indicators, and touch targets intact at every supported width. Decorative transforms must not create clipping and must respect reduced-motion preferences.
 - Do not add host-shell workarounds, global overflow rules, sidebars, or registry/Composer changes to the candidate package. Project LLM owns integration and verifies the placed block in an isolated worktree.
 
+### Accessibility Acceptance Contract
+
+- Meet WCAG 2.1 AA color contrast for text, meaningful icons, badges, controls, and non-text UI boundaries. Use the injected theme and approved semantic token pairs; do not assume a translucent brand color remains legible over every surface.
+- Every meaningful card, callout, badge, panel, or other surface must retain a visible perimeter in forced-colors active mode. Prefer shared primitives and their forced-colors utilities. Never use shadow, blur, or background tint as the only boundary.
+- Only genuine controls may be keyboard-focusable. Do not add tabIndex, role="button", pointer cursors, hover affordances, or keyboard handlers to static editorial content just to satisfy a test.
+- A block with no genuine controls is expected to report keyboard navigation as NOT_APPLICABLE in Project LLM browser evidence. A block with controls must provide native semantics (or an equivalent accessible role), keyboard operation, and a visible focus-visible indicator.
+- Include focused unit coverage for semantic structure, accessible names where controls exist, contrast-safe token usage, visible boundaries, reduced motion, and responsive containment. Project LLM remains the authority for isolated browser, forced-colors, keyboard, axe-core, and six-width gates.
+
 ### Evidence and Ownership
 
 External AI supplies the portable component, schemas, integration metadata, and focused unit tests. Project LLM is the only authority that runs qualification, placement, isolated browser verification, and certification. A candidate must not claim those gates have passed. The isolated browser gate measures document overflow, block overflow, and child-to-parent bounds at all six supported widths before certification can pass.
