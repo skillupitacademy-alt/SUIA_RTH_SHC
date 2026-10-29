@@ -35,20 +35,23 @@ export function SyntaxPill({
 
   const content = label ?? text ?? children;
 
+  const hasCustomColor = Boolean(style?.color) || className.includes('text-');
+  const hasCustomBg = Boolean(style?.backgroundColor) || className.includes('bg-');
+
   const variantStyles = {
     primary: {
-      backgroundColor: withAlpha(primary, '14'),
-      color: primaryDark,
+      ...(hasCustomBg ? {} : { backgroundColor: withAlpha(primary, '14') }),
+      ...(hasCustomColor ? {} : { color: '#881337' }),
     },
     muted: {
-      backgroundColor: '#f1f5f9',
-      color: '#334155',
+      ...(hasCustomBg ? {} : { backgroundColor: '#f1f5f9' }),
+      ...(hasCustomColor ? {} : { color: '#334155' }),
     },
     outline: {
       backgroundColor: 'transparent',
       borderColor: withAlpha(primary, '40'),
       borderWidth: 1,
-      color: primary,
+      ...(hasCustomColor ? {} : { color: primary }),
     },
   }[variant];
 
