@@ -6,6 +6,12 @@
  * 
  * CRITICAL: This file exports Zod runtime schemas (NOT TypeScript interfaces)
  * to enable runtime validation, discriminated union dispatch, and type inference.
+ * 
+ * SCHEMA CONTRACT:
+ * - Matches ACTUAL Composer output from toCanonicalBlock() (blockVersionDefinitions.ts:264-277)
+ * - NO content.page wrapping (Composer unwraps at lines 266-268, 273)
+ * - Objective items require `text` field (renderer reads obj.text at ObjectiveO1Block.tsx:96)
+ * - Objective `id` is optional (storage type declares string|number optional)
  */
 
 import { z } from 'zod';
@@ -15,13 +21,18 @@ import { PresentationConfigSchema } from './presentation.schema';
  * Objective Item Schema
  * 
  * Represents a single learning objective with metadata for display.
- * Uses .passthrough() to allow component extensibility via [key: string]: unknown.
+ * 
+ * CRITICAL CONTRACT POINTS:
+ * - `id` is optional (matches storage type: string | number | undefined)
+ * - `text` is REQUIRED (renderer reads obj.text at line 96 of ObjectiveO1Block.tsx)
+ * - Additional fields (verb, title, description, badge, icon) are optional metadata
+ * - Uses .passthrough() to allow extensibility
  */
 export const ObjectiveO1ItemSchema = z.object({
-  id: z.string().min(1).max(50),
+  id: z.union([z.string(), z.number()]).optional(),
+  text: z.string().min(1).max(500),
   verb: z.string().min(1).max(50).optional(),
   title: z.string().min(1).max(200).optional(),
-  text: z.string().min(1).max(500),
   description: z.string().min(1).max(1000).optional(),
   badge: z.string().min(1).max(50).optional(),
   category: z.string().min(1).max(50).optional(),
@@ -32,7 +43,7 @@ export const ObjectiveO1ItemSchema = z.object({
  * Note Schema (Structured Format)
  * 
  * Optional callout box with title and text.
- * Uses .strict() to prevent arbitrary fields.
+ * Can be a simple string or a structured object.
  */
 export const ObjectiveO1NoteSchema = z.object({
   title: z.string().min(1).max(100).optional(),
@@ -40,12 +51,17 @@ export const ObjectiveO1NoteSchema = z.object({
 }).strict();
 
 /**
- * Page Schema (Content Payload)
+ * Content Schema (Direct Payload - NO page wrapper)
  * 
- * Canonical structure matching component interface.
- * Uses .strict() to prevent arbitrary top-level fields.
+ * CRITICAL: Composer outputs DIRECT content, NOT wrapped in content.page
+ * Evidence: blockVersionDefinitions.ts lines 266-273 unwrap page and assign direct content
+ * 
+ * This matches:
+ * - Composer toCanonicalBlock() output (line 273)
+ * - Renderer input (ObjectiveO1Block.tsx line 43: const content = block.content)
+ * - Storage type TutorialObjectivePayload
  */
-export const ObjectiveO1PageSchema = z.object({
+export const ObjectiveO1ContentSchema = z.object({
   eyebrow: z.string().min(1).max(100).optional(),
   title: z.string().min(1).max(200),
   titleHighlight: z.string().min(1).max(100).optional(),
@@ -59,26 +75,20 @@ export const ObjectiveO1PageSchema = z.object({
 }).strict();
 
 /**
- * Author Content Schema (AI Output Wrapper)
- * 
- * Follows canonical pattern: content.page nesting.
- * This is the output format expected from AI generation.
- */
-export const ObjectiveO1AuthorContentSchema = z.object({
-  page: ObjectiveO1PageSchema,
-}).strict();
-
-/**
  * Objective O1 Block Schema (Runtime Validation)
  * 
- * Complete block envelope following canonical pattern.
+ * Complete block envelope matching Composer's ACTUAL toCanonicalBlock() output.
  * 
- * CRITICAL REQUIREMENTS:
+ * CRITICAL CONTRACT:
+ * - content is DIRECT (NOT content.page) - proven by blockVersionDefinitions.ts:273
+ * - Must validate actual Composer save payloads and registry defaults
+ * - Must validate blocks loaded from database during hydration
+ * 
+ * REQUIREMENTS:
  * - Must be a Zod schema (z.object), NOT a TypeScript interface
  * - Must use z.literal() for type and version discriminators
  * - Must use z.string().uuid() for id validation
  * - Must NOT use .strict() at top level (allows optional envelope fields)
- * - Must import and use PresentationConfigSchema
  * 
  * This schema enables:
  * - Runtime validation via .parse() and .safeParse()
@@ -90,8 +100,8 @@ export const ObjectiveO1BlockSchema = z.object({
   id: z.string().uuid(),
   type: z.literal('objective'),
   version: z.literal('O1'),
-  content: ObjectiveO1AuthorContentSchema,
-  presentation: PresentationConfigSchema,
+  content: ObjectiveO1ContentSchema,
+  presentation: PresentationConfigSchema.optional(),
   expectedTimeSec: z.number().int().positive().optional(),
   progressRole: z.enum(['instructional', 'structural', 'assessment', 'media']).default('instructional').optional(),
 });
@@ -103,22 +113,21 @@ export const ObjectiveO1BlockSchema = z.object({
  */
 export type ObjectiveO1Item = z.infer<typeof ObjectiveO1ItemSchema>;
 export type ObjectiveO1Note = z.infer<typeof ObjectiveO1NoteSchema>;
-export type ObjectiveO1Page = z.infer<typeof ObjectiveO1PageSchema>;
-export type ObjectiveO1AuthorContent = z.infer<typeof ObjectiveO1AuthorContentSchema>;
+export type ObjectiveO1Content = z.infer<typeof ObjectiveO1ContentSchema>;
 export type ObjectiveO1Block = z.infer<typeof ObjectiveO1BlockSchema>;
 
 /**
- * Validator Function (Optional but Recommended)
+ * Validator Function
  * 
- * Convenience function for validating AI-generated content payloads.
- * Throws ZodError if validation fails.
+ * Validates complete O1 block structure.
+ * Use this to validate blocks after Composer canonicalization or from database hydration.
  * 
- * @param output - Unknown AI output to validate
- * @returns Validated and typed content payload
+ * @param block - Unknown block to validate
+ * @returns Validated and typed O1 block
  * @throws ZodError if validation fails
  */
-export function validateObjectiveO1AIOutput(
-  output: unknown
-): ObjectiveO1AuthorContent {
-  return ObjectiveO1AuthorContentSchema.parse(output);
+export function validateObjectiveO1Block(
+  block: unknown
+): ObjectiveO1Block {
+  return ObjectiveO1BlockSchema.parse(block);
 }
