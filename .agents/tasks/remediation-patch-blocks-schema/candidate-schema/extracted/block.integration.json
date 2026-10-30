@@ -1,0 +1,33 @@
+{
+  "family": "Objective",
+  "version": "O1",
+  "typeId": "objective",
+  "componentFile": "ObjectiveO1Block.tsx",
+  "componentExport": "ObjectiveO1Block",
+  "testFile": "ObjectiveO1Block.test.tsx",
+  "jsonSchemaFile": "objective-o1.schema.json",
+  "typeSchemaFile": "objective-o1.schema.ts",
+  "registryVersionId": "o1",
+  "label": "O1 - Objective",
+  "description": "Presents learning objectives with numbered step badges and category pills.",
+  "defaultPayload": {
+    "eyebrow": "LEARNING OBJECTIVES",
+    "title": "Skills You Will Develop in This Lesson",
+    "titleHighlight": "Will Develop",
+    "introduction": "By the end of this lesson, you will have the following practical skills:",
+    "objectives": [
+      {
+        "id": "obj-1",
+        "verb": "Create",
+        "title": "Create and initialize lists",
+        "text": "Create Python lists using different methods and initialize them with values.",
+        "badge": "Practical Skill",
+        "icon": "create"
+      }
+    ],
+    "note": {
+      "title": "Note",
+      "text": "These are observable, practical skills you will develop in this lesson."
+    }
+  }
+}
