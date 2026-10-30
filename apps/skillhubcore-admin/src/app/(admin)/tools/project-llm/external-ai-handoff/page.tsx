@@ -298,6 +298,9 @@ You must package your output as a single .zip archive containing the six require
        expectedTimeSec: z.number().int().positive().optional(),
        progressRole: z.enum(['instructional', 'structural', 'assessment', 'media']).default('instructional').optional(),
      });
+     export function validate${componentName}(data: unknown) {
+       return ${componentName}Schema.parse(data);
+     }
    - Interface-only or type-only files without a runtime Zod schema export will be REJECTED during intake.
 
 5. block.integration.json (Portable Integration Metadata)
