@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Objective O1 Block Schema",
+  "description": "JSON Schema contract for ObjectiveBlock version O1 (Simple Learning Goals / Skills You Will Develop).",
   "type": "object",
   "required": [
     "title",
@@ -8,19 +9,28 @@
   ],
   "properties": {
     "eyebrow": {
-      "type": "string"
+      "type": "string",
+      "description": "Uppercase category badge text displayed above the block title.",
+      "default": "LEARNING OBJECTIVES"
     },
     "title": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "description": "Main heading for the Objective O1 block.",
+      "default": "Skills You Will Develop in This Lesson"
     },
     "titleHighlight": {
-      "type": "string"
+      "type": "string",
+      "description": "Optional substring within title to highlight with the primary brand color."
     },
     "introduction": {
-      "type": "string"
+      "type": "string",
+      "description": "Lead paragraph introducing the learning goals."
     },
     "objectives": {
       "type": "array",
+      "minItems": 1,
+      "description": "Collection of observable learning goals and practical skills.",
       "items": {
         "type": "object",
         "required": [
@@ -29,29 +39,60 @@
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "verb": {
-            "type": "string"
+            "type": "string",
+            "description": "Action verb emphasized at the start of the skill title (e.g., Create, Access, Extract, Modify, Use, Explain)."
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "Short skill heading (e.g., 'Create and initialize lists')."
           },
           "text": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "description": "Observable learning goal statement or detailed skill description."
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional detailed explanation under the skill heading."
           },
           "badge": {
-            "type": "string"
+            "type": "string",
+            "description": "Skill category pill label (e.g., 'Practical Skill', 'Core Skill', 'Understanding')."
           },
           "icon": {
-            "type": "string"
+            "type": "string",
+            "description": "Icon key identifier ('create', 'access', 'extract', 'modify', 'use', 'explain')."
           }
         },
         "additionalProperties": true
       }
     },
     "note": {
-      "type": "object"
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "required": [
+            "text"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     }
   },
   "additionalProperties": true
