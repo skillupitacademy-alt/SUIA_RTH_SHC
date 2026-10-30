@@ -516,3 +516,45 @@ export type IntroductionBlock = IntroductionI1Block;
 // | IntroductionI2Block
 // | IntroductionI3Block
 // ...
+
+/**
+ * ========================================
+ * OBJECTIVE BLOCK - Learning Objectives Display
+ * ========================================
+ * 
+ * Provides structured overview of skills learners will develop.
+ * Typically placed early in tutorial progression (after introduction).
+ * 
+ * Canonical block following version envelope pattern.
+ */
+
+/**
+ * Objective O1 Types - Import from schema
+ */
+export type {
+  ObjectiveO1Item,
+  ObjectiveO1Note,
+  ObjectiveO1Page,
+  ObjectiveO1AuthorContent,
+} from '../schemas/objective-o1.schema';
+
+/**
+ * Objective O1 Block
+ * Canonical block with version envelope
+ */
+export interface ObjectiveO1Block extends BaseBlock {
+  type: 'objective';
+  version: 'O1';
+  content: import('../schemas/objective-o1.schema').ObjectiveO1AuthorContent;
+}
+
+/**
+ * Objective Block (Version Union)
+ * All Objective block versions
+ */
+export type ObjectiveBlock = ObjectiveO1Block;
+// Future versions:
+// | ObjectiveO2Block
+// | ObjectiveO3Block
+// ...
+

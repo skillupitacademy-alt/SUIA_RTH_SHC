@@ -21,6 +21,7 @@ export * from './schemas/presentation.schema';
 export * from './schemas/definition-d1.schema';
 export * from './schemas/code-c1.schema';
 export * from './schemas/introduction-i1.schema';
+export * from './schemas/objective-o1.schema';
 
 // Registry and validation
 export * from './registry';
@@ -53,6 +54,10 @@ export type {
   IntroductionI1Page,
   IntroductionI1AuthorContent,
   IntroductionIconKey,
+  ObjectiveBlock,
+  ObjectiveO1Block,
+  ObjectiveO1Page,
+  ObjectiveO1AuthorContent,
   CodeC1Block,
   CodeC1Page,
   CodeC1AuthorContent,
