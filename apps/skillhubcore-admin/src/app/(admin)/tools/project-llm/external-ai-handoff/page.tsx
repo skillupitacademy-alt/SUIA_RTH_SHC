@@ -147,15 +147,27 @@ ${DESIGN_SYSTEM_CONTRACT_MARKDOWN}
      Style: { backgroundColor: withAlpha(primary, '14') }
      Foreground: use a semantic high-contrast class such as text-slate-900 dark:text-slate-100
      Icon: Relevant Lucide React icon (h-4 w-4)
-    - Block Title (Hero Scale Invariant):
+    - Block Title (Hero Scale Invariant) & BlockHeader Primitive:
       Class: "text-[clamp(34px,4vw,52px)] font-extrabold leading-[1.1] tracking-[-1.1px]"
-      Rule: MUST compose <BlockHeader titleScale="hero" headingLevel="h1" showAccentBar={true} />
+      Rule: MUST compose <BlockHeader /> from '../primitives' using the exact prop names:
+        <BlockHeader
+          eyebrow={eyebrow}
+          icon={Target} // Lucide React icon component
+          badgeStyle="pill"
+          title={title}
+          headingLevel="h1"
+          titleScale="hero"
+          introduction={introText} // CRITICAL: Prop is named 'introduction' (NOT 'subtitle' or 'description')
+          theme={theme}
+          showAccentBar={true}
+        />
       Foreground: use text-slate-900 dark:text-slate-100; do not downgrade to standard (2xl/3xl) scale.
     - Brand Accent Divider Bar (Signature Dash):
       Class: "mb-4 mt-3 h-1 w-12 rounded-full"
       Style: { backgroundColor: primary } (automatically rendered by BlockHeader with showAccentBar={true})
    - Intro / Subtitle / Lead Paragraph:
      Class: "text-base sm:text-lg font-medium leading-[1.7] max-w-3xl mb-6"
+     Passed via 'introduction' prop to BlockHeader: introduction={introText}
      Foreground: use text-slate-800 dark:text-slate-200; do not use alpha-appended theme text colors
    - Item / Card Body Text:
      Class: "text-sm sm:text-base font-medium leading-relaxed text-slate-900 dark:text-slate-100"
@@ -261,9 +273,21 @@ You must package your output as a single .zip archive containing the six require
        >
          ...
        </article>
-   - Dual Named and Default Exports:
-     export function ${componentName}({ block, className, theme, runtimeContext }: BlockComponentProps) { ... }
+   - Dual Named and Default Exports & Type-Safe Wrapper Pattern:
+     export function ${componentName}({ block, className = '', theme, runtimeContext }: BlockComponentProps) {
+       const activeTheme = theme ?? DEFAULT_THEME;
+       const typedBlock = block as unknown as ${componentName}Data;
+       return (
+         <${componentName}View
+           block={typedBlock}
+           theme={activeTheme}
+           className={className}
+           runtimeContext={runtimeContext}
+         />
+       );
+     }
      export { ${componentName} as default };
+     CRITICAL: Do NOT mutate 'block' directly (e.g. NEVER do 'block.type = ...' or 'block.version = ...'). 'block' is a TypeScript discriminated union; cast to typedBlock as shown above.
 
 2. ${componentName}.test.tsx (Unit Test Suite)
    - Standard Vitest / React Testing Library tests.
