@@ -58,8 +58,8 @@ def patch_tutorial_block_renderer(
                 raise PatchError("Cannot find GeneratedBlockRenderer declaration")
             patched_content = patched_content[:interface_match.start()] + import_statement + "\n" + patched_content[interface_match.start():]
 
-    # Detect duplicates on updated content
-    existing_pattern = r"\{\s*family:\s*['\"]" + re.escape(block_type) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}"
+    # Detect duplicates on updated content - capture trailing comma in the pattern
+    existing_pattern = r"\{\s*family:\s*['\"]" + re.escape(block_type) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}\s*,?"
     existing_matches = list(re.finditer(existing_pattern, patched_content, re.IGNORECASE))
     if len(existing_matches) > 1:
         raise PatchError(f"Duplicate renderer entry detected for ({block_type}, {version_upper})")
@@ -67,7 +67,10 @@ def patch_tutorial_block_renderer(
     # If exactly 1 entry exists, update it in place
     if len(existing_matches) == 1:
         m = existing_matches[0]
-        if m.group(0).strip() == entry.strip():
+        # Normalize comparison: strip whitespace and trailing comma for comparison
+        existing_normalized = m.group(0).strip().rstrip(',').strip()
+        entry_normalized = entry.strip().rstrip(',').strip()
+        if existing_normalized == entry_normalized:
             return patched_content
         return patched_content[:m.start()] + entry + patched_content[m.end():]
 
@@ -239,7 +242,8 @@ def patch_generated_block_version_definitions(
     type_norm = family_type_id.lower().strip()
     version_upper = version.upper().strip()
 
-    pattern = r"\{\s*type:\s*['\"]" + re.escape(type_norm) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}"
+    # Capture trailing comma in the pattern
+    pattern = r"\{\s*type:\s*['\"]" + re.escape(type_norm) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}\s*,?"
     existing_matches = list(re.finditer(pattern, content, re.IGNORECASE))
     if len(existing_matches) > 1:
         raise PatchError(f"Duplicate block version definition detected for ({type_norm}, {version_upper})")
@@ -251,6 +255,11 @@ def patch_generated_block_version_definitions(
 
     if len(existing_matches) == 1:
         m = existing_matches[0]
+        # Normalize comparison: strip whitespace and trailing comma for comparison
+        existing_normalized = m.group(0).strip().rstrip(',').strip()
+        entry_normalized = entry.strip().rstrip(',').strip()
+        if existing_normalized == entry_normalized:
+            return content
         return content[:m.start()] + entry + content[m.end():]
 
     marker = "  // PROJECT_LLM_GENERATED_DEFINITIONS"
