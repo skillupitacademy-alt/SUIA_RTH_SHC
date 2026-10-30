@@ -18,6 +18,7 @@ from app.placement.patcher import (
     patch_tutorial_page_content_types,
     patch_generated_block_version_definitions,
     patch_generated_block_registry,
+    patch_blocks_schema,
     PatchError,
 )
 
@@ -258,3 +259,123 @@ export const GENERATED_BLOCK_VERSION_DEFINITIONS = [
     # Calling again should be idempotent and not duplicate
     reこと = patch_tutorial_page_content_types(patched, "objective")
     assert reこと == patched
+
+
+def test_patch_blocks_schema_adds_first_schema():
+    """Test adding first block schema to union (when only base imports exist)."""
+    # Realistic scenario: blocks.schema.ts exists but has no block schemas yet
+    content = '''import { z } from 'zod';
+import { BaseSchema } from './base.schema';
+
+export * from './base.schema';
+
+export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() =>
+  z.union([])
+);'''
+    
+    patched = patch_blocks_schema(
+        content,
+        schema_filename="objective-o1.schema.ts",
+        schema_export_name="ObjectiveO1BlockSchema"
+    )
+    
+    assert "import { ObjectiveO1BlockSchema } from './objective-o1.schema';" in patched
+    assert "export * from './objective-o1.schema';" in patched
+    assert "ObjectiveO1BlockSchema," in patched
+
+
+def test_patch_blocks_schema_idempotent():
+    """Test calling twice produces same result."""
+    content = '''import { z } from 'zod';
+import { CodeC1BlockSchema } from './code-c1.schema';
+
+export * from './code-c1.schema';
+
+export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() =>
+  z.union([
+    CodeC1BlockSchema,
+  ])
+);'''
+    
+    patched_once = patch_blocks_schema(
+        content,
+        schema_filename="objective-o1.schema.ts",
+        schema_export_name="ObjectiveO1BlockSchema"
+    )
+    
+    patched_twice = patch_blocks_schema(
+        patched_once,
+        schema_filename="objective-o1.schema.ts",
+        schema_export_name="ObjectiveO1BlockSchema"
+    )
+    
+    assert patched_once == patched_twice
+
+
+def test_patch_blocks_schema_preserves_existing():
+    """Test existing schemas not removed."""
+    content = '''import { z } from 'zod';
+import { CodeC1BlockSchema } from './code-c1.schema';
+import { IntroductionI1BlockSchema } from './introduction-i1.schema';
+
+export * from './code-c1.schema';
+export * from './introduction-i1.schema';
+
+export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() =>
+  z.union([
+    CodeC1BlockSchema,
+    IntroductionI1BlockSchema,
+  ])
+);'''
+    
+    patched = patch_blocks_schema(
+        content,
+        schema_filename="objective-o1.schema.ts",
+        schema_export_name="ObjectiveO1BlockSchema"
+    )
+    
+    assert "CodeC1BlockSchema" in patched
+    assert "IntroductionI1BlockSchema" in patched
+    assert "ObjectiveO1BlockSchema" in patched
+
+
+def test_patch_blocks_schema_fails_on_missing_union():
+    """Test fail-closed when TutorialBlockSchema not found."""
+    content = '''import { z } from 'zod';
+
+// No TutorialBlockSchema here
+'''
+    
+    with pytest.raises(PatchError, match="Cannot find schema import section"):
+        patch_blocks_schema(
+            content,
+            schema_filename="objective-o1.schema.ts",
+            schema_export_name="ObjectiveO1BlockSchema"
+        )
+
+
+def test_patch_blocks_schema_substring_safety():
+    """Test that similar schema names don't cause false positives."""
+    content = '''import { z } from 'zod';
+import { ObjectiveBlockSchema } from './objective.schema';
+
+export * from './objective.schema';
+
+export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() =>
+  z.union([
+    ObjectiveBlockSchema,
+  ])
+);'''
+    
+    # Should add ObjectiveO1BlockSchema without thinking ObjectiveBlockSchema is a match
+    patched = patch_blocks_schema(
+        content,
+        schema_filename="objective-o1.schema.ts",
+        schema_export_name="ObjectiveO1BlockSchema"
+    )
+    
+    assert "ObjectiveBlockSchema" in patched  # Original preserved
+    assert "ObjectiveO1BlockSchema" in patched  # New one added
+    # Count exact occurrences in union array
+    assert "ObjectiveBlockSchema," in patched
+    assert "ObjectiveO1BlockSchema," in patched
