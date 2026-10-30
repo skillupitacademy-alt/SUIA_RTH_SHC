@@ -69,8 +69,8 @@ def test_derive_file_operations_resolution(tmp_path):
         {"filename": "ObjectiveO1Block.tsx", "content": "export function ObjectiveO1Block() {}"},
         {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
         {"filename": "objective-o1.schema.json", "content": "{}"},
-        {"filename": "objective-o1.schema.ts", "content": "export const schema = {};"},
-        {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
+        {"filename": "objective-o1.schema.ts", "content": "import { z } from 'zod';\nexport const ObjectiveO1BlockSchema = z.object({ title: z.string() });"},
+        {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","schemaExport":"ObjectiveO1BlockSchema","defaultPayload":{"title":"Example","objectives":[]}}'},
     ]
 
     ops = comparator.derive_file_operations(
@@ -522,8 +522,8 @@ def test_derive_file_operations_rejects_hidden_files(tmp_path):
         )
 
 
-def test_derive_file_operations_accepts_missing_schema_export_metadata(tmp_path):
-    """Test backward compatibility when schemaExport is not provided in integration metadata."""
+def test_derive_file_operations_rejects_missing_schema_export_metadata(tmp_path):
+    """Test that schemaExport is now REQUIRED when typeSchemaFile is provided."""
     renderer_rel = "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
     generated_registry_rel = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/generatedBlockRegistries.ts"
     blocks_schema_rel = "packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts"
@@ -547,19 +547,18 @@ def test_derive_file_operations_accepts_missing_schema_export_metadata(tmp_path)
 
     comparator = CanonicalComparator(snapshot={})
     
-    # Integration metadata without schemaExport should pass (backward compatible)
-    ops = comparator.derive_file_operations(
-        files=[
-            {"filename": "ObjectiveO1Block.tsx", "content": "export function ObjectiveO1Block() {}"},
-            {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
-            {"filename": "objective-o1.schema.json", "content": "{}"},
-            {"filename": "objective-o1.schema.ts", "content": "export const SomeSchema = z.object({ id: z.string() });"},
-            {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
-        ],
-        family=BlockFamily.OBJECTIVE,
-        version="O1",
-        workspace_root=tmp_path,
-    )
-    
-    # Should complete without error
-    assert any(op.source_filename == "objective-o1.schema.ts" for op in ops)
+    # Integration metadata without schemaExport should now be REJECTED (schemaExport is mandatory)
+    with pytest.raises(ValueError, match="must include 'schemaExport' when 'typeSchemaFile' is provided"):
+        comparator.derive_file_operations(
+            files=[
+                {"filename": "ObjectiveO1Block.tsx", "content": "export function ObjectiveO1Block() {}"},
+                {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
+                {"filename": "objective-o1.schema.json", "content": "{}"},
+                {"filename": "objective-o1.schema.ts", "content": "export const SomeSchema = z.object({ id: z.string() });"},
+                {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
+            ],
+            family=BlockFamily.OBJECTIVE,
+            version="O1",
+            workspace_root=tmp_path,
+        )
+

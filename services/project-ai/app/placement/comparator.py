@@ -527,17 +527,23 @@ class CanonicalComparator:
                         "Canonical schemas must use .schema.ts extension for runtime validation."
                     )
                 
-                # Extract expected schema export name from integration metadata
-                expected_schema_export = integration_metadata.get("schemaExport")
-                if expected_schema_export:
-                    # Validate: runtime Zod schema export exists (not just interface/type)
+                # When typeSchemaFile is provided, schemaExport is REQUIRED
+                if 'typeSchemaFile' in integration_metadata:
+                    schema_export = integration_metadata.get("schemaExport")
+                    if not schema_export:
+                        raise ValueError(
+                            "block.integration.json must include 'schemaExport' when 'typeSchemaFile' is provided. "
+                            "The schemaExport field must name the runtime Zod schema export."
+                        )
+                    
+                    # ALWAYS validate runtime Zod schema export exists (not just interface/type)
                     if not re.search(
-                        rf"export\s+const\s+{re.escape(expected_schema_export)}\s*[=:]\s*z\.",
+                        rf"export\s+const\s+{re.escape(schema_export)}\s*[=:]\s*z\.",
                         content
                     ):
                         raise ValueError(
                             f"Schema file '{filename}' must export runtime Zod schema "
-                            f"'{expected_schema_export}' using 'export const {expected_schema_export} = z.object(...)'. "
+                            f"'{schema_export}' using 'export const {schema_export} = z.object(...)'. "
                             "Interface-only or type-only files are not valid runtime schemas."
                         )
                 
