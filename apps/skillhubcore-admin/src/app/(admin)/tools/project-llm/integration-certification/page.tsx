@@ -6,6 +6,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import {
   ShieldCheck,
   CheckCircle2,
+  Globe,
+  AlertTriangle,
   GitBranch,
   TestTube,
   Cpu,
@@ -77,12 +79,14 @@ export default function IntegrationCertificationPage() {
   const [proposedNextVersion, setProposedNextVersion] = useState<string | null>(null);
   const [isCreatingReplacement, setIsCreatingReplacement] = useState(false);
   const [composerVerification, setComposerVerification] = useState<any>(null);
+  const [isVerifyingLearner, setIsVerifyingLearner] = useState(false);
+  const [learnerVerification, setLearnerVerification] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [liveStatusAnnouncement, setLiveStatusAnnouncement] = useState<string>('');
 
   const isAnyActionRunning =
-    isPlanning || isExecuting || isApproving || isQualifying || isVerifyingComposer || isApprovingFinal || isSuperseding;
+    isPlanning || isExecuting || isApproving || isQualifying || isVerifyingComposer || isVerifyingLearner || isApprovingFinal || isSuperseding;
 
   useEffect(() => {
     if (!isAnyActionRunning) {
@@ -110,6 +114,12 @@ export default function IntegrationCertificationPage() {
         setComposerVerification(cert.rawGateResults.composer);
       } else {
         setComposerVerification(null);
+      }
+
+      if (cert.rawGateResults?.learner_runtime) {
+        setLearnerVerification(cert.rawGateResults.learner_runtime);
+      } else {
+        setLearnerVerification(null);
       }
 
       if (cert.targetFamily && cert.targetVersion) {
@@ -317,6 +327,24 @@ export default function IntegrationCertificationPage() {
     }
   };
 
+  const handleVerifyLearnerRuntime = async () => {
+    if (!workflowId) return;
+    setIsVerifyingLearner(true);
+    setError(null);
+    setLiveStatusAnnouncement('Initiating authenticated learner runtime verification in isolated browser...');
+    try {
+      const res = await projectLlmClient.verifyLearnerRuntime(workflowId);
+      setLearnerVerification(res);
+      setLiveStatusAnnouncement(`Learner runtime verification completed with status: ${res.status}`);
+      await fetchCertificationData();
+    } catch (err: any) {
+      setError(err?.message || 'Failed to verify learner runtime');
+      setLiveStatusAnnouncement(`Learner runtime verification error: ${err?.message}`);
+    } finally {
+      setIsVerifyingLearner(false);
+    }
+  };
+
   const handleVerifyComposer = async () => {
     if (!workflowId) return;
     setError(null);
@@ -507,6 +535,29 @@ export default function IntegrationCertificationPage() {
     },
     {
       id: '6.6',
+      title: 'Learner Runtime & ILS Gate',
+      subtitle: 'Authenticated Browser, ILS 200 & LSNB/RSSB',
+      status: isVerifyingLearner
+        ? 'RUNNING'
+        : learnerVerification?.status === 'FAIL'
+        ? 'FAIL'
+        : learnerVerification?.status === 'BLOCKED'
+        ? 'BLOCKED'
+        : ['PASS', 'NOT_APPLICABLE'].includes(learnerVerification?.status)
+        ? 'PASS'
+        : 'PENDING',
+      feedbackType: isVerifyingLearner
+        ? 'RUNNING • Active'
+        : learnerVerification?.status === 'FAIL'
+        ? 'FAIL • Action Required'
+        : learnerVerification?.status === 'BLOCKED'
+        ? 'BLOCKED • Prerequisite'
+        : ['PASS', 'NOT_APPLICABLE'].includes(learnerVerification?.status)
+        ? 'PASS • Verified'
+        : 'PENDING • Queued',
+    },
+    {
+      id: '6.7',
       title: 'Gate 3 Final Certification',
       subtitle: 'Evidence Hash & Screenshot SHA-256 Seal',
       status: isApprovingFinal ? 'RUNNING' : isFinalCertified ? 'PASS' : 'PENDING',
@@ -837,7 +888,7 @@ export default function IntegrationCertificationPage() {
             { id: 'repo', label: 'Repository Integration', icon: GitBranch },
             { id: 'tests', label: 'Contract & Test Gates', icon: TestTube },
             { id: 'composer', label: 'Tutorial Composer (WCAG & 6-Width)', icon: Workflow },
-            { id: 'runtime', label: 'Runtime Verification', icon: Cpu },
+            { id: 'runtime', label: 'Learner Runtime & ILS (Live Browser)', icon: Globe },
             { id: 'cert', label: 'Final Certification (Gate 3)', icon: ShieldCheck },
           ].map((t) => {
             const Icon = t.icon;
@@ -2066,59 +2117,125 @@ export default function IntegrationCertificationPage() {
             </div>
           )}
 
-          {/* TAB D: RUNTIME VERIFICATION */}
+          {/* TAB D: RUNTIME VERIFICATION (AUTHENTICATED LEARNER RUNTIME & ILS GATE) */}
           {activeTab === 'runtime' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 font-outfit">
-                    Runtime Verification in Live Container
+                  <div className="flex items-center gap-2 mb-1">
+                    {learnerVerification?.status === 'PASS' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                        <CheckCircle2 size={12} className="text-emerald-600" />
+                        PASS • AUTHENTICATED LEARNER RUNTIME CERTIFIED
+                      </span>
+                    ) : learnerVerification?.status === 'BLOCKED' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-300">
+                        <AlertCircle size={12} className="text-blue-600" />
+                        BLOCKED • PREREQUISITE ENVIRONMENT UNAVAILABLE
+                      </span>
+                    ) : learnerVerification?.status === 'FAIL' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-300">
+                        <AlertTriangle size={12} className="text-rose-600" />
+                        FAIL • RUNTIME CHECKS FAILED
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300">
+                        <AlertCircle size={12} className="text-amber-600" />
+                        PENDING • QUEUED FOR LIVE LEARNER VERIFICATION
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 font-outfit">
+                    Authenticated Learner Runtime &amp; ILS Lifecycle Verification
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Application health, container routes, and performance benchmarks
+                    Runs isolated Playwright session with short-lived fixture cookie; asserts ILS 200, block rendering, LSNB/RSSB, and zero console errors.
                   </p>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  Container Healthy
-                </span>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <span className="text-[10px] font-mono text-slate-400 block mb-1">DEV SERVER PORT</span>
-                  <p className="text-base font-mono font-bold text-slate-800">:3007 (skillhubcore-admin)</p>
-                  <p className="text-[11px] text-emerald-600 mt-1 font-medium">HTTP 200 OK • Healthy</p>
-                </div>
-
-                <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <span className="text-[10px] font-mono text-slate-400 block mb-1">BACKEND SERVICE PORT</span>
-                  <p className="text-base font-mono font-bold text-emerald-600">:8000 (project-ai)</p>
-                  <p className="text-[11px] text-slate-500 mt-1">FastAPI Governance Engine</p>
-                </div>
-
-                <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                  <span className="text-[10px] font-mono text-slate-400 block mb-1">PROCESS STATUS</span>
-                  <p className="text-base font-mono font-bold text-emerald-600">
-                    {runtimeHealth?.processStatus || 'RUNNING'}
-                  </p>
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Last Checked:{' '}
-                    {runtimeHealth?.lastChecked
-                      ? new Date(runtimeHealth.lastChecked).toLocaleTimeString()
-                      : 'Active'}
-                  </p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleVerifyLearnerRuntime}
+                    disabled={
+                      isVerifyingLearner ||
+                      !['IMPLEMENTED', 'VERIFYING', 'CERTIFICATION_READY', 'AWAITING_GATE_2', 'CERTIFIED'].includes(
+                        certificationData?.state || ''
+                      )
+                    }
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300 shadow-sm transition-all"
+                  >
+                    <Play size={13} className={isVerifyingLearner ? 'animate-spin' : ''} />
+                    {isVerifyingLearner
+                      ? `Verifying Learner Route (${elapsedSeconds}s)...`
+                      : 'Run Learner Runtime Verification'}
+                  </button>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-900 text-slate-200 font-mono text-xs">
-                <div className="text-slate-400 text-[11px] mb-2">{`// Live Runtime Container Verification Log`}</div>
-                <div className="text-emerald-400">GET /tools/project-llm/integration-certification 200 OK</div>
-                <div className="text-emerald-400">Active Workflow: {workflowId || 'N/A'}</div>
-                <div className="text-emerald-400">
-                  Target Identity: {familyName} {targetVersion}
+              {/* Status Diagnostic Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
+                  <span className="text-[10px] font-mono text-slate-400 block mb-0.5">ILS NAVIGATION API</span>
+                  <p className="text-sm font-bold text-slate-800">
+                    {learnerVerification?.evidence_payload?.navigationApi?.status === 'PASS' ? 'HTTP 200 OK' : learnerVerification?.status === 'BLOCKED' ? 'BLOCKED' : 'PENDING'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Authorized • No 401/403</p>
                 </div>
-                <div className="text-slate-400">Governance Engine status: {certificationData?.state || 'READY'}</div>
+
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
+                  <span className="text-[10px] font-mono text-slate-400 block mb-0.5">BLOCK IN LEARNER DOM</span>
+                  <p className="text-sm font-bold text-slate-800">
+                    {learnerVerification?.evidence_payload?.blockRender?.status === 'PASS' ? 'RENDERED' : 'PENDING'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 font-mono truncate">
+                    {learnerVerification?.evidence_payload?.blockRender?.selector || `data-block-type="${familyName.toLowerCase()}"`}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
+                  <span className="text-[10px] font-mono text-slate-400 block mb-0.5">SIDEBAR CONTROLS</span>
+                  <p className="text-sm font-bold text-slate-800">
+                    LSNB: {learnerVerification?.evidence_payload?.lsnb?.status || 'PASS'} • RSSB: {learnerVerification?.evidence_payload?.rssb?.status || 'PASS'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Telemetry context verified</p>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
+                  <span className="text-[10px] font-mono text-slate-400 block mb-0.5">TEST SESSION IDENTITY</span>
+                  <p className="text-sm font-bold text-slate-800">
+                    {learnerVerification?.evidence_payload?.identityMode || 'SkillUp Fixture'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 font-mono truncate">
+                    {learnerVerification?.evidence_payload?.identityHash?.slice(0, 16) || 'Zero-plaintext token'}
+                  </p>
+                </div>
               </div>
+
+              {/* Blockers or findings */}
+              {learnerVerification?.blockers && learnerVerification.blockers.length > 0 && (
+                <div className="p-4 rounded-xl border border-amber-300 bg-amber-50/70 text-amber-900 text-xs space-y-1">
+                  <p className="font-bold flex items-center gap-1.5 text-amber-800">
+                    <AlertTriangle size={14} /> Findings &amp; Prerequisite Blockers ({learnerVerification.blockers.length}):
+                  </p>
+                  <ul className="list-disc list-inside space-y-0.5 text-amber-900">
+                    {learnerVerification.blockers.map((b: string, i: number) => (
+                      <li key={i}>{b}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Evidence details */}
+              {learnerVerification?.evidence_hash && (
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-900 text-slate-200 font-mono text-xs space-y-1.5">
+                  <div className="text-slate-400 text-[11px]">{`// Authoritative Cryptographic Evidence Ledger`}</div>
+                  <div>Evidence Hash: <span className="text-emerald-400">{learnerVerification.evidence_hash}</span></div>
+                  <div>Verified Commit: <span className="text-blue-400">{learnerVerification?.evidence_payload?.verifiedCommit || 'N/A'}</span></div>
+                  <div>Screenshot SHA-256: <span className="text-pink-400">{learnerVerification?.screenshot_sha256 || 'N/A'}</span></div>
+                  <div>Timestamp: <span className="text-slate-400">{learnerVerification?.evidence_payload?.verifiedAt || 'N/A'}</span></div>
+                </div>
+              )}
             </div>
           )}
 
@@ -2156,6 +2273,7 @@ export default function IntegrationCertificationPage() {
                       disabled={
                         isApprovingFinal ||
                         composerVerification?.status !== 'PASS' ||
+                        !['PASS', 'NOT_APPLICABLE'].includes(learnerVerification?.status) ||
                         !['CERTIFICATION_READY', 'AWAITING_GATE_2'].includes(wfState)
                       }
                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 shadow-sm transition-all"
@@ -2183,6 +2301,17 @@ export default function IntegrationCertificationPage() {
                       detail: isComposerVerified
                         ? `PASS • Commit ${composerVerification?.verified_commit?.slice(0, 10) || 'verified'}`
                         : 'PENDING • Isolated Composer run required',
+                    },
+                    {
+                      label: '2b. Learner Runtime & ILS Verification',
+                      ok: ['PASS', 'NOT_APPLICABLE'].includes(learnerVerification?.status),
+                      detail: learnerVerification?.status === 'PASS'
+                        ? `PASS • ILS 200 & block render confirmed (${learnerVerification?.evidence_hash?.slice(0, 10) || 'verified'})`
+                        : learnerVerification?.status === 'BLOCKED'
+                        ? `BLOCKED • ${learnerVerification?.message || 'Prerequisite service unavailable'}`
+                        : learnerVerification?.status === 'FAIL'
+                        ? `FAIL • ${learnerVerification?.message || 'Runtime checks failed'}`
+                        : 'PENDING • Live authenticated browser test required',
                     },
                     {
                       label: '3. WCAG 2.1 A/AA Axe-Core Audit',

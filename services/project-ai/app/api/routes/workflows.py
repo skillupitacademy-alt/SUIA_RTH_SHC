@@ -893,6 +893,65 @@ async def approve_final_certification(
                 )
             )
 
+        # 7. Learner Runtime & ILS Gate Verification
+        learner_gate = gate_results.get("learner_runtime") or gate_results.get("runtime") or {}
+        if not learner_gate:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Learner Runtime & ILS verification gate record is missing. Live learner runtime verification must be executed before final certification."
+            )
+        learner_status = learner_gate.get("status")
+        if learner_status == "BLOCKED":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Learner Runtime & ILS gate is BLOCKED ({learner_gate.get('message', 'Prerequisite unavailable')}). Certification requires an executed and passed live learner runtime test."
+            )
+        if learner_status not in ("PASS", "NOT_APPLICABLE"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Learner Runtime & ILS gate did not pass (status: {learner_status}): {learner_gate.get('message', 'Runtime check failed')}"
+            )
+
+        if learner_status == "PASS":
+            learner_evidence = learner_gate.get("evidence_payload")
+            if not learner_evidence or not isinstance(learner_evidence, dict):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Learner runtime gate is missing cryptographic evidence_payload"
+                )
+            from app.verification.learner_runtime_verifier import compute_canonical_json_hash
+            recomputed_learner_hash = compute_canonical_json_hash(learner_evidence)
+            stored_learner_hash = learner_gate.get("evidence_hash")
+            if recomputed_learner_hash != stored_learner_hash:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Learner runtime evidence_hash mismatch (recomputed {recomputed_learner_hash} != stored {stored_learner_hash})"
+                )
+            if learner_evidence.get("verifiedCommit") != placement_commit:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Learner runtime verifiedCommit does not match placement commit"
+                )
+            screenshot_path = learner_gate.get("screenshot_path")
+            expected_shot_sha = learner_evidence.get("screenshotSha256")
+            if not screenshot_path or not expected_shot_sha:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Learner runtime screenshot evidence is missing"
+                )
+            shot_file = Path(screenshot_path)
+            if not shot_file.exists():
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Learner runtime screenshot file missing on disk: {screenshot_path}"
+                )
+            actual_shot_sha = hashlib.sha256(shot_file.read_bytes()).hexdigest()
+            if actual_shot_sha != expected_shot_sha:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Learner runtime screenshot SHA mismatch on disk"
+                )
+
         evidence_verified = True
         evidence_summary = gate_results
     else:
@@ -1164,6 +1223,101 @@ async def verify_composer(
             result["current_workflow_state"] = workflow_model.current_state
 
     return result
+
+
+@router.post("/{workflow_id}/verify-learner-runtime", response_model=dict)
+async def verify_learner_runtime_endpoint(
+    workflow_id: str,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    workflow_repo: WorkflowRepository = Depends(get_workflow_repository),
+    session: AsyncSession = Depends(get_db_session)
+) -> dict:
+    """
+    Execute post-placement Learner Runtime verification in an authenticated Playwright session.
+    
+    INVARIANTS:
+    - Never mints JWTs directly using JWT_SECRET; requests session from test fixture auth endpoint.
+    - Resolves route from platform-owned fixture metadata.
+    - Asserts ILS navigation/progress APIs return 200 (no 401/403).
+    - Asserts candidate block renders in DOM with data-block-type and data-block-version.
+    - Saves canonical evidence hash and screenshot to workflow gate results.
+    """
+    workflow = await governance_service.get_workflow(workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
+
+    allowed_states = [
+        CanonicalWorkflowState.IMPLEMENTED,
+        CanonicalWorkflowState.VERIFYING,
+        CanonicalWorkflowState.CERTIFICATION_READY,
+        CanonicalWorkflowState.AWAITING_GATE_2
+    ]
+    if workflow.current_state not in allowed_states:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Cannot run Learner Runtime verification in state {workflow.current_state.value}. "
+                "Placement must be executed first."
+            )
+        )
+
+    try:
+        commit_sha = _get_verified_placement_commit(
+            workflow.gate_results or {},
+            workflow.candidate_sha256 or "",
+            workflow.manifest_sha256 or "",
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    target_family = workflow.target_family
+    target_version = workflow.target_version
+    candidate_sha = workflow.candidate_sha256 or ""
+    manifest_sha = workflow.manifest_sha256 or ""
+
+    # Release initial DB connection before running browser verification
+    await session.close()
+
+    from app.verification.learner_runtime_verifier import verify_learner_runtime
+    from app.persistence.database import get_session_factory
+    from app.verification.composer_worktree_verifier import find_workspace_root
+
+    workspace_root = find_workspace_root()
+
+    res = verify_learner_runtime(
+        workflow_id=workflow_id,
+        candidate_hash=candidate_sha,
+        manifest_hash=manifest_sha,
+        verified_commit=commit_sha,
+        block_family=target_family,
+        block_version=target_version,
+        workspace_root=workspace_root,
+    )
+
+    result_dict = {
+        "status": res.status,
+        "message": res.message,
+        "evidence_payload": res.evidence_payload,
+        "evidence_hash": res.evidence_hash,
+        "screenshot_path": res.screenshot_path,
+        "screenshot_sha256": res.screenshot_sha256,
+        "blockers": res.blockers,
+    }
+
+    session_factory = get_session_factory()
+    async with session_factory() as write_session:
+        fresh_repo = await get_workflow_repository(write_session)
+        workflow_model = await fresh_repo.get(workflow_id, verify_bindings=False)
+        if workflow_model:
+            current_gates = dict(workflow_model.gate_results or {})
+            current_gates["learner_runtime"] = result_dict
+            workflow_model.gate_results = current_gates
+            await fresh_repo.upsert(workflow_model)
+            await write_session.commit()
+            result_dict["current_workflow_state"] = workflow_model.current_state
+
+    return result_dict
 
 
 @router.post("/{workflow_id}/supersede", response_model=dict)

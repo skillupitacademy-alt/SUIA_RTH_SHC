@@ -938,6 +938,33 @@ export class ProjectLlmClient {
   }
 
   /**
+   * Run post-placement Learner Runtime & ILS verification in an authenticated Playwright session.
+   * Maps to: POST /workflows/{workflowId}/verify-learner-runtime
+   */
+  async verifyLearnerRuntime(workflowId: string): Promise<Record<string, any>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/verify-learner-runtime`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        await handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to run Learner Runtime verification. Check network connection.'
+      );
+    }
+  }
+
+  /**
    * Supersede stale or unapproved placement plan with a fresh revision.
    * Maps to: POST /workflows/{workflowId}/supersede
    */
