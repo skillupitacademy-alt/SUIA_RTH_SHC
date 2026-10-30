@@ -419,6 +419,20 @@ class CanonicalComparator:
         integration_filename = None
         integration_metadata = None
 
+        # First pass: validate filename safety for all files
+        for f in files:
+            filename = f.get('filename') if isinstance(f, dict) else f.filename
+            
+            # Validate filename safety
+            # Reject path traversal
+            if ".." in filename or filename.startswith("/") or "\\" in filename:
+                raise ValueError(f"Unsafe filename detected: {filename}")
+            
+            # Reject hidden files (except .json, .ts, .tsx)
+            if filename.startswith(".") and not filename.endswith((".json", ".ts", ".tsx")):
+                raise ValueError(f"Hidden file not allowed: {filename}")
+
+        # Second pass: find and validate integration metadata
         for f in files:
             filename = f.get('filename') if isinstance(f, dict) else f.filename
             content = f.get('content') if isinstance(f, dict) else f.content
@@ -502,6 +516,40 @@ class CanonicalComparator:
 
             # 4. TypeScript Schema / Types
             elif filename.endswith('.schema.ts') or filename.endswith('.types.ts'):
+                # Validate: schema file must exist
+                if not filename:
+                    raise ValueError("Candidate schema filename is empty")
+                
+                # Validate: supported extension
+                if filename.endswith('.types.ts'):
+                    raise ValueError(
+                        f"Schema file '{filename}' uses .types.ts extension. "
+                        "Canonical schemas must use .schema.ts extension for runtime validation."
+                    )
+                
+                # Extract expected schema export name from integration metadata
+                expected_schema_export = integration_metadata.get("schemaExport")
+                if expected_schema_export:
+                    # Validate: runtime Zod schema export exists (not just interface/type)
+                    if not re.search(
+                        rf"export\s+const\s+{re.escape(expected_schema_export)}\s*[=:]\s*z\.",
+                        content
+                    ):
+                        raise ValueError(
+                            f"Schema file '{filename}' must export runtime Zod schema "
+                            f"'{expected_schema_export}' using 'export const {expected_schema_export} = z.object(...)'. "
+                            "Interface-only or type-only files are not valid runtime schemas."
+                        )
+                
+                # Validate schema import path matches placed file
+                schema_filename = integration_metadata.get("typeSchemaFile")
+                if schema_filename:
+                    expected_import_module = schema_filename.replace(".schema.ts", "").replace(".ts", "")
+                    # Import path should be: ./objective-o1.schema (without extension)
+                    # Reject path traversal attempts
+                    if ".." in expected_import_module or expected_import_module.startswith("/"):
+                        raise ValueError(f"Unsafe import path detected: {expected_import_module}")
+                
                 operations.append(make_candidate_file_op(
                     filename, source_sha, f"packages/types/src/tutorial-rich-document/schemas/{filename}", "TypeScript Zod schema"
                 ))

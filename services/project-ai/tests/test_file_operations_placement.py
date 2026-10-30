@@ -379,3 +379,187 @@ export const TutorialBlockSchema: z.ZodType<any> = z.lazy(() =>
     # Count exact occurrences in union array
     assert "ObjectiveBlockSchema," in patched
     assert "ObjectiveO1BlockSchema," in patched
+
+
+def test_derive_file_operations_rejects_types_ts_extension(tmp_path):
+    """Test that .types.ts extension is rejected (must use .schema.ts)."""
+    comparator = CanonicalComparator(snapshot={})
+    with pytest.raises(ValueError, match=r"uses \.types\.ts extension.*must use \.schema\.ts"):
+        comparator.derive_file_operations(
+            files=[
+                {"filename": "ObjectiveO1Block.tsx", "content": "export function ObjectiveO1Block() {}"},
+                {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
+                {"filename": "objective-o1.schema.json", "content": "{}"},
+                {"filename": "objective-o1.types.ts", "content": "export interface ObjectiveO1BlockContract {}"},
+                {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.types.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
+            ],
+            family=BlockFamily.OBJECTIVE,
+            version="O1",
+            workspace_root=tmp_path,
+        )
+
+
+def test_derive_file_operations_rejects_interface_only_schema(tmp_path):
+    """Test that interface-only schema files are rejected (must export Zod schema)."""
+    comparator = CanonicalComparator(snapshot={})
+    with pytest.raises(ValueError, match="must export runtime Zod schema.*Interface-only"):
+        comparator.derive_file_operations(
+            files=[
+                {"filename": "ObjectiveO1Block.tsx", "content": "export function ObjectiveO1Block() {}"},
+                {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
+                {"filename": "objective-o1.schema.json", "content": "{}"},
+                {"filename": "objective-o1.schema.ts", "content": "export interface ObjectiveO1BlockSchema { id: string; type: string; }"},
+                {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","schemaExport":"ObjectiveO1BlockSchema","defaultPayload":{"title":"Example","objectives":[]}}'},
+            ],
+            family=BlockFamily.OBJECTIVE,
+            version="O1",
+            workspace_root=tmp_path,
+        )
+
+
+def test_derive_file_operations_accepts_valid_zod_schema(tmp_path):
+    """Test that valid Zod schema export passes validation."""
+    renderer_rel = "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
+    generated_registry_rel = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/generatedBlockRegistries.ts"
+    blocks_schema_rel = "packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts"
+    composer_definitions_rel = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/generatedBlockVersionDefinitions.ts"
+
+    renderer_file = tmp_path / renderer_rel
+    renderer_file.parent.mkdir(parents=True, exist_ok=True)
+    renderer_file.write_text("export const GENERATED_BLOCK_RENDERERS = [];\n", encoding='utf-8')
+
+    generated_registry_file = tmp_path / generated_registry_rel
+    generated_registry_file.parent.mkdir(parents=True, exist_ok=True)
+    generated_registry_file.write_text("export const GENERATED_BLOCK_REGISTRIES = [];\n", encoding='utf-8')
+
+    blocks_schema_file = tmp_path / blocks_schema_rel
+    blocks_schema_file.parent.mkdir(parents=True, exist_ok=True)
+    blocks_schema_file.write_text("import { z } from 'zod';\nexport const TutorialBlockSchema: z.ZodType<any> = z.lazy(() => z.union([]));\n", encoding='utf-8')
+
+    composer_definitions_file = tmp_path / composer_definitions_rel
+    composer_definitions_file.parent.mkdir(parents=True, exist_ok=True)
+    composer_definitions_file.write_text("export const GENERATED_BLOCK_VERSION_DEFINITIONS = [];\n", encoding='utf-8')
+
+    comparator = CanonicalComparator(snapshot={})
+    
+    # Valid Zod schema with proper export
+    ops = comparator.derive_file_operations(
+        files=[
+            {"filename": "ObjectiveO1Block.tsx", "content": "export function ObjectiveO1Block() {}"},
+            {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
+            {"filename": "objective-o1.schema.json", "content": "{}"},
+            {"filename": "objective-o1.schema.ts", "content": "import { z } from 'zod';\nexport const ObjectiveO1BlockSchema = z.object({ id: z.string(), type: z.literal('objective') });"},
+            {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","schemaExport":"ObjectiveO1BlockSchema","defaultPayload":{"title":"Example","objectives":[]}}'},
+        ],
+        family=BlockFamily.OBJECTIVE,
+        version="O1",
+        workspace_root=tmp_path,
+    )
+    
+    # Should complete without error and include schema file operation
+    schema_ops = [op for op in ops if op.source_filename == "objective-o1.schema.ts"]
+    assert len(schema_ops) == 1
+    assert schema_ops[0].action == PlacementFileAction.CREATE
+
+
+def test_derive_file_operations_rejects_path_traversal_filename(tmp_path):
+    """Test that filenames with path traversal attempts are rejected."""
+    comparator = CanonicalComparator(snapshot={})
+    with pytest.raises(ValueError, match="Unsafe filename detected"):
+        comparator.derive_file_operations(
+            files=[
+                {"filename": "../../../etc/passwd", "content": "malicious"},
+                {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
+            ],
+            family=BlockFamily.OBJECTIVE,
+            version="O1",
+            workspace_root=tmp_path,
+        )
+
+
+def test_derive_file_operations_rejects_absolute_path_filename(tmp_path):
+    """Test that absolute path filenames are rejected."""
+    comparator = CanonicalComparator(snapshot={})
+    with pytest.raises(ValueError, match="Unsafe filename detected"):
+        comparator.derive_file_operations(
+            files=[
+                {"filename": "/etc/passwd", "content": "malicious"},
+                {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
+            ],
+            family=BlockFamily.OBJECTIVE,
+            version="O1",
+            workspace_root=tmp_path,
+        )
+
+
+def test_derive_file_operations_rejects_windows_path_traversal(tmp_path):
+    """Test that Windows-style path traversal is rejected."""
+    comparator = CanonicalComparator(snapshot={})
+    with pytest.raises(ValueError, match="Unsafe filename detected"):
+        comparator.derive_file_operations(
+            files=[
+                {"filename": "..\\..\\windows\\system32\\config", "content": "malicious"},
+                {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
+            ],
+            family=BlockFamily.OBJECTIVE,
+            version="O1",
+            workspace_root=tmp_path,
+        )
+
+
+def test_derive_file_operations_rejects_hidden_files(tmp_path):
+    """Test that non-allowed hidden files are rejected."""
+    comparator = CanonicalComparator(snapshot={})
+    with pytest.raises(ValueError, match="Hidden file not allowed"):
+        comparator.derive_file_operations(
+            files=[
+                {"filename": ".env", "content": "SECRET_KEY=12345"},
+                {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
+            ],
+            family=BlockFamily.OBJECTIVE,
+            version="O1",
+            workspace_root=tmp_path,
+        )
+
+
+def test_derive_file_operations_accepts_missing_schema_export_metadata(tmp_path):
+    """Test backward compatibility when schemaExport is not provided in integration metadata."""
+    renderer_rel = "packages/ui/src/tutorial/generatedBlockRenderers.tsx"
+    generated_registry_rel = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/registry/generatedBlockRegistries.ts"
+    blocks_schema_rel = "packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts"
+    composer_definitions_rel = "apps/skillhubcore-admin/src/app/(admin)/tools/tutorial-page-content/document/generatedBlockVersionDefinitions.ts"
+
+    renderer_file = tmp_path / renderer_rel
+    renderer_file.parent.mkdir(parents=True, exist_ok=True)
+    renderer_file.write_text("export const GENERATED_BLOCK_RENDERERS = [];\n", encoding='utf-8')
+
+    generated_registry_file = tmp_path / generated_registry_rel
+    generated_registry_file.parent.mkdir(parents=True, exist_ok=True)
+    generated_registry_file.write_text("export const GENERATED_BLOCK_REGISTRIES = [];\n", encoding='utf-8')
+
+    blocks_schema_file = tmp_path / blocks_schema_rel
+    blocks_schema_file.parent.mkdir(parents=True, exist_ok=True)
+    blocks_schema_file.write_text("import { z } from 'zod';\nexport const TutorialBlockSchema: z.ZodType<any> = z.lazy(() => z.union([]));\n", encoding='utf-8')
+
+    composer_definitions_file = tmp_path / composer_definitions_rel
+    composer_definitions_file.parent.mkdir(parents=True, exist_ok=True)
+    composer_definitions_file.write_text("export const GENERATED_BLOCK_VERSION_DEFINITIONS = [];\n", encoding='utf-8')
+
+    comparator = CanonicalComparator(snapshot={})
+    
+    # Integration metadata without schemaExport should pass (backward compatible)
+    ops = comparator.derive_file_operations(
+        files=[
+            {"filename": "ObjectiveO1Block.tsx", "content": "export function ObjectiveO1Block() {}"},
+            {"filename": "ObjectiveO1Block.test.tsx", "content": "test('renders', () => {})"},
+            {"filename": "objective-o1.schema.json", "content": "{}"},
+            {"filename": "objective-o1.schema.ts", "content": "export const SomeSchema = z.object({ id: z.string() });"},
+            {"filename": "block.integration.json", "content": '{"family":"Objective","version":"O1","typeId":"objective","componentFile":"ObjectiveO1Block.tsx","componentExport":"ObjectiveO1Block","testFile":"ObjectiveO1Block.test.tsx","jsonSchemaFile":"objective-o1.schema.json","typeSchemaFile":"objective-o1.schema.ts","defaultPayload":{"title":"Example","objectives":[]}}'},
+        ],
+        family=BlockFamily.OBJECTIVE,
+        version="O1",
+        workspace_root=tmp_path,
+    )
+    
+    # Should complete without error
+    assert any(op.source_filename == "objective-o1.schema.ts" for op in ops)
