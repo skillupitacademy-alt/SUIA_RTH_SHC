@@ -538,7 +538,7 @@ class CanonicalComparator:
                     
                     # ALWAYS validate runtime Zod schema export exists (not just interface/type)
                     if not re.search(
-                        rf"export\s+const\s+{re.escape(schema_export)}\s*[=:]\s*z\.",
+                        rf"export\s+const\s+{re.escape(schema_export)}\s*[=:]\s*z\s*\.",
                         content
                     ):
                         raise ValueError(
