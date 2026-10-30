@@ -437,14 +437,14 @@ def patch_blocks_schema(
     import_statement = f"import {{ {schema_export_name} }} from './{schema_module}.schema';"
     export_statement = f"export * from './{schema_module}.schema';"
     
-    # Check idempotency: if import exists and schema is in union, return unchanged
-    if import_statement in content:
+    # Check idempotency: if ALL THREE elements exist, return unchanged
+    if import_statement in content and export_statement in content:
         # Check if schema is already in union
         union_pattern = r"export\s+const\s+TutorialBlockSchema[^=]+=\s*z\.lazy\(\(\s*\)\s*=>\s*z\.union\(\[([\s\S]*?)\]\s*\)\s*\);"
         union_match = re.search(union_pattern, content)
         # Use word-boundary regex to prevent false positives from substring matches
         if union_match and re.search(r'\b' + re.escape(schema_export_name) + r'\b', union_match.group(1)):
-            return content  # Already patched - idempotent
+            return content  # Already patched - idempotent (all three elements present)
     
     patched_content = content
     
