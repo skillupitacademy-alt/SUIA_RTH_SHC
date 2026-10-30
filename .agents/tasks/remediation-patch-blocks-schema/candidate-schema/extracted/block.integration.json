@@ -7,6 +7,7 @@
   "testFile": "ObjectiveO1Block.test.tsx",
   "jsonSchemaFile": "objective-o1.schema.json",
   "typeSchemaFile": "objective-o1.schema.ts",
+  "schemaExport": "ObjectiveO1BlockSchema",
   "registryVersionId": "o1",
   "label": "O1 - Objective",
   "description": "Presents learning objectives with numbered step badges and category pills.",
