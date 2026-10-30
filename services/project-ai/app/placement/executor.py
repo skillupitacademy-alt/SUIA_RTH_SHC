@@ -475,9 +475,14 @@ class PlacementExecutor:
                             "Missing typeSchemaFile in block.integration.json"
                         )
                     
-                    # Derive schema export name from family/version
-                    # Per Phase 1 audit: ObjectiveO1BlockSchema pattern
-                    schema_export_name = f"{manifest.blockFamily.value}{manifest.blockVersion.upper()}BlockSchema"
+                    # This name was validated during manifest generation. Reusing it
+                    # prevents the executor from silently imposing a naming convention
+                    # that differs from the candidate's runtime Zod export.
+                    schema_export_name = integration_metadata.get("schemaExport")
+                    if not isinstance(schema_export_name, str) or not schema_export_name:
+                        raise PlacementExecutionError(
+                            "Missing schemaExport in block.integration.json for canonical schema registration"
+                        )
                     
                     # Apply patch with validated parameters
                     patched = patch_blocks_schema(
