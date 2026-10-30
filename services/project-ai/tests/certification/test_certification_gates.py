@@ -504,8 +504,8 @@ class TestRuntimeGate:
         # Mock the verify_runtime to return success
         result = executor.execute_runtime_verification_gate(['introduction'], test_manifest)
         
-        # May be BLOCKED if Playwright not installed, or PASS if verification succeeds
-        assert result.status in [CertificationGateStatus.PASS, CertificationGateStatus.BLOCKED]
+        # Static snapshot evidence is never enough to certify a runtime pass.
+        assert result.status == CertificationGateStatus.BLOCKED
     
     def test_runtime_gate_blocked_with_empty_snapshot(self):
         """Runtime gate blocked when snapshot has no verified blocks."""

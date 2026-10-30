@@ -342,19 +342,10 @@ def verify_runtime(
     if 'evidenceId' in block_evidence:
         evidence_ids.append(block_evidence['evidenceId'])
     
-    # Step 2: Runtime verification requires browser automation
-    # This is delegated to browser.py module which uses Playwright
-    # For now, we return a placeholder indicating browser verification is required
-    
-    # NOTE: In the full implementation, this would:
-    # 1. Start application process
-    # 2. Call browser.verify_in_browser() to perform actual DOM verification
-    # 3. Stop application process
-    # 4. Return comprehensive RuntimeVerification result
-    
-    # For M2 implementation, we verify the orchestration logic is correct
-    # and browser integration will be added in subsequent wave
-    
+    # Snapshot evidence only proves that static discovery found the block. It
+    # cannot certify a running application, especially an authenticated learner
+    # route. Until an actual browser runner is configured, report this plainly
+    # rather than manufacturing a runtime pass from static evidence.
     return RuntimeVerification(
         verificationId=verification_id,
         target=target,
@@ -363,13 +354,21 @@ def verify_runtime(
         expected=expected_content,
         observed={
             'blockType': block_type,
-            'status': 'runtime_orchestration_ready',
-            'note': 'Runtime verification orchestration implemented; browser integration via browser.py'
+            'status': 'runtime_browser_execution_required',
+            'note': (
+                'Static discovery found the block, but no browser or authenticated '
+                'learner lifecycle verification was executed.'
+            )
         },
-        passed=True,
-        evidenceIds=evidence_ids,
+        passed=False,
+        # A static discovery identifier is deliberately not promoted to runtime
+        # evidence. Runtime gates must attach browser-produced evidence instead.
+        evidenceIds=[],
         consoleErrors=console_errors,
         networkErrors=network_errors,
-        error_code=None,
-        error_message=None
+        error_code=RuntimeErrorCode.RUNTIME_START_FAILURE,
+        error_message=(
+            'Runtime browser verification was not executed. '
+            'Configure and run the authenticated learner lifecycle gate before certification.'
+        )
     )

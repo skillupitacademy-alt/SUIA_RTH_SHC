@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const ObjectiveO1ItemSchema = z
   .object({
-    id: z.string().min(1),
+    id: z.union([z.string().min(1), z.number()]).optional(),
     text: z.string().min(1).optional(),
     title: z.string().min(1).optional(),
     verb: z.string().optional(),
@@ -17,7 +17,7 @@ export const ObjectiveO1ItemSchema = z
       (typeof item.text === 'string' && item.text.trim().length > 0) ||
       (typeof item.title === 'string' && item.title.trim().length > 0),
     {
-      message: 'Each objective item must include a non-empty title or text.',
+      message: "Objective item must have either 'title' or 'text' with non-empty value",
     }
   );
 
@@ -34,7 +34,7 @@ export const ObjectiveO1NoteSchema = z.union([
 export const ObjectiveO1ContentSchema = z
   .object({
     eyebrow: z.string().optional(),
-    title: z.string().min(1).optional(),
+    title: z.string().min(1),
     titleHighlight: z.string().optional(),
     introduction: z.string().optional(),
     subtitle: z.string().optional(),

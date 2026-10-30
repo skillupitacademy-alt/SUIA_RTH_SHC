@@ -141,7 +141,12 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
 
     // console.log('[ILS-DEBUG][AUTH][requireStudentAuth][SUCCESS]', { userId });
     return { ok: true, userId, payload };
-  } catch {
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[SkillUp learner auth] token verification failed', {
+        reason: error instanceof Error ? error.message : 'Unknown verification error',
+      });
+    }
     // console.error('[ILS-DEBUG][AUTH][requireStudentAuth][ERROR] Token verification failed');
     return {
       ok: false,
