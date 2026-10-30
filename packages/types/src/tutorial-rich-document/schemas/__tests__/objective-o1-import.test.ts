@@ -19,15 +19,13 @@ describe('Objective O1 Schema Import Resolution', () => {
       type: 'objective',
       version: 'O1',
       content: {
-        page: {
-          title: 'Learning Objectives',
-          objectives: [
-            {
-              id: 'obj1',
-              text: 'Understand core concepts',
-            },
-          ],
-        },
+        title: 'Learning Objectives',
+        objectives: [
+          {
+            id: 'obj1',
+            text: 'Understand core concepts',
+          },
+        ],
       },
       presentation: undefined,
     };
@@ -42,15 +40,13 @@ describe('Objective O1 Schema Import Resolution', () => {
       type: 'introduction', // Wrong type
       version: 'O1',
       content: {
-        page: {
-          title: 'Learning Objectives',
-          objectives: [
-            {
-              id: 'obj1',
-              text: 'Understand core concepts',
-            },
-          ],
-        },
+        title: 'Learning Objectives',
+        objectives: [
+          {
+            id: 'obj1',
+            text: 'Understand core concepts',
+          },
+        ],
       },
       presentation: undefined,
     };
@@ -65,10 +61,8 @@ describe('Objective O1 Schema Import Resolution', () => {
       type: 'objective',
       version: 'O1',
       content: {
-        page: {
-          title: 'Learning Objectives',
-          objectives: [], // Empty array violates .min(1)
-        },
+        title: 'Learning Objectives',
+        objectives: [], // Empty array violates .min(1)
       },
       presentation: undefined,
     };
