@@ -280,8 +280,25 @@ You must package your output as a single .zip archive containing the six require
    - Valid JSON schema representing the block's content payload.
    - Must include "$schema": "http://json-schema.org/draft-07/schema#", "title": "${targetFamily} ${versionUpper} Block Schema".
 
-4. ${familyLower}-${versionLower}.schema.ts (TypeScript Type Contract)
-   - Export interfaces representing the block payload and content structure.
+4. ${familyLower}-${versionLower}.schema.ts (TypeScript Runtime Zod Schema Contract)
+   - CRITICAL REQUIREMENT FOR SAVE & PUBLISH:
+     This file MUST export an actual runtime Zod schema object using 'z.object(...)', NOT just TypeScript interfaces or types.
+     Project LLM places this schema into packages/types and registers it in TutorialBlockSchema, enabling Tutorial Composer Save and Publish APIs to validate the block.
+   - Must import { z } from 'zod'.
+   - Must export the named Zod schema constant matching 'schemaExport' in block.integration.json:
+     export const ${componentName}Schema = z.object({
+       id: z.string().uuid(),
+       type: z.literal('${familyLower}'),
+       version: z.literal('${versionUpper}'),
+       content: z.object({
+         // Direct content payload matching your block needs
+         // For text/title items: accept title OR text, require at least one via .refine()
+       }),
+       presentation: z.any().optional(),
+       expectedTimeSec: z.number().int().positive().optional(),
+       progressRole: z.enum(['instructional', 'structural', 'assessment', 'media']).default('instructional').optional(),
+     });
+   - Interface-only or type-only files without a runtime Zod schema export will be REJECTED during intake.
 
 5. block.integration.json (Portable Integration Metadata)
    - This is the ONLY integration artifact. Do not provide registry, renderer, Composer, or shared type files.
@@ -295,6 +312,7 @@ You must package your output as a single .zip archive containing the six require
        "testFile": "${componentName}.test.tsx",
        "jsonSchemaFile": "${familyLower}-${versionLower}.schema.json",
        "typeSchemaFile": "${familyLower}-${versionLower}.schema.ts",
+       "schemaExport": "${componentName}Schema",
        "registryVersionId": "${versionLower}",
        "label": "${versionUpper} - ${targetFamily}",
        "description": "Short user-facing description",

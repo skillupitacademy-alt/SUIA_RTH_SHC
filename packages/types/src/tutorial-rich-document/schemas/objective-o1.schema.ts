@@ -24,20 +24,38 @@ import { PresentationConfigSchema } from './presentation.schema';
  * 
  * CRITICAL CONTRACT POINTS:
  * - `id` is optional (matches storage type: string | number | undefined)
- * - `text` is REQUIRED (renderer reads obj.text at line 96 of ObjectiveO1Block.tsx)
- * - Additional fields (verb, title, description, badge, icon) are optional metadata
+ * - BOTH `title` and `text` are optional individually
+ * - AT LEAST ONE of `title` or `text` must be present (enforced by .refine())
+ * - Renderer (ObjectiveO1Block.tsx:124) prefers title, falls back to text
+ * - Registry defaults (objective.registry.ts:28) use `title` + `description`, NOT `text`
+ * - Additional fields (verb, description, badge, icon) are optional metadata
  * - Uses .passthrough() to allow extensibility
  */
 export const ObjectiveO1ItemSchema = z.object({
   id: z.union([z.string(), z.number()]).optional(),
-  text: z.string().min(1).max(500),
-  verb: z.string().min(1).max(50).optional(),
+  
+  // BOTH optional individually - at least one required via .refine()
   title: z.string().min(1).max(200).optional(),
+  text: z.string().min(1).max(500).optional(),
+  
+  // Metadata fields
+  verb: z.string().min(1).max(50).optional(),
   description: z.string().min(1).max(1000).optional(),
   badge: z.string().min(1).max(50).optional(),
   category: z.string().min(1).max(50).optional(),
   icon: z.string().min(1).max(50).optional(),
-}).passthrough();
+}).passthrough()
+  .refine(
+    (obj) => {
+      const hasTitle = typeof obj.title === 'string' && obj.title.trim().length > 0;
+      const hasText = typeof obj.text === 'string' && obj.text.trim().length > 0;
+      return hasTitle || hasText;
+    },
+    {
+      message: "Objective item must have either 'title' or 'text' with non-empty value",
+      path: ['title', 'text']
+    }
+  );
 
 /**
  * Note Schema (Structured Format)

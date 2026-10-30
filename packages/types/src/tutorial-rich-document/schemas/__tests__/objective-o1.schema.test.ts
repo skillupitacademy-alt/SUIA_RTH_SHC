@@ -90,11 +90,10 @@ describe('ObjectiveO1BlockSchema', () => {
   });
 
   describe('Registry Default Validation', () => {
-    it('validates registry default shape with text field added', () => {
-      // This is the registry default AFTER correction to add text field
-      // Source: objective.registry.ts lines 15-60
-      // CRITICAL: text field must be added to match renderer requirement
-      const registryDefault = {
+    it('validates actual unchanged registry default shape (with title only, no text field)', () => {
+      // This is the EXACT unchanged registry default from objective.registry.ts lines 19-68
+      // Note: objectives contain `title` and `description`, but NO `text` field.
+      const actualUnchangedRegistryDefault = {
         id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         type: 'objective',
         version: 'O1',
@@ -108,7 +107,6 @@ describe('ObjectiveO1BlockSchema', () => {
               id: '1',
               verb: 'Create',
               title: 'Create and initialize lists',
-              text: 'Create and initialize lists', // Must have text for renderer
               description: 'Create Python lists using different methods and initialize them with values.',
               badge: 'Practical Skill',
               icon: 'create',
@@ -116,71 +114,62 @@ describe('ObjectiveO1BlockSchema', () => {
             {
               id: '2',
               verb: 'Access',
-              title: 'Access list elements by index',
-              text: 'Access list elements by index',
-              description: 'Retrieve individual elements from a list using positive and negative indices.',
-              badge: 'Practical Skill',
+              title: 'Access list elements',
+              description: 'Retrieve individual elements from a list using indexing and negative indexing.',
+              badge: 'Core Skill',
               icon: 'access',
             },
             {
               id: '3',
+              verb: 'Extract',
+              title: 'Extract values using slicing',
+              description: 'Use slicing to get a range of elements and create sublists.',
+              badge: 'Core Skill',
+              icon: 'extract',
+            },
+            {
+              id: '4',
               verb: 'Modify',
               title: 'Modify list contents',
-              text: 'Modify list contents',
-              description: 'Update, add, and remove elements from existing lists.',
+              description: 'Change, add, or remove elements in existing lists.',
               badge: 'Practical Skill',
               icon: 'modify',
             },
             {
-              id: '4',
+              id: '5',
               verb: 'Use',
-              title: 'Use list methods',
-              text: 'Use list methods',
-              description: 'Apply built-in list methods for common operations like sorting and searching.',
+              title: 'Use common list methods',
+              description: 'Apply built-in methods like append, extend, insert, remove, and pop.',
               badge: 'Practical Skill',
               icon: 'use',
             },
             {
-              id: '5',
+              id: '6',
               verb: 'Iterate',
               title: 'Iterate through lists',
-              text: 'Iterate through lists',
-              description: 'Loop through list elements using for loops and other iteration techniques.',
+              description: 'Process list elements using for loops, while loops, and list comprehensions.',
               badge: 'Practical Skill',
               icon: 'iterate',
             },
-            {
-              id: '6',
-              verb: 'Work with',
-              title: 'Work with nested lists',
-              text: 'Work with nested lists',
-              description: 'Create and manipulate lists containing other lists (2D lists).',
-              badge: 'Advanced Skill',
-              icon: 'nest',
-            },
           ],
-          note: {
-            title: 'Note',
-            text: 'These are observable, practical skills you will develop in this lesson. Each skill has been carefully designed to be demonstrable and verifiable.',
-          },
         },
-        expectedTimeSec: 300,
       };
 
-      const result = ObjectiveO1BlockSchema.safeParse(registryDefault);
+      const result = ObjectiveO1BlockSchema.safeParse(actualUnchangedRegistryDefault);
 
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.content.objectives).toHaveLength(6);
-        expect(result.data.content.objectives[0].text).toBe('Create and initialize lists');
-        expect(result.data.expectedTimeSec).toBe(300);
+        expect(result.data.content.objectives[0].title).toBe('Create and initialize lists');
+        expect(result.data.content.objectives[0].text).toBeUndefined();
       }
     });
   });
 
   describe('Objective Item Field Requirements', () => {
-    it('requires text field in objective items', () => {
-      const blockMissingText = {
+    it('accepts title-only or text-only objective items and rejects items missing both', () => {
+      // 1. Title only (matches actual registry default: objective.registry.ts:28)
+      const blockWithTitleOnly = {
         id: '123e4567-e89b-12d3-a456-426614174000',
         type: 'objective',
         version: 'O1',
@@ -189,19 +178,71 @@ describe('ObjectiveO1BlockSchema', () => {
           objectives: [
             {
               id: '1',
-              title: 'Some title', // Has title but NO text
-              // Missing required 'text' field
+              title: 'Create and initialize lists', // Has title, NO text
             },
           ],
         },
       };
+      const titleResult = ObjectiveO1BlockSchema.safeParse(blockWithTitleOnly);
+      expect(titleResult.success).toBe(true);
 
-      const result = ObjectiveO1BlockSchema.safeParse(blockMissingText);
+      // 2. Text only (matches AI-generated payload)
+      const blockWithTextOnly = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        type: 'objective',
+        version: 'O1',
+        content: {
+          title: 'Learning Objectives',
+          objectives: [
+            {
+              id: '1',
+              text: 'Create and initialize lists', // Has text, NO title
+            },
+          ],
+        },
+      };
+      const textResult = ObjectiveO1BlockSchema.safeParse(blockWithTextOnly);
+      expect(textResult.success).toBe(true);
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.some(issue => 
-          issue.path.includes('text')
+      // 3. Both title and text present
+      const blockWithBoth = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        type: 'objective',
+        version: 'O1',
+        content: {
+          title: 'Learning Objectives',
+          objectives: [
+            {
+              id: '1',
+              title: 'List initialization',
+              text: 'Create and initialize lists',
+            },
+          ],
+        },
+      };
+      const bothResult = ObjectiveO1BlockSchema.safeParse(blockWithBoth);
+      expect(bothResult.success).toBe(true);
+
+      // 4. Missing BOTH title and text (MUST FAIL)
+      const blockMissingBoth = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        type: 'objective',
+        version: 'O1',
+        content: {
+          title: 'Learning Objectives',
+          objectives: [
+            {
+              id: '1',
+              description: 'Just a description with no title or text',
+            },
+          ],
+        },
+      };
+      const missingResult = ObjectiveO1BlockSchema.safeParse(blockMissingBoth);
+      expect(missingResult.success).toBe(false);
+      if (!missingResult.success) {
+        expect(missingResult.error.issues.some(issue => 
+          issue.message.includes("must have either 'title' or 'text'")
         )).toBe(true);
       }
     });

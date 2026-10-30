@@ -45,8 +45,17 @@ export {
   DefinitionD1AuthorContentSchema,
   validateDefinitionD1AIOutput,
 } from './schemas/definition-d1.schema';
-export { CodeC1BlockSchema } from './schemas/code-c1.schema';
-export { IntroductionI1BlockSchema } from './schemas/introduction-i1.schema';
+export {
+  CodeC1BlockSchema,
+  CodeC1AuthorContentSchema,
+  HistoricalTutorialCodePayloadSchema,
+  validateCodeC1AIOutput,
+} from './schemas/code-c1.schema';
+export {
+  IntroductionI1BlockSchema,
+  IntroductionI1AuthorContentSchema,
+  validateIntroductionI1AIOutput,
+} from './schemas/introduction-i1.schema';
 export {
   ObjectiveO1BlockSchema,
   ObjectiveO1ItemSchema,
