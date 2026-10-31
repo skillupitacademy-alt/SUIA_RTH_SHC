@@ -218,4 +218,6 @@ scripts/verify-*.mjs
 /.project-ai/learner-runtime.env
 /.project-ai/learner-fixtures.json
 /.project-ai/linux-worker-smoke/
+/.project-ai/linux-worker-smoke-*.json
+/.project-ai/linux-worker-smoke-*.png
 /services/project-ai/.build/
