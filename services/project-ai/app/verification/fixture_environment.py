@@ -12,7 +12,8 @@ def verification_database_url() -> str:
         raise FixtureBlockedError("PROJECT_LLM_VERIFICATION_DATABASE_URL is not configured")
     if os.environ.get("PROJECT_LLM_FIXTURE_DATABASE_WRITES_ALLOWED") != "true":
         raise FixtureBlockedError("Verification database requires explicit permission for dedicated fixture writes")
-    if os.environ.get("ENVIRONMENT", "").lower() in ("production", "prod") and os.environ.get("PROJECT_LLM_LOCAL_VERIFICATION") != "true":
+    worker_mode = os.environ.get("PROJECT_LLM_EXECUTION_MODE") == "isolated_worker"
+    if os.environ.get("ENVIRONMENT", "").lower() in ("production", "prod") and os.environ.get("PROJECT_LLM_LOCAL_VERIFICATION") != "true" and not worker_mode:
         raise FixtureBlockedError("Production-labelled environments require explicit local-verification opt-in")
     parsed = urlparse(url.replace("postgresql+asyncpg://", "postgresql://", 1))
     if parsed.scheme != "postgresql" or not parsed.hostname:

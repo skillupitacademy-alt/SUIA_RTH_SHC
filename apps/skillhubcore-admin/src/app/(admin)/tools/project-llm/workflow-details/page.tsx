@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -37,7 +37,7 @@ export default function WorkflowDetailsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Extracted fetch function to avoid duplication
-  const fetchWorkflowState = async () => {
+  const fetchWorkflowState = useCallback(async () => {
     if (!workflowId) return;
     
     setIsLoading(true);
@@ -54,12 +54,12 @@ export default function WorkflowDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [workflowId]);
 
   // Fetch workflow state from backend on mount
   useEffect(() => {
     fetchWorkflowState();
-  }, [workflowId]);
+  }, [fetchWorkflowState]);
 
   const handleRetry = () => {
     fetchWorkflowState();
@@ -212,6 +212,7 @@ export default function WorkflowDetailsPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {workflowState && <span className="text-xs font-medium text-slate-600">{workflowState.state}</span>}
             <Link
               href={`/tools/project-llm/integration-certification${workflowId ? `?workflowId=${workflowId}` : ''}`}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm"

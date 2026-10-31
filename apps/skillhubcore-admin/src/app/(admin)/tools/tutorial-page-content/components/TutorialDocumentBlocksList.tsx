@@ -32,13 +32,13 @@ export function TutorialDocumentBlocksList({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+  const handleDragStart = (e: React.DragEvent<HTMLButtonElement>, index: number) => {
     e.dataTransfer.setData('text/plain', String(index));
     e.dataTransfer.effectAllowed = 'move';
     setDraggedIndex(index);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+  const handleDragOver = (e: React.DragEvent<HTMLButtonElement>, index: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     if (dropTargetIndex !== index) {
@@ -52,7 +52,7 @@ export function TutorialDocumentBlocksList({
     }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetIndex: number) => {
+  const handleDrop = (e: React.DragEvent<HTMLButtonElement>, targetIndex: number) => {
     e.preventDefault();
     const sourceRaw = e.dataTransfer.getData('text/plain');
     const sourceIndex = draggedIndex ?? (sourceRaw ? Number(sourceRaw) : NaN);
@@ -91,7 +91,7 @@ export function TutorialDocumentBlocksList({
         </span>
       </div>
 
-      <div className="mt-3.5 space-y-2 max-h-[380px] overflow-y-auto pr-1">
+      <div role={documentBlocks.length > 0 ? 'list' : undefined} className="mt-3.5 space-y-2 max-h-[380px] overflow-y-auto pr-1">
         {documentBlocks.length === 0 ? (
           <p className="text-center py-6 text-xs text-slate-400 font-medium">
             No blocks added yet. Click &ldquo;+ Add Block Instance&rdquo; above to append blocks.
@@ -104,12 +104,7 @@ export function TutorialDocumentBlocksList({
             return (
               <div
                 key={block.id}
-                draggable={Boolean(onReorderBlocks)}
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={() => handleDragLeave(index)}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
+                role="listitem"
                 className={`group flex items-center justify-between rounded-xl border bg-white p-2.5 shadow-sm transition-all duration-150 select-none ${
                   isDragging
                     ? 'opacity-40 border-dashed border-pink-400 scale-[0.98] bg-slate-50'
@@ -121,12 +116,27 @@ export function TutorialDocumentBlocksList({
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   {/* Drag Handle */}
                   {onReorderBlocks && (
-                    <div
-                      className="cursor-grab active:cursor-grabbing text-slate-300 group-hover:text-slate-500 hover:!text-pink-600 transition-colors shrink-0 p-0.5"
+                    <button
+                      type="button"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragLeave={() => handleDragLeave(index)}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      onKeyDown={(event) => {
+                        const target = event.key === 'ArrowUp' ? index - 1 : event.key === 'ArrowDown' ? index + 1 : index;
+                        if (target !== index && target >= 0 && target < documentBlocks.length) {
+                          event.preventDefault();
+                          onReorderBlocks(index, target);
+                        }
+                      }}
+                      aria-label={`Reorder ${block.title}`}
+                      className="cursor-grab active:cursor-grabbing text-slate-300 group-hover:text-slate-500 hover:!text-pink-600 transition-colors shrink-0 p-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pink-600"
                       title="Drag to reorder"
                     >
                       <GripVertical size={16} />
-                    </div>
+                    </button>
                   )}
 
                   {/* Step Sequence Badge */}

@@ -217,3 +217,5 @@ scripts/verify-*.mjs
 # Learner verifier local database credentials and generated fixture catalog
 /.project-ai/learner-runtime.env
 /.project-ai/learner-fixtures.json
+/.project-ai/linux-worker-smoke/
+/services/project-ai/.build/

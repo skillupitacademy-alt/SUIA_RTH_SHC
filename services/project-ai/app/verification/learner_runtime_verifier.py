@@ -135,6 +135,7 @@ def _skillup_preview_at_commit(
             env=preview_env,
             stdout=server_log,
             stderr=server_log,
+            start_new_session=os.name != "nt",
             text=True,
         )
         deadline = time.time() + 90

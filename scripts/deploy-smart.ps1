@@ -58,6 +58,7 @@
     Supported Services:
     - api-server (Backend API)
     - question-judge (Question Judge Service)
+    - project-ai (optional private Project LLM verification worker)
     - realtutorialhub-web, realtutorialhub-quiz, realtutorialhub-admin
     - skillup-web, skillup-admin
     - skillhubcore-admin (SkillHubCore Admin Portal)
@@ -269,6 +270,10 @@ if ($servicesToDeploy.Count -eq 0) {
 
 Write-Host ""
 Write-Success "Will deploy $($servicesToDeploy.Count) service(s): $($servicesToDeploy -join ', ')"
+if ($servicesToDeploy -contains 'project-ai') {
+    Write-Warn "Project AI requires the updated VPS runtime bundle and private /opt/platform/env/project-ai configuration."
+    Write-Warn "Its source bundle uses committed HEAD only. -SkipChecks does not bypass worker startup preflight."
+}
 Write-Host ""
 
 # Prompt for confirmation

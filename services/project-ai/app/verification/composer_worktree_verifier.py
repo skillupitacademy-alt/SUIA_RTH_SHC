@@ -174,7 +174,12 @@ def _kill_process_tree(pid: int) -> None:
             subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], capture_output=True, check=False)
         else:
             import signal
-            os.kill(pid, signal.SIGKILL)
+            # Preview subprocesses start their own session. Refuse to signal
+            # a shared group that could include the API worker itself.
+            if os.getpgid(pid) == pid:
+                os.killpg(pid, signal.SIGKILL)
+            else:
+                os.kill(pid, signal.SIGKILL)
     except Exception as e:
         logger.warning(f"Error terminating process tree {pid}: {e}")
 
@@ -505,6 +510,7 @@ async def verify_composer_in_worktree(
             shell=False,
             stdout=server_log,
             stderr=server_log,
+            start_new_session=os.name != "nt",
             text=True
         )
 

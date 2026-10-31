@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requestVerificationBackend } from '@/lib/project-llm/api/backendRequest';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -68,7 +69,7 @@ async function handleRequest(
     }
 
     // Forward request to FastAPI with Authorization header
-    const response = await fetch(targetUrl, {
+    const backendOptions = {
       method: request.method,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -79,10 +80,18 @@ async function handleRequest(
         }),
       },
       body,
-    });
+    };
+
+    const verificationRequest = request.method === 'POST' && (
+      backendPath === 'candidates/upload' ||
+      /\/(qualify|execute|verify-composer|verify-learner-runtime)$/.test(backendPath)
+    );
+    const response = verificationRequest
+      ? await requestVerificationBackend(targetUrl, backendOptions)
+      : await fetch(targetUrl, backendOptions);
 
     // Parse and return the FastAPI response
-    const responseText = await response.text();
+    const responseText = typeof response.text === 'string' ? response.text : await response.text();
 
     // Try to parse as JSON; fallback to raw text
     let responseData: unknown;

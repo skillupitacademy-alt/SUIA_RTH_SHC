@@ -11,7 +11,7 @@ from uuid import uuid4
 
 def _path(workflow_id: str, operation: str) -> Path:
     key = hashlib.sha256(f"{workflow_id}:{operation}".encode()).hexdigest()
-    directory = Path(tempfile.gettempdir()) / "project-ai-progress"
+    directory = Path(os.environ.get("PROJECT_AI_PROGRESS_DIR", str(Path(tempfile.gettempdir()) / "project-ai-progress")))
     directory.mkdir(parents=True, exist_ok=True)
     return directory / f"{key}.json"
 

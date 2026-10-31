@@ -30,6 +30,7 @@ try:
         _workspace_root / "apps" / "skillhubcore-admin" / ".env.local",
         _service_dir / ".env",
         _workspace_root / ".project-ai" / "learner-runtime.env",
+        Path(os.environ.get("PROJECT_AI_ENV_FILE", "/etc/project-ai/worker.env")),
     ]
     for _env_file in _env_candidates:
         if _env_file.exists():
@@ -42,6 +43,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth.dependencies import get_current_user
+from app.repository.discovery_client import resolve_snapshot_path
 from app.api.routes import agents, candidate, contract, creation, evidence, governance, health, snapshot, tasks, workflows
 
 
@@ -61,7 +63,7 @@ async def lifespan(app: FastAPI):
         str(Path(__file__).resolve().parents[3]),
     )
     os.environ["WORKSPACE_ROOT"] = workspace_root
-    snapshot_path = Path(workspace_root) / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json'
+    snapshot_path = resolve_snapshot_path(Path(workspace_root) / 'packages' / 'project-llm-discovery' / 'output' / 'snapshot.json')
     
     print(f"Project AI starting...")
     print(f"Workspace root: {workspace_root}")

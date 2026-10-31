@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -10,7 +10,6 @@ import {
   AlertTriangle,
   GitBranch,
   TestTube,
-  Cpu,
   Workflow,
   ArrowRight,
   ArrowLeft,
@@ -41,6 +40,7 @@ import type {
   PlacementExecutionResult,
   PlacementManifest,
 } from '@/lib/project-llm/types/canonicalWorkflowState';
+import type { BackendGateResult } from '@/lib/project-llm/types/backend';
 
 type CertTab = 'repo' | 'tests' | 'composer' | 'runtime' | 'cert';
 
@@ -65,7 +65,7 @@ export default function IntegrationCertificationPage() {
   const effectiveCandidateId = queryCandidateId || resolvedCandidateId || certificationData?.candidateId || null;
 
   const [activeTab, setActiveTab] = useState<CertTab>('repo');
-  const [runtimeHealth, setRuntimeHealth] = useState<RuntimeHealthStatus | null>(null);
+  const [, setRuntimeHealth] = useState<RuntimeHealthStatus | null>(null);
   const [, setBrowserVerification] = useState<BrowserVerificationStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [manifest, setManifest] = useState<PlacementManifest | null>(null);
@@ -79,9 +79,9 @@ export default function IntegrationCertificationPage() {
   const [isSuperseding, setIsSuperseding] = useState(false);
   const [proposedNextVersion, setProposedNextVersion] = useState<string | null>(null);
   const [isCreatingReplacement, setIsCreatingReplacement] = useState(false);
-  const [composerVerification, setComposerVerification] = useState<any>(null);
+  const [composerVerification, setComposerVerification] = useState<BackendGateResult | null>(null);
   const [isVerifyingLearner, setIsVerifyingLearner] = useState(false);
-  const [learnerVerification, setLearnerVerification] = useState<any>(null);
+  const [learnerVerification, setLearnerVerification] = useState<BackendGateResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [liveStatusAnnouncement, setLiveStatusAnnouncement] = useState<string>('');
@@ -101,7 +101,7 @@ export default function IntegrationCertificationPage() {
   }, [isAnyActionRunning]);
 
   // Extracted fetch function to avoid duplication
-  const fetchCertificationData = async () => {
+  const fetchCertificationData = useCallback(async () => {
     if (!workflowId) return;
 
     setIsLoading(true);
@@ -133,7 +133,7 @@ export default function IntegrationCertificationPage() {
       }
 
       const targetCandId = queryCandidateId || cert.candidateId || null;
-      if (targetCandId && targetCandId !== resolvedCandidateId) {
+      if (targetCandId) {
         setResolvedCandidateId(targetCandId);
       }
 
@@ -167,12 +167,12 @@ export default function IntegrationCertificationPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [workflowId, queryCandidateId, setState]);
 
   // Fetch certification data from backend on mount
   useEffect(() => {
     fetchCertificationData();
-  }, [workflowId]);
+  }, [fetchCertificationData]);
 
   useEffect(() => {
     if (!effectiveCandidateId) {
@@ -338,9 +338,10 @@ export default function IntegrationCertificationPage() {
       setLearnerVerification(res);
       setLiveStatusAnnouncement(`Learner runtime verification completed with status: ${res.status}`);
       await fetchCertificationData();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to verify learner runtime');
-      setLiveStatusAnnouncement(`Learner runtime verification error: ${err?.message}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to verify learner runtime';
+      setError(message);
+      setLiveStatusAnnouncement(`Learner runtime verification error: ${message}`);
     } finally {
       setIsVerifyingLearner(false);
     }
@@ -429,7 +430,7 @@ export default function IntegrationCertificationPage() {
   const reducedMotionCheck = modalityChecks?.reduced_motion || null;
   const forcedColorsCheck = modalityChecks?.forced_colors || null;
   const responsiveCheck = modalityChecks?.responsive_viewports || null;
-  const viewportsTested: Array<any> = responsiveCheck?.viewports_tested || [];
+  const viewportsTested = responsiveCheck?.viewports_tested || [];
   const screenshotPath =
     runnerMeta?.screenshot_path || composerVerification?.evidence_payload?.screenshot_path || null;
   const screenshotSha256 =
@@ -544,7 +545,7 @@ export default function IntegrationCertificationPage() {
         ? 'FAIL'
         : learnerVerification?.status === 'BLOCKED'
         ? 'BLOCKED'
-        : ['PASS', 'NOT_APPLICABLE'].includes(learnerVerification?.status)
+        : learnerVerification?.status === 'PASS'
         ? 'PASS'
         : 'PENDING',
       feedbackType: isVerifyingLearner
@@ -553,7 +554,7 @@ export default function IntegrationCertificationPage() {
         ? 'FAIL • Action Required'
         : learnerVerification?.status === 'BLOCKED'
         ? 'BLOCKED • Prerequisite'
-        : ['PASS', 'NOT_APPLICABLE'].includes(learnerVerification?.status)
+        : learnerVerification?.status === 'PASS'
         ? 'PASS • Verified'
         : 'PENDING • Queued',
     },
@@ -2209,7 +2210,7 @@ export default function IntegrationCertificationPage() {
                       disabled={
                         isApprovingFinal ||
                         composerVerification?.status !== 'PASS' ||
-                        !['PASS', 'NOT_APPLICABLE'].includes(learnerVerification?.status) ||
+                        learnerVerification?.status !== 'PASS' ||
                         !['CERTIFICATION_READY', 'AWAITING_GATE_2'].includes(wfState)
                       }
                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300 shadow-sm transition-all"
@@ -2240,7 +2241,7 @@ export default function IntegrationCertificationPage() {
                     },
                     {
                       label: '2b. Learner Runtime & ILS Verification',
-                      ok: ['PASS', 'NOT_APPLICABLE'].includes(learnerVerification?.status),
+                      ok: learnerVerification?.status === 'PASS',
                       detail: learnerVerification?.status === 'PASS'
                         ? `PASS • ILS 200 & block render confirmed (${learnerVerification?.evidence_hash?.slice(0, 10) || 'verified'})`
                         : learnerVerification?.status === 'BLOCKED'

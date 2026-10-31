@@ -30,6 +30,8 @@ mkdir -p \
   "$BUNDLE_DIR/env/shared" \
   "$BUNDLE_DIR/env/brands" \
   "$BUNDLE_DIR/env/services" \
+  "$BUNDLE_DIR/env/project-ai" \
+  "$BUNDLE_DIR/docs" \
   "$BUNDLE_DIR/state" \
   "$BUNDLE_DIR/logs" \
   "$BUNDLE_DIR/backups"
@@ -48,7 +50,12 @@ cp "$HOSTINGER_DIR/scripts/rollback-deployment.sh" "$BUNDLE_DIR/scripts/"
 cp "$HOSTINGER_DIR/scripts/deploy-production.sh" "$BUNDLE_DIR/scripts/"
 cp "$HOSTINGER_DIR/registry/README.md" "$BUNDLE_DIR/registry/"
 cp "$HOSTINGER_DIR/runtime/README.md" "$BUNDLE_DIR/README.md"
+cp "$HOSTINGER_DIR/../../services/project-ai/deploy/README.md" "$BUNDLE_DIR/docs/project-ai-worker.md"
+cp "$HOSTINGER_DIR/../../services/project-ai/deploy/worker.env.example" "$BUNDLE_DIR/env/project-ai/worker.env.example"
 cp -R "$HOSTINGER_DIR/nginx/." "$BUNDLE_DIR/nginx/"
+
+# Windows checkouts may contain CRLF even when Git normalizes committed scripts.
+find "$BUNDLE_DIR" -type f -name '*.sh' -exec sed -i 's/\r$//' {} +
 
 cat > "$BUNDLE_DIR/manifest.json" <<EOF
 {

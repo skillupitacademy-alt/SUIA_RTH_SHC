@@ -7,6 +7,14 @@
     "network": "auto"
   },
   "tests": {
+    "project-ai": {
+      "name": "Private Project AI Health",
+      "method": "GET",
+      "url": "http://project-ai:8000/health",
+      "expected_status": 200,
+      "timeout_seconds": 10,
+      "required": true
+    },
     "api-server": {
       "name": "API Server Health",
       "method": "GET",

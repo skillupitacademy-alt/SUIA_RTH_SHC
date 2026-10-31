@@ -77,7 +77,8 @@ validate_service_map() {
         (.value.image_name | type != "string") or
         (.value.buildable | type != "boolean") or
         (.value.health_check_required | type != "boolean") or
-        ((.value.buildable == true) and ((.value.package_name // "") == ""))
+        (.value.package_name == "") or
+        ((.value.package_name != null) and (.value.package_name | type != "string"))
       )
     | .key
   ' "$file")

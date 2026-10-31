@@ -170,11 +170,23 @@ describe('ProjectLlmClient', () => {
         gate: 'UBRC',
         result: 'PASS',
         detail: 'All checks passed',
+        category: 'Governance Compliance Gate',
+        evidenceId: undefined,
+        evidenceHash: undefined,
+        timestamp: undefined,
+        totalTests: undefined,
+        passedTests: undefined,
       });
       expect(result.gates[1]).toEqual({
         gate: 'Brand',
         result: 'PENDING',
         detail: '',
+        category: 'Governance Compliance Gate',
+        evidenceId: undefined,
+        evidenceHash: undefined,
+        timestamp: undefined,
+        totalTests: undefined,
+        passedTests: undefined,
       });
     });
   });

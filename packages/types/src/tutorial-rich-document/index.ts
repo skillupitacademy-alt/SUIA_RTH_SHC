@@ -39,6 +39,7 @@ export {
   TimelineBlockSchema,
 } from './schemas/blocks.schema';
 export { PresentationConfigSchema } from './schemas/presentation.schema';
+export { SummaryS1BlockSchema } from './schemas/content-blocks.schema';
 export {
   DefinitionD1BlockSchema,
   DefinitionD1PageSchema,

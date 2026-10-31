@@ -27,6 +27,7 @@ import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
 import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
+import type { EngineeringContract } from '@/lib/project-llm/types/backend';
 
 interface RequirementCard {
   id: string;
@@ -163,7 +164,7 @@ export default function ComplianceBriefPage() {
   const workflowId = searchParams.get('workflowId') || state.workflowId;
   const [viewMode, setViewMode] = useState<'grid' | 'checklist'>('grid');
   const [copied, setCopied] = useState(false);
-  const [contract, setContract] = useState<Record<string, unknown> | null>(null);
+  const [contract, setContract] = useState<EngineeringContract | null>(null);
   const [contractLoading, setContractLoading] = useState(false);
 
   // Load engineering contract from backend when workflowId is available
@@ -171,7 +172,7 @@ export default function ComplianceBriefPage() {
     if (!workflowId) return;
     setContractLoading(true);
     projectLlmClient.getEngineeringContract(workflowId)
-      .then((data: any) => {
+      .then((data) => {
         setContract(data);
       })
       .catch(() => {
@@ -183,13 +184,13 @@ export default function ComplianceBriefPage() {
 
   const handleCopyBrief = () => {
     const contractJson = contract ? JSON.stringify(contract, null, 2) : 'Backend contract not loaded.';
-    const targetFamily = String((contract as any)?.target?.family || state.familyName || 'Block');
-    const targetVersion = String((contract as any)?.target?.version || state.targetVersion || 'V1').toUpperCase();
+    const targetFamily = String(contract?.target?.family || state.familyName || 'Block');
+    const targetVersion = String(contract?.target?.version || state.targetVersion || 'V1').toUpperCase();
     const typeId = targetFamily.toLowerCase();
     const componentName = `${targetFamily}${targetVersion}Block`;
     const briefText = `PROJECT LLM CANONICAL COMPLIANCE BRIEF & ENGINEERING CONTRACT
 Workflow ID: ${workflowId || 'not supplied'}
-Contract SHA-256: ${String((contract as any)?.contract_hash || 'not available')}
+Contract SHA-256: ${String(contract?.contract_hash || 'not available')}
 Target Block: ${targetFamily} (${targetVersion})
 Block Type ID: '${typeId}'
 
@@ -296,6 +297,7 @@ that any gate passed without attached verification evidence.`;
 
             <button
               onClick={handleCopyBrief}
+              disabled={contractLoading}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 rounded-xl transition-all shadow-sm shadow-pink-500/20 active:scale-95"
             >
               {copied ? (

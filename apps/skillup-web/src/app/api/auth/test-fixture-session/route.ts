@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       learnerIdHash,
       testTenant,
     }, { headers: { 'Cache-Control': 'no-store' } });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to generate test fixture session' },
       { status: 500 }

@@ -10,7 +10,6 @@ import {
   Download,
   ArrowRight,
   ArrowLeft,
-  Lightbulb,
   Upload,
   FileCode,
   Sparkles,
@@ -27,6 +26,7 @@ import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
 import { projectLlmClient } from '@/lib/project-llm/api/projectLlmClient';
 import { DESIGN_SYSTEM_CONTRACT_MARKDOWN } from '@/lib/project-llm/designSystemContract';
+import type { EngineeringContract } from '@/lib/project-llm/types/backend';
 
 type TabKey = 'summary' | 'ils' | 'lsnb' | 'rssb' | 'composer' | 'testing' | 'brand' | 'evidence';
 
@@ -41,7 +41,7 @@ export default function ExternalAiHandoffPage() {
   const [previewTab, setPreviewTab] = useState<'preview' | 'html' | 'schema'>('preview');
   const [workflowId, setWorkflowId] = useState(urlWorkflowId || '');
   const [isNavigating, setIsNavigating] = useState(false);
-  const [engineeringContract, setEngineeringContract] = useState<Record<string, unknown> | null>(null);
+  const [engineeringContract, setEngineeringContract] = useState<EngineeringContract | null>(null);
   const [contractLoading, setContractLoading] = useState(false);
   const [contractError, setContractError] = useState<string | null>(null);
 
@@ -90,8 +90,8 @@ export default function ExternalAiHandoffPage() {
     { key: 'evidence', label: 'Evidence', icon: ShieldCheck },
   ];
 
-  const targetFamily = String((engineeringContract as any)?.target?.family || (engineeringContract as any)?.target_family || state.familyName || 'Block');
-  const targetVersion = String((engineeringContract as any)?.target?.version || (engineeringContract as any)?.target_version || state.targetVersion || 'V1').toUpperCase();
+  const targetFamily = String(engineeringContract?.target?.family || engineeringContract?.target_family || state.familyName || 'Block');
+  const targetVersion = String(engineeringContract?.target?.version || engineeringContract?.target_version || state.targetVersion || 'V1').toUpperCase();
   const familyLower = targetFamily.toLowerCase();
   const versionUpper = targetVersion.toUpperCase();
   const versionLower = targetVersion.toLowerCase();

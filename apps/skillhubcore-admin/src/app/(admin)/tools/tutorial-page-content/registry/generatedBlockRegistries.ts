@@ -1,4 +1,3 @@
-import { getObjectiveO1Prompt } from '../blocks/objective/O1/objectiveO1.prompt';
 import type { BlockRegistryEntry } from './types';
 
 /**

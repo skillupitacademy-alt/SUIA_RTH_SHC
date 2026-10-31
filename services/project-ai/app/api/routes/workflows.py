@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 import json
 import asyncio
 from app.verification.execution_progress import ExecutionProgress, read_progress
+from app.verification.worker_slot import serialize_verification
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Any, List
 import re
@@ -1160,6 +1161,7 @@ class SupersedeWorkflowRequest(BaseModel):
 
 
 @router.post("/{workflow_id}/verify-composer", response_model=dict)
+@serialize_verification
 async def verify_composer(
     workflow_id: str,
     user: AuthenticatedPrincipal = Depends(require_contract_admin),
@@ -1280,6 +1282,7 @@ async def execution_progress_endpoint(
 
 
 @router.post("/{workflow_id}/verify-learner-runtime", response_model=dict)
+@serialize_verification
 async def verify_learner_runtime_endpoint(
     workflow_id: str,
     user: AuthenticatedPrincipal = Depends(require_contract_admin),

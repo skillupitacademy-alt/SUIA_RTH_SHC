@@ -96,49 +96,51 @@ const MOCK_SNAPSHOT = {
 
 describe('transformSnapshotToIntelligence', () => {
   it('should correctly identify verified versioned blocks', () => {
-    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT as any);
+    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT);
 
     expect(result.runtime.verifiedImplementations).toHaveLength(4); // I1, C1, D1, S1
     expect(result.runtime.status.verifiedImplementations).toBe(4);
   });
 
   it('should correctly identify structural primitives', () => {
-    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT as any);
+    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT);
 
-    expect(result.primitives.count).toBe(2); // heading, paragraph
-    expect(result.primitives.list.map((p: any) => p.name)).toEqual(
+    // count describes the fixed corpus taxonomy; list contains discovered entries.
+    expect(result.primitives.count).toBe(15);
+    expect(result.primitives.list).toHaveLength(2);
+    expect(result.primitives.list.map((p) => p.name)).toEqual(
       expect.arrayContaining(['heading', 'paragraph'])
     );
   });
 
   it('should map UBRC_VALID to FULL compliance', () => {
-    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT as any);
+    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT);
 
     const codeBlock = result.runtime.verifiedImplementations.find(
-      (v: any) => v.versionId === 'C1'
+      (v) => v.versionId === 'C1'
     );
     expect(codeBlock?.ubrcCompliance).toBe('FULL');
   });
 
   it('should map UBRC_VERSION_MISMATCH to PARTIAL compliance', () => {
-    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT as any);
+    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT);
 
     const introBlock = result.runtime.verifiedImplementations.find(
-      (v: any) => v.versionId === 'I1'
+      (v) => v.versionId === 'I1'
     );
     expect(introBlock?.ubrcCompliance).toBe('PARTIAL');
   });
 
   it('should set lifecycle status to RUNTIME_INTEGRATED for REGISTERED blocks', () => {
-    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT as any);
+    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT);
 
-    result.runtime.verifiedImplementations.forEach((impl: any) => {
+    result.runtime.verifiedImplementations.forEach((impl) => {
       expect(impl.lifecycleStatus).toBe('RUNTIME_INTEGRATED');
     });
   });
 
   it('should include source documents with commit SHA and scan timestamp', () => {
-    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT as any);
+    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT);
 
     expect(result.sourceDocuments).toEqual(
       expect.arrayContaining([
@@ -150,7 +152,7 @@ describe('transformSnapshotToIntelligence', () => {
   });
 
   it('should calculate planned families correctly', () => {
-    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT as any);
+    const result = transformSnapshotToIntelligence(MOCK_SNAPSHOT);
 
     // I, C, D, S are discovered; the rest should be planned
     expect(result.runtime.plannedFamilyIds.length).toBeGreaterThan(0);
@@ -168,10 +170,11 @@ describe('transformSnapshotToIntelligence', () => {
       blocks: { verified: [], rendered: [] },
     };
 
-    const result = transformSnapshotToIntelligence(emptySnapshot as any);
+    const result = transformSnapshotToIntelligence(emptySnapshot);
 
     expect(result.runtime.verifiedImplementations).toHaveLength(0);
     expect(result.runtime.incompleteImplementations).toHaveLength(0);
-    expect(result.primitives.count).toBe(0);
+    expect(result.primitives.count).toBe(15);
+    expect(result.primitives.list).toHaveLength(0);
   });
 });

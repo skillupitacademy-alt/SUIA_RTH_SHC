@@ -203,8 +203,8 @@ export default function CandidateUploadPage() {
       } catch {
         setLiveAnnouncement('Candidate package uploaded and bound to workflow.');
       }
-    } catch (err: any) {
-      const msg = err instanceof ProjectLlmError ? err.message : err?.message || 'Failed to upload candidate files';
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to upload candidate files';
       setUploadError(msg);
       setLiveAnnouncement(`Candidate upload failed: ${msg}`);
     } finally {

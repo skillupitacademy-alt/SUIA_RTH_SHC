@@ -1,3 +1,5 @@
+import type { BackendGateResults } from './backend';
+
 /**
  * TypeScript types mirroring Python CanonicalWorkflowState and related models.
  *
@@ -52,7 +54,7 @@ export type CertificationStatus = {
   manifestSha256?: string;
   contractSha256?: string;
   finalStatus?: string;
-  rawGateResults?: Record<string, any>;
+  rawGateResults?: BackendGateResults;
 };
 
 export type RuntimeHealthStatus = {
@@ -80,7 +82,7 @@ export type CandidateResponse = {
     evidence_hash?: string;
     total_tests?: number;
     passed_tests?: number;
-    runner_metadata?: Record<string, any>;
+    runner_metadata?: Record<string, unknown>;
   };
 };
 

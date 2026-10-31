@@ -7,10 +7,16 @@ independently. All repository facts come from the TypeScript D1-D8 scanners.
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict
 
 from pydantic import BaseModel, Field
+
+
+def resolve_snapshot_path(default_path: str | Path) -> Path:
+    """Use a configured runtime snapshot without falling back to stale source data."""
+    return Path(os.environ.get('PROJECT_AI_SNAPSHOT_PATH') or default_path)
 
 
 class DiscoveryClient:
@@ -28,7 +34,7 @@ class DiscoveryClient:
         Args:
             snapshot_path: Path to the TypeScript-generated snapshot JSON file
         """
-        self.snapshot_path = Path(snapshot_path)
+        self.snapshot_path = resolve_snapshot_path(snapshot_path)
         self._cached_snapshot: Dict[str, Any] | None = None
     
     def load_snapshot(self) -> Dict[str, Any]:
