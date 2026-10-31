@@ -92,6 +92,13 @@ describe('FilesystemRepositoryAdapter', () => {
       expect(result).toBe(false);
     });
 
+    it('should return false when a parent path is a regular file on Linux', async () => {
+      const error = Object.assign(new Error('Not a directory'), { code: 'ENOTDIR' });
+      mockAccess.mockRejectedValue(error);
+
+      await expect(adapter.fileExists('services/a.txt/package.json')).resolves.toBe(false);
+    });
+
     it('should throw PermissionError when access permission denied', async () => {
       const error = Object.assign(new Error('Permission denied'), { code: 'EACCES' }) as NodeError;
       mockAccess.mockRejectedValue(error);

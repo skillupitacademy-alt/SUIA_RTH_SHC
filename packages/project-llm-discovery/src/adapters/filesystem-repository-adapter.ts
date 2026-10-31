@@ -57,7 +57,7 @@ export class FilesystemRepositoryAdapter implements RepositoryAdapter {
       return true;
     } catch (error: unknown) {
       if (error instanceof Error && 'code' in error) {
-        if (error.code === 'ENOENT') {
+        if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
           return false;
         }
         if (error.code === 'EACCES' || error.code === 'EPERM') {
