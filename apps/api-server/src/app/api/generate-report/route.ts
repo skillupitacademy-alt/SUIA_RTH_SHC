@@ -66,7 +66,7 @@ async function postHandler(req: NextRequest) {
     }
 
     const internalKey = req.headers.get("x-internal-key") ?? "";
-    const internalSecret = process.env.INTERNAL_API_KEY ?? "secret";
+    const internalSecret = process.env.INTERNAL_API_KEY ?? "";
     const isInternal = internalKey !== "" && internalKey === internalSecret;
     
     let userId: string;

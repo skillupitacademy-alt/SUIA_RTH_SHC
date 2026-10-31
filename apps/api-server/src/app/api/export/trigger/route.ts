@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ExportSaga } from '@/lib/export/export.saga';
 import { ExportFormat } from '@/lib/export/exportTypes';
 import { logger } from '@/lib/logger';
+import { TokenService } from '@/modules/auth/token.service';
+import { container } from '@/modules/core/container';
 import { JobsService } from '@/modules/system/jobs.service';
 
 const log = logger.child({ module: 'export-trigger-api' });
@@ -18,19 +20,43 @@ function buildExportDownloadUrl(examId: string, format: string) {
   return `${base}${suffix}`;
 }
 
+/**
+ * POST /api/export/trigger
+ *
+ * 🔐 SECURITY FIX (EXPORT-TRIGGER-01): Authenticate caller and derive userId
+ * from verified JWT. Client-supplied userId is no longer trusted.
+ */
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as unknown;
- 
-     if (!isExportTriggerBody(body)) {
-       log.warn({ body }, 'Invalid export trigger body');
-       return NextResponse.json(
-         { error: 'Missing required fields: examId, format, userId', received: body },
-         { status: 400 }
-       );
-     }
+    // ── Authentication ──────────────────────────────────────────────
+    const tokenService = container.get(TokenService);
+    const token = tokenService.getAccessToken(req, { scope: 'user' });
 
-    const { examId, format, userId } = body;
+    if (token === undefined || token === null || token === '') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = await tokenService.verifyUserAccessToken(token);
+
+    if (!payload || !payload.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Derive userId from verified token — never from the request body
+    const userId = payload.userId;
+
+    // ── Body validation ─────────────────────────────────────────────
+    const body = (await req.json()) as unknown;
+
+    if (!isExportTriggerBody(body)) {
+      log.warn({ body }, 'Invalid export trigger body');
+      return NextResponse.json(
+        { error: 'Missing required fields: examId, format', received: body },
+        { status: 400 }
+      );
+    }
+
+    const { examId, format } = body;
 
     log.info({ examId, format, userId }, 'Triggering analytical export');
 
@@ -100,12 +126,12 @@ function isExportFormat(value: unknown): value is ExportFormat {
   return value === 'pdf' || value === 'json' || value === 'csv' || value === 'student-insight-pdf';
 }
 
-function isExportTriggerBody(value: unknown): value is { examId: string; format: ExportFormat; userId: string } {
+/** Body now only requires examId and format — userId comes from JWT */
+function isExportTriggerBody(value: unknown): value is { examId: string; format: ExportFormat } {
   if (typeof value !== 'object' || value === null) return false;
   const record = value as Record<string, unknown>;
   return (
     isNonEmptyString(record.examId) &&
-    isNonEmptyString(record.userId) &&
     isExportFormat(record.format)
   );
 }

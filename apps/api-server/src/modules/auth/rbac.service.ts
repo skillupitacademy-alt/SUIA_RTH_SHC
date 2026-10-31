@@ -26,8 +26,8 @@ export async function _verifyAdmin(_payload: TokenPayload): Promise<boolean> {
             .limit(1);
 
         if (_users.length === 0) {
-            log.warn({ userId: _payload.userId, brand }, 'RBAC admin check: user not found in brand auth DB; falling back to token claims');
-            return isAdminInToken;
+            log.warn({ userId: _payload.userId, brand }, 'RBAC admin check: user not found in brand auth DB - denying');
+            return false;
         }
 
         if (_users[0].isBlocked === true) {
@@ -41,8 +41,9 @@ export async function _verifyAdmin(_payload: TokenPayload): Promise<boolean> {
                 userId: _payload.userId,
                 message: err instanceof Error ? err.message : String(err),
             },
-            'RBAC admin check failed; falling back to token roles',
+            'RBAC admin check failed — denying (fail closed)',
         );
+        return false;
     }
 
     // 1. JWT Payload Check (Fast Payout)

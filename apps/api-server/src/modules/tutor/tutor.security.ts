@@ -1,10 +1,14 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export class TutorSecurityService {
-  private static readonly SECRET =
-    typeof process.env.AUTH_SECRET === "string" && process.env.AUTH_SECRET.length > 0
-      ? process.env.AUTH_SECRET
-      : "tutor-notes-secret-key-123";
+  /** Fail at use-time (not import-time) if AUTH_SECRET is missing. */
+  private static get SECRET(): string {
+    const s = process.env.AUTH_SECRET;
+    if (typeof s !== "string" || s.length === 0) {
+      throw new Error("TUTOR_SECURITY: AUTH_SECRET environment variable is required");
+    }
+    return s;
+  }
 
   /**
    * Generates a signed URL for a specific topic note.

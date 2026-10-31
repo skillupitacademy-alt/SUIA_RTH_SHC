@@ -10,36 +10,28 @@ import { unauthorized } from "@/lib/api-error";
 import { ApiResponse } from "@/lib/api-response";
 import { recordCounter, recordTimer } from "@/lib/metrics";
 import { withLogging } from "@/lib/withLogging";
-import { _verifyAdmin } from '@/modules/auth/rbac.service';
-import { TokenService } from '@/modules/auth/token.service';
-import { container } from '@/modules/core/container';
 
-async function getHandler(_request: NextRequest) {
+/**
+ * POST /api/migrate
+ * 
+ * 🔐 SECURITY FIX (MIGRATE-01):
+ * - Changed from GET to POST (migrations are not idempotent reads)
+ * - Removed fail-open _verifyAdmin fallback
+ * - Requires MIGRATION_SECRET — no admin token fallback
+ */
+async function postHandler(_request: NextRequest) {
   const start = Date.now();
   try {
-    // 1. Check for Internal Migration Secret (P0-SEC-001)
+    // Require migration secret — no fallback to admin token
     const MIGRATION_SECRET = process.env.MIGRATION_SECRET;
     const clientSecret = _request.headers.get('x-migration-secret');
 
-    let isAuthorized = false;
-
-    if ((MIGRATION_SECRET !== undefined && MIGRATION_SECRET !== null && MIGRATION_SECRET !== '') && clientSecret === MIGRATION_SECRET) {
-      isAuthorized = true;
-    } else {
-      // 2. Fallback to Admin Authentication (Supports Cookie and Header)
-      const _token = container.get(TokenService).getAccessToken(_request, { scope: 'admin' });
-      if (_token !== undefined && _token !== null && _token !== '') {
-        try {
-          const _payload = await container.get(TokenService).verifyAdminAccessToken(_token);
-          isAuthorized = await _verifyAdmin(_payload);
-        } catch {
-          // Ignore _token errors, authorization remains false
-        }
-      }
-    }
-
-    if (!isAuthorized) {
-      throw unauthorized("Unauthorized: Valid migration secret or admin token required");
+    if (
+      !MIGRATION_SECRET ||
+      MIGRATION_SECRET === '' ||
+      clientSecret !== MIGRATION_SECRET
+    ) {
+      throw unauthorized("Unauthorized: Valid migration secret required");
     }
 
     const DATABASE_URL = process.env.DATABASE_URL;
@@ -72,4 +64,15 @@ async function getHandler(_request: NextRequest) {
   }
 }
 
-export const GET = withLogging(getHandler, { component: 'system', operation: 'database_migration' });
+export const POST = withLogging(postHandler, { component: 'system', operation: 'database_migration' });
+
+/**
+ * GET /api/migrate — Deprecated, returns 405
+ * Migrations must use POST with x-migration-secret header.
+ */
+export function GET() {
+  return ApiResponse.error(
+    new Error('Method Not Allowed: Use POST with x-migration-secret header'),
+    405
+  );
+}
