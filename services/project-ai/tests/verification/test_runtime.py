@@ -21,7 +21,8 @@ from app.verification.runtime import (
     RuntimeVerification,
     RuntimeErrorCode,
     get_health_url,
-    APP_PORTS
+    APP_PORTS,
+    verify_runtime,
 )
 from app.verification.browser import BrowserVerificationConfig, verify_in_browser
 
@@ -265,13 +266,34 @@ class TestRuntimeVerification:
         
         # No process
         assert app_process.is_running() is False
-        
+
         # Running process
         mock_process = Mock()
         mock_process.poll.return_value = None
         app_process.process = mock_process
         assert app_process.is_running() is True
-        
+
         # Stopped process
         mock_process.poll.return_value = 0
         assert app_process.is_running() is False
+
+    def test_static_discovery_cannot_pass_as_runtime_verification(self, tmp_path):
+        """A snapshot may support planning, but cannot certify a running learner route."""
+        result = verify_runtime(
+            block_type='objective',
+            snapshot={
+                'blocks': {
+                    'verified': [
+                        {'blockType': 'objective', 'evidenceId': 'ev-static-objective'}
+                    ]
+                }
+            },
+            repository_root=tmp_path,
+            target='suia-admin',
+            route='/tutorial-v2/example',
+        )
+
+        assert result.passed is False
+        assert result.error_code == RuntimeErrorCode.RUNTIME_START_FAILURE
+        assert result.evidenceIds == []
+        assert result.observed['status'] == 'runtime_browser_execution_required'

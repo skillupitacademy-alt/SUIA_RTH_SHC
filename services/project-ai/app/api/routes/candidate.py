@@ -479,7 +479,7 @@ async def upload_candidate(
 
     # Automated Qualification Gate: Run candidate unit tests in isolated sandbox
     from app.verification.candidate_tester import run_candidate_qualification_tests
-    test_result = await run_candidate_qualification_tests(package.candidateId, package.files)
+    test_result = await run_candidate_qualification_tests(package.candidateId, package.files, workflow_id=str(package.workflow_id))
     
     if not test_result["passed"]:
         # Preserve source-level accessibility feedback for the existing workflow
@@ -625,7 +625,7 @@ async def qualify_candidate(
     package = model_to_candidate(candidate_model)
     from app.verification.candidate_tester import run_candidate_qualification_tests
 
-    test_result = await run_candidate_qualification_tests(package.candidateId, package.files)
+    test_result = await run_candidate_qualification_tests(package.candidateId, package.files, workflow_id=str(candidate_model.workflow_id))
     workflow_repo = await get_workflow_repository(session)
     workflow_model = await workflow_repo.get(str(candidate_model.workflow_id))
     if not workflow_model:

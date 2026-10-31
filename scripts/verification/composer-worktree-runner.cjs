@@ -17,6 +17,28 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
+// Operational telemetry only; never substitute this file for gate evidence.
+function reportTask(label) {
+  const progressPath = process.env.PROJECT_AI_PROGRESS_PATH;
+  if (!progressPath) return;
+  const temporary = `${progressPath}.${process.pid}.tmp`;
+  try {
+    const progress = JSON.parse(fs.readFileSync(progressPath, 'utf8'));
+    if (progress.status !== 'RUNNING') return;
+    const now = Date.now() / 1000;
+    const previous = progress.tasks.at(-1);
+    if (previous) Object.assign(previous, { status: 'DONE', finishedAt: now });
+    progress.tasks.push({ label, status: 'RUNNING', startedAt: now });
+    progress.updatedAt = now;
+    fs.writeFileSync(temporary, JSON.stringify(progress));
+    fs.renameSync(temporary, progressPath);
+  } catch {
+    // Unavailable telemetry cannot turn a failed browser check into success.
+  } finally {
+    try { fs.unlinkSync(temporary); } catch {}
+  }
+}
+
 // Parse CLI arguments
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -100,6 +122,7 @@ function parseArgs() {
 
   let browser;
   try {
+    reportTask('Launch Chromium and authenticate Composer session');
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({
       viewport: { width: 1440, height: 900 },
@@ -179,6 +202,7 @@ function parseArgs() {
     result.network_errors = [];
 
     // Step C: Wait for Tutorial Composer elements
+    reportTask('Discover block family and render exact version');
     await page.waitForSelector('#select-block, select', { timeout: 25000 });
 
     // 1. Verify family is registered in dropdown
@@ -297,6 +321,7 @@ function parseArgs() {
     const blockSelector = `[data-block-type="${targetFamilyLower}"]`;
 
     // 3. Axe-core Accessibility Audit (Rule: only against selected rendered block preview container)
+    reportTask('Run Axe accessibility audit');
     let AxeBuilder = null;
     try {
       AxeBuilder = require('@axe-core/playwright').default || require('@axe-core/playwright');
@@ -369,6 +394,7 @@ function parseArgs() {
 
     // 4. Modality Checks
     if (result.rendered_dom) {
+      reportTask('Verify keyboard navigation and focus');
       // Modality A: Keyboard Navigation & Focus Ring
       try {
         const blockEl = await page.$(blockSelector);
@@ -436,6 +462,7 @@ function parseArgs() {
         };
       }
 
+      reportTask('Verify reduced-motion behavior');
       // Modality B: Reduced Motion (prefers-reduced-motion: reduce)
       try {
         await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -501,6 +528,7 @@ function parseArgs() {
         };
       }
 
+      reportTask('Verify forced-colors boundaries');
       // Modality C: Forced Colors (Windows High Contrast Mode)
       // Must verify that EVERY rendered card surface and container preserves visible borders/outlines
       try {
@@ -578,6 +606,7 @@ function parseArgs() {
         result.modality_checks.responsive_viewports.viewports_tested = [];
 
         for (const vp of viewportsToTest) {
+          reportTask(`Check responsive boundaries at ${vp.width}px`);
           await page.setViewportSize({ width: vp.width, height: vp.height });
           await page.waitForTimeout(250);
 
@@ -624,6 +653,7 @@ function parseArgs() {
       }
     }
 
+    reportTask('Capture screenshot evidence');
     // Step E: Capture screenshot evidence
     try {
       const parentDir = path.dirname(screenshotPath);

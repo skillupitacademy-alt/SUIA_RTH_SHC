@@ -516,3 +516,57 @@ export type IntroductionBlock = IntroductionI1Block;
 // | IntroductionI2Block
 // | IntroductionI3Block
 // ...
+
+/**
+ * ========================================
+ * OBJECTIVE BLOCK - Learning Objectives Display
+ * ========================================
+ * 
+ * Provides structured overview of skills learners will develop.
+ * Typically placed early in tutorial progression (after introduction).
+ * 
+ * Canonical block following version envelope pattern.
+ */
+
+/**
+ * Objective O1 Types - Import from schema
+ * 
+ * CRITICAL: O1 uses DIRECT content (not wrapped in page)
+ * - ObjectiveO1Content matches actual Composer output
+ * - No ObjectiveO1Page or ObjectiveO1AuthorContent (those were legacy concepts)
+ * - Schema matches blockVersionDefinitions.ts canonical output
+ */
+import type {
+  ObjectiveO1Item as SchemaObjectiveO1Item,
+  ObjectiveO1Note as SchemaObjectiveO1Note,
+  ObjectiveO1Content as SchemaObjectiveO1Content,
+  ObjectiveO1Block as SchemaObjectiveO1Block,
+} from '../schemas/objective-o1.schema';
+
+export type ObjectiveO1Item = SchemaObjectiveO1Item;
+export type ObjectiveO1Note = SchemaObjectiveO1Note;
+export type ObjectiveO1Content = SchemaObjectiveO1Content;
+
+/**
+ * Legacy type aliases for backward compatibility
+ * These map to the actual direct content structure
+ */
+export type ObjectiveO1Page = SchemaObjectiveO1Content;
+export type ObjectiveO1AuthorContent = SchemaObjectiveO1Content;
+
+/**
+ * Objective O1 Block
+ * Re-export from schema
+ */
+export type ObjectiveO1Block = SchemaObjectiveO1Block;
+
+/**
+ * Objective Block (Version Union)
+ * All Objective block versions
+ */
+export type ObjectiveBlock = ObjectiveO1Block;
+// Future versions:
+// | ObjectiveO2Block
+// | ObjectiveO3Block
+// ...
+

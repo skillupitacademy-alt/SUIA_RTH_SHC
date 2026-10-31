@@ -37,14 +37,16 @@ async function getHandler(request: NextRequest) {
     }
 
     // Call API server
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
+    const apiUrl = (process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in')
+      .replace(/\/+$/, '').replace(/\/api$/, '');
     const response = await fetch(
       `${apiUrl}/api/tutorial/progress?subtopicId=${parsed.data.subtopicId}`,
       {
         headers: {
           'X-Brand': 'skillup',
           'X-User-ID': user.userId,
-          'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
+          'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
+          'x-internal-key': process.env.INTERNAL_API_KEY || '',
         },
         cache: 'no-store'
       }
@@ -88,7 +90,8 @@ async function postHandler(request: NextRequest) {
     }
 
     // Call API server
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
+    const apiUrl = (process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in')
+      .replace(/\/+$/, '').replace(/\/api$/, '');
     const response = await fetch(
       `${apiUrl}/api/tutorial/progress`,
       {
@@ -97,7 +100,8 @@ async function postHandler(request: NextRequest) {
           'Content-Type': 'application/json',
           'X-Brand': 'skillup',
           'X-User-ID': user.userId,
-          'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
+          'X-Internal-Secret': process.env.INTERNAL_API_SECRET || '',
+          'x-internal-key': process.env.INTERNAL_API_KEY || '',
         },
         body: JSON.stringify(parsed.data),
         cache: 'no-store'

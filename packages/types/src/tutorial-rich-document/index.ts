@@ -14,13 +14,55 @@ export * from './metadata';
 export * from './presentation';
 export * from './blocks';
 
-// Validation schemas
+// Validation schemas - Export schemas but not type re-exports to avoid conflicts
 export * from './schemas/document.schema';
-export * from './schemas/blocks.schema';
-export * from './schemas/presentation.schema';
-export * from './schemas/definition-d1.schema';
-export * from './schemas/code-c1.schema';
-export * from './schemas/introduction-i1.schema';
+export {
+  TutorialBlockSchema,
+  ContentBlockSchema,
+  HeadingBlockSchema,
+  ParagraphBlockSchema,
+  ListBlockSchema,
+  CodeBlockSchema,
+  TableBlockSchema,
+  ImageBlockSchema,
+  CalloutBlockSchema,
+  DefinitionBlockSchema,
+  ExampleBlockSchema,
+  QuoteBlockSchema,
+  SummaryBlockSchema,
+  DiagramBlockSchema,
+  ComparisonBlockSchema,
+  ContainerBlockSchema,
+  TwoColumnBlockSchema,
+  ThreeColumnBlockSchema,
+  CardGridBlockSchema,
+  TimelineBlockSchema,
+} from './schemas/blocks.schema';
+export { PresentationConfigSchema } from './schemas/presentation.schema';
+export {
+  DefinitionD1BlockSchema,
+  DefinitionD1PageSchema,
+  DefinitionD1AuthorContentSchema,
+  validateDefinitionD1AIOutput,
+} from './schemas/definition-d1.schema';
+export {
+  CodeC1BlockSchema,
+  CodeC1AuthorContentSchema,
+  HistoricalTutorialCodePayloadSchema,
+  validateCodeC1AIOutput,
+} from './schemas/code-c1.schema';
+export {
+  IntroductionI1BlockSchema,
+  IntroductionI1AuthorContentSchema,
+  validateIntroductionI1AIOutput,
+} from './schemas/introduction-i1.schema';
+export {
+  ObjectiveO1BlockSchema,
+  ObjectiveO1ItemSchema,
+  ObjectiveO1NoteSchema,
+  ObjectiveO1ContentSchema,
+  validateObjectiveO1Block,
+} from './schemas/objective-o1.schema';
 
 // Registry and validation
 export * from './registry';
@@ -53,6 +95,10 @@ export type {
   IntroductionI1Page,
   IntroductionI1AuthorContent,
   IntroductionIconKey,
+  ObjectiveBlock,
+  ObjectiveO1Block,
+  ObjectiveO1Page,
+  ObjectiveO1AuthorContent,
   CodeC1Block,
   CodeC1Page,
   CodeC1AuthorContent,

@@ -1469,16 +1469,16 @@ class TestWave5RuntimeVerification:
             'findings': []
         }
     
-    def test_runtime_gate_passes_with_valid_block(self, mock_snapshot_runtime_valid, test_manifest):
-        """Runtime verification gate passes when block is properly implemented."""
+    def test_runtime_gate_blocks_without_browser_evidence(self, mock_snapshot_runtime_valid, test_manifest):
+        """Static discovery alone must not be promoted to a runtime certification pass."""
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
         
         result = executor.execute_runtime_verification_gate(['I1'], test_manifest)
         
-        assert result.status == CertificationGateStatus.PASS
-        assert len(result.evidence_ids) > 0
-        assert len(result.blockers) == 0
-        assert 'runtime verification passed' in result.message.lower()
+        assert result.status == CertificationGateStatus.BLOCKED
+        # Some fixtures deliberately use an invalid manifest and fail before
+        # browser execution. Either path must remain fail-closed.
+        assert 'manifest validation failed' in result.message.lower() or 'runtime verification unavailable' in result.message.lower()
     
     def test_runtime_gate_blocked_with_empty_snapshot(self, test_manifest):
         """Runtime gate blocked when snapshot has no verified blocks."""
@@ -1520,19 +1520,14 @@ class TestWave5RuntimeVerification:
         assert result.status == CertificationGateStatus.FAIL
         assert len(result.blockers) > 0
     
-    def test_runtime_gate_collects_evidence_ids(self, mock_snapshot_runtime_valid, test_manifest):
-        """Runtime gate collects real evidence IDs from TypeScript discovery."""
+    def test_runtime_gate_does_not_promote_static_evidence_to_runtime_evidence(self, mock_snapshot_runtime_valid, test_manifest):
+        """Runtime evidence must come from a browser run, never static discovery."""
         executor = CertificationGateExecutor(mock_snapshot_runtime_valid, Path('.'))
         
         result = executor.execute_runtime_verification_gate(['I1'], test_manifest)
         
-        assert result.status == CertificationGateStatus.PASS
-        assert len(result.evidence_ids) > 0
-        
-        # Verify evidence IDs are real (not synthetic)
-        for eid in result.evidence_ids:
-            assert eid.startswith('ev-')
-            assert 'candidate' not in eid
+        assert result.status == CertificationGateStatus.BLOCKED
+        assert result.evidence_ids == []
     
     def test_runtime_gate_verifies_multiple_blocks(self, mock_snapshot_runtime_valid, test_manifest):
         """Runtime gate can verify multiple blocks in single call."""
@@ -1555,8 +1550,7 @@ class TestWave5RuntimeVerification:
         
         result = executor.execute_runtime_verification_gate(['I1', 'C1'], test_manifest)
         
-        assert result.status == CertificationGateStatus.PASS
-        assert 'passed for 2 block(s)' in result.message.lower() or 'verified for 2 block(s)' in result.message.lower()
+        assert result.status == CertificationGateStatus.BLOCKED
     
     def test_browser_gate_passes_with_valid_block(self, mock_snapshot_runtime_valid, test_manifest):
         """Browser verification gate passes when block renders correctly."""
