@@ -45,6 +45,7 @@ class LearnerRuntimeTestIdentityProvider:
         test_tenant: Optional[str] = None,
         fixture_id: Optional[str] = None,
         auth_mode: Optional[str] = None,
+        fixture_session_secret: Optional[str] = None,
     ):
         if enabled is None:
             raw_enabled = os.environ.get("PROJECT_LLM_LEARNER_RUNTIME_ENABLED", "false").strip().lower()
@@ -56,6 +57,7 @@ class LearnerRuntimeTestIdentityProvider:
         self.test_tenant = test_tenant or os.environ.get("PROJECT_LLM_LEARNER_TEST_TENANT", "skillup")
         self.fixture_id = fixture_id or os.environ.get("PROJECT_LLM_LEARNER_TEST_FIXTURE_ID", "test-fixture-learner-01")
         self.auth_mode = auth_mode or os.environ.get("PROJECT_LLM_LEARNER_AUTH_MODE", "internal_fixture")
+        self.fixture_session_secret = fixture_session_secret or os.environ.get("PROJECT_LLM_FIXTURE_SESSION_SECRET", "")
 
     def get_test_session(self) -> LearnerSessionResult:
         """
@@ -77,6 +79,10 @@ class LearnerRuntimeTestIdentityProvider:
             )
 
     def _request_fixture_session(self) -> LearnerSessionResult:
+        if not self.fixture_session_secret:
+            raise LearnerRuntimeTestIdentityUnavailable(
+                "Fixture session authorization is not configured (PROJECT_LLM_FIXTURE_SESSION_SECRET is missing)"
+            )
         endpoint = f"{self.base_url}/api/auth/test-fixture-session"
         payload = json.dumps({
             "fixtureId": self.fixture_id,
@@ -90,6 +96,7 @@ class LearnerRuntimeTestIdentityProvider:
                 "Content-Type": "application/json",
                 "Accept": "application/json",
                 "User-Agent": "Project-LLM-Runtime-Verifier/1.0",
+                "X-Project-LLM-Fixture-Secret": self.fixture_session_secret,
             },
             method="POST",
         )
@@ -170,3 +177,4 @@ class LearnerRuntimeTestIdentityProvider:
                 )
         except Exception as e:
             raise LearnerRuntimeTestIdentityUnavailable(f"Test login failed: {str(e)}")
+

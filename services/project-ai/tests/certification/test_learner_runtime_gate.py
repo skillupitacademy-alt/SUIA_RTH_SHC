@@ -198,6 +198,7 @@ def test_case_05_navigation_200_and_rendered_block_yields_pass(temp_workspace, m
         "redirected_to_login": False,
         "navigation_status": 200,
         "progress_status": 200,
+        "progress_event_status": "PASS",
         "block_rendered": True,
         "lsnb_status": "PASS",
         "rssb_status": "PASS",
@@ -228,6 +229,34 @@ def test_case_05_navigation_200_and_rendered_block_yields_pass(temp_workspace, m
     assert result.evidence_payload is not None
     assert result.evidence_hash is not None
     assert result.screenshot_sha256 == hashlib.sha256(b"valid-screenshot-png-bytes").hexdigest()
+
+
+def test_case_05b_unobserved_required_apis_never_yield_pass(temp_workspace, mock_identity_provider):
+    """A rendered page alone is not learner-runtime evidence."""
+    mock_run_output = json.dumps({
+        "passed": True,
+        "redirected_to_login": False,
+        "navigation_status": None,
+        "progress_status": None,
+        "progress_event_status": "NOT_CHECKED",
+        "block_rendered": True,
+        "lsnb_status": "PASS",
+        "rssb_status": "PASS",
+        "console_errors": [],
+        "page_errors": [],
+        "network_errors": [],
+    })
+    screenshot = temp_workspace / ".evidence" / "screenshots" / "learner_runtime_wf-test-05b_aaaaaaaa.png"
+    screenshot.write_bytes(b"screenshot")
+    with patch("subprocess.run") as mock_subproc:
+        mock_subproc.return_value = Mock(returncode=0, stdout=mock_run_output, stderr="")
+        result = verify_learner_runtime(
+            workflow_id="wf-test-05b", candidate_hash="a" * 64, manifest_hash="b" * 64,
+            verified_commit="c" * 40, block_family="objective", block_version="O1",
+            workspace_root=temp_workspace, identity_provider=mock_identity_provider,
+        )
+    assert result.status == "FAIL"
+    assert any("navigation" in blocker.lower() for blocker in result.blockers)
 
 
 # ============================================================================
@@ -274,6 +303,7 @@ def test_case_07_console_error_yields_fail(temp_workspace, mock_identity_provide
         "redirected_to_login": False,
         "navigation_status": 200,
         "progress_status": 200,
+        "progress_event_status": "PASS",
         "block_rendered": True,
         "lsnb_status": "PASS",
         "rssb_status": "PASS",
@@ -345,6 +375,7 @@ def test_case_09_lsnb_not_applicable_preserved(temp_workspace, mock_identity_pro
         "redirected_to_login": False,
         "navigation_status": 200,
         "progress_status": 200,
+        "progress_event_status": "PASS",
         "block_rendered": True,
         "lsnb_status": "NOT_APPLICABLE",
         "rssb_status": "NOT_APPLICABLE",
@@ -416,6 +447,7 @@ def test_case_11_screenshot_missing_yields_fail(temp_workspace, mock_identity_pr
         "redirected_to_login": False,
         "navigation_status": 200,
         "progress_status": 200,
+        "progress_event_status": "PASS",
         "block_rendered": True,
         "lsnb_status": "PASS",
         "rssb_status": "PASS",
@@ -470,6 +502,7 @@ def test_case_13_add_and_update_paths_use_same_runner(temp_workspace, mock_ident
         "redirected_to_login": False,
         "navigation_status": 200,
         "progress_status": 200,
+        "progress_event_status": "PASS",
         "block_rendered": True,
         "lsnb_status": "PASS",
         "rssb_status": "PASS",
@@ -510,6 +543,7 @@ def test_case_14_multi_family_distinct_verification(temp_workspace, mock_identit
         "redirected_to_login": False,
         "navigation_status": 200,
         "progress_status": 200,
+        "progress_event_status": "PASS",
         "block_rendered": True,
         "lsnb_status": "PASS",
         "rssb_status": "PASS",

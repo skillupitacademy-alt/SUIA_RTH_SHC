@@ -937,6 +937,17 @@ export class ProjectLlmClient {
     }
   }
 
+  async getExecutionProgress(workflowId: string, operation: 'composer' | 'learner' | 'qualification') {
+    const response = await fetch(`${this.baseUrl}/workflows/${encodeURIComponent(workflowId)}/execution-progress/${operation}`, {
+      credentials: 'same-origin', cache: 'no-store',
+    });
+    if (!response.ok) await handleFetchError(response);
+    return response.json() as Promise<{
+      startedAt?: number; status: string;
+      tasks: Array<{ label: string; status: string; startedAt: number; finishedAt?: number }>;
+    }>;
+  }
+
   /**
    * Run post-placement Learner Runtime & ILS verification in an authenticated Playwright session.
    * Maps to: POST /workflows/{workflowId}/verify-learner-runtime

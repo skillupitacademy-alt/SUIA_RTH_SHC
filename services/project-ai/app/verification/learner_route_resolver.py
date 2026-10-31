@@ -154,3 +154,4 @@ class LearnerRouteResolver:
             block_version=version_clean,
             is_fixture=True,
         )
+

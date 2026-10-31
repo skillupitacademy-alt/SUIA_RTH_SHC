@@ -214,3 +214,6 @@ scripts/verify-*.mjs
 
 # Git worktrees (temporary working directories)
 .worktrees/
+# Learner verifier local database credentials and generated fixture catalog
+/.project-ai/learner-runtime.env
+/.project-ai/learner-fixtures.json

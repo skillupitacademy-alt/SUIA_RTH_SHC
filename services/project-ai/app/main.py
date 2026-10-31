@@ -29,6 +29,7 @@ try:
         _workspace_root / ".env.local",
         _workspace_root / "apps" / "skillhubcore-admin" / ".env.local",
         _service_dir / ".env",
+        _workspace_root / ".project-ai" / "learner-runtime.env",
     ]
     for _env_file in _env_candidates:
         if _env_file.exists():

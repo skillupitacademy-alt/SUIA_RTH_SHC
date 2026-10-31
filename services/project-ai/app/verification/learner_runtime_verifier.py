@@ -12,6 +12,10 @@ import json
 import hashlib
 import subprocess
 import tempfile
+import time
+import shutil
+import urllib.request
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional
@@ -26,6 +30,15 @@ from app.verification.learner_route_resolver import (
     LearnerRouteResolver,
     LearnerRouteContext,
     LearnerRouteResolutionError,
+)
+from app.verification.fixture_registry import LearnerRuntimeFixtureContract
+from app.verification.fixture_environment import verification_database_url
+from app.verification.composer_worktree_verifier import (
+    _create_verification_worktree,
+    _cleanup_verification_worktree,
+    _prepare_dependencies,
+    _kill_process_tree,
+    find_free_port,
 )
 
 
@@ -57,6 +70,96 @@ def compute_canonical_json_hash(payload: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical_str.encode("utf-8")).hexdigest()
 
 
+def _pnpm_command() -> str:
+    return "pnpm.cmd" if os.name == "nt" else "pnpm"
+
+
+@contextmanager
+def _skillup_preview_at_commit(
+    workspace_root: Path,
+    commit_sha: str,
+    timeout_seconds: int = 600,
+    progress=None,
+):
+    """Serve SkillUp from the immutable placement commit, never the live tree."""
+    worktree_path: Optional[Path] = None
+    server_process: Optional[subprocess.Popen] = None
+    linked: List[Path] = []
+    report = progress or (lambda label: None)
+    try:
+        report("Checkout learner placement commit")
+        worktree_path = _create_verification_worktree(workspace_root, commit_sha)
+        report("Install frozen-lockfile dependencies (offline, then online if needed)")
+        linked = _prepare_dependencies(workspace_root, worktree_path, timeout_seconds)
+        source_env = workspace_root / "apps" / "skillup-web" / ".env.local"
+        target_env = worktree_path / "apps" / "skillup-web" / ".env.local"
+        if source_env.exists() and not target_env.exists():
+            target_env.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_env, target_env)
+
+        preview_env = os.environ.copy()
+        preview_env["PROJECT_LLM_ISOLATED_VERIFICATION"] = "true"
+        preview_env["ENVIRONMENT"] = "verification"
+        preview_env["APP_ENV"] = "verification"
+        fixture_db = verification_database_url()
+        preview_env["DATABASE_URL_TUTORIAL"] = fixture_db
+        preview_env["DATABASE_DIRECT_URL_TUTORIAL"] = fixture_db
+        learner_api = os.environ.get("PROJECT_LLM_LEARNER_API_BASE_URL")
+        if not learner_api:
+            raise RuntimeError("PROJECT_LLM_LEARNER_API_BASE_URL must point to a non-production ILS API")
+        preview_env["API_SERVER_URL"] = learner_api
+        preview_env["NEXT_PUBLIC_API_URL"] = learner_api
+        preview_env["INTERNAL_API_URL"] = learner_api
+        preview_env["GATEWAY_URL"] = learner_api
+
+        report("Build SkillUp learner application")
+        build = subprocess.run(
+            [_pnpm_command(), "--filter", "@quiz/skillup-web", "exec", "next", "build", "--webpack"],
+            cwd=worktree_path,
+            env=preview_env,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+        if build.returncode != 0:
+            output = ((build.stdout or "") + "\n" + (build.stderr or "")).strip()
+            raise RuntimeError(f"SkillUp production build failed: {output[-1200:]}")
+
+        port = find_free_port()
+        report("Start learner preview and wait for readiness")
+        server_process = subprocess.Popen(
+            [_pnpm_command(), "--filter", "@quiz/skillup-web", "exec", "next", "start", "-p", str(port), "-H", "127.0.0.1"],
+            cwd=worktree_path,
+            env=preview_env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        deadline = time.time() + 90
+        ready_url = f"http://skillup.localhost:{port}/login"
+        ready = False
+        while time.time() < deadline:
+            if server_process.poll() is not None:
+                stderr = server_process.stderr.read() if server_process.stderr else ""
+                raise RuntimeError(f"SkillUp preview exited early: {stderr[-1000:]}")
+            try:
+                with urllib.request.urlopen(ready_url, timeout=2) as response:
+                    if response.status < 500:
+                        ready = True
+                        break
+            except Exception:
+                time.sleep(1)
+        if not ready:
+            raise RuntimeError(f"SkillUp preview did not become ready at {ready_url}")
+        yield port
+    finally:
+        if server_process and server_process.poll() is None:
+            _kill_process_tree(server_process.pid)
+        if worktree_path:
+            _cleanup_verification_worktree(workspace_root, worktree_path, linked)
+
+
 def _generate_playwright_learner_script(
     target_url: str,
     cookie_name: str,
@@ -74,6 +177,7 @@ def _generate_playwright_learner_script(
 
     return f"""
 const {{ chromium }} = require('playwright');
+const fixtureCookie = JSON.parse(require('node:fs').readFileSync(0, 'utf8') || '{{}}');
 
 (async () => {{
     const result = {{
@@ -103,7 +207,7 @@ const {{ chromium }} = require('playwright');
         // 1. Inject short-lived test fixture cookie
         await context.addCookies([{{
             name: {json.dumps(cookie_name)},
-            value: {json.dumps(cookie_value)},
+            value: fixtureCookie.cookieValue,
             domain: {json.dumps(cookie_domain)},
             path: '/'
         }}]);
@@ -133,8 +237,9 @@ const {{ chromium }} = require('playwright');
                 if (url.includes('navigation') || url.includes('sidebar')) {{
                     result.navigation_status = status;
                 }}
-                if (url.includes('progress') || url.includes('telemetry')) {{
+                if (url.includes('/api/tutorial/ils/visit') || url.includes('/api/tutorial/ils/block-visit')) {{
                     result.progress_status = status;
+                    result.progress_event_status = status === 200 ? 'PASS' : 'FAIL';
                 }}
             }}
 
@@ -149,7 +254,9 @@ const {{ chromium }} = require('playwright');
             timeout: 25000
         }});
 
-        await page.waitForTimeout(1500);
+        await page.waitForResponse(response =>
+            new URL(response.url()).pathname.startsWith('/api/tutorial/ils/navigation/'),
+            {{ timeout: 15000 }}).catch(() => null);
 
         // 4. Assert no redirect to login
         const currentUrl = page.url();
@@ -169,11 +276,13 @@ const {{ chromium }} = require('playwright');
         }}
 
         // 6. Assert LSNB and RSSB presence
-        const lsnb = await page.$('[data-sidebar="tutorial-navigation"], aside, nav[aria-label*="navigation" i]');
-        result.lsnb_status = lsnb ? 'PASS' : 'NOT_APPLICABLE';
+        const lsnb = await page.$('aside[aria-label="Tutorial navigation"], nav[aria-label="Tutorial curriculum"]');
+        result.lsnb_status = lsnb ? 'PASS' : 'FAIL';
 
-        const rssb = await page.$('[data-sidebar="subtopic-navigation"], [data-testid="learning-progress-sidebar"], aside');
-        result.rssb_status = rssb ? 'PASS' : 'NOT_APPLICABLE';
+        const progressToggle = page.getByRole('button', {{ name: 'Learning progress', exact: true }});
+        if (await progressToggle.count()) await progressToggle.click();
+        const rssb = await page.$('aside[aria-label="Your Progress"]');
+        result.rssb_status = rssb ? 'PASS' : 'FAIL';
 
         // 7. Exercise applicable learner progression if progressRole is instructional or assessment
         const role = {json.dumps(progress_role.lower())};
@@ -181,11 +290,8 @@ const {{ chromium }} = require('playwright');
             // Locate interactive completion button or section element
             const compBtn = await page.$('button[data-action="complete-block"], button:has-text("Mark Complete"), [data-testid="progress-check"]');
             if (compBtn) {{
-                await compBtn.click().catch(() => {{}});
+                await compBtn.click();
                 await page.waitForTimeout(1000);
-                result.progress_event_status = 'PASS';
-            }} else {{
-                result.progress_event_status = 'PASS'; // telemetry event fired automatically on visit
             }}
         }} else {{
             result.progress_event_status = 'NOT_APPLICABLE';
@@ -194,9 +300,17 @@ const {{ chromium }} = require('playwright');
         // 8. Capture screenshot
         await page.screenshot({{ path: {json.dumps(str(screenshot_path))}, fullPage: false }});
 
-        // 9. Final assertion logic
+        // 9. Final assertion logic. A missing API observation is not success:
+        // this gate certifies the learner lifecycle, not merely a rendered page.
         const hasAuthFailure = result.network_errors.some(e => e.includes('UNAUTHORIZED_401') || e.includes('UNAUTHORIZED_403'));
-        if (!hasAuthFailure && !result.redirected_to_login && result.block_rendered && result.console_errors.length === 0) {{
+        const navigationPassed = result.navigation_status === 200;
+        const progressionRequired = role === 'instructional' || role === 'assessment';
+        const progressPassed = !progressionRequired ||
+            (result.progress_status === 200 && result.progress_event_status === 'PASS');
+        const sidebarsPassed = result.lsnb_status === 'PASS' && result.rssb_status === 'PASS';
+        if (!hasAuthFailure && !result.redirected_to_login && result.block_rendered &&
+            navigationPassed && progressPassed && sidebarsPassed &&
+            result.console_errors.length === 0 && result.page_errors.length === 0) {{
             result.passed = true;
         }}
     }} catch (err) {{
@@ -221,6 +335,8 @@ def verify_learner_runtime(
     identity_provider: Optional[LearnerRuntimeTestIdentityProvider] = None,
     route_resolver: Optional[LearnerRouteResolver] = None,
     manifest_metadata: Optional[Dict[str, Any]] = None,
+    fixture_contract: Optional[LearnerRuntimeFixtureContract] = None,
+    progress=None,
 ) -> LearnerRuntimeVerificationResult:
     """
     Executes generic authenticated learner-runtime certification gate.
@@ -229,64 +345,108 @@ def verify_learner_runtime(
     provider = identity_provider or LearnerRuntimeTestIdentityProvider()
     resolver = route_resolver or LearnerRouteResolver()
 
-    # Step 1: Obtain test session
-    try:
-        session = provider.get_test_session()
-    except LearnerRuntimeTestIdentityUnavailable as e:
-        return LearnerRuntimeVerificationResult(
-            status="BLOCKED",
-            message=f"Learner runtime verification BLOCKED: {e.message}",
-            blockers=[e.message],
+    # Step 1: Resolve canonical fixture route. The production endpoint passes a
+    # database-validated contract; the legacy resolver remains only for unit
+    # compatibility and cannot create certification evidence by itself.
+    if fixture_contract is None:
+        try:
+            route_ctx = resolver.resolve_fixture_route(
+                block_family=block_family,
+                block_version=block_version,
+                manifest_metadata=manifest_metadata,
+            )
+        except LearnerRouteResolutionError as e:
+            return LearnerRuntimeVerificationResult(
+                status="BLOCKED",
+                message=f"Fixture route resolution BLOCKED: {str(e)}",
+                blockers=[str(e)],
+            )
+    else:
+        route_ctx = LearnerRouteContext(
+            domain_slug=fixture_contract.domain_slug,
+            subject_slug=fixture_contract.subject_slug,
+            topic_slug=fixture_contract.topic_slug,
+            subtopic_slug=fixture_contract.subtopic_slug,
+            navigation_node_id=fixture_contract.navigation_node_id,
+            subtopic_id=fixture_contract.subtopic_id,
+            page_route=fixture_contract.learner_route,
+            block_family=block_family.lower(),
+            block_version=block_version.upper(),
+            is_fixture=True,
         )
 
-    # Step 2: Resolve canonical fixture route
-    try:
-        route_ctx = resolver.resolve_fixture_route(
-            block_family=block_family,
-            block_version=block_version,
-            manifest_metadata=manifest_metadata,
-        )
-    except LearnerRouteResolutionError as e:
-        return LearnerRuntimeVerificationResult(
-            status="BLOCKED",
-            message=f"Fixture route resolution BLOCKED: {str(e)}",
-            blockers=[str(e)],
-        )
-
-    # Step 3: Prepare screenshot and script paths
+    # Step 2: Prepare screenshot and script paths
     screenshots_dir = root / ".evidence" / "screenshots"
     screenshots_dir.mkdir(parents=True, exist_ok=True)
+    runner_dir = root / ".evidence" / "runtime-runners"
+    runner_dir.mkdir(parents=True, exist_ok=True)
     screenshot_filename = f"learner_runtime_{workflow_id}_{candidate_hash[:8]}.png"
     screenshot_path = screenshots_dir / screenshot_filename
 
-    target_url = f"{provider.base_url}{route_ctx.page_route}"
-
-    script_content = _generate_playwright_learner_script(
-        target_url=target_url,
-        cookie_name=session.cookieName,
-        cookie_value=session.cookieValue,
-        cookie_domain=session.domain,
-        block_family=block_family,
-        block_version=block_version,
-        progress_role=progress_role,
-        screenshot_path=screenshot_path,
+    preview_context = (
+        _skillup_preview_at_commit(root, verified_commit, progress=progress)
+        if fixture_contract is not None
+        else nullcontext(None)
     )
-
-    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
-        f.write(script_content)
-        script_path = Path(f.name)
-
+    script_path: Optional[Path] = None
     try:
-        # Run the Playwright script using Node.js in workspace
-        proc = subprocess.run(
-            ["node", str(script_path)],
-            cwd=str(root),
-            capture_output=True,
-            text=True,
-            timeout=40,
-        )
+        with preview_context as preview_port:
+            # Fixture mode obtains the cookie from the same immutable preview
+            # that Playwright is about to inspect. This avoids testing a
+            # mutable live SkillUp process with a session from another build.
+            if fixture_contract is not None and preview_port is not None:
+                provider.base_url = fixture_contract.resolve_origin(preview_port)
+            try:
+                if progress:
+                    progress("Obtain authenticated learner fixture session")
+                session = provider.get_test_session()
+            except LearnerRuntimeTestIdentityUnavailable as e:
+                return LearnerRuntimeVerificationResult(
+                    status="BLOCKED",
+                    message=f"Learner runtime verification BLOCKED: {e.message}",
+                    blockers=[e.message],
+                )
+            target_url = (
+                fixture_contract.resolve_url(preview_port)
+                if fixture_contract is not None and preview_port is not None
+                else f"{provider.base_url}{route_ctx.page_route}"
+            )
+            script_content = _generate_playwright_learner_script(
+                target_url=target_url,
+                cookie_name=session.cookieName,
+                cookie_value=session.cookieValue,
+                cookie_domain=session.domain,
+                block_family=block_family,
+                block_version=block_version,
+                progress_role=progress_role,
+                screenshot_path=screenshot_path,
+            )
+            # Keep the generated runner beneath the workspace so Node can
+            # resolve the repository's Playwright dependency while the source
+            # served to the browser still comes from the detached worktree.
+            with tempfile.NamedTemporaryFile(
+                "w",
+                suffix=".js",
+                prefix="learner-runtime-",
+                dir=runner_dir,
+                delete=False,
+                encoding="utf-8",
+            ) as f:
+                f.write(script_content)
+                script_path = Path(f.name)
+            # Run Playwright from the detached worktree when available.
+            if progress:
+                progress("Browser verification: learner render, ILS APIs and screenshot")
+            proc = subprocess.run(
+                ["node", str(script_path)],
+                cwd=str(root),
+                capture_output=True,
+                input=json.dumps({"cookieValue": session.cookieValue}),
+                text=True,
+                timeout=40,
+            )
     except subprocess.TimeoutExpired:
-        if script_path.exists():
+        if script_path and script_path.exists():
             script_path.unlink()
         return LearnerRuntimeVerificationResult(
             status="FAIL",
@@ -294,7 +454,7 @@ def verify_learner_runtime(
             blockers=["Execution timed out waiting for learner page to stabilize"],
         )
     except Exception as e:
-        if script_path.exists():
+        if script_path and script_path.exists():
             script_path.unlink()
         return LearnerRuntimeVerificationResult(
             status="BLOCKED",
@@ -302,7 +462,7 @@ def verify_learner_runtime(
             blockers=[str(e)],
         )
     finally:
-        if script_path.exists():
+        if script_path and script_path.exists():
             try:
                 script_path.unlink()
             except Exception:
@@ -360,14 +520,14 @@ def verify_learner_runtime(
             "selector": run_data.get("block_selector", ""),
         },
         "navigationApi": {
-            "status": "PASS" if run_data.get("navigation_status") in (200, None) else "FAIL",
+            "status": "PASS" if run_data.get("navigation_status") == 200 else "FAIL",
             "endpointHash": hash_str(f"{route_ctx.page_route}/navigation"),
-            "httpStatus": run_data.get("navigation_status") or 200,
+            "httpStatus": run_data.get("navigation_status"),
         },
         "progressApi": {
-            "status": "PASS" if run_data.get("progress_status") in (200, None) else "FAIL",
+            "status": "PASS" if run_data.get("progress_status") == 200 else "FAIL",
             "endpointHash": hash_str(f"{route_ctx.page_route}/progress"),
-            "httpStatus": run_data.get("progress_status") or 200,
+            "httpStatus": run_data.get("progress_status"),
         },
         "lsnb": {"status": run_data.get("lsnb_status", "PASS")},
         "rssb": {"status": run_data.get("rssb_status", "PASS")},
@@ -394,6 +554,22 @@ def verify_learner_runtime(
     if run_data.get("page_errors"):
         for pe in run_data["page_errors"]:
             blockers.append(f"Uncaught page error: {pe}")
+    if run_data.get("navigation_status") != 200:
+        blockers.append(
+            f"Required ILS navigation API was not observed with HTTP 200 "
+            f"(observed: {run_data.get('navigation_status')!r})"
+        )
+    if progress_role.lower() in ("instructional", "assessment"):
+        if run_data.get("progress_status") != 200:
+            blockers.append(
+                f"Required learner progress API was not observed with HTTP 200 "
+                f"(observed: {run_data.get('progress_status')!r})"
+            )
+        if run_data.get("progress_event_status") != "PASS":
+            blockers.append("Required learner progress event did not complete successfully")
+    for sidebar_name, sidebar_status in (("LSNB", run_data.get("lsnb_status")), ("RSSB", run_data.get("rssb_status"))):
+        if sidebar_status in (None, "NOT_CHECKED", "FAIL"):
+            blockers.append(f"{sidebar_name} verification did not pass (status: {sidebar_status or 'missing'})")
     if not screenshot_sha256:
         blockers.append("Screenshot artifact was not created or verified on disk")
 
@@ -417,3 +593,4 @@ def verify_learner_runtime(
         screenshot_sha256=screenshot_sha256,
         blockers=[],
     )
+

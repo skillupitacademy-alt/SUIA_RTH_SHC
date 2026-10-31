@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
+import { ExecutionTaskProgress } from '../components/ExecutionTaskProgress';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
 import { projectLlmClient, ProjectLlmError } from '@/lib/project-llm/api/projectLlmClient';
 import type { CertificationStatus } from '@/lib/project-llm/types/canonicalWorkflowState';
@@ -97,49 +98,19 @@ export default function CandidateUploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoadingCertification, setIsLoadingCertification] = useState(false);
 
-  // Live progress telemetry for WCAG status announcements
-  const [livePhaseIndex, setLivePhaseIndex] = useState<number>(0);
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
-  const [liveAnnouncement, setLiveAnnouncement] = useState<string>('');
-
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [liveAnnouncement, setLiveAnnouncement] = useState('');
   const isBusy = isUploading || isValidating;
 
   useEffect(() => {
-    if (!isBusy) {
-      return;
-    }
+    if (!isBusy) return;
     setElapsedSeconds(0);
-    setLivePhaseIndex(0);
-    setLiveAnnouncement(
-      isUploading
-        ? 'Stepper 5 compliance pipeline started: Phase 5.1 Package Intake & SHA-256 Digest Computation in progress.'
-        : 'Re-running Stepper 5 compliance validation gates against backend repository state.'
-    );
-
-    const timer = setInterval(() => {
-      setElapsedSeconds((prev) => {
-        const next = prev + 1;
-        if (isUploading) {
-          if (next === 2) {
-            setLivePhaseIndex(1);
-            setLiveAnnouncement('Phase 5.2 in progress: Binding candidate package to canonical workflow and engineering contract.');
-          } else if (next === 5) {
-            setLivePhaseIndex(2);
-            setLiveAnnouncement('Phase 5.3 in progress: Auditing UBRC structure, brand independence, and schema parity.');
-          } else if (next === 8) {
-            setLivePhaseIndex(3);
-            setLiveAnnouncement('Phase 5.4 in progress: Executing isolated worktree Vitest unit test suite.');
-          }
-        } else {
-          setLivePhaseIndex(Math.min(3, Math.floor(next / 2)));
-        }
-        return next;
-      });
-    }, 1000);
-
+    setLiveAnnouncement(isUploading
+      ? 'Upload requested. Waiting for confirmed backend qualification tasks.'
+      : 'Refreshing recorded qualification results.');
+    const timer = setInterval(() => setElapsedSeconds((previous) => previous + 1), 1000);
     return () => clearInterval(timer);
   }, [isBusy, isUploading]);
-
   // Fetch certification status from backend on mount or when active workflow changes
   useEffect(() => {
     if (!activeWorkflowId) return;
@@ -511,14 +482,13 @@ export default function CandidateUploadPage() {
           </div>
         </div>
 
-        {/* 4-Phase Stepper 5 Compliance Grid */}
+        <ExecutionTaskProgress workflowId={activeWorkflowId || null} operation="qualification" active={isUploading} />
+        {/* Recorded compliance results; operational tasks are reported above. */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3.5">
           {STEP5_LIVE_PHASES.map((phase, idx) => {
             let phaseState: 'DONE' | 'ACTIVE' | 'FAILED' | 'PENDING' = 'PENDING';
             if (isBusy) {
-              if (idx < livePhaseIndex) phaseState = 'DONE';
-              else if (idx === livePhaseIndex) phaseState = 'ACTIVE';
-              else phaseState = 'PENDING';
+              phaseState = 'PENDING';
             } else if (failedGatesCount > 0 && idx === 3) {
               phaseState = 'FAILED';
             } else if (allGatesSatisfied) {
@@ -533,8 +503,6 @@ export default function CandidateUploadPage() {
                 className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between ${
                   phaseState === 'DONE'
                     ? 'border-emerald-200 bg-emerald-50/40'
-                    : phaseState === 'ACTIVE'
-                    ? 'border-pink-400 bg-pink-50/60 ring-2 ring-pink-300/40'
                     : phaseState === 'FAILED'
                     ? 'border-red-300 bg-red-50/50'
                     : 'border-slate-200 bg-slate-50/60'
@@ -549,21 +517,16 @@ export default function CandidateUploadPage() {
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                         phaseState === 'DONE'
                           ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                          : phaseState === 'ACTIVE'
-                          ? 'bg-pink-100 text-pink-900 border-pink-300'
                           : phaseState === 'FAILED'
                           ? 'bg-red-100 text-red-900 border-red-300'
                           : 'bg-slate-100 text-slate-600 border-slate-300'
                       }`}
                     >
                       {phaseState === 'DONE' && <Check size={10} strokeWidth={3} />}
-                      {phaseState === 'ACTIVE' && <RefreshCw size={10} className="animate-spin" />}
                       {phaseState === 'FAILED' && <AlertCircle size={10} />}
                       {phaseState === 'PENDING' && <Clock size={10} />}
                       {phaseState === 'DONE'
                         ? 'PASS • Done'
-                        : phaseState === 'ACTIVE'
-                        ? 'RUNNING • Live'
                         : phaseState === 'FAILED'
                         ? 'FAIL • Action Needed'
                         : 'PENDING'}

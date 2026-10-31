@@ -167,15 +167,35 @@ def _remove_isolated_worktree(workspace_root: Path, worktree_path: Path, linked:
     )
 
 
-async def run_candidate_qualification_tests(
+async def run_candidate_qualification_tests(candidate_id, files, timeout_seconds=240, workflow_id=None):
+    """Run blocking sandbox work off the API event loop so status stays readable."""
+    import asyncio
+    from app.verification.execution_progress import ExecutionProgress
+
+    progress = ExecutionProgress(str(workflow_id or candidate_id), "qualification")
+    try:
+        result = await asyncio.to_thread(lambda: asyncio.run(_run_candidate_qualification_tests(
+            candidate_id, files, timeout_seconds, progress,
+        )))
+        progress.finish("PASS" if result.get("passed") else "FAIL")
+        return result
+    except Exception:
+        progress.finish("FAIL")
+        raise
+
+
+async def _run_candidate_qualification_tests(
     candidate_id: str,
     files: List[Any],
-    timeout_seconds: int = 240
+    timeout_seconds: int = 240,
+    progress=None,
 ) -> Dict[str, Any]:
     """
     Run automated Vitest test suite on candidate files in an isolated sandbox.
     """
     start_time = time.time()
+    report = progress or (lambda label: None)
+    report("Validate submitted component and test files")
     workspace_root = find_workspace_root()
     ui_package_dir = workspace_root / 'packages' / 'ui'
     
@@ -235,6 +255,7 @@ async def run_candidate_qualification_tests(
         for file in files
     ]
     runner_revision = _runner_revision()
+    report("Run static accessibility and design-contract preflight")
     accessibility_preflight = _accessibility_preflight(component_files)
 
     if accessibility_preflight["status"] != "PASS":
@@ -373,7 +394,9 @@ async def run_candidate_qualification_tests(
     linked_deps: List[Path] = []
     
     try:
+        report("Checkout isolated qualification sandbox")
         worktree_path = _create_isolated_worktree(workspace_root)
+        report("Prepare sandbox dependencies")
         linked_deps = _link_dependencies(workspace_root, worktree_path)
 
         # Synchronize setup.ts into qualification worktree
@@ -386,6 +409,7 @@ async def run_candidate_qualification_tests(
         blocks_dir = worktree_path / 'packages' / 'ui' / 'src' / 'tutorial' / 'blocks'
         tests_dir = blocks_dir / '__tests__'
 
+        report("Stage candidate source and rewrite sandbox test imports")
         # Write candidate component files with prefix
         comp_map = {}
         for comp in component_files:
@@ -440,6 +464,7 @@ async def run_candidate_qualification_tests(
             written_files.append(cand_test_path)
             rel_test_paths.append(f"src/tutorial/blocks/__tests__/{cand_test_filename}")
 
+        report("Execute candidate Vitest suite")
         # Run vitest
         # Do not let a long-lived API worker's Node resolution or production mode
         # leak into an isolated qualification run.
@@ -481,6 +506,7 @@ async def run_candidate_qualification_tests(
                 env=test_env,
             )
         
+        report("Collect test results and qualification evidence")
         duration_ms = int((time.time() - start_time) * 1000)
         stdout = process.stdout or ""
         stderr = process.stderr or ""

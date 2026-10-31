@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useProjectLlm } from '../context/ProjectLlmContext';
 import { ProjectLlmStepper } from '../components/ProjectLlmStepper';
+import { ExecutionTaskProgress } from '../components/ExecutionTaskProgress';
 import { ProjectLlmContextBanner } from '../components/ProjectLlmContextBanner';
 import { projectLlmClient, ProjectLlmError } from '@/lib/project-llm/api/projectLlmClient';
 import type {
@@ -745,6 +746,7 @@ export default function IntegrationCertificationPage() {
                     {isExecuting && 'Executing Stage 6.4: Isolated Git Worktree Creation & Surgical AST Placement'}
                     {isVerifyingComposer &&
                       'Executing Stage 6.5: Isolated Worktree Composer, WCAG 2.1 AA & 6-Width Responsive Verification'}
+                    {isVerifyingLearner && 'Executing Learner Runtime & ILS Verification'}
                     {isApprovingFinal &&
                       'Executing Stage 6.6: Gate 3 Cryptographic Evidence & Screenshot SHA-256 Revalidation'}
                     {isSuperseding && 'Superseding Workflow & Reconciling Ancestor Lifecycle State to REJECTED (SUPERSEDED)'}
@@ -757,76 +759,10 @@ export default function IntegrationCertificationPage() {
               </span>
             </div>
 
-            {isVerifyingComposer && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
-                {[
-                  {
-                    step: '6.5.1',
-                    label: 'Git Worktree Checkout at Placement Commit',
-                    activeAt: 0,
-                    doneAt: 3,
-                  },
-                  {
-                    step: '6.5.2',
-                    label: 'Ephemeral Next.js Server Boot & Port Binding',
-                    activeAt: 3,
-                    doneAt: 9,
-                  },
-                  {
-                    step: '6.5.3',
-                    label: 'Authenticated Composer Session & Block Render',
-                    activeAt: 9,
-                    doneAt: 15,
-                  },
-                  {
-                    step: '6.5.4',
-                    label: 'Axe-Core WCAG 2.1 Level A/AA DOM Scan',
-                    activeAt: 15,
-                    doneAt: 20,
-                  },
-                  {
-                    step: '6.5.5',
-                    label: 'Keyboard, Reduced Motion & Forced-Colors Modalities',
-                    activeAt: 20,
-                    doneAt: 25,
-                  },
-                  {
-                    step: '6.5.6',
-                    label: '6-Width Responsive Matrix (375–1536px) & Screenshot SHA-256',
-                    activeAt: 25,
-                    doneAt: 999,
-                  },
-                ].map((sub) => {
-                  const isSubDone = elapsedSeconds >= sub.doneAt;
-                  const isSubActive = elapsedSeconds >= sub.activeAt && elapsedSeconds < sub.doneAt;
-                  return (
-                    <div
-                      key={sub.step}
-                      className={`p-2.5 rounded-lg border text-xs flex items-start gap-2 ${
-                        isSubDone
-                          ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
-                          : isSubActive
-                          ? 'bg-white border-pink-300 text-pink-900 font-bold shadow-2xs'
-                          : 'bg-white/60 border-slate-200 text-slate-500'
-                      }`}
-                    >
-                      {isSubDone ? (
-                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0 mt-0.5" />
-                      ) : isSubActive ? (
-                        <RefreshCw size={14} className="animate-spin text-pink-600 shrink-0 mt-0.5" />
-                      ) : (
-                        <Clock size={14} className="text-slate-400 shrink-0 mt-0.5" />
-                      )}
-                      <div>
-                        <span className="font-mono text-[10px] uppercase block opacity-75">
-                          Subphase {sub.step} • {isSubDone ? 'DONE' : isSubActive ? 'IN PROGRESS' : 'QUEUED'}
-                        </span>
-                        <span>{sub.label}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            {(isQualifying || isVerifyingComposer || isVerifyingLearner) && (
+              <ExecutionTaskProgress workflowId={workflowId}
+                operation={isQualifying ? 'qualification' : isVerifyingComposer ? 'composer' : 'learner'}
+                active={isQualifying || isVerifyingComposer || isVerifyingLearner} />
             )}
           </div>
         )}

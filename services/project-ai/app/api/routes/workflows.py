@@ -13,6 +13,9 @@ R3 PERSISTENCE:
 """
 
 from datetime import datetime, timezone
+import json
+import asyncio
+from app.verification.execution_progress import ExecutionProgress, read_progress
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Any, List
 import re
@@ -77,6 +80,36 @@ def _get_verified_placement_commit(
     if placement.get("manifest_sha256") != manifest_sha256:
         raise ValueError("Placement evidence manifest hash does not match the workflow")
     return commit
+
+
+def _candidate_default_fixture_block(candidate: Any, family: str, version: str) -> dict[str, Any]:
+    """Build the only safe runtime fixture payload: the candidate's declared default."""
+    files = getattr(candidate, "files", None) or []
+    metadata: dict[str, Any] | None = None
+    for candidate_file in files:
+        filename = candidate_file.get("filename") if isinstance(candidate_file, dict) else getattr(candidate_file, "filename", None)
+        if filename != "block.integration.json":
+            continue
+        content = candidate_file.get("content") if isinstance(candidate_file, dict) else getattr(candidate_file, "content", None)
+        try:
+            metadata = json.loads(content) if isinstance(content, str) else content
+        except json.JSONDecodeError as exc:
+            raise ValueError("Candidate block.integration.json is not valid JSON") from exc
+        break
+
+    if not isinstance(metadata, dict):
+        raise ValueError("Candidate package does not contain block.integration.json")
+    payload = metadata.get("defaultPayload")
+    if not isinstance(payload, dict) or not payload:
+        raise ValueError("Candidate block.integration.json has no non-empty defaultPayload")
+
+    from uuid import NAMESPACE_URL, uuid5
+    return {
+        "id": str(uuid5(NAMESPACE_URL, f"project-llm:{family.lower()}:{version.upper()}")),
+        "type": family.lower(),
+        "version": version.upper(),
+        "content": payload,
+    }
 
 
 async def get_governance_service(
@@ -906,7 +939,7 @@ async def approve_final_certification(
                 status_code=400,
                 detail=f"Cannot approve: Learner Runtime & ILS gate is BLOCKED ({learner_gate.get('message', 'Prerequisite unavailable')}). Certification requires an executed and passed live learner runtime test."
             )
-        if learner_status not in ("PASS", "NOT_APPLICABLE"):
+        if learner_status != "PASS":
             raise HTTPException(
                 status_code=400,
                 detail=f"Cannot approve: Learner Runtime & ILS gate did not pass (status: {learner_status}): {learner_gate.get('message', 'Runtime check failed')}"
@@ -1182,15 +1215,22 @@ async def verify_composer(
     from app.verification.composer_worktree_verifier import verify_composer_in_worktree
     from app.persistence.database import get_session_factory
 
-    result = await verify_composer_in_worktree(
+    progress = ExecutionProgress(workflow_id, "composer")
+    try:
+        result = await asyncio.to_thread(lambda: asyncio.run(verify_composer_in_worktree(
         workflow_id=workflow_id,
         commit_sha=commit_sha,
         block_family=target_family,
         block_version=target_version,
         candidate_hash=candidate_sha,
         manifest_hash=manifest_sha,
-        timeout_seconds=600
-    )
+        timeout_seconds=600,
+        progress=progress,
+        )))
+        progress.finish("PASS" if result.get("passed") else "FAIL")
+    except Exception:
+        progress.finish("FAIL")
+        raise
 
     session_factory = get_session_factory()
     async with session_factory() as write_session:
@@ -1223,6 +1263,20 @@ async def verify_composer(
             result["current_workflow_state"] = workflow_model.current_state
 
     return result
+
+
+@router.get("/{workflow_id}/execution-progress/{operation}", response_model=dict)
+async def execution_progress_endpoint(
+    workflow_id: str,
+    operation: str,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+) -> dict:
+    if operation not in ("composer", "learner", "qualification"):
+        raise HTTPException(status_code=400, detail="Unknown verification operation")
+    if not await governance_service.get_workflow(workflow_id):
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return read_progress(workflow_id, operation)
 
 
 @router.post("/{workflow_id}/verify-learner-runtime", response_model=dict)
@@ -1276,25 +1330,84 @@ async def verify_learner_runtime_endpoint(
     candidate_sha = workflow.candidate_sha256 or ""
     manifest_sha = workflow.manifest_sha256 or ""
 
+    candidate_repo = await get_candidate_repository(session)
+    candidate = await candidate_repo.get(str(workflow.candidate_id)) if workflow.candidate_id else None
+    if not candidate:
+        raise HTTPException(status_code=409, detail="Runtime verification requires the workflow's candidate package")
+    try:
+        candidate_block = _candidate_default_fixture_block(candidate, target_family, target_version)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
     # Release initial DB connection before running browser verification
     await session.close()
 
-    from app.verification.learner_runtime_verifier import verify_learner_runtime
+    from app.verification.learner_runtime_verifier import (
+        LearnerRuntimeVerificationResult,
+        verify_learner_runtime,
+    )
     from app.persistence.database import get_session_factory
     from app.verification.composer_worktree_verifier import find_workspace_root
+    from app.verification.disposable_fixture_provisioner import disposable_fixture_session
+    from app.verification.fixture_registry import FixtureBlockedError, LearnerFixtureRegistry
+    from app.verification.learner_identity import LearnerRuntimeTestIdentityProvider
+    from app.verification.fixture_environment import fixture_session_factory
 
     workspace_root = find_workspace_root()
+    session_factory = get_session_factory()
+    identity_provider = LearnerRuntimeTestIdentityProvider()
+    progress = ExecutionProgress(workflow_id, "learner")
+    fixture_engine = None
 
-    res = verify_learner_runtime(
-        workflow_id=workflow_id,
-        candidate_hash=candidate_sha,
-        manifest_hash=manifest_sha,
-        verified_commit=commit_sha,
-        block_family=target_family,
-        block_version=target_version,
-        workspace_root=workspace_root,
-    )
+    try:
+        progress("Validate dedicated fixture configuration and database readiness")
+        fixture_engine, verification_sessions = fixture_session_factory()
+        async with verification_sessions() as fixture_session:
+            fixture_contract = await LearnerFixtureRegistry().resolve_fixture_contract(
+                fixture_id=identity_provider.fixture_id,
+                tenant=identity_provider.test_tenant,
+                session=fixture_session,
+                verify_db_existence=True,
+            )
 
+        progress("Provision candidate fixture document")
+        async with disposable_fixture_session(
+            session_factory=verification_sessions,
+            workflow_id=workflow_id,
+            contract=fixture_contract,
+            candidate_block=candidate_block,
+            block_family=target_family,
+            block_version=target_version,
+        ):
+            res = await asyncio.to_thread(verify_learner_runtime,
+                workflow_id=workflow_id,
+                candidate_hash=candidate_sha,
+                manifest_hash=manifest_sha,
+                verified_commit=commit_sha,
+                block_family=target_family,
+                block_version=target_version,
+                workspace_root=workspace_root,
+                identity_provider=identity_provider,
+                fixture_contract=fixture_contract,
+                progress=progress,
+            )
+    except FixtureBlockedError as error:
+        res = LearnerRuntimeVerificationResult(
+            status="BLOCKED",
+            message="Learner runtime verification BLOCKED: fixture is not configured or ready",
+            blockers=error.blockers,
+        )
+    except Exception as error:
+        res = LearnerRuntimeVerificationResult(
+            status="BLOCKED",
+            message="Learner runtime verification BLOCKED: fixture provisioning failed",
+            blockers=[str(error)],
+        )
+    finally:
+        if fixture_engine is not None:
+            await fixture_engine.dispose()
+
+    progress.finish(res.status)
     result_dict = {
         "status": res.status,
         "message": res.message,
@@ -1305,7 +1418,6 @@ async def verify_learner_runtime_endpoint(
         "blockers": res.blockers,
     }
 
-    session_factory = get_session_factory()
     async with session_factory() as write_session:
         fresh_repo = await get_workflow_repository(write_session)
         workflow_model = await fresh_repo.get(workflow_id, verify_bindings=False)
