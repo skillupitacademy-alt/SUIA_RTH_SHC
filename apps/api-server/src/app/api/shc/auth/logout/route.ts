@@ -15,8 +15,6 @@ export const dynamic = 'force-dynamic';
  * Logout endpoint for SHC admins.
  */
 async function handler(req: NextRequest) {
-  console.log('[SHC_AUTH] Logout request received');
-
   try {
     const tokenService = new TokenService();
     const accessToken = tokenService.getAccessToken(req);
@@ -29,7 +27,6 @@ async function handler(req: NextRequest) {
         userId = payload.userId;
       } catch {
         // Token invalid or expired, continue with logout anyway
-        console.log('[SHC_AUTH] Token verification failed during logout');
       }
     }
 
@@ -38,9 +35,7 @@ async function handler(req: NextRequest) {
     if (userId !== null && userId !== undefined && userId !== '') {
       const shcAuthService = new SHCAuthService();
       await shcAuthService.logout(userId, ip);
-      console.log('[SHC_AUTH] Logout successful:', { userId });
     } else {
-      console.log('[SHC_AUTH] Logout without user ID');
     }
 
     // Return success message

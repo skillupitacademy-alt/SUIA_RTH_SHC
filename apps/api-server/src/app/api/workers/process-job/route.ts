@@ -25,8 +25,9 @@ async function postHandler(req: Request) {
     let raw;
     try {
       raw = JSON.parse(rawBody);
-      validateJsonSize(raw);
-      validateJsonDepth(raw);
+      if (!validateJsonSize(raw) || !validateJsonDepth(raw)) {
+        throw new Error('Payload too large or too deep');
+      }
     } catch {
       throw badRequest("Invalid payload");
     }

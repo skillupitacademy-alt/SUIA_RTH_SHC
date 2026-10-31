@@ -80,8 +80,9 @@ async function patchHandler(req: NextRequest) {
     let raw;
     try {
       raw = await req.json();
-      validateJsonSize(raw);
-      validateJsonDepth(raw);
+      if (!validateJsonSize(raw) || !validateJsonDepth(raw)) {
+        throw new Error('Payload too large or too deep');
+      }
     } catch {
       throw badRequest("Invalid payload");
     }

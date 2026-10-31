@@ -36,17 +36,12 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
   const { requestId } = obsCtx; // 🔥 Observability context from withObservability
 
   try {
-    console.log('[AUTH_FLOW][ME][START]', JSON.stringify({
-      requestId,
-      path: req.nextUrl.pathname,
-    }));
 
     // Extract token from cookies (httpOnly)
     const tokenService = container.get(TokenService);
     const accessToken = tokenService.getAccessToken(req);
 
     if (typeof accessToken !== 'string' || accessToken.length === 0) {
-      console.log('[AUTH_FLOW][ME][NO_TOKEN]', JSON.stringify({ requestId }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_token' });
       return NextResponse.json({ user: null }, { status: 401 });
     }
@@ -56,10 +51,6 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
     try {
       payload = await tokenService.verifyAccessToken(accessToken);
     } catch (error) {
-      console.log('[AUTH_FLOW][ME][INVALID_TOKEN]', JSON.stringify({
-        requestId,
-        error: error instanceof Error ? error.message : 'unknown',
-      }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_token' });
       return NextResponse.json({ user: null }, { status: 401 });
     }
@@ -67,14 +58,8 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
     // 🔥 CRITICAL SECURITY FIX: Extract brand from JWT payload (NOT headers)
     const brand = payload.brand;
     
-    console.log('[ME_DEBUG] JWT-based brand resolution:', {
-      tokenBrand: brand,
-      userId: payload.userId,
-      securityNote: 'Brand resolved from signed JWT payload'
-    });
 
     if (typeof brand !== 'string' || (brand !== 'realtutorialhub' && brand !== 'skillup')) {
-      console.log('[ME_DEBUG] FAILURE: Invalid brand in JWT payload');
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'invalid_token_brand' });
       return NextResponse.json({ user: null }, { status: 401 });
     }
@@ -133,11 +118,6 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
     const brandContext = getAuthBrandContext(brand);
     
     // MANDATORY RUNTIME DB VALIDATION
-    console.log('[FINAL_DB_CHECK]', {
-      hasSelect: typeof brandContext.db.select === 'function',
-      hasQuery: Boolean(brandContext.db.query),
-      dbType: brandContext.db?.constructor?.name
-    });
     
     // STRICT DB VALIDATION - NO fallback allowed
     if (typeof brandContext.db?.select !== 'function') {
@@ -170,57 +150,30 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
           refreshTokenHash,
         });
         
-        console.log('[ME_DEBUG] FAANG-LEVEL: Session validation:', {
-          payloadUserId: payload.userId,
-          shadowUserId: payload.shadowUserId,
-          sessionUserId,
-          brand,
-          hasRefreshToken: true,
-          sessionFound: validSession !== null && validSession !== undefined,
-          sessionId: validSession?.id,
-          sessionRevoked: validSession?.revoked,
-        });
         
         if (!validSession) {
-          console.log('[ME_DEBUG] FAANG-LEVEL: Session not found or revoked - global logout detected');
           recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'session_revoked' });
           return NextResponse.json({ user: null }, { status: 401 });
         }
         
-        console.log('[ME_DEBUG] FAANG-LEVEL: Session validated successfully');
       } else {
         // Fallback: Check if user has ANY active refresh tokens
         // This handles cases where refresh token cookie might be missing
         const sessionUserId = payload.userId;
         const activeTokens = await brandTokenRepo.getUserSessions(sessionUserId);
         
-        console.log('[ME_DEBUG] SECURITY: Token revocation check (fallback):', {
-          payloadUserId: payload.userId,
-          shadowUserId: payload.shadowUserId,
-          sessionUserId,
-          brand,
-          hasRefreshToken: false,
-          activeTokensCount: activeTokens.length,
-        });
         
         if (activeTokens.length === 0) {
-          console.log('[ME_DEBUG] SECURITY: No active refresh tokens found - global logout detected');
           recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'no_active_tokens' });
           return NextResponse.json({ user: null }, { status: 401 });
         }
         
-        console.log('[ME_DEBUG] SECURITY: Found', activeTokens.length, 'active refresh tokens - allowing access');
       }
     } catch (tokenCheckError) {
-      console.error('[ME_DEBUG] Token revocation check failed:', tokenCheckError);
-      // Continue with normal flow if token check fails (graceful degradation)
+      recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'session_check_error' });
+      return NextResponse.json({ user: null }, { status: 401 });
     }
     
-    console.log('[ME_DEBUG] Database context:', {
-      brand,
-      useBrandBinding,
-      dbInstance: typeof brandContext.db === 'object' && brandContext.db !== null ? 'present' : 'missing'
-    });
 
     const userRepo = container.get(UserRepository);
     const brandUserRepo = useBrandBinding && typeof userRepo.withDb === 'function'
@@ -228,38 +181,17 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
       : userRepo;
     
     // TASK 3: Fetch user with brand-specific repository
-    console.log('[ME_DEBUG] Fetching user:', {
-      userId: payload.userId,
-      brand,
-      tokenBrand: payload.brand
-    });
 
     const user = await brandUserRepo.findByIdWithDetails(payload.userId);
 
-    console.log('[ME_DEBUG] User lookup result:', {
-      found: user !== null && user !== undefined,
-      userId: user?.id,
-      email: user?.email,
-      isBlocked: user?.isBlocked,
-      hasProfile: user?.profile !== null && user?.profile !== undefined
-    });
 
     if (user === null || user === undefined) {
-      console.log('[AUTH_FLOW][ME][USER_NOT_FOUND]', JSON.stringify({
-        requestId,
-        userId: payload.userId,
-        brand,
-      }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'user_not_found' });
       throw new Error(`User not found in ${brand} database`);
     }
 
     // Check if user is blocked
     if (user.isBlocked) {
-      console.log('[AUTH_FLOW][ME][USER_BLOCKED]', JSON.stringify({
-        requestId,
-        userId: user.id,
-      }));
       recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'user_blocked' });
       return ApiResponse.error(unauthorized('Account has been blocked'));
     }
@@ -289,13 +221,6 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
     const end = Date.now();
     const durationMs = end - start;
 
-    console.log('[AUTH_FLOW][ME][SUCCESS]', JSON.stringify({
-      requestId,
-      durationMs,
-      userId: user.id,
-      role: isAdmin ? 'admin' : 'user',
-      brand,
-    }));
 
     recordCounter(METRICS.AUTH.LOGIN, 1, { operation: 'get_me' });
 
@@ -306,11 +231,6 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to get user';
-    console.log('[AUTH_FLOW][ME][ERROR]', JSON.stringify({
-      requestId,
-      message,
-      stack: error instanceof Error ? error.stack?.split('\n').slice(0, 3) : undefined
-    }));
     recordCounter(METRICS.AUTH.FAILURE, 1, { reason: 'server_error' });
     
     // TASK 5: Proper error handling - return 500 for server errors, not 401

@@ -15,14 +15,11 @@ export const dynamic = 'force-dynamic';
  * Get current SHC admin user info.
  */
 async function handler(req: NextRequest) {
-  console.log('[SHC_AUTH] Me request received');
-
   try {
     const tokenService = new TokenService();
     const accessToken = tokenService.getAccessToken(req);
 
     if (accessToken === null || accessToken === undefined || accessToken === '') {
-      console.log('[SHC_AUTH] No access token found');
       return ApiResponse.error(unauthorized('Authentication required'));
     }
 
@@ -31,19 +28,12 @@ async function handler(req: NextRequest) {
 
     // Verify this is an SHC admin token
     if (payload.brand !== 'skillhubcore' || payload.aud !== 'shc-admin') {
-      console.log('[SHC_AUTH] Invalid token brand or audience:', {
-        brand: payload.brand,
-        aud: payload.aud,
-      });
       return ApiResponse.error(unauthorized('Invalid token'));
     }
 
-    console.log('[SHC_AUTH] Token verified:', { userId: payload.userId });
 
     const shcAuthService = new SHCAuthService();
     const user = await shcAuthService.me(payload.userId);
-
-    console.log('[SHC_AUTH] User info retrieved:', { userId: user.id, role: user.role });
 
     return ApiResponse.success({ 
       user: {

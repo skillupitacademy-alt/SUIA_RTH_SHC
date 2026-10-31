@@ -4,7 +4,7 @@ import { PracticeInteractionRequestSchema } from '@quiz/validation';
 import { and, eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getAuthenticatedUserId, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
+import { extractCorrectAnswerFromContent, getAuthenticatedUserIdAsync, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,15 +12,18 @@ export const dynamic = 'force-dynamic';
  * POST /api/tutorial/interactions/practice
  * 
  * Submit practice test answer and track user interaction
+ * 
+ * 🔐 SECURITY FIX (INT-01b): Same fix as quiz — correctAnswer resolved
+ * server-side when a previous submission exists.
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = getAuthenticatedUserId(request);
+    const userId = await getAuthenticatedUserIdAsync(request);
     if (userId instanceof NextResponse) return userId;
 
     const parsed = await parseJsonBody(request, PracticeInteractionRequestSchema);
     if (!parsed.success) return parsed.response;
-    const { sectionId, questionId, selectedAnswer, correctAnswer, timeSpent, feedbackViewed } = parsed.data;
+    const { sectionId, questionId, selectedAnswer, correctAnswer: clientCorrectAnswer, timeSpent, feedbackViewed } = parsed.data;
 
     const section = await getTutorialSection(sectionId);
     if (!section) {
@@ -30,20 +33,55 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const isCorrect = selectedAnswer === correctAnswer;
-    
-    // Get attempt number
-    const previousAttempts = await db
+    // 🔐 SECURITY: Resolve correctAnswer server-side from authoritative section content or DB.
+    // Tier 1: Look directly in section content JSONB (authoritative source)
+    const contentCorrectAnswer = extractCorrectAnswerFromContent(section.content, questionId);
+
+    const previousAnswers = await db
       .select()
       .from(practiceTestAnswers)
       .where(
         and(
-          eq(practiceTestAnswers.userId, userId),
           eq(practiceTestAnswers.questionId, questionId)
         )
       );
-    
-    const attemptNumber = previousAttempts.length + 1;
+
+    let correctAnswer: string;
+    const previousCorrect = previousAnswers.find(a => a.correctAnswer);
+
+    if (contentCorrectAnswer) {
+      // Tier 1: Authoritative answer from section JSONB
+      correctAnswer = contentCorrectAnswer;
+      if (clientCorrectAnswer !== correctAnswer) {
+        console.warn('[SECURITY][Practice] Client sent mismatched correctAnswer against section content', {
+          questionId,
+          clientValue: clientCorrectAnswer,
+          serverValue: correctAnswer,
+          userId: typeof userId === 'string' ? userId.slice(0, 8) : 'unknown',
+        });
+      }
+    } else if (previousCorrect) {
+      // Tier 2: Use the server-stored correct answer from a previous submission
+      correctAnswer = previousCorrect.correctAnswer;
+      if (clientCorrectAnswer !== correctAnswer) {
+        console.warn('[SECURITY][Practice] Client sent mismatched correctAnswer against DB history', {
+          questionId,
+          clientValue: clientCorrectAnswer,
+          serverValue: correctAnswer,
+          userId: typeof userId === 'string' ? userId.slice(0, 8) : 'unknown',
+        });
+      }
+    } else {
+      // Tier 3: First-ever submission with no section/DB definition
+      correctAnswer = clientCorrectAnswer;
+      console.warn('[SECURITY][Practice] First submission — accepting client correctAnswer', {
+        questionId,
+        sectionId,
+      });
+    }
+
+    const isCorrect = selectedAnswer === correctAnswer;
+    const attemptNumber = previousAnswers.filter(a => a.userId === userId).length + 1;
     
     // Insert practice test answer
     const [answer] = await db
@@ -81,13 +119,13 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET /api/tutorial/interactions/practice?userId=xxx&sectionId=xxx
+ * GET /api/tutorial/interactions/practice?sectionId=xxx
  * 
  * Get user's practice test answers for a section
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = getAuthenticatedUserId(request);
+    const userId = await getAuthenticatedUserIdAsync(request);
     if (userId instanceof NextResponse) return userId;
 
     const { searchParams } = new URL(request.url);
