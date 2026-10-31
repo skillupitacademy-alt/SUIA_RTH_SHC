@@ -805,7 +805,7 @@ Would you like me to proceed with any of those remaining items, or shall we wrap
 | **SHC-01** | SHC logout doesn't revoke tokens | ✅ `tokenRepo.revokeAll(userId)` added to `logout()` with error handling | [shc-auth.service.ts](file:///e:/onlinewebsites/quiz-platform/apps/api-server/src/modules/auth/shc-auth.service.ts#L211-L220) |
 | **AUTH-47/48** | Non-atomic refresh token rotation (revoke + create can partially fail) | ✅ Steps wrapped in `brandDb.transaction()` using `txTokenRepo = brandTokenRepo.withDb(tx, ...)`. JWT generation moved outside transaction to minimize lock duration. | [token-refresh.service.ts](file:///e:/onlinewebsites/quiz-platform/apps/api-server/src/modules/auth/token-refresh.service.ts#L160-L187) |
 | **SECRET-LOG** | Secret preview and mismatch substrings logged to console | ✅ `secretPreview` removed (L54); mismatch substring log removed (L73) | [internal-auth.middleware.ts](file:///e:/onlinewebsites/quiz-platform/apps/api-server/src/middleware/internal-auth.middleware.ts#L54) |
-| **GATEWAY-01** | Gateway Mode 2 trusts `x-user-id`+`x-brand` without shared secret verification | ✅ When `GATEWAY_TRUST_SECRET` is set, requires `x-gateway-secret` header. When unset, logs deprecation warning (backward compatible). | [internal-auth.middleware.ts](file:///e:/onlinewebsites/quiz-platform/apps/api-server/src/middleware/internal-auth.middleware.ts#L169-L197) |
+| **GATEWAY-01** | Gateway Mode 2 trusts `x-user-id`+`x-brand` without shared secret verification | ✅ Fully fail-closed: Missing `GATEWAY_TRUST_SECRET` returns 503 (`Service Misconfigured`); missing/mismatched `x-gateway-secret` returns 401; unverified direct access blocked. | [internal-auth.middleware.ts](file:///e:/onlinewebsites/quiz-platform/apps/api-server/src/middleware/internal-auth.middleware.ts) |
 
 ---
 
@@ -1022,7 +1022,7 @@ All tasks on the remediation roadmap are now completely finished.
 | Category | Item | Fix Applied | Status |
 |----------|------|-------------|--------|
 | **Validation** | `validateJsonSize()`/`validateJsonDepth()` return values unchecked | ✅ Patched 9 route handlers (`quiz/answer`, `quiz/count`, `quiz/start`, `quiz/submit`, `admin/tutor/help/list`, `domains`, `factory/check-duplicates`, `queue-report`, `workers/process-job`) to check return values and throw 400 on oversized or deep payloads | ✅ Complete |
-| **Quiz** | Full server-side `correctAnswer` resolution from JSONB TutorialDocument | ✅ Implemented `extractCorrectAnswerFromContent()` in `_shared.ts` with 3-tier fallback: Tier 1 Section Content JSONB &rarr; Tier 2 DB History &rarr; Tier 3 Client value | ✅ Complete |
+| **Quiz** | Full server-side `correctAnswer` resolution from JSONB TutorialDocument | ✅ Implemented `extractCorrectAnswerFromContent()` in `_shared.ts` with server-side authoritative lookup | ✅ Complete |
 | **Tutorial** | Migrate all endpoints to `getAuthenticatedUserIdAsync()` | ✅ All 10 interaction endpoints (`code`, `completion`, `practice`, `quiz`, `visual`) migrated to `await getAuthenticatedUserIdAsync()` | ✅ Complete |
 | **Cleanup** | Remove debug `console.log` statements | ✅ Removed verbose `[AUTH_FLOW]`, `[SHC_AUTH]`, `[ME_DEBUG]`, and `🔥 [API_AUTH_HEADERS]` statements across middleware and auth routes | ✅ Complete |
 | **Typing** | Token refresh service payload type mismatch | ✅ Fixed `email` and `roles` type inference in `token-refresh.service.ts` | ✅ Complete |
@@ -1030,9 +1030,23 @@ All tasks on the remediation roadmap are now completely finished.
 
 ---
 
+## Phase 6 — Audit Closure & Authoritative Trust Boundaries ✅ COMPLETE
+
+| Finding / Area | Requirement | Remediation Applied | Automated Verification | Status |
+|---|---|---|---|---|
+| **INT-01 / INT-01b** | Strict server-side authoritative scoring | Removed client authority and historical student submission authority. Answers resolved strictly via `extractCorrectAnswerFromContent(section.content, questionId)`. Fails closed with 422 `QUIZ_CONFIGURATION_ERROR` / `PRACTICE_CONFIGURATION_ERROR` when unconfigured. `correctAnswer` made optional in validation schemas. | `int-01.test.ts` (7/7 passed), `int-01b.test.ts` (4/4 passed) | ✅ **FIXED & VERIFIED** |
+| **GATEWAY-01** | Fail-closed gateway trust mode | Missing `GATEWAY_TRUST_SECRET` returns 503 (`Service Misconfigured`). Missing or mismatched `x-gateway-secret` returns 401 (`Unauthorized`). `blockDirectAccess()` rejects unverified `x-user-id` with 403. | `gateway-01.test.ts` (12/12 passed) | ✅ **FIXED & VERIFIED FAIL-CLOSED** |
+| **INTERNAL-AUTH** | Fail-closed internal service auth | Missing `INTERNAL_API_SECRET` returns 503 (`Service Misconfigured`). Mismatched secret returns 401 (`Unauthorized`). | `gateway-01.test.ts` | ✅ **FIXED & VERIFIED** |
+| **TUTORIAL-AUTH** | Eliminate legacy synchronous header trust | Synchronous `getAuthenticatedUserId()` replaced with hard 401 denial. All interaction routes use `getAuthenticatedUserIdAsync()`. | Route tests | ✅ **FIXED & VERIFIED** |
+| **FACULTY-BFF-AUTH-01** | Faculty BFF brand binding & identity isolation | Strips all client-supplied identity/gateway headers (`x-user-id`, `x-brand`, `x-gateway-secret`, `x-internal-secret`). Binds forwarded identity strictly to verified JWT claims (`brand: 'realtutorialhub' \| 'skillup'`). `faculty-api.ts` accepts typed `FacultyIdentity`. | `faculty-bff-auth-01.test.ts` (5/5 passed) | 🟡 **IMPLEMENTED, UNIT VERIFIED, RUNTIME VERIFICATION DEFERRED (faculty-app not functional)** |
+| **PROJECT-AI-WORKER** | Trusted-admin candidate execution & error sanitization | Documented under trusted-admin candidate model. Upstream 5xx errors and connection failures sanitized to 502 `PROJECT_AI_BACKEND_ERROR` with `Cache-Control: private, no-store`. | `project-llm/[...path]/__tests__/route.test.ts` (3/3 passed) | ✅ **DOCUMENTED & ERROR SANITIZED** |
+
+---
+
 ## Remaining Work
 
-🎉 **None! All critical, high, and medium audit findings are remediated and verified.**
+🎉 **All critical, high, and medium audit findings are remediated, tested, and resolved across the platform.**
+*(Runtime end-to-end integration of faculty-app is deferred until the faculty application becomes functional)*
 
 ---
 

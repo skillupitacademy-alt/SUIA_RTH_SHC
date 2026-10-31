@@ -1357,3 +1357,178 @@ Sources: [HierarchySyncService](https://github.com/skillupitacademy-alt/SUIA_RTH
 
 No files have been modified and no tests have been run. The next review phase should inspect the database migrations/actual FK constraints and the question/blueprint authorization boundary, to determine whether hierarchy deletion and resource-scoping risks are enforced elsewhere.
 
+# Phase 29 — Report persistence and PDF workflow
+
+I’m continuing from the report-download and artifact-retrieval phase. This review is based on the current `main` branch files fetched from `skillupitacademy-alt/SUIA_RTH_SHC`; I have not changed repository files or run tests.
+
+The key architectural question for this phase is whether a report’s attempt, owner, database state, and stored artifact remain bound together through duplicate deliveries, retries, and concurrent workers.
+
+## 29.1 — `report-repository.ts`
+
+File: `apps/api-server/src/modules/report-engine/report-repository.ts`
+
+| Code path                                    | Finding                                                               | Risk                                                                                                                                             |
+| -------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `getReportByAttempt(attemptId)`              | Looks up by attempt ID only.                                          | Fine as a lookup primitive, but callers must verify the attempt owner before exposing or changing data.                                          |
+| `createReportIfNotExists(input)`             | Performs a read, then an insert; the two operations are not atomic.   | Concurrent calls can both see “not found” and race on the unique attempt constraint. One may fail rather than return the already-created report. |
+| `updateReportStatus(attemptId, status, ...)` | Updates by attempt ID only, with no expected-current-state condition. | A late worker can overwrite a newer state—for example, set a report to `generating` after another worker made it `ready`.                        |
+| `updateReportSuccess(attemptId, data)`       | Writes `ready` and artifact metadata by attempt ID only.              | A stale or competing worker can replace the current artifact pointer or mark a report ready without proving it owns the active generation.       |
+| `listReports(filters)`                       | Accepts status as a string and casts it to the enum type.             | Type assertion does not validate runtime input. Invalid status strings can reach the database query.                                             |
+| `getReportStats()`                           | Aggregates all reports.                                               | Appropriate for an admin-level function, but callers must not expose these global aggregates to ordinary users.                                  |
+
+The schema’s unique constraint on `attemptId` prevents duplicate report rows, but it does not make the repository’s read-then-insert operation race-safe. Nor does it provide concurrency control for status transitions.
+
+Architectural recommendation: make report creation an atomic insert/upsert with a defined conflict behavior, and make transitions conditional—e.g. update only when the stored state is one of the states the caller is allowed to advance. For finalization, include a generation/run identifier or compare-and-set token so an older worker cannot publish over a newer run.
+
+## 29.2 — `reports.ts` and `exam.ts`
+
+Files: `packages/db/src/schema/reports.ts`, `packages/db/src/schema/exam.ts`
+
+The `reports` table has:
+
+- `attemptId` as a unique, non-null FK to `exams.id`
+- `userId` as a separate FK to `users.id`
+- `status`, `fileRef`, storage provider, and generation metadata
+
+The important integrity gap is that the schema independently references `reports.attemptId → exams.id` and `reports.userId → users.id`. It does not enforce that `reports.userId` equals the `userId` of the linked exam.
+
+That means the database can accept a report row whose `attemptId` points to one user’s exam while `userId` points to another user. Application code must prevent that mismatch, or the schema must be strengthened with a composite ownership constraint.
+
+There are also two artifact-pointer locations:
+
+1. `reports.fileRef`
+2. `exams.exportUrls.analytics_pdf`
+
+The PDF workflow writes both. These pointers can diverge if the process fails between writes, or if concurrent workers read-modify-write the JSONB `exportUrls` value. A single canonical artifact pointer—or transactional/conditional synchronization—is safer.
+
+## 29.3 — `ReportJobService.ts`
+
+File: `apps/api-server/src/services/reports/ReportJobService.ts`
+
+### Good concurrency control
+
+`getNextJob()` uses a single SQL update with a `FOR UPDATE SKIP LOCKED` subquery to claim one queued job and set it to `processing`. This is materially stronger than a separate “select queued job, then update” sequence: competing workers should not claim the same row through this query.
+
+### Findings
+
+1\. Job ownership is not enforced in service operations.\
+`getJobStatus`, `updateProgress`, and `failJob` take only `jobId`. That can be acceptable for internal worker methods, but any user-facing caller must first verify `job.userId` against the authenticated identity. This is consistent with the earlier finding in the export-status route: a job ID alone is not an authorization boundary.
+
+2\. Stale-job recovery can race with active processing.\
+`resetStaleJobs()` resets processing jobs based on `updated_at` age. The worker updates progress at intervals, but a long rendering operation can exceed the 30-minute stale threshold without updating the job row. Recovery may then requeue a job while the original worker is still rendering. A second worker can start a duplicate run.
+
+3\. Retry state is not a full execution lease.\
+The stale reset increments `retry_count`, but there is no worker/run token checked by subsequent progress, failure, or completion writes. If the job is requeued and reclaimed, the original worker can still write state for the same `jobId`.
+
+4\. Retry exhaustion is bounded, but error handling needs care.\
+Jobs at or above `max_retries` are marked failed. That is a useful limit, but a stale original worker could later overwrite the failed state because `failJob` and `updateProgress` are unconditional by ID.
+
+Recommendation: claim jobs with a durable lease/run token and heartbeat; every progress/final-state write should include that token and expected status. Recovery should only expire a lease after a heartbeat timeout, not merely because the row has been processing for a fixed duration.
+
+## 29.4 — `HierarchicalReportService.ts`
+
+File: `apps/api-server/src/services/reports/HierarchicalReportService.ts`
+
+The flow is:
+
+1. Load job by ID.
+2. Mark progress at 5%.
+3. Load the exam’s materialized report and user ID.
+4. Traverse hierarchy nodes and estimate page count.
+5. Render each node as a PDF segment.
+6. Merge segments.
+7. Upload the final PDF.
+8. Update the report row and `exams.exportUrls`.
+9. Mark job completed and exam completed.
+
+### Findings
+
+\- The `job.userId` and `exam.userId` relationship is not verified. The service uses `exam.userId` for the upload namespace, which is safer than trusting the job’s supplied user ID for storage. But it never checks that the job owner matches the exam owner. This is a data-integrity issue: a mismatched job can drive processing of an exam it does not own. Enforce `job.userId === exam.userId` before report access or generation.
+
+\- Artifact publication is not atomic. The upload happens before the report-row update, followed by a separate JSONB pointer update on the exam. Failures can leave an uploaded object without a database pointer, or leave `reports.fileRef` and `exams.exportUrls.analytics_pdf` inconsistent.
+
+\- The exam is marked `completed` at the end of report generation. Report PDF generation and exam completion are distinct lifecycle events. A report worker should not independently set the exam’s status to completed unless that transition is explicitly part of the exam lifecycle contract. Otherwise it can conceal an exam that was not actually completed through the exam submission flow.
+
+\- Progress values are not tied to durable stages. Progress updates are performed around each segment and upload, but a retry starts from the beginning. The code does not persist a segment checkpoint or a stable run identity to distinguish an old attempt from a newer attempt.
+
+\- An empty hierarchy can reach PDF merging. The current traversal always pushes the root domain, so a normal valid hierarchy yields at least one node. Still, the service assumes `report.hierarchy` and its nested arrays are present and valid; a typed cast from JSONB does not validate runtime shape. Validate the materialized report before traversal.
+
+The `SKIP LOCKED` claim in the job service is a good foundation. The larger problem is that the claim does not remain authoritative throughout this processing service: later writes are keyed only by `jobId`, without proving the worker still owns the job.
+
+## 29.5 — `pdf-report/route.ts`
+
+File: `apps/api-server/src/app/api/workflows/pdf-report/route.ts`
+
+### Findings
+
+1\. QStash signature verification is present.\
+The outer handler calls `verifyQStashSignature(req)` and rejects invalid signatures. This is a positive control. The verifier also fails closed when signing keys are unavailable.
+
+2\. The outer payload validation is incomplete.\
+The secured handler validates `attemptId`, but the workflow itself requires both `attemptId` and `userId`. The outer handler does not validate `userId` before forwarding the body. A signed malformed payload can therefore enter the workflow and fail later, rather than being rejected at the boundary.
+
+3\. The supplied `userId` is not compared with the exam owner.\
+The workflow uses the request payload’s `userId` for `uploadReport(...)`. The `ReportPdfService.generate()` call does not receive that user ID and does not validate ownership either. The workflow should load the exam and verify its owner before generating or uploading the report.
+
+4\. Idempotency checks use two different pointer sources.\
+The workflow checks `reports.status === "ready"` and a nonempty `fileRef`, then checks `exams.exportUrls.analytics_pdf`. If either pointer exists, it short-circuits. A stale or incorrect pointer can therefore cause generation to be skipped even if the report record and stored artifact are not actually consistent.
+
+5\. A report can be left in `generating`.\
+The workflow writes `generating` before rendering and uploading. If rendering, upload, or finalization fails, the code shown does not explicitly transition the report to `failed`. Whether a failure handler elsewhere repairs this state needs to be verified; this route alone does not establish that guarantee.
+
+6\. Finalization has a split-write window.\
+`updateReportSuccess()` writes the report row, then the workflow separately reads `exams.exportUrls` and updates the JSONB field. If the second write fails, the report row can be `ready` while the exam pointer is missing or stale. Concurrent updates can also overwrite each other’s JSONB fields because the code performs read-modify-write rather than a guarded merge.
+
+7\. The Redis lock is released in `finally`.\
+The outer handler acquires `pdf-report:${attemptId}` and releases it when the workflow handler returns. This is safe only if the handler’s return means the durable workflow execution has finished. If the workflow framework returns after accepting or scheduling the durable workflow, the lock protects only the request/acceptance window—not the actual rendering duration. This requires confirmation against the framework’s runtime semantics; I would not treat the lock as proof that duplicate rendering is prevented.
+
+8\. The lock release is not ownership-aware.\
+`releaseJobLock()` deletes the key unconditionally. If the lock expires and another worker acquires it, the earlier worker can delete the newer worker’s lock. The same concern applies to the shared `job-lock.ts` helper. Use a unique lock token and delete only when the stored token matches.
+
+9\. The exam pointer is not owner-scoped.\
+Both `findFirst` and `update(exams)` are filtered only by `exams.id`. That can be acceptable inside a trusted workflow after ownership has been validated, but this route does not establish that validation.
+
+## 29.6 — `report-pdf.service.ts`
+
+File: `apps/api-server/src/modules/report-engine/report-pdf.service.ts`
+
+### Security and operational observations
+
+- `generate()` loads exam report material by `attemptId` and invokes the report engine without checking a caller’s ownership. This should be treated as an internal primitive; the authenticated or trusted workflow boundary must validate ownership before invoking it.
+- The internal key is added to the print URL as `internalKey=...` and also sent as an HTTP header. The URL is logged during navigation. This creates a risk of the key appearing in application logs, browser diagnostics, or downstream URL telemetry. Prefer header-only authentication where possible and redact sensitive query parameters from logs.
+- `INTERNAL_API_KEY` falls back to `"dev-internal-key"`. A development fallback can be dangerous if production configuration is missing. Production should fail closed rather than silently use a known value.
+- The browser is closed in `finally`, which is good resource cleanup. However, the remote Browserless connection and local browser launch occur before the `try` block. Failures during browser setup are outside that cleanup block; this is worth reviewing for remote-session cleanup and resource leakage.
+- `pageCount` is returned as `totalPages ?? 1`. That is an estimate or caller-supplied value, not a count derived from the generated PDF. If consumers interpret it as the actual page count, report metadata can be inaccurate.
+- `generateAndUpload()` derives the user ID from the exam before upload, which is preferable to accepting a caller-supplied user ID. It still relies on its caller to authorize the attempt before invoking it.
+
+## Phase 29 — consolidated assessment
+
+| Priority | Finding                                                                                   | Primary remediation                                                                             |
+| -------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Critical | Report/job owner and exam owner are not consistently bound together.                      | Verify ownership at workflow entry; enforce database-level composite ownership where practical. |
+| High     | Unconditional report/job status writes allow stale workers to overwrite newer state.      | Conditional transitions with expected state and a worker/run token.                             |
+| High     | Retry recovery can requeue jobs while an original long-running worker is still active.    | Lease + heartbeat + ownership token; fence all subsequent writes.                               |
+| High     | Report row and exam JSONB artifact pointers can diverge.                                  | Define one canonical pointer or synchronize them transactionally/conditionally.                 |
+| High     | PDF workflow’s supplied `userId` is used for upload without validating exam ownership.    | Resolve the owner from the exam and compare it with the request/job owner before processing.    |
+| High     | Lock deletion is unconditional; duplicate-work protection may not span durable execution. | Token-based lock release and verify the workflow framework’s execution/return semantics.        |
+| Medium   | Report creation uses read-then-insert despite a unique constraint.                        | Atomic insert/upsert with defined conflict behavior.                                            |
+| Medium   | Report generation can leave stale `generating` state after errors.                        | Durable failure transition and stale-generation recovery.                                       |
+| Medium   | PDF internal key appears in a query parameter and logged URL.                             | Header-only secret transport and log redaction.                                                 |
+| Medium   | PDF generation marks the exam completed in the hierarchical path.                         | Separate exam lifecycle state from report-generation state.                                     |
+
+### Principal Architect conclusion
+
+The current implementation has several useful building blocks: a unique report-per-attempt constraint, QStash signature verification, a `SKIP LOCKED` job claim, bounded retries, and storage paths derived from the exam owner in the hierarchical service.
+
+However, the core correctness gap is lack of end-to-end ownership and execution fencing. The system can claim a job safely, but it does not consistently prove that the same owner and same worker-run are authorized to finish it. That weakens both tenant isolation and retry correctness.
+
+I recommend addressing these in this order:
+
+1. Verify `job.userId === exam.userId` and validate PDF workflow ownership before any report generation or upload.
+2. Add lease/run tokens and conditional state transitions to report jobs and report rows.
+3. Make artifact-pointer publication atomic or designate a single canonical pointer.
+4. Separate exam completion from report completion.
+5. Remove the internal secret from the print URL and redact it from logs.
+6. Add concurrency tests for duplicate delivery, stale worker recovery, conflicting finalization, and owner mismatch.
+
+This phase is a static code review of the files listed above; it is not a test or runtime certification. The exact behavior of the Upstash workflow handler’s return and lock lifetime remains an item to verify against the deployed runtime.
