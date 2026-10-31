@@ -55,10 +55,18 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
       .where(eq(this.refreshTokensTable.token, tokenHash));
   }
 
-  async revokeById(id: string) {
+  /**
+   * 🔐 SECURITY FIX (AUTH-50): revokeById is now user-scoped.
+   * Prevents cross-user session revocation by requiring userId match.
+   */
+  async revokeById(id: string, userId?: string) {
+    const conditions = [eq(this.refreshTokensTable.id, id)];
+    if (userId) {
+      conditions.push(eq(this.refreshTokensTable.userId, userId));
+    }
     await this.dbInstance.update(this.refreshTokensTable)
       .set({ revoked: true })
-      .where(eq(this.refreshTokensTable.id, id));
+      .where(and(...conditions));
   }
 
   async revokeAll(userId: string) {
@@ -145,21 +153,20 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
       .orderBy(this.refreshTokensTable.lastUsedAt);
   }
 
-  // 🔐 Enterprise Auth: Revoke all sessions except current
+  /**
+   * 🔐 SECURITY FIX (AUTH-49): Revoke all sessions except current in a single
+   * atomic WHERE clause using sql"`not equal"` instead of revoking all then
+   * un-revoking the current token (which was race-prone).
+   */
   async revokeOtherSessions(userId: string, currentTokenHash: string) {
+    const { ne } = await import('drizzle-orm');
     await this.dbInstance.update(this.refreshTokensTable)
       .set({ revoked: true })
       .where(and(
         eq(this.refreshTokensTable.userId, userId),
         eq(this.refreshTokensTable.revoked, false),
-        // Use SQL to compare token hashes (not equal to current)
-        // Note: This is a simplified version, you may need to adjust based on your DB
+        ne(this.refreshTokensTable.token, currentTokenHash)
       ));
-    
-    // Then un-revoke the current token if it was affected
-    await this.dbInstance.update(this.refreshTokensTable)
-      .set({ revoked: false })
-      .where(eq(this.refreshTokensTable.token, currentTokenHash));
   }
 
   // 🔐 Enterprise Auth: Check for suspicious activity (IP mismatch)

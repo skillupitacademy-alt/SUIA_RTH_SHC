@@ -5,6 +5,7 @@ import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import { PasswordService } from '@/modules/auth/password.service';
+import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { container } from '@/modules/core/container';
 import { EmailService } from '@/modules/email/EmailService';
@@ -13,7 +14,8 @@ export class PasswordRecoveryService {
   constructor(
     private userRepo = container.get(UserRepository),
     private auditService = container.get(AuditService),
-    private passwordService = container.get(PasswordService)
+    private passwordService = container.get(PasswordService),
+    private tokenRepo = container.get(TokenRepository)
   ) {}
 
   async forgotPassword(email: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
@@ -80,7 +82,14 @@ export class PasswordRecoveryService {
 
     await brandUserRepo.updatePassword(validToken.userId, passwordHash);
 
-    // Invalidate token
+    // 🔐 SECURITY FIX (API-41): Revoke ALL active refresh sessions after password reset.
+    // A compromised session must not survive a password change.
+    const brandTokenRepo = shouldUseBrandBinding() && typeof this.tokenRepo.withDb === 'function'
+      ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
+      : this.tokenRepo;
+    await brandTokenRepo.revokeAll(validToken.userId);
+
+    // Invalidate reset token
     await brandUserRepo.deleteResetToken(validToken.id);
 
     await this.auditService.log({ userId: validToken.userId, action: 'auth_password_reset_completed', ip, brand });

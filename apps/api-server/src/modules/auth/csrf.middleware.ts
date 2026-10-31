@@ -41,15 +41,10 @@ export async function csrfProtection(_request: NextRequest) {
   const headerToken = _request.headers.get('x-csrf-token');
 
   if (cookieToken === undefined || headerToken === null || cookieToken !== headerToken) {
-    // SECURITY UPGRADE: JWT Fallback
-    // If the CSRF check fails, check if the _request has a valid Authorization header.
-    // In a multi-port/multi-domain local setup, cookies are often lost or blocked.
-    // If the JWT is valid, we can trust the identity and just re-issue the CSRF _token.
-    const authHeader = _request.headers.get('authorization');
-    if (authHeader !== null && authHeader.startsWith('Bearer ')) {
-      // We return null to allow the _request, but middleware will also add the new CSRF _token to the response
-      return null; 
-    }
+    // 🔐 SECURITY FIX (MW-07): Removed Bearer header bypass.
+    // Merely having a Bearer header does NOT prove the request is legitimate.
+    // An attacker can craft a cross-origin request with a Bearer header.
+    // CSRF protection must remain independent of authentication.
 
     // SELF-HEALING: If session is valid, issue a new _token so the client can retry immediately
     // We only provide this helper if the _user is actually logged in (has an access _token)
