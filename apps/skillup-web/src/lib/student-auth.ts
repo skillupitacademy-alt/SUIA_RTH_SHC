@@ -63,11 +63,8 @@ function getPayloadRoles(payload: UserTokenPayload): string[] {
 }
 
 function hasSkillupAccess(payload: UserTokenPayload): boolean {
-  if (payload.brand === 'skillup') {
-    return true;
-  }
-
-  return Array.isArray(payload.platforms) && payload.platforms.includes('skillup');
+  // Membership in multiple brands does not change the scope of this access token.
+  return payload.brand === 'skillup';
 }
 
 export async function requireStudentAuth(request: NextRequest): Promise<StudentAuthResult> {

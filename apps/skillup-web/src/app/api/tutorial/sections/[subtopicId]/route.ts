@@ -51,7 +51,9 @@ export async function GET(
     }
     
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
     
   } catch (error) {
     console.error('[SkillUp Tutorial Sections] Error:', error);

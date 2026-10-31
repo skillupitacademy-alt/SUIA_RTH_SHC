@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,9 @@ export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ brandId: string }> },
 ) {
+  const accessDenied = await requireAdminRequest(_request);
+  if (accessDenied) return accessDenied;
+
   const { brandId } = await context.params;
   const baseUrl = resolveContentBaseUrl();
 

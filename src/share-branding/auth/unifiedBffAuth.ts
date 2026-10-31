@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { TokenService } from '@quiz/auth';
 import type { Brand } from '@quiz/types';
 import { isSupportedBrand } from '@quiz/types';
+import { resolveBrandFromHostname, extractHostnameFromRequest } from './brandResolution';
 
 /**
  * 🔥 UNIFIED BFF AUTH - SINGLE SOURCE OF TRUTH
@@ -86,13 +87,7 @@ function normalizeRoles(roles: string[] = []): Role[] {
  * Replaces all custom cookie parsing and JWT decoding
  */
 export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthResult> {
-  const cookieHeader = req.headers.get('cookie') || '';
-  
-  // Extract accessToken from cookies
-  const accessToken = cookieHeader
-    .split('; ')
-    .find(c => c.startsWith('accessToken='))
-    ?.split('=')[1];
+  const accessToken = req.cookies.get('accessToken')?.value;
 
   if (!accessToken) {
     // 📊 OBSERVABILITY: Log missing token
@@ -120,6 +115,9 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
       typeof rawBrand === 'string' && isSupportedBrand(rawBrand)
         ? rawBrand
         : undefined;
+    const hostname = extractHostnameFromRequest(req.headers.get('host'));
+    const requestBrand = hostname ? resolveBrandFromHostname(hostname) : undefined;
+    if (!brand || !requestBrand || brand !== requestBrand) return { isAuthenticated: false };
     
     // 🔥 CRITICAL FIX: Normalize roles immediately to prevent security bypass
     const rawRoles = Array.isArray(payload.roles) ? payload.roles : [];
@@ -153,7 +151,7 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
       isAuthenticated: true,
       userId: shadowUserId,
       email: payload.email,
-      brand: brand || 'realtutorialhub', // 🔥 COMPATIBILITY: Preserve existing RTH fallback
+      brand,
       roles: normalizedRoles, // ✅ Always normalized and deduplicated
       accessToken,
       shadowUserId,
@@ -178,7 +176,8 @@ export async function extractAuthFromRequest(req: NextRequest): Promise<BffAuthR
  * Replaces inconsistent header creation across BFF routes
  */
 export function createInternalHeaders(auth: BffAuthResult): Record<string, string> {
-  if (!auth.isAuthenticated || !auth.userId || !auth.shadowUserId || !auth.originalUserId) {
+  if (!auth.isAuthenticated || !auth.userId || !auth.shadowUserId || !auth.originalUserId ||
+      !auth.brand || !isSupportedBrand(auth.brand)) {
     throw new Error('Cannot create internal headers for unauthenticated request');
   }
 
@@ -204,7 +203,7 @@ export function createInternalHeaders(auth: BffAuthResult): Record<string, strin
     'x-user-id': auth.originalUserId,  // ✅ FIXED: Use originalUserId for database queries
     'x-shadow-user-id': auth.shadowUserId,
     'x-original-user-id': auth.originalUserId,
-    'x-brand': auth.brand || 'realtutorialhub',
+    'x-brand': auth.brand,
     'x-internal-secret': internalSecret,
     'content-type': 'application/json',
   };

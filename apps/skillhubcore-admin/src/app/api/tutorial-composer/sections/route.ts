@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 /**
  * Tutorial Composer API - Sections (V2)
  * V2 API using (subtopicId, brandId) identity
@@ -91,6 +92,9 @@ function getAuthenticatedContext(_request: NextRequest): TutorialComposerService
  * Create new tutorial (V2)
  */
 export async function POST(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);
@@ -200,6 +204,9 @@ export async function POST(request: NextRequest) {
  * List tutorials with filters (V2)
  */
 export async function GET(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     // Step 1: Authenticate request (admin API requires authentication)
     const authResult = await authenticateRequest(request);

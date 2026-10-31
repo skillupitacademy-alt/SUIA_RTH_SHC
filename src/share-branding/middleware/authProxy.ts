@@ -164,8 +164,6 @@ async function resolveUser(request: NextRequest): Promise<AuthResult> {
   console.log('[BFF_AUTH_DEBUG]', JSON.stringify({
     pathname: request.nextUrl.pathname,
     hasToken: token !== undefined && token.trim().length > 0,
-    tokenLength: token?.length ?? 0,
-    tokenPrefix: token?.substring(0, 20),
   }));
   
   if (token === undefined || token.trim().length === 0) {

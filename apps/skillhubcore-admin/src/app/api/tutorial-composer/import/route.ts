@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 /**
  * Tutorial Composer API - Raw Content Import
  * Ingests raw Markdown, HTML, or Plain Text and produces a validated canonical TutorialDocument.
@@ -62,33 +63,14 @@ function handleImportError(error: unknown) {
  * Ingest raw content and return parsed TutorialDocument with structural statistics
  */
 export async function POST(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     // Step 1: Authenticate request
     const authResult = await authenticateRequest(request);
-    let user;
-    if ('type' in authResult) {
-      // Dev auth bypass is ONLY permitted when explicitly enabled in local development environment
-      const isExplicitDevBypass =
-        process.env.NODE_ENV === 'development' &&
-        (process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS === 'true' ||
-          request.headers.get('x-tutorial-dev-bypass') === 'true');
-
-      if (isExplicitDevBypass) {
-        user = {
-          userId: 'dev-admin-preview',
-          originalUserId: 'dev-admin-preview',
-          shadowUserId: 'dev-admin-preview',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          roles: ['admin', 'super_admin'] as any[],
-          isAdmin: true,
-          email: 'admin@skillhubcore.local',
-        };
-      } else {
-        return createAuthErrorResponse(authResult);
-      }
-    } else {
-      user = authResult.user;
-    }
+    if ('type' in authResult) return createAuthErrorResponse(authResult);
+    const { user } = authResult;
 
     // Step 2: Parse request body
     const body = await request.json();

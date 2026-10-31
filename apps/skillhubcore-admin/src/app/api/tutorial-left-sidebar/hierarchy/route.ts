@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { NextResponse } from 'next/server';
 import { asc, isNull } from 'drizzle-orm';
 
@@ -22,7 +23,10 @@ function compactSlug(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-export async function GET() {
+export async function GET(request: import("next/server").NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const [domainRows, subjectRows, topicRows, subtopicRows] = await Promise.all([

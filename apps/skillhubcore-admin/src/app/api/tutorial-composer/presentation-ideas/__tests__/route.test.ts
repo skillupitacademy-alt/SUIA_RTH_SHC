@@ -14,6 +14,10 @@ import type {
 } from '@quiz/types';
 import { CURRENT_SCHEMA_VERSION } from '@quiz/types';
 
+// The real boundary is covered by admin-boundary.test.ts; keep these tests
+// focused on this handler's own authentication and authorization checks.
+vi.mock('@/lib/admin-route-guard', () => ({ requireAdminRequest: vi.fn().mockResolvedValue(null) }));
+
 // Mock auth helpers
 vi.mock('@/lib/auth-helpers', () => ({
   authenticateRequest: vi.fn(),
@@ -277,14 +281,6 @@ describe('POST /api/tutorial-composer/presentation-ideas', () => {
   });
 
   it('should call presentationIdeasService with correct parameters', async () => {
-    // Set dev bypass environment
-    const originalEnv = process.env.NODE_ENV;
-    const originalBypass = process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS;
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (process.env as any).NODE_ENV = 'development';
-    process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS = 'true';
-
     const mockResult = {
       ideas: [],
       statistics: { total: 0, high: 0, medium: 0, low: 0, byType: {}, enhancementTips: 0 },
@@ -301,7 +297,6 @@ describe('POST /api/tutorial-composer/presentation-ideas', () => {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'x-tutorial-dev-bypass': 'true',
       },
       body: JSON.stringify({
         document: mockDocument,
@@ -326,10 +321,6 @@ describe('POST /api/tutorial-composer/presentation-ideas', () => {
       })
     );
 
-    // Cleanup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (process.env as any).NODE_ENV = originalEnv;
-    process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS = originalBypass;
   });
 
   it('should return 500 for unexpected service error', async () => {

@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
@@ -720,6 +721,9 @@ async function responseFromRow(row: typeof tutorialSidebarTreesV2.$inferSelect) 
 }
 
 export async function GET(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const { searchParams } = new URL(request.url);
     const brandIdParam = searchParams.get('brandId');
@@ -757,6 +761,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const parsed = saveSchema.safeParse(await request.json());
     if (!parsed.success) {

@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 /**
  * Tutorial Composer API - Block Management (V2)
  * Append block instances to existing tutorials
@@ -96,6 +97,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ sectionId: string }> }
 ) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const { sectionId } = await params;
 

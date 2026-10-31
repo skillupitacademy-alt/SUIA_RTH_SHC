@@ -1,10 +1,10 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
+  root: __dirname,
+  plugins: [react()],
   test: {
     environment: 'jsdom',
     globals: true,
@@ -17,8 +17,17 @@ export default defineConfig({
     minWorkers: 1,
   },
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: [
+      { find: /^@quiz\/auth\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/auth/src/$1') },
+      { find: '@quiz/auth', replacement: path.resolve(__dirname, '../../packages/auth/src') },
+      { find: /^@quiz\/types\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/types/src/$1') },
+      { find: '@quiz/types', replacement: path.resolve(__dirname, '../../packages/types/src') },
+      { find: /^@quiz\/db-tutorial\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/db-tutorial/src/$1') },
+      { find: '@quiz/db-tutorial', replacement: path.resolve(__dirname, '../../packages/db-tutorial/src') },
+      { find: /^@\/share-branding\/(.*)$/, replacement: path.resolve(__dirname, '../../src/share-branding/$1') },
+      { find: '@/share-branding', replacement: path.resolve(__dirname, '../../src/share-branding') },
+      { find: /^@\/(.*)$/, replacement: path.resolve(__dirname, './src/$1') },
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+    ],
   },
 });

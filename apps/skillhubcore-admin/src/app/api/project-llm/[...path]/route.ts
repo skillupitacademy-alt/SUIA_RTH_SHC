@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { requestVerificationBackend } from '@/lib/project-llm/api/backendRequest';
 
@@ -17,8 +18,8 @@ export const runtime = 'nodejs';
  * 3. Request is forwarded to FastAPI with Authorization: Bearer <token>
  * 4. FastAPI validates the JWT and handles all authorization logic
  *
- * CRITICAL: This adapter does NOT verify tokens or check permissions locally.
- * All JWT validation and authorization is delegated to the FastAPI backend.
+ * Exported handlers verify the SHC admin principal and mutation origin locally.
+ * FastAPI must additionally enforce workflow ownership and operation permissions.
  *
  * UNVERIFIED ASSUMPTIONS (require end-to-end testing):
  * 1. Token compatibility: Admin tokens signed with ADMIN_JWT_SECRET may or may not
@@ -102,13 +103,15 @@ async function handleRequest(
     }
 
     if (response.status >= 400) {
-      console.error(`[PROJECT_LLM_ADAPTER] Upstream ${request.method} ${targetUrl} failed with ${response.status}:`, responseText);
+      console.error('[PROJECT_LLM_ADAPTER] Upstream request failed', {
+        method: request.method, status: response.status, route: '/api/project-llm/[...path]',
+      });
     }
 
-    return NextResponse.json(responseData, { status: response.status });
-  } catch (error) {
+    return NextResponse.json(responseData, { status: response.status, headers: { 'Cache-Control': 'private, no-store' } });
+  } catch {
     // Network or fetch error (backend unreachable)
-    console.error('[PROJECT_LLM_ADAPTER] Backend request failed:', error);
+    console.error('[PROJECT_LLM_ADAPTER] Backend request failed');
     return NextResponse.json(
       { error: 'Backend service unavailable' },
       { status: 503 }
@@ -123,6 +126,9 @@ export async function GET(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
 ) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   return handleRequest(request, context);
 }
 
@@ -133,6 +139,9 @@ export async function POST(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
 ) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   return handleRequest(request, context);
 }
 
@@ -143,6 +152,9 @@ export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
 ) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   return handleRequest(request, context);
 }
 
@@ -153,5 +165,8 @@ export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
 ) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   return handleRequest(request, context);
 }

@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { domains, getDb } from '@quiz/db';
 import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
@@ -5,6 +6,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/admin/domains - List domains with pagination and search
 export async function GET(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const searchParams = request.nextUrl.searchParams;
@@ -50,6 +54,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/admin/domains - Create a new domain
 export async function POST(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const body = await request.json();
@@ -84,6 +91,9 @@ export async function POST(request: NextRequest) {
 
 // PUT /api/admin/domains - Update a domain
 export async function PUT(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const body = await request.json();
@@ -128,6 +138,9 @@ export async function PUT(request: NextRequest) {
 
 // DELETE /api/admin/domains - Delete a domain (soft delete)
 export async function DELETE(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const searchParams = request.nextUrl.searchParams;

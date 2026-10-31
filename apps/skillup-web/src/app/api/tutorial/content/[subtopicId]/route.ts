@@ -86,7 +86,7 @@ export async function GET(
       ...data,
       _deprecation: 'This endpoint is deprecated. Use /api/tutorial/sections/* instead.'
     });
-    result.headers.set('Cache-Control', 'public, max-age=3600');
+    result.headers.set('Cache-Control', 'private, no-store');
     result.headers.set('X-Deprecated', 'true');
     result.headers.set('X-Deprecation-Message', 'Use /api/tutorial/sections/* instead');
     return result;

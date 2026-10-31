@@ -62,6 +62,10 @@ import { TutorialDocumentSchema, type TutorialDocument } from '@quiz/types';
 type AnyContent = any;
 import { invalidateTutorialDeliveryCache } from '@/lib/cache-invalidation';
 
+// The real boundary is covered by admin-boundary.test.ts; retain the
+// handler's authentication and authorization checks in this integration test.
+vi.mock('@/lib/admin-route-guard', () => ({ requireAdminRequest: vi.fn().mockResolvedValue(null) }));
+
 // Mock only external dependencies (not internal services)
 vi.mock('@/lib/auth-helpers', () => ({
   authenticateRequest: vi.fn(),

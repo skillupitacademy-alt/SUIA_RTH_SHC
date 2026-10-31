@@ -1,8 +1,12 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { getDb, skills } from '@quiz/db';
 import { inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const { ids } = await request.json() as { ids?: string[] };
     if (!Array.isArray(ids) || ids.length === 0) {

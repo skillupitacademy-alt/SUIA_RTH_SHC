@@ -1,8 +1,12 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { getDb, subjects } from '@quiz/db';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -27,6 +31,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const accessDenied = await requireAdminRequest(_request);
+  if (accessDenied) return accessDenied;
+
   try {
     const { id } = await params;
     const db = getDb();
