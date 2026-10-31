@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
 
+export type FacultyBrand = 'realtutorialhub' | 'skillup';
+
+export interface FacultyIdentity {
+  userId: string;
+  shadowUserId?: string;
+  originalUserId?: string;
+  brand: FacultyBrand;
+  roles?: string[];
+}
+
 export function getFacultyUpstreamBaseUrl() {
   const values = [
     process.env.INTERNAL_API_URL,
@@ -58,23 +68,54 @@ function appendHeader(headers: Headers, key: string, value: string | null | unde
   }
 }
 
-export function buildFacultyUpstreamHeaders(source: Headers | HeadersInit, extra?: HeadersInit) {
+export function buildFacultyUpstreamHeaders(
+  source: Headers | HeadersInit,
+  identityOrExtra?: FacultyIdentity | HeadersInit,
+  extra?: HeadersInit
+): Headers {
   const headers = new Headers();
   const sourceHeaders = source instanceof Headers ? source : new Headers(source);
 
+  let identity: FacultyIdentity | undefined;
+  let extraHeaders: HeadersInit | undefined;
+
+  if (identityOrExtra && typeof identityOrExtra === 'object' && 'userId' in identityOrExtra && 'brand' in identityOrExtra) {
+    identity = identityOrExtra as FacultyIdentity;
+    extraHeaders = extra;
+  } else {
+    extraHeaders = identityOrExtra as HeadersInit | undefined;
+  }
+
   appendHeader(headers, 'accept', 'application/json');
   appendHeader(headers, 'cookie', sourceHeaders.get('cookie'));
-  appendHeader(headers, 'x-gateway-secret', process.env.INTERNAL_GATEWAY_SECRET);
+  
+  const gatewaySecret = process.env.GATEWAY_TRUST_SECRET ?? process.env.INTERNAL_GATEWAY_SECRET;
+  appendHeader(headers, 'x-gateway-secret', gatewaySecret);
   appendHeader(headers, 'x-portal-identity', sourceHeaders.get('x-portal-identity') ?? 'faculty');
-  appendHeader(headers, 'x-brand', sourceHeaders.get('x-brand'));
-  appendHeader(headers, 'x-platform', sourceHeaders.get('x-platform') ?? sourceHeaders.get('x-brand'));
-  appendHeader(headers, 'x-user-id', sourceHeaders.get('x-user-id'));
-  appendHeader(headers, 'x-shadow-user-id', sourceHeaders.get('x-shadow-user-id'));
-  appendHeader(headers, 'x-original-user-id', sourceHeaders.get('x-original-user-id'));
 
-  if (extra !== undefined) {
-    const extraHeaders = new Headers(extra);
-    extraHeaders.forEach((value, key) => headers.set(key, value));
+  if (identity) {
+    appendHeader(headers, 'x-brand', identity.brand);
+    appendHeader(headers, 'x-platform', identity.brand);
+    appendHeader(headers, 'x-user-id', identity.userId);
+    appendHeader(headers, 'x-shadow-user-id', identity.shadowUserId ?? identity.userId);
+    if (identity.originalUserId) {
+      appendHeader(headers, 'x-original-user-id', identity.originalUserId);
+    }
+    if (identity.roles && identity.roles.length > 0) {
+      appendHeader(headers, 'x-user-roles', identity.roles.join(','));
+    }
+  } else {
+    appendHeader(headers, 'x-brand', sourceHeaders.get('x-brand'));
+    appendHeader(headers, 'x-platform', sourceHeaders.get('x-platform') ?? sourceHeaders.get('x-brand'));
+    appendHeader(headers, 'x-user-id', sourceHeaders.get('x-user-id'));
+    appendHeader(headers, 'x-shadow-user-id', sourceHeaders.get('x-shadow-user-id'));
+    appendHeader(headers, 'x-original-user-id', sourceHeaders.get('x-original-user-id'));
+    appendHeader(headers, 'x-user-roles', sourceHeaders.get('x-user-roles'));
+  }
+
+  if (extraHeaders !== undefined) {
+    const extraMap = new Headers(extraHeaders);
+    extraMap.forEach((value, key) => headers.set(key, value));
   }
 
   return headers;

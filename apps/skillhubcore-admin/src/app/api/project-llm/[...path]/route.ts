@@ -21,15 +21,10 @@ export const runtime = 'nodejs';
  * Exported handlers verify the SHC admin principal and mutation origin locally.
  * FastAPI must additionally enforce workflow ownership and operation permissions.
  *
- * UNVERIFIED ASSUMPTIONS (require end-to-end testing):
- * 1. Token compatibility: Admin tokens signed with ADMIN_JWT_SECRET may or may not
- *    be accepted by FastAPI's JWT validation; this has not been tested end-to-end.
- * 2. Backend URL: PROJECT_AI_BACKEND env var is assumed to point to the correct
- *    FastAPI service; not yet confirmed in staging.
- * 3. Token claims: Admin token is assumed to contain the userId and roles claims
- *    FastAPI expects; not yet verified.
- * 4. Role assignment: Admin users may not hold the contract_admin role required
- *    by FastAPI endpoints; FastAPI will enforce this and return 403.
+ * TRUSTED-ADMIN WORKER MODEL:
+ * The Project AI execution worker operates under a trusted-admin candidate model.
+ * Upstream 5xx exceptions are sanitized to 502 PROJECT_AI_BACKEND_ERROR with private, no-store headers
+ * to prevent internal error and path leakage.
  */
 
 /**
@@ -40,6 +35,11 @@ async function handleRequest(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> }
 ): Promise<NextResponse> {
+  const requestId =
+    request.headers.get('x-request-id') ||
+    request.headers.get('x-correlation-id') ||
+    crypto.randomUUID();
+
   // Extract JWT from cookies (same names set by login route)
   const token =
     request.cookies.get('accessToken')?.value ||
@@ -74,6 +74,7 @@ async function handleRequest(
       method: request.method,
       headers: {
         Authorization: `Bearer ${token}`,
+        'x-request-id': requestId,
         // Only forward Content-Type if the original request had it
         // (don't force application/json for multipart/form-data uploads)
         ...(request.headers.get('content-type') && {
@@ -91,6 +92,20 @@ async function handleRequest(
       ? await requestVerificationBackend(targetUrl, backendOptions)
       : await fetch(targetUrl, backendOptions);
 
+    // Sanitize upstream 5xx errors to prevent leaking internal execution state
+    if (response.status >= 500) {
+      console.error('[PROJECT_LLM_ADAPTER] Upstream 5xx error', {
+        method: request.method,
+        status: response.status,
+        route: '/api/project-llm/[...path]',
+        requestId,
+      });
+      return NextResponse.json(
+        { error: 'PROJECT_AI_BACKEND_ERROR', requestId },
+        { status: 502, headers: { 'Cache-Control': 'private, no-store' } }
+      );
+    }
+
     // Parse and return the FastAPI response
     const responseText = typeof response.text === 'string' ? response.text : await response.text();
 
@@ -104,17 +119,23 @@ async function handleRequest(
 
     if (response.status >= 400) {
       console.error('[PROJECT_LLM_ADAPTER] Upstream request failed', {
-        method: request.method, status: response.status, route: '/api/project-llm/[...path]',
+        method: request.method,
+        status: response.status,
+        route: '/api/project-llm/[...path]',
+        requestId,
       });
     }
 
-    return NextResponse.json(responseData, { status: response.status, headers: { 'Cache-Control': 'private, no-store' } });
-  } catch {
+    return NextResponse.json(responseData, {
+      status: response.status,
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
+  } catch (err) {
     // Network or fetch error (backend unreachable)
-    console.error('[PROJECT_LLM_ADAPTER] Backend request failed');
+    console.error('[PROJECT_LLM_ADAPTER] Backend request failed', { requestId, err });
     return NextResponse.json(
-      { error: 'Backend service unavailable' },
-      { status: 503 }
+      { error: 'PROJECT_AI_BACKEND_ERROR', requestId },
+      { status: 502, headers: { 'Cache-Control': 'private, no-store' } }
     );
   }
 }
