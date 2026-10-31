@@ -168,6 +168,14 @@ def test_canonicalize_generates_id_if_missing():
     assert str(__import__('uuid').UUID(canonical["id"])) == canonical["id"]
 
 
+def test_canonicalize_preserves_learner_runtime_metadata():
+    raw = {"type": "objective", "version": "O1", "content": {"title": "Learn"},
+           "expectedTimeSec": 90, "progressRole": "instructional", "presentation": {"collapsed": False}}
+    canonical = canonicalize_candidate_block(raw, "objective", "O1")
+    for key in ("expectedTimeSec", "progressRole", "presentation"):
+        assert canonical[key] == raw[key]
+
+
 def test_canonicalize_rejects_type_mismatch():
     raw_block = {
         "type": "code",

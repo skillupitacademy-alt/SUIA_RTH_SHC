@@ -466,6 +466,7 @@ async def verify_composer_in_worktree(
     server_process: Optional[subprocess.Popen] = None
     runner_script_path: Optional[Path] = None
     linked_deps: List[Path] = []
+    server_log = tempfile.TemporaryFile(mode="w+", encoding="utf-8")
 
     try:
         # Step 1: Create isolated worktree at placed commit
@@ -502,8 +503,8 @@ async def verify_composer_in_worktree(
             server_cmd,
             cwd=str(worktree_path),
             shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=server_log,
+            stderr=server_log,
             text=True
         )
 
@@ -516,8 +517,7 @@ async def verify_composer_in_worktree(
         while time.time() < health_deadline:
             if server_process.poll() is not None:
                 # Process crashed early
-                stderr = server_process.stderr.read() if server_process.stderr else ""
-                raise RuntimeError(f"Preview server exited unexpectedly (code {server_process.returncode}): {stderr}")
+                raise RuntimeError(f"Preview server exited unexpectedly (code {server_process.returncode})")
             try:
                 with urllib.request.urlopen(target_check_url, timeout=2) as resp:
                     if resp.status == 200:
@@ -729,6 +729,7 @@ async def verify_composer_in_worktree(
 
     finally:
         # Step 5: Cleanly terminate the preview server
+        report("Stop admin preview and remove temporary worktree")
         if server_process and server_process.pid:
             logger.info(f"Terminating preview server process {server_process.pid}...")
             _kill_process_tree(server_process.pid)
@@ -744,3 +745,4 @@ async def verify_composer_in_worktree(
         if worktree_path and worktree_path.exists():
             logger.info(f"Cleaning up verification worktree at {worktree_path}...")
             _cleanup_verification_worktree(workspace_root, worktree_path, linked_deps)
+        server_log.close()

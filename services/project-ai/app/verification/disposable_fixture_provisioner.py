@@ -88,12 +88,16 @@ def canonicalize_candidate_block(
 
     # 4. Canonical structure
     block_id = str(raw_block.get("id") or uuid.uuid4())
-    return {
+    canonical = {
         "id": block_id,
         "type": norm_expected_family,
         "version": norm_expected_version,
         "content": content,
     }
+    for key in ("expectedTimeSec", "progressRole", "presentation"):
+        if key in raw_block:
+            canonical[key] = raw_block[key]
+    return canonical
 
 
 def wrap_in_tutorial_document(

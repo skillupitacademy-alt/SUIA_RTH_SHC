@@ -85,6 +85,7 @@ def _skillup_preview_at_commit(
     worktree_path: Optional[Path] = None
     server_process: Optional[subprocess.Popen] = None
     linked: List[Path] = []
+    server_log = tempfile.TemporaryFile(mode="w+", encoding="utf-8")
     report = progress or (lambda label: None)
     try:
         report("Checkout learner placement commit")
@@ -132,8 +133,8 @@ def _skillup_preview_at_commit(
             [_pnpm_command(), "--filter", "@quiz/skillup-web", "exec", "next", "start", "-p", str(port), "-H", "127.0.0.1"],
             cwd=worktree_path,
             env=preview_env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=server_log,
+            stderr=server_log,
             text=True,
         )
         deadline = time.time() + 90
@@ -141,8 +142,7 @@ def _skillup_preview_at_commit(
         ready = False
         while time.time() < deadline:
             if server_process.poll() is not None:
-                stderr = server_process.stderr.read() if server_process.stderr else ""
-                raise RuntimeError(f"SkillUp preview exited early: {stderr[-1000:]}")
+                raise RuntimeError("SkillUp preview exited before readiness")
             try:
                 with urllib.request.urlopen(ready_url, timeout=2) as response:
                     if response.status < 500:
@@ -154,10 +154,12 @@ def _skillup_preview_at_commit(
             raise RuntimeError(f"SkillUp preview did not become ready at {ready_url}")
         yield port
     finally:
+        report("Stop learner preview and remove temporary worktree")
         if server_process and server_process.poll() is None:
             _kill_process_tree(server_process.pid)
         if worktree_path:
             _cleanup_verification_worktree(workspace_root, worktree_path, linked)
+        server_log.close()
 
 
 def _generate_playwright_learner_script(
@@ -443,14 +445,14 @@ def verify_learner_runtime(
                 capture_output=True,
                 input=json.dumps({"cookieValue": session.cookieValue}),
                 text=True,
-                timeout=40,
+                timeout=90,
             )
     except subprocess.TimeoutExpired:
         if script_path and script_path.exists():
             script_path.unlink()
         return LearnerRuntimeVerificationResult(
             status="FAIL",
-            message="Playwright learner runtime verification timed out after 40 seconds",
+            message="Playwright learner runtime verification timed out after 90 seconds",
             blockers=["Execution timed out waiting for learner page to stabilize"],
         )
     except Exception as e:
