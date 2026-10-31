@@ -84,6 +84,10 @@ a schema-validated generated registry default. The worker's
 dedicated fixture and restores it afterwards. It records screenshot/hash and
 restoration checks, but never advances or certifies a workflow. Its local API URL
 is `host.docker.internal:3011`, not a VPS deployment address.
+When launching this standalone diagnostic via `docker exec`, pass
+`-e npm_config_store_dir=/workspace/.pnpm-store` as well. Normal verification
+requests already inherit this setting from the worker entrypoint; `docker exec`
+does not inherit environment variables exported later by that entrypoint.
 
 ## Capacity and Proxy Limits
 
