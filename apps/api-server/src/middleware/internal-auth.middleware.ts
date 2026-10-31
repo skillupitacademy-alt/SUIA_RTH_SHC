@@ -24,6 +24,30 @@ export interface ValidateRequestOptions {
   requireInternalSecret?: boolean;
 }
 
+function rejectUnauthorized(message = 'Unauthorized') {
+  return {
+    error: new Response(
+      JSON.stringify({ error: 'Unauthorized', message }),
+      {
+        status: 401,
+        headers: { 'content-type': 'application/json' },
+      }
+    ),
+  };
+}
+
+function serviceMisconfigured(message = 'Authentication service is misconfigured') {
+  return {
+    error: new Response(
+      JSON.stringify({ error: 'Service Misconfigured', message }),
+      {
+        status: 503,
+        headers: { 'content-type': 'application/json' },
+      }
+    ),
+  };
+}
+
 export function validateRequest(
   req: NextRequest,
   options?: ValidateRequestOptions
@@ -37,30 +61,21 @@ export function validateRequest(
   const brand = req.headers.get('x-brand');
   const userRoles = req.headers.get('x-user-roles'); // Extract roles from gateway
   
-  
-  
   // If internal secret is provided, validate it strictly
   if (internalSecret !== null) {
-    
     // Trim both secrets to handle whitespace issues
     const receivedSecret = internalSecret.trim();
     const expectedSecret = process.env.INTERNAL_API_SECRET?.trim();
     
+    if (!expectedSecret) {
+      console.error(`[AUTH][${correlationId}] Internal authentication unavailable: INTERNAL_API_SECRET is not configured`);
+      return serviceMisconfigured('Internal authentication is unavailable');
+    }
     
     if (expectedSecret !== receivedSecret) {
       console.error(`[AUTH][${correlationId}] Invalid internal secret provided`);
-      // 🔐 SECURITY FIX: Removed secret substring log
-      return {
-        error: new Response(JSON.stringify({ 
-          error: 'Unauthorized', 
-          message: 'Invalid internal service secret' 
-        }), { 
-          status: 401,
-          headers: { 'content-type': 'application/json' }
-        })
-      };
+      return rejectUnauthorized('Invalid internal service secret');
     }
-    
     
     if (userId === null || brand === null) {
       console.error(`[AUTH][${correlationId}] Internal call missing required headers`);
@@ -89,13 +104,11 @@ export function validateRequest(
       };
     }
     
-    
     // 🔥 CRITICAL FIX: Use unified role normalization
     // This handles "user,student" string → ["user"] array
     const roles = typeof userRoles === 'string' && userRoles.trim() !== ''
       ? userRoles.split(',').map(r => r.trim().toLowerCase()).filter(r => r.length > 0)
       : undefined;
-    
     
     // 🚨 GUARD: Ensure roles is always array or undefined (never string)
     if (roles && !Array.isArray(roles)) {
@@ -119,45 +132,29 @@ export function validateRequest(
   // When requireInternalSecret is true, missing internal secret is unauthorized
   // This prevents ILS routes from falling back to gateway authentication
   if (options?.requireInternalSecret === true) {
-    return {
-      error: new Response(JSON.stringify({ 
-        error: 'Unauthorized', 
-        message: 'Internal secret required for this endpoint' 
-      }), { 
-        status: 401,
-        headers: { 'content-type': 'application/json' }
-      })
-    };
+    return rejectUnauthorized('Internal secret required for this endpoint');
   }
   
-  // Mode 2: Gateway Authentication (EXISTING)
-  // 🔒 SECURITY FIX (GATEWAY-01): When GATEWAY_TRUST_SECRET is configured,
-  // gateway mode requires the x-gateway-secret header to match.
-  // This prevents attackers who can reach the API directly from spoofing
-  // x-user-id + x-brand headers to impersonate any user.
+  // Mode 2: Gateway Authentication (FAIL CLOSED)
+  // 🔒 SECURITY FIX (GATEWAY-01): Fail-closed enforcement
+  // When gateway headers (x-user-id + x-brand) are presented:
+  // 1. GATEWAY_TRUST_SECRET must be configured in environment (otherwise 503 Service Misconfigured)
+  // 2. x-gateway-secret header must match GATEWAY_TRUST_SECRET (otherwise 401 Unauthorized)
   const gatewayUserId = req.headers.get('x-user-id');
   const gatewayBrand = req.headers.get('x-brand');
   const gatewayRoles = req.headers.get('x-user-roles');
   
   if (gatewayUserId !== null && gatewayBrand !== null) {
-    const gatewayTrustSecret = process.env.GATEWAY_TRUST_SECRET;
-    if (typeof gatewayTrustSecret === 'string' && gatewayTrustSecret.length > 0) {
-      const providedGatewaySecret = req.headers.get('x-gateway-secret');
-      if (providedGatewaySecret !== gatewayTrustSecret) {
-        console.error(`[AUTH][${correlationId}] Gateway auth rejected: invalid or missing x-gateway-secret`);
-        return {
-          error: new Response(JSON.stringify({
-            error: 'Unauthorized',
-            message: 'Invalid gateway credentials'
-          }), {
-            status: 401,
-            headers: { 'content-type': 'application/json' }
-          })
-        };
-      }
-    } else {
-      // GATEWAY_TRUST_SECRET not configured — log deprecation warning
-      console.warn(`[AUTH][${correlationId}] ⚠️ Gateway mode without GATEWAY_TRUST_SECRET is deprecated. Set GATEWAY_TRUST_SECRET and pass x-gateway-secret from BFF apps.`);
+    const gatewayTrustSecret = process.env.GATEWAY_TRUST_SECRET?.trim();
+    if (!gatewayTrustSecret) {
+      console.error(`[AUTH][${correlationId}] Gateway authentication unavailable: GATEWAY_TRUST_SECRET is not configured`);
+      return serviceMisconfigured('Gateway authentication is unavailable');
+    }
+
+    const providedGatewaySecret = req.headers.get('x-gateway-secret')?.trim();
+    if (!providedGatewaySecret || providedGatewaySecret !== gatewayTrustSecret) {
+      console.error(`[AUTH][${correlationId}] Gateway auth rejected: invalid or missing x-gateway-secret`);
+      return rejectUnauthorized('Invalid gateway credentials');
     }
     
     // Validate brand for multi-brand system
@@ -174,13 +171,11 @@ export function validateRequest(
       };
     }
     
-    
     // 🔥 CRITICAL FIX: Use unified role normalization
     // This handles "user,student" string → ["user"] array
     const roles = typeof gatewayRoles === 'string' && gatewayRoles.trim() !== ''
       ? gatewayRoles.split(',').map(r => r.trim().toLowerCase()).filter(r => r.length > 0)
       : undefined;
-    
     
     // 🚨 GUARD: Ensure roles is always array or undefined (never string)
     if (roles && !Array.isArray(roles)) {
@@ -206,15 +201,49 @@ export function validateRequest(
 
 /**
  * Block unauthorized direct access (security enforcement)
+ * Strictly verifies secrets when gateway or internal headers are presented.
+ * Bare x-user-id without verified gateway secret is rejected.
  */
 export function blockDirectAccess(req: NextRequest): Response | null {
-  const internalSecret = req.headers.get('x-internal-secret');
-  const gatewayUserId = req.headers.get('x-user-id');
+  const internalSecret = req.headers.get('x-internal-secret')?.trim();
+  const gatewayUserId = req.headers.get('x-user-id')?.trim();
+  const gatewaySecret = req.headers.get('x-gateway-secret')?.trim();
   const hasJwtCookie = req.headers.get('cookie')?.includes('accessToken=');
+  const hasAuthHeader = req.headers.get('authorization')?.startsWith('Bearer ');
   
-  // Allow if any valid auth method present
-  if (internalSecret !== null || gatewayUserId !== null || hasJwtCookie === true) {
-    return null; // Allow
+  // 1. If internal secret header is present, it must match configured INTERNAL_API_SECRET
+  if (internalSecret) {
+    const expectedInternal = process.env.INTERNAL_API_SECRET?.trim();
+    if (expectedInternal && internalSecret === expectedInternal) {
+      return null;
+    }
+    return new Response(JSON.stringify({ 
+      error: 'Forbidden', 
+      message: 'Invalid internal secret' 
+    }), { 
+      status: 403,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+
+  // 2. If gateway user header is present, it must be accompanied by a valid x-gateway-secret
+  if (gatewayUserId) {
+    const expectedGateway = process.env.GATEWAY_TRUST_SECRET?.trim();
+    if (expectedGateway && gatewaySecret && gatewaySecret === expectedGateway) {
+      return null;
+    }
+    return new Response(JSON.stringify({ 
+      error: 'Forbidden', 
+      message: 'Direct API access with unverified gateway headers is blocked' 
+    }), { 
+      status: 403,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+
+  // 3. Direct JWT access allowed via cookie or Authorization header
+  if (hasJwtCookie === true || hasAuthHeader === true) {
+    return null; // Allow to proceed to JWT validation
   }
   
   console.error('[AUTH] Blocked direct access - no authentication');
