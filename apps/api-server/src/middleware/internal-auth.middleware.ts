@@ -17,7 +17,7 @@ export interface AuthContext {
   brand: string;
   correlationId: string;
   authMode: 'gateway' | 'internal';
-  roles?: string[]; // 🔥 ADD: User roles for RBAC
+  roles?: string[]; // User roles for RBAC
 }
 
 export interface ValidateRequestOptions {
@@ -35,42 +35,21 @@ export function validateRequest(
   const userId = req.headers.get('x-user-id');
   const userEmail = req.headers.get('x-user-email');
   const brand = req.headers.get('x-brand');
-  const userRoles = req.headers.get('x-user-roles'); // 🔥 ADD: Extract roles from gateway
+  const userRoles = req.headers.get('x-user-roles'); // Extract roles from gateway
   
-  console.log(`🔥 [API_AUTH_HEADERS][${correlationId}]`, JSON.stringify({
-    hasInternalSecret: internalSecret !== null,
-    internalSecretLength: internalSecret?.length ?? 0,
-    hasUserId: userId !== null,
-    hasBrand: brand !== null,
-    hasRoles: userRoles !== null,
-    rolesHeaderValue: userRoles, // 🔥 CRITICAL: Raw header value
-    rolesHeaderType: typeof userRoles,
-    brand
-  }));
   
-  console.log(`[AUTH][${correlationId}] Expected secret configured:`, {
-    hasSecret: process.env.INTERNAL_API_SECRET !== undefined,
-    secretLength: process.env.INTERNAL_API_SECRET?.length ?? 0,
-    secretPreview: process.env.INTERNAL_API_SECRET !== undefined ? `${process.env.INTERNAL_API_SECRET.substring(0, 20)}...` : 'NONE'
-  });
   
   // If internal secret is provided, validate it strictly
   if (internalSecret !== null) {
-    console.log(`[AUTH][${correlationId}] Validating internal secret...`);
     
     // Trim both secrets to handle whitespace issues
     const receivedSecret = internalSecret.trim();
     const expectedSecret = process.env.INTERNAL_API_SECRET?.trim();
     
-    console.log(`[AUTH][${correlationId}] Secret comparison:`, {
-      receivedLength: receivedSecret.length,
-      expectedLength: expectedSecret?.length ?? 0,
-      match: receivedSecret === expectedSecret
-    });
     
     if (expectedSecret !== receivedSecret) {
       console.error(`[AUTH][${correlationId}] Invalid internal secret provided`);
-      console.error(`[AUTH][${correlationId}] Secret mismatch - received: ${receivedSecret?.substring(0, 20)}..., expected: ${expectedSecret?.substring(0, 20)}...`);
+      // 🔐 SECURITY FIX: Removed secret substring log
       return {
         error: new Response(JSON.stringify({ 
           error: 'Unauthorized', 
@@ -82,7 +61,6 @@ export function validateRequest(
       };
     }
     
-    console.log(`[AUTH][${correlationId}] Internal service authentication`);
     
     if (userId === null || brand === null) {
       console.error(`[AUTH][${correlationId}] Internal call missing required headers`);
@@ -111,11 +89,6 @@ export function validateRequest(
       };
     }
     
-    console.log(`[PERF][AUTH][INTERNAL][${correlationId}]`, { 
-      duration: 0, 
-      optimization: 'Skipped all auth validation',
-      brand
-    });
     
     // 🔥 CRITICAL FIX: Use unified role normalization
     // This handles "user,student" string → ["user"] array
@@ -123,14 +96,6 @@ export function validateRequest(
       ? userRoles.split(',').map(r => r.trim().toLowerCase()).filter(r => r.length > 0)
       : undefined;
     
-    console.log(`🔥 [API_AUTH_ROLES_PARSED][${correlationId}]`, JSON.stringify({
-      rolesHeaderRaw: userRoles,
-      rolesParsed: roles,
-      rolesCount: roles?.length ?? 0,
-      rolesType: typeof roles,
-      rolesIsArray: Array.isArray(roles),
-      authMode: 'internal'
-    }));
     
     // 🚨 GUARD: Ensure roles is always array or undefined (never string)
     if (roles && !Array.isArray(roles)) {
@@ -145,7 +110,7 @@ export function validateRequest(
         brand,
         correlationId,
         authMode: 'internal',
-        roles, // 🔥 FIXED: Always array or undefined
+        roles, // Always array or undefined
       }
     };
   }
@@ -154,7 +119,6 @@ export function validateRequest(
   // When requireInternalSecret is true, missing internal secret is unauthorized
   // This prevents ILS routes from falling back to gateway authentication
   if (options?.requireInternalSecret === true) {
-    console.log(`[AUTH][${correlationId}] Internal secret required but not provided`);
     return {
       error: new Response(JSON.stringify({ 
         error: 'Unauthorized', 
@@ -167,12 +131,34 @@ export function validateRequest(
   }
   
   // Mode 2: Gateway Authentication (EXISTING)
+  // 🔒 SECURITY FIX (GATEWAY-01): When GATEWAY_TRUST_SECRET is configured,
+  // gateway mode requires the x-gateway-secret header to match.
+  // This prevents attackers who can reach the API directly from spoofing
+  // x-user-id + x-brand headers to impersonate any user.
   const gatewayUserId = req.headers.get('x-user-id');
   const gatewayBrand = req.headers.get('x-brand');
-  const gatewayRoles = req.headers.get('x-user-roles'); // 🔥 ADD: Extract roles from gateway
+  const gatewayRoles = req.headers.get('x-user-roles');
   
   if (gatewayUserId !== null && gatewayBrand !== null) {
-    console.log(`[AUTH][${correlationId}] Gateway authentication`);
+    const gatewayTrustSecret = process.env.GATEWAY_TRUST_SECRET;
+    if (typeof gatewayTrustSecret === 'string' && gatewayTrustSecret.length > 0) {
+      const providedGatewaySecret = req.headers.get('x-gateway-secret');
+      if (providedGatewaySecret !== gatewayTrustSecret) {
+        console.error(`[AUTH][${correlationId}] Gateway auth rejected: invalid or missing x-gateway-secret`);
+        return {
+          error: new Response(JSON.stringify({
+            error: 'Unauthorized',
+            message: 'Invalid gateway credentials'
+          }), {
+            status: 401,
+            headers: { 'content-type': 'application/json' }
+          })
+        };
+      }
+    } else {
+      // GATEWAY_TRUST_SECRET not configured — log deprecation warning
+      console.warn(`[AUTH][${correlationId}] ⚠️ Gateway mode without GATEWAY_TRUST_SECRET is deprecated. Set GATEWAY_TRUST_SECRET and pass x-gateway-secret from BFF apps.`);
+    }
     
     // Validate brand for multi-brand system
     if (!['realtutorialhub', 'skillup'].includes(gatewayBrand)) {
@@ -188,11 +174,6 @@ export function validateRequest(
       };
     }
     
-    console.log(`[PERF][AUTH][GATEWAY][${correlationId}]`, { 
-      duration: 1, 
-      optimization: 'Skipped JWT validation',
-      brand: gatewayBrand
-    });
     
     // 🔥 CRITICAL FIX: Use unified role normalization
     // This handles "user,student" string → ["user"] array
@@ -200,14 +181,6 @@ export function validateRequest(
       ? gatewayRoles.split(',').map(r => r.trim().toLowerCase()).filter(r => r.length > 0)
       : undefined;
     
-    console.log(`🔥 [API_AUTH_ROLES_PARSED][${correlationId}]`, JSON.stringify({
-      rolesHeaderRaw: gatewayRoles,
-      rolesParsed: roles,
-      rolesCount: roles?.length ?? 0,
-      rolesType: typeof roles,
-      rolesIsArray: Array.isArray(roles),
-      authMode: 'gateway'
-    }));
     
     // 🚨 GUARD: Ensure roles is always array or undefined (never string)
     if (roles && !Array.isArray(roles)) {
@@ -222,13 +195,12 @@ export function validateRequest(
         brand: gatewayBrand,
         correlationId,
         authMode: 'gateway',
-        roles, // 🔥 FIXED: Always array or undefined
+        roles, // Always array or undefined
       }
     };
   }
   
   // No internal or gateway auth - will fall back to JWT
-  console.log(`[AUTH][${correlationId}] No internal/gateway auth, will use JWT fallback`);
   return {};
 }
 

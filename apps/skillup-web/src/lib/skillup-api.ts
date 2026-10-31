@@ -41,6 +41,9 @@ export async function fetchSkillupApi<T>(path: string): Promise<T> {
       forwardedHeaders.set('x-brand', brand);
       forwardedHeaders.set('x-platform', brand);
     }
+    // u{1F512} SECURITY: Send gateway trust secret so API server can verify this BFF is trusted
+    const gatewaySecret = process.env.GATEWAY_TRUST_SECRET;
+    if (gatewaySecret) forwardedHeaders.set('x-gateway-secret', gatewaySecret);
   } catch {
     // Static build paths do not have a request scope. We keep the fetch attempt
     // for runtime rendering and fall back to live DB helpers only when needed.
