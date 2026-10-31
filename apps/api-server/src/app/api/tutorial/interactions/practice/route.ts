@@ -33,55 +33,44 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // 🔐 SECURITY: Resolve correctAnswer server-side from authoritative section content or DB.
-    // Tier 1: Look directly in section content JSONB (authoritative source)
-    const contentCorrectAnswer = extractCorrectAnswerFromContent(section.content, questionId);
+    // 🔐 SECURITY FIX (INT-01b): Resolve correctAnswer strictly from authoritative section content.
+    // Client-supplied correctAnswer and student history are NEVER used as scoring authority.
+    const authoritativeCorrectAnswer = extractCorrectAnswerFromContent(section.content, questionId);
 
-    const previousAnswers = await db
-      .select()
-      .from(practiceTestAnswers)
-      .where(
-        and(
-          eq(practiceTestAnswers.questionId, questionId)
-        )
-      );
-
-    let correctAnswer: string;
-    const previousCorrect = previousAnswers.find(a => a.correctAnswer);
-
-    if (contentCorrectAnswer) {
-      // Tier 1: Authoritative answer from section JSONB
-      correctAnswer = contentCorrectAnswer;
-      if (clientCorrectAnswer !== correctAnswer) {
-        console.warn('[SECURITY][Practice] Client sent mismatched correctAnswer against section content', {
-          questionId,
-          clientValue: clientCorrectAnswer,
-          serverValue: correctAnswer,
-          userId: typeof userId === 'string' ? userId.slice(0, 8) : 'unknown',
-        });
-      }
-    } else if (previousCorrect) {
-      // Tier 2: Use the server-stored correct answer from a previous submission
-      correctAnswer = previousCorrect.correctAnswer;
-      if (clientCorrectAnswer !== correctAnswer) {
-        console.warn('[SECURITY][Practice] Client sent mismatched correctAnswer against DB history', {
-          questionId,
-          clientValue: clientCorrectAnswer,
-          serverValue: correctAnswer,
-          userId: typeof userId === 'string' ? userId.slice(0, 8) : 'unknown',
-        });
-      }
-    } else {
-      // Tier 3: First-ever submission with no section/DB definition
-      correctAnswer = clientCorrectAnswer;
-      console.warn('[SECURITY][Practice] First submission — accepting client correctAnswer', {
-        questionId,
+    if (!authoritativeCorrectAnswer) {
+      console.error('[Practice] Authoritative correct answer missing', {
         sectionId,
+        questionId,
+      });
+
+      return NextResponse.json(
+        {
+          error: 'PRACTICE_CONFIGURATION_ERROR',
+          message: 'Question cannot be scored because its authoritative answer is unavailable.',
+        },
+        { status: 422 }
+      );
+    }
+
+    if (clientCorrectAnswer && clientCorrectAnswer !== authoritativeCorrectAnswer) {
+      console.warn('[SECURITY][Practice] Ignored mismatched client correctAnswer', {
+        questionId,
+        clientValue: clientCorrectAnswer,
+        authoritativeValue: authoritativeCorrectAnswer,
+        userId: typeof userId === 'string' ? userId.slice(0, 8) : 'unknown',
       });
     }
 
+    const correctAnswer = authoritativeCorrectAnswer;
+
+    // Query previous user answers solely for attempt counting
+    const previousAnswers = await db
+      .select({ id: practiceTestAnswers.id })
+      .from(practiceTestAnswers)
+      .where(and(eq(practiceTestAnswers.userId, userId), eq(practiceTestAnswers.questionId, questionId)));
+
     const isCorrect = selectedAnswer === correctAnswer;
-    const attemptNumber = previousAnswers.filter(a => a.userId === userId).length + 1;
+    const attemptNumber = previousAnswers.length + 1;
     
     // Insert practice test answer
     const [answer] = await db
