@@ -12,32 +12,17 @@ import { z } from 'zod';
 import { getAuthContext } from '@/lib/auth-context';
 
 /**
- * 🔐 SECURITY FIX (INT-01c): Use getAuthContext() which validates via
- * internal secret, gateway headers, or JWT — instead of blindly trusting
- * the x-user-id header which any caller can set.
+ * 🔐 SECURITY (INT-01c): Synchronous header-based authentication is explicitly denied.
+ * All tutorial interaction callers MUST use getAuthenticatedUserIdAsync() which
+ * validates via internal secret, gateway headers, or JWT.
  */
-export function getAuthenticatedUserId(request: NextRequest): string | NextResponse {
-  // Synchronous fallback: trust x-user-id ONLY if an x-internal-secret is
-  // present (validated upstream by the internal-auth middleware).
-  // For all other cases the caller must use getAuthenticatedUserIdAsync().
-  const hasInternalSecret = request.headers.get('x-internal-secret') !== null;
-  const userId = request.headers.get('x-user-id');
-
-  if (hasInternalSecret && userId !== null && userId !== '') {
-    return userId;
-  }
-
-  if (userId === null || userId === '') {
-    return NextResponse.json({ error: 'Authenticated X-User-ID required' }, { status: 401 });
-  }
-
-  // Gateway mode: x-user-id present but no internal secret.
-  // Log a warning — gateway should be validating JWT before injecting this header.
-  console.warn('[SECURITY] x-user-id accepted without x-internal-secret — ensure gateway validates JWT upstream', {
-    userId: userId.slice(0, 8),
-  });
-
-  return userId;
+export function getAuthenticatedUserId(_request: NextRequest): NextResponse {
+  return NextResponse.json(
+    {
+      error: 'Synchronous header-based authentication is not supported. Use getAuthenticatedUserIdAsync.',
+    },
+    { status: 401 }
+  );
 }
 
 /**
