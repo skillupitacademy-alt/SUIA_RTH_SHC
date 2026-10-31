@@ -6,7 +6,16 @@
 - Headless authenticated learner smoke: page 200; Introduction I1, Definition D1, Code C1 rendered; ILS navigation and visit 200; both sidebars visible; no failed API responses, page errors, or console errors.
 - Screenshot: `.evidence/screenshots/learner-runtime-smoke-1793432673179.png`.
 - Real remote PostgreSQL fixture round-trip: preflight, committed block injection, and exact original-document restoration passed. Authored Python content was read-only during that round-trip.
-- 104 focused Python tests passed. SkillUp fixture auth/progress route tests: 9 passed.
+- 106 focused Python tests passed. SkillUp fixture auth/progress route tests: 9 passed. Progress UI tests: 2 passed. Both app TypeScript checks passed.
+
+## Isolated Committed-Code Diagnostic
+
+- Commit: `862c15f8`.
+- Result: PASS, no blockers. Production preview build, fixture-session authentication, learner rendering, navigation/visit APIs, sidebars, screenshot capture, and teardown executed through the real verifier.
+- Evidence hash: `40dba0902fd49796b2f0bd96bac164a6f548e7aa3661edf1f04ad5712e9abbcb`.
+- Screenshot: `.evidence/screenshots/learner_runtime_diagnostic-isolated-learner_d838edc4.png`.
+- Cleanup checked directly in PostgreSQL: zero fixture blocks, no active lease, and zero remaining dedicated fixture learner rows in navigation progress, block learning state, and telemetry events.
+- An earlier isolated attempt timed out because preview logs could fill an undrained pipe. Both preview launchers now use temporary log files; a regression test covers this.
 
 ## Defects Fixed
 
