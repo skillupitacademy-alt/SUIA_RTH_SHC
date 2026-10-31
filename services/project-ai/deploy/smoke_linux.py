@@ -11,9 +11,67 @@ from app.verification.worker_slot import verification_slot
 from app.verification.composer_worktree_verifier import _kill_process_tree
 
 
+def check_dependency_startup():
+    entrypoint = Path(__file__).with_name('entrypoint.sh').read_text()
+    for scenario in ('cached', 'missing-tarball', 'invalid-lockfile'):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            commands = root / 'bin'
+            commands.mkdir()
+            (root / '.git').mkdir()
+            config = root / 'worker.env'
+            config.touch()
+            script = root / 'entrypoint.sh'
+            script.write_text(entrypoint)
+            mocks = {
+                'git': '#!/bin/sh\nexit 0\n',
+                'pnpm': '''#!/bin/sh
+printf '%s|%s\\n' "$npm_config_store_dir" "$*" >> "$WORKSPACE_ROOT/calls"
+case "$*" in
+  *--offline*)
+    case "$INSTALL_SCENARIO" in
+      missing-tarball) echo ERR_PNPM_NO_OFFLINE_TARBALL; exit 1 ;;
+      invalid-lockfile) echo ERR_PNPM_OUTDATED_LOCKFILE; exit 1 ;;
+    esac ;;
+esac
+exit 0
+''',
+                'python': '#!/bin/sh\nexit 0\n',
+                'uvicorn': '#!/bin/sh\nexit 0\n',
+            }
+            for name, content in mocks.items():
+                command = commands / name
+                command.write_text(content)
+                command.chmod(0o755)
+            (root / 'services/project-ai').mkdir(parents=True)
+            environment = {**os.environ, 'PATH': f'{commands}:{os.environ["PATH"]}',
+                           'WORKSPACE_ROOT': str(root), 'PROJECT_AI_ENV_FILE': str(config),
+                           'INSTALL_SCENARIO': scenario}
+            environment.pop('npm_config_store_dir', None)
+            result = subprocess.run(['sh', str(script)], env=environment, capture_output=True,
+                                    text=True, timeout=15)
+            calls = (root / 'calls').read_text().splitlines()
+            installs = [line for line in calls if '|install ' in line]
+            assert all(line.startswith(f'{root}/.pnpm-store|') for line in calls)
+            assert '--offline' in installs[0]
+            assert len(installs) == (2 if scenario == 'missing-tarball' else 1)
+            if scenario == 'invalid-lockfile':
+                assert result.returncode != 0
+                assert not any('|--filter' in line for line in calls)
+                assert 'ERR_PNPM_OUTDATED_LOCKFILE' in result.stdout
+            else:
+                assert result.returncode == 0, result.stderr
+                assert any('|--filter' in line for line in calls)
+            if scenario == 'missing-tarball':
+                assert 'ERR_PNPM_NO_OFFLINE_TARBALL' in result.stdout
+                assert '--offline' not in installs[1]
+    print('PASS: shared-cache startup, missing-tarball retry and fail-closed lockfile errors', flush=True)
+
+
 def main():
     if sys.platform != 'linux':
         raise SystemExit('This smoke test requires a Linux container')
+    check_dependency_startup()
     with tempfile.TemporaryDirectory() as directory:
         os.environ['PROJECT_AI_STATE_DIR'] = directory
         child_check = (

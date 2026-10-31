@@ -49,6 +49,10 @@ The worker starts non-root, installs lockfile dependencies into its managed Git
 volume, checks configuration and Chromium, then starts one uvicorn process without
 reload. Memory-intensive endpoints share one file lock; a concurrent job receives
 409 and must retry. Startup may take up to 20 minutes on a cold dependency store.
+Repository and worktree installs share the persistent repository's `.pnpm-store`
+cache, but keep independent installed dependencies. Startup tries the frozen
+lockfile offline first and retries online only for a missing cached tarball;
+other install errors stop startup. No install diagnostics are suppressed.
 Startup also regenerates the discovery snapshot at the worker commit into its
 state volume, instead of reading the Windows-generated tracked snapshot. Preflight
 requires the generated snapshot commit to match the worker HEAD.
@@ -98,5 +102,7 @@ not override CDN limits and is not proof of deployment readiness.
 
 Do not expose port 8000 publicly or mount the Docker socket. Treat candidate code
 as trusted administrator-supplied code: container limits are not a complete sandbox
-against hostile uploads. No VPS commands or live database writes are part of the
-local smoke tests above.
+against hostile uploads. The toolchain smoke tests do not write to a database.
+The explicitly authorized authenticated diagnostic temporarily replaces only the
+reserved fixture document and restores it afterwards; it never certifies a workflow
+or deploys to the VPS.
