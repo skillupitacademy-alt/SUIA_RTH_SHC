@@ -79,6 +79,14 @@ describe('SHC admin trust boundary', () => {
     expect(await requireAdminRequest(request(undefined, 'POST'))).toBeNull();
   });
   it.each([
+    'http://localhost:3007',
+    'http://127.0.0.1:3007',
+    'http://skillhubcore.localhost:3007',
+    'http://shc.localhost:3007',
+  ])('allows development mutation origin %s', async devOrigin => {
+    expect(await requireAdminRequest(request(undefined, 'POST', true, devOrigin))).toBeNull();
+  });
+  it.each([
     ['/api/tutorial-composer/sections/id/publish', 'POST', PERMISSIONS.TUTORIAL_AUTHOR_PUBLISH],
     ['/api/tutorial-composer/sections/id', 'DELETE', PERMISSIONS.TUTORIAL_AUTHOR_DELETE],
     ['/api/tutorial-left-sidebar', 'POST', PERMISSIONS.TUTORIAL_AUTHOR_PUBLISH],

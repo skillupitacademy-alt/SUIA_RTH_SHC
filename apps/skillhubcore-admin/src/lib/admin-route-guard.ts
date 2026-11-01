@@ -13,6 +13,9 @@ export function requireAdminMutationOrigin(request: NextRequest): NextResponse |
   if (process.env.NODE_ENV !== 'production') {
     allowed.add('http://localhost:3007');
     allowed.add('http://127.0.0.1:3007');
+    allowed.add('http://skillhubcore.localhost:3007');
+    allowed.add('http://shc.localhost:3007');
+    allowed.add('http://admin.skillhubcore.localhost:3007');
   }
   // An exact origin for a separately deployed staging/admin instance.
   if (process.env.SHC_ADMIN_ORIGIN) {
@@ -23,7 +26,33 @@ export function requireAdminMutationOrigin(request: NextRequest): NextResponse |
       }
     } catch { /* Invalid configuration must not weaken the default policy. */ }
   }
-  const origin = request.headers.get('origin');
+
+  let origin = request.headers.get('origin');
+  if (!origin || origin === 'null') {
+    const referer = request.headers.get('referer');
+    if (referer) {
+      try {
+        origin = new URL(referer).origin;
+      } catch {
+        origin = null;
+      }
+    }
+  }
+
+  // Allow any .localhost origin on port 3007 in development
+  if (process.env.NODE_ENV !== 'production' && origin) {
+    try {
+      const url = new URL(origin);
+      if (
+        (url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.endsWith('.localhost')) &&
+        (url.port === '3007' || url.port === '') &&
+        url.protocol === 'http:'
+      ) {
+        allowed.add(origin);
+      }
+    } catch { /* Invalid URL format */ }
+  }
+
   if (!origin || !allowed.has(origin)) {
     return NextResponse.json({ error: 'Untrusted request origin' }, {
       status: 403, headers: { 'Cache-Control': 'private, no-store' },
