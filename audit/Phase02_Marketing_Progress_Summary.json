@@ -1,0 +1,18 @@
+{
+  "phase": "02",
+  "status": "INCOMPLETE_NOT_SIGNED_OFF",
+  "baseline_commit": "5efd1129d905d05c912acfef66e52df9ca15120b",
+  "baseline_tree": "a1753abdf166364bdc76c55df6ed33e1a014a8c4",
+  "inventory": 290,
+  "phase01_classifications": {
+    "HISTORICAL_REPORT_MENTION": 45,
+    "NO_PATH_LEVEL_EVIDENCE": 139,
+    "PINNED_SOURCE_RETRIEVED": 106
+  },
+  "phase02_complete_sources_inspected": 20,
+  "phase02_source_lines_inspected": 1113,
+  "cumulative_minimum_pinned_sources_evidenced": 126,
+  "not_pinned_retrieved_according_to_conservative_ledger": 164,
+  "not_certified_full_line_review": 270,
+  "notes": "Counts are evidence thresholds, not claims about untouched files; previous rounds may have reviewed many paths."
+}

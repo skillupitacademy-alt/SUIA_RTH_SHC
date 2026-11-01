@@ -1,0 +1,12 @@
+gate_id,criterion,decision,evidence_summary,evidence_basis,exit_requirement
+G01,Pinned source inventory,PASS,290 unique paths mapped to pinned commit and tree,Phase 01 ledger,Maintain immutable per-path manifest
+G02,Full line-level coverage,NOT PASSED,Only a subset has pinned-source retrieval evidence; 290/290 semantic reviews not certified,Phase 02 tracker,Complete unverified file reviews with per-file evidence
+G03,Consent enforcement,NOT PASSED,P03-01 and P03-07 show missing server/direct-provider enforcement paths,Phase 03 report,"Trusted consent proof, fail-closed gates, revocation/expiry tests"
+G04,Brand and identity isolation,NOT PASSED,"P03-02 brand singleton, P03-04 conflict merge; runtime topology not demonstrated",Phase 03 report,"Brand-scoped tracker/store, conflict quarantine, two-brand tests"
+G05,Event durability and delivery,NOT PASSED,P03-03/P03-08: delivery failures and inadequate acknowledgement/replay evidence,Phase 03 report,"Durable transport, response checks, recovery/replay tests"
+G06,Consent storage and UX,NOT PASSED,P03-05 storage/schema gap; P03-06 reopening control conditional on site-wide check,Phase 03 report,"Runtime validation, exception-safe storage, accessible preference management"
+G07,Historical findings reconciliation,NOT PASSED,"286 historical MKT IDs recorded, but item-by-item canonical status and dedupe unverified",Phase 04 report,"Canonical 286-entry register with owners, evidence, closure test"
+G08,Build/typecheck/lint/unit/E2E,NOT EXECUTED,No reproducible command outputs attached for audited commit,Phase 01–04 reports,Execute CI and capture exact outputs and environment
+G09,Security/privacy deployment validation,NOT EXECUTED,"Actual endpoints, middleware, headers, DB, provider receipts and region settings unverified",Phase 03 report,"Authenticated integration, negative, resilience and privacy tests"
+G10,Marketing-content integrity,NOT PASSED,"Historical hardcoded claims, duration/assessment inconsistencies require corrections and evidence",Historical closure rounds / Phase 02,"Review claims, course metadata, actual approved source of truth"
+G11,Release go/no-go,NO-GO,High-severity architecture risks not remediated/retested; multiple gates open,Phase 03–04,Independent retest and signed release approval
