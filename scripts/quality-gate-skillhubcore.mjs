@@ -136,16 +136,28 @@ function main() {
   const args = process.argv.slice(2);
   const stageArg = args.find(arg => arg.startsWith('--stage='));
   
+  // Validate no unknown arguments
+  const unknownArgs = args.filter(arg => !arg.startsWith('--stage='));
+  if (unknownArgs.length > 0) {
+    console.error(`❌ Unknown arguments: ${unknownArgs.join(', ')}`);
+    console.error(`   Valid format: [--stage=<name>]`);
+    process.exit(255);
+  }
+  
   if (stageArg) {
     // Run single stage
     const stageName = stageArg.split('=')[1];
-    const stage = STAGES[stageName];
     
-    if (!stage) {
+    // CRITICAL: Validate stage name against explicit allowlist
+    // Reject toString, constructor, __proto__, and other prototype pollution
+    const validStages = ['guards', 'security', 'lint', 'typecheck', 'test', 'build'];
+    if (!validStages.includes(stageName)) {
       console.error(`❌ Unknown stage: ${stageName}`);
-      console.error(`   Valid stages: ${Object.keys(STAGES).join(', ')}`);
+      console.error(`   Valid stages: ${validStages.join(', ')}`);
       process.exit(255);
     }
+    
+    const stage = STAGES[stageName];
     
     console.log(`\n🎯 Running single stage: ${stage.name}`);
     try {

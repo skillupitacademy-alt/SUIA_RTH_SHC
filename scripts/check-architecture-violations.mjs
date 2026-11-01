@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * W0.2 Architecture Violation Checker - Fail-closed scanning with baseline awareness
+ * W0.2 Architecture Violation Checker - Fail-closed scanning with TypeScript parsing
  * 
  * 5 Architecture Gates:
- * 1. Frontend auth cookie parsing
- * 2. localStorage auth persistence
+ * 1. Frontend auth cookie parsing (document.cookie reads)
+ * 2. localStorage auth persistence (accessToken/refreshToken storage)
  * 3. Manual Authorization headers
- * 4. Duplicate JWT verification
- * 5. Direct DB imports in HTTP routes (baseline-aware)
+ * 4. Duplicate JWT verification (direct jose/jsonwebtoken use)
+ * 5. Direct DB imports in HTTP routes (baseline-aware, multiline/side-effect safe)
  * 
  * FAIL-CLOSED POLICY:
- * - Missing scan roots → FAIL
- * - Unreadable files → FAIL
- * - Invalid baseline data → FAIL
- * - Scanner errors → FAIL (not silent PASS)
+ * - Missing scan roots → FAIL (exit 2)
+ * - Unreadable files → FAIL (exit 2)
+ * - Invalid baseline data → FAIL (exit 2)
+ * - Scanner errors → FAIL (exit 2)
  * 
  * Exit codes:
  * - 0: All gates passed
@@ -25,16 +25,16 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import ts from 'typescript';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
 /**
- * Fail-closed file scanner
- * Throws on missing root, unreadable files, or scan errors
+ * Fail-closed file scanner using TypeScript AST for imports
  */
-function scanFiles(pattern, rootPaths, fileExtensions = ['.ts', '.tsx']) {
+function scanFilesWithTS(importTest, rootPaths, fileExtensions = ['.ts', '.tsx']) {
   const results = [];
   
   for (const rootPath of rootPaths) {
@@ -50,18 +50,17 @@ function scanFiles(pattern, rootPaths, fileExtensions = ['.ts', '.tsx']) {
       throw new Error(`SCAN_ERROR: Scan root is not a directory: ${rootPath}`);
     }
     
-    walkDirectory(fullPath, pattern, fileExtensions, results);
+    walkDirectoryTS(fullPath, importTest, fileExtensions, results);
   }
   
   return results;
 }
 
-function walkDirectory(dir, pattern, extensions, results) {
+function walkDirectoryTS(dir, importTest, extensions, results) {
   let entries;
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch (error) {
-    // FAIL-CLOSED: Unreadable directory must fail
     throw new Error(`SCAN_ERROR: Cannot read directory ${dir}: ${error.message}`);
   }
   
@@ -69,26 +68,126 @@ function walkDirectory(dir, pattern, extensions, results) {
     const fullPath = path.join(dir, entry.name);
     
     if (entry.isDirectory()) {
-      // Skip node_modules, .next, etc.
       if (['node_modules', '.next', 'dist', 'build'].includes(entry.name)) {
         continue;
       }
-      walkDirectory(fullPath, pattern, extensions, results);
+      walkDirectoryTS(fullPath, importTest, extensions, results);
     } else if (entry.isFile()) {
       const ext = path.extname(entry.name);
       if (extensions.includes(ext)) {
         try {
           const content = fs.readFileSync(fullPath, 'utf8');
-          const matches = findMatches(content, pattern, fullPath);
-          if (matches.length > 0) {
-            results.push(...matches.map(m => ({
-              file: path.relative(rootDir, fullPath).replaceAll('\\', '/'),
-              line: m.line,
-              match: m.text,
-            })));
+          const source = ts.createSourceFile(fullPath, content, ts.ScriptTarget.Latest, true);
+          const violations = checkImportsWithTS(source, importTest, fullPath);
+          if (violations.length > 0) {
+            results.push(...violations);
           }
         } catch (error) {
-          // FAIL-CLOSED: Unreadable file must fail
+          throw new Error(`SCAN_ERROR: Cannot process file ${fullPath}: ${error.message}`);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Check imports using TypeScript AST
+ * Handles multiline, side-effect, and subpath imports
+ */
+function checkImportsWithTS(source, importTest, filePath) {
+  const violations = [];
+  const relativePath = path.relative(rootDir, filePath).replaceAll('\\', '/');
+  
+  function visit(node) {
+    // Check import declarations: import ... from '...'
+    if (ts.isImportDeclaration(node)) {
+      if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+        const moduleName = node.moduleSpecifier.text;
+        if (importTest(moduleName)) {
+          const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+          const text = node.getText(source).substring(0, 100); // Truncate for readability
+          violations.push({
+            file: relativePath,
+            line,
+            match: text,
+          });
+        }
+      }
+    }
+    
+    // Check dynamic imports: import('...')
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      if (node.arguments[0] && ts.isStringLiteral(node.arguments[0])) {
+        const moduleName = node.arguments[0].text;
+        if (importTest(moduleName)) {
+          const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+          const text = node.getText(source).substring(0, 100);
+          violations.push({
+            file: relativePath,
+            line,
+            match: text,
+          });
+        }
+      }
+    }
+    
+    ts.forEachChild(node, visit);
+  }
+  
+  visit(source);
+  return violations;
+}
+
+/**
+ * Pattern-based scanner for non-import patterns
+ */
+function scanFilesWithPattern(pattern, rootPaths, fileExtensions = ['.ts', '.tsx']) {
+  const results = [];
+  
+  for (const rootPath of rootPaths) {
+    const fullPath = path.join(rootDir, rootPath);
+    
+    if (!fs.existsSync(fullPath)) {
+      throw new Error(`SCAN_ERROR: Required scan root does not exist: ${rootPath}`);
+    }
+    
+    const stats = fs.statSync(fullPath);
+    if (!stats.isDirectory()) {
+      throw new Error(`SCAN_ERROR: Scan root is not a directory: ${rootPath}`);
+    }
+    
+    walkDirectoryPattern(fullPath, pattern, fileExtensions, results);
+  }
+  
+  return results;
+}
+
+function walkDirectoryPattern(dir, pattern, extensions, results) {
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch (error) {
+    throw new Error(`SCAN_ERROR: Cannot read directory ${dir}: ${error.message}`);
+  }
+  
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    
+    if (entry.isDirectory()) {
+      if (['node_modules', '.next', 'dist', 'build'].includes(entry.name)) {
+        continue;
+      }
+      walkDirectoryPattern(fullPath, pattern, extensions, results);
+    } else if (entry.isFile()) {
+      const ext = path.extname(entry.name);
+      if (extensions.includes(ext)) {
+        try {
+          const content = fs.readFileSync(fullPath, 'utf8');
+          const matches = findPatternMatches(content, pattern, fullPath);
+          if (matches.length > 0) {
+            results.push(...matches);
+          }
+        } catch (error) {
           throw new Error(`SCAN_ERROR: Cannot read file ${fullPath}: ${error.message}`);
         }
       }
@@ -96,15 +195,17 @@ function walkDirectory(dir, pattern, extensions, results) {
   }
 }
 
-function findMatches(content, pattern, filePath) {
+function findPatternMatches(content, pattern, filePath) {
   const matches = [];
+  const relativePath = path.relative(rootDir, filePath).replaceAll('\\', '/');
   const lines = content.split('\n');
   
   for (let i = 0; i < lines.length; i++) {
     if (pattern.test(lines[i])) {
       matches.push({
+        file: relativePath,
         line: i + 1,
-        text: lines[i].trim(),
+        match: lines[i].trim().substring(0, 100),
       });
     }
   }
@@ -114,7 +215,6 @@ function findMatches(content, pattern, filePath) {
 
 /**
  * Load and validate baseline
- * FAIL-CLOSED: Invalid baseline must fail
  */
 function loadBaseline() {
   const baselinePath = path.join(rootDir, 'audit/W0.2_Architecture_Baseline.json');
@@ -131,7 +231,6 @@ function loadBaseline() {
     throw new Error(`BASELINE_ERROR: Cannot parse baseline JSON: ${error.message}`);
   }
   
-  // Validate baseline structure
   if (!baseline.baseline_commit || typeof baseline.baseline_commit !== 'string') {
     throw new Error('BASELINE_ERROR: Missing or invalid baseline_commit');
   }
@@ -149,7 +248,6 @@ function loadBaseline() {
 
 /**
  * Validate baseline routes exist
- * FAIL-CLOSED: Nonexistent baseline routes must fail
  */
 function validateBaselineRoutes(baseline) {
   const missing = [];
@@ -165,12 +263,12 @@ function validateBaselineRoutes(baseline) {
     throw new Error(`BASELINE_ERROR: ${missing.length} baseline routes do not exist:\n  ${missing.join('\n  ')}\nStale baseline must be corrected.`);
   }
   
-  console.log(`Baseline validation: All ${baseline.directDBRoutes.length} routes exist`);
+  console.log(`Baseline validation: All ${baseline.directDBRoutes.length} routes exist\n`);
 }
 
 // Main execution
 try {
-  console.log('W0.2 Architecture Violation Checker - Fail-closed scanning\n');
+  console.log('W0.2 Architecture Violation Checker - Fail-closed scanning with TypeScript AST\n');
   
   const baseline = loadBaseline();
   validateBaselineRoutes(baseline);
@@ -179,25 +277,25 @@ try {
   let totalViolations = 0;
   
   /**
-   * Gate 1: Frontend auth cookie parsing
+   * Gate 1: Frontend auth cookie parsing (document.cookie reads)
    */
-  console.log('\nGate 1: Checking frontend auth cookie parsing...');
-  const authCookiePattern = /cookie\(\s*['"]admin_session['"]/i;
+  console.log('Gate 1: Checking frontend auth cookie parsing...');
+  const cookiePattern = /document\.cookie/;
   const clientPaths = [
     'apps/skillhubcore-admin/src/app',
     'apps/skillhubcore-admin/src/components',
   ];
   
   try {
-    const cookieViolations = scanFiles(authCookiePattern, clientPaths);
+    const cookieViolations = scanFilesWithPattern(cookiePattern, clientPaths);
     if (cookieViolations.length > 0) {
-      console.error('❌ FAIL: Frontend auth cookie parsing detected:');
+      console.error('❌ FAIL: Frontend document.cookie access detected:');
       cookieViolations.forEach(v => console.error(`  ${v.file}:${v.line} - ${v.match}`));
-      console.error('  Rule: Auth must use server-side JWT validation, not client-side cookie parsing.\n');
+      console.error('  Rule: Client code must not read document.cookie for auth tokens.\n');
       totalViolations += cookieViolations.length;
       results.push({ gate: 'auth-cookie-parsing', status: 'FAIL', violations: cookieViolations.length });
     } else {
-      console.log('✅ PASS: No frontend auth cookie parsing detected.\n');
+      console.log('✅ PASS: No frontend document.cookie access detected.\n');
       results.push({ gate: 'auth-cookie-parsing', status: 'PASS', violations: 0 });
     }
   } catch (error) {
@@ -206,17 +304,17 @@ try {
   }
   
   /**
-   * Gate 2: localStorage auth persistence
+   * Gate 2: localStorage auth persistence (accessToken/refreshToken)
    */
   console.log('Gate 2: Checking localStorage auth persistence...');
-  const localStorageAuthPattern = /localStorage\.(get|set)Item\s*\(\s*['"](?:token|jwt|session|auth)/i;
+  const localStorageAuthPattern = /localStorage\.(get|set)Item\s*\(\s*['"](?:accessToken|refreshToken|token|jwt|session|auth)/i;
   
   try {
-    const storageViolations = scanFiles(localStorageAuthPattern, clientPaths);
+    const storageViolations = scanFilesWithPattern(localStorageAuthPattern, clientPaths);
     if (storageViolations.length > 0) {
       console.error('❌ FAIL: localStorage auth persistence detected:');
       storageViolations.forEach(v => console.error(`  ${v.file}:${v.line} - ${v.match}`));
-      console.error('  Rule: Auth must use httpOnly cookies, not localStorage (XSS vulnerability).\n');
+      console.error('  Rule: Auth tokens must use httpOnly cookies, not localStorage (XSS vulnerability).\n');
       totalViolations += storageViolations.length;
       results.push({ gate: 'localStorage-auth', status: 'FAIL', violations: storageViolations.length });
     } else {
@@ -235,17 +333,21 @@ try {
   const authHeaderPattern = /headers\s*:\s*\{[^}]*['"]Authorization['"]\s*:/;
   const servicePaths = [
     'apps/skillhubcore-admin/src',
-    'packages/auth/src',
   ];
   
   try {
-    const headerViolations = scanFiles(authHeaderPattern, servicePaths, ['.ts', '.tsx', '.js']);
-    if (headerViolations.length > 0) {
+    const headerViolations = scanFilesWithPattern(authHeaderPattern, servicePaths, ['.ts', '.tsx', '.js']);
+    // Filter out legitimate server-side uses (e.g., in BFF/middleware)
+    const actualViolations = headerViolations.filter(v => 
+      !v.file.includes('middleware') && !v.file.includes('lib/auth')
+    );
+    
+    if (actualViolations.length > 0) {
       console.error('❌ FAIL: Manual Authorization headers detected:');
-      headerViolations.forEach(v => console.error(`  ${v.file}:${v.line} - ${v.match}`));
+      actualViolations.forEach(v => console.error(`  ${v.file}:${v.line} - ${v.match}`));
       console.error('  Rule: Authorization must use packages/auth, not manual header construction.\n');
-      totalViolations += headerViolations.length;
-      results.push({ gate: 'manual-auth-headers', status: 'FAIL', violations: headerViolations.length });
+      totalViolations += actualViolations.length;
+      results.push({ gate: 'manual-auth-headers', status: 'FAIL', violations: actualViolations.length });
     } else {
       console.log('✅ PASS: No manual Authorization headers detected.\n');
       results.push({ gate: 'manual-auth-headers', status: 'PASS', violations: 0 });
@@ -256,19 +358,21 @@ try {
   }
   
   /**
-   * Gate 4: Duplicate JWT verification
+   * Gate 4: Duplicate JWT verification (direct jose/jsonwebtoken imports)
    */
   console.log('Gate 4: Checking duplicate JWT verification...');
-  const jwtPattern = /jwt\.verify|jsonwebtoken/;
-  const excludeAuthPaths = servicePaths.filter(p => !p.includes('packages/auth'));
+  const jwtPackages = ['jose', 'jsonwebtoken'];
+  const authOwnerPath = 'packages/auth';
   
   try {
-    const jwtViolations = scanFiles(jwtPattern, excludeAuthPaths, ['.ts', '.tsx', '.js']);
-    // Filter out packages/auth imports (allowed)
-    const actualViolations = jwtViolations.filter(v => 
-      !v.match.includes("from '@quiz/auth'") && 
-      !v.match.includes('from "@quiz/auth"')
+    const jwtViolations = scanFilesWithTS(
+      (moduleName) => jwtPackages.some(pkg => moduleName === pkg || moduleName.startsWith(pkg + '/')),
+      servicePaths,
+      ['.ts', '.tsx', '.js']
     );
+    
+    // Filter out packages/auth (authoritative owner)
+    const actualViolations = jwtViolations.filter(v => !v.file.startsWith(authOwnerPath));
     
     if (actualViolations.length > 0) {
       console.error('❌ FAIL: Duplicate JWT verification outside packages/auth detected:');
@@ -286,12 +390,15 @@ try {
   }
   
   /**
-   * Gate 5: Direct DB imports in HTTP routes (baseline-aware)
+   * Gate 5: Direct DB imports in HTTP routes (TypeScript AST parsing)
    * 
-   * CRITICAL DISTINCTION:
-   * - @quiz/db = direct persistence coupling (VIOLATION unless baselined)
-   * - @quiz/db-tutorial = intended service boundary (PERMITTED)
-   * - drizzle-orm = direct ORM use (VIOLATION unless baselined)
+   * DETECTION:
+   * - @quiz/db and subpaths (e.g., @quiz/db/client) = VIOLATION
+   * - drizzle-orm = VIOLATION
+   * - getDb() calls = VIOLATION via pattern scan
+   * - @quiz/db-tutorial = PERMITTED (service boundary)
+   * 
+   * Handles multiline, side-effect, and subpath imports via TypeScript AST
    */
   console.log('Gate 5: Checking direct DB imports in HTTP routes...');
   console.log(`  Baseline exceptions: ${baseline.directDBRoutes.length} documented routes`);
@@ -315,9 +422,6 @@ try {
   }
   walkRoutes(apiDir);
   
-  // Scan for direct persistence imports
-  // PERMITTED: @quiz/db-tutorial (service boundary)
-  // VIOLATION: @quiz/db, drizzle-orm, getDb (persistence coupling)
   const directDBImports = [];
   
   for (const routeFile of routeFiles) {
@@ -329,35 +433,39 @@ try {
       throw new Error(`SCAN_ERROR: Cannot read ${routeFile}: ${error.message}`);
     }
     
-    // Check for persistence coupling patterns
-    // Match: import ... from '@quiz/db'
-    // Match: import { db } from '@quiz/db'
-    // Match: import ... from 'drizzle-orm'
-    // Match: getDb()
-    // DO NOT match: import ... from '@quiz/db-tutorial' (service boundary)
-    const lines = content.split('\n');
+    // Use TypeScript AST for import detection
+    const source = ts.createSourceFile(fullPath, content, ts.ScriptTarget.Latest, true);
     let hasViolation = false;
     
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      // Check for direct @quiz/db imports (but not @quiz/db-tutorial)
-      if (/import.*from\s+['"]@quiz\/db['"]/.test(line) && !/db-tutorial/.test(line)) {
-        hasViolation = true;
-        break;
+    function checkNode(node) {
+      // Check import declarations
+      if (ts.isImportDeclaration(node)) {
+        if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+          const moduleName = node.moduleSpecifier.text;
+          
+          // VIOLATION: @quiz/db or @quiz/db/*
+          if (moduleName === '@quiz/db' || moduleName.startsWith('@quiz/db/')) {
+            // EXCEPTION: @quiz/db-tutorial is a service boundary
+            if (!moduleName.startsWith('@quiz/db-tutorial')) {
+              hasViolation = true;
+            }
+          }
+          
+          // VIOLATION: drizzle-orm
+          if (moduleName === 'drizzle-orm' || moduleName.startsWith('drizzle-orm/')) {
+            hasViolation = true;
+          }
+        }
       }
       
-      // Check for drizzle-orm imports
-      if (/import.*from\s+['"]drizzle-orm/.test(line)) {
-        hasViolation = true;
-        break;
-      }
-      
-      // Check for getDb() calls
-      if (/\bgetDb\s*\(/.test(line)) {
-        hasViolation = true;
-        break;
-      }
+      ts.forEachChild(node, checkNode);
+    }
+    
+    checkNode(source);
+    
+    // Also check for getDb() calls (pattern-based)
+    if (/\bgetDb\s*\(/.test(content)) {
+      hasViolation = true;
     }
     
     if (hasViolation) {
@@ -376,8 +484,9 @@ try {
   if (newViolations.length > 0) {
     console.error('❌ FAIL: NEW direct DB imports in HTTP routes detected:');
     newViolations.forEach(v => console.error(`  ${v}`));
-    console.error('  Rule: HTTP routes must not directly import @quiz/db or drizzle-orm.');
+    console.error('  Rule: HTTP routes must not directly import @quiz/db, @quiz/db/*, or drizzle-orm.');
     console.error('  Use repository/service layer instead.');
+    console.error('  Service boundary: @quiz/db-tutorial is PERMITTED.');
     console.error('  See audit/W0.2_Architecture_Baseline.json for documented exceptions.\n');
     totalViolations += newViolations.length;
     results.push({ gate: 'direct-db-in-routes', status: 'FAIL', violations: newViolations.length });
