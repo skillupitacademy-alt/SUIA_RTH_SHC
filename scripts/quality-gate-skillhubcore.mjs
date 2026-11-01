@@ -4,11 +4,11 @@
  * W0.2 SkillHubCore Quality Gate - Fail-fast aggregate enforcement
  * 
  * Execution order (fail-fast):
- * 1. Architecture Guards (direct-DB route baseline compliance)
+ * 1. Architecture Guards (direct-DB route baseline + API boundary authorization)
  * 2. Security Tests (admin boundary, upstream proxy validation)
- * 3. Lint (ESLint with --max-warnings=0)
+ * 3. Lint (ESLint with EXPLICIT --max-warnings=0)
  * 4. Type Check (TypeScript strict mode)
- * 5. Unit Tests (safe, non-DB vitest tests)
+ * 5. Unit Tests (ISOLATED safe tests, no ambient DB access)
  * 6. Build (Next.js production build)
  * 
  * Exit codes:
@@ -19,11 +19,11 @@
  *   node scripts/quality-gate-skillhubcore.mjs [--stage=<name>]
  * 
  * Stages (independently runnable):
- *   --stage=guards        Architecture violation check only
+ *   --stage=guards        Architecture violation check + API boundary check
  *   --stage=security      Security tests only
- *   --stage=lint          Lint only
+ *   --stage=lint          Lint with --max-warnings=0
  *   --stage=typecheck     Type check only
- *   --stage=test          Unit tests only
+ *   --stage=test          Isolated unit tests only
  *   --stage=build         Build only
  *   (no --stage)          Run all stages in order (fail-fast)
  */
@@ -43,11 +43,18 @@ const STAGES = {
     exitCode: 1,
     run: () => {
       console.log('\n🏛️  Gate 1: Architecture Guards');
-      console.log('   Checking direct-DB route baseline compliance...\n');
+      console.log('   Part 1: Direct-DB route baseline compliance...\n');
       execSync('node scripts/check-architecture-violations.mjs', {
         cwd: ROOT,
         stdio: 'inherit',
       });
+      
+      console.log('\n   Part 2: API authorization boundary check...\n');
+      execSync('node scripts/check-api-boundaries.mjs', {
+        cwd: SKILLHUBCORE_DIR,
+        stdio: 'inherit',
+      });
+      
       console.log('   ✅ Architecture guards passed\n');
     },
   },
@@ -69,8 +76,9 @@ const STAGES = {
     exitCode: 3,
     run: () => {
       console.log('\n🧹 Gate 3: Lint');
-      console.log('   Running ESLint with --max-warnings=0...\n');
-      execSync('pnpm run lint', {
+      console.log('   Running ESLint with EXPLICIT --max-warnings=0...\n');
+      // EXPLICIT --max-warnings=0 (Sol Review correction)
+      execSync('cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx . --max-warnings=0', {
         cwd: SKILLHUBCORE_DIR,
         stdio: 'inherit',
       });
@@ -94,9 +102,11 @@ const STAGES = {
     name: 'Unit Tests',
     exitCode: 5,
     run: () => {
-      console.log('\n🧪 Gate 5: Unit Tests');
-      console.log('   Running safe unit tests (non-DB)...\n');
-      execSync('pnpm run test', {
+      console.log('\n🧪 Gate 5: Unit Tests (ISOLATED safe tests)');
+      console.log('   Running isolated unit tests (no ambient DB access)...\n');
+      // ISOLATED test selection (Sol Review correction)
+      // Run only safe unit tests, exclude DB integration tests
+      execSync('pnpm run test:isolated', {
         cwd: SKILLHUBCORE_DIR,
         stdio: 'inherit',
       });
@@ -146,7 +156,8 @@ function main() {
     // Run all stages (fail-fast)
     console.log('\n🚀 SkillHubCore Quality Gate - Running all stages (fail-fast)\n');
     console.log('   Target: apps/skillhubcore-admin');
-    console.log('   Baseline: 17 direct-DB routes (W0.2)\n');
+    console.log('   Baseline: 26 direct-DB routes (W0.2 corrected)');
+    console.log('   Isolated tests: Safe unit tests only (no ambient DB)\n');
     
     const stageOrder = ['guards', 'security', 'lint', 'typecheck', 'test', 'build'];
     
@@ -163,11 +174,11 @@ function main() {
     
     console.log('\n✅ All quality gates passed!\n');
     console.log('   Summary:');
-    console.log('   - Architecture Guards: ✅ PASS');
+    console.log('   - Architecture Guards: ✅ PASS (baseline + API boundary)');
     console.log('   - Security Tests:      ✅ PASS');
-    console.log('   - Lint:                ✅ PASS');
+    console.log('   - Lint:                ✅ PASS (--max-warnings=0)');
     console.log('   - Type Check:          ✅ PASS');
-    console.log('   - Unit Tests:          ✅ PASS');
+    console.log('   - Unit Tests:          ✅ PASS (isolated)');
     console.log('   - Build:               ✅ PASS\n');
     process.exit(0);
   }

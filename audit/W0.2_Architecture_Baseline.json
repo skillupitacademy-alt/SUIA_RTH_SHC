@@ -22,7 +22,6 @@
     "apps/skillhubcore-admin/src/app/api/admin/topics/[id]/route.ts",
     "apps/skillhubcore-admin/src/app/api/admin/topics/batch-delete/route.ts",
     "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
-    "apps/skillhubcore-admin/src/app/api/admin/sidebar/route.ts",
     "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/hierarchy/route.ts",
     "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
     "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
@@ -37,9 +36,10 @@
   ],
   "notes": {
     "taxonomy_crud": "15 routes for domains/skills/subjects/subtopics/topics CRUD operations directly import getDb() and drizzle-orm. This is a domain-wide DIP violation documented in Finding 1.",
-    "sidebar": "945-line Tutorial Sidebar API route with direct-DB coupling documented in Finding 28. Largest SRP/DIP failure in codebase.",
-    "tutorial_left_sidebar": "Tutorial left sidebar hierarchy route and navigation-nodes route also have direct-DB import; discovered during W0.2 baseline inventory.",
+    "tutorial_left_sidebar": "Tutorial left sidebar hierarchy route and navigation-nodes route have direct-DB import; discovered during W0.2 baseline inventory.",
     "tutorial_composer": "10 tutorial-composer routes (analysis, block-suggestions, import, presentation-ideas, sections CRUD) have direct-DB imports; discovered during W0.2 regex pattern fix.",
-    "enforcement": "W0.2 CI gates will REJECT any NEW direct-DB imports in HTTP routes. Baseline routes (27 total) are permitted only until Wave 4 remediation."
+    "admin_sidebar_removed": "Original baseline incorrectly included nonexistent admin/sidebar/route.ts (Finding 28 945-line route). Corrected during W0.2 verification. The route does not exist at baseline commit.",
+    "enforcement": "W0.2 CI gates will REJECT any NEW direct-DB imports in HTTP routes. Baseline routes (26 total, corrected from 27) are permitted only until Wave 4 remediation.",
+    "service_boundary_distinction": "@quiz/db-tutorial is a permitted service boundary import. Only @quiz/db and drizzle-orm direct imports are violations."
   }
 }

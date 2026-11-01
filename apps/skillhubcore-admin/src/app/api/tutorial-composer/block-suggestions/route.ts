@@ -34,6 +34,7 @@ import {
 } from '@quiz/types';
 import {
   authenticateRequest,
+  createAuthErrorResponse,
   requireTutorialEditPermission,
   requireSubtopicAccess,
   requireBrandAccess,
