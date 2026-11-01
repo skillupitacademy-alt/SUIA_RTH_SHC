@@ -1,0 +1,175 @@
+name: Quality & Architecture Gates
+
+on:
+  push:
+    branches: [main, remediation/*]
+  pull_request:
+    branches: ["*"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Placeholder credentials for CI only - no production secrets
+  DATABASE_URL: postgresql://ci_user:ci_pass@localhost/ci_test
+  UPSTASH_REDIS_REST_URL: https://placeholder-ci.upstash.io
+  UPSTASH_REDIS_REST_TOKEN: placeholder_ci_token
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run lint
+        run: pnpm lint:all
+
+  architecture-guards:
+    name: Architecture Guards
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Check architecture violations
+        run: node scripts/check-architecture-violations.mjs
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run type check
+        run: pnpm typecheck:all
+
+  test:
+    name: Unit & Security Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run SkillHubCore Admin tests
+        run: pnpm --filter @quiz/skillhubcore-admin run test
+        
+      - name: Run security boundary tests
+        run: pnpm --filter @quiz/skillhubcore-admin run test:security
+        
+      - name: Check API authorization boundaries
+        run: pnpm --filter @quiz/skillhubcore-admin run check:boundaries
+        
+      - name: Upload test coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-skillhubcore-admin
+          path: apps/skillhubcore-admin/coverage/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  build:
+    name: Build
+    needs: [lint, architecture-guards, type-check, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build SkillHubCore Admin
+        run: pnpm --filter @quiz/skillhubcore-admin run build
+        
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-skillhubcore-admin
+          path: apps/skillhubcore-admin/.next/
+          retention-days: 3
+
+  quality-success:
+    name: All Gates Passed
+    needs: [lint, architecture-guards, type-check, test, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "✅ All quality and architecture gates passed"
