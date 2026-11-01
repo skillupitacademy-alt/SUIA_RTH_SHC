@@ -78,8 +78,12 @@ const STAGES = {
       console.log('\n🧹 Gate 3: Lint');
       console.log('   Running ESLint with EXPLICIT --max-warnings=0...\n');
       // EXPLICIT --max-warnings=0 (Sol Review correction)
-      execSync('cross-env ESLINT_USE_FLAT_CONFIG=false eslint --ext .ts,.tsx,.js,.jsx . --max-warnings=0', {
+      execSync('pnpm exec eslint --ext .ts,.tsx,.js,.jsx . --max-warnings=0', {
         cwd: SKILLHUBCORE_DIR,
+        env: {
+          ...process.env,
+          ESLINT_USE_FLAT_CONFIG: 'false',
+        },
         stdio: 'inherit',
       });
       console.log('   ✅ Lint passed\n');
