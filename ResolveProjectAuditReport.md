@@ -1038,15 +1038,14 @@ All tasks on the remediation roadmap are now completely finished.
 | **GATEWAY-01** | Fail-closed gateway trust mode | Missing `GATEWAY_TRUST_SECRET` returns 503 (`Service Misconfigured`). Missing or mismatched `x-gateway-secret` returns 401 (`Unauthorized`). `blockDirectAccess()` rejects unverified `x-user-id` with 403. | `gateway-01.test.ts` (12/12 passed) | ✅ **FIXED & VERIFIED FAIL-CLOSED** |
 | **INTERNAL-AUTH** | Fail-closed internal service auth | Missing `INTERNAL_API_SECRET` returns 503 (`Service Misconfigured`). Mismatched secret returns 401 (`Unauthorized`). | `gateway-01.test.ts` | ✅ **FIXED & VERIFIED** |
 | **TUTORIAL-AUTH** | Eliminate legacy synchronous header trust | Synchronous `getAuthenticatedUserId()` replaced with hard 401 denial. All interaction routes use `getAuthenticatedUserIdAsync()`. | Route tests | ✅ **FIXED & VERIFIED** |
-| **FACULTY-BFF-AUTH-01** | Faculty BFF brand binding & identity isolation | Strips all client-supplied identity/gateway headers (`x-user-id`, `x-brand`, `x-gateway-secret`, `x-internal-secret`). Binds forwarded identity strictly to verified JWT claims (`brand: 'realtutorialhub' \| 'skillup'`). `faculty-api.ts` accepts typed `FacultyIdentity`. | `faculty-bff-auth-01.test.ts` (5/5 passed) | 🟡 **IMPLEMENTED, UNIT VERIFIED, RUNTIME VERIFICATION DEFERRED (faculty-app not functional)** |
-| **PROJECT-AI-WORKER** | Trusted-admin candidate execution & error sanitization | Documented under trusted-admin candidate model. Upstream 5xx errors and connection failures sanitized to 502 `PROJECT_AI_BACKEND_ERROR` with `Cache-Control: private, no-store`. | `project-llm/[...path]/__tests__/route.test.ts` (3/3 passed) | ✅ **DOCUMENTED & ERROR SANITIZED** |
+| **FACULTY-BFF-AUTH-01** | Faculty BFF brand binding & identity isolation | Strips all client-supplied identity/gateway headers (`x-user-id`, `x-brand`, `x-gateway-secret`, `x-internal-secret`). Binds forwarded identity strictly to verified JWT claims (`brand: 'realtutorialhub' \| 'skillup'`). `faculty-api.ts` enforces mandatory `FacultyIdentity` with zero untrusted fallback. | `faculty-bff-auth-01.test.ts` (8/8 passed) | 🟡 **IMPLEMENTED, UNIT VERIFIED, RUNTIME VERIFICATION DEFERRED (faculty-app not functional)** |
+| **PROJECT-AI-WORKER** | Trusted-admin candidate execution & error sanitization | Documented under trusted-admin candidate model. Upstream 5xx errors and connection failures sanitized to 502 `PROJECT_AI_BACKEND_ERROR` with `Cache-Control: private, no-store` and error code-only logging. | `project-llm/[...path]/__tests__/route.test.ts` (3/3 passed) | ✅ **DOCUMENTED & ERROR SANITIZED** |
 
 ---
 
 ## Remaining Work
 
-🎉 **All critical, high, and medium audit findings are remediated, tested, and resolved across the platform.**
-*(Runtime end-to-end integration of faculty-app is deferred until the faculty application becomes functional)*
+All operational critical/high/medium remediation items are implemented. Faculty cross-brand source controls are substantially implemented and unit-covered; full helper hardening and runtime integration verification remain deferred until the faculty application is operational.
 
 ---
 
