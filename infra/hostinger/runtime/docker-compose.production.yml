@@ -1,4 +1,13 @@
 services:
+  project-ai:
+    mem_limit: 3g
+    cpus: "1.00"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+
   nginx:
     mem_limit: 256m
     cpus: "0.50"

@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 /**
  * Tutorial Composer - Presentation Ideas API
  * POST /api/tutorial-composer/presentation-ideas
@@ -46,38 +47,14 @@ import {
  * Generate presentation improvement recommendations
  */
 export async function POST(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     // Step 1: Authenticate
     const authResult = await authenticateRequest(request);
-    let user;
-    if ('type' in authResult) {
-      // Dev auth bypass is ONLY permitted when explicitly enabled in local development environment
-      const isExplicitDevBypass =
-        process.env.NODE_ENV === 'development' &&
-        (process.env.TUTORIAL_COMPOSER_DEV_AUTH_BYPASS === 'true' ||
-          request.headers.get('x-tutorial-dev-bypass') === 'true');
-
-      if (isExplicitDevBypass) {
-        user = {
-          userId: 'dev-admin-preview',
-          originalUserId: 'dev-admin-preview',
-          shadowUserId: 'dev-admin-preview',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          roles: ['admin', 'super_admin'] as any[],
-          isAdmin: true,
-          email: 'admin@skillhubcore.local',
-        };
-      } else {
-        const { type, message } = authResult;
-        const status = type === 'MISSING_TOKEN' || type === 'INVALID_TOKEN' ? 401 : 403;
-        return NextResponse.json(
-          createErrorResponse('UNAUTHENTICATED', message, status),
-          { status }
-        );
-      }
-    } else {
-      user = authResult.user;
-    }
+    if ('type' in authResult) return createAuthErrorResponse(authResult);
+    const { user } = authResult;
 
     // Step 2: Authorize - Tutorial Edit Permission
     const editAuthError = requireTutorialEditPermission(user);

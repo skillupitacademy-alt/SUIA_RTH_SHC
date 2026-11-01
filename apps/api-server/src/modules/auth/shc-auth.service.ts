@@ -4,6 +4,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { logger } from '@/lib/logger';
 import { AuditService } from '@/modules/auth/audit.service';
+import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -207,7 +208,15 @@ export class SHCAuthService {
 
     this.logInstance.info({ userId }, 'SHC admin logout');
 
-    // Token revocation would happen here if we were storing them
-    // For now, tokens will expire naturally
+    // U+1F512 SECURITY FIX (SHC-01): Revoke ALL active refresh tokens for this user.
+    // SHC uses people_db (defaultDb) for token storage.
+    try {
+      const tokenRepo = container.get(TokenRepository);
+      await tokenRepo.revokeAll(userId);
+      this.logInstance.info({ userId }, 'SHC admin tokens revoked');
+    } catch (err) {
+      // Log but don't fail the logout — cookies are still cleared by the BFF
+      this.logInstance.error({ userId, err }, 'Failed to revoke SHC admin tokens');
+    }
   }
 }

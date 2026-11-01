@@ -654,6 +654,19 @@ export async function upsertFacultyAttendance(
     return null;
   }
 
+  // 🔐 SECURITY FIX (ATTEND-01): Validate every submitted studentId
+  // belongs to this batch's roster before writing attendance.
+  const enrolledIds = new Set(roster.roster.map(s => s.id));
+  const invalidIds = attendanceRecordsPayload.filter(r => !enrolledIds.has(r.studentId));
+  if (invalidIds.length > 0) {
+    console.warn('[SECURITY][Attendance] Rejected studentIds not in roster', {
+      facultyId: access.facultyId,
+      batchId,
+      invalidIds: invalidIds.map(r => r.studentId),
+    });
+    return null; // Reject the entire batch to prevent partial forgery
+  }
+
   for (const record of attendanceRecordsPayload) {
     await peopleDb
       .insert(peopleAttendanceRecords)

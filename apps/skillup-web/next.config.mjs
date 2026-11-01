@@ -3,6 +3,9 @@ import withSerwist from '@serwist/next';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   compress: true,
+  ...(process.env.PROJECT_LLM_EXECUTION_MODE === 'isolated_worker'
+    ? { experimental: { cpus: 1 } }
+    : {}),
   output: process.env.CLOUD_RUN_BUILD === 'true' ? 'standalone' : undefined,
   transpilePackages: ['@quiz/auth', '@quiz/db-tutorial', '@quiz/types', '@quiz/validation', '@quiz/ui', '@quiz/observability', '@quiz/api-client'],
   turbopack: {},

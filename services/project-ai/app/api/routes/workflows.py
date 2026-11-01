@@ -13,6 +13,10 @@ R3 PERSISTENCE:
 """
 
 from datetime import datetime, timezone
+import json
+import asyncio
+from app.verification.execution_progress import ExecutionProgress, read_progress
+from app.verification.worker_slot import serialize_verification
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Any, List
 import re
@@ -77,6 +81,36 @@ def _get_verified_placement_commit(
     if placement.get("manifest_sha256") != manifest_sha256:
         raise ValueError("Placement evidence manifest hash does not match the workflow")
     return commit
+
+
+def _candidate_default_fixture_block(candidate: Any, family: str, version: str) -> dict[str, Any]:
+    """Build the only safe runtime fixture payload: the candidate's declared default."""
+    files = getattr(candidate, "files", None) or []
+    metadata: dict[str, Any] | None = None
+    for candidate_file in files:
+        filename = candidate_file.get("filename") if isinstance(candidate_file, dict) else getattr(candidate_file, "filename", None)
+        if filename != "block.integration.json":
+            continue
+        content = candidate_file.get("content") if isinstance(candidate_file, dict) else getattr(candidate_file, "content", None)
+        try:
+            metadata = json.loads(content) if isinstance(content, str) else content
+        except json.JSONDecodeError as exc:
+            raise ValueError("Candidate block.integration.json is not valid JSON") from exc
+        break
+
+    if not isinstance(metadata, dict):
+        raise ValueError("Candidate package does not contain block.integration.json")
+    payload = metadata.get("defaultPayload")
+    if not isinstance(payload, dict) or not payload:
+        raise ValueError("Candidate block.integration.json has no non-empty defaultPayload")
+
+    from uuid import NAMESPACE_URL, uuid5
+    return {
+        "id": str(uuid5(NAMESPACE_URL, f"project-llm:{family.lower()}:{version.upper()}")),
+        "type": family.lower(),
+        "version": version.upper(),
+        "content": payload,
+    }
 
 
 async def get_governance_service(
@@ -893,6 +927,65 @@ async def approve_final_certification(
                 )
             )
 
+        # 7. Learner Runtime & ILS Gate Verification
+        learner_gate = gate_results.get("learner_runtime") or gate_results.get("runtime") or {}
+        if not learner_gate:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot approve: Learner Runtime & ILS verification gate record is missing. Live learner runtime verification must be executed before final certification."
+            )
+        learner_status = learner_gate.get("status")
+        if learner_status == "BLOCKED":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Learner Runtime & ILS gate is BLOCKED ({learner_gate.get('message', 'Prerequisite unavailable')}). Certification requires an executed and passed live learner runtime test."
+            )
+        if learner_status != "PASS":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot approve: Learner Runtime & ILS gate did not pass (status: {learner_status}): {learner_gate.get('message', 'Runtime check failed')}"
+            )
+
+        if learner_status == "PASS":
+            learner_evidence = learner_gate.get("evidence_payload")
+            if not learner_evidence or not isinstance(learner_evidence, dict):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Learner runtime gate is missing cryptographic evidence_payload"
+                )
+            from app.verification.learner_runtime_verifier import compute_canonical_json_hash
+            recomputed_learner_hash = compute_canonical_json_hash(learner_evidence)
+            stored_learner_hash = learner_gate.get("evidence_hash")
+            if recomputed_learner_hash != stored_learner_hash:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Learner runtime evidence_hash mismatch (recomputed {recomputed_learner_hash} != stored {stored_learner_hash})"
+                )
+            if learner_evidence.get("verifiedCommit") != placement_commit:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Learner runtime verifiedCommit does not match placement commit"
+                )
+            screenshot_path = learner_gate.get("screenshot_path")
+            expected_shot_sha = learner_evidence.get("screenshotSha256")
+            if not screenshot_path or not expected_shot_sha:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Learner runtime screenshot evidence is missing"
+                )
+            shot_file = Path(screenshot_path)
+            if not shot_file.exists():
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot approve: Learner runtime screenshot file missing on disk: {screenshot_path}"
+                )
+            actual_shot_sha = hashlib.sha256(shot_file.read_bytes()).hexdigest()
+            if actual_shot_sha != expected_shot_sha:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot approve: Learner runtime screenshot SHA mismatch on disk"
+                )
+
         evidence_verified = True
         evidence_summary = gate_results
     else:
@@ -1068,6 +1161,7 @@ class SupersedeWorkflowRequest(BaseModel):
 
 
 @router.post("/{workflow_id}/verify-composer", response_model=dict)
+@serialize_verification
 async def verify_composer(
     workflow_id: str,
     user: AuthenticatedPrincipal = Depends(require_contract_admin),
@@ -1123,15 +1217,22 @@ async def verify_composer(
     from app.verification.composer_worktree_verifier import verify_composer_in_worktree
     from app.persistence.database import get_session_factory
 
-    result = await verify_composer_in_worktree(
+    progress = ExecutionProgress(workflow_id, "composer")
+    try:
+        result = await asyncio.to_thread(lambda: asyncio.run(verify_composer_in_worktree(
         workflow_id=workflow_id,
         commit_sha=commit_sha,
         block_family=target_family,
         block_version=target_version,
         candidate_hash=candidate_sha,
         manifest_hash=manifest_sha,
-        timeout_seconds=600
-    )
+        timeout_seconds=600,
+        progress=progress,
+        )))
+        progress.finish("PASS" if result.get("passed") else "FAIL")
+    except Exception:
+        progress.finish("FAIL")
+        raise
 
     session_factory = get_session_factory()
     async with session_factory() as write_session:
@@ -1164,6 +1265,174 @@ async def verify_composer(
             result["current_workflow_state"] = workflow_model.current_state
 
     return result
+
+
+@router.get("/{workflow_id}/execution-progress/{operation}", response_model=dict)
+async def execution_progress_endpoint(
+    workflow_id: str,
+    operation: str,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+) -> dict:
+    if operation not in ("composer", "learner", "qualification"):
+        raise HTTPException(status_code=400, detail="Unknown verification operation")
+    if not await governance_service.get_workflow(workflow_id):
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return read_progress(workflow_id, operation)
+
+
+@router.post("/{workflow_id}/verify-learner-runtime", response_model=dict)
+@serialize_verification
+async def verify_learner_runtime_endpoint(
+    workflow_id: str,
+    user: AuthenticatedPrincipal = Depends(require_contract_admin),
+    governance_service: WorkflowGovernanceService = Depends(get_governance_service),
+    workflow_repo: WorkflowRepository = Depends(get_workflow_repository),
+    session: AsyncSession = Depends(get_db_session)
+) -> dict:
+    """
+    Execute post-placement Learner Runtime verification in an authenticated Playwright session.
+    
+    INVARIANTS:
+    - Never mints JWTs directly using JWT_SECRET; requests session from test fixture auth endpoint.
+    - Resolves route from platform-owned fixture metadata.
+    - Asserts ILS navigation/progress APIs return 200 (no 401/403).
+    - Asserts candidate block renders in DOM with data-block-type and data-block-version.
+    - Saves canonical evidence hash and screenshot to workflow gate results.
+    """
+    workflow = await governance_service.get_workflow(workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail=f"Workflow not found: {workflow_id}")
+
+    allowed_states = [
+        CanonicalWorkflowState.IMPLEMENTED,
+        CanonicalWorkflowState.VERIFYING,
+        CanonicalWorkflowState.CERTIFICATION_READY,
+        CanonicalWorkflowState.AWAITING_GATE_2
+    ]
+    if workflow.current_state not in allowed_states:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Cannot run Learner Runtime verification in state {workflow.current_state.value}. "
+                "Placement must be executed first."
+            )
+        )
+
+    try:
+        commit_sha = _get_verified_placement_commit(
+            workflow.gate_results or {},
+            workflow.candidate_sha256 or "",
+            workflow.manifest_sha256 or "",
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    target_family = workflow.target_family
+    target_version = workflow.target_version
+    candidate_sha = workflow.candidate_sha256 or ""
+    manifest_sha = workflow.manifest_sha256 or ""
+
+    candidate_repo = await get_candidate_repository(session)
+    candidate = await candidate_repo.get(str(workflow.candidate_id)) if workflow.candidate_id else None
+    if not candidate:
+        raise HTTPException(status_code=409, detail="Runtime verification requires the workflow's candidate package")
+    try:
+        candidate_block = _candidate_default_fixture_block(candidate, target_family, target_version)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error))
+
+    # Release initial DB connection before running browser verification
+    await session.close()
+
+    from app.verification.learner_runtime_verifier import (
+        LearnerRuntimeVerificationResult,
+        verify_learner_runtime,
+    )
+    from app.persistence.database import get_session_factory
+    from app.verification.composer_worktree_verifier import find_workspace_root
+    from app.verification.disposable_fixture_provisioner import disposable_fixture_session
+    from app.verification.fixture_registry import FixtureBlockedError, LearnerFixtureRegistry
+    from app.verification.learner_identity import LearnerRuntimeTestIdentityProvider
+    from app.verification.fixture_environment import fixture_session_factory
+
+    workspace_root = find_workspace_root()
+    session_factory = get_session_factory()
+    identity_provider = LearnerRuntimeTestIdentityProvider()
+    progress = ExecutionProgress(workflow_id, "learner")
+    fixture_engine = None
+
+    try:
+        progress("Validate dedicated fixture configuration and database readiness")
+        fixture_engine, verification_sessions = fixture_session_factory()
+        async with verification_sessions() as fixture_session:
+            fixture_contract = await LearnerFixtureRegistry().resolve_fixture_contract(
+                fixture_id=identity_provider.fixture_id,
+                tenant=identity_provider.test_tenant,
+                session=fixture_session,
+                verify_db_existence=True,
+            )
+
+        progress("Provision candidate fixture document")
+        async with disposable_fixture_session(
+            session_factory=verification_sessions,
+            workflow_id=workflow_id,
+            contract=fixture_contract,
+            candidate_block=candidate_block,
+            block_family=target_family,
+            block_version=target_version,
+        ):
+            res = await asyncio.to_thread(verify_learner_runtime,
+                workflow_id=workflow_id,
+                candidate_hash=candidate_sha,
+                manifest_hash=manifest_sha,
+                verified_commit=commit_sha,
+                block_family=target_family,
+                block_version=target_version,
+                workspace_root=workspace_root,
+                identity_provider=identity_provider,
+                fixture_contract=fixture_contract,
+                progress=progress,
+            )
+    except FixtureBlockedError as error:
+        res = LearnerRuntimeVerificationResult(
+            status="BLOCKED",
+            message="Learner runtime verification BLOCKED: fixture is not configured or ready",
+            blockers=error.blockers,
+        )
+    except Exception as error:
+        res = LearnerRuntimeVerificationResult(
+            status="BLOCKED",
+            message="Learner runtime verification BLOCKED: fixture provisioning failed",
+            blockers=[str(error)],
+        )
+    finally:
+        if fixture_engine is not None:
+            await fixture_engine.dispose()
+
+    progress.finish(res.status)
+    result_dict = {
+        "status": res.status,
+        "message": res.message,
+        "evidence_payload": res.evidence_payload,
+        "evidence_hash": res.evidence_hash,
+        "screenshot_path": res.screenshot_path,
+        "screenshot_sha256": res.screenshot_sha256,
+        "blockers": res.blockers,
+    }
+
+    async with session_factory() as write_session:
+        fresh_repo = await get_workflow_repository(write_session)
+        workflow_model = await fresh_repo.get(workflow_id, verify_bindings=False)
+        if workflow_model:
+            current_gates = dict(workflow_model.gate_results or {})
+            current_gates["learner_runtime"] = result_dict
+            workflow_model.gate_results = current_gates
+            await fresh_repo.upsert(workflow_model)
+            await write_session.commit()
+            result_dict["current_workflow_state"] = workflow_model.current_state
+
+    return result_dict
 
 
 @router.post("/{workflow_id}/supersede", response_model=dict)

@@ -90,7 +90,7 @@ get_all_services() {
 }
 
 get_buildable_services() {
-  jq -r '.services | to_entries[] | select(.value.buildable == true) | .key' "$1" | tr '\n' ' '
+  jq -r '.services | to_entries[] | select(.value.buildable == true and .value.optional != true) | .key' "$1" | tr '\n' ' '
 }
 
 get_service_field() {

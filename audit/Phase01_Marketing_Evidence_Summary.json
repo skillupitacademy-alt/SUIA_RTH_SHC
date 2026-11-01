@@ -1,0 +1,13 @@
+{
+  "baseline_commit": "5efd1129d905d05c912acfef66e52df9ca15120b",
+  "tree_sha": "a1753abdf166364bdc76c55df6ed33e1a014a8c4",
+  "total": 290,
+  "evidence_categories": {
+    "HISTORICAL_REPORT_MENTION": 45,
+    "NO_PATH_LEVEL_EVIDENCE": 139,
+    "PINNED_SOURCE_RETRIEVED": 106
+  },
+  "status": "coverage certification not established",
+  "scope": "packages/marketing-site/src only",
+  "methodology": "Evidence reconciliation against five tranche reports and confirmed pinned ref retrievals in conversation (rounds 4-11); no new 290-file code execution"
+}

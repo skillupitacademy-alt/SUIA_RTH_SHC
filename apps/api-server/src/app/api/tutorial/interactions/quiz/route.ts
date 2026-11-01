@@ -4,7 +4,7 @@ import { QuizInteractionRequestSchema } from '@quiz/validation';
 import { and, eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getAuthenticatedUserId, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
+import { extractCorrectAnswerFromContent, getAuthenticatedUserIdAsync, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,15 +12,23 @@ export const dynamic = 'force-dynamic';
  * POST /api/tutorial/interactions/quiz
  * 
  * Submit quiz answer and track user interaction
+ * 
+ * 🔐 SECURITY FIX (INT-01): correctAnswer from the client body is no longer
+ * used to determine isCorrect. Instead we look up the user's most recent
+ * previous correct answer for this question (stored server-side), or fall
+ * back to the client value only for the first attempt while logging a warning.
+ * 
+ * TODO: Resolve correctAnswer from the section content JSONB (TutorialDocument)
+ * to eliminate client trust entirely.
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = getAuthenticatedUserId(request);
+    const userId = await getAuthenticatedUserIdAsync(request);
     if (userId instanceof NextResponse) return userId;
 
     const parsed = await parseJsonBody(request, QuizInteractionRequestSchema);
     if (!parsed.success) return parsed.response;
-    const { sectionId, questionId, selectedAnswer, correctAnswer, timeSpent } = parsed.data;
+    const { sectionId, questionId, selectedAnswer, correctAnswer: clientCorrectAnswer, timeSpent } = parsed.data;
 
     const section = await getTutorialSection(sectionId);
     if (!section) {
@@ -30,20 +38,44 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const isCorrect = selectedAnswer === correctAnswer;
-    
-    // Get attempt number (count previous attempts for this question)
-    const previousAttempts = await db
-      .select()
-      .from(quizAnswers)
-      .where(
-        and(
-          eq(quizAnswers.userId, userId),
-          eq(quizAnswers.questionId, questionId)
-        )
+    // 🔐 SECURITY FIX (INT-01): Resolve correctAnswer strictly from authoritative section content.
+    // Client-supplied correctAnswer and student history are NEVER used as scoring authority.
+    const authoritativeCorrectAnswer = extractCorrectAnswerFromContent(section.content, questionId);
+
+    if (!authoritativeCorrectAnswer) {
+      console.error('[Quiz] Authoritative correct answer missing', {
+        sectionId,
+        questionId,
+      });
+
+      return NextResponse.json(
+        {
+          error: 'QUIZ_CONFIGURATION_ERROR',
+          message: 'Question cannot be scored because its authoritative answer is unavailable.',
+        },
+        { status: 422 }
       );
-    
-    const attemptNumber = previousAttempts.length + 1;
+    }
+
+    if (clientCorrectAnswer && clientCorrectAnswer !== authoritativeCorrectAnswer) {
+      console.warn('[SECURITY][Quiz] Ignored mismatched client correctAnswer', {
+        questionId,
+        clientValue: clientCorrectAnswer,
+        authoritativeValue: authoritativeCorrectAnswer,
+        userId: typeof userId === 'string' ? userId.slice(0, 8) : 'unknown',
+      });
+    }
+
+    const correctAnswer = authoritativeCorrectAnswer;
+
+    // Query previous user answers solely for attempt counting
+    const previousAnswers = await db
+      .select({ id: quizAnswers.id })
+      .from(quizAnswers)
+      .where(and(eq(quizAnswers.userId, userId), eq(quizAnswers.questionId, questionId)));
+
+    const isCorrect = selectedAnswer === correctAnswer;
+    const attemptNumber = previousAnswers.length + 1;
     
     // Insert quiz answer
     const [answer] = await db
@@ -80,13 +112,13 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET /api/tutorial/interactions/quiz?userId=xxx&sectionId=xxx
+ * GET /api/tutorial/interactions/quiz?sectionId=xxx
  * 
  * Get user's quiz answers for a section
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = getAuthenticatedUserId(request);
+    const userId = await getAuthenticatedUserIdAsync(request);
     if (userId instanceof NextResponse) return userId;
 
     const { searchParams } = new URL(request.url);

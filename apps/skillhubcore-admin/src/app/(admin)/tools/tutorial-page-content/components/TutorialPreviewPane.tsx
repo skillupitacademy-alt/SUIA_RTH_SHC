@@ -12,7 +12,6 @@ import type {
   BrandTutorialTheme,
   TutorialPageContentType,
   TutorialSidebarBrandId,
-  TutorialBlock,
 } from '@quiz/types';
 
 import { themeForBrand } from '../theme/brandTheme';
@@ -34,8 +33,7 @@ interface TutorialPreviewPaneProps {
   // Active block preview
   activeBlockType: TutorialPageContentType;
   activeBlockVersion: string; // version code (e.g., "C1")
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Preserving existing untyped payload from parent
-  activeBlockPreview: any;
+  activeBlockPreview: BlockInstance['payload'] | null;
   
   // Rendering dependencies
   brandId: TutorialSidebarBrandId;
@@ -83,9 +81,11 @@ class PreviewErrorBoundary extends Component<PreviewErrorBoundaryProps, PreviewE
 function getEffectiveBlockInfo(
   defaultType: TutorialPageContentType,
   defaultVersion: string,
-  payload: any
+  payload: unknown
 ): { type: TutorialPageContentType; version: string } {
-  const detectedType = payload?.page?.type || payload?.type;
+  const record = payload && typeof payload === 'object' ? payload as Record<string, unknown> : {};
+  const page = record.page && typeof record.page === 'object' ? record.page as Record<string, unknown> : {};
+  const detectedType = page.type || record.type;
   if (typeof detectedType === 'string') {
     const registryEntry = getBlockType(detectedType as TutorialPageContentType);
     if (registryEntry) {
@@ -113,7 +113,7 @@ function renderBlockContent(
     type: TutorialPageContentType;
     version?: string;
     versionCode?: string;
-    payload: any;
+    payload: BlockInstance['payload'] | null;
     expectedTimeSec?: number;
   },
   theme: BrandTutorialTheme

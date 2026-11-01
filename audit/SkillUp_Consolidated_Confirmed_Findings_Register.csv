@@ -1,0 +1,22 @@
+id,priority,finding,source,evidence,confidence
+SEC-01,P1,Cross-user session revocation,apps/api-server/src/modules/auth/global-logout.service.ts,revokeSession calls tokenRepo.revokeById(sessionId) without userId; repository ownership condition optional,Confirmed source behavior
+SEC-02,P1,Legacy tutorial progress accepts caller-provided user header,apps/api-server/src/app/api/tutorial/progress/route.ts,GET/POST read x-user-id without auth in handler; exposure depends on perimeter,Confirmed handler gap; reachable exploit requires deployment evidence
+SEC-03,P1/P2,Export status omits job user-ownership guard,apps/api-server/src/app/api/export/status/[jobId]/route.ts,JWT validates caller; then reads job without comparing job.userId to verified userId,Confirmed handler gap
+SEC-04,P1/P2,Authentication context can fall back to JWT after rejected privileged headers,apps/api-server/src/lib/auth-context.ts,validateRequest.error not treated as terminal; JWT fallback follows,Confirmed control flow
+SEC-05,P1/P2,Identity ID contract inconsistent,apps/skillup-web/src/lib/student-auth.ts,student auth selects shadowUserId; unified BFF headers send originalUserId as primary,Confirmed contract inconsistency
+DATA-01,P1,Synthetic academic program/faculty/batch data,apps/skillup-web/src/lib/skillup-data.ts,"FALLBACK_* returned for zero rows, errors or no enrollment",Confirmed
+DATA-02,P1,Synthetic exam metrics,src/share-branding/ExamSummaryReport.tsx,"Fallback score, percentile, skill data, timing and hardcoded date",Confirmed
+DATA-03,P1/P2,Authenticated navigations cached offline,apps/skillup-web/src/app/sw.ts,Caches all navigations with no sensitive-route exclusion or logout purge,Confirmed behavior; tenant-leak impact conditional
+DATA-04,P2,Learner dashboard attendance scope inconsistent,apps/skillup-web/src/lib/skillup-data.ts,Present records across sessions divided by active batch session count,Confirmed
+DATA-05,P2,Dashboard and payments ledger sources diverge,apps/skillup-web/src/lib/skillup-data.ts,Dashboard ORM paymentInstallments vs payments SQL payment_plans and payment_installments,Confirmed
+LIFE-01,P2,Onboarding redirects after save failure,src/share-branding/OnboardingEngine/components/OnboardingPage.tsx,Both catch handlers navigate to dashboard,Confirmed
+LEARN-01,P2,Sidebar progress never marks any completed URL,src/share-branding/LearningExperience/components/TutorialPageShell.tsx,Completed set always new Set(),Confirmed
+LEARN-02,P1 conditional,Unsanitized rendered HTML boundary,src/share-branding/LearningExperience/components/MarkdownRenderer.tsx,dangerouslySetInnerHTML consumes block.content; upstream sanitization unverified,Requires source provenance and threat proof
+LEARN-03,P2,Legacy/progress and ILS model mismatch,apps/skillup-web/src/app/api/tutorial/progress/route.ts,Legacy subtopic blockType progress versus navigation node ILS block IDs,Confirmed architecture mismatch
+LEARN-04,P2,Inconsistent ILS upstream URL prefixes,apps/skillup-web/src/app/api/tutorial/ils/complete-node/route.ts,Some BFF paths include /api while peers use /tutorial/ils,Requires deployed base URL integration tests
+EXAM-01,P2,Exam timer client-authoritative,src/share-branding/ExamEngine/components/ExamEngine.tsx,Local count down with timeout handleSubmit and no server-deadline sync,Confirmed client behavior; server enforcement unverified
+EXAM-02,P2,Missing examId loads demo content,src/share-branding/ExamEngine/components/examSessionLoader.ts,No examId returns demoExamApiResponse,Confirmed
+EXAM-03,P2 conditional,Exam fetch host based on forwarded-host,src/share-branding/ExamEngine/components/examSessionLoader.ts,x-forwarded-host preferred over host for internal fetch URL,Conditional on reverse-proxy trust
+SEC-06,P2,Placement token handoff,apps/skillup-web/src/app/api/auth/placement-handoff/route.ts,Posts general access token to placement service; uses x-forwarded-host to rewrite cookies,Confirmed design risk
+SEC-07,P2,Production-like test fixture override,apps/skillup-web/src/app/api/auth/test-fixture-session/route.ts,NODE_ENV production may be bypassed for isolatedPreview if other env flags do not mark production; secret required,Confirmed conditional control
+DATA-06,P2,Fabricated completed-session recording URLs,apps/skillup-web/src/lib/skillup-data.ts,Synthesizes /recordings/<id> for completed sessions with no verified recording record,Confirmed

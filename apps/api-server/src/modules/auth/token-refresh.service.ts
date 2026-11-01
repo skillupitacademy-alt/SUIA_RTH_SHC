@@ -19,10 +19,9 @@ export class TokenRefreshService {
    * Enterprise-grade token refresh with rotation:
    * 1. Validate old refresh token
    * 2. Check for session hijacking (IP mismatch)
-   * 3. Revoke old token
-   * 4. Issue new access + refresh tokens
-   * 5. Store new refresh token with device context
-   * 6. Audit log the refresh
+   * 3. Generate new access + refresh tokens (CPU-only, no DB)
+   * 4. ATOMIC: Revoke old token + store new token in one DB transaction (AUTH-47/48)
+   * 5. Audit log the refresh
    */
   async refresh(
     oldRefreshToken: string,
@@ -110,10 +109,8 @@ export class TokenRefreshService {
     // 🔐 STEP 2.5: Update last_used_at before rotation (for "Last active" display)
     await brandTokenRepo.updateLastUsed(oldTokenHash);
 
-    // 🔐 STEP 3: Revoke old refresh token (rotation)
-    await brandTokenRepo.revokeToken(oldTokenHash);
-
-    // 🔐 STEP 4: Generate new tokens
+    // 🔐 STEP 3: Generate new tokens (CPU-only, no DB)
+    // JWT generation happens outside the transaction to minimize DB lock duration.
     const userId = existingSession.userId;
     
     // Verify the old refresh token to get payload
@@ -126,13 +123,21 @@ export class TokenRefreshService {
     const shadowUserId = oldPayload.shadowUserId ?? userId;
     const originalUserId = oldPayload.originalUserId ?? userId;
 
+    // 🔐 SECURITY FIX (API-40): Populate email and roles from the old token payload
+    // instead of using empty values. The old refresh token was verified above,
+    // so its claims are trustworthy for the new access token.
+    const email: string = typeof oldPayload.email === 'string' ? oldPayload.email : '';
+    const roles: string[] = Array.isArray(oldPayload.roles)
+      ? oldPayload.roles.filter((r): r is string => typeof r === 'string')
+      : [];
+
     // Generate new access token
     const newAccessToken = await this.tokenService.generateAccessToken({
       userId,
       originalUserId,
       shadowUserId,
-      email: '', // Will be populated from user record if needed
-      roles: [], // Will be populated from user record if needed
+      email,
+      roles,
       isAdmin,
       tokenType,
       brand,
@@ -154,7 +159,10 @@ export class TokenRefreshService {
 
     const newRefreshTokenHash = await this.tokenService.hashToken(newRefreshToken);
 
-    // 🔐 STEP 5: Store new refresh token with device context
+    // 🔐 STEP 4: ATOMIC TOKEN ROTATION (AUTH-47/48)
+    // Revoke old token + store new token in a single DB transaction.
+    // If the server crashes between these operations, both roll back —
+    // preventing orphaned sessions (old revoked, new never created).
     const mergedDeviceContext = deviceContext ?? {
       deviceId: existingSession.deviceId ?? undefined,
       ipAddress: ip,
@@ -162,19 +170,25 @@ export class TokenRefreshService {
       deviceName: existingSession.deviceName ?? undefined,
     };
 
-    await brandTokenRepo.createRefreshToken({
-      userId,
-      token: newRefreshTokenHash,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      deviceContext: {
-        deviceId: mergedDeviceContext.deviceId,
-        ipAddress: mergedDeviceContext.ipAddress,
-        userAgent: mergedDeviceContext.userAgent,
-        deviceName: mergedDeviceContext.deviceName,
-      },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const brandDb = brandContext.db as any;
+    await brandDb.transaction(async (tx: any) => {
+      const txTokenRepo = brandTokenRepo.withDb(tx, { refreshTokens: brandContext.tables.refreshTokens });
+      await txTokenRepo.revokeToken(oldTokenHash);
+      await txTokenRepo.createRefreshToken({
+        userId,
+        token: newRefreshTokenHash,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        deviceContext: {
+          deviceId: mergedDeviceContext.deviceId,
+          ipAddress: mergedDeviceContext.ipAddress,
+          userAgent: mergedDeviceContext.userAgent,
+          deviceName: mergedDeviceContext.deviceName,
+        },
+      });
     });
 
-    // 🔐 STEP 6: Audit log
+    // 🔐 STEP 5: Audit log
     await this.auditService.log({
       userId,
       action: 'token_refresh_success',

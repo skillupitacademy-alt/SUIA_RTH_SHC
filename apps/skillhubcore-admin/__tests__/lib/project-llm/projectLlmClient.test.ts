@@ -21,7 +21,7 @@ describe('ProjectLlmClient', () => {
   });
 
   describe('createWorkflow', () => {
-    it('should POST to /workflows/create with correct payload', async () => {
+    it('should POST to /workflows with correct payload', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ workflowId: 'wf-123', state: 'INITIATED' }),
@@ -34,7 +34,7 @@ describe('ProjectLlmClient', () => {
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        '/api/project-llm/workflows/create',
+        '/api/project-llm/workflows',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
@@ -135,13 +135,13 @@ describe('ProjectLlmClient', () => {
         statusText: 'Unauthorized',
       });
 
-      await expect(client.getWorkflowState('wf-1')).rejects.toThrow(ProjectLlmError);
-      await expect(
-        client.getWorkflowState('wf-1').catch((e) => e)
-      ).resolves.toMatchObject({
+      const request = client.getWorkflowState('wf-1');
+      await expect(request).rejects.toThrow(ProjectLlmError);
+      await expect(request).rejects.toMatchObject({
         code: ProjectLlmErrorCode.UNAUTHORIZED,
         statusCode: 401,
       });
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NOT_FOUND for 404', async () => {

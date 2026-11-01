@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 /**
  * Tutorial Navigation Nodes API
  * Phase 1: Returns navigation nodes for Composer navigation-node selector
@@ -17,6 +18,9 @@ export const dynamic = 'force-dynamic';
  * Returns navigation nodes for a given subtopic
  */
 export async function GET(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const subtopicId = searchParams.get('subtopicId');

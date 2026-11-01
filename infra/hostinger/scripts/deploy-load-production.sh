@@ -67,6 +67,9 @@ for service in $SERVICES; do
 done
 
 log_header "Restart Phase"
+case " $SERVICES " in
+  *" project-ai "*) DEPLOY_HEALTH_TIMEOUT=1200 ;;
+esac
 compose up -d --no-build --no-deps $SERVICES
 if compose ps -q nginx >/dev/null 2>&1; then
   log_info "Reloading Nginx so Docker DNS upstreams point to the recreated containers"

@@ -415,6 +415,61 @@ def test_atomic_preflight_blocks_write_on_later_stale_pre_image(temp_workspace):
         commit_mock.assert_not_called()
 
 
+def test_executor_uses_declared_schema_export_for_blocks_schema_patch(temp_workspace):
+    """PATCH_BLOCKS_SCHEMA must use the validated metadata export, not infer one."""
+    blocks_schema = temp_workspace / "packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts"
+    blocks_schema.parent.mkdir(parents=True, exist_ok=True)
+    blocks_schema.write_text(
+        "import { z } from 'zod';\n"
+        "export const TutorialBlockSchema = z.lazy(() => z.union([]));\n",
+        encoding="utf-8",
+    )
+    current_content = blocks_schema.read_text(encoding="utf-8")
+    operation = PlacementFileOperation(
+        action=PlacementFileAction.PATCH_BLOCKS_SCHEMA,
+        source_filename="block.integration.json",
+        source_sha256=hashlib.sha256(b"metadata").hexdigest(),
+        target_path="packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts",
+        expected_pre_hash=hashlib.sha256(current_content.encode("utf-8")).hexdigest(),
+        description="Register runtime schema",
+    )
+    manifest = PlacementManifest(
+        manifestId="manifest-schema-export",
+        candidateId="candidate-schema-export",
+        decision=PlacementDecision.ADD,
+        targetPath="packages/ui/src/tutorial/blocks",
+        blockFamily=BlockFamily.OBJECTIVE,
+        blockVersion="O1",
+        requiredChanges=["Register schema"],
+        fileOperations=[operation],
+        evidenceIds=["evidence-schema-export"],
+        createdAt="2026-10-30T00:00:00Z",
+        manifestHash="test-hash",
+    )
+    metadata = json.dumps({
+        "typeSchemaFile": "objective-o1.schema.ts",
+        "schemaExport": "CustomObjectiveSchema",
+    })
+    candidate_files = [
+        CandidateFile(
+            filename="block.integration.json",
+            content=metadata,
+            contentType="application/json",
+            hash=hashlib.sha256(metadata.encode("utf-8")).hexdigest(),
+        )
+    ]
+    executor = PlacementExecutor(str(temp_workspace), dry_run=True)
+
+    with patch("app.placement.executor.patch_blocks_schema", return_value=current_content) as patch_schema:
+        executor._execute_manifest_operations(manifest, candidate_files)
+
+    patch_schema.assert_called_once_with(
+        current_content,
+        schema_filename="objective-o1.schema.ts",
+        schema_export_name="CustomObjectiveSchema",
+    )
+
+
 # ============================================================================
 # 4. Patcher Tests: Duplicate Detection & Cross-Family Same-Version Coexistence
 # ============================================================================
@@ -669,12 +724,12 @@ def test_route_manifest_generation_persistence_and_executor_verification_roundtr
                     "contentType": "application/json",
                     "hash": "c" * 64,
                 },
-                {
-                    "filename": "summary.types.ts",
-                    "content": "export interface SummaryProps {}",
-                    "contentType": "text/typescript",
-                    "hash": "c" * 64,
-                },
+                    {
+                        "filename": "summary-v1.schema.ts",
+                        "content": "import { z } from 'zod';\nexport const SummaryV1BlockSchema = z.object({ title: z.string() });",
+                        "contentType": "text/typescript",
+                        "hash": "c" * 64,
+                    },
                 {
                     "filename": "block.integration.json",
                     "content": json.dumps({
@@ -685,7 +740,8 @@ def test_route_manifest_generation_persistence_and_executor_verification_roundtr
                         "componentExport": "SummaryV1Block",
                         "testFile": "summary.test.tsx",
                         "jsonSchemaFile": "summary.schema.json",
-                        "typeSchemaFile": "summary.types.ts",
+                            "typeSchemaFile": "summary-v1.schema.ts",
+                            "schemaExport": "SummaryV1BlockSchema",
                         "defaultPayload": {"title": "Summary"}
                     }),
                     "contentType": "application/json",

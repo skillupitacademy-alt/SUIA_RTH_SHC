@@ -5,7 +5,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.api.routes.workflows import _get_verified_placement_commit
+from app.api.routes.workflows import (
+    _candidate_default_fixture_block,
+    _get_verified_placement_commit,
+)
 from app.verification.composer_worktree_verifier import (
     _generate_playwright_script,
     _prepare_dependencies,
@@ -29,6 +32,29 @@ def test_placement_commit_requires_exact_hash_bindings():
 
     with pytest.raises(ValueError, match="valid commit SHA"):
         _get_verified_placement_commit({"placement": {"commit": "dry-run-commit-hash"}}, "", "")
+
+
+def test_runtime_fixture_uses_candidate_default_payload_only():
+    candidate = type("Candidate", (), {
+        "files": [{
+            "filename": "block.integration.json",
+            "content": '{"defaultPayload":{"title":"Objectives","objectives":[{"text":"Learn"}]}}',
+        }],
+    })()
+
+    assert _candidate_default_fixture_block(candidate, "Objective", "O1") == {
+        "id": __import__('uuid').uuid5(__import__('uuid').NAMESPACE_URL, 'project-llm:objective:O1').__str__(),
+        "type": "objective",
+        "version": "O1",
+        "content": {"title": "Objectives", "objectives": [{"text": "Learn"}]},
+    }
+
+
+def test_runtime_fixture_rejects_missing_candidate_default_payload():
+    candidate = type("Candidate", (), {"files": []})()
+
+    with pytest.raises(ValueError, match="block.integration.json"):
+        _candidate_default_fixture_block(candidate, "Objective", "O1")
 
 
 def test_playwright_runner_requires_exact_version_and_clean_network():

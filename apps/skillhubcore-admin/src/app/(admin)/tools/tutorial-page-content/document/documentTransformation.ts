@@ -9,9 +9,7 @@
 import { CodeC1AuthorContentSchema } from '@quiz/types/tutorial-rich-document';
 import type {
   TutorialBlock,
-  DefinitionD1AuthorContent,
   CodeC1AuthorContent,
-  IntroductionI1AuthorContent,
 } from '@quiz/types/tutorial-rich-document';
 import type {
   TutorialDefinitionPayload,
@@ -21,7 +19,6 @@ import type {
   TutorialObjectivePayload,
   TutorialPageContentType,
 } from '@quiz/types/tutorial-page-content.types';
-import { toCanonicalCodeC1 } from '../blocks/code/C1/codeC1.converter';
 import { canonicalizeBlockInstance } from './blockVersionDefinitions';
 export {
   normalizeDefinitionD1Payload,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireStudent } from '@/lib/assignment-auth';
+import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,11 +82,16 @@ export async function GET(
       ...data,
       _deprecation: 'This endpoint is deprecated. Use /api/tutorial/sections/* instead.'
     });
-    result.headers.set('Cache-Control', 'public, max-age=3600');
+    result.headers.set('Cache-Control', 'private, no-store');
     result.headers.set('X-Deprecated', 'true');
     result.headers.set('X-Deprecation-Message', 'Use /api/tutorial/sections/* instead');
     return result;
   } catch (error) {
+    if (error instanceof AssignmentAuthError) {
+      return NextResponse.json({ error: error.message }, {
+        status: error.statusCode, headers: { 'Cache-Control': 'private, no-store' },
+      });
+    }
     console.error('[RTH Tutorial Content] Unexpected error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

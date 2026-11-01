@@ -6,13 +6,13 @@
  * 
  * Uses the existing RBAC permission system from @quiz/auth package.
  * 
- * NOTE: Most SkillHubCore admin routes use proxyUpstreamRequest() and rely on
- * gateway authentication. These helpers are for NEW internal routes like the
- * Tutorial Composer that write directly to the database.
+ * Every admin handler verifies its local principal before database access or
+ * upstream forwarding. The gateway remains an additional authorization boundary.
  */
 
 import { TokenService } from '@quiz/auth';
 import { RBACService, PERMISSIONS, type Permission } from '@quiz/auth/rbac';
+import { normalizeRoles } from '@quiz/auth/rbac/normalize-roles';
 import type { Role } from '@quiz/auth/rbac/roles';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -65,24 +65,15 @@ function getAccessToken(request: NextRequest): string | undefined {
  */
 async function verifyToken(token: string): Promise<AuthenticatedUser | null> {
   try {
-    // Try primary audience first (shc-admin for gateway tokens)
-    let payload;
-    try {
-      payload = await TokenService.verifyAdminAccessToken(token, { 
-        audience: 'shc-admin' 
-      });
-    } catch {
-      // Fallback to 'admin' audience for compatibility
-      payload = await TokenService.verifyAdminAccessToken(token, { 
-        audience: 'admin' 
-      });
-    }
+    const payload = await TokenService.verifyAdminAccessToken(token, { audience: 'shc-admin' });
+    if (payload.brand !== 'skillhubcore') return null;
 
     // Extract user identity from token payload
     const originalUserId = payload.originalUserId ?? payload.sub ?? payload.userId;
     const shadowUserId = payload.shadowUserId ?? originalUserId;
     
-    if (!originalUserId || typeof originalUserId !== 'string') {
+    if (typeof originalUserId !== 'string' || !originalUserId.trim() ||
+        typeof shadowUserId !== 'string' || !shadowUserId.trim()) {
       console.error('[AUTH] Token missing user ID claims', {
         hasOriginalUserId: !!payload.originalUserId,
         hasSub: !!payload.sub,
@@ -96,13 +87,12 @@ async function verifyToken(token: string): Promise<AuthenticatedUser | null> {
       userId: shadowUserId,
       originalUserId,
       shadowUserId,
-      roles: (payload.roles ?? []) as Role[],
-      isAdmin: payload.isAdmin ?? true,
+      roles: normalizeRoles(payload.roles),
+      isAdmin: RBACService.isAdminLevel(normalizeRoles(payload.roles)),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       email: (payload as any).email,
     };
-  } catch (error) {
-    console.error('[AUTH] Token verification failed:', error);
+  } catch {
     return null;
   }
 }
@@ -182,7 +172,7 @@ export function createAuthErrorResponse(error: AuthError): NextResponse {
  * @returns true if user has admin role
  */
 export function hasAdminRole(user: AuthenticatedUser): boolean {
-  return RBACService.isAdminLevel(user.roles) || user.isAdmin;
+  return RBACService.isAdminLevel(user.roles);
 }
 
 /**
@@ -220,7 +210,10 @@ export function hasPermission(
   user: AuthenticatedUser,
   permission: Permission
 ): boolean {
-  return RBACService.hasPermission(user.roles, permission, user.userId);
+  // Evaluate the union explicitly: the legacy shared RBAC canonicalizer drops
+  // elevated roles when a student role is present. Each singleton still uses
+  // the authoritative role-to-permission matrix, including wildcard grants.
+  return user.roles.some(role => RBACService.hasPermission([role], permission, user.userId));
 }
 
 /**

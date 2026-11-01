@@ -5,6 +5,7 @@ import { ApiResponse } from '@/lib/api-response';
 import { withCacheHeaders } from '@/lib/cache-headers';
 import { sanitizeJsonField, validateJsonDepth, validateJsonSize } from '@/lib/sanitize';
 import { withLogging } from '@/lib/withLogging';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { DomainService } from '@/modules/domain/domain.service';
 
 export const dynamic = 'force-dynamic';
@@ -28,13 +29,21 @@ async function getHandler(req: NextRequest) {
 
 export const GET = withLogging(getHandler, { component: 'core', operation: 'get_domains' });
 
+/**
+ * 🔐 SECURITY FIX (DOMAIN-01): Require admin authentication for domain creation.
+ * Previously this endpoint was fully unauthenticated.
+ */
 async function postHandler(req: NextRequest) {
   try {
+    // Require admin authentication
+    await requireAdminRouteAccess(req);
+
     let raw;
     try {
       raw = await req.json();
-      validateJsonSize(raw);
-      validateJsonDepth(raw);
+      if (!validateJsonSize(raw) || !validateJsonDepth(raw)) {
+        throw new Error('Payload too large or too deep');
+      }
     } catch {
       throw badRequest("Invalid payload");
     }

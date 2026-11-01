@@ -1,16 +1,12 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 
-const typesDir = join(process.cwd(), '.next', 'types');
+const require = createRequire(import.meta.url);
+const result = spawnSync(process.execPath, [require.resolve('next/dist/bin/next'), 'typegen'], {
+  stdio: 'inherit',
+});
 
-mkdirSync(typesDir, { recursive: true });
-
-const routesPath = join(typesDir, 'routes.d.ts');
-if (!existsSync(routesPath)) {
-  writeFileSync(routesPath, 'export {}\n');
+if (result.error) {
+  throw result.error;
 }
-
-const validatorPath = join(typesDir, 'validator.ts');
-if (!existsSync(validatorPath)) {
-  writeFileSync(validatorPath, 'export {}\n');
-}
+process.exit(result.status ?? 1);

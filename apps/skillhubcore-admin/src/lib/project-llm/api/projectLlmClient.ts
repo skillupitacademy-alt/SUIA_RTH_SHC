@@ -19,7 +19,10 @@ import type {
   RuntimeHealthStatus,
   BrowserVerificationStatus,
   VersionInspectionResponse,
+  CertificationGateResult,
 } from '../types/canonicalWorkflowState';
+import type { BackendGateResult, EngineeringContract, WorkflowApiResponse } from '../types/backend';
+import { CanonicalWorkflowStateEnum } from '../types/canonicalWorkflowState';
 
 /**
  * Typed error codes for API failures
@@ -419,17 +422,17 @@ export class ProjectLlmClient {
         await handleFetchError(response);
       }
 
-      const data: any = await response.json();
+      const data: WorkflowApiResponse = await response.json();
       const rawGates = data.gate_results || {};
       const nonGateKeys = new Set(['purpose', 'supersedes', 'superseded']);
-      const gates: any[] = Object.entries(rawGates)
+      const gates: CertificationGateResult[] = Object.entries(rawGates)
         .filter(([gateName]) => !nonGateKeys.has(gateName))
-        .map(([gateName, gateVal]: [string, any]) => {
+        .map(([gateName, gateVal]) => {
           let result: 'PASS' | 'FAIL' | 'SKIPPED' | 'PENDING' = 'PENDING';
           let detail = '';
           if (typeof gateVal === 'string') {
             const upper = gateVal.toUpperCase();
-            result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(upper) ? upper : 'PENDING') as any;
+            if (upper === 'PASS' || upper === 'FAIL' || upper === 'SKIPPED' || upper === 'PENDING') result = upper;
           } else if (typeof gateVal === 'object' && gateVal !== null) {
             const rawStatus =
               gateVal.status ||
@@ -437,7 +440,7 @@ export class ProjectLlmClient {
               gateVal.result ||
               (gateName.toLowerCase().includes('placement') && gateVal.commit ? 'PASS' : 'PENDING');
             const status = String(rawStatus).toUpperCase();
-            result = (['PASS', 'FAIL', 'SKIPPED', 'PENDING'].includes(status) ? status : 'PENDING') as any;
+            if (status === 'PASS' || status === 'FAIL' || status === 'SKIPPED' || status === 'PENDING') result = status;
             detail = gateVal.detail || gateVal.reason || gateVal.message || '';
           }
           const lowerGate = gateName.toLowerCase();
@@ -493,7 +496,7 @@ export class ProjectLlmClient {
 
       return {
         workflowId: data.workflow_id || workflowId,
-        state: data.state?.current || data.state?.current_state || data.current_state || 'REQUESTED',
+        state: data.state?.current || data.state?.current_state || data.current_state || CanonicalWorkflowStateEnum.REQUESTED,
         gates,
         certifiedAt: data.updated_at || undefined,
         targetFamily: data.target?.family,
@@ -556,7 +559,7 @@ export class ProjectLlmClient {
     workflowId: string,
     toState: string,
     reason?: string
-  ): Promise<any> {
+  ): Promise<WorkflowApiResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/transition`, {
         method: 'POST',
@@ -684,8 +687,9 @@ export class ProjectLlmClient {
         await handleFetchError(response);
       }
 
-      const data: any = await response.json();
-      const runtimeGate = data.gate_results?.['runtime-verification'] || {};
+      const data: WorkflowApiResponse = await response.json();
+      const rawGate = data.gate_results?.['runtime-verification'];
+      const runtimeGate = typeof rawGate === 'object' && rawGate !== null ? rawGate : {};
       const isHealthy = runtimeGate.status === 'PASS' || runtimeGate.verdict === 'PASS';
 
       return {
@@ -726,8 +730,9 @@ export class ProjectLlmClient {
         await handleFetchError(response);
       }
 
-      const data: any = await response.json();
-      const browserGate = data.gate_results?.['browser-verification'] || {};
+      const data: WorkflowApiResponse = await response.json();
+      const rawGate = data.gate_results?.['browser-verification'];
+      const browserGate = typeof rawGate === 'object' && rawGate !== null ? rawGate : {};
       let result: 'PASS' | 'FAIL' | 'SKIPPED' = 'SKIPPED';
       const status = (browserGate.status || browserGate.verdict || '').toUpperCase();
       if (status === 'PASS') result = 'PASS';
@@ -760,7 +765,7 @@ export class ProjectLlmClient {
     targetVersion: string;
     purpose?: string;
     specificationId?: string;
-  }): Promise<Record<string, any>> {
+  }): Promise<WorkflowApiResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/workflows`, {
         method: 'POST',
@@ -824,7 +829,7 @@ export class ProjectLlmClient {
    * Maps to: GET /workflows/{workflowId}/engineering-contract
    * If the contract hasn't been generated yet (404), it automatically generates it.
    */
-  async getEngineeringContract(workflowId: string): Promise<Record<string, unknown>> {
+  async getEngineeringContract(workflowId: string): Promise<EngineeringContract> {
     try {
       const response = await fetch(
         `${this.baseUrl}/workflows/${workflowId}/engineering-contract`,
@@ -914,7 +919,7 @@ export class ProjectLlmClient {
    * Run post-placement Composer verification in an isolated worktree preview.
    * Maps to: POST /workflows/{workflowId}/verify-composer
    */
-  async verifyComposerWorktree(workflowId: string): Promise<Record<string, any>> {
+  async verifyComposerWorktree(workflowId: string): Promise<BackendGateResult> {
     try {
       const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/verify-composer`, {
         method: 'POST',
@@ -933,6 +938,44 @@ export class ProjectLlmClient {
         ProjectLlmErrorCode.NETWORK_ERROR,
         null,
         'Unable to run Composer verification. Check network connection.'
+      );
+    }
+  }
+
+  async getExecutionProgress(workflowId: string, operation: 'composer' | 'learner' | 'qualification') {
+    const response = await fetch(`${this.baseUrl}/workflows/${encodeURIComponent(workflowId)}/execution-progress/${operation}`, {
+      credentials: 'same-origin', cache: 'no-store',
+    });
+    if (!response.ok) await handleFetchError(response);
+    return response.json() as Promise<{
+      startedAt?: number; status: string;
+      tasks: Array<{ label: string; status: string; startedAt: number; finishedAt?: number }>;
+    }>;
+  }
+
+  /**
+   * Run post-placement Learner Runtime & ILS verification in an authenticated Playwright session.
+   * Maps to: POST /workflows/{workflowId}/verify-learner-runtime
+   */
+  async verifyLearnerRuntime(workflowId: string): Promise<BackendGateResult> {
+    try {
+      const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/verify-learner-runtime`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+      });
+
+      if (!response.ok) {
+        await handleFetchError(response);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof ProjectLlmError) throw error;
+      throw new ProjectLlmError(
+        ProjectLlmErrorCode.NETWORK_ERROR,
+        null,
+        'Unable to run Learner Runtime verification. Check network connection.'
       );
     }
   }
@@ -986,7 +1029,7 @@ export class ProjectLlmClient {
     workflow_id: string;
     new_state: string;
     evidence_verified?: boolean;
-    evidence_summary?: Record<string, any>;
+    evidence_summary?: Record<string, unknown>;
   }> {
     try {
       const response = await fetch(`${this.baseUrl}/workflows/${workflowId}/approve-final`, {

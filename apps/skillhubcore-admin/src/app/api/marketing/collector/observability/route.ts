@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,10 @@ function resolveCollectorBaseUrl() {
     .replace(/\/+$/, '');
 }
 
-export async function GET() {
+export async function GET(request: import("next/server").NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   const baseUrl = resolveCollectorBaseUrl();
   const token = process.env.ANALYTICS_ADMIN_TOKEN;
 

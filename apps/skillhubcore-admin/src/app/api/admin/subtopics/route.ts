@@ -1,9 +1,13 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { domains, getDb, subjects, subtopics, topics } from '@quiz/db';
 import { and, desc, eq, ilike, inArray } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const searchParams = request.nextUrl.searchParams;
@@ -57,6 +61,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const body = await request.json();
@@ -82,6 +89,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const body = await request.json();
@@ -108,6 +118,9 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const db = getDb();
     const { searchParams } = request.nextUrl;

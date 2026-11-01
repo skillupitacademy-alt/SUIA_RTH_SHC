@@ -8,6 +8,11 @@ export type ProxyRequestOptions = {
   brand?: string;
   roles?: string[]; // 🔥 ADD: User roles for RBAC
   upstreamPath?: string;
+  /**
+   * Brand-resolved hostname supplied after trusted-host validation. It is the
+   * only hostname allowed to drive an upstream cookie domain.
+   */
+  publicHostname?: string;
 };
 
 function tryExtractHostname(value?: string | null): string | undefined {
@@ -47,7 +52,7 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   // for cookies to work across services. Use the CF Worker request hostname as the original.
   const originHostname = tryExtractHostname(headers.get('origin'));
   const cfWorkerHostname = url.hostname; // This is the public domain from the CF route
-  const originalHostname = originHostname ?? cfWorkerHostname;
+  const originalHostname = options.publicHostname ?? originHostname ?? cfWorkerHostname;
 
   // 🔥 CORRELATION ID: Generate if not present for end-to-end tracing
   const correlationId = headers.get('x-correlation-id') || crypto.randomUUID();
@@ -152,6 +157,11 @@ export async function proxyRequest(request: Request, upstream: string, options: 
   headers.delete('cf-connecting-ip');
   headers.delete('X-Forwarded-For');
   headers.delete('x-forwarded-for');
+  // The gateway already consumes the request body before forwarding it. Passing
+  // Expect: 100-continue through makes workerd expose the informational 100 as
+  // the upstream response, which cannot be returned to a browser.
+  headers.delete('Expect');
+  headers.delete('expect');
 
   const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.clone().arrayBuffer();
 

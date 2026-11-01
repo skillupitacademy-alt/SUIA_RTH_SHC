@@ -58,8 +58,8 @@ def patch_tutorial_block_renderer(
                 raise PatchError("Cannot find GeneratedBlockRenderer declaration")
             patched_content = patched_content[:interface_match.start()] + import_statement + "\n" + patched_content[interface_match.start():]
 
-    # Detect duplicates on updated content
-    existing_pattern = r"\{\s*family:\s*['\"]" + re.escape(block_type) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}"
+    # Detect duplicates on updated content - capture trailing comma in the pattern
+    existing_pattern = r"\{\s*family:\s*['\"]" + re.escape(block_type) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}\s*,?"
     existing_matches = list(re.finditer(existing_pattern, patched_content, re.IGNORECASE))
     if len(existing_matches) > 1:
         raise PatchError(f"Duplicate renderer entry detected for ({block_type}, {version_upper})")
@@ -67,7 +67,10 @@ def patch_tutorial_block_renderer(
     # If exactly 1 entry exists, update it in place
     if len(existing_matches) == 1:
         m = existing_matches[0]
-        if m.group(0).strip() == entry.strip():
+        # Normalize comparison: strip whitespace and trailing comma for comparison
+        existing_normalized = m.group(0).strip().rstrip(',').strip()
+        entry_normalized = entry.strip().rstrip(',').strip()
+        if existing_normalized == entry_normalized:
             return patched_content
         return patched_content[:m.start()] + entry + patched_content[m.end():]
 
@@ -239,7 +242,8 @@ def patch_generated_block_version_definitions(
     type_norm = family_type_id.lower().strip()
     version_upper = version.upper().strip()
 
-    pattern = r"\{\s*type:\s*['\"]" + re.escape(type_norm) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}"
+    # Capture trailing comma in the pattern
+    pattern = r"\{\s*type:\s*['\"]" + re.escape(type_norm) + r"['\"],\s*version:\s*['\"]" + re.escape(version_upper) + r"['\"].*?\}\s*,?"
     existing_matches = list(re.finditer(pattern, content, re.IGNORECASE))
     if len(existing_matches) > 1:
         raise PatchError(f"Duplicate block version definition detected for ({type_norm}, {version_upper})")
@@ -251,6 +255,11 @@ def patch_generated_block_version_definitions(
 
     if len(existing_matches) == 1:
         m = existing_matches[0]
+        # Normalize comparison: strip whitespace and trailing comma for comparison
+        existing_normalized = m.group(0).strip().rstrip(',').strip()
+        entry_normalized = entry.strip().rstrip(',').strip()
+        if existing_normalized == entry_normalized:
+            return content
         return content[:m.start()] + entry + content[m.end():]
 
     marker = "  // PROJECT_LLM_GENERATED_DEFINITIONS"
@@ -392,3 +401,113 @@ def patch_generated_block_registry(
   }},
 '''
     return content.replace(marker, entry + marker, 1)
+
+
+def patch_blocks_schema(
+    content: str,
+    schema_filename: str,
+    schema_export_name: str,
+) -> str:
+    """
+    Register a block schema in TutorialBlockSchema Zod union.
+    
+    Operations:
+    1. Add import if missing: import { SchemaName } from './filename';
+    2. Add re-export if missing: export * from './filename';
+    3. Add to z.union([...]) if missing
+    
+    Idempotent, fail-closed, duplicate-detecting.
+    
+    Target file: packages/types/src/tutorial-rich-document/schemas/blocks.schema.ts
+    
+    Args:
+        content: Current content of blocks.schema.ts
+        schema_filename: Schema filename (e.g., "objective-o1.schema.ts")
+        schema_export_name: Schema export name (e.g., "ObjectiveO1BlockSchema")
+    
+    Returns:
+        Patched content with schema registered in union
+    
+    Raises:
+        PatchError: If structure is ambiguous or unsafe to patch
+    """
+    # Validate export name using JavaScript identifier pattern
+    if not re.match(r"^[A-Za-z_$][A-Za-z0-9_$]*$", schema_export_name):
+        raise PatchError(f"Invalid schema export name: {schema_export_name}")
+    
+    # Extract module name: remove .schema.ts or .ts extension
+    schema_module = schema_filename
+    if schema_module.endswith(".schema.ts"):
+        schema_module = schema_module[:-10]  # Remove .schema.ts
+    elif schema_module.endswith(".ts"):
+        schema_module = schema_module[:-3]  # Remove .ts
+    
+    # Build import and export statements
+    import_statement = f"import {{ {schema_export_name} }} from './{schema_module}.schema';"
+    export_statement = f"export * from './{schema_module}.schema';"
+    
+    # Check idempotency: if ALL THREE elements exist, return unchanged
+    if import_statement in content and export_statement in content:
+        # Check if schema is already in union
+        union_pattern = r"export\s+const\s+TutorialBlockSchema[^=]+=\s*z\.lazy\(\(\s*\)\s*=>\s*z\.union\(\[([\s\S]*?)\]\s*\)\s*\);"
+        union_match = re.search(union_pattern, content)
+        # Use word-boundary regex to prevent false positives from substring matches
+        if union_match and re.search(r'\b' + re.escape(schema_export_name) + r'\b', union_match.group(1)):
+            return content  # Already patched - idempotent (all three elements present)
+    
+    patched_content = content
+    
+    # Step 1: Add import if missing
+    if import_statement not in patched_content:
+        # Find last schema import line - look for imports from relative paths
+        schema_import_pattern = r"(import\s+\{[^}]+\}\s+from\s+'\.[^']+';(?:\r?\n))"
+        matches = list(re.finditer(schema_import_pattern, patched_content))
+        if not matches:
+            raise PatchError("Cannot find schema import section in blocks.schema.ts")
+        
+        # Insert after last schema import
+        last_match = matches[-1]
+        insert_pos = last_match.end()
+        patched_content = patched_content[:insert_pos] + import_statement + "\n" + patched_content[insert_pos:]
+    
+    # Step 2: Add re-export if missing
+    if export_statement not in patched_content:
+        # Find last re-export line
+        export_pattern = r"(export\s+\*\s+from\s+'\.[^']+';(?:\r?\n))"
+        matches = list(re.finditer(export_pattern, patched_content))
+        if not matches:
+            raise PatchError("Cannot find re-export section in blocks.schema.ts")
+        
+        # Insert after last re-export
+        last_match = matches[-1]
+        insert_pos = last_match.end()
+        patched_content = patched_content[:insert_pos] + export_statement + "\n" + patched_content[insert_pos:]
+    
+    # Step 3: Find TutorialBlockSchema declaration and add to union
+    union_pattern = r"(export\s+const\s+TutorialBlockSchema[^=]+=\s*z\.lazy\(\(\s*\)\s*=>\s*z\.union\(\[)([\s\S]*?)(\]\s*\)\s*\);)"
+    union_match = re.search(union_pattern, patched_content)
+    if not union_match:
+        raise PatchError("Cannot find TutorialBlockSchema union structure in blocks.schema.ts")
+    
+    prefix = union_match.group(1)
+    union_body = union_match.group(2)
+    suffix = union_match.group(3)
+    
+    # Check if schema already in union (additional safety check)
+    # Use word-boundary regex to prevent false positives from substring matches
+    if re.search(r'\b' + re.escape(schema_export_name) + r'\b', union_body):
+        return patched_content  # Already in union - idempotent
+    
+    # Add schema to union with proper indentation (4 spaces based on existing file)
+    # Insert before closing bracket, maintaining existing structure
+    union_body_stripped = union_body.rstrip()
+    if union_body_stripped and not union_body_stripped.endswith(","):
+        union_body_stripped += ","
+    
+    new_union_body = union_body_stripped + f"\n    {schema_export_name},"
+    
+    # Reconstruct with updated union
+    replacement = prefix + new_union_body + "\n  " + suffix
+    patched_content = patched_content[:union_match.start()] + replacement + patched_content[union_match.end():]
+    
+    return patched_content

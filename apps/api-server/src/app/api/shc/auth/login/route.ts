@@ -26,26 +26,19 @@ const loginSchema = z.object({
  * used by RTH and SUI. They authenticate against people_db.
  */
 async function handler(req: NextRequest) {
-  console.log('[SHC_AUTH] Login request received');
-
   try {
     const body = await req.json();
     const parsed = loginSchema.safeParse(body);
 
     if (!parsed.success) {
-      console.log('[SHC_AUTH] Validation failed:', parsed.error.issues);
       return ApiResponse.error(validationError(parsed.error.issues));
     }
 
     const { email, password } = parsed.data;
     const ip = getClientIp(req);
 
-    console.log('[SHC_AUTH] Attempting login:', { email, ip });
-
     const shcAuthService = new SHCAuthService();
     const result = await shcAuthService.login(email, password, ip);
-
-    console.log('[SHC_AUTH] Login successful:', { userId: result.user.id, role: result.user.role });
 
     // Return tokens in response body
     // The SHC admin app proxy will handle setting cookies

@@ -1,3 +1,4 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 /**
  * Tutorial Composer API - Publish Tutorial (V2)
  * V2 API using (subtopicId, brandId) identity
@@ -94,6 +95,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ sectionId: string }> }
 ) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   try {
     const { sectionId } = await params;
 

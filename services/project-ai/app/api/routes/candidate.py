@@ -42,6 +42,7 @@ from app.models.candidate import (
 from app.models.implementation_approval import ImplementationApproval
 from app.placement.approval_enforcer import ApprovalEnforcer
 from app.repository.discovery_client import DiscoveryClient
+from app.verification.worker_slot import serialize_verification
 from app.persistence import (
     get_db_session,
     get_candidate_repository,
@@ -296,7 +297,10 @@ def get_discovery_client() -> DiscoveryClient:
     return DiscoveryClient(snapshot_path)
 
 
+
+
 @router.post("/upload", response_model=Dict[str, Any])
+@serialize_verification
 async def upload_candidate(
     package: CandidatePackage,
     user: AuthenticatedPrincipal = Depends(get_current_user),
@@ -479,7 +483,7 @@ async def upload_candidate(
 
     # Automated Qualification Gate: Run candidate unit tests in isolated sandbox
     from app.verification.candidate_tester import run_candidate_qualification_tests
-    test_result = await run_candidate_qualification_tests(package.candidateId, package.files)
+    test_result = await run_candidate_qualification_tests(package.candidateId, package.files, workflow_id=str(package.workflow_id))
     
     if not test_result["passed"]:
         # Preserve source-level accessibility feedback for the existing workflow
@@ -609,6 +613,7 @@ async def upload_candidate(
 
 
 @router.post("/{candidate_id}/qualify")
+@serialize_verification
 async def qualify_candidate(
     candidate_id: str,
     user: AuthenticatedPrincipal = Depends(require_contract_admin),
@@ -625,7 +630,7 @@ async def qualify_candidate(
     package = model_to_candidate(candidate_model)
     from app.verification.candidate_tester import run_candidate_qualification_tests
 
-    test_result = await run_candidate_qualification_tests(package.candidateId, package.files)
+    test_result = await run_candidate_qualification_tests(package.candidateId, package.files, workflow_id=str(candidate_model.workflow_id))
     workflow_repo = await get_workflow_repository(session)
     workflow_model = await workflow_repo.get(str(candidate_model.workflow_id))
     if not workflow_model:
@@ -1307,6 +1312,7 @@ async def list_candidates(
 
 
 @router.post("/{candidate_id}/execute", response_model=Dict[str, Any])
+@serialize_verification
 async def execute_placement(
     candidate_id: str,
     user: AuthenticatedPrincipal = Depends(require_contract_admin),

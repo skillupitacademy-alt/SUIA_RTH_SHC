@@ -195,13 +195,12 @@ New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 New-Item -ItemType Directory -Force -Path $TempEnvDir | Out-Null
 
 $composeLines = Get-Content -LiteralPath $ComposeBase
-Write-LocalBuildCompose -Lines $composeLines -Path $TempCompose
 
 $serviceMap = Get-Content -Raw $ServiceMapPath | ConvertFrom-Json
 $buildable = @($serviceMap.services.PSObject.Properties | Where-Object { $_.Value.buildable -eq $true })
 
 if ($Services.Count -eq 0) {
-  $Services = @($buildable.Name)
+  $Services = @($buildable | Where-Object { $_.Value.optional -ne $true } | ForEach-Object { $_.Name })
 }
 
 $selected = @()
@@ -216,6 +215,15 @@ foreach ($service in $Services) {
   $selected += $service
 }
 
+if ($selected -contains 'project-ai') {
+  # Check before generating the tracked local Compose helper.
+  $sourceStatus = & git -C $RepoDir status --porcelain --untracked-files=normal
+  if ($LASTEXITCODE -ne 0 -or $sourceStatus) {
+    throw 'Commit or separately preserve pending changes before building Project AI. The worker runs committed HEAD only.'
+  }
+}
+Write-LocalBuildCompose -Lines $composeLines -Path $TempCompose
+
 Write-Host "Building services: $($selected -join ', ')"
 Write-Host "Image tag: $ImageTag"
 if ($EnvFile) {
@@ -226,6 +234,13 @@ $imageRefs = @()
 $manifestServices = @()
 
 foreach ($service in $selected) {
+  if ($service -eq 'project-ai') {
+    # Ship committed source history in the private worker image, not env files.
+    $sourceBundleDir = Join-Path $RepoDir 'services\project-ai\.build'
+    New-Item -ItemType Directory -Force -Path $sourceBundleDir | Out-Null
+    & git -C $RepoDir bundle create (Join-Path $sourceBundleDir 'source.bundle') HEAD
+    if ($LASTEXITCODE -ne 0) { throw 'Failed to create Project AI source bundle.' }
+  }
   $serviceEnvFiles = Get-ServiceEnvFiles -Lines $composeLines -Service $service
   $serviceBuildArgs = Get-ServiceBuildArgs -Lines $composeLines -Service $service
   $mergedEnv = @{}

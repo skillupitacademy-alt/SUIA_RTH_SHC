@@ -28,11 +28,6 @@ async function handler(_req: NextRequest, obsCtx: { requestId: string }) {
   const requestHostname = resolveRequestHostnameFromHeaders(_req.headers, _req.nextUrl.hostname);
   const brand: 'skillup' | 'realtutorialhub' = (typeof requestHostname === 'string' && requestHostname.includes('skillup')) ? 'skillup' : 'realtutorialhub';
 
-  console.log('[AUTH_FLOW][LOGOUT][START]', JSON.stringify({
-    requestId,
-    brand,
-    requestHostname,
-  }));
 
   // 🔥 CRITICAL FIX: Extract userId from access token for deterministic logout
   let userId: string | undefined;
@@ -83,11 +78,6 @@ async function handler(_req: NextRequest, obsCtx: { requestId: string }) {
 
   const portalIdentity = _req.headers.get('x-portal-identity') ?? 'global';
 
-  console.log('[AUTH_FLOW][LOGOUT][CLEARING_COOKIES]', JSON.stringify({
-    requestId,
-    portalIdentity,
-    brand,
-  }));
 
   // Use shared cookie middleware to clear cookies
   if (portalIdentity === 'infrastructure') {
@@ -135,11 +125,6 @@ async function handler(_req: NextRequest, obsCtx: { requestId: string }) {
   
   clearOnboardingStateCookie(response, _req);
 
-  console.log('[AUTH_FLOW][LOGOUT][SUCCESS]', JSON.stringify({
-    requestId,
-    portalIdentity,
-    brand,
-  }));
 
   return response;
 }

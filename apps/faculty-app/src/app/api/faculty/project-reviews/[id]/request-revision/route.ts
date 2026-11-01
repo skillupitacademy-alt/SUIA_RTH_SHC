@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { relayFacultyUpstreamResponse } from '@/lib/faculty-api';
+import { getFacultyIdentity, relayFacultyUpstreamResponse } from '@/lib/faculty-api';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +14,11 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const identity = await getFacultyIdentity(req);
+  if (!identity) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const params = paramsSchema.safeParse(await context.params);
   if (!params.success) {
     return NextResponse.json({ error: 'Invalid submission id' }, { status: 400 });
@@ -25,6 +30,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   }
 
   const response = await relayFacultyUpstreamResponse(
+    identity,
     req.headers,
     `/api/tutorial/faculty/project-reviews/${params.data.id}/request-revision`,
     {

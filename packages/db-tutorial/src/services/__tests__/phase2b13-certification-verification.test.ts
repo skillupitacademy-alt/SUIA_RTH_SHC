@@ -323,6 +323,9 @@ describe('Phase 2B.13: Certification Verification', () => {
       
       if (result.success) {
         expect(result.data.content).toHaveProperty('points');
+        if (!('points' in result.data.content)) {
+          throw new Error('Expected the S1 bullet-content variant');
+        }
         expect(Array.isArray(result.data.content.points)).toBe(true);
       }
     });

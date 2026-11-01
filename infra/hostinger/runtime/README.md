@@ -2,6 +2,11 @@
 
 This directory defines the Phase 3 VPS runtime shape. It is designed for a VPS that does not contain application source code.
 
+The optional `project-ai` profile is an exception inside its private worker
+container only: it maintains Git source in a named volume for candidate placement
+and isolated browser builds. See `services/project-ai/deploy/README.md` in the
+source repository before enabling it. Existing web-service deployment is unchanged.
+
 ## Target VPS Layout
 
 ```text

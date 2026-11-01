@@ -23,11 +23,9 @@ function canonicalizeRoles(roles: Role[]): Role[] {
   }
   
   // 🔥 STRICT UNIFICATION: Legacy user role → student
-  if (roles.includes('user' as Role) || roles.includes('student' as any)) {
-    return ['student' as Role];
-  }
-  
-  return roles;
+  // Alias legacy 'user' to 'student', preserve all other roles, deduplicate
+  const mapped = roles.map(r => (r === ('user' as Role) ? 'student' as Role : r));
+  return [...new Set(mapped)] as Role[];
 }
 
 export class RBACService {

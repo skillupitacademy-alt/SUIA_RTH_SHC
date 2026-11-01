@@ -166,7 +166,7 @@ export function ProjectLlmProvider({ children }: { children: React.ReactNode }) 
       purpose,
     }));
     try {
-      const result: any = await projectLlmClient.createWorkflow({
+      const result = await projectLlmClient.createWorkflow({
         targetFamily: familyName,
         targetVersion: targetVersion,
         purpose: purpose,

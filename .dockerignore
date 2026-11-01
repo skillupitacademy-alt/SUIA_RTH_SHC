@@ -75,3 +75,6 @@ tsconfig.tsbuildinfo
 .kiro
 .sixth
 .playwright-mcp
+.project-ai
+.evidence
+.worktrees

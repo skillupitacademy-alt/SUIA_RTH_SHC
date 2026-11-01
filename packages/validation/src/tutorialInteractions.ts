@@ -9,7 +9,9 @@ export const QuizInteractionRequestSchema = strictObject({
   sectionId: NonEmptyStringSchema,
   questionId: NonEmptyStringSchema,
   selectedAnswer: NonEmptyStringSchema,
-  correctAnswer: NonEmptyStringSchema,
+  // 🔐 SECURITY (INT-01): correctAnswer is optional for backward compatibility but ignored by the server.
+  // The server resolves the answer strictly from authoritative section content.
+  correctAnswer: z.string().optional(),
   timeSpent: NonNegativeNumberSchema.default(0),
 });
 
@@ -17,7 +19,9 @@ export const PracticeInteractionRequestSchema = strictObject({
   sectionId: NonEmptyStringSchema,
   questionId: NonEmptyStringSchema,
   selectedAnswer: NonEmptyStringSchema,
-  correctAnswer: NonEmptyStringSchema,
+  // 🔐 SECURITY (INT-01b): correctAnswer is optional for backward compatibility but ignored by the server.
+  // The server resolves the answer strictly from authoritative section content.
+  correctAnswer: z.string().optional(),
   timeSpent: NonNegativeNumberSchema.default(0),
   feedbackViewed: z.boolean().default(false),
 });

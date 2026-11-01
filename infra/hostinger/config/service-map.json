@@ -2,6 +2,16 @@
   "version": "3.2",
   "description": "Service mapping for deployment execution. Dependency detection is delegated to Turbo where available; this file maps deployable packages to Docker Compose services and image names.",
   "services": {
+    "project-ai": {
+      "name": "project-ai",
+      "package_name": null,
+      "source_path": "services/project-ai",
+      "compose_name": "project-ai",
+      "image_name": "quiz-platform-project-ai",
+      "buildable": true,
+      "optional": true,
+      "health_check_required": true
+    },
     "api-server": {
       "name": "api-server",
       "package_name": "@quiz/api-server",

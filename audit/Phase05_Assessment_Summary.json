@@ -1,0 +1,20 @@
+{
+  "phase": 5,
+  "assessment_date": "2026-11-01",
+  "decision": "NO_GO",
+  "phase05_report_complete": true,
+  "overall_source_audit_certified": false,
+  "source_inventory": 290,
+  "phase02_minimum_pinned_retrieval_evidence": 126,
+  "phase02_unverified_pinned_retrieval_paths": 164,
+  "historical_mkt_ids_recorded": 286,
+  "historical_mkt_ids_fully_reconciled": false,
+  "phase03_findings": 8,
+  "phase04_root_cause_families": 6,
+  "release_gates": 11,
+  "release_gates_passed": 1,
+  "runtime_tests_executed": false,
+  "production_approved": false,
+  "repo_modified": false,
+  "report": "Phase05_Marketing_Final_Architectural_Audit_Report.md"
+}

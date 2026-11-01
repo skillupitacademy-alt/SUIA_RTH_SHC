@@ -4,7 +4,7 @@ import { CompletionInteractionRequestSchema } from '@quiz/validation';
 import { and, eq, isNull } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getAuthenticatedUserId, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
+import { getAuthenticatedUserIdAsync, getTutorialSection, parseJsonBody, updateProgressForSection } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = getAuthenticatedUserId(request);
+    const userId = await getAuthenticatedUserIdAsync(request);
     if (userId instanceof NextResponse) return userId;
 
     const parsed = await parseJsonBody(request, CompletionInteractionRequestSchema);
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = getAuthenticatedUserId(request);
+    const userId = await getAuthenticatedUserIdAsync(request);
     if (userId instanceof NextResponse) return userId;
 
     const { searchParams } = new URL(request.url);

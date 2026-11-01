@@ -32,7 +32,7 @@ async function getHandler(req: NextRequest) {
 
     // 2. Auth Context (Internal vs User)
     const internalKeyHeader = req.headers.get('x-internal-key') ?? '';
-    const internalSecret = process.env.INTERNAL_API_KEY ?? 'secret';
+    const internalSecret = process.env.INTERNAL_API_KEY ?? '';
     const isInternal = internalKeyHeader !== '' && internalSecret !== '' && internalKeyHeader === internalSecret;
 
     let userId: string;

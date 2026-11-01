@@ -8,6 +8,13 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/faculty-api', () => ({
   relayFacultyUpstreamResponse: mocks.relayMock,
+  getFacultyIdentity: vi.fn().mockResolvedValue({
+    userId: 'faculty-1',
+    shadowUserId: 'faculty-1',
+    originalUserId: 'faculty-1',
+    brand: 'realtutorialhub',
+    roles: ['faculty'],
+  }),
 }));
 
 vi.mock('@/lib/faculty-live-data', () => ({
@@ -62,7 +69,7 @@ describe('faculty-app routes', () => {
       },
     ]);
 
-    mocks.relayMock.mockImplementation(async (_headers: Headers | HeadersInit, path: string, init?: RequestInit) => {
+    mocks.relayMock.mockImplementation(async (_identity: any, _headers: Headers | HeadersInit, path: string, init?: RequestInit) => {
       if (path.startsWith('/api/tutorial/faculty/help-requests/') && init?.method === 'PATCH') {
         return jsonResponse({
           data: { id: path.split('/').at(-1), status: 'resolved', resolvedAt: new Date().toISOString() },

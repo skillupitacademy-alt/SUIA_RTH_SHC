@@ -27,6 +27,16 @@ export type {
   IntroductionIconKey,
 } from './content-blocks';
 
+// Export version-specific Objective block types from content-blocks
+export type {
+  ObjectiveO1Item,
+  ObjectiveO1Note,
+  ObjectiveO1Page,
+  ObjectiveO1AuthorContent,
+  ObjectiveO1Block,
+  ObjectiveBlock,
+} from './content-blocks';
+
 // Export version-specific Summary block types from content-blocks
 export type {
   SummaryS1AuthorContent,

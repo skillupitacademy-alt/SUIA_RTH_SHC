@@ -14,6 +14,44 @@ x-next-health-defaults: &next-health-defaults
   start_period: 60s
 
 services:
+  project-ai:
+    <<: *common-defaults
+    profiles: ["project-llm"]
+    image: quiz-platform-project-ai:latest
+    init: true
+    user: "1000:1000"
+    env_file:
+      - /opt/platform/env/shared/.env
+    environment:
+      WORKSPACE_ROOT: /workspace
+      PROJECT_AI_ENV_FILE: /etc/project-ai/worker.env
+      PROJECT_AI_STATE_DIR: /var/lib/project-ai/state
+      PROJECT_AI_SNAPSHOT_PATH: /var/lib/project-ai/state/snapshot.json
+      PROJECT_AI_PROGRESS_DIR: /var/lib/project-ai/state/progress
+      PROJECT_AI_VERIFICATION_WORKTREES_DIR: /var/lib/project-ai/worktrees
+      PROJECT_AI_SERIAL_VERIFICATION: "true"
+      PROJECT_LLM_EXECUTION_MODE: isolated_worker
+      NODE_OPTIONS: --max-old-space-size=2048
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      - project_ai_repository:/workspace
+      - project_ai_worktrees:/var/lib/project-ai/worktrees
+      - project_ai_state:/var/lib/project-ai/state
+      - /opt/platform/env/project-ai:/etc/project-ai:ro
+    extra_hosts:
+      - skillup.localhost:127.0.0.1
+      - skillhubcore.localhost:127.0.0.1
+    expose: ["8000"]
+    shm_size: 256m
+    pids_limit: 512
+    stop_grace_period: 60s
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 900s
+
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
@@ -201,6 +239,8 @@ services:
 
   skillhubcore-admin:
     <<: *common-defaults
+    environment:
+      PROJECT_AI_BACKEND: ${PROJECT_AI_BACKEND:-http://project-ai:8000}
     image: quiz-platform-skillhubcore-admin:latest
     env_file:
       - /opt/platform/env/shared/.env
@@ -243,3 +283,8 @@ networks:
     name: quiz_platform_edge
   app_internal:
     name: quiz_platform_internal
+
+volumes:
+  project_ai_repository:
+  project_ai_worktrees:
+  project_ai_state:

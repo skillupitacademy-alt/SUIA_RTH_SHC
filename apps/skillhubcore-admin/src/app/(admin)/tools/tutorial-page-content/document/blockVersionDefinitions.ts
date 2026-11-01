@@ -4,6 +4,7 @@ import type {
   DefinitionD1AuthorContent,
   CodeC1AuthorContent,
   IntroductionI1AuthorContent,
+  SummaryS1AuthorContent,
 } from '@quiz/types/tutorial-rich-document';
 import type {
   TutorialObjectivePayload,
@@ -47,6 +48,12 @@ const legacyStorage = (payload: unknown): StoragePreparationResult => ({
   payloadFormat: 'legacy',
   memoryModelWarning: '',
 });
+
+function payloadRecord(payload: unknown): Record<string, unknown> {
+  return payload && typeof payload === 'object' && !Array.isArray(payload)
+    ? payload as Record<string, unknown>
+    : {};
+}
 
 function normalizeCodeC1Preview(payload: unknown): PreviewNormalizationResult {
   try {
@@ -197,15 +204,15 @@ const definitions: BlockVersionDefinition[] = [
     prepareForStorage: legacyStorage,
     parseMarkdown: parseSummaryMarkdown,
     toCanonicalBlock: (instance: BlockInstance): TutorialBlock => {
-      const raw = instance.payload as any;
+      const raw = payloadRecord(instance.payload);
       const unwrapped = raw?.content && typeof raw.content === 'object' && !raw.page && !raw.revisionTable
         ? raw.content
         : raw;
 
-      const summaryPayload = unwrapped as TutorialSummaryPayload;
+      const summaryPayload = unwrapped as Partial<TutorialSummaryPayload> & Partial<Extract<SummaryS1AuthorContent, { points: string[] }>>;
       const points: string[] = [];
-      if (Array.isArray((summaryPayload as any).points)) {
-        (summaryPayload as any).points.forEach((p: unknown) => {
+      if (Array.isArray(summaryPayload.points)) {
+        summaryPayload.points.forEach((p: unknown) => {
           if (typeof p === 'string' && p) points.push(p);
         });
       }
@@ -224,9 +231,9 @@ const definitions: BlockVersionDefinition[] = [
         });
       }
       const isRichSummary = Boolean(
-        (summaryPayload as any)?.revisionTable ||
-        (summaryPayload as any)?.summary ||
-        (summaryPayload as any)?.page?.badge
+        summaryPayload.revisionTable ||
+        summaryPayload.summary ||
+        summaryPayload.page?.badge
       );
 
       return {
@@ -236,9 +243,9 @@ const definitions: BlockVersionDefinition[] = [
         content: (isRichSummary
           ? summaryPayload
           : {
-              title: summaryPayload.page?.title || (summaryPayload as any).title || 'Summary',
+              title: summaryPayload.page?.title || summaryPayload.title || 'Summary',
               points: points.length > 0 ? points : ['Summary content'],
-            }) as any,
+            }) as SummaryS1AuthorContent,
         expectedTimeSec: instance.expectedTimeSec,
       };
     },
@@ -263,15 +270,15 @@ const definitions: BlockVersionDefinition[] = [
     normalizePreview: normalizeObjectivePreview,
     prepareForStorage: (payload) => ({ ...normalizeObjectivePreview(payload), payloadFormat: 'canonical' }),
     toCanonicalBlock: (instance: BlockInstance): TutorialBlock => {
-      const raw = instance.payload as any;
-      const content = (raw?.page && typeof raw.page === 'object') ? { ...raw.page } : { ...raw };
+      const raw = instance.payload as TutorialObjectivePayload & { page?: TutorialObjectivePayload; expectedTimeSec?: number };
+      const content = (raw.page && typeof raw.page === 'object') ? { ...raw.page } : { ...raw };
       if ('expectedTimeSec' in content) delete content.expectedTimeSec;
       return {
         id: instance.id,
         type: 'objective',
         version: 'O1',
         content: content as TutorialObjectivePayload,
-        expectedTimeSec: instance.expectedTimeSec ?? raw?.expectedTimeSec,
+        expectedTimeSec: instance.expectedTimeSec ?? (typeof raw.expectedTimeSec === 'number' ? raw.expectedTimeSec : undefined),
       } as TutorialBlock;
     },
   },
@@ -281,15 +288,15 @@ const definitions: BlockVersionDefinition[] = [
     normalizePreview: normalizeObjectivePreview,
     prepareForStorage: (payload) => ({ ...normalizeObjectivePreview(payload), payloadFormat: 'canonical' }),
     toCanonicalBlock: (instance: BlockInstance): TutorialBlock => {
-      const raw = instance.payload as any;
-      const content = (raw?.page && typeof raw.page === 'object') ? { ...raw.page } : { ...raw };
+      const raw = instance.payload as TutorialObjectivePayload & { page?: TutorialObjectivePayload; expectedTimeSec?: number };
+      const content = (raw.page && typeof raw.page === 'object') ? { ...raw.page } : { ...raw };
       if ('expectedTimeSec' in content) delete content.expectedTimeSec;
       return {
         id: instance.id,
         type: 'objective',
         version: 'O2',
         content: content as TutorialObjectivePayload,
-        expectedTimeSec: instance.expectedTimeSec ?? raw?.expectedTimeSec,
+        expectedTimeSec: instance.expectedTimeSec ?? (typeof raw.expectedTimeSec === 'number' ? raw.expectedTimeSec : undefined),
       } as TutorialBlock;
     },
   },
@@ -304,11 +311,11 @@ const definitions: BlockVersionDefinition[] = [
     }),
     toCanonicalBlock: (instance: BlockInstance): TutorialBlock => ({
       id: instance.id,
-      type: definition.type as any,
+      type: definition.type,
       version: definition.version,
-      content: instance.payload as any,
+      content: instance.payload,
       expectedTimeSec: instance.expectedTimeSec,
-    }),
+    } as TutorialBlock),
   })),
 ];
 
@@ -353,9 +360,9 @@ export function canonicalizeBlockInstance(instance: BlockInstance): TutorialBloc
 
   return {
     id: instance.id,
-    type: instance.type as any,
+    type: instance.type,
     version,
-    content: instance.payload as any,
+    content: instance.payload,
     expectedTimeSec: instance.expectedTimeSec,
   } as TutorialBlock;
 }

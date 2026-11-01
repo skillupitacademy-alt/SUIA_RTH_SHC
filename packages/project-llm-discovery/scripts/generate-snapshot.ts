@@ -27,11 +27,13 @@ async function main() {
   const snapshot = await buildSnapshot(repositoryRoot, adapter);
 
   // Ensure output directory exists
-  const outputDir = join(__dirname, '..', 'output');
+  const outputPath = process.env.PROJECT_AI_SNAPSHOT_PATH
+    ? resolve(process.env.PROJECT_AI_SNAPSHOT_PATH)
+    : join(__dirname, '..', 'output', 'snapshot.json');
+  const outputDir = dirname(outputPath);
   mkdirSync(outputDir, { recursive: true });
 
   // Write snapshot to file (consumed by FastAPI backend)
-  const outputPath = join(outputDir, 'snapshot.json');
   const jsonContent = JSON.stringify(snapshot, null, 2);
   writeFileSync(outputPath, jsonContent, 'utf-8');
 

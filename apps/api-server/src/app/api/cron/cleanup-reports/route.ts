@@ -18,9 +18,9 @@ async function getHandler(req: NextRequest) {
 
   const internalKey = req.headers.get("x-internal-key") ?? "";
   const isInternal =
-    process.env.INTERNAL_API_KEY != null
-      ? internalKey === process.env.INTERNAL_API_KEY
-      : internalKey === "secret";
+    process.env.INTERNAL_API_KEY != null &&
+    process.env.INTERNAL_API_KEY !== '' &&
+    internalKey === process.env.INTERNAL_API_KEY;
 
   if (!isVercelCron && !isInternal && process.env.NODE_ENV === "production") {
     throw unauthorized("Unauthorized");

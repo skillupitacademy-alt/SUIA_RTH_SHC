@@ -20,6 +20,12 @@ export async function requireStudent(request: Request) {
 
   try {
     const payload = await TokenService.verifyAccessToken(token, { audience: 'user', isAdmin: false });
+    if (payload.brand !== 'realtutorialhub') {
+      throw new AssignmentAuthError('Forbidden - brand mismatch', 403);
+    }
+    if (typeof payload.userId !== 'string' || !payload.userId.trim()) {
+      throw new AssignmentAuthError('Unauthorized', 401);
+    }
     
     // 🔥 CRITICAL FIX: Add role validation that was missing
     // This was a security gap - RTH had no role checking!

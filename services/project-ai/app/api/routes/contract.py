@@ -26,6 +26,7 @@ from app.contracts.repository_intelligence import (
     RepositoryEvidenceBlocked
 )
 from app.models.workflow_target import WorkflowTarget
+from app.repository.discovery_client import resolve_snapshot_path
 from app.orchestration.canonical_workflow import CanonicalWorkflowState
 from app.evidence.ledger import record_agent_run
 from app.evidence.schemas import AgentRun
@@ -86,7 +87,7 @@ def load_repository_snapshot(workspace_root: str) -> Dict[str, Any]:
     Raises:
         HTTPException 404: If snapshot file not found
     """
-    snapshot_path = Path(workspace_root) / "packages" / "project-llm-discovery" / "output" / "snapshot.json"
+    snapshot_path = resolve_snapshot_path(Path(workspace_root) / "packages" / "project-llm-discovery" / "output" / "snapshot.json")
     
     if not snapshot_path.exists():
         raise HTTPException(
@@ -115,7 +116,7 @@ def calculate_snapshot_sha256(workspace_root: str) -> str:
     Raises:
         HTTPException 404: If snapshot file not found
     """
-    snapshot_path = Path(workspace_root) / "packages" / "project-llm-discovery" / "output" / "snapshot.json"
+    snapshot_path = resolve_snapshot_path(Path(workspace_root) / "packages" / "project-llm-discovery" / "output" / "snapshot.json")
     
     if not snapshot_path.exists():
         raise HTTPException(

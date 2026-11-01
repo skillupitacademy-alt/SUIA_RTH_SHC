@@ -36,12 +36,9 @@ export function canonicalizeRoles(input: unknown): string[] {
   
   // 🔥 STRICT UNIFICATION: user + student → student (ONLY)
   // No spreading, no merging, no hybrid state
-  if (roles.includes('user') || roles.includes('student')) {
-    return ['student'];
-  }
-  
-  // Keep other roles as-is (admin, faculty, super_admin)
-  return roles.filter(Boolean);
+  // Alias legacy 'user' to 'student', preserve all other roles, deduplicate
+  const mapped = roles.map(r => (r === 'user' ? 'student' : r));
+  return [...new Set(mapped)];
 }
 
 /**

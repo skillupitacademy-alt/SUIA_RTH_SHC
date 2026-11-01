@@ -135,6 +135,9 @@ export function createForwardHeaders(request: NextRequest): Headers {
   const headers = new Headers(request.headers);
   headers.delete('host');
   headers.delete('content-length');
+  // Node's server-side fetch rejects Expect: 100-continue. The BFF has already
+  // read the request body, so this hop-by-hop header must not be forwarded.
+  headers.delete('expect');
   
   // 🔥 CRITICAL: Get actual public hostname (not arbitrary client headers)
   // SECURITY: Only use the actual Host header Next.js received
@@ -465,6 +468,11 @@ export async function proxyAuthRequest(
       tag: 'AUTH_GATEWAY_FAIL',
       authPath: options.authPath,
       error: err instanceof Error ? err.message : 'Unknown error',
+      cause:
+        err instanceof Error &&
+        (err as Error & { cause?: unknown }).cause instanceof Error
+          ? (err as Error & { cause: Error }).cause.message
+          : undefined,
     }));
 
     console.log(JSON.stringify({

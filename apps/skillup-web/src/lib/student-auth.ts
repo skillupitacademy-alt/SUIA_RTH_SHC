@@ -63,11 +63,8 @@ function getPayloadRoles(payload: UserTokenPayload): string[] {
 }
 
 function hasSkillupAccess(payload: UserTokenPayload): boolean {
-  if (payload.brand === 'skillup') {
-    return true;
-  }
-
-  return Array.isArray(payload.platforms) && payload.platforms.includes('skillup');
+  // Membership in multiple brands does not change the scope of this access token.
+  return payload.brand === 'skillup';
 }
 
 export async function requireStudentAuth(request: NextRequest): Promise<StudentAuthResult> {
@@ -141,7 +138,12 @@ export async function requireStudentAuth(request: NextRequest): Promise<StudentA
 
     // console.log('[ILS-DEBUG][AUTH][requireStudentAuth][SUCCESS]', { userId });
     return { ok: true, userId, payload };
-  } catch {
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[SkillUp learner auth] token verification failed', {
+        reason: error instanceof Error ? error.message : 'Unknown verification error',
+      });
+    }
     // console.error('[ILS-DEBUG][AUTH][requireStudentAuth][ERROR] Token verification failed');
     return {
       ok: false,

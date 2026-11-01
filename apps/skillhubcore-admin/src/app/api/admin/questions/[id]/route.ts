@@ -1,6 +1,7 @@
+import { requireAdminRequest } from '@/lib/admin-route-guard';
 import type { NextRequest } from 'next/server';
 
-import { FALLBACK_API_BASE_SKILLHUBCORE, proxyUpstreamRequest } from '@/share-branding/auth';
+import { FALLBACK_API_BASE_SKILLHUBCORE, proxyUpstreamRequest } from '@/lib/upstream-proxy';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -18,13 +19,22 @@ async function proxyQuestionRequest(request: NextRequest, context: RouteContext)
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   return proxyQuestionRequest(request, context);
 }
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   return proxyQuestionRequest(request, context);
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
+  const accessDenied = await requireAdminRequest(request);
+  if (accessDenied) return accessDenied;
+
   return proxyQuestionRequest(request, context);
 }

@@ -174,7 +174,12 @@ def _kill_process_tree(pid: int) -> None:
             subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], capture_output=True, check=False)
         else:
             import signal
-            os.kill(pid, signal.SIGKILL)
+            # Preview subprocesses start their own session. Refuse to signal
+            # a shared group that could include the API worker itself.
+            if os.getpgid(pid) == pid:
+                os.killpg(pid, signal.SIGKILL)
+            else:
+                os.kill(pid, signal.SIGKILL)
     except Exception as e:
         logger.warning(f"Error terminating process tree {pid}: {e}")
 
@@ -444,13 +449,15 @@ async def verify_composer_in_worktree(
     block_version: str,
     candidate_hash: str,
     manifest_hash: str,
-    timeout_seconds: int = 600
+    timeout_seconds: int = 600,
+    progress=None,
 ) -> Dict[str, Any]:
     """
     Execute full Composer verification on an isolated git worktree checked out at commit_sha.
     
     Returns hash-bound evidence dictionary conforming to GateResult schema.
     """
+    report = progress or (lambda label: None)
     start_time = time.time()
     workspace_root = find_workspace_root()
     port = find_free_port()
@@ -464,13 +471,17 @@ async def verify_composer_in_worktree(
     server_process: Optional[subprocess.Popen] = None
     runner_script_path: Optional[Path] = None
     linked_deps: List[Path] = []
+    server_log = tempfile.TemporaryFile(mode="w+", encoding="utf-8")
 
     try:
         # Step 1: Create isolated worktree at placed commit
         logger.info(f"Creating verification worktree for commit {commit_sha}...")
+        report("Checkout placement commit")
         worktree_path = _create_verification_worktree(workspace_root, commit_sha)
+        report("Install frozen-lockfile dependencies (offline, then online if needed)")
         linked_deps = _prepare_dependencies(workspace_root, worktree_path, timeout_seconds)
 
+        report("Build admin application")
         _build_admin_preview(worktree_path, timeout_seconds)
 
         admin_app_dir = worktree_path / "apps" / "skillhubcore-admin"
@@ -492,12 +503,14 @@ async def verify_composer_in_worktree(
         # Step 2: Start isolated preview server on ephemeral port
         logger.info(f"Starting ephemeral Next.js preview server on port {port}...")
         server_cmd = [_pnpm_command(), "--filter", "@quiz/skillhubcore-admin", "exec", "next", "start", "-p", str(port), "-H", "127.0.0.1"]
+        report("Start admin preview and wait for readiness")
         server_process = subprocess.Popen(
             server_cmd,
             cwd=str(worktree_path),
             shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=server_log,
+            stderr=server_log,
+            start_new_session=os.name != "nt",
             text=True
         )
 
@@ -510,8 +523,7 @@ async def verify_composer_in_worktree(
         while time.time() < health_deadline:
             if server_process.poll() is not None:
                 # Process crashed early
-                stderr = server_process.stderr.read() if server_process.stderr else ""
-                raise RuntimeError(f"Preview server exited unexpectedly (code {server_process.returncode}): {stderr}")
+                raise RuntimeError(f"Preview server exited unexpectedly (code {server_process.returncode})")
             try:
                 with urllib.request.urlopen(target_check_url, timeout=2) as resp:
                     if resp.status == 200:
@@ -549,6 +561,8 @@ async def verify_composer_in_worktree(
         runner_script_path = runner_script_in_worktree
 
         node_env = os.environ.copy()
+        if progress is not None:
+            node_env["PROJECT_AI_PROGRESS_PATH"] = str(progress.path)
         node_env["NODE_PATH"] = f"{worktree_path / 'node_modules'}{os.pathsep}{worktree_path / 'apps' / 'skillhubcore-admin' / 'node_modules'}"
         node_cmd = [
             "node",
@@ -558,6 +572,7 @@ async def verify_composer_in_worktree(
             "--block-version", block_version,
             "--screenshot", str(screenshot_path)
         ]
+        report("Browser verification: render, accessibility, six widths and screenshot")
         playwright_res = subprocess.run(
             node_cmd,
             cwd=str(worktree_path),
@@ -649,6 +664,7 @@ async def verify_composer_in_worktree(
             findings.append(f"Console errors detected ({len(console_errors)}): {'; '.join(console_errors[:3])}")
 
         # Compute deterministic evidence hash including accessibility and modality results
+        report("Hash screenshot and assemble verification evidence")
         screenshot_hash = _sha256_file(screenshot_path)
         evidence_payload = {
             "verification": parsed_result,
@@ -719,6 +735,7 @@ async def verify_composer_in_worktree(
 
     finally:
         # Step 5: Cleanly terminate the preview server
+        report("Stop admin preview and remove temporary worktree")
         if server_process and server_process.pid:
             logger.info(f"Terminating preview server process {server_process.pid}...")
             _kill_process_tree(server_process.pid)
@@ -734,3 +751,4 @@ async def verify_composer_in_worktree(
         if worktree_path and worktree_path.exists():
             logger.info(f"Cleaning up verification worktree at {worktree_path}...")
             _cleanup_verification_worktree(workspace_root, worktree_path, linked_deps)
+        server_log.close()

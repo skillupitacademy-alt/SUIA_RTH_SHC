@@ -1,0 +1,7 @@
+root_cause_id,family,phase03_findings,highest_severity,historical_mapping,release_disposition
+RC-01,Consent enforcement,P03-01;P03-07,High,No proven canonical MKT ID,Blocker candidate
+RC-02,Brand runtime isolation,P03-02,High,No proven canonical MKT ID,Blocker candidate
+RC-03,Delivery reliability,P03-03;P03-08,High,MKT-223; MKT-228; MKT-286 related,Blocker candidate
+RC-04,Identity conflict and scoping,P03-04,High,MKT-226 adjacent,Blocker candidate
+RC-05,Consent storage/schema,P03-05,Medium/High,MKT-285 partial overlap,Must fix
+RC-06,Preference UX,P03-06,Medium/High,No proven canonical MKT ID,Verify site-level control

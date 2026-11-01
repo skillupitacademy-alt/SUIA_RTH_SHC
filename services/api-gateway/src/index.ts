@@ -24,15 +24,23 @@ function rewritePath(pathname: string, routePrefix: string, upstreamPathPrefix?:
 export const createApp = () => {
   const app = new Hono<{ Bindings: GatewayBindings; Variables: GatewayVariables }>();
 
-  app.onError((_error, c) =>
-    c.json(
+  app.onError((error, c) => {
+    // Keep client errors generic, but retain a bounded server-side diagnostic.
+    // Without this, a local gateway failure becomes an opaque 500 and prevents
+    // learner authentication from being debugged or verified.
+    console.error('[GATEWAY_UNHANDLED_ERROR]', {
+      requestId: c.get('requestId'),
+      path: new URL(c.req.url).pathname,
+      message: error instanceof Error ? error.message : 'Unknown gateway error',
+    });
+    return c.json(
       {
         error: 'Internal Server Error',
         requestId: c.get('requestId'),
       },
       500,
-    ),
-  );
+    );
+  });
 
   // 🔥 OBSERVABILITY MIDDLEWARE
   app.use('*', createRequestIdMiddleware());
@@ -223,6 +231,7 @@ export const createApp = () => {
         portal,
         brand,
         roles, // 🔥 ADD: Forward roles to upstream
+        publicHostname: requestBrand.hostname,
         upstreamPath: rewritePath(normalizedPath, route.prefix, route.upstreamPathPrefix),
       });
       timings.afterProxy = Date.now();
