@@ -1,10 +1,16 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildFacultyUpstreamHeaders, type FacultyIdentity } from '../lib/faculty-api';
+import {
+  buildFacultyUpstreamHeaders,
+  getFacultyIdentity,
+  relayFacultyUpstreamResponse,
+  type FacultyIdentity,
+} from '../lib/faculty-api';
 import { proxy, stripClientHeaders } from '../proxy';
 
 const mocks = vi.hoisted(() => ({
   verifyUserAccessToken: vi.fn(),
+  fetch: vi.fn(),
 }));
 
 vi.mock('@quiz/auth', () => ({
@@ -12,6 +18,8 @@ vi.mock('@quiz/auth', () => ({
     verifyUserAccessToken: mocks.verifyUserAccessToken,
   },
 }));
+
+globalThis.fetch = mocks.fetch as unknown as typeof fetch;
 
 describe('FACULTY-BFF-AUTH-01: Faculty BFF Brand Binding & Identity Sanitization', () => {
   const originalEnv = { ...process.env };
@@ -127,7 +135,7 @@ describe('FACULTY-BFF-AUTH-01: Faculty BFF Brand Binding & Identity Sanitization
     });
   });
 
-  describe('buildFacultyUpstreamHeaders', () => {
+  describe('buildFacultyUpstreamHeaders (Mandatory FacultyIdentity)', () => {
     it('forwards verified FacultyIdentity and injects gateway secret', () => {
       process.env.GATEWAY_TRUST_SECRET = 'verified-gateway-secret';
 
@@ -141,10 +149,14 @@ describe('FACULTY-BFF-AUTH-01: Faculty BFF Brand Binding & Identity Sanitization
 
       const sourceHeaders = new Headers({
         cookie: 'accessToken=secret',
+        // Client attempted to spoof different brand and user ID in sourceHeaders
+        'x-brand': 'realtutorialhub',
+        'x-user-id': 'untrusted-source-user',
       });
 
       const upstream = buildFacultyUpstreamHeaders(sourceHeaders, identity);
 
+      // Verify that sourceHeaders x-brand and x-user-id are completely ignored
       expect(upstream.get('x-gateway-secret')).toBe('verified-gateway-secret');
       expect(upstream.get('x-brand')).toBe('skillup');
       expect(upstream.get('x-platform')).toBe('skillup');
@@ -153,6 +165,78 @@ describe('FACULTY-BFF-AUTH-01: Faculty BFF Brand Binding & Identity Sanitization
       expect(upstream.get('x-original-user-id')).toBe('faculty-orig-1');
       expect(upstream.get('x-user-roles')).toBe('faculty');
       expect(upstream.get('cookie')).toBe('accessToken=secret');
+    });
+  });
+
+  describe('getFacultyIdentity', () => {
+    it('resolves identity from verified token cookie', async () => {
+      mocks.verifyUserAccessToken.mockResolvedValueOnce({
+        userId: 'fac-u-1',
+        shadowUserId: 'fac-s-1',
+        originalUserId: 'fac-o-1',
+        roles: ['faculty'],
+        brand: 'skillup',
+      });
+
+      const req = new NextRequest('http://localhost/api/assignments', {
+        headers: {
+          cookie: 'accessToken=valid-token',
+        },
+      });
+
+      const identity = await getFacultyIdentity(req);
+      expect(identity).not.toBeNull();
+      expect(identity?.userId).toBe('fac-s-1');
+      expect(identity?.brand).toBe('skillup');
+      expect(identity?.roles).toEqual(['faculty']);
+    });
+
+    it('returns null when brand is unsupported or missing', async () => {
+      mocks.verifyUserAccessToken.mockResolvedValueOnce({
+        userId: 'fac-u-1',
+        brand: 'invalid-brand',
+      });
+
+      const req = new NextRequest('http://localhost/api/assignments', {
+        headers: {
+          cookie: 'accessToken=invalid-brand-token',
+        },
+      });
+
+      const identity = await getFacultyIdentity(req);
+      expect(identity).toBeNull();
+    });
+  });
+
+  describe('relayFacultyUpstreamResponse with mandatory identity', () => {
+    it('relays upstream request using verified identity', async () => {
+      process.env.INTERNAL_API_URL = 'http://localhost:3001';
+      process.env.GATEWAY_TRUST_SECRET = 'gw-secret-123';
+
+      mocks.fetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        })
+      );
+
+      const identity: FacultyIdentity = {
+        userId: 'fac-1',
+        brand: 'realtutorialhub',
+        roles: ['faculty'],
+      };
+
+      const res = await relayFacultyUpstreamResponse(identity, new Headers(), '/api/tutorial/faculty/assignments');
+      expect(res).not.toBeNull();
+      expect(res?.status).toBe(200);
+
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+      const [url, init] = mocks.fetch.mock.calls[0];
+      expect(url.toString()).toBe('http://localhost:3001/api/tutorial/faculty/assignments');
+      const headers = init.headers as Headers;
+      expect(headers.get('x-gateway-secret')).toBe('gw-secret-123');
+      expect(headers.get('x-brand')).toBe('realtutorialhub');
+      expect(headers.get('x-user-id')).toBe('fac-1');
     });
   });
 });

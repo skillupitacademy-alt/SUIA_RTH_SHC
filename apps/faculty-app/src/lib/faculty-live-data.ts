@@ -12,7 +12,7 @@ import {
   users,
 } from '@quiz/db-people';
 
-import { fetchFacultyPortalJson } from './faculty-api';
+import { fetchFacultyPortalJson, type FacultyBrand, type FacultyIdentity } from './faculty-api';
 
 export interface FacultyBatchSummary {
   id: string;
@@ -149,7 +149,15 @@ async function fetchFacultyTutorialData<T>(source: Headers | HeadersInit, userId
   if (headers.get('x-portal-identity') === null) {
     headers.set('x-portal-identity', 'faculty');
   }
-  return fetchFacultyPortalJson<T>(headers, path);
+  const brand = (headers.get('x-brand') as FacultyBrand) || 'realtutorialhub';
+  const identity: FacultyIdentity = {
+    userId,
+    shadowUserId: userId,
+    originalUserId: userId,
+    brand,
+    roles: ['faculty'],
+  };
+  return fetchFacultyPortalJson<T>(identity, headers, path);
 }
 
 export async function getFacultyDashboardSummary(source: Headers | HeadersInit, userId: string): Promise<FacultyDashboardSummary> {

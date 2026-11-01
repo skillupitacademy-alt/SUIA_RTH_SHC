@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { relayFacultyUpstreamResponse } from '@/lib/faculty-api';
+import { getFacultyIdentity, relayFacultyUpstreamResponse } from '@/lib/faculty-api';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +17,11 @@ const bodySchema = z.object({
 });
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const identity = await getFacultyIdentity(req);
+  if (!identity) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const params = paramsSchema.safeParse(await context.params);
   if (!params.success) {
     return NextResponse.json({ error: 'Invalid session id' }, { status: 400 });
@@ -34,7 +39,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     return NextResponse.json({ error: 'Invalid payload', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const response = await relayFacultyUpstreamResponse(req.headers, `/api/faculty/sessions/${params.data.id}`, {
+  const response = await relayFacultyUpstreamResponse(identity, req.headers, `/api/faculty/sessions/${params.data.id}`, {
     method: 'PATCH',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(parsed.data),

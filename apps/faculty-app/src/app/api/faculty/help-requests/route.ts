@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { relayFacultyUpstreamResponse } from '@/lib/faculty-api';
+import { getFacultyIdentity, relayFacultyUpstreamResponse } from '@/lib/faculty-api';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const response = await relayFacultyUpstreamResponse(req.headers, `/api/tutorial/faculty/help-requests${req.nextUrl.search}`);
+  const identity = await getFacultyIdentity(req);
+  if (!identity) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const response = await relayFacultyUpstreamResponse(identity, req.headers, `/api/tutorial/faculty/help-requests${req.nextUrl.search}`);
   if (response === null) {
     return NextResponse.json({ error: 'Upstream unavailable' }, { status: 503 });
   }

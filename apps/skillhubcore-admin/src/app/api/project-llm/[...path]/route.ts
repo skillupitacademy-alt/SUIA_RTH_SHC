@@ -130,9 +130,15 @@ async function handleRequest(
       status: response.status,
       headers: { 'Cache-Control': 'private, no-store' },
     });
-  } catch (err) {
+  } catch (err: unknown) {
     // Network or fetch error (backend unreachable)
-    console.error('[PROJECT_LLM_ADAPTER] Backend request failed', { requestId, err });
+    const errorCode =
+      err && typeof err === 'object' && 'code' in err && typeof (err as { code: unknown }).code === 'string'
+        ? (err as { code: string }).code
+        : err instanceof Error
+          ? err.name
+          : 'UNKNOWN_ERROR';
+    console.error('[PROJECT_LLM_ADAPTER] Backend request failed', { requestId, errorCode });
     return NextResponse.json(
       { error: 'PROJECT_AI_BACKEND_ERROR', requestId },
       { status: 502, headers: { 'Cache-Control': 'private, no-store' } }

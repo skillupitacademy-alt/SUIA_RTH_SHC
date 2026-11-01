@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { TokenService } from '@quiz/auth';
+import { NextRequest, NextResponse } from 'next/server';
 
 export type FacultyBrand = 'realtutorialhub' | 'skillup';
 
@@ -68,23 +69,65 @@ function appendHeader(headers: Headers, key: string, value: string | null | unde
   }
 }
 
+/**
+ * Resolves a verified FacultyIdentity from the incoming request.
+ * Prioritizes cryptographic verification of the accessToken cookie,
+ * falling back to verified headers injected by proxy middleware.
+ */
+export async function getFacultyIdentity(request: NextRequest): Promise<FacultyIdentity | null> {
+  // 1. Verify from accessToken cookie if present
+  const token = request.cookies.get('accessToken')?.value;
+  if (token) {
+    try {
+      const payload = await TokenService.verifyUserAccessToken(token, { audience: 'user' });
+      const brand = payload.brand;
+      if (brand === 'realtutorialhub' || brand === 'skillup') {
+        const userId = payload.shadowUserId ?? payload.userId ?? payload.sub;
+        if (userId) {
+          return {
+            userId,
+            shadowUserId: payload.shadowUserId ?? userId,
+            originalUserId: payload.originalUserId ?? userId,
+            brand,
+            roles: payload.roles ?? [],
+          };
+        }
+      }
+    } catch {
+      // Fall through to middleware-verified headers
+    }
+  }
+
+  // 2. Extract verified headers from proxy middleware
+  const headerBrand = request.headers.get('x-brand');
+  const headerUserId = request.headers.get('x-user-id') ?? request.headers.get('x-shadow-user-id');
+  if (headerUserId && (headerBrand === 'realtutorialhub' || headerBrand === 'skillup')) {
+    const rolesHeader = request.headers.get('x-user-roles');
+    return {
+      userId: headerUserId,
+      shadowUserId: request.headers.get('x-shadow-user-id') ?? headerUserId,
+      originalUserId: request.headers.get('x-original-user-id') ?? headerUserId,
+      brand: headerBrand,
+      roles: rolesHeader ? rolesHeader.split(',').map((r) => r.trim()).filter(Boolean) : [],
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Builds headers for upstream API server dispatch.
+ * 🔒 SECURITY: Requires verified FacultyIdentity. All brand, user ID,
+ * and role headers are derived exclusively from the verified identity.
+ * No untrusted fallback to client-supplied source headers.
+ */
 export function buildFacultyUpstreamHeaders(
   source: Headers | HeadersInit,
-  identityOrExtra?: FacultyIdentity | HeadersInit,
+  identity: FacultyIdentity,
   extra?: HeadersInit
 ): Headers {
   const headers = new Headers();
   const sourceHeaders = source instanceof Headers ? source : new Headers(source);
-
-  let identity: FacultyIdentity | undefined;
-  let extraHeaders: HeadersInit | undefined;
-
-  if (identityOrExtra && typeof identityOrExtra === 'object' && 'userId' in identityOrExtra && 'brand' in identityOrExtra) {
-    identity = identityOrExtra as FacultyIdentity;
-    extraHeaders = extra;
-  } else {
-    extraHeaders = identityOrExtra as HeadersInit | undefined;
-  }
 
   appendHeader(headers, 'accept', 'application/json');
   appendHeader(headers, 'cookie', sourceHeaders.get('cookie'));
@@ -93,28 +136,19 @@ export function buildFacultyUpstreamHeaders(
   appendHeader(headers, 'x-gateway-secret', gatewaySecret);
   appendHeader(headers, 'x-portal-identity', sourceHeaders.get('x-portal-identity') ?? 'faculty');
 
-  if (identity) {
-    appendHeader(headers, 'x-brand', identity.brand);
-    appendHeader(headers, 'x-platform', identity.brand);
-    appendHeader(headers, 'x-user-id', identity.userId);
-    appendHeader(headers, 'x-shadow-user-id', identity.shadowUserId ?? identity.userId);
-    if (identity.originalUserId) {
-      appendHeader(headers, 'x-original-user-id', identity.originalUserId);
-    }
-    if (identity.roles && identity.roles.length > 0) {
-      appendHeader(headers, 'x-user-roles', identity.roles.join(','));
-    }
-  } else {
-    appendHeader(headers, 'x-brand', sourceHeaders.get('x-brand'));
-    appendHeader(headers, 'x-platform', sourceHeaders.get('x-platform') ?? sourceHeaders.get('x-brand'));
-    appendHeader(headers, 'x-user-id', sourceHeaders.get('x-user-id'));
-    appendHeader(headers, 'x-shadow-user-id', sourceHeaders.get('x-shadow-user-id'));
-    appendHeader(headers, 'x-original-user-id', sourceHeaders.get('x-original-user-id'));
-    appendHeader(headers, 'x-user-roles', sourceHeaders.get('x-user-roles'));
+  appendHeader(headers, 'x-brand', identity.brand);
+  appendHeader(headers, 'x-platform', identity.brand);
+  appendHeader(headers, 'x-user-id', identity.userId);
+  appendHeader(headers, 'x-shadow-user-id', identity.shadowUserId ?? identity.userId);
+  if (identity.originalUserId) {
+    appendHeader(headers, 'x-original-user-id', identity.originalUserId);
+  }
+  if (identity.roles && identity.roles.length > 0) {
+    appendHeader(headers, 'x-user-roles', identity.roles.join(','));
   }
 
-  if (extraHeaders !== undefined) {
-    const extraMap = new Headers(extraHeaders);
+  if (extra !== undefined) {
+    const extraMap = new Headers(extra);
     extraMap.forEach((value, key) => headers.set(key, value));
   }
 
@@ -122,6 +156,7 @@ export function buildFacultyUpstreamHeaders(
 }
 
 export async function fetchFacultyUpstreamJson<T>(
+  identity: FacultyIdentity,
   source: Headers | HeadersInit,
   path: string,
   init?: RequestInit
@@ -133,7 +168,7 @@ export async function fetchFacultyUpstreamJson<T>(
 
   const response = await fetch(new URL(path, upstream), {
     ...init,
-    headers: buildFacultyUpstreamHeaders(source, init?.headers),
+    headers: buildFacultyUpstreamHeaders(source, identity, init?.headers),
     cache: 'no-store',
   });
 
@@ -145,6 +180,7 @@ export async function fetchFacultyUpstreamJson<T>(
 }
 
 export async function fetchFacultyPortalJson<T>(
+  identity: FacultyIdentity,
   source: Headers | HeadersInit,
   path: string,
   init?: RequestInit
@@ -156,7 +192,7 @@ export async function fetchFacultyPortalJson<T>(
 
   const response = await fetch(new URL(path, portal), {
     ...init,
-    headers: buildFacultyUpstreamHeaders(source, init?.headers),
+    headers: buildFacultyUpstreamHeaders(source, identity, init?.headers),
     cache: 'no-store',
   });
 
@@ -168,6 +204,7 @@ export async function fetchFacultyPortalJson<T>(
 }
 
 export async function relayFacultyUpstreamResponse(
+  identity: FacultyIdentity,
   source: Headers | HeadersInit,
   path: string,
   init?: RequestInit
@@ -179,7 +216,7 @@ export async function relayFacultyUpstreamResponse(
 
   const response = await fetch(new URL(path, upstream), {
     ...init,
-    headers: buildFacultyUpstreamHeaders(source, init?.headers),
+    headers: buildFacultyUpstreamHeaders(source, identity, init?.headers),
     cache: 'no-store',
   });
 

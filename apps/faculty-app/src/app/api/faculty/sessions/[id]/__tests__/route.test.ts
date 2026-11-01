@@ -7,6 +7,13 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/faculty-api', () => ({
   relayFacultyUpstreamResponse: mocks.relayMock,
+  getFacultyIdentity: vi.fn().mockResolvedValue({
+    userId: 'faculty-1',
+    shadowUserId: 'faculty-1',
+    originalUserId: 'faculty-1',
+    brand: 'realtutorialhub',
+    roles: ['faculty'],
+  }),
 }));
 
 import { PATCH } from '../route';
