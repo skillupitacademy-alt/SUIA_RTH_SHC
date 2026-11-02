@@ -285,7 +285,7 @@ claimed. Existing audit findings remain open. RC-CI-01 remains IN_PROGRESS.
 
 ### W0.2-HOSTINGER - Pre-build Quality Enforcement and Provenance
 **Root cause:** `RC-CI-01`
-**Status:** `VERIFICATION_FAILED` (Sol review of 9c34bb83: negative-test assertions and final publication source check pending)
+**Status:** `VERIFICATION_FAILED` (Sol review of 63d66cd8: production corrections present; final-boundary actual-entrypoint tests and remaining catch-as-success cases pending)
 **Application:** SHC deployment path; other service qualification excluded
 **Priority:** P0
 **Sole implementer:** Claude Sonnet 4.5
@@ -334,6 +334,8 @@ follow-ups below. Their registration does not expand this SHC ticket's scope.
 **Latest Sol review:** `audit/W0.2_HOSTINGER_Sol_Review_08dbb9e1.md` ? executed post-save source drift and mid-build receipt mutation probes still reach upload.
 
 **Latest Sol review:** `audit/W0.2_HOSTINGER_Sol_Review_9c34bb83.md` - receipt binding and post-save checks confirmed; negative tests still swallow exceptions and deployer lacks final publication cleanliness check.
+
+**Latest Sol review:** `audit/W0.2_HOSTINGER_Sol_Review_63d66cd8.md` - final publication check and scenarios 9/10 confirmed; scenario 11 duplicates policy and scenarios 4/6/7 retain catch-as-success paths. Remaining correction is scoped to verification harness/evidence.
 
 ### DEPLOY-SUIA-01 - SUIA Quality Gate and Hostinger Enforcement
 **Root cause:** `RC-CI-01`

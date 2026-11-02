@@ -396,7 +396,7 @@ try {
         -ImageTag 'test-tag' ``
         -EvidenceDir '$nonGitDir\infra\hostinger\dist\evidence' ``
         -InvocationId '$([guid]::NewGuid().ToString())' ``
-        2>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
+        *>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
     exit `$LASTEXITCODE
 } catch {
     `$_ | Out-File -FilePath '$outputFile' -Append -Encoding UTF8
