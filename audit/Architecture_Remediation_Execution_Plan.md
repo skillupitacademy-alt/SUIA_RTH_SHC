@@ -496,7 +496,7 @@ implementation remains SHC-only.
 **Authoritative acceptance:** `audit/W1.1_Sol_Acceptance.md`. Runtime findings remain open; prior interim status labels are superseded.
 
 ### W1.1.2 - Session Persistence and Tenant Binding Discovery
-**Status:** `CORRECTED` (Sol review corrections applied: existing routes documented, dropped-userId defect confirmed, focused W1.2-SESS-01 proposal)
+**Status:** `VERIFICATION_READY` (Gemini Rev 2 PASS for commit `0247f981`; pending Sol acceptance)
 **Root cause:** `RC-ID-01`
 **Wave:** 1
 **Application:** SHC auth with SUIA/RTH read-only dependencies
@@ -508,7 +508,7 @@ implementation remains SHC-only.
 **Scope, audit mapping, allowed files and acceptance:** `audit/W1.1.2_Session_Discovery_Task.md`
 No production changes or DB access; source evidence and proposed regression cases only.
 
-**Corrected evidence:** `audit/W1.1.2_Session_Persistence_Investigation.md` (commit 1d8cf320, reviewed and corrected 2025-01-10).
+**Corrected evidence:** `audit/W1.1.2_Session_Persistence_Investigation.md` (commit `0247f981`, reviewed and corrected 2025-01-10; Gemini Rev 2 verification PASS).
 
 **Key findings:**
 - Existing routes documented: GET/DELETE /api/auth/sessions, DELETE /api/auth/sessions/[sessionId], POST /api/auth/logout-all
