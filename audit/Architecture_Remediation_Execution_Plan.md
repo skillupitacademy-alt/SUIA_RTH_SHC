@@ -34,7 +34,7 @@ The target architecture remains a **modular multi-application platform with sele
 5. Other models review; they do not simultaneously create competing implementations.
 6. No broad refactor without a root-cause ticket and explicit scope.
 7. Preserve sound existing code.
-8. Follow SOLID pragmatically together with DRY, KISS, YAGNI, SoC, high cohesion and low coupling.
+8. Follow SOLID pragmatically together with DRY, KISS, YAGNI, SoC, high cohesion and low coupling. Apply these immediately to every relevant change, including W1.2-SESS-01; do not defer them to app remediation waves.
 9. Browser/UI state is never authoritative for identity, authorization, audit approval, exam state, certification, payments, or persisted learner state.
 10. Static/demo/reference data must never be presented as production `CURRENT`, `PASS`, `VERIFIED`, `APPROVED`, `CERTIFIED`, `HEALTHY`, or `AUDITED`.
 11. All trusted identity and brand context must be derived or validated server-side.
@@ -42,6 +42,17 @@ The target architecture remains a **modular multi-application platform with sele
 13. Every change requires acceptance tests.
 14. No model may state "fixed", "verified", or "complete" without evidence.
 15. Production/runtime claims require runtime/deployment evidence, not source inspection alone.
+
+Engineering-principle enforcement is mandatory on each scoped implementation:
+the implementer records applicable responsibility/dependency, ownership, reuse,
+simplicity, security and testability evidence; the independent verifier assesses
+it; Sol decides acceptance. Do not expand a ticket into unrelated refactoring.
+Record out-of-scope source-backed violations with file/line, canonical root cause,
+affected app, proposed ticket/dependency and status so they remain actionable.
+Waves 4/5/6 must each maintain an application-specific architecture acceptance
+matrix for SHC/SUIA/RTH, respectively. A mandatory finding must be corrected or
+covered by an explicit approved exception before the app is architecturally
+accepted. Passing functional tests or builds alone is insufficient.
 
 ---
 
