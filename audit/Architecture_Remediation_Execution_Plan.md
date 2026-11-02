@@ -558,17 +558,56 @@ of refresh redesign, schema migration or deployment from this planned entry.
 **Authoritative acceptance:** `audit/W1.2-SESS-01_Sol_Acceptance.md`. Sol resolved Opus's minor directive finding with a comment-only change. RC-ID-01 remains IN_PROGRESS; deployment and broader auth boundaries remain separately gated.
 
 ### W1.2-REFRESH-01 - Refresh Authority and Rotation Discovery
-**Status:** `INVESTIGATION_COMPLETE`
+**Status:** `CLOSED` (Sol source-discovery acceptance of 148a613c; exploit severity, reviewer attribution and runtime claims qualified)
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth and SUIA/RTH caller boundaries
 **Priority:** P0 read-only investigation
 **Implementer:** Gemini 3.8 (sole investigator)
-**Independent verifier:** Sonnet 4.5 read-only
+**Independent verifier:** Sol source review; supplied Sonnet attribution unverified after failed model-launch handoff
 **Acceptance:** Sol
 **Dependency:** W1.2-SESS-01 accepted
 **Scope, audit mapping and acceptance:** `audit/W1.2-REFRESH-01_Authority_Discovery_Task.md`
 **Investigation Deliverable:** `audit/W1.2-REFRESH-01_Investigation.md`
 Traced token issuer/audience/platform, stored owner, DB selection, TOCTOU concurrent rotation race, replay gaps, and broken pre-existing unit tests. Ready for Sonnet independent review. No auth changes, database access, new storage or rollout.
+
+**Authoritative acceptance:** `audit/W1.2-REFRESH-01_Sol_Acceptance.md`. No assertion of five executed Critical exploits; no existing production behavior was changed.
+
+### W1.2-REFRESH-02 - Atomic Single-Consumer Refresh Rotation
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application / priority:** API refresh service and canonical signer / P0
+**Dependency:** W1.2-REFRESH-01 source discovery accepted
+**Implementer:** Gemini 3.8 (sole worker)
+**Independent security reviewer:** Opus 4.6 preferred; actual availability recorded
+**Acceptance:** Sol
+**Scope, audit context, files, tests and acceptance:** `audit/W1.2-REFRESH-02_Atomic_Rotation_Task.md`
+Prove concurrent consumption and same-second token uniqueness cases, then enforce
+one successful consume plus successor in one transaction. Limited additive jti
+only if collision is reproduced; preserve legacy verifier compatibility. No
+schema, issuer/key migration, family-revocation design or deployment authorized.
+
+### W1.2-REFRESH-03 - Authority and Account Lifecycle Qualification
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application / priority:** shared auth and tenant boundaries / P0 design
+**Implementer:** Gemini when separately assigned
+**Independent reviewer:** Opus or separately attributable reviewer; Sol accepts
+Trace verified brand/audience/issuer, stored subject, original/shadow mapping,
+blocked/deleted account revocation and request-host/header authority. Specify
+compatibility and regression scope before behavior changes. Missing comparison
+is not automatically a demonstrated cross-tenant exploit; no physical DB claims
+without appropriate environment evidence. No token-policy migration authorized.
+
+### W1.2-REFRESH-04 - Replay Classification and Post-Commit Failure Policy
+**Status:** `PLANNED`
+**Wave / root causes:** 1 / RC-ID-01, RC-EVENT-01
+**Application / priority:** refresh lifecycle / P1 design
+**Implementer:** Gemini when separately assigned
+**Independent reviewer:** separately attributable security reviewer; Sol accepts
+Qualify revoked-token rejection versus reuse detection, actual token-family
+ownership/storage, descendant revocation policy and audit-after-commit response
+failure. Do not introduce schema, outbox, global session framework or automatic
+family-wide revocation without a separate justified design and approval.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `PLANNED`
