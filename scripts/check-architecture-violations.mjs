@@ -475,10 +475,19 @@ try {
   
   // Filter against baseline
   const newViolations = directDBImports.filter(route => !baseline.directDBRoutes.includes(route));
+  const dormantExceptions = baseline.directDBRoutes.filter(route => !directDBImports.includes(route));
   
   console.log(`  Total routes checked: ${routeFiles.length}`);
   console.log(`  Routes with direct DB imports: ${directDBImports.length}`);
   console.log(`  Baseline-permitted routes: ${directDBImports.length - newViolations.length}`);
+  
+  if (dormantExceptions.length > 0) {
+    console.log(`\n  ⚠️  WARNING: ${dormantExceptions.length} baseline exceptions no longer violate:`);
+    dormantExceptions.forEach(route => console.log(`    - ${route}`));
+    console.log(`  These routes should be removed from W0.2_Architecture_Baseline.json`);
+    console.log(`  unless there is an approved documented reason to retain them.\n`);
+  }
+  
   console.log(`  NEW violations: ${newViolations.length}`);
   
   if (newViolations.length > 0) {

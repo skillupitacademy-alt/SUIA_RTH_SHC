@@ -10,7 +10,7 @@
     "test": "vitest run",
     "check:boundaries": "node scripts/check-api-boundaries.mjs",
     "test:security": "vitest run src/lib/__tests__/admin-boundary.test.ts src/lib/__tests__/upstream-proxy.test.ts",
-    "test:isolated": "vitest run src/lib/__tests__/admin-boundary.test.ts src/lib/__tests__/upstream-proxy.test.ts",
+    "test:isolated": "vitest run src/lib/__tests__/admin-boundary.test.ts src/lib/__tests__/upstream-proxy.test.ts src/app/api/tutorial-composer/__tests__/validate-fixtures.test.ts src/app/api/tutorial-left-sidebar/__tests__/markdown-navigation-parser.test.ts",
     "type-check": "node scripts/ensure-next-types.mjs && tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

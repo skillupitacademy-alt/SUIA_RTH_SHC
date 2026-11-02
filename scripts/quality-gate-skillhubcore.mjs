@@ -134,7 +134,6 @@ const STAGES = {
 
 function main() {
   const args = process.argv.slice(2);
-  const stageArg = args.find(arg => arg.startsWith('--stage='));
   
   // Validate no unknown arguments
   const unknownArgs = args.filter(arg => !arg.startsWith('--stage='));
@@ -144,9 +143,27 @@ function main() {
     process.exit(255);
   }
   
-  if (stageArg) {
+  // Collect all --stage arguments
+  const stageArgs = args.filter(arg => arg.startsWith('--stage='));
+  
+  // CRITICAL: Reject duplicate/conflicting --stage arguments
+  if (stageArgs.length > 1) {
+    console.error(`❌ Conflicting stage arguments: ${stageArgs.join(' ')}`);
+    console.error(`   Only one --stage argument is allowed`);
+    process.exit(255);
+  }
+  
+  if (stageArgs.length === 1) {
     // Run single stage
+    const stageArg = stageArgs[0];
     const stageName = stageArg.split('=')[1];
+    
+    // Validate stage name is not empty or malformed
+    if (!stageName || stageName.trim() === '') {
+      console.error(`❌ Malformed stage argument: ${stageArg}`);
+      console.error(`   Valid format: --stage=<name>`);
+      process.exit(255);
+    }
     
     // CRITICAL: Validate stage name against explicit allowlist
     // Reject toString, constructor, __proto__, and other prototype pollution

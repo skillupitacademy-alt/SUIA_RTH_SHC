@@ -23,23 +23,15 @@
     "apps/skillhubcore-admin/src/app/api/admin/topics/batch-delete/route.ts",
     "apps/skillhubcore-admin/src/app/api/admin/topics/route.ts",
     "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/hierarchy/route.ts",
-    "apps/skillhubcore-admin/src/app/api/tutorial-composer/analysis/route.ts",
-    "apps/skillhubcore-admin/src/app/api/tutorial-composer/block-suggestions/route.ts",
-    "apps/skillhubcore-admin/src/app/api/tutorial-composer/import/route.ts",
-    "apps/skillhubcore-admin/src/app/api/tutorial-composer/presentation-ideas/route.ts",
-    "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/route.ts",
-    "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/blocks/route.ts",
-    "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/publish/route.ts",
-    "apps/skillhubcore-admin/src/app/api/tutorial-composer/sections/[sectionId]/route.ts",
     "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/navigation-nodes/route.ts",
     "apps/skillhubcore-admin/src/app/api/tutorial-left-sidebar/route.ts"
   ],
   "notes": {
     "taxonomy_crud": "15 routes for domains/skills/subjects/subtopics/topics CRUD operations directly import getDb() and drizzle-orm. This is a domain-wide DIP violation documented in Finding 1.",
-    "tutorial_left_sidebar": "Tutorial left sidebar hierarchy route and navigation-nodes route have direct-DB import; discovered during W0.2 baseline inventory.",
-    "tutorial_composer": "10 tutorial-composer routes (analysis, block-suggestions, import, presentation-ideas, sections CRUD) have direct-DB imports; discovered during W0.2 regex pattern fix.",
+    "tutorial_left_sidebar": "3 tutorial left sidebar routes (hierarchy, navigation-nodes, root) have direct-DB import; discovered during W0.2 baseline inventory.",
+    "tutorial_composer_refactored": "8 tutorial-composer routes REMOVED from baseline (2026-11-02): analysis, block-suggestions, import, presentation-ideas, sections CRUD. These routes were refactored to use @quiz/db-tutorial (service boundary) instead of direct @quiz/db imports. No longer violate policy.",
     "admin_sidebar_removed": "Original baseline incorrectly included nonexistent admin/sidebar/route.ts (Finding 28 945-line route). Corrected during W0.2 verification. The route does not exist at baseline commit.",
-    "enforcement": "W0.2 CI gates will REJECT any NEW direct-DB imports in HTTP routes. Baseline routes (26 total, corrected from 27) are permitted only until Wave 4 remediation.",
+    "enforcement": "W0.2 CI gates will REJECT any NEW direct-DB imports in HTTP routes. Baseline routes (18 total, reduced from 26) are permitted only until Wave 4 remediation.",
     "service_boundary_distinction": "@quiz/db-tutorial is a permitted service boundary import. Only @quiz/db and drizzle-orm direct imports are violations."
   }
 }
