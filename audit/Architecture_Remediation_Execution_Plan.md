@@ -575,12 +575,12 @@ Traced token issuer/audience/platform, stored owner, DB selection, TOCTOU concur
 **Controlled batch assignment:** `audit/W1.2_Gemini_Controlled_Batch_01.md` - Gemini may implement REFRESH-02 and then prepare REFRESH-03 read-only in one run, using separate commits/evidence and separate Sol acceptance. No REFRESH-03 behavior changes or other ticket expansion authorized.
 
 ### W1.2-REFRESH-02 - Atomic Single-Consumer Refresh Rotation
-**Status:** `IMPLEMENTED_UNVERIFIED` (Gemini implementation & review corrections complete: additive jti for same-second collisions, consumeToken CAS in transaction with strictly-typed TransactionDb without suppressions/any, actual-source AST mutation proof, restored audience-mismatch test, repaired blocked-branch test mock, 20/20 focused tests, full quality checks pass; ready for Opus review and Sol acceptance)
-**Wave / root cause:** 1 / RC-ROT-01
+**Status:** `CLOSED` (Sol independently verified 48 API tests, 153 auth tests, actual-source mutation, both typechecks and complete six-stage SHC gate; authority/lifecycle follow-ups remain open)
+**Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service and canonical signer / P0
 **Dependency:** W1.2-REFRESH-01 source discovery accepted
 **Implementer:** Gemini 3.8 (sole worker per audit/W1.2_Gemini_Controlled_Batch_01.md)
-**Independent security reviewer:** Opus 4.6 preferred; actual availability recorded
+**Independent security reviewer:** Sol source/execution review; supplied same-session Opus 5.5 report is supplementary, not independent sign-off
 **Acceptance:** Sol
 **Scope, audit context, files, tests and acceptance:** `audit/W1.2-REFRESH-02_Atomic_Rotation_Task.md`
 **Implementation Deliverable:** `audit/W1.2-REFRESH-02_Execution_Report.md`
@@ -589,17 +589,21 @@ one successful consume plus successor in one transaction. Limited additive jti
 only to prevent reproduced same-second collision; preserved legacy verifier compatibility. No
 schema, issuer/key migration, family-revocation design or deployment authorized.
 
+**Separate acceptance record:** `audit/W1.2-REFRESH-02-03_Sol_Acceptance.md`.
+
 ### W1.2-REFRESH-03 - Authority and Account Lifecycle Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` (Gemini read-only investigation complete: traced BFF/proxy/route -> auth facade -> service -> token verifier -> stored-row owner and DB selection; authority matrix, review corrections for qualified cross-tenant risks/unverified ingress, and follow-on proposals W1.2-REFRESH-05/06 documented in audit/W1.2-REFRESH-03_Authority_Investigation.md; ready for Opus review and Sol acceptance)
+**Status:** `CLOSED` (Sol source/design acceptance; ingress, lifecycle impact and legacy claim behavior qualified; no authority behavior fixed)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** shared auth and tenant boundaries / P0 design
 **Implementer:** Gemini 3.8 (sole worker per audit/W1.2_Gemini_Controlled_Batch_01.md)
-**Independent reviewer:** Opus 4.6 or separately attributable reviewer; Sol accepts
+**Independent reviewer:** Sol source review; same-session Opus 5.5 self-review disclosed
 **Investigation Deliverable:** `audit/W1.2-REFRESH-03_Authority_Investigation.md`
 Traced verified brand/audience/issuer, stored subject, original/shadow mapping,
 blocked/deleted account revocation and request-host/header authority. Documented
 findings with direct source citations; recommended minimal follow-on scope without modifying code.
 No token-policy migration, live database execution, or code edits authorized.
+
+**Acceptance and final source qualifications:** `audit/W1.2-REFRESH-02-03_Sol_Acceptance.md`. Task A closure remains independently gated.
 
 ### W1.2-REFRESH-04 - Replay Classification and Post-Commit Failure Policy
 **Status:** `PLANNED`
@@ -623,6 +627,8 @@ family-wide revocation without a separate justified design and approval.
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Scope:** Inject `UserRepository` into `TokenRefreshService`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); fetch fresh user roles and email from database on refresh rather than propagating stale JWT claims; resolves baseline `auth.refresh.blocked.branch.test.ts`.
+
+**Next controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_02.md`. REFRESH-05/06 are assigned design/read-only work only in that batch; the implementation scopes above are proposals, not behavior authorization. Gemini authors, separately attributable reviewer verifies, Sol accepts contracts before code.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `PLANNED`
