@@ -558,17 +558,17 @@ of refresh redesign, schema migration or deployment from this planned entry.
 **Authoritative acceptance:** `audit/W1.2-SESS-01_Sol_Acceptance.md`. Sol resolved Opus's minor directive finding with a comment-only change. RC-ID-01 remains IN_PROGRESS; deployment and broader auth boundaries remain separately gated.
 
 ### W1.2-REFRESH-01 - Refresh Authority and Rotation Discovery
-**Status:** `PLANNED`
+**Status:** `INVESTIGATION_COMPLETE`
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth and SUIA/RTH caller boundaries
 **Priority:** P0 read-only investigation
-**Implementer:** Gemini 3.8 (sole investigator when started)
+**Implementer:** Gemini 3.8 (sole investigator)
 **Independent verifier:** Sonnet 4.5 read-only
 **Acceptance:** Sol
 **Dependency:** W1.2-SESS-01 accepted
 **Scope, audit mapping and acceptance:** `audit/W1.2-REFRESH-01_Authority_Discovery_Task.md`
-Trace token issuer/audience/platform, stored owner, DB selection and concurrent
-rotation/replay semantics. No auth changes, database access, new storage or rollout.
+**Investigation Deliverable:** `audit/W1.2-REFRESH-01_Investigation.md`
+Traced token issuer/audience/platform, stored owner, DB selection, TOCTOU concurrent rotation race, replay gaps, and broken pre-existing unit tests. Ready for Sonnet independent review. No auth changes, database access, new storage or rollout.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `PLANNED`
