@@ -442,7 +442,7 @@ implementation remains SHC-only.
 
 ### W1.1 - Tenant Identity Vocabulary and Architecture Reconciliation
 **Root cause:** `RC-ID-01`
-**Status:** `VERIFICATION_READY` (Gemini Rev 5 PASS for commit `dedba891`; pending Sol final acceptance)
+**Status:** `CLOSED` (Sol acceptance of b35f430d plus supporting-document integration corrections; architecture/documentation scope only)
 **Owner:** Sol
 **Implementation:** Sonnet 4.5 (documentation/architecture amendment)
 **Independent verification:** Gemini 3.8
@@ -471,7 +471,7 @@ implementation remains SHC-only.
 - ✅ `audit/W1.1_Correction_Summary.md` created (implementation evidence)
 - ✅ `audit/Architecture_Remediation_Execution_Plan.md` W1.1/W1.2/Wave 8 criteria reconciled
 - ✅ Gemini independent verification complete (Revision 5 - PASS)
-- ⏳ Sol final acceptance pending
+- ⏳ Sol final acceptance recorded in audit/W1.1_Sol_Acceptance.md
 
 **Acceptance criteria:**
 - Tenant-scoped learnerId is canonical (not globalUserId)
@@ -492,6 +492,37 @@ implementation remains SHC-only.
 - W1.2: Authorization behavioral corrections (depends on W1.1 acceptance)
 
 **Latest review/correction task:** `audit/W1.1_Sol_Review_abc36be3.md`. Independent verification must include Sol's local section-4 documentation correction.
+
+**Authoritative acceptance:** `audit/W1.1_Sol_Acceptance.md`. Runtime findings remain open; prior interim status labels are superseded.
+
+### W1.1.2 - Session Persistence and Tenant Binding Discovery
+**Status:** `PLANNED`
+**Root cause:** `RC-ID-01`
+**Wave:** 1
+**Application:** SHC auth with SUIA/RTH read-only dependencies
+**Priority:** P0 before session ownership implementation
+**Implementer:** Sonnet 4.5
+**Independent verifier:** Gemini 3.8
+**Acceptance:** Sol
+**Dependency:** W1.1 accepted documentation
+**Scope, audit mapping, allowed files and acceptance:** `audit/W1.1.2_Session_Discovery_Task.md`
+No production changes or DB access; source evidence and proposed regression cases only.
+
+### W1.2-EMAIL - People Projection Email Uniqueness Design
+**Status:** `PLANNED`
+**Root cause:** `RC-ID-01` / `RC-DB-01`
+**Application:** SHC people projections and identity bridge
+**Priority:** P1 design dependency for duplicate-email projection fixes
+**Implementer:** Sonnet 4.5 when separately assigned
+**Independent verifier:** Gemini; specialist security review before migration
+**Acceptance:** Sol; separate owner migration authorization
+**Dependency:** W1.1 approved vocabulary; source-backed consumer analysis
+Trace email-only lookup consumers, staff authentication, constraints/migrations,
+bridge partial writes and retry subscribers. Recommend scoped fail-closed lookup
+and uniqueness design. Consumer disambiguation must precede or be atomic with
+constraint relaxation. No approved migration, data merge/cleanup or rollout.
+Acceptance requires evidence, negative-case matrix, compatibility/rollback design
+and independent review; no runtime claim from documentation alone.
 
 ### W1.2 - Critical Authorization Corrections
 **Status:** `PLANNED`
