@@ -331,6 +331,8 @@ follow-ups below. Their registration does not expand this SHC ticket's scope.
 
 **Latest Sol review:** `audit/W0.2_HOSTINGER_Sol_Review_d45d9416.md` ? actual-entrypoint tests and publication evidence corrections pending.
 
+**Latest Sol review:** `audit/W0.2_HOSTINGER_Sol_Review_08dbb9e1.md` ? executed post-save source drift and mid-build receipt mutation probes still reach upload.
+
 ### DEPLOY-SUIA-01 - SUIA Quality Gate and Hostinger Enforcement
 **Root cause:** `RC-CI-01`
 **Status:** `PLANNED`
