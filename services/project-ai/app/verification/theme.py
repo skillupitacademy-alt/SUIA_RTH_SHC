@@ -153,39 +153,36 @@ def discover_theme_configurations(repository_root: Path) -> List[ThemeConfigurat
                 ))
     
     # 2. Discover BrandTutorialTheme (skillup/SUIA, rth/RTH)
+    canonical_theme_path = repository_root / "packages" / "types" / "src" / "tutorial-sidebar.types.ts"
     brand_theme_path = repository_root / "apps" / "skillhubcore-admin" / "src" / "app" / "(admin)" / "tools" / "tutorial-page-content" / "theme" / "brandTheme.ts"
-    if brand_theme_path.exists():
-        content = brand_theme_path.read_text(encoding='utf-8')
+    target_path = canonical_theme_path if canonical_theme_path.exists() else brand_theme_path
+    if target_path.exists():
+        theme_content = target_path.read_text(encoding='utf-8')
         
-        # Parse themeForBrand function to extract brand themes
-        # SkillUp/SUIA theme
-        skillup_match = re.search(
-            r"if.*brandId === 'skillup'.*\{[^}]*return \{([^}]+)\}",
-            content,
-            re.DOTALL
-        )
+        # Parse theme definitions (supports canonical BRAND_TUTORIAL_THEMES or legacy themeForBrand)
+        skillup_match = re.search(r"skillup:\s*\{([^}]+)\}", theme_content, re.DOTALL)
+        if not skillup_match:
+            skillup_match = re.search(r"if.*brandId === 'skillup'.*\{[^}]*return \{([^}]+)\}", theme_content, re.DOTALL)
         if skillup_match:
             colors = _parse_theme_colors(skillup_match.group(1))
             themes.append(ThemeConfiguration(
                 name="SUIA (SkillUp IT Academy) Theme",
                 identifier="skillup",
                 colors=colors,
-                source_file=str(brand_theme_path.relative_to(repository_root))
+                source_file=str(target_path.relative_to(repository_root))
             ))
         
-        # RTH theme (default/else branch)
-        rth_match = re.search(
-            r"return \{([^}]+)\};\s*\}",
-            content,
-            re.DOTALL
-        )
+        rth_match = re.search(r"(?:realtutorialhub|rth):\s*\{([^}]+)\}", theme_content, re.DOTALL)
+        if not rth_match:
+            legacy_rth_content = theme_content[skillup_match.end():] if skillup_match else theme_content
+            rth_match = re.search(r"return \{([^}]+)\};\s*\}", legacy_rth_content, re.DOTALL)
         if rth_match:
             colors = _parse_theme_colors(rth_match.group(1))
             themes.append(ThemeConfiguration(
                 name="RTH (RealTutorialHub) Theme",
                 identifier="rth",
                 colors=colors,
-                source_file=str(brand_theme_path.relative_to(repository_root))
+                source_file=str(target_path.relative_to(repository_root))
             ))
     
     # 3. Discover DomainTheme (indigo, blue, teal, steel)

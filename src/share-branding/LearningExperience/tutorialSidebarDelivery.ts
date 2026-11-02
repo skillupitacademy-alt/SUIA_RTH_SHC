@@ -10,14 +10,15 @@ import {
   tutorialSubjects,
   tutorialTopics,
 } from '@quiz/db-tutorial';
-import type {
-  BrandTutorialTheme,
-  TutorialNavigationNode,
-  TutorialNavigationTree,
-  TutorialNormalizedNavigationNode,
-  TutorialNormalizedNavigationTree,
-  TutorialPagePayload,
-  TutorialSidebarBrandId,
+import {
+  themeForBrand,
+  type BrandTutorialTheme,
+  type TutorialNavigationNode,
+  type TutorialNavigationTree,
+  type TutorialNormalizedNavigationNode,
+  type TutorialNormalizedNavigationTree,
+  type TutorialPagePayload,
+  type TutorialSidebarBrandId,
 } from '@quiz/types';
 
 export interface TutorialSidebarDeliveryParams {
@@ -89,13 +90,7 @@ function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'
         shortName: 'SUIA',
         tagline: 'Build Skills That Move Careers',
       },
-      theme: {
-        primary: '#f54a8d',
-        primaryDark: '#d63d7a',
-        secondary: '#133382',
-        activeBackground: '#fff0f6',
-        completed: '#08a64a',
-      },
+      theme: themeForBrand('skillup'),
     };
   }
 
@@ -105,13 +100,7 @@ function getRuntimeBrandConfig(brandId: Exclude<TutorialSidebarBrandId, 'shared'
       shortName: 'RTH',
       tagline: 'Learn Smarter, Not Harder',
     },
-    theme: {
-      primary: '#d03f00',
-      primaryDark: '#b63600',
-      secondary: '#124fd6',
-      activeBackground: '#eef3fa',
-      completed: '#08a64a',
-    },
+    theme: themeForBrand('realtutorialhub'),
   };
 }
 
