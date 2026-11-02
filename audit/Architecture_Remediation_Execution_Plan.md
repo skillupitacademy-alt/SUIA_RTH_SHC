@@ -285,7 +285,7 @@ claimed. Existing audit findings remain open. RC-CI-01 remains IN_PROGRESS.
 
 ### W0.2-HOSTINGER - Pre-build Quality Enforcement and Provenance
 **Root cause:** `RC-CI-01`
-**Status:** `VERIFICATION_FAILED` (Sol review of 434b3556: catch-as-success corrected; scenario 11 still injects drift before builder completion rather than at final publication)
+**Status:** `VERIFICATION_READY` (Sol review of 434b3556 addressed: deterministic module pre-import Get-FileHash override implemented; normal 36/36 and disposable mutation sensitivity test independently reproduced by Gemini; pending Sol final architectural acceptance)
 **Application:** SHC deployment path; other service qualification excluded
 **Priority:** P0
 **Sole implementer:** Claude Sonnet 4.5
@@ -338,6 +338,10 @@ follow-ups below. Their registration does not expand this SHC ticket's scope.
 **Latest Sol review:** `audit/W0.2_HOSTINGER_Sol_Review_63d66cd8.md` - final publication check and scenarios 9/10 confirmed; scenario 11 duplicates policy and scenarios 4/6/7 retain catch-as-success paths. Remaining correction is scoped to verification harness/evidence.
 
 **Latest Sol review:** `audit/W0.2_HOSTINGER_Sol_Review_434b3556.md` - independently reproduced 11 scenarios/36 assertions; final-boundary evidence remains pending because scenario 11 is rejected by the earlier builder check. Harness-only correction requested.
+
+**Deterministic guidance:** `audit/W0.2_HOSTINGER_Scenario11_PowerShell_Guidance.md` - Sol established module pre-import pattern for Get-FileHash override at deployer tar hash boundary.
+
+**Gemini verification report:** `audit/W0.2_HOSTINGER_Verification_Report.md` (Revision 6) - independently reproduced normal run (36/36 PASS) and disposable mutation run (sensitivity proven; removal of final check causes unverified drift publication).
 
 ### DEPLOY-SUIA-01 - SUIA Quality Gate and Hostinger Enforcement
 **Root cause:** `RC-CI-01`
