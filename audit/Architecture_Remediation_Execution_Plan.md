@@ -442,60 +442,80 @@ implementation remains SHC-only.
 
 ### W1.1 - Tenant Identity Vocabulary and Architecture Reconciliation
 **Root cause:** `RC-ID-01`
-**Status:** `VERIFICATION_READY` (Sol review of 60bd89bb corrected in ce4915b0: governing architecture file audit/FinalAechitecture.md cited with exact lines 887-933, 2590, 2649-2664; full amendment diff provided; database topology qualified as source routing; three-domain token distinction added; people users email consumers traced; bounded migration recommendation; verified by Gemini in Rev 3 report; pending Sol architectural acceptance)
+**Status:** `IN_REVIEW` (documentation amendment implemented; Gemini verification and Sol acceptance pending)
 **Owner:** Sol
-**Implementation:** Sonnet 4.5 (one documentation/design author)
-**Independent verification:** Gemini
+**Implementation:** Sonnet 4.5 (documentation/architecture amendment)
+**Independent verification:** Gemini 3.8
 **Specialist review:** Opus 4.6 before later high-risk auth implementation
 **Branch:** remediation/w1-1-identity-reconciliation
 **Baseline:** 567970d55f7b147d0a32417fdc7d89d24697c44e
-**Scope and task package:** `audit/W1.1_Owner_Identity_Clarification_and_Reconciliation.md`
-**Latest Sol review/correction package:** `audit/W1.1_Sol_Review_3021c24d.md`
-**Current acceptance review:** `audit/W1.1_Sol_Review_60bd89bb.md`
+**Scope and task package:** `audit/W1.1_Approved_Amendment_Task.md`
+**Owner approval:** `audit/W1.1_Architecture_Decision_For_Owner_Approval.md`
+**Sol reviews:** `audit/W1.1_Sol_Review_3021c24d.md`, `audit/W1.1_Sol_Review_60bd89bb.md`, `audit/W1.1_Sol_Review_147bf562.md`
+**Implementation evidence:** `audit/W1.1_Correction_Summary.md`, `audit/W1.1_Evidence_Authority_Table.md`
 
-Owner direction: independent SUIA and RTH learner identities and records; SHC
-provides tenant-authorized shared capabilities. No implicit global learner account,
-account linking, credential/session merging or cross-tenant entitlement.
+**Owner-approved architecture direction:**
 
-The current target document explicitly describes shared global learner identity.
-Reconcile this contradiction with exact source/document evidence and propose a
-narrow amendment for owner review. Do not change runtime behavior or database
-keys in this batch. Existing globalUserId assumptions are suspended as W1.1
-implementation instructions pending this reconciliation. W1.2 and Wave 8 identity
-criteria must be reconciled before execution; their historical wording is not
-approval to introduce shared learner identity.
+1. SUIA (`skillup`) and RTH (`realtutorialhub`) own independent learner accounts, credentials/session boundaries and learner records
+2. Equal learner IDs or emails across tenants identify independent learners; no automatic linking
+3. Qualified learner reference includes verified platform and local learner ID; existing `platform`/`brand` values used
+4. SHC people DB maintains optional platform-specific infrastructure projections for service coordination (not replacement learner identity)
+5. `shared` describes resource scope requiring authorization; never learner authority or implicit cross-tenant permission
 
-Define tenant-scoped learner, issuer-scoped principal, service and SHC staff
-identity, authentication session, learning session and audit actor separately.
-Preserve existing wire aliases pending compatibility approval. The vocabulary
-review must first evaluate existing platform values skillup and
-realtutorialhub as tenant context, without automatically adding tenantId.
-The shared value denotes resource scope, never learner identity or implicit
-permission. Trace platform/brand meanings separately before canonicalization.
-Acceptance for this batch requires a source-backed inventory, contradiction matrix, proposed
-contract/amendment, minimal implementation scope and regression-test matrix,
-Gemini verification and Sol review. Identity behavior changes additionally
-require the owner's architecture approval. No runtime verification claim.
+**Implementation scope:** Documentation and architecture amendment only. No source code, schema, credentials, behavior, migration, deployment or merge changes.
+
+**Deliverables:**
+- ✅ `audit/FinalAechitecture.md` amended (sections 3, 4, table 2590)
+- ✅ `audit/W1.1_Identity_Contract_Reconciliation.md` corrected (per Sol reviews 3021c24d/60bd89bb/147bf562)
+- ✅ `audit/W1.1_Evidence_Authority_Table.md` created (authoritative identity contract)
+- ✅ `audit/W1.1_Correction_Summary.md` created (implementation evidence)
+- ✅ `audit/Architecture_Remediation_Execution_Plan.md` W1.1/W1.2 criteria reconciled
+- ⏳ Gemini independent verification pending
+- ⏳ Sol final acceptance pending
+
+**Acceptance criteria:**
+- Tenant-scoped learnerId is canonical (not globalUserId)
+- SHC shadowUserId is optional cross-reference (not replacement identity)
+- platform/brand values validated and tenant-scoped
+- shared resource authorization verified (not automatic learner permission)
+- Source citations accurate
+- Contradictory global-learner statements removed
+- Staff/service identity preserved where applicable
+- Historical evidence intact
+- git diff --check passes
+- Gemini verification complete
+- Sol acceptance recorded
+
+**Follow-on tickets:**
+- W1.1.2: Session persistence investigation (read-only)
+- W1.2-EMAIL: People DB composite email uniqueness (separate approval required)
+- W1.2: Authorization behavioral corrections (depends on W1.1 acceptance)
 
 ### W1.2 - Critical Authorization Corrections
 **Status:** `PLANNED`
+**Root cause:** `RC-ID-01`
+**Dependencies:** W1.1 acceptance
+**Priority:** P0
 
 Implement first:
-- Cross-user session revocation ownership.
-- Legacy tutorial progress identity.
-- Export job/exam ownership.
-- Rejected privileged/internal auth must not silently downshift.
-- Project LLM audit actor derived server-side.
-- Human Gate 1 becomes explicit authenticated approval.
+- Cross-user session revocation ownership
+- Legacy tutorial progress identity binding
+- Export job/exam tenant ownership
+- Rejected privileged/internal auth must not silently downshift
+- Project LLM audit actor derived server-side
+- Human Gate 1 becomes explicit authenticated approval
 
-Required tests:
-- User A cannot mutate User B.
-- SkillUp-only identity cannot access RTH private resource.
-- RTH-only identity cannot access SkillUp private resource.
-- Global identity alone grants no implicit brand membership.
-- Forged `x-user-id`/`x-brand` rejected or ignored.
-- Invalid trusted-service authentication fails closed.
-- Project LLM Gate 1 cannot be advanced by generic browser state progression.
+Required tests (reconciled with W1.1 independent tenant model):
+- User A cannot mutate User B's resources
+- Tenant A learner cannot access Tenant B private resources
+- Tenant A learner with identical ID/email to Tenant B learner cannot access Tenant B resources
+- Equal IDs or emails across tenants remain isolated (independent learners)
+- Forged `x-user-id`/`x-brand` headers rejected or ignored
+- Invalid trusted-service authentication fails closed
+- Bridge failure scenarios handled securely (partial projection)
+- `shared` resource access requires verified caller + tenant entitlement + resource policy
+- `platforms` array alone does not authorize cross-tenant learner access
+- Project LLM Gate 1 cannot be advanced by generic browser state progression
 
 ---
 

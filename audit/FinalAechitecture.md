@@ -883,32 +883,49 @@ Cross-brand operations should go through a defined service/API contract or a con
 
 ## 3. Global identity and brand-specific data
 
-Your global identity model should separate the identity of a person from their relationship with a brand.
+The identity architecture distinguishes infrastructure identity (SHC people DB projection) from tenant learner identity (brand-owned user accounts).
+
+### 3.1 Tenant Learner Identity
+
+SUIA (`skillup`) and RTH (`realtutorialhub`) own independent learner identities and records. Each tenant maintains its own learner namespace in separate databases (skillup_prod, rth_prod). Equal learner IDs or email addresses across tenants identify independent learners, not the same person. No automatic account linking or credential sharing occurs.
+
+Tenant learner databases enforce unique email within tenant scope. Cross-tenant email duplication is permitted to support independent registration per tenant.
+
+### 3.2 SHC People DB Projection (Infrastructure)
+
+The people DB (`people_prod`) maintains shadow projections of tenant learners for cross-platform service coordination. Each brand user may be projected via the identity bridge:
+
+- `externalId`: References brand user ID
+- `platform`: Tenant context ('skillup' or 'realtutorialhub')
+- `shadowUserId`: SHC infrastructure cross-reference ID
+
+This projection enables SHC shared services to coordinate tenant-specific operations without unifying learner accounts. The shadow ID is a cross-reference, not a replacement canonical learner identity.
 
 Conceptually:
 
 ```
-people_prod
+people_prod (SHC infrastructure projections)
 │
-├── users
-│   └── id
+├── users (shadow projections)
+│   ├── id (shadowUserId, SHC infrastructure reference)
+│   ├── externalId (brand user ID)
+│   └── platform (tenant context)
 │
-├── identity_credentials
-│
-└── user_brand_memberships
-    ├── user_id
-    ├── brand_id
-    ├── brand_user_id
-    └── status
+└── platform_access
+    ├── userId (references shadow projection)
+    └── platform (authorized tenant/service contexts)
 ```
 
-Brand databases then reference the global identity ID:
+Brand databases own learner identity:
 
 ```
 rth_prod
 │
+├── users
+│   ├── id (tenant-scoped learner ID)
+│   └── shadowUserId (optional SHC projection reference)
+│
 ├── learner_profiles
-│   └── global_user_id
 │
 ├── enrollments
 │
@@ -918,19 +935,22 @@ rth_prod
 ```
 skillup_prod
 │
+├── users
+│   ├── id (tenant-scoped learner ID)
+│   └── shadowUserId (optional SHC projection reference)
+│
 ├── learner_profiles
-│   └── global_user_id
 │
 ├── enrollments
 │
 └── tutorial_progress
 ```
 
-The `global_user_id` is the identity link.
+The `shadowUserId` provides an optional SHC cross-reference for shared services requiring cross-platform coordination. It does not imply shared learner accounts or automatic authorization.
 
-A user might have an identity in `people_prod` and a profile in one brand database, or profiles in both brand databases.
+A person may have independent learner accounts in one or both tenant databases, each with its own identity, credentials, and records. Cross-tenant account linking is not automatic.
 
-Do not assume that having a global identity automatically means the user has access to both brands. Membership and authorization must be checked independently.
+Do not assume that a people DB projection grants learner access to any tenant. Tenant membership and authorization must be verified independently per request.
 
 Also, if these are physically separate PostgreSQL databases, do not assume ordinary PostgreSQL foreign keys can enforce relationships across them. Cross-database relationships need application-level validation or a deliberately designed integration mechanism.
 
@@ -2587,7 +2607,7 @@ One important reality: no architecture can honestly guarantee that a system will
 | Current starting point   | 100+ offline students, no online student base yet                       |
 | Brand model              | RTH and SUIA remain independent brands                                  |
 | Shared platform          | SkillHubCore provides shared capabilities                               |
-| Student identity         | One global identity, with explicit membership and access for each brand |
+| Student identity         | Independent tenant learner identities (SUIA and RTH); SHC infrastructure projection for service coordination |
 | Application architecture | Modular monorepo with clear domain boundaries                           |
 | Deployment architecture  | Independently deploy and scale services when justified                  |
 | Database architecture    | Separate brand data ownership; shared identity data                     |
@@ -2646,13 +2666,13 @@ Since you want your existing offline students to access features on both brands,
 
 | Concept          | Expected behavior                                                                                      |
 | ---------------- | ------------------------------------------------------------------------------------------------------ |
-| Global account   | A student has one global identity                                                                      |
-| Brand membership | The student can have an RTH membership, a SUIA membership, or both                                     |
+| Global account   | Each tenant owns independent learner identities; a person may register separately in SUIA and/or RTH  |
+| Brand membership | If a person requires access to both tenants, link accounts through controlled auditable process                                     |
 | Brand access     | Access is granted based on explicit membership and permissions                                         |
 | Brand profile    | Brand-specific enrollment, progress, preferences, and records stay in the relevant brand’s data domain |
-| Login            | Shared authentication may be used where appropriate                                                    |
+| Login            | Each tenant has its own authentication; shared services may coordinate where appropriate               |
 | Authorization    | Every request still checks the target brand and required permission                                    |
-| Brand switching  | A student can move between brands without gaining unauthorized access                                  |
+| Brand switching  | A person with linked accounts can move between brands without gaining unauthorized access              |
 | Account linking  | Existing offline student records are linked through a controlled, auditable process                    |
 
 Do not make a global rule that “every user can access both brands.” Instead, support both memberships and grant them to the students who are entitled to both.
