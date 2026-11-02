@@ -42,7 +42,7 @@ describe('AuthService.refresh generic branches', () => {
         container.register(AuditService, mockAuditService as any);
     });
 
-    it('refresh: successful refresh flow', async () => {
+    it('refresh: successful refresh flow with transactional token rotation', async () => {
         mockTokenRepo.findByHash.mockResolvedValue({ id: 's1', userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
         mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
         mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', isBlocked: false, userRoles: [] } as any);
@@ -51,7 +51,14 @@ describe('AuthService.refresh generic branches', () => {
 
         const service = container.get(AuthService);
         const result = await service.refresh('token', undefined, undefined, 'user', 'realtutorialhub');
+        
         expect(result.accessToken).toBe('access');
+        expect(result.refreshToken).toBe('refresh');
+        
+        // Verify token rotation occurred: old token revoked, new token created
         // Note: refresh flow uses revokeToken (by hash) in transaction, not revokeById
+        expect(mockTokenRepo.revokeToken).toHaveBeenCalledTimes(1);
+        expect(mockTokenRepo.createRefreshToken).toHaveBeenCalledTimes(1);
+        expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledTimes(1);
     });
 });
