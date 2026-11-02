@@ -531,13 +531,13 @@ No production changes or DB access; source evidence and proposed regression case
 **Acceptance:** `audit/W1.1.2_Sol_Acceptance.md`.
 
 ### W1.2-SESS-01 - Existing Single-Session Revocation Ownership
-**Status:** `VERIFICATION_FAILED` (Sol review of 57b0979a: route tests fail 8/8; actual mutation, connected tenant-state and quality evidence incomplete)
+**Status:** `VERIFICATION_FAILED` (Gemini Rev 3 confirms committed tenant test failure; remaining corrections reassigned to Gemini by owner)
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth service supporting independent SUIA/RTH tenants
 **Audit mapping:** SU-SESSION-010; source review W1.1.2
 **Priority:** P0 security correction
-**Implementer:** Sonnet 4.5 when assigned
-**Independent verifier:** Gemini; specialist security review before acceptance
+**Implementer:** Gemini 3.8 (sole remaining correction implementer; replaces Sonnet per owner instruction)
+**Independent verifier:** Opus 4.6 preferred; if unavailable, Sonnet read-only on Gemini corrections with prior authorship disclosed; Sol decides review sufficiency
 **Acceptance:** Sol
 **Dependency:** corrected W1.1.2 evidence and bounded implementation package
 Source confirms GlobalLogoutService drops the verified user ID before an optional
@@ -552,6 +552,8 @@ of refresh redesign, schema migration or deployment from this planned entry.
 **Current review/correction package:** `audit/W1.2-SESS-01_Sol_Review_bd3c7489.md`. Corrections committed at `1712dc9b` / `ff8b3422`. Gemini Rev 2 report at `audit/W1.2-SESS-01_Gemini_Verification_Report.md`. No finding/root-cause closure or deployment authorization.
 
 **Latest correction task:** `audit/W1.2-SESS-01_Sol_Review_57b0979a.md`. No waived route/quality gate or finding closure.
+
+**Current authoritative assignment:** `audit/W1.2-SESS-01_Gemini_Takeover_Task.md`. Sonnet stops editing this ticket. Gemini implementation is not its own independent verification. Sol retains final acceptance; prior assignment wording is superseded.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`

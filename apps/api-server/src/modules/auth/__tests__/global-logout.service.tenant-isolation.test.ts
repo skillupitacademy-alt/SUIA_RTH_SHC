@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GlobalLogoutService } from '../global-logout.service';
 import { TokenRepository } from '../repositories/token.repository';
-import { UserRepository } from '../repositories/user.repository';
-import { AuditService } from '../audit.service';
 
 /**
  * W1.2-SESS-01: Integrated tenant isolation test
@@ -29,11 +27,15 @@ vi.mock('drizzle-orm', async () => {
   };
 });
 
-// Create tenant-specific adapters IN HOISTED SCOPE
-const { rthAdapter, suiaAdapter } = vi.hoisted(() => {
+// Create tenant-specific adapters and schema tables IN HOISTED SCOPE
+const { rthAdapter, suiaAdapter, rthTable, suiaTable } = vi.hoisted(() => {
+  const rthTable = { id: 'rth_refresh_tokens.id', userId: 'rth_refresh_tokens.userId' };
+  const suiaTable = { id: 'suia_refresh_tokens.id', userId: 'suia_refresh_tokens.userId' };
+
   class TenantFixtureAdapter {
     sessions: SessionRow[] = [];
     tableName: string;
+    updateCalls: any[] = [];
 
     constructor(tableName: string) {
       this.tableName = tableName;
@@ -51,9 +53,15 @@ const { rthAdapter, suiaAdapter } = vi.hoisted(() => {
       return this.sessions.find(s => s.id === id);
     }
 
-    // Simulates drizzle update().set().where()
-    update() {
+    reset() {
+      this.sessions = [];
+      this.updateCalls = [];
+    }
+
+    // Simulates drizzle update(table).set(values).where(predicate)
+    update(table: any) {
       const self = this;
+      self.updateCalls.push(table);
       return {
         set(updates: Partial<SessionRow>) {
           return {
@@ -63,18 +71,26 @@ const { rthAdapter, suiaAdapter } = vi.hoisted(() => {
               }
 
               const conditions = predicate.conditions;
+              if (!Array.isArray(conditions) || conditions.length !== 2) {
+                throw new Error('Expected exactly 2 conditions in AND predicate');
+              }
+
               let affectedCount = 0;
 
               for (const session of self.sessions) {
                 let matches = true;
 
                 for (const cond of conditions) {
-                  if (cond.op === 'eq') {
-                    const field = cond.field.split('.').pop();
-                    if (session[field as keyof SessionRow] !== cond.value) {
-                      matches = false;
-                      break;
-                    }
+                  if (cond.op !== 'eq') {
+                    throw new Error(`Unexpected operator: ${cond.op}`);
+                  }
+                  const field = cond.field.split('.').pop();
+                  if (field !== 'id' && field !== 'userId') {
+                    throw new Error(`Unexpected field in predicate: ${cond.field}`);
+                  }
+                  if (session[field as keyof SessionRow] !== cond.value) {
+                    matches = false;
+                    break;
                   }
                 }
 
@@ -109,32 +125,27 @@ const { rthAdapter, suiaAdapter } = vi.hoisted(() => {
   return {
     rthAdapter: new TenantFixtureAdapter('rth_refresh_tokens'),
     suiaAdapter: new TenantFixtureAdapter('suia_refresh_tokens'),
+    rthTable,
+    suiaTable,
   };
 });
 
 vi.mock('@quiz/db', () => ({
   STANDARD_QUERY_TIMEOUT: 15000,
-  db: rthAdapter, // Default to RTH adapter
-  refreshTokens: {
-    id: 'refreshTokens.id',
-    userId: 'refreshTokens.userId',
-    token: 'refreshTokens.token',
-    revoked: 'refreshTokens.revoked',
-    expiresAt: 'refreshTokens.expiresAt',
-    lastActiveAt: 'refreshTokens.lastActiveAt',
-  },
+  db: rthAdapter,
+  refreshTokens: rthTable,
 }));
 
 vi.mock('../brand-db', () => ({
   getAuthBrandContext: vi.fn((brand: string) => {
-    const adapter = brand === 'skillup' ? suiaAdapter : rthAdapter;
+    const isSkillup = brand === 'skillup';
     return {
-      db: adapter,
+      db: isSkillup ? suiaAdapter : rthAdapter,
       tables: {
-        refreshTokens: 'mock_refresh_tokens_table',
-        users: 'mock_users_table',
-        userRoles: 'mock_user_roles_table',
-        userOrganizations: 'mock_user_organizations_table',
+        refreshTokens: isSkillup ? suiaTable : rthTable,
+        users: isSkillup ? 'suia_users' : 'rth_users',
+        userRoles: isSkillup ? 'suia_user_roles' : 'rth_user_roles',
+        userOrganizations: isSkillup ? 'suia_user_orgs' : 'rth_user_orgs',
       },
     };
   }),
@@ -150,12 +161,16 @@ vi.mock('../audit.service', () => ({
 }));
 
 describe('W1.2-SESS-01: GlobalLogoutService tenant isolation', () => {
+  const mockUserRepo = {
+    updateLastActive: vi.fn().mockResolvedValue(undefined),
+    withDb: vi.fn(function(this: any) { return this; }),
+  } as any;
+
   beforeEach(() => {
     vi.clearAllMocks();
     lastPredicate = null;
-    // Reset tenant adapters
-    rthAdapter.sessions = [];
-    suiaAdapter.sessions = [];
+    rthAdapter.reset();
+    suiaAdapter.reset();
   });
 
   it('RTH tenant: revokeSession operates on RTH fixture only, SUIA fixture untouched', async () => {
@@ -181,14 +196,10 @@ describe('W1.2-SESS-01: GlobalLogoutService tenant isolation', () => {
     expect(rthAdapter.findById('session-100')?.revoked).toBe(false);
     expect(suiaAdapter.findById('session-100')?.revoked).toBe(false);
 
-    // Create RTH-bound service
-    const mockUserRepo = {
-      updateLastActive: vi.fn().mockResolvedValue(undefined),
-      withDb: vi.fn(function(this: any) { return this; }),
-    } as any;
-
+    // Create REAL TokenRepository and REAL GlobalLogoutService
+    const realTokenRepo = new TokenRepository(rthAdapter, { refreshTokens: rthTable as any });
     const service = new GlobalLogoutService(
-      undefined as any, // Will be created with RTH context
+      realTokenRepo,
       mockUserRepo,
       mockAuditService as any
     );
@@ -202,11 +213,15 @@ describe('W1.2-SESS-01: GlobalLogoutService tenant isolation', () => {
     expect(rthSession?.userId).toBe('user-A');
     expect(rthSession?.token).toBe('token-rth-A');
 
+    // Assert: Selected table was updated on RTH adapter
+    expect(rthAdapter.updateCalls).toContain(rthTable);
+
     // Assert: SUIA session-100 remains ACTIVE (untouched)
     const suiaSession = suiaAdapter.findById('session-100');
     expect(suiaSession?.revoked).toBe(false);
     expect(suiaSession?.userId).toBe('user-A');
     expect(suiaSession?.token).toBe('token-suia-A');
+    expect(suiaAdapter.updateCalls).toHaveLength(0);
 
     // Verify the actual WHERE predicate included both session ID and user ID
     expect(lastPredicate).not.toBeNull();
@@ -245,14 +260,10 @@ describe('W1.2-SESS-01: GlobalLogoutService tenant isolation', () => {
     expect(rthAdapter.findById('session-200')?.revoked).toBe(false);
     expect(suiaAdapter.findById('session-200')?.revoked).toBe(false);
 
-    // Create SUIA-bound service
-    const mockUserRepo = {
-      updateLastActive: vi.fn().mockResolvedValue(undefined),
-      withDb: vi.fn(function(this: any) { return this; }),
-    } as any;
-
+    // Create REAL TokenRepository and REAL GlobalLogoutService
+    const realTokenRepo = new TokenRepository(suiaAdapter, { refreshTokens: suiaTable as any });
     const service = new GlobalLogoutService(
-      undefined as any,
+      realTokenRepo,
       mockUserRepo,
       mockAuditService as any
     );
@@ -265,12 +276,14 @@ describe('W1.2-SESS-01: GlobalLogoutService tenant isolation', () => {
     expect(suiaSession?.revoked).toBe(true);
     expect(suiaSession?.userId).toBe('user-B');
     expect(suiaSession?.token).toBe('token-suia-B');
+    expect(suiaAdapter.updateCalls).toContain(suiaTable);
 
     // Assert: RTH session-200 remains ACTIVE (untouched)
     const rthSession = rthAdapter.findById('session-200');
     expect(rthSession?.revoked).toBe(false);
     expect(rthSession?.userId).toBe('user-B');
     expect(rthSession?.token).toBe('token-rth-B');
+    expect(rthAdapter.updateCalls).toHaveLength(0);
 
     // Verify actual WHERE predicate
     expect(lastPredicate).not.toBeNull();
@@ -301,13 +314,9 @@ describe('W1.2-SESS-01: GlobalLogoutService tenant isolation', () => {
       expiresAt: new Date(Date.now() + 100000),
     });
 
-    const mockUserRepo = {
-      updateLastActive: vi.fn().mockResolvedValue(undefined),
-      withDb: vi.fn(function(this: any) { return this; }),
-    } as any;
-
+    const realTokenRepo = new TokenRepository(rthAdapter, { refreshTokens: rthTable as any });
     const service = new GlobalLogoutService(
-      undefined as any,
+      realTokenRepo,
       mockUserRepo,
       mockAuditService as any
     );

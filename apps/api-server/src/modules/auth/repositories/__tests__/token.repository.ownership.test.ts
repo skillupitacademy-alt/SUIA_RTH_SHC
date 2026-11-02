@@ -1,4 +1,7 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { and, eq } from 'drizzle-orm';
 
 /**
  * W1.2-SESS-01: Owner-scoped single-session revocation security tests
@@ -475,15 +478,32 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
   });
 
   describe('SECURITY REGRESSION: Controlled mutation proof', () => {
-    it('PRE-FIX MUTATION: Repository without ownership check allows cross-user revocation', async () => {
+    it('PRE-FIX MUTATION: Actual production source with owner predicate removed allows cross-user revocation', async () => {
       /**
-       * This test demonstrates the original vulnerability by creating a
-       * disposable copy of TokenRepository where only the owner predicate
-       * is removed, proving that without the fix, cross-user revocation
-       * would be possible.
+       * Reads the actual production repository source file, creates a disposable
+       * mutant where ONLY the owner predicate is removed from the WHERE clause,
+       * and runs the cross-user regression against the exact same test adapter.
        */
+      const prodSourcePath = path.resolve(__dirname, '../token.repository.ts');
+      const prodSource = fs.readFileSync(prodSourcePath, 'utf8');
 
-      // Setup: User B has a session
+      // Verify the production source contains the dual-predicate
+      expect(prodSource).toContain('eq(this.refreshTokensTable.userId, userId)');
+
+      // Extract the production revokeById method body
+      const methodMatch = prodSource.match(/async revokeById\([^)]*\)\s*\{([\s\S]*?)\n  \}/);
+      if (!methodMatch) {
+        throw new Error('Failed to extract revokeById from production source');
+      }
+
+      // Mutate ONLY by removing the owner predicate from the WHERE clause (retaining valid actor validation)
+      const mutantBody = methodMatch[1].replace(/,\s*eq\(this\.refreshTokensTable\.userId,\s*userId\)/, '');
+
+      // Verify the mutant still has actor validation but lacks owner predicate in WHERE
+      expect(mutantBody).toContain('W1.2-SESS-01: userId is required for session revocation');
+      expect(mutantBody).not.toContain('eq(this.refreshTokensTable.userId, userId)');
+
+      // Setup fixture: User B has an active session
       testAdapter.reset();
       testAdapter.insert({
         id: 'session-victim',
@@ -496,46 +516,39 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       // Verify session starts active
       expect(testAdapter.findById('session-victim')?.revoked).toBe(false);
 
-      // Create vulnerable repository copy: remove owner predicate but keep valid actor identity
-      class VulnerableTokenRepository extends TokenRepository {
-        async revokeById(id: string, _userId: string) {
-          // VULNERABILITY: Accept userId but don't enforce it in WHERE clause
-          if (typeof _userId !== 'string' || _userId.trim().length === 0) {
-            throw new Error('W1.2-SESS-01: userId is required for session revocation');
-          }
-          // Only match by session ID (no ownership check)
-          await this.dbInstance.update(this.refreshTokensTable)
-            .set({ revoked: true })
-            .where({ op: 'eq', field: 'refreshTokens.id', value: id });
-        }
-      }
-
-      // Configure mock to accept single-predicate
+      // Wire test mock to use the real test adapter evaluator (identical between mutant and protected)
       vi.clearAllMocks();
       capturedPredicates = [];
       lastPredicate = null;
       updateWhereMock.mockImplementation(async (predicate) => {
-        // Accept single eq predicate (no ownership)
-        if (predicate && predicate.op === 'eq') {
-          for (const session of testAdapter['sessions']) {
-            if (session.id === predicate.value) {
-              session.revoked = true;
-              return 1;
-            }
-          }
+        if (lastPredicate) {
+          return testAdapter.applyUpdate(lastPredicate, { revoked: true });
         }
         return 0;
       });
 
-      const vulnerableRepo = new VulnerableTokenRepository();
+      // Instantiate repository and bind the mutated production method
+      const mutantRepo = new TokenRepository();
+      const drizzle = await import('drizzle-orm');
+      mutantRepo.revokeById = async function(id: string, userId: string) {
+        // Execute the mutated body extracted from actual production source
+        const and = drizzle.and;
+        const eq = drizzle.eq;
+        await eval('(async function(and, eq) {' + mutantBody + '}).call(this, and, eq)');
+      };
 
       // User A attempts to revoke B's session WITH valid identity supplied
-      await vulnerableRepo.revokeById('session-victim', 'user-A');
+      await mutantRepo.revokeById('session-victim', 'user-A');
 
-      // VULNERABILITY DEMONSTRATED: User B's session was revoked
+      // VULNERABILITY DEMONSTRATED: User B's session was revoked because production source lacked owner predicate
       const victimSession = testAdapter.findById('session-victim');
       expect(victimSession?.revoked).toBe(true);
       expect(victimSession?.userId).toBe('user-B');
+
+      // Verify only single session predicate was captured
+      expect(capturedPredicates).toHaveLength(1);
+      expect(capturedPredicates[0].field).toBe('refreshTokens.id');
+      expect(capturedPredicates[0].value).toBe('session-victim');
     });
 
     it('POST-FIX: Production code with ownership check prevents cross-user revocation', async () => {
