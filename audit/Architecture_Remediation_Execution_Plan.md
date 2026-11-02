@@ -519,7 +519,7 @@ implementation remains SHC-only.
 **Scope, audit mapping, allowed files and acceptance:** `audit/W1.1.2_Session_Discovery_Task.md`
 No production changes or DB access; source evidence and proposed regression cases only.
 
-**Corrected evidence:** `audit/W1.1.2_Session_Persistence_Investigation.md` (commit `0247f981`, reviewed and corrected 2025-01-10; Gemini Rev 2 verification PASS).
+**Corrected evidence:** `audit/W1.1.2_Session_Persistence_Investigation.md` (commit `0247f981`, reviewed and corrected 2026-11-02; Gemini Rev 2 verification PASS).
 
 **Key findings:**
 - Existing routes documented: GET/DELETE /api/auth/sessions, DELETE /api/auth/sessions/[sessionId], POST /api/auth/logout-all
@@ -531,7 +531,7 @@ No production changes or DB access; source evidence and proposed regression case
 **Acceptance:** `audit/W1.1.2_Sol_Acceptance.md`.
 
 ### W1.2-SESS-01 - Existing Single-Session Revocation Ownership
-**Status:** `VERIFICATION_FAILED` (Gemini Rev 3 confirms committed tenant test failure; remaining corrections reassigned to Gemini by owner)
+**Status:** `CLOSED` (Sol acceptance: source ownership correction, 30 focused tests, actual mutation proof, Opus review and full six-stage canonical gate exit 0; runtime qualification separate)
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth service supporting independent SUIA/RTH tenants
 **Audit mapping:** SU-SESSION-010; source review W1.1.2
@@ -540,7 +540,7 @@ No production changes or DB access; source evidence and proposed regression case
 **Independent verifier:** Opus 4.6 preferred; if unavailable, Sonnet read-only on Gemini corrections with prior authorship disclosed; Sol decides review sufficiency
 **Acceptance:** Sol
 **Dependency:** corrected W1.1.2 evidence and bounded implementation package
-Source confirms GlobalLogoutService drops the verified user ID before an optional
+Baseline source showed GlobalLogoutService dropped the verified user ID before an optional
 repository owner filter. Correct the existing path; do not add duplicate routes.
 Require owner-scoped persistence, no accidental unscoped revocation, relevant
 caller review, positive/cross-user/cross-platform/invalid-context regression tests,
@@ -554,6 +554,34 @@ of refresh redesign, schema migration or deployment from this planned entry.
 **Latest correction task:** `audit/W1.2-SESS-01_Sol_Review_57b0979a.md`. No waived route/quality gate or finding closure.
 
 **Current authoritative assignment:** `audit/W1.2-SESS-01_Gemini_Takeover_Task.md`. Sonnet stops editing this ticket. Gemini implementation is not its own independent verification. Sol retains final acceptance; prior assignment wording is superseded.
+
+**Authoritative acceptance:** `audit/W1.2-SESS-01_Sol_Acceptance.md`. Sol resolved Opus's minor directive finding with a comment-only change. RC-ID-01 remains IN_PROGRESS; deployment and broader auth boundaries remain separately gated.
+
+### W1.2-REFRESH-01 - Refresh Authority and Rotation Discovery
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application:** API auth and SUIA/RTH caller boundaries
+**Priority:** P0 read-only investigation
+**Implementer:** Gemini 3.8 (sole investigator when started)
+**Independent verifier:** Sonnet 4.5 read-only
+**Acceptance:** Sol
+**Dependency:** W1.2-SESS-01 accepted
+**Scope, audit mapping and acceptance:** `audit/W1.2-REFRESH-01_Authority_Discovery_Task.md`
+Trace token issuer/audience/platform, stored owner, DB selection and concurrent
+rotation/replay semantics. No auth changes, database access, new storage or rollout.
+
+### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application:** API auth legacy POST logout-all and existing DELETE sessions path
+**Priority:** P1
+**Audit context:** SU-AUTH-004; direct W1.1.2 source wiring evidence
+**Implementer:** Gemini 3.8 when separately assigned after refresh discovery
+**Independent verifier:** Sonnet read-only; security review before runtime changes
+**Acceptance:** Sol
+Qualify generic SessionService repository wiring and actual route consumers before
+choosing bounded delegation/decommissioning. Do not create duplicate endpoints or
+assume deployed failure. No runtime change authorized by this planned entry.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`

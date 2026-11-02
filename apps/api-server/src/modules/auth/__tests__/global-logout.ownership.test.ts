@@ -141,7 +141,7 @@ describe('W1.2-SESS-01: GlobalLogoutService ownership propagation', () => {
     currentTokenRepo = failingRepo;
     const failingService = new GlobalLogoutService(failingRepo as any, currentUserRepo as any, mockAuditService as any);
 
-    // @ts-expect-error Testing accidental empty string
+    // Empty strings are valid TypeScript; repository rejects them at runtime.
     await expect(failingService.revokeSession('', 'session-123', undefined, 'realtutorialhub'))
       .rejects.toThrow('W1.2-SESS-01');
   });
