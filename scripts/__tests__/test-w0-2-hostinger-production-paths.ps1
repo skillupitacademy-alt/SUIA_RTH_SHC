@@ -341,7 +341,7 @@ try {
 `$env:TEST_ROOT = '$TestRoot'
 `$env:NON_INTERACTIVE = '1'
 try {
-    & '$deployScript' -Services 'skillhubcore-admin' -NonInteractive 2>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
+    & '$deployScript' -Services 'skillhubcore-admin' -NonInteractive *>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
     exit `$LASTEXITCODE
 } catch {
     `$_ | Out-File -FilePath '$outputFile' -Append -Encoding UTF8
