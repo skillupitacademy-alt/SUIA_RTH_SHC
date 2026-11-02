@@ -56,6 +56,44 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
   }
 
   /**
+   * 🔐 ATOMIC REFRESH ROTATION (W1.2-REFRESH-02)
+   * Conditionally consumes an active, unexpired refresh token for the expected owner.
+   * Performs an atomic compare-and-swap update and returns the consumed record or null.
+   *
+   * @param tokenHash - SHA-256 hash of the refresh token to consume
+   * @param expectedUserId - REQUIRED verified owner user ID
+   * @returns The consumed session row if exactly one row was updated; null otherwise.
+   */
+  async consumeToken(tokenHash: string, expectedUserId: string): Promise<RefreshTokenRow | null> {
+    if (typeof expectedUserId !== 'string' || expectedUserId.trim().length === 0) {
+      throw new Error('W1.2-REFRESH-02: expectedUserId is required for token consumption');
+    }
+    if (typeof tokenHash !== 'string' || tokenHash.trim().length === 0) {
+      throw new Error('W1.2-REFRESH-02: tokenHash is required for token consumption');
+    }
+
+    const now = new Date();
+    const result = await this.dbInstance.update(this.refreshTokensTable)
+      .set({
+        revoked: true,
+        lastUsedAt: now,
+      })
+      .where(and(
+        eq(this.refreshTokensTable.token, tokenHash),
+        eq(this.refreshTokensTable.userId, expectedUserId),
+        eq(this.refreshTokensTable.revoked, false),
+        gt(this.refreshTokensTable.expiresAt, now)
+      ))
+      .returning();
+
+    if (Array.isArray(result) && result.length === 1) {
+      return result[0] as RefreshTokenRow;
+    }
+
+    return null;
+  }
+
+  /**
    * 🔐 SECURITY FIX (W1.2-SESS-01): Owner-scoped single-session revocation.
    * Prevents cross-user session revocation by requiring verified userId match.
    *

@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { refreshTokensFindFirst, updateWhereMock, updateSetMock, updateMock, insertValuesMock, insertMock } = vi.hoisted(() => {
-  const _updateWhereMock = vi.fn();
+  const _returningMock = vi.fn().mockResolvedValue([{ id: 'rt1', userId: 'u1' }]);
+  const _updateWhereMock = vi.fn(() => Object.assign(Promise.resolve(undefined), { returning: _returningMock }));
   const _updateSetMock = vi.fn(() => ({ where: _updateWhereMock }));
   const _insertValuesMock = vi.fn();
   return {
@@ -50,13 +51,14 @@ describe('TokenRepository', () => {
     await expect(repo.createRefreshToken({ userId: 'u1', token: 'hash', expiresAt: new Date() })).resolves.toBeUndefined();
     await expect(repo.revokeToken('hash')).resolves.toBeUndefined();
     await expect(repo.revokeById('rt1', 'u1')).resolves.toBeUndefined();
+    await expect(repo.consumeToken('hash', 'u1')).resolves.toEqual({ id: 'rt1', userId: 'u1' });
     await expect(repo.revokeAll('u1')).resolves.toBeUndefined();
     await expect(repo.touchSession('u1')).resolves.toBeUndefined();
     await expect(repo.findValidToken('u1', 'hash')).resolves.toEqual({ id: 'rt1' });
     await expect(repo.findByHash('hash')).resolves.toEqual({ id: 'rt1' });
 
     expect(insertMock).toHaveBeenCalledTimes(1);
-    expect(updateMock).toHaveBeenCalledTimes(4);
+    expect(updateMock).toHaveBeenCalledTimes(5);
     expect(refreshTokensFindFirst).toHaveBeenCalledTimes(2);
   });
 });

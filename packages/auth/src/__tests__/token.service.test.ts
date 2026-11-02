@@ -216,6 +216,36 @@ describe('TokenService', () => {
       expect(verified.aud).toBe('user');
     });
 
+    it('generates distinct refresh tokens with unique jti even when called concurrently in the same second', async () => {
+      const [token1, token2] = await Promise.all([
+        service.generateRefreshToken('u1', false, 'user'),
+        service.generateRefreshToken('u1', false, 'user'),
+      ]);
+      expect(token1).not.toBe(token2);
+      const hash1 = await service.hashToken(token1);
+      const hash2 = await service.hashToken(token2);
+      expect(hash1).not.toBe(hash2);
+
+      const verified1 = await service.verifyRefreshToken(token1);
+      const verified2 = await service.verifyRefreshToken(token2);
+      expect(verified1.jti).toBeDefined();
+      expect(verified2.jti).toBeDefined();
+      expect(verified1.jti).not.toBe(verified2.jti);
+    });
+
+    it('verifies legacy refresh tokens without jti claim (backward compatibility)', async () => {
+      const legacyToken = await new SignJWT({ userId: 'u-legacy', aud: 'user', isAdmin: false })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setAudience('user')
+        .setIssuedAt()
+        .setExpirationTime('7d')
+        .sign(TokenService.REFRESH_SECRET);
+
+      const verified = await service.verifyRefreshToken(legacyToken);
+      expect(verified.userId).toBe('u-legacy');
+      expect(verified.jti).toBeUndefined();
+    });
+
     it('generates and verifies admin refresh token', async () => {
       const token = await service.generateRefreshToken('u1', true, 'admin');
       const verified = await service.verifyRefreshToken(token);

@@ -1,3 +1,5 @@
+import { db } from '@quiz/db';
+
 import type { RequestBrand } from '@/lib/request-brand';
 import { AuditService } from '@/modules/auth/audit.service';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
@@ -170,11 +172,15 @@ export class TokenRefreshService {
       deviceName: existingSession.deviceName ?? undefined,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const brandDb = brandContext.db as any;
-    await brandDb.transaction(async (tx: any) => {
-      const txTokenRepo = brandTokenRepo.withDb(tx, { refreshTokens: brandContext.tables.refreshTokens });
-      await txTokenRepo.revokeToken(oldTokenHash);
+    const targetDb = useBrandBinding ? brandContext.db : db;
+    await targetDb.transaction(async (tx) => {
+      const txTokenRepo = typeof brandTokenRepo.withDb === 'function'
+        ? brandTokenRepo.withDb(tx, { refreshTokens: brandContext.tables.refreshTokens })
+        : brandTokenRepo;
+      const consumedParent = await txTokenRepo.consumeToken(oldTokenHash, userId);
+      if (!consumedParent) {
+        throw new Error('Refresh token has been revoked or already consumed');
+      }
       await txTokenRepo.createRefreshToken({
         userId,
         token: newRefreshTokenHash,

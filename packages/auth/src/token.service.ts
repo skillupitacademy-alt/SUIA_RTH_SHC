@@ -326,6 +326,7 @@ export class TokenService {
       .setProtectedHeader({ alg: 'HS256' })
       .setAudience(audience)
       .setIssuedAt()
+      .setJti(globalThis.crypto.randomUUID())
       .setExpirationTime(REFRESH_TOKEN_EXPIRE)
       .sign(secret);
   }

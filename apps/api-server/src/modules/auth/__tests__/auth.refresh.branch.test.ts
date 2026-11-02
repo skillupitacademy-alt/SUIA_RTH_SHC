@@ -18,6 +18,7 @@ const mockTokenRepo = {
     createRefreshToken: vi.fn(),
     revokeById: vi.fn(),
     revokeToken: vi.fn(),
+    consumeToken: vi.fn().mockResolvedValue({ id: 's1', userId: 'u1' }),
     updateLastUsed: vi.fn(),
     withDb: vi.fn(function(this: any) { return this; })
 };
@@ -55,9 +56,9 @@ describe('AuthService.refresh generic branches', () => {
         expect(result.accessToken).toBe('access');
         expect(result.refreshToken).toBe('refresh');
 
-        // Verify token rotation occurred: old token revoked, new token created
-        // Note: refresh flow uses revokeToken (by hash) in transaction, not revokeById
-        expect(mockTokenRepo.revokeToken).toHaveBeenCalledTimes(1);
+        // Verify token rotation occurred: parent atomically consumed, successor created
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledTimes(1);
+        expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
         expect(mockTokenRepo.createRefreshToken).toHaveBeenCalledTimes(1);
         expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledTimes(1);
     });
