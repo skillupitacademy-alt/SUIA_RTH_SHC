@@ -442,7 +442,7 @@ implementation remains SHC-only.
 
 ### W1.1 - Tenant Identity Vocabulary and Architecture Reconciliation
 **Root cause:** `RC-ID-01`
-**Status:** `IN_PROGRESS` (owner clarification recorded; documentation/source reconciliation only)
+**Status:** `VERIFICATION_READY` (Sol review of 3021c24d corrected in ed09bbf7: database topology, identity bridge projection semantics, and people DB email conflict fully traced and verified by Gemini in Rev 2 report; pending Sol architectural acceptance)
 **Owner:** Sol
 **Implementation:** Sonnet 4.5 (one documentation/design author)
 **Independent verification:** Gemini
@@ -450,6 +450,7 @@ implementation remains SHC-only.
 **Branch:** remediation/w1-1-identity-reconciliation
 **Baseline:** 567970d55f7b147d0a32417fdc7d89d24697c44e
 **Scope and task package:** `audit/W1.1_Owner_Identity_Clarification_and_Reconciliation.md`
+**Latest Sol review/correction package:** `audit/W1.1_Sol_Review_3021c24d.md`
 
 Owner direction: independent SUIA and RTH learner identities and records; SHC
 provides tenant-authorized shared capabilities. No implicit global learner account,
