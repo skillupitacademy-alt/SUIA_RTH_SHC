@@ -575,8 +575,8 @@ Traced token issuer/audience/platform, stored owner, DB selection, TOCTOU concur
 **Controlled batch assignment:** `audit/W1.2_Gemini_Controlled_Batch_01.md` - Gemini may implement REFRESH-02 and then prepare REFRESH-03 read-only in one run, using separate commits/evidence and separate Sol acceptance. No REFRESH-03 behavior changes or other ticket expansion authorized.
 
 ### W1.2-REFRESH-02 - Atomic Single-Consumer Refresh Rotation
-**Status:** `IMPLEMENTED_UNVERIFIED` (Gemini implementation complete: additive jti for same-second collisions, consumeToken CAS in transaction, 9/9 atomic rotation tests, 20/20 focused tests, full quality checks pass; ready for Opus 4.6 review and Sol acceptance)
-**Wave / root cause:** 1 / RC-ID-01
+**Status:** `IMPLEMENTED_UNVERIFIED` (Gemini implementation & review corrections complete: additive jti for same-second collisions, consumeToken CAS in transaction with strictly-typed TransactionDb without suppressions/any, actual-source AST mutation proof, restored audience-mismatch test, repaired blocked-branch test mock, 20/20 focused tests, full quality checks pass; ready for Opus review and Sol acceptance)
+**Wave / root cause:** 1 / RC-ROT-01
 **Application / priority:** API refresh service and canonical signer / P0
 **Dependency:** W1.2-REFRESH-01 source discovery accepted
 **Implementer:** Gemini 3.8 (sole worker per audit/W1.2_Gemini_Controlled_Batch_01.md)
@@ -590,7 +590,7 @@ only to prevent reproduced same-second collision; preserved legacy verifier comp
 schema, issuer/key migration, family-revocation design or deployment authorized.
 
 ### W1.2-REFRESH-03 - Authority and Account Lifecycle Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` (Gemini read-only investigation complete: traced BFF/proxy/route -> auth facade -> service -> token verifier -> stored-row owner and DB selection; authority matrix and follow-on proposals documented in audit/W1.2-REFRESH-03_Authority_Investigation.md; ready for Opus 4.6 review and Sol acceptance)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Gemini read-only investigation complete: traced BFF/proxy/route -> auth facade -> service -> token verifier -> stored-row owner and DB selection; authority matrix, review corrections for qualified cross-tenant risks/unverified ingress, and follow-on proposals W1.2-REFRESH-05/06 documented in audit/W1.2-REFRESH-03_Authority_Investigation.md; ready for Opus review and Sol acceptance)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** shared auth and tenant boundaries / P0 design
 **Implementer:** Gemini 3.8 (sole worker per audit/W1.2_Gemini_Controlled_Batch_01.md)
@@ -611,6 +611,18 @@ Qualify revoked-token rejection versus reuse detection, actual token-family
 ownership/storage, descendant revocation policy and audit-after-commit response
 failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
+
+### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application / priority:** API refresh service / P1
+**Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates.
+
+### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application / priority:** API refresh service / P1
+**Scope:** Inject `UserRepository` into `TokenRefreshService`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); fetch fresh user roles and email from database on refresh rather than propagating stale JWT claims; resolves baseline `auth.refresh.blocked.branch.test.ts`.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `PLANNED`
