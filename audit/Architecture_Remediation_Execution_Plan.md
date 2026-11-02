@@ -572,6 +572,8 @@ Traced token issuer/audience/platform, stored owner, DB selection, TOCTOU concur
 
 **Authoritative acceptance:** `audit/W1.2-REFRESH-01_Sol_Acceptance.md`. No assertion of five executed Critical exploits; no existing production behavior was changed.
 
+**Controlled batch assignment:** `audit/W1.2_Gemini_Controlled_Batch_01.md` - Gemini may implement REFRESH-02 and then prepare REFRESH-03 read-only in one run, using separate commits/evidence and separate Sol acceptance. No REFRESH-03 behavior changes or other ticket expansion authorized.
+
 ### W1.2-REFRESH-02 - Atomic Single-Consumer Refresh Rotation
 **Status:** `PLANNED`
 **Wave / root cause:** 1 / RC-ID-01
