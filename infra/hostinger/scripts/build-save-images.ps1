@@ -344,10 +344,20 @@ if ($selected -contains 'skillhubcore-admin') {
       throw "Evidence timing invalid: completion ($($evidence.timing.completionUtc)) before start ($($evidence.timing.startUtc))"
     }
     
-    # Freshness check: evidence must be from the last hour
+    # Freshness check with bounded clock-skew policy:
+    # - Accept receipts up to 60 minutes old
+    # - Reject future-dated receipts (allow max 5 minutes clock skew)
+    # - Reject invalid/unparseable timing
     $ageMinutes = ($now - $completionTime).TotalMinutes
+    
+    # Reject future receipts beyond allowed clock skew
+    if ($ageMinutes -lt -5) {
+      throw "Evidence has future completion time (appears $([Math]::Round(-$ageMinutes, 1)) minutes in the future, max clock skew: 5 minutes). Check system clocks or reject tampered evidence."
+    }
+    
+    # Reject stale receipts
     if ($ageMinutes -gt 60) {
-      throw "Evidence is too old (completed $([Math]::Round($ageMinutes, 1)) minutes ago). Run deployment orchestrator or quality gate helper to create fresh evidence."
+      throw "Evidence is too old (completed $([Math]::Round($ageMinutes, 1)) minutes ago, max age: 60 minutes). Run deployment orchestrator or quality gate helper to create fresh evidence."
     }
   } catch {
     throw "Evidence timing validation failed: $_"

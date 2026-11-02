@@ -53,22 +53,9 @@ function Write-Err {
     Write-Host "[GATE-ERROR] $Message" -ForegroundColor Red 
 }
 
-# Validate parameters
+# Validate parameters - filesystem checks only, no Git yet
 if (-not (Test-Path $RepositoryRoot)) {
     Write-Err "Repository root does not exist: $RepositoryRoot"
-    exit 1
-}
-
-# Validate it's a git repository
-try {
-    $gitDir = git -C $RepositoryRoot rev-parse --git-dir 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Err "Not a git repository: $RepositoryRoot"
-        Write-Err "Git output: $gitDir"
-        exit 1
-    }
-} catch {
-    Write-Err "Cannot validate git repository: $_"
     exit 1
 }
 
@@ -81,8 +68,8 @@ if (-not (Test-Path $EvidenceDir)) {
     }
 }
 
-# INVALIDATE PRIOR SUCCESS BEFORE FALLIBLE PREPARATION
-# This ensures failed attempts cannot leave reusable success
+# INVALIDATE PRIOR SUCCESS BEFORE ANY GIT/GATE OPERATIONS
+# This ensures no Git failure can leave reusable old success
 $evidencePath = Join-Path $EvidenceDir "quality-gate-skillhubcore-admin-$ImageTag.json"
 if (Test-Path $evidencePath) {
     Write-Info "Invalidating previous evidence before gate attempt: $evidencePath"
@@ -93,6 +80,20 @@ if (Test-Path $evidencePath) {
         Write-Err "Cannot invalidate previous evidence: $_"
         exit 1
     }
+}
+
+# NOW validate it's a git repository (after invalidation)
+Write-Info "Validating git repository..."
+try {
+    $gitDir = git -C $RepositoryRoot rev-parse --git-dir 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Err "Not a git repository: $RepositoryRoot"
+        Write-Err "Git output: $gitDir"
+        exit 1
+    }
+} catch {
+    Write-Err "Cannot validate git repository: $_"
+    exit 1
 }
 
 # Get full commit SHA (40 chars) using git -C

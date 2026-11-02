@@ -465,13 +465,14 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Success "Docker images built and saved"
 
-# Step 6: Verify artifacts
-Write-Info "Step 6/9: Verifying build artifacts..."
+# Step 6: Verify and validate artifacts before publication
+Write-Info "Step 6/9: Verifying and validating build artifacts before publication..."
 $artifactPath = ".\infra\hostinger\dist\images"
 $tarFile = "$artifactPath\quiz-platform-images-$tag.tar"
 $shaFile = "$artifactPath\quiz-platform-images-$tag.tar.sha256"
 $manifestFile = "$artifactPath\quiz-platform-images-$tag.manifest.json"
 
+# Basic existence checks
 if (-not (Test-Path $tarFile)) {
     Write-Err "Docker image archive not found: $tarFile"
     exit 1
@@ -485,18 +486,165 @@ if (-not (Test-Path $manifestFile)) {
     exit 1
 }
 
+# Validate local archive checksum
+Write-Host "  -> Validating local archive checksum..." -ForegroundColor Gray
+$expectedHash = (Get-Content $shaFile).Split(' ')[0]
+$actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $tarFile).Hash.ToLowerInvariant()
+if ($expectedHash -ne $actualHash) {
+    Write-Err "Local archive checksum mismatch!"
+    Write-Host "  Expected: $expectedHash" -ForegroundColor Red
+    Write-Host "  Actual:   $actualHash" -ForegroundColor Red
+    Write-Err "Archive may be corrupted or tampered. Cannot proceed with publication."
+    exit 1
+}
+Write-Host "  -> Local checksum validated" -ForegroundColor Green
+
+# For SHC deployments: Validate publication association
+if ($servicesToDeploy -contains 'skillhubcore-admin') {
+    Write-Host "  -> Validating SHC publication association..." -ForegroundColor Gray
+    
+    # Load and validate manifest
+    try {
+        $manifest = Get-Content -Raw $manifestFile | ConvertFrom-Json
+    } catch {
+        Write-Err "Cannot parse manifest: $_"
+        exit 1
+    }
+    
+    # Verify manifest has quality gate evidence
+    if (-not $manifest.PSObject.Properties['qualityGateEvidence']) {
+        Write-Err "Manifest missing required qualityGateEvidence for SHC deployment"
+        exit 1
+    }
+    
+    $manifestEvidence = $manifest.qualityGateEvidence
+    
+    # Verify current source commit matches manifest
+    $repoRoot = $PSScriptRoot | Split-Path
+    $currentCommit = (git -C $repoRoot rev-parse HEAD 2>&1).Trim()
+    if ($LASTEXITCODE -ne 0) {
+        Write-Err "Cannot verify current source commit: $currentCommit"
+        exit 1
+    }
+    
+    if ($manifest.gitCommit -ne $currentCommit) {
+        Write-Err "Manifest source commit mismatch"
+        Write-Host "  Manifest: $($manifest.gitCommit)" -ForegroundColor Red
+        Write-Host "  Current:  $currentCommit" -ForegroundColor Red
+        Write-Err "Cannot publish artifacts from different commit"
+        exit 1
+    }
+    
+    if ($manifestEvidence.sourceCommit -ne $currentCommit) {
+        Write-Err "Quality gate evidence commit mismatch"
+        Write-Host "  Evidence: $($manifestEvidence.sourceCommit)" -ForegroundColor Red
+        Write-Host "  Current:  $currentCommit" -ForegroundColor Red
+        Write-Err "Cannot publish with mismatched evidence"
+        exit 1
+    }
+    
+    # Verify invocation matches
+    if ($manifestEvidence.invocationId -ne $invocationId) {
+        Write-Err "Quality gate evidence invocation mismatch"
+        Write-Host "  Manifest: $($manifestEvidence.invocationId)" -ForegroundColor Red
+        Write-Host "  Expected: $invocationId" -ForegroundColor Red
+        Write-Err "Cannot publish artifacts from different invocation"
+        exit 1
+    }
+    
+    # Verify service matches
+    if ($manifestEvidence.service -ne 'skillhubcore-admin') {
+        Write-Err "Quality gate evidence service mismatch: expected 'skillhubcore-admin', got '$($manifestEvidence.service)'"
+        exit 1
+    }
+    
+    # Verify status
+    if ($manifestEvidence.status -ne 'PASS') {
+        Write-Err "Cannot publish: quality gate status is not PASS (got: $($manifestEvidence.status))"
+        exit 1
+    }
+    
+    # Load and validate actual receipt file
+    $evidenceDir = Join-Path $repoRoot "infra\hostinger\dist\evidence"
+    $evidencePath = Join-Path $evidenceDir $manifestEvidence.evidenceFile
+    
+    if (-not (Test-Path $evidencePath)) {
+        Write-Err "Evidence file referenced by manifest not found: $evidencePath"
+        Write-Err "Cannot publish without validated receipt"
+        exit 1
+    }
+    
+    # Verify receipt integrity matches manifest
+    $receiptHash = (Get-FileHash -LiteralPath $evidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($receiptHash -ne $manifestEvidence.evidenceIntegrity.hash) {
+        Write-Err "Evidence integrity hash mismatch!"
+        Write-Host "  Manifest: $($manifestEvidence.evidenceIntegrity.hash)" -ForegroundColor Red
+        Write-Host "  Actual:   $receiptHash" -ForegroundColor Red
+        Write-Err "Receipt may have been modified after packaging. Cannot publish."
+        exit 1
+    }
+    
+    # Validate receipt content and apply freshness policy at publication
+    try {
+        $receiptContent = Get-Content -Raw $evidencePath | ConvertFrom-Json
+    } catch {
+        Write-Err "Cannot parse evidence receipt: $_"
+        exit 1
+    }
+    
+    # Re-apply freshness policy at publication time
+    try {
+        $completionTime = [DateTime]::Parse($receiptContent.timing.completionUtc, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal)
+        $now = [DateTime]::UtcNow
+        $ageMinutes = ($now - $completionTime).TotalMinutes
+        
+        # Reject future receipts (max 5 min clock skew)
+        if ($ageMinutes -lt -5) {
+            Write-Err "Evidence has future completion time (appears $([Math]::Round(-$ageMinutes, 1)) minutes in the future)"
+            exit 1
+        }
+        
+        # Reject stale receipts (max 60 min age)
+        if ($ageMinutes -gt 60) {
+            Write-Err "Evidence is too old for publication (completed $([Math]::Round($ageMinutes, 1)) minutes ago, max age: 60 minutes)"
+            exit 1
+        }
+    } catch {
+        Write-Err "Cannot validate evidence freshness at publication: $_"
+        exit 1
+    }
+    
+    Write-Host "  -> SHC publication association validated" -ForegroundColor Green
+    Write-Host "     Commit: $currentCommit" -ForegroundColor DarkGray
+    Write-Host "     Invocation: $invocationId" -ForegroundColor DarkGray
+    Write-Host "     Receipt integrity: verified" -ForegroundColor DarkGray
+    
+    # Copy receipt to release artifacts directory for upload
+    $receiptDestination = Join-Path $artifactPath $manifestEvidence.evidenceFile
+    Copy-Item -LiteralPath $evidencePath -Destination $receiptDestination -Force
+    Write-Host "  -> Receipt copied to release artifacts" -ForegroundColor Gray
+}
+
 $tarSize = (Get-Item $tarFile).Length / 1MB
-Write-Success "Artifacts verified (Archive size: $([math]::Round($tarSize, 2)) MB)"
+Write-Success "Artifacts verified and validated (Archive size: $([math]::Round($tarSize, 2)) MB)"
 
 # Step 7: Upload to production server
 Write-Info "Step 7/9: Uploading artifacts to production server..."
 Write-Host "  -> Uploading to 72.61.115.49:/opt/platform/releases/" -ForegroundColor Gray
 
-scp `
-    $tarFile `
-    $shaFile `
-    $manifestFile `
-    root@72.61.115.49:/opt/platform/releases/
+# Build file list: always tar, sha, manifest; add receipt for SHC
+$filesToUpload = @($tarFile, $shaFile, $manifestFile)
+
+if ($servicesToDeploy -contains 'skillhubcore-admin') {
+    $manifest = Get-Content -Raw $manifestFile | ConvertFrom-Json
+    $receiptFile = Join-Path $artifactPath $manifest.qualityGateEvidence.evidenceFile
+    if (Test-Path $receiptFile) {
+        $filesToUpload += $receiptFile
+        Write-Host "  -> Including SHC quality gate receipt" -ForegroundColor DarkGray
+    }
+}
+
+scp @filesToUpload root@72.61.115.49:/opt/platform/releases/
 
 if ($LASTEXITCODE -ne 0) {
     Write-Err "Failed to upload artifacts to production server"
