@@ -149,6 +149,11 @@ docker-compose.local-build.yml
         Copy-Item -Path (Join-Path $ScriptsDir "enforce-shc-quality-gate.ps1") -Destination "scripts\" -Force
         Copy-Item -Path (Join-Path $ScriptsDir "..\infra\hostinger\scripts\build-save-images.ps1") -Destination "infra\hostinger\scripts\" -Force
         
+        # Copy test helper for scenario 11
+        $testHelperDir = "scripts\__tests__"
+        New-Item -ItemType Directory -Force -Path $testHelperDir | Out-Null
+        Copy-Item -Path (Join-Path $ScriptsDir "__tests__\inject-drift-at-deployer-hash.ps1") -Destination "$testHelperDir\" -Force
+        
         # Initial commit (suppress warnings)
         $ErrorActionPreference = 'Continue'
         git add -A *>&1 | Where-Object { $_ -notlike "*warning*" } | Out-Null
@@ -812,45 +817,35 @@ try {
     Remove-Item "infra\hostinger\dist\evidence\*.json" -ErrorAction SilentlyContinue
     Remove-Item "infra\hostinger\dist\images\*" -ErrorAction SilentlyContinue
     Remove-Item "$TestRoot\uploads.txt" -ErrorAction SilentlyContinue
-    Remove-Item "scenario11-injection-trace.txt" -ErrorAction SilentlyContinue
+    Remove-Item "$TestRoot\scenario11-injection-trace.txt" -ErrorAction SilentlyContinue
     Remove-Item "drift-at-final-check.txt" -ErrorAction SilentlyContinue
     
-    # Tell Docker stub to inject drift asynchronously after builder returns
-    $env:TEST_DOCKER_DIRTY_AFTER_SAVE = "1"
-    
-    # Run deployment - Docker stub will inject drift after builder completes
-    $deployScript = Join-Path (Get-Location) "scripts\deploy-smart.ps1"
+    # Use wrapper script with deterministic Get-FileHash override
+    $deployScript = Join-Path (Get-Location) "scripts" | Join-Path -ChildPath "deploy-smart.ps1"
+    $wrapperScript = Join-Path (Get-Location) "scripts" | Join-Path -ChildPath "__tests__" | Join-Path -ChildPath "inject-drift-at-deployer-hash.ps1"
     $outputFile = Join-Path $TestRoot "scenario11-output.txt"
     $traceFile = Join-Path $TestRoot "scenario11-injection-trace.txt"
     
-    $null = powershell -NoProfile -ExecutionPolicy Bypass -Command @"
-`$env:TEST_ROOT = '$TestRoot'
-`$env:TEST_DOCKER_DIRTY_AFTER_SAVE = '1'
-`$env:NON_INTERACTIVE = '1'
-try {
-    & '$deployScript' -Services 'skillhubcore-admin' -NonInteractive 2>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
-    exit `$LASTEXITCODE
-} catch {
-    `$_ | Out-File -FilePath '$outputFile' -Append -Encoding UTF8
-    exit 1
-}
-"@
+    # Run wrapper in child process to isolate override
+    $null = powershell -NoProfile -ExecutionPolicy Bypass -File "$wrapperScript" `
+        -DeployScript "$deployScript" `
+        -FixtureRepo "$((Get-Location).Path)" `
+        -TracePath "$traceFile" `
+        *>&1 | Out-File -FilePath $outputFile -Encoding UTF8
     
     $exitCode = $LASTEXITCODE
     $output = if (Test-Path $outputFile) { Get-Content $outputFile -Raw } else { "" }
     Remove-Item $outputFile -ErrorAction SilentlyContinue
-    $env:TEST_DOCKER_DIRTY_AFTER_SAVE = "0"
     
-    # Wait for async injection job to complete
-    Start-Sleep -Milliseconds 500
-    Get-Job | Wait-Job -Timeout 5 | Remove-Job -Force -ErrorAction SilentlyContinue
-    
-    # Verify injection occurred
-    if (Test-Path $traceFile) {
-        Write-Host "  [TRACE] Drift injected asynchronously after builder return" -ForegroundColor Cyan
+    # Verify injection trace exists (proves override worked)
+    $injectionOccurred = Test-Path $traceFile
+    if ($injectionOccurred) {
+        $caller = Get-Content $traceFile -Raw
+        Write-Host "  [TRACE] Drift injected from: $caller" -ForegroundColor Cyan
         Remove-Item $traceFile -ErrorAction SilentlyContinue
     } else {
-        Write-Host "  [WARN] No injection trace found" -ForegroundColor Yellow
+        Write-Host "  [FAIL] No injection trace found - override did not execute" -ForegroundColor Red
+        $script:FailCount++
     }
     
     # Verify builder succeeded (manifest created)
@@ -880,12 +875,10 @@ try {
     
     # Clean up
     Remove-Item "drift-at-final-check.txt" -ErrorAction SilentlyContinue
-    Get-Job | Remove-Job -Force -ErrorAction SilentlyContinue
     
 } catch {
     Write-Host "  [FAIL] Test scenario threw unexpected exception: $_" -ForegroundColor Red
     $script:FailCount++
-    $env:TEST_DOCKER_DIRTY_AFTER_SAVE = "0"
 } finally {
     Pop-Location
 }
