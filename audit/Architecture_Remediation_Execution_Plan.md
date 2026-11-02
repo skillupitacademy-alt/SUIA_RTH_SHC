@@ -496,7 +496,7 @@ implementation remains SHC-only.
 **Authoritative acceptance:** `audit/W1.1_Sol_Acceptance.md`. Runtime findings remain open; prior interim status labels are superseded.
 
 ### W1.1.2 - Session Persistence and Tenant Binding Discovery
-**Status:** `PLANNED`
+**Status:** `CORRECTED` (Sol review corrections applied: existing routes documented, dropped-userId defect confirmed, focused W1.2-SESS-01 proposal)
 **Root cause:** `RC-ID-01`
 **Wave:** 1
 **Application:** SHC auth with SUIA/RTH read-only dependencies
@@ -507,6 +507,32 @@ implementation remains SHC-only.
 **Dependency:** W1.1 accepted documentation
 **Scope, audit mapping, allowed files and acceptance:** `audit/W1.1.2_Session_Discovery_Task.md`
 No production changes or DB access; source evidence and proposed regression cases only.
+
+**Corrected evidence:** `audit/W1.1.2_Session_Persistence_Investigation.md` (commit 1d8cf320, reviewed and corrected 2025-01-10).
+
+**Key findings:**
+- Existing routes documented: GET/DELETE /api/auth/sessions, DELETE /api/auth/sessions/[sessionId], POST /api/auth/logout-all
+- SU-SESSION-010 ownership defect confirmed: GlobalLogoutService.revokeSession (L113) drops userId before calling TokenRepository.revokeById
+- Generic SessionService wiring unresolved (POST /api/auth/logout-all); runtime behavior unknown; alternative working route exists (DELETE /api/auth/sessions)
+- No brand column in refresh_tokens; not a defect given database routing and JWT signature validation
+- Focused implementation proposal: W1.2-SESS-01 for single-session revocation ownership only
+
+### W1.2-SESS-01 - Existing Single-Session Revocation Ownership
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application:** API auth service supporting independent SUIA/RTH tenants
+**Audit mapping:** SU-SESSION-010; source review W1.1.2
+**Priority:** P0 security correction
+**Implementer:** Sonnet 4.5 when assigned
+**Independent verifier:** Gemini; specialist security review before acceptance
+**Acceptance:** Sol
+**Dependency:** corrected W1.1.2 evidence and bounded implementation package
+Source confirms GlobalLogoutService drops the verified user ID before an optional
+repository owner filter. Correct the existing path; do not add duplicate routes.
+Require owner-scoped persistence, no accidental unscoped revocation, relevant
+caller review, positive/cross-user/cross-platform/invalid-context regression tests,
+applicable quality checks and independently executed verification. No authorization
+of refresh redesign, schema migration or deployment from this planned entry.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
