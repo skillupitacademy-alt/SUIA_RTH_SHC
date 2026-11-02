@@ -285,7 +285,7 @@ claimed. Existing audit findings remain open. RC-CI-01 remains IN_PROGRESS.
 
 ### W0.2-HOSTINGER - Pre-build Quality Enforcement and Provenance
 **Root cause:** `RC-CI-01`
-**Status:** `IMPLEMENTED_UNVERIFIED` (awaiting Gemini verification)
+**Status:** `VERIFICATION_FAILED` (awaiting Gemini verification)
 **Application:** SHC deployment path; other service qualification excluded
 **Priority:** P0
 **Sole implementer:** Claude Sonnet 4.5
@@ -326,6 +326,8 @@ where required. Runtime evidence not obtained remains explicitly unverified.
 SHC deployment enforcement is not complete until this follow-up is accepted.
 Overall deployment safety additionally requires the SUIA, RTH and mixed-service
 follow-ups below. Their registration does not expand this SHC ticket's scope.
+
+**Sol review:** `audit/W0.2_HOSTINGER_Sol_Review_f691fb7e.md` ? builder drift, receipt reuse and executable coverage corrections required.
 
 ### DEPLOY-SUIA-01 - SUIA Quality Gate and Hostinger Enforcement
 **Root cause:** `RC-CI-01`
