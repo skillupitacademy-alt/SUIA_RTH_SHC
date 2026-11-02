@@ -8,11 +8,19 @@ import { container } from '../../core/container';
 
 const mockTokenService = { 
     verifyRefreshToken: vi.fn(),
-    hashToken: vi.fn().mockResolvedValue('hash')
+    hashToken: vi.fn().mockResolvedValue('hash'),
+    generateAccessToken: vi.fn().mockResolvedValue('access-token'),
+    generateRefreshToken: vi.fn().mockResolvedValue('refresh-token'),
 };
 const mockUserRepo = { findByIdWithDetails: vi.fn() };
-const mockTokenRepo = { findByHash: vi.fn() };
-const mockAuditService = { log: vi.fn() };
+const mockTokenRepo = {
+    findByHash: vi.fn(),
+    updateLastUsed: vi.fn().mockResolvedValue(undefined),
+    consumeToken: vi.fn().mockResolvedValue({ id: 't1', userId: 'u1' }),
+    createRefreshToken: vi.fn().mockResolvedValue(undefined),
+    withDb: vi.fn(function() { return this; }),
+};
+const mockAuditService = { log: vi.fn().mockResolvedValue(undefined) };
 
 vi.mock('../token.service', () => ({ TokenService: vi.fn().mockImplementation(() => mockTokenService) }));
 vi.mock('../repositories/user.repository', () => ({ UserRepository: vi.fn().mockImplementation(() => mockUserRepo) }));

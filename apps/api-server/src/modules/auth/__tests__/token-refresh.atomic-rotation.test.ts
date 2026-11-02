@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import * as ts from 'typescript';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { and, eq, gt } from 'drizzle-orm';
 import { TokenRefreshService } from '../token-refresh.service';
@@ -11,8 +14,8 @@ import { TokenRepository } from '../repositories/token.repository';
  * 2. Deterministic concurrency race: Two concurrent requests read active parent;
  *    atomic consume ensures exactly ONE winner, while the second request fails closed
  *    with zero successor leaked or persisted.
- * 3. Pre-fix vulnerability reproduction: Proves that without atomic compare-and-swap,
- *    two concurrent requests would both succeed and fork two replacement tokens.
+ * 3. Pre-fix vulnerability reproduction (Actual-Source Mutant): Proves that without
+ *    atomic compare-and-swap in token.repository.ts, two concurrent requests fork tokens.
  * 4. Rollback: If successor insertion fails, parent consumption is rolled back.
  * 5. Already-revoked, expired, absent, or wrong-owner tokens cannot be consumed.
  * 6. Tenant isolation: Colliding session IDs across RTH and SUIA remain strictly isolated.
@@ -414,20 +417,34 @@ describe('W1.2-REFRESH-02: Atomic Single-Consumer Refresh Rotation', () => {
       expect(successors[0].revoked).toBe(false);
     });
 
-    it('PRE-FIX VULNERABILITY REPRODUCTION: Shows that without atomic CAS, concurrent requests fork tokens', async () => {
-      // Simulate vulnerable repository using old unconditional revokeToken
-      class VulnerableMockRepo extends TokenRepository {
+    it('PRE-FIX VULNERABILITY REPRODUCTION: Actual-source mutant proves that without atomic CAS, concurrent requests fork tokens', async () => {
+      // 1. Read actual production source file
+      const prodRepoPath = path.resolve(__dirname, '../repositories/token.repository.ts');
+      const prodSource = fs.readFileSync(prodRepoPath, 'utf8');
+
+      expect(prodSource).toContain('eq(this.refreshTokensTable.revoked, false)');
+      expect(prodSource).toContain('gt(this.refreshTokensTable.expiresAt, now)');
+
+      // 2. Extract production consumeToken method
+      const match = prodSource.match(/async consumeToken\([^)]*\): Promise<[^>]*>\s*\{([\s\S]*?)\n  \}/);
+      expect(match).not.toBeNull();
+
+      // 3. Mutate: Remove active CAS predicates (simulating pre-fix unconditional update)
+      const mutantBody = match![1]
+        .replace(/eq\(this\.refreshTokensTable\.revoked,\s*false\),?\s*/, '')
+        .replace(/gt\(this\.refreshTokensTable\.expiresAt,\s*now\),?\s*/, '')
+        .replace(/if\s*\(Array\.isArray\(result\)\s*&&\s*result\.length === 1\)/, 'if (Array.isArray(result) && result.length >= 0)');
+
+      const jsCode = ts.transpile(mutantBody);
+
+      class DisposableMutantRepo extends TokenRepository {
         withDb(dbClient: any, tables?: any): this {
-          return new VulnerableMockRepo(dbClient, tables) as this;
+          return new DisposableMutantRepo(dbClient, tables) as this;
         }
 
         async consumeToken(tokenHash: string, expectedUserId: string): Promise<any> {
-          // Vulnerable implementation: unconditional update (does not check revoked=false or rowCount)
-          await (this as any).dbInstance.update((this as any).refreshTokensTable)
-            .set({ revoked: true })
-            .where(eq((this as any).refreshTokensTable.token, tokenHash));
-          // Always returns truthy object simulating success
-          return { id: 'vulnerable-consumed' };
+          const fn = new Function('and', 'eq', 'gt', 'tokenHash', 'expectedUserId', `return (async function() { ${jsCode} }).call(this);`);
+          return await fn.call(this, and, eq, gt, tokenHash, expectedUserId);
         }
       }
 
@@ -458,7 +475,7 @@ describe('W1.2-REFRESH-02: Atomic Single-Consumer Refresh Rotation', () => {
         return row;
       });
 
-      const vulnRepo = new VulnerableMockRepo(rthAdapter as any, { refreshTokens: rthTable as any });
+      const vulnRepo = new DisposableMutantRepo(rthAdapter as any, { refreshTokens: rthTable as any });
       const vulnService = new TokenRefreshService(vulnRepo, mockTokenService, mockAuditService as any);
 
       const results = await Promise.allSettled([

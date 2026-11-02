@@ -8,6 +8,10 @@ import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
+type TransactionDb = {
+  transaction<T>(callback: (tx: Parameters<Parameters<typeof db.transaction>[0]>[0]) => Promise<T>): Promise<T>;
+};
+
 export class TokenRefreshService {
   constructor(
     private tokenRepo = container.get(TokenRepository),
@@ -116,9 +120,25 @@ export class TokenRefreshService {
     const userId = existingSession.userId;
     
     // Verify the old refresh token to get payload
-    const oldPayload = await this.tokenService.verifyRefreshToken(oldRefreshToken, {
-      audience: requestedAudience,
-    });
+    let oldPayload: Awaited<ReturnType<typeof this.tokenService.verifyRefreshToken>>;
+    try {
+      oldPayload = await this.tokenService.verifyRefreshToken(oldRefreshToken, {
+        audience: requestedAudience,
+      });
+    } catch (err) {
+      await this.auditService.log({
+        userId: existingSession.userId,
+        action: 'token_refresh_failed',
+        metadata: {
+          reason: 'invalid_token_signature_or_audience',
+          error: err instanceof Error ? err.message : String(err),
+          brand,
+        },
+        ip,
+        brand,
+      });
+      throw new Error('Invalid refresh token');
+    }
 
     const isAdmin = oldPayload.isAdmin === true;
     const tokenType = oldPayload.tokenType ?? (isAdmin ? 'admin' : 'user');
@@ -172,7 +192,7 @@ export class TokenRefreshService {
       deviceName: existingSession.deviceName ?? undefined,
     };
 
-    const targetDb = useBrandBinding ? brandContext.db : db;
+    const targetDb = (useBrandBinding ? brandContext.db : db) as TransactionDb;
     await targetDb.transaction(async (tx) => {
       const txTokenRepo = typeof brandTokenRepo.withDb === 'function'
         ? brandTokenRepo.withDb(tx, { refreshTokens: brandContext.tables.refreshTokens })
