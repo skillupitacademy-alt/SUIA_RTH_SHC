@@ -442,7 +442,7 @@ implementation remains SHC-only.
 
 ### W1.1 - Tenant Identity Vocabulary and Architecture Reconciliation
 **Root cause:** `RC-ID-01`
-**Status:** `VERIFICATION_FAILED` (Sol review of abc36be3: section 4 integration corrected locally; ownership summaries, Wave 8 and evidence consistency remain pending)
+**Status:** `VERIFICATION_READY` (Gemini Rev 5 PASS for commit `dedba891`; pending Sol final acceptance)
 **Owner:** Sol
 **Implementation:** Sonnet 4.5 (documentation/architecture amendment)
 **Independent verification:** Gemini 3.8
@@ -451,7 +451,7 @@ implementation remains SHC-only.
 **Baseline:** 567970d55f7b147d0a32417fdc7d89d24697c44e
 **Scope and task package:** `audit/W1.1_Approved_Amendment_Task.md`
 **Owner approval:** `audit/W1.1_Architecture_Decision_For_Owner_Approval.md`
-**Sol reviews:** `audit/W1.1_Sol_Review_3021c24d.md`, `audit/W1.1_Sol_Review_60bd89bb.md`, `audit/W1.1_Sol_Review_147bf562.md`
+**Sol reviews:** `audit/W1.1_Sol_Review_3021c24d.md`, `audit/W1.1_Sol_Review_60bd89bb.md`, `audit/W1.1_Sol_Review_147bf562.md`, `audit/W1.1_Sol_Review_abc36be3.md`
 **Implementation evidence:** `audit/W1.1_Correction_Summary.md`, `audit/W1.1_Evidence_Authority_Table.md`
 
 **Owner-approved architecture direction:**
@@ -466,11 +466,11 @@ implementation remains SHC-only.
 
 **Deliverables:**
 - ✅ `audit/FinalAechitecture.md` amended (sections 3, 4, table 2590)
-- ✅ `audit/W1.1_Identity_Contract_Reconciliation.md` corrected (per Sol reviews 3021c24d/60bd89bb/147bf562)
+- ✅ `audit/W1.1_Identity_Contract_Reconciliation.md` corrected (per Sol reviews 3021c24d/60bd89bb/147bf562/abc36be3)
 - ✅ `audit/W1.1_Evidence_Authority_Table.md` created (authoritative identity contract)
 - ✅ `audit/W1.1_Correction_Summary.md` created (implementation evidence)
-- ✅ `audit/Architecture_Remediation_Execution_Plan.md` W1.1/W1.2 criteria reconciled
-- ⏳ Gemini independent verification pending
+- ✅ `audit/Architecture_Remediation_Execution_Plan.md` W1.1/W1.2/Wave 8 criteria reconciled
+- ✅ Gemini independent verification complete (Revision 5 - PASS)
 - ⏳ Sol final acceptance pending
 
 **Acceptance criteria:**
