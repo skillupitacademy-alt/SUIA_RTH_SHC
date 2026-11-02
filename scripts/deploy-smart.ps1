@@ -607,6 +607,24 @@ if ($servicesToDeploy -contains 'skillhubcore-admin') {
         exit 1
     }
     
+    # Re-run FULL production validation to catch invalid gate profile, exit code, etc.
+    if (-not $receiptContent.PSObject.Properties['gate'] -or 
+        -not $receiptContent.gate.PSObject.Properties['profile'] -or
+        $receiptContent.gate.profile -ne "quality:skillhubcore") {
+        Write-Err "Receipt has invalid gate profile: expected 'quality:skillhubcore', got '$($receiptContent.gate.profile)'"
+        exit 1
+    }
+    
+    if (-not $receiptContent.PSObject.Properties['exitCode'] -or $receiptContent.exitCode -ne 0) {
+        Write-Err "Receipt has invalid exit code: expected 0, got $($receiptContent.exitCode)"
+        exit 1
+    }
+    
+    if (-not $receiptContent.PSObject.Properties['status'] -or $receiptContent.status -ne "PASS") {
+        Write-Err "Receipt has invalid status: expected PASS, got $($receiptContent.status)"
+        exit 1
+    }
+    
     # Re-apply freshness policy at publication time
     try {
         $completionTime = [DateTime]::Parse($receiptContent.timing.completionUtc, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal)

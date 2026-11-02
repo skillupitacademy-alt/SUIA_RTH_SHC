@@ -172,12 +172,26 @@ if ($args -contains "compose" -and $args -contains "build") {
         git add docker-generated.txt 2>&1 | Out-Null
         git commit -m "Docker build generated file" 2>&1 | Out-Null
     }
+    if ($env:TEST_DOCKER_MUTATE_RECEIPT -eq "1") {
+        # Mutate the receipt file (change gate.profile and exitCode)
+        $receiptPath = Get-ChildItem -Path "infra\hostinger\dist\evidence\quality-gate-*.json" -File | Select-Object -First 1
+        if ($receiptPath) {
+            $receipt = Get-Content $receiptPath.FullName -Raw | ConvertFrom-Json
+            $receipt.gate.profile = "invalid:profile"
+            $receipt.exitCode = 9
+            $receipt | ConvertTo-Json -Depth 10 | Set-Content $receiptPath.FullName
+        }
+    }
     exit 0
 } elseif ($args -contains "save") {
     $idx = [array]::IndexOf($args, "-o")
     if ($idx -ge 0 -and ($idx + 1) -lt $args.Count) {
         $outputFile = $args[$idx + 1]
         "DOCKER_IMAGE_TAR" | Out-File -FilePath $outputFile -Encoding ASCII
+    }
+    if ($env:TEST_DOCKER_DIRTY_AT_SAVE -eq "1") {
+        # Create uncommitted file after docker save
+        "dirty-at-save" | Out-File -FilePath "dirty-at-save.txt" -Encoding ASCII
     }
     exit 0
 } elseif ($args -contains "image" -and $args -contains "inspect") {
@@ -523,6 +537,104 @@ try {
 } catch {
     Write-Host "  [FAIL] Publication validation test failed: $_" -ForegroundColor Red
     Assert-True "Deployment succeeded" $false
+} finally {
+    Pop-Location
+}
+
+# ----------------------------------------------------------------------------
+# Scenario 9: Dirty source at docker save (MUST REJECT, zero uploads)
+# ----------------------------------------------------------------------------
+Write-TestHeader "Dirty source at docker save detection (MUST REJECT)"
+
+Push-Location $MockRepoRoot
+try {
+    # Clean previous artifacts
+    Remove-Item "infra\hostinger\dist\evidence\*.json" -ErrorAction SilentlyContinue
+    Remove-Item "infra\hostinger\dist\images\*" -ErrorAction SilentlyContinue
+    Remove-Item "$TestRoot\uploads.txt" -ErrorAction SilentlyContinue
+    
+    # Tell Docker stub to create dirty file during docker save
+    $env:TEST_DOCKER_DIRTY_AT_SAVE = "1"
+    
+    $output = & "scripts\deploy-smart.ps1" `
+        -Services "skillhubcore-admin" `
+        -NonInteractive `
+        *>&1 | Out-String
+    
+    $exitCode = $LASTEXITCODE
+    $env:TEST_DOCKER_DIRTY_AT_SAVE = "0"
+    
+    Assert-True "Deployment rejected dirty source at docker save" ($exitCode -ne 0)
+    Assert-Contains "Error mentions uncommitted changes after packaging" $output "uncommitted changes"
+    
+    # Clean up dirty file created by stub
+    Remove-Item "dirty-at-save.txt" -ErrorAction SilentlyContinue
+    
+    # Verify zero uploads (critical: no artifacts published)
+    if (Test-Path "$TestRoot\uploads.txt") {
+        $uploads = Get-Content "$TestRoot\uploads.txt" -Raw
+        $uploadCount = ($uploads -split "`n" | Where-Object { $_ }).Count
+        Assert-True "Zero uploads after dirty source at save" ($uploadCount -eq 0)
+    } else {
+        Assert-True "Zero uploads after dirty source at save" $true
+    }
+    
+} catch {
+    $env:TEST_DOCKER_DIRTY_AT_SAVE = "0"
+    Assert-True "Deployment rejected dirty source at docker save" $true
+} finally {
+    Pop-Location
+}
+
+# ----------------------------------------------------------------------------
+# Scenario 10: Receipt mutation during build (MUST REJECT, zero uploads)
+# ----------------------------------------------------------------------------
+Write-TestHeader "Receipt mutation during build detection (MUST REJECT)"
+
+Push-Location $MockRepoRoot
+try {
+    # Clean dirty file from previous scenario
+    Remove-Item "dirty-at-save.txt" -ErrorAction SilentlyContinue
+    
+    # Clean previous artifacts
+    Remove-Item "infra\hostinger\dist\evidence\*.json" -ErrorAction SilentlyContinue
+    Remove-Item "infra\hostinger\dist\images\*" -ErrorAction SilentlyContinue
+    Remove-Item "$TestRoot\uploads.txt" -ErrorAction SilentlyContinue
+    
+    # Tell Docker stub to mutate receipt during build
+    $env:TEST_DOCKER_MUTATE_RECEIPT = "1"
+    
+    $ErrorActionPreference = 'Continue'
+    $output = & "scripts\deploy-smart.ps1" `
+        -Services "skillhubcore-admin" `
+        -NonInteractive `
+        2>&1 | Out-String
+    
+    $exitCode = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+    $env:TEST_DOCKER_MUTATE_RECEIPT = "0"
+    
+    Assert-True "Deployment rejected receipt mutation" ($exitCode -ne 0)
+    # Accept either digest mismatch OR validation failure (gate profile, exitCode, etc.)
+    $hasDigestError = $output -like "*digest*"
+    $hasProfileError = $output -like "*gate profile*"
+    $hasExitCodeError = $output -like "*exit code*"
+    $hasModifiedError = $output -like "*modified*"
+    $hasValidationError = $hasDigestError -or $hasProfileError -or $hasExitCodeError -or $hasModifiedError
+    Assert-True "Error mentions receipt digest mismatch or validation failure" $hasValidationError
+    
+    # Verify zero uploads (critical: no artifacts published)
+    if (Test-Path "$TestRoot\uploads.txt") {
+        $uploads = Get-Content "$TestRoot\uploads.txt" -Raw
+        $uploadCount = ($uploads -split "`n" | Where-Object { $_ }).Count
+        Assert-True "Zero uploads after receipt mutation" ($uploadCount -eq 0)
+    } else {
+        Assert-True "Zero uploads after receipt mutation" $true
+    }
+    
+} catch {
+    $env:TEST_DOCKER_MUTATE_RECEIPT = "0"
+    Assert-True "Deployment rejected receipt mutation" $true
 } finally {
     Pop-Location
 }

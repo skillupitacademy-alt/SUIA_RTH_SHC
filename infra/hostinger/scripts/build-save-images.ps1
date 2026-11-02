@@ -218,6 +218,8 @@ foreach ($service in $Services) {
 
 # W0.2-HOSTINGER: Verify quality gate evidence for SkillHubCore
 $expectedCommitBeforeBuild = $null
+$expectedReceiptDigestBeforeBuild = $null
+
 if ($selected -contains 'skillhubcore-admin') {
   Write-Host "Verifying quality gate evidence for skillhubcore-admin..."
   
@@ -388,11 +390,16 @@ if ($selected -contains 'skillhubcore-admin') {
     throw "Evidence source commit mismatch for skillhubcore-admin. Evidence: $($evidence.sourceCommit), Expected before build: $expectedCommitBeforeBuild. Cannot use evidence from different commit."
   }
   
+  # CAPTURE RECEIPT DIGEST BEFORE BUILD (immutable for this invocation)
+  # This digest will be compared against at manifest creation to detect any mutation
+  $expectedReceiptDigestBeforeBuild = (Get-FileHash -LiteralPath $evidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+  
   Write-Host "Quality gate evidence verified for skillhubcore-admin"
   Write-Host "  Source commit: $expectedCommitBeforeBuild"
   Write-Host "  Gate: $($evidence.gate.profile)"
   Write-Host "  Status: $($evidence.status)"
   Write-Host "  Invocation: $($evidence.invocationId)"
+  Write-Host "  Receipt digest: $expectedReceiptDigestBeforeBuild (captured before build)"
 }
 
 # Verify source is still clean (only for SHC - preserve non-SHC behavior)
@@ -529,6 +536,32 @@ if ($LASTEXITCODE -ne 0) {
   throw "docker save failed"
 }
 
+# W0.2-HOSTINGER: Recheck source after packaging, before manifest/publication
+Write-Host "Rechecking source after packaging..."
+$postPackagingCommit = git -C $RepoDir rev-parse HEAD 2>&1
+if ($LASTEXITCODE -ne 0) {
+  throw "Git rev-parse failed after packaging: $postPackagingCommit"
+}
+$postPackagingCommit = $postPackagingCommit.Trim()
+
+$postPackagingStatus = git -C $RepoDir status --porcelain 2>&1
+if ($LASTEXITCODE -ne 0) {
+  throw "Git status failed after packaging: $postPackagingStatus"
+}
+
+# For SHC: Verify source unchanged after docker save
+if ($expectedCommitBeforeBuild) {
+  if ($postPackagingCommit -ne $expectedCommitBeforeBuild) {
+    throw "HEAD changed after packaging for skillhubcore-admin. Expected: $expectedCommitBeforeBuild, After packaging: $postPackagingCommit. Cannot publish artifacts from drifted source."
+  }
+  
+  if ($postPackagingStatus) {
+    throw "Working tree has uncommitted changes after packaging. Cannot publish artifacts with dirty source."
+  }
+  
+  Write-Host "Source unchanged after packaging (commit: $postPackagingCommit, clean)"
+}
+
 $manifestObject = [ordered]@{
   schemaVersion = "1"
   imageTag = $ImageTag
@@ -537,55 +570,92 @@ $manifestObject = [ordered]@{
   services = $manifestServices
 }
 
-# W0.2-HOSTINGER: Bind validated receipt provenance to manifest
-if ($selected -contains 'skillhubcore-admin') {
-  $evidenceDir = Join-Path $HostingerDir "dist\evidence"
-  $evidencePath = Join-Path $evidenceDir "quality-gate-skillhubcore-admin-$ImageTag.json"
-  
-  # Revalidate evidence before packaging (fail closed on missing/stale)
-  if (-not (Test-Path $evidencePath)) {
-    throw "Evidence missing before packaging for skillhubcore-admin. Cannot package artifacts without validated provenance."
-  }
-  
-  try {
-    $evidenceRaw = Get-Content -Raw $evidencePath
-    $evidenceForManifest = $evidenceRaw | ConvertFrom-Json
-  } catch {
-    throw "Cannot read evidence before packaging: $_"
-  }
-  
-  # Verify evidence still matches current state
-  if ($evidenceForManifest.sourceCommit -ne $expectedCommitBeforeBuild) {
-    throw "Evidence commit mismatch before packaging. Evidence: $($evidenceForManifest.sourceCommit), Expected: $expectedCommitBeforeBuild"
-  }
-  if ($evidenceForManifest.invocationId -ne $InvocationId) {
-    throw "Evidence invocation mismatch before packaging. Cannot package with mismatched association."
-  }
-  if ($evidenceForManifest.status -ne "PASS") {
-    throw "Cannot package artifacts: evidence status is not PASS (got: $($evidenceForManifest.status))"
-  }
-  
-  # Compute evidence integrity hash
-  $evidenceHash = (Get-FileHash -LiteralPath $evidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
-  
-  $manifestObject.qualityGateEvidence = @{
-    service = "skillhubcore-admin"
-    sourceCommit = $evidenceForManifest.sourceCommit
-    invocationId = $evidenceForManifest.invocationId
-    gateProfile = $evidenceForManifest.gate.profile
-    status = $evidenceForManifest.status
-    evidenceFile = "quality-gate-skillhubcore-admin-$ImageTag.json"
-    evidenceIntegrity = @{
-      algorithm = "SHA256"
-      hash = $evidenceHash
+  # W0.2-HOSTINGER: Bind validated receipt provenance to manifest
+  if ($selected -contains 'skillhubcore-admin') {
+    $evidenceDir = Join-Path $HostingerDir "dist\evidence"
+    $evidencePath = Join-Path $evidenceDir "quality-gate-skillhubcore-admin-$ImageTag.json"
+    
+    # Revalidate evidence before manifest creation (fail closed on missing/mutation)
+    if (-not (Test-Path $evidencePath)) {
+      throw "Evidence missing before manifest creation for skillhubcore-admin. Cannot create manifest without validated provenance."
     }
+    
+    # VERIFY RECEIPT BYTES UNCHANGED SINCE PRE-BUILD VALIDATION
+    # Compare against captured digest, do NOT recompute and accept mutation
+    $currentReceiptDigest = (Get-FileHash -LiteralPath $evidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($currentReceiptDigest -ne $expectedReceiptDigestBeforeBuild) {
+      throw "Receipt has been modified since pre-build validation! Expected digest: $expectedReceiptDigestBeforeBuild, Current: $currentReceiptDigest. Cannot create manifest with mutated evidence."
+    }
+    
+    try {
+      $evidenceRaw = Get-Content -Raw $evidencePath
+      $evidenceForManifest = $evidenceRaw | ConvertFrom-Json
+    } catch {
+      throw "Cannot read evidence before manifest creation: $_"
+    }
+    
+    # Re-run FULL production validation to catch any invalid fields
+    # (Not just commit/invocation/status - include gate profile, exit code, etc.)
+    if (-not $evidenceForManifest.PSObject.Properties['version'] -or $evidenceForManifest.version -ne "1.0") {
+      throw "Evidence version invalid or missing"
+    }
+    if (-not $evidenceForManifest.PSObject.Properties['service'] -or $evidenceForManifest.service -ne "skillhubcore-admin") {
+      throw "Evidence service invalid or missing"
+    }
+    if (-not $evidenceForManifest.PSObject.Properties['gate'] -or 
+        -not $evidenceForManifest.gate.PSObject.Properties['profile'] -or
+        $evidenceForManifest.gate.profile -ne "quality:skillhubcore") {
+      throw "Evidence gate profile invalid or missing: expected 'quality:skillhubcore'"
+    }
+    if (-not $evidenceForManifest.PSObject.Properties['exitCode'] -or $evidenceForManifest.exitCode -ne 0) {
+      throw "Evidence exit code invalid: must be 0, got $($evidenceForManifest.exitCode)"
+    }
+    if (-not $evidenceForManifest.PSObject.Properties['status'] -or $evidenceForManifest.status -ne "PASS") {
+      throw "Evidence status invalid: must be PASS, got $($evidenceForManifest.status)"
+    }
+    
+    # Verify evidence still matches expected state
+    if ($evidenceForManifest.sourceCommit -ne $expectedCommitBeforeBuild) {
+      throw "Evidence commit mismatch before manifest creation. Evidence: $($evidenceForManifest.sourceCommit), Expected: $expectedCommitBeforeBuild"
+    }
+    if ($evidenceForManifest.invocationId -ne $InvocationId) {
+      throw "Evidence invocation mismatch before manifest creation. Cannot create manifest with mismatched association."
+    }
+    
+    # Re-apply freshness policy
+    try {
+      $completionTime = [DateTime]::Parse($evidenceForManifest.timing.completionUtc, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal)
+      $now = [DateTime]::UtcNow
+      $ageMinutes = ($now - $completionTime).TotalMinutes
+      
+      if ($ageMinutes -lt -5) {
+        throw "Evidence has future completion time (appears $([Math]::Round(-$ageMinutes, 1)) minutes in the future)"
+      }
+      if ($ageMinutes -gt 60) {
+        throw "Evidence is too old for manifest creation (completed $([Math]::Round($ageMinutes, 1)) minutes ago, max age: 60 minutes)"
+      }
+    } catch {
+      throw "Cannot validate evidence freshness at manifest creation: $_"
+    }
+    
+    $manifestObject.qualityGateEvidence = @{
+      service = "skillhubcore-admin"
+      sourceCommit = $evidenceForManifest.sourceCommit
+      invocationId = $evidenceForManifest.invocationId
+      gateProfile = $evidenceForManifest.gate.profile
+      status = $evidenceForManifest.status
+      evidenceFile = "quality-gate-skillhubcore-admin-$ImageTag.json"
+      evidenceIntegrity = @{
+        algorithm = "SHA256"
+        hash = $expectedReceiptDigestBeforeBuild  # Use captured digest, not recomputed
+      }
+    }
+    
+    Write-Host "Bound quality gate provenance to manifest:"
+    Write-Host "  Commit: $($evidenceForManifest.sourceCommit)"
+    Write-Host "  Invocation: $($evidenceForManifest.invocationId)"
+    Write-Host "  Receipt digest: $expectedReceiptDigestBeforeBuild (verified unchanged)"
   }
-  
-  Write-Host "Bound quality gate provenance to manifest:"
-  Write-Host "  Commit: $($evidenceForManifest.sourceCommit)"
-  Write-Host "  Invocation: $($evidenceForManifest.invocationId)"
-  Write-Host "  Evidence hash: $evidenceHash"
-}
 
 $manifestObject | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $manifest
 
