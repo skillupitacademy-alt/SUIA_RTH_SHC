@@ -496,7 +496,7 @@ implementation remains SHC-only.
 **Authoritative acceptance:** `audit/W1.1_Sol_Acceptance.md`. Runtime findings remain open; prior interim status labels are superseded.
 
 ### W1.1.2 - Session Persistence and Tenant Binding Discovery
-**Status:** `VERIFICATION_READY` (Gemini Rev 2 PASS for commit `0247f981`; pending Sol acceptance)
+**Status:** `CLOSED` (source investigation accepted; W1.1.2_Sol_Acceptance.md; runtime defects remain open)
 **Root cause:** `RC-ID-01`
 **Wave:** 1
 **Application:** SHC auth with SUIA/RTH read-only dependencies
@@ -517,6 +517,8 @@ No production changes or DB access; source evidence and proposed regression case
 - No brand column in refresh_tokens; not a defect given database routing and JWT signature validation
 - Focused implementation proposal: W1.2-SESS-01 for single-session revocation ownership only
 
+**Acceptance:** `audit/W1.1.2_Sol_Acceptance.md`.
+
 ### W1.2-SESS-01 - Existing Single-Session Revocation Ownership
 **Status:** `PLANNED`
 **Wave / root cause:** 1 / RC-ID-01
@@ -533,6 +535,8 @@ Require owner-scoped persistence, no accidental unscoped revocation, relevant
 caller review, positive/cross-user/cross-platform/invalid-context regression tests,
 applicable quality checks and independently executed verification. No authorization
 of refresh redesign, schema migration or deployment from this planned entry.
+
+**Assigned implementation package:** `audit/W1.2-SESS-01_Ownership_Task.md`. Sonnet implements; Gemini verifies; specialist review and Sol acceptance required. No deployment authorization.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
