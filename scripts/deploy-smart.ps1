@@ -284,7 +284,7 @@ if ($confirm -ne 'y' -and $confirm -ne 'Y') {
 }
 
 # Step 1: Get current git tag
-Write-Info "Step 1/8: Getting git commit hash..."
+Write-Info "Step 1/9: Getting git commit hash..."
 try {
     $tag = git rev-parse --short=12 HEAD
     if ($LASTEXITCODE -ne 0) {
@@ -297,24 +297,23 @@ try {
 }
 
 # Step 2: Verify changes are committed
-Write-Info "Step 2/8: Verifying git status..."
+Write-Info "Step 2/9: Verifying git status..."
 $gitStatus = git status --porcelain
 if ($gitStatus) {
-    Write-Warn "You have uncommitted changes:"
+    Write-Err "Working tree has uncommitted changes:"
+    Write-Host ""
     git status --short
     Write-Host ""
-    $continue = Read-Host "Continue anyway? (y/N)"
-    if ($continue -ne 'y' -and $continue -ne 'Y') {
-        Write-Info "Deployment cancelled"
-        exit 0
-    }
+    Write-Err "Deployment requires clean working tree for provenance"
+    Write-Host "Commit or stash changes before deploying." -ForegroundColor Yellow
+    exit 1
 }
 
 # Step 3: Run linting
 if ($SkipChecks) {
-    Write-Warn "Step 3/8: Skipping ESLint checks because -SkipChecks was provided"
+    Write-Warn "Step 3/9: Skipping ESLint checks because -SkipChecks was provided"
 } else {
-Write-Info "Step 3/8: Running ESLint checks..."
+Write-Info "Step 3/9: Running ESLint checks..."
 
 $hasLintErrors = $false
 foreach ($service in $servicesToDeploy) {
@@ -358,9 +357,9 @@ if ($hasLintErrors) {
 
 # Step 4: Run TypeScript checks
 if ($SkipChecks) {
-    Write-Warn "Step 4/8: Skipping TypeScript checks because -SkipChecks was provided"
+    Write-Warn "Step 4/9: Skipping TypeScript checks because -SkipChecks was provided"
 } else {
-Write-Info "Step 4/8: Running TypeScript compilation checks..."
+Write-Info "Step 4/9: Running TypeScript compilation checks..."
 
 $hasTypeErrors = $false
 foreach ($service in $servicesToDeploy) {
@@ -396,12 +395,57 @@ if ($hasTypeErrors) {
 }
 }
 
+# Step 4.5: Enforce mandatory quality gates (W0.2-HOSTINGER)
+Write-Info "Step 4.5/9: Enforcing mandatory quality gates..."
+
+# Generate unique invocation ID
+$invocationId = [guid]::NewGuid().ToString()
+
+# Check if SkillHubCore is in deployment
+if ($servicesToDeploy -contains 'skillhubcore-admin') {
+    Write-Host "  -> SkillHubCore Admin requires mandatory quality gate" -ForegroundColor Gray
+    Write-Host "     (NOT bypassed by -SkipChecks)" -ForegroundColor DarkGray
+    
+    # Enforce SHC quality gate
+    $repoRoot = $PSScriptRoot | Split-Path
+    $evidenceDir = Join-Path $repoRoot "infra\hostinger\dist\evidence"
+    
+    & "$PSScriptRoot\enforce-shc-quality-gate.ps1" `
+        -RepositoryRoot $repoRoot `
+        -ImageTag $tag `
+        -EvidenceDir $evidenceDir `
+        -InvocationId $invocationId
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Err "Mandatory quality gate failed for skillhubcore-admin"
+        Write-Host ""
+        Write-Host "The quality gate cannot be bypassed." -ForegroundColor Yellow
+        Write-Host "Fix reported issues and re-run deployment." -ForegroundColor Yellow
+        Write-Host ""
+        exit 1
+    }
+    
+    Write-Success "Quality gate passed for skillhubcore-admin"
+}
+
+# Report services not qualified by SHC gate
+$otherServices = $servicesToDeploy | Where-Object { $_ -ne 'skillhubcore-admin' }
+if ($otherServices.Count -gt 0) {
+    Write-Host ""
+    Write-Host "  Other services in this deployment:" -ForegroundColor Cyan
+    foreach ($svc in $otherServices) {
+        Write-Host "    - $svc (not qualified by this SHC gate; enforcement pending)" -ForegroundColor DarkGray
+    }
+    Write-Host ""
+}
+
 # Step 5: Build Docker images
-Write-Info "Step 5/8: Building and saving Docker images..."
+Write-Info "Step 5/9: Building and saving Docker images..."
 Write-Host "  -> Building: $($servicesToDeploy -join ', ')..." -ForegroundColor Gray
 $buildSaveParams = @{
     ImageTag = $tag
     Services = $servicesToDeploy
+    InvocationId = $invocationId
 }
 if ($NoCache) {
     $buildSaveParams.NoCache = $true
@@ -415,7 +459,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Success "Docker images built and saved"
 
 # Step 6: Verify artifacts
-Write-Info "Step 6/8: Verifying build artifacts..."
+Write-Info "Step 6/9: Verifying build artifacts..."
 $artifactPath = ".\infra\hostinger\dist\images"
 $tarFile = "$artifactPath\quiz-platform-images-$tag.tar"
 $shaFile = "$artifactPath\quiz-platform-images-$tag.tar.sha256"
@@ -438,7 +482,7 @@ $tarSize = (Get-Item $tarFile).Length / 1MB
 Write-Success "Artifacts verified (Archive size: $([math]::Round($tarSize, 2)) MB)"
 
 # Step 7: Upload to production server
-Write-Info "Step 7/8: Uploading artifacts to production server..."
+Write-Info "Step 7/9: Uploading artifacts to production server..."
 Write-Host "  -> Uploading to 72.61.115.49:/opt/platform/releases/" -ForegroundColor Gray
 
 scp `
@@ -454,7 +498,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Success "Artifacts uploaded successfully"
 
 # Step 8: Verify checksum on server
-Write-Info "Step 8/8: Verifying checksum on production server..."
+Write-Info "Step 8/9: Verifying checksum on production server..."
 ssh root@72.61.115.49 "cd /opt/platform/releases && sha256sum -c quiz-platform-images-$tag.tar.sha256"
 
 if ($LASTEXITCODE -ne 0) {

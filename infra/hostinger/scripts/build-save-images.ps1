@@ -3,6 +3,7 @@ param(
   [string]$OutputDir = "",
   [string]$EnvFile = "",
   [string[]]$Services = @(),
+  [string]$InvocationId = "",
   [switch]$NoCache = $false
 )
 
@@ -215,6 +216,77 @@ foreach ($service in $Services) {
   $selected += $service
 }
 
+# W0.2-HOSTINGER: Verify quality gate evidence for SkillHubCore
+if ($selected -contains 'skillhubcore-admin') {
+  Write-Host "Verifying quality gate evidence for skillhubcore-admin..."
+  
+  $evidenceDir = Join-Path $HostingerDir "dist\evidence"
+  $evidencePath = Join-Path $evidenceDir "quality-gate-skillhubcore-admin-$ImageTag.json"
+  
+  if (-not (Test-Path $evidencePath)) {
+    throw "Missing quality gate evidence for skillhubcore-admin (commit $ImageTag). Evidence file not found: $evidencePath"
+  }
+  
+  try {
+    $evidence = Get-Content -Raw $evidencePath | ConvertFrom-Json
+  } catch {
+    throw "Malformed quality gate evidence for skillhubcore-admin: $_"
+  }
+  
+  # Validate evidence schema
+  if (-not $evidence.version) {
+    throw "Evidence missing required field: version"
+  }
+  if ($evidence.version -ne "1.0") {
+    throw "Unsupported evidence version: $($evidence.version)"
+  }
+  if ($evidence.service -ne "skillhubcore-admin") {
+    throw "Evidence service mismatch: expected 'skillhubcore-admin', got '$($evidence.service)'"
+  }
+  if ($evidence.status -ne "PASS") {
+    throw "Quality gate did not pass for skillhubcore-admin (status: $($evidence.status))"
+  }
+  if ($evidence.exitCode -ne 0) {
+    throw "Quality gate failed for skillhubcore-admin (exit code: $($evidence.exitCode))"
+  }
+  
+  # Get full commit SHA for verification
+  $fullCommit = git -C $RepoDir rev-parse HEAD 2>&1
+  if ($LASTEXITCODE -ne 0) {
+    throw "Git rev-parse failed: $fullCommit"
+  }
+  $fullCommit = $fullCommit.Trim()
+  
+  # Verify source commit matches
+  if ($evidence.sourceCommit -ne $fullCommit) {
+    throw "Evidence source commit mismatch for skillhubcore-admin. Evidence: $($evidence.sourceCommit), Current: $fullCommit"
+  }
+  
+  # Verify image tag matches
+  if ($evidence.imageTag -ne $ImageTag) {
+    throw "Evidence image tag mismatch for skillhubcore-admin. Evidence: $($evidence.imageTag), Build: $ImageTag"
+  }
+  
+  # Verify invocation ID matches (if provided)
+  if ($InvocationId -and $evidence.invocationId -ne $InvocationId) {
+    throw "Evidence invocation mismatch for skillhubcore-admin. Evidence: $($evidence.invocationId), Build: $InvocationId"
+  }
+  
+  Write-Host "Quality gate evidence verified for skillhubcore-admin"
+  Write-Host "  Source commit: $fullCommit"
+  Write-Host "  Gate: $($evidence.gate.profile)"
+  Write-Host "  Status: $($evidence.status)"
+}
+
+# Verify source is still clean
+$sourceStatus = git -C $RepoDir status --porcelain 2>&1
+if ($LASTEXITCODE -ne 0) {
+  throw "Git status failed: $sourceStatus"
+}
+if ($sourceStatus) {
+  throw "Working tree has uncommitted changes. Deployment requires clean source."
+}
+
 if ($selected -contains 'project-ai') {
   # Check before generating the tracked local Compose helper.
   $sourceStatus = & git -C $RepoDir status --porcelain --untracked-files=normal
@@ -302,6 +374,35 @@ foreach ($service in $selected) {
   }
 }
 
+# W0.2-HOSTINGER: Recheck source after build, before packaging
+Write-Host "Rechecking source after build..."
+$postBuildCommit = git -C $RepoDir rev-parse HEAD 2>&1
+if ($LASTEXITCODE -ne 0) {
+  throw "Git rev-parse failed after build: $postBuildCommit"
+}
+$postBuildCommit = $postBuildCommit.Trim()
+
+$preBuildCommit = git -C $RepoDir rev-parse HEAD 2>&1
+if ($LASTEXITCODE -ne 0) {
+  throw "Git rev-parse verification failed: $preBuildCommit"
+}
+$preBuildCommit = $preBuildCommit.Trim()
+
+$postBuildStatus = git -C $RepoDir status --porcelain 2>&1
+if ($LASTEXITCODE -ne 0) {
+  throw "Git status failed after build: $postBuildStatus"
+}
+
+if ($postBuildStatus) {
+  throw "Working tree modified during build. Build process must not alter tracked source."
+}
+
+if ($postBuildCommit -ne $preBuildCommit) {
+  throw "HEAD changed during build. Commit: before=$preBuildCommit, after=$postBuildCommit"
+}
+
+Write-Host "Source unchanged after build (commit: $postBuildCommit)"
+
 $archive = Join-Path $OutputDir "quiz-platform-images-$ImageTag.tar"
 $manifest = Join-Path $OutputDir "quiz-platform-images-$ImageTag.manifest.json"
 $checksum = Join-Path $OutputDir "quiz-platform-images-$ImageTag.tar.sha256"
@@ -318,6 +419,19 @@ $manifestObject = [ordered]@{
   createdAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
   services = $manifestServices
 }
+
+# W0.2-HOSTINGER: Add evidence reference if SHC is included
+if ($selected -contains 'skillhubcore-admin') {
+  $evidencePath = Join-Path $evidenceDir "quality-gate-skillhubcore-admin-$ImageTag.json"
+  if (Test-Path $evidencePath) {
+    $manifestObject.qualityGateEvidence = @{
+      service = "skillhubcore-admin"
+      evidenceFile = "quality-gate-skillhubcore-admin-$ImageTag.json"
+      verified = $true
+    }
+  }
+}
+
 $manifestObject | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $manifest
 
 $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash.ToLowerInvariant()

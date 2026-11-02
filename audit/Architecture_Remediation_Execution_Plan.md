@@ -285,12 +285,13 @@ claimed. Existing audit findings remain open. RC-CI-01 remains IN_PROGRESS.
 
 ### W0.2-HOSTINGER - Pre-build Quality Enforcement and Provenance
 **Root cause:** `RC-CI-01`
-**Status:** `PLANNED`
+**Status:** `IN_PROGRESS`
 **Application:** SHC deployment path; other service qualification excluded
 **Priority:** P0
 **Sole implementer:** Claude Sonnet 4.5
 **Independent verifier:** Gemini
 **Acceptance authority:** Sol
+**Implementation authorization:** `audit/W0.2_HOSTINGER_Sol_Design_Decision.md`
 **Dependencies:** W0.2 repository gate
 **Architecture requirements:** secure defaults, explicit service ownership,
 controlled changes, reproducible quality and source/artifact provenance
@@ -308,7 +309,100 @@ Acceptance: positive and negative script tests, source-drift/stale-evidence
 checks, mixed-service and SkipChecks cases, canonical repository gate,
 independent verification, scoped diff and actual artifact/runtime evidence
 where required. Runtime evidence not obtained remains explicitly unverified.
-Wave 0 enforcement is not complete until this follow-up is accepted.
+SHC deployment enforcement is not complete until this follow-up is accepted.
+Overall deployment safety additionally requires the SUIA, RTH and mixed-service
+follow-ups below. Their registration does not expand this SHC ticket's scope.
+
+### DEPLOY-SUIA-01 - SUIA Quality Gate and Hostinger Enforcement
+**Root cause:** `RC-CI-01`
+**Status:** `PLANNED`
+**Wave:** 5 (SkillUp application qualification; after SHC enforcement pattern)
+**Application:** `apps/skillup-web`
+**Priority:** P0 for SUIA deployment qualification
+**Sole implementer:** Claude Sonnet 4.5 (when activated by Sol)
+**Independent verifier:** Gemini
+**Acceptance authority:** Sol
+**Dependencies:** W0.2-HOSTINGER; SUIA test/configuration inventory and reviewed
+application-specific gate design
+**Audit references:** RC-CI-01 crosswalk; SUIA quality/test/operational findings
+must be reconciled against the implementation baseline at activation
+**Architecture requirements:** secure defaults, reproducible engineering
+gates, independent brand qualification, source/artifact provenance
+
+Establish SUIA's own canonical quality command and invoke it for every resolved
+SUIA service selection before build/upload. No `-SkipChecks` or alternative
+flag may bypass the mandatory gate. Bind tested source to actual build input;
+fail closed on quality errors or missing/stale/mismatched provenance. Reuse
+the accepted mechanism without assuming SHC's tests qualify SUIA.
+
+Acceptance: application architecture/security/lint/type/unit/build evidence;
+safe test isolation; service-selection and mixed-service negative tests;
+source-drift and provenance rejection tests; proof that failure prevents
+build/upload; independent Gemini reproduction; Sol acceptance; controlled
+deployment/runtime evidence wherever the claim requires it. No production
+execution is authorized by registration.
+
+### DEPLOY-RTH-01 - RTH Quality Gate and Hostinger Enforcement
+**Root cause:** `RC-CI-01`
+**Status:** `PLANNED`
+**Wave:** 6 (RTH application qualification; following SUIA)
+**Application:** `apps/realtutorialhub-web`
+**Priority:** P0 for RTH deployment qualification
+**Sole implementer:** Claude Sonnet 4.5 (when activated by Sol)
+**Independent verifier:** Gemini
+**Acceptance authority:** Sol
+**Dependencies:** W0.2-HOSTINGER; DEPLOY-SUIA-01; RTH test/configuration inventory
+and reviewed application-specific gate design
+**Audit references:** RC-CI-01 crosswalk; RTH quality/test/operational findings
+must be reconciled against the implementation baseline at activation
+**Architecture requirements:** secure defaults, reproducible engineering
+gates, independent brand qualification, source/artifact provenance
+
+Establish RTH's own canonical quality command and mandatory invocation for
+every resolved RTH service selection before build/upload. No `-SkipChecks` or
+alternative flag bypass. Require tested-source/build-input consistency and
+fail closed on quality or provenance failures. SHC/SUIA successes provide no
+implicit RTH qualification.
+
+Acceptance: the same per-application repository, negative selection, failure
+propagation, source/artifact and independent-verification requirements as
+DEPLOY-SUIA-01, evaluated using RTH-specific tests. Deployment/runtime claims
+require their own controlled evidence. No production execution is authorized
+by registration.
+
+### DEPLOY-MIXED-01 - Cross-Application Deployment Gate Qualification
+**Root cause:** `RC-CI-01`
+**Status:** `PLANNED`
+**Wave:** 8 (cross-application qualification)
+**Application:** SHC, SUIA and RTH selection through the deployment entrypoint
+**Priority:** P0 for overall deployment-safety acceptance
+**Sole implementer:** Claude Sonnet 4.5 (when activated by Sol)
+**Independent verifier:** Gemini
+**Acceptance authority:** Sol
+**Dependencies:** W0.2-HOSTINGER, DEPLOY-SUIA-01, DEPLOY-RTH-01
+**Audit references:** RC-CI-01; accepted per-application enforcement evidence
+**Architecture requirements:** failure isolation, explicit coverage,
+fail-closed automation, trustworthy artifact provenance
+
+Verify each app alone, pairs, and all three together, including the owner's
+five-service command with project-ai and api-server. Resolve explicit,
+default, auto-detected and aliased selections using the actual deployment
+contract. Every selected app's applicable mandatory gate must execute exactly
+as defined; any failure or invalid provenance prevents deployment mutation.
+Flags, ordering, duplicate service names and unsupported service handling
+must not silently omit an applicable gate or manufacture a global PASS.
+
+Acceptance: independently executed selection/flag matrix, per-app failure
+injection and trace assertions proving no build/upload after failure,
+per-service source/artifact binding, scoped coverage reporting and Sol review.
+Other services require separate qualification; these three apps' gates must
+not certify Project AI or API-server behavior implicitly.
+
+**Overall deployment safety closure rule:** SHC, SUIA and RTH must each be
+independently protected and verified, and DEPLOY-MIXED-01 must be accepted.
+Until then, report precise accepted coverage and remaining gaps; do not call
+the overall deployment safety program complete. Current W0.2-HOSTINGER
+implementation remains SHC-only.
 
 ---
 
