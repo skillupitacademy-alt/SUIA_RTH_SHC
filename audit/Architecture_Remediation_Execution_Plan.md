@@ -285,7 +285,7 @@ claimed. Existing audit findings remain open. RC-CI-01 remains IN_PROGRESS.
 
 ### W0.2-HOSTINGER - Pre-build Quality Enforcement and Provenance
 **Root cause:** `RC-CI-01`
-**Status:** `IN_PROGRESS`
+**Status:** `IMPLEMENTED_UNVERIFIED` (awaiting Gemini verification)
 **Application:** SHC deployment path; other service qualification excluded
 **Priority:** P0
 **Sole implementer:** Claude Sonnet 4.5
@@ -304,6 +304,20 @@ must not bypass it. Bind evidence to exact clean source/build input and
 service; detect source drift and abort. Use mocked execution to prove no
 build/upload/restart on failure. Do not infer full-service qualification
 from SHC results. No production execution is authorized.
+
+**Implementation commits:** 9fe8e5ae (core), 418b6f22 (evidence doc), ae992e93 (handoff)
+**Implementation artifacts:**
+- `audit/W0.2_HOSTINGER_Implementation_Evidence.md` - Full implementation evidence
+- `audit/W0.2_HOSTINGER_Gemini_Handoff.md` - Verification handoff to Gemini
+- `scripts/enforce-shc-quality-gate.ps1` - Mandatory gate enforcer (NEW)
+- `scripts/deploy-smart.ps1` - Added Step 4.5 (NOT bypassed by -SkipChecks)
+- `infra/hostinger/scripts/build-save-images.ps1` - Evidence validation + recheck
+- `scripts/__tests__/test-hostinger-enforcement.ps1` - 8/8 tests PASSING (gitignored)
+
+**Evidence schema:** v1.0 JSON with full 40-char commit SHA, transient in `infra/hostinger/dist/evidence/`
+**Verification checkpoints:** Before gate, after gate, after build (3x source verification)
+**Evidence invalidation:** Old evidence deleted before new gate execution
+**Builder protection:** Validates evidence before Docker build (fail closed on missing/invalid)
 
 Acceptance: positive and negative script tests, source-drift/stale-evidence
 checks, mixed-service and SkipChecks cases, canonical repository gate,
