@@ -70,13 +70,13 @@ Learning · assessments · brand data
 
 Shared SkillHubCore capabilities
 
-Global identity · shared services · event processing
+SHC infrastructure projections · shared services · event processing
 
 Brand databases
 
 rth_prod · skillup_prod
 
-Global identity DB
+SHC Infrastructure DB
 
 people_prod
 
@@ -312,7 +312,7 @@ Identity · Shared capabilities · Events · Observability
 
 Infrastructure and persistence
 
-Brand databases · Global identity DB · Cache · Queues · Object storage
+Brand databases · SHC Infrastructure DB · Cache · Queues · Object storage
 
 This is a logical architecture, not a requirement that every box be a separate deployable service.
 
@@ -795,15 +795,15 @@ For your platform, we need to decide:
 1. Which database owns each type of information.
 2. Which application or service is allowed to access it.
 3. How brand data is isolated.
-4. How relationships between global identity and brand-specific users are maintained.
+4. How tenant learner accounts and SHC infrastructure projections are maintained.
 5. How database schemas evolve safely.
 6. How the database can handle millions of users and high concurrent workloads.
 
 Your existing architecture already has an important starting point:
 
-- `people_prod` — global identity.
-- `rth_prod` — Real Tutorial Hub data.
-- `skillup_prod` — SkillUp IT Academy data.
+- `people_prod` — SHC infrastructure projections and service identity.
+- `rth_prod` — Real Tutorial Hub learner identity and data.
+- `skillup_prod` — SkillUp IT Academy learner identity and data.
 - `quiz_platform_prod` — legacy database being phased out.
 
 I would preserve the principle of separate brand data and shared identity, while defining stronger ownership and access rules around it.
@@ -814,9 +814,9 @@ Shared Identity Platform
 
 `people_prod`
 
-Global users · Identity · Credentials · Identity-to-brand links
+SHC infrastructure projections · Platform-specific cross-references · Service coordination
 
-Identity reference / validated identity context
+Authorized shared service access
 
 RTH data domain
 
@@ -858,16 +858,17 @@ For example:
 
 | Data                             | Authoritative owner                                |
 | -------------------------------- | -------------------------------------------------- |
-| Global user identity             | `people_prod`                                      |
-| Authentication credentials       | Identity domain                                    |
-| Global user ID                   | Identity domain                                    |
+| Tenant learner identity          | Tenant database (`rth_prod` or `skillup_prod`)     |
+| Tenant authentication credentials| Tenant identity domain                             |
+| Tenant learner ID                | Tenant database (canonical learner identifier)     |
+| SHC infrastructure projection    | `people_prod` (shadow ID, not learner authority)   |
 | RTH learner profile              | `rth_prod`                                         |
 | SkillUp learner profile          | `skillup_prod`                                     |
 | RTH course enrollment            | `rth_prod`                                         |
 | SkillUp course enrollment        | `skillup_prod`                                     |
 | RTH tutorial progress            | `rth_prod`                                         |
 | SkillUp tutorial progress        | `skillup_prod`                                     |
-| Shared identity-to-brand mapping | `people_prod`                                      |
+| Platform-specific projections    | `people_prod` (authorized service coordination)    |
 | Brand-specific permissions       | Brand domain, according to the authorization model |
 | Shared service operational state | Owning SkillHubCore service                        |
 
@@ -1189,7 +1190,7 @@ For each database, we need to specify:
 | Schema owner        | Which team/package maintains the schema |
 | Read access         | Which services can read the data        |
 | Write access        | Which service can modify the data       |
-| Identity linkage    | How global user IDs are referenced      |
+| Identity linkage    | How tenant learner IDs and SHC projections are referenced |
 | Brand isolation     | How cross-brand access is prevented     |
 | Migration ownership | Who can change the schema               |
 | Scaling strategy    | How the database will grow              |
@@ -1645,11 +1646,11 @@ The diagram shows logical layers. Some can initially share infrastructure, but t
 
 Your existing production databases should continue to serve the applications:
 
-| Database       | Operational responsibility                 |
-| -------------- | ------------------------------------------ |
-| `people_prod`  | Global identity and identity relationships |
-| `rth_prod`     | RTH operational learning data              |
-| `skillup_prod` | SkillUp operational learning data          |
+| Database       | Operational responsibility                                |
+| -------------- | --------------------------------------------------------- |
+| `people_prod`  | SHC infrastructure projections and service identity       |
+| `rth_prod`     | RTH learner identity and operational learning data        |
+| `skillup_prod` | SkillUp learner identity and operational learning data    |
 
 Analytics should not routinely execute expensive scans against these production databases.
 
@@ -1897,9 +1898,9 @@ For example:
 ```
 AI request
    ↓
-Authenticated global user
+Authenticated principal (learner or staff)
    ↓
-Validated brand membership
+Validated tenant context and entitlement
    ↓
 Authorized course / content scope
    ↓
@@ -1908,7 +1909,7 @@ Retrieval or analytics query
 Response
 ```
 
-A shared AI service must not treat a global user ID as permission to access both brands.
+A shared AI service must not treat an SHC shadow ID as permission to access both brands.
 
 Likewise, an analytics assistant should not receive unrestricted database access and be allowed to generate arbitrary SQL against production databases.
 
@@ -2164,20 +2165,20 @@ The UI should not directly implement database access or authorization logic.
 
 We discussed retaining the separate brand data model.
 
-| Database             | Responsibility                   |
-| -------------------- | -------------------------------- |
-| `people_prod`        | Global identity                  |
-| `rth_prod`           | RTH operational data             |
-| `skillup_prod`       | SkillUp operational data         |
-| `quiz_platform_prod` | Legacy database being phased out |
+| Database             | Responsibility                                      |
+| -------------------- | --------------------------------------------------- |
+| `people_prod`        | SHC infrastructure projections and service identity |
+| `rth_prod`           | RTH learner identity and operational data           |
+| `skillup_prod`       | SkillUp learner identity and operational data       |
+| `quiz_platform_prod` | Legacy database being phased out                    |
 
 Key decisions and principles:
 
 - Every table must have an authoritative owner.
 - Every database must have a defined service owner.
-- Global identity and brand membership are separate concepts.
-- A global identity does not automatically grant access to both brands.
-- Cross-brand access must be explicitly authorized.
+- Tenant learner identity and SHC infrastructure projections are separate concepts.
+- An SHC infrastructure projection does not automatically grant learner access to any tenant.
+- Cross-tenant access must be explicitly authorized per independent tenant account.
 - Database access should use controlled data-access modules.
 - Schema changes must be version-controlled and reviewed.
 - Database migrations should use safe deployment patterns.
@@ -2324,14 +2325,14 @@ Each indexed item should retain metadata such as brand, course, tutorial, sectio
 
 ## 9. AI and analytics security
 
-We agreed that AI and analytics must preserve the same brand isolation model as the operational platform.
+We agreed that AI and analytics must preserve the same tenant isolation model as the operational platform.
 
-A global identity ID does not automatically grant access to all brand data.
+An SHC infrastructure projection ID does not automatically grant learner access to any tenant.
 
 AI retrieval and analytics must validate:
 
-- User identity.
-- Brand membership.
+- Principal identity (learner or staff).
+- Tenant context and entitlement.
 - Course or content permissions.
 - Data scope.
 - Dataset access.
@@ -2467,13 +2468,14 @@ Once these boundaries are settled, we can create the project-wide Architecture a
 
 | Area            | Discussion                                          | Recommended Direction                                          |
 | --------------- | --------------------------------------------------- | -------------------------------------------------------------- |
-| Global identity | `people_prod` stores global identity                | Keep global identity separate from brand-specific data         |
-| RTH data        | `rth_prod` stores RTH operational data              | RTH owns its brand data                                        |
-| SkillUp data    | `skillup_prod` stores SkillUp operational data      | SkillUp owns its brand data                                    |
+| Tenant identity | Tenants own independent learner identities          | Keep tenant learner identity separate from SHC projections     |
+| SHC projections | `people_prod` maintains infrastructure projections  | Shadow IDs for service coordination, not learner authority     |
+| RTH data        | `rth_prod` stores RTH learner identity and data     | RTH owns its learner accounts and brand data                   |
+| SkillUp data    | `skillup_prod` stores SkillUp learner identity      | SkillUp owns its learner accounts and brand data               |
 | Legacy data     | `quiz_platform_prod` is being phased out            | Migrate remaining required data and retire legacy dependencies |
 | Data ownership  | Every table and data domain needs an owner          | Define authoritative ownership                                 |
 | Database access | Avoid unrestricted cross-database access            | Use controlled data-access modules and service contracts       |
-| Brand isolation | Global identity does not imply access to all brands | Validate brand membership and permissions                      |
+| Tenant isolation| Same email/ID across tenants = independent learners | Validate tenant context and learner ownership per request      |
 | Schema changes  | Database changes must be controlled                 | Version migrations, review changes, and deploy safely          |
 | Data integrity  | Preserve valid and consistent records               | Use constraints, transactions, and appropriate keys            |
 | Backups         | Production data must be recoverable                 | Test backup restoration and recovery procedures                |
@@ -2543,8 +2545,8 @@ The vector index is a derived representation, not the source of truth. The autho
 
 | Security Requirement | Expected Behavior                                      |
 | -------------------- | ------------------------------------------------------ |
-| Identity             | Validate the requesting user                           |
-| Brand membership     | Confirm the user belongs to the requested brand        |
+| Identity             | Validate the requesting principal                      |
+| Tenant context       | Confirm the principal has entitlement in the tenant    |
 | Authorization        | Verify permissions for the requested data              |
 | AI retrieval         | Retrieve only content the user is authorized to access |
 | Analytics access     | Restrict access to governed datasets and metrics       |
@@ -2622,7 +2624,7 @@ You already have a useful foundation: a shared identity system, separate brand d
 
 A suitable logical architecture would look like this:
 
-\#chatgpt-mermaid-\_r_21g\_{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;fill:rgb(13, 13, 13);}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#chatgpt-mermaid-\_r_21g\_ .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_21g\_ .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_21g\_ .error-icon{fill:rgb(243, 243, 243);}#chatgpt-mermaid-\_r_21g\_ .error-text{fill:rgb(13, 13, 13);stroke:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .edge-thickness-normal{stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .edge-thickness-thick{stroke-width:3.5px;}#chatgpt-mermaid-\_r_21g\_ .edge-pattern-solid{stroke-dasharray:0;}#chatgpt-mermaid-\_r_21g\_ .edge-thickness-invisible{stroke-width:0;fill:none;}#chatgpt-mermaid-\_r_21g\_ .edge-pattern-dashed{stroke-dasharray:3;}#chatgpt-mermaid-\_r_21g\_ .edge-pattern-dotted{stroke-dasharray:2;}#chatgpt-mermaid-\_r_21g\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ .marker.cross{stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ svg{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;}#chatgpt-mermaid-\_r_21g\_ p{margin:0;}#chatgpt-mermaid-\_r_21g\_ .label{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .cluster-label text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .cluster-label span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .cluster-label span p{background-color:transparent;}#chatgpt-mermaid-\_r_21g\_ .label text,#chatgpt-mermaid-\_r_21g\_ span{fill:rgb(13, 13, 13);color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .node rect,#chatgpt-mermaid-\_r_21g\_ .node circle,#chatgpt-mermaid-\_r_21g\_ .node ellipse,#chatgpt-mermaid-\_r_21g\_ .node polygon,#chatgpt-mermaid-\_r_21g\_ .node path{fill:rgb(222, 234, 251);stroke:rgb(83, 154, 248);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .rough-node .label text,#chatgpt-mermaid-\_r_21g\_ .node .label text,#chatgpt-mermaid-\_r_21g\_ .image-shape .label,#chatgpt-mermaid-\_r_21g\_ .icon-shape .label{text-anchor:middle;}#chatgpt-mermaid-\_r_21g\_ .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .rough-node .label,#chatgpt-mermaid-\_r_21g\_ .node .label,#chatgpt-mermaid-\_r_21g\_ .image-shape .label,#chatgpt-mermaid-\_r_21g\_ .icon-shape .label{text-align:center;}#chatgpt-mermaid-\_r_21g\_ .node.clickable{cursor:pointer;}#chatgpt-mermaid-\_r_21g\_ .root .anchor path{fill:rgb(143, 143, 143)!important;stroke-width:0;stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ .arrowheadPath{fill:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ .edgePath .path{stroke:rgb(143, 143, 143);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .flowchart-link{stroke:rgb(143, 143, 143);fill:none;}#chatgpt-mermaid-\_r_21g\_ .edgeLabel{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_21g\_ .edgeLabel p{background-color:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_21g\_ .edgeLabel rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_21g\_ .labelBkg{background-color:rgba(252, 252, 252, 0.5);}#chatgpt-mermaid-\_r_21g\_ .cluster rect{fill:rgb(243, 243, 243);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .cluster text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .cluster span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:12px;background:rgb(243, 243, 243);border:1px solid rgba(0, 0, 0, 0.1);border-radius:2px;pointer-events:none;z-index:100;}#chatgpt-mermaid-\_r_21g\_ .flowchartTitleText{text-anchor:middle;font-size:18px;fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ rect.text{fill:none;stroke-width:0;}#chatgpt-mermaid-\_r_21g\_ .icon-shape,#chatgpt-mermaid-\_r_21g\_ .image-shape{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_21g\_ .icon-shape p,#chatgpt-mermaid-\_r_21g\_ .image-shape p{background-color:rgb(252, 252, 252);padding:2px;}#chatgpt-mermaid-\_r_21g\_ .icon-shape .label rect,#chatgpt-mermaid-\_r_21g\_ .image-shape .label rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_21g\_ .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#chatgpt-mermaid-\_r_21g\_ .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#chatgpt-mermaid-\_r_21g\_ .node .neo-node{stroke:rgb(83, 154, 248);}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node rect,#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].cluster rect,#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node polygon{stroke:url(#chatgpt-mermaid-\_r_21g\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].swimlane.cluster rect{filter:none;}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node path{stroke:url(#chatgpt-mermaid-\_r_21g\_-gradient);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node .neo-line path{stroke:rgb(83, 154, 248);filter:none;}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node circle{stroke:url(#chatgpt-mermaid-\_r_21g\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node circle .state-start{fill:#000000;}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].icon-shape .icon{fill:url(#chatgpt-mermaid-\_r_21g\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].icon-shape .icon-neo path{stroke:url(#chatgpt-mermaid-\_r_21g\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ .node text{font-size:14px;font-weight:600;letter-spacing:normal;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_21g\_ .edgeLabels text{font-size:13px;font-weight:600;letter-spacing:-0.08px;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_21g\_ .node tspan[font-weight="normal"],#chatgpt-mermaid-\_r_21g\_ .edgeLabels tspan[font-weight="normal"]{font-weight:600;}#chatgpt-mermaid-\_r_21g\_ .edgeLabel .label rect{opacity:1;rx:13px;ry:13px;fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .node rect,#chatgpt-mermaid-\_r_21g\_ .node circle,#chatgpt-mermaid-\_r_21g\_ .node ellipse,#chatgpt-mermaid-\_r_21g\_ .node polygon,#chatgpt-mermaid-\_r_21g\_ .node path{fill:rgb(229, 243, 255);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .node rect{rx:16px;ry:16px;}#chatgpt-mermaid-\_r_21g\_ .mermaid-decision .label-container{fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-dasharray:2,2;}#chatgpt-mermaid-\_r_21g\_ .edgePaths .flowchart-link{stroke:rgb(143, 143, 143);stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;}#chatgpt-mermaid-\_r_21g\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ :root{--mermaid-font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";}Students, Faculty, AdminsCloudflare DNS, CDN, WAF,DDoS ProtectionGateway and Brand ResolutionRTH Applications and ServicesSUIA Applications and ServicesSkillHubCore Shared ServicesGlobal Identity: people_prodRTH Database: rth_prodSUIA Database: skillup_prodManaged CacheDurable Queue andBackground JobsAnalytics and Data PlatformAI Services and RetrievalLogs, Metrics, Traces, Alerts
+\#chatgpt-mermaid-\_r_21g\_{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;fill:rgb(13, 13, 13);}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#chatgpt-mermaid-\_r_21g\_ .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_21g\_ .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#chatgpt-mermaid-\_r_21g\_ .error-icon{fill:rgb(243, 243, 243);}#chatgpt-mermaid-\_r_21g\_ .error-text{fill:rgb(13, 13, 13);stroke:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .edge-thickness-normal{stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .edge-thickness-thick{stroke-width:3.5px;}#chatgpt-mermaid-\_r_21g\_ .edge-pattern-solid{stroke-dasharray:0;}#chatgpt-mermaid-\_r_21g\_ .edge-thickness-invisible{stroke-width:0;fill:none;}#chatgpt-mermaid-\_r_21g\_ .edge-pattern-dashed{stroke-dasharray:3;}#chatgpt-mermaid-\_r_21g\_ .edge-pattern-dotted{stroke-dasharray:2;}#chatgpt-mermaid-\_r_21g\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ .marker.cross{stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ svg{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:16px;}#chatgpt-mermaid-\_r_21g\_ p{margin:0;}#chatgpt-mermaid-\_r_21g\_ .label{font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .cluster-label text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .cluster-label span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .cluster-label span p{background-color:transparent;}#chatgpt-mermaid-\_r_21g\_ .label text,#chatgpt-mermaid-\_r_21g\_ span{fill:rgb(13, 13, 13);color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .node rect,#chatgpt-mermaid-\_r_21g\_ .node circle,#chatgpt-mermaid-\_r_21g\_ .node ellipse,#chatgpt-mermaid-\_r_21g\_ .node polygon,#chatgpt-mermaid-\_r_21g\_ .node path{fill:rgb(222, 234, 251);stroke:rgb(83, 154, 248);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .rough-node .label text,#chatgpt-mermaid-\_r_21g\_ .node .label text,#chatgpt-mermaid-\_r_21g\_ .image-shape .label,#chatgpt-mermaid-\_r_21g\_ .icon-shape .label{text-anchor:middle;}#chatgpt-mermaid-\_r_21g\_ .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .rough-node .label,#chatgpt-mermaid-\_r_21g\_ .node .label,#chatgpt-mermaid-\_r_21g\_ .image-shape .label,#chatgpt-mermaid-\_r_21g\_ .icon-shape .label{text-align:center;}#chatgpt-mermaid-\_r_21g\_ .node.clickable{cursor:pointer;}#chatgpt-mermaid-\_r_21g\_ .root .anchor path{fill:rgb(143, 143, 143)!important;stroke-width:0;stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ .arrowheadPath{fill:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ .edgePath .path{stroke:rgb(143, 143, 143);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .flowchart-link{stroke:rgb(143, 143, 143);fill:none;}#chatgpt-mermaid-\_r_21g\_ .edgeLabel{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_21g\_ .edgeLabel p{background-color:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_21g\_ .edgeLabel rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_21g\_ .labelBkg{background-color:rgba(252, 252, 252, 0.5);}#chatgpt-mermaid-\_r_21g\_ .cluster rect{fill:rgb(243, 243, 243);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .cluster text{fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ .cluster span{color:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";font-size:12px;background:rgb(243, 243, 243);border:1px solid rgba(0, 0, 0, 0.1);border-radius:2px;pointer-events:none;z-index:100;}#chatgpt-mermaid-\_r_21g\_ .flowchartTitleText{text-anchor:middle;font-size:18px;fill:rgb(13, 13, 13);}#chatgpt-mermaid-\_r_21g\_ rect.text{fill:none;stroke-width:0;}#chatgpt-mermaid-\_r_21g\_ .icon-shape,#chatgpt-mermaid-\_r_21g\_ .image-shape{background-color:rgb(252, 252, 252);text-align:center;}#chatgpt-mermaid-\_r_21g\_ .icon-shape p,#chatgpt-mermaid-\_r_21g\_ .image-shape p{background-color:rgb(252, 252, 252);padding:2px;}#chatgpt-mermaid-\_r_21g\_ .icon-shape .label rect,#chatgpt-mermaid-\_r_21g\_ .image-shape .label rect{opacity:0.5;background-color:rgb(252, 252, 252);fill:rgb(252, 252, 252);}#chatgpt-mermaid-\_r_21g\_ .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#chatgpt-mermaid-\_r_21g\_ .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#chatgpt-mermaid-\_r_21g\_ .node .neo-node{stroke:rgb(83, 154, 248);}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node rect,#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].cluster rect,#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node polygon{stroke:url(#chatgpt-mermaid-\_r_21g\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].swimlane.cluster rect{filter:none;}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node path{stroke:url(#chatgpt-mermaid-\_r_21g\_-gradient);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node .neo-line path{stroke:rgb(83, 154, 248);filter:none;}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node circle{stroke:url(#chatgpt-mermaid-\_r_21g\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].node circle .state-start{fill:#000000;}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].icon-shape .icon{fill:url(#chatgpt-mermaid-\_r_21g\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ [data-look="neo"].icon-shape .icon-neo path{stroke:url(#chatgpt-mermaid-\_r_21g\_-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#chatgpt-mermaid-\_r_21g\_ .node text{font-size:14px;font-weight:600;letter-spacing:normal;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_21g\_ .edgeLabels text{font-size:13px;font-weight:600;letter-spacing:-0.08px;fill:rgb(0, 79, 153);}#chatgpt-mermaid-\_r_21g\_ .node tspan[font-weight="normal"],#chatgpt-mermaid-\_r_21g\_ .edgeLabels tspan[font-weight="normal"]{font-weight:600;}#chatgpt-mermaid-\_r_21g\_ .edgeLabel .label rect{opacity:1;rx:13px;ry:13px;fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .node rect,#chatgpt-mermaid-\_r_21g\_ .node circle,#chatgpt-mermaid-\_r_21g\_ .node ellipse,#chatgpt-mermaid-\_r_21g\_ .node polygon,#chatgpt-mermaid-\_r_21g\_ .node path{fill:rgb(229, 243, 255);stroke:rgba(0, 0, 0, 0.1);stroke-width:1px;}#chatgpt-mermaid-\_r_21g\_ .node rect{rx:16px;ry:16px;}#chatgpt-mermaid-\_r_21g\_ .mermaid-decision .label-container{fill:rgb(245, 250, 255);stroke:rgb(206, 219, 229);stroke-dasharray:2,2;}#chatgpt-mermaid-\_r_21g\_ .edgePaths .flowchart-link{stroke:rgb(143, 143, 143);stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;}#chatgpt-mermaid-\_r_21g\_ .marker{fill:rgb(143, 143, 143);stroke:rgb(143, 143, 143);}#chatgpt-mermaid-\_r_21g\_ :root{--mermaid-font-family:-apple-system-body,ui-sans-serif,-apple-system,system-ui,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";}Students, Faculty, AdminsCloudflare DNS, CDN, WAF,DDoS ProtectionGateway and Brand ResolutionRTH Applications and ServicesSUIA Applications and ServicesSkillHubCore Shared ServicesGlobal Identitypeople_prodSHC Infrastructure: people_prodRTH Database: rth_prodSUIA Database: skillup_prodManaged CacheDurable Queue andBackground JobsAnalytics and Data PlatformAI Services and RetrievalLogs, Metrics, Traces, Alerts
 
 The important architectural distinction is that shared identity and shared infrastructure do not mean shared authorization or unrestricted shared data.
 
@@ -2660,32 +2662,31 @@ Do not scale every service equally. A tutorial page, an exam submission, an AI g
 
 For example, an AI question-generation workload should not be allowed to consume all API capacity while students are trying to log in or submit an exam.
 
-# 4. How students should access both brands
+# 4. Independent access for students using both platforms
 
-Since you want your existing offline students to access features on both brands, the identity model must support that deliberately.
+A person may register independently in SUIA and RTH. Entitlement in one platform does not create an account, session or permission in the other.
 
-| Concept          | Expected behavior                                                                                      |
-| ---------------- | ------------------------------------------------------------------------------------------------------ |
-| Global account   | Each tenant owns independent learner identities; a person may register separately in SUIA and/or RTH  |
-| Brand membership | If a person requires access to both tenants, link accounts through controlled auditable process                                     |
-| Brand access     | Access is granted based on explicit membership and permissions                                         |
-| Brand profile    | Brand-specific enrollment, progress, preferences, and records stay in the relevant brand’s data domain |
-| Login            | Each tenant has its own authentication; shared services may coordinate where appropriate               |
-| Authorization    | Every request still checks the target brand and required permission                                    |
-| Brand switching  | A person with linked accounts can move between brands without gaining unauthorized access              |
-| Account linking  | Existing offline student records are linked through a controlled, auditable process                    |
+| Concept | Required behavior |
+| --- | --- |
+| Learner account | Each platform owns its learner account and identity namespace |
+| Platform entitlement | Grant courses and capabilities independently within the verified platform |
+| Learner records | Enrollment, progress, preferences and records remain owned by the relevant platform |
+| Authentication | Preserve independent credential and session boundaries; infrastructure reuse does not imply account linking |
+| SHC projection | A platform-specific service reference, not a global learner account or entitlement |
+| Shared resources | Apply verified caller, tenant entitlement, action and resource policy |
+| Account linking / SSO | Not authorized by this amendment; any future feature needs a separate decision |
 
-Do not make a global rule that “every user can access both brands.” Instead, support both memberships and grant them to the students who are entitled to both.
+Do not make a global rule that "every user can access both brands." A student requiring both platforms needs independently authorized accounts and access in each. Equal email addresses or local IDs do not link those accounts.
 
-A practical onboarding flow:
+A practical onboarding flow for offline students:
 
-1. Create or verify the student’s global identity.
-2. Match the student to the correct offline student record.
-3. Assign the required brand memberships.
-4. Validate access to the relevant brand’s courses and services.
-5. Test the flow using real student accounts before opening it to all students.
+1. Verify the existing offline student record according to the approved onboarding process.
+2. Create or match a learner account independently within each applicable platform; do not infer a cross-platform link from email or ID equality.
+3. Create a platform-specific SHC projection through the identity bridge where required for authorized shared-service coordination.
+4. Validate entitlement to each platform's courses and services independently.
+5. Verify the flow using controlled student test accounts before general release.
 
-This allows you to start with 100 students without making identity and authorization assumptions that become dangerous at a larger scale.
+This document amendment does not execute onboarding, change credentials or sessions, introduce account linking, or authorize production operations.
 
 # 5. The application coding standard must support scaling
 
@@ -2746,7 +2747,7 @@ The project should move through measurable readiness gates. Each gate should be 
 | Stage                                | What to implement                                                                                             | Exit criteria                                                                 |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | Stage 0 — Architecture baseline      | Document service boundaries, database ownership, brand access rules, critical user journeys, and dependencies | Architecture decisions reviewed and recorded                                  |
-| Stage 1 — Offline student onboarding | Set up the 100+ students, brand memberships, access validation, and support process                           | Real students can securely access the intended features of both brands        |
+| Stage 1 — Offline student onboarding | Set up the 100+ students, independent tenant accounts, access validation, and support process                 | Real students can securely access the intended features of both platforms     |
 | Stage 2 — Production foundation      | Health checks, structured logs, alerts, backups, restore procedures, secrets management, CI/CD rollback       | A production failure can be detected, diagnosed, and recovered from           |
 | Stage 3 — Initial online launch      | CDN, rate limits, API protections, database pooling, caching where appropriate                                | Realistic load tests pass for expected initial online traffic                 |
 | Stage 4 — Growth readiness           | Autoscaling, queue-based processing, database tuning, service isolation, load testing                         | The platform passes its agreed workload and burst targets                     |
@@ -2775,7 +2776,7 @@ Do not start by adding more servers, creating many microservices, or buying larg
 Start in this order:
 
 1. Audit the current architecture — establish what is actually implemented and deployed versus what is only planned.
-2. Define the service and data ownership boundaries — particularly identity, brand membership, RTH data, SUIA data, and shared SkillHubCore capabilities.
+2. Define the service and data ownership boundaries — particularly tenant learner identity, SHC infrastructure projections, RTH data, SUIA data, and shared SkillHubCore capabilities.
 3. Validate the two-brand student access flow — use your real offline student base as the first controlled online rollout.
 4. Define workload and reliability targets — registered users alone are not a capacity plan.
 5. Establish observability, backups, recovery, and safe deployment practices.

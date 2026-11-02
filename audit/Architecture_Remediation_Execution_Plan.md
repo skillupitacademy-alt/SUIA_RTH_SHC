@@ -442,7 +442,7 @@ implementation remains SHC-only.
 
 ### W1.1 - Tenant Identity Vocabulary and Architecture Reconciliation
 **Root cause:** `RC-ID-01`
-**Status:** `IN_REVIEW` (documentation amendment implemented; Gemini verification and Sol acceptance pending)
+**Status:** `VERIFICATION_FAILED` (Sol review of abc36be3: section 4 integration corrected locally; ownership summaries, Wave 8 and evidence consistency remain pending)
 **Owner:** Sol
 **Implementation:** Sonnet 4.5 (documentation/architecture amendment)
 **Independent verification:** Gemini 3.8
@@ -490,6 +490,8 @@ implementation remains SHC-only.
 - W1.1.2: Session persistence investigation (read-only)
 - W1.2-EMAIL: People DB composite email uniqueness (separate approval required)
 - W1.2: Authorization behavioral corrections (depends on W1.1 acceptance)
+
+**Latest review/correction task:** `audit/W1.1_Sol_Review_abc36be3.md`. Independent verification must include Sol's local section-4 documentation correction.
 
 ### W1.2 - Critical Authorization Corrections
 **Status:** `PLANNED`
@@ -774,32 +776,43 @@ Only after privacy/identity/delivery blockers.
 
 **Status:** `PLANNED`
 
-Verify:
+Verify independent tenant account isolation with explicitly authorized SHC projection access:
 
 ```text
-Global identity
+SUIA learner account (skillup_prod)
     |
-    +-- SkillUp membership -> SkillUp resources only
+    +-- SUIA resources (authorized by SUIA account)
     |
-    +-- RTH membership -> RTH resources only
+    +-- Optional SHC projection (service coordination, not entitlement)
+
+RTH learner account (rth_prod)
+    |
+    +-- RTH resources (authorized by RTH account)
+    |
+    +-- Optional SHC projection (service coordination, not entitlement)
 ```
 
 Tests:
-- SkillUp only -> RTH private resource -> DENY.
-- RTH only -> SkillUp private resource -> DENY.
-- Both memberships -> each correct brand -> ALLOW.
-- forged brand -> DENY/IGNORE.
-- global identity only -> no implicit entitlement.
-- direct shared-package dependency violations -> CI failure.
-- direct unauthorized DB dependency -> CI failure.
+- SkillUp-only account -> RTH private resource -> DENY.
+- RTH-only account -> SkillUp private resource -> DENY.
+- Same email in both tenants -> independent accounts -> no automatic linking.
+- Same learner ID in both tenants -> independent learners -> tenant isolation.
+- Forged brand/platform context -> DENY/IGNORE.
+- SHC projection alone -> no implicit tenant entitlement.
+- `shared` resource access -> verify caller, tenant entitlement, resource policy, action permission.
+- `platforms` array without verified tenant account -> no learner access.
+- Direct shared-package dependency violations -> CI failure.
+- Direct unauthorized DB dependency -> CI failure.
 
 Also verify:
-- shared package ownership.
-- database ownership.
-- event contracts.
-- gateway trust.
-- failure isolation.
-- service identity.
+- Tenant learner ownership.
+- SHC projection semantics (cross-reference, not authority).
+- Database ownership and access controls.
+- Event contracts.
+- Gateway trust.
+- Failure isolation.
+- Service identity.
+- Bridge failure handling (partial success scenarios).
 
 ---
 
