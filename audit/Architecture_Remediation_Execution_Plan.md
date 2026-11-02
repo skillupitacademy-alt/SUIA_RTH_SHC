@@ -440,30 +440,40 @@ implementation remains SHC-only.
 
 # WAVE 1 - TRUST FOUNDATION
 
-### W1.1 - Canonical Identity Vocabulary
+### W1.1 - Tenant Identity Vocabulary and Architecture Reconciliation
 **Root cause:** `RC-ID-01`
-**Status:** `PLANNED`
-
+**Status:** `IN_PROGRESS` (owner clarification recorded; documentation/source reconciliation only)
 **Owner:** Sol
-**Analysis:** Astra
-**Implementation:** Sonnet 4.5
-**Review:** Opus 4.6 + Gemini
+**Implementation:** Sonnet 4.5 (one documentation/design author)
+**Independent verification:** Gemini
+**Specialist review:** Opus 4.6 before later high-risk auth implementation
+**Branch:** remediation/w1-1-identity-reconciliation
+**Baseline:** 567970d55f7b147d0a32417fdc7d89d24697c44e
+**Scope and task package:** `audit/W1.1_Owner_Identity_Clarification_and_Reconciliation.md`
 
-Define explicitly:
-- `globalUserId`
-- brand-local identity only if genuinely required
-- `sessionId`
-- `brandId`
-- memberships
-- roles
-- permissions
-- trusted service identity
-- audit actor identity
+Owner direction: independent SUIA and RTH learner identities and records; SHC
+provides tenant-authorized shared capabilities. No implicit global learner account,
+account linking, credential/session merging or cross-tenant entitlement.
 
-Acceptance:
-- One documented identity contract.
-- No ambiguous `userId` semantics at critical boundaries.
-- No client-controlled header becomes authoritative.
+The current target document explicitly describes shared global learner identity.
+Reconcile this contradiction with exact source/document evidence and propose a
+narrow amendment for owner review. Do not change runtime behavior or database
+keys in this batch. Existing globalUserId assumptions are suspended as W1.1
+implementation instructions pending this reconciliation. W1.2 and Wave 8 identity
+criteria must be reconciled before execution; their historical wording is not
+approval to introduce shared learner identity.
+
+Define tenant-scoped learner, issuer-scoped principal, service and SHC staff
+identity, authentication session, learning session and audit actor separately.
+Preserve existing wire aliases pending compatibility approval. The vocabulary
+review must first evaluate existing platform values skillup and
+realtutorialhub as tenant context, without automatically adding tenantId.
+The shared value denotes resource scope, never learner identity or implicit
+permission. Trace platform/brand meanings separately before canonicalization.
+Acceptance for this batch requires a source-backed inventory, contradiction matrix, proposed
+contract/amendment, minimal implementation scope and regression-test matrix,
+Gemini verification and Sol review. Identity behavior changes additionally
+require the owner's architecture approval. No runtime verification claim.
 
 ### W1.2 - Critical Authorization Corrections
 **Status:** `PLANNED`
