@@ -6,18 +6,18 @@ import { TokenRepository } from '../repositories/token.repository';
 import { AuditService } from '../audit.service';
 import { container } from '../../core/container';
 
-const mockTokenService = { 
-    verifyRefreshToken: vi.fn(), 
-    generateAccessToken: vi.fn(), 
-    generateRefreshToken: vi.fn(), 
-    hashToken: vi.fn().mockResolvedValue('hash') 
+const mockTokenService = {
+    verifyRefreshToken: vi.fn(),
+    generateAccessToken: vi.fn(),
+    generateRefreshToken: vi.fn(),
+    hashToken: vi.fn().mockResolvedValue('hash')
 };
 const mockUserRepo = { findByIdWithDetails: vi.fn(), updateLastActive: vi.fn() };
-const mockTokenRepo = { 
-    findByHash: vi.fn(), 
-    createRefreshToken: vi.fn(), 
-    revokeById: vi.fn(), 
-    revokeToken: vi.fn(), 
+const mockTokenRepo = {
+    findByHash: vi.fn(),
+    createRefreshToken: vi.fn(),
+    revokeById: vi.fn(),
+    revokeToken: vi.fn(),
     updateLastUsed: vi.fn(),
     withDb: vi.fn(function(this: any) { return this; })
 };
@@ -51,10 +51,10 @@ describe('AuthService.refresh generic branches', () => {
 
         const service = container.get(AuthService);
         const result = await service.refresh('token', undefined, undefined, 'user', 'realtutorialhub');
-        
+
         expect(result.accessToken).toBe('access');
         expect(result.refreshToken).toBe('refresh');
-        
+
         // Verify token rotation occurred: old token revoked, new token created
         // Note: refresh flow uses revokeToken (by hash) in transaction, not revokeById
         expect(mockTokenRepo.revokeToken).toHaveBeenCalledTimes(1);

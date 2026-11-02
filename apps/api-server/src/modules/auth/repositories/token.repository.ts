@@ -31,9 +31,9 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
     return new TokenRepository(dbClient, tables) as this;
   }
 
-  async createRefreshToken(data: { 
-    userId: string; 
-    token: string; 
+  async createRefreshToken(data: {
+    userId: string;
+    token: string;
     expiresAt: Date;
     deviceContext?: DeviceContext;
   }) {
@@ -58,7 +58,7 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
   /**
    * 🔐 SECURITY FIX (W1.2-SESS-01): Owner-scoped single-session revocation.
    * Prevents cross-user session revocation by requiring verified userId match.
-   * 
+   *
    * @param id - Session ID to revoke
    * @param userId - REQUIRED verified brand-local user ID (ownership authority)
    * @throws {Error} If userId is missing, empty, or whitespace-only
@@ -185,7 +185,7 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
     session?: RefreshTokenRow;
   }> {
     const session = await this.findByHash(tokenHash);
-    
+
     if (!session) {
       return { valid: false, reason: 'session_not_found' };
     }

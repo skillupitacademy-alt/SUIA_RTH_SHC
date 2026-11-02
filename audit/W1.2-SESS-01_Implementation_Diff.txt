@@ -1,0 +1,66 @@
+﻿diff --git a/apps/api-server/src/modules/auth/global-logout.service.ts b/apps/api-server/src/modules/auth/global-logout.service.ts
+index 3cae5803..d6cac429 100644
+--- a/apps/api-server/src/modules/auth/global-logout.service.ts
++++ b/apps/api-server/src/modules/auth/global-logout.service.ts
+@@ -97,9 +97,10 @@ export class GlobalLogoutService {
+   }
+ 
+   /**
+-   * ≡ƒöÉ REVOKE SPECIFIC SESSION
++   * ≡ƒöÉ REVOKE SPECIFIC SESSION (W1.2-SESS-01: Owner-scoped)
+    * 
+-   * Revokes a specific session by ID (for "Logout this device" functionality)
++   * Revokes a specific session by ID (for "Logout this device" functionality).
++   * Enforces ownership: only the verified userId can revoke their own sessions.
+    */
+   async revokeSession(userId: string, sessionId: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
+     const brandContext = getAuthBrandContext(brand);
+@@ -109,8 +110,8 @@ export class GlobalLogoutService {
+       ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
+       : this.tokenRepo;
+ 
+-    // Revoke the specific session
+-    await brandTokenRepo.revokeById(sessionId);
++    // ≡ƒöÉ W1.2-SESS-01: Pass verified brand-local userId to enforce ownership
++    await brandTokenRepo.revokeById(sessionId, userId);
+ 
+     // Audit log
+     await this.auditService.log({
+diff --git a/apps/api-server/src/modules/auth/repositories/token.repository.ts b/apps/api-server/src/modules/auth/repositories/token.repository.ts
+index e5bf3e07..7f546818 100644
+--- a/apps/api-server/src/modules/auth/repositories/token.repository.ts
++++ b/apps/api-server/src/modules/auth/repositories/token.repository.ts
+@@ -56,17 +56,26 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
+   }
+ 
+   /**
+-   * ≡ƒöÉ SECURITY FIX (AUTH-50): revokeById is now user-scoped.
+-   * Prevents cross-user session revocation by requiring userId match.
++   * ≡ƒöÉ SECURITY FIX (W1.2-SESS-01): Owner-scoped single-session revocation.
++   * Prevents cross-user session revocation by requiring verified userId match.
++   * 
++   * @param id - Session ID to revoke
++   * @param userId - REQUIRED verified brand-local user ID (ownership authority)
++   * @throws {Error} If userId is missing, empty, or whitespace-only
+    */
+-  async revokeById(id: string, userId?: string) {
+-    const conditions = [eq(this.refreshTokensTable.id, id)];
+-    if (userId) {
+-      conditions.push(eq(this.refreshTokensTable.userId, userId));
++  async revokeById(id: string, userId: string) {
++    // Runtime validation: fail closed if owner identity is missing/invalid
++    if (typeof userId !== 'string' || userId.trim().length === 0) {
++      throw new Error('W1.2-SESS-01: userId is required for session revocation');
+     }
++
++    // Single atomic update with both session ID and owner ID in WHERE clause
+     await this.dbInstance.update(this.refreshTokensTable)
+       .set({ revoked: true })
+-      .where(and(...conditions));
++      .where(and(
++        eq(this.refreshTokensTable.id, id),
++        eq(this.refreshTokensTable.userId, userId)
++      ));
+   }
+ 
+   async revokeAll(userId: string) {

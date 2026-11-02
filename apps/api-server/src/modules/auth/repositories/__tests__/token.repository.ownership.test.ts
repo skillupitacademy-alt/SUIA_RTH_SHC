@@ -177,7 +177,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
     capturedPredicates = [];
     lastPredicate = null;
     testAdapter.reset();
-    
+
     // Configure updateWhereMock to apply predicates to test adapter
     updateWhereMock.mockImplementation(async (predicate) => {
       if (lastPredicate) {
@@ -206,7 +206,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       });
 
       const repo = new TokenRepository();
-      
+
       // A revokes session-A1
       await repo.revokeById('session-A1', 'user-A');
 
@@ -236,7 +236,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       });
 
       const repo = new TokenRepository();
-      
+
       // User A attempts to revoke B's session
       await repo.revokeById('session-B-laptop', 'user-A');
 
@@ -259,7 +259,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       });
 
       const repo = new TokenRepository();
-      
+
       // Attempt to revoke unknown session
       await repo.revokeById('session-unknown', 'user-A');
 
@@ -279,7 +279,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       });
 
       const repo = new TokenRepository();
-      
+
       // Attempt to revoke again
       await repo.revokeById('session-revoked', 'user-A');
 
@@ -330,7 +330,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
 
       // Verify NO database write occurred
       expect(updateWhereMock).not.toHaveBeenCalled();
-      
+
       // Verify session unchanged
       const session = testAdapter.findById('session-123');
       expect(session?.revoked).toBe(false);
@@ -350,7 +350,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
         .rejects.toThrow('W1.2-SESS-01: userId is required');
 
       expect(updateWhereMock).not.toHaveBeenCalled();
-      
+
       const session = testAdapter.findById('session-456');
       expect(session?.revoked).toBe(false);
     });
@@ -369,7 +369,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
         .rejects.toThrow('W1.2-SESS-01: userId is required');
 
       expect(updateWhereMock).not.toHaveBeenCalled();
-      
+
       const session = testAdapter.findById('session-789');
       expect(session?.revoked).toBe(false);
     });
@@ -393,7 +393,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
         .rejects.toThrow('W1.2-SESS-01: userId is required');
 
       expect(updateWhereMock).not.toHaveBeenCalled();
-      
+
       const session = testAdapter.findById('session-999');
       expect(session?.revoked).toBe(false);
     });
@@ -453,7 +453,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
 
       // SUIA repository instance (different db binding)
       const suiaRepo = new TokenRepository();
-      
+
       // Query SUIA's session-100 - should still be active
       const suiaSessionBefore = suiaAdapter.findById('session-100');
       expect(suiaSessionBefore?.revoked).toBe(false);
@@ -475,16 +475,17 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
   });
 
   describe('SECURITY REGRESSION: Controlled mutation proof', () => {
-    it('PRE-FIX MUTATION: Production code with ownership check removed allows cross-user revocation', async () => {
+    it('PRE-FIX MUTATION: Repository without ownership check allows cross-user revocation', async () => {
       /**
        * This test demonstrates the original vulnerability by creating a
-       * vulnerable method that skips the userId check, proving that without
-       * the fix, cross-user revocation would be possible.
+       * disposable copy of TokenRepository where only the owner predicate
+       * is removed, proving that without the fix, cross-user revocation
+       * would be possible.
        */
 
       // Setup: User B has a session
-      const mutationAdapter = new StatefulTestAdapter();
-      mutationAdapter.insert({
+      testAdapter.reset();
+      testAdapter.insert({
         id: 'session-victim',
         userId: 'user-B',
         token: 'token-victim',
@@ -493,19 +494,46 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       });
 
       // Verify session starts active
-      expect(mutationAdapter.findById('session-victim')?.revoked).toBe(false);
+      expect(testAdapter.findById('session-victim')?.revoked).toBe(false);
 
-      // Simulate vulnerable behavior: revoke without owner check
-      // This directly mutates the adapter to show what would happen
-      const sessions = mutationAdapter['sessions']; // Access private field for test
-      for (const session of sessions) {
-        if (session.id === 'session-victim') {
-          session.revoked = true; // VULNERABLE: No userId check
+      // Create vulnerable repository copy: remove owner predicate but keep valid actor identity
+      class VulnerableTokenRepository extends TokenRepository {
+        async revokeById(id: string, _userId: string) {
+          // VULNERABILITY: Accept userId but don't enforce it in WHERE clause
+          if (typeof _userId !== 'string' || _userId.trim().length === 0) {
+            throw new Error('W1.2-SESS-01: userId is required for session revocation');
+          }
+          // Only match by session ID (no ownership check)
+          await this.dbInstance.update(this.refreshTokensTable)
+            .set({ revoked: true })
+            .where({ op: 'eq', field: 'refreshTokens.id', value: id });
         }
       }
 
+      // Configure mock to accept single-predicate
+      vi.clearAllMocks();
+      capturedPredicates = [];
+      lastPredicate = null;
+      updateWhereMock.mockImplementation(async (predicate) => {
+        // Accept single eq predicate (no ownership)
+        if (predicate && predicate.op === 'eq') {
+          for (const session of testAdapter['sessions']) {
+            if (session.id === predicate.value) {
+              session.revoked = true;
+              return 1;
+            }
+          }
+        }
+        return 0;
+      });
+
+      const vulnerableRepo = new VulnerableTokenRepository();
+
+      // User A attempts to revoke B's session WITH valid identity supplied
+      await vulnerableRepo.revokeById('session-victim', 'user-A');
+
       // VULNERABILITY DEMONSTRATED: User B's session was revoked
-      const victimSession = mutationAdapter.findById('session-victim');
+      const victimSession = testAdapter.findById('session-victim');
       expect(victimSession?.revoked).toBe(true);
       expect(victimSession?.userId).toBe('user-B');
     });
@@ -514,7 +542,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       /**
        * This proves the fix works against the same scenario
        */
-      
+
       // Setup: User B has a session
       testAdapter.reset();
       testAdapter.insert({
@@ -537,7 +565,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       });
 
       const repo = new TokenRepository();
-      
+
       // User A attempts to revoke B's session WITH userId required
       await repo.revokeById('session-victim', 'user-A');
 
@@ -564,7 +592,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
       });
 
       const repo = new TokenRepository();
-      
+
       // Attempt to bypass with missing userId
       // @ts-expect-error Testing runtime protection
       await expect(repo.revokeById('session-protected'))
@@ -572,7 +600,7 @@ describe('W1.2-SESS-01: Owner-scoped single-session revocation', () => {
 
       // Verify NO database operation occurred
       expect(updateWhereMock).not.toHaveBeenCalled();
-      
+
       // Verify session unchanged
       const session = testAdapter.findById('session-protected');
       expect(session?.revoked).toBe(false);
