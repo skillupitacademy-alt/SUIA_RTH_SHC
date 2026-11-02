@@ -97,9 +97,10 @@ export class GlobalLogoutService {
   }
 
   /**
-   * 🔐 REVOKE SPECIFIC SESSION
+   * 🔐 REVOKE SPECIFIC SESSION (W1.2-SESS-01: Owner-scoped)
    * 
-   * Revokes a specific session by ID (for "Logout this device" functionality)
+   * Revokes a specific session by ID (for "Logout this device" functionality).
+   * Enforces ownership: only the verified userId can revoke their own sessions.
    */
   async revokeSession(userId: string, sessionId: string, ip?: string, brand: RequestBrand = 'realtutorialhub') {
     const brandContext = getAuthBrandContext(brand);
@@ -109,8 +110,8 @@ export class GlobalLogoutService {
       ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
       : this.tokenRepo;
 
-    // Revoke the specific session
-    await brandTokenRepo.revokeById(sessionId);
+    // 🔐 W1.2-SESS-01: Pass verified brand-local userId to enforce ownership
+    await brandTokenRepo.revokeById(sessionId, userId);
 
     // Audit log
     await this.auditService.log({

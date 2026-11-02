@@ -56,17 +56,26 @@ export class TokenRepository extends BaseRepository<RefreshTokenRow, typeof refr
   }
 
   /**
-   * 🔐 SECURITY FIX (AUTH-50): revokeById is now user-scoped.
-   * Prevents cross-user session revocation by requiring userId match.
+   * 🔐 SECURITY FIX (W1.2-SESS-01): Owner-scoped single-session revocation.
+   * Prevents cross-user session revocation by requiring verified userId match.
+   * 
+   * @param id - Session ID to revoke
+   * @param userId - REQUIRED verified brand-local user ID (ownership authority)
+   * @throws {Error} If userId is missing, empty, or whitespace-only
    */
-  async revokeById(id: string, userId?: string) {
-    const conditions = [eq(this.refreshTokensTable.id, id)];
-    if (userId) {
-      conditions.push(eq(this.refreshTokensTable.userId, userId));
+  async revokeById(id: string, userId: string) {
+    // Runtime validation: fail closed if owner identity is missing/invalid
+    if (typeof userId !== 'string' || userId.trim().length === 0) {
+      throw new Error('W1.2-SESS-01: userId is required for session revocation');
     }
+
+    // Single atomic update with both session ID and owner ID in WHERE clause
     await this.dbInstance.update(this.refreshTokensTable)
       .set({ revoked: true })
-      .where(and(...conditions));
+      .where(and(
+        eq(this.refreshTokensTable.id, id),
+        eq(this.refreshTokensTable.userId, userId)
+      ));
   }
 
   async revokeAll(userId: string) {

@@ -49,7 +49,7 @@ describe('TokenRepository', () => {
     const repo = new TokenRepository();
     await expect(repo.createRefreshToken({ userId: 'u1', token: 'hash', expiresAt: new Date() })).resolves.toBeUndefined();
     await expect(repo.revokeToken('hash')).resolves.toBeUndefined();
-    await expect(repo.revokeById('rt1')).resolves.toBeUndefined();
+    await expect(repo.revokeById('rt1', 'u1')).resolves.toBeUndefined();
     await expect(repo.revokeAll('u1')).resolves.toBeUndefined();
     await expect(repo.touchSession('u1')).resolves.toBeUndefined();
     await expect(repo.findValidToken('u1', 'hash')).resolves.toEqual({ id: 'rt1' });
