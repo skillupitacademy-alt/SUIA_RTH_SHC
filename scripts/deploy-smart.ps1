@@ -652,6 +652,39 @@ if ($servicesToDeploy -contains 'skillhubcore-admin') {
     Write-Host "     Invocation: $invocationId" -ForegroundColor DarkGray
     Write-Host "     Receipt integrity: verified" -ForegroundColor DarkGray
     
+    # W0.2-HOSTINGER: Final source cleanliness check immediately before SHC upload
+    # Verify Git succeeds, HEAD matches validated commit, working tree is clean
+    $finalHeadCheck = git -C $repoRoot rev-parse HEAD 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Err "Git failed during final source check before SHC publication: $finalHeadCheck"
+        exit 1
+    }
+    
+    $finalHead = $finalHeadCheck.Trim()
+    if ($finalHead -ne $currentCommit) {
+        Write-Err "HEAD changed before SHC publication!"
+        Write-Host "  Expected: $currentCommit" -ForegroundColor Red
+        Write-Host "  Current:  $finalHead" -ForegroundColor Red
+        Write-Err "Cannot publish from different commit"
+        exit 1
+    }
+    
+    $finalStatusCheck = git -C $repoRoot status --porcelain 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Err "Git status failed during final source check before SHC publication: $finalStatusCheck"
+        exit 1
+    }
+    
+    if ($finalStatusCheck) {
+        Write-Err "Working tree is not clean before SHC publication!"
+        Write-Host "Uncommitted changes detected:" -ForegroundColor Red
+        $finalStatusCheck | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+        Write-Err "Cannot publish with uncommitted changes"
+        exit 1
+    }
+    
+    Write-Host "  -> Final source verification passed (HEAD=$($finalHead.Substring(0,12)), clean)" -ForegroundColor Green
+    
     # Copy receipt to release artifacts directory for upload
     $receiptDestination = Join-Path $artifactPath $manifestEvidence.evidenceFile
     Copy-Item -LiteralPath $evidencePath -Destination $receiptDestination -Force
