@@ -194,10 +194,14 @@ if ($args -contains "compose" -and $args -contains "build") {
         "dirty-at-save" | Out-File -FilePath "dirty-at-save.txt" -Encoding ASCII
     }
     if ($env:TEST_DOCKER_DIRTY_AFTER_SAVE -eq "1") {
-        # Create uncommitted file after docker save, simulating drift before publication (for scenario 11)
-        # This happens AFTER the builder completes, simulating drift injected at publication boundary
-        Start-Sleep -Milliseconds 500
-        "drift-after-save" | Out-File -FilePath "drift-after-save.txt" -Encoding ASCII
+        # Create uncommitted file asynchronously AFTER builder completes (for scenario 11)
+        # Use Start-Job to inject drift after this docker save call returns
+        # Shorter delay to inject before deployer Step 6 runs
+        Start-Job -ScriptBlock {
+            Start-Sleep -Milliseconds 800
+            "drift-after-builder-return" | Out-File -FilePath "$using:PWD\drift-at-final-check.txt" -Encoding ASCII
+            "DRIFT_INJECTED" | Out-File -FilePath "$using:env:TEST_ROOT\scenario11-injection-trace.txt" -Encoding ASCII
+        } | Out-Null
     }
     exit 0
 } elseif ($args -contains "image" -and $args -contains "inspect") {
@@ -808,13 +812,17 @@ try {
     Remove-Item "infra\hostinger\dist\evidence\*.json" -ErrorAction SilentlyContinue
     Remove-Item "infra\hostinger\dist\images\*" -ErrorAction SilentlyContinue
     Remove-Item "$TestRoot\uploads.txt" -ErrorAction SilentlyContinue
+    Remove-Item "scenario11-injection-trace.txt" -ErrorAction SilentlyContinue
+    Remove-Item "drift-at-final-check.txt" -ErrorAction SilentlyContinue
     
-    # Tell Docker stub to inject drift AFTER docker save (at the publication boundary)
+    # Tell Docker stub to inject drift asynchronously after builder returns
     $env:TEST_DOCKER_DIRTY_AFTER_SAVE = "1"
     
-    # Run deployment - should fail at final cleanliness check
+    # Run deployment - Docker stub will inject drift after builder completes
     $deployScript = Join-Path (Get-Location) "scripts\deploy-smart.ps1"
     $outputFile = Join-Path $TestRoot "scenario11-output.txt"
+    $traceFile = Join-Path $TestRoot "scenario11-injection-trace.txt"
+    
     $null = powershell -NoProfile -ExecutionPolicy Bypass -Command @"
 `$env:TEST_ROOT = '$TestRoot'
 `$env:TEST_DOCKER_DIRTY_AFTER_SAVE = '1'
@@ -833,23 +841,46 @@ try {
     Remove-Item $outputFile -ErrorAction SilentlyContinue
     $env:TEST_DOCKER_DIRTY_AFTER_SAVE = "0"
     
-    # Assert all three checks independently
-    Assert-True "Publication rejected dirty source before upload (exit ≠ 0)" ($exitCode -ne 0)
+    # Wait for async injection job to complete
+    Start-Sleep -Milliseconds 500
+    Get-Job | Wait-Job -Timeout 5 | Remove-Job -Force -ErrorAction SilentlyContinue
     
-    $outputStr = [string]$output
-    $hasCleanError = $outputStr.Contains("not clean") -or $outputStr.Contains("uncommitted changes") -or $outputStr.Contains("dirty")
-    Assert-True "Error mentions working tree not clean before publication" $hasCleanError
-    
-    # Verify zero uploads
-    $uploadCount = 0
-    if (Test-Path "$TestRoot\uploads.txt") {
-        $uploads = Get-Content "$TestRoot\uploads.txt" -Raw
-        $uploadCount = ($uploads -split "`n" | Where-Object { $_ }).Count
+    # Verify injection occurred
+    if (Test-Path $traceFile) {
+        Write-Host "  [TRACE] Drift injected asynchronously after builder return" -ForegroundColor Cyan
+        Remove-Item $traceFile -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "  [WARN] No injection trace found" -ForegroundColor Yellow
     }
-    Assert-True "Zero uploads after dirty source before publication" ($uploadCount -eq 0)
     
-    # Clean up any dirty files created
-    Remove-Item "drift-after-save.txt" -ErrorAction SilentlyContinue
+    # Verify builder succeeded (manifest created)
+    $manifestCreated = (Get-ChildItem "infra\hostinger\dist\images\*.manifest.json" -ErrorAction SilentlyContinue).Count -gt 0
+    if (-not $manifestCreated) {
+        Write-Host "  [FAIL] Builder did not complete successfully (no manifest created)" -ForegroundColor Red
+        $script:FailCount++
+    } else {
+        Write-Host "  [PASS] Builder completed successfully (manifest created)" -ForegroundColor Green
+        
+        # Assert all three checks independently
+        Assert-True "Publication rejected dirty source before upload (exit ≠ 0)" ($exitCode -ne 0)
+        
+        # Require EXACT production message from final deployer check
+        $outputStr = [string]$output
+        $hasExactMessage = $outputStr.Contains("Working tree is not clean before SHC publication")
+        Assert-True "Error contains exact final-publication message" $hasExactMessage
+        
+        # Verify zero uploads
+        $uploadCount = 0
+        if (Test-Path "$TestRoot\uploads.txt") {
+            $uploads = Get-Content "$TestRoot\uploads.txt" -Raw
+            $uploadCount = ($uploads -split "`n" | Where-Object { $_ }).Count
+        }
+        Assert-True "Zero uploads after dirty source before publication" ($uploadCount -eq 0)
+    }
+    
+    # Clean up
+    Remove-Item "drift-at-final-check.txt" -ErrorAction SilentlyContinue
+    Get-Job | Remove-Job -Force -ErrorAction SilentlyContinue
     
 } catch {
     Write-Host "  [FAIL] Test scenario threw unexpected exception: $_" -ForegroundColor Red
