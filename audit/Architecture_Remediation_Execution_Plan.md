@@ -531,7 +531,7 @@ No production changes or DB access; source evidence and proposed regression case
 **Acceptance:** `audit/W1.1.2_Sol_Acceptance.md`.
 
 ### W1.2-SESS-01 - Existing Single-Session Revocation Ownership
-**Status:** `PLANNED`
+**Status:** `VERIFICATION_READY` (Commit ff8b3422; Gemini Rev 2 verification complete; ready for Sol acceptance review)
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth service supporting independent SUIA/RTH tenants
 **Audit mapping:** SU-SESSION-010; source review W1.1.2
@@ -548,6 +548,8 @@ applicable quality checks and independently executed verification. No authorizat
 of refresh redesign, schema migration or deployment from this planned entry.
 
 **Assigned implementation package:** `audit/W1.2-SESS-01_Ownership_Task.md`. Sonnet implements; Gemini verifies; specialist review and Sol acceptance required. No deployment authorization.
+
+**Current review/correction package:** `audit/W1.2-SESS-01_Sol_Review_bd3c7489.md`. Corrections committed at `1712dc9b` / `ff8b3422`. Gemini Rev 2 report at `audit/W1.2-SESS-01_Gemini_Verification_Report.md`. No finding/root-cause closure or deployment authorization.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
