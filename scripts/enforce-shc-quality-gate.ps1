@@ -59,11 +59,38 @@ if (-not (Test-Path $RepositoryRoot)) {
     exit 1
 }
 
+# Validate it's a git repository
+try {
+    $gitDir = git -C $RepositoryRoot rev-parse --git-dir 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Err "Not a git repository: $RepositoryRoot"
+        Write-Err "Git output: $gitDir"
+        exit 1
+    }
+} catch {
+    Write-Err "Cannot validate git repository: $_"
+    exit 1
+}
+
 if (-not (Test-Path $EvidenceDir)) {
     try {
         New-Item -ItemType Directory -Force -Path $EvidenceDir | Out-Null
     } catch {
         Write-Err "Cannot create evidence directory: $EvidenceDir"
+        exit 1
+    }
+}
+
+# INVALIDATE PRIOR SUCCESS BEFORE FALLIBLE PREPARATION
+# This ensures failed attempts cannot leave reusable success
+$evidencePath = Join-Path $EvidenceDir "quality-gate-skillhubcore-admin-$ImageTag.json"
+if (Test-Path $evidencePath) {
+    Write-Info "Invalidating previous evidence before gate attempt: $evidencePath"
+    try {
+        Remove-Item -Force $evidencePath
+        Write-Info "Previous evidence invalidated"
+    } catch {
+        Write-Err "Cannot invalidate previous evidence: $_"
         exit 1
     }
 }
@@ -112,18 +139,6 @@ try {
 } catch {
     Write-Err "Failed to check git status: $_"
     exit 1
-}
-
-# Invalidate any previous evidence for this image tag
-$evidencePath = Join-Path $EvidenceDir "quality-gate-skillhubcore-admin-$ImageTag.json"
-if (Test-Path $evidencePath) {
-    Write-Info "Invalidating previous evidence: $evidencePath"
-    try {
-        Remove-Item -Force $evidencePath
-    } catch {
-        Write-Err "Cannot invalidate previous evidence: $_"
-        exit 1
-    }
 }
 
 # Execute canonical quality gate from repository root

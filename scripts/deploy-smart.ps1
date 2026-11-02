@@ -298,11 +298,18 @@ try {
 
 # Step 2: Verify changes are committed
 Write-Info "Step 2/9: Verifying git status..."
-$gitStatus = git status --porcelain
+
+$repoRoot = $PSScriptRoot | Split-Path
+$gitStatus = git -C $repoRoot status --porcelain 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Err "Git status command failed: $gitStatus"
+    exit 1
+}
+
 if ($gitStatus) {
     Write-Err "Working tree has uncommitted changes:"
     Write-Host ""
-    git status --short
+    git -C $repoRoot status --short
     Write-Host ""
     Write-Err "Deployment requires clean working tree for provenance"
     Write-Host "Commit or stash changes before deploying." -ForegroundColor Yellow
