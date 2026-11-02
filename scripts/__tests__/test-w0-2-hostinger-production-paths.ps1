@@ -190,8 +190,14 @@ if ($args -contains "compose" -and $args -contains "build") {
         "DOCKER_IMAGE_TAR" | Out-File -FilePath $outputFile -Encoding ASCII
     }
     if ($env:TEST_DOCKER_DIRTY_AT_SAVE -eq "1") {
-        # Create uncommitted file after docker save
+        # Create uncommitted file after docker save (for scenario 9)
         "dirty-at-save" | Out-File -FilePath "dirty-at-save.txt" -Encoding ASCII
+    }
+    if ($env:TEST_DOCKER_DIRTY_AFTER_SAVE -eq "1") {
+        # Create uncommitted file after docker save, simulating drift before publication (for scenario 11)
+        # This happens AFTER the builder completes, simulating drift injected at publication boundary
+        Start-Sleep -Milliseconds 500
+        "drift-after-save" | Out-File -FilePath "drift-after-save.txt" -Encoding ASCII
     }
     exit 0
 } elseif ($args -contains "image" -and $args -contains "inspect") {
@@ -381,21 +387,34 @@ New-Item -ItemType Directory -Force -Path $nonGitDir | Out-Null
 New-Item -ItemType Directory -Force -Path "$nonGitDir\infra\hostinger\dist\evidence" | Out-Null
 
 try {
-    $output = & "$ScriptsDir\enforce-shc-quality-gate.ps1" `
-        -RepositoryRoot $nonGitDir `
-        -ImageTag "test-tag" `
-        -EvidenceDir "$nonGitDir\infra\hostinger\dist\evidence" `
-        -InvocationId ([guid]::NewGuid().ToString()) `
-        *>&1 | Out-String
+    # Invoke gate helper in child process
+    $outputFile = Join-Path $TestRoot "scenario4-output.txt"
+    $null = powershell -NoProfile -ExecutionPolicy Bypass -Command @"
+try {
+    & '$ScriptsDir\enforce-shc-quality-gate.ps1' ``
+        -RepositoryRoot '$nonGitDir' ``
+        -ImageTag 'test-tag' ``
+        -EvidenceDir '$nonGitDir\infra\hostinger\dist\evidence' ``
+        -InvocationId '$([guid]::NewGuid().ToString())' ``
+        2>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
+    exit `$LASTEXITCODE
+} catch {
+    `$_ | Out-File -FilePath '$outputFile' -Append -Encoding UTF8
+    exit 1
+}
+"@
     
     $exitCode = $LASTEXITCODE
+    $output = if (Test-Path $outputFile) { Get-Content $outputFile -Raw } else { "" }
+    Remove-Item $outputFile -ErrorAction SilentlyContinue
     
-    Assert-True "Gate helper rejected non-git directory" ($exitCode -ne 0)
+    Assert-True "Gate helper rejected non-git directory (exit ≠ 0)" ($exitCode -ne 0)
     Assert-Contains "Error mentions not a git repository" $output "not a git repository"
     Assert-FileNotExists "No evidence created after Git failure" "$nonGitDir\infra\hostinger\dist\evidence\quality-gate-*.json"
     
 } catch {
-    Assert-True "Gate helper rejected non-git directory" $true
+    Write-Host "  [FAIL] Test scenario threw unexpected exception: $_" -ForegroundColor Red
+    $script:FailCount++
 }
 
 # ----------------------------------------------------------------------------
@@ -459,30 +478,56 @@ Write-TestHeader "Direct builder call without InvocationId (MUST FAIL)"
 
 Push-Location $MockRepoRoot
 try {
-    $tag = "shc-direct"
+    # Clean working tree to ensure prerequisite success
+    $status = git status --porcelain
+    if ($status) {
+        git reset --hard HEAD 2>&1 | Out-Null
+        git clean -fd 2>&1 | Out-Null
+    }
     
-    # First create valid evidence
+    $tag = "shc-direct-$([guid]::NewGuid().ToString().Substring(0,8))"
     $invocationId = [guid]::NewGuid().ToString()
-    & "scripts\enforce-shc-quality-gate.ps1" `
+    
+    # Create valid evidence (prerequisite - must succeed)
+    $gateOutput = & "scripts\enforce-shc-quality-gate.ps1" `
         -RepositoryRoot (Get-Location) `
         -ImageTag $tag `
         -EvidenceDir "infra\hostinger\dist\evidence" `
         -InvocationId $invocationId `
-        2>&1 | Out-Null
-    
-    # Try to build WITHOUT InvocationId parameter
-    $output = & "infra\hostinger\scripts\build-save-images.ps1" `
-        -ImageTag $tag `
-        -Services "skillhubcore-admin" `
         2>&1 | Out-String
     
-    $exitCode = $LASTEXITCODE
-    
-    Assert-True "Builder rejected direct call without InvocationId" ($exitCode -ne 0)
-    Assert-Contains "Error mentions InvocationId required" $output "InvocationId"
+    $gateExitCode = $LASTEXITCODE
+    if ($gateExitCode -ne 0) {
+        Write-Host "  [FAIL] Prerequisite gate execution failed (dirty source or other error)" -ForegroundColor Red
+        Write-Host "  Gate output: $($gateOutput.Substring(0, [Math]::Min(200, $gateOutput.Length)))" -ForegroundColor Yellow
+        $script:FailCount++
+    } else {
+        # Now test: Try to build WITHOUT InvocationId parameter
+        $outputFile = Join-Path $TestRoot "scenario6-output.txt"
+        $null = powershell -NoProfile -ExecutionPolicy Bypass -Command @"
+try {
+    & 'infra\hostinger\scripts\build-save-images.ps1' ``
+        -ImageTag '$tag' ``
+        -Services 'skillhubcore-admin' ``
+        2>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
+    exit `$LASTEXITCODE
+} catch {
+    `$_ | Out-File -FilePath '$outputFile' -Append -Encoding UTF8
+    exit 1
+}
+"@
+        
+        $exitCode = $LASTEXITCODE
+        $output = if (Test-Path $outputFile) { Get-Content $outputFile -Raw } else { "" }
+        Remove-Item $outputFile -ErrorAction SilentlyContinue
+        
+        Assert-True "Builder rejected direct call without InvocationId (exit ≠ 0)" ($exitCode -ne 0)
+        Assert-Contains "Error mentions InvocationId required" $output "InvocationId"
+    }
     
 } catch {
-    Assert-True "Builder rejected direct call without InvocationId" $true
+    Write-Host "  [FAIL] Test scenario threw unexpected exception: $_" -ForegroundColor Red
+    $script:FailCount++
 } finally {
     Pop-Location
 }
@@ -494,7 +539,14 @@ Write-TestHeader "Future-dated receipt rejection (MUST FAIL)"
 
 Push-Location $MockRepoRoot
 try {
-    $tag = "shc-future"
+    # Clean working tree
+    $status = git status --porcelain
+    if ($status) {
+        git reset --hard HEAD 2>&1 | Out-Null
+        git clean -fd 2>&1 | Out-Null
+    }
+    
+    $tag = "shc-future-$([guid]::NewGuid().ToString().Substring(0,8))"
     $invocationId = [guid]::NewGuid().ToString()
     $commit = Get-CurrentCommit
     
@@ -523,20 +575,39 @@ try {
     $evidencePath = "infra\hostinger\dist\evidence\quality-gate-skillhubcore-admin-$tag.json"
     $evidence | ConvertTo-Json -Depth 10 | Set-Content $evidencePath
     
-    # Try to build with future-dated receipt
-    $output = & "infra\hostinger\scripts\build-save-images.ps1" `
-        -ImageTag $tag `
-        -Services "skillhubcore-admin" `
-        -InvocationId $invocationId `
-        2>&1 | Out-String
-    
-    $exitCode = $LASTEXITCODE
-    
-    Assert-True "Builder rejected future-dated receipt" ($exitCode -ne 0)
-    Assert-Contains "Error mentions future time" $output "future"
+    # Verify prerequisite: evidence file exists
+    if (-not (Test-Path $evidencePath)) {
+        Write-Host "  [FAIL] Prerequisite failed: evidence file not created" -ForegroundColor Red
+        $script:FailCount++
+    } else {
+        # Try to build with future-dated receipt
+        $outputFile = Join-Path $TestRoot "scenario7-output.txt"
+        $null = powershell -NoProfile -ExecutionPolicy Bypass -Command @"
+`$env:TEST_ROOT = '$TestRoot'
+try {
+    & 'infra\hostinger\scripts\build-save-images.ps1' ``
+        -ImageTag '$tag' ``
+        -Services 'skillhubcore-admin' ``
+        -InvocationId '$invocationId' ``
+        2>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
+    exit `$LASTEXITCODE
+} catch {
+    `$_ | Out-File -FilePath '$outputFile' -Append -Encoding UTF8
+    exit 1
+}
+"@
+        
+        $exitCode = $LASTEXITCODE
+        $output = if (Test-Path $outputFile) { Get-Content $outputFile -Raw } else { "" }
+        Remove-Item $outputFile -ErrorAction SilentlyContinue
+        
+        Assert-True "Builder rejected future-dated receipt (exit ≠ 0)" ($exitCode -ne 0)
+        Assert-Contains "Error mentions future time" $output "future"
+    }
     
 } catch {
-    Assert-True "Builder rejected future-dated receipt" $true
+    Write-Host "  [FAIL] Test scenario threw unexpected exception: $_" -ForegroundColor Red
+    $script:FailCount++
 } finally {
     Pop-Location
 }
@@ -726,170 +797,66 @@ try {
 # ----------------------------------------------------------------------------
 Write-TestHeader "Dirty source before SHC publication detection (MUST REJECT)"
 
-# Create a separate test repo to avoid contaminating main mock repo
-$PublicationTestRoot = Join-Path $TestRoot "publication-test"
-$PublicationMockRepo = Join-Path $PublicationTestRoot "mock-repo"
-New-Item -ItemType Directory -Force -Path $PublicationMockRepo | Out-Null
-
-Push-Location $PublicationMockRepo
+Push-Location $MockRepoRoot
 try {
-    # Initialize minimal git repository
-    git init 2>&1 | Out-Null
-    git config user.name "Test User" 2>&1 | Out-Null
-    git config user.email "test@test.com" 2>&1 | Out-Null
-    
-    # Create required structure
-    New-Item -ItemType Directory -Force -Path "infra\hostinger\dist\evidence" | Out-Null
-    New-Item -ItemType Directory -Force -Path "infra\hostinger\dist\images" | Out-Null
-    New-Item -ItemType Directory -Force -Path "infra\hostinger\config" | Out-Null
-    New-Item -ItemType Directory -Force -Path "scripts" | Out-Null
-    
-    # Copy scripts
-    Copy-Item -Path (Join-Path $ScriptsDir "deploy-smart.ps1") -Destination "scripts\" -Force
-    
-    # Create minimal manifest with SHC evidence
-    $commit = "abcd1234567890abcd1234567890abcd12345678"
-    $manifestPath = "infra\hostinger\dist\images\quiz-platform-images-test.manifest.json"
-    $evidenceFile = "quality-gate-skillhubcore-admin-test.json"
-    
-    $manifest = @{
-        schemaVersion = "1"
-        imageTag = "test"
-        gitCommit = $commit
-        createdAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-        services = @(
-            @{
-                name = "skillhubcore-admin"
-                imageId = "sha256:abc123"
-            }
-        )
-        qualityGateEvidence = @{
-            service = "skillhubcore-admin"
-            sourceCommit = $commit
-            invocationId = [guid]::NewGuid().ToString()
-            evidenceFile = $evidenceFile
-            evidenceIntegrity = @{
-                algorithm = "sha256"
-                hash = "dummyhash"
-            }
-            status = "PASS"
-        }
+    # Clean working tree and artifacts
+    $status = git status --porcelain
+    if ($status) {
+        git reset --hard HEAD 2>&1 | Out-Null
+        git clean -fd 2>&1 | Out-Null
     }
+    Remove-Item "infra\hostinger\dist\evidence\*.json" -ErrorAction SilentlyContinue
+    Remove-Item "infra\hostinger\dist\images\*" -ErrorAction SilentlyContinue
+    Remove-Item "$TestRoot\uploads.txt" -ErrorAction SilentlyContinue
     
-    # Create matching receipt
-    $receipt = @{
-        version = "1.0"
-        service = "skillhubcore-admin"
-        sourceCommit = $commit
-        imageTag = "test"
-        invocationId = $manifest.qualityGateEvidence.invocationId
-        gate = @{
-            command = "pnpm"
-            profile = "quality:skillhubcore"
-        }
-        timing = @{
-            startUtc = (Get-Date).AddMinutes(-5).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-            completionUtc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-        }
-        status = "PASS"
-        exitCode = 0
-    }
+    # Tell Docker stub to inject drift AFTER docker save (at the publication boundary)
+    $env:TEST_DOCKER_DIRTY_AFTER_SAVE = "1"
     
-    $receiptPath = "infra\hostinger\dist\evidence\$evidenceFile"
-    $receipt | ConvertTo-Json -Depth 10 | Set-Content $receiptPath
-    
-    # Update manifest with correct receipt hash
-    $receiptHash = (Get-FileHash -LiteralPath $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
-    $manifest.qualityGateEvidence.evidenceIntegrity.hash = $receiptHash
-    $manifest | ConvertTo-Json -Depth 10 | Set-Content $manifestPath
-    
-    # Create archive
-    "DOCKER_IMAGE_TAR" | Out-File "infra\hostinger\dist\images\quiz-platform-images-test.tar" -Encoding ASCII
-    
-    # Commit clean state matching the commit in manifest
-    git add -A 2>&1 | Out-Null
-    git commit -m "Initial" 2>&1 | Out-Null
-    $actualCommit = (git rev-parse HEAD).Trim()
-    
-    # Update manifest and receipt to use actual commit
-    $manifest.gitCommit = $actualCommit
-    $manifest.qualityGateEvidence.sourceCommit = $actualCommit
-    $manifest | ConvertTo-Json -Depth 10 | Set-Content $manifestPath
-    
-    $receipt.sourceCommit = $actualCommit
-    $receipt | ConvertTo-Json -Depth 10 | Set-Content $receiptPath
-    
-    # Recalculate receipt hash
-    $receiptHash = (Get-FileHash -LiteralPath $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
-    $manifest.qualityGateEvidence.evidenceIntegrity.hash = $receiptHash
-    $manifest | ConvertTo-Json -Depth 10 | Set-Content $manifestPath
-    
-    # Now create dirty file AFTER manifest creation but BEFORE publication
-    "dirty-before-publish" | Out-File "dirty-before-publish.txt" -Encoding ASCII
-    
-    # Try to trigger publication step (Step 6/7) - should fail at final cleanliness check
-    # Note: This is a partial test since we're not running full deployment, but testing the validation logic
+    # Run deployment - should fail at final cleanliness check
     $deployScript = Join-Path (Get-Location) "scripts\deploy-smart.ps1"
-    
-    # We'll test the validation directly by simulating what Step 6 does
-    $testValidation = powershell -NoProfile -ExecutionPolicy Bypass -Command @"
-`$ErrorActionPreference = 'Stop'
-`$repoRoot = Get-Location
-`$currentCommit = (git -C `$repoRoot rev-parse HEAD 2>&1).Trim()
-if (`$LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Cannot verify current source commit"
+    $outputFile = Join-Path $TestRoot "scenario11-output.txt"
+    $null = powershell -NoProfile -ExecutionPolicy Bypass -Command @"
+`$env:TEST_ROOT = '$TestRoot'
+`$env:TEST_DOCKER_DIRTY_AFTER_SAVE = '1'
+`$env:NON_INTERACTIVE = '1'
+try {
+    & '$deployScript' -Services 'skillhubcore-admin' -NonInteractive 2>&1 | Out-File -FilePath '$outputFile' -Encoding UTF8
+    exit `$LASTEXITCODE
+} catch {
+    `$_ | Out-File -FilePath '$outputFile' -Append -Encoding UTF8
     exit 1
 }
-
-# Final source cleanliness check (the new code we added)
-`$finalHeadCheck = git -C `$repoRoot rev-parse HEAD 2>&1
-if (`$LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Git failed during final source check"
-    exit 1
-}
-
-`$finalHead = `$finalHeadCheck.Trim()
-if (`$finalHead -ne `$currentCommit) {
-    Write-Host "ERROR: HEAD changed before publication"
-    exit 1
-}
-
-`$finalStatusCheck = git -C `$repoRoot status --porcelain 2>&1
-if (`$LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Git status failed"
-    exit 1
-}
-
-if (`$finalStatusCheck) {
-    Write-Host "ERROR: Working tree is not clean before publication"
-    Write-Host "Uncommitted changes detected"
-    exit 1
-}
-
-Write-Host "SUCCESS: All checks passed"
-exit 0
 "@
     
     $exitCode = $LASTEXITCODE
-    $output = $testValidation | Out-String
+    $output = if (Test-Path $outputFile) { Get-Content $outputFile -Raw } else { "" }
+    Remove-Item $outputFile -ErrorAction SilentlyContinue
+    $env:TEST_DOCKER_DIRTY_AFTER_SAVE = "0"
     
     # Assert all three checks independently
     Assert-True "Publication rejected dirty source before upload (exit ≠ 0)" ($exitCode -ne 0)
     
-    $hasCleanError = $output -like "*not clean*" -or $output -like "*uncommitted changes*"
+    $outputStr = [string]$output
+    $hasCleanError = $outputStr.Contains("not clean") -or $outputStr.Contains("uncommitted changes") -or $outputStr.Contains("dirty")
     Assert-True "Error mentions working tree not clean before publication" $hasCleanError
     
-    # No upload trace to check since we didn't reach SCP call
-    Assert-True "Validation failed before upload could occur" ($exitCode -ne 0)
+    # Verify zero uploads
+    $uploadCount = 0
+    if (Test-Path "$TestRoot\uploads.txt") {
+        $uploads = Get-Content "$TestRoot\uploads.txt" -Raw
+        $uploadCount = ($uploads -split "`n" | Where-Object { $_ }).Count
+    }
+    Assert-True "Zero uploads after dirty source before publication" ($uploadCount -eq 0)
+    
+    # Clean up any dirty files created
+    Remove-Item "drift-after-save.txt" -ErrorAction SilentlyContinue
     
 } catch {
     Write-Host "  [FAIL] Test scenario threw unexpected exception: $_" -ForegroundColor Red
     $script:FailCount++
+    $env:TEST_DOCKER_DIRTY_AFTER_SAVE = "0"
 } finally {
     Pop-Location
-    if (Test-Path $PublicationTestRoot) {
-        Remove-Item -Recurse -Force $PublicationTestRoot -ErrorAction SilentlyContinue
-    }
 }
 
 # ============================================================================
