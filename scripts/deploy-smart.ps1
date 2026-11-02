@@ -72,7 +72,9 @@ param(
     [string]$BaseBranch = "origin/main",
     [switch]$Force,
     [switch]$SkipChecks,
-    [switch]$NoCache
+    [switch]$NoCache,
+    [switch]$NonInteractive,
+    [switch]$Yes
 )
 
 $ErrorActionPreference = 'Stop'
@@ -277,7 +279,12 @@ if ($servicesToDeploy -contains 'project-ai') {
 Write-Host ""
 
 # Prompt for confirmation
-$confirm = Read-Host "Continue with these services? (y/N)"
+if ($Yes -or $NonInteractive -or ($env:NON_INTERACTIVE -eq "1")) {
+    Write-Info "Non-interactive mode: proceeding with selected services"
+    $confirm = 'y'
+} else {
+    $confirm = Read-Host "Continue with these services? (y/N)"
+}
 if ($confirm -ne 'y' -and $confirm -ne 'Y') {
     Write-Info "Deployment cancelled"
     exit 0
@@ -353,6 +360,10 @@ foreach ($service in $servicesToDeploy) {
 
 if ($hasLintErrors) {
     Write-Err "Linting failed for one or more services"
+    if ($Yes -or $NonInteractive -or ($env:NON_INTERACTIVE -eq "1")) {
+        Write-Err "Non-interactive mode: aborting due to lint errors"
+        exit 1
+    }
     $continue = Read-Host "Continue anyway? (y/N)"
     if ($continue -ne 'y' -and $continue -ne 'Y') {
         exit 1
@@ -393,6 +404,10 @@ foreach ($service in $servicesToDeploy) {
 
 if ($hasTypeErrors) {
     Write-Err "TypeScript checks failed for one or more services"
+    if ($Yes -or $NonInteractive -or ($env:NON_INTERACTIVE -eq "1")) {
+        Write-Err "Non-interactive mode: aborting due to TypeScript errors"
+        exit 1
+    }
     $continue = Read-Host "Continue anyway? (y/N)"
     if ($continue -ne 'y' -and $continue -ne 'Y') {
         exit 1
@@ -714,7 +729,12 @@ if ($detectedChanges.Count -gt 0) {
 Write-Host "===============================================================" -ForegroundColor Blue
 Write-Host ""
 
-$deploy = Read-Host "Deploy to production now? (yes/no)"
+if ($Yes -or $NonInteractive -or ($env:NON_INTERACTIVE -eq "1")) {
+    Write-Info "Non-interactive mode: auto-confirming deployment to production"
+    $deploy = 'yes'
+} else {
+    $deploy = Read-Host "Deploy to production now? (yes/no)"
+}
 if ($deploy -ne 'yes') {
     Write-Info "Deployment cancelled. Images remain on server for manual deployment."
     Write-Host ""

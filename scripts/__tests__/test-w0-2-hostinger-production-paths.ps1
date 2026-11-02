@@ -135,6 +135,15 @@ services:
         
         "" | Set-Content "infra\hostinger\compose\docker-compose.production.yml"
         
+        # Ignore build and release artifacts like real repository
+        @"
+dist/
+*.tar
+*.sha256
+*.manifest.json
+docker-compose.local-build.yml
+"@ | Set-Content ".gitignore"
+        
         # Copy actual scripts
         Copy-Item -Path (Join-Path $ScriptsDir "deploy-smart.ps1") -Destination "scripts\" -Force
         Copy-Item -Path (Join-Path $ScriptsDir "enforce-shc-quality-gate.ps1") -Destination "scripts\" -Force
@@ -157,48 +166,50 @@ services:
 function Create-Stubs {
     # Docker stub - succeeds, creates image ID
     @'
-#!/usr/bin/env pwsh
-param([Parameter(ValueFromRemainingArguments)]$Args)
-
-if ($Args -contains "compose" -and $Args -contains "build") {
-    # Docker build success - optionally create a new commit to test drift detection
+if ($args -contains "compose" -and $args -contains "build") {
     if ($env:TEST_DOCKER_CREATE_COMMIT -eq "1") {
-        $repoPath = Get-Location
         "test" | Out-File -FilePath "docker-generated.txt" -Encoding ASCII
         git add docker-generated.txt 2>&1 | Out-Null
         git commit -m "Docker build generated file" 2>&1 | Out-Null
     }
     exit 0
-} elseif ($Args -contains "save") {
-    # Docker save - create dummy tar
-    $outputFile = $Args[$Args.IndexOf("-o") + 1]
-    "DOCKER_IMAGE_TAR" | Out-File -FilePath $outputFile -Encoding ASCII
+} elseif ($args -contains "save") {
+    $idx = [array]::IndexOf($args, "-o")
+    if ($idx -ge 0 -and ($idx + 1) -lt $args.Count) {
+        $outputFile = $args[$idx + 1]
+        "DOCKER_IMAGE_TAR" | Out-File -FilePath $outputFile -Encoding ASCII
+    }
     exit 0
-} elseif ($Args -contains "image" -and $Args -contains "inspect") {
-    # Image exists
+} elseif ($args -contains "image" -and $args -contains "inspect") {
     Write-Output "sha256:abc123"
     exit 0
-} elseif ($Args -contains "tag") {
+} elseif ($args -contains "tag") {
     exit 0
 } else {
     exit 0
 }
 '@ | Set-Content "$StubsDir\docker.ps1" -Encoding ASCII
+    '@echo off
+powershell -ExecutionPolicy Bypass -NoProfile -File "%~dp0docker.ps1" %*' | Set-Content "$StubsDir\docker.cmd" -Encoding ASCII
     
     # SSH stub - succeeds
     @'
-#!/usr/bin/env pwsh
 exit 0
 '@ | Set-Content "$StubsDir\ssh.ps1" -Encoding ASCII
+    '@echo off
+powershell -ExecutionPolicy Bypass -NoProfile -File "%~dp0ssh.ps1" %*' | Set-Content "$StubsDir\ssh.cmd" -Encoding ASCII
     
     # SCP stub - records what was uploaded
     @'
-#!/usr/bin/env pwsh
-param([Parameter(ValueFromRemainingArguments)]$Args)
 $uploadLog = Join-Path $env:TEST_ROOT "uploads.txt"
-$Args | Out-File -FilePath $uploadLog -Append -Encoding ASCII
+$args | Out-File -FilePath $uploadLog -Append -Encoding ASCII
 exit 0
 '@ | Set-Content "$StubsDir\scp.ps1" -Encoding ASCII
+    '@echo off
+powershell -ExecutionPolicy Bypass -NoProfile -File "%~dp0scp.ps1" %*' | Set-Content "$StubsDir\scp.cmd" -Encoding ASCII
+
+    # PNPM stub
+    Create-MockPnpmStub
 }
 
 function Get-CurrentCommit {
@@ -213,15 +224,15 @@ function Get-CurrentCommit {
 function Create-MockPnpmStub {
     # Create pnpm stub that succeeds (quality gate passes)
     @'
-#!/usr/bin/env pwsh
-param([Parameter(ValueFromRemainingArguments)]$Args)
-if ($Args -contains "quality:skillhubcore") {
+if ($args -contains "quality:skillhubcore") {
     Start-Sleep -Milliseconds 100
     exit 0
 } else {
     exit 0
 }
 '@ | Set-Content "$StubsDir\pnpm.ps1" -Encoding ASCII
+    '@echo off
+powershell -ExecutionPolicy Bypass -NoProfile -File "%~dp0pnpm.ps1" %*' | Set-Content "$StubsDir\pnpm.cmd" -Encoding ASCII
 }
 
 # ============================================================================
@@ -233,8 +244,8 @@ Write-Host "  W0.2-HOSTINGER Production Path Test Suite" -ForegroundColor Magent
 Write-Host "  Testing ACTUAL entrypoints with stubbed external effects" -ForegroundColor Magenta
 Write-Host "============================================================" -ForegroundColor Magenta
 
+$env:NON_INTERACTIVE = "1"
 Initialize-TestEnvironment
-Create-MockPnpmStub
 $env:TEST_ROOT = $TestRoot
 
 # ----------------------------------------------------------------------------
@@ -251,7 +262,8 @@ try {
     $output = & "scripts\deploy-smart.ps1" `
         -Services "skillhubcore-admin" `
         -SkipChecks `
-        2>&1 | Out-String
+        -NonInteractive `
+        *>&1 | Out-String
     
     $exitCode = $LASTEXITCODE
     
@@ -282,7 +294,8 @@ try {
     
     $output = & "scripts\deploy-smart.ps1" `
         -Services "skillhubcore-admin","api-server" `
-        2>&1 | Out-String
+        -NonInteractive `
+        *>&1 | Out-String
     
     $exitCode = $LASTEXITCODE
     
@@ -309,7 +322,8 @@ try {
     
     $output = & "scripts\deploy-smart.ps1" `
         -Services "skillhubcore-admin" `
-        2>&1 | Out-String
+        -NonInteractive `
+        *>&1 | Out-String
     
     $exitCode = $LASTEXITCODE
     
@@ -342,12 +356,12 @@ try {
         -ImageTag "test-tag" `
         -EvidenceDir "$nonGitDir\infra\hostinger\dist\evidence" `
         -InvocationId ([guid]::NewGuid().ToString()) `
-        2>&1 | Out-String
+        *>&1 | Out-String
     
     $exitCode = $LASTEXITCODE
     
     Assert-True "Gate helper rejected non-git directory" ($exitCode -ne 0)
-    Assert-Contains "Error mentions not a git repository" $output "Not a git repository"
+    Assert-Contains "Error mentions not a git repository" $output "not a git repository"
     Assert-FileNotExists "No evidence created after Git failure" "$nonGitDir\infra\hostinger\dist\evidence\quality-gate-*.json"
     
 } catch {
@@ -370,7 +384,8 @@ try {
     
     $output = & "scripts\deploy-smart.ps1" `
         -Services "skillhubcore-admin" `
-        2>&1 | Out-String
+        -NonInteractive `
+        *>&1 | Out-String
     
     $exitCode = $LASTEXITCODE
     $env:TEST_DOCKER_CREATE_COMMIT = "0"
@@ -488,7 +503,8 @@ try {
     
     $output = & "scripts\deploy-smart.ps1" `
         -Services "skillhubcore-admin" `
-        2>&1 | Out-String
+        -NonInteractive `
+        *>&1 | Out-String
     
     $exitCode = $LASTEXITCODE
     

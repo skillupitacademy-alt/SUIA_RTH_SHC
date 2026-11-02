@@ -155,15 +155,14 @@ Write-Info "Working directory: $RepositoryRoot"
 $startTime = (Get-Date).ToUniversalTime()
 
 try {
-    # Execute gate command with explicit error handling
-    $gateProcess = Start-Process -FilePath $gateCommand `
-        -ArgumentList $gateArgs `
-        -WorkingDirectory $RepositoryRoot `
-        -NoNewWindow `
-        -Wait `
-        -PassThru
-    
-    $exitCode = $gateProcess.ExitCode
+    # Execute gate command with explicit error handling from RepositoryRoot
+    Push-Location $RepositoryRoot
+    try {
+        & $gateCommand @gateArgs
+        $exitCode = $LASTEXITCODE
+    } finally {
+        Pop-Location
+    }
     
     if ($exitCode -ne 0) {
         Write-Err "Quality gate failed with exit code: $exitCode"
