@@ -35,6 +35,50 @@ export function tryExtractHostname(value?: string | null): string | undefined {
   return first.replace(/:\d+$/, '').toLowerCase();
 }
 
+export interface StrictRefreshBrandResult {
+  brand?: RequestBrand;
+  error?: 'missing_brand' | 'invalid_brand' | 'conflicting_brand';
+}
+
+/**
+ * Strict refresh-context helper for tenant user/admin refresh requests.
+ * Evaluates raw x-brand and x-platform headers:
+ * - Missing or empty returns error: 'missing_brand'
+ * - 'shared' or unknown non-canonical values return error: 'invalid_brand'
+ * - Disagreeing non-empty x-brand and x-platform return error: 'conflicting_brand'
+ * - Preserves existing resolveRequestBrandFromHeaders for other callers untouched.
+ */
+export function resolveStrictRefreshBrandFromHeaders(headers?: HeaderReader | null): StrictRefreshBrandResult {
+  const rawBrand = headers?.get('x-brand');
+  const rawPlatform = headers?.get('x-platform');
+
+  const hasBrand = typeof rawBrand === 'string' && rawBrand.trim().length > 0;
+  const hasPlatform = typeof rawPlatform === 'string' && rawPlatform.trim().length > 0;
+
+  if (!hasBrand && !hasPlatform) {
+    return { error: 'missing_brand' };
+  }
+
+  const normBrand = hasBrand ? rawBrand!.trim().toLowerCase() : undefined;
+  const normPlatform = hasPlatform ? rawPlatform!.trim().toLowerCase() : undefined;
+
+  if (normBrand === 'shared' || normPlatform === 'shared') {
+    return { error: 'invalid_brand' };
+  }
+
+  if (normBrand !== undefined && normPlatform !== undefined && normBrand !== normPlatform) {
+    return { error: 'conflicting_brand' };
+  }
+
+  const candidate = normBrand ?? normPlatform!;
+  const canonical = resolveRequestBrand(candidate);
+  if (canonical === undefined) {
+    return { error: 'invalid_brand' };
+  }
+
+  return { brand: canonical };
+}
+
 export function resolveRequestBrandFromHeaders(headers?: HeaderReader | null, _fallbackHostname?: string | null): RequestBrand | undefined {
   const explicitBrandCandidates = [
     typeof headers?.get('x-brand') === 'string' ? headers?.get('x-brand')?.trim().toLowerCase() : undefined,

@@ -83,7 +83,114 @@ export class TokenRefreshService {
       throw new Error('Refresh token has expired');
     }
 
-    // 🔐 STEP 2: Session Hijack Detection (IP mismatch)
+    // 🔐 STEP 2: Cryptographic signature, expiration & audience verification FIRST
+    // Must precede all session state modifications / writes.
+    let oldPayload: Awaited<ReturnType<typeof this.tokenService.verifyRefreshToken>>;
+    try {
+      oldPayload = await this.tokenService.verifyRefreshToken(oldRefreshToken, {
+        audience: requestedAudience,
+      });
+    } catch (err) {
+      await this.auditService.log({
+        userId: existingSession.userId,
+        action: 'token_refresh_failed',
+        metadata: {
+          reason: 'invalid_token_signature_or_audience',
+          error: err instanceof Error ? err.message : String(err),
+          brand,
+        },
+        ip,
+        brand,
+      });
+      throw new Error('Invalid refresh token');
+    }
+
+    // 🔐 STEP 2.1: Non-empty signed userId & Subject Parity check
+    if (
+      typeof oldPayload.userId !== 'string' ||
+      oldPayload.userId.trim().length === 0 ||
+      oldPayload.userId !== existingSession.userId
+    ) {
+      await this.auditService.log({
+        userId: existingSession.userId,
+        action: 'token_refresh_failed',
+        metadata: {
+          reason: 'token_owner_mismatch',
+          tokenUserId: oldPayload?.userId,
+          sessionUserId: existingSession.userId,
+          brand,
+        },
+        ip,
+        brand,
+      });
+      throw new Error('Invalid refresh token');
+    }
+
+    // 🔐 STEP 2.2: Scope confusion / class consistency check
+    const hasScopeConfusion =
+      (oldPayload.tokenType === 'admin' && oldPayload.isAdmin === false) ||
+      (oldPayload.tokenType === 'user' && oldPayload.isAdmin === true) ||
+      (requestedAudience === 'user' && (oldPayload.isAdmin === true || oldPayload.tokenType === 'admin')) ||
+      (requestedAudience === 'admin' && oldPayload.tokenType === 'user');
+
+    if (hasScopeConfusion) {
+      await this.auditService.log({
+        userId: existingSession.userId,
+        action: 'token_refresh_failed',
+        metadata: {
+          reason: 'scope_confusion',
+          tokenType: oldPayload.tokenType,
+          isAdmin: oldPayload.isAdmin,
+          requestedAudience,
+          brand,
+        },
+        ip,
+        brand,
+      });
+      throw new Error('Invalid refresh token');
+    }
+
+    // 🔐 STEP 2.3: Brand Claim Verification (Absent vs. Malformed vs. Canonical Parity)
+    const tokenBrand = oldPayload.brand;
+    if (tokenBrand === undefined) {
+      // Genuinely absent brand claim: eligible for legacy progressive upgrade
+      // All prerequisites are verified (signature, exp, session active/unexpired, matching subject).
+    } else if (
+      tokenBrand === null ||
+      typeof tokenBrand !== 'string' ||
+      tokenBrand.trim().length === 0 ||
+      (tokenBrand !== 'realtutorialhub' && tokenBrand !== 'skillup' && tokenBrand !== 'skillhubcore')
+    ) {
+      await this.auditService.log({
+        userId: existingSession.userId,
+        action: 'token_refresh_failed',
+        metadata: {
+          reason: 'malformed_brand_claim',
+          brandClaim: String(tokenBrand),
+          brand,
+        },
+        ip,
+        brand,
+      });
+      throw new Error('Invalid refresh token: malformed brand claim');
+    } else {
+      if (tokenBrand.toLowerCase() !== brand.toLowerCase()) {
+        await this.auditService.log({
+          userId: existingSession.userId,
+          action: 'token_refresh_failed',
+          metadata: {
+            reason: 'brand_mismatch',
+            tokenBrand,
+            targetBrand: brand,
+          },
+          ip,
+          brand,
+        });
+        throw new Error('Invalid refresh token: tenant brand mismatch');
+      }
+    }
+
+    // 🔐 STEP 2.4: Session Hijack Detection (IP mismatch warning)
     if (typeof ip === 'string' && ip.length > 0 && typeof existingSession.ipAddress === 'string' && existingSession.ipAddress.length > 0 && existingSession.ipAddress !== ip) {
       console.warn('[SECURITY] IP mismatch during token refresh', {
         userId: existingSession.userId,
@@ -104,41 +211,14 @@ export class TokenRefreshService {
         ip,
         brand,
       });
-
-      // Optional: Revoke all sessions for this user (aggressive security)
-      // await brandTokenRepo.revokeAll(existingSession.userId);
-      // throw new Error('Suspicious activity detected. Please log in again.');
-      
-      // For now, we'll allow it but log the warning (mobile IPs change frequently)
     }
 
-    // 🔐 STEP 2.5: Update last_used_at before rotation (for "Last active" display)
+    // 🔐 STEP 2.5: Update last_used_at AFTER all authority verifications pass
     await brandTokenRepo.updateLastUsed(oldTokenHash);
 
     // 🔐 STEP 3: Generate new tokens (CPU-only, no DB)
     // JWT generation happens outside the transaction to minimize DB lock duration.
     const userId = existingSession.userId;
-    
-    // Verify the old refresh token to get payload
-    let oldPayload: Awaited<ReturnType<typeof this.tokenService.verifyRefreshToken>>;
-    try {
-      oldPayload = await this.tokenService.verifyRefreshToken(oldRefreshToken, {
-        audience: requestedAudience,
-      });
-    } catch (err) {
-      await this.auditService.log({
-        userId: existingSession.userId,
-        action: 'token_refresh_failed',
-        metadata: {
-          reason: 'invalid_token_signature_or_audience',
-          error: err instanceof Error ? err.message : String(err),
-          brand,
-        },
-        ip,
-        brand,
-      });
-      throw new Error('Invalid refresh token');
-    }
 
     const isAdmin = oldPayload.isAdmin === true;
     const tokenType = oldPayload.tokenType ?? (isAdmin ? 'admin' : 'user');

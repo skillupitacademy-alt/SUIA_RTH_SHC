@@ -617,7 +617,7 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `VERIFIED` (Design VERIFIED by Sol with final tenant-only scope and source qualifications; runtime authority implementation remains pending under batch 03)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Batch 03 Task A runtime authority implemented and verified with 48 tests and typecheck; ready for review)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
