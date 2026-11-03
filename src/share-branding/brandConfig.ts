@@ -1,3 +1,5 @@
+import { BRAND_TUTORIAL_THEMES } from '@quiz/types';
+
 /**
  * Unified brand config single source of truth.
  * Used by shared branding routes and components for both brands.
@@ -13,6 +15,13 @@ export interface BrandConfig {
   secondaryColor: string; // RTH: #124fd6 | SkillUp: #133382
   primaryRgb: string; // For shadow rgba(), e.g. "208,63,0"
   accentBackground: string;
+
+  // 4-Color Canonical Palette & Step Accents
+  accent1?: string;
+  accent2?: string;
+  stepAccent1?: string;
+  stepAccent2?: string;
+  stepAccent3?: string;
 
   // Tailwind gradients
   gradientFrom: string;
@@ -73,6 +82,11 @@ export const rthConfig: BrandConfig = {
   primaryColor: '#d03f00',
   primaryColorDark: '#b63600',
   secondaryColor: '#124fd6',
+  accent1: BRAND_TUTORIAL_THEMES.realtutorialhub.accent1,
+  accent2: BRAND_TUTORIAL_THEMES.realtutorialhub.accent2,
+  stepAccent1: BRAND_TUTORIAL_THEMES.realtutorialhub.stepAccent1,
+  stepAccent2: BRAND_TUTORIAL_THEMES.realtutorialhub.stepAccent2,
+  stepAccent3: BRAND_TUTORIAL_THEMES.realtutorialhub.stepAccent3,
   primaryRgb: '208,63,0',
   accentBackground: '#fff1eb',
 
@@ -128,6 +142,11 @@ export const skillUpConfig: BrandConfig = {
   primaryColor: '#f54a8d',
   primaryColorDark: '#d63d7a',
   secondaryColor: '#133382',
+  accent1: BRAND_TUTORIAL_THEMES.skillup.accent1,
+  accent2: BRAND_TUTORIAL_THEMES.skillup.accent2,
+  stepAccent1: BRAND_TUTORIAL_THEMES.skillup.stepAccent1,
+  stepAccent2: BRAND_TUTORIAL_THEMES.skillup.stepAccent2,
+  stepAccent3: BRAND_TUTORIAL_THEMES.skillup.stepAccent3,
   primaryRgb: '245,74,141',
   accentBackground: '#fff0f6',
 
