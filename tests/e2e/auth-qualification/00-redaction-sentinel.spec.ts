@@ -481,6 +481,8 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
     const origReady = process.env.AUTH_QUALIFICATION_READY;
     const origBuild = process.env.TEST_BUILD_REVISION;
     const origIso = process.env.TEST_ISOLATED_ENVIRONMENT;
+    const origLiveMode = process.env.TEST_LIVE_NEON_MODE;
+    const origLiveAuth = process.env.TEST_LIVE_NEON_AUTHORIZATION;
     const origSuiaEmail = process.env.TEST_SUIA_LEARNER_EMAIL;
     const origSuiaPass = process.env.TEST_SUIA_LEARNER_PASSWORD;
 
@@ -489,6 +491,8 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
       process.env.AUTH_QUALIFICATION_READY = 'true';
       process.env.TEST_BUILD_REVISION = 'provenance-test-rev-123';
       process.env.TEST_ISOLATED_ENVIRONMENT = 'true';
+      delete process.env.TEST_LIVE_NEON_MODE;
+      delete process.env.TEST_LIVE_NEON_AUTHORIZATION;
       delete process.env.TEST_SUIA_LEARNER_EMAIL;
       delete process.env.TEST_SUIA_LEARNER_PASSWORD;
 
@@ -497,7 +501,7 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
         projectOrigin: 'http://skillup.localhost:3009',
       });
       expect(outcome1.launched, 'Browser must NOT launch when project account variables are missing').toBe(false);
-      expect(outcome1.reason).toContain('Approved synthetic account credentials missing');
+      expect(outcome1.reason).toContain('Approved account credentials missing');
       expect(fakeBrowserLaunchCount, 'Launch counter must remain 0').toBe(0);
 
       // Case 2: Unknown project name -> ASSERT ZERO LAUNCHES
@@ -551,6 +555,45 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
         });
         expect(outcome6.launched, 'Certified project with accounts must be permitted to launch').toBe(true);
         expect(fakeBrowserLaunchCount, 'Launch counter must increment to 2').toBe(2);
+
+        // Case 7: Neither isolated nor live mode -> ASSERT ZERO LAUNCHES
+        delete process.env.TEST_ISOLATED_ENVIRONMENT;
+        delete process.env.TEST_LIVE_NEON_MODE;
+        const outcome7 = attemptBrowserLaunch({
+          projectName: 'suia-chromium',
+          projectOrigin: 'http://skillup.localhost:3009',
+        });
+        expect(outcome7.launched, 'Must reject when neither mode certified').toBe(false);
+        expect(outcome7.reason).toContain('Neither isolated synthetic test environment');
+
+        // Case 8: Live Neon mode without authorization reference -> ASSERT ZERO LAUNCHES
+        process.env.TEST_LIVE_NEON_MODE = 'true';
+        delete process.env.TEST_LIVE_NEON_AUTHORIZATION;
+        const outcome8 = attemptBrowserLaunch({
+          projectName: 'suia-chromium',
+          projectOrigin: 'http://skillup.localhost:3009',
+        });
+        expect(outcome8.launched, 'Live mode without auth reference must reject').toBe(false);
+        expect(outcome8.reason).toContain('Live Neon mode requires valid TEST_LIVE_NEON_AUTHORIZATION');
+
+        // Case 9: Live Neon mode with valid authorization reference -> LAUNCH ALLOWED
+        process.env.TEST_LIVE_NEON_AUTHORIZATION = 'audit/W1.2_Browser_Live_Neon_Owner_Authorization.md';
+        const outcome9 = attemptBrowserLaunch({
+          projectName: 'suia-chromium',
+          projectOrigin: 'http://skillup.localhost:3009',
+        });
+        expect(outcome9.launched, 'Live mode with valid auth reference must be permitted to launch').toBe(true);
+        expect(fakeBrowserLaunchCount, 'Launch counter must increment to 3').toBe(3);
+
+        // Case 10: Live Neon mode attempting all-device revocation (disallowInLiveMode: true) -> ASSERT ZERO LAUNCHES
+        const outcome10 = attemptBrowserLaunch({
+          projectName: 'suia-chromium',
+          projectOrigin: 'http://skillup.localhost:3009',
+          disallowInLiveMode: true,
+        });
+        expect(outcome10.launched, 'All-device revocation must be rejected in live Neon mode').toBe(false);
+        expect(outcome10.reason).toContain('all-device session revocation');
+        expect(fakeBrowserLaunchCount, 'Launch counter must NOT increment on rejected revocation').toBe(3);
       }
     } finally {
       // Restore previous environment variables
@@ -562,6 +605,12 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
 
       if (origIso !== undefined) process.env.TEST_ISOLATED_ENVIRONMENT = origIso;
       else delete process.env.TEST_ISOLATED_ENVIRONMENT;
+
+      if (origLiveMode !== undefined) process.env.TEST_LIVE_NEON_MODE = origLiveMode;
+      else delete process.env.TEST_LIVE_NEON_MODE;
+
+      if (origLiveAuth !== undefined) process.env.TEST_LIVE_NEON_AUTHORIZATION = origLiveAuth;
+      else delete process.env.TEST_LIVE_NEON_AUTHORIZATION;
 
       if (origSuiaEmail !== undefined) process.env.TEST_SUIA_LEARNER_EMAIL = origSuiaEmail;
       else delete process.env.TEST_SUIA_LEARNER_EMAIL;

@@ -8,6 +8,7 @@ test.describe('SUIA Logout and Post-Logout Session Contract', () => {
     enforceReadinessBoundary(testInfo, {
       projectName: 'suia-chromium',
       projectOrigin: process.env.SUIA_BASE_URL,
+      disallowInLiveMode: true,
       requiredAccountVars: [
         SYNTHETIC_ACCOUNTS.SUIA_LEARNER.emailEnvVar,
         SYNTHETIC_ACCOUNTS.SUIA_LEARNER.passwordEnvVar,

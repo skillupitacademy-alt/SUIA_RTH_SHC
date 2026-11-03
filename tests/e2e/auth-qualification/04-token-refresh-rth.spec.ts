@@ -16,6 +16,9 @@ test.describe('RTH Token Refresh Flow Qualification', () => {
     const creds = getAccountCredentials(SYNTHETIC_ACCOUNTS.RTH_LEARNER);
     await auth.loginViaUI('/login', creds.email, creds.password);
 
+    // Ensure session navigation and cookies are established
+    await expect(auth.page).toHaveURL(/\/dashboard|\/onboarding|\/tutorials|\/account|\/learn/, { timeout: 30000 });
+
     const cookiesBefore = await auth.context.cookies();
     const initialRefresh = cookiesBefore.find(c => c.name === 'refreshToken');
     const initialAccess = cookiesBefore.find(c => c.name === 'accessToken');
@@ -37,7 +40,7 @@ test.describe('RTH Token Refresh Flow Qualification', () => {
     expect(refreshRotated, 'Refresh token value must change upon rotation').toBe(true);
 
     // Verify subsequent protected use with rotated session using guarded API helper
-    const meRes = await auth.apiGet('/api/auth/me');
+    const meRes = await auth.apiGet('/api/profile');
     expect(meRes.status()).toBe(200);
   });
 });

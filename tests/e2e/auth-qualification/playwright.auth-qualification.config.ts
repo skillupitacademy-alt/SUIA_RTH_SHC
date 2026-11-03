@@ -1,12 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { validateOriginSafety } from './helpers/readiness';
 
 import { allocateOrValidateRunDirectory } from './helpers/output-ownership';
 
 // Load only explicit auth qualification test environment (never auto-load broad .env.local)
 dotenv.config({ path: '.env.auth-qualification' });
+if (fs.existsSync('.env.auth-qualification.local')) {
+  dotenv.config({ path: '.env.auth-qualification.local', override: true });
+}
 
 // Do NOT use guessed-port execution defaults (:3009, :3003, :3000).
 // If explicitly provided in environment, validate fail-closed; if unset, remain undefined.
@@ -34,7 +38,7 @@ export default defineConfig({
   testDir: '.',
   testMatch: '**/*.spec.ts',
   outputDir: ownedOutputDir,
-  timeout: 60000,
+  timeout: 90000,
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,

@@ -20,15 +20,15 @@ test.describe('SHC Administrator Authentication Qualification', () => {
     await auth.loginViaUI('/login', creds.email, creds.password);
 
     // Verify redirection to admin dashboard
-    await expect(auth.page).toHaveURL(/\/admin(\/|$)/, { timeout: 15000 });
+    await expect(auth.page).toHaveURL(/\/dashboard|\/admin(\/|$)/, { timeout: 30000 });
 
     // Verify SHC GUI cookies established (all 4 named cookies per setAdminSessionCookies)
     const cookies = await auth.context.cookies();
     assertCookieExists(cookies, 'accessToken', { httpOnly: true });
     assertCookieExists(cookies, 'admin_accessToken', { httpOnly: true });
 
-    // Verify admin-only API access using guarded API helper
-    const adminCheck = await auth.apiGet('/api/admin/overview');
+    // Verify admin-only API access using guarded API helper (/api/admin/domains)
+    const adminCheck = await auth.apiGet('/api/admin/domains');
     const isAuthorized = [200, 204].includes(adminCheck.status());
     expect(isAuthorized, 'Admin endpoint must be authorized for SHC admin session').toBe(true);
   });

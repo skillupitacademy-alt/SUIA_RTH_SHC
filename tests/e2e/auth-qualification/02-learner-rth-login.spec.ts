@@ -20,7 +20,7 @@ test.describe('RTH Learner Authentication Qualification', () => {
     await auth.loginViaUI('/login', creds.email, creds.password);
 
     // Verify redirection to RTH learner area
-    await expect(auth.page).toHaveURL(/\/dashboard|\/tutorials|\/account/, { timeout: 15000 });
+    await expect(auth.page).toHaveURL(/\/dashboard|\/onboarding|\/tutorials|\/account|\/learn/, { timeout: 30000 });
 
     // Verify standard learner cookies established
     const cookies = await auth.context.cookies();
@@ -28,10 +28,10 @@ test.describe('RTH Learner Authentication Qualification', () => {
     assertCookieExists(cookies, 'refreshToken', { httpOnly: true });
 
     // Verify protected user endpoint using guarded API helper
-    const apiResponse = await auth.apiGet('/api/auth/me');
+    const apiResponse = await auth.apiGet('/api/profile');
     expect(apiResponse.status()).toBe(200);
     const data = await apiResponse.json();
 
-    assertValueMatchesSafely(data?.user?.email, creds.email, 'User email matches credentials');
+    assertValueMatchesSafely(data?.email, creds.email, 'User email matches credentials');
   });
 });

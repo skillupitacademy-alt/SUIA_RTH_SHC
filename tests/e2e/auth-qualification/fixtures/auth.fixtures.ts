@@ -137,12 +137,31 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
       const submitBtn = page.locator('button[type="submit"], button:has-text("Sign in"), button:has-text("Log in")').first();
 
       await expect(emailInput).toBeVisible({ timeout: 10000 });
+      // Allow Next.js client hydration to attach form onSubmit handler
+      await page.waitForTimeout(1000);
       await emailInput.fill(email);
 
       await expect(passInput).toBeVisible({ timeout: 10000 });
       await passInput.fill(pass);
 
+      // Listen for login response to handle rate limiting cooldown if encountered
+      const loginResponsePromise = page.waitForResponse(
+        resp => resp.url().includes('/api/auth/login'),
+        { timeout: 10000 }
+      ).catch(() => null);
+
       await submitBtn.click();
+
+      const loginResp = await loginResponsePromise;
+      if (loginResp && loginResp.status() === 429) {
+        const retryAfterSec = parseInt(loginResp.headers()['retry-after'] || '15', 10);
+        const waitMs = (isNaN(retryAfterSec) ? 15 : retryAfterSec + 1) * 1000;
+        await page.waitForTimeout(waitMs);
+        // Ensure inputs are still populated before resubmitting
+        await emailInput.fill(email);
+        await passInput.fill(pass);
+        await submitBtn.click();
+      }
     };
 
     const performLogout = async () => {

@@ -8,6 +8,7 @@ test.describe('RTH Logout and Post-Logout Session Contract', () => {
     enforceReadinessBoundary(testInfo, {
       projectName: 'rth-chromium',
       projectOrigin: process.env.RTH_BASE_URL,
+      disallowInLiveMode: true,
       requiredAccountVars: [
         SYNTHETIC_ACCOUNTS.RTH_LEARNER.emailEnvVar,
         SYNTHETIC_ACCOUNTS.RTH_LEARNER.passwordEnvVar,

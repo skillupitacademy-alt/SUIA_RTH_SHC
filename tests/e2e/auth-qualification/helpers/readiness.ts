@@ -166,12 +166,15 @@ export interface ProjectReadinessRequirements {
   projectName: string;
   projectOrigin?: string;
   requiredAccountVars?: string[];
+  disallowInLiveMode?: boolean;
 }
 
 export interface ReadinessRecord {
   authQualificationReady: boolean;
   buildRevision?: string;
   isolatedEnvironment: boolean;
+  liveNeonMode: boolean;
+  liveNeonAuthorization?: string;
   projectOrigins: {
     suia?: string;
     rth?: string;
@@ -186,6 +189,8 @@ export function getReadinessRecord(): ReadinessRecord {
     authQualificationReady: process.env.AUTH_QUALIFICATION_READY === 'true',
     buildRevision: process.env.TEST_BUILD_REVISION,
     isolatedEnvironment: process.env.TEST_ISOLATED_ENVIRONMENT === 'true',
+    liveNeonMode: process.env.TEST_LIVE_NEON_MODE === 'true',
+    liveNeonAuthorization: process.env.TEST_LIVE_NEON_AUTHORIZATION,
     projectOrigins: {
       suia: process.env.SUIA_BASE_URL,
       rth: process.env.RTH_BASE_URL,
@@ -203,11 +208,13 @@ export function getReadinessRecord(): ReadinessRecord {
  * 1. Known project name validation (unknown projects fail closed)
  * 2. Master readiness manifest (AUTH_QUALIFICATION_READY=true)
  * 3. Tested build provenance (TEST_BUILD_REVISION)
- * 4. Isolated synthetic test environment certification (TEST_ISOLATED_ENVIRONMENT=true)
- * 5. Explicit non-empty project origin (no guessed-port fallback)
- * 6. Origin domain safety compliance
- * 7. Project-to-account prerequisite mapping BEFORE browser launch
- * 8. Installed Playwright Chromium executable availability
+ * 4. Environment certification: either isolated synthetic test environment (TEST_ISOLATED_ENVIRONMENT=true)
+ *    OR explicit owner-authorized live Neon mode (TEST_LIVE_NEON_MODE=true with valid authorization reference).
+ * 5. Prohibits all-device session revocation in live Neon mode.
+ * 6. Explicit non-empty project origin (no guessed-port fallback)
+ * 7. Origin domain safety compliance
+ * 8. Project-to-account prerequisite mapping BEFORE browser launch
+ * 9. Installed Playwright Chromium executable availability
  */
 export function checkReadinessPrerequisites(
   req: ProjectReadinessRequirements
@@ -242,12 +249,31 @@ export function checkReadinessPrerequisites(
     };
   }
 
-  // 4. Isolated environment certification
-  if (process.env.TEST_ISOLATED_ENVIRONMENT !== 'true') {
+  // 4. Environment mode certification (isolated synthetic test environment OR owner-authorized live Neon mode)
+  const isIsolatedMode = process.env.TEST_ISOLATED_ENVIRONMENT === 'true';
+  const isLiveNeonMode = process.env.TEST_LIVE_NEON_MODE === 'true';
+
+  if (!isIsolatedMode && !isLiveNeonMode) {
     return {
       ready: false,
-      reason: `[NOT EXECUTED] ${req.projectName}: Isolated synthetic test environment not certified (TEST_ISOLATED_ENVIRONMENT=true missing).`,
+      reason: `[NOT EXECUTED] ${req.projectName}: Neither isolated synthetic test environment (TEST_ISOLATED_ENVIRONMENT=true) nor owner-authorized live mode (TEST_LIVE_NEON_MODE=true) is certified.`,
     };
+  }
+
+  if (isLiveNeonMode) {
+    const authRef = process.env.TEST_LIVE_NEON_AUTHORIZATION;
+    if (!authRef || !authRef.includes('W1.2_Browser_Live_Neon_Owner_Authorization.md')) {
+      return {
+        ready: false,
+        reason: `[NOT EXECUTED] ${req.projectName}: Live Neon mode requires valid TEST_LIVE_NEON_AUTHORIZATION referencing audit/W1.2_Browser_Live_Neon_Owner_Authorization.md.`,
+      };
+    }
+    if (req.disallowInLiveMode) {
+      return {
+        ready: false,
+        reason: `[NOT EXECUTED] ${req.projectName}: Scenario contains all-device session revocation (DELETE /api/auth/sessions), which is prohibited in live Neon mode per audit/W1.2_Browser_Live_Neon_Owner_Authorization.md.`,
+      };
+    }
   }
 
   // 5. Explicit project origin (guessed-port default prohibited)
@@ -280,7 +306,7 @@ export function checkReadinessPrerequisites(
     if (missingAccounts.length > 0) {
       return {
         ready: false,
-        reason: `[NOT EXECUTED] ${req.projectName}: Approved synthetic account credentials missing (${missingAccounts.length} required variables unset).`,
+        reason: `[NOT EXECUTED] ${req.projectName}: Approved account credentials missing (${missingAccounts.length} required variables unset).`,
       };
     }
   }
