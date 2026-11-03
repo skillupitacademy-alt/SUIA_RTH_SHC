@@ -617,18 +617,20 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `IMPLEMENTED_UNVERIFIED` (Batch 03 Task A runtime authority implemented and verified with 48 tests and typecheck; ready for review)
+**Status:** `VERIFICATION_FAILED` (Implementation changes required at 8badd407: incomplete present class-claim validation and unscoped SHC/infra policy; accepted design remains VERIFIED; see batch-03 Sol review)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
 **Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `IMPLEMENTED_UNVERIFIED` (Batch 03 Task B runtime lifecycle & role freshness implemented, verified with 58 refresh tests, typecheck, auth package tests; ready for review)
+**Status:** `VERIFICATION_FAILED` (Implementation changes required at 8badd407: lastUsedAt writes before lifecycle denial, permissive hydration fallback and missing connected tenant evidence; accepted design remains VERIFIED)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
 **Scope:** Define strict repository lookup (`findActiveUserWithRoles`) on `UserRepository`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); dynamically fetch fresh roles while strictly preserving principal boundaries (no learner escalation, demoted admin fail-closed); accounts for actual 8-hour access token TTL; resolves baseline `auth.refresh.blocked.branch.test.ts`.
+
+**Implementation review:** `audit/W1.2_Batch_03_Sol_Review_8badd407.md`. Gemini corrects F1-F6 under `audit/W1.2_Gemini_Controlled_Batch_03_Corrections.md`; no main merge, deployment or ticket closure.
 
 **Design acceptance:** `audit/W1.2_Batch_02_Sol_Acceptance.md`. Both contracts include Sol's final source/scope qualifications; author response remains historical evidence. This is not code acceptance or RC-ID-01 closure.
 
