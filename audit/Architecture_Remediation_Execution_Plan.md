@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation VERIFICATION_FAILED on output-root ownership at reviewed 12efa4ea; exact-origin/account-map corrections are present. Actual reporter attempts arbitrary supplied-root deletion; see `audit/W1.2_Browser_Output_Ownership_Review_12efa4ea.md` for the single bounded repair. Runtime NOT EXECUTED.)
+**Status:** `IN_PROGRESS` (Preparation `IMPLEMENTED_UNVERIFIED`: single remaining output-root ownership blocker resolved per `audit/W1.2_Browser_Output_Ownership_Review_12efa4ea.md`. Fixed harness parent `.run-artifacts`, pre-config allocation, unique run directory with `.auth-run-ownership.json` token, realpath/lstat ancestor checking rejecting escapes and junctions, unowned directory deletion refusal, and sibling run isolation verified offline across 8 sentinel tests; all 10 live browser journeys honestly recorded as `NOT EXECUTED` pending synthetic environment prerequisites. See `audit/W1.2-BROWSER-01_Readiness_And_Smoke_Report.md`.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
