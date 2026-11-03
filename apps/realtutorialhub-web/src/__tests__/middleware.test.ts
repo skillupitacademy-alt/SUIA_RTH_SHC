@@ -11,10 +11,15 @@ vi.mock('@quiz/auth', () => ({
 
 import { isPublicAuthRoute, proxy } from '../proxy';
 
-const makeRequest = (pathname: string, cookie?: string) =>
-  new NextRequest(`http://localhost${pathname}`, {
-    headers: cookie !== undefined ? { cookie } : undefined,
+const makeRequest = (pathname: string, cookie?: string, baseUrl = 'http://realtutorialhub.localhost:3003') => {
+  const url = new URL(`${baseUrl}${pathname}`);
+  return new NextRequest(url.toString(), {
+    headers: {
+      host: url.host,
+      ...(cookie !== undefined ? { cookie } : {}),
+    },
   });
+};
 
 describe('realtutorialhub-web proxy', () => {
   beforeEach(() => {
@@ -34,42 +39,50 @@ describe('realtutorialhub-web proxy', () => {
     expect(response.status).toBe(200);
   });
 
-  it('redirects dashboard to login when unauthenticated', async () => {
-    const response = await proxy(makeRequest('/dashboard'));
+  it('redirects dashboard to login on same origin when unauthenticated (local)', async () => {
+    const response = await proxy(makeRequest('/dashboard', undefined, 'http://realtutorialhub.localhost:3003'));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('http://realtutorialhub.localhost:3003/login?redirect=%2Fdashboard');
+  });
+
+  it('redirects dashboard to login on production origin when requested from production-shaped host', async () => {
+    const response = await proxy(makeRequest('/dashboard', undefined, 'https://user.realtutorialhub.com'));
 
     expect(response.status).toBe(307);
     expect(response.headers.get('location')).toBe('https://user.realtutorialhub.com/login?redirect=%2Fdashboard');
   });
 
-  it('allows dashboard RSC requests without auth interception', async () => {
-    const response = await proxy(makeRequest('/dashboard?_rsc=test'));
-
-    expect(response.status).toBe(200);
-    expect(verifyUserAccessTokenMock).not.toHaveBeenCalled();
-  });
-
-  it('redirects protected routes to SkillHubCore login when unauthenticated', async () => {
-    const response = await proxy(makeRequest('/learn/full-stack/js/promises'));
+  it('requires auth interception for protected RSC requests', async () => {
+    const response = await proxy(makeRequest('/dashboard?_rsc=test', undefined, 'http://realtutorialhub.localhost:3003'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toBe('https://user.realtutorialhub.com/login?redirect=%2Flearn%2Ffull-stack%2Fjs%2Fpromises');
+    expect(response.headers.get('location')).toBe('http://realtutorialhub.localhost:3003/login?redirect=%2Fdashboard%3F_rsc%3Dtest');
+  });
+
+  it('redirects protected routes to login on same origin when unauthenticated', async () => {
+    const response = await proxy(makeRequest('/learn/full-stack/js/promises', undefined, 'http://realtutorialhub.localhost:3003'));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('http://realtutorialhub.localhost:3003/login?redirect=%2Flearn%2Ffull-stack%2Fjs%2Fpromises');
     expect(new URL(response.headers.get('location') ?? '').searchParams.get('redirect')).toBe('/learn/full-stack/js/promises');
   });
 
-  it('accepts a SkillUp JWT on protected routes', async () => {
+  it('accepts a valid brand JWT on public routes and adds user headers', async () => {
     verifyUserAccessTokenMock.mockResolvedValueOnce({
       sub: 'student-1',
       shadowUserId: 'shadow-student-1',
       originalUserId: 'brand-student-1',
       roles: ['student'],
+      brand: 'realtutorialhub',
       subscriptions: ['notes'],
       iss: 'skillhubcore.in',
       exp: Math.floor(Date.now() / 1000) + 3600,
     });
 
-    const response = await proxy(makeRequest('/api/tutorial/content/abc', 'accessToken=skillup-token'));
+    const response = await proxy(makeRequest('/api/certificates/verify/code-123', 'accessToken=rth-token', 'http://realtutorialhub.localhost:3003'));
 
-    expect(verifyUserAccessTokenMock).toHaveBeenCalledWith('skillup-token', { audience: 'user' });
+    expect(verifyUserAccessTokenMock).toHaveBeenCalledWith('rth-token', { audience: 'user' });
     expect(response.status).toBe(200);
     expect(response.headers.get('x-user-id')).toBe('shadow-student-1');
     expect(response.headers.get('x-shadow-user-id')).toBe('shadow-student-1');

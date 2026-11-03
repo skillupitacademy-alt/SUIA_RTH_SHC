@@ -11,8 +11,8 @@ vi.mock('@quiz/auth', () => ({
 
 import { isPublicAuthRoute, proxy } from '../proxy';
 
-const makeRequest = (pathname: string, cookie?: string) =>
-  new NextRequest(`http://localhost${pathname}`, {
+const makeRequest = (pathname: string, cookie?: string, baseUrl = 'http://localhost') =>
+  new NextRequest(`${baseUrl}${pathname}`, {
     headers: cookie !== undefined ? { cookie } : undefined,
   });
 
@@ -34,18 +34,24 @@ describe('skillup-web proxy', () => {
     expect(response.status).toBe(200);
   });
 
-  it('redirects dashboard to login when unauthenticated', async () => {
-    const response = await proxy(makeRequest('/dashboard'));
+  it('redirects dashboard to login on same origin when unauthenticated (local)', async () => {
+    const response = await proxy(makeRequest('/dashboard', undefined, 'http://skillup.localhost:3009'));
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toContain('/login');
-    expect(response.headers.get('location')).toContain('redirect=%2Fdashboard');
+    expect(response.headers.get('location')).toBe('http://skillup.localhost:3009/login?redirect=%2Fdashboard');
   });
 
-  it('allows dashboard RSC requests without auth interception', async () => {
-    const response = await proxy(makeRequest('/dashboard?_rsc=test'));
+  it('redirects to production login origin when requested from production-shaped host', async () => {
+    const response = await proxy(makeRequest('/dashboard', undefined, 'https://user.skillupitacademy.com'));
 
-    expect(response.status).toBe(200);
-    expect(verifyUserAccessTokenMock).not.toHaveBeenCalled();
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('https://user.skillupitacademy.com/login?redirect=%2Fdashboard');
+  });
+
+  it('requires auth interception for protected RSC requests', async () => {
+    const response = await proxy(makeRequest('/dashboard?_rsc=test', undefined, 'http://skillup.localhost:3009'));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('http://skillup.localhost:3009/login?redirect=%2Fdashboard%3F_rsc%3Dtest');
   });
 });
