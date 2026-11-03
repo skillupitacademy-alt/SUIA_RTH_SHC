@@ -5,10 +5,14 @@ import { SYNTHETIC_ACCOUNTS, getAccountCredentials } from './helpers/test-creden
 
 test.describe('RTH Learner Authentication Qualification', () => {
   test('AQ-02: RTH learner valid login, protected dashboard, and API access', async ({ auth }, testInfo) => {
-    enforceReadinessBoundary(testInfo, 'AQ-02', [
-      SYNTHETIC_ACCOUNTS.RTH_LEARNER.emailEnvVar,
-      SYNTHETIC_ACCOUNTS.RTH_LEARNER.passwordEnvVar,
-    ]);
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'rth-chromium',
+      projectOrigin: process.env.RTH_BASE_URL,
+      requiredAccountVars: [
+        SYNTHETIC_ACCOUNTS.RTH_LEARNER.emailEnvVar,
+        SYNTHETIC_ACCOUNTS.RTH_LEARNER.passwordEnvVar,
+      ],
+    });
 
     const creds = getAccountCredentials(SYNTHETIC_ACCOUNTS.RTH_LEARNER);
 
@@ -23,8 +27,8 @@ test.describe('RTH Learner Authentication Qualification', () => {
     assertCookieExists(cookies, 'accessToken', { httpOnly: true });
     assertCookieExists(cookies, 'refreshToken', { httpOnly: true });
 
-    // Verify protected user endpoint
-    const apiResponse = await auth.page.request.get('/api/auth/me');
+    // Verify protected user endpoint using guarded API helper
+    const apiResponse = await auth.apiGet('/api/auth/me');
     expect(apiResponse.status()).toBe(200);
     const data = await apiResponse.json();
 

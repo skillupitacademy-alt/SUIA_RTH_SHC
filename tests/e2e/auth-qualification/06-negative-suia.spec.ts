@@ -4,7 +4,10 @@ import { assertCookieAbsent } from './helpers/sanitized-evidence';
 
 test.describe('SUIA Negative Authentication Qualification', () => {
   test('AQ-06-SUIA: Invalid credentials rejection and zero-cookie state on SUIA', async ({ auth }, testInfo) => {
-    enforceReadinessBoundary(testInfo, 'AQ-06-SUIA');
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'suia-chromium',
+      projectOrigin: process.env.SUIA_BASE_URL,
+    });
 
     // Attempt login with invalid credentials on /login
     await auth.page.goto('/login', { waitUntil: 'domcontentloaded' });

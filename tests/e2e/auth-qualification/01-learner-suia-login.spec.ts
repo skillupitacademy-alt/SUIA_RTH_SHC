@@ -5,10 +5,14 @@ import { SYNTHETIC_ACCOUNTS, getAccountCredentials } from './helpers/test-creden
 
 test.describe('SUIA Learner Authentication Qualification', () => {
   test('AQ-01: SUIA learner valid login, protected dashboard, and API access', async ({ auth }, testInfo) => {
-    enforceReadinessBoundary(testInfo, 'AQ-01', [
-      SYNTHETIC_ACCOUNTS.SUIA_LEARNER.emailEnvVar,
-      SYNTHETIC_ACCOUNTS.SUIA_LEARNER.passwordEnvVar,
-    ]);
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'suia-chromium',
+      projectOrigin: process.env.SUIA_BASE_URL,
+      requiredAccountVars: [
+        SYNTHETIC_ACCOUNTS.SUIA_LEARNER.emailEnvVar,
+        SYNTHETIC_ACCOUNTS.SUIA_LEARNER.passwordEnvVar,
+      ],
+    });
 
     const creds = getAccountCredentials(SYNTHETIC_ACCOUNTS.SUIA_LEARNER);
 
@@ -23,8 +27,8 @@ test.describe('SUIA Learner Authentication Qualification', () => {
     assertCookieExists(cookies, 'accessToken', { httpOnly: true });
     assertCookieExists(cookies, 'refreshToken', { httpOnly: true });
 
-    // Verify protected API call
-    const apiResponse = await auth.page.request.get('/api/auth/me');
+    // Verify protected API call using guarded API helper
+    const apiResponse = await auth.apiGet('/api/auth/me');
     expect(apiResponse.status()).toBe(200);
     const data = await apiResponse.json();
 

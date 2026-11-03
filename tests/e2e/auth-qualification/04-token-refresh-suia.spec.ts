@@ -4,10 +4,14 @@ import { SYNTHETIC_ACCOUNTS, getAccountCredentials } from './helpers/test-creden
 
 test.describe('SUIA Token Refresh Flow Qualification', () => {
   test('AQ-04-SUIA: SUIA learner active refresh rotation, cookie update, and protected access', async ({ auth }, testInfo) => {
-    enforceReadinessBoundary(testInfo, 'AQ-04-SUIA', [
-      SYNTHETIC_ACCOUNTS.SUIA_LEARNER.emailEnvVar,
-      SYNTHETIC_ACCOUNTS.SUIA_LEARNER.passwordEnvVar,
-    ]);
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'suia-chromium',
+      projectOrigin: process.env.SUIA_BASE_URL,
+      requiredAccountVars: [
+        SYNTHETIC_ACCOUNTS.SUIA_LEARNER.emailEnvVar,
+        SYNTHETIC_ACCOUNTS.SUIA_LEARNER.passwordEnvVar,
+      ],
+    });
 
     const creds = getAccountCredentials(SYNTHETIC_ACCOUNTS.SUIA_LEARNER);
     await auth.loginViaUI('/login', creds.email, creds.password);
@@ -18,8 +22,8 @@ test.describe('SUIA Token Refresh Flow Qualification', () => {
     expect(initialRefresh !== undefined, 'Initial refreshToken must exist').toBe(true);
     expect(initialAccess !== undefined, 'Initial accessToken must exist').toBe(true);
 
-    // Call POST /api/auth/refresh directly using the active browser session
-    const refreshRes = await auth.page.request.post('/api/auth/refresh');
+    // Call POST /api/auth/refresh directly using guarded API helper
+    const refreshRes = await auth.apiPost('/api/auth/refresh');
     expect(refreshRes.status()).toBe(200);
 
     // Verify cookies updated in memory without leaking token values
@@ -32,8 +36,8 @@ test.describe('SUIA Token Refresh Flow Qualification', () => {
     const refreshRotated = rotatedRefresh!.value !== initialRefresh!.value;
     expect(refreshRotated, 'Refresh token value must change upon rotation').toBe(true);
 
-    // Verify subsequent protected use with rotated session
-    const meRes = await auth.page.request.get('/api/auth/me');
+    // Verify subsequent protected use with rotated session using guarded API helper
+    const meRes = await auth.apiGet('/api/auth/me');
     expect(meRes.status()).toBe(200);
   });
 });

@@ -1,6 +1,6 @@
 import type { BrowserContext } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import fs from 'fs';
-import path from 'path';
 
 /**
  * Execution Boundary & Readiness Validation for Authentication Qualification (W1.2-BROWSER-01).
@@ -8,8 +8,10 @@ import path from 'path';
  * Enforces strict fail-closed guards before any browser fixture setup or network interaction:
  * 1. Prohibits production domains (e.g. *.skillupitacademy.com, *.realtutorialhub.com, skillhubcore.in).
  * 2. Parses URL origin via new URL(originUrl).origin and validates hostname.
- * 3. Blocks disallowed network requests and redirects before network delivery.
- * 4. Requires explicit readiness manifest (AUTH_QUALIFICATION_READY=true, isolated environment, accounts).
+ * 3. Requires explicit project origins (no guessed-port execution defaults).
+ * 4. Requires tested build revision (TEST_BUILD_REVISION) and isolated environment certification.
+ * 5. Validates Playwright Chromium executable presence via chromium.executablePath().
+ * 6. Blocks disallowed network requests and redirects before network delivery.
  */
 
 const FORBIDDEN_PRODUCTION_PATTERNS = [
@@ -75,6 +77,19 @@ export function validateOriginSafety(originUrl?: string): void {
 }
 
 /**
+ * Checks whether the Chromium executable expected by the installed Playwright package exists on disk.
+ * Uses chromium.executablePath() without attempting to download or launch.
+ */
+export function isChromiumExecutableAvailable(): boolean {
+  try {
+    const execPath = chromium.executablePath();
+    return Boolean(execPath && fs.existsSync(execPath));
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Installs network-level routing guards on a Playwright browser context.
  * Intercepts every outgoing HTTP/HTTPS request and aborts immediately if pointing to an unsafe origin.
  */
@@ -91,6 +106,12 @@ export async function installNetworkOriginGuard(context: BrowserContext): Promis
   });
 }
 
+export interface ProjectReadinessRequirements {
+  projectName: string;
+  projectOrigin?: string;
+  requiredAccountVars?: string[];
+}
+
 export interface ReadinessRecord {
   authQualificationReady: boolean;
   buildRevision?: string;
@@ -101,20 +122,7 @@ export interface ReadinessRecord {
     shc?: string;
   };
   accountsAvailable: string[];
-  chromiumAvailable: boolean;
-}
-
-export function isChromiumAvailable(): boolean {
-  const localAppData = process.env.LOCALAPPDATA;
-  if (!localAppData) return false;
-  const playwrightBrowsersPath = path.join(localAppData, 'ms-playwright');
-  if (!fs.existsSync(playwrightBrowsersPath)) return false;
-  try {
-    const entries = fs.readdirSync(playwrightBrowsersPath);
-    return entries.some(entry => entry.startsWith('chromium_headless_shell-') || entry.startsWith('chromium-'));
-  } catch {
-    return false;
-  }
+  chromiumExecutableAvailable: boolean;
 }
 
 export function getReadinessRecord(): ReadinessRecord {
@@ -130,44 +138,84 @@ export function getReadinessRecord(): ReadinessRecord {
     accountsAvailable: Object.keys(process.env).filter(
       k => k.startsWith('TEST_') && k.endsWith('_EMAIL') && Boolean(process.env[k])
     ),
-    chromiumAvailable: isChromiumAvailable(),
+    chromiumExecutableAvailable: isChromiumExecutableAvailable(),
   };
 }
 
+/**
+ * Concrete fail-closed readiness check validating:
+ * 1. Master readiness manifest (AUTH_QUALIFICATION_READY=true)
+ * 2. Tested build provenance (TEST_BUILD_REVISION)
+ * 3. Isolated synthetic test environment certification (TEST_ISOLATED_ENVIRONMENT=true)
+ * 4. Explicit non-empty project origin (no guessed-port fallback)
+ * 5. Origin domain safety compliance
+ * 6. Required synthetic account variables
+ * 7. Installed Playwright Chromium executable availability
+ */
 export function checkReadinessPrerequisites(
-  scenarioId: string,
-  requiredAccountVars: string[] = []
+  req: ProjectReadinessRequirements
 ): { ready: boolean; reason?: string } {
   // 1. Master readiness flag
   if (process.env.AUTH_QUALIFICATION_READY !== 'true') {
     return {
       ready: false,
-      reason: `${scenarioId}: Isolated environment readiness manifest (AUTH_QUALIFICATION_READY=true) not established.`,
+      reason: `[NOT EXECUTED] ${req.projectName}: Master readiness manifest (AUTH_QUALIFICATION_READY=true) not established.`,
     };
   }
 
-  // 2. Isolated environment flag
+  // 2. Tested build provenance
+  const buildRev = process.env.TEST_BUILD_REVISION;
+  if (!buildRev || buildRev.trim() === '') {
+    return {
+      ready: false,
+      reason: `[NOT EXECUTED] ${req.projectName}: Tested build revision (TEST_BUILD_REVISION) not specified.`,
+    };
+  }
+
+  // 3. Isolated environment certification
   if (process.env.TEST_ISOLATED_ENVIRONMENT !== 'true') {
     return {
       ready: false,
-      reason: `${scenarioId}: Target environment is not certified as an isolated synthetic test environment (TEST_ISOLATED_ENVIRONMENT=true missing).`,
+      reason: `[NOT EXECUTED] ${req.projectName}: Isolated synthetic test environment not certified (TEST_ISOLATED_ENVIRONMENT=true missing).`,
     };
   }
 
-  // 3. Required synthetic account credentials
-  const missingAccounts = requiredAccountVars.filter(v => !process.env[v] || process.env[v]!.trim() === '');
-  if (missingAccounts.length > 0) {
+  // 4. Explicit project origin (guessed-port default prohibited)
+  if (!req.projectOrigin || req.projectOrigin.trim() === '') {
     return {
       ready: false,
-      reason: `${scenarioId}: Synthetic test accounts missing (${missingAccounts.length} required variables unset).`,
+      reason: `[NOT EXECUTED] ${req.projectName}: Explicit project base URL unset in environment (guessed-port default prohibited).`,
     };
   }
 
-  // 4. Chromium availability
-  if (!isChromiumAvailable()) {
+  // 5. Origin domain safety
+  try {
+    validateOriginSafety(req.projectOrigin);
+  } catch (err: any) {
     return {
       ready: false,
-      reason: `${scenarioId}: Chromium browser binary is not installed in the local Playwright cache.`,
+      reason: `[NOT EXECUTED] ${req.projectName}: Configured origin violates safety boundary: ${err.message}`,
+    };
+  }
+
+  // 6. Required synthetic account credentials
+  if (req.requiredAccountVars && req.requiredAccountVars.length > 0) {
+    const missingAccounts = req.requiredAccountVars.filter(
+      v => !process.env[v] || process.env[v]!.trim() === ''
+    );
+    if (missingAccounts.length > 0) {
+      return {
+        ready: false,
+        reason: `[NOT EXECUTED] ${req.projectName}: Synthetic test accounts missing (${missingAccounts.length} required variables unset).`,
+      };
+    }
+  }
+
+  // 7. Installed Playwright Chromium executable
+  if (!isChromiumExecutableAvailable()) {
+    return {
+      ready: false,
+      reason: `[NOT EXECUTED] ${req.projectName}: Installed Playwright Chromium executable is not present on disk.`,
     };
   }
 
@@ -180,11 +228,10 @@ export function checkReadinessPrerequisites(
  */
 export function enforceReadinessBoundary(
   testInfo: { skip: (condition: boolean, reason: string) => void },
-  scenarioId: string,
-  requiredAccountVars: string[] = []
+  req: ProjectReadinessRequirements
 ): void {
-  const result = checkReadinessPrerequisites(scenarioId, requiredAccountVars);
+  const result = checkReadinessPrerequisites(req);
   if (!result.ready) {
-    testInfo.skip(true, `[NOT EXECUTED] ${result.reason}`);
+    testInfo.skip(true, result.reason || '[NOT EXECUTED] Prerequisites unfulfilled');
   }
 }

@@ -5,10 +5,14 @@ import { SYNTHETIC_ACCOUNTS, getAccountCredentials } from './helpers/test-creden
 
 test.describe('SHC Administrator Authentication Qualification', () => {
   test('AQ-03: SHC admin valid login and admin route protection', async ({ auth }, testInfo) => {
-    enforceReadinessBoundary(testInfo, 'AQ-03', [
-      SYNTHETIC_ACCOUNTS.SHC_ADMIN.emailEnvVar,
-      SYNTHETIC_ACCOUNTS.SHC_ADMIN.passwordEnvVar,
-    ]);
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'shc-chromium',
+      projectOrigin: process.env.SHC_BASE_URL,
+      requiredAccountVars: [
+        SYNTHETIC_ACCOUNTS.SHC_ADMIN.emailEnvVar,
+        SYNTHETIC_ACCOUNTS.SHC_ADMIN.passwordEnvVar,
+      ],
+    });
 
     const creds = getAccountCredentials(SYNTHETIC_ACCOUNTS.SHC_ADMIN);
 
@@ -23,8 +27,8 @@ test.describe('SHC Administrator Authentication Qualification', () => {
     assertCookieExists(cookies, 'accessToken', { httpOnly: true });
     assertCookieExists(cookies, 'admin_accessToken', { httpOnly: true });
 
-    // Verify admin-only API access
-    const adminCheck = await auth.page.request.get('/api/admin/overview');
+    // Verify admin-only API access using guarded API helper
+    const adminCheck = await auth.apiGet('/api/admin/overview');
     const isAuthorized = [200, 204].includes(adminCheck.status());
     expect(isAuthorized, 'Admin endpoint must be authorized for SHC admin session').toBe(true);
   });

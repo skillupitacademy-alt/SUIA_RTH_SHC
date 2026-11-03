@@ -5,14 +5,15 @@ import { validateOriginSafety } from './helpers/readiness';
 // Load only explicit auth qualification test environment (never auto-load broad .env.local)
 dotenv.config({ path: '.env.auth-qualification' });
 
-const SUIA_URL = process.env.SUIA_BASE_URL || 'http://skillup.localhost:3009';
-const RTH_URL = process.env.RTH_BASE_URL || 'http://realtutorialhub.localhost:3003';
-const SHC_URL = process.env.SHC_BASE_URL || 'http://skillhubcore.localhost:3000';
+// Do NOT use guessed port defaults (:3009, :3003, :3000).
+// If explicitly provided in environment, validate fail-closed; if unset, remain undefined.
+const SUIA_URL = process.env.SUIA_BASE_URL;
+const RTH_URL = process.env.RTH_BASE_URL;
+const SHC_URL = process.env.SHC_BASE_URL;
 
-// Enforce fail-closed origin boundary on config evaluation
-validateOriginSafety(SUIA_URL);
-validateOriginSafety(RTH_URL);
-validateOriginSafety(SHC_URL);
+if (SUIA_URL) validateOriginSafety(SUIA_URL);
+if (RTH_URL) validateOriginSafety(RTH_URL);
+if (SHC_URL) validateOriginSafety(SHC_URL);
 
 export default defineConfig({
   testDir: '.',
@@ -23,7 +24,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
 
-  // Sole reporter: Zero-leakage safe qualification reporter (no raw built-in reporters)
+  // Sole reporter: Zero-leakage allowlisted reporter (raw built-in reporters eliminated)
   reporter: [
     ['./helpers/safe-reporter.ts'],
   ],

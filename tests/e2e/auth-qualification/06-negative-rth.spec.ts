@@ -4,7 +4,10 @@ import { assertCookieAbsent } from './helpers/sanitized-evidence';
 
 test.describe('RTH Negative Authentication Qualification', () => {
   test('AQ-06-RTH: Invalid credentials rejection and zero-cookie state on RTH', async ({ auth }, testInfo) => {
-    enforceReadinessBoundary(testInfo, 'AQ-06-RTH');
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'rth-chromium',
+      projectOrigin: process.env.RTH_BASE_URL,
+    });
 
     // Attempt login with invalid credentials on /login
     await auth.page.goto('/login', { waitUntil: 'domcontentloaded' });

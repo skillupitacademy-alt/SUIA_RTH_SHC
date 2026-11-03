@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation still VERIFICATION_FAILED: independent bare-error child probe exposes fake credential; build/account readiness and APIRequestContext redirect guards incomplete. Runtime NOT EXECUTED; see `audit/W1.2_Batch_05_Sol_Review_1c72f58f.md`.)
+**Status:** `IN_PROGRESS` (Preparation `IMPLEMENTED_UNVERIFIED`: allowlisted safe reporter suppresses raw errors/stdout/stderr; deliberate failure probe passes with bare opaque secrets and artifact cleanup; strict pre-fixture readiness validates build/accounts/chromium; guarded API transport blocks service workers and unvalidated redirects. Real journeys remain `NOT EXECUTED` pending synthetic prerequisites.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.

@@ -4,7 +4,10 @@ import { assertCookieAbsent } from './helpers/sanitized-evidence';
 
 test.describe('SHC Negative Authentication Qualification', () => {
   test('AQ-06-SHC: Invalid credentials rejection and zero-cookie state on SHC', async ({ auth }, testInfo) => {
-    enforceReadinessBoundary(testInfo, 'AQ-06-SHC');
+    enforceReadinessBoundary(testInfo, {
+      projectName: 'shc-chromium',
+      projectOrigin: process.env.SHC_BASE_URL,
+    });
 
     // Attempt login with invalid credentials on /login
     await auth.page.goto('/login', { waitUntil: 'domcontentloaded' });

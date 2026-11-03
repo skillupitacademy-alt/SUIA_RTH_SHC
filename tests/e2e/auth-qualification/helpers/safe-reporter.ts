@@ -1,9 +1,11 @@
 import type { Reporter, TestCase, TestResult, TestError, FullConfig, Suite } from '@playwright/test/reporter';
+import fs from 'fs';
+import path from 'path';
 
 const SENSITIVE_PATTERNS = [
   // JWT tokens
   /eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}/g,
-  // URL / Query / Form / Error params: password=..., token=..., secret=... (matches through spaces until delimiter or line end)
+  // URL / Query / Form / Error params: password=..., token=..., secret=...
   /((?:password|passwd|pwd|token|secret|authorization|cookie|session|accessToken|refreshToken)\s*[:=]\s*)([^\r\n,;]+)/gi,
   // JSON key-values: "password": "...", "token": "..."
   /("?(?:password|passwd|pwd|token|secret|authorization|cookie|session|accessToken|refreshToken)"?\s*:\s*)"[^"\r\n]+"/gi,
@@ -12,12 +14,17 @@ const SENSITIVE_PATTERNS = [
   /((?:Authorization|auth):\s*(?:Bearer\s+)?)([^\r\n]+)/gi,
   // Generic Bearer tokens
   /(Bearer\s+)[a-zA-Z0-9._~+/-]+=*/gi,
-  // Fake sentinel brackets e.g. <fake sentinel>, <fake secret>
+  // Angle-bracketed fake sentinels e.g. <fake sentinel>
   /<fake[^>]*>/gi,
-  // Specific sentinel patterns used in tests
+  // Specific sentinel patterns used in offline tests
   /SENTINEL_[A-Za-z0-9_]+/g,
 ];
 
+/**
+ * Offline utility function for in-memory string redaction checks.
+ * Note: Reporter output safety does NOT rely on regex pattern-matching;
+ * all test stdout/stderr, raw error messages, and locator stacks are suppressed.
+ */
 export function sanitizeText(text: string): string {
   if (!text) return text;
   let sanitized = String(text);
@@ -43,7 +50,7 @@ export default class SafeQualificationReporter implements Reporter {
   onBegin(_config: FullConfig, suite: Suite): void {
     this.totalTests = suite.allTests().length;
     process.stdout.write(
-      `\n[SAFE_REPORTER] Running ${this.totalTests} qualification tests (Zero-Leakage Allowed Evidence Mode)\n`
+      `\n[QUALIFICATION_REPORTER] Discovered ${this.totalTests} tests across projects\n`
     );
     for (const test of suite.allTests()) {
       const proj = test.parent.project()?.name ?? 'default';
@@ -64,40 +71,64 @@ export default class SafeQualificationReporter implements Reporter {
       process.stdout.write(`  ok [${projectName}] ${testTitle} (${duration}ms)\n`);
     } else if (result.status === 'skipped') {
       this.skippedTests++;
-      process.stdout.write(`  -  [${projectName}] ${testTitle} (SKIPPED)\n`);
+      process.stdout.write(`  -  [${projectName}] ${testTitle} (SKIPPED / NOT EXECUTED)\n`);
     } else {
       this.failedTests++;
-      // Safe failure representation: do NOT dump raw locator logs, request bodies, or unredacted stacks
-      let summary = 'Assertion or runtime error occurred';
-      if (result.errors && result.errors.length > 0) {
-        const firstErr = result.errors[0];
-        const rawMsg = firstErr.message || String(firstErr);
-        const firstLine = rawMsg.split('\n')[0].substring(0, 100);
-        summary = sanitizeText(firstLine);
+      // FIXED allowlisted reason code only.
+      // Suppresses arbitrary raw error text, locator stacks, DOM dumps, and request bodies.
+      let reasonCode = 'INTENDED_OR_ASSERTION_FAILURE';
+      if (result.status === 'timedOut') {
+        reasonCode = 'TEST_TIMEOUT';
       }
       process.stdout.write(`  FAIL [${projectName}] ${testTitle} (${duration}ms)\n`);
-      process.stdout.write(`       Reason: ${summary}\n`);
+      process.stdout.write(`       Reason: [${reasonCode}]\n`);
+    }
+
+    // Clean up any test output artifacts (error-context.md, traces, screenshots) to ensure zero artifact retention
+    if (result.attachments && result.attachments.length > 0) {
+      for (const attachment of result.attachments) {
+        if (attachment.path && fs.existsSync(attachment.path)) {
+          try {
+            fs.unlinkSync(attachment.path);
+          } catch {
+            // Ignore
+          }
+        }
+      }
     }
   }
 
-  onStdOut(chunk: string | Buffer): void {
-    const text = chunk.toString();
-    process.stdout.write(sanitizeText(text));
+  onStdOut(_chunk: string | Buffer): void {
+    // Suppress arbitrary test stdout to guarantee zero credential/chunk leakage
   }
 
-  onStdErr(chunk: string | Buffer): void {
-    const text = chunk.toString();
-    process.stderr.write(sanitizeText(text));
+  onStdErr(_chunk: string | Buffer): void {
+    // Suppress arbitrary test stderr to guarantee zero credential/chunk leakage
   }
 
-  onError(error: TestError): void {
-    const raw = error.message || String(error);
-    process.stderr.write(`[SAFE_REPORTER_ERROR] ${sanitizeText(raw)}\n`);
+  onError(_error: TestError): void {
+    // Emit only fixed generic notice, never raw error message or call stack
+    process.stderr.write(`[QUALIFICATION_REPORTER] Global execution error occurred\n`);
   }
 
   onEnd(): void {
     process.stdout.write(
-      `\n[SAFE_REPORTER] Complete: ${this.passedTests} passed, ${this.failedTests} failed, ${this.skippedTests} skipped (${this.totalTests} total)\n\n`
+      `\n[QUALIFICATION_REPORTER] Complete: ${this.passedTests} passed, ${this.failedTests} failed, ${this.skippedTests} skipped (${this.totalTests} total)\n`
     );
+    if (this.skippedTests > 0) {
+      process.stdout.write(
+        `[QUALIFICATION_REPORTER] Notice: ${this.skippedTests} tests marked SKIPPED / NOT EXECUTED (Prerequisites unfulfilled - Not a full runtime pass)\n\n`
+      );
+    }
+
+    // Clean up test-results directory recursively if created by test runner
+    const testResultsDir = path.resolve(process.cwd(), 'test-results');
+    if (fs.existsSync(testResultsDir)) {
+      try {
+        fs.rmSync(testResultsDir, { recursive: true, force: true });
+      } catch {
+        // Ignore
+      }
+    }
   }
 }
