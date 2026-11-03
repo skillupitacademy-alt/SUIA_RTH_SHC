@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Harness preparation VERIFIED/accepted by Sol at reviewed 138d61a6: 8 offline sentinels passed, 23 tests discovered, 15 unready journeys skipped; actual runtime NOT EXECUTED. Controlled build/isolated fixtures/account mapping remain prerequisites; see `audit/W1.2_Browser_Preparation_Sol_Acceptance.md`.)
+**Status:** `IN_PROGRESS` (Stage 1 readiness gate executed per `audit/W1.2_Browser_Runtime_Readiness_And_Execution_Task.md`; report in `audit/W1.2-BROWSER-01_Runtime_Readiness_Report.md`. Halted fail-closed: apps target remote Neon cloud DB without local isolation, running servers stale from 06:13 AM, Chromium binary not installed. All 15 credentialed journeys preserved as NOT EXECUTED.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
