@@ -652,4 +652,244 @@ describe('W1.2-REFRESH-02: Atomic Single-Consumer Refresh Rotation', () => {
       expect(suiaAdapter.findById('session-colliding')?.revoked).toBe(true);
     });
   });
+
+  describe('W1.2-REFRESH-07: Pre-CAS Metadata Elimination & State Safety', () => {
+    it('REQ-1: successful rotation consumes exactly one parent, updates its timestamp in CAS, and inserts exactly one successor while unrelated sessions remain unchanged', async () => {
+      const fixedInitialDate = new Date(Date.now() - 3600000);
+      const unrelatedDate = new Date(Date.now() - 7200000);
+
+      rthAdapter.insert({
+        id: 'parent-req1',
+        userId: 'user-alice',
+        token: 'hash-req1-token',
+        revoked: false,
+        expiresAt: new Date(Date.now() + 100000),
+        lastUsedAt: fixedInitialDate,
+      });
+
+      rthAdapter.insert({
+        id: 'unrelated-req1',
+        userId: 'user-bob',
+        token: 'hash-unrelated-token',
+        revoked: false,
+        expiresAt: new Date(Date.now() + 100000),
+        lastUsedAt: unrelatedDate,
+      });
+
+      const repo = new TokenRepository(rthAdapter as any, { refreshTokens: rthTable as any });
+      const service = new TokenRefreshService(repo, mockTokenService, mockAuditService as any);
+
+      const result = await service.refresh('req1-token', '192.0.2.1', undefined, 'user', 'realtutorialhub');
+      expect(result.accessToken).toBe('access-token-new');
+
+      // Parent is consumed and timestamp updated in CAS
+      const parent = rthAdapter.findById('parent-req1');
+      expect(parent?.revoked).toBe(true);
+      expect(parent?.lastUsedAt!.getTime()).toBeGreaterThan(fixedInitialDate.getTime());
+
+      // Exactly one successor created
+      const allSessions = rthAdapter.findAll();
+      expect(allSessions).toHaveLength(3); // parent + unrelated + 1 successor
+      const successors = allSessions.filter((s) => s.id !== 'parent-req1' && s.id !== 'unrelated-req1');
+      expect(successors).toHaveLength(1);
+      expect(successors[0].userId).toBe('user-alice');
+      expect(successors[0].revoked).toBe(false);
+
+      // Unrelated session is completely unchanged
+      const unrelated = rthAdapter.findById('unrelated-req1');
+      expect(unrelated?.revoked).toBe(false);
+      expect(unrelated?.lastUsedAt?.getTime()).toBe(unrelatedDate.getTime());
+    });
+
+    it('REQ-2: access/refresh signing failure leaves original parent state/timestamp unchanged, creates no child, and performs zero metadata writes', async () => {
+      const fixedInitialDate = new Date(Date.now() - 3600000);
+
+      rthAdapter.insert({
+        id: 'parent-req2',
+        userId: 'user-alice',
+        token: 'hash-req2-token',
+        revoked: false,
+        expiresAt: new Date(Date.now() + 100000),
+        lastUsedAt: fixedInitialDate,
+      });
+
+      mockTokenService.generateAccessToken.mockRejectedValueOnce(new Error('CPU/Signing cryptographic failure'));
+
+      const repo = new TokenRepository(rthAdapter as any, { refreshTokens: rthTable as any });
+      const service = new TokenRefreshService(repo, mockTokenService, mockAuditService as any);
+
+      await expect(
+        service.refresh('req2-token', '192.0.2.1', undefined, 'user', 'realtutorialhub')
+      ).rejects.toThrow('CPU/Signing cryptographic failure');
+
+      // Parent MUST remain completely unmodified
+      const parent = rthAdapter.findById('parent-req2');
+      expect(parent?.revoked).toBe(false);
+      expect(parent?.lastUsedAt?.getTime()).toBe(fixedInitialDate.getTime());
+
+      // No child sessions created
+      expect(rthAdapter.findAll()).toHaveLength(1);
+    });
+
+    it('REQ-3: CAS loser creates no child and makes no session-state changes', async () => {
+      const fixedInitialDate = new Date(Date.now() - 3600000);
+
+      rthAdapter.insert({
+        id: 'parent-req3',
+        userId: 'user-alice',
+        token: 'hash-req3-token',
+        revoked: false,
+        expiresAt: new Date(Date.now() + 100000),
+        lastUsedAt: fixedInitialDate,
+      });
+
+      let concurrentReads = 0;
+      let resolveBothReads: () => void;
+      const bothReadPromise = new Promise<void>((resolve) => {
+        resolveBothReads = resolve;
+      });
+
+      const baseFindFirst = rthAdapter.query.refreshTokens.findFirst;
+      rthAdapter.query.refreshTokens.findFirst = vi.fn(async (args: any) => {
+        const row = await baseFindFirst(args);
+        concurrentReads++;
+        if (concurrentReads === 2) {
+          resolveBothReads();
+        } else {
+          await bothReadPromise;
+        }
+        return row;
+      });
+
+      const repo = new TokenRepository(rthAdapter as any, { refreshTokens: rthTable as any });
+      const service = new TokenRefreshService(repo, mockTokenService, mockAuditService as any);
+
+      const results = await Promise.allSettled([
+        service.refresh('req3-token', '192.0.2.10', undefined, 'user', 'realtutorialhub'),
+        service.refresh('req3-token', '192.0.2.20', undefined, 'user', 'realtutorialhub'),
+      ]);
+
+      const fulfilled = results.filter((r) => r.status === 'fulfilled');
+      const rejected = results.filter((r) => r.status === 'rejected');
+
+      expect(fulfilled).toHaveLength(1);
+      expect(rejected).toHaveLength(1);
+      expect((rejected[0] as PromiseRejectedResult).reason.message).toMatch(/revoked or already consumed/i);
+
+      // Only exactly ONE successor exists (the winner's); loser created zero successors
+      const allSessions = rthAdapter.findAll();
+      expect(allSessions).toHaveLength(2); // parent + 1 successor
+    });
+
+    it('REQ-4: child insertion failure rolls back parent consumption AND timestamp, preserving tenant isolation', async () => {
+      const initialRthDate = new Date(Date.now() - 3600000);
+      const initialSuiaDate = new Date(Date.now() - 7200000);
+
+      // RTH session
+      rthAdapter.insert({
+        id: 'colliding-rollback-sess',
+        userId: 'user-A',
+        token: 'hash-rth-colliding',
+        revoked: false,
+        expiresAt: new Date(Date.now() + 100000),
+        lastUsedAt: initialRthDate,
+      });
+
+      // SUIA session with same ID and same user
+      suiaAdapter.insert({
+        id: 'colliding-rollback-sess',
+        userId: 'user-A',
+        token: 'hash-suia-colliding',
+        revoked: false,
+        expiresAt: new Date(Date.now() + 100000),
+        lastUsedAt: initialSuiaDate,
+      });
+
+      mockTokenService.verifyRefreshToken.mockResolvedValueOnce({
+        userId: 'user-A',
+        brand: 'realtutorialhub',
+        isAdmin: false,
+        tokenType: 'user',
+      });
+
+      // Force child creation to fail in RTH
+      vi.spyOn(TokenRepository.prototype, 'createRefreshToken').mockRejectedValueOnce(new Error('Child insertion DB disk full'));
+
+      const rthRepo = new TokenRepository(rthAdapter as any, { refreshTokens: rthTable as any });
+      const service = new TokenRefreshService(rthRepo, mockTokenService, mockAuditService as any);
+
+      await expect(
+        service.refresh('rth-colliding', '192.0.2.1', undefined, 'user', 'realtutorialhub')
+      ).rejects.toThrow('Child insertion DB disk full');
+
+      // In RTH: parent consumption AND timestamp rolled back
+      const rthParent = rthAdapter.findById('colliding-rollback-sess');
+      expect(rthParent?.revoked).toBe(false);
+      expect(rthParent?.lastUsedAt?.getTime()).toBe(initialRthDate.getTime());
+
+      // SUIA session remains completely unrevoked and untouched
+      const suiaParent = suiaAdapter.findById('colliding-rollback-sess');
+      expect(suiaParent?.revoked).toBe(false);
+      expect(suiaParent?.lastUsedAt?.getTime()).toBe(initialSuiaDate.getTime());
+    });
+
+    it('PRE-FIX MUTATION PROOF: Pre-fix service with eager updateLastUsed updates parent metadata on signing failure, whereas fixed service does not', async () => {
+      const fixedInitialDate = new Date(Date.now() - 5000000);
+
+      // Disposable mutant service simulating pre-fix code (eager updateLastUsed before signing)
+      class DisposablePreFixService extends TokenRefreshService {
+        async refresh(token: string, ip?: string, examId?: string, audience?: any, brand?: any, deviceContext?: any): Promise<any> {
+          // Pre-fix behavior: eager updateLastUsed before signing
+          const oldTokenHash = await (this as any).tokenService.hashToken(token);
+          await (this as any).tokenRepo.updateLastUsed(oldTokenHash);
+
+          // Simulate Step 3 signing failure
+          throw new Error('Simulated Step 3 Signing Failure');
+        }
+      }
+
+      // 1. Run against Mutant (Pre-Fix)
+      rthAdapter.insert({
+        id: 'parent-mutant-sess',
+        userId: 'user-alice',
+        token: 'hash-mutant-token',
+        revoked: false,
+        expiresAt: new Date(Date.now() + 100000),
+        lastUsedAt: fixedInitialDate,
+      });
+
+      const repo = new TokenRepository(rthAdapter as any, { refreshTokens: rthTable as any });
+      const mutantService = new DisposablePreFixService(repo, mockTokenService, mockAuditService as any);
+
+      await expect(
+        mutantService.refresh('mutant-token', '192.0.2.1', undefined, 'user', 'realtutorialhub')
+      ).rejects.toThrow('Simulated Step 3 Signing Failure');
+
+      // VULNERABILITY DEMONSTRATION: Pre-fix code updated lastUsedAt despite signing failure!
+      const mutantParent = rthAdapter.findById('parent-mutant-sess');
+      expect(mutantParent?.lastUsedAt?.getTime()).toBeGreaterThan(fixedInitialDate.getTime());
+
+      // 2. Run against Production Fixed Service under identical conditions
+      rthAdapter.insert({
+        id: 'parent-fixed-sess',
+        userId: 'user-alice',
+        token: 'hash-fixed-token',
+        revoked: false,
+        expiresAt: new Date(Date.now() + 100000),
+        lastUsedAt: fixedInitialDate,
+      });
+
+      mockTokenService.generateAccessToken.mockRejectedValueOnce(new Error('Simulated Step 3 Signing Failure'));
+      const fixedService = new TokenRefreshService(repo, mockTokenService, mockAuditService as any);
+
+      await expect(
+        fixedService.refresh('fixed-token', '192.0.2.1', undefined, 'user', 'realtutorialhub')
+      ).rejects.toThrow('Simulated Step 3 Signing Failure');
+
+      // FIX VERIFICATION: Fixed service leaves parent lastUsedAt completely untouched!
+      const fixedParent = rthAdapter.findById('parent-fixed-sess');
+      expect(fixedParent?.lastUsedAt?.getTime()).toBe(fixedInitialDate.getTime());
+    });
+  });
+
 });

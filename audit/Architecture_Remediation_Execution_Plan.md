@@ -670,7 +670,7 @@ isolation or decommission SHC flows. Source/topology uncertainties remain explic
 No runtime edit, key/issuer change, DB migration or deployment authorized here.
 
 ### W1.2-REFRESH-07 - Metadata and Revoked-Record Diagnostics Scoping
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED` (Redundant pre-CAS updateLastUsed removed from token-refresh.service.ts; verified with 44 stateful vitest regressions, mutation proof, typechecks and lint; pending distinct read-only review and Sol acceptance per Batch 05 Task A)
 **Assignment:** Batch 05 Task A authorizes only the redundant pre-CAS timestamp-write removal in token-refresh.service.ts plus focused stateful tests; optional revoked-record diagnostics remains design-only. See `audit/W1.2_Gemini_Controlled_Batch_05_Task.md` for scope and gates.
 **Wave / root causes:** 1 / RC-ID-01; RC-EVENT-01 context only
 **Application / priority:** generic tenant refresh / P1 bounded follow-up

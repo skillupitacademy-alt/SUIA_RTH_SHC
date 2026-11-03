@@ -61,6 +61,6 @@ describe('AuthService.refresh generic branches', () => {
         expect(mockTokenRepo.consumeToken).toHaveBeenCalledTimes(1);
         expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('hash', 'u1');
         expect(mockTokenRepo.createRefreshToken).toHaveBeenCalledTimes(1);
-        expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledTimes(1);
+        expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
     });
 });

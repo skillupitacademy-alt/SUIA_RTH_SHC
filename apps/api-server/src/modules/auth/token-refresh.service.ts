@@ -398,9 +398,6 @@ export class TokenRefreshService {
       freshEmail = email;
     }
 
-    // 🔐 STEP 2.8: Update last_used_at ONLY AFTER all authority, eligibility, and role checks succeed
-    await brandTokenRepo.updateLastUsed(oldTokenHash);
-
     // 🔐 STEP 3: Generate new tokens (CPU-only, no DB)
     const newAccessToken = await this.tokenService.generateAccessToken({
       userId,

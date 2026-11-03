@@ -697,7 +697,8 @@ describe('UserRepository.findActiveUserWithRoles Strict Implementation', () => {
 
       const rthResult = await connectedService.refresh('token-1', '127.0.0.1', undefined, 'user', 'realtutorialhub');
       expect(rthResult.accessToken).toBe('new-access-token');
-      expect(mockTokenRepo.updateLastUsed).toHaveBeenCalled();
+      expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
+      expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('token-hash', 'col-user-1');
       expect(rthAdapter.queriedTables).toContain(rthTables.users);
       expect(rthAdapter.queriedTables).toContain(rthTables.userRoles);
       expect(rthAdapter.queriedColumns).toContain('id');

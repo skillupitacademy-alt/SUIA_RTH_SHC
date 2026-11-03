@@ -91,8 +91,8 @@ describe('TokenRefreshService Authority & Brand Binding (W1.2-REFRESH-05)', () =
     expect(result.userId).toBe('user-rth-1');
     expect(result.isAdmin).toBe(false);
 
-    // Verify ordering: updateLastUsed called only after authority verified
-    expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledWith('token-sha256-hash');
+    // W1.2-REFRESH-07: eager pre-CAS updateLastUsed retired; verified no out-of-transaction metadata write
+    expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
     expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('token-sha256-hash', 'user-rth-1');
     expect(mockTokenRepo.createRefreshToken).toHaveBeenCalled();
   });
@@ -117,7 +117,7 @@ describe('TokenRefreshService Authority & Brand Binding (W1.2-REFRESH-05)', () =
     const result = await service.refresh('raw-token', '127.0.0.1', undefined, 'user', 'skillup');
 
     expect(result.accessToken).toBe('new-access-token');
-    expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledTimes(1);
+    expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
     expect(mockTokenRepo.consumeToken).toHaveBeenCalledTimes(1);
   });
 
@@ -309,7 +309,7 @@ describe('TokenRefreshService Authority & Brand Binding (W1.2-REFRESH-05)', () =
     const result = await service.refresh('raw-legacy-token', '127.0.0.1', undefined, 'user', 'realtutorialhub');
 
     expect(result.accessToken).toBe('new-access-token');
-    expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledTimes(1);
+    expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
     expect(mockTokenRepo.consumeToken).toHaveBeenCalledTimes(1);
 
     // Verify progressive upgrade: successor token generated with explicit canonical brand
@@ -464,7 +464,7 @@ describe('TokenRefreshService Authority & Brand Binding (W1.2-REFRESH-05)', () =
 
     // Assert that out-of-scope infrastructure does NOT invoke tenant user eligibility lookup
     expect(mockUserRepo.findActiveUserWithRoles).not.toHaveBeenCalled();
-    expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledWith('token-sha256-hash');
+    expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
     expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('token-sha256-hash', 'user-infra-1');
   });
 });
