@@ -679,8 +679,7 @@ authentication refactor, RTH runtime change, deployment or main merge. RTH's mat
 source pattern is noted for separate qualification, not a reproduced runtime result.
 
 ### W1.2-LOGOUT-02 - RTH Normal Logout Cookie Clearance and Qualification
-**Status:** `PLANNED` (RTH has the analogous source pattern; no independent RTH live
-logout result is claimed. Apply the minimal accepted SUIA approach after source gate.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Implemented canonical proxy delegation in `apps/realtutorialhub-web/src/app/api/auth/logout/route.ts` preserving upstream token revocation and matching domain cookie-expiry headers. Verified via 4 offline route unit regression tests [status, multi-cookie, local/prod domain rewrite] and successful AQ-05-NORMAL-RTH live headless Chromium pass [1 passed in 49.6s]; 8 offline safety sentinels passed. Acceptance pending independent Sol review.)
 **Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
 **Assignment:** `audit/W1.2_Gemini_RTH_Logout_Cookie_Correction_Task.md`
 **Implementer / acceptance:** Gemini / independent Sol review.

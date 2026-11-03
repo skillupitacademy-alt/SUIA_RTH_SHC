@@ -96,6 +96,7 @@ export default defineConfig({
         '**/02-learner-rth-login.spec.ts',
         '**/04-token-refresh-rth.spec.ts',
         '**/05-logout-rth.spec.ts',
+        '**/05-normal-logout-rth.spec.ts',
         '**/06-negative-rth.spec.ts',
       ],
     },
