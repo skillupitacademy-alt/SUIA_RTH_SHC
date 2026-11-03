@@ -617,26 +617,26 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `IMPLEMENTED_UNVERIFIED` (Targeted scope correction complete per review 7a3b26ef; subject parity, brand claim parity, class consistency, and lazy UserRepository resolution strictly governed by `isScopedTenant`; out-of-scope infra/SHC preserved; contract remains VERIFIED; pending Sol code review)
+**Status:** `CLOSED` (CLOSED by Sol at reviewed d512beb8: scoped authority/context guards accepted with independent regressions, mutation evidence, typechecks, lint and completed API/SHC builds; deployment and six-host browser qualification outstanding)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
 **Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `IMPLEMENTED_UNVERIFIED` (Tenant evidence & mutant sensitivity correction complete per review 7a3b26ef; connected tests with production binding enabled and AST column evaluation prove sensitivity against removed-binding and wrong-column mutants in `Tenant_Sensitivity.py`; strict lookup with zero session writes; contract remains VERIFIED; pending Sol code review)
+**Status:** `CLOSED` (CLOSED by Sol at reviewed d512beb8: strict tenant eligibility/current roles and pre-rotation denial ordering accepted; 95 selected regressions and sensitive tenant fixtures verified; broader lifecycle triggers/guard work remain separate)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
 **Scope:** Define strict repository lookup (`findActiveUserWithRoles`) on `UserRepository`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); dynamically fetch fresh roles while strictly preserving principal boundaries (no learner escalation, demoted admin fail-closed); accounts for actual 8-hour access token TTL; resolves baseline `auth.refresh.blocked.branch.test.ts`.
 
-**Latest implementation review:** `audit/W1.2_Batch_03_Sol_Review_7a3b26ef.md` (two remaining scope/evidence items corrected in `audit/W1.2_Batch_03_Corrections_Response.md`); previous reviews: `audit/W1.2_Batch_03_Sol_Review_8badd407.md`, `audit/W1.2_Batch_03_Sol_Review_fc4c6e38.md`. Gemini corrected both items under `audit/W1.2_Gemini_Controlled_Batch_03_Corrections.md`; no main merge, deployment or ticket closure.
+**Runtime acceptance:** `audit/W1.2_Batch_03_Sol_Acceptance.md` closes both scoped implementation tickets. Prior review failures and author submissions remain historical evidence; their pending states are superseded by this acceptance. RC-ID-01 stays IN_PROGRESS.
 
-**Design acceptance:** `audit/W1.2_Batch_02_Sol_Acceptance.md`. Both contracts include Sol's final source/scope qualifications; author response remains historical evidence. This is not code acceptance or RC-ID-01 closure.
+**Design provenance:** `audit/W1.2_Batch_02_Sol_Acceptance.md` and the verified contracts remain governing. Actual deployed isolation, immediate access revocation and every learner/admin journey are not claimed fixed.
 
-**Next controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_03_Task.md` authorizes Gemini to implement REFRESH-05 then REFRESH-06 in separate commits on a new branch. Start each runtime stage IN_PROGRESS and submit IMPLEMENTED_UNVERIFIED; independent code review and Sol acceptance remain mandatory before closure. Existing SHC/infra paths are preserved.
+**Next controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_04_Task.md` assigns GUARD-01 and REFRESH-04 source/design qualification only, with separate commits and independent review. No runtime policy change, live DB or deployment is authorized in that batch.
 
-**Browser qualification:** Retain the six-host production/local login -> refresh -> protected dashboard -> logout matrix under Wave 8 qualification. No executed local/production journey is claimed by these source contracts; cookie/domain/redirect and boundary cases remain outstanding.
+**Browser qualification:** Keep the six-host production/local login -> refresh -> protected dashboard -> logout matrix under Wave 8 qualification. No local/production journey has been executed by this source acceptance; cookies, redirects, ingress and physical DB topology remain outstanding.
 
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
 **Status:** `PLANNED`
