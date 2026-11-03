@@ -606,7 +606,7 @@ No token-policy migration, live database execution, or code edits authorized.
 **Acceptance and final source qualifications:** `audit/W1.2-REFRESH-02-03_Sol_Acceptance.md`. Task A closure remains independently gated.
 
 ### W1.2-REFRESH-04 - Replay Classification and Post-Commit Failure Policy
-**Status:** `IMPLEMENTED_UNVERIFIED` (Corrected investigation report complete with verified token states, metadata persistence, client event cancellation, and BFF fallback traces; pending distinct read-only review and Sol acceptance per Batch 04 corrections)
+**Status:** `CLOSED` (Sol accepts source/design investigation at reviewed da6c0742 with final editorial qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; proposed runtime changes remain separate)
 **Wave / root causes:** 1 / RC-ID-01, RC-EVENT-01
 **Application / priority:** refresh lifecycle / P1 design
 **Implementer:** Gemini when separately assigned
@@ -639,7 +639,7 @@ family-wide revocation without a separate justified design and approval.
 **Browser qualification:** Keep the six-host production/local login -> refresh -> protected dashboard -> logout matrix under Wave 8 qualification. No local/production journey has been executed by this source acceptance; cookies, redirects, ingress and physical DB topology remain outstanding.
 
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` (Corrected investigation report complete with verified SHC resolver acceptance, shared-client callers, 6-host matrix, and bounded resource paths; pending distinct read-only review and Sol acceptance per Batch 04 corrections)
+**Status:** `CLOSED` (Sol accepts bounded source investigation at reviewed da6c0742 with SHC/client/store/guard qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; no whole-application or deployed journey acceptance)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant RBAC, generic infra/default DB and SHC auth callers / P1 design
 **Implementer:** Gemini when separately assigned; independent reviewer and acceptance: Sol
@@ -649,6 +649,29 @@ refresh persistence and specialized people/Redis flow. Propose minimal changes
 only from source evidence; do not treat refreshed role capping as universal portal
 isolation or decommission SHC flows. Source/topology uncertainties remain explicit.
 No runtime edit, key/issuer change, DB migration or deployment authorized here.
+
+### W1.2-REFRESH-07 - Metadata and Revoked-Record Diagnostics Scoping
+**Status:** `PLANNED`
+**Wave / root causes:** 1 / RC-ID-01; RC-EVENT-01 context only
+**Application / priority:** generic tenant refresh / P1 bounded follow-up
+**Provenance:** `audit/W1.2_Batch_04_Sol_Acceptance.md`, REFRESH-04 investigation
+Define a separate task for redundant pre-CAS metadata removal and optional known-revoked
+diagnostics without inferring consumption cause from revoked/lastUsedAt. Require stateful
+signing-failure, CAS-loss, rollback and other-session non-mutation tests. Preserve client
+response compatibility and no automatic all-device revocation. No schema, token-family,
+outbox, retry grace or runtime change is authorized by this planned entry.
+
+### W1.2-GUARD-02 - Principal Scope and SHC Compatibility Contract
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application / priority:** tenant guards, purpose-bound login and SHC GUI auth / P1 design
+**Provenance:** `audit/W1.2_Batch_04_Sol_Acceptance.md`, GUARD-01 investigation
+Qualify separate policy choices for tenant helper audience/class preconditions, learner-purpose
+login and SHC GUI refresh/re-login/store/audience routing. Preserve separate people/tenant
+identities, infrastructure and verified caller compatibility. Do not mount specialized helpers,
+persist SHC tokens in a guessed store or change keys/cookies by inference. Runtime work needs
+a bounded task and independent review. Carry exam default-store/conditional-owner questions
+into application/domain assessment; global resource isolation is not certified by GUARD-01.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `PLANNED`
