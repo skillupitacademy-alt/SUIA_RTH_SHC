@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation VERIFIED. Reconciliation at 6ad95704 accepted per 906c8189. Focused SHC admin authorization control [AQ-03] executed and verified: unauthenticated request rejected with HTTP 401, authenticated GUI session authorized with HTTP 200, exact serving process provenance recorded. Dashboard, single-session UI logout, and remaining negative fixtures outstanding; see `audit/W1.2_Browser_Runtime_Reconciliation_Sol_Disposition.md`. No full runtime closure.)
+**Status:** `IN_PROGRESS` (Preparation VERIFIED; SHC AQ-03 unauthenticated 401 JSON -> GUI login -> authenticated access independently VERIFIED by Sol at 3d392ead, 1 test passed. See `audit/W1.2_Browser_SHC_Control_Sol_Acceptance.md`. Next: separate normal SUIA UI logout per `audit/W1.2_Browser_SUIA_Normal_Logout_Task.md`; broader runtime/negative fixtures and Wave 8 remain open.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
