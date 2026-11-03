@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation VERIFICATION_FAILED at reviewed bb8bd1f3: offline reporter probe leaks fake secret; readiness, project/scenario fixtures remain incomplete. No authenticated run authorized yet; runtime NOT EXECUTED. See remaining D1-D4 review.)
+**Status:** `IN_PROGRESS` (Preparation gaps D1-D4 repaired: single SafeQualificationReporter pipeline with raw reporters eliminated; fail-closed pre-fixture readiness guards prevent browser/page allocation; explicit per-project test matching; verified child-process deliberate failure probe passes with zero fake secret leakage; all 10 browser qualification journeys honestly recorded as NOT EXECUTED pending synthetic prerequisites.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
@@ -683,7 +683,7 @@ outbox or retry grace is authorized. The separately bounded Batch 05 assignment 
 provides the sole current runtime exception: redundant pre-CAS metadata-write removal.
 
 ### W1.2-GUARD-02 - Principal Scope and SHC Compatibility Contract
-**Status:** `VERIFICATION_FAILED` (Corrected contract still invents infra tokenType/namespace and conflicts with its own role-fallback preconditions; remaining B1-B3 in `audit/W1.2_Batch_05_Sol_Review_bb8bd1f3.md`.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Corrected in commit 9d08f354 resolving B1-B3: real tokenType=user/admin with infra as audience; single coherent tenant-admin helper policy rejecting infra with false; deprecated unreachable fallback; removed unsupported enterprise posture assertions; documented FetchClient limitations. Design only; pending independent review and Sol acceptance.)
 **Assignment:** Gemini Batch 05 Task B, contract only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant guards, purpose-bound login and SHC GUI auth / P1 design
