@@ -2,9 +2,9 @@ import { test, expect } from './fixtures/auth.fixtures';
 import { enforceReadinessBoundary } from './helpers/readiness';
 import { assertCookieAbsent } from './helpers/sanitized-evidence';
 
-test.describe('Negative Authentication Qualification', () => {
-  test('AQ-06: Invalid credentials rejection and zero-cookie state', async ({ auth }, testInfo) => {
-    enforceReadinessBoundary(testInfo, 'AQ-06');
+test.describe('RTH Negative Authentication Qualification', () => {
+  test('AQ-06-RTH: Invalid credentials rejection and zero-cookie state on RTH', async ({ auth }, testInfo) => {
+    enforceReadinessBoundary(testInfo, 'AQ-06-RTH');
 
     // Attempt login with invalid credentials on /login
     await auth.page.goto('/login', { waitUntil: 'domcontentloaded' });
@@ -13,7 +13,7 @@ test.describe('Negative Authentication Qualification', () => {
     const passInput = auth.page.locator('input[type="password"], input[name="password"], input#password').first();
     const submitBtn = auth.page.locator('button[type="submit"], button:has-text("Sign in"), button:has-text("Log in")').first();
 
-    await emailInput.fill('nonexistent-learner@test.invalid');
+    await emailInput.fill('invalid-learner@realtutorialhub.invalid');
     await passInput.fill('InvalidPassword!999');
     await submitBtn.click();
 

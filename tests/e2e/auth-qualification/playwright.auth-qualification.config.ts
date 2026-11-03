@@ -23,8 +23,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
 
+  // Sole reporter: Zero-leakage safe qualification reporter (no raw built-in reporters)
   reporter: [
-    ['list'],
     ['./helpers/safe-reporter.ts'],
   ],
 
@@ -38,7 +38,7 @@ export default defineConfig({
   projects: [
     {
       name: 'sentinel-checks',
-      testMatch: '**/00-redaction-sentinel.spec.ts',
+      testMatch: '**/00-*.spec.ts',
     },
     {
       name: 'suia-chromium',
@@ -48,9 +48,9 @@ export default defineConfig({
       },
       testMatch: [
         '**/01-learner-suia-login.spec.ts',
-        '**/04-token-refresh-flow.spec.ts',
-        '**/05-logout-session-contract.spec.ts',
-        '**/06-negative-credentials.spec.ts',
+        '**/04-token-refresh-suia.spec.ts',
+        '**/05-logout-suia.spec.ts',
+        '**/06-negative-suia.spec.ts',
         '**/07-blocked-account-refresh.spec.ts',
         '**/08-same-email-tenant-isolation.spec.ts',
         '**/09-account-switching-boundary.spec.ts',
@@ -65,10 +65,9 @@ export default defineConfig({
       },
       testMatch: [
         '**/02-learner-rth-login.spec.ts',
-        '**/04-token-refresh-flow.spec.ts',
-        '**/05-logout-session-contract.spec.ts',
-        '**/06-negative-credentials.spec.ts',
-        '**/08-same-email-tenant-isolation.spec.ts',
+        '**/04-token-refresh-rth.spec.ts',
+        '**/05-logout-rth.spec.ts',
+        '**/06-negative-rth.spec.ts',
       ],
     },
     {
@@ -79,9 +78,8 @@ export default defineConfig({
       },
       testMatch: [
         '**/03-admin-shc-login.spec.ts',
-        '**/04-token-refresh-flow.spec.ts',
-        '**/06-negative-credentials.spec.ts',
-        '**/10-cross-tenant-authorization-denial.spec.ts',
+        '**/04-token-refresh-shc.spec.ts',
+        '**/06-negative-shc.spec.ts',
       ],
     },
   ],

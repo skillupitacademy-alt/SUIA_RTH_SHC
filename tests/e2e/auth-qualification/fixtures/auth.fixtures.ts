@@ -1,23 +1,51 @@
 import { test as baseTest, expect, Page, BrowserContext } from '@playwright/test';
-import { validateOriginSafety } from '../helpers/readiness';
+import { validateOriginSafety, installNetworkOriginGuard, checkReadinessPrerequisites } from '../helpers/readiness';
 
 export interface AuthFixtureContext {
   page: Page;
   context: BrowserContext;
   loginViaUI: (loginPath: string, email: string, pass: string) => Promise<void>;
-  performLogout: (logoutPath?: string) => Promise<void>;
+  performLogout: () => Promise<void>;
 }
 
 export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
-  auth: async ({ page, context, baseURL }, use) => {
-    // 1. Enforce fail-closed origin boundary before any browser activity
-    validateOriginSafety(baseURL);
+  // 1. Guard context fixture: enforce readiness BEFORE attempting any browser launch
+  context: async ({ playwright, baseURL }, use, testInfo) => {
+    const readiness = checkReadinessPrerequisites(testInfo.title);
+    if (!readiness.ready) {
+      testInfo.skip(true, `[NOT EXECUTED] ${readiness.reason}`);
+      return;
+    }
 
-    // 2. Clear cookies before each test to guarantee fresh isolation
+    validateOriginSafety(baseURL);
+    const browser = await playwright.chromium.launch();
+    const ctx = await browser.newContext({ baseURL });
+    await installNetworkOriginGuard(ctx);
+    await use(ctx);
+    await ctx.close();
+    await browser.close();
+  },
+
+  // 2. Page fixture: only created if context was created
+  page: async ({ context }, use, testInfo) => {
+    if (testInfo.status === 'skipped' || !context) {
+      return;
+    }
+    const pg = await context.newPage();
+    await use(pg);
+    await pg.close();
+  },
+
+  // 3. Auth fixture: provided to tests
+  auth: async ({ page, context, baseURL }, use, testInfo) => {
+    if (testInfo.status === 'skipped' || !page || !context) {
+      return;
+    }
+
+    // Clear cookies before test run to ensure strict session isolation
     await context.clearCookies();
 
     const loginViaUI = async (loginPath: string, email: string, pass: string) => {
-      // Guard the destination path
       await page.goto(loginPath, { waitUntil: 'domcontentloaded' });
       validateOriginSafety(page.url());
 
@@ -34,13 +62,18 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
       await submitBtn.click();
     };
 
-    const performLogout = async (logoutPath = '/login') => {
-      const logoutBtn = page.locator('button:has-text("Sign out"), button:has-text("Logout"), a:has-text("Logout")').first();
-      if (await logoutBtn.isVisible()) {
-        await logoutBtn.click();
-      } else {
-        await page.goto(logoutPath, { waitUntil: 'domcontentloaded' });
+    const performLogout = async () => {
+      const logoutBtn = page.locator(
+        'button:has-text("Sign out"), button:has-text("Logout"), a:has-text("Logout")'
+      ).first();
+
+      const isVisible = await logoutBtn.isVisible({ timeout: 5000 }).catch(() => false);
+      if (!isVisible) {
+        throw new Error(
+          '[UNSUPPORTED_ACTION] Logout control is not visible or supported on current page. Navigation to /login cannot substitute for true logout revocation.'
+        );
       }
+      await logoutBtn.click();
     };
 
     await use({
@@ -50,11 +83,10 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
       performLogout,
     });
 
-    // Cleanup after test run
     try {
       await context.clearCookies();
     } catch {
-      // Ignore cleanup error if context is already closed
+      // Ignore if closed
     }
   },
 });
