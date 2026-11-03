@@ -687,7 +687,8 @@ source pattern is noted for separate qualification, not a reproduced runtime res
 one approved local/live-Neon journey. Preserve all-device skips and shared safety
 helpers. No backend auth/schema/account mutation, main merge or deployment.
 
-**Next browser assignment:** `audit/W1.2_Gemini_Learner_Dashboard_Qualification_Task.md`:
+**Status for Dashboard & Cookie Batch (Tasks A-E):** `IMPLEMENTED_UNVERIFIED` (Tasks A, B, C executed and passed in Chromium; Task D cookie checks passed within active sessions; Task E fixture readiness matrix established. Full evidence in `audit/W1.2_Browser_Dashboard_And_Cookie_Qualification_Report.md`. Parent `BROWSER-01` remains `IN_PROGRESS` pending Sol independent review and acceptance.)
+**Governing assignment:** `audit/W1.2_Gemini_Learner_Dashboard_Qualification_Task.md`:
 five sequential tasks: A SUIA dashboard control, B RTH dashboard control, C SHC dashboard
 control, D source-derived cookie-policy checks within those same sessions, E remaining
 negative-fixture readiness and bounded follow-up assignments. Existing approved accounts;
