@@ -667,9 +667,7 @@ supported refresh. No broad refactor, production deployment or production test a
 This early gate supplements, and does not close or replace, formal Wave 8 qualification.
 
 ### W1.2-LOGOUT-01 - SUIA Normal Logout Cookie Clearance
-**Status:** `PLANNED` (AQ-05-NORMAL independently failed at reviewed 8cf421c5;
-offline Chromium independently reproduced domain-cookie persistence under the BFF's
-host-only expiry. This is an actionable cookie-clearance defect, not passing logout.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Implemented canonical proxy delegation in `apps/skillup-web/src/app/api/auth/logout/route.ts` preserving upstream token revocation and matching domain cookie-expiry headers. Verified via 4 offline route unit regression tests [status, multi-cookie, local/prod domain rewrite] and successful AQ-05-NORMAL live headless Chromium pass [1 passed in 22.5s]; 8 offline safety sentinels passed. Acceptance pending independent Sol review.)
 **Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
 **Review:** `audit/W1.2_Browser_SUIA_Logout_Sol_Review_8cf421c5.md`
 **Assignment:** `audit/W1.2_Gemini_SUIA_Logout_Cookie_Correction_Task.md`

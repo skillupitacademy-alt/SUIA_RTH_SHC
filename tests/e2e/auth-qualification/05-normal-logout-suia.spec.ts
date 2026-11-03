@@ -34,10 +34,17 @@ test.describe('SUIA Normal Single-Session UI Logout Qualification', () => {
     const profileData = await profileBefore.json();
     assertValueMatchesSafely(profileData?.email, creds.email, 'User email matches credentials');
 
+    // Allow page to settle and client hydration to attach handlers
+    await auth.page.waitForLoadState('networkidle').catch(() => {});
+    await auth.page.waitForTimeout(2000);
+
     // 5. Inspect whether the actual visible Logout control exists on the landed page
     const logoutSelector = 'button:has-text("Logout"), button:has-text("Sign out"), button:has-text("Log out"), a:has-text("Logout"), a:has-text("Sign out")';
     const logoutControl = auth.page.locator(logoutSelector).first();
-    const isLogoutVisible = await logoutControl.isVisible().catch(() => false);
+    const isLogoutVisible = await logoutControl
+      .waitFor({ state: 'visible', timeout: 10000 })
+      .then(() => true)
+      .catch(() => false);
 
     if (!isLogoutVisible) {
       // Per governing instructions: if no Logout control exists on the landed page for this account,
@@ -48,10 +55,6 @@ test.describe('SUIA Normal Single-Session UI Logout Qualification', () => {
       );
       return;
     }
-
-    // Allow dashboard client hydration to attach onClick event handlers
-    await auth.page.waitForLoadState('networkidle').catch(() => {});
-    await auth.page.waitForTimeout(2500);
 
     // 6. If visible, click the real visible Logout control and observe normal logout request (POST /api/auth/logout)
     const logoutResponsePromise = auth.page.waitForResponse(
