@@ -78,6 +78,7 @@ export default defineConfig({
         '**/01-learner-suia-login.spec.ts',
         '**/04-token-refresh-suia.spec.ts',
         '**/05-logout-suia.spec.ts',
+        '**/05-normal-logout-suia.spec.ts',
         '**/06-negative-suia.spec.ts',
         '**/07-blocked-account-refresh.spec.ts',
         '**/08-same-email-tenant-isolation.spec.ts',

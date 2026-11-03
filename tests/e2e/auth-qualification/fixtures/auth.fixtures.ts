@@ -147,7 +147,8 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
       await expect(submitBtn).toBeEnabled({ timeout: 10000 });
 
       // Allow Next.js client hydration to attach form onSubmit handler
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle').catch(() => {});
+      await page.waitForTimeout(2500);
       await emailInput.fill(email);
       await passInput.fill(pass);
 

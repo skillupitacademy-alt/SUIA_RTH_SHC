@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation VERIFIED; SHC AQ-03 unauthenticated 401 JSON -> GUI login -> authenticated access independently VERIFIED by Sol at 3d392ead, 1 test passed. See `audit/W1.2_Browser_SHC_Control_Sol_Acceptance.md`. Next: separate normal SUIA UI logout per `audit/W1.2_Browser_SUIA_Normal_Logout_Task.md`; broader runtime/negative fixtures and Wave 8 remain open.)
+**Status:** `IN_PROGRESS` (Preparation VERIFIED; SHC AQ-03 unauthenticated 401 JSON -> GUI login -> authenticated access independently VERIFIED by Sol at 3d392ead, 1 test passed. See `audit/W1.2_Browser_SHC_Control_Sol_Acceptance.md`. SUIA AQ-05-NORMAL executed per `audit/W1.2_Browser_SUIA_Normal_Logout_Task.md`: GUI login, dashboard landing, and 200 logout observed, but cookie clearance FAILED due to BFF stripping domain attributes; see `audit/W1.2_Browser_SUIA_Normal_Logout_Execution_Report.md`. Broader runtime/negative fixtures and Wave 8 remain open.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
