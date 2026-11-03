@@ -606,7 +606,7 @@ No token-policy migration, live database execution, or code edits authorized.
 **Acceptance and final source qualifications:** `audit/W1.2-REFRESH-02-03_Sol_Acceptance.md`. Task A closure remains independently gated.
 
 ### W1.2-REFRESH-04 - Replay Classification and Post-Commit Failure Policy
-**Status:** `VERIFICATION_FAILED` (Sol source review of ac9b9610 requires corrected SHC flow separation, replay/timestamp evidence, conditional client/BFF failure policy and committed whitespace checks; see `audit/W1.2_Batch_04_Sol_Review_ac9b9610.md` and bounded Batch 04 corrections task)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Corrected investigation report complete with verified token states, metadata persistence, client event cancellation, and BFF fallback traces; pending distinct read-only review and Sol acceptance per Batch 04 corrections)
 **Wave / root causes:** 1 / RC-ID-01, RC-EVENT-01
 **Application / priority:** refresh lifecycle / P1 design
 **Implementer:** Gemini when separately assigned
