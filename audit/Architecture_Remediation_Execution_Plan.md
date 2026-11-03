@@ -687,7 +687,7 @@ source pattern is noted for separate qualification, not a reproduced runtime res
 one approved local/live-Neon journey. Preserve all-device skips and shared safety
 helpers. No backend auth/schema/account mutation, main merge or deployment.
 
-**Status for Dashboard & Cookie Batch (Tasks A-E):** `IMPLEMENTED_UNVERIFIED` (Tasks A, B, C executed and passed in Chromium; Task D cookie checks passed within active sessions; Task E fixture readiness matrix established. Full evidence in `audit/W1.2_Browser_Dashboard_And_Cookie_Qualification_Report.md`. Parent `BROWSER-01` remains `IN_PROGRESS` pending Sol independent review and acceptance.)
+**Status for Dashboard & Cookie Batch (Tasks A-E):** `VERIFICATION_FAILED` for complete batch acceptance (learner assertions count navigation exceptions/foreign redirect blocks as success; cookie matrix exceeds assertions; fixture plan reuses unrelated ticket identities. SHC dashboard assertions independently passed once, as did 8 offline sentinels; this does not close the incomplete batch. Review: `audit/W1.2_Dashboard_Cookie_Sol_Review_56b259ab.md`. Correction assignment: `audit/W1.2_Gemini_Dashboard_Cookie_Corrections.md`. Parent BROWSER-01 remains IN_PROGRESS.)
 **Governing assignment:** `audit/W1.2_Gemini_Learner_Dashboard_Qualification_Task.md`:
 five sequential tasks: A SUIA dashboard control, B RTH dashboard control, C SHC dashboard
 control, D source-derived cookie-policy checks within those same sessions, E remaining
@@ -695,6 +695,18 @@ negative-fixture readiness and bounded follow-up assignments. Existing approved 
 test/evidence/planning only, no account/data mutation or application runtime repair.
 Each task requires separate evidence and Sol acceptance. Dashboard appearance does not
 prove resource ownership or tenant isolation; unsupported cases remain NOT EXECUTED.
+
+### W1.2-PROXY-01 - Local Learner Login Redirect Scope
+**Status:** `PLANNED` (independent anonymous local GETs observed SUIA/RTH dashboard
+307 redirects to production login origins; no redirect was followed. This is a local
+login-routing defect, not established evidence of an authorization exploit.)
+**Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
+**Assignment:** `audit/W1.2_Gemini_Local_Login_Redirect_Correction_Task.md`
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** minimal SUIA/RTH proxy login-default correction, compatibility regressions,
+attributable anonymous metadata check and corrected focused dashboard qualification.
+Preserve explicit override compatibility, auth verification, route matchers, brand,
+cookie and DB policies; no account mutation, main merge or deployment.
 
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
 **Status:** `CLOSED` (Sol accepts bounded source investigation at reviewed da6c0742 with SHC/client/store/guard qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; no whole-application or deployed journey acceptance)
