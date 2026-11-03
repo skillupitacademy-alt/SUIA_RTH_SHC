@@ -746,6 +746,10 @@ into application/domain assessment; global resource isolation is not certified b
 
 ### W1.2-GUARD-03 - Bounded Principal-Policy Implementation Scoping
 **Status:** `PLANNED`
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Tasks A/B:
+separate tenant-admin helper/caller compatibility and server-fixed learner-login
+implementation scopes. Documentation/scoping only; runtime protections require their
+own explicit bounded implementation assignment and independent acceptance.
 **Wave / root cause:** 1 / RC-ID-01
 **Provenance:** accepted GUARD-02 contract and `audit/W1.2_Batch_05_Sol_Review_1c72f58f.md`
 Prepare separately bounded runtime assignments for tenant helper preconditions and server-fixed
@@ -771,6 +775,9 @@ assume deployed failure. No runtime change authorized by this planned entry.
 
 ### W1.2-SESS-03 - Legacy Logout-All Compatibility and Remediation Decision
 **Status:** `PLANNED`
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task C; preserve the
+existing legacy logout-all scope, qualify compatibility uncertainty and propose a
+bounded implementation. No live all-device call, runtime patch or endpoint removal.
 **Wave / root cause:** 1 / RC-ID-01
 **Provenance:** accepted SESS-02 source qualification and `audit/W1.2_Batch_05_Sol_Review_9ec71675.md`
 Qualify external/dynamic consumers before route removal or preserve a bounded legacy
@@ -779,6 +786,26 @@ identity, audience/brand policy, count/response compatibility and owner/tenant n
 tests. Undefined SessionRepository is not an established default DB. No runtime edit,
 deletion or live deployment is authorized by this planned entry. Single-session foreign
 revocation safe no-op and stateless access-token limits remain unchanged.
+
+### W1.2-FIXTURE-01 - Isolated Same-Email and Colliding-ID Backend Qualification
+**Status:** `PLANNED`
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task D.
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** executable actual-source login/service/repository tests with independent
+in-memory tenant stores and disposable credentials. No live DB/account provisioning,
+production policy change or browser AQ-08 closure. Explicitly disclose stubbed layers,
+test-environment branches and physical/deployed isolation limitations.
+
+### W1.2-FIXTURE-02 - Isolated Signed-Principal Admin-Guard Qualification
+**Status:** `PLANNED`
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task E.
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** actual admin-guard verification chain with disposable signed tokens and
+stubbed infrastructure; legitimate admin control and learner/invalid-principal denials,
+including database admin-role changes and query ordering. No live negative probes,
+production policy change, universal API certification or browser AQ-10 closure.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
