@@ -648,6 +648,11 @@ separate authorization for production deployment/testing.
 **Status:** `IN_PROGRESS` (Stage 1 readiness gate executed per `audit/W1.2_Browser_Runtime_Readiness_And_Execution_Task.md`; report in `audit/W1.2-BROWSER-01_Runtime_Readiness_Report.md`. Halted fail-closed: apps target remote Neon cloud DB without local isolation, running servers stale from 06:13 AM, Chromium binary not installed. All 15 credentialed journeys preserved as NOT EXECUTED.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
+**Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
+permits the bounded listed-account smoke pass via local applications against existing
+Neon bindings. Record explicit live mode; do not falsify isolation flags. Browser
+installation authorized using installed Playwright CLI; no bulk/account/data mutations,
+all-device session revocation or production-domain tests in this pass.
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
 **Next runtime assignment:** `audit/W1.2_Browser_Runtime_Readiness_And_Execution_Task.md`:
 establish actual isolated local build/fixture/account readiness, then conditionally execute

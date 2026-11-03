@@ -2,6 +2,11 @@
 
 Recorded: 2026-11-03 from the owner's explicit instruction in the Sol chat.
 Status: mandatory requirement; browser execution NOT STARTED.
+Owner live-data scope update: `W1.2_Browser_Live_Neon_Owner_Authorization.md` records
+explicit authorization for bounded local-browser smoke journeys against existing Neon
+bindings. Its explicit live mode supersedes isolation-only prerequisites for that pass;
+it does not authorize production-domain browser tests, destructive scenarios or false
+synthetic/isolated fixture claims.
 Execution tracking authority: Architecture_Remediation_Execution_Plan.md.
 Architecture authority: FinalAechitecture.md. This requirement supplements existing
 source acceptance; it does not replace either authority or the accepted identity contracts.
