@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation gaps D1-D4 repaired: single SafeQualificationReporter pipeline with raw reporters eliminated; fail-closed pre-fixture readiness guards prevent browser/page allocation; explicit per-project test matching; verified child-process deliberate failure probe passes with zero fake secret leakage; all 10 browser qualification journeys honestly recorded as NOT EXECUTED pending synthetic prerequisites.)
+**Status:** `IN_PROGRESS` (Preparation still VERIFICATION_FAILED: independent bare-error child probe exposes fake credential; build/account readiness and APIRequestContext redirect guards incomplete. Runtime NOT EXECUTED; see `audit/W1.2_Batch_05_Sol_Review_1c72f58f.md`.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
@@ -683,7 +683,7 @@ outbox or retry grace is authorized. The separately bounded Batch 05 assignment 
 provides the sole current runtime exception: redundant pre-CAS metadata-write removal.
 
 ### W1.2-GUARD-02 - Principal Scope and SHC Compatibility Contract
-**Status:** `IMPLEMENTED_UNVERIFIED` (Corrected in commit 9d08f354 resolving B1-B3: real tokenType=user/admin with infra as audience; single coherent tenant-admin helper policy rejecting infra with false; deprecated unreachable fallback; removed unsupported enterprise posture assertions; documented FetchClient limitations. Design only; pending independent review and Sol acceptance.)
+**Status:** `CLOSED` (Sol accepts design qualification at reviewed 1c72f58f / contract 9d08f354 with final editorial limits in `audit/W1.2_Batch_05_Sol_Review_1c72f58f.md`; no runtime guard/login/SHC policy implemented or authorized.)
 **Assignment:** Gemini Batch 05 Task B, contract only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant guards, purpose-bound login and SHC GUI auth / P1 design
@@ -694,6 +694,17 @@ identities, infrastructure and verified caller compatibility. Do not mount speci
 persist SHC tokens in a guessed store or change keys/cookies by inference. Runtime work needs
 a bounded task and independent review. Carry exam default-store/conditional-owner questions
 into application/domain assessment; global resource isolation is not certified by GUARD-01.
+
+### W1.2-GUARD-03 - Bounded Principal-Policy Implementation Scoping
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Provenance:** accepted GUARD-02 contract and `audit/W1.2_Batch_05_Sol_Review_1c72f58f.md`
+Prepare separately bounded runtime assignments for tenant helper preconditions and server-fixed
+learner-purpose login propagation, with legacy/admin/infra compatibility and negative tests.
+SHC continuity/TTL/store choice remains an explicit policy decision; no generic people-ID
+routing, cookie removal or shared-client behavior change is authorized by this entry.
+Reference mandatory early browser and Wave 8 qualification; source design acceptance is
+not runtime implementation. Do not combine these into an authentication-system rewrite.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `CLOSED` (Sol accepts source qualification at reviewed 9ec71675 with editorial limits and isolated actual-container missing-repository probe; runtime route repair/removal remains separately scoped under SESS-03)
