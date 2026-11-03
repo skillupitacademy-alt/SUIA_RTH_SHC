@@ -617,18 +617,20 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED` (Gemini contract design complete: traced refresh signers/verifiers, defined cryptographic brand claim parity, subject-to-session parity, verified-before-mutation ordering, rejection of 'shared' scope, progressive upgrade for legacy tokens, and test matrix in audit/W1.2-REFRESH-05_Authority_Contract.md; ready for independent review and Sol acceptance)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
-**Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates.
+**Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
+**Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED` (Gemini contract design complete: traced blocking/deletion/role mutations, evaluated downstream access-token consumers vs refresh, defined tenant-local UserRepository lookup avoiding shadow ID confusion, dynamic role freshness, fail-closed account status enforcement, and test matrix in audit/W1.2-REFRESH-06_Lifecycle_Contract.md; baseline test auth.refresh.blocked.branch.test.ts preserved as open specification; ready for independent review and Sol acceptance)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
+**Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
 **Scope:** Inject `UserRepository` into `TokenRefreshService`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); fetch fresh user roles and email from database on refresh rather than propagating stale JWT claims; resolves baseline `auth.refresh.blocked.branch.test.ts`.
 
-**Next controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_02.md`. REFRESH-05/06 are assigned design/read-only work only in that batch; the implementation scopes above are proposals, not behavior authorization. Gemini authors, separately attributable reviewer verifies, Sol accepts contracts before code.
+**Controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_02.md`. REFRESH-05/06 are assigned design/read-only work only in that batch; the implementation scopes above are proposals, not behavior authorization. Gemini authors, separately attributable reviewer verifies, Sol accepts contracts before code.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `PLANNED`
