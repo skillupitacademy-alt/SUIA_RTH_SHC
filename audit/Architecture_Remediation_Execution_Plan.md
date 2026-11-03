@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation and SHC AQ-03 VERIFIED. SUIA LOGOUT-01 and RTH LOGOUT-02 cookie corrections and normal UI logout independently accepted; see `audit/W1.2_SUIA_Logout_Cookie_Sol_Acceptance.md` and `audit/W1.2_RTH_Logout_Cookie_Sol_Acceptance.md`. Dashboard rendering/denial controls, broader negative fixtures and formal Wave 8 remain open.)
+**Status:** `IN_PROGRESS` (Preparation, SHC API control, SUIA/RTH normal logout and the corrected local SUIA/RTH/SHC dashboard-cookie checks independently VERIFIED within their recorded scopes. PROXY-01 same-origin login-default correction CLOSED. See `audit/W1.2_Dashboard_Cookie_Corrections_Sol_Acceptance.md` and prior logout acceptances. Unsupported lifecycle/tenant/cache/SHC-refresh fixtures, broader resource qualification and formal Wave 8 remain open.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
@@ -687,7 +687,7 @@ source pattern is noted for separate qualification, not a reproduced runtime res
 one approved local/live-Neon journey. Preserve all-device skips and shared safety
 helpers. No backend auth/schema/account mutation, main merge or deployment.
 
-**Status for Dashboard & Cookie Batch (Tasks A-E):** `IMPLEMENTED_UNVERIFIED` within `IN_PROGRESS BROWSER-01` (Five-part corrections implemented per `audit/W1.2_Gemini_Dashboard_Cookie_Corrections.md`: PROXY-01 resolved in `a8fb0772`; fail-closed same-origin learner assertions and onboarding classification verified in AQ-01 and AQ-02; SHC API regression restored in `03-admin-shc-login.spec.ts` and GUI dashboard isolated in `03-admin-shc-dashboard.spec.ts`; exact cookie verification helper `cookie-policy-verifier.ts` verified with 8 offline unit tests; Task E updated with candidate labels `UNASSIGNED-*` preserving `GUARD-03` and `SESS-03`. All 8 sentinels passed. Report: `audit/W1.2_Browser_Dashboard_And_Cookie_Qualification_Report.md`. Parent BROWSER-01 remains IN_PROGRESS.)
+**Status for Dashboard & Cookie Batch (Tasks A-E):** `VERIFIED` for the bounded submitted dashboard/metadata checks (Sol independently passed SUIA, RTH and SHC dashboard+cookie journeys at reviewed 921f06f9; 13 proxy regressions, 13 cookie/denial tests, 8 sentinels and 6 disposable override-compatibility probes passed. Task E accepted as planning after Sol editorial correction; unsupported fixtures remain NOT EXECUTED. See `audit/W1.2_Dashboard_Cookie_Corrections_Sol_Acceptance.md` for scope/history limits. Parent BROWSER-01 remains IN_PROGRESS.)
 **Governing assignment:** `audit/W1.2_Gemini_Learner_Dashboard_Qualification_Task.md`:
 five sequential tasks: A SUIA dashboard control, B RTH dashboard control, C SHC dashboard
 control, D source-derived cookie-policy checks within those same sessions, E remaining
@@ -697,7 +697,7 @@ Each task requires separate evidence and Sol acceptance. Dashboard appearance do
 prove resource ownership or tenant isolation; unsupported cases remain NOT EXECUTED.
 
 ### W1.2-PROXY-01 - Local Learner Login Redirect Scope
-**Status:** `IMPLEMENTED_UNVERIFIED` (Committed locally as `a8fb0772`. Fixed unauthenticated login redirect default in `apps/skillup-web/src/proxy.ts` and `apps/realtutorialhub-web/src/proxy.ts` to omit hardcoded production fallbacks and resolve `/login` against request origin. Verified with 13 unit tests across SUIA/RTH and live local 307 same-origin assertions. Review pending by Sol.)
+**Status:** `CLOSED` (Sol accepts a8fb0772 at reviewed 921f06f9: independent local anonymous 307 same-origin login checks, 13 app proxy regressions, 6 explicit/relative/blank override probes and corrected learner browser journeys passed. Source/default correction only; no broader authorization or deployment certification. See `audit/W1.2_Dashboard_Cookie_Corrections_Sol_Acceptance.md`.)
 **Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
 **Assignment:** `audit/W1.2_Gemini_Local_Login_Redirect_Correction_Task.md`
 **Implementer / acceptance:** Gemini / independent Sol review.
