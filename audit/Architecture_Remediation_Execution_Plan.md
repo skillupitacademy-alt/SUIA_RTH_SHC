@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Harness prepared and validated via spec discovery in `tests/e2e/auth-qualification/**`; report delivered in `audit/W1.2-BROWSER-01_Readiness_And_Smoke_Report.md`; runtime execution pending controlled local synthetic fixtures; formal Wave 8 remains mandatory)
+**Status:** `IN_PROGRESS` (Batch 05 preparation VERIFICATION_FAILED: target/readiness enforcement, source-derived scenarios and safe reporting require corrections in `audit/W1.2_Batch_05_Sol_Review_9ec71675.md`; browser runtime NOT EXECUTED, formal Wave 8 remains mandatory)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
@@ -670,7 +670,7 @@ isolation or decommission SHC flows. Source/topology uncertainties remain explic
 No runtime edit, key/issuer change, DB migration or deployment authorized here.
 
 ### W1.2-REFRESH-07 - Metadata and Revoked-Record Diagnostics Scoping
-**Status:** `IMPLEMENTED_UNVERIFIED` (Redundant pre-CAS updateLastUsed removed from token-refresh.service.ts; verified with 44 stateful vitest regressions, mutation proof, typechecks and lint; pending distinct read-only review and Sol acceptance per Batch 05 Task A)
+**Status:** `VERIFICATION_FAILED` (Small production deletion matches scope; actual-source metadata sensitivity, refresh-signing failure and CAS-loser state evidence require targeted correction; see `audit/W1.2_Batch_05_Sol_Review_9ec71675.md`)
 **Assignment:** Batch 05 Task A authorizes only the redundant pre-CAS timestamp-write removal in token-refresh.service.ts plus focused stateful tests; optional revoked-record diagnostics remains design-only. See `audit/W1.2_Gemini_Controlled_Batch_05_Task.md` for scope and gates.
 **Wave / root causes:** 1 / RC-ID-01; RC-EVENT-01 context only
 **Application / priority:** generic tenant refresh / P1 bounded follow-up
@@ -683,7 +683,7 @@ outbox or retry grace is authorized. The separately bounded Batch 05 assignment 
 provides the sole current runtime exception: redundant pre-CAS metadata-write removal.
 
 ### W1.2-GUARD-02 - Principal Scope and SHC Compatibility Contract
-**Status:** `IMPLEMENTED_UNVERIFIED` (Contract submitted covering tenant helper preconditions, purpose-bound learner login, and SHC refresh/re-login policy decisions; pending distinct read-only review and Sol acceptance per Batch 05 Task B)
+**Status:** `VERIFICATION_FAILED` (Principal-class/tenant preconditions and complete login/SHC compatibility boundaries require correction; unsupported MFA/current-behavior claims are not accepted; see Batch 05 Sol review)
 **Assignment:** Gemini Batch 05 Task B, contract only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant guards, purpose-bound login and SHC GUI auth / P1 design
@@ -696,7 +696,7 @@ a bounded task and independent review. Carry exam default-store/conditional-owne
 into application/domain assessment; global resource isolation is not certified by GUARD-01.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` (Source qualification delivered in `audit/W1.2-SESS-02_Logout_All_Qualification.md`; pending independent review and Sol acceptance)
+**Status:** `CLOSED` (Sol accepts source qualification at reviewed 9ec71675 with editorial limits and isolated actual-container missing-repository probe; runtime route repair/removal remains separately scoped under SESS-03)
 **Assignment:** Gemini Batch 05 Task C, source qualification only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth legacy POST logout-all and existing DELETE sessions path
@@ -708,6 +708,17 @@ into application/domain assessment; global resource isolation is not certified b
 Qualify generic SessionService repository wiring and actual route consumers before
 choosing bounded delegation/decommissioning. Do not create duplicate endpoints or
 assume deployed failure. No runtime change authorized by this planned entry.
+
+### W1.2-SESS-03 - Legacy Logout-All Compatibility and Remediation Decision
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Provenance:** accepted SESS-02 source qualification and `audit/W1.2_Batch_05_Sol_Review_9ec71675.md`
+Qualify external/dynamic consumers before route removal or preserve a bounded legacy
+contract via existing authoritative logout-all delegation. Define verified tenant-local
+identity, audience/brand policy, count/response compatibility and owner/tenant negative
+tests. Undefined SessionRepository is not an established default DB. No runtime edit,
+deletion or live deployment is authorized by this planned entry. Single-session foreign
+revocation safe no-op and stateless access-token limits remain unchanged.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
