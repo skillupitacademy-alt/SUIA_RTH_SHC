@@ -683,7 +683,7 @@ outbox or retry grace is authorized. The separately bounded Batch 05 assignment 
 provides the sole current runtime exception: redundant pre-CAS metadata-write removal.
 
 ### W1.2-GUARD-02 - Principal Scope and SHC Compatibility Contract
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED` (Contract submitted covering tenant helper preconditions, purpose-bound learner login, and SHC refresh/re-login policy decisions; pending distinct read-only review and Sol acceptance per Batch 05 Task B)
 **Assignment:** Gemini Batch 05 Task B, contract only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant guards, purpose-bound login and SHC GUI auth / P1 design
