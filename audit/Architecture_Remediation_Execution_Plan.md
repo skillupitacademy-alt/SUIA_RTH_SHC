@@ -639,7 +639,7 @@ family-wide revocation without a separate justified design and approval.
 **Browser qualification:** Keep the six-host production/local login -> refresh -> protected dashboard -> logout matrix under Wave 8 qualification. No local/production journey has been executed by this source acceptance; cookies, redirects, ingress and physical DB topology remain outstanding.
 
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
-**Status:** `VERIFICATION_FAILED` (Sol source review of ac9b9610 requires corrected SHC resolver/shared-client/registered-route claims, authoritative host matrix and bounded ownership/store conclusions; see `audit/W1.2_Batch_04_Sol_Review_ac9b9610.md` and `audit/W1.2_Gemini_Controlled_Batch_04_Corrections.md`)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Corrected investigation report complete with verified SHC resolver acceptance, shared-client callers, 6-host matrix, and bounded resource paths; pending distinct read-only review and Sol acceptance per Batch 04 corrections)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant RBAC, generic infra/default DB and SHC auth callers / P1 design
 **Implementer:** Gemini when separately assigned; independent reviewer and acceptance: Sol
