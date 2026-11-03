@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation VERIFIED; SHC AQ-03 unauthenticated 401 JSON -> GUI login -> authenticated access independently VERIFIED by Sol at 3d392ead, 1 test passed. See `audit/W1.2_Browser_SHC_Control_Sol_Acceptance.md`. SUIA AQ-05-NORMAL executed per `audit/W1.2_Browser_SUIA_Normal_Logout_Task.md`: GUI login, dashboard landing, and 200 logout observed, but cookie clearance FAILED due to BFF stripping domain attributes; see `audit/W1.2_Browser_SUIA_Normal_Logout_Execution_Report.md`. Broader runtime/negative fixtures and Wave 8 remain open.)
+**Status:** `IN_PROGRESS` (Preparation VERIFIED; SHC AQ-03 independently VERIFIED, see `audit/W1.2_Browser_SHC_Control_Sol_Acceptance.md`. SUIA normal logout initially failed; LOGOUT-01's cookie correction and focused normal UI logout subsequently passed independent review at 6ab018b5, see `audit/W1.2_SUIA_Logout_Cookie_Sol_Acceptance.md`. RTH logout, broader runtime/negative fixtures and formal Wave 8 remain open.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
@@ -667,7 +667,7 @@ supported refresh. No broad refactor, production deployment or production test a
 This early gate supplements, and does not close or replace, formal Wave 8 qualification.
 
 ### W1.2-LOGOUT-01 - SUIA Normal Logout Cookie Clearance
-**Status:** `IMPLEMENTED_UNVERIFIED` (Implemented canonical proxy delegation in `apps/skillup-web/src/app/api/auth/logout/route.ts` preserving upstream token revocation and matching domain cookie-expiry headers. Verified via 4 offline route unit regression tests [status, multi-cookie, local/prod domain rewrite] and successful AQ-05-NORMAL live headless Chromium pass [1 passed in 22.5s]; 8 offline safety sentinels passed. Acceptance pending independent Sol review.)
+**Status:** `CLOSED` (Sol independently accepted reviewed 6ab018b5: 4 actual-route regressions, 8 offline sentinels, SUIA typecheck/lint and 1 normal UI logout journey passed, including cookie absence and post-logout profile denial. See `audit/W1.2_SUIA_Logout_Cookie_Sol_Acceptance.md` for exact commands, runner limitations and scoped acceptance. BROWSER-01 remains IN_PROGRESS.)
 **Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
 **Review:** `audit/W1.2_Browser_SUIA_Logout_Sol_Review_8cf421c5.md`
 **Assignment:** `audit/W1.2_Gemini_SUIA_Logout_Cookie_Correction_Task.md`
@@ -677,6 +677,16 @@ existing normal-session headless Chromium journey. Preserve upstream token revoc
 canonical login cookie scope and safe evidence controls. No all-device logout, broad
 authentication refactor, RTH runtime change, deployment or main merge. RTH's matching
 source pattern is noted for separate qualification, not a reproduced runtime result.
+
+### W1.2-LOGOUT-02 - RTH Normal Logout Cookie Clearance and Qualification
+**Status:** `PLANNED` (RTH has the analogous source pattern; no independent RTH live
+logout result is claimed. Apply the minimal accepted SUIA approach after source gate.)
+**Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
+**Assignment:** `audit/W1.2_Gemini_RTH_Logout_Cookie_Correction_Task.md`
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** RTH logout BFF and focused regression, distinct normal UI logout spec and
+one approved local/live-Neon journey. Preserve all-device skips and shared safety
+helpers. No backend auth/schema/account mutation, main merge or deployment.
 
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
 **Status:** `CLOSED` (Sol accepts bounded source investigation at reviewed da6c0742 with SHC/client/store/guard qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; no whole-application or deployed journey acceptance)
