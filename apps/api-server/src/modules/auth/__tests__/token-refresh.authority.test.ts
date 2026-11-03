@@ -20,6 +20,7 @@ describe('TokenRefreshService Authority & Brand Binding (W1.2-REFRESH-05)', () =
   let mockTokenService: any;
   let mockAuditService: any;
   let mockDb: any;
+  let mockUserRepo: any;
   let service: TokenRefreshService;
 
   beforeEach(() => {
@@ -50,7 +51,7 @@ describe('TokenRefreshService Authority & Brand Binding (W1.2-REFRESH-05)', () =
       transaction: vi.fn(async (cb: any) => cb(mockDb)),
     };
 
-    const mockUserRepo = {
+    mockUserRepo = {
       findActiveUserWithRoles: vi.fn().mockImplementation(async (userId: string) => ({
         id: userId,
         email: userId + '@example.com',
@@ -437,5 +438,33 @@ describe('TokenRefreshService Authority & Brand Binding (W1.2-REFRESH-05)', () =
         }),
       })
     );
+  });
+
+  it('TC-AUTH-15: succeeds for valid infrastructure refresh with aud: infra and brand: skillhubcore without invoking tenant user eligibility', async () => {
+    mockTokenRepo.findByHash.mockResolvedValue({
+      id: 'session-infra',
+      userId: 'user-infra-1',
+      revoked: false,
+      expiresAt: new Date(Date.now() + 100000),
+    });
+
+    mockTokenService.verifyRefreshToken.mockResolvedValue({
+      userId: 'user-infra-1',
+      brand: 'skillhubcore',
+      isAdmin: true,
+      tokenType: 'admin',
+      roles: ['super_admin'],
+    });
+
+    const result = await service.refresh('raw-infra-token', '127.0.0.1', undefined, 'infra', 'skillhubcore');
+
+    expect(result.accessToken).toBe('new-access-token');
+    expect(result.userId).toBe('user-infra-1');
+    expect(result.isAdmin).toBe(true);
+
+    // Assert that out-of-scope infrastructure does NOT invoke tenant user eligibility lookup
+    expect(mockUserRepo.findActiveUserWithRoles).not.toHaveBeenCalled();
+    expect(mockTokenRepo.updateLastUsed).toHaveBeenCalledWith('token-sha256-hash');
+    expect(mockTokenRepo.consumeToken).toHaveBeenCalledWith('token-sha256-hash', 'user-infra-1');
   });
 });

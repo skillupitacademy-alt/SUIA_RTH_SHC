@@ -220,4 +220,35 @@ describe('POST /api/auth/refresh Route Ingress Authority (W1.2-REFRESH-05)', () 
       expect.anything()
     );
   });
+
+  it('dispatches valid infrastructure refresh with infra_refreshToken cookie and sets infra cookies', async () => {
+    mocks.authService.refresh.mockResolvedValue({
+      accessToken: 'fresh-infra-access',
+      refreshToken: 'fresh-infra-refresh',
+    });
+
+    const request = new NextRequest('http://localhost:3000/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'x-portal-identity': 'infrastructure',
+        cookie: 'infra_refreshToken=valid-infra-token',
+      },
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+
+    expect(mocks.authService.refresh).toHaveBeenCalledWith(
+      'valid-infra-token',
+      expect.anything(),
+      undefined,
+      'infra',
+      undefined,
+      expect.anything()
+    );
+
+    const setCookieHeaders = response.headers.getSetCookie();
+    expect(setCookieHeaders.some((c) => c.includes('infra_accessToken='))).toBe(true);
+    expect(setCookieHeaders.some((c) => c.includes('infra_refreshToken='))).toBe(true);
+  });
 });
