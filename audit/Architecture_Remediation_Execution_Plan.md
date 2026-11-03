@@ -666,6 +666,20 @@ independent verification and Sol acceptance. Record known SHC gaps rather than i
 supported refresh. No broad refactor, production deployment or production test authorization.
 This early gate supplements, and does not close or replace, formal Wave 8 qualification.
 
+### W1.2-LOGOUT-01 - SUIA Normal Logout Cookie Clearance
+**Status:** `PLANNED` (AQ-05-NORMAL independently failed at reviewed 8cf421c5;
+offline Chromium independently reproduced domain-cookie persistence under the BFF's
+host-only expiry. This is an actionable cookie-clearance defect, not passing logout.)
+**Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
+**Review:** `audit/W1.2_Browser_SUIA_Logout_Sol_Review_8cf421c5.md`
+**Assignment:** `audit/W1.2_Gemini_SUIA_Logout_Cookie_Correction_Task.md`
+**Implementer / acceptance:** Gemini / independent Sol review.
+**Scope:** bounded SUIA BFF cookie-expiry correction, actual-route regression and the
+existing normal-session headless Chromium journey. Preserve upstream token revocation,
+canonical login cookie scope and safe evidence controls. No all-device logout, broad
+authentication refactor, RTH runtime change, deployment or main merge. RTH's matching
+source pattern is noted for separate qualification, not a reproduced runtime result.
+
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
 **Status:** `CLOSED` (Sol accepts bounded source investigation at reviewed da6c0742 with SHC/client/store/guard qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; no whole-application or deployed journey acceptance)
 **Wave / root cause:** 1 / RC-ID-01
