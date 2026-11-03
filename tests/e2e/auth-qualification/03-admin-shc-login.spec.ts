@@ -1,34 +1,31 @@
 import { test, expect } from './fixtures/auth.fixtures';
-import { requirePrerequisites, assertCookieExists } from './helpers/sanitized-evidence';
+import { enforceReadinessBoundary } from './helpers/readiness';
+import { assertCookieExists } from './helpers/sanitized-evidence';
 import { SYNTHETIC_ACCOUNTS, getAccountCredentials } from './helpers/test-credentials';
 
 test.describe('SHC Administrator Authentication Qualification', () => {
   test('AQ-03: SHC admin valid login and admin route protection', async ({ auth }, testInfo) => {
-    requirePrerequisites(
-      testInfo,
-      [
-        SYNTHETIC_ACCOUNTS.SHC_ADMIN.emailEnvVar,
-        SYNTHETIC_ACCOUNTS.SHC_ADMIN.passwordEnvVar,
-        'SKILLHUBCORE_DATABASE_URL',
-      ],
-      'SHC Administrator Journey'
-    );
+    enforceReadinessBoundary(testInfo, 'AQ-03', [
+      SYNTHETIC_ACCOUNTS.SHC_ADMIN.emailEnvVar,
+      SYNTHETIC_ACCOUNTS.SHC_ADMIN.passwordEnvVar,
+    ]);
 
     const creds = getAccountCredentials(SYNTHETIC_ACCOUNTS.SHC_ADMIN);
 
-    // Navigate to SHC admin login page
-    await auth.loginViaUI('/admin/login', creds.email, creds.password);
+    // Navigate to SHC admin GUI login page
+    await auth.loginViaUI('/login', creds.email, creds.password);
 
     // Verify redirection to admin dashboard
     await expect(auth.page).toHaveURL(/\/admin(\/|$)/, { timeout: 15000 });
 
-    // Verify SHC cookies
+    // Verify SHC GUI cookies established (all 4 named cookies per setAdminSessionCookies)
     const cookies = await auth.context.cookies();
-    await assertCookieExists(cookies, 'auth_token', { httpOnly: true });
+    assertCookieExists(cookies, 'accessToken', { httpOnly: true });
+    assertCookieExists(cookies, 'admin_accessToken', { httpOnly: true });
 
     // Verify admin-only API access
-    const adminCheck = await auth.page.request.get('/api/admin/metrics');
-    // Expect 200 OK or appropriate admin response, strictly not 401/403
-    expect([200, 204]).toContain(adminCheck.status());
+    const adminCheck = await auth.page.request.get('/api/admin/overview');
+    const isAuthorized = [200, 204].includes(adminCheck.status());
+    expect(isAuthorized, 'Admin endpoint must be authorized for SHC admin session').toBe(true);
   });
 });

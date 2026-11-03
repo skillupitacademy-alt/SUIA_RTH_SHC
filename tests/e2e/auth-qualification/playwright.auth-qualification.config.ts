@@ -1,24 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
+import { validateOriginSafety } from './helpers/readiness';
 
-// Load optional local test environment variables
-dotenv.config({ path: '.env.test.local' });
-dotenv.config({ path: '.env.local' });
-
-/**
- * Dedicated Playwright configuration for Authentication Browser Qualification (W1.2-BROWSER-01).
- *
- * Strict Security & Execution Discipline:
- * 1. Sequential execution only (workers: 1, fullyParallel: false) to prevent shared-state races.
- * 2. Sensitive capture disabled by default: trace, video, screenshot, and storageState persistence
- *    are set to 'off' during credentialed steps to prevent token/cookie leakage.
- * 3. Base URLs are derived from environment variables, defaulting to local multi-tenant ports.
- * 4. Production targets are explicitly prohibited.
- */
+// Load only explicit auth qualification test environment (never auto-load broad .env.local)
+dotenv.config({ path: '.env.auth-qualification' });
 
 const SUIA_URL = process.env.SUIA_BASE_URL || 'http://skillup.localhost:3009';
 const RTH_URL = process.env.RTH_BASE_URL || 'http://realtutorialhub.localhost:3003';
 const SHC_URL = process.env.SHC_BASE_URL || 'http://skillhubcore.localhost:3000';
+
+// Enforce fail-closed origin boundary on config evaluation
+validateOriginSafety(SUIA_URL);
+validateOriginSafety(RTH_URL);
+validateOriginSafety(SHC_URL);
 
 export default defineConfig({
   testDir: '.',
@@ -27,19 +21,25 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
-  retries: 0, // Retries prohibited on auth qualification to ensure deterministic isolation failures
+  retries: 0,
 
-  reporter: [['list']],
+  reporter: [
+    ['list'],
+    ['./helpers/safe-reporter.ts'],
+  ],
 
   use: {
-    /* Sensitive artifacts disabled by default to prevent secret exposure */
     trace: 'off',
     video: 'off',
     screenshot: 'off',
-    ignoreHTTPSErrors: true,
+    ignoreHTTPSErrors: false,
   },
 
   projects: [
+    {
+      name: 'sentinel-checks',
+      testMatch: '**/00-redaction-sentinel.spec.ts',
+    },
     {
       name: 'suia-chromium',
       use: {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 /**
  * Sanitized Evidence Helper for Authentication Qualification.
@@ -22,60 +22,50 @@ export function sanitizeString(input: string): string {
 }
 
 /**
- * Validates that an environment variable is present without returning its actual value.
+ * Safe cookie existence assertion that never serializes cookie values into assertion logs.
  */
-export function isEnvVarPresent(varName: string): boolean {
-  const val = process.env[varName];
-  return typeof val === 'string' && val.trim().length > 0;
-}
-
-/**
- * Asserts that required test environment credentials and synthetic fixture databases
- * are available before executing an authenticated scenario. If prerequisites are missing,
- * skips the test deterministically with an explicit reason, preventing unguided failure
- * or accidental interaction with live production/staging databases.
- */
-export function requirePrerequisites(
-  testInfo: { skip: (condition: boolean, reason: string) => void },
-  requiredVars: string[],
-  contextDescription: string
-): void {
-  const missing = requiredVars.filter(v => !isEnvVarPresent(v));
-  if (missing.length > 0) {
-    testInfo.skip(
-      true,
-      `Prerequisites missing for ${contextDescription}: [${missing.join(', ')}]. Controlled synthetic fixture required.`
-    );
-  }
-}
-
-/**
- * Safe cookie existence assertion that never reveals cookie values.
- */
-export async function assertCookieExists(
+export function assertCookieExists(
   cookies: Array<{ name: string; value: string; domain?: string; httpOnly?: boolean; secure?: boolean }>,
   cookieName: string,
   options?: { httpOnly?: boolean; secure?: boolean }
-): Promise<void> {
+): void {
   const match = cookies.find(c => c.name === cookieName);
-  expect(match, `Expected cookie ${cookieName} to be present`).toBeDefined();
-  expect(match!.value.length, `Expected cookie ${cookieName} to have non-empty value`).toBeGreaterThan(0);
+  const isPresent = match !== undefined;
+  expect(isPresent, `Cookie '${cookieName}' must be present in browser context`).toBe(true);
 
-  if (options?.httpOnly !== undefined) {
-    expect(match!.httpOnly, `Cookie ${cookieName} httpOnly attribute mismatch`).toBe(options.httpOnly);
-  }
-  if (options?.secure !== undefined) {
-    expect(match!.secure, `Cookie ${cookieName} secure attribute mismatch`).toBe(options.secure);
+  if (match) {
+    const hasValue = typeof match.value === 'string' && match.value.length > 0;
+    expect(hasValue, `Cookie '${cookieName}' value must be non-empty`).toBe(true);
+
+    if (options?.httpOnly !== undefined) {
+      expect(match.httpOnly === options.httpOnly, `Cookie '${cookieName}' httpOnly mismatch`).toBe(true);
+    }
+    if (options?.secure !== undefined) {
+      expect(match.secure === options.secure, `Cookie '${cookieName}' secure mismatch`).toBe(true);
+    }
   }
 }
 
 /**
- * Safe cookie absence assertion.
+ * Safe cookie absence assertion that never serializes matching cookie objects on failure.
  */
-export async function assertCookieAbsent(
+export function assertCookieAbsent(
   cookies: Array<{ name: string; value: string }>,
   cookieName: string
-): Promise<void> {
-  const match = cookies.find(c => c.name === cookieName);
-  expect(match, `Expected cookie ${cookieName} to be absent`).toBeUndefined();
+): void {
+  const isAbsent = !cookies.some(c => c.name === cookieName);
+  expect(isAbsent, `Cookie '${cookieName}' must be absent from browser context`).toBe(true);
+}
+
+/**
+ * Safe string equality assertion that compares values strictly in memory
+ * and reports only boolean success/failure to prevent secret leakage in stack traces.
+ */
+export function assertValueMatchesSafely(
+  actual: unknown,
+  expected: unknown,
+  description: string
+): void {
+  const matches = actual === expected;
+  expect(matches, `Invariant verification failed for: ${description}`).toBe(true);
 }

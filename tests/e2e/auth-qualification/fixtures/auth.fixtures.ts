@@ -1,20 +1,25 @@
 import { test as baseTest, expect, Page, BrowserContext } from '@playwright/test';
-import { sanitizeString } from '../helpers/sanitized-evidence';
+import { validateOriginSafety } from '../helpers/readiness';
 
 export interface AuthFixtureContext {
   page: Page;
   context: BrowserContext;
-  loginViaUI: (loginUrl: string, email: string, pass: string) => Promise<void>;
-  performLogout: (logoutUrl: string) => Promise<void>;
+  loginViaUI: (loginPath: string, email: string, pass: string) => Promise<void>;
+  performLogout: (logoutPath?: string) => Promise<void>;
 }
 
 export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
-  auth: async ({ page, context }, use) => {
-    // Clear cookies before each test to guarantee fresh isolation
+  auth: async ({ page, context, baseURL }, use) => {
+    // 1. Enforce fail-closed origin boundary before any browser activity
+    validateOriginSafety(baseURL);
+
+    // 2. Clear cookies before each test to guarantee fresh isolation
     await context.clearCookies();
 
-    const loginViaUI = async (loginUrl: string, email: string, pass: string) => {
-      await page.goto(loginUrl, { waitUntil: 'domcontentloaded' });
+    const loginViaUI = async (loginPath: string, email: string, pass: string) => {
+      // Guard the destination path
+      await page.goto(loginPath, { waitUntil: 'domcontentloaded' });
+      validateOriginSafety(page.url());
 
       const emailInput = page.locator('input[type="email"], input[name="email"], input#email').first();
       const passInput = page.locator('input[type="password"], input[name="password"], input#password').first();
@@ -29,12 +34,12 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
       await submitBtn.click();
     };
 
-    const performLogout = async (logoutUrl: string) => {
+    const performLogout = async (logoutPath = '/login') => {
       const logoutBtn = page.locator('button:has-text("Sign out"), button:has-text("Logout"), a:has-text("Logout")').first();
       if (await logoutBtn.isVisible()) {
         await logoutBtn.click();
       } else {
-        await page.goto(logoutUrl, { waitUntil: 'domcontentloaded' });
+        await page.goto(logoutPath, { waitUntil: 'domcontentloaded' });
       }
     };
 

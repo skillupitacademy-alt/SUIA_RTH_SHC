@@ -1,10 +1,13 @@
 import { test, expect } from './fixtures/auth.fixtures';
+import { enforceReadinessBoundary } from './helpers/readiness';
 import { assertCookieAbsent } from './helpers/sanitized-evidence';
 
 test.describe('Negative Authentication Qualification', () => {
-  test('AQ-06: Invalid credentials rejection and zero-cookie state', async ({ auth }) => {
-    // Attempt login with invalid credentials
-    await auth.page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
+  test('AQ-06: Invalid credentials rejection and zero-cookie state', async ({ auth }, testInfo) => {
+    enforceReadinessBoundary(testInfo, 'AQ-06');
+
+    // Attempt login with invalid credentials on /login
+    await auth.page.goto('/login', { waitUntil: 'domcontentloaded' });
 
     const emailInput = auth.page.locator('input[type="email"], input[name="email"], input#email').first();
     const passInput = auth.page.locator('input[type="password"], input[name="password"], input#password').first();
@@ -19,12 +22,13 @@ test.describe('Negative Authentication Qualification', () => {
     await expect(errorAlert).toBeVisible({ timeout: 10000 });
 
     // Verify URL did NOT navigate to dashboard
-    expect(auth.page.url()).toContain('/auth/login');
+    expect(auth.page.url()).toContain('/login');
 
     // Verify NO authentication cookies were set
     const cookies = await auth.context.cookies();
-    await assertCookieAbsent(cookies, 'auth_token');
-    await assertCookieAbsent(cookies, 'refresh_token_skillup');
-    await assertCookieAbsent(cookies, 'refresh_token_realtutorialhub');
+    assertCookieAbsent(cookies, 'accessToken');
+    assertCookieAbsent(cookies, 'refreshToken');
+    assertCookieAbsent(cookies, 'admin_accessToken');
+    assertCookieAbsent(cookies, 'admin_refreshToken');
   });
 });
