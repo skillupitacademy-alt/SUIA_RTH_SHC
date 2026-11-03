@@ -94,8 +94,8 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
 
     validateOriginSafety(baseURL);
 
-    // Launch Chromium only after readiness is certified
-    const browser = await playwright.chromium.launch();
+    // Launch Chromium only after readiness is certified (explicit headless mode required)
+    const browser = await playwright.chromium.launch({ headless: true });
     const ctx = await browser.newContext({
       baseURL,
       serviceWorkers: 'block', // Strictly block service workers for test isolation
