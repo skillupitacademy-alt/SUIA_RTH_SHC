@@ -235,7 +235,6 @@ export function validateRunOwnership(
     return false;
   }
 }
-
 /**
  * Safely removes a verified run-owned directory.
  * If ownership validation fails, REFUSES TO DELETE and returns false.
@@ -266,7 +265,6 @@ export function safeCleanupRunDirectory(
     return false;
   }
 }
-
 /**
  * Checks whether targetPath is strictly inside ownedOutputDir without escaping via
  * directory traversal ('..') or symbolic links/junctions along any ancestor component.
@@ -310,4 +308,3 @@ export function isSafelyContainedInOwnedDir(targetPath: string, ownedDir: string
     return false;
   }
 }
-
