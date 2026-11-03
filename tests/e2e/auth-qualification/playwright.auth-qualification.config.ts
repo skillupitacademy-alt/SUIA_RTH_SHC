@@ -38,7 +38,7 @@ export default defineConfig({
   testDir: '.',
   testMatch: '**/*.spec.ts',
   outputDir: ownedOutputDir,
-  timeout: 90000,
+  timeout: 60000,
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
