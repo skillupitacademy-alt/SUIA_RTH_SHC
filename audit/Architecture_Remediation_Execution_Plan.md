@@ -648,6 +648,7 @@ separate authorization for production deployment/testing.
 **Status:** `PLANNED` (NOT STARTED; requires identified controlled build/environment and authorized synthetic fixtures)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
+**Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
 **Scope:** Playwright Chromium SUIA/RTH learner and SHC admin login, protected dashboard,
 approved refresh/logout, invalid credentials, blocked-account refresh, same-email tenant
 independence, account switching, cookies/redirects and cross-tenant denial. Pin tested
@@ -670,6 +671,7 @@ No runtime edit, key/issuer change, DB migration or deployment authorized here.
 
 ### W1.2-REFRESH-07 - Metadata and Revoked-Record Diagnostics Scoping
 **Status:** `PLANNED`
+**Assignment:** Batch 05 Task A authorizes only the redundant pre-CAS timestamp-write removal in token-refresh.service.ts plus focused stateful tests; optional revoked-record diagnostics remains design-only. See `audit/W1.2_Gemini_Controlled_Batch_05_Task.md` for scope and gates.
 **Wave / root causes:** 1 / RC-ID-01; RC-EVENT-01 context only
 **Application / priority:** generic tenant refresh / P1 bounded follow-up
 **Provenance:** `audit/W1.2_Batch_04_Sol_Acceptance.md`, REFRESH-04 investigation
@@ -677,10 +679,12 @@ Define a separate task for redundant pre-CAS metadata removal and optional known
 diagnostics without inferring consumption cause from revoked/lastUsedAt. Require stateful
 signing-failure, CAS-loss, rollback and other-session non-mutation tests. Preserve client
 response compatibility and no automatic all-device revocation. No schema, token-family,
-outbox, retry grace or runtime change is authorized by this planned entry.
+outbox or retry grace is authorized. The separately bounded Batch 05 assignment above
+provides the sole current runtime exception: redundant pre-CAS metadata-write removal.
 
 ### W1.2-GUARD-02 - Principal Scope and SHC Compatibility Contract
 **Status:** `PLANNED`
+**Assignment:** Gemini Batch 05 Task B, contract only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant guards, purpose-bound login and SHC GUI auth / P1 design
 **Provenance:** `audit/W1.2_Batch_04_Sol_Acceptance.md`, GUARD-01 investigation
@@ -693,12 +697,13 @@ into application/domain assessment; global resource isolation is not certified b
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `PLANNED`
+**Assignment:** Gemini Batch 05 Task C, source qualification only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth legacy POST logout-all and existing DELETE sessions path
 **Priority:** P1
 **Audit context:** SU-AUTH-004; direct W1.1.2 source wiring evidence
 **Implementer:** Gemini 3.8 when separately assigned after refresh discovery
-**Independent verifier:** Sonnet read-only; security review before runtime changes
+**Independent verifier:** distinct read-only reviewer with actual identity/authorship disclosed; Sol acceptance before follow-on runtime work
 **Acceptance:** Sol
 Qualify generic SessionService repository wiring and actual route consumers before
 choosing bounded delegation/decommissioning. Do not create duplicate endpoints or
