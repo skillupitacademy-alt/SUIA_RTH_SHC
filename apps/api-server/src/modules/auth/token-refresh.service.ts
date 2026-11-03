@@ -14,12 +14,16 @@ type TransactionDb = {
 };
 
 export class TokenRefreshService {
+  private userRepo?: UserRepository;
+
   constructor(
     private tokenRepo = container.get(TokenRepository),
     private tokenService = container.get(TokenService),
     private auditService = container.get(AuditService),
-    private userRepo = container.get(UserRepository)
-  ) {}
+    userRepo?: UserRepository
+  ) {
+    this.userRepo = userRepo;
+  }
 
   /**
    * 🔄 REFRESH TOKEN ROTATION
@@ -49,10 +53,6 @@ export class TokenRefreshService {
     const brandTokenRepo = useBrandBinding && typeof this.tokenRepo.withDb === 'function'
       ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
       : this.tokenRepo;
-
-    const brandUserRepo = useBrandBinding && typeof this.userRepo.withDb === 'function'
-      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
-      : this.userRepo;
 
     // 🔐 STEP 1: Validate old token exists and is valid
     const existingSession = await brandTokenRepo.findByHash(oldTokenHash);
@@ -111,33 +111,33 @@ export class TokenRefreshService {
       throw new Error('Invalid refresh token');
     }
 
-    // 🔐 STEP 2.1: Non-empty signed userId & Subject Parity check
-    if (
-      typeof oldPayload.userId !== 'string' ||
-      oldPayload.userId.trim().length === 0 ||
-      oldPayload.userId !== existingSession.userId
-    ) {
-      await this.auditService.log({
-        userId: existingSession.userId,
-        action: 'token_refresh_failed',
-        metadata: {
-          reason: 'token_owner_mismatch',
-          tokenUserId: oldPayload?.userId,
-          sessionUserId: existingSession.userId,
-          brand,
-        },
-        ip,
-        brand,
-      });
-      throw new Error('Invalid refresh token');
-    }
-
-    // 🔐 STEP 2.2: Scope confusion / class consistency check (W1.2-REFRESH-05/06)
+    // 🔐 STEP 2.2: Compute tenant scope predicate
     const isScopedTenant =
       (brand === 'realtutorialhub' || brand === 'skillup') &&
       (requestedAudience === 'user' || requestedAudience === 'admin');
 
     if (isScopedTenant) {
+      // 🔐 STEP 2.1: Non-empty signed userId & Subject Parity check (scoped tenant only)
+      if (
+        typeof oldPayload.userId !== 'string' ||
+        oldPayload.userId.trim().length === 0 ||
+        oldPayload.userId !== existingSession.userId
+      ) {
+        await this.auditService.log({
+          userId: existingSession.userId,
+          action: 'token_refresh_failed',
+          metadata: {
+            reason: 'token_owner_mismatch',
+            tokenUserId: oldPayload?.userId,
+            sessionUserId: existingSession.userId,
+            brand,
+          },
+          ip,
+          brand,
+        });
+        throw new Error('Invalid refresh token');
+      }
+
       // Validate isAdmin claim if present
       if (oldPayload.isAdmin !== undefined) {
         if (typeof oldPayload.isAdmin !== 'boolean') {
@@ -226,45 +226,45 @@ export class TokenRefreshService {
         });
         throw new Error('Invalid refresh token');
       }
-    }
 
-    // 🔐 STEP 2.3: Brand Claim Verification (Absent vs. Malformed vs. Canonical Parity)
-    const tokenBrand = oldPayload.brand;
-    if (tokenBrand === undefined) {
-      // Genuinely absent brand claim: eligible for legacy progressive upgrade
-      // All prerequisites are verified (signature, exp, session active/unexpired, matching subject).
-    } else if (
-      tokenBrand === null ||
-      typeof tokenBrand !== 'string' ||
-      tokenBrand.trim().length === 0 ||
-      (tokenBrand !== 'realtutorialhub' && tokenBrand !== 'skillup' && tokenBrand !== 'skillhubcore')
-    ) {
-      await this.auditService.log({
-        userId: existingSession.userId,
-        action: 'token_refresh_failed',
-        metadata: {
-          reason: 'malformed_brand_claim',
-          brandClaim: String(tokenBrand),
-          brand,
-        },
-        ip,
-        brand,
-      });
-      throw new Error('Invalid refresh token: malformed brand claim');
-    } else {
-      if (tokenBrand.toLowerCase() !== brand.toLowerCase()) {
+      // 🔐 STEP 2.3: Brand Claim Verification (Absent vs. Malformed vs. Canonical Parity)
+      const tokenBrand = oldPayload.brand;
+      if (tokenBrand === undefined) {
+        // Genuinely absent brand claim: eligible for legacy progressive upgrade
+        // All prerequisites are verified (signature, exp, session active/unexpired, matching subject).
+      } else if (
+        tokenBrand === null ||
+        typeof tokenBrand !== 'string' ||
+        tokenBrand.trim().length === 0 ||
+        (tokenBrand !== 'realtutorialhub' && tokenBrand !== 'skillup' && tokenBrand !== 'skillhubcore')
+      ) {
         await this.auditService.log({
           userId: existingSession.userId,
           action: 'token_refresh_failed',
           metadata: {
-            reason: 'brand_mismatch',
-            tokenBrand,
-            targetBrand: brand,
+            reason: 'malformed_brand_claim',
+            brandClaim: String(tokenBrand),
+            brand,
           },
           ip,
           brand,
         });
-        throw new Error('Invalid refresh token: tenant brand mismatch');
+        throw new Error('Invalid refresh token: malformed brand claim');
+      } else {
+        if (tokenBrand.toLowerCase() !== brand.toLowerCase()) {
+          await this.auditService.log({
+            userId: existingSession.userId,
+            action: 'token_refresh_failed',
+            metadata: {
+              reason: 'brand_mismatch',
+              tokenBrand,
+              targetBrand: brand,
+            },
+            ip,
+            brand,
+          });
+          throw new Error('Invalid refresh token: tenant brand mismatch');
+        }
       }
     }
 
@@ -304,6 +304,13 @@ export class TokenRefreshService {
 
     // 🔐 STEP 2.6: Tenant-Local User Eligibility & Fresh Roles (W1.2-REFRESH-06)
     if (isScopedTenant) {
+      if (!this.userRepo) {
+        this.userRepo = container.get(UserRepository);
+      }
+    const brandUserRepo = useBrandBinding && typeof this.userRepo.withDb === 'function'
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
+
       if (typeof brandUserRepo.findActiveUserWithRoles !== 'function') {
         throw new Error('User repository does not support strict eligibility checks');
       }

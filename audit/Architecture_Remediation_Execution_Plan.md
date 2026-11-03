@@ -617,20 +617,20 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `VERIFICATION_FAILED` (Correction review at 7a3b26ef: core probes pass, but new subject/brand guards and eligibility dependency remain outside tenant-only scope; contract remains VERIFIED; targeted scope fix required)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Targeted scope correction complete per review 7a3b26ef; subject parity, brand claim parity, class consistency, and lazy UserRepository resolution strictly governed by `isScopedTenant`; out-of-scope infra/SHC preserved; contract remains VERIFIED; pending Sol code review)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
 **Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `VERIFICATION_FAILED` (Correction review at 7a3b26ef: denial ordering/strict lookup fixed; connected tests still pass removed-binding and wrong-column mutants; production-routing/predicate evidence required; contract remains VERIFIED)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Tenant evidence & mutant sensitivity correction complete per review 7a3b26ef; connected tests with production binding enabled and AST column evaluation prove sensitivity against removed-binding and wrong-column mutants in `Tenant_Sensitivity.py`; strict lookup with zero session writes; contract remains VERIFIED; pending Sol code review)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
 **Scope:** Define strict repository lookup (`findActiveUserWithRoles`) on `UserRepository`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); dynamically fetch fresh roles while strictly preserving principal boundaries (no learner escalation, demoted admin fail-closed); accounts for actual 8-hour access token TTL; resolves baseline `auth.refresh.blocked.branch.test.ts`.
 
-**Latest implementation review:** `audit/W1.2_Batch_03_Sol_Review_7a3b26ef.md` (two remaining scope/evidence items); previous review: `audit/W1.2_Batch_03_Sol_Review_8badd407.md`. Gemini corrects the two remaining scope/evidence items under `audit/W1.2_Gemini_Controlled_Batch_03_Corrections.md`; no main merge, deployment or ticket closure.
+**Latest implementation review:** `audit/W1.2_Batch_03_Sol_Review_7a3b26ef.md` (two remaining scope/evidence items corrected in `audit/W1.2_Batch_03_Corrections_Response.md`); previous reviews: `audit/W1.2_Batch_03_Sol_Review_8badd407.md`, `audit/W1.2_Batch_03_Sol_Review_fc4c6e38.md`. Gemini corrected both items under `audit/W1.2_Gemini_Controlled_Batch_03_Corrections.md`; no main merge, deployment or ticket closure.
 
 **Design acceptance:** `audit/W1.2_Batch_02_Sol_Acceptance.md`. Both contracts include Sol's final source/scope qualifications; author response remains historical evidence. This is not code acceptance or RC-ID-01 closure.
 

@@ -1,6 +1,211 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  users as defaultUsers,
+  userProfiles as defaultUserProfiles,
+  roles as defaultRoles,
+  userRoles as defaultUserRoles,
+} from '@quiz/db';
+import {
+  users as rthUsers,
+  userProfiles as rthUserProfiles,
+  roles as rthRoles,
+  userRoles as rthUserRoles,
+} from '@quiz/db-rth';
+import {
+  users as suiaUsers,
+  userProfiles as suiaUserProfiles,
+  roles as suiaRoles,
+  userRoles as suiaUserRoles,
+} from '@quiz/db-skillup';
 import { TokenRefreshService } from '../token-refresh.service';
 import { UserRepository } from '../repositories/user.repository';
+
+const { rthAdapter, suiaAdapter, defaultAdapter, rthTables, suiaTables, defaultTables } = vi.hoisted(() => {
+  class MockTenantDbAdapterInternal {
+    public queriedTables: any[] = [];
+    public queriedColumns: string[] = [];
+
+    constructor(
+      public users: Array<{ id: string; email: string; isBlocked: boolean; deletedAt: Date | null }> = [],
+      public roles: Array<{ id: string; name: string }> = [],
+      public userRoles: Array<{ userId: string; roleId: string }> = [],
+      public failCoreQuery = false,
+      public failRoleQuery = false
+    ) {}
+
+    reset() {
+      this.queriedTables = [];
+      this.queriedColumns = [];
+      this.failCoreQuery = false;
+      this.failRoleQuery = false;
+    }
+
+    async transaction<T>(callback: (tx: any) => Promise<T>): Promise<T> {
+      return callback(this);
+    }
+
+    select(_fields?: any) {
+      const self = this;
+      return {
+        from(fromTable: any) {
+          self.queriedTables.push(fromTable);
+
+          return {
+            where(whereExpr: any) {
+              if (self.failCoreQuery) {
+                return {
+                  limit: () => Promise.reject(new Error('DB users connection failure')),
+                };
+              }
+
+              let colName: string | null = null;
+              let paramVal: unknown = null;
+
+              if (whereExpr?.queryChunks) {
+                for (const chunk of whereExpr.queryChunks) {
+                  if (chunk && typeof chunk.name === 'string' && chunk.table) {
+                    colName = chunk.name;
+                    self.queriedColumns.push(colName);
+                  }
+                  if (chunk && chunk.constructor && chunk.constructor.name === 'Param') {
+                    paramVal = chunk.value;
+                  }
+                }
+              }
+
+              let matchingUsers: any[] = [];
+              if (colName === 'id') {
+                matchingUsers = self.users.filter((u) => u.id === paramVal);
+              } else if (colName === 'email') {
+                matchingUsers = self.users.filter((u) => u.email === paramVal);
+              }
+
+              return {
+                limit: (n: number) => Promise.resolve(matchingUsers.slice(0, n)),
+              };
+            },
+            innerJoin(joinTable: any, _joinCondition: any) {
+              self.queriedTables.push(joinTable);
+              return {
+                where(whereExpr: any) {
+                  if (self.failRoleQuery) {
+                    return Promise.reject(new Error('DB userRoles query failure'));
+                  }
+
+                  let colName: string | null = null;
+                  let paramVal: unknown = null;
+
+                  if (whereExpr?.queryChunks) {
+                    for (const chunk of whereExpr.queryChunks) {
+                      if (chunk && typeof chunk.name === 'string' && chunk.table) {
+                        colName = chunk.name;
+                        self.queriedColumns.push(colName);
+                      }
+                      if (chunk && chunk.constructor && chunk.constructor.name === 'Param') {
+                        paramVal = chunk.value;
+                      }
+                    }
+                  }
+
+                  const matchingUserRoles =
+                    colName === 'userId' || colName === 'user_id'
+                      ? self.userRoles.filter((ur) => ur.userId === paramVal)
+                      : [];
+
+                  const joined = matchingUserRoles.map((ur) => {
+                    const role = self.roles.find((r) => r.id === ur.roleId);
+                    return { name: role?.name ?? null };
+                  });
+
+                  return Promise.resolve(joined);
+                },
+              };
+            },
+          };
+        },
+      };
+    }
+  }
+
+  const rth = new MockTenantDbAdapterInternal();
+  const suia = new MockTenantDbAdapterInternal();
+  const def = new MockTenantDbAdapterInternal();
+
+  const rTables: any = {};
+  const sTables: any = {};
+  const dTables: any = {};
+
+  return {
+    rthAdapter: rth,
+    suiaAdapter: suia,
+    defaultAdapter: def,
+    rthTables: rTables,
+    suiaTables: sTables,
+    defaultTables: dTables,
+  };
+});
+
+Object.assign(rthTables, {
+  users: rthUsers,
+  userProfiles: rthUserProfiles,
+  roles: rthRoles,
+  userRoles: rthUserRoles,
+  refreshTokens: {},
+  auditLogs: {},
+  verificationTokens: {},
+  passwordResetTokens: {},
+  loginAttempts: {},
+});
+
+Object.assign(suiaTables, {
+  users: suiaUsers,
+  userProfiles: suiaUserProfiles,
+  roles: suiaRoles,
+  userRoles: suiaUserRoles,
+  refreshTokens: {},
+  auditLogs: {},
+  verificationTokens: {},
+  passwordResetTokens: {},
+  loginAttempts: {},
+});
+
+Object.assign(defaultTables, {
+  users: defaultUsers,
+  userProfiles: defaultUserProfiles,
+  roles: defaultRoles,
+  userRoles: defaultUserRoles,
+  refreshTokens: {},
+  auditLogs: {},
+  verificationTokens: {},
+  passwordResetTokens: {},
+  loginAttempts: {},
+});
+
+vi.mock('../brand-db', () => ({
+  getAuthBrandContext: vi.fn((brand: string) => {
+    if (brand === 'skillup') {
+      return { db: suiaAdapter, tables: suiaTables };
+    }
+    if (brand === 'realtutorialhub') {
+      return { db: rthAdapter, tables: rthTables };
+    }
+    return { db: defaultAdapter, tables: defaultTables };
+  }),
+  shouldUseBrandBinding: vi.fn(() => true),
+}));
+
+vi.mock('@/modules/auth/brand-db', () => ({
+  getAuthBrandContext: vi.fn((brand: string) => {
+    if (brand === 'skillup') {
+      return { db: suiaAdapter, tables: suiaTables };
+    }
+    if (brand === 'realtutorialhub') {
+      return { db: rthAdapter, tables: rthTables };
+    }
+    return { db: defaultAdapter, tables: defaultTables };
+  }),
+  shouldUseBrandBinding: vi.fn(() => true),
+}));
 
 /**
  * W1.2-REFRESH-06: Account Lifecycle & Dynamic Role Freshness Tests
@@ -408,6 +613,29 @@ describe('UserRepository.findActiveUserWithRoles Strict Implementation', () => {
     let mockAuditService: any;
 
     beforeEach(() => {
+      rthAdapter.reset();
+      suiaAdapter.reset();
+      defaultAdapter.reset();
+
+      rthAdapter.users = [
+        { id: 'col-user-1', email: 'alice@rth.com', isBlocked: false, deletedAt: null },
+        { id: 'col-user-10', email: 'distractor@rth.com', isBlocked: false, deletedAt: null },
+        { id: 'user-empty-roles', email: 'empty@rth.com', isBlocked: false, deletedAt: null },
+      ];
+      rthAdapter.roles = [{ id: 'role-rth-1', name: 'student' }];
+      rthAdapter.userRoles = [{ userId: 'col-user-1', roleId: 'role-rth-1' }];
+
+      suiaAdapter.users = [
+        { id: 'col-user-1', email: 'alice@suia.com', isBlocked: true, deletedAt: null },
+        { id: 'col-user-10', email: 'distractor-suia@suia.com', isBlocked: false, deletedAt: null },
+      ];
+      suiaAdapter.roles = [{ id: 'role-suia-1', name: 'student' }];
+      suiaAdapter.userRoles = [{ userId: 'col-user-1', roleId: 'role-suia-1' }];
+
+      defaultAdapter.users = [];
+      defaultAdapter.roles = [];
+      defaultAdapter.userRoles = [];
+
       mockTokenRepo = {
         findByHash: vi.fn(),
         updateLastUsed: vi.fn().mockResolvedValue(undefined),
@@ -430,84 +658,30 @@ describe('UserRepository.findActiveUserWithRoles Strict Implementation', () => {
       };
     });
 
-    class MockTenantDbAdapter {
-      public queriedTables: any[] = [];
-      constructor(
-        public users: Array<{ id: string; email: string; isBlocked: boolean; deletedAt: Date | null }> = [],
-        public roles: Array<{ id: string; name: string }> = [],
-        public userRoles: Array<{ userId: string; roleId: string }> = [],
-        public failCoreQuery = false,
-        public failRoleQuery = false
-      ) {}
-
-      select(_fields: any) {
-        const self = this;
-        return {
-          from(fromTable: any) {
-            self.queriedTables.push(fromTable);
-            return {
-              where(whereExpr: any) {
-                if (self.failCoreQuery) {
-                  return {
-                    limit: () => Promise.reject(new Error('DB users connection failure')),
-                  };
-                }
-                const serialized = JSON.stringify(whereExpr);
-                const matchingUsers = self.users.filter((u) => serialized.includes(u.id));
-                return {
-                  limit: (n: number) => Promise.resolve(matchingUsers.slice(0, n)),
-                };
-              },
-              innerJoin(joinTable: any, _joinCondition: any) {
-                self.queriedTables.push(joinTable);
-                return {
-                  where(whereExpr: any) {
-                    if (self.failRoleQuery) {
-                      return Promise.reject(new Error('DB userRoles query failure'));
-                    }
-                    const serialized = JSON.stringify(whereExpr);
-                    const matchingUserRoles = self.userRoles.filter((ur) => serialized.includes(ur.userId));
-                    const joined = matchingUserRoles.map((ur) => {
-                      const role = self.roles.find((r) => r.id === ur.roleId);
-                      return { name: role?.name ?? null };
-                    });
-                    return Promise.resolve(joined);
-                  },
-                };
-              },
-            };
-          },
-        };
-      }
-    }
-
     it('TC-LIFE-10: connected service + real UserRepository enforces tenant isolation with colliding user IDs between RTH and SUIA', async () => {
-      // User ID "col-user-1" exists in RTH as active learner, but in SUIA as blocked
-      const rthAdapter = new MockTenantDbAdapter(
-        [{ id: 'col-user-1', email: 'alice@rth.com', isBlocked: false, deletedAt: null }],
-        [{ id: 'role-rth-1', name: 'student' }],
-        [{ userId: 'col-user-1', roleId: 'role-rth-1' }]
-      );
+      // Direct repository query isolation using unbound repository withDb
+      const unboundUserRepo = new UserRepository(defaultAdapter as any, defaultTables);
 
-      const suiaAdapter = new MockTenantDbAdapter(
-        [{ id: 'col-user-1', email: 'alice@suia.com', isBlocked: true, deletedAt: null }],
-        [{ id: 'role-suia-1', name: 'student' }],
-        [{ userId: 'col-user-1', roleId: 'role-suia-1' }]
-      );
-
-      const rthUserRepo = new UserRepository(rthAdapter as any);
-      const suiaUserRepo = new UserRepository(suiaAdapter as any);
-
-      // Verify real repository query isolation directly
-      const rthEligibility = await rthUserRepo.findActiveUserWithRoles('col-user-1');
+      const boundRthRepo = unboundUserRepo.withDb(rthAdapter as any, rthTables);
+      const rthEligibility = await boundRthRepo.findActiveUserWithRoles('col-user-1');
       expect(rthEligibility?.isBlocked).toBe(false);
+      expect(rthEligibility?.email).toBe('alice@rth.com');
       expect(rthEligibility?.roles).toEqual(['student']);
 
-      const suiaEligibility = await suiaUserRepo.findActiveUserWithRoles('col-user-1');
+      const boundSuiaRepo = unboundUserRepo.withDb(suiaAdapter as any, suiaTables);
+      const suiaEligibility = await boundSuiaRepo.findActiveUserWithRoles('col-user-1');
       expect(suiaEligibility?.isBlocked).toBe(true);
+      expect(suiaEligibility?.email).toBe('alice@suia.com');
 
-      // Verify connected service behavior: RTH succeeds, SUIA fails closed
-      const rthService = new TokenRefreshService(mockTokenRepo, mockTokenService, mockAuditService, rthUserRepo);
+      // Connected service with single unbound repository dependency and production binding
+      const connectedService = new TokenRefreshService(
+        mockTokenRepo,
+        mockTokenService,
+        mockAuditService,
+        unboundUserRepo
+      );
+
+      // Verify RTH connected refresh succeeds
       mockTokenRepo.findByHash.mockResolvedValue({
         id: 'sess-rth',
         userId: 'col-user-1',
@@ -521,13 +695,15 @@ describe('UserRepository.findActiveUserWithRoles Strict Implementation', () => {
         tokenType: 'user',
       });
 
-      const rthResult = await rthService.refresh('token-1', '127.0.0.1', undefined, 'user', 'realtutorialhub');
+      const rthResult = await connectedService.refresh('token-1', '127.0.0.1', undefined, 'user', 'realtutorialhub');
       expect(rthResult.accessToken).toBe('new-access-token');
       expect(mockTokenRepo.updateLastUsed).toHaveBeenCalled();
+      expect(rthAdapter.queriedTables).toContain(rthTables.users);
+      expect(rthAdapter.queriedTables).toContain(rthTables.userRoles);
+      expect(rthAdapter.queriedColumns).toContain('id');
 
-      // Clear calls for SUIA check
+      // Verify SUIA connected refresh fails closed
       vi.clearAllMocks();
-      const suiaService = new TokenRefreshService(mockTokenRepo, mockTokenService, mockAuditService, suiaUserRepo);
       mockTokenRepo.findByHash.mockResolvedValue({
         id: 'sess-suia',
         userId: 'col-user-1',
@@ -542,82 +718,89 @@ describe('UserRepository.findActiveUserWithRoles Strict Implementation', () => {
       });
 
       await expect(
-        suiaService.refresh('token-2', '127.0.0.1', undefined, 'user', 'skillup')
+        connectedService.refresh('token-2', '127.0.0.1', undefined, 'user', 'skillup')
       ).rejects.toThrow('access_denied:user_blocked');
 
-      // Zero state writes on SUIA denial (proves tenant isolation: SUIA cannot borrow RTH active eligibility)
+      expect(suiaAdapter.queriedTables).toContain(suiaTables.users);
+      expect(suiaAdapter.queriedColumns).toContain('id');
       expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
       expect(mockTokenRepo.consumeToken).not.toHaveBeenCalled();
     });
 
     it('TC-LIFE-11: real UserRepository propagates core query database errors without swallowing (zero session writes)', async () => {
-      const failingAdapter = new MockTenantDbAdapter([], [], [], true, false);
-      const realUserRepo = new UserRepository(failingAdapter as any);
-      const serviceWithFailingRepo = new TokenRefreshService(mockTokenRepo, mockTokenService, mockAuditService, realUserRepo);
+      rthAdapter.failCoreQuery = true;
+      const unboundUserRepo = new UserRepository(defaultAdapter as any, defaultTables);
+      const connectedService = new TokenRefreshService(
+        mockTokenRepo,
+        mockTokenService,
+        mockAuditService,
+        unboundUserRepo
+      );
 
       mockTokenRepo.findByHash.mockResolvedValue({
         id: 'sess-err',
-        userId: 'user-err',
+        userId: 'col-user-1',
         revoked: false,
         expiresAt: new Date(Date.now() + 100000),
       });
       mockTokenService.verifyRefreshToken.mockResolvedValue({
-        userId: 'user-err',
+        userId: 'col-user-1',
         brand: 'realtutorialhub',
         isAdmin: false,
         tokenType: 'user',
       });
 
       await expect(
-        serviceWithFailingRepo.refresh('token-err', '127.0.0.1', undefined, 'user', 'realtutorialhub')
+        connectedService.refresh('token-err', '127.0.0.1', undefined, 'user', 'realtutorialhub')
       ).rejects.toThrow('DB users connection failure');
 
       expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
       expect(mockTokenRepo.consumeToken).not.toHaveBeenCalled();
       expect(mockTokenRepo.createRefreshToken).not.toHaveBeenCalled();
+      rthAdapter.failCoreQuery = false;
     });
 
     it('TC-LIFE-12: real UserRepository propagates role query database errors without swallowing (zero session writes)', async () => {
-      const failingRoleAdapter = new MockTenantDbAdapter(
-        [{ id: 'user-role-err', email: 'err@rth.com', isBlocked: false, deletedAt: null }],
-        [],
-        [],
-        false,
-        true
+      rthAdapter.failRoleQuery = true;
+      const unboundUserRepo = new UserRepository(defaultAdapter as any, defaultTables);
+      const connectedService = new TokenRefreshService(
+        mockTokenRepo,
+        mockTokenService,
+        mockAuditService,
+        unboundUserRepo
       );
-      const realUserRepo = new UserRepository(failingRoleAdapter as any);
-      const serviceWithFailingRepo = new TokenRefreshService(mockTokenRepo, mockTokenService, mockAuditService, realUserRepo);
 
       mockTokenRepo.findByHash.mockResolvedValue({
         id: 'sess-err-role',
-        userId: 'user-role-err',
+        userId: 'col-user-1',
         revoked: false,
         expiresAt: new Date(Date.now() + 100000),
       });
       mockTokenService.verifyRefreshToken.mockResolvedValue({
-        userId: 'user-role-err',
+        userId: 'col-user-1',
         brand: 'realtutorialhub',
         isAdmin: false,
         tokenType: 'user',
       });
 
       await expect(
-        serviceWithFailingRepo.refresh('token-err-role', '127.0.0.1', undefined, 'user', 'realtutorialhub')
+        connectedService.refresh('token-err-role', '127.0.0.1', undefined, 'user', 'realtutorialhub')
       ).rejects.toThrow('DB userRoles query failure');
 
       expect(mockTokenRepo.updateLastUsed).not.toHaveBeenCalled();
       expect(mockTokenRepo.consumeToken).not.toHaveBeenCalled();
       expect(mockTokenRepo.createRefreshToken).not.toHaveBeenCalled();
+      rthAdapter.failRoleQuery = false;
     });
 
     it('TC-LIFE-13: real UserRepository handles legitimate empty roles for learner and denies admin with zero session writes', async () => {
-      const adapter = new MockTenantDbAdapter(
-        [{ id: 'user-empty-roles', email: 'empty@rth.com', isBlocked: false, deletedAt: null }],
-        [],
-        []
+      const unboundUserRepo = new UserRepository(defaultAdapter as any, defaultTables);
+      const connectedService = new TokenRefreshService(
+        mockTokenRepo,
+        mockTokenService,
+        mockAuditService,
+        unboundUserRepo
       );
-      const realUserRepo = new UserRepository(adapter as any);
-      const serviceInstance = new TokenRefreshService(mockTokenRepo, mockTokenService, mockAuditService, realUserRepo);
 
       // 1. Learner with legitimate empty roles succeeds
       mockTokenRepo.findByHash.mockResolvedValue({
@@ -633,7 +816,7 @@ describe('UserRepository.findActiveUserWithRoles Strict Implementation', () => {
         tokenType: 'user',
       });
 
-      const learnerResult = await serviceInstance.refresh('token-empty', '127.0.0.1', undefined, 'user', 'realtutorialhub');
+      const learnerResult = await connectedService.refresh('token-empty', '127.0.0.1', undefined, 'user', 'realtutorialhub');
       expect(learnerResult.accessToken).toBe('new-access-token');
       expect(learnerResult.isAdmin).toBe(false);
 
@@ -653,7 +836,7 @@ describe('UserRepository.findActiveUserWithRoles Strict Implementation', () => {
       });
 
       await expect(
-        serviceInstance.refresh('token-empty-admin', '127.0.0.1', undefined, 'admin', 'realtutorialhub')
+        connectedService.refresh('token-empty-admin', '127.0.0.1', undefined, 'admin', 'realtutorialhub')
       ).rejects.toThrow('access_denied:insufficient_permissions');
 
       expect(mockAuditService.log).toHaveBeenCalledWith(
@@ -669,20 +852,24 @@ describe('UserRepository.findActiveUserWithRoles Strict Implementation', () => {
     });
 
     it('TC-LIFE-14: verify userProfiles table is never queried during findActiveUserWithRoles', async () => {
-      const adapter = new MockTenantDbAdapter(
-        [{ id: 'user-profile-check', email: 'p@rth.com', isBlocked: false, deletedAt: null }],
-        [{ id: 'r1', name: 'student' }],
-        [{ userId: 'user-profile-check', roleId: 'r1' }]
-      );
-      const realUserRepo = new UserRepository(adapter as any);
+      rthAdapter.reset();
+      rthAdapter.users = [
+        { id: 'user-profile-check', email: 'p@rth.com', isBlocked: false, deletedAt: null },
+      ];
+      rthAdapter.roles = [{ id: 'r1', name: 'student' }];
+      rthAdapter.userRoles = [{ userId: 'user-profile-check', roleId: 'r1' }];
 
-      await realUserRepo.findActiveUserWithRoles('user-profile-check');
+      const unboundUserRepo = new UserRepository(defaultAdapter as any, defaultTables);
+      const boundRepo = unboundUserRepo.withDb(rthAdapter as any, rthTables);
 
-      // Assert userProfiles is never referenced in queried tables
-      const userProfilesReferenced = adapter.queriedTables.some((t) =>
-        String(t?.name ?? t).includes('profile')
-      );
-      expect(userProfilesReferenced).toBe(false);
+      await boundRepo.findActiveUserWithRoles('user-profile-check');
+
+      // Assert userProfiles is never referenced in queried tables using real table identity
+      expect(rthAdapter.queriedTables).toContain(rthTables.users);
+      expect(rthAdapter.queriedTables).toContain(rthTables.userRoles);
+      expect(rthAdapter.queriedTables).toContain(rthTables.roles);
+      expect(rthAdapter.queriedTables).not.toContain(rthTables.userProfiles);
+      expect(rthAdapter.queriedTables.some((t) => t === rthTables.userProfiles)).toBe(false);
     });
   });
 });
