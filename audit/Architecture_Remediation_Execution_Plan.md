@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `PLANNED` (NOT STARTED; requires identified controlled build/environment and authorized synthetic fixtures)
+**Status:** `IN_PROGRESS` (Harness prepared and validated via spec discovery in `tests/e2e/auth-qualification/**`; report delivered in `audit/W1.2-BROWSER-01_Readiness_And_Smoke_Report.md`; runtime execution pending controlled local synthetic fixtures; formal Wave 8 remains mandatory)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
