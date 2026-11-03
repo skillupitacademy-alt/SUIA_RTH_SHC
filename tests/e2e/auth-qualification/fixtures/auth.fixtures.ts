@@ -92,6 +92,11 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
       return;
     }
 
+    if (!baseURL) {
+      testInfo.skip(true, '[NOT EXECUTED] Project baseURL is undefined');
+      return;
+    }
+
     validateOriginSafety(baseURL);
 
     // Launch Chromium only after readiness is certified (explicit headless mode required)
