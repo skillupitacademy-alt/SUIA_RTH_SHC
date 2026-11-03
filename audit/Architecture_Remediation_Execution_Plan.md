@@ -606,7 +606,7 @@ No token-policy migration, live database execution, or code edits authorized.
 **Acceptance and final source qualifications:** `audit/W1.2-REFRESH-02-03_Sol_Acceptance.md`. Task A closure remains independently gated.
 
 ### W1.2-REFRESH-04 - Replay Classification and Post-Commit Failure Policy
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED` (Discovery report delivered in `audit/W1.2-REFRESH-04_Replay_And_Failure_Policy.md`; pending distinct read-only review and Sol acceptance)
 **Wave / root causes:** 1 / RC-ID-01, RC-EVENT-01
 **Application / priority:** refresh lifecycle / P1 design
 **Implementer:** Gemini when separately assigned
