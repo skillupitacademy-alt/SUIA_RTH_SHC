@@ -147,7 +147,7 @@ export class UserRepository extends BaseRepository<User, typeof users> {
       .where(eq(usersTable.id, userId))
       .limit(1);
 
-    if (!userRecord) {
+    if (userRecord === undefined || userRecord === null) {
       return null;
     }
 

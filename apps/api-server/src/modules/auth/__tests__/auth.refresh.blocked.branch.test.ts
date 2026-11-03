@@ -12,7 +12,7 @@ const mockTokenService = {
     generateAccessToken: vi.fn().mockResolvedValue('access-token'),
     generateRefreshToken: vi.fn().mockResolvedValue('refresh-token'),
 };
-const mockUserRepo = { findByIdWithDetails: vi.fn() };
+const mockUserRepo = { findByIdWithDetails: vi.fn(), findActiveUserWithRoles: vi.fn() };
 const mockTokenRepo = {
     findByHash: vi.fn(),
     updateLastUsed: vi.fn().mockResolvedValue(undefined),
@@ -45,6 +45,7 @@ describe('AuthService.refresh blocked branch', () => {
         mockTokenRepo.findByHash.mockResolvedValue({ userId: 'u1', expiresAt: new Date(Date.now() + 100000) } as any);
         mockTokenService.verifyRefreshToken.mockResolvedValue({ userId: 'u1', isAdmin: false });
         mockUserRepo.findByIdWithDetails.mockResolvedValue({ id: 'u1', isBlocked: true } as any);
+        mockUserRepo.findActiveUserWithRoles.mockResolvedValue({ id: 'u1', email: 'u1@test.com', isBlocked: true, deletedAt: null, roles: [] });
 
         const service = container.get(AuthService);
         await expect(service.refresh('token')).rejects.toThrow('access_denied:user_blocked');

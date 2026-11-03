@@ -617,14 +617,14 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `VERIFICATION_FAILED` (Implementation changes required at 8badd407: incomplete present class-claim validation and unscoped SHC/infra policy; accepted design remains VERIFIED; see batch-03 Sol review)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Batch 03 Task A runtime authority & claims validation corrected per review F1-F6; verified with 65 refresh tests, 18/18 probe checks, typecheck, lint, build, quality:skillhubcore; ready for review)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
 **Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `VERIFICATION_FAILED` (Implementation changes required at 8badd407: lastUsedAt writes before lifecycle denial, permissive hydration fallback and missing connected tenant evidence; accepted design remains VERIFIED)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Batch 03 Task B runtime lifecycle & connected tenant evidence corrected per review F1-F6; zero writes on denial verified; ready for review)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
