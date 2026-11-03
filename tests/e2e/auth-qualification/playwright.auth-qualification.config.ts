@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { validateOriginSafety } from './helpers/readiness';
 
+import { allocateOrValidateRunDirectory } from './helpers/output-ownership';
+
 // Load only explicit auth qualification test environment (never auto-load broad .env.local)
 dotenv.config({ path: '.env.auth-qualification' });
 
@@ -16,10 +18,16 @@ if (SUIA_URL) validateOriginSafety(SUIA_URL);
 if (RTH_URL) validateOriginSafety(RTH_URL);
 if (SHC_URL) validateOriginSafety(SHC_URL);
 
-// Dedicated, per-run owned output directory separate from workspace root test-results
-const ownedOutputDir = process.env.AUTH_QUALIFICATION_OUTPUT_DIR
-  ? path.resolve(process.env.AUTH_QUALIFICATION_OUTPUT_DIR)
-  : path.resolve(__dirname, '.run-artifacts');
+// Validate and allocate unique, owned run directory strictly beneath fixed harness parent.
+// Fails closed BEFORE returning config if an invalid run ID or escaping path is provided.
+const runAllocation = allocateOrValidateRunDirectory();
+const ownedOutputDir = runAllocation.runDir;
+const runId = runAllocation.runId;
+const ownershipToken = runAllocation.ownershipToken;
+
+// Export run provenance to environment for consistent reporter/worker alignment
+process.env.AUTH_QUALIFICATION_RUN_ID = runId;
+process.env.AUTH_QUALIFICATION_OWNERSHIP_TOKEN = ownershipToken;
 
 export default defineConfig({
   testDir: '.',
@@ -31,9 +39,16 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
 
-  // Sole reporter: Zero-leakage allowlisted reporter with explicit owned output directory
+  // Sole reporter: Zero-leakage allowlisted reporter with verified run ownership
   reporter: [
-    ['./helpers/safe-reporter.ts', { outputDir: ownedOutputDir }],
+    [
+      './helpers/safe-reporter.ts',
+      {
+        outputDir: ownedOutputDir,
+        runId,
+        ownershipToken,
+      },
+    ],
   ],
 
   use: {

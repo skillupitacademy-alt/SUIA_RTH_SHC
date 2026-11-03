@@ -1,6 +1,13 @@
 import type { Reporter, TestCase, TestResult, TestError, FullConfig, Suite } from '@playwright/test/reporter';
 import fs from 'fs';
 import path from 'path';
+import {
+  isSafelyContainedInOwnedDir,
+  safeCleanupRunDirectory,
+  FIXED_HARNESS_ARTIFACTS_PARENT,
+} from './output-ownership';
+
+export { isSafelyContainedInOwnedDir } from './output-ownership';
 
 const ALLOWED_PROJECTS = [
   'sentinel-checks',
@@ -10,39 +17,6 @@ const ALLOWED_PROJECTS = [
 ];
 
 const SCENARIO_ID_PATTERN = /^(AQ-\d{2}(?:-[A-Z]+)?|SENTINEL-\d{2})/;
-
-/**
- * Checks whether targetPath is strictly inside ownedOutputDir without escaping via
- * directory traversal ('..') or symbolic links.
- */
-export function isSafelyContainedInOwnedDir(targetPath: string, ownedDir: string): boolean {
-  if (!targetPath || !ownedDir) return false;
-  try {
-    const resolvedTarget = path.resolve(targetPath);
-    const resolvedOwned = path.resolve(ownedDir);
-
-    // Prevent matching the directory itself or root
-    if (resolvedTarget === resolvedOwned) return false;
-
-    // Check traversal escape
-    const relative = path.relative(resolvedOwned, resolvedTarget);
-    if (relative.startsWith('..') || path.isAbsolute(relative) || relative === '') {
-      return false;
-    }
-
-    // Reject symbolic links or junctions
-    if (fs.existsSync(resolvedTarget)) {
-      const lstat = fs.lstatSync(resolvedTarget);
-      if (lstat.isSymbolicLink()) {
-        return false;
-      }
-    }
-
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Derives a strictly allowlisted scenario identifier from test metadata.
@@ -90,19 +64,30 @@ export function sanitizeErrorText(text: string): string {
   return sanitizeText(text);
 }
 
+export interface SafeReporterOptions {
+  outputDir?: string;
+  runId?: string;
+  ownershipToken?: string;
+  parentDir?: string;
+}
+
 export default class SafeQualificationReporter implements Reporter {
   private totalTests = 0;
   private passedTests = 0;
   private failedTests = 0;
   private skippedTests = 0;
-  private ownedOutputDir: string;
+  private ownedOutputDir?: string;
+  private runId?: string;
+  private ownershipToken?: string;
+  private parentDir: string;
 
-  constructor(options?: { outputDir?: string }) {
-    this.ownedOutputDir = options?.outputDir
-      ? path.resolve(options.outputDir)
-      : (process.env.AUTH_QUALIFICATION_OUTPUT_DIR
-          ? path.resolve(process.env.AUTH_QUALIFICATION_OUTPUT_DIR)
-          : path.resolve(__dirname, '..', '.run-artifacts'));
+  constructor(options?: SafeReporterOptions) {
+    this.ownedOutputDir = options?.outputDir;
+    this.runId = options?.runId || process.env.AUTH_QUALIFICATION_RUN_ID;
+    this.ownershipToken = options?.ownershipToken || process.env.AUTH_QUALIFICATION_OWNERSHIP_TOKEN;
+    this.parentDir = options?.parentDir
+      ? path.resolve(options.parentDir)
+      : FIXED_HARNESS_ARTIFACTS_PARENT;
   }
 
   onBegin(_config: FullConfig, suite: Suite): void {
@@ -144,7 +129,7 @@ export default class SafeQualificationReporter implements Reporter {
     }
 
     // Clean up test attachments ONLY if they are strictly contained inside ownedOutputDir
-    if (result.attachments && result.attachments.length > 0) {
+    if (result.attachments && result.attachments.length > 0 && this.ownedOutputDir) {
       for (const attachment of result.attachments) {
         if (attachment.path && isSafelyContainedInOwnedDir(attachment.path, this.ownedOutputDir)) {
           try {
@@ -180,13 +165,32 @@ export default class SafeQualificationReporter implements Reporter {
       );
     }
 
-    // Clean up only the dedicated owned output directory; NEVER touch the shared workspace test-results
-    if (fs.existsSync(this.ownedOutputDir) && this.ownedOutputDir !== path.resolve(process.cwd())) {
-      try {
-        fs.rmSync(this.ownedOutputDir, { recursive: true, force: true });
-      } catch {
-        // Ignore
-      }
+    // Clean up only the verified, genuine run-owned directory using ownership token validation.
+    // NEVER touches the shared workspace test-results, and NEVER deletes the fixed parent containing sibling runs.
+    if (this.ownedOutputDir) {
+      safeCleanupRunDirectory(
+        this.ownedOutputDir,
+        this.runId,
+        this.ownershipToken,
+        this.parentDir
+      );
+
+      // Register exit hook to clean up any terminal .last-run.json re-created by Playwright runner at process termination
+      process.once('exit', () => {
+        try {
+          if (this.ownedOutputDir && fs.existsSync(this.ownedOutputDir)) {
+            const rel = path.relative(this.parentDir, this.ownedOutputDir);
+            if (!rel.startsWith('..') && !path.isAbsolute(rel) && rel !== '') {
+              const files = fs.readdirSync(this.ownedOutputDir);
+              if (files.length <= 1 && (files.length === 0 || files[0] === '.last-run.json')) {
+                fs.rmSync(this.ownedOutputDir, { recursive: true, force: true });
+              }
+            }
+          }
+        } catch {
+          // Ignore exit errors
+        }
+      });
     }
   }
 }

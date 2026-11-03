@@ -8,11 +8,17 @@ import {
 import { sanitizeString, assertCookieAbsent, assertCookieExists } from './helpers/sanitized-evidence';
 import {
   sanitizeText,
-  isSafelyContainedInOwnedDir,
   getAllowlistedScenarioId,
   getAllowlistedProject,
   default as SafeQualificationReporter,
 } from './helpers/safe-reporter';
+import {
+  FIXED_HARNESS_ARTIFACTS_PARENT,
+  allocateOrValidateRunDirectory,
+  validateRunOwnership,
+  safeCleanupRunDirectory,
+  isSafelyContainedInOwnedDir,
+} from './helpers/output-ownership';
 import { guardedApiFetch } from './fixtures/auth.fixtures';
 import fs from 'fs';
 import path from 'path';
@@ -98,17 +104,22 @@ test.describe('Task D Sentinel, Readiness & Redaction Harness Verification', () 
   });
 
   test('SENTINEL-04: child-process deliberate failure suppresses bare errors, split stdout/stderr, fake titles, and cleans owned artifacts', () => {
-    // 1. Set up dedicated temporary run root separate from workspace test-results
-    const childOutputDir = path.resolve(__dirname, '.tmp-sentinel-child-artifacts');
-    if (!fs.existsSync(childOutputDir)) {
-      fs.mkdirSync(childOutputDir, { recursive: true });
-    }
+    // 1. Allocate a genuine unique run ID under the fixed harness parent
+    const childRunId = `sentinel-child-${Date.now()}-${process.pid}`;
+    const childAllocation = allocateOrValidateRunDirectory({ runId: childRunId });
+    const childOutputDir = childAllocation.runDir;
 
-    // 2. Set up a foreign canary file OUTSIDE the child output root to verify it survives
+    // 2. Set up a foreign canary file OUTSIDE the child run root to verify it survives
     const canaryOutside = path.resolve(__dirname, '.canary-outside-sentinel-test.txt');
     fs.writeFileSync(canaryOutside, 'CANARY_OUTSIDE_MUST_SURVIVE', 'utf-8');
 
-    // 3. Synthesize a temporary test file designed to deliberately throw an error containing bare, unlabelled fake credentials,
+    // 3. Set up a sibling run directory to verify sibling separation
+    const siblingRunId = `sibling-run-${Date.now()}-${process.pid}`;
+    const siblingAllocation = allocateOrValidateRunDirectory({ runId: siblingRunId });
+    const siblingCanary = path.join(siblingAllocation.runDir, 'sibling-canary.txt');
+    fs.writeFileSync(siblingCanary, 'SIBLING_CANARY_MUST_SURVIVE', 'utf-8');
+
+    // 4. Synthesize a temporary test file designed to deliberately throw an error containing bare, unlabelled fake credentials,
     // a fake secret in the dynamic test title, split stdout/stderr chunks, JSON payloads, and an owned artifact file
     const tmpTestPath = path.resolve(__dirname, '00-tmp-deliberate-fail.spec.ts');
     const relativeTestFile = '00-tmp-deliberate-fail.spec.ts';
@@ -149,7 +160,7 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
     fs.writeFileSync(tmpTestPath, testContent, 'utf-8');
 
     try {
-      // 4. Invoke Playwright runner as a child process using the safe reporter config and childOutputDir
+      // 5. Invoke Playwright runner as a child process using the safe reporter config and childRunId
       const configPath = path.resolve(__dirname, 'playwright.auth-qualification.config.ts');
       const cliPath = path.resolve(process.cwd(), 'node_modules', '@playwright/test', 'cli.js');
 
@@ -160,18 +171,18 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
           encoding: 'utf-8',
           env: {
             ...process.env,
-            AUTH_QUALIFICATION_OUTPUT_DIR: childOutputDir,
+            AUTH_QUALIFICATION_RUN_ID: childRunId,
             AUTH_QUALIFICATION_READY: 'false',
           },
         }
       );
 
-      // 5. Deliberate failure must result in exit code 1 (intended test failure)
+      // 6. Deliberate failure must result in exit code 1 (intended test failure)
       expect(result.status, 'Deliberate test failure must exit with code 1').toBe(1);
 
       const combinedOutput = `${result.stdout || ''}\n${result.stderr || ''}`;
 
-      // 6. Assert zero leakage of secret in title, bare secrets, split chunks, JSON keys, or cookies
+      // 7. Assert zero leakage of secret in title, bare secrets, split chunks, JSON keys, or cookies
       expect(combinedOutput.includes(secretInTitle), 'Output must NOT contain fake secret in test title').toBe(false);
       expect(combinedOutput.includes(bareFakeSecret), 'Output must NOT contain bare fake secret string').toBe(false);
       expect(combinedOutput.includes(splitChunk1), 'Output must NOT contain split stdout chunk 1').toBe(false);
@@ -179,17 +190,21 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
       expect(combinedOutput.includes(jsonFakeSecret), 'Output must NOT contain JSON fake secret').toBe(false);
       expect(combinedOutput.includes(cookieFakeSecret), 'Output must NOT contain cookie fake secret').toBe(false);
 
-      // 7. Assert output uses allowlisted scenario ID fallback ([UNLISTED_SCENARIO])
+      // 8. Assert output uses allowlisted scenario ID fallback ([UNLISTED_SCENARIO])
       expect(combinedOutput.includes('[UNLISTED_SCENARIO]'), 'Output must display allowlisted scenario ID placeholder').toBe(true);
 
-      // 8. Assert output contains only safe fixed reason code
+      // 9. Assert output contains only safe fixed reason code
       expect(combinedOutput.includes('Reason: [INTENDED_OR_ASSERTION_FAILURE]'), 'Output must contain safe fixed reason code').toBe(true);
 
-      // 9. Assert foreign canary OUTSIDE the run directory was strictly preserved
+      // 10. Assert foreign canary OUTSIDE the run directory was strictly preserved
       expect(fs.existsSync(canaryOutside), 'Canary file outside owned directory must NOT be deleted').toBe(true);
       expect(fs.readFileSync(canaryOutside, 'utf-8')).toBe('CANARY_OUTSIDE_MUST_SURVIVE');
 
-      // 10. Assert synthetic secret artifacts created by that run were NOT retained
+      // 11. Assert sibling run directory and sibling canary SURVIVED untouched
+      expect(fs.existsSync(siblingCanary), 'Sibling canary must survive child run cleanup').toBe(true);
+      expect(fs.readFileSync(siblingCanary, 'utf-8')).toBe('SIBLING_CANARY_MUST_SURVIVE');
+
+      // 12. Assert synthetic secret artifacts created by that run were NOT retained
       if (fs.existsSync(childOutputDir)) {
         const remainingFiles = fs.readdirSync(childOutputDir, { recursive: true }) as string[];
         const hasSecretArtifact = remainingFiles.some(
@@ -198,72 +213,100 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
         expect(hasSecretArtifact, 'Synthetic secret artifacts must not be retained').toBe(false);
       }
     } finally {
-      // Clean up temporary files
-      if (fs.existsSync(tmpTestPath)) {
-        fs.unlinkSync(tmpTestPath);
-      }
-      if (fs.existsSync(canaryOutside)) {
-        fs.unlinkSync(canaryOutside);
-      }
-      if (fs.existsSync(childOutputDir)) {
-        fs.rmSync(childOutputDir, { recursive: true, force: true });
-      }
+      // Clean up temporary test file and canaries
+      if (fs.existsSync(tmpTestPath)) fs.unlinkSync(tmpTestPath);
+      if (fs.existsSync(canaryOutside)) fs.unlinkSync(canaryOutside);
+      safeCleanupRunDirectory(childOutputDir, childRunId, childAllocation.ownershipToken);
+      safeCleanupRunDirectory(siblingAllocation.runDir, siblingRunId, siblingAllocation.ownershipToken);
     }
   });
 
-  test('SENTINEL-05: canary preservation and path containment prevents deletion of foreign files outside owned directory', () => {
-    const ownedDir = path.resolve(__dirname, '.tmp-containment-owned');
-    const foreignDir = path.resolve(__dirname, '.tmp-containment-foreign');
+  test('SENTINEL-05: output root ownership validation, sibling separation, canary preservation & ancestor junction rejection', () => {
+    const testParent = path.resolve(__dirname, '.tmp-test-artifacts-parent');
+    if (!fs.existsSync(testParent)) fs.mkdirSync(testParent, { recursive: true });
 
-    if (!fs.existsSync(ownedDir)) fs.mkdirSync(ownedDir, { recursive: true });
+    const foreignDir = path.resolve(__dirname, '.tmp-unowned-foreign-dir');
     if (!fs.existsSync(foreignDir)) fs.mkdirSync(foreignDir, { recursive: true });
-
-    const ownedFile = path.resolve(ownedDir, 'owned-artifact.txt');
-    const foreignCanary = path.resolve(foreignDir, 'foreign-canary.txt');
-    const traversalPath = path.resolve(ownedDir, '..', '.tmp-containment-foreign', 'foreign-canary.txt');
-
-    fs.writeFileSync(ownedFile, 'OWNED_ARTIFACT', 'utf-8');
-    fs.writeFileSync(foreignCanary, 'FOREIGN_CANARY_DO_NOT_TOUCH', 'utf-8');
+    const foreignCanary = path.join(foreignDir, 'foreign-report-canary.txt');
+    fs.writeFileSync(foreignCanary, 'FOREIGN_CANARY_MUST_NEVER_BE_DELETED', 'utf-8');
 
     try {
-      // 1. isSafelyContainedInOwnedDir accurately distinguishes containment
-      expect(isSafelyContainedInOwnedDir(ownedFile, ownedDir)).toBe(true);
-      expect(isSafelyContainedInOwnedDir(foreignCanary, ownedDir)).toBe(false);
-      expect(isSafelyContainedInOwnedDir(traversalPath, ownedDir)).toBe(false);
-      expect(isSafelyContainedInOwnedDir(ownedDir, ownedDir)).toBe(false); // Directory itself is not an uninkable file
-      expect(isSafelyContainedInOwnedDir('', ownedDir)).toBe(false);
+      // 1. Refusal of arbitrary output roots BEFORE runner cleanup:
+      // Passing invalid run IDs with traversal or slashes must throw fail-closed
+      expect(() => allocateOrValidateRunDirectory({ parentDir: testParent, runId: '../../foreign-escape' })).toThrow(
+        /\[OWNERSHIP_SAFETY_VIOLATION\].*Invalid run identifier/
+      );
+      expect(() => allocateOrValidateRunDirectory({ parentDir: testParent, runId: 'nested/dir/attempt' })).toThrow(
+        /\[OWNERSHIP_SAFETY_VIOLATION\].*Invalid run identifier/
+      );
+      expect(() => allocateOrValidateRunDirectory({ parentDir: testParent, runId: 'run with spaces' })).toThrow(
+        /\[OWNERSHIP_SAFETY_VIOLATION\].*Invalid run identifier/
+      );
 
-      // 2. Reporter attachment cleanup in onTestEnd strictly protects foreign canary
-      const reporter = new SafeQualificationReporter({ outputDir: ownedDir });
-      const mockResult: any = {
-        status: 'failed',
-        duration: 10,
-        attachments: [
-          { name: 'foreign-canary', path: foreignCanary },
-          { name: 'owned-artifact', path: ownedFile },
-        ],
-      };
-      const mockTestCase: any = {
-        title: 'SENTINEL-05: containment check',
-        parent: { project: () => ({ name: 'sentinel-checks' }) },
-      };
+      // 2. Unowned directory refusal:
+      // An unowned directory missing .auth-run-ownership.json cannot be cleaned
+      expect(validateRunOwnership(foreignDir, undefined, undefined, testParent)).toBe(false);
+      expect(safeCleanupRunDirectory(foreignDir, undefined, undefined, testParent)).toBe(false);
+      expect(fs.existsSync(foreignCanary), 'Foreign canary must survive unowned cleanup attempt').toBe(true);
 
-      reporter.onTestEnd(mockTestCase, mockResult);
+      // Reporter with unowned output directory refuses deletion in onEnd()
+      const unownedReporter = new SafeQualificationReporter({
+        outputDir: foreignDir,
+        parentDir: testParent,
+      });
+      unownedReporter.onEnd();
+      expect(fs.existsSync(foreignCanary), 'Foreign canary must survive reporter onEnd()').toBe(true);
 
-      // Foreign canary must survive untouched
-      expect(fs.existsSync(foreignCanary), 'Foreign canary must survive onTestEnd').toBe(true);
-      expect(fs.readFileSync(foreignCanary, 'utf-8')).toBe('FOREIGN_CANARY_DO_NOT_TOUCH');
+      // 3. Parent / child / sibling run separation:
+      const runA = allocateOrValidateRunDirectory({ parentDir: testParent, runId: 'run-alpha' });
+      const runB = allocateOrValidateRunDirectory({ parentDir: testParent, runId: 'run-beta' });
 
-      // Owned file strictly inside ownedDir must be unlinked
-      expect(fs.existsSync(ownedFile), 'Owned artifact must be unlinked onTestEnd').toBe(false);
+      const canaryA = path.join(runA.runDir, 'artifact-a.txt');
+      const canaryB = path.join(runB.runDir, 'artifact-b.txt');
+      fs.writeFileSync(canaryA, 'RUN_A_ARTIFACT', 'utf-8');
+      fs.writeFileSync(canaryB, 'RUN_B_ARTIFACT', 'utf-8');
 
-      // 3. onEnd() cleans ownedDir but NEVER touches workspace test-results or foreign dirs
-      reporter.onEnd();
-      expect(fs.existsSync(ownedDir), 'ownedDir should be cleaned up by onEnd').toBe(false);
-      expect(fs.existsSync(foreignCanary), 'Foreign directory must survive onEnd').toBe(true);
+      // Cleaning runA removes runA, but runB and the parent directory survive untouched
+      const cleanedA = safeCleanupRunDirectory(runA.runDir, runA.runId, runA.ownershipToken, testParent);
+      expect(cleanedA).toBe(true);
+      expect(fs.existsSync(runA.runDir), 'runA should be cleaned').toBe(false);
+      expect(fs.existsSync(canaryB), 'runB artifact must survive runA cleanup').toBe(true);
+      expect(fs.existsSync(runB.runDir), 'runB directory must survive runA cleanup').toBe(true);
+      expect(fs.existsSync(testParent), 'Fixed parent directory must NEVER be deleted').toBe(true);
+
+      // Cleaning parent directory itself is strictly prohibited
+      expect(safeCleanupRunDirectory(testParent, undefined, undefined, testParent)).toBe(false);
+
+      // 4. Ancestor symlink / junction escape rejection:
+      const outsideDir = path.resolve(__dirname, '.tmp-outside-target');
+      if (!fs.existsSync(outsideDir)) fs.mkdirSync(outsideDir, { recursive: true });
+      const outsideFile = path.join(outsideDir, 'outside-secret.txt');
+      fs.writeFileSync(outsideFile, 'OUTSIDE_FILE', 'utf-8');
+
+      const junctionLink = path.join(runB.runDir, 'junction-escape');
+      let junctionTested = false;
+      try {
+        fs.symlinkSync(outsideDir, junctionLink, 'junction');
+        junctionTested = true;
+      } catch (err: any) {
+        // Platform limitation notice (e.g. if platform lacks junction permission)
+        process.stderr.write(`[NOTICE] NTFS junction creation unavailable on this system: ${err.message}\n`);
+      }
+
+      if (junctionTested) {
+        const fileUnderJunction = path.join(junctionLink, 'outside-secret.txt');
+        // Even though fileUnderJunction lexically starts with runB.runDir,
+        // isSafelyContainedInOwnedDir must detect the ancestor junction and return false!
+        expect(isSafelyContainedInOwnedDir(fileUnderJunction, runB.runDir)).toBe(false);
+        fs.unlinkSync(junctionLink);
+      }
+
+      // Final cleanup of runB
+      safeCleanupRunDirectory(runB.runDir, runB.runId, runB.ownershipToken, testParent);
+      if (fs.existsSync(outsideDir)) fs.rmSync(outsideDir, { recursive: true, force: true });
     } finally {
-      if (fs.existsSync(ownedDir)) fs.rmSync(ownedDir, { recursive: true, force: true });
       if (fs.existsSync(foreignDir)) fs.rmSync(foreignDir, { recursive: true, force: true });
+      if (fs.existsSync(testParent)) fs.rmSync(testParent, { recursive: true, force: true });
     }
   });
 
