@@ -638,6 +638,24 @@ family-wide revocation without a separate justified design and approval.
 
 **Browser qualification:** Keep the six-host production/local login -> refresh -> protected dashboard -> logout matrix under Wave 8 qualification. No local/production journey has been executed by this source acceptance; cookies, redirects, ingress and physical DB topology remain outstanding.
 
+**Owner browser requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
+is mandatory for relevant authentication implementation/acceptance tasks and browser
+handoffs. Run an early separately scoped controlled-environment Chromium/Playwright
+smoke gate when accepted code is available; retain the formal Wave 8 matrix and
+separate authorization for production deployment/testing.
+
+### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
+**Status:** `PLANNED` (NOT STARTED; requires identified controlled build/environment and authorized synthetic fixtures)
+**Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
+**Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
+**Scope:** Playwright Chromium SUIA/RTH learner and SHC admin login, protected dashboard,
+approved refresh/logout, invalid credentials, blocked-account refresh, same-email tenant
+independence, account switching, cookies/redirects and cross-tenant denial. Pin tested
+source/build and environment; require executable results, secret-free failure evidence,
+independent verification and Sol acceptance. Record known SHC gaps rather than inventing
+supported refresh. No broad refactor, production deployment or production test authorization.
+This early gate supplements, and does not close or replace, formal Wave 8 qualification.
+
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
 **Status:** `CLOSED` (Sol accepts bounded source investigation at reviewed da6c0742 with SHC/client/store/guard qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; no whole-application or deployed journey acceptance)
 **Wave / root cause:** 1 / RC-ID-01
@@ -1188,6 +1206,11 @@ Required:
 | W7 | Marketing/privacy | `PLANNED` | Yes for marketing release |
 | W8 | Cross-platform qualification | `PLANNED` | Yes |
 | W9 | Operational/scale qualification | `PLANNED` | Final |
+
+Wave 8 authentication browser acceptance must follow
+`audit/Authentication_Browser_Qualification_Requirements.md`, including all six
+owner-required production/local environments. W1.2-BROWSER-01 provides earlier
+controlled smoke evidence only; formal production qualification remains separately gated.
 
 ---
 
