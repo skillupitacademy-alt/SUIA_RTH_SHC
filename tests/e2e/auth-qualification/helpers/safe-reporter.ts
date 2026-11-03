@@ -174,23 +174,6 @@ export default class SafeQualificationReporter implements Reporter {
         this.ownershipToken,
         this.parentDir
       );
-
-      // Register exit hook to clean up any terminal .last-run.json re-created by Playwright runner at process termination
-      process.once('exit', () => {
-        try {
-          if (this.ownedOutputDir && fs.existsSync(this.ownedOutputDir)) {
-            const rel = path.relative(this.parentDir, this.ownedOutputDir);
-            if (!rel.startsWith('..') && !path.isAbsolute(rel) && rel !== '') {
-              const files = fs.readdirSync(this.ownedOutputDir);
-              if (files.length <= 1 && (files.length === 0 || files[0] === '.last-run.json')) {
-                fs.rmSync(this.ownedOutputDir, { recursive: true, force: true });
-              }
-            }
-          }
-        } catch {
-          // Ignore exit errors
-        }
-      });
     }
   }
 }

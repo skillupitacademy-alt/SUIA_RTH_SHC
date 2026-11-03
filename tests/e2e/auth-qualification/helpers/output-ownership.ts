@@ -57,17 +57,25 @@ export function hasSymlinkOrJunctionAncestor(targetPath: string, stopAncestor?: 
   }
 }
 
+export interface AllocateRunDirectoryOptions {
+  runId?: string;
+  parentDir?: string;
+  ownershipToken?: string;
+  create?: boolean;
+  expectExisting?: boolean;
+}
+
 /**
  * Validates that an output directory is strictly a unique run directory inside the fixed
  * harness parent, contains a valid run ID, has no symlink/junction ancestors, and does not escape.
  * Fails closed BEFORE Playwright config or runner can touch or clean the directory.
  */
-export function allocateOrValidateRunDirectory(options?: {
-  runId?: string;
-  parentDir?: string;
-  ownershipToken?: string;
-  create?: boolean;
-}): { runId: string; runDir: string; ownershipToken: string } {
+export function allocateOrValidateRunDirectory(options?: AllocateRunDirectoryOptions): {
+  runId: string;
+  runDir: string;
+  outputDir: string;
+  ownershipToken: string;
+} {
   const parentDir = options?.parentDir
     ? path.resolve(options.parentDir)
     : FIXED_HARNESS_ARTIFACTS_PARENT;
@@ -80,7 +88,16 @@ export function allocateOrValidateRunDirectory(options?: {
   }
 
   // 2. Validate or generate run ID
-  let runId = options?.runId || process.env.AUTH_QUALIFICATION_RUN_ID;
+  const isInheritedWorker =
+    !options?.runId &&
+    !options?.parentDir &&
+    Boolean(process.env.AUTH_QUALIFICATION_RUN_ID) &&
+    Boolean(process.env.AUTH_QUALIFICATION_OWNERSHIP_TOKEN);
+
+  let runId = options?.runId;
+  if (!runId && isInheritedWorker) {
+    runId = process.env.AUTH_QUALIFICATION_RUN_ID;
+  }
   if (runId) {
     runId = runId.trim();
     if (!VALID_RUN_ID_REGEX.test(runId)) {
@@ -96,6 +113,7 @@ export function allocateOrValidateRunDirectory(options?: {
 
   // 3. Form runDir and verify strict containment beneath parentDir
   const runDir = path.resolve(parentDir, runId);
+  const outputDir = path.join(runDir, 'artifacts');
   const relative = path.relative(parentDir, runDir);
   if (
     relative.startsWith('..') ||
@@ -126,15 +144,60 @@ export function allocateOrValidateRunDirectory(options?: {
 
   // 6. Token generation and marker creation
   const markerPath = path.join(runDir, OWNERSHIP_MARKER_FILENAME);
-  let ownershipToken = options?.ownershipToken || process.env.AUTH_QUALIFICATION_OWNERSHIP_TOKEN;
+  let ownershipToken = options?.ownershipToken;
+  if (!ownershipToken && isInheritedWorker) {
+    ownershipToken = process.env.AUTH_QUALIFICATION_OWNERSHIP_TOKEN;
+  }
 
   if (options?.create !== false) {
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true });
     }
-    if (!fs.existsSync(runDir)) {
-      fs.mkdirSync(runDir, { recursive: true });
+
+    // Atomically ensure fresh directory allocation:
+    // If runDir already exists, refuse to overwrite or claim unless caller explicitly expects existing AND proves ownership
+    if (fs.existsSync(runDir)) {
+      if (options?.expectExisting === true || isInheritedWorker) {
+        const tokenToValidate = ownershipToken;
+        if (!fs.existsSync(markerPath)) {
+          throw new Error(
+            `[OWNERSHIP_SAFETY_VIOLATION] Existing directory '${runDir}' lacks an ownership marker and cannot be claimed.`
+          );
+        }
+        if (!tokenToValidate) {
+          throw new Error(
+            `[OWNERSHIP_SAFETY_VIOLATION] Cannot claim existing run directory '${runDir}' without providing an expected ownership token.`
+          );
+        }
+        let parsed: RunOwnershipRecord;
+        try {
+          parsed = JSON.parse(fs.readFileSync(markerPath, 'utf-8'));
+        } catch {
+          throw new Error(
+            `[OWNERSHIP_SAFETY_VIOLATION] Existing marker in '${runDir}' is corrupt or unreadable.`
+          );
+        }
+        if (
+          parsed.harness !== 'auth-qualification-run' ||
+          parsed.runId !== runId ||
+          parsed.ownershipToken !== tokenToValidate
+        ) {
+          throw new Error(
+            `[OWNERSHIP_SAFETY_VIOLATION] Cannot claim existing run directory '${runDir}': marker content or ownership token mismatch.`
+          );
+        }
+        // Validated existing ownership; do not overwrite marker
+        return { runId, runDir, outputDir, ownershipToken: tokenToValidate };
+      } else {
+        throw new Error(
+          `[OWNERSHIP_SAFETY_VIOLATION] Run directory '${runDir}' already exists. Refusing to overwrite existing run or marker.`
+        );
+      }
     }
+
+    // Fresh atomic creation
+    fs.mkdirSync(runDir, { recursive: false });
+    fs.mkdirSync(outputDir, { recursive: false });
 
     if (!ownershipToken) {
       ownershipToken = crypto.randomBytes(16).toString('hex');
@@ -150,21 +213,47 @@ export function allocateOrValidateRunDirectory(options?: {
       createdAt: Date.now(),
     };
 
-    fs.writeFileSync(markerPath, JSON.stringify(record, null, 2), 'utf-8');
-  } else if (!ownershipToken && fs.existsSync(markerPath)) {
+    fs.writeFileSync(markerPath, JSON.stringify(record, null, 2), { encoding: 'utf-8', flag: 'wx' });
+  } else {
+    // Validation-only mode (create === false)
+    if (!fs.existsSync(runDir)) {
+      throw new Error(
+        `[OWNERSHIP_SAFETY_VIOLATION] Run directory '${runDir}' does not exist.`
+      );
+    }
+    if (!fs.existsSync(markerPath)) {
+      throw new Error(
+        `[OWNERSHIP_SAFETY_VIOLATION] Existing directory '${runDir}' lacks an ownership marker.`
+      );
+    }
+    if (!ownershipToken) {
+      throw new Error(
+        `[OWNERSHIP_SAFETY_VIOLATION] Cannot validate existing run directory '${runDir}' without an expected ownership token.`
+      );
+    }
+    let parsed: RunOwnershipRecord;
     try {
-      const data = JSON.parse(fs.readFileSync(markerPath, 'utf-8'));
-      if (data.ownershipToken) {
-        ownershipToken = data.ownershipToken;
-      }
+      parsed = JSON.parse(fs.readFileSync(markerPath, 'utf-8'));
     } catch {
-      // Ignore
+      throw new Error(
+        `[OWNERSHIP_SAFETY_VIOLATION] Existing marker in '${runDir}' is corrupt.`
+      );
+    }
+    if (
+      parsed.harness !== 'auth-qualification-run' ||
+      parsed.runId !== runId ||
+      parsed.ownershipToken !== ownershipToken
+    ) {
+      throw new Error(
+        `[OWNERSHIP_SAFETY_VIOLATION] Existing directory '${runDir}' failed ownership token match.`
+      );
     }
   }
 
   return {
     runId,
     runDir,
+    outputDir,
     ownershipToken: ownershipToken || '',
   };
 }

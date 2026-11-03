@@ -14,6 +14,7 @@ import {
 } from './helpers/safe-reporter';
 import {
   FIXED_HARNESS_ARTIFACTS_PARENT,
+  OWNERSHIP_MARKER_FILENAME,
   allocateOrValidateRunDirectory,
   validateRunOwnership,
   safeCleanupRunDirectory,
@@ -104,10 +105,9 @@ test.describe('Task D Sentinel, Readiness & Redaction Harness Verification', () 
   });
 
   test('SENTINEL-04: child-process deliberate failure suppresses bare errors, split stdout/stderr, fake titles, and cleans owned artifacts', () => {
-    // 1. Allocate a genuine unique run ID under the fixed harness parent
+    // 1. Generate a unique run ID for child process (child allocates its own directory on launch)
     const childRunId = `sentinel-child-${Date.now()}-${process.pid}`;
-    const childAllocation = allocateOrValidateRunDirectory({ runId: childRunId });
-    const childOutputDir = childAllocation.runDir;
+    const childOutputDir = path.join(FIXED_HARNESS_ARTIFACTS_PARENT, childRunId);
 
     // 2. Set up a foreign canary file OUTSIDE the child run root to verify it survives
     const canaryOutside = path.resolve(__dirname, '.canary-outside-sentinel-test.txt');
@@ -204,7 +204,7 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
       expect(fs.existsSync(siblingCanary), 'Sibling canary must survive child run cleanup').toBe(true);
       expect(fs.readFileSync(siblingCanary, 'utf-8')).toBe('SIBLING_CANARY_MUST_SURVIVE');
 
-      // 12. Assert synthetic secret artifacts created by that run were NOT retained
+      // 12. Assert synthetic secret-bearing artifacts created by that run were NOT retained
       if (fs.existsSync(childOutputDir)) {
         const remainingFiles = fs.readdirSync(childOutputDir, { recursive: true }) as string[];
         const hasSecretArtifact = remainingFiles.some(
@@ -213,10 +213,10 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
         expect(hasSecretArtifact, 'Synthetic secret artifacts must not be retained').toBe(false);
       }
     } finally {
-      // Clean up temporary test file and canaries
+      // Clean up temporary test file, canaries, and runs
       if (fs.existsSync(tmpTestPath)) fs.unlinkSync(tmpTestPath);
       if (fs.existsSync(canaryOutside)) fs.unlinkSync(canaryOutside);
-      safeCleanupRunDirectory(childOutputDir, childRunId, childAllocation.ownershipToken);
+      if (fs.existsSync(childOutputDir)) fs.rmSync(childOutputDir, { recursive: true, force: true });
       safeCleanupRunDirectory(siblingAllocation.runDir, siblingRunId, siblingAllocation.ownershipToken);
     }
   });
@@ -243,21 +243,57 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
         /\[OWNERSHIP_SAFETY_VIOLATION\].*Invalid run identifier/
       );
 
-      // 2. Unowned directory refusal:
-      // An unowned directory missing .auth-run-ownership.json cannot be cleaned
-      expect(validateRunOwnership(foreignDir, undefined, undefined, testParent)).toBe(false);
-      expect(safeCleanupRunDirectory(foreignDir, undefined, undefined, testParent)).toBe(false);
-      expect(fs.existsSync(foreignCanary), 'Foreign canary must survive unowned cleanup attempt').toBe(true);
+      // 2. Existing foreign directory with valid run ID:
+      // Cannot overwrite or claim an existing unowned directory; preserves foreign files and writes zero markers
+      const foreignValidRunDir = path.join(testParent, 'valid-looking-run-id');
+      if (!fs.existsSync(foreignValidRunDir)) fs.mkdirSync(foreignValidRunDir, { recursive: true });
+      const foreignDataFile = path.join(foreignValidRunDir, 'foreign-data.txt');
+      fs.writeFileSync(foreignDataFile, 'FOREIGN_DATA_PRESERVED', 'utf-8');
 
-      // Reporter with unowned output directory refuses deletion in onEnd()
-      const unownedReporter = new SafeQualificationReporter({
+      expect(() =>
+        allocateOrValidateRunDirectory({ parentDir: testParent, runId: 'valid-looking-run-id' })
+      ).toThrow(/\[OWNERSHIP_SAFETY_VIOLATION\].*already exists/);
+      expect(fs.existsSync(foreignDataFile), 'Foreign data file must survive allocation refusal').toBe(true);
+      expect(
+        fs.existsSync(path.join(foreignValidRunDir, OWNERSHIP_MARKER_FILENAME)),
+        'No marker should be written into existing foreign directory'
+      ).toBe(false);
+
+      // 3. Existing owned run with wrong token:
+      // Refuses to claim or overwrite existing owned run with wrong token; preserves original marker content
+      const runOwned = allocateOrValidateRunDirectory({ parentDir: testParent, runId: 'owned-run-x' });
+      const markerPath = path.join(runOwned.runDir, OWNERSHIP_MARKER_FILENAME);
+      const originalMarkerContent = fs.readFileSync(markerPath, 'utf-8');
+
+      expect(() =>
+        allocateOrValidateRunDirectory({
+          parentDir: testParent,
+          runId: 'owned-run-x',
+          expectExisting: true,
+          ownershipToken: 'wrong-token-abc',
+        })
+      ).toThrow(/\[OWNERSHIP_SAFETY_VIOLATION\].*marker content or ownership token mismatch/);
+      expect(fs.readFileSync(markerPath, 'utf-8'), 'Original marker content must be untouched').toBe(
+        originalMarkerContent
+      );
+
+      // 4. Mismatched marker/token plus terminal metadata in reporter:
+      // An unowned directory or mismatched token with terminal .last-run.json refuses deletion in reporter onEnd()
+      const terminalJsonPath = path.join(foreignDir, '.last-run.json');
+      fs.writeFileSync(terminalJsonPath, JSON.stringify({ status: 'failed' }), 'utf-8');
+
+      const mismatchedReporter = new SafeQualificationReporter({
         outputDir: foreignDir,
+        runId: 'mismatched-id',
+        ownershipToken: 'mismatched-token',
         parentDir: testParent,
       });
-      unownedReporter.onEnd();
-      expect(fs.existsSync(foreignCanary), 'Foreign canary must survive reporter onEnd()').toBe(true);
+      mismatchedReporter.onEnd();
 
-      // 3. Parent / child / sibling run separation:
+      expect(fs.existsSync(foreignCanary), 'Foreign canary must survive reporter onEnd()').toBe(true);
+      expect(fs.existsSync(terminalJsonPath), 'Terminal metadata in unowned directory must NOT be deleted').toBe(true);
+
+      // 5. Parent / child / sibling run separation:
       const runA = allocateOrValidateRunDirectory({ parentDir: testParent, runId: 'run-alpha' });
       const runB = allocateOrValidateRunDirectory({ parentDir: testParent, runId: 'run-beta' });
 
@@ -277,7 +313,7 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
       // Cleaning parent directory itself is strictly prohibited
       expect(safeCleanupRunDirectory(testParent, undefined, undefined, testParent)).toBe(false);
 
-      // 4. Ancestor symlink / junction escape rejection:
+      // 6. Ancestor symlink / junction escape rejection:
       const outsideDir = path.resolve(__dirname, '.tmp-outside-target');
       if (!fs.existsSync(outsideDir)) fs.mkdirSync(outsideDir, { recursive: true });
       const outsideFile = path.join(outsideDir, 'outside-secret.txt');
@@ -301,9 +337,11 @@ test('unlisted_title_containing_${secretInTitle}', async ({}, testInfo) => {
         fs.unlinkSync(junctionLink);
       }
 
-      // Final cleanup of runB
+      // Final cleanup of runOwned and runB
+      safeCleanupRunDirectory(runOwned.runDir, runOwned.runId, runOwned.ownershipToken, testParent);
       safeCleanupRunDirectory(runB.runDir, runB.runId, runB.ownershipToken, testParent);
       if (fs.existsSync(outsideDir)) fs.rmSync(outsideDir, { recursive: true, force: true });
+      if (fs.existsSync(foreignValidRunDir)) fs.rmSync(foreignValidRunDir, { recursive: true, force: true });
     } finally {
       if (fs.existsSync(foreignDir)) fs.rmSync(foreignDir, { recursive: true, force: true });
       if (fs.existsSync(testParent)) fs.rmSync(testParent, { recursive: true, force: true });

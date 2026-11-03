@@ -21,7 +21,8 @@ if (SHC_URL) validateOriginSafety(SHC_URL);
 // Validate and allocate unique, owned run directory strictly beneath fixed harness parent.
 // Fails closed BEFORE returning config if an invalid run ID or escaping path is provided.
 const runAllocation = allocateOrValidateRunDirectory();
-const ownedOutputDir = runAllocation.runDir;
+const ownedRunDir = runAllocation.runDir;
+const ownedOutputDir = runAllocation.outputDir;
 const runId = runAllocation.runId;
 const ownershipToken = runAllocation.ownershipToken;
 
@@ -44,7 +45,7 @@ export default defineConfig({
     [
       './helpers/safe-reporter.ts',
       {
-        outputDir: ownedOutputDir,
+        outputDir: ownedRunDir,
         runId,
         ownershipToken,
       },
