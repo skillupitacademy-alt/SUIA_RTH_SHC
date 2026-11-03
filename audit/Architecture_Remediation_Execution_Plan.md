@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Stage 1 readiness certified under owner-authorized live Neon mode in `audit/W1.2-BROWSER-01_Runtime_Readiness_Report.md`; Stage 2 headless Chromium journeys executed across SUIA, RTH, and SHC in `audit/W1.2-BROWSER-01_Headless_Execution_Report.md`. 16 tests passed [8 sentinels + 8 live browser journeys], 0 failed, 7 gated as SKIPPED / NOT EXECUTED. Awaiting Sol independent review and acceptance.)
+**Status:** `IN_PROGRESS` (Preparation accepted; author-reported live headless smoke at 50378d90 is IN_REVIEW. Build/run provenance, partial-dashboard scope, historical failures/raw-reporter usage and normal live session writes require reconciliation; see `audit/W1.2_Browser_Runtime_Sol_Review_50378d90.md`. No full runtime closure.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
