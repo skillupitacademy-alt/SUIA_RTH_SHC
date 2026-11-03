@@ -696,7 +696,7 @@ a bounded task and independent review. Carry exam default-store/conditional-owne
 into application/domain assessment; global resource isolation is not certified by GUARD-01.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED` (Source qualification delivered in `audit/W1.2-SESS-02_Logout_All_Qualification.md`; pending independent review and Sol acceptance)
 **Assignment:** Gemini Batch 05 Task C, source qualification only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application:** API auth legacy POST logout-all and existing DELETE sessions path
