@@ -15,6 +15,10 @@ export default defineConfig({
     alias: [
       { find: /^@\/(.*)$/, replacement: path.resolve(__dirname, './src/$1') },
       { find: '@', replacement: path.resolve(__dirname, './src') },
+      { find: /^@quiz\/auth\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/auth/src/$1') },
+      { find: '@quiz/auth', replacement: path.resolve(__dirname, '../../packages/auth/src') },
+      { find: /^@quiz\/types\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/types/src/$1') },
+      { find: '@quiz/types', replacement: path.resolve(__dirname, '../../packages/types/src') },
       { find: '@quiz/db-people', replacement: path.resolve(__dirname, '../../packages/db-people/src/index.ts') },
       { find: /^@quiz\/db-people\/(.*)$/, replacement: path.resolve(__dirname, '../../packages/db-people/src/$1') },
     ],

@@ -687,7 +687,7 @@ source pattern is noted for separate qualification, not a reproduced runtime res
 one approved local/live-Neon journey. Preserve all-device skips and shared safety
 helpers. No backend auth/schema/account mutation, main merge or deployment.
 
-**Status for Dashboard & Cookie Batch (Tasks A-E):** `VERIFICATION_FAILED` for complete batch acceptance (learner assertions count navigation exceptions/foreign redirect blocks as success; cookie matrix exceeds assertions; fixture plan reuses unrelated ticket identities. SHC dashboard assertions independently passed once, as did 8 offline sentinels; this does not close the incomplete batch. Review: `audit/W1.2_Dashboard_Cookie_Sol_Review_56b259ab.md`. Correction assignment: `audit/W1.2_Gemini_Dashboard_Cookie_Corrections.md`. Parent BROWSER-01 remains IN_PROGRESS.)
+**Status for Dashboard & Cookie Batch (Tasks A-E):** `IMPLEMENTED_UNVERIFIED` within `IN_PROGRESS BROWSER-01` (Five-part corrections implemented per `audit/W1.2_Gemini_Dashboard_Cookie_Corrections.md`: PROXY-01 resolved in `a8fb0772`; fail-closed same-origin learner assertions and onboarding classification verified in AQ-01 and AQ-02; SHC API regression restored in `03-admin-shc-login.spec.ts` and GUI dashboard isolated in `03-admin-shc-dashboard.spec.ts`; exact cookie verification helper `cookie-policy-verifier.ts` verified with 8 offline unit tests; Task E updated with candidate labels `UNASSIGNED-*` preserving `GUARD-03` and `SESS-03`. All 8 sentinels passed. Report: `audit/W1.2_Browser_Dashboard_And_Cookie_Qualification_Report.md`. Parent BROWSER-01 remains IN_PROGRESS.)
 **Governing assignment:** `audit/W1.2_Gemini_Learner_Dashboard_Qualification_Task.md`:
 five sequential tasks: A SUIA dashboard control, B RTH dashboard control, C SHC dashboard
 control, D source-derived cookie-policy checks within those same sessions, E remaining
@@ -697,9 +697,7 @@ Each task requires separate evidence and Sol acceptance. Dashboard appearance do
 prove resource ownership or tenant isolation; unsupported cases remain NOT EXECUTED.
 
 ### W1.2-PROXY-01 - Local Learner Login Redirect Scope
-**Status:** `PLANNED` (independent anonymous local GETs observed SUIA/RTH dashboard
-307 redirects to production login origins; no redirect was followed. This is a local
-login-routing defect, not established evidence of an authorization exploit.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Committed locally as `a8fb0772`. Fixed unauthenticated login redirect default in `apps/skillup-web/src/proxy.ts` and `apps/realtutorialhub-web/src/proxy.ts` to omit hardcoded production fallbacks and resolve `/login` against request origin. Verified with 13 unit tests across SUIA/RTH and live local 307 same-origin assertions. Review pending by Sol.)
 **Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
 **Assignment:** `audit/W1.2_Gemini_Local_Login_Redirect_Correction_Task.md`
 **Implementer / acceptance:** Gemini / independent Sol review.

@@ -108,6 +108,7 @@ export default defineConfig({
       },
       testMatch: [
         '**/03-admin-shc-login.spec.ts',
+        '**/03-admin-shc-dashboard.spec.ts',
         '**/04-token-refresh-shc.spec.ts',
         '**/06-negative-shc.spec.ts',
       ],
