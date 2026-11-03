@@ -50,7 +50,20 @@ describe('TokenRefreshService Authority & Brand Binding (W1.2-REFRESH-05)', () =
       transaction: vi.fn(async (cb: any) => cb(mockDb)),
     };
 
-    service = new TokenRefreshService(mockTokenRepo, mockTokenService, mockAuditService);
+    const mockUserRepo = {
+      findActiveUserWithRoles: vi.fn().mockImplementation(async (userId: string) => ({
+        id: userId,
+        email: userId + '@example.com',
+        isBlocked: false,
+        deletedAt: null,
+        roles: ['student'],
+      })),
+      withDb: vi.fn(function (this: any) {
+        return this;
+      }),
+    };
+
+    service = new TokenRefreshService(mockTokenRepo, mockTokenService, mockAuditService, mockUserRepo as any);
   });
 
   it('TC-AUTH-01: succeeds for valid learner token matching RTH tenant DB', async () => {

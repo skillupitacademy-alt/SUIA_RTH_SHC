@@ -624,7 +624,7 @@ family-wide revocation without a separate justified design and approval.
 **Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `VERIFIED` (Design VERIFIED by Sol: strict tenant eligibility and scoped role freshness; blocked-account runtime defect remains open pending batch 03 implementation)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Batch 03 Task B runtime lifecycle & role freshness implemented, verified with 58 refresh tests, typecheck, auth package tests; ready for review)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`

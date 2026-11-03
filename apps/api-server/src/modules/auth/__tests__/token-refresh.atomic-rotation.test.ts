@@ -301,6 +301,23 @@ vi.mock('../audit.service', () => ({
   AuditService: vi.fn().mockImplementation(() => mockAuditService),
 }));
 
+const mockUserRepo = {
+  findActiveUserWithRoles: vi.fn().mockImplementation(async (userId: string) => ({
+    id: userId,
+    email: `@example.com`,
+    isBlocked: false,
+    deletedAt: null,
+    roles: [],
+  })),
+  withDb: vi.fn(function (this: any) {
+    return this;
+  }),
+};
+
+vi.mock('../repositories/user.repository', () => ({
+  UserRepository: vi.fn().mockImplementation(() => mockUserRepo),
+}));
+
 describe('W1.2-REFRESH-02: Atomic Single-Consumer Refresh Rotation', () => {
   let mockTokenService: any;
 

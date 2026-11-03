@@ -4,6 +4,14 @@ import { eq } from 'drizzle-orm';
 import type { BrandAuthTables } from '@/modules/auth/brand-db';
 import { BaseRepository } from '@/modules/core/repositories/base.repository';
 
+export interface StrictUserEligibility {
+  id: string;
+  email: string;
+  isBlocked: boolean;
+  deletedAt: Date | null;
+  roles: string[];
+}
+
 export interface User {
   id: string;
   email: string;
@@ -114,6 +122,54 @@ export class UserRepository extends BaseRepository<User, typeof users> {
     const user = await this.findByEmail(email);
     if (user === undefined) return undefined;
     return this.hydrateUserDetails(user);
+  }
+
+  /**
+   * Strict user eligibility & core roles lookup for token refresh (W1.2-REFRESH-06)
+   * - Propagates database errors directly (does not swallow outages)
+   * - Bypasses userProfiles on the critical path
+   * - Distinguishes missing user (null) from legitimate empty roles ([])
+   */
+  async findActiveUserWithRoles(userId: string): Promise<StrictUserEligibility | null> {
+    const db = this.dbInstance;
+    const usersTable = this.tables.users;
+    const rolesTable = this.tables.roles;
+    const userRolesTable = this.tables.userRoles;
+
+    const [userRecord] = await db
+      .select({
+        id: usersTable.id,
+        email: usersTable.email,
+        isBlocked: usersTable.isBlocked,
+        deletedAt: usersTable.deletedAt,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+
+    if (!userRecord) {
+      return null;
+    }
+
+    const roleRows = await db
+      .select({
+        name: rolesTable.name,
+      })
+      .from(userRolesTable)
+      .innerJoin(rolesTable, eq(userRolesTable.roleId, rolesTable.id))
+      .where(eq(userRolesTable.userId, userId));
+
+    const roles = (roleRows as Array<{ name?: string | null }>)
+      .map((r) => r.name?.trim().toLowerCase())
+      .filter((name): name is string => typeof name === 'string' && name.length > 0);
+
+    return {
+      id: userRecord.id,
+      email: userRecord.email,
+      isBlocked: Boolean(userRecord.isBlocked),
+      deletedAt: userRecord.deletedAt ? new Date(userRecord.deletedAt) : null,
+      roles,
+    };
   }
 
   async findByIdWithDetails(id: string) {

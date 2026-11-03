@@ -5,6 +5,7 @@ import { AuditService } from '@/modules/auth/audit.service';
 import { getAuthBrandContext, shouldUseBrandBinding } from '@/modules/auth/brand-db';
 import type { DeviceContext } from '@/modules/auth/repositories/token.repository';
 import { TokenRepository } from '@/modules/auth/repositories/token.repository';
+import { UserRepository, type StrictUserEligibility } from '@/modules/auth/repositories/user.repository';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
@@ -16,7 +17,8 @@ export class TokenRefreshService {
   constructor(
     private tokenRepo = container.get(TokenRepository),
     private tokenService = container.get(TokenService),
-    private auditService = container.get(AuditService)
+    private auditService = container.get(AuditService),
+    private userRepo = container.get(UserRepository)
   ) {}
 
   /**
@@ -47,6 +49,10 @@ export class TokenRefreshService {
     const brandTokenRepo = useBrandBinding && typeof this.tokenRepo.withDb === 'function'
       ? this.tokenRepo.withDb(brandContext.db, { refreshTokens: brandContext.tables.refreshTokens })
       : this.tokenRepo;
+
+    const brandUserRepo = useBrandBinding && typeof this.userRepo.withDb === 'function'
+      ? this.userRepo.withDb(brandContext.db, brandContext.tables)
+      : this.userRepo;
 
     // 🔐 STEP 1: Validate old token exists and is valid
     const existingSession = await brandTokenRepo.findByHash(oldTokenHash);
@@ -216,43 +222,138 @@ export class TokenRefreshService {
     // 🔐 STEP 2.5: Update last_used_at AFTER all authority verifications pass
     await brandTokenRepo.updateLastUsed(oldTokenHash);
 
-    // 🔐 STEP 3: Generate new tokens (CPU-only, no DB)
-    // JWT generation happens outside the transaction to minimize DB lock duration.
     const userId = existingSession.userId;
-
-    const isAdmin = oldPayload.isAdmin === true;
-    const tokenType = oldPayload.tokenType ?? (isAdmin ? 'admin' : 'user');
     const shadowUserId = oldPayload.shadowUserId ?? userId;
     const originalUserId = oldPayload.originalUserId ?? userId;
-
-    // 🔐 SECURITY FIX (API-40): Populate email and roles from the old token payload
-    // instead of using empty values. The old refresh token was verified above,
-    // so its claims are trustworthy for the new access token.
     const email: string = typeof oldPayload.email === 'string' ? oldPayload.email : '';
-    const roles: string[] = Array.isArray(oldPayload.roles)
-      ? oldPayload.roles.filter((r): r is string => typeof r === 'string')
-      : [];
 
-    // Generate new access token
+    // 🔐 STEP 2.6: Tenant-Local User Eligibility & Fresh Roles (W1.2-REFRESH-06)
+    let userEligibility: StrictUserEligibility | null = null;
+    if (typeof brandUserRepo.findActiveUserWithRoles === 'function') {
+      userEligibility = await brandUserRepo.findActiveUserWithRoles(userId);
+    } else if (typeof brandUserRepo.findByIdWithDetails === 'function') {
+      const details = await brandUserRepo.findByIdWithDetails(userId);
+      if (!details) {
+        userEligibility = null;
+      } else {
+        const userRolesList = Array.isArray(details.userRoles)
+          ? details.userRoles.map((ur: any) => ur.role?.name?.trim().toLowerCase()).filter(Boolean)
+          : [];
+        userEligibility = {
+          id: details.id,
+          email: details.email,
+          isBlocked: Boolean(details.isBlocked),
+          deletedAt: details.deletedAt ? new Date(details.deletedAt) : null,
+          roles: userRolesList,
+        };
+      }
+    } else {
+      throw new Error('User repository does not support eligibility checks');
+    }
+
+    // Deny missing account
+    if (!userEligibility) {
+      await this.auditService.log({
+        userId,
+        action: 'token_refresh_failed',
+        metadata: { reason: 'user_not_found', brand },
+        ip,
+        brand,
+      });
+      throw new Error('Invalid refresh token');
+    }
+
+    // Deny soft-deleted account
+    if (userEligibility.deletedAt !== null) {
+      await this.auditService.log({
+        userId,
+        action: 'token_refresh_failed',
+        metadata: { reason: 'user_deleted', brand },
+        ip,
+        brand,
+      });
+      throw new Error('Account has been deactivated');
+    }
+
+    // Deny blocked account (resolves baseline auth.refresh.blocked.branch.test.ts)
+    if (userEligibility.isBlocked === true) {
+      await this.auditService.log({
+        userId,
+        action: 'token_refresh_failed',
+        metadata: { reason: 'user_blocked', brand },
+        ip,
+        brand,
+      });
+      throw new Error('access_denied:user_blocked');
+    }
+
+    // 🔐 STEP 2.7: Role Freshness & Principal Scope Preservation
+    const dbRoles = userEligibility.roles;
+    const freshEmail = userEligibility.email || email;
+
+    const dbHasAdminRole = dbRoles.some((r) =>
+      ['admin', 'super_admin', 'infrastructure'].includes(r.toLowerCase())
+    );
+
+    const isSessionInfraScope = requestedAudience === 'infra';
+    const isSessionAdminScope = requestedAudience === 'admin';
+    let successorRoles: string[];
+    let successorIsAdmin: boolean;
+    let successorTokenType: 'user' | 'admin';
+    let successorAudience: string;
+
+    if (isSessionInfraScope) {
+      successorIsAdmin = true;
+      successorAudience = 'infra';
+      successorTokenType = 'admin';
+      successorRoles = dbRoles;
+    } else if (!isSessionAdminScope) {
+      // Learner scope: Preserve user audience, user tokenType, isAdmin=false
+      // CRITICAL RBAC DEFENSE: Strip administrative roles from learner successor token
+      successorIsAdmin = false;
+      successorAudience = 'user';
+      successorTokenType = 'user';
+      successorRoles = dbRoles.filter(
+        (r) => !['admin', 'super_admin', 'infrastructure'].includes(r.toLowerCase())
+      );
+    } else {
+      // Admin scope: Require current administrative role in database
+      if (!dbHasAdminRole) {
+        await this.auditService.log({
+          userId,
+          action: 'admin_session_demoted_revoked',
+          metadata: { reason: 'insufficient_permissions', brand },
+          ip,
+          brand,
+        });
+        throw new Error('access_denied:insufficient_permissions');
+      }
+      successorIsAdmin = true;
+      successorAudience = 'admin';
+      successorTokenType = 'admin';
+      successorRoles = dbRoles;
+    }
+
+    // 🔐 STEP 3: Generate new tokens (CPU-only, no DB)
     const newAccessToken = await this.tokenService.generateAccessToken({
       userId,
       originalUserId,
       shadowUserId,
-      email,
-      roles,
-      isAdmin,
-      tokenType,
+      email: freshEmail,
+      roles: successorRoles,
+      isAdmin: successorIsAdmin,
+      tokenType: successorTokenType,
       brand,
-      aud: requestedAudience,
+      aud: successorAudience,
     });
 
     // Generate new refresh token
     const newRefreshToken = await this.tokenService.generateRefreshToken(
       userId,
-      isAdmin,
-      requestedAudience,
+      successorIsAdmin,
+      successorAudience,
       {
-        tokenType,
+        tokenType: successorTokenType,
         brand,
         originalUserId,
         shadowUserId,
@@ -311,7 +412,7 @@ export class TokenRefreshService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
       userId,
-      isAdmin,
+      isAdmin: successorIsAdmin,
     };
   }
 }
