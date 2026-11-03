@@ -137,30 +137,73 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
       const submitBtn = page.locator('button[type="submit"], button:has-text("Sign in"), button:has-text("Log in")').first();
 
       await expect(emailInput).toBeVisible({ timeout: 10000 });
+      await expect(passInput).toBeVisible({ timeout: 10000 });
+      await expect(submitBtn).toBeVisible({ timeout: 10000 });
+      await expect(submitBtn).toBeEnabled({ timeout: 10000 });
+
       // Allow Next.js client hydration to attach form onSubmit handler
       await page.waitForTimeout(1000);
       await emailInput.fill(email);
-
-      await expect(passInput).toBeVisible({ timeout: 10000 });
       await passInput.fill(pass);
 
-      // Listen for login response to handle rate limiting cooldown if encountered
+      // Listen for login response explicitly without swallowing errors
       const loginResponsePromise = page.waitForResponse(
         resp => resp.url().includes('/api/auth/login'),
-        { timeout: 10000 }
-      ).catch(() => null);
+        { timeout: 15000 }
+      );
 
       await submitBtn.click();
 
-      const loginResp = await loginResponsePromise;
-      if (loginResp && loginResp.status() === 429) {
-        const retryAfterSec = parseInt(loginResp.headers()['retry-after'] || '15', 10);
-        const waitMs = (isNaN(retryAfterSec) ? 15 : retryAfterSec + 1) * 1000;
-        await page.waitForTimeout(waitMs);
-        // Ensure inputs are still populated before resubmitting
+      let loginResp;
+      try {
+        loginResp = await loginResponsePromise;
+      } catch {
+        throw new Error(
+          '[LOGIN_TIMEOUT] No response received from /api/auth/login within timeout; refusing to resubmit unknown-outcome request.'
+        );
+      }
+
+      if (loginResp.status() === 429) {
+        // Under no circumstances retry invalid-credential negative security tests
+        const isNegativeTest = email.toLowerCase().includes('invalid');
+        if (isNegativeTest) {
+          throw new Error(
+            '[RATE_LIMITED_429] Received HTTP 429 rate limit during invalid credential test; refusing retry on negative security assertion.'
+          );
+        }
+
+        const rawRetrySec = parseInt(loginResp.headers()['retry-after'] || '15', 10);
+        // Bound cooldown delay between 1s and 30s maximum
+        const cappedDelaySec = Math.min(Math.max(isNaN(rawRetrySec) ? 15 : rawRetrySec, 1), 30);
+        console.warn(
+          `[THROTTLED_429] Received HTTP 429 on /api/auth/login. Waiting capped cooldown of ${cappedDelaySec}s before single permitted retry.`
+        );
+        await page.waitForTimeout(cappedDelaySec * 1000);
+
+        // Single bounded retry with explicit listener
+        const retryResponsePromise = page.waitForResponse(
+          resp => resp.url().includes('/api/auth/login'),
+          { timeout: 15000 }
+        );
+
         await emailInput.fill(email);
         await passInput.fill(pass);
         await submitBtn.click();
+
+        let retryResp;
+        try {
+          retryResp = await retryResponsePromise;
+        } catch {
+          throw new Error(
+            '[LOGIN_TIMEOUT] No response received on single retry from /api/auth/login within timeout.'
+          );
+        }
+
+        if (retryResp.status() === 429) {
+          throw new Error(
+            '[RATE_LIMITED_429] Received HTTP 429 on single permitted retry. Halting without further retries.'
+          );
+        }
       }
     };
 
