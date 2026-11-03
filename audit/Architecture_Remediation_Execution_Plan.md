@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation VERIFICATION_FAILED at reviewed ef988641: exit cleanup bypasses token validation and allocation can overwrite existing run ownership; see `audit/W1.2_Browser_Ownership_Review_ef988641.md`. Accepted origin/preflight progress unchanged; runtime NOT EXECUTED.)
+**Status:** `IN_PROGRESS` (Preparation `IMPLEMENTED_UNVERIFIED` for review: unvalidated exit hook removed; atomic allocation with explicit existing-run token verification implemented; 8 offline sentinels passed; all 10 live browser journeys recorded as `NOT EXECUTED` pending synthetic test prerequisites.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
