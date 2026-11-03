@@ -617,20 +617,20 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `VERIFICATION_FAILED` (Corrected contract still needs consistent absent/null and SHC scope rules plus source-accurate cookie/environment matrix; see Sol review 5eb7480b; no implementation authorized)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Targeted correction delivered addressing B2, B4, and R1–R9; awaiting independent review and Sol acceptance; no code implementation authorized)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
 **Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `VERIFICATION_FAILED` (Corrected contract still leaks elevated roles into learner claims and invents constructor/key/type/cookie facts; see Sol review 5eb7480b; no implementation authorized)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Targeted correction delivered addressing B1, B2, B3, and R1–R9; awaiting independent review and Sol acceptance; no code implementation authorized)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
 **Scope:** Define strict repository lookup (`findActiveUserWithRoles`) on `UserRepository`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); dynamically fetch fresh roles while strictly preserving principal boundaries (no learner escalation, demoted admin fail-closed); accounts for actual 8-hour access token TTL; resolves baseline `auth.refresh.blocked.branch.test.ts`.
 
-**Corrections Response:** `audit/W1.2_Batch_02_Corrections_Response.md` addresses findings R1 through R9 point-by-point.
+**Corrections Response:** `audit/W1.2_Batch_02_Corrections_Response.md` addresses findings R1 through R9 and targeted items B1 through B4.
 **Latest Sol review:** `audit/W1.2-REFRESH-05-06_Sol_Review_5eb7480b.md` (B1-B4 targeted pass); previous review: `audit/W1.2-REFRESH-05-06_Sol_Review_fc798cee.md`. Corrections completed under `audit/W1.2_Gemini_Controlled_Batch_02_Corrections.md`; source and tests remain read-only. No implementation acceptance or main merge.
 
 **Controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_02.md`. REFRESH-05/06 are assigned design/read-only work only in that batch; the implementation scopes above are proposals, not behavior authorization. Gemini authors, separately attributable reviewer verifies, Sol accepts contracts before code.
