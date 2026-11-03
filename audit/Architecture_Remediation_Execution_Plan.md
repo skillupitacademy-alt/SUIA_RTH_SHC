@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Batch 05 preparation corrections delivered in commit `877d3a94`: fail-closed origin boundaries, dedicated readiness manifest boundary, source-derived /login routes and real cookie names, boolean non-serializing assertions, safe reporter, and offline sentinel checks verified; all 10 browser journeys honestly reported as `NOT EXECUTED` pending synthetic environment prerequisites; formal Wave 8 remains mandatory)
+**Status:** `IN_PROGRESS` (Preparation VERIFICATION_FAILED at reviewed bb8bd1f3: offline reporter probe leaks fake secret; readiness, project/scenario fixtures remain incomplete. No authenticated run authorized yet; runtime NOT EXECUTED. See remaining D1-D4 review.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
@@ -670,7 +670,7 @@ isolation or decommission SHC flows. Source/topology uncertainties remain explic
 No runtime edit, key/issuer change, DB migration or deployment authorized here.
 
 ### W1.2-REFRESH-07 - Metadata and Revoked-Record Diagnostics Scoping
-**Status:** `IMPLEMENTED_UNVERIFIED` (Targeted corrections delivered in commit `60eb5bc0`: actual-source mutant restores Step 2.8 at original position proving metadata regression failure vs fixed behavior, separate REQ-2A access signing & REQ-2B refresh signing tests, and REQ-3/REQ-3B attributed CAS-loser zero-metadata proof; pending Sol review and acceptance)
+**Status:** `CLOSED` (Sol accepts scoped metadata-write removal at reviewed bb8bd1f3 / Task A 60eb5bc0; 55 isolated regressions and API typecheck passed, actual-source sensitivity verified; diagnostics/runtime browser qualification remain separate. See `audit/W1.2_Batch_05_Sol_Review_bb8bd1f3.md`.)
 **Assignment:** Batch 05 Task A authorizes only the redundant pre-CAS timestamp-write removal in token-refresh.service.ts plus focused stateful tests; optional revoked-record diagnostics remains design-only. See `audit/W1.2_Gemini_Controlled_Batch_05_Task.md` for scope and gates.
 **Wave / root causes:** 1 / RC-ID-01; RC-EVENT-01 context only
 **Application / priority:** generic tenant refresh / P1 bounded follow-up
@@ -683,7 +683,7 @@ outbox or retry grace is authorized. The separately bounded Batch 05 assignment 
 provides the sole current runtime exception: redundant pre-CAS metadata-write removal.
 
 ### W1.2-GUARD-02 - Principal Scope and SHC Compatibility Contract
-**Status:** `IMPLEMENTED_UNVERIFIED` (Targeted contract revisions delivered in commit `657714dd`: resolves items B1-B6 including runtime class preconditions, restored helper ordering with DB catch/throw distinction, removed unsupported MFA claims, full requestedAudience propagation trace, and SHC 4-cookie reality & staged policy; strictly documentation-only; pending Sol review and acceptance)
+**Status:** `VERIFICATION_FAILED` (Corrected contract still invents infra tokenType/namespace and conflicts with its own role-fallback preconditions; remaining B1-B3 in `audit/W1.2_Batch_05_Sol_Review_bb8bd1f3.md`.)
 **Assignment:** Gemini Batch 05 Task B, contract only; `audit/W1.2_Gemini_Controlled_Batch_05_Task.md`.
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant guards, purpose-bound login and SHC GUI auth / P1 design
