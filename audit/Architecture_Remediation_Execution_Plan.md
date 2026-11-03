@@ -649,6 +649,10 @@ separate authorization for production deployment/testing.
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Assignment:** Batch 05 Task D (`audit/W1.2_Gemini_Controlled_Batch_05_Task.md`): readiness/executable preparation and conditional controlled smoke; preparation alone cannot close this ticket.
+**Next runtime assignment:** `audit/W1.2_Browser_Runtime_Readiness_And_Execution_Task.md`:
+establish actual isolated local build/fixture/account readiness, then conditionally execute
+supported headless Chromium journeys. No provisioning, live/remote DB use, production
+testing or server repointing is authorized. Missing prerequisites remain NOT EXECUTED.
 **Scope:** Playwright Chromium SUIA/RTH learner and SHC admin login, protected dashboard,
 approved refresh/logout, invalid credentials, blocked-account refresh, same-email tenant
 independence, account switching, cookies/redirects and cross-tenant denial. Pin tested
