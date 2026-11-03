@@ -617,23 +617,36 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `IMPLEMENTED_UNVERIFIED` (Targeted correction delivered addressing B2, B4, and R1–R9; awaiting independent review and Sol acceptance; no code implementation authorized)
+**Status:** `VERIFIED` (Design VERIFIED by Sol with final tenant-only scope and source qualifications; runtime authority implementation remains pending under batch 03)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
 **Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `IMPLEMENTED_UNVERIFIED` (Targeted correction delivered addressing B1, B2, B3, and R1–R9; awaiting independent review and Sol acceptance; no code implementation authorized)
+**Status:** `VERIFIED` (Design VERIFIED by Sol: strict tenant eligibility and scoped role freshness; blocked-account runtime defect remains open pending batch 03 implementation)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
 **Scope:** Define strict repository lookup (`findActiveUserWithRoles`) on `UserRepository`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); dynamically fetch fresh roles while strictly preserving principal boundaries (no learner escalation, demoted admin fail-closed); accounts for actual 8-hour access token TTL; resolves baseline `auth.refresh.blocked.branch.test.ts`.
 
-**Corrections Response:** `audit/W1.2_Batch_02_Corrections_Response.md` addresses findings R1 through R9 and targeted items B1 through B4.
-**Latest Sol review:** `audit/W1.2-REFRESH-05-06_Sol_Review_5eb7480b.md` (B1-B4 targeted pass); previous review: `audit/W1.2-REFRESH-05-06_Sol_Review_fc798cee.md`. Corrections completed under `audit/W1.2_Gemini_Controlled_Batch_02_Corrections.md`; source and tests remain read-only. No implementation acceptance or main merge.
+**Design acceptance:** `audit/W1.2_Batch_02_Sol_Acceptance.md`. Both contracts include Sol's final source/scope qualifications; author response remains historical evidence. This is not code acceptance or RC-ID-01 closure.
 
-**Controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_02.md`. REFRESH-05/06 are assigned design/read-only work only in that batch; the implementation scopes above are proposals, not behavior authorization. Gemini authors, separately attributable reviewer verifies, Sol accepts contracts before code.
+**Next controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_03_Task.md` authorizes Gemini to implement REFRESH-05 then REFRESH-06 in separate commits on a new branch. Start each runtime stage IN_PROGRESS and submit IMPLEMENTED_UNVERIFIED; independent code review and Sol acceptance remain mandatory before closure. Existing SHC/infra paths are preserved.
+
+**Browser qualification:** Retain the six-host production/local login -> refresh -> protected dashboard -> logout matrix under Wave 8 qualification. No executed local/production journey is claimed by these source contracts; cookie/domain/redirect and boundary cases remain outstanding.
+
+### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
+**Status:** `PLANNED`
+**Wave / root cause:** 1 / RC-ID-01
+**Application / priority:** tenant RBAC, generic infra/default DB and SHC auth callers / P1 design
+**Implementer:** Gemini when separately assigned; independent reviewer and acceptance: Sol
+Trace role-based and DB-fallback admin authorization, audience/principal enforcement,
+actual generic infrastructure issuers/cookies/default tables, API shc-admin GUI
+refresh persistence and specialized people/Redis flow. Propose minimal changes
+only from source evidence; do not treat refreshed role capping as universal portal
+isolation or decommission SHC flows. Source/topology uncertainties remain explicit.
+No runtime edit, key/issuer change, DB migration or deployment authorized here.
 
 ### W1.2-SESS-02 - Legacy Logout-All Wiring Qualification
 **Status:** `PLANNED`
