@@ -617,20 +617,21 @@ failure. Do not introduce schema, outbox, global session framework or automatic
 family-wide revocation without a separate justified design and approval.
 
 ### W1.2-REFRESH-05 - Token Authority & Brand Binding Integrity
-**Status:** `VERIFICATION_FAILED` (Contract changes required: legacy malformed-claim handling, request defaults/trust, active SHC consumers and production/local host/cookie matrix incomplete; no code implementation authorized)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Corrected authority contract delivered addressing R1, R2, R3, R4, R8, R9; awaiting independent review and Sol acceptance; no code implementation authorized)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-05_Authority_Contract.md`
-**Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes.
+**Scope:** Enforce token payload `brand` claim against target tenant DB context; enforce subject parity between JWT `userId` and database session `userId`; validate request brand against verified hostname candidates; execute all verifications before database writes; preserve legacy compatibility for strictly absent claims.
 
 ### W1.2-REFRESH-06 - Account Lifecycle & Fresh Role Revalidation
-**Status:** `VERIFICATION_FAILED` (Contract changes required: actual eight-hour default access TTL, strict role-query failure handling, principal-scope preservation and lifecycle/error/test boundaries; no code implementation authorized)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Corrected lifecycle contract delivered addressing R4, R5, R6, R7, R8, R9; awaiting independent review and Sol acceptance; no code implementation authorized)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** API refresh service / P1
 **Contract Deliverable:** `audit/W1.2-REFRESH-06_Lifecycle_Contract.md`
-**Scope:** Inject `UserRepository` into `TokenRefreshService`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); fetch fresh user roles and email from database on refresh rather than propagating stale JWT claims; resolves baseline `auth.refresh.blocked.branch.test.ts`.
+**Scope:** Define strict repository lookup (`findActiveUserWithRoles`) on `UserRepository`; verify active user state (`!user.isBlocked`, `!user.deletedAt`); dynamically fetch fresh roles while strictly preserving principal boundaries (no learner escalation, demoted admin fail-closed); accounts for actual 8-hour access token TTL; resolves baseline `auth.refresh.blocked.branch.test.ts`.
 
-**Sol review:** `audit/W1.2-REFRESH-05-06_Sol_Review_fc798cee.md`. Correct both contracts under `audit/W1.2_Gemini_Controlled_Batch_02_Corrections.md`; source and tests remain read-only. No implementation acceptance or main merge.
+**Corrections Response:** `audit/W1.2_Batch_02_Corrections_Response.md` addresses findings R1 through R9 point-by-point.
+**Sol review:** `audit/W1.2-REFRESH-05-06_Sol_Review_fc798cee.md`. Corrections completed under `audit/W1.2_Gemini_Controlled_Batch_02_Corrections.md`; source and tests remain read-only. No implementation acceptance or main merge.
 
 **Controlled batch:** `audit/W1.2_Gemini_Controlled_Batch_02.md`. REFRESH-05/06 are assigned design/read-only work only in that batch; the implementation scopes above are proposals, not behavior authorization. Gemini authors, separately attributable reviewer verifies, Sol accepts contracts before code.
 
