@@ -80,9 +80,11 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
   // 1. Guard context fixture: enforce readiness BEFORE allocating browser or context
   context: async ({ playwright, baseURL }, use, testInfo) => {
     const projectName = testInfo.project.name;
+    const isNegative = testInfo.title.includes('AQ-06') || testInfo.title.toLowerCase().includes('negative');
     const readiness = checkReadinessPrerequisites({
       projectName,
       projectOrigin: baseURL,
+      requiredAccountVars: isNegative ? [] : undefined,
     });
 
     if (!readiness.ready) {
@@ -100,7 +102,7 @@ export const test = baseTest.extend<{ auth: AuthFixtureContext }>({
     });
 
     // Install network routing guard on context
-    await installNetworkOriginGuard(ctx);
+    await installNetworkOriginGuard(ctx, [baseURL]);
 
     await use(ctx);
     await ctx.close();

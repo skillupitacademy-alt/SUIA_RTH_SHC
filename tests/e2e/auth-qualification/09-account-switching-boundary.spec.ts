@@ -1,7 +1,7 @@
 import { test } from './fixtures/auth.fixtures';
 
 test.describe('Account Switching Boundary Qualification', () => {
-  test('AQ-09: Account switching clears previous profile, private markers, and cache', async ({ auth: _auth }, testInfo) => {
+  test('AQ-09: Account switching clears previous profile, private markers, and cache', async ({}, testInfo) => {
     // Private-state and dashboard cache residue qualification fixture is not established
     testInfo.skip(
       true,

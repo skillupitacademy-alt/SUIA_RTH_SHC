@@ -1,7 +1,7 @@
 import { test } from './fixtures/auth.fixtures';
 
 test.describe('SHC Administrator Token Refresh Flow Qualification', () => {
-  test('AQ-04-SHC: SHC admin refresh capability gap qualification', async ({ auth: _auth }, testInfo) => {
+  test('AQ-04-SHC: SHC admin refresh capability gap qualification', async ({}, testInfo) => {
     // Upstream SHC refresh route and GUI admin session fixture are not qualified
     testInfo.skip(
       true,

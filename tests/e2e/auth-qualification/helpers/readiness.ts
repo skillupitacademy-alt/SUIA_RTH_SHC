@@ -7,11 +7,12 @@ import fs from 'fs';
  *
  * Enforces strict fail-closed guards before any browser fixture setup or network interaction:
  * 1. Prohibits production domains (e.g. *.skillupitacademy.com, *.realtutorialhub.com, skillhubcore.in).
- * 2. Parses URL origin via new URL(originUrl).origin and validates hostname.
- * 3. Requires explicit project origins (no guessed-port execution defaults).
- * 4. Requires tested build revision (TEST_BUILD_REVISION) and isolated environment certification.
- * 5. Validates Playwright Chromium executable presence via chromium.executablePath().
- * 6. Blocks disallowed network requests and redirects before network delivery.
+ * 2. Rejects userinfo credentials (user:pass@host) in configured URLs.
+ * 3. Enforces exact approved project origins for all browser and API requests (rejects unapproved local ports/hosts).
+ * 4. Requires explicit project origins (no guessed-port execution defaults).
+ * 5. Requires tested build revision (TEST_BUILD_REVISION) and isolated environment certification.
+ * 6. Wires project-to-account requirements into pre-fixture validation before browser launch.
+ * 7. Validates Playwright Chromium executable presence via chromium.executablePath().
  */
 
 const FORBIDDEN_PRODUCTION_PATTERNS = [
@@ -27,9 +28,31 @@ const ALLOWED_LOCAL_HOSTNAMES = [
   '127.0.0.1',
 ];
 
+export const KNOWN_PROJECTS = [
+  'sentinel-checks',
+  'suia-chromium',
+  'rth-chromium',
+  'shc-chromium',
+] as const;
+
+export const PROJECT_ACCOUNT_MAP: Record<string, string[]> = {
+  'suia-chromium': [
+    'TEST_SUIA_LEARNER_EMAIL',
+    'TEST_SUIA_LEARNER_PASSWORD',
+  ],
+  'rth-chromium': [
+    'TEST_RTH_LEARNER_EMAIL',
+    'TEST_RTH_LEARNER_PASSWORD',
+  ],
+  'shc-chromium': [
+    'TEST_SHC_ADMIN_EMAIL',
+    'TEST_SHC_ADMIN_PASSWORD',
+  ],
+};
+
 /**
- * Validates that a target URL or origin is strictly non-production and allowed for isolated test execution.
- * Fails closed immediately if missing, empty, or matching a production/unsafe domain.
+ * Validates that a target URL or origin is strictly non-production, free of userinfo credentials,
+ * and allowed for local test execution.
  */
 export function validateOriginSafety(originUrl?: string): void {
   if (!originUrl || typeof originUrl !== 'string' || originUrl.trim() === '') {
@@ -44,6 +67,13 @@ export function validateOriginSafety(originUrl?: string): void {
   } catch {
     throw new Error(
       `[BROWSER-01 SAFETY VIOLATION] Invalid URL format for target origin: ${originUrl}. Execution halted.`
+    );
+  }
+
+  // Reject userinfo credentials
+  if (parsed.username || parsed.password) {
+    throw new Error(
+      `[BROWSER-01 SAFETY VIOLATION] Userinfo credentials not permitted in configured URL: ${originUrl}. Execution halted.`
     );
   }
 
@@ -90,18 +120,44 @@ export function isChromiumExecutableAvailable(): boolean {
 }
 
 /**
- * Installs network-level routing guards on a Playwright browser context.
- * Intercepts every outgoing HTTP/HTTPS request and aborts immediately if pointing to an unsafe origin.
+ * Installs exact-origin network routing guard on a Playwright browser context.
+ * Intercepts every outgoing request and strictly rejects any host or port outside the project's
+ * explicit qualified allowed origin list (rejects unapproved local ports/hosts, userinfo, and foreign destinations).
  */
-export async function installNetworkOriginGuard(context: BrowserContext): Promise<void> {
-  await context.route('**/*', (route) => {
-    const requestUrl = route.request().url();
+export async function installNetworkOriginGuard(
+  context: BrowserContext,
+  allowedOrigins: string[]
+): Promise<void> {
+  const normalizedAllowed = allowedOrigins.map(o => {
+    validateOriginSafety(o);
+    return new URL(o).origin.toLowerCase();
+  });
+
+  await context.route('**/*', async (route) => {
     try {
-      validateOriginSafety(requestUrl);
-      route.continue();
+      const requestUrl = route.request().url();
+      const parsed = new URL(requestUrl);
+
+      // Reject userinfo credentials
+      if (parsed.username || parsed.password) {
+        await route.abort('blockedbyclient');
+        return;
+      }
+
+      const targetOrigin = parsed.origin.toLowerCase();
+
+      // Reject if not strictly in the project's exact allowed origin list
+      if (!normalizedAllowed.includes(targetOrigin)) {
+        await route.abort('blockedbyclient');
+        return;
+      }
+
+      // Validate origin safety fail-closed
+      validateOriginSafety(targetOrigin);
+
+      await route.continue();
     } catch {
-      // Abort immediately before network delivery
-      route.abort('blockedbyclient');
+      await route.abort('blockedbyclient');
     }
   });
 }
@@ -144,18 +200,32 @@ export function getReadinessRecord(): ReadinessRecord {
 
 /**
  * Concrete fail-closed readiness check validating:
- * 1. Master readiness manifest (AUTH_QUALIFICATION_READY=true)
- * 2. Tested build provenance (TEST_BUILD_REVISION)
- * 3. Isolated synthetic test environment certification (TEST_ISOLATED_ENVIRONMENT=true)
- * 4. Explicit non-empty project origin (no guessed-port fallback)
- * 5. Origin domain safety compliance
- * 6. Required synthetic account variables
- * 7. Installed Playwright Chromium executable availability
+ * 1. Known project name validation (unknown projects fail closed)
+ * 2. Master readiness manifest (AUTH_QUALIFICATION_READY=true)
+ * 3. Tested build provenance (TEST_BUILD_REVISION)
+ * 4. Isolated synthetic test environment certification (TEST_ISOLATED_ENVIRONMENT=true)
+ * 5. Explicit non-empty project origin (no guessed-port fallback)
+ * 6. Origin domain safety compliance
+ * 7. Project-to-account prerequisite mapping BEFORE browser launch
+ * 8. Installed Playwright Chromium executable availability
  */
 export function checkReadinessPrerequisites(
   req: ProjectReadinessRequirements
 ): { ready: boolean; reason?: string } {
-  // 1. Master readiness flag
+  // 1. Unknown project validation
+  if (!KNOWN_PROJECTS.includes(req.projectName as any)) {
+    return {
+      ready: false,
+      reason: `[NOT EXECUTED] ${req.projectName}: Unknown project name not recognized in qualification matrix.`,
+    };
+  }
+
+  // Sentinel offline suite does not require network origins or accounts
+  if (req.projectName === 'sentinel-checks') {
+    return { ready: true };
+  }
+
+  // 2. Master readiness flag
   if (process.env.AUTH_QUALIFICATION_READY !== 'true') {
     return {
       ready: false,
@@ -163,7 +233,7 @@ export function checkReadinessPrerequisites(
     };
   }
 
-  // 2. Tested build provenance
+  // 3. Tested build provenance
   const buildRev = process.env.TEST_BUILD_REVISION;
   if (!buildRev || buildRev.trim() === '') {
     return {
@@ -172,7 +242,7 @@ export function checkReadinessPrerequisites(
     };
   }
 
-  // 3. Isolated environment certification
+  // 4. Isolated environment certification
   if (process.env.TEST_ISOLATED_ENVIRONMENT !== 'true') {
     return {
       ready: false,
@@ -180,7 +250,7 @@ export function checkReadinessPrerequisites(
     };
   }
 
-  // 4. Explicit project origin (guessed-port default prohibited)
+  // 5. Explicit project origin (guessed-port default prohibited)
   if (!req.projectOrigin || req.projectOrigin.trim() === '') {
     return {
       ready: false,
@@ -188,7 +258,7 @@ export function checkReadinessPrerequisites(
     };
   }
 
-  // 5. Origin domain safety
+  // 6. Origin domain safety
   try {
     validateOriginSafety(req.projectOrigin);
   } catch (err: any) {
@@ -198,20 +268,24 @@ export function checkReadinessPrerequisites(
     };
   }
 
-  // 6. Required synthetic account credentials
-  if (req.requiredAccountVars && req.requiredAccountVars.length > 0) {
-    const missingAccounts = req.requiredAccountVars.filter(
+  // 7. Project-to-account requirements mapping evaluated BEFORE launch
+  const requiredAccounts = req.requiredAccountVars !== undefined
+    ? req.requiredAccountVars
+    : (PROJECT_ACCOUNT_MAP[req.projectName] ?? []);
+
+  if (requiredAccounts.length > 0) {
+    const missingAccounts = requiredAccounts.filter(
       v => !process.env[v] || process.env[v]!.trim() === ''
     );
     if (missingAccounts.length > 0) {
       return {
         ready: false,
-        reason: `[NOT EXECUTED] ${req.projectName}: Synthetic test accounts missing (${missingAccounts.length} required variables unset).`,
+        reason: `[NOT EXECUTED] ${req.projectName}: Approved synthetic account credentials missing (${missingAccounts.length} required variables unset).`,
       };
     }
   }
 
-  // 7. Installed Playwright Chromium executable
+  // 8. Installed Playwright Chromium executable
   if (!isChromiumExecutableAvailable()) {
     return {
       ready: false,
