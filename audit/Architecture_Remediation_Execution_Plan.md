@@ -639,7 +639,7 @@ family-wide revocation without a separate justified design and approval.
 **Browser qualification:** Keep the six-host production/local login -> refresh -> protected dashboard -> logout matrix under Wave 8 qualification. No local/production journey has been executed by this source acceptance; cookies, redirects, ingress and physical DB topology remain outstanding.
 
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED` (Discovery report delivered in `audit/W1.2-GUARD-01_Principal_Qualification.md`; pending distinct read-only review and Sol acceptance)
 **Wave / root cause:** 1 / RC-ID-01
 **Application / priority:** tenant RBAC, generic infra/default DB and SHC auth callers / P1 design
 **Implementer:** Gemini when separately assigned; independent reviewer and acceptance: Sol
