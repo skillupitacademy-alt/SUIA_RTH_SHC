@@ -688,9 +688,12 @@ one approved local/live-Neon journey. Preserve all-device skips and shared safet
 helpers. No backend auth/schema/account mutation, main merge or deployment.
 
 **Next browser assignment:** `audit/W1.2_Gemini_Learner_Dashboard_Qualification_Task.md`:
-separate SUIA then RTH anonymous-denial/authenticated-render/reload controls, using
-existing approved accounts without onboarding or learning-data mutation. Test/evidence
-scope only; dashboard appearance is not proof of resource ownership or tenant isolation.
+five sequential tasks: A SUIA dashboard control, B RTH dashboard control, C SHC dashboard
+control, D source-derived cookie-policy checks within those same sessions, E remaining
+negative-fixture readiness and bounded follow-up assignments. Existing approved accounts;
+test/evidence/planning only, no account/data mutation or application runtime repair.
+Each task requires separate evidence and Sol acceptance. Dashboard appearance does not
+prove resource ownership or tenant isolation; unsupported cases remain NOT EXECUTED.
 
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
 **Status:** `CLOSED` (Sol accepts bounded source investigation at reviewed da6c0742 with SHC/client/store/guard qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; no whole-application or deployed journey acceptance)
