@@ -645,7 +645,7 @@ smoke gate when accepted code is available; retain the formal Wave 8 matrix and
 separate authorization for production deployment/testing.
 
 ### W1.2-BROWSER-01 - Early Controlled Authentication Smoke Qualification
-**Status:** `IN_PROGRESS` (Preparation VERIFIED; SHC AQ-03 independently VERIFIED, see `audit/W1.2_Browser_SHC_Control_Sol_Acceptance.md`. SUIA normal logout initially failed; LOGOUT-01's cookie correction and focused normal UI logout subsequently passed independent review at 6ab018b5, see `audit/W1.2_SUIA_Logout_Cookie_Sol_Acceptance.md`. RTH logout, broader runtime/negative fixtures and formal Wave 8 remain open.)
+**Status:** `IN_PROGRESS` (Preparation and SHC AQ-03 VERIFIED. SUIA LOGOUT-01 and RTH LOGOUT-02 cookie corrections and normal UI logout independently accepted; see `audit/W1.2_SUIA_Logout_Cookie_Sol_Acceptance.md` and `audit/W1.2_RTH_Logout_Cookie_Sol_Acceptance.md`. Dashboard rendering/denial controls, broader negative fixtures and formal Wave 8 remain open.)
 **Wave / root cause:** early Wave 1 runtime verification / RC-ID-01
 **Requirement:** `audit/Authentication_Browser_Qualification_Requirements.md`
 **Owner live-data authorization:** `audit/W1.2_Browser_Live_Neon_Owner_Authorization.md`
@@ -679,13 +679,18 @@ authentication refactor, RTH runtime change, deployment or main merge. RTH's mat
 source pattern is noted for separate qualification, not a reproduced runtime result.
 
 ### W1.2-LOGOUT-02 - RTH Normal Logout Cookie Clearance and Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` (Implemented canonical proxy delegation in `apps/realtutorialhub-web/src/app/api/auth/logout/route.ts` preserving upstream token revocation and matching domain cookie-expiry headers. Verified via 4 offline route unit regression tests [status, multi-cookie, local/prod domain rewrite] and successful AQ-05-NORMAL-RTH live headless Chromium pass [1 passed in 49.6s]; 8 offline safety sentinels passed. Acceptance pending independent Sol review.)
+**Status:** `CLOSED` (Sol independently accepted reviewed a1cbb005: 4 actual-route regressions, 8 offline sentinels and 1 focused normal UI logout journey passed, including cookie absence and post-logout profile denial. See `audit/W1.2_RTH_Logout_Cookie_Sol_Acceptance.md` for exact checks and limitations. BROWSER-01 remains IN_PROGRESS.)
 **Wave / root cause:** early Wave 1 / RC-ID-01; parent BROWSER-01 remains IN_PROGRESS.
 **Assignment:** `audit/W1.2_Gemini_RTH_Logout_Cookie_Correction_Task.md`
 **Implementer / acceptance:** Gemini / independent Sol review.
 **Scope:** RTH logout BFF and focused regression, distinct normal UI logout spec and
 one approved local/live-Neon journey. Preserve all-device skips and shared safety
 helpers. No backend auth/schema/account mutation, main merge or deployment.
+
+**Next browser assignment:** `audit/W1.2_Gemini_Learner_Dashboard_Qualification_Task.md`:
+separate SUIA then RTH anonymous-denial/authenticated-render/reload controls, using
+existing approved accounts without onboarding or learning-data mutation. Test/evidence
+scope only; dashboard appearance is not proof of resource ownership or tenant isolation.
 
 ### W1.2-GUARD-01 - Downstream Principal and SHC Compatibility Qualification
 **Status:** `CLOSED` (Sol accepts bounded source investigation at reviewed da6c0742 with SHC/client/store/guard qualifications in `audit/W1.2_Batch_04_Sol_Acceptance.md`; no whole-application or deployed journey acceptance)
