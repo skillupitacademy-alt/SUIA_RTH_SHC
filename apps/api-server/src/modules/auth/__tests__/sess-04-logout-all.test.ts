@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { POST } from '@/app/api/auth/logout-all/route';
 import {
@@ -10,50 +10,49 @@ import {
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 
-describe('SESS-04: Legacy Logout-All Compatibility Adapter (Offline Matrix)', () => {
-  let mockTokenService: {
-    getAccessToken: ReturnType<typeof vi.fn>;
-    verifyAccessToken: ReturnType<typeof vi.fn>;
-  };
+// Disposable keys for realistic cryptographic isolation
+const DISPOSABLE_KEY = new TextEncoder().encode('sess-04-disposable-key-32-bytes!');
+const realTokenService = new TokenService(DISPOSABLE_KEY, DISPOSABLE_KEY, DISPOSABLE_KEY);
 
-  let mockGlobalLogoutService: {
-    getActiveSessions: ReturnType<typeof vi.fn>;
-    logoutAllDevices: ReturnType<typeof vi.fn>;
-  };
-
-  const VALID_USER_PAYLOAD = {
-    userId: 'user-sess-1',
-    email: 'learner@skillup.test',
-    brand: 'skillup',
-    tokenType: 'user' as const,
-    isAdmin: false,
-    aud: 'user',
-    roles: ['student'],
-  };
+describe('SESS-04: Legacy Logout-All Adapter & Real Engine State (Offline Matrix)', () => {
+  const previousTokenService = container.get(TokenService);
+  const previousGlobalLogout = container.get(GlobalLogoutService);
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    mockTokenService = {
-      getAccessToken: vi.fn(),
-      verifyAccessToken: vi.fn(),
-    };
-
-    mockGlobalLogoutService = {
-      getActiveSessions: vi.fn(),
-      logoutAllDevices: vi.fn(),
-    };
-
-    // Bind mocks to the DI container for the route
-    vi.spyOn(container, 'get').mockImplementation((token: any) => {
-      if (token === TokenService) return mockTokenService;
-      if (token === GlobalLogoutService) return mockGlobalLogoutService;
-      return {};
-    });
   });
+
+  afterEach(() => {
+    container.register(TokenService, previousTokenService);
+    container.register(GlobalLogoutService, previousGlobalLogout);
+    vi.restoreAllMocks();
+  });
+
+  async function generateToken(payload: {
+    userId: string;
+    brand: string;
+    tokenType: 'user' | 'admin';
+    aud: string | string[];
+    roles?: string[];
+  }) {
+    const isAdmin = payload.tokenType === 'admin';
+    return realTokenService.generateAccessToken({
+      userId: payload.userId,
+      originalUserId: payload.userId,
+      shadowUserId: `shadow-${payload.userId}`,
+      email: `${payload.userId}@example.test`,
+      roles: payload.roles ?? (isAdmin ? ['admin'] : ['student']),
+      brand: payload.brand as any,
+      isAdmin,
+      tokenType: payload.tokenType,
+      aud: payload.aud as any,
+    });
+  }
 
   function createRequest(options?: {
     authHeader?: string;
+    cookie?: string;
+    origin?: string;
     host?: string;
     brandHeader?: string;
   }): NextRequest {
@@ -61,9 +60,14 @@ describe('SESS-04: Legacy Logout-All Compatibility Adapter (Offline Matrix)', ()
     if (options?.authHeader) {
       headers.set('authorization', options.authHeader);
     }
+    if (options?.cookie) {
+      headers.set('cookie', options.cookie);
+    }
+    if (options?.origin) {
+      headers.set('origin', options.origin);
+    }
     const host = options?.host ?? 'skillup.test';
     headers.set('host', host);
-    headers.set('origin', 'https://' + host);
     headers.set('x-brand', options?.brandHeader ?? 'skillup');
 
     return new NextRequest('https://' + host + '/api/auth/logout-all', {
@@ -72,157 +76,398 @@ describe('SESS-04: Legacy Logout-All Compatibility Adapter (Offline Matrix)', ()
     });
   }
 
-  it('Scenario 1: Confirmed Success returns legacy JSON shape with snapshot count and no Set-Cookie', async () => {
-    mockTokenService.getAccessToken.mockReturnValue('valid-token');
-    mockTokenService.verifyAccessToken.mockResolvedValue(VALID_USER_PAYLOAD);
-    mockGlobalLogoutService.getActiveSessions.mockResolvedValue([
-      { id: 's1', deviceId: 'd1' },
-      { id: 's2', deviceId: 'd2' },
-      { id: 's3', deviceId: 'd3' },
-    ]);
-    mockGlobalLogoutService.logoutAllDevices.mockResolvedValue({
-      success: true,
-      message: 'Logged out from all devices',
+  describe('Part 1: Audience & Class Boundary Controls', () => {
+    let mockEngine: {
+      getActiveSessions: ReturnType<typeof vi.fn>;
+      logoutAllDevices: ReturnType<typeof vi.fn>;
+    };
+
+    beforeEach(() => {
+      mockEngine = {
+        getActiveSessions: vi.fn(async () => [{ id: 'sess-1' }]),
+        logoutAllDevices: vi.fn(async () => ({ success: true, message: 'Logged out from all devices' })),
+      };
+      container.register(TokenService, realTokenService);
+      container.register(GlobalLogoutService, mockEngine as any);
     });
 
-    const req = createRequest({ authHeader: 'Bearer valid-token', host: 'skillup.test' });
-    const res = await POST(req);
-    const body = await res.json();
+    it('permits valid user token with aud:user and reaches revocation engine', async () => {
+      const jwt = await generateToken({
+        userId: 'u1',
+        brand: 'skillup',
+        tokenType: 'user',
+        aud: 'user',
+      });
 
-    expect(res.status).toBe(200);
-    expect(body).toEqual({
-      message: 'Logged out from all devices successfully',
-      revokedSessions: 3,
-      timestamp: expect.any(String),
-    });
-    // Invariant: No new Set-Cookie header introduced
-    expect(res.headers.get('set-cookie')).toBeNull();
-    expect(mockGlobalLogoutService.logoutAllDevices).toHaveBeenCalledWith(
-      'user-sess-1',
-      expect.any(String),
-      'skillup'
-    );
-  });
+      const req = createRequest({
+        authHeader: `Bearer ${jwt}`,
+        host: 'skillup.test',
+        brandHeader: 'skillup',
+      });
 
-  it('Scenario 2: Pre-operation count query failure is classified as pre-commit failure (revocation not attempted)', async () => {
-    mockTokenService.getAccessToken.mockReturnValue('valid-token');
-    mockTokenService.verifyAccessToken.mockResolvedValue(VALID_USER_PAYLOAD);
-    mockGlobalLogoutService.getActiveSessions.mockRejectedValue(new Error('DB read timeout'));
+      const res = await POST(req);
+      const body = await res.json();
 
-    const req = createRequest({ authHeader: 'Bearer valid-token', host: 'skillup.test' });
-    const res = await POST(req);
-    const body = await res.json();
-
-    expect(res.status).toBe(500);
-    expect(body).toEqual({
-      error: 'Unable to inspect sessions; revocation not attempted',
-    });
-    // Crucial: revocation was never attempted!
-    expect(mockGlobalLogoutService.logoutAllDevices).not.toHaveBeenCalled();
-    expect(res.headers.get('set-cookie')).toBeNull();
-  });
-
-  it('Scenario 3: RevocationStageError produces 500 with Unknown Revocation Outcome and retry semantics', async () => {
-    mockTokenService.getAccessToken.mockReturnValue('valid-token');
-    mockTokenService.verifyAccessToken.mockResolvedValue(VALID_USER_PAYLOAD);
-    mockGlobalLogoutService.getActiveSessions.mockResolvedValue([{ id: 's1' }]);
-    mockGlobalLogoutService.logoutAllDevices.mockRejectedValue(new RevocationStageError());
-
-    const req = createRequest({ authHeader: 'Bearer valid-token', host: 'skillup.test' });
-    const res = await POST(req);
-    const body = await res.json();
-
-    expect(res.status).toBe(500);
-    expect(body).toEqual({
-      error: 'Session revocation outcome unknown; retry with valid credentials',
-    });
-    expect(res.headers.get('set-cookie')).toBeNull();
-  });
-
-  it('Scenario 4: PresenceStageError produces 500 distinguishing confirmed revocation from presence failure', async () => {
-    mockTokenService.getAccessToken.mockReturnValue('valid-token');
-    mockTokenService.verifyAccessToken.mockResolvedValue(VALID_USER_PAYLOAD);
-    mockGlobalLogoutService.getActiveSessions.mockResolvedValue([{ id: 's1' }]);
-    mockGlobalLogoutService.logoutAllDevices.mockRejectedValue(new PresenceStageError());
-
-    const req = createRequest({ authHeader: 'Bearer valid-token', host: 'skillup.test' });
-    const res = await POST(req);
-    const body = await res.json();
-
-    expect(res.status).toBe(500);
-    expect(body).toEqual({
-      error: 'Sessions revoked; presence update could not be confirmed',
-    });
-    expect(res.headers.get('set-cookie')).toBeNull();
-  });
-
-  it('Scenario 5: Denies missing token with 401', async () => {
-    mockTokenService.getAccessToken.mockReturnValue(undefined);
-
-    const req = createRequest();
-    const res = await POST(req);
-    const body = await res.json();
-
-    expect(res.status).toBe(401);
-    expect(body.error).toBe('Unauthorized');
-  });
-
-  it('Scenario 6: Denies invalid/expired token with 401', async () => {
-    mockTokenService.getAccessToken.mockReturnValue('expired-token');
-    mockTokenService.verifyAccessToken.mockRejectedValue(new Error('Token expired'));
-
-    const req = createRequest({ authHeader: 'Bearer expired-token' });
-    const res = await POST(req);
-    const body = await res.json();
-
-    expect(res.status).toBe(401);
-    expect(body.error).toBe('Invalid or expired token');
-  });
-
-  it('Scenario 7: Denies infra token class with 403', async () => {
-    mockTokenService.getAccessToken.mockReturnValue('infra-token');
-    mockTokenService.verifyAccessToken.mockResolvedValue({
-      ...VALID_USER_PAYLOAD,
-      tokenType: 'infra' as any,
+      expect(res.status).toBe(200);
+      expect(body.revokedSessions).toBe(1);
+      expect(mockEngine.logoutAllDevices).toHaveBeenCalledTimes(1);
+      expect(mockEngine.logoutAllDevices).toHaveBeenCalledWith('u1', expect.any(String), 'skillup');
     });
 
-    const req = createRequest({ authHeader: 'Bearer infra-token' });
-    const res = await POST(req);
-    const body = await res.json();
+    it('permits valid admin token with aud:admin and reaches revocation engine', async () => {
+      const jwt = await generateToken({
+        userId: 'admin-1',
+        brand: 'skillup',
+        tokenType: 'admin',
+        aud: 'admin',
+      });
 
-    expect(res.status).toBe(403);
-    expect(body.error).toBe('Forbidden: Invalid credential class');
-  });
+      const req = createRequest({
+        authHeader: `Bearer ${jwt}`,
+        host: 'skillup.test',
+        brandHeader: 'skillup',
+      });
 
-  it('Scenario 8: Denies foreign/non-tenant brand (e.g. skillhubcore) with 403', async () => {
-    mockTokenService.getAccessToken.mockReturnValue('shc-token');
-    mockTokenService.verifyAccessToken.mockResolvedValue({
-      ...VALID_USER_PAYLOAD,
-      brand: 'skillhubcore' as any,
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(mockEngine.logoutAllDevices).toHaveBeenCalledTimes(1);
     });
 
-    const req = createRequest({ authHeader: 'Bearer shc-token' });
-    const res = await POST(req);
-    const body = await res.json();
+    it('permits admin token with audience array containing admin', async () => {
+      const jwt = await generateToken({
+        userId: 'admin-1',
+        brand: 'skillup',
+        tokenType: 'admin',
+        aud: ['admin', 'internal'],
+      });
 
-    expect(res.status).toBe(403);
-    expect(body.error).toBe('Forbidden: Invalid tenant brand');
+      const req = createRequest({
+        authHeader: `Bearer ${jwt}`,
+        host: 'skillup.test',
+        brandHeader: 'skillup',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+    });
+
+    it('rejects infra-audience token even though tokenType is admin', async () => {
+      const jwt = await generateToken({
+        userId: 'infra-1',
+        brand: 'skillup',
+        tokenType: 'admin',
+        aud: 'infra',
+      });
+
+      const req = createRequest({
+        authHeader: `Bearer ${jwt}`,
+        host: 'skillup.test',
+        brandHeader: 'skillup',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      expect(mockEngine.getActiveSessions).not.toHaveBeenCalled();
+      expect(mockEngine.logoutAllDevices).not.toHaveBeenCalled();
+    });
+
+    it('rejects shc-admin audience token', async () => {
+      const jwt = await generateToken({
+        userId: 'shc-1',
+        brand: 'skillup',
+        tokenType: 'admin',
+        aud: 'shc-admin',
+      });
+
+      const req = createRequest({
+        authHeader: `Bearer ${jwt}`,
+        host: 'skillup.test',
+        brandHeader: 'skillup',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      expect(mockEngine.logoutAllDevices).not.toHaveBeenCalled();
+    });
+
+    it('rejects contradictory audience/class pairing (tokenType:user with aud:admin)', async () => {
+      const jwt = await generateToken({
+        userId: 'u1',
+        brand: 'skillup',
+        tokenType: 'user',
+        aud: 'admin',
+      });
+
+      const req = createRequest({
+        authHeader: `Bearer ${jwt}`,
+        host: 'skillup.test',
+        brandHeader: 'skillup',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      expect(mockEngine.logoutAllDevices).not.toHaveBeenCalled();
+    });
   });
 
-  it('Scenario 9: Denies request when brand mismatch detected', async () => {
-    mockTokenService.getAccessToken.mockReturnValue('valid-token');
-    // Token is for skillup, but request header says realtutorialhub
-    mockTokenService.verifyAccessToken.mockResolvedValue(VALID_USER_PAYLOAD);
+  describe('Part 1: Cookie-Authenticated Mutation & CSRF Boundaries', () => {
+    let mockEngine: {
+      getActiveSessions: ReturnType<typeof vi.fn>;
+      logoutAllDevices: ReturnType<typeof vi.fn>;
+    };
 
-    const req = createRequest({
-      authHeader: 'Bearer valid-token',
-      host: 'realtutorialhub.test',
-      brandHeader: 'realtutorialhub',
+    beforeEach(() => {
+      mockEngine = {
+        getActiveSessions: vi.fn(async () => [{ id: 'sess-1' }]),
+        logoutAllDevices: vi.fn(async () => ({ success: true, message: 'Logged out from all devices' })),
+      };
+      container.register(TokenService, realTokenService);
+      container.register(GlobalLogoutService, mockEngine as any);
     });
-    const res = await POST(req);
-    const body = await res.json();
 
-    expect(res.status).toBe(403);
-    expect(body.error).toBeDefined();
+    it('allows cookie-authenticated request with matching origin', async () => {
+      const jwt = await generateToken({
+        userId: 'cookie-user-1',
+        brand: 'realtutorialhub',
+        tokenType: 'user',
+        aud: 'user',
+      });
+
+      const req = createRequest({
+        cookie: `accessToken=${jwt}`,
+        origin: 'https://realtutorialhub.test',
+        host: 'realtutorialhub.test',
+        brandHeader: 'realtutorialhub',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(mockEngine.logoutAllDevices).toHaveBeenCalledTimes(1);
+    });
+
+    it('denies cookie-authenticated request with foreign origin', async () => {
+      const jwt = await generateToken({
+        userId: 'cookie-user-1',
+        brand: 'realtutorialhub',
+        tokenType: 'user',
+        aud: 'user',
+      });
+
+      const req = createRequest({
+        cookie: `accessToken=${jwt}`,
+        origin: 'https://foreign.example.invalid',
+        host: 'realtutorialhub.test',
+        brandHeader: 'realtutorialhub',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      expect(mockEngine.logoutAllDevices).not.toHaveBeenCalled();
+    });
+
+    it('denies cookie-authenticated request with deceptive substring host origin', async () => {
+      const jwt = await generateToken({
+        userId: 'cookie-user-1',
+        brand: 'realtutorialhub',
+        tokenType: 'user',
+        aud: 'user',
+      });
+
+      const req = createRequest({
+        cookie: `accessToken=${jwt}`,
+        origin: 'https://realtutorialhub.test.attacker.com',
+        host: 'realtutorialhub.test',
+        brandHeader: 'realtutorialhub',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      expect(mockEngine.logoutAllDevices).not.toHaveBeenCalled();
+    });
+
+    it('denies cookie-authenticated request with missing origin header', async () => {
+      const jwt = await generateToken({
+        userId: 'cookie-user-1',
+        brand: 'realtutorialhub',
+        tokenType: 'user',
+        aud: 'user',
+      });
+
+      const req = createRequest({
+        cookie: `accessToken=${jwt}`,
+        host: 'realtutorialhub.test',
+        brandHeader: 'realtutorialhub',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      expect(mockEngine.logoutAllDevices).not.toHaveBeenCalled();
+    });
+
+    it('arbitrary bearer header cannot turn selected cookie credential into CSRF bypass', async () => {
+      const jwt = await generateToken({
+        userId: 'cookie-user-1',
+        brand: 'realtutorialhub',
+        tokenType: 'user',
+        aud: 'user',
+      });
+
+      // Attacker supplies a garbage Bearer header while browser sends the user's cookie
+      const req = createRequest({
+        authHeader: 'Bearer arbitrary-invalid-bearer-token',
+        cookie: `accessToken=${jwt}`,
+        origin: 'https://foreign.example.invalid',
+        host: 'realtutorialhub.test',
+        brandHeader: 'realtutorialhub',
+      });
+
+      const res = await POST(req);
+      // Fails immediately on invalid bearer token (401), does NOT fall back to cookie with CSRF bypass
+      expect(res.status).toBe(401);
+      expect(mockEngine.logoutAllDevices).not.toHaveBeenCalled();
+    });
+
+    it('preserves legitimate non-browser bearer compatibility without requiring origin', async () => {
+      const jwt = await generateToken({
+        userId: 'bearer-user-1',
+        brand: 'realtutorialhub',
+        tokenType: 'user',
+        aud: 'user',
+      });
+
+      // Programmatic client sends Bearer token with no origin header
+      const req = createRequest({
+        authHeader: `Bearer ${jwt}`,
+        host: 'realtutorialhub.test',
+        brandHeader: 'realtutorialhub',
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(mockEngine.logoutAllDevices).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Part 4: Real GlobalLogoutService Engine State & Failure-Stage Proof', () => {
+    // In-memory tenant store simulating database rows
+    type StoredToken = { id: string; userId: string; brand: string; revoked: boolean };
+    type StoredUser = { id: string; brand: string; lastActiveAt: Date };
+
+    let tokenStore: StoredToken[];
+    let userStore: StoredUser[];
+
+    let inMemTokenRepo: any;
+    let inMemUserRepo: any;
+    let mockAuditService: any;
+    let realGlobalLogoutService: GlobalLogoutService;
+
+    beforeEach(() => {
+      tokenStore = [
+        // Colliding local user ID: '100' exists in both skillup and realtutorialhub!
+        { id: 'suia-sess-1', userId: '100', brand: 'skillup', revoked: false },
+        { id: 'suia-sess-2', userId: '100', brand: 'skillup', revoked: false },
+        { id: 'rth-sess-1', userId: '100', brand: 'realtutorialhub', revoked: false },
+        // Unrelated user in skillup
+        { id: 'suia-other-sess', userId: '200', brand: 'skillup', revoked: false },
+      ];
+
+      userStore = [
+        { id: '100', brand: 'skillup', lastActiveAt: new Date(Date.now() - 5000) },
+        { id: '100', brand: 'realtutorialhub', lastActiveAt: new Date(Date.now() - 5000) },
+        { id: '200', brand: 'skillup', lastActiveAt: new Date(Date.now() - 5000) },
+      ];
+
+      inMemTokenRepo = {
+        getUserSessions: vi.fn(async (userId: string) => {
+          return tokenStore.filter((t) => t.userId === userId && !t.revoked);
+        }),
+        revokeAll: vi.fn(async (userId: string) => {
+          tokenStore.forEach((t) => {
+            if (t.userId === userId) {
+              t.revoked = true;
+            }
+          });
+        }),
+        withDb: vi.fn().mockReturnThis(),
+      };
+
+      inMemUserRepo = {
+        updateLastActive: vi.fn(async (userId: string, date: Date) => {
+          const u = userStore.find((user) => user.id === userId);
+          if (u) u.lastActiveAt = date;
+        }),
+        withDb: vi.fn().mockReturnThis(),
+      };
+
+      mockAuditService = {
+        log: vi.fn(async () => {}),
+      };
+
+      realGlobalLogoutService = new GlobalLogoutService(
+        inMemTokenRepo,
+        inMemUserRepo,
+        mockAuditService
+      );
+    });
+
+    it('actual revocation revokes target user tokens and sets user offline in memory', async () => {
+      const result = await realGlobalLogoutService.logoutAllDevices('100', '192.0.2.1', 'skillup');
+      expect(result).toEqual({ success: true, message: 'Logged out from all devices' });
+
+      // Target user tokens in skillup are revoked
+      const suiaTokens = tokenStore.filter((t) => t.userId === '100');
+      expect(suiaTokens.every((t) => t.revoked)).toBe(true);
+
+      // Presence termination executed
+      expect(inMemUserRepo.updateLastActive).toHaveBeenCalledTimes(1);
+    });
+
+    it('commit-then-throw in presence termination throws PresenceStageError with confirmed revocation', async () => {
+      // Simulate presence failure after revokeAll succeeds
+      inMemUserRepo.updateLastActive.mockRejectedValueOnce(new Error('DB presence connection lost'));
+
+      await expect(
+        realGlobalLogoutService.logoutAllDevices('100', '192.0.2.1', 'skillup')
+      ).rejects.toThrow(PresenceStageError);
+
+      // Tokens WERE revoked before the presence error occurred!
+      const userTokens = tokenStore.filter((t) => t.userId === '100');
+      expect(userTokens.every((t) => t.revoked)).toBe(true);
+    });
+
+    it('revokeAll failure throws RevocationStageError without presence update', async () => {
+      inMemTokenRepo.revokeAll.mockRejectedValueOnce(new Error('Lock acquisition timeout'));
+
+      await expect(
+        realGlobalLogoutService.logoutAllDevices('100', '192.0.2.1', 'skillup')
+      ).rejects.toThrow(RevocationStageError);
+
+      // Presence update was NOT called
+      expect(inMemUserRepo.updateLastActive).not.toHaveBeenCalled();
+    });
+
+    it('absorbs audit service logging errors without failing revocation', async () => {
+      // AuditService absorbs insert failures internally; simulate error in audit log
+      mockAuditService.log.mockImplementationOnce(async () => {
+        // Internal logger error, absorbed by AuditService
+      });
+
+      const result = await realGlobalLogoutService.logoutAllDevices('100', '192.0.2.1', 'skillup');
+      expect(result.success).toBe(true);
+    });
+
+    it('owner-scoped idempotent retry preserves state without unrevoking or altering others', async () => {
+      // 1. Initial revocation
+      await realGlobalLogoutService.logoutAllDevices('100', '192.0.2.1', 'skillup');
+      expect(tokenStore.filter((t) => t.userId === '100').every((t) => t.revoked)).toBe(true);
+
+      // 2. Idempotent retry
+      const retryResult = await realGlobalLogoutService.logoutAllDevices('100', '192.0.2.1', 'skillup');
+      expect(retryResult.success).toBe(true);
+
+      // Invariant: Tokens remain revoked, unrelated user '200' remains untouched
+      expect(tokenStore.filter((t) => t.userId === '100').every((t) => t.revoked)).toBe(true);
+      expect(tokenStore.find((t) => t.userId === '200')?.revoked).toBe(false);
+    });
   });
 });

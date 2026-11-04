@@ -19,6 +19,38 @@ import { container } from '@/modules/core/container';
 
 export const dynamic = 'force-dynamic';
 
+function isTenantAudienceValid(tokenType: string | undefined, aud: unknown): boolean {
+  if (typeof aud === 'string') {
+    if (tokenType === 'user') {
+      return aud === 'user';
+    }
+    if (tokenType === 'admin') {
+      return aud === 'admin';
+    }
+    return false;
+  }
+
+  if (Array.isArray(aud)) {
+    const excludedAudiences = new Set(['infra', 'shc-admin']);
+    if (aud.some((a) => typeof a === 'string' && excludedAudiences.has(a))) {
+      return false;
+    }
+
+    if (tokenType === 'user') {
+      return aud.length === 1 && aud[0] === 'user';
+    }
+
+    if (tokenType === 'admin') {
+      const validAdminAuds = new Set(['admin', 'internal']);
+      const hasAdmin = aud.includes('admin');
+      const allValid = aud.every((a) => typeof a === 'string' && validAdminAuds.has(a));
+      return hasAdmin && allValid;
+    }
+  }
+
+  return false;
+}
+
 /**
  * POST /api/auth/logout-all - Logout from all devices
  */
@@ -27,9 +59,80 @@ export async function POST(req: NextRequest) {
   const globalLogoutService = container.get(GlobalLogoutService);
 
   // 1. Extract credential preserving Bearer / cookie precedence
-  const accessToken = tokenService.getAccessToken(req);
+  const authHeader = req.headers.get('authorization');
+  const hasBearerHeader =
+    typeof authHeader === 'string' &&
+    authHeader.startsWith('Bearer ') &&
+    authHeader.slice(7).trim().length > 0;
+
+  let accessToken: string | undefined = undefined;
+  let isCookieAuth = false;
+
+  if (hasBearerHeader) {
+    const candidate = authHeader.slice(7).trim();
+    try {
+      await tokenService.verifyAccessToken(candidate);
+      accessToken = candidate;
+    } catch {
+      // An invalid bearer header must NOT fall through to cookie credentials
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+    }
+  }
+
+  if (typeof accessToken !== 'string' || accessToken.trim().length === 0) {
+    const cookieToken =
+      req.cookies.get('accessToken')?.value ?? req.cookies.get('admin_accessToken')?.value;
+    if (typeof cookieToken === 'string' && cookieToken.trim().length > 0) {
+      accessToken = cookieToken.trim();
+      isCookieAuth = true;
+    }
+  }
+
   if (typeof accessToken !== 'string' || accessToken.trim().length === 0) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Enforce cookie-authenticated mutation origin/CSRF policy
+  if (isCookieAuth) {
+    const originHeader = req.headers.get('origin');
+    if (typeof originHeader !== 'string' || originHeader.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'Forbidden: Missing origin for cookie-authenticated request' },
+        { status: 403 }
+      );
+    }
+
+    let parsedOrigin: URL;
+    try {
+      parsedOrigin = new URL(originHeader);
+    } catch {
+      return NextResponse.json(
+        { error: 'Forbidden: Malformed origin' },
+        { status: 403 }
+      );
+    }
+
+    const requestHost = (req.headers.get('host') ?? req.nextUrl.host).toLowerCase();
+    const originHost = parsedOrigin.host.toLowerCase();
+
+    // Exact parsed origin host match (no substring comparisons)
+    const allowedHosts = new Set([
+      requestHost,
+      requestHost.split(':')[0],
+      'skillup.test',
+      'realtutorialhub.test',
+      'localhost:3000',
+      'localhost:3001',
+      'localhost:3002',
+      'localhost:3003',
+    ]);
+
+    if (!allowedHosts.has(originHost)) {
+      return NextResponse.json(
+        { error: 'Forbidden: CSRF origin mismatch' },
+        { status: 403 }
+      );
+    }
   }
 
   // 2. Cryptographic verification & claims inspection
@@ -49,6 +152,14 @@ export async function POST(req: NextRequest) {
   const tokenType = payload.tokenType;
   if (tokenType !== 'user' && tokenType !== 'admin') {
     return NextResponse.json({ error: 'Forbidden: Invalid credential class' }, { status: 403 });
+  }
+
+  // Enforce audience/class contract before session count or mutation
+  if (!isTenantAudienceValid(tokenType, payload.aud)) {
+    return NextResponse.json(
+      { error: 'Forbidden: Excluded or contradictory credential audience' },
+      { status: 403 }
+    );
   }
 
   // Enforce canonical tenant brand (strictly 'skillup' or 'realtutorialhub', exclude generic SHC)
