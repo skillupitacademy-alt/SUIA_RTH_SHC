@@ -179,3 +179,11 @@ From `apps/skillhubcore-admin`, `$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec 
 `21832df4` adds a regex-derived audit ID candidate index: 696 distinct candidates, 633 absent from the existing 91-row crosswalk. It is discovery only: IDs may be historical/referenced, other formats may be missed, and no wave/source/acceptance reconciliation is implied. FND01 remains materially incomplete despite eleven source-checked crosswalk rows.
 
 Network guard follow-up: `audit/W1_W3_Offline_Test_Network_Guard.ts` is a Vitest setup file installed before test modules; it denies global fetch, Node TCP/TLS connects and UDP sends. Its sensitivity selection `node --input-type=module -e "import { startVitest } from 'vitest/node'; const v = await startVitest('test', ['audit/W1_W3_Offline_Test_Network_Guard.test.ts'], { run: true, config: false, setupFiles: ['audit/W1_W3_Offline_Test_Network_Guard.ts'] }); if (!v) process.exit(1); await v.close();"` exited 0, 1 passed. Re-running the seven-file SkillUp selection with the same setupFiles option exited 0, 22 passed; the five-file SHC table selection similarly exited 0, 24 passed. DB/cache/queue keys were cleared first. This JavaScript-process guard is not an OS firewall and does not claim to block child processes, native networking or other mechanisms; no child networking was used by those selections. It supplements, not erases, the earlier disclosed unintended fetch attempt.
+
+Latest combined event verification with the pre-import guard, after clearing DB/cache/queue keys:
+
+```powershell
+node --input-type=module -e "import { startVitest } from 'vitest/node'; const v = await startVitest('test', ['packages/events/src/__tests__/fnd23-event-type-probe.test.ts','packages/events/src/__tests__/fnd23-event-retry-probe.test.ts','packages/events/src/__tests__/fnd23-linked-transport.test.ts'], { run: true, config: false, setupFiles: ['audit/W1_W3_Offline_Test_Network_Guard.ts'] }); if (!v) process.exit(1); await v.close();"
+```
+
+Exit 1: 2 files failed / 1 passed; 2 tests failed / 5 passed. The required mismatched-type denial and retry-after-handler-failure assertions remain red; no real QStash, Redis, database or cryptographic verification was performed.
