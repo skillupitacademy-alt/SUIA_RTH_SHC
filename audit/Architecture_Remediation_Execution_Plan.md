@@ -745,7 +745,7 @@ a bounded task and independent review. Carry exam default-store/conditional-owne
 into application/domain assessment; global resource isolation is not certified by GUARD-01.
 
 ### W1.2-GUARD-03 - Bounded Principal-Policy Implementation Scoping
-**Status:** `IMPLEMENTED_UNVERIFIED` (Remaining scope corrections completed per audit/W1.2_Batch_06_Remaining_Scope_Corrections.md: actual no-options verifier logic and cookie extraction documented; active-account eligibility vs service-principal trade-off explicit; exact portal header authority matrix specified; session schema corrected with no fictitious columns; 5th positional deviceContext preserved. Scoping only; strictly zero runtime code changes. Pending Sol review and acceptance.)
+**Status:** `CLOSED` (Sol accepts reviewed 8812f552 with architect-authored final decisions in the two scope documents: preserve infra tenant eligibility, actual route permissions, legacy header/signature compatibility, current schema/device-IP precedence and empty-role learner purpose. Scoping only; runtime work is separately PLANNED under ADMIN-01 and LOGIN-01. See `audit/W1.2_Batch_06_Scope_Sol_Acceptance.md`.)
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Tasks A/B:
 separate tenant-admin helper/caller compatibility and server-fixed learner-login
 implementation scopes. Documentation/scoping only; runtime protections require their
@@ -774,7 +774,7 @@ choosing bounded delegation/decommissioning. Do not create duplicate endpoints o
 assume deployed failure. No runtime change authorized by this planned entry.
 
 ### W1.2-SESS-03 - Legacy Logout-All Compatibility and Remediation Decision
-**Status:** `IMPLEMENTED_UNVERIFIED` (Remaining scope corrections completed per audit/W1.2_Batch_06_Remaining_Scope_Corrections.md: generic verifier key fallback and token-class enforcement documented; absorbed audit error dynamics detailed; deterministic result matrix for confirmed success, confirmed pre-commit failure, unknown post-commit outcome, and presence failure specified. Architectural decision only; strictly zero runtime code changes. Pending Sol review and acceptance.)
+**Status:** `CLOSED` (Sol accepts reviewed 8812f552 with a selected deterministic compatibility contract: preserve legacy response and no new cookie/deprecation metadata; distinguish precheck/no attempt, revocation unknown and confirmed-revocation/presence failure through a safe service-stage error. Decision only; runtime adapter is separately PLANNED under SESS-04. See `audit/W1.2_Batch_06_Scope_Sol_Acceptance.md`.)
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task C; preserve the
 existing legacy logout-all scope, qualify compatibility uncertainty and propose a
 bounded implementation. No live all-device call, runtime patch or endpoint removal.
@@ -806,6 +806,34 @@ test-environment branches and physical/deployed isolation limitations.
 stubbed infrastructure; legitimate admin control and learner/invalid-principal denials,
 including database admin-role changes and query ordering. No live negative probes,
 production policy change, universal API certification or browser AQ-10 closure.
+
+### W1.2-ADMIN-01 - Tenant Admin Preconditions and Compatible Proxy Routing
+**Status:** `PLANNED`
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Tasks A/B, validated by E.
+**Implementer / acceptance:** Gemini / independent Sol review.
+Implement accepted strict tenant-admin preconditions and shared non-privileged account
+eligibility, with proxy infra factory/analytics adaptation preserving existing blocked/
+missing-account denial and actual handler permissions. A/B are one integrated ticket;
+no independent deployment/acceptance of the strict helper before caller compatibility.
+
+### W1.2-LOGIN-01 - Server-Fixed Tenant Learner Login Purpose
+**Status:** `PLANNED`
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E.
+**Implementer / acceptance:** Gemini / independent Sol review.
+Implement server-fixed learner purpose, consistent access/refresh claims, no fabricated
+roles/entitlements, existing session schema and fifth deviceContext/third IP precedence.
+Preserve dedicated admin/infra/SHC and generic default-DB compatibility outside tenant scope.
+
+### W1.2-SESS-04 - Legacy Logout-All Compatibility Adapter
+**Status:** `PLANNED`
+**Root cause:** RC-ID-01
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E.
+**Implementer / acceptance:** Gemini / independent Sol review.
+Implement a verified tenant owner/user-admin adapter over the existing revocation engine,
+legacy snapshot-count response and safe service-stage failure attribution. Preserve
+canonical consumers and no new cookie/deprecation metadata; no live all-device execution.
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
