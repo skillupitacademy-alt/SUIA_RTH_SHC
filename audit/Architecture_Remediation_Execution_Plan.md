@@ -808,7 +808,7 @@ including database admin-role changes and query ordering. No live negative probe
 production policy change, universal API certification or browser AQ-10 closure.
 
 ### W1.2-ADMIN-01 - Tenant Admin Preconditions and Compatible Proxy Routing
-**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of Batch 07 corrections. Strict tenant-admin helper, shared non-privileged account eligibility, proxy routing branches across admin/factory/analytics, and requireAdminRouteAccess verified offline by 10 tests in admin-01-proxy.test.ts and 16 tests in rbac.service.test.ts.)
+**Status:** `CLOSED` (Sol accepts helper/proxy/route-guard scope at reviewed bb968161. Submitted proxy/strict-helper controls and additional independent infra analytics active/blocked and unknown-header signed-admin controls passed. See `audit/W1.2_Batch_07_Remaining_Sol_Review_bb968161.md`. Deployed/resource/browser qualification remains separately scoped.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Tasks A/B, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
 **Implementer / acceptance:** Gemini / independent Sol review.
@@ -820,7 +820,7 @@ one atomic unit across `rbac.service.ts`, `proxy.ts`, `admin-audience.util.ts`, 
 `rbac.service.test.ts` (16 tests passing) and `admin-01-proxy.test.ts` (10 tests passing).
 
 ### W1.2-LOGIN-01 - Server-Fixed Tenant Learner Login Purpose
-**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of Batch 07 corrections. Scoped learner purpose strictly to tenant ingress while preserving generic skillhubcore default-DB admin detection. Fail-fast purpose validation before DB/hash/audit. Offline verified by 6 tests in login-01-purpose.test.ts and Sol Probe 4.)
+**Status:** `VERIFICATION_FAILED` (Generic brand and fail-fast corrections independently pass existing probes. Required actual public login/signup forwarding/cookie controls remain incomplete and the distinct-key fixture labels use wrong constructor argument order. Remaining assignment `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`, Package 3. No complete LOGIN-01 acceptance.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
 **Implementer / acceptance:** Gemini / independent Sol review.
@@ -832,7 +832,7 @@ Preserves generic default-DB and dedicated admin issuers. Verified by `login-01-
 (6 tests passing).
 
 ### W1.2-SESS-04 - Legacy Logout-All Compatibility Adapter
-**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of Batch 07 corrections. Audience gate strictly rejects excluded/infra audiences; exact parsed origin/CSRF enforcement stops cookie-authenticated cross-origin mutations; real GlobalLogoutService stage failure, collision, and idempotent retry proved offline in 17 tests in sess-04-logout-all.test.ts and Sol Probes 2 & 3.)
+**Status:** `VERIFICATION_FAILED` (Original four probes pass, but independent wrong-scheme/cross-tenant origin and cookie-displaced-by-Bearer probes still return 200. The submitted state adapter also revokes a foreign tenant collision, invalidating its isolation claim. Review `audit/W1.2_Batch_07_Remaining_Sol_Review_bb968161.md`; remaining Packages 1/2 in `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`. No live all-device execution.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
 **Implementer / acceptance:** Gemini / independent Sol review.
