@@ -12,10 +12,10 @@ import { calculateTutorialProgress, TUTORIAL_REQUIRED_MASTERY_SECTIONS } from '@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import type { BlockType, TutorialBrand } from '@/modules/tutorial-engine';
-import { TutorialService } from '@/modules/tutorial-engine';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
+import type { BlockType, TutorialBrand } from '@/modules/tutorial-engine';
+import { TutorialService } from '@/modules/tutorial-engine';
 
 export const dynamic = 'force-dynamic';
 

@@ -24,8 +24,7 @@ import { proxy } from '@/proxy';
  * 6. Direct API access without gateway or internal secret is rejected fail-closed (403 Forbidden).
  * 7. Real Signed Learner Credential through API Proxy:
  *    Demonstrates the live proxy behavior with actual cryptographic tokens.
- *    Exposes the open proxy.ts anti-downshift defect (where an invalid x-internal-key falls through
- *    to user token evaluation) preserved for architectural governance.
+ *    Requires the proxy to reject an explicit invalid key before learner fallback.
  */
 
 describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Downshift', () => {
@@ -195,11 +194,7 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
     const resNormal = await proxy(reqNormal);
     expect(resNormal.status).toBe(200);
 
-    // 2. EXPOSED SOURCE DEFECT (Documented for architectural remediation):
-    // In proxy.ts line 102, bad x-internal-key sets isSystemBypass = false,
-    // causing proxy to fall through to user token verification (status 200) instead of denying (status 403).
-    // As proxy.ts is not authorized for runtime edits in Batch 08, this defect is recorded in
-    // audit/W1.2_Batch_08_Handoff.md with a minimal correction proposal.
+    // An explicit invalid internal key must not fall through to learner authentication.
     const reqWithBadKey = new NextRequest('https://realtutorialhub.test/api/export/status/test-job', {
       headers: {
         authorization: `Bearer ${learnerToken}`,
@@ -209,5 +204,24 @@ describe('B08-G: Invalid Privileged/Internal Authentication Boundary & Anti-Down
     const resWithBadKey = await proxy(reqWithBadKey);
     // Explicitly rejected privileged credentials must fail closed before learner fallback.
     expect(resWithBadKey.status).toBe(403);
+  });
+
+  it('distinguishes absent, valid, empty and unconfigured internal keys', async () => {
+    const run = async (key?: string) => {
+      const headers = new Headers({ 'x-request-id': 'request-control', 'x-session-id': 'session-control' });
+      if (key !== undefined) headers.set('x-internal-key', key);
+      return proxy(new NextRequest('https://api.internal.test/api/export/status/job', { headers }));
+    };
+    expect((await run()).status).toBe(401);
+    expect((await run(TEST_INTERNAL_SECRET)).status).toBe(200);
+    const empty = await run('');
+    expect(empty.status).toBe(403);
+    expect(empty.headers.get('x-request-id')).toBe('request-control');
+    expect(empty.headers.get('x-session-id')).toBe('session-control');
+    delete process.env.INTERNAL_API_KEY;
+    expect((await run(TEST_INTERNAL_SECRET)).status).toBe(403);
+    process.env.INTERNAL_API_KEY = '';
+    expect((await run('')).status).toBe(403);
+    expect((await proxy(new NextRequest('https://api.internal.test/api/health', { headers: { 'x-internal-key': 'wrong' } }))).status).toBe(200);
   });
 });

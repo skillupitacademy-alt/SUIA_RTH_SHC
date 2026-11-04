@@ -99,7 +99,15 @@ export async function proxy(request: NextRequest) {
     const internalKey = request.headers.get('x-internal-key');
     const authHeader = request.headers.get('authorization');
 
-    const isValidInternalKey = internalKey !== null && internalKey === process.env.INTERNAL_API_KEY;
+    const isValidInternalKey = internalKey !== null && internalKey !== '' &&
+      process.env.INTERNAL_API_KEY !== undefined && process.env.INTERNAL_API_KEY !== '' &&
+      internalKey === process.env.INTERNAL_API_KEY;
+    if (internalKey !== null && !isValidInternalKey) {
+      const response = NextResponse.json({ error: 'Invalid internal service key' }, { status: 403 });
+      response.headers.set('x-request-id', requestId);
+      response.headers.set('x-session-id', sessionId);
+      return corsMiddleware(request, response);
+    }
     const isValidCronAuth = authHeader !== null && process.env.CRON_SECRET !== undefined && authHeader === `Bearer ${process.env.CRON_SECRET}`;
 
     const isSystemBypass = isValidInternalKey || isValidCronAuth;
