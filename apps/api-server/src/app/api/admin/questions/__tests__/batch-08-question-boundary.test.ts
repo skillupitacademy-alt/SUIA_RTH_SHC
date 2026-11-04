@@ -43,4 +43,22 @@ describe('admin question CQRS handler effect boundary', () => {
     const response = await GET(await request('user'), undefined);
     expect.soft(response.status).toBe(401); expect.soft(await response.json()).toMatchObject({ code: 'UNAUTHORIZED' }); expect(queryBus.dispatch).not.toHaveBeenCalled();
   });
+  it('rejects malformed question payloads before engine writes and preserves supported types', async () => {
+    const createQuestion = vi.fn(async (value: unknown) => value);
+    const previousEngine = container.get(AdminQuestionEngine);
+    container.register(AdminQuestionEngine, { createQuestion } as never);
+    try {
+      const base = await request('admin');
+      const invoke = (body: unknown) => POST(new NextRequest(base.url, { method: 'POST', headers: base.headers, body: JSON.stringify(body) }), undefined);
+      const valid = { topicId: '11111111-1111-4111-8111-111111111111', questionText: 'Question', options: ['A'] };
+      expect((await invoke({ ...valid, type: 'invalid' })).status).toBe(400);
+      expect((await invoke({ ...valid, options: [] })).status).toBe(400);
+      expect(createQuestion).not.toHaveBeenCalled();
+      for (const type of ['mcq', 'code_mcq', 'multi_select']) {
+        expect((await invoke({ ...valid, type })).status).toBe(200);
+        expect(createQuestion).toHaveBeenLastCalledWith(expect.objectContaining({ type }), 'principal');
+      }
+      expect(createQuestion).toHaveBeenCalledTimes(3);
+    } finally { container.register(AdminQuestionEngine, previousEngine); }
+  });
 });
