@@ -163,3 +163,5 @@ Latest combined SkillUp truth selection: after DB/cache/queue keys were cleared,
 After the dashboard, attendance and payment edits, from `apps/skillup-web`, `$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/lib/skillup-data.ts' 'src/app/student/page.tsx' 'src/app/student/attendance/page.tsx' 'src/app/student/payments/page.tsx'` exited 0 without output. Test-file lint and builds remain open.
 
 `3b75fc51` traces SHC-TAXONOMY-CONTRACT-003: four SHC tables construct a slug field, while the central hierarchy schemas do not declare one. The actual backend ownership and HTTP/storage round trip remain unexecuted; no guessed mapping was implemented.
+
+After the shared footer claim follow-up `c718179c`, `pnpm exec tsc --noEmit` from each of `apps/realtutorialhub-site` and `apps/skillupitacademy-site` exited 0 again. The shared-package ESLint configuration limitation remains as recorded above.
