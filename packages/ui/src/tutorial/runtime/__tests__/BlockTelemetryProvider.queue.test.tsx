@@ -10,8 +10,8 @@
  * 6. No duplicate delivery
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, waitFor, act, cleanup } from '@testing-library/react';
 import React from 'react';
 import { BlockTelemetryProvider } from '../BlockTelemetryProvider';
 import * as ActiveBlockModule from '../ActiveBlockContext';
@@ -25,13 +25,10 @@ vi.mock('../ActiveBlockContext', async () => {
   };
 });
 
-// Mock fetch
-global.fetch = vi.fn();
+// Mock fetch is installed per test.
 
 // Mock performance.now()
 const mockPerformanceNow = vi.fn();
-global.performance.now = mockPerformanceNow;
-
 const mockNavigationNodeId = 'whatisjava';
 const mockSubtopicId = '5326eeb6-c4c8-4218-9687-2b46f94a9bb4';
 const mockSectionId = 'section-uuid-789';
@@ -39,6 +36,8 @@ const mockSessionId = 'test-session-uuid';
 
 describe('BlockTelemetryProvider - Durable Queue (STEP 3.4)', () => {
   beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+    vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
     vi.clearAllMocks();
     mockPerformanceNow.mockReturnValue(0);
     
@@ -47,6 +46,8 @@ describe('BlockTelemetryProvider - Durable Queue (STEP 3.4)', () => {
       json: async () => ({}),
     } as Response);
   });
+
+  afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
   // ============================================
   // CRITICAL TEST A: Failed transition preserves time
