@@ -109,6 +109,10 @@ export function TopicTable() {
         try {
             const searchTerm = debouncedSearch.trim() === '' ? undefined : debouncedSearch;
             const response = await apiClient.admin.getTopics(currentCursor, pageSize, undefined, searchTerm);
+            const ids = response.data.map((item: Topic | null) => item?.id);
+            if (ids.some((id) => typeof id !== 'string' || id.trim().length === 0) || new Set(ids).size !== ids.length) {
+                throw new Error('Topic response contains invalid identifiers');
+            }
             const mapped = response.data.map((topic: Topic) => ({
                 ...topic,
                 learningUrl: topic.learningUrl ?? '',
@@ -122,6 +126,8 @@ export function TopicTable() {
             setSelectedIds(new Set());
         } catch (error) {
             clientLogger.error('Failed to fetch topics', { error: error instanceof Error ? error.message : 'unknown' });
+            setData([]);
+            setSelectedIds(new Set());
             setErrorMessage('Connection Error: Unable to load topics at this time.');
         } finally {
             setIsLoading(false);

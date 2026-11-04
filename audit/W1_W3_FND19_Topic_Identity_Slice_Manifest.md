@@ -1,0 +1,5 @@
+# FND19 topic identity slice manifest
+
+Baseline 44b54142; RC-CONTRACT-01 resource identity. `TopicTable.tsx` spreads unvalidated API rows and uses their IDs in selection/edit/delete. Missing, blank or duplicate identifiers cannot safely address resources. Allowed production file: that component; adjacent isolated tests. Reject malformed pages and clear list/selection; preserve valid IDs. No change to topic complexity/domain mapping, schema, backend or authorization. Mounted tests with mocked API/hooks and blocked fetch; no real browser/store; async races separate. Sol review required.
+
+Verification: root, DB/cache/queue keys removed; programmatic Vitest `config: false`, jsdom, React plugin and explicit SHC `@` alias selecting `topic-identity.test.tsx`: exit 0, 4 passed for valid/missing/blank/duplicate IDs. Actual table has stub API/hooks and blocked fetch. SHC `pnpm exec tsc --noEmit` exit 0; whitespace check passed. No real service/browser; request races and complexity contract remain open. IMPLEMENTED_UNVERIFIED.
