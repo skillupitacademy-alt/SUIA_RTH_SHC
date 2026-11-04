@@ -27,13 +27,14 @@ it('nested child has its own DOM identity while the observer retains top-level s
   }
   vi.stubGlobal('IntersectionObserver', Observer);
   const parent = { id: 'parent-block', type: 'two-column', content: {
-    left: { blocks: [{ id: 'child-block', type: 'paragraph', content: { text: 'child marker' } }] },
+    left: { blocks: [{ id: 'child-block', type: 'paragraph', content: { text: 'child marker' } }, createD1Fixture({ id: 'instructional-child-observed' })] },
     right: { blocks: [] },
   } };
   function MountedConsumer() {
     const container = useRef<HTMLDivElement>(null);
     return <ActiveBlockProvider containerRef={container}><div ref={container}>
-      <TutorialBlockRenderer block={parent as never} runtimeContext={{ learnerId: 'learner', navigationNodeId: 'node', sectionId: 'section', subtopicId: 'subtopic', blockId: 'parent-block', blockType: 'two-column', blockVersion: 'unversioned' }} />
+      <TutorialBlockRenderer block={parent as never} theme={{ primary: '#123456', secondary: '#654321' } as never} runtimeContext={{ learnerId: 'learner', navigationNodeId: 'node', sectionId: 'section', subtopicId: 'subtopic', blockId: 'parent-block', blockType: 'two-column', blockVersion: 'unversioned' }} />
+      <TutorialBlockRenderer block={{ id: 'sibling-observed', type: 'paragraph', content: { text: 'sibling marker' } } as never} />
     </div></ActiveBlockProvider>;
   }
   try {
@@ -43,6 +44,11 @@ it('nested child has its own DOM identity while the observer retains top-level s
     expect.soft(child.getAttribute('data-block-id')).toBe('child-block');
     expect(observed).not.toContain(child);
     expect(observed).toContain(child.closest('[data-block-id="parent-block"]'));
+    const instructionalChild = document.querySelector('[data-block-id="instructional-child-observed"]');
+    const sibling = document.querySelector('[data-block-id="sibling-observed"]');
+    expect(instructionalChild).not.toBeNull();
+    expect(observed).not.toContain(instructionalChild);
+    expect(observed).toContain(sibling);
   } finally {
     cleanup();
     vi.unstubAllGlobals();
