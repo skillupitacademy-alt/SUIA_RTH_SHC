@@ -221,3 +221,5 @@ node --input-type=module -e "import { startVitest } from 'vitest/node'; import r
 ```
 
 Exit 0, 5 files / 47 tests passed; this selection is distinct from and overlaps earlier 66-test evidence, not additive. Actual browser, authenticated ownership and physical telemetry persistence are not established. An earlier attempt used the same command without the `test.exclude` option; Vitest matched substring paths in unrelated `.worktrees` and reported failures from those checkouts. It was interrupted, exit 1, without a reliable complete count; the offline guard was active and no live service or deletion was performed. That attempt is invalid as current-branch regression evidence; the explicit-exclusion rerun above is the attributable result.
+
+`af43457f` extends the actual admin question create-handler boundary selection: 4 tests passed with disposable signed principals, actual route/schema and mocked engine. Invalid types/options cause zero engine calls; three supported types and verified actor reach the engine seam. It does not prove repository persistence or the SHC client/HTTP round trip; FND20 remains partial.
