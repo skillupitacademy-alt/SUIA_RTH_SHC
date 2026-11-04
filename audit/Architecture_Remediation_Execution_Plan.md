@@ -23,6 +23,23 @@ The program covers:
 
 The target architecture remains a **modular multi-application platform with selectively distributed services**, explicit ownership, separate brand authorization/data boundaries, strict API/data contracts, secure-by-default behavior, observable/reliable operations, and enforceable CI architecture gates.
 
+### Current owner-directed consolidated foundation assignment
+
+On 2026-11-05 the owner requested one assignment for the nine remaining W1-W3 planning
+groups before W4. `audit/W1_W3_Terra_Consolidated_Implementation_Task.md` assigns thirty
+tasks FND01-FND30 to Terra, with independent Sol acceptance. This becomes the active
+foundation work list and incorporates unfinished Batch 08/J work while preserving its
+historical scope and evidence. The nine-group count aggregates W1.2 and W1.2-EMAIL,
+W2.1 and W3.1-W3.6. It is not a fixed implementation-batch count.
+
+Compatible, source-manifested corrections and contract consolidation may proceed within
+that assignment's boundaries. Unknown tenant/resource authority, policy-changing identity
+or session choices, migrations and other named gates require their exact Sol decision.
+Independent W2 and contract-analysis work may advance while a W1 dependency awaits review.
+Each group receives its own disposition, followed by dependency-based W4 entry review.
+Terra's J submission through 95bba4c3 remains IMPLEMENTED_UNVERIFIED pending independent
+review. Existing accepted scopes retain their recorded meanings.
+
 ---
 
 ## 2. Non-Negotiable Governance Rules
@@ -851,12 +868,12 @@ and no new cookie/deprecation metadata; tested strictly offline via `sess-04-log
 
 ### Controlled Batch 08 - Negative Authorization and Isolation Qualification
 **Status:** `IN_PROGRESS`. The twenty-package assignment remains incomplete with individual verified, failed, partial and NOT EXECUTED scopes.
-**Owner assignment-size requirement:** Every Sol assignment or continuation to Tera must contain at least twenty individually actionable tasks with deliverables and acceptance checks. The current J01-J20 continuation is recorded in `audit/W1.2_Terra_Controlled_Batch_08_20_Package_Task.md`, mapped to historical continuations and existing package IDs.
+**Owner assignment-size requirement:** Every Sol assignment or continuation to Tera must contain at least twenty individually actionable tasks with deliverables and acceptance checks. The active consolidated foundation assignment is `audit/W1_W3_Terra_Consolidated_Implementation_Task.md` with FND01-FND30. Its FND02-FND10 incorporate unfinished J01-J20 and existing package duties. The historical J01-J20 assignment remains in `audit/W1.2_Terra_Controlled_Batch_08_20_Package_Task.md` for traceability.
 **Latest independent disposition:** `audit/W1.2_Terra_I01_I20_Sol_Acceptance_6c15e17d.md` accepts the bounded code-representation correction at its helper/service/handler seams. Genuine legacy code remains supported and malformed version-stripped C1 now denies. I01-I20 and the overall assignment remain PARTIAL, with physical tenant, transaction, publication and client-owner gates open.
 **Independent evidence:** Composed central route/service 34 passed. Sol representation 17 passed, included in the nine-file selected service/repository total of 158 passed. Config:false BFF composition 2 passed. Normal UI set 30 passed / 1 header failure. Original probe retains 2 foreign-export failures, while containment/priority selected cases pass. Overlapping selections remain separate.
 **Quality gates:** API and db-tutorial typechecks passed, API excludes tests and db-tutorial includes its TS fixtures. Targeted composed API fixture lint passed with zero errors/warnings. The staged transaction adapter explicitly serializes callbacks. Publication controls establish validation-time membership, with removal after claim still creditable. UI typing/lint, physical SQL, tenant and browser gates retain their gaps.
 **Canonical interpretation:** Exact ID/version denial precedes completion writes at the tested service seam. Root count follows the existing schema, with depth, cycle and duplicate rejection retained. Child context assertions now include learner, navigation, section, subtopic and descendant identity with test-isolated spy history. Canonical tenant storage and nested event accounting remain separately open.
-**Assignment:** `audit/W1.2_Terra_Controlled_Batch_08_20_Package_Task.md` assigns twenty J01-J20 tasks. New runtime authority is confined to BlockTelemetryProvider.tsx and blockTelemetryDelivery.ts for immutable learning-session metadata and its necessary timing cutover. Transition/compatibility controls, nested C1 evidence and decision-ready ownership contracts are assigned. Authentication-owner/epoch changes, BFF session forwarding/subject changes, schemas, storage identity and publication locks retain separate gates.
+**Assignment:** The owner-directed consolidated W1-W3 assignment now governs active foundation work, incorporating the J01-J20 metadata, compatibility and authority duties. J implementation through 95bba4c3 awaits independent acceptance. Follow the consolidated per-slice manifests and implementation boundaries. Unselected authority/policy choices, schema migrations, physical storage, publication locks and runtime qualification retain their explicit gates.
 **Remaining boundaries:** Canonical private tenant storage, nested instructional events, full gateway/browser operation, export producer/legacy provenance, conflicting admin context, SHC session design and real client-cache qualification remain failed, partial or unexecuted at their recorded layers. Legacy containment cannot close canonical progress or ILS telemetry gates.
 **Authority:** FinalAechitecture.md and accepted independent tenant identity. BROWSER-01/RC-ID-01 remain IN_PROGRESS, with canonical Waves 5-6 and formal Wave 8/runtime qualification separate. Existing interim SHC issuance/cookie compatibility and prior accepted ticket scopes retain their meanings.
 
