@@ -5,6 +5,20 @@ import { TokenRepository } from '@/modules/auth/repositories/token.repository';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { container } from '@/modules/core/container';
 
+export class RevocationStageError extends Error {
+  constructor(message = 'Session revocation outcome unknown; retry with valid credentials') {
+    super(message);
+    this.name = 'RevocationStageError';
+  }
+}
+
+export class PresenceStageError extends Error {
+  constructor(message = 'Sessions revoked; presence update could not be confirmed') {
+    super(message);
+    this.name = 'PresenceStageError';
+  }
+}
+
 export class GlobalLogoutService {
   constructor(
     private tokenRepo = container.get(TokenRepository),
@@ -36,13 +50,21 @@ export class GlobalLogoutService {
       : this.userRepo;
 
     // 🔥 Revoke ALL refresh tokens for this user
-    await brandTokenRepo.revokeAll(userId);
+    try {
+      await brandTokenRepo.revokeAll(userId);
+    } catch (_err) {
+      throw new RevocationStageError();
+    }
 
     // 🔥 Force user offline
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    await brandUserRepo.updateLastActive(userId, oneHourAgo);
+    try {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      await brandUserRepo.updateLastActive(userId, oneHourAgo);
+    } catch (_err) {
+      throw new PresenceStageError();
+    }
 
-    // 🔥 Audit log
+    // 🔥 Audit log (absorbed internally by AuditService)
     await this.auditService.log({
       userId,
       action: 'global_logout',
