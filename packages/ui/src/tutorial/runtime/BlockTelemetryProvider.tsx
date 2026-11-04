@@ -28,7 +28,7 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback, useContext } from 'react';
-import { useActiveBlock, type ActiveBlockIdentity } from './ActiveBlockContext';
+import { useActiveBlock } from './ActiveBlockContext';
 import { TelemetryCallbackContext } from './TelemetryCallbackContext';
 import { 
   splitActiveTimeSeconds, 
@@ -80,6 +80,7 @@ export interface BlockTelemetryProviderProps {
  * Internal timing state for currently active block
  */
 interface TimingState {
+  sessionId: string;
   blockId: string;
   blockVersion: string;
   startTime: number; // performance.now() when timing started
@@ -91,25 +92,6 @@ interface TimingState {
  * Phase D-2: Use production delivery event type
  */
 type DeliveryEvent = DeliveryEventType;
-
-/**
- * Phase D-2: Live accumulator (mutable)
- */
-interface LiveAccumulator {
-  blockId: string;
-  blockVersion: string;
-  pendingMs: number;
-}
-
-/**
- * Pending active time awaiting delivery
- * CRITICAL: Survives block transitions and flush failures
- */
-interface PendingActiveTime {
-  blockId: string;
-  blockVersion: string;
-  pendingMs: number;
-}
 
 /**
  * Request identity for race condition prevention
@@ -139,11 +121,9 @@ export function BlockTelemetryProvider({
   // STEP 1: Consume telemetry callback context (behavior implementation deferred to Step 2)
   const telemetryCallbackContext = useContext(TelemetryCallbackContext);
   
-  // Session ID from props
-  const sessionIdRef = useRef<string | null>(propSessionId);
-  
   // Current timing state (actively accumulating for current block)
   const timingStateRef = useRef<TimingState | null>(null);
+  const transitionGenerationRef = useRef(0);
   
   // Phase D-2: Production delivery queue
   const deliveryQueueRef = useRef<BlockTelemetryDeliveryQueue | null>(null);
@@ -156,17 +136,6 @@ export function BlockTelemetryProvider({
   
   // Heartbeat timer ID
   const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  
-  /**
-   * Update session ID when prop changes
-   */
-  useEffect(() => {
-    sessionIdRef.current = propSessionId;
-    
-    if (!propSessionId) {
-      console.warn('[BlockTelemetry] No session ID provided - telemetry disabled');
-    }
-  }, [propSessionId]);
   
   /**
    * Phase D-2 F2: Snapshot/swap - capture timing and create frozen delivery events
@@ -211,6 +180,7 @@ export function BlockTelemetryProvider({
       blockId: state.blockId,
       blockVersion: state.blockVersion,
       activeTimeSec: wholeSeconds,
+      sessionId: state.sessionId,
     });
   }, [navigationNodeId, subtopicId, sectionId]);
   
@@ -226,9 +196,10 @@ export function BlockTelemetryProvider({
    */
   const emitVisit = useCallback(async (
     blockId: string,
-    blockVersion: string
+    blockVersion: string,
+    sessionId: string,
   ): Promise<void> => {
-    if (!enabled || !sessionIdRef.current) {
+    if (!enabled || !sessionId) {
       return;
     }
     
@@ -247,7 +218,7 @@ export function BlockTelemetryProvider({
       subtopicId,
       blockId,
       blockVersion,
-      sessionId: sessionIdRef.current,
+      sessionId,
       sectionId,
     };
     
@@ -257,7 +228,7 @@ export function BlockTelemetryProvider({
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'x-session-id': sessionIdRef.current,
+          'x-session-id': sessionId,
         },
         body: JSON.stringify(requestPayload),
       });
@@ -277,7 +248,7 @@ export function BlockTelemetryProvider({
    */
   const sendBlockActiveTime: SendBlockActiveTime = useCallback(
     async (event: DeliveryEvent) => {
-      if (!enabled || !sessionIdRef.current) {
+      if (!event.sessionId) {
         return {
           processed: false,
           alreadyProcessed: false,
@@ -290,7 +261,7 @@ export function BlockTelemetryProvider({
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'x-session-id': sessionIdRef.current,
+            'x-session-id': event.sessionId,
           },
           body: JSON.stringify({
             navigationNodeId: event.navigationNodeId,
@@ -395,21 +366,15 @@ export function BlockTelemetryProvider({
   /**
    * Start timing for a block
    */
-  const startTiming = useCallback((blockId: string, blockVersion: string) => {
+  const startTiming = useCallback((blockId: string, blockVersion: string, sessionId: string) => {
     timingStateRef.current = {
+      sessionId,
       blockId,
       blockVersion,
       startTime: performance.now(),
       accumulatedMs: 0,
       isPaused: false,
     };
-  }, []);
-  
-  /**
-   * Stop timing (does not flush - caller must flush separately)
-   */
-  const stopTiming = useCallback(() => {
-    timingStateRef.current = null;
   }, []);
   
   /**
@@ -450,54 +415,32 @@ export function BlockTelemetryProvider({
    * Handle active block changes
    */
   useEffect(() => {
-    if (!enabled || !sessionIdRef.current) return;
-    
+    const generation = ++transitionGenerationRef.current;
     const currentState = timingStateRef.current;
-    
-    // Block change: Safe transition with durable delivery queue
-    const transitionToNewBlock = async () => {
-      if (!activeBlock) {
-        // No active block - flush and stop
-        if (currentState) {
-          await flushAllPending();
-          stopTiming();
-        }
-        return;
-      }
-      
-      // Coerce undefined blockVersion to 'unversioned' (Phase 4.4 API requirement)
-      const blockVersion = activeBlock.blockVersion || 'unversioned';
-      
-      // Check if this is the same block
-      if (
-        currentState &&
+    const nextSession = enabled ? propSessionId : null;
+    const blockVersion = activeBlock?.blockVersion || 'unversioned';
+    if (currentState && nextSession && activeBlock &&
         currentState.blockId === activeBlock.blockId &&
-        currentState.blockVersion === blockVersion
-      ) {
-        // Same block - no action needed
-        return;
+        currentState.blockVersion === blockVersion &&
+        currentState.sessionId === nextSession) return;
+
+    // Snapshot synchronously at the cutover, before awaiting any network request.
+    // Fractional time belongs to the old interval and is not transferred.
+    const pending = currentState ? flushAllPending() : Promise.resolve();
+    timingStateRef.current = null;
+    if (!nextSession || !activeBlock) return;
+
+    if (!currentState || currentState.sessionId !== nextSession) {
+      lastVisitIdentityRef.current = null;
+    }
+    startTiming(activeBlock.blockId, blockVersion, nextSession);
+    void pending.then(async () => {
+      if (transitionGenerationRef.current === generation) {
+        await emitVisit(activeBlock.blockId, blockVersion, nextSession);
       }
-      
-      // 1. CRITICAL Phase D-2: Flush old block BEFORE stopping (snapshot/swap preserves in-flight accumulation)
-      if (currentState) {
-        await flushAllPending();
-        stopTiming();
-      }
-      
-      // 2. Emit visit for new block
-      await emitVisit(activeBlock.blockId, blockVersion);
-      
-      // 3. Start timing for new block
-      startTiming(activeBlock.blockId, blockVersion);
-    };
-    
-    // Execute transition and handle errors gracefully
-    // Note: Error handling ensures telemetry failures don't break UX
-    transitionToNewBlock().catch((error) => {
-      console.error('[BlockTelemetry] Transition failed:', error);
-    });
-  }, [activeBlock, enabled, flushAllPending, emitVisit, startTiming, stopTiming]);
-  
+    }).catch(error => console.error('[BlockTelemetry] Transition failed:', error));
+  }, [activeBlock, enabled, propSessionId, flushAllPending, emitVisit, startTiming]);
+
   /**
    * Heartbeat: Periodically flush accumulated time and retry pending
    */

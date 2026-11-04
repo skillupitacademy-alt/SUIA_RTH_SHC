@@ -72,6 +72,87 @@ describe('provider pending delivery', () => {
     await act(async () => { release({ ok: true, json: async () => ({ processed: true }) } as Response); await deferred; });
     expect(requests()).toHaveLength(1);
   });
+  it('cuts over the same block at a session change without transferring fractional time', async () => {
+    vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({ processed: true }) } as Response);
+    vi.mocked(ActiveBlock.useActiveBlock).mockReturnValue({ activeBlock: block('A', 'C1') });
+    const { rerender } = render(view()); await act(async () => {});
+    now.mockReturnValue(15750);
+    await act(async () => { rerender(<BlockTelemetryProvider {...ids} sessionId="next"><div>next</div></BlockTelemetryProvider>); });
+    now.mockReturnValue(28250);
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    const calls = vi.mocked(fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time');
+    const bodies = calls.map(c => JSON.parse((c[1] as RequestInit).body as string));
+    const headers = calls.map(c => new Headers((c[1] as RequestInit).headers).get('x-session-id'));
+    expect(bodies.map(body => body.activeTimeSec)).toEqual([15, 12]);
+    expect(headers).toEqual(['session', 'next']);
+    expect(new Set(bodies.map(body => body.eventId)).size).toBe(2);
+  });
+  it('does not accrue disabled null-session time or relabel pending work on resume', async () => {
+    let fail = true;
+    vi.mocked(fetch).mockImplementation(async url => url === '/api/tutorial/ils/block-active-time' && fail ? ({ ok: false } as Response) : ({ ok: true, json: async () => ({ processed: true }) } as Response));
+    vi.mocked(ActiveBlock.useActiveBlock).mockReturnValue({ activeBlock: block('A', 'C1') });
+    const { rerender } = render(view()); await act(async () => {});
+    now.mockReturnValue(10000); await act(async () => { rerender(<BlockTelemetryProvider {...ids} sessionId={null}><div>none</div></BlockTelemetryProvider>); });
+    const old = requests()[0]; expect(old.activeTimeSec).toBe(10);
+    now.mockReturnValue(30000); fail = false;
+    await act(async () => { rerender(<BlockTelemetryProvider {...ids} sessionId="next"><div>next</div></BlockTelemetryProvider>); });
+    now.mockReturnValue(35000); await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    const calls = vi.mocked(fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time');
+    const oldCalls = calls.filter(c => JSON.parse((c[1] as RequestInit).body as string).eventId === old.eventId);
+    expect(oldCalls.length).toBeGreaterThanOrEqual(2);
+    expect(oldCalls.every(c => new Headers((c[1] as RequestInit).headers).get('x-session-id') === 'session')).toBe(true);
+    expect(requests().some(body => body.eventId !== old.eventId && body.activeTimeSec === 5)).toBe(true);
+  });
+  it('keeps three rapid session intervals distinct while the first send is deferred', async () => {
+    let release!: (response: Response) => void;
+    const deferred = new Promise<Response>(resolve => { release = resolve; });
+    let first = true;
+    vi.mocked(fetch).mockImplementation(async url => {
+      if (url === '/api/tutorial/ils/block-active-time' && first) { first = false; return deferred; }
+      return { ok: true, json: async () => ({ processed: true }) } as Response;
+    });
+    vi.mocked(ActiveBlock.useActiveBlock).mockReturnValue({ activeBlock: block('A', 'C1') });
+    const { rerender } = render(view()); await act(async () => {});
+    now.mockReturnValue(10000); await act(async () => { rerender(<BlockTelemetryProvider {...ids} sessionId="second"><div>second</div></BlockTelemetryProvider>); });
+    now.mockReturnValue(20000); await act(async () => { rerender(<BlockTelemetryProvider {...ids} sessionId="third"><div>third</div></BlockTelemetryProvider>); });
+    now.mockReturnValue(30000);
+    await act(async () => { release({ ok: true, json: async () => ({ processed: true }) } as Response); await deferred; });
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    const calls = vi.mocked(fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time');
+    const delivered = calls.map(c => ({ body: JSON.parse((c[1] as RequestInit).body as string), session: new Headers((c[1] as RequestInit).headers).get('x-session-id') }));
+    expect(delivered.map(item => [item.session, item.body.activeTimeSec])).toEqual([['session', 10], ['second', 10], ['third', 10]]);
+  });
+  it('retains captured metadata across rejection and non-OK retries after cutover', async () => {
+    let attempts = 0;
+    vi.mocked(fetch).mockImplementation(async url => {
+      if (url !== '/api/tutorial/ils/block-active-time') return { ok: true, json: async () => ({ processed: true }) } as Response;
+      attempts++;
+      if (attempts === 1) throw new Error('network outage');
+      if (attempts === 2) return { ok: false } as Response;
+      return { ok: true, json: async () => ({ processed: true }) } as Response;
+    });
+    vi.mocked(ActiveBlock.useActiveBlock).mockReturnValue({ activeBlock: block('A', 'C1') });
+    const { rerender } = render(view()); await act(async () => {}); now.mockReturnValue(10000);
+    await act(async () => { rerender(<BlockTelemetryProvider {...ids} sessionId="next"><div>next</div></BlockTelemetryProvider>); });
+    const initial = requests()[0];
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    const calls = vi.mocked(fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time' && JSON.parse((c[1] as RequestInit).body as string).eventId === initial.eventId);
+    expect(calls).toHaveLength(3);
+    expect(calls.every(c => new Headers((c[1] as RequestInit).headers).get('x-session-id') === 'session')).toBe(true);
+    expect(calls.every(c => JSON.stringify(JSON.parse((c[1] as RequestInit).body as string)) === JSON.stringify(initial))).toBe(true);
+  });
+  it('keeps capped chunks and new-session seconds separate at cutover', async () => {
+    vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({ processed: true }) } as Response);
+    vi.mocked(ActiveBlock.useActiveBlock).mockReturnValue({ activeBlock: block('A', 'C1') });
+    const { rerender } = render(view()); await act(async () => {});
+    now.mockReturnValue(1200700); await act(async () => { rerender(<BlockTelemetryProvider {...ids} sessionId="next"><div>next</div></BlockTelemetryProvider>); });
+    now.mockReturnValue(1202200); await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+    const calls = vi.mocked(fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time');
+    const delivered = calls.map(c => ({ body: JSON.parse((c[1] as RequestInit).body as string), session: new Headers((c[1] as RequestInit).headers).get('x-session-id') }));
+    expect(delivered.map(item => [item.session, item.body.activeTimeSec])).toEqual([['session', 600], ['session', 600], ['next', 1]]);
+    expect(new Set(delivered.map(item => item.body.eventId)).size).toBe(3);
+  });
   it('preserves old page and version on a pending event across page/session transition', async () => {
     let fail = true;
     vi.mocked(fetch).mockImplementation(async url => url === '/api/tutorial/ils/block-active-time' && fail ? ({ ok: false } as Response) : ({ ok: true, json: async () => ({ processed: true }) } as Response));

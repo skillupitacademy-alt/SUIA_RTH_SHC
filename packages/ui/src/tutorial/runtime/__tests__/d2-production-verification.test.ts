@@ -69,6 +69,16 @@ describe('D-2 Frontend Production Verification', () => {
   // ==========================================================================
   
   describe('F1: Production event ID generation', () => {
+    it('retains optional session metadata across capped chunks while preserving legacy inputs', () => {
+      const input = { navigationNodeId: 'node', subtopicId: 'subtopic', sectionId: null, blockId: 'block', blockVersion: 'D1', activeTimeSec: 1201 };
+      const legacy = createDeliveryEvents(input);
+      expect(legacy.map(event => event.activeTimeSec)).toEqual([600, 600, 1]);
+      expect(legacy.every(event => event.sessionId === undefined)).toBe(true);
+      const scoped = createDeliveryEvents({ ...input, sessionId: 'session' });
+      expect(scoped.map(event => event.activeTimeSec)).toEqual([600, 600, 1]);
+      expect(scoped.every(event => event.sessionId === 'session')).toBe(true);
+      expect(new Set(scoped.map(event => event.eventId)).size).toBe(3);
+    });
     it('F1-1: each logical delivery event receives one stable eventId', () => {
       const events = createDeliveryEvents({
         navigationNodeId: 'whatisjava',
