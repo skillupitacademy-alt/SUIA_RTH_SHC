@@ -4,6 +4,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { TutorialBlockRenderer } from '../TutorialBlockRenderer';
 import { ActiveBlockProvider } from '../runtime/ActiveBlockContext';
 import { BlockTelemetryProvider } from '../runtime/BlockTelemetryProvider';
+import { createD1Fixture } from '../../../../db-tutorial/src/services/__tests__/test-fixtures';
 
 it('delivers the selected top-level parent identity rather than nested child identity', async () => {
   let callback!: IntersectionObserverCallback;
@@ -12,17 +13,20 @@ it('delivers the selected top-level parent identity rather than nested child ide
   vi.stubGlobal('IntersectionObserver', Observer);
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ processed: true }) } as Response)));
   const clock = vi.spyOn(performance, 'now').mockReturnValue(0);
-  const parent = { id: 'parent', type: 'two-column', content: { left: { blocks: [{ id: 'child', type: 'paragraph', content: { text: 'child' } }] }, right: { blocks: [] } } };
+  const parent = { id: 'parent', type: 'two-column', content: { left: { blocks: [createD1Fixture({ id: 'child' })] }, right: { blocks: [] } } };
   function Harness() {
     const container = useRef<HTMLDivElement>(null);
     return <ActiveBlockProvider containerRef={container}><BlockTelemetryProvider navigationNodeId="node" subtopicId="subtopic" sectionId="section" sessionId="session" heartbeatIntervalMs={20}>
-      <div ref={container}><TutorialBlockRenderer block={parent as never} /></div>
+      <div ref={container}><TutorialBlockRenderer block={parent as never} theme={{ primary: '#123456', secondary: '#654321' } as never} /><TutorialBlockRenderer block={createD1Fixture({ id: 'sibling' }) as never} theme={{ primary: '#123456', secondary: '#654321' } as never} /></div>
     </BlockTelemetryProvider></ActiveBlockProvider>;
   }
   try {
     render(<Harness />);
-    await waitFor(() => expect(observed).toHaveLength(1));
+    await waitFor(() => expect(observed).toHaveLength(2));
     expect(observed[0]?.getAttribute('data-block-id')).toBe('parent');
+    expect(observed[1]?.getAttribute('data-block-id')).toBe('sibling');
+    expect(document.querySelector('[data-block-id="child"]')?.getAttribute('data-block-version')).toBe('D1');
+    expect(observed).not.toContain(document.querySelector('[data-block-id="child"]'));
     await act(async () => { callback([{ target: observed[0], isIntersecting: true, boundingClientRect: { top: 0, bottom: 100 } } as IntersectionObserverEntry], {} as IntersectionObserver); });
     await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(call => call[0] === '/api/tutorial/ils/block-visit')).toBe(true));
     await act(async () => {});
@@ -32,6 +36,10 @@ it('delivers the selected top-level parent identity rather than nested child ide
     expect(bodies.every(body => body.blockId === 'parent')).toBe(true);
     expect(bodies.some(body => body.blockVersion === 'unversioned' && body.activeTimeSec === 3)).toBe(true);
     expect(bodies.every(body => body.navigationNodeId === 'node' && body.subtopicId === 'subtopic' && body.sectionId === 'section')).toBe(true);
+    await act(async () => { callback([{ target: observed[0], isIntersecting: false, boundingClientRect: { top: 0, bottom: 100 } }, { target: observed[1], isIntersecting: true, boundingClientRect: { top: 0, bottom: 100 } }] as IntersectionObserverEntry[], {} as IntersectionObserver); });
+    await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(call => String((call[1] as RequestInit)?.body).includes('sibling'))).toBe(true));
+    const siblingBodies = vi.mocked(fetch).mock.calls.filter(call => String(call[0]).includes('/block-')).map(call => JSON.parse((call[1] as RequestInit).body as string)).filter(body => body.blockId === 'sibling');
+    expect(siblingBodies.some(body => body.blockVersion === 'D1')).toBe(true);
   } finally { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); }
 });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });

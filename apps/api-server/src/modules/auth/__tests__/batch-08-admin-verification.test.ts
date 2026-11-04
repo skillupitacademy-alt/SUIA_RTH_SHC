@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiResponse } from '@/lib/api-response';
+import * as metrics from '@/lib/metrics';
 import { container } from '@/modules/core/container';
 import { TokenService } from '../token.service';
 import { requireAdminRouteAccess, verifyAdminOrInfraToken } from '../admin-audience.util';
@@ -49,6 +50,23 @@ describe('admin credential verification boundary', () => {
   it('denies a role-ineligible SHC principal without changing the 403 contract', async () => {
     const value = await tokens.generateAccessToken({ userId: 'admin', roles: ['student'], brand: 'skillhubcore', tokenType: 'admin', isAdmin: true, aud: 'shc-admin' });
     expect(await status(requireAdminRouteAccess(req(value, 'shc-admin')))).toBe(403);
+  });
+  it.each(['wrong-audience-admin', 'wrong-class-admin-audience'] as const)('rejects independently signed %s', async kind => {
+    const { SignJWT } = await import('jose');
+    const adminClass = kind === 'wrong-audience-admin';
+    const signed = await new SignJWT({ userId: 'admin', originalUserId: 'admin', shadowUserId: 'admin', roles: [adminClass ? 'admin' : 'student'], brand: 'skillup', tokenType: adminClass ? 'admin' : 'user', isAdmin: adminClass })
+      .setProtectedHeader({ alg: 'HS256' }).setAudience(adminClass ? 'user' : 'admin').setExpirationTime('5m').sign(key);
+    let failure: unknown; try { await requireAdminRouteAccess(req(signed)); } catch (error) { failure = error; }
+    const response = ApiResponse.error(failure); expect(response.status).toBe(401); expect(await response.json()).toMatchObject({ code: 'UNAUTHORIZED' });
+    expect(_verifyAdmin).not.toHaveBeenCalled(); expect(_verifyActiveAccount).not.toHaveBeenCalled();
+  });
+  it('does not relabel success-metric failure as credential rejection', async () => {
+    vi.spyOn(metrics, 'recordCounter').mockImplementationOnce(() => { throw new Error('metric outage'); });
+    expect(await status(verifyAdminOrInfraToken(req(await token('skillup', 'admin'))))).toBe(500);
+  });
+  it('surfaces failure-metric outage as operational error after rejected verification', async () => {
+    vi.spyOn(metrics, 'recordCounter').mockImplementationOnce(() => { throw new Error('metric outage'); });
+    expect(await status(verifyAdminOrInfraToken(req('invalid')))).toBe(500);
   });
   it('does not translate service resolution failure into 401', async () => {
     vi.spyOn(container, 'get').mockImplementationOnce(() => { throw new Error('service unavailable'); });

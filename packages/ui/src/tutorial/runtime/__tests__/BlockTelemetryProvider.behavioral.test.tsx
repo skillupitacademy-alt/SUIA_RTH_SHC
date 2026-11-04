@@ -582,79 +582,22 @@ describe('BlockTelemetryProvider - Behavioral State Machine', () => {
   // ============================================
 
   describe('Flush Serialization', () => {
-    it('serializes overlapping flushes to prevent double-counting', async () => {
-      vi.useFakeTimers();
-      vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow);
-      mockPerformanceNow.mockReturnValue(0);
-
-      let fetchCallCount = 0;
-      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(async (url) => {
-        fetchCallCount++;
-        // Simulate slow network
-        await act(async () => { await vi.advanceTimersByTimeAsync(100); });
-        return { ok: true, json: async () => ({}) } as Response;
-      });
-
-      const mockUseActiveBlock = vi.mocked(ActiveBlockModule.useActiveBlock);
-      mockUseActiveBlock.mockReturnValue({
-        activeBlock: { blockId: 'block-a', blockType: 'code', blockVersion: 'C1' },
-      });
-
-      const { rerender } = render(
-        <BlockTelemetryProvider
-          navigationNodeId={mockNavigationNodeId}
-          subtopicId={mockSubtopicId}
-          sectionId={mockSectionId}
-          sessionId={mockSessionId}
-          heartbeatIntervalMs={30000}
-        >
-          <div>Content</div>
-        </BlockTelemetryProvider>
-      );
-
-      await vi.waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
-      });
-
-      fetchCallCount = 0;
-
-      // 15 seconds on block A
-      mockPerformanceNow.mockReturnValue(15000);
-
-      // Trigger heartbeat (starts flush)
-      act(() => { vi.advanceTimersByTime(30000); });
-
-      // Immediately transition to block B (requests another flush)
-      mockUseActiveBlock.mockReturnValue({
-        activeBlock: { blockId: 'block-b', blockType: 'definition', blockVersion: 'D1' },
-      });
-
-      await act(async () => {
-        rerender(
-          <BlockTelemetryProvider
-            navigationNodeId={mockNavigationNodeId}
-            subtopicId={mockSubtopicId}
-            sectionId={mockSectionId}
-            sessionId={mockSessionId}
-            heartbeatIntervalMs={30000}
-          >
-            <div>Content</div>
-          </BlockTelemetryProvider>
-        );
-      });
-
-      // Wait for all flushes
-      await vi.waitFor(() => {
-        expect(fetchCallCount).toBeGreaterThan(0);
-      }, { timeout: 5000 });
-
-      // Should have serialized the flushes (not sent duplicate activeTimeSec for same period)
-      const activeTimeCalls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(
-        c => c[0] === '/api/tutorial/ils/block-active-time'
-      );
-
-      // Exactly one active-time call for block A
-      expect(activeTimeCalls.length).toBeLessThanOrEqual(1);
+    it('serializes a deferred A delivery while a second flush is requested', async () => {
+      vi.useFakeTimers(); vi.spyOn(performance, 'now').mockImplementation(mockPerformanceNow); mockPerformanceNow.mockReturnValue(0);
+      let resolveA!: (response: Response) => void;
+      const delayed = new Promise<Response>(resolve => { resolveA = resolve; });
+      vi.mocked(global.fetch).mockImplementation(async url => url === '/api/tutorial/ils/block-active-time' ? delayed : ({ ok: true, json: async () => ({ processed: true }) } as Response));
+      const active = vi.mocked(ActiveBlockModule.useActiveBlock);
+      active.mockReturnValue({ activeBlock: { blockId: 'A', blockType: 'code', blockVersion: 'C1' } });
+      const view = () => <BlockTelemetryProvider navigationNodeId={mockNavigationNodeId} subtopicId={mockSubtopicId} sectionId={mockSectionId} sessionId={mockSessionId} heartbeatIntervalMs={30000}><div>Content</div></BlockTelemetryProvider>;
+      const { rerender } = render(view()); await act(async () => {});
+      mockPerformanceNow.mockReturnValue(15000); await act(async () => { vi.advanceTimersByTime(30000); });
+      active.mockReturnValue({ activeBlock: { blockId: 'B', blockType: 'definition', blockVersion: 'D1' } });
+      await act(async () => { rerender(view()); });
+      const calls = () => vi.mocked(global.fetch).mock.calls.filter(c => c[0] === '/api/tutorial/ils/block-active-time').map(c => JSON.parse((c[1] as RequestInit).body as string));
+      expect(calls()).toHaveLength(1); expect(calls()[0]).toMatchObject({ blockId: 'A', blockVersion: 'C1', activeTimeSec: 15 });
+      await act(async () => { resolveA({ ok: true, json: async () => ({ processed: true }) } as Response); await delayed; });
+      await act(async () => {}); expect(calls()).toHaveLength(1);
     });
   });
 
