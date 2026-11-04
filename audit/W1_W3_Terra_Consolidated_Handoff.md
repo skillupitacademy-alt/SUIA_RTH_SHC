@@ -117,3 +117,5 @@ $env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/lib/skillup-data.ts' 
 ```
 
 Each exited 0 without output; no test-file or package-wide lint implied.
+
+After the later subtopic identity change, `ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint` (PowerShell equivalent `$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/components/questions/QuestionTable.tsx' 'src/components/questions/SubtopicTable.tsx'`) from `apps/skillhubcore-admin` exited 0 without output. This checks production files only.
