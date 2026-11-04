@@ -13,3 +13,5 @@ Baseline df81a5c0, clean before FND07. This is an incomplete register, not an ex
 | G4-G9 FND18-FND23 | RC-CONTRACT-01 and domain root causes | auth, taxonomy, question, tutorial, Project LLM and event contracts | Per-domain verified drift, consumer manifests and W1 authority dependencies pending; no consolidated acceptance. |
 
 Unknown historical provenance, physical tenant routing, actual browser identity transitions and deployment gates are not inferred from offline fixtures. No group is accepted or closed by this register.
+
+Additional original audit finding outside the 91-row crosswalk: SHC-PLLM-AUDIT-TRUTH-001 -> `apps/skillhubcore-admin/src/app/(admin)/tools/project-llm/workflow-details/page.tsx` -> FND15 bounded correction `3f988db2`, IMPLEMENTED_UNVERIFIED. Fetched workflow status retained; fabricated audit/evidence removed; backend evidence/approval and Sol acceptance remain pending. Specification-review and explorer reference issues are separate newly source-backed findings, not this original ID. This addition does not make the register exhaustive.
