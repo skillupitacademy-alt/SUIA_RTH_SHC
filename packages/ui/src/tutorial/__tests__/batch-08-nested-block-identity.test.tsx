@@ -49,7 +49,11 @@ it('nested child has its own DOM identity while the observer retains top-level s
   }
 });
 
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  childContext.mockClear();
+});
 
 it.each([true, false])('preserves nested and sibling identities with runtime context: %s', (withContext) => {
   const document = { id: 'parent', type: 'two-column', content: {
