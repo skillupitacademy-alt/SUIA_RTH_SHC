@@ -6,7 +6,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { TutorialBlockRenderer } from '../TutorialBlockRenderer';
 import { ActiveBlockProvider } from '../runtime/ActiveBlockContext';
 
-it('nested child exposes and sends its own identity to the actual active-block observer', async () => {
+it('nested child exposes its own identity and is registered with the actual active-block observer', async () => {
   const observed: Element[] = [];
   const created = vi.fn();
   class Observer {
