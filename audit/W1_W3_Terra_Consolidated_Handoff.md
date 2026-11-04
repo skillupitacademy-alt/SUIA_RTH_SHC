@@ -26,7 +26,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND20 | PARTIAL / IMPLEMENTED_UNVERIFIED: 45947f8c contains invalid question resource IDs at the mounted consumer; canonical runtime contract, round-trip and historical compatibility remain open. |
 | FND21 | NOT COMPLETE: tutorial contract consolidation depends on W1 owner authority and reviewed membership. |
 | FND22 | NOT COMPLETE: Project LLM contract consolidation depends on actor and approval authority. |
-| FND23 | NOT COMPLETE: analytics contracts require event-specific domain ownership and linked controls. |
+| FND23 | VERIFICATION_FAILED: bf229bf8 retains a failing registered-type denial probe; event ownership, compatible worker types, replay and transactional semantics remain open. |
 | FND24 | NOT COMPLETE: domain-specific caller controls depend on FND18–FND23. |
 | FND25 | PARTIAL: mounted report truth and lifecycle adverse controls run; remaining domain invariants and infrastructure-sensitive controls open. |
 | FND26 | PARTIAL: affected UI and learner-app typechecks and whitespace checks pass; other package lint/build gates not executed. |
@@ -86,3 +86,5 @@ Additional marketing truth slice `c718179c` removes an unsupported shared-footer
 Crosswalk working index `767c8588` has six source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
 
 `634af2bc` adds two isolated real-schema question controls: current valid single/bulk inputs pass and unknown type/empty options are denied. This confirms the exercised schema only, not the SHC client/API/persistence round trip or historical data support; all FND20 acceptance gates remain open.
+
+`bf229bf8` contains an intentionally failing isolated security probe: actual shared event consumer returns OK and invokes the handler once for a custom-schema event whose type differs from its registered type. The fake signature verifier and blocked fetch isolate the seam; actual QStash, Redis, worker and database execution are NOT EXECUTED. This test remains red until a separately selected compatible correction exists; do not suppress or reinterpret its denial invariant. The two existing worker registration/schema mismatches are traced in `W1_W3_Foundation_Crosswalk_And_Truth_Inventory.md`.
