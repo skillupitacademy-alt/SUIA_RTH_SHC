@@ -68,19 +68,22 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
-import { GET as apiGet } from '../../../app/api/tutorial/progress/route';
-import { GET as suiaGet } from '../../../../../../apps/skillup-web/src/app/api/tutorial/progress/route';
-import { GET as rthGet } from '../../../../../../apps/realtutorialhub-web/src/app/api/tutorial/progress/route';
+import { GET as apiGet, POST as apiPost } from '../../../app/api/tutorial/progress/route';
+import { proxy } from '@/proxy';
+import { GET as suiaGet, POST as suiaPost } from '../../../../../../apps/skillup-web/src/app/api/tutorial/progress/route';
+import { GET as rthGet, POST as rthPost } from '../../../../../../apps/realtutorialhub-web/src/app/api/tutorial/progress/route';
 vi.mock('@quiz/db-tutorial', () => ({TutorialProgressRepository: class {
   async getProgress() { return {blocksCompleted: []}; }
 }}));
-vi.mock('@/modules/tutorial-engine', () => ({TutorialService: class {}}));
+const controls = vi.hoisted(() => ({write: vi.fn()}));
+vi.mock('@/modules/tutorial-engine', () => ({TutorialService: class { async trackProgress(input: unknown) { controls.write(input); return {success:true, data:{}}; } }}));
 describe('SOL-TERRA actual progress BFF to API transport', () => {
   const key = new TextEncoder().encode('sol-terra-disposable-auth-key-000000');
   let previous: TokenService;
   let previousContainer: TokenService;
   let service: TokenService;
   beforeEach(() => {
+    controls.write.mockClear();
     previous = TokenService.getInstance();
     previousContainer = container.get(TokenService);
     service = new TokenService(key, key, key);
@@ -112,6 +115,71 @@ describe('SOL-TERRA actual progress BFF to API transport', () => {
     }));
     expect(transport).toHaveBeenCalledOnce();
     expect(result.status).toBe(200);
+  });
+  it.each([
+    ['skillup', 'skillup.localhost:3009', suiaGet, suiaPost],
+    ['realtutorialhub', 'realtutorialhub.localhost:3003', rthGet, rthPost],
+  ] as const)('SOL-TERRA %s GET and POST preserve cookie precedence and central CSRF', async (brand, host, bffGet, bffPost) => {
+    vi.stubEnv('INTERNAL_API_URL', 'http://api-offline.test/api/');
+    const token = await service.generateAccessToken({userId:'actual-user', shadowUserId:'different-shadow', roles:['student'], brand, aud:'user', tokenType:'user', isAdmin:false});
+    const other = await service.generateAccessToken({userId:'other-user', roles:['student'], brand, aud:'user', tokenType:'user', isAdmin:false});
+    const endpoint = '/api/tutorial/progress?subtopicId=11111111-1111-4111-8111-111111111111';
+    const transport = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, init) => {
+      const req = new NextRequest(String(url), {method:init?.method, headers:init?.headers, body:init?.body as string | undefined});
+      const gate = await proxy(req);
+      if (gate.headers.get('x-middleware-next') !== '1') return gate;
+      return req.method === 'POST' ? apiPost(req) : apiGet(req);
+    });
+    for (const mode of ['cookie', 'bearer', 'both'] as const) {
+      const headers = new Headers({host, 'x-csrf-token':'test-csrf'});
+      if (mode !== 'bearer') headers.set('cookie', `accessToken=${token}; csrfToken=test-csrf`);
+      else headers.set('cookie', 'csrfToken=test-csrf');
+      if (mode !== 'cookie') headers.set('authorization', `Bearer ${mode === 'both' ? other : token}`);
+      expect((await bffGet(new NextRequest(`http://${host}${endpoint}`, {headers}))).status).toBe(200);
+      const postHeaders = new Headers(headers); postHeaders.set('content-type', 'application/json');
+      expect((await bffPost(new NextRequest(`http://${host}/api/tutorial/progress`, {method:'POST', headers:postHeaders,
+        body:JSON.stringify({subtopicId:'11111111-1111-4111-8111-111111111111', blockType:'code', status:'viewed'})}))).status).toBe(200);
+      expect(controls.write.mock.calls.at(-1)?.[0]).toMatchObject({userId:'actual-user', brandId:brand});
+    }
+    expect(transport).toHaveBeenCalledTimes(6);
+  });
+  it.each([
+    ['skillup', 'skillup.localhost:3009', suiaPost],
+    ['realtutorialhub', 'realtutorialhub.localhost:3003', rthPost],
+  ] as const)('SOL-TERRA %s mutation without CSRF or configured internal key is denied', async (brand, host, bffPost) => {
+    vi.stubEnv('INTERNAL_API_KEY', undefined);
+    const token = await service.generateAccessToken({userId:'actual-user', roles:['student'], brand, aud:'user', tokenType:'user', isAdmin:false});
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, init) => {
+      const req = new NextRequest(String(url), {method:init?.method, headers:init?.headers, body:init?.body as string | undefined});
+      const gate = await proxy(req);
+      return gate.headers.get('x-middleware-next') === '1' ? apiPost(req) : gate;
+    });
+    const result = await bffPost(new NextRequest(`http://${host}/api/tutorial/progress`, {method:'POST',
+      headers:{host, authorization:`Bearer ${token}`, 'content-type':'application/json'},
+      body:JSON.stringify({subtopicId:'11111111-1111-4111-8111-111111111111', blockType:'code', status:'viewed'})}));
+    expect(result.status).toBe(403);
+    expect(controls.write).not.toHaveBeenCalled();
+  });
+  it.each([
+    ['skillup', 'skillup.localhost:3009', suiaGet, suiaPost],
+    ['realtutorialhub', 'realtutorialhub.localhost:3003', rthGet, rthPost],
+  ] as const)('SOL-TERRA %s denies invalid and foreign credentials before transport', async (brand, host, bffGet, bffPost) => {
+    const foreign = await service.generateAccessToken({userId:'foreign-user', roles:['student'], brand: brand === 'skillup' ? 'realtutorialhub' : 'skillup', aud:'user', tokenType:'user', isAdmin:false});
+    const transport = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Unexpected outbound transport'));
+    for (const credential of ['', 'invalid.token.value', foreign]) {
+      const headers = new Headers({host, 'content-type':'application/json'});
+      if (credential) headers.set('authorization', `Bearer ${credential}`);
+      expect([401,403]).toContain((await bffGet(new NextRequest(`http://${host}/api/tutorial/progress?subtopicId=11111111-1111-4111-8111-111111111111`, {headers}))).status);
+      expect([401,403]).toContain((await bffPost(new NextRequest(`http://${host}/api/tutorial/progress`, {method:'POST', headers,
+        body:JSON.stringify({subtopicId:'11111111-1111-4111-8111-111111111111', blockType:'code', status:'viewed'})}))).status);
+    }
+    const good = await service.generateAccessToken({userId:'valid-user', roles:['student'], brand, aud:'user', tokenType:'user', isAdmin:false});
+    const conflicting = new NextRequest(`http://${host}/api/tutorial/progress?subtopicId=11111111-1111-4111-8111-111111111111`, {
+      headers:{host, cookie:'accessToken=invalid.cookie.token', authorization:`Bearer ${good}`},
+    });
+    expect([401,403]).toContain((await bffGet(conflicting)).status);
+    expect(transport).not.toHaveBeenCalled();
+    expect(controls.write).not.toHaveBeenCalled();
   });
 });
 """, encoding="utf-8")

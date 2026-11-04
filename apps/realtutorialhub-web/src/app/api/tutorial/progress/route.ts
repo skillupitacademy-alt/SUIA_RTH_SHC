@@ -1,8 +1,21 @@
+import { TokenService } from '@quiz/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
 
 export const dynamic = 'force-dynamic';
+
+function credentialHeaders(request: NextRequest): Record<string, string> {
+  const token = TokenService.getInstance().getAccessToken(request, { scope: 'user' });
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  const csrf = request.cookies.get('csrfToken')?.value;
+  const csrfHeader = request.headers.get('x-csrf-token');
+  const origin = request.headers.get('origin');
+  if (csrf) headers.Cookie = `csrfToken=${csrf}`;
+  if (csrfHeader) headers['x-csrf-token'] = csrfHeader;
+  if (origin) headers.Origin = origin;
+  return headers;
+}
 
 const blockTypeSchema = z.enum(['notes', 'layman', 'real_life', 'technical', 'code', 'ai_tutor']);
 
@@ -33,11 +46,13 @@ async function getHandler(request: NextRequest) {
     }
 
     // Call API server
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
+    const apiUrl = (process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in')
+      .replace(/\/+$/, '').replace(/\/api$/, '');
     const response = await fetch(
       `${apiUrl}/api/tutorial/progress?subtopicId=${parsed.data.subtopicId}`,
       {
         headers: {
+          ...credentialHeaders(request),
           'X-Brand': 'realtutorialhub',
           'X-User-ID': user.userId,
           'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
@@ -83,13 +98,15 @@ async function postHandler(request: NextRequest) {
     }
 
     // Call API server
-    const apiUrl = process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in';
+    const apiUrl = (process.env.INTERNAL_API_URL || process.env.GATEWAY_URL || 'https://api.skillhubcore.in')
+      .replace(/\/+$/, '').replace(/\/api$/, '');
     const response = await fetch(
       `${apiUrl}/api/tutorial/progress`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...credentialHeaders(request),
           'X-Brand': 'realtutorialhub',
           'X-User-ID': user.userId,
           'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
