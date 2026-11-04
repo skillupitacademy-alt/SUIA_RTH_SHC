@@ -34,3 +34,10 @@ it.each([[SubjectTable, api.getSubjects, 'Connection Error: Unable to load subje
   expect(await screen.findByText(message)).toBeTruthy();
   expect(screen.queryByText('First')).toBeNull();
 });
+
+it.each([[SubjectTable, api.getSubjects, 'Connection Error: Unable to load subjects.'], [SkillTable, api.getSkills, 'Connection Error: Unable to load skills at this time.']])('rejects blank identities', async (Table, getRows, message) => {
+  getRows.mockResolvedValue({ data: [{ id: ' ', name: 'Blank identity' }], total: 1 });
+  render(<Table />);
+  expect(await screen.findByText(message)).toBeTruthy();
+  expect(screen.queryByText('Blank identity')).toBeNull();
+});
