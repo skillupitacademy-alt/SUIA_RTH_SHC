@@ -153,6 +153,24 @@ describe('provider pending delivery', () => {
     expect(delivered.map(item => [item.session, item.body.activeTimeSec])).toEqual([['session', 600], ['session', 600], ['next', 1]]);
     expect(new Set(delivered.map(item => item.body.eventId)).size).toBe(3);
   });
+  it('flushes the old interval on disable and does not accrue disabled time', async () => {
+    let release!: (response: Response) => void;
+    const pending = new Promise<Response>(resolve => { release = resolve; });
+    vi.mocked(fetch).mockImplementation(async url => url === '/api/tutorial/ils/block-active-time' ? pending : ({ ok: true, json: async () => ({ processed: true }) } as Response));
+    vi.mocked(ActiveBlock.useActiveBlock).mockReturnValue({ activeBlock: block('A', 'C1') });
+    const { rerender, unmount } = render(view());
+    await act(async () => {});
+    now.mockReturnValue(10000);
+    await act(async () => { rerender(<BlockTelemetryProvider {...ids} enabled={false}><div>disabled</div></BlockTelemetryProvider>); });
+    const first = requests()[0];
+    expect(first).toMatchObject({ blockId: 'A', blockVersion: 'C1', activeTimeSec: 10 });
+    now.mockReturnValue(50000);
+    await act(async () => { await vi.advanceTimersByTimeAsync(60000); });
+    expect(requests()).toHaveLength(1);
+    await act(async () => { release({ ok: true, json: async () => ({ processed: true }) } as Response); await pending; });
+    unmount();
+    expect(requests()).toHaveLength(1);
+  });
   it('preserves old page and version on a pending event across page/session transition', async () => {
     let fail = true;
     vi.mocked(fetch).mockImplementation(async url => url === '/api/tutorial/ils/block-active-time' && fail ? ({ ok: false } as Response) : ({ ok: true, json: async () => ({ processed: true }) } as Response));

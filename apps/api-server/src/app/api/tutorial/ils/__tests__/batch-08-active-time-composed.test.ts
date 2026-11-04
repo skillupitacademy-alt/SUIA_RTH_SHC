@@ -134,6 +134,24 @@ describe('composed active-time entry and real service', () => {
     fixture.blocks = cyclic;
     expect((await POST(request({ ...body, blockId: 'parent', blockVersion: 'unversioned' }))).status).toBe(400); expect(fixture.claims).toBe(0);
   });
+  it('credits only the selected schema-valid C1 sibling and denies wrong version', async () => {
+    const firstId = '77777777-7777-4777-8777-777777777777';
+    const secondId = '88888888-8888-4888-8888-888888888888';
+    const first = createC1Fixture({ id: firstId });
+    const second = createC1Fixture({ id: secondId });
+    expect(CodeC1BlockSchema.safeParse(first).success).toBe(true);
+    expect(CodeC1BlockSchema.safeParse(second).success).toBe(true);
+    fixture.blocks = [{ id: 'parent', type: 'two-column', content: { left: { blocks: [first, second] }, right: { blocks: [] } } }];
+    expect((await POST(request({ ...body, blockId: firstId, blockVersion: 'C1' }))).status).toBe(200);
+    expect([...fixture.state.keys()].some(key => key.includes(firstId))).toBe(true);
+    expect([...fixture.state.keys()].some(key => key.includes(secondId))).toBe(false);
+    const claims = fixture.claims;
+    expect((await POST(request({ ...body, eventId: '99999999-9999-4999-8999-999999999999', blockId: secondId, blockVersion: 'D1' }))).status).toBe(400);
+    expect(fixture.claims).toBe(claims);
+    fixture.blocks = [{ id: 'parent', type: 'two-column', content: { left: { blocks: [first, first] }, right: { blocks: [] } } }];
+    expect((await POST(request({ ...body, eventId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', blockId: firstId, blockVersion: 'C1' }))).status).toBe(400);
+    expect(fixture.claims).toBe(claims);
+  });
   it('accepts structural parent and nested versioned child telemetry', async () => {
     fixture.blocks = [{ id: 'parent', type: 'two-column', content: { left: { blocks: [{ id: 'child', type: 'definition', version: 'D1', content: {} }] }, right: { blocks: [] } } }];
     expect((await POST(request({ ...body, blockId: 'parent', blockVersion: 'unversioned' }))).status).toBe(200);
@@ -177,6 +195,15 @@ describe('composed active-time entry and real service', () => {
     expect(invalidResponse.status).toBe(400);
     expect(fixture.events.size).toBe(1);
     expect([...fixture.state.values()]).toEqual([30]);
+  });
+  it('treats learning-session headers as absent from central event identity', async () => {
+    const withSession = (session: string) => new NextRequest('http://localhost/api/tutorial/ils/block-active-time', { method: 'POST', headers: { 'x-internal-secret': 'disposable-secret', 'x-user-id': 'learner', 'x-brand': 'skillup', 'x-session-id': session, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    expect((await POST(withSession('session-a'))).status).toBe(200);
+    const replay = await POST(withSession('session-b'));
+    expect(replay.status).toBe(200);
+    expect(await replay.json()).toMatchObject({ alreadyProcessed: true });
+    expect(fixture.writes).toBe(1);
+    expect(fixture.events.get(body.eventId)).not.toHaveProperty('sessionId');
   });
   it('models a committed event with a lost acknowledgement and retry', async () => {
     await POST(request()); // Deliberately drop the first response after commit.

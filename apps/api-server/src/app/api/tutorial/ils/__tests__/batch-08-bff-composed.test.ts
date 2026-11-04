@@ -38,8 +38,13 @@ describe('learner BFF to central ILS service', () => {
     const invalid = new NextRequest(incoming.url, { method: 'POST', headers: { authorization: 'Bearer invalid' }, body: JSON.stringify(body) });
     expect((await bff.POST(invalid)).status).toBe(401);
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    const noSession = new NextRequest(incoming.url, { method: 'POST', headers: { authorization: `Bearer ${signed}` }, body: JSON.stringify({ ...body, eventId: '66666666-6666-4666-8666-666666666666' }) });
+    expect((await bff.POST(noSession)).status).toBe(200);
+    expect(forwardedSession).toBeNull();
+    expect(fixture.writes).toHaveLength(2);
+
     const wrongVersion = new NextRequest(incoming.url, { method: 'POST', headers: { authorization: `Bearer ${signed}`, 'x-session-id': 'browser-session' }, body: JSON.stringify({ ...body, blockVersion: 'D2' }) });
     expect((await bff.POST(wrongVersion)).status).toBe(400);
-    expect(fixture.writes).toHaveLength(1);
+    expect(fixture.writes).toHaveLength(2);
   });
 });
