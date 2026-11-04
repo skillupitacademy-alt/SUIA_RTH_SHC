@@ -48,6 +48,11 @@ describe('composed active-time entry and real service', () => {
     const response = await POST(request(body, 'skillup', 'disposable-secret', 'other'));
     expect(response.status).toBe(400); expect(fixture.writes).toBe(1); expect([...fixture.state.values()]).toEqual([30]);
   });
+  it.each([['other-block', 'D1', 'node-1'], ['known', 'D2', 'node-1']])('rejects conflicting duplicate block/version %s/%s', async (blockId, blockVersion, node) => {
+    expect((await POST(request())).status).toBe(200);
+    const response = await POST(request({ ...body, blockId, blockVersion, navigationNodeId: node }));
+    expect(response.status).toBe(400); expect(fixture.writes).toBe(1); expect([...fixture.state.values()]).toEqual([30]);
+  });
   it('rolls back a failed state update then credits a retry exactly once', async () => {
     fixture.fail = true; expect((await POST(request())).status).toBe(500); expect(fixture.events.size).toBe(0); expect(fixture.state.size).toBe(0);
     fixture.fail = false; expect((await POST(request())).status).toBe(200); expect(fixture.events.size).toBe(1); expect([...fixture.state.values()]).toEqual([30]);
