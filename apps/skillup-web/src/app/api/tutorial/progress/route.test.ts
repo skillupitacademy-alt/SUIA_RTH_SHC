@@ -30,3 +30,16 @@ it('never proxies unauthenticated progress requests', async () => {
   expect((await GET(new NextRequest('http://skillup.localhost/api/tutorial/progress'))).status).toBe(401);
   expect(upstream).not.toHaveBeenCalled();
 });
+
+it('omits an unconfigured internal key for ordinary authenticated progress requests', async () => {
+  vi.stubEnv('INTERNAL_API_URL', 'http://isolated.invalid');
+  vi.stubEnv('INTERNAL_API_KEY', '');
+  vi.mocked(requireStudentAuth).mockResolvedValue({ ok: true, userId: 'learner', payload: { userId: 'learner' } as never });
+  const upstream = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: {} }), { status: 200 }));
+  vi.stubGlobal('fetch', upstream);
+  const id = '11111111-1111-4111-8111-111111111111';
+  await GET(new NextRequest(`http://skillup.localhost/api/tutorial/progress?subtopicId=${id}`));
+  expect(new Headers(upstream.mock.calls[0][1].headers).has('x-internal-key')).toBe(false);
+  await POST(new NextRequest('http://skillup.localhost/api/tutorial/progress', { method: 'POST', body: JSON.stringify({ subtopicId: id, blockType: 'code', status: 'viewed' }) }));
+  expect(new Headers(upstream.mock.calls[1][1].headers).has('x-internal-key')).toBe(false);
+});
