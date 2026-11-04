@@ -34,39 +34,6 @@ function getPaymentPool() {
 
   return paymentPool;
 }
-const FALLBACK_PROGRAMS = [
-  {
-    id: 'skillup-full-stack',
-    slug: 'full-stack-web',
-    name: 'Full Stack Developer',
-    duration: 'Live track',
-    description: 'Frontend, APIs, deployment, and project delivery.',
-    audience: 'Students targeting product engineering roles',
-    summary: 'Build production-ready web apps and interview-ready projects.',
-    highlights: ['Frontend foundations', 'Next.js app architecture', 'API integration', 'Deployment readiness'],
-  },
-  {
-    id: 'skillup-data',
-    slug: 'data-analytics',
-    name: 'Data Analyst',
-    duration: 'Live track',
-    description: 'SQL, dashboards, reporting, and business communication.',
-    audience: 'Learners building reporting and insight skills',
-    summary: 'Turn datasets into clear business insights and reports.',
-    highlights: ['SQL analysis', 'Dashboard storytelling', 'Spreadsheet workflows', 'Stakeholder reporting'],
-  },
-  {
-    id: 'skillup-cloud',
-    slug: 'cloud-ops',
-    name: 'Cloud Support',
-    duration: 'Live track',
-    description: 'Linux, networking, monitoring, incident response, and cloud workflows.',
-    audience: 'Students preparing for support and operations roles',
-    summary: 'Operate, monitor, and support modern cloud systems confidently.',
-    highlights: ['Linux basics', 'Monitoring and incidents', 'Networking essentials', 'Cloud operations'],
-  },
-] as const;
-
 const FALLBACK_FACULTY = [
   {
     name: 'Asha Iyer',
@@ -207,42 +174,33 @@ async function getStudentBatchContext(userId: string) {
 }
 
 export async function getSkillupPrograms() {
-  try {
-    const rows = await db
-      .select({
-        id: batches.id,
-        slug: batches.id,
-        name: batches.name,
-        duration: batches.startDate,
-        description: subjects.name,
-        audience: domains.name,
-        summary: batches.status,
-      })
-      .from(batches)
-      .leftJoin(subjects, eq(subjects.id, batches.subjectId))
-      .leftJoin(domains, eq(domains.id, batches.domainId))
-      .where(isNull(batches.deletedAt))
-      .orderBy(desc(batches.createdAt));
+  const rows = await db
+    .select({
+      id: batches.id,
+      slug: batches.id,
+      name: batches.name,
+      description: subjects.name,
+      audience: domains.name,
+      status: batches.status,
+    })
+    .from(batches)
+    .leftJoin(subjects, eq(subjects.id, batches.subjectId))
+    .leftJoin(domains, eq(domains.id, batches.domainId))
+    .where(isNull(batches.deletedAt))
+    .orderBy(desc(batches.createdAt));
 
-    if (rows.length === 0) {
-      return { programs: [...FALLBACK_PROGRAMS] };
-    }
-
-    return {
-      programs: rows.map((row) => ({
-        id: row.id,
-        slug: row.slug,
-        name: row.name,
-        duration: row.duration ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(toDate(row.duration)) : 'Live track',
-        description: row.description ?? 'Live SkillUp program',
-        audience: row.audience ?? 'SkillUp learners',
-        summary: row.summary === 'active' ? 'Active live batch' : 'Upcoming live batch',
-        highlights: [row.description ?? 'Live curriculum', row.audience ?? 'SkillUp learners', 'Placement-ready workflow'],
-      })),
-    };
-  } catch {
-    return { programs: [...FALLBACK_PROGRAMS] };
-  }
+  return {
+    programs: rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      duration: 'Unavailable',
+      description: row.description ? `Subject: ${row.description}` : 'Unavailable',
+      audience: row.audience ? `Domain: ${row.audience}` : 'Unavailable',
+      summary: row.status ? `Batch status: ${row.status}` : 'Batch status unavailable',
+      highlights: [],
+    })),
+  };
 }
 
 export async function getSkillupStudentDashboard(userId: string) {
@@ -593,7 +551,7 @@ export async function getSkillupFaculty() {
 
 export async function getSkillupProgramBySlug(slug: string) {
   const programs = (await getSkillupPrograms()).programs;
-  return programs.find((program) => program.slug === slug) ?? FALLBACK_PROGRAMS.find((program) => program.slug === slug);
+  return programs.find((program) => program.slug === slug);
 }
 
 export async function getSkillupProgramDetail(slug: string): Promise<SkillupProgramDetail | null> {
@@ -605,19 +563,6 @@ export async function getSkillupProgramDetail(slug: string): Promise<SkillupProg
   return {
     ...program,
     highlights: [...program.highlights],
-    curriculum: [
-      {
-        title: 'Foundation',
-        items: [program.highlights[0] ?? program.description, program.highlights[1] ?? program.summary],
-      },
-      {
-        title: 'Build and ship',
-        items: [program.highlights[2] ?? program.audience, program.highlights[3] ?? 'Live project delivery'],
-      },
-      {
-        title: 'Placement prep',
-        items: ['Interview readiness drills', 'Portfolio and resume review', 'Mentor feedback sessions'],
-      },
-    ],
+    curriculum: [],
   };
 }

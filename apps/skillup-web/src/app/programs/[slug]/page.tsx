@@ -58,6 +58,7 @@ export default async function ProgramDetailPage({ params }: ProgramPageProps) {
         <div className="mt-8 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
           <article className="surface-card rounded-[2.5rem] bg-white/80 p-6">
             <p className="section-kicker text-slate-500">Curriculum</p>
+            {program.curriculum.length === 0 && <p className="mt-5 text-sm text-slate-600">Curriculum unavailable.</p>}
             <div className="mt-5 space-y-3">
               {program.curriculum.map((section) => (
                 <details key={section.title} className="group rounded-3xl border border-slate-200 bg-white px-4 py-3">

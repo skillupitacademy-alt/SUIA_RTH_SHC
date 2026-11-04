@@ -38,6 +38,7 @@ export default async function ProgramsPage() {
           </Link>
         </div>
 
+        {programs.length === 0 && <p className="mt-8 text-sm text-slate-600">No programs are currently available.</p>}
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {programs.map((program) => (
             <Link
