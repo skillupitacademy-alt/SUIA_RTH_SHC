@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { TokenService } from '@quiz/auth';
 import { proxy } from '@central-proxy';
-import { GET } from './route';
+import { GET } from '@skillup-progress';
 import { requireStudentAuth } from '@/lib/student-auth';
 vi.mock('@central-rbac', () => ({ _verifyActiveAccount: vi.fn(), _verifyAdmin: vi.fn() }));
 vi.mock('@/lib/student-auth', () => ({ requireStudentAuth: vi.fn() }));
