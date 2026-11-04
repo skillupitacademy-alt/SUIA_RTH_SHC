@@ -57,34 +57,34 @@ test.describe('SUIA Learner-Purpose Browser Smoke Qualification', () => {
     // 4. In-memory inspection of freshly issued tokens for boolean learner purpose metadata
     const accessTokenCookie = cookies.find((c) => c.name === 'accessToken');
     const refreshTokenCookie = cookies.find((c) => c.name === 'refreshToken');
-    expect(accessTokenCookie?.value, 'accessToken cookie value must exist').toBeTruthy();
-    expect(refreshTokenCookie?.value, 'refreshToken cookie value must exist').toBeTruthy();
+    expect(Boolean(accessTokenCookie?.value), 'accessToken cookie value must exist').toBe(true);
+    expect(Boolean(refreshTokenCookie?.value), 'refreshToken cookie value must exist').toBe(true);
 
     const accessPayload = parseJwtPayloadInMemory(accessTokenCookie!.value);
     const refreshPayload = parseJwtPayloadInMemory(refreshTokenCookie!.value);
 
     // In-memory verification of access token purpose claims
     const accessAud = accessPayload.aud;
-    const accessAudMatches = accessAud === 'user' || (Array.isArray(accessAud) && accessAud.includes('user'));
-    assertValueMatchesSafely(accessAudMatches, true, 'AccessToken aud must contain "user"');
+    const accessAudMatches = accessAud === 'user';
+    assertValueMatchesSafely(accessAudMatches, true, 'AccessToken aud must be exactly "user"');
 
     const accessAudAdmin = accessAud === 'admin' || (Array.isArray(accessAud) && accessAud.includes('admin'));
     assertValueMatchesSafely(accessAudAdmin, false, 'AccessToken aud must not be "admin"');
 
     assertValueMatchesSafely(accessPayload.tokenType, 'user', 'AccessToken tokenType must be "user"');
-    assertValueMatchesSafely(accessPayload.isAdmin === true, false, 'AccessToken isAdmin must be false');
+    assertValueMatchesSafely(accessPayload.isAdmin, false, 'AccessToken isAdmin must be boolean false');
     assertValueMatchesSafely(accessPayload.brand, 'skillup', 'AccessToken brand must be "skillup"');
 
     // In-memory verification of refresh token purpose claims
     const refreshAud = refreshPayload.aud;
-    const refreshAudMatches = refreshAud === 'user' || (Array.isArray(refreshAud) && refreshAud.includes('user'));
-    assertValueMatchesSafely(refreshAudMatches, true, 'RefreshToken aud must contain "user"');
+    const refreshAudMatches = refreshAud === 'user';
+    assertValueMatchesSafely(refreshAudMatches, true, 'RefreshToken aud must be exactly "user"');
 
     const refreshAudAdmin = refreshAud === 'admin' || (Array.isArray(refreshAud) && refreshAud.includes('admin'));
     assertValueMatchesSafely(refreshAudAdmin, false, 'RefreshToken aud must not be "admin"');
 
     assertValueMatchesSafely(refreshPayload.tokenType, 'user', 'RefreshToken tokenType must be "user"');
-    assertValueMatchesSafely(refreshPayload.isAdmin === true, false, 'RefreshToken isAdmin must be false');
+    assertValueMatchesSafely(refreshPayload.isAdmin, false, 'RefreshToken isAdmin must be boolean false');
     assertValueMatchesSafely(refreshPayload.brand, 'skillup', 'RefreshToken brand must be "skillup"');
 
     // 5. Guarded successful profile request with in-memory account comparison
