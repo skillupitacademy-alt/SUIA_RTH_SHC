@@ -83,7 +83,7 @@ Additional marketing truth slice `c718179c` removes an unsupported shared-footer
 
 `f9621da5` extends the FND20 QuestionTable identity containment to duplicate IDs within a page; the mounted table selection passed 4 tests with mocked API and blocked fetch, and SHC typecheck passed. Cross-page identity, backend validation and canonical question contracts remain open.
 
-Crosswalk working index through the subtopic identity slice has fifteen source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
+Crosswalk working index through the subtopic identity slice has sixteen source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
 
 `634af2bc` adds two isolated real-schema question controls: current valid single/bulk inputs pass and unknown type/empty options are denied. This confirms the exercised schema only, not the SHC client/API/persistence round trip or historical data support; all FND20 acceptance gates remain open.
 
@@ -261,3 +261,5 @@ Guarded legacy progress repository lane: `packages/db-tutorial/src/repositories/
 Latest UI static check: from repository root `pnpm exec tsc --noEmit -p packages/ui/tsconfig.json` exited 0 after the guarded 47-test lifecycle selection. Test inclusion is governed by that project config and is not assumed; no build or browser execution is implied.
 
 Test typecheck scope clarification from existing configs: `packages/ui/tsconfig.json` excludes `*.test.*` and `__tests__`; `apps/api-server/tsconfig.json` excludes `*.test.*`, `__tests__` and `src/test`; `apps/skillup-web/tsconfig.json` excludes `*.test.*`; `apps/skillhubcore-admin/tsconfig.json` includes `**/*.ts`/`**/*.tsx` without an explicit test exclusion, while `packages/events/tsconfig.json` includes `src/**/*.ts`. A TypeScript import can affect inclusion beyond globs, but the recorded UI/API/SkillUp package typechecks do not constitute a general test-type gate. SHC/events checks cover their project inclusion as configured; no separate all-repository test typecheck was run.
+
+`576b0729` source-checks SU-AUTH-026: the SkillUp test-session endpoint still permits an isolated-preview override under NODE_ENV production when deployment markers do not identify production. Secret and fixture checks also exist; actual deployment configuration and exposure are NOT EXECUTED.
