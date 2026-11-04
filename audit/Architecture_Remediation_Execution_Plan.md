@@ -808,32 +808,39 @@ including database admin-role changes and query ordering. No live negative probe
 production policy change, universal API certification or browser AQ-10 closure.
 
 ### W1.2-ADMIN-01 - Tenant Admin Preconditions and Compatible Proxy Routing
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED`
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Tasks A/B, validated by E.
 **Implementer / acceptance:** Gemini / independent Sol review.
-Implement accepted strict tenant-admin preconditions and shared non-privileged account
-eligibility, with proxy infra factory/analytics adaptation preserving existing blocked/
-missing-account denial and actual handler permissions. A/B are one integrated ticket;
-no independent deployment/acceptance of the strict helper before caller compatibility.
+**Commit:** `a7d59877`
+Implemented strict tenant-admin preconditions and shared non-privileged account
+eligibility (`_verifyActiveAccount`), with proxy infra factory/analytics adaptation preserving
+existing blocked/missing-account denial and actual handler permissions. Integrated as
+one atomic unit across `rbac.service.ts`, `proxy.ts`, `admin-audience.util.ts`, and verified by
+`rbac.service.test.ts` (16 tests passing).
 
 ### W1.2-LOGIN-01 - Server-Fixed Tenant Learner Login Purpose
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED`
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E.
 **Implementer / acceptance:** Gemini / independent Sol review.
-Implement server-fixed learner purpose, consistent access/refresh claims, no fabricated
-roles/entitlements, existing session schema and fifth deviceContext/third IP precedence.
-Preserve dedicated admin/infra/SHC and generic default-DB compatibility outside tenant scope.
+**Commits:** `b967e6be`, `1fe36579`
+Implemented server-fixed learner purpose, consistent access/refresh claims (`aud: 'user'`,
+`tokenType: 'user'`, `isAdmin: false`), empty-role principal baseline (`roles: []`) without
+invented roles, existing session schema, and fifth `deviceContext` / third IP precedence.
+Preserves generic default-DB and dedicated admin issuers. Verified by `login-01-purpose.test.ts`
+(5 tests passing).
 
 ### W1.2-SESS-04 - Legacy Logout-All Compatibility Adapter
-**Status:** `PLANNED`
+**Status:** `IMPLEMENTED_UNVERIFIED`
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E.
 **Implementer / acceptance:** Gemini / independent Sol review.
-Implement a verified tenant owner/user-admin adapter over the existing revocation engine,
-legacy snapshot-count response and safe service-stage failure attribution. Preserve
-canonical consumers and no new cookie/deprecation metadata; no live all-device execution.
+**Commit:** `c1f10081`
+Implemented a verified tenant owner/user-admin adapter over the existing `GlobalLogoutService`
+engine, legacy snapshot-count response, and safe service-stage failure attribution
+(`RevocationStageError` vs `PresenceStageError`). Preserves canonical consumers and no new
+cookie/deprecation metadata; tested strictly offline via `sess-04-logout-all.test.ts` (9 tests passing).
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
