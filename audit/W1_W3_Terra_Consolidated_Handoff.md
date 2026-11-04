@@ -106,3 +106,14 @@ Marketing targeted lint limitation: from `packages/marketing-site`, `pnpm exec e
 `pnpm exec tsc --noEmit` from `apps/api-server` exited 0 after the isolated FND20 schema control was added. Test inclusion is determined by the existing tsconfig and is not assumed; no full test-type gate was established.
 
 `pnpm run type-check` from `packages/events` exited 0; the intentionally failing event security/retry tests remain separate. No package-wide test pass is claimed.
+
+Exact targeted lint commands (each executed from its named package directory):
+
+```powershell
+# apps/skillhubcore-admin
+$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/components/questions/QuestionTable.tsx' 'src/components/questions/SubtopicTable.tsx' 'src/components/questions/DomainTable.tsx' 'src/components/questions/SubjectTable.tsx' 'src/components/questions/TopicTable.tsx' 'src/components/questions/SkillTable.tsx' 'src/app/(admin)/events/page.tsx' 'src/app/(admin)/audit/page.tsx' 'src/app/(admin)/metrics/page.tsx' 'src/app/(admin)/users/page.tsx' 'src/app/(admin)/users/[userId]/page.tsx' 'src/app/(admin)/subscriptions/page.tsx' 'src/app/(admin)/subscriptions/[id]/page.tsx'
+# apps/skillup-web
+$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/lib/skillup-data.ts' 'src/app/programs/page.tsx' 'src/app/programs/[slug]/page.tsx' 'src/app/faculty/page.tsx' 'src/app/batches/page.tsx' 'src/app/student/page.tsx' 'src/app/student/my-batch/page.tsx' 'src/components/SessionCalendar.tsx'
+```
+
+Each exited 0 without output; no test-file or package-wide lint implied.
