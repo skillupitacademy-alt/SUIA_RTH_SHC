@@ -85,6 +85,10 @@ export class LoginService {
     deviceContext?: { deviceId?: string; userAgent?: string; deviceName?: string },
     options?: LoginOptions
   ) {
+    if (options?.purpose !== undefined && options.purpose !== 'learner') {
+      throw new InvalidPurposeError(`Unsupported login purpose: ${String(options.purpose)}`);
+    }
+
     const perfStart = Date.now();
     const timings = {
       start: perfStart,
@@ -195,10 +199,8 @@ export class LoginService {
       .map((ur) => normalizeRoleName(ur.role.name))
       .filter((role): role is string => role !== null);
 
-    const isLearnerPurpose = options?.purpose === 'learner';
-    if (options?.purpose !== undefined && !isLearnerPurpose) {
-      throw new InvalidPurposeError(`Unsupported login purpose: ${String(options.purpose)}`);
-    }
+    const isTenantBrand = brand === 'skillup' || brand === 'realtutorialhub';
+    const isLearnerPurpose = options?.purpose === 'learner' && isTenantBrand;
 
     let roleNames: string[];
     let isAdmin: boolean;

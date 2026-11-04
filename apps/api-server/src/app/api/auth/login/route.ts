@@ -99,13 +99,16 @@ async function handler(req: NextRequest, obsCtx: { requestId: string }) {
       return ApiResponse.error(badRequest('Brand is required'));
     }
 
+    const isTenantBrand = brand === 'skillup' || brand === 'realtutorialhub';
+    const loginOptions = isTenantBrand ? { purpose: 'learner' as const } : undefined;
+
     const { _user, accessToken, refreshToken, isAdmin } = await container.get(AuthService).login(
       email,
       password,
       ip,
       brand,
       deviceContext,
-      { purpose: 'learner' }
+      loginOptions
     );
     timings.afterLogin = Date.now();
     

@@ -31,8 +31,19 @@ const mockSecurityService = {
   withContext: vi.fn().mockReturnThis(),
 };
 
-// Real TokenService for cryptographic verification
-const realTokenService = new TokenService();
+// Explicit disposable keys (both distinct keys and shared keys)
+const DISPOSABLE_ACCESS_KEY = new TextEncoder().encode('login-01-disposable-access-32b!');
+const DISPOSABLE_ADMIN_KEY = new TextEncoder().encode('login-01-disposable-admin--32b!');
+const DISPOSABLE_REFRESH_KEY = new TextEncoder().encode('login-01-disposable-refresh32b!');
+
+const distinctTokenService = new TokenService(
+  DISPOSABLE_ACCESS_KEY,
+  DISPOSABLE_ADMIN_KEY,
+  DISPOSABLE_REFRESH_KEY
+);
+
+const SHARED_KEY = new TextEncoder().encode('login-01-shared-key-32-bytes!!!');
+const sharedTokenService = new TokenService(SHARED_KEY, SHARED_KEY, SHARED_KEY);
 
 vi.mock('@/modules/auth/brand-db', () => ({
   getAuthBrandContext: vi.fn(() => ({
@@ -46,7 +57,7 @@ vi.mock('@/modules/auth/brand-db', () => ({
   shouldUseBrandBinding: vi.fn(() => false),
 }));
 
-describe('LOGIN-01: Server-Fixed Tenant Learner Purpose', () => {
+describe('LOGIN-01: Server-Fixed Tenant Learner Purpose & Ingress Scoping', () => {
   let loginService: LoginService;
 
   beforeEach(() => {
@@ -57,7 +68,7 @@ describe('LOGIN-01: Server-Fixed Tenant Learner Purpose', () => {
       mockAuditService as any,
       mockPasswordService as any,
       mockSecurityService as any,
-      realTokenService
+      distinctTokenService
     );
   });
 
@@ -87,8 +98,8 @@ describe('LOGIN-01: Server-Fixed Tenant Learner Purpose', () => {
     // 1. Result flags must indicate non-admin
     expect(result.isAdmin).toBe(false);
 
-    // 2. Cryptographic Access Token claims verification
-    const accessPayload = await realTokenService.verifyUserAccessToken(result.accessToken, { audience: 'user' });
+    // 2. Cryptographic Access Token claims verification under distinct keys
+    const accessPayload = await distinctTokenService.verifyUserAccessToken(result.accessToken, { audience: 'user' });
     expect(accessPayload.userId).toBe('admin-user-1');
     expect(accessPayload.brand).toBe('skillup');
     expect(accessPayload.tokenType).toBe('user');
@@ -99,11 +110,11 @@ describe('LOGIN-01: Server-Fixed Tenant Learner Purpose', () => {
 
     // 3. Admin token verifier MUST reject this learner-purpose token
     await expect(
-      realTokenService.verifyAdminAccessToken(result.accessToken, { audience: 'admin' })
+      distinctTokenService.verifyAdminAccessToken(result.accessToken, { audience: 'admin' })
     ).rejects.toThrow();
 
     // 4. Cryptographic Refresh Token claims verification
-    const refreshPayload = await realTokenService.verifyRefreshToken(result.refreshToken, { audience: 'user' });
+    const refreshPayload = await distinctTokenService.verifyRefreshToken(result.refreshToken, { audience: 'user' });
     expect(refreshPayload.userId).toBe('admin-user-1');
     expect(refreshPayload.tokenType).toBe('user');
     expect(refreshPayload.aud).toBe('user');
@@ -147,53 +158,85 @@ describe('LOGIN-01: Server-Fixed Tenant Learner Purpose', () => {
 
     expect(result.isAdmin).toBe(false);
 
-    const accessPayload = await realTokenService.verifyUserAccessToken(result.accessToken, { audience: 'user' });
+    const accessPayload = await distinctTokenService.verifyUserAccessToken(result.accessToken, { audience: 'user' });
     expect(accessPayload.tokenType).toBe('user');
     expect(accessPayload.isAdmin).toBe(false);
     expect(accessPayload.aud).toBe('user');
-    // Preserves legitimate student role, strips admin role
     expect(accessPayload.roles).toEqual(['student']);
   });
 
-  it('legacy caller with omitted purpose preserves existing role-derived admin elevation', async () => {
+  it('operates correctly under supported shared-key configuration', async () => {
+    const sharedLoginService = new LoginService(
+      mockUserRepo as any,
+      mockTokenRepo as any,
+      mockAuditService as any,
+      mockPasswordService as any,
+      mockSecurityService as any,
+      sharedTokenService
+    );
+
     mockUserRepo.findWithDetails.mockResolvedValueOnce({
-      id: 'legacy-admin-3',
-      email: 'legacy@realtutorialhub.test',
+      id: 'shared-user-1',
+      email: 'shared@skillup.test',
       passwordHash: 'hash',
       isBlocked: false,
       emailVerified: true,
-      shadowUserId: 'shadow-3',
+      shadowUserId: 'shadow-shared',
       userRoles: [{ role: { name: 'admin' } }],
     });
 
-    // Omitted purpose options (legacy internal caller)
-    const result = await loginService.login(
-      'legacy@realtutorialhub.test',
+    const result = await sharedLoginService.login(
+      'shared@skillup.test',
       'password123',
-      '198.51.100.3',
-      'realtutorialhub'
+      '198.51.100.10',
+      'skillup',
+      undefined,
+      { purpose: 'learner' }
     );
 
-    expect(result.isAdmin).toBe(true);
-
-    const adminPayload = await realTokenService.verifyAdminAccessToken(result.accessToken, { audience: 'admin' });
-    expect(adminPayload.tokenType).toBe('admin');
-    expect(adminPayload.isAdmin).toBe(true);
-    expect(adminPayload.aud).toBe('admin');
-    expect(adminPayload.roles).toEqual(['admin']);
+    expect(result.isAdmin).toBe(false);
+    const accessPayload = await sharedTokenService.verifyUserAccessToken(result.accessToken, { audience: 'user' });
+    expect(accessPayload.tokenType).toBe('user');
+    expect(accessPayload.isAdmin).toBe(false);
+    expect(accessPayload.roles).toEqual([]);
   });
 
-  it('throws InvalidPurposeError for unsupported purpose string', async () => {
-    mockUserRepo.findWithDetails.mockResolvedValueOnce({
-      id: 'user-4',
-      email: 'user@skillup.test',
+  it('preserves generic skillhubcore brand admin detection behavior', async () => {
+    mockUserRepo.findWithDetails.mockResolvedValue({
+      id: 'shc-admin-user',
+      email: 'shc-admin@example.test',
       passwordHash: 'hash',
       isBlocked: false,
       emailVerified: true,
-      shadowUserId: 'shadow-4',
-      userRoles: [],
+      shadowUserId: 'shadow-shc',
+      userRoles: [{ role: { name: 'admin' } }],
     });
 
+    // 1. Without purpose options
+    const legacyResult = await loginService.login(
+      'shc-admin@example.test',
+      'password123',
+      '192.0.2.1',
+      'skillhubcore'
+    );
+    expect(legacyResult.isAdmin).toBe(true);
+
+    // 2. With purpose: 'learner' on generic skillhubcore
+    const forwardedResult = await loginService.login(
+      'shc-admin@example.test',
+      'password123',
+      '192.0.2.1',
+      'skillhubcore',
+      undefined,
+      { purpose: 'learner' }
+    );
+
+    // Invariant: Learner-scoping does not strip admin status on generic skillhubcore
+    expect(forwardedResult.isAdmin).toBe(legacyResult.isAdmin);
+    expect(forwardedResult.isAdmin).toBe(true);
+  });
+
+  it('fails fast on unsupported purpose without user lookup or password checks', async () => {
     await expect(
       loginService.login(
         'user@skillup.test',
@@ -204,6 +247,11 @@ describe('LOGIN-01: Server-Fixed Tenant Learner Purpose', () => {
         { purpose: 'admin' as any }
       )
     ).rejects.toThrow(InvalidPurposeError);
+
+    // Security Invariant: no database lookups, password hashes, or login_success audit emitted
+    expect(mockUserRepo.findWithDetails).not.toHaveBeenCalled();
+    expect(mockPasswordService.compare).not.toHaveBeenCalled();
+    expect(mockAuditService.log).not.toHaveBeenCalled();
   });
 
   it('AuthService facade cleanly forwards options and deviceContext to LoginService', async () => {
