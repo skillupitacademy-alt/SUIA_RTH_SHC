@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _verifyActiveAccount, _verifyAdmin } from '@/modules/auth/rbac.service';
+import { requireAdminRouteAccess } from '@/modules/auth/admin-audience.util';
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { proxy } from '@/proxy';
@@ -349,5 +350,21 @@ describe('B08-D: Learner-to-Admin and Cross-Tenant Authorization Controls', () =
     expect(body.error).toBe('Authentication required');
     expect(body.scope).toBe('admin');
     expect(mockSelect).not.toHaveBeenCalled();
+  });
+
+  it('signed tenant admin cannot use a conflicting canonical request tenant', async () => {
+    const token = await createSignedToken({ userId: 'valid-rth-admin', brand: 'realtutorialhub', tokenType: 'admin', aud: 'admin', isAdmin: true, roles: ['admin'] });
+    const req = createProxyRequest({ path: '/api/admin/courses', token, portalIdentity: 'admin', host: 'skillupitacademy.com' });
+    req.headers.set('x-brand', 'skillup');
+    const privilegedOperation = vi.fn();
+    const gate = await proxy(req);
+    if (gate.headers.get('x-middleware-next') === '1') {
+      try {
+        await requireAdminRouteAccess(req);
+        privilegedOperation();
+      } catch { /* Guard denial prevents the operation. */ }
+    }
+    expect.soft(gate.status).toBe(403);
+    expect(privilegedOperation).not.toHaveBeenCalled();
   });
 });

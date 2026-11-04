@@ -88,6 +88,22 @@ describe('ADMIN-01: API Proxy & Admin Audience Route-Guard Regression Matrix', (
   }
 
   describe('Proxy Routing Branches across admin / factory / analytics', () => {
+    it('rejects an explicit invalid internal key before a valid admin reaches downstream work', async () => {
+      const token = await createSignedToken({ userId: 'admin-control', brand: 'realtutorialhub', tokenType: 'admin', aud: 'admin', roles: ['admin'] });
+      const req = createProxyRequest({ path: '/api/admin/users', token });
+      req.headers.set('x-internal-key', 'disposable-invalid-key');
+      const previousKey = process.env.INTERNAL_API_KEY;
+      process.env.INTERNAL_API_KEY = 'disposable-configured-key';
+      try {
+        const result = await proxy(req);
+        expect(result.status).toBe(403);
+        expect(result.headers.get('x-middleware-next')).toBeNull();
+        expect(mockSelect).not.toHaveBeenCalled();
+      } finally {
+        if (previousKey === undefined) delete process.env.INTERNAL_API_KEY;
+        else process.env.INTERNAL_API_KEY = previousKey;
+      }
+    });
     it('SHC Admin on /api/analytics/admin is explicitly denied before tenant lookup', async () => {
       const shcToken = await createSignedToken({
         userId: 'shc-admin-1',

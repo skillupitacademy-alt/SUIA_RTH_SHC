@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { storage } from '@/lib/storage';
 import { TokenService } from '@/modules/auth/token.service';
@@ -61,6 +61,9 @@ vi.mock('@/lib/storage', () => ({
 }));
 
 describe('B08-F: Private Export Download Ownership', () => {
+  const previousFetch = globalThis.fetch;
+  const previousTokenService = TokenService.getInstance();
+  const previousContainerTokenService = container.get(TokenService);
   const OWNER_USER_ID = 'owner-uuid-001';
   const ATTACKER_USER_ID = 'attacker-uuid-002';
   const JOB_ID = 'job-export-101';
@@ -123,6 +126,13 @@ describe('B08-F: Private Export Download Ownership', () => {
         analytics_json: 'exports/exam-report.json',
       },
     });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = previousFetch;
+    TokenService.setInstance(previousTokenService);
+    container.register(TokenService, previousContainerTokenService);
+    vi.restoreAllMocks();
   });
 
   it('POSITIVE CONTROL: authorized owner can download completed job export (200)', async () => {
@@ -203,4 +213,20 @@ describe('B08-F: Private Export Download Ownership', () => {
     expect(res.status).toBe(404);
     expect(storage.getReadUrl).not.toHaveBeenCalled();
   });
+
+  for (const branch of ['jobId', 'examId'] as const) {
+    it(`foreign brand with colliding local ID must not download by ${branch}`, async () => {
+      const foreign = await testTokenService.generateAccessToken({
+        userId: OWNER_USER_ID, roles: ['student'], brand: 'realtutorialhub', tokenType: 'user', aud: 'user',
+      });
+      const id = branch === 'jobId' ? JOB_ID : EXAM_ID;
+      const req = new NextRequest(`https://skillup.test/api/export/download?${branch}=${id}`, {
+        headers: { authorization: `Bearer ${foreign}` },
+      });
+      const response = await GET(req);
+      expect.soft(response.status).toBe(403);
+      expect.soft(storage.getReadUrl).not.toHaveBeenCalled();
+      expect(globalThis.fetch).not.toHaveBeenCalled();
+    });
+  }
 });

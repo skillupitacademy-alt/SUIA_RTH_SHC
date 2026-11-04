@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
@@ -14,15 +14,9 @@ import { GET } from '../route';
  * Verifies that GET /api/export/status/[jobId]:
  * 1. Positive Control: Legitimate job owner can retrieve job status (HTTP 200).
  * 2. Authentication Control: Anonymous caller without token is denied (HTTP 401).
- * 3. SECURITY INVARIANT (FAILING - REAL SOURCE DEFECT REPRODUCTION):
- *    Export status endpoint MUST enforce that caller owns the job (job.userId === caller.userId),
- *    and MUST reject unauthorized cross-user access with HTTP 403 Forbidden.
- *
- *    REAL SOURCE DEFECT EXPOSED:
- *    apps/api-server/src/app/api/export/status/[jobId]/route.ts authenticates that caller has a valid
- *    access token, but NEVER checks `job.userId === payload.userId`.
- *    Consequently, any authenticated tenant user can query status, progress, and downloadUrl of
- *    another user's export job (IDOR).
+ * 3. Existing-job same-user ownership containment rejects non-owners.
+ * 4. Equal local IDs across brands require an authoritative tenant binding, still absent
+ *    from this isolated resource fixture and retained as a failing security invariant.
  */
 
 const TEST_SECRET = new TextEncoder().encode('export-status-test-secret-32b!');
@@ -62,6 +56,8 @@ vi.mock('@/lib/storage', () => ({
 }));
 
 describe('B08-F: Private Export Status Ownership', () => {
+  const previousTokenService = TokenService.getInstance();
+  const previousContainerTokenService = container.get(TokenService);
   const OWNER_USER_ID = 'owner-uuid-101';
   const ATTACKER_USER_ID = 'attacker-uuid-102';
   const JOB_ID = 'job-export-status-101';
@@ -112,6 +108,12 @@ describe('B08-F: Private Export Status Ownership', () => {
     });
   });
 
+  afterEach(() => {
+    TokenService.setInstance(previousTokenService);
+    container.register(TokenService, previousContainerTokenService);
+    vi.restoreAllMocks();
+  });
+
   it('POSITIVE CONTROL: authorized owner can retrieve export job status (200)', async () => {
     const req = new NextRequest(`https://skillup.test/api/export/status/${JOB_ID}`, {
       method: 'GET',
@@ -137,9 +139,7 @@ describe('B08-F: Private Export Status Ownership', () => {
   });
 
   /**
-   * SECURITY INVARIANT (REAL SOURCE DEFECT EXPOSED):
-   * An authenticated caller who does NOT own the job MUST receive 403 Forbidden.
-   * Under current route.ts, it returns 200 with victim's job status and downloadUrl.
+   * Existing containment requires a non-owner to receive 403 Forbidden.
    */
   it('SECURITY INVARIANT (DEFECT EXPOSED): non-owner caller must be denied with 403 Forbidden', async () => {
     const req = new NextRequest(`https://skillup.test/api/export/status/${JOB_ID}`, {
@@ -153,5 +153,20 @@ describe('B08-F: Private Export Status Ownership', () => {
 
     // Invariant: Non-owner must NOT receive job status or downloadUrl
     expect(res.status).toBe(403);
+  });
+
+  it('forged owner headers cannot elevate a non-owner credential', async () => {
+    const req = new NextRequest(`https://skillup.test/api/export/status/${JOB_ID}`, {
+      headers: { authorization: `Bearer ${attackerToken}`, 'x-user-id': OWNER_USER_ID, 'x-brand': 'skillup' },
+    });
+    expect((await GET(req, { params: Promise.resolve({ jobId: JOB_ID }) })).status).toBe(403);
+  });
+
+  it('foreign tenant with equal local subject must not read status', async () => {
+    const token = await testTokenService.generateAccessToken({
+      userId: OWNER_USER_ID, roles: ['student'], brand: 'realtutorialhub', tokenType: 'user', aud: 'user',
+    });
+    const req = new NextRequest(`https://skillup.test/api/export/status/${JOB_ID}`, { headers: { authorization: `Bearer ${token}` } });
+    expect((await GET(req, { params: Promise.resolve({ jobId: JOB_ID }) })).status).toBe(403);
   });
 });
