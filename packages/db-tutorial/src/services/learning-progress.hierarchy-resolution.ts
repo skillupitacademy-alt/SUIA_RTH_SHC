@@ -17,7 +17,7 @@
  * - Time tracking
  */
 
-import { MAX_BLOCKS_PER_DOCUMENT, MAX_NESTING_DEPTH } from '@quiz/types';
+import { CodeBlockSchema, MAX_BLOCKS_PER_DOCUMENT, MAX_NESTING_DEPTH } from '@quiz/types';
 import type { AuthenticatedIdentity } from './learning-progress.types';
 import { InvalidBlockCompletionError, InvalidNavigationHierarchyError } from './learning-progress.types';
 import type { TutorialSectionRepository } from '../repositories/tutorial-section.repository';
@@ -63,6 +63,7 @@ export async function validateCompletionMembership(
       const matchesVersion = block.version === blockVersion ||
         (allowStructural && block.version === undefined && blockVersion === 'unversioned' &&
           UNVERSIONED_STRUCTURAL_TYPES.has(block.type) &&
+          (block.type !== 'code' || CodeBlockSchema.safeParse(block).success) &&
           (block.progressRole === undefined || block.progressRole === 'structural'));
       if (block.id === blockId && matchesVersion) matches++;
       if (block.type === 'two-column') {
