@@ -558,7 +558,7 @@ ${JSON.stringify(engineeringContract, null, 2)}
         {engineeringContract && (
           <div className="space-y-3">
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-              Contract retrieved and identity-bound. Workflow: <strong>{String(engineeringContract.workflow_id)}</strong>
+              Contract retrieved. Reported workflow: <strong>{String(engineeringContract.workflow_id)}</strong>
               <div className="mt-1 break-all font-mono text-xs">SHA-256: {String(engineeringContract.contract_hash)}</div>
             </div>
             <pre className="max-h-72 overflow-auto rounded-lg bg-slate-950 p-3 text-xs text-slate-100">{JSON.stringify(engineeringContract, null, 2)}</pre>
@@ -976,12 +976,12 @@ ${JSON.stringify(engineeringContract, null, 2)}
                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                     : 'bg-amber-100 text-amber-800 border border-amber-200'
                 }`}>
-                  {engineeringContract ? '✓ GATE PASSED' : 'CONTRACT REQUIRED'}
+                  {engineeringContract ? 'CONTRACT LOADED' : 'CONTRACT REQUIRED'}
                 </span>
               </div>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
                 {engineeringContract
-                  ? `Immutable contract verified (${String(engineeringContract.contract_hash).slice(0, 12)}...). Target block ${targetFamily} (${versionUpper}) is ready for implementation.`
+                  ? `Contract retrieved (${String(engineeringContract.contract_hash).slice(0, 12)}...). Gate verification is not shown here.`
                   : 'Load or verify the backend engineering contract above to unlock transition to Candidate Upload.'}
               </p>
             </div>
