@@ -175,6 +175,19 @@ describe('B08-F: Private Export Download Ownership', () => {
     expect(storage.getReadUrl).not.toHaveBeenCalled();
   });
 
+  for (const branch of ['jobId', 'examId'] as const) {
+    it(`invalid credential denies ${branch} before storage or fetch`, async () => {
+      const id = branch === 'jobId' ? JOB_ID : EXAM_ID;
+      const req = new NextRequest(`https://skillup.test/api/export/download?${branch}=${id}`, {
+        headers: { authorization: 'Bearer invalid.test.signature' },
+      });
+      const response = await GET(req);
+      expect.soft(response.status).toBe(401);
+      expect.soft(storage.getReadUrl).not.toHaveBeenCalled();
+      expect(globalThis.fetch).not.toHaveBeenCalled();
+    });
+  }
+
   it('EXAM OWNERSHIP: legitimate exam owner can download exam report (200)', async () => {
     const req = new NextRequest(`https://skillup.test/api/export/download?examId=${EXAM_ID}&format=json`, {
       method: 'GET',

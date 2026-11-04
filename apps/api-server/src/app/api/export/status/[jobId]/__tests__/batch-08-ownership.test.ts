@@ -5,6 +5,7 @@ import { TokenService } from '@/modules/auth/token.service';
 import { container } from '@/modules/core/container';
 import { db } from '@quiz/db';
 import { storage } from '@/lib/storage';
+import { redis } from '@/lib/redis';
 import { GET } from '../route';
 
 /**
@@ -187,6 +188,15 @@ describe('B08-F: Private Export Status Ownership', () => {
     const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { authorization: `Bearer ${token}` } });
     const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
     expect.soft(response.status).toBe(403);
+    expect(storage.exists).not.toHaveBeenCalled();
+  });
+
+  it('missing-job non-owner is denied before recovery side effects', async () => {
+    vi.mocked(db.query.exams.findFirst).mockResolvedValueOnce({ userId: OWNER_USER_ID, exportUrls: { analytics_json: 'private-ref' } } as never);
+    const req = new NextRequest('https://skillup.test/api/export/status/missing?examId=exam-1', { headers: { authorization: `Bearer ${attackerToken}` } });
+    const response = await GET(req, { params: Promise.resolve({ jobId: 'missing' }) });
+    expect.soft(response.status).toBe(403);
+    expect.soft(redis.get).not.toHaveBeenCalled();
     expect(storage.exists).not.toHaveBeenCalled();
   });
 });

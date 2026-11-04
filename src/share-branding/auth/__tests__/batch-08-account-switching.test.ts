@@ -13,7 +13,7 @@ import * as validateModule from '../validateAuthState';
  * -----------------------------------
  * This test file exercises transport-level client wrappers (`authLoader`, `validateAuthState` mock).
  *
- * REAL BROWSER DOM/CACHE EVICTION QUALIFICATION: [NOT EXECUTED]
+ * LIVE BROWSER DOM/CACHE EVICTION QUALIFICATION: [NOT EXECUTED]
  *
  * Reason:
  * As identified in Sol's independent review (audit/W1.2_Batch_08_Sol_Review_cabe42ef.md),
@@ -25,13 +25,13 @@ import * as validateModule from '../validateAuthState';
  * 3. Browser-enforced storage barriers (localStorage, sessionStorage, IndexedDB, CacheStorage).
  * 4. Browser cookie jar enforcing HttpOnly / SameSite lifecycle across page navigations.
  *
- * Until these browser harness fixtures are authorized and provisioned under AQ-09 / BROWSER-01,
- * real client cache eviction remains NOT EXECUTED.
+ * The separate jsdom test below executes a real consumer with mocked auth/transport; it
+ * does not substitute for browser-enforced cookies or the full production login journey.
  *
  * SCOPE EXERCISED HERE (BOUNDARY WRAPPER CONTROLS):
  * 1. Sequential Account Switching: User A login/read -> User A logout -> User B login/read in transport wrapper.
  * 2. Transport Invariant: User A's private markers and profile state do not linger in wrapper session.
- * 3. Race condition wrapper: Out-of-order promise resolution does not override active client state.
+ * 3. Race condition wrapper: an unobserved delayed promise is a wrapper-only control.
  */
 
 // Simulated client cookie jar and storage boundary for transport wrapper checks
@@ -244,5 +244,56 @@ describe('B08-H: Account-Switching & State Boundary (Transport Wrapper Controls)
     const activeState = await fetchCurrentUserState();
     expect(clientContext.currentUser?.id).toBe('user-b-uuid-202');
     expect(activeState.onboardingCompleted).toBe(false);
+  });
+});
+
+describe.skipIf(typeof document === 'undefined')('B08-T18 mounted learner state consumer', () => {
+  beforeEach(() => {
+    clientContext.reset();
+    window.localStorage.clear();
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+  });
+
+  it('does not commit delayed learner A progress after logout and learner B login', async () => {
+    const React = await import('react');
+    const { render, waitFor, cleanup } = await import('@testing-library/react');
+    const { QueryProvider } = await import('../../../../apps/realtutorialhub-web/src/components/providers/QueryProvider');
+    const { LearnerProgressPanel } = await import('../../../../apps/realtutorialhub-web/src/components/content/LearnerProgressPanel');
+    const id = '11111111-1111-4111-8111-111111111111';
+    let release!: (response: Response) => void;
+    const delayed = new Promise<Response>((resolve) => { release = resolve; });
+    class Observer { observe() {} unobserve() {} disconnect() {} }
+    vi.stubGlobal('IntersectionObserver', Observer);
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith('/api/tutorial/progress')) return delayed;
+      if (url.startsWith('/api/tutorial/assignments/')) return Response.json({ data: {
+        locked: true, assignments: [], tierStatus: {
+          simple: {status:'not_started', isUnlocked:false}, mixed: {status:'not_started', isUnlocked:false},
+          intermediate: {status:'not_started', isUnlocked:false}, expert: {status:'not_started', isUnlocked:false},
+        },
+      } });
+      throw new Error('Unexpected outbound transport');
+    }));
+    try {
+      await loginUser({ email: 'user-a@skillup.test', password: 'disposable', brand: 'skillup' });
+      render(React.createElement(QueryProvider, null, React.createElement(LearnerProgressPanel, {
+        subtopicId: id, subtopicName: 'Fixture', theme: { sidebarAccent: '#123456' } as never, blockOrder: ['notes'],
+      })));
+      await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/tutorial/progress'), expect.anything()));
+      await logoutUser();
+      await loginUser({ email: 'user-b@skillup.test', password: 'disposable', brand: 'skillup' });
+      expect(clientContext.currentUser?.id).toBe('user-b-uuid-202');
+      release(Response.json({ data: { blocksViewed: ['notes'], completionPercent: 100, assignmentUnlocked: true } }));
+      const key = `tutorial-progress:${id}`;
+      await waitFor(() => expect(window.localStorage.getItem(key)).toContain('notes'));
+      expect(window.localStorage.getItem(key)).not.toContain('notes');
+    } finally {
+      cleanup();
+    }
   });
 });

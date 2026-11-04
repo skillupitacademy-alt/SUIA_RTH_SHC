@@ -92,7 +92,7 @@ def main():
     expect((await GET(req, {params: Promise.resolve({jobId: JOB_ID})})).status).toBe(200);
   });
 """,
-            "import { JobsService } from '@/modules/system/jobs.service';\nimport { redis } from '@/lib/redis';\n",
+            "import { JobsService } from '@/modules/system/jobs.service';\n",
         )
         env = os.environ.copy()
         for key in list(env):
