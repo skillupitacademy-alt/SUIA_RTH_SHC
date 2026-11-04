@@ -42,6 +42,13 @@ cba76c1f, d217753e and 95bba4c3. Its current reported results have not received 
 independent acceptance. They remain IMPLEMENTED_UNVERIFIED. The accepted I correction
 and all historical accepted scopes retain their recorded meanings.
 
+Subsequent independent J review is recorded in W1.2_Terra_J01_J20_Sol_Review_95bba4c3.md.
+Captured learning-session metadata passes at the tested transport seams. Whole-correction
+acceptance is withheld for J-R1 hidden-time credit during session cutover and J-R2 deferred
+visit work after teardown. The submitted UI selection reproduces sixty passes, while
+the combined selection with Sol's new regression has sixty-one passes and two failures.
+This is a checkpoint within FND01-FND30. All thirty tasks remain in the active assignment.
+
 This consolidated assignment becomes the active work list for the remaining W1-W3
 foundation work. It incorporates unfinished J01-J20 and T01-T20 duties through FND02-FND10
 and the integration tasks. Preserve their ledger and IDs rather than creating duplicate
@@ -169,6 +176,16 @@ Correct confirmed stale response/private cache defects using the selected lifecy
 authority. Acceptance requires teardown/remount and continuously mounted A-to-B controls,
 delayed request/callback and logout cases. Distinguish mounted isolated behavior from
 actual browser authentication. Durable storage/owner-epoch redesign remains decision-gated.
+
+Immediate metadata-lifecycle priorities are J-R1 and J-R2 from the independent J review.
+In BlockTelemetryProvider.tsx and blockTelemetryDelivery.ts, preserve current document
+visibility when starting a cutover interval and invalidate obsolete deferred visit work
+on teardown. Reuse existing timing/queue lifecycle mechanisms. Acceptance requires the
+three-case sol-session-transition-lifecycle.test.tsx pass, plus hidden-to-visible resume,
+null/enabled cutover, deferred settlement and supported React effect replay controls.
+Retain captured headers, acknowledgement, final best-effort flush and observer semantics.
+These bounded lifecycle corrections need no new authority or owner-policy selection.
+They do not expand backend session attribution, BFF forwarding or authenticated owner scope.
 
 ### FND08 Bind Project LLM audit actors to verified server identity
 
