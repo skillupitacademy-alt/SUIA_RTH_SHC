@@ -5,8 +5,10 @@ import { AssignmentAuthError, requireStudent } from '@/lib/assignment-auth';
 
 export const dynamic = 'force-dynamic';
 
+const tokenService = new TokenService();
+
 function credentialHeaders(request: NextRequest): Record<string, string> {
-  const token = TokenService.getInstance().getAccessToken(request, { scope: 'user' });
+  const token = tokenService.getAccessToken(request, { scope: 'user' });
   const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   const csrf = request.cookies.get('csrfToken')?.value;
   const csrfHeader = request.headers.get('x-csrf-token');
