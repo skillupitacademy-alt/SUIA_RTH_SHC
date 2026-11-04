@@ -14,3 +14,14 @@ it('does not invoke a registered handler for a different custom-schema event typ
   expect.soft(response.ok).toBe(false);
   expect.soft(effect).not.toHaveBeenCalled();
 });
+
+it('allows a verified message matching the registered event type', async () => {
+  const effect = vi.fn();
+  const handler = createQStashHandler(PlatformEventTypes.PROJECT_SUBMITTED, effect, {
+    receiver: { verify: async () => true } as never,
+    schema: z.object({ type: z.literal('project.submitted'), correlationId: z.string(), id: z.string() }),
+  });
+  const response = await handler(new Request('https://isolated.invalid/', { method: 'POST', headers: { 'upstash-signature': 'fixture' }, body: JSON.stringify({ type: 'project.submitted', correlationId: 'fixture', id: 'fixture' }) }));
+  expect(response.ok).toBe(true);
+  expect(effect).toHaveBeenCalledOnce();
+});
