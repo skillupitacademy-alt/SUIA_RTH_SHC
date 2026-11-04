@@ -22,6 +22,7 @@ it('shows empty program and faculty states', async () => {
   fetchData.mockResolvedValueOnce({ programs: [] }).mockResolvedValueOnce({ faculty: [], heroStats: [{ label: 'Active mentors', value: '0' }] });
   const first = render(await ProgramsPage());
   expect(screen.getByText('No programs are currently available.')).toBeTruthy();
+  expect(screen.getByText('Learning tracks')).toBeTruthy();
   first.unmount();
   render(await FacultyPage());
   expect(screen.getByText('No active faculty are currently available.')).toBeTruthy();
