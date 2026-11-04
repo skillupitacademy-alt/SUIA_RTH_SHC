@@ -173,3 +173,5 @@ After the shared footer claim follow-up `c718179c`, `pnpm exec tsc --noEmit` fro
 Project LLM page lint after the two truth corrections: from `apps/skillhubcore-admin`, `$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/app/(admin)/tools/project-llm/workflow-details/page.tsx' 'src/app/(admin)/tools/project-llm/specification-review/page.tsx'` exited 0 with no output. This is targeted production-file lint, not governance acceptance.
 
 `9dc892d0` labels Project LLM explorer's hardcoded version descriptions as reference rather than VERIFIED/runtime proof and removes an unsupported canonical-artifact assurance. Guarded mounted page control and SHC typecheck passed. The static descriptions remain reference material; qualify/mix-match downstream authority and real evidence remain unverified.
+
+From `apps/skillhubcore-admin`, `$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/app/(admin)/tools/project-llm/explorer/page.tsx'` exited 0 without output after the reference-label slice. Test lint and broader governance verification remain open.
