@@ -175,3 +175,5 @@ Project LLM page lint after the two truth corrections: from `apps/skillhubcore-a
 `9dc892d0` labels Project LLM explorer's hardcoded version descriptions as reference rather than VERIFIED/runtime proof and removes an unsupported canonical-artifact assurance. Guarded mounted page control and SHC typecheck passed. The static descriptions remain reference material; qualify/mix-match downstream authority and real evidence remain unverified.
 
 From `apps/skillhubcore-admin`, `$env:ESLINT_USE_FLAT_CONFIG='false'; pnpm exec eslint 'src/app/(admin)/tools/project-llm/explorer/page.tsx'` exited 0 without output after the reference-label slice. Test lint and broader governance verification remain open.
+
+`21832df4` adds a regex-derived audit ID candidate index: 696 distinct candidates, 633 absent from the existing 91-row crosswalk. It is discovery only: IDs may be historical/referenced, other formats may be missed, and no wave/source/acceptance reconciliation is implied. FND01 remains materially incomplete despite eleven source-checked crosswalk rows.
