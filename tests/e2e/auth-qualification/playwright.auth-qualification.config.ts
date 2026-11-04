@@ -75,6 +75,7 @@ export default defineConfig({
         baseURL: SUIA_URL,
       },
       testMatch: [
+        '**/01-learner-purpose-suia.spec.ts',
         '**/01-learner-suia-login.spec.ts',
         '**/04-token-refresh-suia.spec.ts',
         '**/05-logout-suia.spec.ts',
@@ -93,6 +94,7 @@ export default defineConfig({
         baseURL: RTH_URL,
       },
       testMatch: [
+        '**/02-learner-purpose-rth.spec.ts',
         '**/02-learner-rth-login.spec.ts',
         '**/04-token-refresh-rth.spec.ts',
         '**/05-logout-rth.spec.ts',
