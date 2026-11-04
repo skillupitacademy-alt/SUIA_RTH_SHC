@@ -1417,3 +1417,5 @@ CLOSED
 ```
 
 This file is the program execution authority for remediation work unless the project owner explicitly approves an architecture-plan revision.
+
+**J01-J20 continuation:** learning-session transport metadata correction is IMPLEMENTED_UNVERIFIED pending Sol review; authenticated owner/epoch, tenant authority, physical SQL and browser/session qualification remain separate. See `audit/W1.2_Terra_Batch_08_20_Package_Handoff.md` for selected evidence and retained failures. No ticket is closed by the implementation worker.
