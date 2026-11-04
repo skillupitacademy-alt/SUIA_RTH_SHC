@@ -148,12 +148,10 @@ describe('FIXTURE-01: Same-Email & Colliding-ID Tenant Isolation', () => {
     log: vi.fn().mockResolvedValue(undefined),
   };
 
-  const mockSecurityService = {
+  const mockSecurityService: any = {
     isAccountLocked: vi.fn().mockResolvedValue(false),
     trackLoginAttempt: vi.fn().mockResolvedValue(undefined),
-    withContext: vi.fn(function () {
-      return this;
-    }),
+    withContext: vi.fn(() => mockSecurityService),
   };
 
   // Adapter repository wrapping tenant store
