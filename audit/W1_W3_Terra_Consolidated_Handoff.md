@@ -83,7 +83,7 @@ Additional marketing truth slice `c718179c` removes an unsupported shared-footer
 
 `f9621da5` extends the FND20 QuestionTable identity containment to duplicate IDs within a page; the mounted table selection passed 4 tests with mocked API and blocked fetch, and SHC typecheck passed. Cross-page identity, backend validation and canonical question contracts remain open.
 
-Crosswalk working index through the subtopic identity slice has eleven source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
+Crosswalk working index through the subtopic identity slice has twelve source-checked rows with scoped outcomes/dependencies; the rest of the 91 rows and any findings outside that crosswalk remain unverified. `49c44c63` traces learner reset success to HTTP OK only, without establishing durable persistence or timeout behavior. These are partial FND01/FND12/FND16 evidence, not task closure.
 
 `634af2bc` adds two isolated real-schema question controls: current valid single/bulk inputs pass and unknown type/empty options are denied. This confirms the exercised schema only, not the SHC client/API/persistence round trip or historical data support; all FND20 acceptance gates remain open.
 
@@ -197,3 +197,5 @@ FND11 source trace `38b23220` identifies an unscoped people-email lookup in the 
 `pnpm run lint` from `packages/events` exited 0 with `--no-ignore --max-warnings=0` over `src/**/*.ts`; this includes the retained probe files but does not convert their failing test assertions into a pass.
 
 Offline guard follow-up additionally blocks common Node DNS lookup/resolve methods before test imports. Its sensitivity selection exited 0, 1 passed for fetch, TCP, UDP and DNS lookup denial. This remains an in-process guard rather than a comprehensive OS sandbox: child processes, native modules and alternate resolver mechanisms are not proven blocked. No network was required or contacted by the guard control.
+
+`c092f96b` source-checks SU-AUTH-025: shared middleware requires original and shadow claims, while the SkillUp student helper accepts shadow or user ID. Actual deployed compatibility and authority policy remain unverified.
