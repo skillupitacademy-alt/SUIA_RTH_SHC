@@ -6,7 +6,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | --- | --- |
 | FND01 | PARTIAL: `W1_W3_Terra_Foundation_Register.md` records a source-backed initial slice; full crosswalk enumeration remains outstanding. |
 | FND02 | PARTIAL: affected UI controls and retained Sol probes were run; full ILS/repository/BFF selections remain to be reproduced. Both foreign-tenant export probes fail as recorded below. |
-| FND03 | NOT COMPLETE: signed-subject, projection, private-store, export provenance, admin classification and publication policy need one reviewed decision table and Sol disposition. |
+| FND03 | PARTIAL: `e6113cad` consolidates signed-subject, projection, private-store, export provenance, admin and publication recommendations; Sol policy/deployment disposition remains pending. |
 | FND04 | BLOCKED on FND03 tenant/provenance policy; foreign-tenant equal-ID export probes remain failing historically. No speculative runtime correction. |
 | FND05 | BLOCKED on FND03 private owner/store authority; four evidence lanes remain separately qualified in Batch 08 handoff. |
 | FND06 | BLOCKED on FND03 admin resource classification; accepted previous containment remains in place. |
