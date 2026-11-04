@@ -745,7 +745,7 @@ a bounded task and independent review. Carry exam default-store/conditional-owne
 into application/domain assessment; global resource isolation is not certified by GUARD-01.
 
 ### W1.2-GUARD-03 - Bounded Principal-Policy Implementation Scoping
-**Status:** `VERIFICATION_FAILED` (Remaining implementation-scope corrections at reviewed 3f16e084: verifier defaults/caller eligibility, header compatibility, actual session schema and deviceContext signature preservation. See `audit/W1.2_Batch_06_Fixture_Acceptance_And_Scope_Review.md`; assignment `audit/W1.2_Batch_06_Remaining_Scope_Corrections.md`. No runtime helper/login implementation accepted.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Remaining scope corrections completed per audit/W1.2_Batch_06_Remaining_Scope_Corrections.md: actual no-options verifier logic and cookie extraction documented; active-account eligibility vs service-principal trade-off explicit; exact portal header authority matrix specified; session schema corrected with no fictitious columns; 5th positional deviceContext preserved. Scoping only; strictly zero runtime code changes. Pending Sol review and acceptance.)
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Tasks A/B:
 separate tenant-admin helper/caller compatibility and server-fixed learner-login
 implementation scopes. Documentation/scoping only; runtime protections require their
@@ -774,7 +774,7 @@ choosing bounded delegation/decommissioning. Do not create duplicate endpoints o
 assume deployed failure. No runtime change authorized by this planned entry.
 
 ### W1.2-SESS-03 - Legacy Logout-All Compatibility and Remediation Decision
-**Status:** `VERIFICATION_FAILED` (Source qualification improved, but generic-verifier facts and deterministic confirmed/partial/unknown revocation response semantics require correction. See `audit/W1.2_Batch_06_Fixture_Acceptance_And_Scope_Review.md`; assignment `audit/W1.2_Batch_06_Remaining_Scope_Corrections.md`. No runtime adapter or live all-device test accepted.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Remaining scope corrections completed per audit/W1.2_Batch_06_Remaining_Scope_Corrections.md: generic verifier key fallback and token-class enforcement documented; absorbed audit error dynamics detailed; deterministic result matrix for confirmed success, confirmed pre-commit failure, unknown post-commit outcome, and presence failure specified. Architectural decision only; strictly zero runtime code changes. Pending Sol review and acceptance.)
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task C; preserve the
 existing legacy logout-all scope, qualify compatibility uncertainty and propose a
 bounded implementation. No live all-device call, runtime patch or endpoint removal.
