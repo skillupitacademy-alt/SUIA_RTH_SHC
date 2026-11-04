@@ -151,3 +151,5 @@ node --input-type=module -e "import { startVitest } from 'vitest/node'; import r
 ```
 
 Exit 0, 5 files / 24 tests passed. API/hooks/child components are intercepted and fetch blocked. This selection does not execute physical APIs, browser, authorization or asynchronous owner changes.
+
+`06db8554` dashboard truth correction and `14bc2020` helper control are IMPLEMENTED_UNVERIFIED: mounted page selection passed 3 tests with intercepted fetch, and actual helper no-enrollment/open-job selection passed 1 against mocked query adapters. SkillUp typecheck passed. Prior note that the changed helper fallback had not been exercised is superseded for this fixture only; SQL, other rows and physical services remain unverified. Fixed decorative bars are removed, missing-session percentages are unavailable, and the open-job count is labeled accordingly; the existing API field shape was retained.
