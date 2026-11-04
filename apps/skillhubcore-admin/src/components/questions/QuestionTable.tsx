@@ -191,8 +191,12 @@ export function QuestionTable() {
                     ? data.questions
                     : (Array.isArray(data.data) ? data.data : []);
 
+                if (responseQuestions.some((q: RawQuestion) => typeof q.id !== 'string' || q.id.trim().length === 0)) {
+                    throw new Error('Question response is missing a valid identifier');
+                }
+
                 const mappedQuestions: QuestionData[] = responseQuestions.map((q: RawQuestion, idx: number) => ({
-                    id: q.id ?? `q-${idx}`,
+                    id: q.id!,
                     questionText: (q.questionText != null && q.questionText !== '') ? q.questionText : (q.text ?? ''),
                     type: q.type ?? 'single',
                     difficulty: q.difficulty ?? 'intermediate',

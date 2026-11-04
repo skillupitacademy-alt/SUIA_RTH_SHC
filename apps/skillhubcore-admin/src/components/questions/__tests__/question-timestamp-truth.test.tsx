@@ -16,3 +16,10 @@ it('preserves server creation timestamps and does not invent missing ones', asyn
   expect(await screen.findByText('missing: Unknown')).toBeTruthy();
   expect(screen.getByText('known: 2020-01-01T00:00:00Z')).toBeTruthy();
 });
+
+it.each([undefined, '   '])('rejects a question page with an absent or blank resource ID', async (id) => {
+  getQuestions.mockResolvedValue({ questions: [{ id, questionText: 'Unidentified' }], total: 1 });
+  render(<QuestionTable />);
+  expect(await screen.findByText(/Question response is missing a valid identifier/)).toBeTruthy();
+  expect(screen.queryByText(/q-0/)).toBeNull();
+});
