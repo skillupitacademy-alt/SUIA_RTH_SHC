@@ -820,28 +820,29 @@ one atomic unit across `rbac.service.ts`, `proxy.ts`, `admin-audience.util.ts`, 
 `rbac.service.test.ts` (16 tests passing) and `admin-01-proxy.test.ts` (10 tests passing).
 
 ### W1.2-LOGIN-01 - Server-Fixed Tenant Learner Login Purpose
-**Status:** `VERIFICATION_FAILED` (Generic brand and fail-fast corrections independently pass existing probes. Required actual public login/signup forwarding/cookie controls remain incomplete and the distinct-key fixture labels use wrong constructor argument order. Remaining assignment `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`, Package 3. No complete LOGIN-01 acceptance.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of final Package 3 boundary corrections. Distinct-key constructor order corrected to access/refresh/admin, public login/signup route forwarding and cookie selection verified, dedicated admin issuer tested, and refresh claims asserted. Verified offline by 10 tests in login-01-purpose.test.ts.)
 **Root cause:** RC-ID-01
-**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task C, validated by E; corrections per `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`, Package 3.
 **Implementer / acceptance:** Gemini / independent Sol review.
-**Commits:** `b967e6be`, `1fe36579`, `e34e899e`
+**Commits:** `b967e6be`, `1fe36579`, `e34e899e`, `c526d416`
 Implemented server-fixed learner purpose, consistent access/refresh claims (`aud: 'user'`,
 `tokenType: 'user'`, `isAdmin: false`), empty-role principal baseline (`roles: []`) without
 invented roles, existing session schema, and fifth `deviceContext` / third IP precedence.
 Preserves generic default-DB and dedicated admin issuers. Verified by `login-01-purpose.test.ts`
-(6 tests passing).
+(10 tests passing).
 
 ### W1.2-SESS-04 - Legacy Logout-All Compatibility Adapter
-**Status:** `VERIFICATION_FAILED` (Original four probes pass, but independent wrong-scheme/cross-tenant origin and cookie-displaced-by-Bearer probes still return 200. The submitted state adapter also revokes a foreign tenant collision, invalidating its isolation claim. Review `audit/W1.2_Batch_07_Remaining_Sol_Review_bb968161.md`; remaining Packages 1/2 in `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`. No live all-device execution.)
+**Status:** `IMPLEMENTED_UNVERIFIED` (Pending Sol independent review of final Package 1 & 2 boundary corrections. Canonical cookie-first precedence restored, full exact-origin policy grounded in authoritative request context, brand-partitioned store with independent brand-bound repository adapters, passing persistent canary, commit-then-throw and real AuditService absorption proven offline in 23 tests in sess-04-logout-all.test.ts and 4/4 probes in Remaining Sol Probe.)
 **Root cause:** RC-ID-01
-**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E; corrections per `audit/W1.2_Gemini_Controlled_Batch_07_Corrections.md`.
+**Assignment:** `audit/W1.2_Gemini_Controlled_Batch_07_Task.md`, Task D, validated by E; corrections per `audit/W1.2_Batch_07_Final_Boundary_Corrections.md`, Packages 1 and 2.
 **Implementer / acceptance:** Gemini / independent Sol review.
-**Commits:** `c1f10081`, `59c464d8`
+**Commits:** `c1f10081`, `59c464d8`, `cb2f56b4`
 Implemented a verified tenant owner/user-admin adapter over the existing `GlobalLogoutService`
 engine, legacy snapshot-count response, safe service-stage failure attribution
-(`RevocationStageError` vs `PresenceStageError`), exact parsed origin CSRF verification,
-and strict tenant audience checking. Preserves canonical consumers and no new cookie/deprecation
-metadata; tested strictly offline via `sess-04-logout-all.test.ts` (17 tests passing).
+(`RevocationStageError` vs `PresenceStageError`), canonical cookie-first precedence, exact
+origin CSRF verification, and brand-partitioned tenant store. Preserves canonical consumers
+and no new cookie/deprecation metadata; tested strictly offline via `sess-04-logout-all.test.ts`
+(23 tests passing).
 
 ### W1.2-EMAIL - People Projection Email Uniqueness Design
 **Status:** `PLANNED`
