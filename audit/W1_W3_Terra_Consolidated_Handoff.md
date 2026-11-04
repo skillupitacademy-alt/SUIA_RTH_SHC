@@ -56,3 +56,9 @@ Program catalog `467a6ae6`, faculty `26898b79`, and batch/recordings `d31e6f47` 
 ## Retained Sol probes on d31e6f47
 
 Repository root, with environment keys matching DATABASE, REDIS, UPSTASH, NEON and QSTASH removed, `python audit/W1.2_Batch_08_Sol_Probe.py` exited 1: 3 selected tests passed, 2 failed, 31 skipped, across 3 files (1 failed, 2 passed). Foreign-brand equal-ID jobId and examId download assertions each observed HTTP 200 versus required 403. `python audit/W1.2_Batch_08_Containment_Sol_Probe.py` exited 0: 7 selected tests passed and 28 skipped, 2 files passed. The scripts use intercepted/isolated fixtures and suppress raw output; no physical resource isolation or browser execution is established. These failures remain VERIFICATION_FAILED and FND04 open.
+
+## Mounted page controls and execution incident
+
+Added `apps/skillup-web/src/lib/__tests__/truth-pages.test.tsx`; actual async batch, my-batch, programs and faculty page components render with `fetchSkillupApi` intercepted. From repository root, after clearing DATABASE/REDIS/UPSTASH/NEON/QSTASH environment keys, programmatic Vitest with `config: false`, jsdom, React plugin and an explicit `@` alias to `apps/skillup-web/src`, selecting that file: exit 0, 2 passed. These are mounted isolated components, not browser or real HTTP checks.
+
+An earlier attempt used `vite-tsconfig-paths` and a mock specifier that did not intercept the actual helper: both tests failed, and `fetchSkillupApi` attempted its configured SkillUp network fetch. No successful remote response was shown; whether the request reached the remote service is unknown. This was contrary to the no-production-traffic boundary. That run is invalid as isolated evidence. The explicit app alias and relative helper mock in the passing rerun avoid invoking the real helper; future tests must validate interception before invoking these pages.
