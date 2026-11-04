@@ -5,7 +5,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | Task | Disposition and remaining work |
 | --- | --- |
 | FND01 | PARTIAL: `W1_W3_Terra_Foundation_Register.md` records a source-backed initial slice; full crosswalk enumeration remains outstanding. |
-| FND02 | PARTIAL: affected UI controls were run; the full ILS/repository/BFF and retained Sol probe selections remain to be reproduced under this assignment. Historical export tenant failures remain unresolved. |
+| FND02 | PARTIAL: affected UI controls and retained Sol probes were run; full ILS/repository/BFF selections remain to be reproduced. Both foreign-tenant export probes fail as recorded below. |
 | FND03 | NOT COMPLETE: signed-subject, projection, private-store, export provenance, admin classification and publication policy need one reviewed decision table and Sol disposition. |
 | FND04 | BLOCKED on FND03 tenant/provenance policy; foreign-tenant equal-ID export probes remain failing historically. No speculative runtime correction. |
 | FND05 | BLOCKED on FND03 private owner/store authority; four evidence lanes remain separately qualified in Batch 08 handoff. |
@@ -16,10 +16,10 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND10 | NOT COMPLETE: physical-store and browser scenario prerequisites remain to be consolidated; actual execution NOT EXECUTED. |
 | FND11 | NOT COMPLETE: consumer inventory, equal-email ambiguity controls and uniqueness decision remain; migration separate. |
 | FND12 | PARTIAL: register identifies report and SkillUp fallback sources, not exhaustive W2 coverage. |
-| FND13 | NOT COMPLETE: active SkillUp data callers and truthful replacement require inventory. |
+| FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty and batch/recording slices committed; placement, remaining dashboard truth, HTTP and physical evidence remain. |
 | FND14 | IMPLEMENTED_UNVERIFIED for shared result-report DATA-02 slice only, commit `2d865a14`, manifest `W1_W3_FND14_DATA02_Slice_Manifest.md`; full assessment/result surface coverage remains open. |
-| FND15 | NOT COMPLETE: actual SHC operational and governance consumers require evidence. |
-| FND16 | NOT COMPLETE: persistence-dependent form/action inventory and controls remain. |
+| FND15 | PARTIAL / IMPLEMENTED_UNVERIFIED: question timestamp, SHC events, audit and metrics slices committed; other operational and governance consumers remain. |
+| FND16 | PARTIAL / IMPLEMENTED_UNVERIFIED: MKT-030 newsletter corrected in shared home footer; other form/action inventory and controls remain. |
 | FND17 | NOT COMPLETE: depends on FND12–FND16 and complete finding coverage. |
 | FND18 | NOT COMPLETE: identity contract work depends on W1 authority decisions. |
 | FND19 | NOT COMPLETE: taxonomy ingress/egress drift and controls require inventory. |
