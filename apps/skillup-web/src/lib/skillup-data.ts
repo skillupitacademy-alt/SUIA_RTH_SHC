@@ -34,24 +34,6 @@ function getPaymentPool() {
 
   return paymentPool;
 }
-const FALLBACK_FACULTY = [
-  {
-    name: 'Asha Iyer',
-    title: 'Full Stack Mentor',
-    description: 'Guides front-end and API delivery with weekly code review sessions.',
-  },
-  {
-    name: 'Rahul Mehta',
-    title: 'Data and BI Coach',
-    description: 'Focuses on dashboards, SQL drills, and employer-ready reporting habits.',
-  },
-  {
-    name: 'Neha Shah',
-    title: 'Cloud Support Lead',
-    description: 'Teaches deployment, observability, and production incident management.',
-  },
-] as const;
-
 const FALLBACK_BATCH = {
   batch: {
     name: 'SkillUp FS-24 Morning',
@@ -504,49 +486,21 @@ export async function getSkillupBatches(userId: string) {
 }
 
 export async function getSkillupFaculty() {
-  try {
-    const mentors = await db
-      .select({
-        name: userProfiles.name,
-        title: faculty.availabilityType,
-        description: faculty.status,
-      })
-      .from(faculty)
-      .innerJoin(users, eq(users.id, faculty.userId))
-      .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
-      .where(eq(faculty.status, 'active'));
+  const mentors = await db
+    .select({ name: userProfiles.name, title: faculty.availabilityType })
+    .from(faculty)
+    .innerJoin(users, eq(users.id, faculty.userId))
+    .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+    .where(eq(faculty.status, 'active'));
 
-    const heroStats = [
-      { label: 'Active mentors', value: String(mentors.length) },
-      { label: 'Batch reviews', value: String((await db.select({ id: batchSessions.id }).from(batchSessions)).length) },
-      { label: 'Upcoming sessions', value: String((await db.select({ id: batchSessions.id }).from(batchSessions).where(eq(batchSessions.status, 'scheduled'))).length) },
-      { label: 'Quality score', value: '96%' },
-    ];
-
-    return {
-      faculty: mentors.length > 0
-        ? mentors.map((mentor) => ({
-            name: mentor.name ?? 'SkillUp Mentor',
-            title: mentor.title === 'fulltime' ? 'Full-time Mentor' : mentor.title === 'parttime' ? 'Part-time Mentor' : 'Contract Mentor',
-            description:
-              mentor.description === 'active'
-                ? 'Guides learners through the live batch journey.'
-                : 'Supports the batch flow and learner guidance.',
-          }))
-        : [...FALLBACK_FACULTY],
-      heroStats,
-    };
-  } catch {
-    return {
-      faculty: [...FALLBACK_FACULTY],
-      heroStats: [
-        { label: 'Active mentors', value: String(FALLBACK_FACULTY.length) },
-        { label: 'Batch reviews', value: '3' },
-        { label: 'Upcoming sessions', value: '3' },
-        { label: 'Quality score', value: '96%' },
-      ],
-    };
-  }
+  return {
+    faculty: mentors.map((mentor) => ({
+      name: mentor.name ?? 'Name unavailable',
+      title: mentor.title ?? 'Availability unavailable',
+      description: 'Faculty details unavailable',
+    })),
+    heroStats: [{ label: 'Active mentors', value: String(mentors.length) }],
+  };
 }
 
 export async function getSkillupProgramBySlug(slug: string) {

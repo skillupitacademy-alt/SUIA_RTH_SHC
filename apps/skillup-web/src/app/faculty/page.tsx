@@ -1,15 +1,8 @@
 import Link from 'next/link';
-import { BadgeCheck, BookOpenText, CalendarDays, Users2 } from 'lucide-react';
+import { Users2 } from 'lucide-react';
 
 import { fetchSkillupApi } from '@/lib/skillup-api';
 import type { SkillupFacultyMember } from '@/lib/skillup-types';
-
-const facultyStats = [
-  { label: 'Active mentors', value: '38', icon: Users2 },
-  { label: 'Batch reviews', value: '124', icon: BookOpenText },
-  { label: 'Upcoming sessions', value: '18', icon: CalendarDays },
-  { label: 'Quality score', value: '96%', icon: BadgeCheck },
-];
 
 type FacultyResponse = {
   faculty: SkillupFacultyMember[];
@@ -30,12 +23,11 @@ export default async function FacultyPage() {
       </article>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {heroStats.map((stat, index) => {
-          const Icon = facultyStats[index]?.icon ?? BadgeCheck;
+        {heroStats.map((stat) => {
 
           return (
             <article key={stat.label} className="surface-card rounded-3xl p-5">
-              <Icon className="text-cyan-600" size={18} />
+              <Users2 className="text-cyan-600" size={18} />
               <p className="mt-3 text-xs font-black uppercase tracking-[0.32em] text-slate-500">{stat.label}</p>
               <p className="mt-2 text-4xl font-black tracking-tight text-slate-950 font-outfit">{stat.value}</p>
             </article>
@@ -54,6 +46,7 @@ export default async function FacultyPage() {
               Batch overview
             </Link>
           </div>
+          {faculty.length === 0 && <p className="mt-6 text-sm text-slate-600">No active faculty are currently available.</p>}
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {faculty.map((mentor) => (
               <div key={mentor.name} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
