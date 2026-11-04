@@ -9,6 +9,7 @@ import MyBatchPage from '../../app/student/my-batch/page';
 import ProgramsPage from '../../app/programs/page';
 import FacultyPage from '../../app/faculty/page';
 import StudentDashboardPage from '../../app/student/page';
+import AttendancePage from '../../app/student/attendance/page';
 beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw new Error('Unexpected network request'); })); });
 afterEach(() => { cleanup(); fetchData.mockReset(); vi.unstubAllGlobals(); });
 it('shows no enrollment in both batch entry pages', async () => {
@@ -40,4 +41,15 @@ it('distinguishes missing session percentages from measured zero and calls open 
   first.unmount();
   render(await StudentDashboardPage());
   expect(screen.getAllByText('0%')).toHaveLength(2);
+});
+
+it('distinguishes absent attendance records from measured zero', async () => {
+  fetchData.mockResolvedValueOnce({ history: [] }).mockResolvedValueOnce({ history: [{ date: '2026-01-01', state: 'absent', note: 'Details unavailable' }] });
+  const first = render(await AttendancePage());
+  expect(screen.getByText('Unavailable')).toBeTruthy();
+  expect(screen.queryByText('Monthly summary')).toBeNull();
+  first.unmount();
+  render(await AttendancePage());
+  expect(screen.getByText('0%')).toBeTruthy();
+  expect(screen.getByText('Details unavailable')).toBeTruthy();
 });

@@ -277,12 +277,7 @@ export async function getSkillupAttendance(userId: string) {
       history: rows.map((row) => ({
         date: attendanceDateFormatter.format(toDate(row.markedAt)),
         state: row.status,
-        note:
-          row.status === 'present'
-            ? 'On time for class'
-            : row.status === 'late'
-              ? 'Joined after 10 minutes'
-              : 'Planned leave',
+        note: 'Details unavailable',
       })),
     };
 }
