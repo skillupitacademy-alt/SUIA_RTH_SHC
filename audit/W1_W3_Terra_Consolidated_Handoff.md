@@ -13,7 +13,7 @@ Baseline `df81a5c0` on `remediation/w1-2-batch-05-targeted`; working tree was cl
 | FND07 | IMPLEMENTED_UNVERIFIED for J-R1/J-R2 only, commit `995e1f35`, manifest `W1_W3_FND07_Lifecycle_Slice_Manifest.md`; broader continuously mounted auth-owner/cache requirements remain open. |
 | FND08 | NOT COMPLETE: real Project LLM actor ingress and persistence need inventory and controls. |
 | FND09 | NOT COMPLETE: depends on FND08 and selected approval authority. |
-| FND10 | NOT COMPLETE: physical-store and browser scenario prerequisites remain to be consolidated; actual execution NOT EXECUTED. |
+| FND10 | PARTIAL: 21605b07 maps physical/browser scenarios and prerequisites; exact deployment commands and actual execution remain NOT EXECUTED. |
 | FND11 | NOT COMPLETE: consumer inventory, equal-email ambiguity controls and uniqueness decision remain; migration separate. |
 | FND12 | PARTIAL: register identifies report and SkillUp fallback sources, not exhaustive W2 coverage. |
 | FND13 | PARTIAL / IMPLEMENTED_UNVERIFIED: program, faculty and batch/recording slices committed; placement, remaining dashboard truth, HTTP and physical evidence remain. |
