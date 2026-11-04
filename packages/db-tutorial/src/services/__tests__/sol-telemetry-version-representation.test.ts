@@ -33,6 +33,27 @@ describe('Sol telemetry version representation', () => {
     await expect(validate(block, 'C1')).resolves.toBeUndefined();
   });
 
+  it.each([null, '', 42, {}, false])('denies invalid declared version %s', async version => {
+    const block = { id: blockId, type: 'paragraph', version, content: { text: 'text' } };
+    await expect(validate(block, 'unversioned')).rejects.toThrow();
+  });
+
+  it.each(['instructional', 'assessment', 'media'] as const)('denies unversioned structural type with %s role', async progressRole => {
+    const block = { id: blockId, type: 'paragraph', progressRole, content: { text: 'text' } };
+    await expect(validate(block, 'unversioned')).rejects.toThrow();
+  });
+
+  it.each([undefined, 'structural'] as const)('allows genuine unversioned structural content with role %s', async progressRole => {
+    const block = { id: blockId, type: 'paragraph', progressRole, content: { text: 'text' } };
+    await expect(validate(block, 'unversioned')).resolves.toBeUndefined();
+  });
+
+  it.each(['instructional', 'structural', 'assessment', 'media'] as const)('accepts exact versioned identity with role %s', async progressRole => {
+    const block = createC1Fixture({ id: blockId, progressRole });
+    await expect(validate(block, 'C1')).resolves.toBeUndefined();
+    await expect(validate(block, 'D1')).rejects.toThrow();
+  });
+
   it('denies a C1 content form with its version removed', async () => {
     const { version: _version, ...block } = createC1Fixture({ id: blockId });
     expect(CodeBlockSchema.safeParse(block).success).toBe(false);

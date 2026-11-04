@@ -5,20 +5,30 @@ import { POST as visit } from '../block-visit/route';
 import { CodeBlockSchema, CodeC1BlockSchema, MAX_NESTING_DEPTH } from '@quiz/types';
 import { createC1Fixture } from '../../../../../../../../packages/db-tutorial/src/services/__tests__/test-fixtures';
 
-const fixture = vi.hoisted(() => ({ events: new Map<string, any>(), state: new Map<string, number>(), fail: false, claims: 0, writes: 0, afterLookup: undefined as undefined | (() => void), afterClaim: undefined as undefined | (() => void), visits: new Map<string, any>(), blocks: [] as any[] }));
+const fixture = vi.hoisted(() => ({ events: new Map<string, any>(), state: new Map<string, number>(), fail: false, claims: 0, writes: 0, afterLookup: undefined as undefined | (() => void), afterClaim: undefined as undefined | (() => void), transactionTail: Promise.resolve() as Promise<void>, visits: new Map<string, any>(), blocks: [] as any[] }));
 vi.mock('@quiz/db-tutorial', async original => {
   const actual = await original<typeof import('@quiz/db-tutorial')>();
-  class Section { async getTutorialByPageIdentity(sub: string, node: string, brand: string) { return sub === '22222222-2222-4222-8222-222222222222' && node === 'node-1' && brand === 'skillup' ? { id: 'section', content: { schemaVersion: 1, blocks: fixture.blocks } } : undefined; } }
+  class Section { async getTutorialByPageIdentity(sub: string, node: string, brand: string) { return sub === '22222222-2222-4222-8222-222222222222' && (node === 'node-1' || node === 'node-2') && brand === 'skillup' ? { id: 'section', content: { schemaVersion: 1, blocks: fixture.blocks } } : undefined; } }
   class Events { withDb() { return this; } async claimEvent(data: any) { fixture.claims++; if (fixture.events.has(data.eventId)) return null; fixture.events.set(data.eventId, data); fixture.afterClaim?.(); fixture.afterClaim = undefined; return data; } async findByEventId(id: string) { const result = fixture.events.get(id); fixture.afterLookup?.(); fixture.afterLookup = undefined; return result; } }
   class State { withDb() { return this; } async upsert(data: any) { fixture.writes++; if (data.lastSessionId) { const old = fixture.visits.get(data.blockId); const value = { ...data, visitCount: old ? old.visitCount + (old.lastSessionId === data.lastSessionId ? 0 : 1) : 1, revisionCount: 0 }; fixture.visits.set(data.blockId, value); return value; } if (fixture.fail) throw new Error('isolated state outage'); const key = `${data.userId}:${data.navigationNodeId}:${data.blockId}:${data.blockVersion}`; const total = (fixture.state.get(key) ?? 0) + data.activeTimeSec; fixture.state.set(key, total); return { ...data, activeTimeSec: total }; } async findOne(data: any) { const key = `${data.userId}:${data.navigationNodeId}:${data.blockId}:${data.blockVersion}`; return { ...data, activeTimeSec: fixture.state.get(key) ?? 0 }; } }
   return { ...actual, TutorialNavigationProgressRepository: class {}, TutorialSectionRepository: Section, BlockLearningStateRepository: State, BlockTelemetryEventRepository: Events, db: {} };
 });
-vi.mock('../../../../../../../../packages/db-tutorial/src/db', () => ({ db: { transaction: async (fn: (tx: unknown) => Promise<unknown>) => { const events = new Map(fixture.events); const state = new Map(fixture.state); try { return await fn({}); } catch (error) { fixture.events = events; fixture.state = state; throw error; } } } }));
+vi.mock('../../../../../../../../packages/db-tutorial/src/db', () => ({ db: { transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+  const previous = fixture.transactionTail;
+  let release!: () => void;
+  fixture.transactionTail = new Promise<void>(resolve => { release = resolve; });
+  await previous;
+  const events = new Map(fixture.events);
+  const state = new Map(fixture.state);
+  try { return await fn({}); }
+  catch (error) { fixture.events = events; fixture.state = state; throw error; }
+  finally { release(); }
+} } }));
 const previous = process.env.INTERNAL_API_SECRET;
 const body = { navigationNodeId: 'node-1', subtopicId: '22222222-2222-4222-8222-222222222222', blockId: 'known', blockVersion: 'D1', eventId: '11111111-1111-4111-8111-111111111111', activeTimeSec: 30 };
 function request(input = body, brand = 'skillup', secret = 'disposable-secret', user = 'learner') { return new NextRequest('http://localhost/api/tutorial/ils/block-active-time', { method: 'POST', headers: { 'x-internal-secret': secret, 'x-user-id': user, 'x-brand': brand, 'content-type': 'application/json' }, body: JSON.stringify(input) }); }
 describe('composed active-time entry and real service', () => {
-  beforeEach(() => { process.env.INTERNAL_API_SECRET = 'disposable-secret'; fixture.events.clear(); fixture.state.clear(); fixture.visits.clear(); fixture.blocks = [{ id: 'known', type: 'definition', version: 'D1', content: {} }]; fixture.fail = false; fixture.afterLookup = undefined; fixture.afterClaim = undefined; fixture.claims = 0; fixture.writes = 0; });
+  beforeEach(() => { process.env.INTERNAL_API_SECRET = 'disposable-secret'; fixture.events.clear(); fixture.state.clear(); fixture.visits.clear(); fixture.blocks = [{ id: 'known', type: 'definition', version: 'D1', content: {} }]; fixture.fail = false; fixture.afterLookup = undefined; fixture.afterClaim = undefined; fixture.transactionTail = Promise.resolve(); fixture.claims = 0; fixture.writes = 0; });
   afterEach(() => { if (previous === undefined) delete process.env.INTERNAL_API_SECRET; else process.env.INTERNAL_API_SECRET = previous; });
   it('records same and new visit sessions without manufacturing completion', async () => {
     const visitRequest = (session: string, secret = 'disposable-secret') => new NextRequest('http://localhost/api/tutorial/ils/block-visit', { method: 'POST', headers: { 'x-internal-secret': secret, 'x-user-id': 'learner', 'x-brand': 'skillup', 'content-type': 'application/json' }, body: JSON.stringify({ navigationNodeId: 'node-1', subtopicId: body.subtopicId, blockId: 'known', blockVersion: 'D1', sessionId: session }) });
@@ -147,11 +157,39 @@ describe('composed active-time entry and real service', () => {
     expect((await POST(request())).status).toBe(200);
     expect(fixture.claims).toBe(1); expect(fixture.writes).toBe(1);
   });
+  it('retains an exact duplicate when publication changes during duplicate lookup', async () => {
+    expect((await POST(request())).status).toBe(200);
+    fixture.afterLookup = () => { fixture.blocks = []; };
+    const response = await POST(request());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ alreadyProcessed: true });
+    expect(fixture.writes).toBe(1);
+    expect([...fixture.state.values()]).toEqual([30]);
+  });
+  it('after rollback accepts only the valid concurrent retry in the staged adapter', async () => {
+    fixture.fail = true;
+    expect((await POST(request())).status).toBe(500);
+    expect(fixture.events.size).toBe(0);
+    fixture.fail = false;
+    const invalid = { ...body, eventId: '33333333-3333-4333-8333-333333333333', blockVersion: 'D2' };
+    const [validResponse, invalidResponse] = await Promise.all([POST(request()), POST(request(invalid))]);
+    expect(validResponse.status).toBe(200);
+    expect(invalidResponse.status).toBe(400);
+    expect(fixture.events.size).toBe(1);
+    expect([...fixture.state.values()]).toEqual([30]);
+  });
   it('models a committed event with a lost acknowledgement and retry', async () => {
     await POST(request()); // Deliberately drop the first response after commit.
     const retry = await POST(request());
     expect(retry.status).toBe(200); expect(await retry.json()).toMatchObject({ alreadyProcessed: true });
     expect(fixture.events.size).toBe(1); expect([...fixture.state.values()]).toEqual([30]); expect(fixture.writes).toBe(1);
+  });
+  it('rejects a duplicate with a different valid hierarchy node without added credit', async () => {
+    expect((await POST(request())).status).toBe(200);
+    const response = await POST(request({ ...body, navigationNodeId: 'node-2' }));
+    expect(response.status).toBe(400);
+    expect(fixture.writes).toBe(1);
+    expect([...fixture.state.values()]).toEqual([30]);
   });
   it('rejects a duplicate with a changed amount without added credit', async () => {
     expect((await POST(request())).status).toBe(200);
