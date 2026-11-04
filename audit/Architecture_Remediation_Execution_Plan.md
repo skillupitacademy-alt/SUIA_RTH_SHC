@@ -745,7 +745,7 @@ a bounded task and independent review. Carry exam default-store/conditional-owne
 into application/domain assessment; global resource isolation is not certified by GUARD-01.
 
 ### W1.2-GUARD-03 - Bounded Principal-Policy Implementation Scoping
-**Status:** `IMPLEMENTED_UNVERIFIED` (Tasks A/B scoped in `audit/W1.2-GUARD-03_Tenant_Admin_Implementation_Scope.md` and `audit/W1.2-GUARD-03_Learner_Login_Implementation_Scope.md`. Implementation scopes only; zero runtime code changes made. Pending Sol review.)
+**Status:** `VERIFICATION_FAILED` (Tasks A/B require correction: actual infra factory/analytics caller compatibility and non-invented learner purpose/entitlement contracts. Review: `audit/W1.2_Batch_06_Sol_Review_2e473285.md`; correction assignment: `audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md`. No production implementation or browser qualification accepted.)
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Tasks A/B:
 separate tenant-admin helper/caller compatibility and server-fixed learner-login
 implementation scopes. Documentation/scoping only; runtime protections require their
@@ -774,7 +774,7 @@ choosing bounded delegation/decommissioning. Do not create duplicate endpoints o
 assume deployed failure. No runtime change authorized by this planned entry.
 
 ### W1.2-SESS-03 - Legacy Logout-All Compatibility and Remediation Decision
-**Status:** `IMPLEMENTED_UNVERIFIED` (Task C decision documented in `audit/W1.2-SESS-03_Compatibility_Decision.md`. Evaluates consumer qualification, recommends preservation via delegation adapter with deprecation headers, defines gap analysis, revocation anatomy, and error handling. Pending Sol review.)
+**Status:** `VERIFICATION_FAILED` (Task C requires correction to current signing/TTL/error/cookie facts and legacy adapter principal/count/partial-failure compatibility. Review: `audit/W1.2_Batch_06_Sol_Review_2e473285.md`; correction assignment: `audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md`. No production implementation or browser qualification accepted.)
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task C; preserve the
 existing legacy logout-all scope, qualify compatibility uncertainty and propose a
 bounded implementation. No live all-device call, runtime patch or endpoint removal.
@@ -788,7 +788,7 @@ deletion or live deployment is authorized by this planned entry. Single-session 
 revocation safe no-op and stateless access-token limits remain unchanged.
 
 ### W1.2-FIXTURE-01 - Isolated Same-Email and Colliding-ID Backend Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` (Task D tests implemented in `apps/api-server/src/modules/auth/__tests__/fixture-01-tenant-isolation.test.ts`. 7 isolated controls passed: SUIA/RTH positive controls, cross-tenant password failures, zero sessions on denial, store isolation, and wrong-store sensitivity. Report: `audit/W1.2-FIXTURE-01_Execution_Report.md`. Pending Sol review.)
+**Status:** `VERIFICATION_FAILED` (Task D baseline 7 controls independently passed, but explicit disposable keys/transport containment and accurate bridge/repository evidence are required. Review: `audit/W1.2_Batch_06_Sol_Review_2e473285.md`; correction assignment: `audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md`. No production implementation or browser qualification accepted.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task D.
 **Implementer / acceptance:** Gemini / independent Sol review.
@@ -798,7 +798,7 @@ production policy change or browser AQ-08 closure. Explicitly disclose stubbed l
 test-environment branches and physical/deployed isolation limitations.
 
 ### W1.2-FIXTURE-02 - Isolated Signed-Principal Admin-Guard Qualification
-**Status:** `IMPLEMENTED_UNVERIFIED` (Task E tests implemented in `apps/api-server/src/modules/auth/__tests__/fixture-02-admin-guard.test.ts`. 10 isolated controls passed: tenant admin positive control, correctly signed learner token denial before DB queries, in-flight learner token denial on promoted DB account, missing/tampered token, audience mismatch, SHC admin valid/invalid, infra bypass, and blocked admin. Report: `audit/W1.2-FIXTURE-02_Execution_Report.md`. Pending Sol review.)
+**Status:** `VERIFICATION_FAILED` (Task E baseline 10 controls independently passed, but shared-key audience/class isolation, query-entry assertions and container teardown are required. Review: `audit/W1.2_Batch_06_Sol_Review_2e473285.md`; correction assignment: `audit/W1.2_Gemini_Controlled_Batch_06_Corrections.md`. No production implementation or browser qualification accepted.)
 **Root cause:** RC-ID-01
 **Assignment:** `audit/W1.2_Gemini_Controlled_Batch_06_Task.md`, Task E.
 **Implementer / acceptance:** Gemini / independent Sol review.
